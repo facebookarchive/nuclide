@@ -15,7 +15,9 @@ import type {StatusData} from '../../nuclide-language-service/lib/LanguageServic
 
 export type LanguageStatusProvider = {
   name: string,
+  description: string,
   icon: ?IconName,
+  iconMarkdown: ?string,
   grammarScopes: Array<string>,
   priority: number,
 
@@ -23,3 +25,5 @@ export type LanguageStatusProvider = {
 
   clickStatus(editor: TextEditor, id: string, button: string): Promise<void>,
 };
+
+export type StatusKind = 'null' | 'green' | 'yellow' | 'red';

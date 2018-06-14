@@ -22,14 +22,20 @@ export type StatusConfig = {|
   priority: number,
   observeEventName: string,
   clickEventName: string,
+  description: string,
   icon?: IconName,
+  // If the 'icon' is not present, Markdown can be supplied to render a custom
+  // icon.
+  iconMarkdown?: string,
 |};
 
 export class StatusProvider<T: LanguageService> {
   name: string;
   priority: number;
   grammarScopes: Array<string>;
+  description: string;
   icon: ?IconName;
+  iconMarkdown: ?string;
   _observeEventName: string;
   _clickEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
@@ -37,19 +43,18 @@ export class StatusProvider<T: LanguageService> {
   constructor(
     name: string,
     grammars: Array<string>,
-    priority: number,
-    observeEventName: string,
-    clickEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    icon?: IconName,
+    config: StatusConfig,
   ) {
     this.name = name;
-    this.priority = priority;
     this.grammarScopes = grammars;
-    this.icon = icon;
-    this._observeEventName = observeEventName;
-    this._clickEventName = clickEventName;
     this._connectionToLanguageService = connectionToLanguageService;
+    this.priority = config.priority;
+    this.description = config.description;
+    this.icon = config.icon;
+    this.iconMarkdown = config.iconMarkdown;
+    this._observeEventName = config.observeEventName;
+    this._clickEventName = config.clickEventName;
   }
 
   static register(
@@ -61,14 +66,7 @@ export class StatusProvider<T: LanguageService> {
     return atom.packages.serviceHub.provide(
       'nuclide-language-status',
       config.version,
-      new StatusProvider(
-        name,
-        grammars,
-        config.priority,
-        config.observeEventName,
-        config.clickEventName,
-        connectionToLanguageService,
-      ),
+      new StatusProvider(name, grammars, connectionToLanguageService, config),
     );
   }
 

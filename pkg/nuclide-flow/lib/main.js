@@ -159,7 +159,8 @@ async function activateLsp(): Promise<UniversalDisposable> {
       observeEventName: 'flow.status.observe',
       clickEventName: 'flow.status.click',
       icon: 'nuclicon-flow',
-      // TODO(hchau): bannerMarkdown: The flow language service provides autocomplete, hover, hyperclick for Flow.',
+      // TODO(ljw): Fill in description for Flow.
+      description: '',
     },
   };
 
