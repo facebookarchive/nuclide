@@ -11,6 +11,7 @@
 import {
   getComponentNameFromUri,
   getRequiredPropsFromAst,
+  getDefaultPropNames,
 } from './uiComponentAst';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -26,9 +27,11 @@ export function getComponentDefinitionFromAst(
     return null;
   }
   const requiredProps = getRequiredPropsFromAst(componentName, ast);
+  const defaultProps = getDefaultPropNames(componentName, ast);
   return {
     name: componentName,
     requiredProps,
+    defaultProps,
   };
 }
 

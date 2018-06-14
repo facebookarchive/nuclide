@@ -19,6 +19,7 @@ export type IndexMessage = {|
 export type ComponentDefinition = {|
   name: string,
   requiredProps: Array<ComponentProp>,
+  defaultProps: Array<string>,
 |};
 
 export type ComponentProp = {|
