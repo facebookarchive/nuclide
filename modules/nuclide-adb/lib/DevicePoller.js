@@ -114,9 +114,10 @@ export class DevicePoller {
       track('nuclide-adb-sdb-base.unknown_device_arch', {deviceArchitecture});
     }
 
-    const displayName = device.name.startsWith('emulator')
-      ? device.name
-      : device.model;
+    const displayName =
+      device.name.startsWith('emulator') || device.name.startsWith('localhost:')
+        ? device.name
+        : device.model;
 
     return {
       name: device.name,
