@@ -166,3 +166,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-lightning::before {
   content: "\f12e";
 }
+.icon-nuclicon-console::before {
+  content: "\f12f";
+}
