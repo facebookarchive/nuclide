@@ -14,9 +14,12 @@ import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   FileChangeStatusToIcon,
   FileChangeStatusToLabel,
@@ -27,39 +30,96 @@ import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import PathWithFileIcon from './PathWithFileIcon';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import nullthrows from 'nullthrows';
+import ReactDOM from 'react-dom';
 
-const ANALYTICS_SOURCE_KEY = 'inline';
 const LF = '\u000A';
+const COMMAND_PREFIX = 'changed-file';
+const CONTEXT_MENU_KEY = 'context-menu';
+const INLINE_KEY = 'inline';
+
 type Props = {
   displayPath: string,
-  enableInlineActions: boolean,
   filePath: NuclideUri,
+  rootPath: NuclideUri,
   fileStatus: FileChangeStatusValue,
   generatedType: ?GeneratedFileType,
+  isSelected: boolean,
+
   // Determines status of checkbox to left of the component. null -> no checkbox
   isChecked: ?boolean,
-  isHgPath: boolean,
-  isSelected: boolean,
-  onAddFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
-  onDeleteFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   // onFileChecked: What to do when the checkbox is toggled
-  onFileChecked: (filePath: NuclideUri) => void,
-  onFileChosen: (filePath: NuclideUri) => void,
-  onForgetFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
-  onMarkFileResolved?: (
+  onFileChecked?: ?(filePath: NuclideUri) => void,
+
+  onFileChosen?: ?(filePath: NuclideUri) => void,
+  // Callbacks controlling what happens when certain icons are clicked
+  // If null or undefined, icon won't appear
+  onAddFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onDeleteFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onForgetFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onMarkFileResolved?: ?(
     filePath: NuclideUri,
     analyticsSourceKey: string,
   ) => void,
-  onOpenFileInDiffView: (
+  onOpenFileInDiffView?: ?(
     filePath: NuclideUri,
     analyticsSourceKey: string,
   ) => void,
-  openInDiffViewOption: boolean,
-  onRevertFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
-  rootPath: NuclideUri,
+  onRevertFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
 };
 
 export default class ChangedFile extends React.Component<Props> {
+  _disposables: UniversalDisposable;
+
+  componentDidMount(): void {
+    const node: HTMLElement = (ReactDOM.findDOMNode(this): any);
+    this._disposables = new UniversalDisposable(
+      atom.commands.add(node, `${COMMAND_PREFIX}:goto-file`, event => {
+        goToLocation(this.props.filePath);
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:copy-full-path`, event => {
+        atom.clipboard.write(nuclideUri.getPath(this.props.filePath || ''));
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:delete-file`, event => {
+        const {onDeleteFile, filePath} = this.props;
+        if (onDeleteFile != null) {
+          onDeleteFile(filePath, CONTEXT_MENU_KEY);
+        }
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:copy-file-name`, event => {
+        atom.clipboard.write(nuclideUri.basename(this.props.filePath || ''));
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:add`, event => {
+        const {onAddFile, filePath} = this.props;
+        if (onAddFile != null) {
+          onAddFile(filePath, CONTEXT_MENU_KEY);
+        }
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:revert`, event => {
+        const {onRevertFile, filePath} = this.props;
+        if (onRevertFile != null) {
+          onRevertFile(filePath, CONTEXT_MENU_KEY);
+        }
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:open-in-diff-view`, event => {
+        const {onOpenFileInDiffView, filePath} = this.props;
+        if (onOpenFileInDiffView != null) {
+          onOpenFileInDiffView(filePath, CONTEXT_MENU_KEY);
+        }
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:forget-file`, event => {
+        const {onForgetFile, filePath} = this.props;
+        if (onForgetFile != null) {
+          onForgetFile(filePath, CONTEXT_MENU_KEY);
+        }
+      }),
+    );
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
+  }
+
   _getFileClassname(): string {
     const {fileStatus, generatedType, isSelected} = this.props;
     return classnames(
@@ -90,7 +150,7 @@ export default class ChangedFile extends React.Component<Props> {
     icon: IconName,
     tooltipTitle: string,
     onClick: () => void,
-  ): React.Element<any> {
+  ): React.Node {
     return (
       <div
         className="nuclide-changed-file-action"
@@ -107,129 +167,159 @@ export default class ChangedFile extends React.Component<Props> {
     );
   }
 
-  _renderForgetAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'forget' /* key */,
-      'circle-slash' /* icon */,
-      'Forget (stop tracking file in version control)' /* title */,
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderDeleteAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'delete' /* key */,
-      'trashcan' /* icon */,
-      'Delete file from file system' /* title */,
-      this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderResolveAction(filePath: string): ?React.Element<any> {
-    return this.props.onMarkFileResolved
+  _renderForgetAction(filePath: string): React.Node {
+    const {onForgetFile} = this.props;
+    return onForgetFile != null
       ? this._renderAction(
-          'resolve' /* key */,
-          'check' /* icon */,
-          'Mark file as resolved' /* title */,
-          this.props.onMarkFileResolved.bind(
-            this,
-            filePath,
-            ANALYTICS_SOURCE_KEY,
-          ),
+          'forget' /* key */,
+          'circle-slash' /* icon */,
+          'Forget (stop tracking file in version control)' /* title */,
+          onForgetFile.bind(this, filePath, INLINE_KEY),
         )
       : null;
   }
 
-  _renderMarkDeletedAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'mark-deleted' /* key */,
-      'circle-slash' /* icon */,
-      'Mark file as deleted (remove from version control)' /* title */,
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderDeleteAction(filePath: string): React.Node {
+    const {onDeleteFile} = this.props;
+    return onDeleteFile != null
+      ? this._renderAction(
+          'delete' /* key */,
+          'trashcan' /* icon */,
+          'Delete file from file system' /* title */,
+          onDeleteFile.bind(this, filePath, INLINE_KEY),
+        )
+      : null;
   }
 
-  _renderRestoreAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'restore' /* key */,
-      'playback-rewind' /* icon */,
-      'Restore file (revert to last known version)' /* title */,
-      this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderResolveAction(filePath: string): React.Node {
+    const {onMarkFileResolved} = this.props;
+    return onMarkFileResolved
+      ? this._renderAction(
+          'resolve' /* key */,
+          'check' /* icon */,
+          'Mark file as resolved' /* title */,
+          onMarkFileResolved.bind(this, filePath, INLINE_KEY),
+        )
+      : null;
   }
 
-  _renderAddAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'add' /* key */,
-      'plus' /* icon */,
-      'Add file to version control' /* title */,
-      this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
+  _renderMarkDeletedAction(filePath: string): React.Node {
+    const {onForgetFile} = this.props;
+    return onForgetFile != null
+      ? this._renderAction(
+          'mark-deleted' /* key */,
+          'circle-slash' /* icon */,
+          'Mark file as deleted (remove from version control)' /* title */,
+          onForgetFile.bind(this, filePath, INLINE_KEY),
+        )
+      : null;
   }
 
-  _renderOpenInDiffViewAction(filePath: string): ?React.Element<any> {
-    return this.props.openInDiffViewOption
+  _renderRestoreAction(filePath: string): React.Node {
+    const {onRevertFile} = this.props;
+    return onRevertFile != null
+      ? this._renderAction(
+          'restore' /* key */,
+          'playback-rewind' /* icon */,
+          'Restore file (revert to last known version)' /* title */,
+          onRevertFile.bind(this, filePath, INLINE_KEY),
+        )
+      : null;
+  }
+
+  _renderAddAction(filePath: string): React.Node {
+    const {onAddFile} = this.props;
+    return onAddFile != null
+      ? this._renderAction(
+          'add' /* key */,
+          'plus' /* icon */,
+          'Add file to version control' /* title */,
+          onAddFile.bind(this, filePath, INLINE_KEY),
+        )
+      : null;
+  }
+
+  _renderOpenInDiffViewAction(filePath: string): React.Node {
+    const {onOpenFileInDiffView} = this.props;
+    return onOpenFileInDiffView != null
       ? this._renderAction(
           'diff' /* key */,
           'diff' /* icon */,
           'Open file in Diff View' /* title */,
-          this.props.onOpenFileInDiffView.bind(
-            this,
-            filePath,
-            ANALYTICS_SOURCE_KEY,
-          ),
+          onOpenFileInDiffView.bind(this, filePath, INLINE_KEY),
         )
       : null;
   }
 
   _onCheckboxChange = (isChecked: boolean): void => {
-    this.props.onFileChecked(this.props.filePath);
+    nullthrows(this.props.onFileChecked)(this.props.filePath);
   };
 
   render(): React.Node {
     const {
-      enableInlineActions,
       isChecked,
-      isHgPath,
       displayPath,
       filePath,
       fileStatus,
+      onFileChosen,
+      onOpenFileInDiffView,
+      onForgetFile,
+      onDeleteFile,
+      onAddFile,
+      onRevertFile,
+      onMarkFileResolved,
     } = this.props;
-    let actions;
-    if (enableInlineActions && isHgPath) {
-      const eligibleActions = [this._renderOpenInDiffViewAction(filePath)];
-      switch (fileStatus) {
-        case FileChangeStatus.ADDED:
-          eligibleActions.push(
-            this._renderForgetAction(filePath),
-            this._renderDeleteAction(filePath),
-          );
-          break;
-        case FileChangeStatus.UNTRACKED:
-          eligibleActions.push(
-            this._renderAddAction(filePath),
-            this._renderDeleteAction(filePath),
-          );
-          break;
-        case FileChangeStatus.MISSING: // removed from FS but not VCS
-          eligibleActions.push(
-            this._renderRestoreAction(filePath),
-            this._renderMarkDeletedAction(filePath),
-          );
-          break;
-        case FileChangeStatus.MODIFIED:
-        case FileChangeStatus.REMOVED: // removed from both FS and VCS
-          eligibleActions.push(this._renderRestoreAction(filePath));
-          break;
-        case FileChangeStatus.CHANGE_DELETE:
-          eligibleActions.push(this._renderDeleteAction(filePath));
-          eligibleActions.push(this._renderResolveAction(filePath));
-          break;
-      }
-      actions = (
-        <div className="nuclide-changed-file-actions">{eligibleActions}</div>
-      );
+
+    const enableDiffView = onOpenFileInDiffView != null;
+    const enableForget =
+      onForgetFile != null && fileStatus === FileChangeStatus.ADDED;
+    const enableDelete =
+      onDeleteFile != null &&
+      (fileStatus === FileChangeStatus.UNTRACKED ||
+        fileStatus === FileChangeStatus.CHANGE_DELETE);
+    const enableAdd =
+      onAddFile != null && fileStatus === FileChangeStatus.UNTRACKED;
+    const enableRestore =
+      onRevertFile != null &&
+      (fileStatus === FileChangeStatus.MISSING ||
+        fileStatus === FileChangeStatus.MODIFIED ||
+        fileStatus === FileChangeStatus.REMOVED);
+    const enableMarkDeleted =
+      onForgetFile != null && fileStatus === FileChangeStatus.MISSING;
+    const enableResolve =
+      onMarkFileResolved != null &&
+      fileStatus === FileChangeStatus.CHANGE_DELETE;
+
+    const eligibleActions = [];
+    if (enableDiffView) {
+      eligibleActions.push(this._renderOpenInDiffViewAction(filePath));
     }
+    if (enableAdd) {
+      eligibleActions.push(this._renderAddAction(filePath));
+    }
+    if (enableDelete) {
+      eligibleActions.push(this._renderDeleteAction(filePath));
+    }
+    if (enableForget) {
+      eligibleActions.push(this._renderForgetAction(filePath));
+    }
+    if (enableRestore) {
+      eligibleActions.push(this._renderRestoreAction(filePath));
+    }
+    if (enableMarkDeleted) {
+      eligibleActions.push(this._renderMarkDeletedAction(filePath));
+    }
+    if (enableResolve) {
+      eligibleActions.push(this._renderResolveAction(filePath));
+    }
+
+    const actions =
+      eligibleActions.length > 0 ? (
+        <div className="nuclide-changed-file-actions">{eligibleActions}</div>
+      ) : null;
+    const handleFileChosen =
+      onFileChosen != null ? () => onFileChosen(filePath) : null;
+
     const statusName = FileChangeStatusToLabel[fileStatus];
     const projectRelativePath =
       getAtomProjectRelativePath(filePath) || filePath;
@@ -246,12 +336,15 @@ export default class ChangedFile extends React.Component<Props> {
         data-name={displayPath}
         data-path={filePath}
         data-root={this.props.rootPath}
+        data-enable-diff-view={enableDiffView || null}
+        data-enable-forget={enableForget || null}
+        data-enable-delete={enableDelete || null}
+        data-enable-add={enableAdd || null}
+        data-enable-revert={enableRestore || null}
         className={this._getFileClassname()}
         key={filePath}>
         {checkbox}
-        <span
-          className="nuclide-changed-file-name"
-          onClick={() => this.props.onFileChosen(filePath)}>
+        <span className="nuclide-changed-file-name" onClick={handleFileChosen}>
           <Icon
             className="nuclide-changed-file-name-icon"
             icon={FileChangeStatusToIcon[fileStatus]}
@@ -266,3 +359,72 @@ export default class ChangedFile extends React.Component<Props> {
     );
   }
 }
+
+function getCommandTargetForEvent(event): Element {
+  const {target} = event;
+  return target.closest('.nuclide-changed-file') || target;
+}
+
+// this will currently never get GC'd, but should only ever be created once
+// If this might become a problem, consider refcounting wrt ChangedFile instances
+atom.contextMenu.add({
+  '.nuclide-changed-file': [
+    {type: 'separator'},
+    {
+      label: 'Add file to Mercurial',
+      command: `${COMMAND_PREFIX}:add`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute('data-enable-add');
+      },
+    },
+    {
+      label: 'Open file in Diff View',
+      command: `${COMMAND_PREFIX}:open-in-diff-view`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute(
+          'data-enable-diff-view',
+        );
+      },
+    },
+    {
+      label: 'Revert File',
+      command: `${COMMAND_PREFIX}:revert`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute(
+          'data-enable-revert',
+        );
+      },
+    },
+    {
+      label: 'Delete File',
+      command: `${COMMAND_PREFIX}:delete-file`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute(
+          'data-enable-delete',
+        );
+      },
+    },
+    {
+      label: 'Goto File',
+      command: `${COMMAND_PREFIX}:goto-file`,
+    },
+    {
+      label: 'Copy File Name',
+      command: `${COMMAND_PREFIX}:copy-file-name`,
+    },
+    {
+      label: 'Copy Full Path',
+      command: `${COMMAND_PREFIX}:copy-full-path`,
+    },
+    {
+      label: 'Forget file',
+      command: `${COMMAND_PREFIX}:forget-file`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute(
+          'data-enable-forget',
+        );
+      },
+    },
+    {type: 'separator'},
+  ],
+});

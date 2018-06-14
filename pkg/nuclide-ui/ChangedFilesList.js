@@ -13,18 +13,12 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
-import {repositoryForPath} from '../nuclide-vcs-base';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ChangedFile from './ChangedFile';
-
-function isHgPath(path: NuclideUri): boolean {
-  const repo = repositoryForPath(path);
-  return repo != null && repo.getType() === 'hg';
-}
 
 // Computes the minimally differentiable display path for each file.
 // The algorithm is O(n*m^2) where n = filePaths.length and m = maximum number
@@ -91,25 +85,26 @@ export function computeDisplayPaths(
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
 
 type Props = {
-  // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
-  checkedFiles: ?Set<NuclideUri>,
-  enableInlineActions: boolean,
+  rootPath: NuclideUri,
+  shouldShowFolderName: boolean,
+  selectedFile: ?NuclideUri,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   generatedTypes?: Map<NuclideUri, GeneratedFileType>,
-  onAddFile: (filePath: NuclideUri) => void,
-  onDeleteFile: (filePath: NuclideUri) => void,
+
+  // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
+  checkedFiles: ?Set<NuclideUri>,
   // Callback when a file's checkbox is toggled
   onFileChecked: (filePath: NuclideUri) => void,
-  // Call back when a file is clicked on
-  onFileChosen: (filePath: NuclideUri) => void,
-  onForgetFile: (filePath: NuclideUri) => void,
-  onMarkFileResolved?: (filePath: NuclideUri) => void,
-  onOpenFileInDiffView: (filePath: NuclideUri) => void,
-  onRevertFile: (filePath: NuclideUri) => void,
-  openInDiffViewOption: boolean,
-  rootPath: NuclideUri,
-  selectedFile: ?NuclideUri,
-  shouldShowFolderName: boolean,
+
+  onFileChosen?: ?(filePath: NuclideUri) => void,
+  // Callbacks controlling what happens when certain icons are clicked
+  // If null or undefined, icon won't appear
+  onAddFile?: ?(filePath: NuclideUri) => void,
+  onDeleteFile?: ?(filePath: NuclideUri) => void,
+  onForgetFile?: ?(filePath: NuclideUri) => void,
+  onMarkFileResolved?: ?(filePath: NuclideUri) => void,
+  onOpenFileInDiffView?: ?(filePath: NuclideUri) => void,
+  onRevertFile?: ?(filePath: NuclideUri) => void,
 };
 
 type State = {
@@ -129,7 +124,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
   render(): React.Node {
     const {
       checkedFiles,
-      enableInlineActions,
       fileStatuses,
       generatedTypes,
       onAddFile,
@@ -139,7 +133,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       onForgetFile,
       onMarkFileResolved,
       onOpenFileInDiffView,
-      openInDiffViewOption,
       onRevertFile,
       rootPath,
       selectedFile,
@@ -188,7 +181,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
         />
       ) : null;
 
-    const isHgRoot = isHgPath(rootPath);
     return (
       <ul className="list-tree has-collapsable-children nuclide-changed-files-list">
         <li className={rootClassName}>
@@ -212,14 +204,12 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                 return (
                   <ChangedFile
                     displayPath={displayPath}
-                    enableInlineActions={enableInlineActions}
                     filePath={filePath}
                     fileStatus={fileStatus}
                     generatedType={generatedType}
                     isChecked={
                       checkedFiles == null ? null : checkedFiles.has(filePath)
                     }
-                    isHgPath={isHgRoot}
                     isSelected={selectedFile === filePath}
                     key={filePath}
                     onAddFile={onAddFile}
@@ -229,7 +219,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                     onForgetFile={onForgetFile}
                     onMarkFileResolved={onMarkFileResolved}
                     onOpenFileInDiffView={onOpenFileInDiffView}
-                    openInDiffViewOption={openInDiffViewOption}
                     onRevertFile={onRevertFile}
                     rootPath={rootPath}
                   />
