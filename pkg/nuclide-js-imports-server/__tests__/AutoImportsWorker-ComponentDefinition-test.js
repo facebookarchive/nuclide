@@ -16,10 +16,8 @@ import passesGK from '../../commons-node/passesGK';
 (passesGK: any).mockImplementation(async () => true);
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-const {
-  getExportsForFile,
-  ExportUpdateForFile,
-} = require('../src/lib/AutoImportsWorker');
+import type {ExportUpdateForFile} from '../src/lib/AutoImportsWorker';
+const {getExportsForFile} = require('../src/lib/AutoImportsWorker');
 
 describe('getExportsForFile component definitions', () => {
   it('gets the component definition for a React component', async () => {
