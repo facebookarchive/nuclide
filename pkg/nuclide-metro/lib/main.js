@@ -33,15 +33,14 @@ class Activation {
       this._metroAtomService,
       atom.commands.add('atom-workspace', {
         // Ideally based on CWD, the commands can be disabled and the UI would explain why.
-        'nuclide-metro:start': ({
-          detail,
-        }: {
-          detail: {
+        'nuclide-metro:start': (event: {
+          detail: ?{
             port?: number,
             tunnelBehavior?: TunnelBehavior,
             extraArgs?: Array<string>,
           },
         }) => {
+          const detail = event.detail || {};
           this._metroAtomService.start(
             detail.tunnelBehavior || 'ask_about_tunnel',
             detail.port,
