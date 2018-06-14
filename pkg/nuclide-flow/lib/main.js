@@ -91,6 +91,13 @@ createPackage(module.exports, Activation);
  */
 
 async function activateLsp(): Promise<UniversalDisposable> {
+  let aboutUrl = 'https://flow.org';
+  try {
+    // $FlowFB
+    const strings = require('./fb-strings');
+    aboutUrl = strings.abourUrl;
+  } catch (_) {}
+
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -159,8 +166,7 @@ async function activateLsp(): Promise<UniversalDisposable> {
       observeEventName: 'flow.status.observe',
       clickEventName: 'flow.status.click',
       icon: 'nuclicon-flow',
-      // TODO(ljw): Fill in description for Flow.
-      description: '',
+      description: `__Flow__ provides provides autocomplete, hyperclick, hover, errors and outline. [more...](${aboutUrl})`,
     },
   };
 
