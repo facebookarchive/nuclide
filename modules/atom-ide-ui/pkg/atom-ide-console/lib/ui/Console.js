@@ -123,7 +123,7 @@ export class Console {
   }
 
   getIconName(): string {
-    return 'terminal';
+    return 'nuclicon-console';
   }
 
   // Get the pane item's title. If there's only one source selected, we'll use that to make a more
