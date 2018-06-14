@@ -42,7 +42,7 @@ export type InstantiatedTerminalInfo = {
 };
 
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
-export const TERMINAL_DEFAULT_LOCATION = 'pane';
+export const TERMINAL_DEFAULT_LOCATION = 'bottom';
 export const TERMINAL_DEFAULT_ICON = 'terminal';
 export const TERMINAL_DEFAULT_INFO = {
   remainOnCleanExit: false,
