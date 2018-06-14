@@ -226,6 +226,11 @@
       "versions": {
         "0.0.0": "consumePasteProvider"
       }
+    },
+    "tool-bar": {
+      "versions": {
+        "^1.0.0": "consumeToolBar"
+      }
     }
   },
   "providedServices": {

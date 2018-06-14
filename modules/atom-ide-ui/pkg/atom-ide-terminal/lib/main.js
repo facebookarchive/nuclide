@@ -12,6 +12,7 @@
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 import os from 'os';
 import nullthrows from 'nullthrows';
 
@@ -93,6 +94,23 @@ class Activation {
 
   dispose() {
     this._subscriptions.dispose();
+  }
+
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+    const toolBar = getToolBar('nuclide-terminal');
+    toolBar.addButton(
+      makeToolbarButtonSpec({
+        icon: 'terminal',
+        callback: 'atom-ide-terminal:new-terminal',
+        tooltip: 'New Terminal',
+        priority: 700,
+      }),
+    );
+    const disposable = new UniversalDisposable(() => {
+      toolBar.removeItems();
+    });
+    this._subscriptions.add(disposable);
+    return disposable;
   }
 
   consumePasteProvider(provider: any): IDisposable {
