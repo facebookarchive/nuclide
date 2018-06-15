@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {SdbDeviceDescription} from '../../fb-sdb-rpc/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from 'nuclide-debugger-common/types';
@@ -23,7 +22,6 @@ import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
 import {track} from 'nuclide-commons/analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getSdbServiceByNuclideUri} from '../../commons-atom/fb-remote-connection';
 
 const pollers: Map<string, DevicePoller> = new Map();
 
@@ -81,40 +79,43 @@ export class DevicePoller {
 
   fetch(host: NuclideUri): Observable<Device[]> {
     try {
+      // $FlowFB
+      const getSdbServiceByNuclideUri = require('../../commons-atom/fb-remote-connection')
+        .getSdbServiceByNuclideUri;
       return getSdbServiceByNuclideUri(host)
         .getDeviceList()
         .refCount()
-        .map(devices => devices.map(device => this.parseRawDevice(device)));
+        .map(devices =>
+          devices.map(device => {
+            let deviceArchitecture = '';
+            for (const arch of ['arm64', 'arm', 'x86']) {
+              if (device.architecture.startsWith(arch)) {
+                deviceArchitecture = arch;
+                break;
+              }
+            }
+            if (deviceArchitecture.length === 0) {
+              track('nuclide-sdb.unknown_device_arch', {deviceArchitecture});
+            }
+
+            const displayName = device.name.startsWith('emulator')
+              ? device.name
+              : device.model;
+
+            return {
+              name: device.name,
+              port: device.port,
+              displayName,
+              architecture: deviceArchitecture,
+              rawArchitecture: device.architecture,
+            };
+          }),
+        );
     } catch (e) {
       // The remote host connection can go away while we are fetching if the user
       // removes it from the file tree or the network connection is lost.
       return Observable.of([]);
     }
-  }
-
-  parseRawDevice(device: SdbDeviceDescription): Device {
-    let deviceArchitecture = '';
-    for (const arch of ['arm64', 'arm', 'x86']) {
-      if (device.architecture.startsWith(arch)) {
-        deviceArchitecture = arch;
-        break;
-      }
-    }
-    if (deviceArchitecture.length === 0) {
-      track('nuclide-sdb.unknown_device_arch', {deviceArchitecture});
-    }
-
-    const displayName = device.name.startsWith('emulator')
-      ? device.name
-      : device.model;
-
-    return {
-      name: device.name,
-      port: device.port,
-      displayName,
-      architecture: deviceArchitecture,
-      rawArchitecture: device.architecture,
-    };
   }
 
   static observeDevices(host: NuclideUri): Observable<Expected<Device[]>> {
