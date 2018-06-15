@@ -65,7 +65,7 @@ function isWindowBlank(lastDeepLinkUptime: ?number): boolean {
     atom.project.getPaths().length === 0 &&
     !atom.workspace.getModalPanels().some(x => x.isVisible()) &&
     (lastDeepLinkUptime == null ||
-      process.uptime() - lastDeepLinkUptime < BLANK_DEEP_LINK_EXPIRY)
+      process.uptime() - lastDeepLinkUptime > BLANK_DEEP_LINK_EXPIRY)
   );
 }
 
