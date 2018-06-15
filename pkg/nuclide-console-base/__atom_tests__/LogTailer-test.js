@@ -12,6 +12,10 @@
 import {LogTailer} from '../lib/LogTailer';
 import {Observable, Subject} from 'rxjs';
 
+beforeEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe('LogTailer', () => {
   it('invokes the running callback when there\'s no "starting" status', () => {
     const logTailer = new LogTailer({
@@ -23,7 +27,7 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start({onRunning: handleRunning});
     expect(handleRunning).toHaveBeenCalled();
   });
@@ -40,7 +44,7 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start({onRunning: handleRunning});
     expect(handleRunning).not.toHaveBeenCalled();
     ready.next();
@@ -48,7 +52,7 @@ describe('LogTailer', () => {
   });
 
   it("doesn't show an error notification when every start call has a running callback", () => {
-    spyOn(atom.notifications, 'addError');
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const ready = new Subject();
     const messages = new Subject();
     const err = new Error('Uh oh');
@@ -62,8 +66,8 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
-    const handleRunning2 = jasmine.createSpy();
+    const handleRunning = jest.fn();
+    const handleRunning2 = jest.fn();
     logTailer.start({onRunning: handleRunning});
     logTailer.start({onRunning: handleRunning2});
     messages.error(err);
@@ -73,7 +77,7 @@ describe('LogTailer', () => {
   });
 
   it("shows an error notification when a running callback isn't registered", () => {
-    spyOn(atom.notifications, 'addError');
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const ready = new Subject();
     const messages = new Subject();
     const err = new Error('Uh oh');
@@ -87,7 +91,7 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start({onRunning: handleRunning});
     logTailer.start();
     messages.error(err);
@@ -106,11 +110,11 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start({onRunning: handleRunning});
     logTailer.stop();
     expect(handleRunning).toHaveBeenCalled();
-    const err = (handleRunning.calls[0].args[0]: any);
+    const err = (handleRunning.mock.calls[0][0]: any);
     expect(err.name).toBe('ProcessCancelledError');
   });
 
@@ -129,11 +133,11 @@ describe('LogTailer', () => {
           restart: 'logtailer-test-restart',
         },
       });
-      const handleRunning = jasmine.createSpy();
+      const handleRunning = jest.fn();
       logTailer.start({onRunning: handleRunning});
       messages.complete();
       expect(handleRunning).toHaveBeenCalled();
-      const err = (handleRunning.calls[0].args[0]: any);
+      const err = (handleRunning.mock.calls[0][0]: any);
       expect(err.name).toBe('ProcessCancelledError');
     },
   );
@@ -150,7 +154,7 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start();
     ready.next();
     logTailer.start({onRunning: handleRunning});
@@ -158,7 +162,7 @@ describe('LogTailer', () => {
   });
 
   it("shows an error notification if there's an error after it starts running", () => {
-    spyOn(atom.notifications, 'addError');
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const ready = new Subject();
     const messages = new Subject();
     const logTailer = new LogTailer({
@@ -171,7 +175,7 @@ describe('LogTailer', () => {
         restart: 'logtailer-test-restart',
       },
     });
-    const handleRunning = jasmine.createSpy();
+    const handleRunning = jest.fn();
     logTailer.start({onRunning: handleRunning});
     logTailer.start();
     ready.next();
@@ -181,8 +185,8 @@ describe('LogTailer', () => {
   });
 
   it('uses the error handler', () => {
-    spyOn(atom.notifications, 'addError');
-    const handleError = jasmine.createSpy('handleError');
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
+    const handleError = jest.fn();
     const messages = new Subject();
     const logTailer = new LogTailer({
       name: 'test',
@@ -201,8 +205,8 @@ describe('LogTailer', () => {
   });
 
   it('uses the default error handling when the error is re-thrown by the handler', () => {
-    spyOn(atom.notifications, 'addError');
-    const handleError = jasmine.createSpy('handleError').andCallFake(err => {
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
+    const handleError = jest.fn().mockImplementation(err => {
       throw err;
     });
     const messages = new Subject();
@@ -223,8 +227,8 @@ describe('LogTailer', () => {
   });
 
   it("doesn't use the default notification when the error handler throws a new error", () => {
-    spyOn(atom.notifications, 'addError');
-    const handleError = jasmine.createSpy('handleError').andCallFake(() => {
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
+    const handleError = jest.fn().mockImplementation(() => {
       throw new Error('Unexpected');
     });
     const messages = new Subject();
