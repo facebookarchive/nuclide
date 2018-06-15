@@ -139,6 +139,12 @@ export type LspPreferences = {
 
   // See https://microsoft.github.io/language-server-protocol/specification#textDocument_formatting
   additionalFormattingOptions?: Map<string, any>,
+
+  // Normally Nuclide will claim to the LSP server that it supports snippets,
+  // even though its support is incomplete (in cases of TextEdits, and multiple
+  // cursors). You can set this field to false to make Nuclide no longer make
+  // that claim. (default true).
+  snippetSupport?: boolean,
 };
 
 // Marshals messages from Nuclide's LanguageService
@@ -631,7 +637,11 @@ export class LspLanguageService {
           completion: {
             dynamicRegistration: false,
             completionItem: {
-              snippetSupport: true,
+              // True if LspPreferences.snippetSupport is not defined or
+              // it's set to true.
+              snippetSupport:
+                this._lspPreferences.snippetSupport == null ||
+                this._lspPreferences.snippetSupport,
             },
           },
           hover: {
