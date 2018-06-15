@@ -25,6 +25,7 @@ module.exports = {
   transform: {
     '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
   },
+  setupTestFrameworkScriptFile: '<rootDir>/xplat/nuclide/jest/setupTestFrameworkScriptFile.node.js',
   setupFiles: ['<rootDir>/xplat/nuclide/jest/setup.js'],
   testPathIgnorePatterns: ['/node_modules/'],
 };
