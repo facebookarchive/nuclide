@@ -13,58 +13,68 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {createMessageStream} from '../lib/createMessageStream';
 import {Observable} from 'rxjs';
 
+beforeEach(() => {
+  featureConfig.set('nuclide-ios-simulator-logs.senderBlacklist', []);
+});
+
 describe('createMessageStream', () => {
-  it('splits the output by record', () => {
+  it('splits the output by record', async () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    spyOn(featureConfig, 'observeAsStream').andCallFake(
-      name =>
-        name === 'nuclide-ios-simulator-logs.whitelistedTags'
-          ? Observable.of('.*')
-          : original(name),
-    );
-    waitsForPromise(async () => {
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-ios-simulator-logs.whitelistedTags'
+            ? Observable.of('.*')
+            : original(name),
+      );
+    await (async () => {
       const output = Observable.from(OUTPUT_LINES);
       const messages = await createMessageStream(output)
         .map(message => message.text)
         .toArray()
         .toPromise();
       expect(messages).toEqual(['Message 1', 'Message 2']);
-    });
+    })();
   });
 
-  it('only includes messages with whitelisted tags', () => {
-    waitsForPromise(async () => {
+  it('only includes messages with whitelisted tags', async () => {
+    await (async () => {
       const original = featureConfig.observeAsStream.bind(featureConfig);
-      spyOn(featureConfig, 'observeAsStream').andCallFake(
-        name =>
-          name === 'nuclide-ios-simulator-logs.whitelistedTags'
-            ? Observable.of('X|ExampleTag')
-            : original(name),
-      );
+      jest
+        .spyOn(featureConfig, 'observeAsStream')
+        .mockImplementation(
+          name =>
+            name === 'nuclide-ios-simulator-logs.whitelistedTags'
+              ? Observable.of('X|ExampleTag')
+              : original(name),
+        );
       const output = Observable.from(OUTPUT_LINES);
       const messages = await createMessageStream(output)
         .map(message => message.text)
         .toArray()
         .toPromise();
       expect(messages).toEqual(['Message 2']);
-    });
+    })();
   });
 
-  it('shows an error (once) if the regular expression is invalid', () => {
-    spyOn(atom.notifications, 'addError');
+  it('shows an error (once) if the regular expression is invalid', async () => {
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    spyOn(featureConfig, 'observeAsStream').andCallFake(
-      name =>
-        name === 'nuclide-ios-simulator-logs.whitelistedTags'
-          ? Observable.of('(')
-          : original(name),
-    );
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-ios-simulator-logs.whitelistedTags'
+            ? Observable.of('(')
+            : original(name),
+      );
 
-    waitsForPromise(async () => {
+    await (async () => {
       const output = Observable.from(OUTPUT_LINES);
       await createMessageStream(output).toPromise();
-      expect(atom.notifications.addError.callCount).toBe(1);
-    });
+      expect(atom.notifications.addError.mock.calls.length).toBe(1);
+    })();
   });
 });
 
