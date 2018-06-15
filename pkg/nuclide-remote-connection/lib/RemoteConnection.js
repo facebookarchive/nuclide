@@ -329,15 +329,6 @@ export class RemoteConnection {
             `\`${rootDirectoryPath}\` without Watchman support, which means that ` +
             'crucial features such as synced remote file editing, file search, ' +
             'and Mercurial-related updates will not work.';
-
-          const watchmanConfig = await fileSystemService
-            .findNearestAncestorNamed('.watchmanconfig', rootDirectoryUri)
-            .catch(() => null);
-          if (watchmanConfig == null) {
-            warningMessageToUser +=
-              '<br/><br/>A possible workaround is to create an empty `.watchmanconfig` file ' +
-              'in the remote folder, which will enable Watchman if you have it installed.';
-          }
           detail = error.message || error;
           logger.error(
             'Watchman failed to start - watcher features disabled!',
