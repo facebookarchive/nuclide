@@ -225,7 +225,6 @@ export default class NuclideServer {
   _closeConnection(client: RpcConnection<QueuedAckTransport>): void {
     if (this._clients.get(client.getTransport().id) === client) {
       this._clients.delete(client.getTransport().id);
-      client.dispose();
     }
   }
 

@@ -25,7 +25,9 @@ export function getServerVersion(): Promise<string> {
 export function closeConnection(shutdownServer: boolean): Promise<void> {
   const client: RpcConnection<QueuedAckTransport> = (this: any);
   setTimeout(() => {
+    // TODO(T29368542): Remove references to NuclideServer here.
     NuclideServer.closeConnection(client);
+    client.dispose();
     if (shutdownServer) {
       NuclideServer.shutdown();
     }
