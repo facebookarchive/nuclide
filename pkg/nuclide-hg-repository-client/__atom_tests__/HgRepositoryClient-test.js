@@ -255,7 +255,7 @@ describe('HgRepositoryClient', () => {
       // this to the expected path.
       featureConfig.set('nuclide-hg-repository.enableDiffStats', true);
       const workingDirectoryClone = new Directory(tempDir);
-      spyOn(workingDirectory, 'contains').andCallFake(filePath => {
+      jest.spyOn(workingDirectory, 'contains').mockImplementation(filePath => {
         const prefix = '/private';
         if (filePath.startsWith(prefix)) {
           const prefixRemovedPath = filePath.slice(prefix.length);
@@ -265,7 +265,7 @@ describe('HgRepositoryClient', () => {
       });
 
       const projectDirectoryClone = new Directory(tempSubDir);
-      spyOn(projectDirectory, 'contains').andCallFake(filePath => {
+      jest.spyOn(projectDirectory, 'contains').mockImplementation(filePath => {
         const prefix = '/private';
         if (filePath.startsWith(prefix)) {
           const prefixRemovedPath = filePath.slice(prefix.length);
@@ -274,8 +274,8 @@ describe('HgRepositoryClient', () => {
         return projectDirectoryClone.contains(filePath);
       });
 
-      spyOn(repo, '_updateDiffInfo').andReturn(Observable.of('fake'));
-      spyOn(repo, '_observePaneItemVisibility').andReturn(Observable.of(true));
+      jest.spyOn(repo, '_updateDiffInfo').mockReturnValue(Observable.of('fake'));
+      jest.spyOn(repo, '_observePaneItemVisibility').mockReturnValue(Observable.of(true));
     });
   });
 
@@ -294,21 +294,21 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo, '_getCurrentHeadId').andReturn(Observable.of('test'));
-      spyOn(
+      jest.spyOn(repo, '_getCurrentHeadId').mockReturnValue(Observable.of('test'));
+      jest.spyOn(
         repo._sharedMembers.service,
         'fetchFileContentAtRevision',
-      ).andCallFake(filePath => {
+      ).mockImplementation(filePath => {
         return new Observable.of('test').publish();
       });
-      spyOn(repo, '_getFileDiffs').andCallFake(pathsToFetch => {
+      jest.spyOn(repo, '_getFileDiffs').mockImplementation(pathsToFetch => {
         const diffs = [];
         for (const filePath of pathsToFetch) {
           diffs.push([filePath, mockDiffInfo]);
         }
         return Observable.of(diffs);
       });
-      spyOn(workingDirectory, 'contains').andCallFake(() => {
+      jest.spyOn(workingDirectory, 'contains').mockImplementation(() => {
         return true;
       });
     });
@@ -348,7 +348,7 @@ describe('HgRepositoryClient', () => {
 
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       repo.onDidDestroy(spy);
       repo.destroy();
       expect(spy).toHaveBeenCalled();
