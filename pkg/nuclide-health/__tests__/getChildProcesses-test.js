@@ -77,7 +77,7 @@ function checkQueryPs(
 
     beforeEach(() => {
       originalPid = setProcessPid(mockPid);
-      spyOn(nuclideProcess, 'runCommand').andCallFake((cmd, args, options) => {
+      jest.spyOn(nuclideProcess, 'runCommand').mockImplementation((cmd, args, options) => {
         expect(cmd).toEqual('ps');
         expect(args).toEqual(['-eo', 'pid,ppid,pcpu,time,rss,vsz,command']);
         return Observable.of(
@@ -90,25 +90,25 @@ function checkQueryPs(
       setProcessPid(originalPid);
     });
 
-    it('parses', () => {
-      waitsForPromise(async () => {
+    it('parses', async () => {
+      await (async () => {
         const expected = new Map(data.map(entry => [entry.ps.pid, entry.ps]));
         const actual = await queryPs('command').toPromise();
         expect(actual).toEqual(expected);
-      });
+      })();
     });
 
-    it('summarizes', () => {
-      waitsForPromise(async () => {
+    it('summarizes', async () => {
+      await (async () => {
         const actual = await queryPs('command')
           .map(childProcessSummary)
           .toPromise();
         expect(actual).toEqual(summary);
-      });
+      })();
     });
 
-    it('converts to tree', () => {
-      waitsForPromise(async () => {
+    it('converts to tree', async () => {
+      await (async () => {
         const expectedMap = new Map(descendants.map(x => [x.ps.pid, x]));
         const actual = await queryPs('command')
           .map(childProcessTree)
@@ -129,7 +129,7 @@ function checkQueryPs(
         }
         const count = check(nullthrows(actual));
         expect(count).toBe(data.filter(x => x.isDescendant).length);
-      });
+      })();
     });
   });
 }
