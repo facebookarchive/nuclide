@@ -76,14 +76,14 @@ describe('ContextViewManager', () => {
   /** Registration/deregistration API */
 
   it('correctly registers a single context provider and rerenders', () => {
-    spyOn(manager, '_render');
+    jest.spyOn(manager, '_render').mockImplementation(() => {});
     const registered = manager.registerProvider(provider1);
     expect(registered).toBe(true);
     expect(manager._contextProviders.length).toBe(1);
     expect(manager._render).toHaveBeenCalled();
   });
   it('correctly registers multiple context provdiers and rerenders', () => {
-    spyOn(manager, '_render');
+    jest.spyOn(manager, '_render').mockImplementation(() => {});
     const registered1 = manager.registerProvider(provider1);
     const registered2 = manager.registerProvider(provider2);
     expect(registered1).toBe(true);
@@ -99,7 +99,7 @@ describe('ContextViewManager', () => {
     expect(manager._contextProviders.length).toBe(1);
   });
   it('unregisters a provider and rerenders', () => {
-    spyOn(manager, '_render');
+    jest.spyOn(manager, '_render').mockImplementation(() => {});
     manager.registerProvider(provider1);
     const unregistered = manager.unregisterProvider(PROVIDER1_ID);
     expect(unregistered).toBe(true);
@@ -107,7 +107,7 @@ describe('ContextViewManager', () => {
     expect(manager._render).toHaveBeenCalled();
   });
   it('does not unregister a provider that has not been registered', () => {
-    spyOn(manager, '_render');
+    jest.spyOn(manager, '_render').mockImplementation(() => {});
     const unregistered1 = manager.unregisterProvider(PROVIDER1_ID);
     expect(unregistered1).toBe(false);
     expect(manager._contextProviders.length).toBe(0);
@@ -161,9 +161,9 @@ describe('ContextViewManager', () => {
   /** Actions affecting definition service subscription */
   it('consumes the definition service when showing', () => {
     manager.show();
-    spyOn(manager, 'updateSubscription').andCallThrough();
-    spyOn(manager, '_render').andCallThrough();
-    spyOn(manager, '_renderProviders');
+    jest.spyOn(manager, 'updateSubscription');
+    jest.spyOn(manager, '_render');
+    jest.spyOn(manager, '_renderProviders').mockImplementation(() => {});
     manager.consumeDefinitionProvider(defProvider);
     expect(manager.updateSubscription).toHaveBeenCalled();
     expect(manager._defServiceSubscription).toBeTruthy();
@@ -171,10 +171,10 @@ describe('ContextViewManager', () => {
     expect(manager._renderProviders).toHaveBeenCalled();
   });
   it('consumes the definition service when hidden', () => {
-    spyOn(manager, 'updateSubscription').andCallThrough();
-    spyOn(manager, '_render').andCallThrough();
-    spyOn(manager, '_renderProviders');
-    spyOn(manager, '_disposeView');
+    jest.spyOn(manager, 'updateSubscription');
+    jest.spyOn(manager, '_render');
+    jest.spyOn(manager, '_renderProviders').mockImplementation(() => {});
+    jest.spyOn(manager, '_disposeView').mockImplementation(() => {});
     expect(manager._defServiceSubscription).toBeNull();
     manager.consumeDefinitionProvider(defProvider);
     expect(manager.updateSubscription).toHaveBeenCalled();
@@ -186,9 +186,9 @@ describe('ContextViewManager', () => {
   it('hides correctly', () => {
     manager.show();
     manager.consumeDefinitionProvider(defProvider);
-    spyOn(manager, '_render').andCallThrough();
-    spyOn(manager, '_disposeView');
-    spyOn(manager, 'updateSubscription').andCallThrough();
+    jest.spyOn(manager, '_render');
+    jest.spyOn(manager, '_disposeView').mockImplementation(() => {});
+    jest.spyOn(manager, 'updateSubscription');
     manager.hide();
     expect(manager._isVisible).toBe(false);
     expect(manager._render).toHaveBeenCalled();
@@ -198,9 +198,9 @@ describe('ContextViewManager', () => {
   });
   it('shows correctly', () => {
     manager.consumeDefinitionProvider(defProvider);
-    spyOn(manager, '_render').andCallThrough();
-    spyOn(manager, '_disposeView');
-    spyOn(manager, 'updateSubscription').andCallThrough();
+    jest.spyOn(manager, '_render');
+    jest.spyOn(manager, '_disposeView').mockImplementation(() => {});
+    jest.spyOn(manager, 'updateSubscription');
     manager.show();
     expect(manager._isVisible).toBe(true);
     expect(manager._render).toHaveBeenCalled();
@@ -215,7 +215,7 @@ describe('ContextViewManager', () => {
       'Subscription should exist if panel is visible and def. service consumed',
     );
     const subscription = manager._defServiceSubscription;
-    spyOn(subscription, 'unsubscribe');
+    jest.spyOn(subscription, 'unsubscribe').mockImplementation(() => {});
     manager.dispose();
     expect(subscription.unsubscribe).toHaveBeenCalled();
   });
