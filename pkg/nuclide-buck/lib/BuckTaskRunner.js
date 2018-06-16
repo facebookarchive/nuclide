@@ -57,31 +57,31 @@ export const TASKS = [
   {
     type: 'run',
     label: 'Run',
-    description: 'Run the specfied Buck target',
+    description: 'Run the specified Buck target',
     icon: 'triangle-right',
   },
   {
     type: 'test',
     label: 'Test',
-    description: 'Test the specfied Buck target',
+    description: 'Test the specified Buck target',
     icon: 'check',
   },
   {
     type: 'debug',
     label: 'Build and launch debugger',
-    description: 'Build, launch and debug the specfied Buck target',
+    description: 'Build, launch and debug the specified Buck target',
     icon: 'nuclicon-debugger',
   },
   {
     type: 'debug-launch-no-build',
     label: 'Launch debugger (skip build)',
-    description: 'Launch and debug the specfied Buck target (skip building)',
+    description: 'Launch and debug the specified Buck target (skip building)',
     icon: 'nuclicon-debugger',
   },
   {
     type: 'debug-attach',
     label: 'Attach Debugger',
-    description: 'Attach the debugger to the specfied Buck target',
+    description: 'Attach the debugger to the specified Buck target',
     icon: 'nuclicon-debugger',
   },
 ];
