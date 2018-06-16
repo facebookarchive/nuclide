@@ -14,16 +14,16 @@ import createMessageStream from '../lib/createMessageStream';
 import {Observable} from 'rxjs';
 
 describe('createMessageStream', () => {
-  it('splits the output by message', () => {
+  it('splits the output by message', async () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    spyOn(featureConfig, 'observeAsStream').andCallFake(
+    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
       name =>
         name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('.*')
           : original(name),
     );
 
-    waitsForPromise(async () => {
+    await (async () => {
       const output = Observable.from([
         '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
         'Prepared write state in 0ms',
@@ -42,19 +42,19 @@ describe('createMessageStream', () => {
       messages.forEach(message => {
         expect(message).toBe('Prepared write state in 0ms');
       });
-    });
+    })();
   });
 
-  it('only includes messages with whitelisted tags', () => {
+  it('only includes messages with whitelisted tags', async () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    spyOn(featureConfig, 'observeAsStream').andCallFake(
+    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
       name =>
         name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('ExampleTag')
           : original(name),
     );
 
-    waitsForPromise(async () => {
+    await (async () => {
       const output = Observable.from([
         '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
         'Bad',
@@ -70,20 +70,20 @@ describe('createMessageStream', () => {
         .toPromise();
 
       expect(messages).toEqual(['Good']);
-    });
+    })();
   });
 
-  it('shows an error (once) if the regular expression is invalid', () => {
-    spyOn(atom.notifications, 'addError');
+  it('shows an error (once) if the regular expression is invalid', async () => {
+    jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    spyOn(featureConfig, 'observeAsStream').andCallFake(
+    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
       name =>
         name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('(')
           : original(name),
     );
 
-    waitsForPromise(async () => {
+    await (async () => {
       const output = Observable.from([
         '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
         'Bad',
@@ -93,7 +93,7 @@ describe('createMessageStream', () => {
         '',
       ]);
       await createMessageStream(output).toPromise();
-      expect(atom.notifications.addError.callCount).toBe(1);
-    });
+      expect(atom.notifications.addError.mock.calls.length).toBe(1);
+    })();
   });
 });
