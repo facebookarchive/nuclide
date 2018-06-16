@@ -16,67 +16,65 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {activate} from '../lib/main';
 
 describe('nuclide-move-item-to-available-pane', () => {
-  it('moves items across panes and creates new ones, as appropriate', () => {
-    waitsForPromise(async () => {
-      activate();
+  it('moves items across panes and creates new ones, as appropriate', async () => {
+    activate();
 
-      const tempdir = await fsPromise.tempdir();
-      await atom.workspace.open(nuclideUri.join(tempdir, 'A'));
-      await atom.workspace.open(nuclideUri.join(tempdir, 'B'));
-      await atom.workspace.open(nuclideUri.join(tempdir, 'C'));
-      atom.workspace.getPanes()[0].activateItemAtIndex(0);
-      assertWorkspaceState(['A*', 'B', 'C']);
+    const tempdir = await fsPromise.tempdir();
+    await atom.workspace.open(nuclideUri.join(tempdir, 'A'));
+    await atom.workspace.open(nuclideUri.join(tempdir, 'B'));
+    await atom.workspace.open(nuclideUri.join(tempdir, 'C'));
+    atom.workspace.getPanes()[0].activateItemAtIndex(0);
+    assertWorkspaceState(['A*', 'B', 'C']);
 
-      dispatchCmdKRight();
-      assertWorkspaceState(['B', 'C'], ['A*']);
+    dispatchCmdKRight();
+    assertWorkspaceState(['B', 'C'], ['A*']);
 
-      dispatchCmdKCmdLeft();
-      assertWorkspaceState(['B*', 'C'], ['A']);
+    dispatchCmdKCmdLeft();
+    assertWorkspaceState(['B*', 'C'], ['A']);
 
-      dispatchCmdKRight();
+    dispatchCmdKRight();
 
-      // TODO(mbolin): The rest of this test does not appear to run correctly because Atom does not
-      // seem to layout the windows "for real," so the (x, y) ClientRect for each pane is reported
-      // to be at (0, 0), which breaks the logic of nuclide-move-item-to-available-pane. If we can
-      // figure out how to fix this, this would be a much better test. For now, we leave it here so
-      // to illustrate the expected behavior.
+    // TODO(mbolin): The rest of this test does not appear to run correctly because Atom does not
+    // seem to layout the windows "for real," so the (x, y) ClientRect for each pane is reported
+    // to be at (0, 0), which breaks the logic of nuclide-move-item-to-available-pane. If we can
+    // figure out how to fix this, this would be a much better test. For now, we leave it here so
+    // to illustrate the expected behavior.
 
-      // assertWorkspaceState(['C'], ['A', 'B*']);
-      //
-      // dispatchCmdKRight();
-      // assertWorkspaceState(['C'], ['A'], ['B*']);
-      //
-      // dispatchCmdKCmdLeft();
-      // assertWorkspaceState(['C'], ['A*'], ['B']);
-      //
-      // dispatchCmdKLeft();
-      // assertWorkspaceState(['C', 'A*'], ['B']);
-      //
-      // dispatchCmdKCmdRight();
-      // assertWorkspaceState(['C', 'A'], ['B*']);
-      //
-      // dispatchCmdKLeft();
-      // assertWorkspaceState(['C', 'A', 'B*']);
-      //
-      // dispatchCmdKLeft();
-      // assertWorkspaceState(['B*'], ['C', 'A']);
+    // assertWorkspaceState(['C'], ['A', 'B*']);
+    //
+    // dispatchCmdKRight();
+    // assertWorkspaceState(['C'], ['A'], ['B*']);
+    //
+    // dispatchCmdKCmdLeft();
+    // assertWorkspaceState(['C'], ['A*'], ['B']);
+    //
+    // dispatchCmdKLeft();
+    // assertWorkspaceState(['C', 'A*'], ['B']);
+    //
+    // dispatchCmdKCmdRight();
+    // assertWorkspaceState(['C', 'A'], ['B*']);
+    //
+    // dispatchCmdKLeft();
+    // assertWorkspaceState(['C', 'A', 'B*']);
+    //
+    // dispatchCmdKLeft();
+    // assertWorkspaceState(['B*'], ['C', 'A']);
 
-      // TODO(mbolin): This is also an important test:
+    // TODO(mbolin): This is also an important test:
 
-      // [A] [B, C*] [D]
-      //
-      // cmd-k down
-      //
-      // [A] [B] [D]
-      //     [C*]
-      //
-      // cmd-k up
-      //
-      // [A] [B, C*] [D]
-      //
-      // Note that this test is necessary to verify that both the primaryComparator and
-      // secondaryComparator are doing their job in move.js.
-    });
+    // [A] [B, C*] [D]
+    //
+    // cmd-k down
+    //
+    // [A] [B] [D]
+    //     [C*]
+    //
+    // cmd-k up
+    //
+    // [A] [B, C*] [D]
+    //
+    // Note that this test is necessary to verify that both the primaryComparator and
+    // secondaryComparator are doing their job in move.js.
   });
 });
 
