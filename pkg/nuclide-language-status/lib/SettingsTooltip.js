@@ -20,6 +20,7 @@ type Props = {
   onUpdateSettings: (
     newSettings: Map<LanguageStatusProvider, StatusKind>,
   ) => void,
+  providers: Array<LanguageStatusProvider>,
   settings: Map<LanguageStatusProvider, StatusKind>,
   tooltipRoot: HTMLElement,
 };
@@ -37,8 +38,16 @@ const dropdownItems: Array<MenuItem> = Array.from(dropdownLabels).map(
 
 class SettingsTooltipComponent extends React.PureComponent<Props> {
   render(): React.Node {
+    const relevantProviders = [...this.props.settings.entries()]
+      .filter(([provider, _]) => this.props.providers.includes(provider))
+      .sort(
+        ([a], [b]) =>
+          a.priority === b.priority
+            ? a.name.localeCompare(b.name)
+            : b.priority - a.priority,
+      );
     this._styleTooltip();
-    const servers = Array.from(this.props.settings).map(([provider, kind]) => {
+    const servers = relevantProviders.map(([provider, kind]) => {
       return (
         <div
           className="nuclide-language-status-settings-item"

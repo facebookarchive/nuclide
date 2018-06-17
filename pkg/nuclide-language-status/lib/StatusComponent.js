@@ -26,7 +26,7 @@ export type ServerStatus = {
 };
 
 type Props = {
-  serverStatuses: Array<ServerStatus>,
+  serverStatuses: Array<ServerStatus>, // all providers relevant to this editor, plus their data
   settings: Map<LanguageStatusProvider, StatusKind>,
   onUpdateSettings: (
     newSettings: Map<LanguageStatusProvider, StatusKind>,
@@ -116,6 +116,9 @@ export default class StatusComponent extends React.Component<Props, State> {
         <SettingsTooltip
           onUpdateSettings={this.props.onUpdateSettings}
           parentRef={this._tooltipRefs.get('settings')}
+          providers={this.props.serverStatuses.map(
+            ({provider, data}) => provider,
+          )}
           settings={this.props.settings}
         />
       </div>
