@@ -54,31 +54,51 @@ export default class StatusComponent extends React.Component<Props, State> {
 
   render(): React.Node {
     const {settings} = this.props;
-    const statuses = this.props.serverStatuses.filter(
-      status => status.data.kind !== 'null',
-    );
-    // Shown statuses correspond to which statuses we show icons for.
-    const shownStatuses = statuses.filter(status => {
-      const kind = settings.get(status.provider);
-      return (
-        kind != null &&
-        kindPriorities.indexOf(kind) >= kindPriorities.indexOf(status.data.kind)
-      );
-    });
-    // Non hidden statuses correspond to which statuses affect the bar color.
-    const nonHiddenStatuses = statuses.filter(status => {
-      const kind = settings.get(status.provider);
-      return kind != null && kind !== 'null';
-    });
+    const statuses = this.props.serverStatuses
+      .filter(status => {
+        // For a status to be potentially visible, (1) the user has to have set its
+        // preference to be shown (always/on-progress/on-errors), and (2) the status
+        // provider must have reported a non-null status.data.kind.
+        const settingKind = settings.get(status.provider);
+        return (
+          settingKind != null &&
+          settingKind !== 'null' &&
+          status.data.kind !== 'null'
+        );
+      })
+      .map(status => {
+        // A status tab will be either "visible" (because of a combination
+        // of the user's preference plus the current status.data.kind) or just
+        // "contingently-visible" (i.e. visible only when you hover)
+        const kind = settings.get(status.provider);
+        const visible =
+          kindPriorities.indexOf(kind) >=
+          kindPriorities.indexOf(status.data.kind);
+        return [status, visible];
+      })
+      .sort(([a, aVisible], [b, bVisible]) => {
+        // We'll sort the contingently-visible ones all to the left and the visible
+        // ones to the right. That way there won't be any gaps amongst visible ones.
+        // And within that, we'll sort by priority.
+        if (aVisible !== bVisible) {
+          return aVisible ? 1 : -1;
+        } else if (a.provider.priority !== b.provider.priority) {
+          return a.provider.priority - b.provider.priority;
+        } else {
+          return a.provider.name.localeCompare(b.provider.name);
+        }
+      });
     return (
       <div
         onMouseEnter={() => this.setState({hovered: true})}
         onMouseLeave={() => this.setState({hovered: false})}
         className="nuclide-language-status-container">
-        {this._renderBar(nonHiddenStatuses)}
+        {this._renderBar(statuses)}
         <div className="nuclide-language-status-providers-container">
           {this._renderSettings()}
-          {shownStatuses.map(status => this._renderProvider(status, false))}
+          {statuses.map(([status, visible]) =>
+            this._renderProvider(status, this.state.hovered || visible),
+          )}
         </div>
       </div>
     );
@@ -102,9 +122,9 @@ export default class StatusComponent extends React.Component<Props, State> {
     );
   }
 
-  _renderBar = (statuses: Array<ServerStatus>): React.Node => {
+  _renderBar = (statuses: Array<[ServerStatus, boolean]>): React.Node => {
     const kind: ?StatusKind = statuses
-      .map(s => s.data.kind)
+      .map(([s, visible]) => s.data.kind)
       .sort(
         (k1, k2) => kindPriorities.indexOf(k1) - kindPriorities.indexOf(k2),
       )[0];
@@ -119,10 +139,9 @@ export default class StatusComponent extends React.Component<Props, State> {
     );
   };
 
-  _renderProvider = (status: ServerStatus, hidden: boolean): React.Node => {
+  _renderProvider = (status: ServerStatus, visible: boolean): React.Node => {
     const {provider, data} = status;
 
-    // Use icon if present otherwise the first letter of the name, capitalized.
     const icon = this._renderIcon(provider);
     const progress = this._renderProgress(data);
 
@@ -134,7 +153,7 @@ export default class StatusComponent extends React.Component<Props, State> {
         )}
         data-name={status.provider.name}
         key={status.provider.name}
-        style={{opacity: hidden ? 0 : 1}}
+        style={{opacity: visible ? 1 : 0}}
         ref={this._setTooltipRef}>
         {icon}
         {progress}
