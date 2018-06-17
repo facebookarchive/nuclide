@@ -120,7 +120,7 @@ export function lspLocationWithTitle_atomDefinition(
     position: lspPosition_atomPoint(location.range.start),
     language: 'lsp', // pointless; only ever used to judge equality of two defs
     projectRoot, // used to relativize paths when showing multiple targets
-    name: location.title, // (Nuclide-only)
+    name: location.title == null ? undefined : location.title, // nuclide-only
   };
 }
 
