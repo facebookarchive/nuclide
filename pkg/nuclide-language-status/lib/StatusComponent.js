@@ -47,6 +47,8 @@ export default class StatusComponent extends React.Component<Props, State> {
   // Used to debounce hover state changes.
   _hoveredProviderName: BehaviorSubject<?string> = new BehaviorSubject(null);
   _disposables: UniversalDisposable = new UniversalDisposable();
+  // A projection from serverStatuses that retains identity unless providers change
+  _providersCache: Array<LanguageStatusProvider> = [];
 
   state: State = {
     hoveredProviderName: null,
@@ -125,6 +127,16 @@ export default class StatusComponent extends React.Component<Props, State> {
   }
 
   _renderSettings(): React.Node {
+    // Update _providersCache only if the set of providers has changed.
+    // This is so the content of the settings tooltip only re-renders if
+    // absolutely needed.
+    const newCache = this.props.serverStatuses.map(({provider, _}) => provider);
+    const newCacheValue = newCache.map(p => p.name).join(',');
+    const oldCacheValue = this._providersCache.map(p => p.name).join(',');
+    if (newCacheValue !== oldCacheValue) {
+      this._providersCache = newCache;
+    }
+
     return (
       <div
         className="nuclide-language-status-provider nuclide-language-status-provider-settings"
@@ -139,9 +151,7 @@ export default class StatusComponent extends React.Component<Props, State> {
           <SettingsTooltip
             onUpdateSettings={this.props.onUpdateSettings}
             parentRef={this._tooltipRefs.get('settings')}
-            providers={this.props.serverStatuses.map(
-              ({provider, data}) => provider,
-            )}
+            providers={this._providersCache}
             settings={this.props.settings}
           />
         )}
