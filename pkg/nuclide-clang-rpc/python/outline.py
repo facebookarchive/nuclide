@@ -73,7 +73,8 @@ ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS | OTHER_KIND
 
 # People like adding a '-' by convention, but strip that out.
 PRAGMA_MARK_REGEX = re.compile(
-    '^[ \t]*#[ \t]*pragma[ \t]+mark[ \t]+(?:-[ \t]*)?(.+)$', re.MULTILINE)
+    '^[ \t]*(?:#[ \t]*pragma[ \t]+mark[ \t]+|\/\/+[ \t]*MARK:[ \t]*)(?:-[ \t]*)?(.+)$',
+    re.MULTILINE)
 
 
 def visit_cursor(libclang, cursor):

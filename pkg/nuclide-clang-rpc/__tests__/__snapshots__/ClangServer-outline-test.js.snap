@@ -331,6 +331,132 @@ Array [
         "row": 43,
       },
     },
+    "name": "Section 3",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 45,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 44,
+      },
+    },
+    "name": "Section 4",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 46,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 45,
+      },
+    },
+    "name": "Section 5",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 47,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 46,
+      },
+    },
+    "name": "Section 5",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 48,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 47,
+      },
+    },
+    "name": "Section 6",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 49,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 48,
+      },
+    },
+    "name": "Section 7",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 50,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 49,
+      },
+    },
+    "name": "//MARK: Section8",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 51,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 50,
+      },
+    },
+    "name": "// MARK: Section9",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 52,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 51,
+      },
+    },
+    "name": "#pragma mark - Section 10",
+  },
+  Object {
+    "cursor_kind": "PRAGMA_MARK",
+    "extent": Range {
+      "end": Point {
+        "column": 0,
+        "row": 54,
+      },
+      "start": Point {
+        "column": 0,
+        "row": 53,
+      },
+    },
     "name": "end of file",
   },
 ]

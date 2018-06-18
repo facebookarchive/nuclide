@@ -41,4 +41,14 @@ enum TestEnum {
 
 TEST_F ( a , b ) {}
 
+//MARK: Section 3
+// MARK:Section 4
+// MARK: Section 5
+// MARK: - Section 5
+//MARK: -Section 6
+#pragma mark - Section 7
+#pragma mark //MARK: Section8
+#pragma mark // MARK: Section9
+// MARK: #pragma mark - Section 10
+
 #pragma mark - end of file
