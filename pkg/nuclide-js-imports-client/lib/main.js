@@ -11,6 +11,7 @@
 
 // $FlowFB
 import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
+import type {OnDidInsertSuggestionArgument} from '../../nuclide-language-service/lib/AutocompleteProvider';
 import type {CodeActionConfig} from '../../nuclide-language-service/lib/CodeActionProvider';
 import type {
   GlobalProviderType,
@@ -24,6 +25,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
+import {track} from '../../nuclide-analytics';
 import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from '../../nuclide-js-imports-server/src/utils/constantsForClient';
 import {
   AtomLanguageService,
@@ -79,7 +81,7 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     excludeLowerPriority: false,
     analytics: {
       eventName: 'nuclide-js-imports',
-      shouldLogInsertedSuggestion: false,
+      shouldLogInsertedSuggestion: true,
     },
     disableForSelector: null,
     autocompleteCacherConfig: null,
@@ -100,7 +102,38 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     autocomplete: autocompleteConfig,
     codeAction: codeActionConfig,
   };
-  return new AtomLanguageService(connectToJSImportsService, atomConfig);
+  return new AtomLanguageService(
+    connectToJSImportsService,
+    atomConfig,
+    onDidInsertSuggestion,
+  );
+}
+
+function onDidInsertSuggestion({
+  suggestion,
+}: OnDidInsertSuggestionArgument): void {
+  const {
+    description,
+    displayText,
+    extraData,
+    remoteUri,
+    replacementPrefix,
+    snippet,
+    text,
+    type,
+  } = suggestion;
+  track('nuclide-js-imports:insert-suggestion', {
+    suggestion: {
+      description,
+      displayText,
+      extraData,
+      remoteUri,
+      replacementPrefix,
+      snippet,
+      text,
+      type,
+    },
+  });
 }
 
 function getAutoImportSettings() {
