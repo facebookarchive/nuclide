@@ -17,12 +17,18 @@ import {LanguageStatusManager} from './LanguageStatusManager';
 class Activation {
   _languageStatusManager: LanguageStatusManager;
 
-  constructor() {
+  constructor(state: any) {
     this._languageStatusManager = new LanguageStatusManager();
+    this._languageStatusManager.deserialize(state);
   }
 
   dispose() {
     this._languageStatusManager.dispose();
+  }
+
+  serialize(): any {
+    const serialized = this._languageStatusManager.serialize();
+    return serialized;
   }
 
   consumeLanguageStatusProvider(provider: LanguageStatusProvider): IDisposable {
