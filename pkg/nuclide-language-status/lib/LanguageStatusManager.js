@@ -177,11 +177,7 @@ export class LanguageStatusManager {
     );
     const statusComponentWrapper = new TextEditorBanner(editor);
     statusComponentWrapper.renderUnstyled(<StatusComponentWithProps />);
-    this._disposables.add(statusComponentWrapper);
-    editor.onDidDestroy(() => {
-      this._disposables.remove(statusComponentWrapper);
-      statusComponentWrapper.dispose();
-    });
+    this._disposables.addUntilDestroyed(editor, statusComponentWrapper);
     return statusComponentWrapper;
   };
 }

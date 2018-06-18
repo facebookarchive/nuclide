@@ -37,17 +37,15 @@ class Activation {
     this._disposables = new UniversalDisposable();
 
     const subscribeEditor = (editor: atom$TextEditor) => {
-      const subscription = new UniversalDisposable(
+      this._disposables.addUntilDestroyed(
+        editor,
         editor.onDidDestroy(() => {
           controller.onDestroy(editor);
-          subscription.dispose();
-          this._disposables.remove(subscription);
         }),
         editor.onDidChangeCursorPosition(event => {
           controller.updatePosition(editor, event.newBufferPosition);
         }),
       );
-      this._disposables.add(subscription);
     };
 
     const addEditor = (addEvent: AddTextEditorEvent) => {

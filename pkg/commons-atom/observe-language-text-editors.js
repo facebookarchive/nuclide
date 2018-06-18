@@ -26,18 +26,17 @@ class LanguageTextEditorsListener {
   _grammarScopes: Set<string>;
   _emitter: Emitter;
   _observedTextEditors: Set<TextEditor>;
-  _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
-  _grammarSubscription: IDisposable;
+  _subscriptions: UniversalDisposable;
 
   constructor(grammarScopes: Set<string>) {
     this._grammarScopes = grammarScopes;
 
     this._emitter = new Emitter();
     this._observedTextEditors = new Set();
-    this._destroySubscriptionsMap = new Map();
 
-    this._grammarSubscription = observeGrammarForTextEditors(
-      (textEditor, grammar) => {
+    this._subscriptions = new UniversalDisposable();
+    this._subscriptions.add(
+      observeGrammarForTextEditors((textEditor, grammar) => {
         const textEditorHasTheRightGrammar = this._grammarScopes.has(
           grammar.scopeName,
         );
@@ -50,19 +49,18 @@ class LanguageTextEditorsListener {
           this._observedTextEditors.delete(textEditor);
         }
 
-        const destroySubscription = textEditor.onDidDestroy(() => {
-          // When a text editor that we were observing is destroyed, we need to
-          // do clean-up even if its grammar hasn't changed.
-          if (this._observedTextEditors.has(textEditor)) {
-            this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-            this._observedTextEditors.delete(textEditor);
-          }
-
-          destroySubscription.dispose();
-          this._destroySubscriptionsMap.delete(textEditor);
-        });
-        this._destroySubscriptionsMap.set(textEditor, destroySubscription);
-      },
+        this._subscriptions.addUntilDestroyed(
+          textEditor,
+          textEditor.onDidDestroy(() => {
+            // When a text editor that we were observing is destroyed, we need to
+            // do clean-up even if its grammar hasn't changed.
+            if (this._observedTextEditors.has(textEditor)) {
+              this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+              this._observedTextEditors.delete(textEditor);
+            }
+          }),
+        );
+      }),
     );
   }
 
@@ -90,11 +88,7 @@ class LanguageTextEditorsListener {
   dispose(): void {
     this._emitter.dispose();
     this._observedTextEditors.clear();
-    this._destroySubscriptionsMap.forEach(subscription =>
-      subscription.dispose(),
-    );
-    this._destroySubscriptionsMap.clear();
-    this._grammarSubscription.dispose();
+    this._subscriptions.dispose();
   }
 }
 

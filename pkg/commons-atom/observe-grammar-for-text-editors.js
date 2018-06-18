@@ -27,14 +27,12 @@ class GrammarForTextEditorsListener {
     this._subscriptions.add(
       this._emitter,
       atom.workspace.observeTextEditors(textEditor => {
-        const grammarSubscription = textEditor.observeGrammar(grammar => {
-          this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
-        });
-        const destroySubscription = textEditor.onDidDestroy(() => {
-          grammarSubscription.dispose();
-          destroySubscription.dispose();
-        });
-        this._subscriptions.add(grammarSubscription, destroySubscription);
+        this._subscriptions.addUntilDestroyed(
+          textEditor,
+          textEditor.observeGrammar(grammar => {
+            this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
+          }),
+        );
       }),
     );
   }

@@ -312,13 +312,11 @@ export default class DebugService implements IDebugService {
       />,
     );
 
-    const disposable = new UniversalDisposable(
+    this._sessionEndDisposables.addUntilDestroyed(
+      editor,
+      editor,
       textEditorBanner,
-      editor.onDidDestroy(() => disposable.dispose()),
-      () => editor.destroy(),
     );
-
-    this._sessionEndDisposables.add(disposable);
 
     return editor;
   }

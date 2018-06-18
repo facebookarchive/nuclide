@@ -117,6 +117,10 @@ describe('TextEventDispatcher', () => {
       getPath() {
         return path;
       },
+      destroy() {},
+      onDidDestroy(callback) {
+        return new UniversalDisposable();
+      },
     };
     return editor;
   }

@@ -58,30 +58,27 @@ export default function trackKeyLatency(): IDisposable {
         const unshift = true;
         // We need to access the (private) emitter to use `unshift`.
         // This ensures that we include other will-insert-text handlers.
-        // $FlowIgnore
-        const disposable = editor.emitter.on(
-          'will-insert-text',
-          ({text}) => {
-            if (keystroke++ % SAMPLE_RATE === 0 && text.length === 1) {
-              const startTime = performance.now();
-              setImmediate(() => {
-                keyListenerLatencyTracker.track(performance.now() - startTime);
-                requestAnimationFrame(() => {
-                  keyLatencyTracker.track(performance.now() - startTime);
+        disposables.addUntilDestroyed(
+          editor,
+          // $FlowIgnore
+          editor.emitter.on(
+            'will-insert-text',
+            ({text}) => {
+              if (keystroke++ % SAMPLE_RATE === 0 && text.length === 1) {
+                const startTime = performance.now();
+                setImmediate(() => {
+                  keyListenerLatencyTracker.track(
+                    performance.now() - startTime,
+                  );
+                  requestAnimationFrame(() => {
+                    keyLatencyTracker.track(performance.now() - startTime);
+                  });
                 });
-              });
-            }
-          },
-          unshift,
+              }
+            },
+            unshift,
+          ),
         );
-        const destroyDisposable = new UniversalDisposable(
-          disposable,
-          editor.onDidDestroy(() => {
-            destroyDisposable.dispose();
-            disposables.remove(destroyDisposable);
-          }),
-        );
-        disposables.add(destroyDisposable);
       }, 100);
     }),
   );

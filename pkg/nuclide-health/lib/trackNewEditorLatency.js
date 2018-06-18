@@ -55,28 +55,23 @@ export default function trackNewEditorLatency(): IDisposable {
       unshift,
     ),
     atom.workspace.getCenter().observePanes(pane => {
-      // $FlowIgnore: emitter is private
-      const paneDisposable = pane.emitter.on(
-        'did-change-active-item',
-        item => {
-          // Adding a new pane item also triggers 'did-change-active-item'.
-          if (pendingEditors === 0 && item instanceof TextEditor) {
-            const startTime = performance.now();
-            setImmediate(() => {
-              switchEditorTracking.track(performance.now() - startTime);
-            });
-          }
-        },
-        unshift,
+      disposables.addUntilDestroyed(
+        pane,
+        // $FlowIgnore: emitter is private
+        pane.emitter.on(
+          'did-change-active-item',
+          item => {
+            // Adding a new pane item also triggers 'did-change-active-item'.
+            if (pendingEditors === 0 && item instanceof TextEditor) {
+              const startTime = performance.now();
+              setImmediate(() => {
+                switchEditorTracking.track(performance.now() - startTime);
+              });
+            }
+          },
+          unshift,
+        ),
       );
-      const destroyDisposable = new UniversalDisposable(
-        paneDisposable,
-        pane.onDidDestroy(() => {
-          destroyDisposable.dispose();
-          disposables.remove(destroyDisposable);
-        }),
-      );
-      disposables.add(destroyDisposable);
     }),
   );
   return disposables;

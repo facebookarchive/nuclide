@@ -472,7 +472,7 @@ declare class atom$Pane {
   onDidAddItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
   onDidRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
   onWillRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
-  onDidDestroy(cb: () => void): IDisposable,
+  onDidDestroy(cb: () => mixed): IDisposable,
   onDidChangeFlexScale(cb: (newFlexScale: number) => void): IDisposable,
   onWillDestroy(cb: () => void): IDisposable,
   observeActiveItem(cb: (item: ?Object) => void): IDisposable,

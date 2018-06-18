@@ -83,7 +83,8 @@ export default class BreakpointDisplayController {
     });
     const debuggerModel = this._service.getModel();
     this._gutter = gutter;
-    this._disposables.add(
+    this._disposables.addUntilDestroyed(
+      editor,
       gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
       editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
       observableFromSubscribeFunction(

@@ -267,13 +267,10 @@ export class TextEventDispatcher {
             this._dispatchEvents(editor, event);
           };
         };
-        this._getEditorListenerDisposable().add(
+        this._getEditorListenerDisposable().addUntilDestroyed(
+          editor,
           buffer.onDidStopChanging(makeDispatch('did-change')),
-        );
-        this._getEditorListenerDisposable().add(
           buffer.onDidSave(makeDispatch('did-save')),
-        );
-        this._getEditorListenerDisposable().add(
           buffer.onDidReload(makeDispatch('did-reload')),
         );
         // During reload, many text editors are opened simultaneously.

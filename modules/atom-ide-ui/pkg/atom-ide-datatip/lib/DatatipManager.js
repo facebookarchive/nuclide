@@ -772,12 +772,12 @@ class DatatipManagerForEditor {
 export class DatatipManager {
   _datatipProviders: ProviderRegistry<DatatipProvider>;
   _modifierDatatipProviders: ProviderRegistry<ModifierDatatipProvider>;
-  _editorManagers: Map<atom$TextEditor, DatatipManagerForEditor>;
+  _editorManagers: WeakMap<atom$TextEditor, DatatipManagerForEditor>;
   _subscriptions: UniversalDisposable;
 
   constructor() {
     this._subscriptions = new UniversalDisposable();
-    this._editorManagers = new Map();
+    this._editorManagers = new WeakMap();
     this._datatipProviders = new ProviderRegistry();
     this._modifierDatatipProviders = new ProviderRegistry();
 
@@ -789,12 +789,7 @@ export class DatatipManager {
           this._modifierDatatipProviders,
         );
         this._editorManagers.set(editor, manager);
-        const disposable = new UniversalDisposable(() => {
-          manager.dispose();
-          this._editorManagers.delete(editor);
-        });
-        this._subscriptions.add(disposable);
-        editor.onDidDestroy(() => disposable.dispose());
+        this._subscriptions.addUntilDestroyed(editor, manager);
       }),
     );
   }
@@ -824,9 +819,5 @@ export class DatatipManager {
 
   dispose(): void {
     this._subscriptions.dispose();
-    this._editorManagers.forEach(manager => {
-      manager.dispose();
-    });
-    this._editorManagers = new Map();
   }
 }
