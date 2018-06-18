@@ -17,5 +17,12 @@
       }
     }
   },
+  "consumedServices": {
+    "debugger.sourcePaths": {
+      "versions": {
+        "0.0.0": "consumeDebuggerSourcePaths"
+      }
+    }
+  },
   "private": true
 }

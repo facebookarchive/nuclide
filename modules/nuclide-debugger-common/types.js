@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {SuggestedProjectPath} from 'atom-ide-debugger-java/types';
 import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {TaskEvent, ProcessMessage} from 'nuclide-commons/process';
@@ -341,3 +342,20 @@ export type AppInfoRow = {
   value: string,
   isError?: boolean,
 };
+
+export interface DebuggerSourcePathsService {
+  addKnownJavaSubdirectoryPaths(
+    remote: boolean,
+    translatedPath: string,
+    searchPaths: Array<string>,
+  ): void;
+
+  observeSuggestedAndroidProjectPaths(
+    callback: (Array<SuggestedProjectPath>) => void,
+  ): IDisposable;
+
+  addKnownNativeSubdirectoryPaths(
+    buckRoot: string,
+    searchPaths: Array<string>,
+  ): void;
+}

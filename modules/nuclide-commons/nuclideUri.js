@@ -184,6 +184,10 @@ function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
 }
 
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
+  return joinArray(uri, relativePath);
+}
+
+function joinArray(uri: NuclideUri, relativePath: Array<string>): NuclideUri {
   _testForIllegalUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
@@ -855,6 +859,7 @@ export default {
   getHostname,
   getHostnameOpt,
   join,
+  joinArray,
   archiveJoin,
   relative,
   looksLikeImageUri,

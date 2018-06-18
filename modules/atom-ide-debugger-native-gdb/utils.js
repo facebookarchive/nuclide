@@ -10,10 +10,15 @@
  * @format
  */
 
-import type {IProcessConfig} from 'nuclide-debugger-common/types';
+import type {
+  IProcessConfig,
+  DebuggerSourcePathsService,
+} from 'nuclide-debugger-common/types';
 
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'nuclide-debugger-common';
 import invariant from 'assert';
+
+let _sourcePathsService: ?DebuggerSourcePathsService;
 
 export async function resolveConfiguration(
   configuration: IProcessConfig,
@@ -39,6 +44,15 @@ export async function resolveConfiguration(
   invariant(sourcePath != null);
   sourcePath = await debuggerService.realpath(sourcePath);
 
+  const sourcePaths: Array<string> = [];
+
+  if (_sourcePathsService != null) {
+    _sourcePathsService.addKnownNativeSubdirectoryPaths(
+      sourcePath,
+      sourcePaths,
+    );
+  }
+
   return {
     ...configuration,
     config: {
@@ -46,4 +60,10 @@ export async function resolveConfiguration(
       sourcePath,
     },
   };
+}
+
+export function setSourcePathsService(
+  service: DebuggerSourcePathsService,
+): void {
+  _sourcePathsService = service;
 }

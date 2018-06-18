@@ -27,6 +27,13 @@
       }
     }
   },
+  "consumedServices": {
+    "debugger.sourcePaths": {
+      "versions": {
+        "0.0.0": "consumeDebuggerSourcePaths"
+      }
+    }
+  },
   "dependencies": {
     "big-integer": "1.6.17",
     "nuclide-commons": "0.7.1-dev",

@@ -14,7 +14,7 @@ import type {
   NuclideDebuggerProvider,
   DebuggerConfigurationProvider,
 } from 'nuclide-debugger-common/types';
-import type {DebuggerSourcePathsService} from './types';
+import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';

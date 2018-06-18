@@ -16,6 +16,7 @@ export type {
   DebuggerCapabilities,
   DebuggerConfigAction,
   DebuggerConfigurationProvider,
+  DebuggerSourcePathsService,
   DebuggerProperties,
   Device,
   DevicePanelServiceApi,

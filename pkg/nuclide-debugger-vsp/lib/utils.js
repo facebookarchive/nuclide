@@ -10,7 +10,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {IProcessConfig, VsAdapterType} from 'nuclide-debugger-common';
+import type {
+  DebuggerSourcePathsService,
+  IProcessConfig,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
 import type {
   AutoGenConfig,
   AutoGenLaunchConfig,
@@ -24,6 +28,8 @@ import {
   getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from 'nuclide-debugger-common';
 import * as React from 'react';
+
+let _sourcePathsService: ?DebuggerSourcePathsService;
 
 export type VspNativeDebuggerLaunchBuilderParms = {
   args: Array<string>,
@@ -116,16 +122,30 @@ export async function resolveConfiguration(
 
   const config = configuration.config;
   if (sourcePath != null && sourcePath.trim() !== '') {
-    config.sourcePath = await debuggerService.realpath(sourcePath);
+    const canonicalSourcePath = await debuggerService.realpath(sourcePath);
+    const sourcePaths: Array<string> = [];
+
+    if (_sourcePathsService != null) {
+      _sourcePathsService.addKnownNativeSubdirectoryPaths(
+        canonicalSourcePath,
+        sourcePaths,
+      );
+    } else {
+      sourcePaths.push(sourcePath);
+    }
+
+    config.sourceMap = sourcePaths.map(path => ['.', path]);
   }
 
   adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
 
-  return {
+  const newConfig = {
     ...configuration,
     config,
     adapterExecutable,
   };
+
+  return newConfig;
 }
 
 export function getNativeAutoGenConfig(
@@ -232,4 +252,10 @@ export async function getNativeVSPAttachProcessInfo(
   return new VspProcessInfo(targetUri, 'attach', adapter, null, args, {
     threads: true,
   });
+}
+
+export function setSourcePathsService(
+  sourcePathsService: DebuggerSourcePathsService,
+): void {
+  _sourcePathsService = sourcePathsService;
 }

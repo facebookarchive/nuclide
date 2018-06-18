@@ -12,6 +12,7 @@
 import type {
   NuclideDebuggerProvider,
   DebuggerConfigurationProvider,
+  DebuggerSourcePathsService,
 } from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -22,7 +23,11 @@ import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunch
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {getPrepackAutoGenConfig, resolveConfiguration} from './utils';
+import {
+  getPrepackAutoGenConfig,
+  resolveConfiguration,
+  setSourcePathsService,
+} from './utils';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 
@@ -88,6 +93,12 @@ class Activation {
       resolveConfiguration,
       adapterType: VsAdapterTypes.NATIVE_LLDB,
     };
+  }
+
+  consumeDebuggerSourcePaths(
+    sourcePathService: DebuggerSourcePathsService,
+  ): void {
+    setSourcePathsService(sourcePathService);
   }
 
   dispose(): void {

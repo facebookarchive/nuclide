@@ -14,12 +14,13 @@ import type {
   NuclideDebuggerProvider,
   DebuggerConfigurationProvider,
 } from 'nuclide-debugger-common/types';
+import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import {resolveConfiguration} from './utils';
+import {resolveConfiguration, setSourcePathsService} from './utils';
 
 class Activation {
   constructor() {}
@@ -47,6 +48,12 @@ class Activation {
       resolveConfiguration,
       adapterType: VsAdapterTypes.NATIVE_GDB,
     };
+  }
+
+  consumeDebuggerSourcePaths(
+    sourcePathService: DebuggerSourcePathsService,
+  ): void {
+    setSourcePathsService(sourcePathService);
   }
 }
 

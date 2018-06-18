@@ -18,7 +18,7 @@ import type {
   IVspInstance,
 } from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerSourcePathsService} from './types';
+import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
 
 import typeof * as JavaDebuggerHelpersService from './JavaDebuggerHelpersService';
 
