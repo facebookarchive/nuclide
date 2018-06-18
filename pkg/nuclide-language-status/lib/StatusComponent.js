@@ -14,6 +14,7 @@ import type {LanguageStatusProvider, StatusKind} from './types';
 
 import marked from 'marked';
 import classnames from 'classnames';
+import {Observable, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import * as React from 'react';
@@ -35,18 +36,37 @@ type Props = {
 };
 
 type State = {
-  hovered: boolean,
+  hoveredProviderName: ?string,
 };
 
+const SETTINGS_NAME: string = 'settings';
 const kindPriorities: Array<StatusKind> = ['red', 'yellow', 'green'];
 
 export default class StatusComponent extends React.Component<Props, State> {
   _tooltipRefs: Map<string, HTMLElement> = new Map();
+  // Used to debounce hover state changes.
+  _hoveredProviderName: BehaviorSubject<?string> = new BehaviorSubject(null);
   _disposables: UniversalDisposable = new UniversalDisposable();
 
   state: State = {
-    hovered: false,
+    hoveredProviderName: null,
   };
+
+  constructor() {
+    super();
+    // $FlowFixMe: debounce() is not in flow types for rxjs
+    const hoveredProviderNameDebounced = this._hoveredProviderName.debounce(
+      hoveredProviderName => {
+        // No debounce when hovering on to, 250ms debounce when hovering off of
+        return Observable.empty().delay(hoveredProviderName != null ? 0 : 250);
+      },
+    );
+    this._disposables.add(
+      hoveredProviderNameDebounced.subscribe(hoveredProviderName => {
+        this.setState({hoveredProviderName});
+      }),
+    );
+  }
 
   componentWillUnmount() {
     this._disposables.dispose();
@@ -89,15 +109,15 @@ export default class StatusComponent extends React.Component<Props, State> {
         }
       });
     return (
-      <div
-        onMouseEnter={() => this.setState({hovered: true})}
-        onMouseLeave={() => this.setState({hovered: false})}
-        className="nuclide-language-status-container">
+      <div className="nuclide-language-status-container">
         {this._renderBar(statuses)}
         <div className="nuclide-language-status-providers-container">
           {this._renderSettings()}
           {statuses.map(([status, visible]) =>
-            this._renderProvider(status, this.state.hovered || visible),
+            this._renderProvider(
+              status,
+              this.state.hoveredProviderName != null || visible,
+            ),
           )}
         </div>
       </div>
@@ -108,19 +128,23 @@ export default class StatusComponent extends React.Component<Props, State> {
     return (
       <div
         className="nuclide-language-status-provider nuclide-language-status-provider-settings"
-        data-name="settings"
-        key="settings"
-        style={{opacity: this.state.hovered ? 1 : 0}}
+        data-name={SETTINGS_NAME}
+        key={SETTINGS_NAME}
+        onMouseOver={this._onMouseOver}
+        onMouseOut={this._onMouseOut}
+        style={{opacity: this.state.hoveredProviderName != null ? 1 : 0}}
         ref={this._setTooltipRef}>
         <Icon className="nuclide-language-status-icon" icon="gear" />
-        <SettingsTooltip
-          onUpdateSettings={this.props.onUpdateSettings}
-          parentRef={this._tooltipRefs.get('settings')}
-          providers={this.props.serverStatuses.map(
-            ({provider, data}) => provider,
-          )}
-          settings={this.props.settings}
-        />
+        {this.state.hoveredProviderName !== SETTINGS_NAME ? null : (
+          <SettingsTooltip
+            onUpdateSettings={this.props.onUpdateSettings}
+            parentRef={this._tooltipRefs.get('settings')}
+            providers={this.props.serverStatuses.map(
+              ({provider, data}) => provider,
+            )}
+            settings={this.props.settings}
+          />
+        )}
       </div>
     );
   }
@@ -154,17 +178,21 @@ export default class StatusComponent extends React.Component<Props, State> {
           'nuclide-language-status-provider',
           'nuclide-language-status-provider-' + data.kind,
         )}
+        onMouseOver={this._onMouseOver}
+        onMouseOut={this._onMouseOut}
         data-name={status.provider.name}
         key={status.provider.name}
         style={{opacity: visible ? 1 : 0}}
         ref={this._setTooltipRef}>
         {icon}
         {progress}
-        <StatusTooltip
-          parentRef={this._tooltipRefs.get(status.provider.name)}
-          status={status}
-          editor={this.props.editor}
-        />
+        {this.state.hoveredProviderName !== provider.name ? null : (
+          <StatusTooltip
+            parentRef={this._tooltipRefs.get(status.provider.name)}
+            status={status}
+            editor={this.props.editor}
+          />
+        )}
       </div>
     );
   };
@@ -210,5 +238,13 @@ export default class StatusComponent extends React.Component<Props, State> {
       return;
     }
     this._tooltipRefs.set(ref.dataset.name, ref);
+  };
+
+  _onMouseOver = (e: SyntheticEvent<any>): void => {
+    this._hoveredProviderName.next(e.currentTarget.dataset.name);
+  };
+
+  _onMouseOut = (): void => {
+    this._hoveredProviderName.next(null);
   };
 }

@@ -13,8 +13,6 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-const HIDE_DELAY = 150;
-
 type Props = {
   parentRef: ?React.ElementRef<any>,
 };
@@ -28,7 +26,6 @@ const makeTooltip = (TooltipComponent: React.ComponentType<any>) => {
   class HigherOrderTooltip extends React.Component<Props, State> {
     _tooltipDisposable: ?IDisposable;
     _parentRef: ?React.ElementRef<any>;
-    _hideTimeoutId: ?TimeoutID;
 
     props: Props = {
       parentRef: null,
@@ -37,26 +34,22 @@ const makeTooltip = (TooltipComponent: React.ComponentType<any>) => {
       tooltipRoot: null,
     };
 
+    componentDidMount(): void {
+      this._showTooltip();
+    }
+
+    componentWillUnmount(): void {
+      this._hideTooltip();
+    }
+
     componentDidUpdate(prevProps: Props): void {
       const {parentRef: prevParentRef} = prevProps;
       const {parentRef} = this.props;
 
-      if (prevParentRef === parentRef) {
-        return;
-      }
-
-      if (prevParentRef != null) {
+      // Re-render tooltip if the parent element changed.
+      if (prevParentRef !== parentRef) {
         this._hideTooltip();
-        prevParentRef.removeEventListener('mouseenter', this._showTooltip);
-        prevParentRef.removeEventListener(
-          'mouseleave',
-          this._scheduleHideTooltip,
-        );
-      }
-
-      if (parentRef != null) {
-        parentRef.addEventListener('mouseenter', this._showTooltip);
-        parentRef.addEventListener('mouseleave', this._scheduleHideTooltip);
+        this._showTooltip();
       }
     }
 
@@ -92,7 +85,6 @@ const makeTooltip = (TooltipComponent: React.ComponentType<any>) => {
     }
 
     _showTooltip = (): void => {
-      this._cancelHideTooltip();
       if (this.props.parentRef == null || this._tooltipDisposable != null) {
         return;
       }
@@ -110,10 +102,6 @@ const makeTooltip = (TooltipComponent: React.ComponentType<any>) => {
       if (tooltip != null && tooltip[0] != null) {
         const tooltipRoot = tooltip[0].getTooltipElement();
         this.setState({tooltipRoot});
-        if (tooltipRoot != null) {
-          tooltipRoot.addEventListener('mouseenter', this._showTooltip);
-          tooltipRoot.addEventListener('mouseleave', this._scheduleHideTooltip);
-        }
       }
     };
 
@@ -123,18 +111,6 @@ const makeTooltip = (TooltipComponent: React.ComponentType<any>) => {
       }
       this.setState({tooltipRoot: null});
       this._tooltipDisposable = null;
-      this._hideTimeoutId = null;
-    };
-
-    _scheduleHideTooltip = (): void => {
-      this._hideTimeoutId = setTimeout(this._hideTooltip, HIDE_DELAY);
-    };
-
-    _cancelHideTooltip = (): void => {
-      if (this._hideTimeoutId != null) {
-        clearTimeout(this._hideTimeoutId);
-      }
-      this._hideTimeoutId = null;
     };
   }
 
