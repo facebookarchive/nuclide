@@ -59,7 +59,7 @@ type LaunchRequestArguments = {
   args: ?Array<string>,
   env: Array<string>,
   sourcePath: string,
-  debuggerRoot: ?string,
+  sourcePaths: Array<string>,
   trace: ?boolean,
 };
 
@@ -67,7 +67,7 @@ type AttachRequestArguments = {
   ...DebugProtocol.AttachRequestArguments,
   pid: number,
   sourcePath: string,
-  debuggerRoot: ?string,
+  sourcePaths: Array<string>,
   stopOnAttach: ?boolean,
   trace: ?boolean,
 };
@@ -213,19 +213,8 @@ class MIDebugSession extends LoggingDebugSession {
       });
     }
 
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
-
     this._client.start('gdb', ['-q', '--interpreter=mi2'], environment);
-
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
+    if (!(await this._setSourcePaths(response, args))) {
       return;
     }
 
@@ -280,19 +269,9 @@ class MIDebugSession extends LoggingDebugSession {
       true,
     );
 
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
-
     this._client.start('gdb', ['-q', '--interpreter=mi2'], null);
 
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
+    if (!this._setSourcePaths(response, args)) {
       return;
     }
 
@@ -301,6 +280,29 @@ class MIDebugSession extends LoggingDebugSession {
 
     this._hasTarget = true;
     this.sendResponse(response);
+  }
+
+  async _setSourcePaths(
+    response: DebugProtocol.Response,
+    args: LaunchRequestArguments | AttachRequestArguments,
+  ): Promise<boolean> {
+    let sourcePaths: Array<string> = [];
+    if (args.sourcePaths != null) {
+      sourcePaths = args.sourcePaths;
+    } else if (args.sourcePath != null && args.sourcePath.trim() !== '') {
+      sourcePaths = [args.sourcePath];
+    }
+
+    if (sourcePaths.length !== 0) {
+      const quotedPathList = sourcePaths.map(path => `"${path}"`).join(' ');
+      const command = `environment-directory -r ${quotedPathList}`;
+      this._logToConsole(`Setting source paths with "${command}"\n`);
+      if (!(await this._sendWithFailureCheck(response, command))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async disconnectRequest(

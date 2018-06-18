@@ -101,13 +101,13 @@
                 "type": "string",
                 "description": "Path to search for source files"
               },
+              "sourcePaths": {
+                "type": "array",
+                "description": "An array of paths to search for source files. If present, overrides the single 'sourcePath' parameter."
+              },
               "env": {
                 "type": "string",
                 "description": "Environment variables to start process with"
-              },
-              "debuggerRoot": {
-                "type": "string",
-                "description": "Optional directory to spawn the debugger in"
               }
             }
           },
@@ -124,9 +124,9 @@
                 "type": "string",
                 "description": "Path to search for source files"
               },
-              "debuggerRoot": {
-                "type": "string",
-                "description": "Optional directory to spawn the debugger in"
+              "sourcePaths": {
+                "type": "array",
+                "description": "An array of paths to search for source files. If present, overrides the single 'sourcePath' parameter."
               },
               "stopOnAttach": {
                 "type": "boolean",

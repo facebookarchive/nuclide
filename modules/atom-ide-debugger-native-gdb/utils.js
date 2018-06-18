@@ -16,7 +16,6 @@ import type {
 } from 'nuclide-debugger-common/types';
 
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'nuclide-debugger-common';
-import invariant from 'assert';
 
 let _sourcePathsService: ?DebuggerSourcePathsService;
 
@@ -41,24 +40,26 @@ export async function resolveConfiguration(
     }
   }
 
-  invariant(sourcePath != null);
-  sourcePath = await debuggerService.realpath(sourcePath);
+  const config = configuration.config;
+  if (sourcePath != null && sourcePath.trim() !== '') {
+    const canonicalSourcePath = await debuggerService.realpath(sourcePath);
+    const sourcePaths: Array<string> = [];
 
-  const sourcePaths: Array<string> = [];
+    if (_sourcePathsService != null) {
+      _sourcePathsService.addKnownNativeSubdirectoryPaths(
+        canonicalSourcePath,
+        sourcePaths,
+      );
+    } else {
+      sourcePaths.push(sourcePath);
+    }
 
-  if (_sourcePathsService != null) {
-    _sourcePathsService.addKnownNativeSubdirectoryPaths(
-      sourcePath,
-      sourcePaths,
-    );
+    config.sourcePaths = sourcePaths;
   }
 
   return {
     ...configuration,
-    config: {
-      ...configuration.config,
-      sourcePath,
-    },
+    config,
   };
 }
 
