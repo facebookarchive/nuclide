@@ -12,7 +12,7 @@
 
 import * as React from 'react';
 import {Block} from './Block';
-import PulseButton from './PulseButton';
+import PulseButtonWithTooltip from './PulseButtonWithTooltip';
 
 type State = {dismissed: boolean};
 
@@ -27,7 +27,11 @@ class Example extends React.Component<{}, State> {
               width: '100%',
               display: 'flex',
             }}>
-            <PulseButton ariaLabel="New feature!" style={{margin: 'auto'}} />
+            <PulseButtonWithTooltip
+              ariaLabel="New feature!"
+              wrapperStyle={{margin: 'auto'}}
+              tooltipText="Look I'm a tooltip!"
+            />
           </div>
         </Block>
       </div>
