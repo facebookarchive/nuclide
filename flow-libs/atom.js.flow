@@ -726,6 +726,7 @@ type atom$TooltipsAddOptions = {
 };
 
 type atom$Tooltip = {
+  show(): void;
   hide(): void;
   getTooltipElement(): HTMLElement,
 };
@@ -736,6 +737,7 @@ declare class atom$TooltipManager {
     target: HTMLElement,
     options: atom$TooltipsAddOptions,
   ): IDisposable,
+  findTooltips(HTMLElement): Array<atom$Tooltip>,
 }
 
 type InsertTextOptions = {
