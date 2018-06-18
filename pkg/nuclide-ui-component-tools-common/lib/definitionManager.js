@@ -23,8 +23,9 @@ import {
   InsertTextFormat,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-function getSnippetFromDefinition(definition: ComponentDefinition): string {
-  // TODO: T29616247 Children as a required prop should have different behavior.
+export function getSnippetFromDefinition(
+  definition: ComponentDefinition,
+): string {
   let snippet = definition.name;
   if (definition.requiredProps.length === 0) {
     snippet += ' $1/>';
@@ -32,14 +33,33 @@ function getSnippetFromDefinition(definition: ComponentDefinition): string {
   }
 
   snippet += '\n';
+  let i = 1;
   definition.requiredProps.forEach((prop, index) => {
     // This is naive and quadratic time but N is really small.
-    if (!definition.defaultProps.includes(prop.name)) {
-      snippet += `  ${prop.name}={$${index + 1}}\n`;
+    if (
+      !definition.defaultProps.includes(prop.name) &&
+      prop.name !== 'children'
+    ) {
+      // There's different behavior depending on the type annotation.
+      // String props have a nested tabstop that gives the user the opportunity
+      // to either delete the quotes in exchange for braces, or to tab into the
+      // quotes.
+      // Other types of props simply render {$tabstop}.
+      const value =
+        prop.typeAnnotation === 'string' || prop.typeAnnotation === 'Fbt'
+          ? `\${${i++}:"$${i++}"}`
+          : `{$${i++}}`;
+      snippet += `  ${prop.name}=${value}\n`;
     }
   });
 
-  return snippet + '/>';
+  // If the component requires children then place a tabstop in between an
+  // opening and closing tag.
+  if (definition.requiredProps.find(p => p.name === 'children')) {
+    return snippet + `>\n  $${i++}\n</${definition.name}>`;
+  }
+
+  return snippet + `$${i}/>`;
 }
 
 // Force an opening JSX tag character so that we don't autocomplete in something
