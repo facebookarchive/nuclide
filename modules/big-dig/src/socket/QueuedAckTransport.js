@@ -17,7 +17,7 @@ import {default as Deque} from 'double-ended-queue';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
-const logger = getLogger('nuclide-server');
+const logger = getLogger('reliable-socket');
 import {Emitter} from 'event-kit';
 
 export const ACK_BUFFER_TIME = 100;

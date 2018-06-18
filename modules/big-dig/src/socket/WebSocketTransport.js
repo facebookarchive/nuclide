@@ -19,7 +19,7 @@ import {getLogger} from 'log4js';
 import {Emitter} from 'event-kit';
 import {compress, decompress} from './compression';
 
-const logger = getLogger('nuclide-server');
+const logger = getLogger('reliable-socket');
 // Do not synchronously compress large payloads (risks blocking the event loop)
 const MAX_SYNC_COMPRESS_LENGTH = 100000;
 
