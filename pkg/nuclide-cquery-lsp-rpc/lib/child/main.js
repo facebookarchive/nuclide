@@ -69,7 +69,8 @@ function onChildSpawn(childProcess): void {
   });
 
   // Every 15 seconds, check the server memory usage.
-  const memoryLimit = (os.totalmem() * DEFAULT_MEMORY_LIMIT) / 100;
+  // Note: totalmem() reports bytes, ps reports kilobytes.
+  const memoryLimit = ((os.totalmem() / 1024) * DEFAULT_MEMORY_LIMIT) / 100;
   const serializedMemoryCheck = serializeAsyncCall(async () =>
     (await memoryUsagePerPid([childProcess.pid])).get(childProcess.pid),
   );

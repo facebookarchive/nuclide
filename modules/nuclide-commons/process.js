@@ -593,7 +593,7 @@ export function parsePsOutput(
   });
 }
 
-// Use `ps` to get memory usage for an array of process id's as a map.
+// Use `ps` to get memory usage in kb for an array of process id's as a map.
 export async function memoryUsagePerPid(
   pids: Array<number>,
 ): Promise<Map<number, number>> {
