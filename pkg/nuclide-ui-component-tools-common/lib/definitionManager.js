@@ -33,7 +33,10 @@ function getSnippetFromDefinition(definition: ComponentDefinition): string {
 
   snippet += '\n';
   definition.requiredProps.forEach((prop, index) => {
-    snippet += `  ${prop.name}={$${index + 1}}\n`;
+    // This is naive and quadratic time but N is really small.
+    if (!definition.defaultProps.includes(prop.name)) {
+      snippet += `  ${prop.name}={$${index + 1}}\n`;
+    }
   });
 
   return snippet + '/>';
