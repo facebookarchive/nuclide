@@ -42,6 +42,7 @@ export default class VsAdapterSpawner implements IVsAdapterSpawner {
           env: {...env, ELECTRON_RUN_AS_NODE: 1},
           input: Observable.from(stdinBuffer).concat(this._stdin),
           killTreeWhenDone: true,
+          killTreeSignal: 'SIGKILL',
         };
         if (adapter.command === 'node') {
           adapter.command = process.execPath;

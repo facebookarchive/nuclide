@@ -424,8 +424,9 @@ export function scriptifyCommand<T>(
 export function killProcess(
   proc: child_process$ChildProcess,
   killTree: boolean,
+  killTreeSignal: ?string,
 ): void {
-  _killProcess(proc, killTree).then(
+  _killProcess(proc, killTree, killTreeSignal).then(
     () => {},
     error => {
       logger.error(`Killing process ${proc.pid} failed`, error);
@@ -726,6 +727,7 @@ type CreateProcessStreamOptions = (
   | child_process$forkOpts
 ) & {
   killTreeWhenDone?: ?boolean,
+  killTreeSignal?: string,
   timeout?: ?number,
   input?: ?(string | Observable<string>),
   dontLogInNuclide?: ?boolean,
@@ -981,7 +983,12 @@ function createProcessStream(
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
     .take(1)
     .switchMap(() => {
-      const {dontLogInNuclide, killTreeWhenDone, timeout} = options;
+      const {
+        dontLogInNuclide,
+        killTreeWhenDone,
+        killTreeSignal,
+        timeout,
+      } = options;
       // flowlint-next-line sketchy-null-number:off
       const enforceTimeout = timeout
         ? x =>
@@ -1096,7 +1103,7 @@ function createProcessStream(
         .finally(() => {
           // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
           if (!proc.wasKilled && !finished) {
-            killProcess(proc, Boolean(killTreeWhenDone));
+            killProcess(proc, Boolean(killTreeWhenDone), killTreeSignal);
           }
         });
     });
@@ -1110,10 +1117,15 @@ function isRealExit(event: {exitCode: ?number, signal: ?string}): boolean {
 async function _killProcess(
   proc: child_process$ChildProcess & {wasKilled?: boolean},
   killTree: boolean,
+  killTreeSignal: ?string,
 ): Promise<void> {
   proc.wasKilled = true;
   if (!killTree) {
-    proc.kill();
+    if (killTreeSignal != null && killTreeSignal !== '') {
+      proc.kill(killTreeSignal);
+    } else {
+      proc.kill();
+    }
     return;
   }
   if (/^win/.test(process.platform)) {
