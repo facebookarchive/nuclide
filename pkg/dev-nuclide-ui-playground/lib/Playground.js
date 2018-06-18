@@ -40,6 +40,7 @@ import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.exampl
 import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 import {HighlightedCodeExamples} from 'nuclide-commons-ui/HighlightedCode.example';
+import {PulseButtonExample} from 'nuclide-commons-ui/PulseButton.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -65,6 +66,7 @@ const playgroundComponents = [
   RelativeDateExamples,
   MessageExamples,
   MultiRootChangedFilesViewExample,
+  PulseButtonExample,
   PathWithFileIconExamples,
   AnimatedEllipsisExamples,
   FileChangesExamples,
