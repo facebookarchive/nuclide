@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {LauncherParameters} from '../../server/NuclideServer';
+import type {LauncherParameters} from '../../server/ServerLauncher';
 import type {Transport} from '../../server/BigDigServer';
 
 import {TunnelManager} from './TunnelManager';

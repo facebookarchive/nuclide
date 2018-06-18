@@ -17,7 +17,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {psTree} from 'nuclide-commons/process';
 import os from 'os';
 import fsPromise from '../common/fs';
-import {launchServer} from './NuclideServer';
+import {launchServer} from './ServerLauncher';
 
 export type LauncherScriptParams = {|
   key: string,

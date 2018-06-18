@@ -13,7 +13,7 @@ import type {Transport} from 'big-dig/src/server/BigDigServer';
 import type {
   LauncherParameters,
   LauncherType,
-} from 'big-dig/src/server/NuclideServer';
+} from 'big-dig/src/server/ServerLauncher';
 import type {Transport as RpcTransportType} from '../../nuclide-rpc';
 
 import {initializeLogging} from '../../nuclide-logging';

@@ -24,7 +24,7 @@ export type LauncherParameters = {
 // The absolutePathToServerMain must export a single function of this type.
 export type LauncherType = (params: LauncherParameters) => Promise<void>;
 
-export type NuclideServerOptions = {
+export type ServerLauncherOptions = {
   // These options will be passed verbatim to https.createServer(). Admittedly,
   // this is not the complete list of options that it takes, but these are the
   // ones we intentionally work with.
@@ -43,7 +43,7 @@ export type NuclideServerOptions = {
 };
 
 /**
- * Launch a NuclideServer with the specified parameters.
+ * Launch a big-dig server with the specified parameters.
  *
  * One common this may fail is if the specified port is in use. The caller is responsible for
  * checking for this failure and retrying on a different port.
@@ -54,7 +54,7 @@ export type NuclideServerOptions = {
  * check server.address().port to see what the actual port is.
  */
 export async function launchServer(
-  options: NuclideServerOptions,
+  options: ServerLauncherOptions,
 ): Promise<number> {
   const webServer = https.createServer(options.webServer);
 
