@@ -197,4 +197,47 @@ describe('UniversalDisposable', () => {
       expect(foo.mock.calls.length > 0).toBe(true);
     });
   });
+
+  describe('addUntilDestroyed', () => {
+    class MockDestructible {
+      destroyCallbacks = new Set();
+      destroy() {
+        this.destroyCallbacks.forEach(x => x());
+      }
+      onDidDestroy(callback) {
+        this.destroyCallbacks.add(callback);
+        return new UniversalDisposable(() => {
+          this.destroyCallbacks.delete(callback);
+        });
+      }
+    }
+
+    it('cleans everything up on destroy', () => {
+      const universal = new UniversalDisposable();
+      const mockDestructible = new MockDestructible();
+      const disposable1 = new UniversalDisposable();
+      const disposable2 = new UniversalDisposable();
+
+      universal.addUntilDestroyed(mockDestructible, disposable1, disposable2);
+      expect(universal.teardowns.size).toBe(1);
+      mockDestructible.destroy();
+
+      expect(universal.teardowns.size).toBe(0);
+      expect(disposable1.disposed).toBe(true);
+      expect(disposable2.disposed).toBe(true);
+    });
+
+    it('cleans up destroy handlers on dispose', () => {
+      const universal = new UniversalDisposable();
+      const mockDestructible = new MockDestructible();
+      const disposable1 = new UniversalDisposable();
+
+      universal.addUntilDestroyed(mockDestructible, disposable1);
+      expect(universal.teardowns.size).toBe(1);
+      universal.dispose();
+
+      expect(disposable1.disposed).toBe(true);
+      expect(mockDestructible.destroyCallbacks.size).toBe(0);
+    });
+  });
 });
