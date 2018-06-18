@@ -1668,7 +1668,12 @@ export class LspLanguageService {
       .switchMap(perConnectionUpdates =>
         ensureInvalidations(
           this._underlyingLogger,
-          perConnectionUpdates.map(convert.lspDiagnostics_atomDiagnostics),
+          perConnectionUpdates.map(diagnostics =>
+            convert.lspDiagnostics_atomDiagnostics(
+              diagnostics,
+              this._languageServerName,
+            ),
+          ),
         ),
       )
       .publish();

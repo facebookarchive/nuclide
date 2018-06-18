@@ -547,8 +547,10 @@ function atomTrace_lspRelatedLocation(
 function lspDiagnostic_atomDiagnostic(
   diagnostic: Diagnostic,
   filePath: NuclideUri, // has already been converted for us
+  defaultSource: string,
 ): FileDiagnosticMessage {
-  let providerName = diagnostic.source != null ? diagnostic.source : 'LSP';
+  let providerName =
+    diagnostic.source != null ? diagnostic.source : defaultSource;
   if (diagnostic.code != null) {
     providerName = providerName + ': ' + String(diagnostic.code);
   }
@@ -601,12 +603,15 @@ export function atomDiagnostic_lspDiagnostic(
 
 export function lspDiagnostics_atomDiagnostics(
   params: PublishDiagnosticsParams,
+  defaultSource: string,
 ): FileDiagnosticMap {
   const filePath = lspUri_localPath(params.uri);
   return new Map([
     [
       filePath,
-      params.diagnostics.map(d => lspDiagnostic_atomDiagnostic(d, filePath)),
+      params.diagnostics.map(d =>
+        lspDiagnostic_atomDiagnostic(d, filePath, defaultSource),
+      ),
     ],
   ]);
 }
