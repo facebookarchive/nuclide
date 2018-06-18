@@ -20,6 +20,7 @@ export type ComponentDefinition = {|
   name: string,
   requiredProps: Array<ComponentProp>,
   defaultProps: Array<string>,
+  leadingComment: ?string,
 |};
 
 export type ComponentProp = {|

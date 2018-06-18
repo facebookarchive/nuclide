@@ -13,6 +13,7 @@ import {
   getRequiredProps,
   parseCode,
   getDefaultPropNames,
+  formatLeadingComment,
 } from '../lib/uiComponentAst';
 import {BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE} from '../__mocks__/common';
 
@@ -70,5 +71,50 @@ class FDSTest extends React.PureComponent<Props> {
     );
 
     expect(defaultProps).toEqual(['value', 'type']);
+  });
+});
+
+describe('formatLeadingComment', () => {
+  it('returns identity', () => {
+    expect(formatLeadingComment('Hello')).toBe('Hello');
+  });
+
+  it('strips asterisks', () => {
+    expect(formatLeadingComment(` * Hello!`)).toBe('Hello!');
+  });
+
+  it('removes trailing blank lines', () => {
+    expect(
+      formatLeadingComment(`
+ * Hello!
+ *
+    `),
+    ).toBe('Hello!');
+  });
+
+  it('strips trailing whitespace', () => {
+    expect(formatLeadingComment(' * Hello!  ')).toBe('Hello!');
+  });
+
+  it('maintains vertical whitespace in the middle', () => {
+    expect(
+      formatLeadingComment(` * Hello!
+ *
+ * It is me!
+ *
+ * Wow!
+ `),
+    ).toBe(`Hello!
+
+It is me!
+
+Wow!`);
+  });
+
+  it('joins consecutive lines', () => {
+    expect(
+      formatLeadingComment(` * Hello!
+  * It is me!`),
+    ).toBe('Hello! It is me!');
   });
 });

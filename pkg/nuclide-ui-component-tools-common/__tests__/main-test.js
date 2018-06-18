@@ -42,5 +42,8 @@ describe('getComponentDefinitionFromAst', () => {
     expect(definition.name).toBe('FDSTest');
     expect(definition.requiredProps.length).toBe(2);
     expect(definition.defaultProps.length).toBe(2);
+    expect(definition.leadingComment).toBe(`@explorer-desc
+
+Test!`);
   });
 });

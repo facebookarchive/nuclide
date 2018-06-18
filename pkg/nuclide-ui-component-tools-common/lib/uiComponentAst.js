@@ -86,17 +86,48 @@ function removePrefix(prefix: string, input: string) {
   return input;
 }
 
+export function formatLeadingComment(comment: string): string {
+  return (
+    comment
+      .split('\n')
+      // Remove any leading asterisks.
+      .map(l => removePrefix('*', l.trim()).trim())
+      // Filter any blank lines before and after the entire text.
+      .filter(
+        (l, i, arr) =>
+          (i > 0 && i < arr.length - 2 && arr[i + 1].length > 0) ||
+          l.length > 0,
+      )
+      // Join lines together, but preserve extra newlines in the text.
+      // e.g., Hello\nGoodbye becomes "Hello Goodbye" but "Hello\n\nGoodbye"
+      // remains "Hello\n\nGoodbye".
+      .reduce((res, line, i, arr) => {
+        if (i === 0) {
+          return line;
+        }
+
+        if (line.length === 0) {
+          return res + '\n\n';
+        }
+
+        if (arr[i - 1].length > 0) {
+          return res + ' ' + line;
+        }
+
+        return res + line;
+      }, '')
+  );
+}
+
 function getLeadingComment(node: Node): ?string {
   if (!node.leadingComments) {
     return null;
   }
 
-  // Remove trailing whitespace and leading asterisk.
-  return node.leadingComments[node.leadingComments.length - 1].value
-    .split('\n')
-    .map(l => removePrefix('*', l.trim()).trim())
-    .filter(l => l.length > 0)
-    .join('\n');
+  // Remove trailing whitespace, trailing empty lines, and leading asterisk.
+  return formatLeadingComment(
+    node.leadingComments[node.leadingComments.length - 1].value,
+  );
 }
 
 function getDefaultPropsFromIdentifier(
@@ -225,4 +256,16 @@ export function getRequiredProps(
   }
 
   return getRequiredPropsFromAst(componentName, ast);
+}
+
+export function getLeadingCommentForComponent(
+  componentName: string,
+  ast: File,
+): ?string {
+  const componentNode = getComponentNode(componentName, ast);
+  if (!componentNode) {
+    return null;
+  }
+
+  return getLeadingComment(componentNode);
 }

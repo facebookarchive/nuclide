@@ -10,8 +10,9 @@
  */
 import {
   getComponentNameFromUri,
-  getRequiredPropsFromAst,
   getDefaultPropNames,
+  getLeadingCommentForComponent,
+  getRequiredPropsFromAst,
 } from './uiComponentAst';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -28,10 +29,12 @@ export function getComponentDefinitionFromAst(
   }
   const requiredProps = getRequiredPropsFromAst(componentName, ast);
   const defaultProps = getDefaultPropNames(componentName, ast);
+  const leadingComment = getLeadingCommentForComponent(componentName, ast);
   return {
     name: componentName,
     requiredProps,
     defaultProps,
+    leadingComment,
   };
 }
 

@@ -18,6 +18,7 @@ describe('getSnippetFromDefinition', () => {
       name: 'FDSTest',
       requiredProps: [],
       defaultProps: [],
+      leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe('FDSTest $1/>');
   });
@@ -32,6 +33,7 @@ describe('getSnippetFromDefinition', () => {
         },
       ],
       defaultProps: [],
+      leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(`FDSTest
   value={\$1}
@@ -52,6 +54,7 @@ describe('getSnippetFromDefinition', () => {
         },
       ],
       defaultProps: [],
+      leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(
       'FDSTest\n\
@@ -75,6 +78,7 @@ $4/>',
         },
       ],
       defaultProps: [],
+      leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(
       'FDSTest\n\
@@ -99,6 +103,7 @@ $4/>',
         },
       ],
       defaultProps: ['label'],
+      leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(`FDSTest
   value={\$1}
