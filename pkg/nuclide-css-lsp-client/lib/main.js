@@ -42,7 +42,7 @@ async function connectToService(
     connection,
   ).createMultiLspLanguageService(
     'css',
-    'vscode-css-languageserver-bin/cssServerMain',
+    ['vscode-css-languageserver-bin/cssServerMain'],
     ['--stdio'],
     {
       fileNotifier,

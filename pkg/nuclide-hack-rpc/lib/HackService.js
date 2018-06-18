@@ -110,7 +110,7 @@ export async function initializeLsp(
     return null;
   }
 
-  return createMultiLspLanguageService('hack', cmd, args, {
+  return createMultiLspLanguageService('hack', [cmd], args, {
     logCategory: HACK_LOGGER_CATEGORY,
     logLevel,
     fileNotifier,

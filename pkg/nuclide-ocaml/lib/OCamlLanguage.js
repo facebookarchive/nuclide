@@ -44,7 +44,7 @@ async function createOCamlLanguageService(
 
   const lspService = await service.createMultiLspLanguageService(
     'ocaml',
-    'ocaml-language-server',
+    ['ocaml-language-server'],
     ['--stdio'],
     {
       logCategory: 'OcamlService',

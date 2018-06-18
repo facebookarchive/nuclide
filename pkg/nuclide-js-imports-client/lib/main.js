@@ -51,7 +51,7 @@ async function connectToJSImportsService(
   const service = getVSCodeLanguageServiceByConnection(connection);
   const lspService = await service.createMultiLspLanguageService(
     'jsimports',
-    './pkg/nuclide-js-imports-server/src/index-entry.js',
+    ['./pkg/nuclide-js-imports-server/src/index-entry.js'],
     [],
     {
       fileNotifier,

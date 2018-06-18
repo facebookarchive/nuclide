@@ -46,7 +46,7 @@ describe('which', () => {
     it('calls where on Windows', () => {
       const param: string = '';
       which(param);
-      expect(runCommand).toHaveBeenCalledWith('where', ['']);
+      expect(runCommand).toHaveBeenCalledWith('where', [''], {});
     });
 
     it('returns the first match', async () => {
@@ -75,7 +75,7 @@ describe('which', () => {
     it('calls which', () => {
       const param: string = '';
       which(param);
-      expect(runCommand).toHaveBeenCalledWith('which', [param]);
+      expect(runCommand).toHaveBeenCalledWith('which', [param], {});
     });
 
     it('returns the first match', async () => {
