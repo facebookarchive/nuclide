@@ -13,11 +13,9 @@
 export type {
   AtomNotificationType,
   ControlButtonSpecification,
-  DebuggerCapabilities,
   DebuggerConfigAction,
   DebuggerConfigurationProvider,
   DebuggerSourcePathsService,
-  DebuggerProperties,
   Device,
   DevicePanelServiceApi,
   IProcessConfig,

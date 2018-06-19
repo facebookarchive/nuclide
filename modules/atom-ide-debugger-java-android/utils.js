@@ -253,12 +253,9 @@ export async function resolveConfiguration(
     targetUri: resolvedTargetUri,
     debugMode: 'attach',
     adapterExecutable,
-    properties: {
-      ...configuration.properties,
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-    },
+    customControlButtons: getCustomControlButtonsForJavaSourcePaths(
+      clickEvents,
+    ),
     config: attachPortTargetConfig,
     customDisposable,
     onInitializeCallback,

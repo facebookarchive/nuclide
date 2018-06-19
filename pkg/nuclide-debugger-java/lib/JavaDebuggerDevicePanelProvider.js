@@ -42,17 +42,9 @@ async function _createAndroidDebugAttachConfig(
     targetUri,
     debugMode: 'attach',
     adapterType: VsAdapterTypes.JAVA_ANDROID,
-    adapterExecutable: null,
     config,
-    capabilities: {threads: true},
-    properties: {
-      customControlButtons: [],
-      threadsComponentTitle: 'Threads',
-    },
     customDisposable: new UniversalDisposable(),
-    getProcessName() {
-      return 'Process ' + pid + ' (Android Java ' + device.name + ')';
-    },
+    processName: 'Process ' + pid + ' (Android Java ' + device.name + ')',
   };
 }
 

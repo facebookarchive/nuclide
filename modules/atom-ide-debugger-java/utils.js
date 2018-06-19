@@ -233,12 +233,9 @@ export async function resolveConfiguration(
   ).getJavaVSAdapterExecutableInfo(false);
   return {
     ...configuration,
-    properties: {
-      ...configuration.properties,
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-    },
+    customControlButtons: getCustomControlButtonsForJavaSourcePaths(
+      clickEvents,
+    ),
     adapterExecutable: javaAdapterExecutable,
     customDisposable,
     onInitializeCallback: async session => {

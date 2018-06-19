@@ -613,17 +613,12 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       targetUri,
       debugMode: launch ? 'launch' : 'attach',
       adapterType: vsAdapterType,
-      adapterExecutable: null,
       config: values,
-      capabilities: {threads},
-      properties: {
-        customControlButtons: [],
-        threadsComponentTitle: 'Threads',
-      },
+      showThreads: threads,
+      customControlButtons: [],
+      threadsComponentTitle: 'Threads',
       customDisposable: new UniversalDisposable(),
-      getProcessName() {
-        return vsAdapterType + ' Process';
-      },
+      processName: vsAdapterType + ' Process',
     });
 
     serializeDebuggerConfig(...this._getSerializationArgs(this.props), {

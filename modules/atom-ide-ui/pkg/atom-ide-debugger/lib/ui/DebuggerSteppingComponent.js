@@ -129,7 +129,7 @@ export default class DebuggerSteppingComponent extends React.Component<
             customControlButtons:
               focusedProcess == null
                 ? []
-                : focusedProcess.configuration.properties.customControlButtons,
+                : focusedProcess.configuration.customControlButtons || [],
           });
           if (
             this.state.waitingForPause &&

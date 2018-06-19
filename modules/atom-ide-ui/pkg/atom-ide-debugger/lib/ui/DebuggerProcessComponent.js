@@ -82,6 +82,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
     const {service} = this.props;
 
     const processElements = processList.map((process, processIndex) => {
+      const {adapterType, processName} = process.configuration;
       const threadElements = process
         .getAllThreads()
         .map((thread, threadIndex) => {
@@ -111,7 +112,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
         'No processes are currently being debugged'
       ) : (
         <ProcessTreeNode
-          title={process.configuration.getProcessName()}
+          title={processName != null ? processName : adapterType}
           key={processIndex}
           childItems={threadElements}
           process={process}

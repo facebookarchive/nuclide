@@ -13,9 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ControlButtonSpecification,
-  DebuggerCapabilities,
   DebuggerConfigAction,
-  DebuggerProperties,
   IProcessConfig,
   IVspInstance,
   MessageProcessor,
@@ -82,21 +80,6 @@ export default class VspProcessInfo {
     this._vspInstance = vspInstance;
   }
 
-  _getDebuggerCapabilities(): DebuggerCapabilities {
-    return {
-      threads: false,
-      ...this._customCapabilities,
-    };
-  }
-
-  _getDebuggerProps(): DebuggerProperties {
-    return {
-      customControlButtons: [],
-      threadsComponentTitle: 'Threads',
-      ...this._customProperties,
-    };
-  }
-
   async customRequest(
     request: string,
     args: any,
@@ -133,8 +116,14 @@ export default class VspProcessInfo {
       debugMode: this._debugMode,
       adapterType: this._adapterType,
       adapterExecutable: this._adapterExecutable,
-      capabilities: this._getDebuggerCapabilities(),
-      properties: this._getDebuggerProps(),
+      showThreads:
+        this._customCapabilities.threads == null
+          ? true
+          : Boolean(this._customCapabilities.threads),
+      threadsComponentTitle:
+        // flowlint-next-line sketchy-null-string:off
+        this._customProperties.threadsComponentTitle || 'Threads',
+      customControlButtons: this._customProperties.customControlButtons || [],
       config: this._config,
       clientPreprocessor:
         this._preprocessors == null
@@ -144,9 +133,7 @@ export default class VspProcessInfo {
         this._preprocessors == null
           ? null
           : this._preprocessors.vspAdapterPreprocessor,
-      getProcessName() {
-        return this._adapterType;
-      },
+      processName: this._adapterType,
     };
   }
 

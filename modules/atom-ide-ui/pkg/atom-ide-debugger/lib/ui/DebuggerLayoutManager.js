@@ -266,13 +266,16 @@ export default class DebuggerLayoutManager {
         title: () =>
           getFocusedProcess() == null
             ? 'Threads'
-            : nullthrows(getFocusedProcess()).configuration.properties
-                .threadsComponentTitle,
+            : nullthrows(getFocusedProcess()).configuration
+                .threadsComponentTitle || 'Threads',
         isEnabled: () =>
           getFocusedProcess() == null
             ? false
-            : nullthrows(getFocusedProcess()).configuration.capabilities
-                .threads,
+            : nullthrows(getFocusedProcess()).configuration.showThreads == null
+              ? true
+              : Boolean(
+                  nullthrows(getFocusedProcess()).configuration.showThreads,
+                ),
         createView: () => <ThreadsView service={this._service} />,
         debuggerModeFilter: (mode: DebuggerModeType) =>
           mode !== DebuggerMode.STOPPED,

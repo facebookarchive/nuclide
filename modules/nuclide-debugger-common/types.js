@@ -69,34 +69,21 @@ export type ControlButtonSpecification = {
   onClick: () => mixed,
 };
 
-// Indicates which of various optional features that this debugger supports.
-export type DebuggerCapabilities = {
-  +threads: boolean,
-};
-
-// Describes how to configure various properties that individual debuggers
-// are allowed to override.
-export type DebuggerProperties = {
-  +customControlButtons: Array<ControlButtonSpecification>,
-  +threadsComponentTitle: string,
-};
-
-export type IProcessConfig = {
+export type IProcessConfig = {|
   +targetUri: NuclideUri,
   +debugMode: DebuggerConfigAction,
   +adapterType: VsAdapterType,
-  +adapterExecutable: ?VSAdapterExecutableInfo,
-  // TODO(most): deprecate
-  +capabilities: DebuggerCapabilities,
-  // TODO(most): deprecate
-  +properties: DebuggerProperties,
+  +adapterExecutable?: ?VSAdapterExecutableInfo,
   +config: Object,
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
   +customDisposable?: UniversalDisposable,
   +onInitializeCallback?: (session: ISession) => Promise<void>,
-  +getProcessName: () => string,
-};
+  +processName?: string,
+  +customControlButtons?: Array<ControlButtonSpecification>,
+  +threadsComponentTitle?: string,
+  +showThreads?: boolean,
+|};
 
 export interface IVsAdapterSpawner {
   spawnAdapter(
