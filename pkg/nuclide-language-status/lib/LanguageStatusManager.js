@@ -16,6 +16,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
+import {track} from '../../nuclide-analytics';
 import StatusComponent from './StatusComponent';
 
 import * as React from 'react';
@@ -125,8 +126,18 @@ export class LanguageStatusManager {
   _onUpdateSettings = (
     newSettings: Map<LanguageStatusProvider, StatusKind>,
   ) => {
+    const changedSettings = {};
+    for (const [provider, kind] of newSettings) {
+      if (this._settings.get(provider) !== kind) {
+        changedSettings[provider.name] = kind;
+      }
+    }
     this._settings = newSettings;
     this._providersChanged.next();
+    track('nuclide-language-status.settings-changed', {
+      settings: this.serialize().settings,
+      changedSettings,
+    });
   };
 
   _addStatusComponent = (editor: atom$TextEditor): IDisposable => {
