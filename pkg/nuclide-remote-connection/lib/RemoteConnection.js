@@ -416,7 +416,7 @@ export class RemoteConnection {
     path: string,
   ): ?RemoteConnection {
     return RemoteConnection.getByHostname(hostname).filter(connection => {
-      return path.startsWith(connection.getPath());
+      return nuclideUri.contains(connection.getPath(), path);
     })[0];
   }
 

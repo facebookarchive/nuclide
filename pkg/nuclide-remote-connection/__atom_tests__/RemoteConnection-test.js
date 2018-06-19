@@ -57,6 +57,14 @@ describe('RemoteConnection', () => {
       expect(conn).toBeUndefined();
     });
 
+    it('returns undefined if the path is a non-matching prefix', () => {
+      const conn = RemoteConnection.getByHostnameAndPath(
+        testHostname,
+        testPath + 'test123',
+      );
+      expect(conn).toBeUndefined();
+    });
+
     it('returns undefined if the hostname is not matching', () => {
       const conn = RemoteConnection.getByHostnameAndPath(
         'bar.nuclide.com',
