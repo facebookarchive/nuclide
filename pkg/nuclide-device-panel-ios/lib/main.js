@@ -48,7 +48,6 @@ class Activation {
               return Expect.value(
                 devices.map(device => ({
                   name: device.udid,
-                  port: 0,
                   displayName: device.name,
                   architecture: devicePanelArchitecture(device.arch),
                   rawArchitecture: device.arch,

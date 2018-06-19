@@ -117,7 +117,6 @@ function parseRawDevice(device: DeviceDescription): Device {
 
   return {
     name: device.name,
-    port: 5037,
     displayName,
     architecture: deviceArchitecture,
     rawArchitecture: device.architecture,

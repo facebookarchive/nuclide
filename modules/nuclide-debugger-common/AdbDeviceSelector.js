@@ -16,7 +16,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 
 import {observeAndroidDevicesX} from 'nuclide-adb/lib/AdbDevicePoller';
-import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/constants';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -77,7 +76,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
             a.value != null ? a.value : [],
             b.value != null ? b.value : [],
             (x, y) => {
-              return x.name === y.name && x.port === y.port;
+              return x.name === y.name;
             },
           );
         })
@@ -121,10 +120,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
 
     return this.state.deviceList.value.map(device => ({
       value: device,
-      label:
-        device.port === DEFAULT_ADB_PORT
-          ? device.displayName
-          : `${device.displayName} on ADB port ${device.port}`,
+      label: device.displayName,
     }));
   }
 

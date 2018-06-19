@@ -19,17 +19,14 @@ import type {Device} from './types';
 
 import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {Table} from 'nuclide-commons-ui/Table';
 import {arrayEqual} from 'nuclide-commons/collection';
-import debounce from 'nuclide-commons/debounce';
 import {Expect} from 'nuclide-commons/expected';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import {AdbDeviceSelector} from './AdbDeviceSelector';
-import {getAdbPath, setAdbPath, addAdbPorts} from './EmulatorUtils';
 
 type ColumnName = 'pid' | 'user' | 'name';
 
@@ -46,7 +43,6 @@ type State = {
   selectedProcessName: ?string,
   sortedColumn: ?ColumnName,
   sortDescending: boolean,
-  adbPorts: string,
 };
 
 export class DeviceAndProcess extends React.Component<Props, State> {
@@ -63,7 +59,6 @@ export class DeviceAndProcess extends React.Component<Props, State> {
         this._javaProcessSubscription.unsubscribe();
       }
     });
-    (this: any)._setAdbPorts = debounce(this._setAdbPorts.bind(this), 1000);
 
     this.state = {
       selectedDevice: null,
@@ -72,24 +67,11 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       selectedProcessName: null,
       sortedColumn: 'name',
       sortDescending: false,
-      adbPorts: '',
     };
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
-  }
-
-  async _setAdbPorts(value: string): Promise<void> {
-    setAdbPath(this.props.targetUri, await getAdbPath());
-
-    const parsedPorts = value
-      .split(/,\s*/)
-      .map(port => parseInt(port.trim(), 10))
-      .filter(port => !Number.isNaN(port));
-
-    addAdbPorts(this.props.targetUri, parsedPorts);
-    this.setState({adbPorts: value, selectedDevice: null});
   }
 
   setState(partialState: Object, callback?: () => mixed): void {
@@ -105,12 +87,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
   _handleDeviceChange = (device: ?Device): void => {
     const oldDevice = this.state.selectedDevice;
-    if (
-      oldDevice != null &&
-      device != null &&
-      oldDevice.name === device.name &&
-      oldDevice.port === device.port
-    ) {
+    if (oldDevice != null && device != null && oldDevice.name === device.name) {
       // Same device selected.
       return;
     }
@@ -236,11 +213,6 @@ export class DeviceAndProcess extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const devicesLabel =
-      this.state.adbPorts === ''
-        ? ''
-        : '(ADB port ' + this.state.adbPorts + ')';
-
     const emptyMessage: string =
       this.state.selectedDevice == null
         ? 'No device selected'
@@ -285,14 +257,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
     return (
       <div className="block">
-        <label>ADB Server Port: </label>
-        <AtomInput
-          placeholderText="Optional. (For One World devices, specify ANDROID_ADB_SERVER_PORT from one_world_adb)"
-          title="Optional. (For One World devices, specify ANDROID_ADB_SERVER_PORT from one_world_adb)"
-          value={this.state.adbPorts}
-          onDidChange={value => this._setAdbPorts(value)}
-        />
-        <label>Device: {devicesLabel}</label>
+        <label>Device:</label>
         <AdbDeviceSelector
           onChange={this._handleDeviceChange}
           targetUri={this.props.targetUri}

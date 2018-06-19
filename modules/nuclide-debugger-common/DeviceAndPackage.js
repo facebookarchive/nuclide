@@ -15,14 +15,11 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from './types';
 
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import debounce from 'nuclide-commons/debounce';
 import {Expect} from 'nuclide-commons/expected';
 import * as React from 'react';
 import {AdbDeviceSelector} from './AdbDeviceSelector';
-import {getAdbPath, setAdbPath, addAdbPorts} from './EmulatorUtils';
 
 type Props = {|
   +targetUri: NuclideUri,
@@ -34,31 +31,16 @@ type State = {
   selectedDevice: ?Device,
   launchPackage: string,
   packages: Expected<Array<string>>,
-  adbPorts: string,
 };
 
 export class DeviceAndPackage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    (this: any)._setAdbPorts = debounce(this._setAdbPorts.bind(this), 1000);
     this.state = {
       selectedDevice: null,
       launchPackage: '',
       packages: Expect.value([]),
-      adbPorts: '',
     };
-  }
-
-  async _setAdbPorts(value: string): Promise<void> {
-    setAdbPath(this.props.targetUri, await getAdbPath());
-
-    const parsedPorts = value
-      .split(/,\s*/)
-      .map(port => parseInt(port.trim(), 10))
-      .filter(port => !Number.isNaN(port));
-
-    addAdbPorts(this.props.targetUri, parsedPorts);
-    this.setState({adbPorts: value, selectedDevice: null});
   }
 
   async _refreshPackageList(device: ?Device) {
@@ -110,20 +92,9 @@ export class DeviceAndPackage extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const devicesLabel =
-      this.state.adbPorts === ''
-        ? ''
-        : '(ADB port ' + this.state.adbPorts + ')';
     return (
       <div className="block">
-        <label>ADB Server Port: </label>
-        <AtomInput
-          placeholderText="Optional. (For One World devices, specify ANDROID_ADB_SERVER_PORT from one_world_adb)"
-          title="Optional. (For One World devices, specify ANDROID_ADB_SERVER_PORT from one_world_adb)"
-          value={this.state.adbPorts}
-          onDidChange={value => this._setAdbPorts(value)}
-        />
-        <label>Device: {devicesLabel}</label>
+        <label>Device:</label>
         <AdbDeviceSelector
           onChange={this._handleDeviceChange}
           targetUri={this.props.targetUri}
