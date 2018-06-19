@@ -66,16 +66,20 @@ describe('UniversalDisposable', () => {
   it('supports adding mixed teardowns', () => {
     const dispose = jest.fn();
     const unsubscribe = jest.fn();
+    const destroy = jest.fn();
+    const destroyable = {destroy, onDidDestroy: jest.fn()};
     const foo = jest.fn();
     const universal = new UniversalDisposable();
-    universal.add({dispose}, {unsubscribe}, foo);
+    universal.add({dispose}, {unsubscribe}, destroyable, foo);
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
+    expect(destroy.mock.calls.length > 0).toBe(false);
     expect(foo.mock.calls.length > 0).toBe(false);
     universal.dispose();
     expect(dispose.mock.calls.length).toBe(1);
     expect(unsubscribe.mock.calls.length).toBe(1);
+    expect(destroy.mock.calls.length).toBe(1);
     expect(foo.mock.calls.length).toBe(1);
   });
 

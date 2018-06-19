@@ -112,6 +112,7 @@ function assertTeardown(teardown: AnyTeardown): void {
   if (
     typeof teardown.dispose === 'function' ||
     typeof teardown.unsubscribe === 'function' ||
+    typeof teardown.destroy === 'function' ||
     typeof teardown === 'function'
   ) {
     return;
