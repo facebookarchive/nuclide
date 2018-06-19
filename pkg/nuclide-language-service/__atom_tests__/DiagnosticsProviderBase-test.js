@@ -56,7 +56,7 @@ describe('DiagnosticsProviderBase', () => {
     subscribedToAny = null;
 
     // Flow complains that a spy is not callable.
-    textEventCallback = (jasmine.createSpy(): any);
+    textEventCallback = (jest.fn(): any);
     const options = {
       grammarScopes: new Set([grammar]),
       onTextEditorEvent: textEventCallback,
@@ -80,8 +80,8 @@ describe('DiagnosticsProviderBase', () => {
   });
 
   it('should send published messages to all subscribers', () => {
-    const callback1 = jasmine.createSpy();
-    const callback2 = jasmine.createSpy();
+    const callback1 = jest.fn();
+    const callback2 = jest.fn();
 
     providerBase.onMessageUpdate(callback1);
     providerBase.onMessageUpdate(callback2);
