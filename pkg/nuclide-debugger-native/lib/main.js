@@ -37,8 +37,8 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
-  getNativeVSPLaunchProcessInfo,
-  getNativeVSPAttachProcessInfo,
+  getNativeVSPLaunchProcessConfig,
+  getNativeVSPAttachProcessConfig,
 } from '../../nuclide-debugger-vsp/lib/utils';
 import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -286,7 +286,7 @@ class Activation {
   }
 
   async _debugPidWithLLDB(pid: number, buckRoot: string): Promise<void> {
-    const attachInfo = await getNativeVSPAttachProcessInfo(
+    const config = getNativeVSPAttachProcessConfig(
       VsAdapterTypes.NATIVE_LLDB,
       buckRoot,
       {
@@ -295,7 +295,7 @@ class Activation {
       },
     );
     const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(attachInfo);
+    debuggerService.startVspDebugging(config);
   }
 
   async _debugBuckTarget(
@@ -324,7 +324,7 @@ class Activation {
       );
     }
 
-    // LaunchProcessInfo's arguments should be local to the remote directory.
+    // launch config's arguments should be local to the remote directory.
     const remoteBuckRoot = nuclideUri.getPath(buckRoot);
     const remoteOutputPath = nuclideUri.getPath(
       nuclideUri.join(buckRoot, relativeOutputPath),
@@ -338,7 +338,7 @@ class Activation {
       }
     }
 
-    const info = await getNativeVSPLaunchProcessInfo(
+    const config = await getNativeVSPLaunchProcessConfig(
       await this._getBuckNativeDebugAdapterType(),
       nuclideUri.join(buckRoot, relativeOutputPath),
       {
@@ -350,7 +350,7 @@ class Activation {
       },
     );
     const debuggerService = await getDebuggerService();
-    await debuggerService.startDebugging(info);
+    await debuggerService.startVspDebugging(config);
     return remoteOutputPath;
   }
 

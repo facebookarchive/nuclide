@@ -15,6 +15,7 @@ import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
 } from './RemoteDebuggerCommandService';
+import type {IProcessConfig} from 'nuclide-debugger-common';
 import typeof * as RemoteDebuggerCommandService from './RemoteDebuggerCommandService';
 
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
@@ -22,7 +23,7 @@ import {observeAddedHostnames} from 'nuclide-commons-atom/projects';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VspProcessInfo, VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import {track} from 'nuclide-commons/analytics';
 import * as RemoteDebuggerCommandServiceLocal from './RemoteDebuggerCommandService';
@@ -31,18 +32,16 @@ import {getLogger} from 'log4js';
 
 let _rpcService: ?nuclide$RpcService = null;
 
-async function getPythonAttachTargetProcessInfo(
+function getPythonAttachTargetProcessConfig(
   targetRootUri: NuclideUri,
   target: PythonDebuggerAttachTarget,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    targetRootUri,
-    'attach',
-    VsAdapterTypes.PYTHON,
-    null,
-    getPythonAttachTargetConfig(target),
-    {threads: true},
-  );
+): IProcessConfig {
+  return {
+    targetUri: targetRootUri,
+    debugMode: 'attach',
+    adapterType: VsAdapterTypes.PYTHON,
+    config: getPythonAttachTargetConfig(target),
+  };
 }
 
 function getPythonAttachTargetConfig(
@@ -108,13 +107,13 @@ export function listenToRemoteDebugCommands(): IDisposable {
       })
       .let(fastDebounce(500))
       .subscribe(async ({rootUri, command}) => {
-        const attachProcessInfo = await getPythonAttachTargetProcessInfo(
+        const attachProcessConfig = getPythonAttachTargetProcessConfig(
           rootUri,
           command.target,
         );
         const debuggerService = await getDebuggerService();
         track('fb-python-debugger-auto-attach');
-        debuggerService.startDebugging(attachProcessInfo);
+        debuggerService.startVspDebugging(attachProcessConfig);
         // Otherwise, we're already debugging that target.
       }),
   );

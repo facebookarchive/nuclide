@@ -24,7 +24,6 @@ import type {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   VsAdapterTypes,
-  VspProcessInfo,
   getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from 'nuclide-debugger-common';
 import * as React from 'react';
@@ -226,32 +225,33 @@ export function getNativeAutoGenConfig(
   };
 }
 
-export async function getNativeVSPLaunchProcessInfo(
-  adapter: VsAdapterType,
+export function getNativeVSPLaunchProcessConfig(
+  adapterType: VsAdapterType,
   program: NuclideUri,
-  args: VspNativeDebuggerLaunchBuilderParms,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    program,
-    'launch',
-    adapter,
-    null,
-    {
+  config: VspNativeDebuggerLaunchBuilderParms,
+): IProcessConfig {
+  return {
+    targetUri: program,
+    debugMode: 'launch',
+    adapterType,
+    config: {
       program: nuclideUri.getPath(program),
-      ...args,
+      ...config,
     },
-    {threads: true},
-  );
+  };
 }
 
-export async function getNativeVSPAttachProcessInfo(
-  adapter: VsAdapterType,
+export function getNativeVSPAttachProcessConfig(
+  adapterType: VsAdapterType,
   targetUri: NuclideUri,
-  args: VspNativeDebuggerAttachBuilderParms,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(targetUri, 'attach', adapter, null, args, {
-    threads: true,
-  });
+  config: VspNativeDebuggerAttachBuilderParms,
+): IProcessConfig {
+  return {
+    targetUri,
+    debugMode: 'attach',
+    adapterType,
+    config,
+  };
 }
 
 export function setSourcePathsService(
