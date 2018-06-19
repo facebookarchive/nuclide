@@ -113,8 +113,8 @@ export type {
 } from './pkg/atom-ide-console/lib/types';
 
 export {
-  default as DebuggerService,
-} from './pkg/atom-ide-debugger/lib/RemoteControlService';
+  RemoteDebuggerService as DebuggerService,
+} from './pkg/atom-ide-debugger/lib/types';
 
 export type {
   TerminalInfo,

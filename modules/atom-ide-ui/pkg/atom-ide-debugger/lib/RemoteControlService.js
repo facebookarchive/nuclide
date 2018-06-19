@@ -11,19 +11,15 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {IDebugService, IProcess} from './types';
-import type {
-  IProcessConfig,
-  IVspInstance,
-  VspProcessInfo,
-} from 'nuclide-debugger-common';
+import type {IDebugService, IProcess, RemoteDebuggerService} from './types';
+import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {DebuggerMode} from './constants';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-export default class RemoteControlService {
+export default class RemoteControlService implements RemoteDebuggerService {
   _service: IDebugService;
   _disposables: UniversalDisposable;
 
@@ -36,7 +32,7 @@ export default class RemoteControlService {
     this._disposables.dispose();
   }
 
-  onSessionEnd(
+  _onSessionEnd(
     focusedProcess: IProcess,
     disposables: UniversalDisposable,
   ): void {
@@ -52,20 +48,6 @@ export default class RemoteControlService {
         }
       }),
     );
-  }
-
-  async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = await this.startVspDebugging(
-      processInfo.getProcessConfig(),
-    );
-
-    processInfo.setVspDebuggerInstance(instance);
-
-    const {focusedProcess} = this._service.viewModel;
-    invariant(focusedProcess != null);
-    const disposables = new UniversalDisposable();
-    disposables.add(processInfo);
-    this.onSessionEnd(focusedProcess, disposables);
   }
 
   async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
@@ -108,7 +90,7 @@ export default class RemoteControlService {
       disposables.add(disposable);
     };
 
-    this.onSessionEnd(focusedProcess, disposables);
+    this._onSessionEnd(focusedProcess, disposables);
 
     return Object.freeze({
       customRequest,

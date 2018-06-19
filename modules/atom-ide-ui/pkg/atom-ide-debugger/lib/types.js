@@ -42,7 +42,11 @@ SOFTWARE.
 
 import type {Observable} from 'rxjs';
 import * as DebugProtocol from 'vscode-debugprotocol';
-import type {IProcessConfig} from 'nuclide-debugger-common';
+import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
+
+export interface RemoteDebuggerService {
+  startVspDebugging(config: IProcessConfig): Promise<IVspInstance>;
+}
 
 export interface ITreeElement {
   getId(): string;
