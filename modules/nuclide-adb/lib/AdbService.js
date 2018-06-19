@@ -12,44 +12,14 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {
-  DeviceDescription,
-  AndroidJavaProcess,
-  Process,
-  DebugBridgeFullConfig,
-} from './types';
-import type {getDevicesOptions} from './common/DebugBridge';
+import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
-import {Adb} from './bridges/Adb';
+import {Adb} from './Adb';
 import {Processes} from './common/Processes';
-import {Devices} from './common/Devices';
 import {runCommand} from 'nuclide-commons/process';
-
-const ADB = 'adb';
-
-export async function registerAdbPath(
-  id: string,
-  path: NuclideUri,
-  priority: number = -1,
-): Promise<void> {
-  getStore(ADB).registerPath(id, {path, priority});
-}
-
-export async function getFullConfig(): Promise<DebugBridgeFullConfig> {
-  return getStore(ADB).getFullConfig();
-}
-
-export async function registerCustomPath(path: ?string): Promise<void> {
-  getStore(ADB).registerCustomPath(path);
-}
-
-export async function getAPIVersion(serial: string): Promise<string> {
-  return new Adb(serial).getAPIVersion().toPromise();
-}
 
 export function getDeviceInfo(
   serial: string,
@@ -72,10 +42,10 @@ export async function stopProcess(
   return new Adb(serial).stopProcess(packageName, pid);
 }
 
-export function getDeviceList(
-  options?: getDevicesOptions,
-): ConnectableObservable<Array<DeviceDescription>> {
-  return new Devices(Adb).getDeviceList(options).publish();
+export function getDeviceList(): ConnectableObservable<
+  Array<DeviceDescription>,
+> {
+  return Adb.getDeviceList().publish();
 }
 
 export async function getPidFromPackageName(
@@ -188,22 +158,14 @@ export async function removeFile(
   return new Adb(serial).removeFile(path);
 }
 
+export async function getAPIVersion(serial: string): Promise<string> {
+  return new Adb(serial).getAPIVersion().toPromise();
+}
+
 export async function getInstalledPackages(
   serial: string,
 ): Promise<Array<string>> {
   return new Adb(serial).getInstalledPackages();
-}
-
-export function addAdbPort(port: number): void {
-  getStore('adb').addPort(port);
-}
-
-export function removeAdbPort(port: number): void {
-  getStore('adb').removePort(port);
-}
-
-export function getAdbPorts(): Promise<Array<number>> {
-  return Promise.resolve(getStore('adb').getPorts());
 }
 
 export async function killServer(): Promise<void> {

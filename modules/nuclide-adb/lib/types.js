@@ -11,7 +11,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Observable, ConnectableObservable} from 'rxjs';
+import type {Observable} from 'rxjs';
 
 export type SimpleProcess = {
   user: string,
@@ -21,13 +21,8 @@ export type SimpleProcess = {
 
 export type AndroidJavaProcess = SimpleProcess;
 
-export type DebugBridgeType = 'adb' | 'sdb';
-
-export type DeviceId = {name: string, port: number};
-
 export type DeviceDescription = {|
   name: string,
-  port: number,
   architecture: string,
   apiVersion: string,
   model: string,
@@ -40,14 +35,6 @@ export type Process = {
   cpuUsage: ?number,
   memUsage: ?number,
   isJava: boolean,
-};
-
-export type DebugBridgeConfig = {path: string, ports: Array<number>};
-
-export type DebugBridgeFullConfig = {
-  active: ?string,
-  all: Array<string>,
-  ports: Array<number>,
 };
 
 //
@@ -81,15 +68,4 @@ export type SshTunnelService = {
   openTunnels(tunnels: Array<Tunnel>): Observable<'ready'>,
   getOpenTunnels(): Set<ResolvedTunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
-};
-
-export type DBType = 'adb' | 'sdb';
-
-export type DBPlatform = {
-  name: string,
-  type: DBType,
-  command: string,
-  getService: NuclideUri => {
-    getDeviceList: () => ConnectableObservable<Array<DeviceDescription>>,
-  },
 };

@@ -10,7 +10,4 @@
  * @format
  */
 
-export type {DBPlatform} from './types';
-
-export {DevicePoller} from './DevicePoller';
 export {getAdbServiceByNuclideUri} from './utils';

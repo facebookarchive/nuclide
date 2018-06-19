@@ -59,8 +59,8 @@ export function startTunnelingAdb(
             : openTunnelsManually(serviceUri),
       )
       .catch(e => {
-        getLogger('nuclide-adb-sdb-base').error(e);
-        track('nuclide-adb-sdb-base:tunneling:error', {host: uri, error: e});
+        getLogger('nuclide-adb').error(e);
+        track('nuclide-adb:tunneling:error', {host: uri, error: e});
         return Observable.empty();
       })
       .publishReplay(1);
