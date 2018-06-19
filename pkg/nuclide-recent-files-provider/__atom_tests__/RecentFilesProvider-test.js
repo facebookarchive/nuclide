@@ -60,12 +60,14 @@ describe('RecentFilesProvider', () => {
     // $FlowIssue
     provider = {...RecentFilesProvider};
     setRecentFilesService(FakeRecentFilesService);
-    spyOn(atom.project, 'getPaths').andCallFake(fakeGetProjectPaths);
+    jest
+      .spyOn(atom.project, 'getPaths')
+      .mockImplementation(fakeGetProjectPaths);
   });
 
   describe('getRecentFiles', () => {
-    it('returns all recently opened files for currently mounted project directories', () => {
-      waitsForPromise(async () => {
+    it('returns all recently opened files for currently mounted project directories', async () => {
+      await (async () => {
         invariant(provider != null);
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         invariant(provider.providerType === 'GLOBAL');
@@ -73,11 +75,11 @@ describe('RecentFilesProvider', () => {
         invariant(provider.providerType === 'GLOBAL');
         fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
         expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
-      });
+      })();
     });
 
-    it('does not return files for project directories that are not currently mounted', () => {
-      waitsForPromise(async () => {
+    it('does not return files for project directories that are not currently mounted', async () => {
+      await (async () => {
         invariant(provider != null);
         fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
         invariant(provider.providerType === 'GLOBAL');
@@ -86,11 +88,11 @@ describe('RecentFilesProvider', () => {
         fakeGetProjectPathsImpl = () => [];
         invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('', [])).toEqual([]);
-      });
+      })();
     });
 
-    it('does not return files that are currently open in Atom', () => {
-      waitsForPromise(async () => {
+    it('does not return files that are currently open in Atom', async () => {
+      await (async () => {
         invariant(provider != null);
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         const textEditor = await atom.workspace.open(FILE_PATHS[0]);
@@ -102,11 +104,11 @@ describe('RecentFilesProvider', () => {
         textEditor.destroy();
         invariant(provider.providerType === 'GLOBAL');
         expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
-      });
+      })();
     });
 
-    it('filters results according to the query string', () => {
-      waitsForPromise(async () => {
+    it('filters results according to the query string', async () => {
+      await (async () => {
         invariant(provider != null);
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
         // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
@@ -126,7 +128,7 @@ describe('RecentFilesProvider', () => {
         expect(results[1].timestamp).toEqual(FAKE_RECENT_FILES[2].timestamp);
         expect(results[1].matchIndexes).toBeDefined();
         expect(results[1].score).toBeGreaterThan(0);
-      });
+      })();
     });
   });
 
