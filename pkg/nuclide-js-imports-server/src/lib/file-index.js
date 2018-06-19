@@ -146,7 +146,12 @@ function watchmanListFiles(
   return client
     .listFiles(root, getWatchmanExpression(root, pattern))
     .then((files: Array<any>) =>
-      files.map(data => ({name: data.name, sha1: data['content.sha1hex']})),
+      files.map(data => {
+        // content.sha1hex may be an object with an "error" property
+        // if getting the sha1 of the file contents fails.
+        const sha1: mixed = data['content.sha1hex'];
+        return {name: data.name, sha1: typeof sha1 === 'string' ? sha1 : null};
+      }),
     );
 }
 
