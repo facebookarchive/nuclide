@@ -16,10 +16,9 @@ import {Directory} from 'atom';
 
 describe('current-working-directory', () => {
   beforeEach(() => {
-    spyOn(atom.project, 'getDirectories').andReturn([
-      new Directory('/a/b/c'),
-      new Directory('/d/e/f'),
-    ]);
+    jest
+      .spyOn(atom.project, 'getDirectories')
+      .mockReturnValue([new Directory('/a/b/c'), new Directory('/d/e/f')]);
   });
 
   describe('Activation', () => {
@@ -67,7 +66,9 @@ describe('current-working-directory', () => {
 describe('CwdApi event handling', () => {
   it('falls back to an existing project when you remove one', () => {
     let projects = [new Directory('/a/b/c'), new Directory('/d/e/f')];
-    spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
+    jest
+      .spyOn(atom.project, 'getDirectories')
+      .mockImplementation(() => projects);
 
     const api = new CwdApi('/d/e/f');
     let cwd = api.getCwd();
@@ -84,18 +85,22 @@ describe('CwdApi event handling', () => {
 
   it('uses the initial directory once it becomes valid', () => {
     let projects = [];
-    spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
+    jest
+      .spyOn(atom.project, 'getDirectories')
+      .mockImplementation(() => projects);
 
     let callback;
     const onDidChangePaths = cb => {
       callback = cb;
     };
-    spyOn(atom.project, 'onDidChangePaths').andCallFake(onDidChangePaths);
+    jest
+      .spyOn(atom.project, 'onDidChangePaths')
+      .mockImplementation(onDidChangePaths);
 
     // The initial path does not exist, so observeCwd is initially undefined.
     const api = new CwdApi('/a/b/c');
 
-    const spy = jasmine.createSpy('cwdChanged');
+    const spy = jest.fn();
     api.observeCwd(spy);
     expect(spy).toHaveBeenCalledWith(null);
 
@@ -106,8 +111,8 @@ describe('CwdApi event handling', () => {
     invariant(callback);
     callback();
 
-    expect(spy.callCount).toBe(2);
-    const arg = spy.calls[1].args[0];
+    expect(spy.mock.calls.length).toBe(2);
+    const arg = spy.mock.calls[1][0];
     expect(arg).not.toBeNull();
     expect((arg: any)).toBe('/a/b/c');
   });
