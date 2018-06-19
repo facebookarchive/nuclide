@@ -36,7 +36,6 @@ import {
 } from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
-import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import * as Selectors from './FileTreeSelectors';
@@ -117,13 +116,7 @@ class Activation {
     if (initialState != null) {
       this._store.loadData(initialState);
     }
-    this._disposables.add(
-      registerCommands(
-        this._store,
-        this._actions,
-        new FileSystemActions(this._store),
-      ),
-    );
+    this._disposables.add(registerCommands(this._store, this._actions));
     this._actions.updateRootDirectories();
     this._contextMenu = new FileTreeContextMenu(this._store);
     this._restored = state.restored === true;

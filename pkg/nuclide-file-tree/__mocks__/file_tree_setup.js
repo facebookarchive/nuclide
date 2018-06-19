@@ -13,7 +13,6 @@
 
 import path from 'path';
 import invariant from 'assert';
-import FileSystemActions from '../lib/FileSystemActions';
 import FileTreeActions from '../lib/FileTreeActions';
 import registerCommands from '../lib/registerCommands';
 import FileTreeStore from '../lib/FileTreeStore';
@@ -29,6 +28,5 @@ export const setup = (store: FileTreeStore, actions: FileTreeActions) => {
   document.body.appendChild(testContainer);
   testContainer.appendChild(workspaceElement);
   // console.log(document.body.innerHTML);
-  const fileSystemActions = new FileSystemActions(store);
-  registerCommands(store, actions, fileSystemActions);
+  registerCommands(store, actions);
 };

@@ -10,7 +10,6 @@
  */
 
 import {COMMANDS_SELECTOR} from './FileTreeConstants';
-import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
 import FileTreeStore from './FileTreeStore';
 import * as Selectors from './FileTreeSelectors';
@@ -30,7 +29,6 @@ const VALID_FILTER_CHARS =
 export default function registerCommands(
   store: FileTreeStore,
   actions: FileTreeActions,
-  fileSystemActions: FileSystemActions,
 ): IDisposable {
   const disposables = new UniversalDisposable();
 
@@ -47,7 +45,7 @@ export default function registerCommands(
         actions.collapseAll();
       },
       'tree-view:add-file-relative': () => {
-        fileSystemActions.openAddFileDialogRelative(filePath => {
+        actions.openAddFileDialogRelative(filePath => {
           actions.openAndRevealFilePath(filePath);
         });
       },
@@ -96,12 +94,12 @@ export default function registerCommands(
         actions.rangeSelectDown();
       },
       'tree-view:add-file': () => {
-        fileSystemActions.openAddFileDialog(filePath => {
+        actions.openAddFileDialog(filePath => {
           actions.openAndRevealFilePath(filePath);
         });
       },
       'tree-view:add-folder': () => {
-        fileSystemActions.openAddFolderDialog(filePath => {
+        actions.openAddFolderDialog(filePath => {
           actions.openAndRevealFilePath(filePath);
         });
       },
@@ -142,10 +140,10 @@ export default function registerCommands(
         actions.removeRootFolderSelection();
       },
       'tree-view:rename-selection': () => {
-        fileSystemActions.openRenameDialog();
+        actions.openRenameDialog();
       },
       'tree-view:duplicate-selection': () => {
-        fileSystemActions.openDuplicateDialog(filePaths => {
+        actions.openDuplicateDialog(filePaths => {
           actions.openAndRevealFilePaths(filePaths);
         });
       },
@@ -153,7 +151,7 @@ export default function registerCommands(
         actions.copyFilenamesWithDir();
       },
       'tree-view:paste-selection': () => {
-        fileSystemActions.openPasteDialog();
+        actions.openPasteDialog();
       },
       'tree-view:search-in-directory': (event: Event) => {
         searchInDirectory(event, store);
