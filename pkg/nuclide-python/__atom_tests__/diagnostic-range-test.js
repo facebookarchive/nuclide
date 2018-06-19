@@ -19,15 +19,13 @@ import {getDiagnosticRange} from '../lib/diagnostic-range';
 describe('Diagnostic range', () => {
   const fixturePath = nuclideUri.join(
     __dirname,
-    'fixtures',
+    '../__mocks__/fixtures',
     'bad_syntax_land.py',
   );
   let editor: ?atom$TextEditor = null;
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
-      editor = await atom.workspace.open(fixturePath);
-    });
+  beforeEach(async () => {
+    editor = await atom.workspace.open(fixturePath);
   });
 
   function checkRange(diagnostic: PythonDiagnostic, expectedRange: atom$Range) {
