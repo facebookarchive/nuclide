@@ -18,18 +18,28 @@
 
 const child_process = require('child_process');
 const vm = require('vm');
+const waitsFor = require('../../../jest/waits_for').default;
+const path = require('path');
+const NODE_BIN = path.resolve(
+  __dirname,
+  '../../../../third-party/node/bin/node',
+);
 
 describe('bin-transpile', () => {
-  it('transpiles one file', () => {
-    const ps = child_process.spawn(
+  it('transpiles one file', async () => {
+    const ps = child_process.spawn(NODE_BIN, [
       require.resolve('../bin/transpile.js'),
-      [require.resolve('./fixtures/modern-syntax')]
-    );
+      require.resolve('../__mocks__/fixtures/modern-syntax'),
+    ]);
 
     let out = '';
     let err = '';
-    ps.stdout.on('data', buf => { out += buf; });
-    ps.stderr.on('data', buf => { err += buf; });
+    ps.stdout.on('data', buf => {
+      out += buf;
+    });
+    ps.stderr.on('data', buf => {
+      err += buf;
+    });
 
     let ran = false;
     ps.on('close', () => {
@@ -42,6 +52,6 @@ describe('bin-transpile', () => {
       ran = true;
     });
 
-    waitsFor(() => ran);
+    await waitsFor(() => ran);
   });
 });

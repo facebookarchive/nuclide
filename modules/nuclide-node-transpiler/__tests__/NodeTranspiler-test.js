@@ -94,7 +94,7 @@ describe('NodeTranspiler', () => {
 
   describe('NodeTranspiler#transform', () => {
     it('works on buffers', () => {
-      const filename = require.resolve('./fixtures/modern-syntax');
+      const filename = require.resolve('../__mocks__/fixtures/modern-syntax');
       const nodeTranspiler = new NodeTranspiler();
 
       const bufferSrc = fs.readFileSync(filename);
@@ -109,7 +109,7 @@ describe('NodeTranspiler', () => {
     });
 
     it('works on strings', () => {
-      const filename = require.resolve('./fixtures/modern-syntax');
+      const filename = require.resolve('../__mocks__/fixtures/modern-syntax');
       const nodeTranspiler = new NodeTranspiler();
 
       const stringSrc = fs.readFileSync(filename, 'utf8');
@@ -126,7 +126,7 @@ describe('NodeTranspiler', () => {
 
   describe('NodeTranspiler#_getCacheFilename', () => {
     it('works', () => {
-      const filename = require.resolve('./fixtures/modern-syntax');
+      const filename = require.resolve('../__mocks__/fixtures/modern-syntax');
       const nodeTranspiler = new NodeTranspiler();
 
       const bufferSrc = fs.readFileSync(filename);
@@ -143,7 +143,7 @@ describe('NodeTranspiler', () => {
 
   describe('NodeTranspiler#transformWithCache', () => {
     it('reads from the cache', () => {
-      const filename = require.resolve('./fixtures/modern-syntax');
+      const filename = require.resolve('../__mocks__/fixtures/modern-syntax');
       const nodeTranspiler = new NodeTranspiler();
 
       nodeTranspiler._getCacheFilename = src => {

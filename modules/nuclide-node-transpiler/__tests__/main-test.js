@@ -23,7 +23,7 @@ describe('require-hook', () => {
     // This test runs in a new process because it monkey-patches `require` and
     // we don't want to pollute the test environment.
     const ret = child_process.spawnSync(process.execPath, [
-      require.resolve('./fixtures/require-hook-test'),
+      require.resolve('../__mocks__/fixtures/require-hook-test'),
     ]);
     expect(ret.status).toBe(0);
     expect(String(ret.stdout).trim()).toBe('OK');
