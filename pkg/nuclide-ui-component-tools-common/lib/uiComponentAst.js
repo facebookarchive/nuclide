@@ -14,6 +14,7 @@
 import {File, Node, parse} from 'babylon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {babylonOptions} from '../../nuclide-js-imports-server/src/lib/AutoImportsManager';
+import {removePrefix} from './utils';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ComponentProp} from './types';
 
@@ -77,13 +78,6 @@ function getTypeAnnotation(node: Node): string {
 
   // Primitive types such as 'string' and 'number' won't have an id.
   return node.value.type;
-}
-
-function removePrefix(prefix: string, input: string) {
-  if (input.indexOf(prefix) === 0) {
-    return input.substr(prefix.length);
-  }
-  return input;
 }
 
 export function formatLeadingComment(comment: string): string {

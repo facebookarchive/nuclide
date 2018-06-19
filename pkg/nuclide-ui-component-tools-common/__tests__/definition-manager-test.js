@@ -10,7 +10,10 @@
  */
 
 import type {ComponentDefinition} from '../lib/types';
-import {getSnippetFromDefinition} from '../lib/definitionManager';
+import {
+  getSnippetFromDefinition,
+  getDocumentationObject,
+} from '../lib/definitionManager';
 
 describe('getSnippetFromDefinition', () => {
   it('should render a snippet without props', () => {
@@ -108,5 +111,74 @@ $4/>',
     expect(getSnippetFromDefinition(definition)).toBe(`FDSTest
   value={\$1}
 \$2/>`);
+  });
+});
+
+describe('getDocumentationObject', () => {
+  it('should return blank object if no leading comment', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment: null,
+      }),
+    ).toEqual({});
+  });
+
+  it('should return blank object if no @explorer-desc directive', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment: 'a'.repeat(240),
+      }),
+    ).toEqual({});
+  });
+
+  it('should return blank object if it includes @no-completion-description directive', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment: 'a'.repeat(240) + ' @no-completion-description',
+      }),
+    ).toEqual({});
+  });
+
+  it('should return documentation with simple string', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment:
+          '@explorer-desc\n\nThis is an adequate description.\n\nDo not include me!',
+      }),
+    ).toEqual({documentation: 'This is an adequate description.'});
+  });
+
+  it('should return blank object if comment is too short', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment: '@explorer-desc\n\nhello',
+      }),
+    ).toEqual({});
+  });
+
+  it('should return truncated documentation with long', () => {
+    expect(
+      getDocumentationObject({
+        name: 'FDS',
+        requiredProps: [],
+        defaultProps: [],
+        leadingComment: '@explorer-desc\n\n' + 'a'.repeat(241),
+      }),
+    ).toEqual({documentation: 'a'.repeat(240) + '…'});
   });
 });

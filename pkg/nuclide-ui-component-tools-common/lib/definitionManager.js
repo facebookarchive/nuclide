@@ -16,12 +16,15 @@ import type {
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {ComponentDefinition} from './types';
 
+import invariant from 'assert';
 import {Matcher} from '../../nuclide-fuzzy-native';
 import {lspPositionToAtomPoint} from '../../nuclide-lsp-implementation-common/lsp-utils';
 import {
   CompletionItemKind,
   InsertTextFormat,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+import {removePrefix} from './utils';
+import {LEADING_COMMENT_LIMIT} from './constants';
 
 export function getSnippetFromDefinition(
   definition: ComponentDefinition,
@@ -82,6 +85,36 @@ function getComponentNameFromPositionParams(
   return word;
 }
 
+export function getDocumentationObject(
+  definition: ComponentDefinition,
+): {documentation?: string} {
+  if (
+    definition.leadingComment == null ||
+    !definition.leadingComment.startsWith('@explorer-desc') ||
+    definition.leadingComment.includes('@no-completion-description')
+  ) {
+    return {};
+  }
+
+  invariant(definition.leadingComment != null);
+  let candidate = removePrefix('@explorer-desc', definition.leadingComment)
+    .split('\n')
+    .find(l => l.length > 0);
+  if (candidate == null) {
+    return {};
+  } else {
+    candidate = candidate.trim();
+  }
+  if (candidate.length < 20) {
+    // This is probably too short and not a real component description. Exclude
+    // it.
+    return {};
+  } else if (candidate.length < LEADING_COMMENT_LIMIT) {
+    return {documentation: candidate};
+  }
+  return {documentation: candidate.substr(0, LEADING_COMMENT_LIMIT) + '…'};
+}
+
 export default class DefinitionManager {
   definitionForComponentName: Map<string, ComponentDefinition>;
   matcher: Matcher;
@@ -119,6 +152,7 @@ export default class DefinitionManager {
           insertTextFormat: InsertTextFormat.Snippet,
           kind: CompletionItemKind.Snippet,
           label: definition.name,
+          ...getDocumentationObject(definition),
         };
       });
   }
