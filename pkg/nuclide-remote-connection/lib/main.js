@@ -178,6 +178,12 @@ export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
   return nullthrows(getServiceByNuclideUri('InfoService', uri));
 }
 
+export function getInfoServiceByConnection(
+  connection: ?ServerConnection,
+): InfoService {
+  return getServiceByConnection('InfoService', connection);
+}
+
 export function getMetroServiceByNuclideUri(uri: NuclideUri): MetroService {
   return nullthrows(getServiceByNuclideUri('MetroService', uri));
 }

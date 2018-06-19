@@ -25,6 +25,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import {observeRawStream} from 'nuclide-commons/stream';
 import {Observable} from 'rxjs';
+import {getNuclideRealDir} from '../../../commons-node/system-info';
 import {ROOT_FS} from '../../../nuclide-fs';
 
 //------------------------------------------------------------------------------
@@ -378,4 +379,8 @@ export async function getFreeSpace(path: NuclideUri): Promise<?number> {
 // Wrapper around fsPromise.tempdir()
 export async function tempdir(prefix: string = ''): Promise<string> {
   return fsPromise.tempdir(prefix);
+}
+
+export async function getNuclideDir(): Promise<NuclideUri> {
+  return getNuclideRealDir();
 }

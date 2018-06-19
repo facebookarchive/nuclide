@@ -19,6 +19,10 @@ export function getServerVersion(): Promise<string> {
   return Promise.resolve(getVersion());
 }
 
+export async function getServerPlatform(): Promise<string> {
+  return process.platform;
+}
+
 // Mark this as async so the client can wait for an acknowledgement.
 // However, we can't close the connection right away, as otherwise the response never gets sent!
 // Add a small delay to allow the return message to go through.
