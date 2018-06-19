@@ -12,16 +12,21 @@
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
+import PulseButtonWithTooltip from 'nuclide-commons-ui/PulseButtonWithTooltip';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 import os from 'os';
 import nullthrows from 'nullthrows';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import AsyncStorage from 'idb-keyval';
 
+import {Observable} from 'rxjs';
 import {setRpcService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
@@ -29,6 +34,8 @@ import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {TerminalApi, TerminalInfo, TerminalInstance} from './types';
+
+const NUX_SEEN_KEY = 'atom_ide_terminal_nux_seen';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -98,7 +105,7 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-terminal');
-    toolBar.addButton(
+    const buttonView = toolBar.addButton(
       makeToolbarButtonSpec({
         icon: 'terminal',
         callback: 'atom-ide-terminal:new-terminal',
@@ -106,9 +113,39 @@ class Activation {
         priority: 700,
       }),
     );
-    const disposable = new UniversalDisposable(() => {
-      toolBar.removeItems();
-    });
+
+    const disposable = new UniversalDisposable(
+      () => {
+        toolBar.removeItems();
+      },
+      Observable.defer(() => AsyncStorage.get(NUX_SEEN_KEY))
+        .filter(seen => !seen)
+        .switchMap(() =>
+          Observable.create(() => {
+            const rect = buttonView.element.getBoundingClientRect();
+            const nuxRoot = document.createElement('div');
+            nuxRoot.style.position = 'absolute';
+            // attach a pulse button, offset so not to obscure the icon
+            nuxRoot.style.top = rect.top + 15 + 'px';
+            nuxRoot.style.left = rect.left + 18 + 'px';
+            ReactDOM.render(
+              <PulseButtonWithTooltip
+                ariaLabel="Try the Terminal"
+                tooltipText="There's now a new built-in terminal. Click here to launch one!"
+                onDismiss={() => AsyncStorage.set(NUX_SEEN_KEY, true)}
+              />,
+              nuxRoot,
+            );
+            nullthrows(document.body).appendChild(nuxRoot);
+
+            return () => {
+              ReactDOM.unmountComponentAtNode(nuxRoot);
+              nuxRoot.remove();
+            };
+          }),
+        )
+        .subscribe(),
+    );
     this._subscriptions.add(disposable);
     return disposable;
   }

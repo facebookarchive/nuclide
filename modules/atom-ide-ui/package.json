@@ -20,6 +20,7 @@
     "decoders": "1.6.1",
     "dompurify": "1.0.3",
     "fuzzaldrin-plus": "0.4.1",
+    "idb-keyval": "2.3.0",
     "idx": "1.2.0",
     "immutable": "4.0.0-rc.9",
     "log4js": "1.1.1",
