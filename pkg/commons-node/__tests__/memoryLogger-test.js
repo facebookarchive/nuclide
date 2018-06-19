@@ -9,6 +9,7 @@
  * @format
  */
 
+jest.unmock('log4js');
 import log4js from 'log4js';
 import {MemoryLogger} from '../memoryLogger';
 
@@ -19,10 +20,10 @@ describe('memoryLogger', () => {
   underlyingLogger.setLevel('OFF');
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     time = 0;
     const time0 = new Date(0).getTimezoneOffset() * 60 * 1000; // midnight
-    jasmine.unspy(Date, 'now');
-    spyOn(Date, 'now').andCallFake(() => time0 + time);
+    jest.spyOn(Date, 'now').mockImplementation(() => time0 + time);
     logger = new MemoryLogger(underlyingLogger, 5 * 60 * 1000);
   });
 

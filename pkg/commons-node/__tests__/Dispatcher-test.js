@@ -22,8 +22,8 @@ describe('Dispatcher', () => {
 
   beforeEach(() => {
     dispatcher = new Dispatcher();
-    callbackA = jasmine.createSpy('callbackA');
-    callbackB = jasmine.createSpy('callbackB');
+    callbackA = jest.fn();
+    callbackB = jest.fn();
   });
 
   it('should execute all subscriber callbacks', () => {
@@ -33,19 +33,19 @@ describe('Dispatcher', () => {
     const payload = {};
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(1);
-    expect(callbackA.calls[0].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(1);
+    expect(callbackA.mock.calls[0][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(1);
-    expect(callbackB.calls[0].args[0]).toBe(payload);
+    expect(callbackB.mock.calls.length).toBe(1);
+    expect(callbackB.mock.calls[0][0]).toBe(payload);
 
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(2);
-    expect(callbackA.calls[1].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(2);
+    expect(callbackA.mock.calls[1][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(2);
-    expect(callbackB.calls[1].args[0]).toBe(payload);
+    expect(callbackB.mock.calls.length).toBe(2);
+    expect(callbackB.mock.calls[1][0]).toBe(payload);
   });
 
   it('should wait for callbacks registered earlier', () => {
@@ -53,26 +53,26 @@ describe('Dispatcher', () => {
 
     dispatcher.register(payload => {
       dispatcher.waitFor([tokenA]);
-      expect(callbackA.calls.length).toBe(1);
-      expect(callbackA.calls[0].args[0]).toBe(payload);
+      expect(callbackA.mock.calls.length).toBe(1);
+      expect(callbackA.mock.calls[0][0]).toBe(payload);
       callbackB(payload);
     });
 
     const payload = {};
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(1);
-    expect(callbackA.calls[0].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(1);
+    expect(callbackA.mock.calls[0][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(1);
-    expect(callbackB.calls[0].args[0]).toBe(payload);
+    expect(callbackB.mock.calls.length).toBe(1);
+    expect(callbackB.mock.calls[0][0]).toBe(payload);
   });
 
   it('should wait for callbacks registered later', () => {
     dispatcher.register(payload => {
       dispatcher.waitFor([tokenB]);
-      expect(callbackB.calls.length).toBe(1);
-      expect(callbackB.calls[0].args[0]).toBe(payload);
+      expect(callbackB.mock.calls.length).toBe(1);
+      expect(callbackB.mock.calls[0][0]).toBe(payload);
       callbackA(payload);
     });
 
@@ -81,11 +81,11 @@ describe('Dispatcher', () => {
     const payload = {};
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(1);
-    expect(callbackA.calls[0].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(1);
+    expect(callbackA.mock.calls[0][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(1);
-    expect(callbackB.calls[0].args[0]).toBe(payload);
+    expect(callbackB.mock.calls.length).toBe(1);
+    expect(callbackB.mock.calls[0][0]).toBe(payload);
   });
 
   it('should throw if dispatch() while dispatching', () => {
@@ -96,14 +96,14 @@ describe('Dispatcher', () => {
 
     const payload = {};
     expect(() => dispatcher.dispatch(payload)).toThrow();
-    expect(callbackA.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(0);
   });
 
   it('should throw if waitFor() while not dispatching', () => {
     const tokenA = dispatcher.register(callbackA);
 
     expect(() => dispatcher.waitFor([tokenA])).toThrow();
-    expect(callbackA.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(0);
   });
 
   it('should throw if waitFor() with invalid token', () => {
@@ -126,7 +126,7 @@ describe('Dispatcher', () => {
 
     const payload = {};
     expect(() => dispatcher.dispatch(payload)).toThrow();
-    expect(callbackA.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(0);
   });
 
   it('should throw on multi-circular dependencies', () => {
@@ -141,8 +141,8 @@ describe('Dispatcher', () => {
     });
 
     expect(() => dispatcher.dispatch({})).toThrow();
-    expect(callbackA.calls.length).toBe(0);
-    expect(callbackB.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(0);
+    expect(callbackB.mock.calls.length).toBe(0);
   });
 
   it('should remain in a consistent state after a failed dispatch', () => {
@@ -157,12 +157,12 @@ describe('Dispatcher', () => {
     expect(() => dispatcher.dispatch({shouldThrow: true})).toThrow();
 
     // Cannot make assumptions about a failed dispatch.
-    const callbackACount = callbackA.calls.length;
+    const callbackACount = callbackA.mock.calls.length;
 
     dispatcher.dispatch({shouldThrow: false});
 
-    expect(callbackA.calls.length).toBe(callbackACount + 1);
-    expect(callbackB.calls.length).toBe(1);
+    expect(callbackA.mock.calls.length).toBe(callbackACount + 1);
+    expect(callbackB.mock.calls.length).toBe(1);
   });
 
   it('should properly unregister callbacks', () => {
@@ -173,20 +173,20 @@ describe('Dispatcher', () => {
     const payload = {};
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(1);
-    expect(callbackA.calls[0].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(1);
+    expect(callbackA.mock.calls[0][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(1);
-    expect(callbackB.calls[0].args[0]).toBe(payload);
+    expect(callbackB.mock.calls.length).toBe(1);
+    expect(callbackB.mock.calls[0][0]).toBe(payload);
 
     dispatcher.unregister(tokenB);
 
     dispatcher.dispatch(payload);
 
-    expect(callbackA.calls.length).toBe(2);
-    expect(callbackA.calls[1].args[0]).toBe(payload);
+    expect(callbackA.mock.calls.length).toBe(2);
+    expect(callbackA.mock.calls[1][0]).toBe(payload);
 
-    expect(callbackB.calls.length).toBe(1);
+    expect(callbackB.mock.calls.length).toBe(1);
   });
 
   it('should throw if register() while dispatching', () => {
@@ -197,7 +197,7 @@ describe('Dispatcher', () => {
 
     const payload = {};
     expect(() => dispatcher.dispatch(payload)).toThrow();
-    expect(callbackA.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(0);
   });
 
   it('should throw if unregister() while dispatching', () => {
@@ -209,7 +209,7 @@ describe('Dispatcher', () => {
 
     const payload = {};
     expect(() => dispatcher.dispatch(payload)).toThrow();
-    expect(callbackA.calls.length).toBe(1);
-    expect(callbackB.calls.length).toBe(0);
+    expect(callbackA.mock.calls.length).toBe(1);
+    expect(callbackB.mock.calls.length).toBe(0);
   });
 });

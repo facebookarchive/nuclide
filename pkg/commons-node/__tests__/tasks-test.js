@@ -38,7 +38,7 @@ describe('commons-node/tasks', () => {
     it('completes when the task does', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const completed = jasmine.createSpy();
+      const completed = jest.fn();
       observable.subscribe({complete: completed});
       expect(completed).not.toHaveBeenCalled();
       task._complete();
@@ -48,7 +48,7 @@ describe('commons-node/tasks', () => {
     it('errors when the task does', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const errored = jasmine.createSpy();
+      const errored = jest.fn();
       observable.subscribe({error: errored});
       expect(errored).not.toHaveBeenCalled();
       task._error(new Error());
@@ -76,7 +76,7 @@ describe('commons-node/tasks', () => {
     it('includes emitted message events', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       observable.subscribe(handler);
       task._message({text: 'hello', level: 'warning'});
       expect(handler).toHaveBeenCalledWith({
@@ -88,7 +88,7 @@ describe('commons-node/tasks', () => {
     it('includes emitted progress events', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       observable.subscribe(handler);
       task._progress(0.5);
       expect(handler).toHaveBeenCalledWith({type: 'progress', progress: 0.5});
@@ -97,7 +97,7 @@ describe('commons-node/tasks', () => {
     it('includes emitted result events', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       observable.subscribe(handler);
       task._result(42);
       expect(handler).toHaveBeenCalledWith({type: 'result', result: 42});
@@ -106,7 +106,7 @@ describe('commons-node/tasks', () => {
     it('includes emitted status events', () => {
       const task = createMockTask();
       const observable = observableFromTask(task);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       observable.subscribe(handler);
       task._status('fine and dandy');
       expect(handler).toHaveBeenCalledWith({
@@ -119,7 +119,7 @@ describe('commons-node/tasks', () => {
   describe('taskFromObservable', () => {
     it('subscribes when started', () => {
       const observable = new Subject();
-      spyOn(observable, 'subscribe').andCallThrough();
+      jest.spyOn(observable, 'subscribe');
       const task = taskFromObservable(observable);
       expect(observable.subscribe).not.toHaveBeenCalled();
       task.start();
@@ -128,9 +128,9 @@ describe('commons-node/tasks', () => {
 
     it('unsubscribes when canceled', () => {
       const sub = new Subscription();
-      spyOn(sub, 'unsubscribe');
+      jest.spyOn(sub, 'unsubscribe').mockImplementation(() => {});
       const observable = new Subject();
-      spyOn(observable, 'subscribe').andReturn(sub);
+      jest.spyOn(observable, 'subscribe').mockReturnValue(sub);
       const task = taskFromObservable(observable);
       task.start();
       expect(sub.unsubscribe).not.toHaveBeenCalled();
@@ -140,10 +140,10 @@ describe('commons-node/tasks', () => {
 
     it('calls onDidComplete callbacks when it completes', () => {
       const sub = new Subscription();
-      spyOn(sub, 'unsubscribe');
+      jest.spyOn(sub, 'unsubscribe').mockImplementation(() => {});
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const completed = jasmine.createSpy();
+      const completed = jest.fn();
       task.onDidComplete(completed);
       task.start();
       expect(completed).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('commons-node/tasks', () => {
     it('calls onDidError callbacks when it errors', () => {
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const errored = jasmine.createSpy();
+      const errored = jest.fn();
       task.onDidError(errored);
       task.start();
       expect(errored).not.toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe('commons-node/tasks', () => {
     it('calls onMessage callbacks for message events', () => {
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       invariant(task.onMessage != null);
       task.onMessage(handler);
       task.start();
@@ -180,7 +180,7 @@ describe('commons-node/tasks', () => {
     it('calls onProgress callbacks for progress events', () => {
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       invariant(task.onProgress != null);
       task.onProgress(handler);
       task.start();
@@ -192,7 +192,7 @@ describe('commons-node/tasks', () => {
     it('calls onResult callbacks for result events', () => {
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       invariant(task.onResult != null);
       task.onResult(handler);
       task.start();
@@ -204,7 +204,7 @@ describe('commons-node/tasks', () => {
     it('calls onStatusChange callbacks for status events', () => {
       const observable = new Subject();
       const task = taskFromObservable(observable);
-      const handler = jasmine.createSpy();
+      const handler = jest.fn();
       invariant(task.onStatusChange != null);
       task.onStatusChange(handler);
       task.start();
@@ -257,7 +257,7 @@ function createMockTask() {
       emitter.emit('status', status);
     },
   };
-  spyOn(task, 'start');
-  spyOn(task, 'cancel');
+  jest.spyOn(task, 'start').mockImplementation(() => {});
+  jest.spyOn(task, 'cancel').mockImplementation(() => {});
   return task;
 }

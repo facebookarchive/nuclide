@@ -20,8 +20,8 @@ describe('DiskCache', () => {
     tempFile = temp.openSync();
   });
 
-  it('is able to save and load values from disk', () => {
-    waitsForPromise(async () => {
+  it('is able to save and load values from disk', async () => {
+    await (async () => {
       const cache: DiskCache<number, number> = new DiskCache(
         tempFile.path,
         key => `k${key}`,
@@ -42,16 +42,16 @@ describe('DiskCache', () => {
       expect(restore.getByteSize()).toBe(15);
       expect(restore.get(1)).toBe(2);
       expect(restore.get(3)).toBe(4);
-    });
+    })();
   });
 
-  it('does not leak Object methods', () => {
-    waitsForPromise(async () => {
+  it('does not leak Object methods', async () => {
+    await (async () => {
       const cache = new DiskCache(tempFile.path, x => x);
       expect(cache.get('hasOwnProperty')).toBe(undefined);
       expect(await cache.save()).toBe(true);
       expect(await cache.load()).toBe(true);
       expect(cache.get('hasOwnProperty')).toBe(undefined);
-    });
+    })();
   });
 });

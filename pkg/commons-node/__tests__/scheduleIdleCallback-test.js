@@ -18,6 +18,7 @@ describe('scheduleIdleCallback using node API', () => {
   let oldRequestIdleCallback;
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     oldRequestIdleCallback = global.requestIdleCallback;
     delete global.requestIdleCallback;
 
@@ -68,6 +69,7 @@ describe('scheduleIdleCallback using browser API', () => {
   let scheduleIdleCallback;
 
   beforeEach(() => {
+    jest.resetModules();
     oldRequestIdleCallback = global.requestIdleCallback;
     requestIdleCallbackCalls = [];
     let count = 1;
@@ -89,7 +91,6 @@ describe('scheduleIdleCallback using browser API', () => {
   afterEach(() => {
     global.cancelIdleCallback = oldCancelIdleCallback;
     global.requestIdleCallback = oldRequestIdleCallback;
-    delete require.cache[require.resolve('../scheduleIdleCallback')];
   });
 
   it('works', () => {
@@ -121,9 +122,8 @@ describe('scheduleIdleCallback using browser API', () => {
 
   it('expires after a timeout', () => {
     let curDate = 0;
-    jasmine.unspy(Date, 'now');
-    spyOn(Date, 'now').andCallFake(() => curDate);
-    const fn = jasmine.createSpy('callback');
+    jest.spyOn(Date, 'now').mockImplementation(() => curDate);
+    const fn = jest.fn();
     const disposable = scheduleIdleCallback(fn, {
       afterRemainingTime: 100,
       timeout: 100,

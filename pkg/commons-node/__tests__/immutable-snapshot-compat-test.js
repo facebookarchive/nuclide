@@ -20,7 +20,7 @@ const ITER = 1000;
 describe('Benchmark', () => {
   it('checks List performance', () => {
     const LIST_SIZE = 1000;
-    console.log(`Benchmark: List.push * ${LIST_SIZE} * ${ITER}`);
+    // console.log(`Benchmark: List.push * ${LIST_SIZE} * ${ITER}`);
 
     let startTime = performanceNow();
     for (let i = 0; i < ITER; i++) {
@@ -29,7 +29,7 @@ describe('Benchmark', () => {
         list = list.push(j);
       }
     }
-    console.log('Immutable.List:', performanceNow() - startTime);
+    // console.log('Immutable.List:', performanceNow() - startTime);
 
     startTime = performanceNow();
     for (let i = 0; i < ITER; i++) {
@@ -38,7 +38,7 @@ describe('Benchmark', () => {
         list = list.push(j);
       }
     }
-    console.log('ImmutableSnapshot.List:', performanceNow() - startTime);
+    // console.log('ImmutableSnapshot.List:', performanceNow() - startTime);
 
     // Snapshot testList so mutations start becoming tracked.
     const testList = List([0]);
@@ -52,10 +52,10 @@ describe('Benchmark', () => {
         list = list.push(j);
       }
     }
-    console.log(
-      'ImmutableSnapshot.List (with deltas):',
-      performanceNow() - startTime,
-    );
+    // console.log(
+    //   'ImmutableSnapshot.List (with deltas):',
+    //   performanceNow() - startTime,
+    // );
   });
 });
 
@@ -1027,9 +1027,9 @@ describe('compatibility with Immutable.Map', () => {
 
   it('iterates values', () => {
     const m = Map({a: 'A', b: 'B', c: 'C'});
-    const iterator = jasmine.createSpy();
+    const iterator = jest.fn();
     m.forEach(iterator);
-    expect(iterator.calls.map(x => x.args)).toEqual([
+    expect(iterator.mock.calls.map(x => x)).toEqual([
       ['A', 'a', m],
       ['B', 'b', m],
       ['C', 'c', m],

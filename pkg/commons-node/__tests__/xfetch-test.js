@@ -18,7 +18,9 @@ import xfetch from '../xfetch';
 describe('xfetch', () => {
   beforeEach(() => {
     // Normally we get a stubbed version during tests.
-    spyOn(require('../system-info'), 'isRunningInTest').andReturn(false);
+    jest
+      .spyOn(require('../system-info'), 'isRunningInTest')
+      .mockReturnValue(false);
   });
 
   it('is the correct module', () => {
@@ -29,20 +31,18 @@ describe('xfetch', () => {
     }
   });
 
-  it('rejects a connection error', () => {
-    waitsForPromise(async () => {
-      let errorThrown;
-      try {
-        await xfetch('http://0.0.0.0:62222');
-      } catch (err) {
-        errorThrown = err;
-      }
-      if (typeof atom === 'undefined') {
-        expect(errorThrown).toMatch(/FetchError/);
-      } else {
-        expect(errorThrown).toMatch(/Failed to fetch/);
-      }
-    });
+  it('rejects a connection error', async () => {
+    let errorThrown;
+    try {
+      await xfetch('http://0.0.0.0:62222');
+    } catch (err) {
+      errorThrown = err;
+    }
+    if (typeof atom === 'undefined') {
+      expect(errorThrown).toMatchSnapshot('if');
+    } else {
+      expect(errorThrown).toMatchSnapshot('else');
+    }
   });
 
   describe('with a connection', () => {
@@ -71,8 +71,8 @@ describe('xfetch', () => {
       server.close();
     });
 
-    it('can do a 2xx GET request', () => {
-      waitsForPromise(async () => {
+    it('can do a 2xx GET request', async () => {
+      await (async () => {
         const realFilename = __filename;
         const response = await xfetch(`http://0.0.0.0:${port}${realFilename}`);
         expect(response.ok).toBe(true);
@@ -80,11 +80,11 @@ describe('xfetch', () => {
         const text = await response.text();
         const contents = await fsPromise.readFile(realFilename, 'utf8');
         expect(text).toEqual(contents);
-      });
+      })();
     });
 
-    it('can do a 404 GET request', () => {
-      waitsForPromise(async () => {
+    it('can do a 404 GET request', async () => {
+      await (async () => {
         // eslint-disable-next-line no-path-concat
         const nonexistingFilename = __filename + 'XXX';
         const response = await xfetch(
@@ -93,7 +93,7 @@ describe('xfetch', () => {
         expect(response.ok).toBe(false);
         expect(response.status).toBe(404);
         expect(response.statusText).toBe('Not Found');
-      });
+      })();
     });
   });
 });

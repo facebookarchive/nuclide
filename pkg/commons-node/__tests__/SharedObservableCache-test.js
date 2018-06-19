@@ -15,7 +15,7 @@ import SharedObservableCache from '../SharedObservableCache';
 describe('SharedObservableCache', () => {
   it('creates and deletes observables on demand', () => {
     const mockObservable = new Subject();
-    const mockFactory = jasmine.createSpy('factory').andReturn(mockObservable);
+    const mockFactory = jest.fn().mockReturnValue(mockObservable);
 
     const map = new SharedObservableCache(mockFactory);
     const stream1 = map.get('key');
@@ -24,16 +24,16 @@ describe('SharedObservableCache', () => {
     // The factory doesn't get called until the first subscription.
     expect(mockFactory).not.toHaveBeenCalled();
 
-    const spy1 = jasmine.createSpy('spy1');
-    const spy2 = jasmine.createSpy('spy2');
+    const spy1 = jest.fn();
+    const spy2 = jest.fn();
 
     // The first subscription triggers observable creation.
     const sub1 = stream1.subscribe(spy1);
-    expect(mockFactory.callCount).toBe(1);
+    expect(mockFactory.mock.calls.length).toBe(1);
 
     // The second subscription shouldn't.
     const sub2 = stream2.subscribe(spy2);
-    expect(mockFactory.callCount).toBe(1);
+    expect(mockFactory.mock.calls.length).toBe(1);
 
     mockObservable.next('test');
     expect(spy1).toHaveBeenCalledWith('test');
@@ -46,7 +46,7 @@ describe('SharedObservableCache', () => {
     expect(map._cache.size).toBe(0);
 
     const sub3 = stream1.subscribe(() => {});
-    expect(mockFactory.callCount).toBe(2);
+    expect(mockFactory.mock.calls.length).toBe(2);
     sub3.unsubscribe();
   });
 });
