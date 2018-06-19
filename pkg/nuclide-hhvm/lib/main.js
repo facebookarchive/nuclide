@@ -24,7 +24,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {startAttachProcessInfo} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
+import {startAttachProcessConfig} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
@@ -177,7 +177,7 @@ class Activation {
         // TODO debuggerService.addBreakpoint(navUri, lineNumber - 1);
       }
 
-      await startAttachProcessInfo(
+      await startAttachProcessConfig(
         hackRootUri,
         null /* attachPort */,
         true /* serverAttach */,

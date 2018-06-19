@@ -12,7 +12,6 @@
 import type {Column} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from 'nuclide-commons/expected';
-import type {VspProcessInfo} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
@@ -33,11 +32,11 @@ type AttachType = 'webserver' | 'script';
 type PropsType = {
   targetUri: NuclideUri,
   configIsValidChanged: (valid: boolean) => void,
-  startAttachProcessInfo: (
+  startAttachProcessConfig: (
     targetUri: NuclideUri,
     debugPort: ?number,
     serverAttach: boolean,
-  ) => Promise<VspProcessInfo>,
+  ) => Promise<void>,
 };
 
 type StateType = {
@@ -316,7 +315,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         ? this.state.pathMenuItems[this.state.selectedPathIndex].label
         : '/';
 
-    await this.props.startAttachProcessInfo(
+    await this.props.startAttachProcessConfig(
       nuclideUri.createRemoteUri(hostname, selectedPath),
       this.state.attachPort,
       this.state.attachType === 'webserver',

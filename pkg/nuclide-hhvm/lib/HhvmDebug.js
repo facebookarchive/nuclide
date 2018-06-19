@@ -16,8 +16,8 @@ import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
-  getLaunchProcessInfo,
-  startAttachProcessInfo,
+  getLaunchProcessConfig,
+  startAttachProcessConfig,
 } from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 
 export async function debug(
@@ -27,14 +27,14 @@ export async function debug(
   useTerminal: boolean,
   scriptArguments: string,
 ): Promise<void> {
-  let processInfo = null;
+  let processConfig = null;
   invariant(activeProjectRoot != null, 'Active project is null');
 
   // See if this is a custom debug mode type.
   try {
     // $FlowFB
     const helper = require('./fb-hhvm');
-    processInfo = await helper.getCustomLaunchInfo(
+    processConfig = await helper.getCustomLaunchInfo(
       debugMode,
       activeProjectRoot,
       target,
@@ -42,9 +42,9 @@ export async function debug(
     );
   } catch (e) {}
 
-  if (processInfo == null) {
+  if (processConfig == null) {
     if (debugMode === 'script') {
-      processInfo = await getLaunchProcessInfo(
+      processConfig = getLaunchProcessConfig(
         activeProjectRoot,
         target,
         scriptArguments,
@@ -53,7 +53,7 @@ export async function debug(
         '' /* cwdPath */,
       );
     } else {
-      await startAttachProcessInfo(
+      await startAttachProcessConfig(
         activeProjectRoot,
         null /* attachPort */,
         true /* serverAttach */,
@@ -62,7 +62,7 @@ export async function debug(
     }
   }
 
-  invariant(processInfo != null);
+  invariant(processConfig != null);
   const debuggerService = await getDebuggerService();
-  await debuggerService.startDebugging(processInfo);
+  await debuggerService.startVspDebugging(processConfig);
 }

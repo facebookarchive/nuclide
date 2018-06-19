@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DebuggerConfigAction,
   ControlButtonSpecification,
+  IProcessConfig,
 } from 'nuclide-debugger-common';
 import type {
   HHVMLaunchConfig,
@@ -26,7 +27,6 @@ import {shellParse} from 'nuclide-commons/string';
 import {
   DebuggerLaunchAttachProvider,
   VsAdapterTypes,
-  VspProcessInfo,
 } from 'nuclide-debugger-common';
 import * as React from 'react';
 import {LaunchUiComponent} from './HhvmLaunchUiComponent';
@@ -38,19 +38,6 @@ type PhpDebuggerSessionConfig = {
   hhvmRuntimeArgs: string,
   hhvmRuntimePath: string,
   hhvmServerAttachPort: number,
-};
-
-const CUSTOM_CPABILITIES = {
-  completionsRequest: true,
-  conditionalBreakpoints: true,
-  continueToLocation: true,
-  setVariable: true,
-  threads: true,
-};
-
-const CUSTOM_ATTACH_PROPERTIES = {
-  customControlButtons: getCustomControlButtons(),
-  threadsComponentTitle: 'Requests',
 };
 
 function getCustomControlButtons(): Array<ControlButtonSpecification> {
@@ -102,7 +89,7 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
             <LaunchUiComponent
               targetUri={this.getTargetUri()}
               configIsValidChanged={configIsValidChanged}
-              getLaunchProcessInfo={getLaunchProcessInfo}
+              getLaunchProcessConfig={getLaunchProcessConfig}
             />
           );
         } else if (action === 'attach') {
@@ -110,7 +97,7 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
             <AttachUiComponent
               targetUri={this.getTargetUri()}
               configIsValidChanged={configIsValidChanged}
-              startAttachProcessInfo={startAttachProcessInfo}
+              startAttachProcessConfig={startAttachProcessConfig}
             />
           );
         } else {
@@ -172,14 +159,14 @@ function _getHHVMLaunchConfig(
   return config;
 }
 
-export async function getLaunchProcessInfo(
+export function getLaunchProcessConfig(
   targetUri: NuclideUri,
   scriptPath: string,
   scriptArgs: string,
   scriptWrapperCommand: ?string,
   runInTerminal: boolean,
   cwdPath: string,
-): Promise<VspProcessInfo> {
+): IProcessConfig {
   const config = _getHHVMLaunchConfig(
     targetUri,
     scriptPath,
@@ -188,15 +175,12 @@ export async function getLaunchProcessInfo(
     runInTerminal,
     cwdPath,
   );
-  const adapterType = VsAdapterTypes.HHVM;
-  return new VspProcessInfo(
+  return {
     targetUri,
-    'launch',
-    adapterType,
-    null,
+    debugMode: 'launch',
+    adapterType: VsAdapterTypes.HHVM,
     config,
-    CUSTOM_CPABILITIES,
-  );
+  };
 }
 
 function _getHHVMAttachConfig(
@@ -228,47 +212,44 @@ function _getHHVMAttachConfig(
   return config;
 }
 
-export async function startAttachProcessInfo(
+export async function startAttachProcessConfig(
   targetUri: NuclideUri,
   attachPort: ?number,
   serverAttach: boolean,
-): Promise<VspProcessInfo> {
+): Promise<void> {
   const config = _getHHVMAttachConfig(targetUri, attachPort);
-  const processInfo = new VspProcessInfo(
+  const processConfig = {
     targetUri,
-    'attach',
-    VsAdapterTypes.HHVM,
-    null,
+    debugMode: 'attach',
+    adapterType: VsAdapterTypes.HHVM,
     config,
-    CUSTOM_CPABILITIES,
-    CUSTOM_ATTACH_PROPERTIES,
-  );
+    customControlButtons: getCustomControlButtons(),
+    threadsComponentTitle: 'Requests',
+    customDisposable: new UniversalDisposable(),
+  };
 
   const debugService = await getDebuggerService();
-  const startDebuggingPromise = debugService.startDebugging(processInfo);
+  const startDebuggingPromise = debugService.startVspDebugging(processConfig);
   try {
     // $FlowFB
     const services = require('./fb-HhvmServices');
     services.startSlog();
 
-    processInfo.addCustomDisposable(
-      new UniversalDisposable(() => {
-        services.stopSlog();
-
-        if (serverAttach) {
-          services.stopCrashHandler(processInfo);
-        }
-      }),
-    );
+    processConfig.customDisposable.add(() => {
+      services.stopSlog();
+      if (serverAttach) {
+        services.stopCrashHandler(processConfig);
+      }
+    });
 
     if (serverAttach) {
-      await startDebuggingPromise;
+      const instance = await startDebuggingPromise;
       services.startCrashHandler(
         targetUri,
-        processInfo,
-        startAttachProcessInfo,
+        processConfig,
+        startAttachProcessConfig,
+        instance,
       );
     }
   } catch (_) {}
-  return processInfo;
 }

@@ -11,7 +11,7 @@
 
 /* global localStorage */
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VspProcessInfo} from 'nuclide-debugger-common';
+import type {IProcessConfig} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -32,14 +32,14 @@ const MAX_RECENTLY_LAUNCHED = 5;
 type Props = {
   targetUri: NuclideUri,
   configIsValidChanged: (valid: boolean) => void,
-  getLaunchProcessInfo: (
+  getLaunchProcessConfig: (
     targetUri: NuclideUri,
     scriptPath: string,
     scriptArgs: string,
     scriptWrapperCommand: ?string,
     runInTerminal: boolean,
     cwdPath: string,
-  ) => Promise<VspProcessInfo>,
+  ) => IProcessConfig,
 };
 
 type State = {
@@ -268,7 +268,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       cwdPath,
     );
 
-    const processInfo = await this.props.getLaunchProcessInfo(
+    const processConfig = this.props.getLaunchProcessConfig(
       this.props.targetUri,
       scriptPath,
       scriptArgs,
@@ -278,7 +278,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     );
 
     const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(processInfo);
+    debuggerService.startVspDebugging(processConfig);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       scriptPath,
