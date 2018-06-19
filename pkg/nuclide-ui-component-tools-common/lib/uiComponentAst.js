@@ -190,6 +190,33 @@ export function getDefaultPropNames(
   return [];
 }
 
+function getObjectTypeProperties(node: Node): ?Array<Node> {
+  if (!node.declaration.right) {
+    return null;
+  }
+
+  const n = node.declaration.right;
+  if (n.type === 'ObjectTypeAnnotation') {
+    return node.declaration.right.properties;
+  }
+
+  // Only support the $Exact utility. We could recurse and support other utility
+  // types but then we would need more logic and we'd start just re-writing
+  // Flow. Traversing one $Exact utility type is sufficient for these purposes.
+  // We don't want to support something like $Rest or $Diff.
+  if (
+    n.type === 'GenericTypeAnnotation' &&
+    n.id.name === '$Exact' &&
+    n.typeParameters.type === 'TypeParameterInstantiation' &&
+    // The $Exact utility will only have one parameter. Anything more
+    // complicated and we abandon ship.
+    n.typeParameters.params.length === 1 &&
+    n.typeParameters.params[0].type === 'ObjectTypeAnnotation'
+  ) {
+    return n.typeParameters.params[0].properties;
+  }
+}
+
 export function getRequiredPropsFromAst(
   componentName: string,
   ast: File,
@@ -208,18 +235,12 @@ export function getRequiredPropsFromAst(
         typeParameterNames.includes(node.declaration.id.name),
     )
     .reduce((props: Array<string>, node: Node) => {
-      // Ensure the node has a type annotation assigned to it.
-      if (
-        !node.declaration.right ||
-        !node.declaration.right.properties ||
-        node.declaration.right.type !== 'ObjectTypeAnnotation'
-      ) {
-        // It may not be an object of properties, ignore it if not. It may be
-        // something like $Rest.
+      const properties = getObjectTypeProperties(node);
+      if (properties == null) {
         return props;
       }
 
-      const required = node.declaration.right.properties
+      const required = properties
         // There could be properties with a type such as
         // ObjectTypeSpreadProperty which would require more logic to
         // include.

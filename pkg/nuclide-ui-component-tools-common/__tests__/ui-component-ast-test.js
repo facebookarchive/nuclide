@@ -42,6 +42,30 @@ describe('ui-component-ast', () => {
     ]);
   });
 
+  it('retrieves required props with $Exact longhand', () => {
+    const requiredProps = getRequiredProps(
+      'FDSTest',
+      `
+export type Props = $Exact<{
+  value: number,
+  type: string,
+}>
+
+class FDSTest extends React.PureComponent<Props> {}
+    `,
+    );
+    expect(requiredProps).toEqual([
+      {
+        name: 'value',
+        typeAnnotation: 'NumberTypeAnnotation',
+      },
+      {
+        name: 'type',
+        typeAnnotation: 'StringTypeAnnotation',
+      },
+    ]);
+  });
+
   it('gets default prop names', () => {
     const defaultProps = getDefaultPropNames(
       'FDSTest',
