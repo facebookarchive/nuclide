@@ -66,7 +66,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
       const packages = Expect.value(
         (await getAdbServiceByNuclideUri(
           this.props.targetUri,
-        ).getInstalledPackages(device)).sort(),
+        ).getInstalledPackages(device.name)).sort(),
       );
       this.setState({
         packages,

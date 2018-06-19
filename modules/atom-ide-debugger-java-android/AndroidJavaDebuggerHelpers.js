@@ -44,19 +44,24 @@ export async function launchAndroidServiceOrActivity(
 ): Promise<void> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
   if (service != null) {
-    await adbService.launchService(device, packageName, service || '', true);
+    await adbService.launchService(
+      device.name,
+      packageName,
+      service || '',
+      true,
+    );
   } else if (activity != null && action != null) {
     // First query the device to be sure the activity exists in the specified package.
     // This will allow us to bubble up a useful error message instead of a cryptic
     // adb failure if the user simply mistyped the activity or package name.
     const activityExists = await adbService.activityExists(
-      device,
+      device.name,
       packageName,
       activity || '',
     );
 
     if (!activityExists) {
-      const packages = await adbService.getAllAvailablePackages(device);
+      const packages = await adbService.getAllAvailablePackages(device.name);
       const availableActivities = new Set(
         packages.filter(line => line.includes(packageName + '/')),
       );
@@ -73,7 +78,7 @@ export async function launchAndroidServiceOrActivity(
     }
 
     await adbService.launchActivity(
-      device,
+      device.name,
       packageName,
       activity || '',
       true,
@@ -88,7 +93,7 @@ export async function getPidFromPackageName(
   packageName: string,
 ): Promise<number> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  const pid = await adbService.getPidFromPackageName(device, packageName);
+  const pid = await adbService.getPidFromPackageName(device.name, packageName);
   if (!Number.isInteger(pid)) {
     throw new Error(`Fail to get pid for package: ${packageName}`);
   }
@@ -118,7 +123,7 @@ export async function getAdbAttachPortTargetInfo(
         adbServiceUri,
       ).getPortForJavaDebugger();
   const forwardSpec = await adbService.forwardJdwpPortToPid(
-    device,
+    device.name,
     adbPort,
     pid || 0,
   );
@@ -128,13 +133,16 @@ export async function getAdbAttachPortTargetInfo(
   }
   cleanupSubject = new Subject();
   subscriptions.add(async () => {
-    const result = await adbService.removeJdwpForwardSpec(device, forwardSpec);
+    const result = await adbService.removeJdwpForwardSpec(
+      device.name,
+      forwardSpec,
+    );
     if (result.trim().startsWith('error')) {
       // TODO(Ericblue): The OneWorld proxy swaps TCP forward for a local filesystem
       // redirection, which confuses adb and prevents proper removal of
       // the forward spec.  Fall back to removing all specs to avoid leaking
       // the port.
-      await adbService.removeJdwpForwardSpec(device, null);
+      await adbService.removeJdwpForwardSpec(device.name, null);
     }
 
     if (cleanupSubject != null) {

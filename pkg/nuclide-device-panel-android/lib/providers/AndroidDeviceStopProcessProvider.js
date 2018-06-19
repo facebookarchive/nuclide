@@ -48,7 +48,7 @@ export class AndroidDeviceStopProcessProvider
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
     return getAdbServiceByNuclideUri(host).stopProcess(
-      device,
+      device.name,
       proc.name,
       proc.pid,
     );

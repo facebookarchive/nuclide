@@ -90,8 +90,8 @@ export class Adb extends DebugBridge {
         wifi_ip,
       ]) => {
         return new Map([
-          ['name', this._device.name],
-          ['adb_port', String(this._device.port)],
+          ['name', this._serial],
+          ['adb_port', '5037'],
           ['architecture', architecture],
           ['api_version', apiVersion],
           ['model', model],
@@ -367,10 +367,7 @@ export class Adb extends DebugBridge {
   }
 
   getDeviceArgs(): Array<string> {
-    const portArg =
-      this._device.port != null ? ['-P', String(this._device.port)] : [];
-    const deviceArg = this._device.name !== '' ? ['-s', this._device.name] : [];
-    return deviceArg.concat(portArg);
+    return this._serial !== '' ? ['-s', this._serial] : [];
   }
 
   getProcesses(): Observable<Array<SimpleProcess>> {

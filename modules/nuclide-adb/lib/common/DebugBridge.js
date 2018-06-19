@@ -25,10 +25,10 @@ export type getDevicesOptions = {
 export class DebugBridge {
   static configObs: Observable<DebugBridgeConfig>;
 
-  _device: DeviceId;
+  _serial: string;
 
-  constructor(device: DeviceId) {
-    this._device = device;
+  constructor(serial: string) {
+    this._serial = serial;
   }
 
   getDeviceArchitecture(): Observable<string> {

@@ -172,7 +172,7 @@ async function _getAndroidSdkSourcePaths(
 ): Promise<Array<string>> {
   const sdkVersion = await getAdbServiceByNuclideUri(
     adbServiceUri,
-  ).getAPIVersion(device);
+  ).getAPIVersion(device.name);
   const sdkSourcePath =
     sdkVersion !== ''
       ? await getJavaDebuggerHelpersServiceByNuclideUri(

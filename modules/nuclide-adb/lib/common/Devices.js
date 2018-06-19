@@ -31,7 +31,7 @@ export class Devices {
     return this._db.getDevices(options).switchMap(devices => {
       return Observable.concat(
         ...devices.map(deviceId => {
-          const db = new this._db(deviceId);
+          const db = new this._db(deviceId.name);
           return Observable.forkJoin(
             db.getDeviceArchitecture().catch(() => Observable.of('')),
             db.getAPIVersion().catch(() => Observable.of('')),

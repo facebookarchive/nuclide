@@ -133,7 +133,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
       this._javaProcessSubscription = Observable.interval(2000)
         .startWith(0)
-        .switchMap(() => adbService.getJavaProcesses(device).refCount())
+        .switchMap(() => adbService.getJavaProcesses(device.name).refCount())
         .distinctUntilChanged((a, b) =>
           arrayEqual(a, b, (x, y) => {
             return x.user === y.user && x.pid === y.pid && x.name === y.name;
