@@ -10,11 +10,7 @@
  * @format
  */
 
-import type {
-  AndroidJavaProcess,
-  DeviceDescription,
-  SimpleProcess,
-} from './types';
+import type {AndroidJavaProcess, SimpleProcess, AdbDevice} from './types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -400,20 +396,62 @@ export class Adb {
     }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   }
 
-  static _parseDevicesCommandOutput(stdout: string): Array<string> {
+  static _parseDevicesCommandOutput(stdout: string): Array<AdbDevice> {
     return stdout
       .split(/\n+/g)
       .slice(1)
       .filter(s => s.length > 0 && !s.trim().startsWith('*'))
       .map(s => s.split(/\s+/g))
       .filter(a => a[0] !== '')
-      .map(a => a[0]);
+      .map(a => {
+        const serial = a[0];
+        const props = a.slice(2);
+        let product;
+        let model;
+        let device;
+        let usb;
+        let transportId;
+        for (const prop of props) {
+          const pair = prop.split(':');
+          if (pair.length !== 2) {
+            continue;
+          }
+          switch (pair[0]) {
+            case 'product':
+              product = pair[1];
+              break;
+            case 'model':
+              model = pair[1];
+              break;
+            case 'device':
+              device = pair[1];
+              break;
+            case 'usb':
+              usb = pair[1];
+              break;
+            case 'transport_id':
+              transportId = pair[1];
+              break;
+            default:
+              break;
+          }
+        }
+        return {
+          serial,
+          product,
+          model,
+          device,
+          usb,
+          transportId,
+        };
+      });
   }
 
-  static getDevices(): Observable<Array<string>> {
-    return runCommand('adb', ['devices'])
+  static getDevices(): Promise<Array<AdbDevice>> {
+    return runCommand('adb', ['devices', '-l'])
       .map(stdout => this._parseDevicesCommandOutput(stdout))
-      .timeout(ADB_TIMEOUT);
+      .timeout(ADB_TIMEOUT)
+      .toPromise();
   }
 
   static killServer(): Promise<void> {
@@ -432,25 +470,5 @@ export class Adb {
         throw new Error(`No version found with "${versionString}"`);
       })
       .toPromise();
-  }
-
-  static getDeviceList(): Observable<Array<DeviceDescription>> {
-    return Adb.getDevices().switchMap(devices => {
-      return Observable.concat(
-        ...devices.map(serial => {
-          const db = new Adb(serial);
-          return Observable.forkJoin(
-            db.getDeviceArchitecture().catch(() => Observable.of('')),
-            db.getAPIVersion().catch(() => Observable.of('')),
-            db.getDeviceModel().catch(() => Observable.of('')),
-          ).map(([architecture, apiVersion, model]) => ({
-            name: serial,
-            architecture,
-            apiVersion,
-            model,
-          }));
-        }),
-      ).toArray();
-    });
   }
 }

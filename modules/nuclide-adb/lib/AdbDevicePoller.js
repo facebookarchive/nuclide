@@ -13,7 +13,7 @@
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from 'nuclide-debugger-common/types';
-import type {DeviceDescription} from 'nuclide-adb/lib/types';
+import type {AdbDevice} from './types';
 
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -22,7 +22,6 @@ import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
-import {track} from 'nuclide-commons/analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAdbServiceByNuclideUri} from './utils';
 
@@ -50,7 +49,7 @@ export function observeAndroidDevicesX(
       .filter(() => !fetching)
       .switchMap(() => {
         fetching = true;
-        return fetch(serviceUri)
+        return Observable.fromPromise(fetch(serviceUri))
           .map(devices => Expect.value(devices))
           .catch(err => {
             const logger = getLogger('nuclide-adb');
@@ -85,40 +84,29 @@ export function observeAndroidDevicesX(
   });
 }
 
-function fetch(hostname: NuclideUri): Observable<Array<Device>> {
+async function fetch(hostname: NuclideUri): Promise<Array<Device>> {
   try {
-    return getAdbServiceByNuclideUri(hostname)
-      .getDeviceList()
-      .refCount()
-      .map(devices => devices.map(device => parseRawDevice(device)));
+    const devices = await getAdbServiceByNuclideUri(hostname).getDeviceList();
+    return devices.map(device => parseRawDevice(device));
   } catch (e) {
     // The remote host connection can go away while we are fetching if the user
     // removes it from the file tree or the network connection is lost.
-    return Observable.of([]);
+    return [];
   }
 }
 
-function parseRawDevice(device: DeviceDescription): Device {
-  let deviceArchitecture = '';
-  for (const arch of ['arm64', 'arm', 'x86']) {
-    if (device.architecture.startsWith(arch)) {
-      deviceArchitecture = arch;
-      break;
-    }
-  }
-  if (deviceArchitecture.length === 0) {
-    track('nuclide-adb.unknown_device_arch', {deviceArchitecture});
-  }
-
+function parseRawDevice(device: AdbDevice): Device {
   const displayName =
-    device.name.startsWith('emulator') || device.name.startsWith('localhost:')
-      ? device.name
+    device.serial.startsWith('emulator') ||
+    device.serial.startsWith('localhost:') ||
+    device.model == null
+      ? device.serial
       : device.model;
 
   return {
-    name: device.name,
+    name: device.serial,
     displayName,
-    architecture: deviceArchitecture,
-    rawArchitecture: device.architecture,
+    architecture: '',
+    rawArchitecture: '',
   };
 }

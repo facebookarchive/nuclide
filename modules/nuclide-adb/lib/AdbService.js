@@ -12,7 +12,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
+import type {AdbDevice, AndroidJavaProcess, Process} from './types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -42,10 +42,8 @@ export async function stopProcess(
   return new Adb(serial).stopProcess(packageName, pid);
 }
 
-export function getDeviceList(): ConnectableObservable<
-  Array<DeviceDescription>,
-> {
-  return Adb.getDeviceList().publish();
+export function getDeviceList(): Promise<Array<AdbDevice>> {
+  return Adb.getDevices();
 }
 
 export async function getPidFromPackageName(
