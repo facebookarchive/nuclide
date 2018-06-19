@@ -28,6 +28,7 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
 import {getLogger} from 'log4js';
 
+import {isPending, observePendingStateEnd} from './pane-item';
 import ProviderRegistry from './ProviderRegistry';
 
 export type Provider = {
@@ -181,6 +182,12 @@ export default class ActiveEditorRegistry<T: Provider, V> {
           kind: 'pane-change',
           editor,
         }),
+        // wait for pending panes to no longer be pending, or if they're not,
+        // get the result right away.
+        (isPending(editor)
+          ? observePendingStateEnd(editor).take(1)
+          : Observable.of(null)
+        ).ignoreElements(),
         Observable.fromPromise(
           this._getResultForEditor(this._getProviderForEditor(editor), editor),
         ),
