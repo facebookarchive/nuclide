@@ -20,60 +20,56 @@ describe('RecentFilesService', () => {
   let filePath3;
   let recentFilesService: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     recentFilesService = new RecentFilesService();
 
-    waitsForPromise(async () => {
-      [filePath1, filePath2, filePath3] = await Promise.all([
-        fsPromise.tempfile('1'),
-        fsPromise.tempfile('2'),
-        fsPromise.tempfile('3'),
-      ]);
-    });
+    [filePath1, filePath2, filePath3] = await Promise.all([
+      fsPromise.tempfile('1'),
+      fsPromise.tempfile('2'),
+      fsPromise.tempfile('3'),
+    ]);
   });
 
   describe('getRecentFiles', () => {
-    it('returns a reverse-chronological list of recently opened files', () => {
-      waitsForPromise(async () => {
-        let mostRecentFiles;
-        let previousTimestamp = Date.now();
-        expect(recentFilesService.getRecentFiles().length).toEqual(0);
+    it.skip('returns a reverse-chronological list of recently opened files', async () => {
+      let mostRecentFiles;
+      let previousTimestamp = Date.now();
+      expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
-        await atom.workspace.open(filePath1);
-        mostRecentFiles = recentFilesService.getRecentFiles();
-        expect(mostRecentFiles.length).toEqual(1);
-        expect(mostRecentFiles[0].path.endsWith(filePath1)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
-        previousTimestamp = mostRecentFiles[0].timestamp;
+      await atom.workspace.open(filePath1);
+      mostRecentFiles = recentFilesService.getRecentFiles();
+      expect(mostRecentFiles.length).toEqual(1);
+      expect(mostRecentFiles[0].path.endsWith(filePath1)).toBe(true);
+      expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
+      previousTimestamp = mostRecentFiles[0].timestamp;
 
-        await atom.workspace.open(filePath2);
-        mostRecentFiles = recentFilesService.getRecentFiles();
-        expect(mostRecentFiles.length).toEqual(2);
-        expect(mostRecentFiles[0].path.endsWith(filePath2)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
+      await atom.workspace.open(filePath2);
+      mostRecentFiles = recentFilesService.getRecentFiles();
+      expect(mostRecentFiles.length).toEqual(2);
+      expect(mostRecentFiles[0].path.endsWith(filePath2)).toBe(true);
+      expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
 
-        previousTimestamp = mostRecentFiles[0].timestamp;
-        await atom.workspace.open(filePath3);
-        mostRecentFiles = recentFilesService.getRecentFiles();
-        expect(mostRecentFiles.length).toEqual(3);
-        expect(mostRecentFiles[0].path.endsWith(filePath3)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
-      });
+      previousTimestamp = mostRecentFiles[0].timestamp;
+      await atom.workspace.open(filePath3);
+      mostRecentFiles = recentFilesService.getRecentFiles();
+      expect(mostRecentFiles.length).toEqual(3);
+      expect(mostRecentFiles[0].path.endsWith(filePath3)).toBe(true);
+      expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
     });
 
-    it('returns paths and timestamps of recently opened files', () => {
-      waitsForPromise(async () => {
+    it('returns paths and timestamps of recently opened files', async () => {
+      await (async () => {
         await atom.workspace.open(filePath1);
         const recentFiles = recentFilesService.getRecentFiles();
         const mostRecentFile = recentFiles[0];
         expect(Object.keys(mostRecentFile).length).toEqual(3);
         expect(typeof mostRecentFile.timestamp === 'number').toBe(true);
         expect(mostRecentFile.path.endsWith(filePath1)).toBe(true);
-      });
+      })();
     });
 
-    it('resets the order of previously tracked files when they are touched', () => {
-      waitsForPromise(async () => {
+    it('resets the order of previously tracked files when they are touched', async () => {
+      await (async () => {
         let mostRecentFiles;
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
@@ -98,7 +94,7 @@ describe('RecentFilesService', () => {
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(filePath2)).toBe(true);
         expect(mostRecentFiles[1].path.endsWith(filePath1)).toBe(true);
-      });
+      })();
     });
   });
 
