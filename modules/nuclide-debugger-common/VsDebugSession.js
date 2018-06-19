@@ -66,6 +66,7 @@ export default class VsDebugSession extends V8Protocol {
   _logger: log4js$Logger;
   _spawner: IVsAdapterSpawner;
   _adapterAnalyticsExtras: AdapterAnalyticsExtras;
+  _adapterErrorOutput: string;
 
   _onDidInitialize: Subject<DebugProtocol.InitializedEvent>;
   _onDidStop: Subject<DebugProtocol.StoppedEvent>;
@@ -102,6 +103,7 @@ export default class VsDebugSession extends V8Protocol {
       // $FlowFixMe flow doesn't consider uuid callable, but it is
       debuggerSessionId: uuid(),
     };
+    this._adapterErrorOutput = '';
 
     this._onDidInitialize = new Subject();
     this._onDidStop = new Subject();
@@ -596,6 +598,7 @@ export default class VsDebugSession extends V8Protocol {
             this._onDidOutput.next(event);
             this._onDidEvent.next(event);
             this._logger.error(`adapter stderr: ${message.data}`);
+            this._adapterErrorOutput = this._adapterErrorOutput + message.data;
           } else {
             invariant(message.kind === 'exit');
             this.onServerExit(message.exitCode || 0);
@@ -663,6 +666,12 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   dispose(): void {
+    if (this._adapterErrorOutput) {
+      track('vs-debug-session:transaction', {
+        ...this._adapterAnalyticsExtras,
+        response: this._adapterErrorOutput,
+      });
+    }
     this.disconnect();
   }
 }
