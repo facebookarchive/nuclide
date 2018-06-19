@@ -137,6 +137,17 @@ function getNodeConfig(): AutoGenConfig {
       header: (
         <p>This is intended to debug node.js files (for node version 6.3+).</p>
       ),
+      getProcessName(values) {
+        let processName = values.program;
+        const lastSlash = processName.lastIndexOf('/');
+        if (lastSlash >= 0) {
+          processName = processName.substring(
+            lastSlash + 1,
+            processName.length,
+          );
+        }
+        return processName + ' (Node)';
+      },
     },
     attach: {
       launch: false,
@@ -145,6 +156,9 @@ function getNodeConfig(): AutoGenConfig {
       properties: [port],
       scriptExtension: '.js',
       header: <p>Attach to a running node.js process</p>,
+      getProcessName(values) {
+        return 'Port: ' + values.port + ' (Node attach)';
+      },
     },
   };
 }

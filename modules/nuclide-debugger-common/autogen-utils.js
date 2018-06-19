@@ -122,6 +122,14 @@ export function getNativeAutoGenConfig(
     scriptExtension: '.c',
     cwdPropertyName: 'working directory',
     header: <p>Debug native programs {debugTypeMessage}.</p>,
+    getProcessName(values) {
+      let processName = values.program;
+      const lastSlash = processName.lastIndexOf('/');
+      if (lastSlash >= 0) {
+        processName = processName.substring(lastSlash + 1, processName.length);
+      }
+      return processName;
+    },
   };
 
   const pid = {
@@ -137,6 +145,9 @@ export function getNativeAutoGenConfig(
     threads: true,
     properties: [pid, sourcePath],
     header: <p>Attach to a running native process {debugTypeMessage}</p>,
+    getProcessName(values) {
+      return 'Pid: ' + values.pid + ' (' + debugTypeMessage + ')';
+    },
   };
   return {
     launch: autoGenLaunchConfig,

@@ -78,6 +78,9 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
     scriptExtension: '.js',
     cwdPropertyName: null,
     header: null,
+    getProcessName(values) {
+      return values.fileToPrepack + ' (Prepack)';
+    },
   };
   return {
     launch: autoGenLaunchConfig,
@@ -203,6 +206,15 @@ export function getNativeAutoGenConfig(
     scriptPropertyName: 'program',
     cwdPropertyName: 'working directory',
     header: <p>Debug native programs {debugTypeMessage}.</p>,
+    getProcessName(values) {
+      let processName = values.program;
+      const lastSlash = processName.lastIndexOf('/');
+      if (lastSlash >= 0) {
+        processName = processName.substring(lastSlash + 1, processName.length);
+      }
+      processName += ' (' + debugTypeMessage + ')';
+      return processName;
+    },
   };
 
   const pid = {
@@ -218,6 +230,9 @@ export function getNativeAutoGenConfig(
     threads: true,
     properties: [pid, sourcePath],
     header: <p>Attach to a running native process {debugTypeMessage}</p>,
+    getProcessName(values) {
+      return 'Pid: ' + pid.name + ' (' + debugTypeMessage + ')';
+    },
   };
   return {
     launch: autoGenLaunchConfig,

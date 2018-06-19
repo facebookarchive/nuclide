@@ -162,6 +162,9 @@ function getReactNativeConfig(): AutoGenConfig {
       cwdPropertyName: 'workspace',
       scriptExtension: '.js',
       header: null,
+      getProcessName(values) {
+        return 'Port: ' + values.port + ' (React Native)';
+      },
     },
     attach: {
       launch: false,
@@ -171,6 +174,9 @@ function getReactNativeConfig(): AutoGenConfig {
       cwdPropertyName: 'workspace',
       scriptExtension: '.js',
       header: null,
+      getProcessName(values) {
+        return 'Port: ' + values.port + ' (React Native)';
+      },
     },
   };
 }

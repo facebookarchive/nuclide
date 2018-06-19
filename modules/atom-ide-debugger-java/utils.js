@@ -69,6 +69,9 @@ export function getJavaConfig(): AutoGenConfig {
       properties: [entryPointClass, classPath],
       cwdPropertyName: 'cwd',
       header: null,
+      getProcessName(values) {
+        return values.entryPointClass + ' (Java)';
+      },
     },
     attach: {
       launch: false,
@@ -76,6 +79,9 @@ export function getJavaConfig(): AutoGenConfig {
       threads: true,
       properties: [javaJdwpPort],
       header: null,
+      getProcessName(values) {
+        return 'Port: ' + values.javaJdwpPort + ' (Java)';
+      },
     },
   };
 }

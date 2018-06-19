@@ -124,6 +124,9 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
     scriptPropertyName: 'executable',
     cwdPropertyName: 'working directory',
     header: null,
+    getProcessName(values) {
+      return values.debugExecutable + ' (OCaml)';
+    },
   };
   return {
     launch: autoGenLaunchConfig,

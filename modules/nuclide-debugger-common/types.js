@@ -134,6 +134,7 @@ type AutoGenLaunchOrAttachConfigBase = {
   scriptExtension?: string,
   scriptPropertyName?: ?string,
   header?: React.Node,
+  getProcessName: (values: Object) => string,
 };
 
 export type AutoGenLaunchConfig = AutoGenLaunchOrAttachConfigBase & {

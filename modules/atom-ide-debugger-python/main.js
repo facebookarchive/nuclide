@@ -142,6 +142,18 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
           </a>.
         </p>
       ) : null,
+      getProcessName(values) {
+        let processName = values.program;
+        const lastSlash = processName.lastIndexOf('/');
+        if (lastSlash >= 0) {
+          processName = processName.substring(
+            lastSlash + 1,
+            processName.length,
+          );
+        }
+        processName += ' (Python)';
+        return processName;
+      },
     },
     attach: null,
   };

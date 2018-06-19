@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
@@ -91,6 +91,10 @@ export function getJavaAndroidConfig(): AutoGenConfig {
       properties: [deviceAndPackage, activity, service, intent, selectSources],
       cwdPropertyName: 'cwd',
       header: null,
+      // Value will be replaced in the return value of resolveConfiguration().
+      getProcessName(values) {
+        return 'Android';
+      },
     },
     attach: {
       launch: false,
@@ -98,6 +102,10 @@ export function getJavaAndroidConfig(): AutoGenConfig {
       threads: true,
       properties: [deviceAndProcess, selectSources],
       header: null,
+      // Value will be replaced in the return value of resolveConfiguration().
+      getProcessName(values) {
+        return 'Android';
+      },
     },
   };
 }
@@ -248,6 +256,15 @@ export async function resolveConfiguration(
     resolvedTargetUri,
   ).getJavaVSAdapterExecutableInfo(false);
 
+  let processName = _getPackageName(debugMode, config);
+
+  // Gets rid of path to package.
+  const lastPeriod = processName.lastIndexOf('.');
+  if (lastPeriod >= 0) {
+    processName = processName.substring(lastPeriod + 1, processName.length);
+  }
+  processName += ' (Android)';
+
   return {
     ...configuration,
     targetUri: resolvedTargetUri,
@@ -259,5 +276,6 @@ export async function resolveConfiguration(
     config: attachPortTargetConfig,
     customDisposable,
     onInitializeCallback,
+    processName,
   };
 }
