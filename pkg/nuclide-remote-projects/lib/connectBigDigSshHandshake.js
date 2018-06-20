@@ -118,7 +118,7 @@ export default function connectBigDigSshHandshake(
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {
     const parsed = yargs.parse(remoteServerCommand);
-    remoteServerCommand = parsed._[0];
+    remoteServerCommand = parsed._.join(' ');
     if (parsed.version != null) {
       version = parsed.version;
     }
