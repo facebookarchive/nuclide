@@ -293,8 +293,9 @@ class HostServicesRelay {
 
     // Otherwise, we are going to make a request to our parent.
     const parentPromise = this._aggregator._parent.showProgress(title, options);
-    const cancel = this._childIsDisposed.toPromise();
-    let progress: ?Progress = await Promise.race([parentPromise, cancel]);
+    let progress: ?Progress = await Observable.from(parentPromise)
+      .takeUntil(this._childIsDisposed)
+      .toPromise();
 
     // Should a cancellation come while we're waiting for our parent,
     // then we'll immediately return a no-op wrapper and ensure that

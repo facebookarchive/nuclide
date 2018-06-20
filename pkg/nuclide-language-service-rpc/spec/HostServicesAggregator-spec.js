@@ -190,7 +190,7 @@ describe('HostServicesAggregator', () => {
       const wrappers = [wrapper1, wrapper2];
       hostRelayObj.showProgress = jasmine
         .createSpy('showProgress')
-        .andCallFake(() => wrappers.shift());
+        .andCallFake(async () => wrappers.shift());
       const child = await forkHostServices(host, logger);
 
       const p1 = await child.showProgress('ping1');
@@ -242,10 +242,14 @@ describe('HostServicesAggregator', () => {
       const pPromise = child2.showProgress('ping');
       child2.dispose();
       const p = await pPromise;
-      expect(wrapper.dispose.callCount).toEqual(1);
+
+      // "p" should be a no-op Progress object, since it was disposed.
       p.setTitle('a');
       expect(wrapper.setTitle.callCount).toEqual(0);
       p.dispose();
+
+      // Wrapper should still be disposed (asynchronously).
+      await waitsFor(() => wrapper.dispose.wasCalled);
       expect(wrapper.dispose.callCount).toEqual(1);
     });
   });

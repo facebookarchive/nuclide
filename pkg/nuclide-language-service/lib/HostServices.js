@@ -83,13 +83,21 @@ class RootHostServices {
   ): ConnectableObservable<void> {
     // We return a ConnectableObservable such that
     // (1) when code connects to it then we display the dialog
-    // (2) when user dismiss the dialog then we complete the stream
+    // (2) when the dialog closes we complete the stream
     // (3) if code unsubscribed before that, then we dismiss the dialog
-    return Observable.create(observer => {
-      const notification = this._atomNotification(level, text);
-      notification.onDidDismiss(() => observer.complete());
-      return () => notification.dismiss();
-    }).publish();
+    return (
+      Observable.create(observer => {
+        const notification = this._atomNotification(level, text);
+        return () => {
+          notification.dismiss();
+        };
+      })
+        // Note: notification.onDidDismiss never fires for non-dismissable notifications!
+        // However non-dismissable notifications have a fixed 5s duration:
+        // https://github.com/atom/notifications/blob/master/lib/notification-element.coffee#L50
+        .takeUntil(Observable.timer(5000))
+        .publish()
+    );
   }
 
   dialogRequest(
