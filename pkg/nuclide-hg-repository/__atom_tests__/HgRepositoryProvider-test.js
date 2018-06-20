@@ -19,8 +19,8 @@ import fsPromise from 'nuclide-commons/fsPromise';
 
 describe('HgRepositoryProvider', () => {
   const provider = new HgRepositoryProvider();
-  it('shares underlying repository for multiple directories in the same repo', () => {
-    waitsForPromise({timeout: 30000}, async () => {
+  it('shares underlying repository for multiple directories in the same repo', async () => {
+    await (async () => {
       const tempDir = await generateFixture(
         'hg_repo_provider_test',
         new Map([['folder/foo', 'foo']]),
@@ -82,6 +82,6 @@ describe('HgRepositoryProvider', () => {
       baseRepo2.destroy();
 
       await fsPromise.rimraf(repoPath);
-    });
+    })();
   });
 });
