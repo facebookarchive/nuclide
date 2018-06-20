@@ -14,14 +14,14 @@ import RemoteProjectsService from '../lib/RemoteProjectsService';
 describe('RemoteProjectsService', () => {
   it('waits for reload', () => {
     const service = new RemoteProjectsService();
-    const spy = jasmine.createSpy('loaded');
+    const spy = jest.fn();
     service.waitForRemoteProjectReload(spy);
     const projects = ['test'];
     service._reloadFinished(projects);
     expect(spy).toHaveBeenCalledWith(projects);
 
     // The callback should still resolve if already loaded.
-    const spy2 = jasmine.createSpy('loaded');
+    const spy2 = jest.fn();
     service.waitForRemoteProjectReload(spy2);
     expect(spy2).toHaveBeenCalledWith(projects);
   });
