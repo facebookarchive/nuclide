@@ -1,3 +1,15 @@
+'use strict';
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _SharedObservableCache;
+
+function _load_SharedObservableCache() {
+  return _SharedObservableCache = _interopRequireDefault(require('../SharedObservableCache'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,19 +17,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
-import {Subject} from 'rxjs';
-import SharedObservableCache from '../SharedObservableCache';
-
 describe('SharedObservableCache', () => {
   it('creates and deletes observables on demand', () => {
-    const mockObservable = new Subject();
+    const mockObservable = new _rxjsBundlesRxMinJs.Subject();
     const mockFactory = jest.fn().mockReturnValue(mockObservable);
 
-    const map = new SharedObservableCache(mockFactory);
+    const map = new (_SharedObservableCache || _load_SharedObservableCache()).default(mockFactory);
     const stream1 = map.get('key');
     const stream2 = map.get('key');
 

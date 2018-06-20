@@ -1,3 +1,17 @@
+'use strict';
+
+var _TunnelManager;
+
+function _load_TunnelManager() {
+  return _TunnelManager = require('../TunnelManager');
+}
+
+var _util;
+
+function _load_util() {
+  return _util = require('../__mocks__/util');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,12 +20,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import {TunnelManager} from '../TunnelManager';
-import {TestTransportFactory} from '../__mocks__/util';
 
 const TEST_PORT_1 = 8091;
 const TEST_PORT_2 = 8092;
@@ -23,8 +34,8 @@ describe('TunnelManager', () => {
   let testTransport;
 
   beforeEach(() => {
-    testTransport = TestTransportFactory();
-    tunnelManager = new TunnelManager(testTransport);
+    testTransport = (0, (_util || _load_util()).TestTransportFactory)();
+    tunnelManager = new (_TunnelManager || _load_TunnelManager()).TunnelManager(testTransport);
   });
 
   afterEach(() => {
@@ -43,21 +54,13 @@ describe('TunnelManager', () => {
 
   it('should throw an error if either port is already bound', async () => {
     const tunnel = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    await expect(
-      tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_3),
-    ).rejects.toThrowErrorMatchingSnapshot();
+    await expect(tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_3)).rejects.toThrowErrorMatchingSnapshot();
 
-    await expect(
-      tunnelManager.createTunnel(TEST_PORT_3, TEST_PORT_2),
-    ).rejects.toThrowErrorMatchingSnapshot();
+    await expect(tunnelManager.createTunnel(TEST_PORT_3, TEST_PORT_2)).rejects.toThrowErrorMatchingSnapshot();
 
-    await expect(
-      tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2),
-    ).rejects.toThrowErrorMatchingSnapshot();
+    await expect(tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2)).rejects.toThrowErrorMatchingSnapshot();
 
-    await expect(
-      tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_3),
-    ).rejects.toThrowErrorMatchingSnapshot();
+    await expect(tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_3)).rejects.toThrowErrorMatchingSnapshot();
 
     tunnel.close();
     tunnelManager.close();
@@ -65,15 +68,9 @@ describe('TunnelManager', () => {
 
   it('should return an the existing tunnel if it already exists', async () => {
     const tunnelA = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelB = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+    const tunnelB = await tunnelManager.createReverseTunnel(TEST_PORT_3, TEST_PORT_4);
     const tunnelC = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelD = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+    const tunnelD = await tunnelManager.createReverseTunnel(TEST_PORT_3, TEST_PORT_4);
 
     expect(tunnelA).toBe(tunnelC);
     expect(tunnelB).toBe(tunnelD);
@@ -83,15 +80,9 @@ describe('TunnelManager', () => {
 
   it('should not close a tunnel until all references are removed', async () => {
     const tunnelA = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelB = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+    const tunnelB = await tunnelManager.createReverseTunnel(TEST_PORT_3, TEST_PORT_4);
     const tunnelC = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelD = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+    const tunnelD = await tunnelManager.createReverseTunnel(TEST_PORT_3, TEST_PORT_4);
 
     expect(tunnelManager.tunnels.length).toBe(2);
     tunnelA.close();
@@ -123,14 +114,9 @@ describe('TunnelManager', () => {
   });
 
   it('should have the correct localPort in the createProxy message when creating a reverse tunnel', async () => {
-    const tunnel = await tunnelManager.createReverseTunnel(
-      TEST_PORT_1,
-      TEST_PORT_2,
-    );
+    const tunnel = await tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2);
     expect(testTransport.send.mock.calls.length).toBe(1);
-    const messages = testTransport.send.mock.calls
-      .map(msg => JSON.parse(msg))
-      .filter(msg => msg.event === 'createProxy');
+    const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg)).filter(msg => msg.event === 'createProxy');
 
     expect(messages.length).toBe(1);
     expect(messages[0].localPort).toBe(TEST_PORT_2);
@@ -138,10 +124,7 @@ describe('TunnelManager', () => {
   });
 
   it('should send a closeProxy message when closing a reverse tunnel', async () => {
-    const tunnel = await tunnelManager.createReverseTunnel(
-      TEST_PORT_1,
-      TEST_PORT_2,
-    );
+    const tunnel = await tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2);
     tunnel.close();
     expect(testTransport.send.mock.calls.length).toBe(2);
     const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));

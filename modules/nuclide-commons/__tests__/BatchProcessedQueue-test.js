@@ -1,23 +1,29 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import BatchProcessedQueue from '../BatchProcessedQueue';
+var _BatchProcessedQueue;
 
-jest.useFakeTimers();
+function _load_BatchProcessedQueue() {
+  return _BatchProcessedQueue = _interopRequireDefault(require('../BatchProcessedQueue'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+jest.useFakeTimers(); /**
+                       * Copyright (c) 2017-present, Facebook, Inc.
+                       * All rights reserved.
+                       *
+                       * This source code is licensed under the BSD-style license found in the
+                       * LICENSE file in the root directory of this source tree. An additional grant
+                       * of patent rights can be found in the PATENTS file in the same directory.
+                       *
+                       *  strict
+                       * @format
+                       */
 
 describe('analytics - BatchProcessedQueue', () => {
   it('regular operation', () => {
     const handler = jasmine.createSpy('handler');
-    const queue = new BatchProcessedQueue(5000, handler);
+    const queue = new (_BatchProcessedQueue || _load_BatchProcessedQueue()).default(5000, handler);
 
     queue.add(1);
     queue.add(2);

@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +7,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -100,10 +102,10 @@ describe('scheduleIdleCallback using browser API', () => {
     };
     const disposable = scheduleIdleCallback(fn);
     expect(requestIdleCallbackCalls.length).toBe(1);
-    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    requestIdleCallbackCalls[0][0]({ timeRemaining: () => 48 });
     expect(fnCalls.length).toBe(0);
     expect(requestIdleCallbackCalls.length).toBe(2);
-    requestIdleCallbackCalls[1][0]({timeRemaining: () => 49});
+    requestIdleCallbackCalls[1][0]({ timeRemaining: () => 49 });
     expect(fnCalls.length).toBe(1);
     expect(cancelIdleCallbackCalls.length).toBe(0);
 
@@ -113,7 +115,7 @@ describe('scheduleIdleCallback using browser API', () => {
 
   it('cancels', () => {
     const disposable = scheduleIdleCallback(() => {});
-    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    requestIdleCallbackCalls[0][0]({ timeRemaining: () => 48 });
     disposable.dispose();
     expect(cancelIdleCallbackCalls.length).toBe(1);
     disposable.dispose();
@@ -126,16 +128,16 @@ describe('scheduleIdleCallback using browser API', () => {
     const fn = jest.fn();
     const disposable = scheduleIdleCallback(fn, {
       afterRemainingTime: 100,
-      timeout: 100,
+      timeout: 100
     });
 
-    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    requestIdleCallbackCalls[0][0]({ timeRemaining: () => 48 });
     expect(fn).not.toHaveBeenCalled();
     curDate = 50;
-    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    requestIdleCallbackCalls[0][0]({ timeRemaining: () => 48 });
     expect(fn).not.toHaveBeenCalled();
     curDate = 100;
-    requestIdleCallbackCalls[0][0]({timeRemaining: () => 48});
+    requestIdleCallbackCalls[0][0]({ timeRemaining: () => 48 });
     expect(fn).toHaveBeenCalled();
 
     disposable.dispose();

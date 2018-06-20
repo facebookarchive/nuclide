@@ -1,50 +1,70 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {SettingsPropsDefault} from './SettingsUtils';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {normalizeIdentifier} from './SettingsUtils';
-import * as React from 'react';
+var _SettingsUtils;
 
-type Props = SettingsPropsDefault & {
-  value: boolean,
-};
+function _load_SettingsUtils() {
+  return _SettingsUtils = require('./SettingsUtils');
+}
 
-export default class SettingsCheckbox extends React.Component<Props> {
-  _handleChange = (event: SyntheticEvent<>) => {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
-    this.props.onChange(isChecked);
-  };
+var _react = _interopRequireWildcard(require('react'));
 
-  render(): React.Node {
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class SettingsCheckbox extends _react.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._handleChange = event => {
+      const isChecked = event.target.checked;
+      this.props.onChange(isChecked);
+    }, _temp;
+  }
+
+  render() {
     const keyPath = this.props.keyPath;
-    const id = normalizeIdentifier(keyPath);
+    const id = (0, (_SettingsUtils || _load_SettingsUtils()).normalizeIdentifier)(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
 
-    return (
-      <div className="checkbox">
-        <label htmlFor={id}>
-          <input
-            checked={value}
-            id={id}
-            onChange={this._handleChange}
-            type="checkbox"
-          />
-          <div className="setting-title">{title}</div>
-        </label>
-        <div className="setting-description">{description}</div>
-      </div>
+    return _react.createElement(
+      'div',
+      { className: 'checkbox' },
+      _react.createElement(
+        'label',
+        { htmlFor: id },
+        _react.createElement('input', {
+          checked: value,
+          id: id,
+          onChange: this._handleChange,
+          type: 'checkbox'
+        }),
+        _react.createElement(
+          'div',
+          { className: 'setting-title' },
+          title
+        )
+      ),
+      _react.createElement(
+        'div',
+        { className: 'setting-description' },
+        description
+      )
     );
   }
 }
+exports.default = SettingsCheckbox; /**
+                                     * Copyright (c) 2017-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the BSD-style license found in the
+                                     * LICENSE file in the root directory of this source tree. An additional grant
+                                     * of patent rights can be found in the PATENTS file in the same directory.
+                                     *
+                                     * 
+                                     * @format
+                                     */

@@ -1,3 +1,89 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MULTIPLE_TARGET_RULE_TYPE = undefined;
+exports.getRootForPath = getRootForPath;
+exports.getBuildFile = getBuildFile;
+exports.getOwners = getOwners;
+exports.getBuckConfig = getBuckConfig;
+exports.build = build;
+exports.install = install;
+exports.buildWithOutput = buildWithOutput;
+exports.testWithOutput = testWithOutput;
+exports.installWithOutput = installWithOutput;
+exports.runWithOutput = runWithOutput;
+exports.listAliases = listAliases;
+exports.listFlavors = listFlavors;
+exports.showOutput = showOutput;
+exports.buildRuleTypeFor = buildRuleTypeFor;
+exports.clean = clean;
+exports.kill = kill;
+exports._buildRuleTypeFor = _buildRuleTypeFor;
+exports.getHTTPServerPort = getHTTPServerPort;
+exports.query = query;
+exports.queryWithArgs = queryWithArgs;
+exports.queryWithAttributes = queryWithAttributes;
+exports.getWebSocketStream = getWebSocketStream;
+exports.resetCompilationDatabaseForSource = resetCompilationDatabaseForSource;
+exports.resetCompilationDatabase = resetCompilationDatabase;
+exports.getCompilationDatabase = getCompilationDatabase;
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _createBuckWebSocket;
+
+function _load_createBuckWebSocket() {
+  return _createBuckWebSocket = _interopRequireDefault(require('./createBuckWebSocket'));
+}
+
+var _ini;
+
+function _load_ini() {
+  return _ini = _interopRequireDefault(require('ini'));
+}
+
+var _BuckClangCompilationDatabase;
+
+function _load_BuckClangCompilationDatabase() {
+  return _BuckClangCompilationDatabase = require('./BuckClangCompilationDatabase');
+}
+
+var _BuckServiceImpl;
+
+function _load_BuckServiceImpl() {
+  return _BuckServiceImpl = _interopRequireWildcard(require('./BuckServiceImpl'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,134 +91,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  BaseBuckBuildOptions,
-  ResolvedRuleType,
-  BuckClangCompilationDatabase,
-} from './types';
-import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
-
-import {getLogger} from 'log4js';
-import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import createBuckWebSocket from './createBuckWebSocket';
-import ini from 'ini';
-import {getCompilationDatabaseHandler} from './BuckClangCompilationDatabase';
-import * as BuckServiceImpl from './BuckServiceImpl';
-
-export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
-
-export type BuckWebSocketMessage =
-  | {
-      // Not actually from Buck - this is to let the receiver know that the socket is connected.
-      type: 'SocketConnected',
-    }
-  | {
-      type: 'BuildProgressUpdated',
-      progressValue: number,
-    }
-  | {
-      type: 'BuildFinished',
-      exitCode: number,
-    }
-  | {
-      type: 'BuildStarted',
-    }
-  | {
-      type: 'ConsoleEvent',
-      message: string,
-      level: {
-        name:
-          | 'OFF'
-          | 'SEVERE'
-          | 'WARNING'
-          | 'INFO'
-          | 'CONFIG'
-          | 'FINE'
-          | 'FINER'
-          | 'FINEST'
-          | 'ALL',
-      },
-    }
-  | {
-      type: 'ParseStarted',
-    }
-  | {
-      type: 'ParseFinished',
-    }
-  | {
-      type: 'InstallFinished',
-      success: boolean,
-      pid?: number,
-    }
-  | {
-      type: 'RunStarted',
-    }
-  | {
-      type: 'RunComplete',
-    }
-  | {
-      type: 'ResultsAvailable',
-      results: {
-        buildTarget: {
-          shortName: string,
-          baseName: string,
-        },
-        success: boolean,
-        failureCount: number,
-        totalNumberOfTests: number,
-        testCases: Array<{
-          success: boolean,
-          failureCount: number,
-          skippedCount: number,
-          testCaseName: string,
-          testResults: Array<{
-            testCaseName: string,
-            testName: string,
-            type: string,
-            time: number,
-            message: string,
-            stacktrace: ?string,
-            stdOut: string,
-            stdErr: string,
-          }>,
-        }>,
-      },
-    }
-  | {
-      type: 'CompilerErrorEvent',
-      error: string,
-      suggestions: Array<mixed>, // TODO: use this?
-      compilerType: string,
-    };
-
-type BuckConfig = Object;
+const MULTIPLE_TARGET_RULE_TYPE = exports.MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
 
 /**
  * Given a file path, returns path to the Buck project root i.e. the directory containing
  * '.buckconfig' file.
  */
-export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
-  return BuckServiceImpl.getRootForPath(file);
+function getRootForPath(file) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl()).getRootForPath(file);
 }
 
 /**
  * Gets the build file for the specified target.
  */
-export function getBuildFile(
-  rootPath: NuclideUri,
-  targetName: string,
-): Promise<?string> {
-  return BuckServiceImpl.getBuildFile(rootPath, targetName);
+function getBuildFile(rootPath, targetName) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl()).getBuildFile(rootPath, targetName);
 }
 
 /**
@@ -147,18 +124,8 @@ export function getBuildFile(
  * @param extraArguments passed on the command line to buck query
  * @return Promise that resolves to an array of build targets.
  */
-export function getOwners(
-  rootPath: NuclideUri,
-  filePath: NuclideUri,
-  extraArguments: Array<string>,
-  kindFilter?: string,
-): Promise<Array<string>> {
-  return BuckServiceImpl.getOwners(
-    rootPath,
-    filePath,
-    extraArguments,
-    kindFilter,
-  );
+function getOwners(rootPath, filePath, extraArguments, kindFilter) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl()).getOwners(rootPath, filePath, extraArguments, kindFilter);
 }
 
 /**
@@ -169,11 +136,7 @@ export function getOwners(
  *
  * @return Promise that resolves to the value, if it is set, else `null`.
  */
-export async function getBuckConfig(
-  rootPath: NuclideUri,
-  section: string,
-  property: string,
-): Promise<?string> {
+async function getBuckConfig(rootPath, section, property) {
   const buckConfig = await _loadBuckConfig(rootPath);
   if (!buckConfig.hasOwnProperty(section)) {
     return null;
@@ -189,13 +152,10 @@ export async function getBuckConfig(
  * TODO(natthu): Also load .buckconfig.local. Consider loading .buckconfig from the home directory
  * and ~/.buckconfig.d/ directory.
  */
-async function _loadBuckConfig(rootPath: string): Promise<BuckConfig> {
+async function _loadBuckConfig(rootPath) {
   const header = 'scope = global\n';
-  const buckConfigContent = await fsPromise.readFile(
-    nuclideUri.join(rootPath, '.buckconfig'),
-    'utf8',
-  );
-  return ini.parse(header + buckConfigContent);
+  const buckConfigContent = await (_fsPromise || _load_fsPromise()).default.readFile((_nuclideUri || _load_nuclideUri()).default.join(rootPath, '.buckconfig'), 'utf8');
+  return (_ini || _load_ini()).default.parse(header + buckConfigContent);
 }
 
 /**
@@ -207,12 +167,8 @@ async function _loadBuckConfig(rootPath: string): Promise<BuckConfig> {
  * An error should be thrown only if the specified targets are invalid.
  * @return Promise that resolves to a build report.
  */
-export function build(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  options?: BaseBuckBuildOptions,
-): Promise<any> {
-  return BuckServiceImpl.build(rootPath, buildTargets, options);
+function build(rootPath, buildTargets, options) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl()).build(rootPath, buildTargets, options);
 }
 
 /**
@@ -226,18 +182,12 @@ export function build(
  * @param simulator The UDID of the simulator to install the binary on.
  * @return Promise that resolves to a build report.
  */
-export function install(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  simulator: ?string,
-  run: boolean,
-  debug: boolean,
-): Promise<any> {
-  return BuckServiceImpl._build(rootPath, buildTargets, {
+function install(rootPath, buildTargets, simulator, run, debug) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl())._build(rootPath, buildTargets, {
     install: true,
     simulator,
     run,
-    debug,
+    debug
   });
 }
 
@@ -252,13 +202,9 @@ export function install(
  *     from stderr.
  *   onCompleted: Only called if the build completes successfully.
  */
-export function buildWithOutput(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  extraArguments: Array<string>,
-): ConnectableObservable<LegacyProcessMessage> {
+function buildWithOutput(rootPath, buildTargets, extraArguments) {
   // TODO(T17463635)
-  return _buildWithOutput(rootPath, buildTargets, {extraArguments}).publish();
+  return _buildWithOutput(rootPath, buildTargets, { extraArguments }).publish();
 }
 
 /**
@@ -272,17 +218,12 @@ export function buildWithOutput(
  *     from stderr.
  *   onCompleted: Only called if the build completes successfully.
  */
-export function testWithOutput(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  extraArguments: Array<string>,
-  debug: boolean,
-): ConnectableObservable<LegacyProcessMessage> {
+function testWithOutput(rootPath, buildTargets, extraArguments, debug) {
   // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     test: true,
     extraArguments,
-    debug,
+    debug
   }).publish();
 }
 
@@ -297,35 +238,23 @@ export function testWithOutput(
  *     from stderr.
  *   onCompleted: Only called if the install completes successfully.
  */
-export function installWithOutput(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  extraArguments: Array<string>,
-  simulator: ?string,
-  run: boolean,
-  debug: boolean,
-): ConnectableObservable<LegacyProcessMessage> {
+function installWithOutput(rootPath, buildTargets, extraArguments, simulator, run, debug) {
   // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     install: true,
     simulator,
     run,
     debug,
-    extraArguments,
+    extraArguments
   }).publish();
 }
 
-export function runWithOutput(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  extraArguments: Array<string>,
-  simulator: ?string,
-): ConnectableObservable<LegacyProcessMessage> {
+function runWithOutput(rootPath, buildTargets, extraArguments, simulator) {
   // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     run: true,
     simulator,
-    extraArguments,
+    extraArguments
   }).publish();
 }
 
@@ -334,63 +263,37 @@ export function runWithOutput(
  * @return An Observable that returns output from buck, as described by the
  *   docblocks for `buildWithOutput` and `installWithOutput`.
  */
-function _buildWithOutput(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  options: BaseBuckBuildOptions,
-): Observable<LegacyProcessMessage> {
+function _buildWithOutput(rootPath, buildTargets, options) {
   // TODO(T17463635)
-  const args = BuckServiceImpl._translateOptionsToBuckBuildArgs({
-    baseOptions: {...options},
-    buildTargets,
+  const args = (_BuckServiceImpl || _load_BuckServiceImpl())._translateOptionsToBuckBuildArgs({
+    baseOptions: Object.assign({}, options),
+    buildTargets
   });
-  return Observable.fromPromise(
-    BuckServiceImpl._getBuckCommandAndOptions(rootPath),
-  ).switchMap(({pathToBuck, buckCommandOptions}) =>
-    observeProcess(pathToBuck, args, {
-      ...buckCommandOptions,
-      /* TODO(T17353599) */ isExitError: () => false,
-    })
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .startWith({
-        kind: 'stdout',
-        data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,
-      }),
-  );
+  return _rxjsBundlesRxMinJs.Observable.fromPromise((_BuckServiceImpl || _load_BuckServiceImpl())._getBuckCommandAndOptions(rootPath)).switchMap(({ pathToBuck, buckCommandOptions }) => (0, (_process || _load_process()).observeProcess)(pathToBuck, args, Object.assign({}, buckCommandOptions, {
+    /* TODO(T17353599) */isExitError: () => false
+  })).catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error })) // TODO(T17463635)
+  .startWith({
+    kind: 'stdout',
+    data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`
+  }));
 }
 
-function _getArgsStringSkipClientId(args: Array<string>): string {
+function _getArgsStringSkipClientId(args) {
   const skipped = args.findIndex(arg => arg === 'client.id=nuclide');
-  return args
-    .filter((arg, index) => index !== skipped && index !== skipped - 1)
-    .join(' ');
+  return args.filter((arg, index) => index !== skipped && index !== skipped - 1).join(' ');
 }
 
-export async function listAliases(
-  rootPath: NuclideUri,
-): Promise<Array<string>> {
+async function listAliases(rootPath) {
   const args = ['audit', 'alias', '--list'];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    args,
-  );
+  const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, args);
   const stdout = result.trim();
   return stdout ? stdout.split('\n') : [];
 }
 
-export async function listFlavors(
-  rootPath: NuclideUri,
-  targets: Array<string>,
-  additionalArgs: Array<string> = [],
-): Promise<?Object> {
-  const args = ['audit', 'flavors', '--json']
-    .concat(targets)
-    .concat(additionalArgs);
+async function listFlavors(rootPath, targets, additionalArgs = []) {
+  const args = ['audit', 'flavors', '--json'].concat(targets).concat(additionalArgs);
   try {
-    const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-      rootPath,
-      args,
-    );
+    const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, args);
     return JSON.parse(result);
   } catch (e) {
     return null;
@@ -404,31 +307,14 @@ export async function listFlavors(
  *
  * The build output path is typically contained in the 'buck.outputPath' key.
  */
-export async function showOutput(
-  rootPath: NuclideUri,
-  aliasOrTarget: string,
-  extraArguments: Array<string> = [],
-): Promise<Array<Object>> {
-  const args = ['targets', '--json', '--show-output', aliasOrTarget].concat(
-    extraArguments,
-  );
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    args,
-  );
+async function showOutput(rootPath, aliasOrTarget, extraArguments = []) {
+  const args = ['targets', '--json', '--show-output', aliasOrTarget].concat(extraArguments);
+  const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, args);
   return JSON.parse(result.trim());
 }
 
-export async function buildRuleTypeFor(
-  rootPath: NuclideUri,
-  aliasesOrTargets: string,
-): Promise<?ResolvedRuleType> {
-  const resolvedRuleTypes = await Promise.all(
-    aliasesOrTargets
-      .trim()
-      .split(/\s+/)
-      .map(target => _buildRuleTypeFor(rootPath, target)),
-  );
+async function buildRuleTypeFor(rootPath, aliasesOrTargets) {
+  const resolvedRuleTypes = await Promise.all(aliasesOrTargets.trim().split(/\s+/).map(target => _buildRuleTypeFor(rootPath, target)));
 
   if (resolvedRuleTypes.length === 1) {
     return resolvedRuleTypes[0];
@@ -436,30 +322,22 @@ export async function buildRuleTypeFor(
     return {
       buildTarget: {
         qualifiedName: aliasesOrTargets,
-        flavors: [],
+        flavors: []
       },
-      type: MULTIPLE_TARGET_RULE_TYPE,
+      type: MULTIPLE_TARGET_RULE_TYPE
     };
   }
 }
 
-export async function clean(rootPath: NuclideUri): Promise<void> {
-  await BuckServiceImpl.runBuckCommandFromProjectRoot(rootPath, ['clean']);
+async function clean(rootPath) {
+  await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, ['clean']);
 }
 
-export async function kill(rootPath: NuclideUri): Promise<void> {
-  await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    ['kill'],
-    {},
-    false,
-  );
+async function kill(rootPath) {
+  await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, ['kill'], {}, false);
 }
 
-export async function _buildRuleTypeFor(
-  rootPath: NuclideUri,
-  aliasOrTarget: string,
-): Promise<?ResolvedRuleType> {
+async function _buildRuleTypeFor(rootPath, aliasOrTarget) {
   let flavors;
   if (aliasOrTarget.includes('#')) {
     const nameComponents = aliasOrTarget.split('#');
@@ -469,14 +347,11 @@ export async function _buildRuleTypeFor(
   }
 
   const canonicalName = _normalizeNameForBuckQuery(aliasOrTarget);
-  let result: {[target: string]: Object};
+  let result;
   try {
-    result = await BuckServiceImpl.query(rootPath, canonicalName, [
-      '--output-attributes',
-      'buck.type',
-    ]);
+    result = await (_BuckServiceImpl || _load_BuckServiceImpl()).query(rootPath, canonicalName, ['--output-attributes', 'buck.type']);
   } catch (error) {
-    getLogger('nuclide-buck-rpc').error(error.message);
+    (0, (_log4js || _load_log4js()).getLogger)('nuclide-buck-rpc').error(error.message);
     return null;
   }
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
@@ -498,20 +373,17 @@ export async function _buildRuleTypeFor(
   return {
     buildTarget: {
       qualifiedName,
-      flavors,
+      flavors
     },
-    type,
+    type
   };
 }
 
 // Buck query doesn't allow omitting // or adding # for flavors, this needs to be fixed in buck.
-function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
+function _normalizeNameForBuckQuery(aliasOrTarget) {
   let canonicalName = aliasOrTarget;
   // Don't prepend // for aliases (aliases will not have colons or .)
-  if (
-    (canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
-    canonicalName.indexOf('//') === -1
-  ) {
+  if ((canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) && canonicalName.indexOf('//') === -1) {
     canonicalName = '//' + canonicalName;
   }
   // Strip flavor string
@@ -524,7 +396,7 @@ function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
 
 const _cachedPorts = new Map();
 
-export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
+async function getHTTPServerPort(rootPath) {
   let port = _cachedPorts.get(rootPath);
   if (port != null) {
     if (port === -1) {
@@ -532,37 +404,24 @@ export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
     }
     // If there are other builds on the promise queue, wait them out.
     // This ensures that we don't return the port for another build.
-    await BuckServiceImpl.getPool(rootPath, false).submit(() =>
-      Promise.resolve(),
-    );
-    const msg = await getWebSocketStream(rootPath, port)
-      .refCount()
-      .take(1)
-      .toPromise()
-      .catch(() => null);
+    await (_BuckServiceImpl || _load_BuckServiceImpl()).getPool(rootPath, false).submit(() => Promise.resolve());
+    const msg = await getWebSocketStream(rootPath, port).refCount().take(1).toPromise().catch(() => null);
     if (msg != null && msg.type === 'SocketConnected') {
       return port;
     }
   }
 
   const args = ['server', 'status', '--json', '--http-port'];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    args,
-  );
-  const json: Object = JSON.parse(result);
+  const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, args);
+  const json = JSON.parse(result);
   port = json['http.port'];
   _cachedPorts.set(rootPath, port);
   return port;
 }
 
 /** Runs `buck query --json` with the specified query. */
-export function query(
-  rootPath: NuclideUri,
-  queryString: string,
-  extraArguments: Array<string>,
-): Promise<Array<string>> {
-  return BuckServiceImpl.query(rootPath, queryString, extraArguments);
+function query(rootPath, queryString, extraArguments) {
+  return (_BuckServiceImpl || _load_BuckServiceImpl()).query(rootPath, queryString, extraArguments);
 }
 
 /**
@@ -574,17 +433,10 @@ export function query(
  * @return object where each arg in args will be a key. Its corresponding value will be the list
  *   of matching build targets in its results.
  */
-export async function queryWithArgs(
-  rootPath: NuclideUri,
-  queryString: string,
-  args: Array<string>,
-): Promise<{[aliasOrTarget: string]: Array<string>}> {
+async function queryWithArgs(rootPath, queryString, args) {
   const completeArgs = ['query', '--json', queryString].concat(args);
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    completeArgs,
-  );
-  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result);
+  const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, completeArgs);
+  const json = JSON.parse(result);
 
   // `buck query` does not include entries in the JSON for params that did not match anything. We
   // massage the output to ensure that every argument has an entry in the output.
@@ -607,52 +459,26 @@ export async function queryWithArgs(
  *      }
  *   }
  */
-export async function queryWithAttributes(
-  rootPath: NuclideUri,
-  queryString: string,
-  attributes: Array<string>,
-): Promise<{[aliasOrTarget: string]: {[attribute: string]: mixed}}> {
-  const completeArgs = [
-    'query',
-    '--json',
-    queryString,
-    '--output-attributes',
-    ...attributes,
-  ];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    completeArgs,
-  );
+async function queryWithAttributes(rootPath, queryString, attributes) {
+  const completeArgs = ['query', '--json', queryString, '--output-attributes', ...attributes];
+  const result = await (_BuckServiceImpl || _load_BuckServiceImpl()).runBuckCommandFromProjectRoot(rootPath, completeArgs);
   return JSON.parse(result);
 }
 
 // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover
 // all possible message types. For now, we'll manually typecast at the callsite.
-export function getWebSocketStream(
-  rootPath: NuclideUri,
-  httpPort: number,
-): ConnectableObservable<Object> {
-  return createBuckWebSocket(httpPort).publish();
+function getWebSocketStream(rootPath, httpPort) {
+  return (0, (_createBuckWebSocket || _load_createBuckWebSocket()).default)(httpPort).publish();
 }
 
-export async function resetCompilationDatabaseForSource(
-  src: NuclideUri,
-  params: CompilationDatabaseParams,
-): Promise<void> {
-  getCompilationDatabaseHandler(params).resetForSource(src);
+async function resetCompilationDatabaseForSource(src, params) {
+  (0, (_BuckClangCompilationDatabase || _load_BuckClangCompilationDatabase()).getCompilationDatabaseHandler)(params).resetForSource(src);
 }
 
-export async function resetCompilationDatabase(
-  params: CompilationDatabaseParams,
-): Promise<void> {
-  getCompilationDatabaseHandler(params).reset();
+async function resetCompilationDatabase(params) {
+  (0, (_BuckClangCompilationDatabase || _load_BuckClangCompilationDatabase()).getCompilationDatabaseHandler)(params).reset();
 }
 
-export function getCompilationDatabase(
-  src: NuclideUri,
-  params: CompilationDatabaseParams,
-): ConnectableObservable<?BuckClangCompilationDatabase> {
-  return Observable.fromPromise(
-    getCompilationDatabaseHandler(params).getCompilationDatabase(src),
-  ).publish();
+function getCompilationDatabase(src, params) {
+  return _rxjsBundlesRxMinJs.Observable.fromPromise((0, (_BuckClangCompilationDatabase || _load_BuckClangCompilationDatabase()).getCompilationDatabaseHandler)(params).getCompilationDatabase(src)).publish();
 }

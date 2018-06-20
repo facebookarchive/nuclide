@@ -1,3 +1,21 @@
+'use strict';
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _ObservablePool;
+
+function _load_ObservablePool() {
+  return _ObservablePool = _interopRequireDefault(require('../ObservablePool'));
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +24,25 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import {Observable, Subject} from 'rxjs';
-import ObservablePool from '../ObservablePool';
-import waitsFor from '../../../jest/waits_for';
-
 describe('ObservablePool', () => {
   it('limits the concurrency of observable values with cancellation', () => {
-    const pool = new ObservablePool(2);
+    const pool = new (_ObservablePool || _load_ObservablePool()).default(2);
 
-    const subject1 = new Subject();
+    const subject1 = new _rxjsBundlesRxMinJs.Subject();
     const spy1 = jest.fn().mockReturnValue(subject1);
     const req1 = pool.schedule(spy1);
 
-    const subject2 = new Subject();
+    const subject2 = new _rxjsBundlesRxMinJs.Subject();
     const spy2 = jest.fn().mockReturnValue(subject2);
     const req2 = pool.schedule(spy2);
 
-    const subject3 = new Subject();
+    const subject3 = new _rxjsBundlesRxMinJs.Subject();
     const spy3 = jest.fn().mockReturnValue(subject3);
-    const req3 = pool.schedule(Observable.defer(spy3));
+    const req3 = pool.schedule(_rxjsBundlesRxMinJs.Observable.defer(spy3));
 
     // Nothing should happen until subscription.
     expect(spy1).not.toHaveBeenCalled();
@@ -62,19 +75,15 @@ describe('ObservablePool', () => {
   });
 
   it('waits for promises, even on unsubscribe', async () => {
-    const pool = new ObservablePool(1);
-    let resolve: ?Function;
-    let reject: ?Function;
-    const spy1 = jest.fn().mockReturnValue(
-      new Promise(r => {
-        resolve = r;
-      }),
-    );
-    const spy2 = jest.fn().mockReturnValue(
-      new Promise((_, r) => {
-        reject = r;
-      }),
-    );
+    const pool = new (_ObservablePool || _load_ObservablePool()).default(1);
+    let resolve;
+    let reject;
+    const spy1 = jest.fn().mockReturnValue(new Promise(r => {
+      resolve = r;
+    }));
+    const spy2 = jest.fn().mockReturnValue(new Promise((_, r) => {
+      reject = r;
+    }));
     const errorSpy = jest.fn();
     const sub1 = pool.schedule(spy1).subscribe();
     pool.schedule(spy2).subscribe(() => {}, errorSpy);
@@ -82,10 +91,7 @@ describe('ObservablePool', () => {
     // Immediately subscribe & unsubscribe -
     // the request should never be scheduled.
     const spy3 = jest.fn().mockReturnValue(Promise.resolve());
-    pool
-      .schedule(spy3)
-      .subscribe()
-      .unsubscribe();
+    pool.schedule(spy3).subscribe().unsubscribe();
 
     expect(spy1).toHaveBeenCalled();
     expect(spy2).not.toHaveBeenCalled();
@@ -94,19 +100,23 @@ describe('ObservablePool', () => {
     // Remove the request, but remain blocked until the promise actually resolves.
     expect(pool._responseListeners.size).toEqual(1);
     expect(spy2).not.toHaveBeenCalled();
-    invariant(resolve != null, 'spy1 should have been scheduled');
+
+    if (!(resolve != null)) {
+      throw new Error('spy1 should have been scheduled');
+    }
+
     resolve();
 
     // Promise resolution is always async...
-    await waitsFor(() => spy2.mock.calls.length > 0, 'spy2 should be called');
+    await (0, (_waits_for || _load_waits_for()).default)(() => spy2.mock.calls.length > 0, 'spy2 should be called');
 
-    invariant(reject != null, 'spy2 was called');
+    if (!(reject != null)) {
+      throw new Error('spy2 was called');
+    }
+
     reject('test');
 
-    await waitsFor(
-      () => errorSpy.mock.calls.length > 0,
-      'errorSpy should be called',
-    );
+    await (0, (_waits_for || _load_waits_for()).default)(() => errorSpy.mock.calls.length > 0, 'errorSpy should be called');
 
     expect(errorSpy).toHaveBeenCalledWith('test');
     expect(pool._responseListeners.size).toBe(0);
@@ -114,24 +124,22 @@ describe('ObservablePool', () => {
   });
 
   it('catches executor errors', () => {
-    const pool = new ObservablePool(1);
+    const pool = new (_ObservablePool || _load_ObservablePool()).default(1);
     let error;
-    pool
-      .schedule(() => {
-        throw Error('test');
-      })
-      .subscribe({
-        error(err) {
-          error = err;
-        },
-      });
+    pool.schedule(() => {
+      throw Error('test');
+    }).subscribe({
+      error(err) {
+        error = err;
+      }
+    });
     expect(error).toEqual(Error('test'));
   });
 
   it('errors on disposal', () => {
-    const pool = new ObservablePool(1);
+    const pool = new (_ObservablePool || _load_ObservablePool()).default(1);
     const errorSpy = jest.fn();
-    pool.schedule(() => Promise.resolve()).subscribe({error: errorSpy});
+    pool.schedule(() => Promise.resolve()).subscribe({ error: errorSpy });
     pool.dispose();
     expect(errorSpy).toHaveBeenCalled();
   });

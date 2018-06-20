@@ -1,28 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import typeof * as FileSystemService from '../../lib/services/FileSystemService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _ServiceTestHelper;
 
-import ServiceTestHelper from '../../__mocks__/services/ServiceTestHelper';
-import invariant from 'assert';
-import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import rimraf from 'rimraf';
-import temp from 'temp';
+function _load_ServiceTestHelper() {
+  return _ServiceTestHelper = _interopRequireDefault(require('../../__mocks__/services/ServiceTestHelper'));
+}
 
-temp.track();
+var _fs = _interopRequireDefault(require('fs'));
 
-const pathToTestDir = nuclideUri.join(__dirname, '../../__mocks__/testfiles');
-const pathToTestFile = nuclideUri.join(pathToTestDir, 'testfile.txt');
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _rimraf;
+
+function _load_rimraf() {
+  return _rimraf = _interopRequireDefault(require('rimraf'));
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+(_temp || _load_temp()).default.track(); /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
+
+const pathToTestDir = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../../__mocks__/testfiles');
+const pathToTestFile = (_nuclideUri || _load_nuclideUri()).default.join(pathToTestDir, 'testfile.txt');
 const pathToWriteFile = pathToTestFile + '.1';
 const pathToLinkFile = pathToTestFile + '.2';
 const pathToBrokenLinkFile = pathToTestFile + '.3';
@@ -30,19 +48,15 @@ const pathToMissingFile = pathToTestFile + '.oops';
 
 describe('FileSystemService', () => {
   let testHelper;
-  let service: FileSystemService;
+  let service;
   beforeEach(async () => {
-    testHelper = new ServiceTestHelper();
-    const FILE_SYSTEM_SERVICE_PATH = require.resolve(
-      '../../lib/services/FileSystemService',
-    );
-    await testHelper.start([
-      {
-        name: 'FileSystemService',
-        definition: FILE_SYSTEM_SERVICE_PATH,
-        implementation: FILE_SYSTEM_SERVICE_PATH,
-      },
-    ]);
+    testHelper = new (_ServiceTestHelper || _load_ServiceTestHelper()).default();
+    const FILE_SYSTEM_SERVICE_PATH = require.resolve('../../lib/services/FileSystemService');
+    await testHelper.start([{
+      name: 'FileSystemService',
+      definition: FILE_SYSTEM_SERVICE_PATH,
+      implementation: FILE_SYSTEM_SERVICE_PATH
+    }]);
     service = testHelper.getRemoteService('FileSystemService');
   });
 
@@ -58,20 +72,22 @@ describe('FileSystemService', () => {
     } catch (e) {
       err = e;
     }
-    invariant(err != null);
+
+    if (!(err != null)) {
+      throw new Error('Invariant violation: "err != null"');
+    }
+
     expect(err).toMatch('ENOENT');
   });
 
   it('can writeFile', async () => {
     await (async () => {
       await service.writeFile(pathToWriteFile, "I'm a little teapot.\n");
-      expect(fs.readFileSync(pathToWriteFile).toString()).toEqual(
-        "I'm a little teapot.\n",
-      );
+      expect(_fs.default.readFileSync(pathToWriteFile).toString()).toEqual("I'm a little teapot.\n");
     })();
   });
 
-  function normalizeStat(stat: Object) {
+  function normalizeStat(stat) {
     // Access time will naturally differ between calls.
     delete stat.atime;
     // "Ms" fields are new to Node 8 and are not currently supported.
@@ -85,15 +101,15 @@ describe('FileSystemService', () => {
   it('can stat', async () => {
     await (async () => {
       const stats = await service.stat(pathToTestFile);
-      const expected = fs.statSync(pathToTestFile);
+      const expected = _fs.default.statSync(pathToTestFile);
       expect(normalizeStat(stats)).toEqual(normalizeStat(expected));
     })();
   });
 
   it('can readdir', async () => {
     await (async () => {
-      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
-      fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
+      _fs.default.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+      _fs.default.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
       const entries = await service.readdir(pathToTestDir);
       expect(entries.length).toBe(2); // Skips broken link
       entries.sort((a, b) => {
@@ -107,8 +123,8 @@ describe('FileSystemService', () => {
 
   it('can readdirSorted', async () => {
     await (async () => {
-      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
-      fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
+      _fs.default.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+      _fs.default.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
       const entries = await service.readdirSorted(pathToTestDir);
       expect(entries.length).toBe(2); // Skips broken link
       expect(entries[0]).toEqual(['testfile.txt', true, false]);
@@ -118,9 +134,9 @@ describe('FileSystemService', () => {
 
   it('can lstat', async () => {
     await (async () => {
-      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+      _fs.default.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
       const lstats = await service.lstat(pathToLinkFile);
-      const expected = fs.lstatSync(pathToLinkFile);
+      const expected = _fs.default.lstatSync(pathToLinkFile);
       expect(normalizeStat(lstats)).toEqual(normalizeStat(expected));
     })();
   });
@@ -140,40 +156,40 @@ describe('FileSystemService', () => {
   });
 
   describe('newFile()', () => {
-    let dirPath: string = (null: any);
+    let dirPath = null;
 
     beforeEach(() => {
-      dirPath = nuclideUri.join(__dirname, 'newFile_test');
+      dirPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'newFile_test');
     });
 
     afterEach(() => {
-      rimraf.sync(dirPath);
+      (_rimraf || _load_rimraf()).default.sync(dirPath);
     });
 
     it('creates the file and the expected subdirectories', async () => {
       await (async () => {
-        const newPath = nuclideUri.join(dirPath, 'foo/bar/baz.txt');
-        expect(fs.existsSync(newPath)).toBe(false);
+        const newPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar/baz.txt');
+        expect(_fs.default.existsSync(newPath)).toBe(false);
         const isNew = await service.newFile(newPath);
-        expect(fs.existsSync(newPath)).toBe(true);
-        expect(fs.statSync(newPath).isFile()).toBe(true);
-        expect(fs.readFileSync(newPath).toString()).toBe('');
+        expect(_fs.default.existsSync(newPath)).toBe(true);
+        expect(_fs.default.statSync(newPath).isFile()).toBe(true);
+        expect(_fs.default.readFileSync(newPath).toString()).toBe('');
         expect(isNew).toBe(true);
       })();
     });
 
     it('is a no-op for an existing file', async () => {
       await (async () => {
-        fs.mkdirSync(dirPath);
-        fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
-        fs.mkdirSync(nuclideUri.join(dirPath, 'foo/bar'));
-        const newPath = nuclideUri.join(dirPath, 'foo/bar/baz.txt');
-        fs.writeFileSync(newPath, 'contents');
-        expect(fs.existsSync(newPath)).toBe(true);
+        _fs.default.mkdirSync(dirPath);
+        _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo'));
+        _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar'));
+        const newPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar/baz.txt');
+        _fs.default.writeFileSync(newPath, 'contents');
+        expect(_fs.default.existsSync(newPath)).toBe(true);
 
         const isNew = await service.newFile(newPath);
-        expect(fs.statSync(newPath).isFile()).toBe(true);
-        expect(fs.readFileSync(newPath).toString()).toBe('contents');
+        expect(_fs.default.statSync(newPath).isFile()).toBe(true);
+        expect(_fs.default.readFileSync(newPath).toString()).toBe('contents');
         expect(isNew).toBe(false);
       })();
     });
@@ -189,7 +205,7 @@ describe('FileSystemService', () => {
 
     it('gets the real path of a symlinked file', async () => {
       await (async () => {
-        fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+        _fs.default.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
         const realpath = await service.realpath(pathToLinkFile);
         expect(realpath).toBe(testHelper.getUriOfRemotePath(pathToTestFile));
       })();
@@ -200,56 +216,52 @@ describe('FileSystemService', () => {
     let dirPath;
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('rename_test');
+      dirPath = (_temp || _load_temp()).default.mkdirSync('rename_test');
     });
 
     it('succeeds when renaming a file', async () => {
       await (async () => {
-        const sourcePath = nuclideUri.join(dirPath, 'file');
-        fs.writeFileSync(sourcePath, '');
-        const destinationPath = nuclideUri.join(dirPath, 'destination_file');
+        const sourcePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'file');
+        _fs.default.writeFileSync(sourcePath, '');
+        const destinationPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'destination_file');
 
         await service.rename(sourcePath, destinationPath);
 
-        expect(fs.existsSync(sourcePath)).toBe(false);
-        expect(fs.existsSync(destinationPath)).toBe(true);
+        expect(_fs.default.existsSync(sourcePath)).toBe(false);
+        expect(_fs.default.existsSync(destinationPath)).toBe(true);
       })();
     });
 
     it('succeeds when renaming a folder', async () => {
       await (async () => {
-        const sourcePath = nuclideUri.join(dirPath, 'directory');
-        fs.mkdirSync(sourcePath);
-        const destinationPath = nuclideUri.join(dirPath, 'destination_folder');
+        const sourcePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'directory');
+        _fs.default.mkdirSync(sourcePath);
+        const destinationPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'destination_folder');
 
         await service.rename(sourcePath, destinationPath);
 
-        expect(fs.existsSync(sourcePath)).toBe(false);
-        expect(fs.existsSync(destinationPath)).toBe(true);
+        expect(_fs.default.existsSync(sourcePath)).toBe(false);
+        expect(_fs.default.existsSync(destinationPath)).toBe(true);
       })();
     });
 
     it('succeeds when renaming into a non-existent directory', async () => {
       await (async () => {
-        const sourcePath = nuclideUri.join(dirPath, 'file');
-        fs.writeFileSync(sourcePath, '');
-        const destinationPath = nuclideUri.join(
-          dirPath,
-          'non-existent',
-          'destination_file',
-        );
+        const sourcePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'file');
+        _fs.default.writeFileSync(sourcePath, '');
+        const destinationPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'non-existent', 'destination_file');
 
         await service.rename(sourcePath, destinationPath);
 
-        expect(fs.existsSync(sourcePath)).toBe(false);
-        expect(fs.existsSync(destinationPath)).toBe(true);
+        expect(_fs.default.existsSync(sourcePath)).toBe(false);
+        expect(_fs.default.existsSync(destinationPath)).toBe(true);
       })();
     });
 
     it('throws error if the source does not exist', async () => {
       await (async () => {
-        const sourcePath = nuclideUri.join(dirPath, 'file');
-        const destinationPath = nuclideUri.join(dirPath, 'destination_file');
+        const sourcePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'file');
+        const destinationPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'destination_file');
 
         let err;
         try {
@@ -258,18 +270,21 @@ describe('FileSystemService', () => {
           err = e;
         }
 
-        invariant(err != null);
+        if (!(err != null)) {
+          throw new Error('Invariant violation: "err != null"');
+        }
+
         expect(err).toMatch('ENOENT');
-        expect(fs.existsSync(destinationPath)).toBe(false);
+        expect(_fs.default.existsSync(destinationPath)).toBe(false);
       })();
     });
 
     it('throws error if the destination exists', async () => {
       await (async () => {
-        const sourcePath = nuclideUri.join(dirPath, 'file');
-        fs.writeFileSync(sourcePath, '');
-        const destinationPath = nuclideUri.join(dirPath, 'destination_file');
-        fs.writeFileSync(destinationPath, '');
+        const sourcePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'file');
+        _fs.default.writeFileSync(sourcePath, '');
+        const destinationPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'destination_file');
+        _fs.default.writeFileSync(destinationPath, '');
 
         let err;
         try {
@@ -278,44 +293,51 @@ describe('FileSystemService', () => {
           err = e;
         }
 
-        invariant(err != null);
+        if (!(err != null)) {
+          throw new Error('Invariant violation: "err != null"');
+        }
+
         expect(err).toMatch('EEXIST');
       })();
     });
   });
 
   describe('mkdir()', () => {
-    let dirPath: string = (null: any);
+    let dirPath = null;
 
     beforeEach(() => {
-      dirPath = nuclideUri.join(__dirname, 'mkdir_test');
+      dirPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'mkdir_test');
     });
 
     afterEach(() => {
-      if (fs.existsSync(dirPath)) {
-        fs.rmdirSync(dirPath);
+      if (_fs.default.existsSync(dirPath)) {
+        _fs.default.rmdirSync(dirPath);
       }
     });
 
     it('creates a directory at a given path', async () => {
       await (async () => {
-        expect(fs.existsSync(dirPath)).toBe(false);
+        expect(_fs.default.existsSync(dirPath)).toBe(false);
         await service.mkdir(dirPath);
-        expect(fs.existsSync(dirPath)).toBe(true);
-        expect(fs.statSync(dirPath).isDirectory()).toBe(true);
+        expect(_fs.default.existsSync(dirPath)).toBe(true);
+        expect(_fs.default.statSync(dirPath).isDirectory()).toBe(true);
       })();
     });
 
     it('throws an error if already existing directory', async () => {
       await (async () => {
         let err;
-        fs.mkdirSync(dirPath);
+        _fs.default.mkdirSync(dirPath);
         try {
           await service.mkdir(dirPath);
         } catch (e) {
           err = e;
         }
-        invariant(err != null);
+
+        if (!(err != null)) {
+          throw new Error('Invariant violation: "err != null"');
+        }
+
         expect(err).toMatch('EEXIST');
       })();
     });
@@ -324,48 +346,52 @@ describe('FileSystemService', () => {
       await (async () => {
         let err;
         try {
-          await service.mkdir(nuclideUri.join(dirPath, 'foo'));
+          await service.mkdir((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo'));
         } catch (e) {
           err = e;
         }
-        invariant(err != null);
+
+        if (!(err != null)) {
+          throw new Error('Invariant violation: "err != null"');
+        }
+
         expect(err).toMatch('ENOENT');
       })();
     });
   });
 
   describe('mkdirp()', () => {
-    let dirPath: string = (null: any);
+    let dirPath = null;
 
     beforeEach(() => {
-      dirPath = nuclideUri.join(__dirname, 'mkdirp_test');
+      dirPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'mkdirp_test');
     });
 
     afterEach(() => {
-      rimraf.sync(dirPath);
+      (_rimraf || _load_rimraf()).default.sync(dirPath);
     });
 
     it('creates the expected subdirectories', async () => {
       await (async () => {
-        const newPath = nuclideUri.join(dirPath, 'foo/bar/baz');
-        expect(fs.existsSync(newPath)).toBe(false);
+        const newPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar/baz');
+        expect(_fs.default.existsSync(newPath)).toBe(false);
         const isNew = await service.mkdirp(newPath);
-        expect(fs.existsSync(newPath)).toBe(true);
+        expect(_fs.default.existsSync(newPath)).toBe(true);
         expect(isNew).toBe(true);
       })();
     });
 
     it('is a no-op for an existing directory', async () => {
       await (async () => {
-        fs.mkdirSync(dirPath);
-        fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
-        fs.mkdirSync(nuclideUri.join(dirPath, 'foo/bar'));
-        const newPath = nuclideUri.join(dirPath, 'foo/bar/baz');
-        fs.mkdirSync(newPath);
-        expect(fs.existsSync(newPath)).toBe(true);
+        _fs.default.mkdirSync(dirPath);
+        _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo'));
+        _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar'));
+        const newPath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo/bar/baz');
+        _fs.default.mkdirSync(newPath);
+        expect(_fs.default.existsSync(newPath)).toBe(true);
 
         const isNew = await service.mkdirp(newPath);
-        expect(fs.existsSync(newPath)).toBe(true);
+        expect(_fs.default.existsSync(newPath)).toBe(true);
         expect(isNew).toBe(false);
       })();
     });
@@ -375,24 +401,24 @@ describe('FileSystemService', () => {
     let dirPath;
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('rmdir_test');
+      dirPath = (_temp || _load_temp()).default.mkdirSync('rmdir_test');
     });
 
     it('removes non-empty directories', async () => {
       await (async () => {
-        const directoryToRemove = nuclideUri.join(dirPath, 'foo');
-        await service.mkdirp(nuclideUri.join(directoryToRemove, 'bar'));
-        expect(fs.existsSync(directoryToRemove)).toBe(true);
+        const directoryToRemove = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
+        await service.mkdirp((_nuclideUri || _load_nuclideUri()).default.join(directoryToRemove, 'bar'));
+        expect(_fs.default.existsSync(directoryToRemove)).toBe(true);
         await service.rmdir(directoryToRemove);
-        expect(fs.existsSync(directoryToRemove)).toBe(false);
+        expect(_fs.default.existsSync(directoryToRemove)).toBe(false);
       })();
     });
 
     it('does nothing for non-existent directories', async () => {
       await (async () => {
-        const directoryToRemove = nuclideUri.join(dirPath, 'foo');
+        const directoryToRemove = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
         await service.rmdir(directoryToRemove);
-        expect(fs.existsSync(directoryToRemove)).toBe(false);
+        expect(_fs.default.existsSync(directoryToRemove)).toBe(false);
       })();
     });
   });
@@ -401,24 +427,24 @@ describe('FileSystemService', () => {
     let dirPath;
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('unlink_test');
+      dirPath = (_temp || _load_temp()).default.mkdirSync('unlink_test');
     });
 
     it('removes file if it exists', async () => {
       await (async () => {
-        const fileToRemove = nuclideUri.join(dirPath, 'foo');
-        fs.writeFileSync(fileToRemove, '');
-        expect(fs.existsSync(fileToRemove)).toBe(true);
+        const fileToRemove = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
+        _fs.default.writeFileSync(fileToRemove, '');
+        expect(_fs.default.existsSync(fileToRemove)).toBe(true);
         await service.unlink(fileToRemove);
-        expect(fs.existsSync(fileToRemove)).toBe(false);
+        expect(_fs.default.existsSync(fileToRemove)).toBe(false);
       })();
     });
 
     it('does nothing for non-existent files', async () => {
       await (async () => {
-        const fileToRemove = nuclideUri.join(dirPath, 'foo');
+        const fileToRemove = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
         await service.unlink(fileToRemove);
-        expect(fs.existsSync(fileToRemove)).toBe(false);
+        expect(_fs.default.existsSync(fileToRemove)).toBe(false);
       })();
     });
   });
@@ -428,10 +454,10 @@ describe('FileSystemService', () => {
     let testFilePath = null;
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('chmod_test');
-      testFilePath = nuclideUri.join(dirPath, 'foo');
-      fs.writeFileSync(testFilePath, '');
-      fs.chmodSync(testFilePath, '0644');
+      dirPath = (_temp || _load_temp()).default.mkdirSync('chmod_test');
+      testFilePath = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
+      _fs.default.writeFileSync(testFilePath, '');
+      _fs.default.chmodSync(testFilePath, '0644');
     });
 
     afterEach(() => {
@@ -442,109 +468,86 @@ describe('FileSystemService', () => {
 
     it.skip('can change permissions', async () => {
       await (async () => {
-        invariant(testFilePath != null);
+        if (!(testFilePath != null)) {
+          throw new Error('Invariant violation: "testFilePath != null"');
+        }
         // chmod 0777
+
+
         await service.chmod(testFilePath, 511);
-        expect(fs.statSync(testFilePath).mode % 512).toBe(511);
+        expect(_fs.default.statSync(testFilePath).mode % 512).toBe(511);
       })();
     });
   });
 
   describe('findNearestAncestorNamed', () => {
-    let dirPath: string = (null: any);
+    let dirPath = null;
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('findNearestAncestorNamed_test');
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar'));
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar', 'baz'));
-      fs.mkdirSync(nuclideUri.join(dirPath, 'boo'));
-      const filePaths = [
-        nuclideUri.join(dirPath, 'foo', 'BUCK'),
-        nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'),
-      ];
-      filePaths.forEach(filePath => fs.writeFileSync(filePath, 'any contents'));
+      dirPath = (_temp || _load_temp()).default.mkdirSync('findNearestAncestorNamed_test');
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo'));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar'));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', 'baz'));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'boo'));
+      const filePaths = [(_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'BUCK'), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', 'baz', 'BUCK')];
+      filePaths.forEach(filePath => _fs.default.writeFileSync(filePath, 'any contents'));
     });
 
     it.skip('findNearestAncestorNamed in dir', async () => {
-      const pathToDirectory1 = nuclideUri.join(dirPath, 'foo');
-      const nearestFile1 = await service.findNearestAncestorNamed(
-        'BUCK',
-        pathToDirectory1,
-      );
-      expect(nearestFile1).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
+      const pathToDirectory1 = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo');
+      const nearestFile1 = await service.findNearestAncestorNamed('BUCK', pathToDirectory1);
+      expect(nearestFile1).toBe((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'BUCK'));
 
-      const pathToDirectory2 = nuclideUri.join(dirPath, 'foo', 'bar', 'baz');
-      const nearestFile2 = await service.findNearestAncestorNamed(
-        'BUCK',
-        pathToDirectory2,
-      );
-      expect(nearestFile2).toBe(
-        nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'),
-      );
+      const pathToDirectory2 = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', 'baz');
+      const nearestFile2 = await service.findNearestAncestorNamed('BUCK', pathToDirectory2);
+      expect(nearestFile2).toBe((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'));
     });
 
     it.skip('findNearestAncestorNamed in ancestor', async () => {
-      const pathToDirectory = nuclideUri.join(dirPath, 'foo', 'bar');
-      const nearestFile = await service.findNearestAncestorNamed(
-        'BUCK',
-        pathToDirectory,
-      );
-      expect(nearestFile).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
+      const pathToDirectory = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar');
+      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
+      expect(nearestFile).toBe((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'BUCK'));
     });
 
     it('findNearestAncestorNamed not in ancestor', async () => {
-      const pathToDirectory = nuclideUri.join(dirPath, 'boo');
-      const nearestFile = await service.findNearestAncestorNamed(
-        'BUCK',
-        pathToDirectory,
-      );
+      const pathToDirectory = (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'boo');
+      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
       expect(nearestFile).toBe(null);
     });
   });
 
   describe('findFilesInDirectories()', () => {
-    let dirPath: string = (null: any);
-    let fileName: string = (null: any);
-    let filePaths: Array<string> = (null: any);
+    let dirPath = null;
+    let fileName = null;
+    let filePaths = null;
 
-    function toLocalPaths(fileUris: Array<NuclideUri>): Array<string> {
-      return fileUris.map(fileUri => nuclideUri.getPath(fileUri));
+    function toLocalPaths(fileUris) {
+      return fileUris.map(fileUri => (_nuclideUri || _load_nuclideUri()).default.getPath(fileUri));
     }
 
     beforeEach(() => {
-      dirPath = nuclideUri.join(__dirname, 'find_in_dir');
+      dirPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'find_in_dir');
       fileName = 'file.txt';
 
-      fs.mkdirSync(dirPath);
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo'));
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', 'bar'));
-      fs.mkdirSync(nuclideUri.join(dirPath, 'baz'));
+      _fs.default.mkdirSync(dirPath);
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo'));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar'));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'baz'));
       // A directory with the same file name won't be matched.
-      fs.mkdirSync(nuclideUri.join(dirPath, 'foo', fileName));
+      _fs.default.mkdirSync((_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', fileName));
 
-      filePaths = [
-        nuclideUri.join(dirPath, fileName),
-        nuclideUri.join(dirPath, 'baz', fileName),
-        nuclideUri.join(dirPath, 'baz', 'other_file1'),
-        nuclideUri.join(dirPath, 'foo', 'other_file2'),
-        nuclideUri.join(dirPath, 'foo', 'bar', 'other_file3'),
-        nuclideUri.join(dirPath, 'foo', 'bar', fileName),
-      ];
-      filePaths.forEach(filePath => fs.writeFileSync(filePath, 'any contents'));
+      filePaths = [(_nuclideUri || _load_nuclideUri()).default.join(dirPath, fileName), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'baz', fileName), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'baz', 'other_file1'), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'other_file2'), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', 'other_file3'), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo', 'bar', fileName)];
+      filePaths.forEach(filePath => _fs.default.writeFileSync(filePath, 'any contents'));
     });
 
     afterEach(() => {
-      rimraf.sync(dirPath);
+      (_rimraf || _load_rimraf()).default.sync(dirPath);
     });
 
     it('errors when no search directories are provided', async () => {
       let error;
       try {
-        await service
-          .findFilesInDirectories([], fileName)
-          .refCount()
-          .toPromise();
+        await service.findFilesInDirectories([], fileName).refCount().toPromise();
       } catch (e) {
         error = e;
       }
@@ -553,51 +556,38 @@ describe('FileSystemService', () => {
 
     it('return empty list when no files are matching', async () => {
       await (async () => {
-        const foundFiles = await service
-          .findFilesInDirectories([dirPath], 'not_existing')
-          .refCount()
-          .toPromise();
+        const foundFiles = await service.findFilesInDirectories([dirPath], 'not_existing').refCount().toPromise();
         expect(foundFiles.length).toBe(0);
       })();
     });
 
     it('return matching file names in a directory (& nested directories)', async () => {
-      const foundFiles = await service
-        .findFilesInDirectories([dirPath], fileName)
-        .refCount()
-        .toPromise();
+      const foundFiles = await service.findFilesInDirectories([dirPath], fileName).refCount().toPromise();
       expect(foundFiles.length).toBe(3);
-      expect(toLocalPaths(foundFiles).sort()).toEqual(
-        [filePaths[0], filePaths[1], filePaths[5]].sort(),
-      );
+      expect(toLocalPaths(foundFiles).sort()).toEqual([filePaths[0], filePaths[1], filePaths[5]].sort());
     });
 
     it('return matching file names in specific search directories', async () => {
-      const foundFiles = await service
-        .findFilesInDirectories(
-          [nuclideUri.join(dirPath, 'baz'), nuclideUri.join(dirPath, 'foo')],
-          fileName,
-        )
-        .refCount()
-        .toPromise();
+      const foundFiles = await service.findFilesInDirectories([(_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'baz'), (_nuclideUri || _load_nuclideUri()).default.join(dirPath, 'foo')], fileName).refCount().toPromise();
       expect(foundFiles.length).toBe(2);
-      expect(toLocalPaths(foundFiles).sort()).toEqual(
-        [filePaths[1], filePaths[5]].sort(),
-      );
+      expect(toLocalPaths(foundFiles).sort()).toEqual([filePaths[1], filePaths[5]].sort());
     });
   });
 
   afterEach(() => {
-    invariant(testHelper);
-    testHelper.stop();
-    if (fs.existsSync(pathToWriteFile)) {
-      fs.unlinkSync(pathToWriteFile);
+    if (!testHelper) {
+      throw new Error('Invariant violation: "testHelper"');
     }
-    if (fs.existsSync(pathToLinkFile)) {
-      fs.unlinkSync(pathToLinkFile);
+
+    testHelper.stop();
+    if (_fs.default.existsSync(pathToWriteFile)) {
+      _fs.default.unlinkSync(pathToWriteFile);
+    }
+    if (_fs.default.existsSync(pathToLinkFile)) {
+      _fs.default.unlinkSync(pathToLinkFile);
     }
     try {
-      fs.unlinkSync(pathToBrokenLinkFile);
+      _fs.default.unlinkSync(pathToBrokenLinkFile);
     } catch (e) {
       /* exists can't check for broken symlinks, just absorb the error for cleanup */
     }

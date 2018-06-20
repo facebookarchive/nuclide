@@ -1,3 +1,37 @@
+'use strict';
+
+var _events = _interopRequireDefault(require('events'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../promise');
+}
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,37 +40,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ProcessExitMessage} from '../process';
-
-import EventEmitter from 'events';
-import {getLogger} from 'log4js';
-import {sleep} from '../promise';
-import child_process from 'child_process';
-import invariant from 'assert';
-import {Observable, Scheduler, Subject} from 'rxjs';
-import waitsFor from '../../../jest/waits_for';
-
-import {
-  spawn,
-  getOutputStream,
-  killProcess,
-  killUnixProcessTree,
-  logStreamErrors,
-  observeProcess,
-  observeProcessRaw,
-  parsePsOutput,
-  preventStreamsFromThrowing,
-  ProcessSystemError,
-  runCommand,
-  runCommandDetailed,
-  scriptifyCommand,
-  exitEventToMessage,
-  LOG_CATEGORY,
-} from '../process';
 
 jest.mock('../performanceNow');
 
@@ -51,164 +57,119 @@ describe('commons-node/process', () => {
     origPlatform = process.platform;
     // Use a fake platform so the platform's PATH is not used in case the test is run on a platform
     // that requires special handling (like OS X).
-    Object.defineProperty(process, 'platform', {value: 'MockMock'});
+    Object.defineProperty(process, 'platform', { value: 'MockMock' });
   });
 
   afterEach(() => {
-    Object.defineProperty(process, 'platform', {value: origPlatform});
+    Object.defineProperty(process, 'platform', { value: origPlatform });
   });
 
   describe('process.killProcess', () => {
     it('should only kill the process when `killTree` is false', async () => {
       await (async () => {
         const proc = {
-          kill: jasmine.createSpy(),
+          kill: jasmine.createSpy()
         };
         jest.spyOn(console, 'log'); // suppress log printing
-        await killProcess((proc: any), false);
+        await (0, (_process || _load_process()).killProcess)(proc, false);
         expect(proc.kill).toHaveBeenCalled();
       })();
     });
 
     it('should kill the process tree when `killTree` is true', async () => {
       // Create a tree that's more than level child deep.
-      const proc = child_process.spawn('bash', [
-        '-c',
-        '( (sleep 1000)& sleep 1000 )& wait',
-      ]);
+      const proc = _child_process.default.spawn('bash', ['-c', '( (sleep 1000)& sleep 1000 )& wait']);
       jest.spyOn(console, 'log'); // suppress log printing
       jest.spyOn(process, 'kill');
-      await sleep(250); // Give some time for the processes to spawn.
-      await killUnixProcessTree(proc);
+      await (0, (_promise || _load_promise()).sleep)(250); // Give some time for the processes to spawn.
+      await (0, (_process || _load_process()).killUnixProcessTree)(proc);
       expect(process.kill.mock.calls.length).toBeGreaterThan(2);
     });
 
     it('should kill the process tree on windows when `killTree` is true', async () => {
       await (async () => {
         const proc = {
-          pid: 123,
+          pid: 123
         };
         jest.spyOn(console, 'log'); // suppress log printing
-        Object.defineProperty(process, 'platform', {value: 'win32'});
-        jest.spyOn(child_process, 'exec');
-        await killProcess((proc: any), true);
-        expect(child_process.exec.mock.calls).toHaveLength(1);
-        expect(child_process.exec.mock.calls[0][0]).toBe(
-          `taskkill /pid ${proc.pid} /T /F`,
-        );
+        Object.defineProperty(process, 'platform', { value: 'win32' });
+        jest.spyOn(_child_process.default, 'exec');
+        await (0, (_process || _load_process()).killProcess)(proc, true);
+        expect(_child_process.default.exec.mock.calls).toHaveLength(1);
+        expect(_child_process.default.exec.mock.calls[0][0]).toBe(`taskkill /pid ${proc.pid} /T /F`);
       })();
     });
   });
 
   describe('process.parsePsOutput', () => {
     it('parse `ps` unix output', () => {
-      const unixPsOut =
-        ' PPID   PID COMM\n' +
-        '    0     1  /sbin/launchd\n' +
-        '    1    42  command with spaces';
-      const processList = parsePsOutput(unixPsOut);
-      expect(processList).toEqual([
-        {
-          command: '/sbin/launchd',
-          pid: 1,
-          parentPid: 0,
-          commandWithArgs: '/sbin/launchd',
-        },
-        {
-          command: 'command with spaces',
-          pid: 42,
-          parentPid: 1,
-          commandWithArgs: 'command with spaces',
-        },
-      ]);
+      const unixPsOut = ' PPID   PID COMM\n' + '    0     1  /sbin/launchd\n' + '    1    42  command with spaces';
+      const processList = (0, (_process || _load_process()).parsePsOutput)(unixPsOut);
+      expect(processList).toEqual([{
+        command: '/sbin/launchd',
+        pid: 1,
+        parentPid: 0,
+        commandWithArgs: '/sbin/launchd'
+      }, {
+        command: 'command with spaces',
+        pid: 42,
+        parentPid: 1,
+        commandWithArgs: 'command with spaces'
+      }]);
     });
 
     it('parse `ps` unix output with command arguments', () => {
-      const unixPsOut =
-        ' PPID   PID COMM\n' +
-        '    0     1  /sbin/launchd\n' +
-        '    1    42  command with spaces';
+      const unixPsOut = ' PPID   PID COMM\n' + '    0     1  /sbin/launchd\n' + '    1    42  command with spaces';
 
-      const unixPsOutWithArgs =
-        ' PID ARGS\n' +
-        '   1  /sbin/launchd\n' +
-        '  42  command with spaces and some more arguments';
+      const unixPsOutWithArgs = ' PID ARGS\n' + '   1  /sbin/launchd\n' + '  42  command with spaces and some more arguments';
 
-      const processList = parsePsOutput(unixPsOut, unixPsOutWithArgs);
-      expect(processList).toEqual([
-        {
-          command: '/sbin/launchd',
-          pid: 1,
-          parentPid: 0,
-          commandWithArgs: '/sbin/launchd',
-        },
-        {
-          command: 'command with spaces',
-          pid: 42,
-          parentPid: 1,
-          commandWithArgs: 'command with spaces and some more arguments',
-        },
-      ]);
+      const processList = (0, (_process || _load_process()).parsePsOutput)(unixPsOut, unixPsOutWithArgs);
+      expect(processList).toEqual([{
+        command: '/sbin/launchd',
+        pid: 1,
+        parentPid: 0,
+        commandWithArgs: '/sbin/launchd'
+      }, {
+        command: 'command with spaces',
+        pid: 42,
+        parentPid: 1,
+        commandWithArgs: 'command with spaces and some more arguments'
+      }]);
     });
 
     it('parse `ps` windows output', () => {
-      const windowsProcessOut =
-        'ParentProcessId   ProcessId   Name\r\n' +
-        '           0                4     System Process\r\n' +
-        '           4                228   smss.exe';
+      const windowsProcessOut = 'ParentProcessId   ProcessId   Name\r\n' + '           0                4     System Process\r\n' + '           4                228   smss.exe';
 
-      const processList = parsePsOutput(windowsProcessOut);
-      expect(processList).toEqual([
-        {
-          command: 'System Process',
-          pid: 4,
-          parentPid: 0,
-          commandWithArgs: 'System Process',
-        },
-        {
-          command: 'smss.exe',
-          pid: 228,
-          parentPid: 4,
-          commandWithArgs: 'smss.exe',
-        },
-      ]);
+      const processList = (0, (_process || _load_process()).parsePsOutput)(windowsProcessOut);
+      expect(processList).toEqual([{
+        command: 'System Process',
+        pid: 4,
+        parentPid: 0,
+        commandWithArgs: 'System Process'
+      }, {
+        command: 'smss.exe',
+        pid: 228,
+        parentPid: 4,
+        commandWithArgs: 'smss.exe'
+      }]);
     });
   });
 
   describe('getOutputStream', () => {
     it('captures stdout, stderr and exitCode', async () => {
       await (async () => {
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(0);',
-        ]);
-        const results = await getOutputStream(child)
-          .toArray()
-          .toPromise();
-        expect(results).toEqual([
-          {kind: 'stderr', data: 'stderr\n'},
-          {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 0, signal: null},
-        ]);
+        const child = _child_process.default.spawn(process.execPath, ['-e', 'console.error("stderr"); console.log("std out"); process.exit(0);']);
+        const results = await (0, (_process || _load_process()).getOutputStream)(child).toArray().toPromise();
+        expect(results).toEqual([{ kind: 'stderr', data: 'stderr\n' }, { kind: 'stdout', data: 'std out\n' }, { kind: 'exit', exitCode: 0, signal: null }]);
       })();
     });
 
     it('errors on nonzero exit codes by default', async () => {
       await (async () => {
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(42);',
-        ]);
-        const results = await getOutputStream(child)
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual([
-          'N',
-          'N',
-          'E',
-        ]);
-        const {error} = results[2];
+        const child = _child_process.default.spawn(process.execPath, ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+        const results = await (0, (_process || _load_process()).getOutputStream)(child).materialize().toArray().toPromise();
+        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        const { error } = results[2];
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
         expect(error.stderr).toBe('stderr\n');
@@ -218,22 +179,21 @@ describe('commons-node/process', () => {
     it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', async () => {
       await (async () => {
         let error;
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); process.exit(42);',
-        ]);
+        const child = _child_process.default.spawn(process.execPath, ['-e', 'console.error("stderr"); process.exit(42);']);
         try {
-          await getOutputStream(child, {
+          await (0, (_process || _load_process()).getOutputStream)(child, {
             exitErrorBufferSize: 2,
-            isExitError: () => true,
-          })
-            .toArray()
-            .toPromise();
+            isExitError: () => true
+          }).toArray().toPromise();
         } catch (err) {
           error = err;
         }
         expect(error).toBeDefined();
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.stderr).toBe('st');
       })();
     });
@@ -242,8 +202,8 @@ describe('commons-node/process', () => {
   describe('spawn', () => {
     it('errors when the process does', async () => {
       jest.spyOn(console, 'log'); // suppress log printing
-      const processStream = spawn('fakeCommand', undefined, {
-        dontLogInNuclide: true,
+      const processStream = (0, (_process || _load_process()).spawn)('fakeCommand', undefined, {
+        dontLogInNuclide: true
       });
       let error;
       try {
@@ -252,7 +212,11 @@ describe('commons-node/process', () => {
         error = err;
       }
       expect(error).toBeDefined();
-      invariant(error);
+
+      if (!error) {
+        throw new Error('Invariant violation: "error"');
+      }
+
       expect(error.code).toBe('ENOENT');
       expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
@@ -264,17 +228,14 @@ describe('commons-node/process', () => {
     it('errors before emitting the process', async () => {
       jest.spyOn(console, 'log'); // suppress log printing
       let proc;
-      await spawn('fakeCommand', undefined, {dontLogInNuclide: true})
-        .do(p => {
-          proc = p;
-        })
-        .catch(err => {
-          expect(proc).toBeUndefined();
-          expect(err.code).toBe('ENOENT');
-          expect(err.message).toBe('spawn fakeCommand ENOENT');
-          return Observable.empty();
-        })
-        .toPromise();
+      await (0, (_process || _load_process()).spawn)('fakeCommand', undefined, { dontLogInNuclide: true }).do(p => {
+        proc = p;
+      }).catch(err => {
+        expect(proc).toBeUndefined();
+        expect(err.code).toBe('ENOENT');
+        expect(err.message).toBe('spawn fakeCommand ENOENT');
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }).toPromise();
     });
 
     it('leaves an error handler when you unsubscribe', async () => {
@@ -284,45 +245,40 @@ describe('commons-node/process', () => {
         const promise = new Promise(r => {
           resolve = r;
         });
-        const sub = spawn('cat', undefined, {dontLogInNuclide: true})
-          // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
-          // assigned yet in our `subscribe()` callback, so we use the async scheduler.
-          .subscribeOn(Scheduler.async)
-          .subscribe(proc => {
-            // As soon as we have a process, unsubscribe. This will happen before the error is
-            // thrown.
-            sub.unsubscribe();
+        const sub = (0, (_process || _load_process()).spawn)('cat', undefined, { dontLogInNuclide: true })
+        // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
+        // assigned yet in our `subscribe()` callback, so we use the async scheduler.
+        .subscribeOn(_rxjsBundlesRxMinJs.Scheduler.async).subscribe(proc => {
+          // As soon as we have a process, unsubscribe. This will happen before the error is
+          // thrown.
+          sub.unsubscribe();
 
-            // Make sure that the error handler is still registered. If it isn't, and the process
-            // errors, node will consider the error unhandled and we'll get a redbox.
-            expect(proc.listenerCount('error')).toBe(1);
+          // Make sure that the error handler is still registered. If it isn't, and the process
+          // errors, node will consider the error unhandled and we'll get a redbox.
+          expect(proc.listenerCount('error')).toBe(1);
 
-            resolve();
-          });
+          resolve();
+        });
         await promise;
       })();
     });
 
     it('can be retried', async () => {
       jest.spyOn(console, 'log'); // suppress log printing
-      jest.spyOn(child_process, 'spawn');
+      jest.spyOn(_child_process.default, 'spawn');
       try {
-        await spawn('fakeCommand', undefined, {dontLogInNuclide: true})
-          .retryWhen(errors =>
-            errors.scan((errorCount, err) => {
-              // If this is the third time the process has errored (i.e. the have already been
-              // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
-              // have bugs with retrying shared observables that would give false negatives for
-              // this test if we only tried twice.)
-              if (errorCount === 2) {
-                throw err;
-              }
-              return errorCount + 1;
-            }, 0),
-          )
-          .toPromise();
+        await (0, (_process || _load_process()).spawn)('fakeCommand', undefined, { dontLogInNuclide: true }).retryWhen(errors => errors.scan((errorCount, err) => {
+          // If this is the third time the process has errored (i.e. the have already been
+          // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
+          // have bugs with retrying shared observables that would give false negatives for
+          // this test if we only tried twice.)
+          if (errorCount === 2) {
+            throw err;
+          }
+          return errorCount + 1;
+        }, 0)).toPromise();
       } catch (err) {}
-      expect(child_process.spawn.mock.calls).toHaveLength(3);
+      expect(_child_process.default.spawn.mock.calls).toHaveLength(3);
     });
 
     it('can be timed out', async () => {
@@ -330,17 +286,22 @@ describe('commons-node/process', () => {
         let error;
         let proc;
         try {
-          await spawn('sleep', ['10000'], {timeout: 1})
-            .do(p => {
-              proc = p;
-              jest.spyOn(proc, 'kill');
-            })
-            .toPromise();
+          await (0, (_process || _load_process()).spawn)('sleep', ['10000'], { timeout: 1 }).do(p => {
+            proc = p;
+            jest.spyOn(proc, 'kill');
+          }).toPromise();
         } catch (err) {
           error = err;
         }
-        invariant(proc != null);
-        invariant(error != null);
+
+        if (!(proc != null)) {
+          throw new Error('Invariant violation: "proc != null"');
+        }
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.name).toBe('ProcessTimeoutError');
         expect(proc.kill).toHaveBeenCalled();
       })();
@@ -351,7 +312,7 @@ describe('commons-node/process', () => {
     it('errors when the process does', async () => {
       await (async () => {
         jest.spyOn(console, 'log'); // suppress log printing
-        const processStream = observeProcess('fakeCommand', []);
+        const processStream = (0, (_process || _load_process()).observeProcess)('fakeCommand', []);
         let error;
         try {
           await processStream.toPromise();
@@ -359,7 +320,11 @@ describe('commons-node/process', () => {
           error = err;
         }
         expect(error).toBeDefined();
-        invariant(error);
+
+        if (!error) {
+          throw new Error('Invariant violation: "error"');
+        }
+
         expect(error.code).toBe('ENOENT');
         expect(error.message).toBe('spawn fakeCommand ENOENT');
       })();
@@ -367,19 +332,9 @@ describe('commons-node/process', () => {
 
     it('errors on nonzero exit codes by default', async () => {
       await (async () => {
-        const results = await observeProcess(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(42);',
-        ])
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual([
-          'N',
-          'N',
-          'E',
-        ]);
-        const {error} = results[2];
+        const results = await (0, (_process || _load_process()).observeProcess)(process.execPath, ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']).materialize().toArray().toPromise();
+        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        const { error } = results[2];
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
         expect(error.stderr).toBe('stderr\n');
@@ -388,13 +343,7 @@ describe('commons-node/process', () => {
 
     it("doesn't get an exit message when there's an exit error", async () => {
       await (async () => {
-        const results = await observeProcess(process.execPath, [
-          '-e',
-          'process.exit(42);',
-        ])
-          .materialize()
-          .toArray()
-          .toPromise();
+        const results = await (0, (_process || _load_process()).observeProcess)(process.execPath, ['-e', 'process.exit(42);']).materialize().toArray().toPromise();
         expect(results.length).toBe(1);
         expect(results[0].kind).toBe('E');
       })();
@@ -404,18 +353,16 @@ describe('commons-node/process', () => {
       await (async () => {
         let error;
         try {
-          await observeProcess(
-            process.execPath,
-            ['-e', 'console.error("stderr"); process.exit(42);'],
-            {exitErrorBufferSize: 2, isExitError: () => true},
-          )
-            .toArray()
-            .toPromise();
+          await (0, (_process || _load_process()).observeProcess)(process.execPath, ['-e', 'console.error("stderr"); process.exit(42);'], { exitErrorBufferSize: 2, isExitError: () => true }).toArray().toPromise();
         } catch (err) {
           error = err;
         }
         expect(error).toBeDefined();
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.stderr).toBe('st');
       })();
     });
@@ -425,13 +372,12 @@ describe('commons-node/process', () => {
     it("doesn't split on line breaks", async () => {
       jest.spyOn(console, 'log'); // suppress log printing
       await (async () => {
-        const event = await observeProcessRaw(process.execPath, [
-          '-e',
-          'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)',
-        ])
-          .take(1)
-          .toPromise();
-        invariant(event.kind === 'stdout');
+        const event = await (0, (_process || _load_process()).observeProcessRaw)(process.execPath, ['-e', 'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)']).take(1).toPromise();
+
+        if (!(event.kind === 'stdout')) {
+          throw new Error('Invariant violation: "event.kind === \'stdout\'"');
+        }
+
         expect(event.data).toBe('stdout1\nstdout2\n');
       })();
     });
@@ -448,38 +394,42 @@ describe('commons-node/process', () => {
     }
 
     it('sends the stdin to the process', async () => {
-      const output = await runCommand('cat', [], {
-        input: 'hello',
+      const output = await (0, (_process || _load_process()).runCommand)('cat', [], {
+        input: 'hello'
       }).toPromise();
       expect(output).toBe('hello');
     });
 
     it('sends a stream of stdin to the process', async () => {
-      const input = new Subject();
-      const outputPromise = runCommand('cat', [], {
-        input,
+      const input = new _rxjsBundlesRxMinJs.Subject();
+      const outputPromise = (0, (_process || _load_process()).runCommand)('cat', [], {
+        input
       }).toPromise();
       input.next('hello');
       input.next(' ');
       input.next('world');
       input.complete();
-      expect(await outputPromise).toBe('hello world');
+      expect((await outputPromise)).toBe('hello world');
     });
 
     it('enforces maxBuffer', async () => {
       let error;
       try {
-        await runCommand('yes', [], {maxBuffer: 100}).toPromise();
+        await (0, (_process || _load_process()).runCommand)('yes', [], { maxBuffer: 100 }).toPromise();
       } catch (err) {
         error = err;
       }
-      invariant(error != null);
+
+      if (!(error != null)) {
+        throw new Error('Invariant violation: "error != null"');
+      }
+
       expect(error.message).toContain('maxBuffer');
     });
 
     it('returns stdout of the running process', async () => {
-      const val = await runCommand('echo', ['-n', 'foo'], {
-        env: process.env,
+      const val = await (0, (_process || _load_process()).runCommand)('echo', ['-n', 'foo'], {
+        env: process.env
       }).toPromise();
       expect(val).toEqual('foo');
     });
@@ -487,17 +437,21 @@ describe('commons-node/process', () => {
     it("throws an error if the process can't be spawned", async () => {
       let error;
       try {
-        await runCommand('fakeCommand').toPromise();
+        await (0, (_process || _load_process()).runCommand)('fakeCommand').toPromise();
       } catch (err) {
         error = err;
       }
-      invariant(error != null);
+
+      if (!(error != null)) {
+        throw new Error('Invariant violation: "error != null"');
+      }
+
       expect(error.code).toBe('ENOENT');
       expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
 
     it('throws an error if the exit code !== 0', async () => {
-      const cmd = runCommand(process.execPath, ['-e', 'process.exit(1)']);
+      const cmd = (0, (_process || _load_process()).runCommand)(process.execPath, ['-e', 'process.exit(1)']);
       await expect(cmd.toPromise()).rejects.toThrow('failed with exit code 1');
     });
 
@@ -505,14 +459,15 @@ describe('commons-node/process', () => {
       await (async () => {
         let error;
         try {
-          await runCommand(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)',
-          ]).toPromise();
+          await (0, (_process || _load_process()).runCommand)(process.execPath, ['-e', 'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)']).toPromise();
         } catch (err) {
           error = err;
         }
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.name).toBe('ProcessExitError');
         expect(error.stderr).toBe('oopsy');
         expect(error.stdout).toBe('daisy');
@@ -523,14 +478,15 @@ describe('commons-node/process', () => {
       await (async () => {
         let error;
         try {
-          await runCommand(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.exit(1)',
-          ]).toPromise();
+          await (0, (_process || _load_process()).runCommand)(process.execPath, ['-e', 'process.stderr.write("oopsy"); process.exit(1)']).toPromise();
         } catch (err) {
           error = err;
         }
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.stderr).toBe('oopsy');
       })();
     });
@@ -539,12 +495,9 @@ describe('commons-node/process', () => {
     // mutated value.
     it("doesn't share a mutable seed (regression test)", async () => {
       await (async () => {
-        const observable = runCommand(process.execPath, [
-          '-e',
-          'process.stdout.write("hello"); process.exit(0)',
-        ]);
+        const observable = (0, (_process || _load_process()).runCommand)(process.execPath, ['-e', 'process.stdout.write("hello"); process.exit(0)']);
         await observable.toPromise();
-        expect(await observable.toPromise()).toBe('hello');
+        expect((await observable.toPromise())).toBe('hello');
       })();
     });
 
@@ -552,16 +505,14 @@ describe('commons-node/process', () => {
       if (origPlatform !== 'win32') {
         it('returns stdout of the running process', async () => {
           await (async () => {
-            const val = await runCommand('echo', ['-n', 'foo'], {
-              env: process.env,
+            const val = await (0, (_process || _load_process()).runCommand)('echo', ['-n', 'foo'], {
+              env: process.env
             }).toPromise();
             expect(val).toEqual('foo');
           })();
         });
         it('throws an error if the exit code !== 0', async () => {
-          await expect(
-            runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise(),
-          ).rejects.toThrow('failed with exit code 1');
+          await expect((0, (_process || _load_process()).runCommand)(process.execPath, ['-e', 'process.exit(1)']).toPromise()).rejects.toThrow('failed with exit code 1');
         });
       }
     });
@@ -579,8 +530,8 @@ describe('commons-node/process', () => {
 
     it('sends the stdin to the process', async () => {
       await (async () => {
-        const output = await runCommandDetailed('cat', [], {
-          input: 'hello',
+        const output = await (0, (_process || _load_process()).runCommandDetailed)('cat', [], {
+          input: 'hello'
         }).toPromise();
         expect(output.stdout).toBe('hello');
       })();
@@ -590,33 +541,38 @@ describe('commons-node/process', () => {
       await (async () => {
         let error;
         try {
-          await runCommandDetailed('yes', [], {maxBuffer: 100}).toPromise();
+          await (0, (_process || _load_process()).runCommandDetailed)('yes', [], { maxBuffer: 100 }).toPromise();
         } catch (err) {
           error = err;
         }
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.message).toContain('maxBuffer');
       })();
     });
 
     it('returns stdout, stderr, and the exit code of the running process', async () => {
       await (async () => {
-        const val = await runCommandDetailed(process.execPath, [
-          '-e',
-          'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)',
-        ]).toPromise();
-        expect(val).toEqual({stdout: 'out', stderr: 'err', exitCode: 0});
+        const val = await (0, (_process || _load_process()).runCommandDetailed)(process.execPath, ['-e', 'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)']).toPromise();
+        expect(val).toEqual({ stdout: 'out', stderr: 'err', exitCode: 0 });
       })();
     });
 
     it("throws an error if the process can't be spawned", async () => {
       let error;
       try {
-        await runCommandDetailed('fakeCommand').toPromise();
+        await (0, (_process || _load_process()).runCommandDetailed)('fakeCommand').toPromise();
       } catch (err) {
         error = err;
       }
-      invariant(error != null);
+
+      if (!(error != null)) {
+        throw new Error('Invariant violation: "error != null"');
+      }
+
       expect(error.code).toBe('ENOENT');
       expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
@@ -624,14 +580,15 @@ describe('commons-node/process', () => {
     it('throws an error if the exit code !== 0', async () => {
       let error;
       try {
-        await runCommandDetailed(process.execPath, [
-          '-e',
-          'process.exit(1)',
-        ]).toPromise();
+        await (0, (_process || _load_process()).runCommandDetailed)(process.execPath, ['-e', 'process.exit(1)']).toPromise();
       } catch (err) {
         error = err;
       }
-      invariant(error != null);
+
+      if (!(error != null)) {
+        throw new Error('Invariant violation: "error != null"');
+      }
+
       expect(error.name).toBe('ProcessExitError');
       expect(error.exitCode).toBe(1);
     });
@@ -640,14 +597,15 @@ describe('commons-node/process', () => {
       await (async () => {
         let error;
         try {
-          await runCommandDetailed(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.exit(1)',
-          ]).toPromise();
+          await (0, (_process || _load_process()).runCommandDetailed)(process.execPath, ['-e', 'process.stderr.write("oopsy"); process.exit(1)']).toPromise();
         } catch (err) {
           error = err;
         }
-        invariant(error != null);
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
         expect(error.stderr).toBe('oopsy');
       })();
     });
@@ -655,24 +613,22 @@ describe('commons-node/process', () => {
 
   describe('exitEventToMessage', () => {
     it('exitCode', () => {
-      expect(exitEventToMessage(makeExitMessage(1))).toBe('exit code 1');
+      expect((0, (_process || _load_process()).exitEventToMessage)(makeExitMessage(1))).toBe('exit code 1');
     });
 
     it('signal', () => {
-      expect(
-        exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}),
-      ).toBe('signal SIGTERM');
+      expect((0, (_process || _load_process()).exitEventToMessage)({ kind: 'exit', exitCode: null, signal: 'SIGTERM' })).toBe('signal SIGTERM');
     });
   });
 
   describe('preventStreamsFromThrowing', () => {
-    let proc: child_process$ChildProcess;
+    let proc;
     beforeEach(() => {
-      proc = ({
-        stdin: new EventEmitter(),
-        stdout: new EventEmitter(),
-        stderr: new EventEmitter(),
-      }: any);
+      proc = {
+        stdin: new _events.default(),
+        stdout: new _events.default(),
+        stderr: new _events.default()
+      };
       jest.spyOn(proc.stdin, 'addListener');
       jest.spyOn(proc.stdout, 'addListener');
       jest.spyOn(proc.stderr, 'addListener');
@@ -682,48 +638,30 @@ describe('commons-node/process', () => {
     });
 
     it('adds listeners', () => {
-      preventStreamsFromThrowing(proc);
-      expect(proc.stdin.addListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
-      expect(proc.stdout.addListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
-      expect(proc.stderr.addListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
+      (0, (_process || _load_process()).preventStreamsFromThrowing)(proc);
+      expect(proc.stdin.addListener).toHaveBeenCalledWith('error', jasmine.any(Function));
+      expect(proc.stdout.addListener).toHaveBeenCalledWith('error', jasmine.any(Function));
+      expect(proc.stderr.addListener).toHaveBeenCalledWith('error', jasmine.any(Function));
     });
 
     it('removes listeners when disposed', () => {
-      const disposable = preventStreamsFromThrowing(proc);
+      const disposable = (0, (_process || _load_process()).preventStreamsFromThrowing)(proc);
       disposable.dispose();
-      expect(proc.stdin.removeListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
-      expect(proc.stdout.removeListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
-      expect(proc.stderr.removeListener).toHaveBeenCalledWith(
-        'error',
-        jasmine.any(Function),
-      );
+      expect(proc.stdin.removeListener).toHaveBeenCalledWith('error', jasmine.any(Function));
+      expect(proc.stdout.removeListener).toHaveBeenCalledWith('error', jasmine.any(Function));
+      expect(proc.stderr.removeListener).toHaveBeenCalledWith('error', jasmine.any(Function));
     });
   });
 
   describe('logStreamErrors', () => {
-    const logger = getLogger(LOG_CATEGORY);
-    let proc: child_process$ChildProcess;
+    const logger = (0, (_log4js || _load_log4js()).getLogger)((_process || _load_process()).LOG_CATEGORY);
+    let proc;
     beforeEach(() => {
-      proc = ({
-        stdin: new EventEmitter(),
-        stdout: new EventEmitter(),
-        stderr: new EventEmitter(),
-      }: any);
+      proc = {
+        stdin: new _events.default(),
+        stdout: new _events.default(),
+        stderr: new _events.default()
+      };
 
       // Add a no-op listener so the error events aren't thrown.
       proc.stdin.on('error', () => {});
@@ -732,13 +670,13 @@ describe('commons-node/process', () => {
     });
 
     it('logs errors', () => {
-      logStreamErrors(proc, 'test', [], {});
+      (0, (_process || _load_process()).logStreamErrors)(proc, 'test', [], {});
       proc.stderr.emit('error', new Error('Test error'));
       expect(logger.error).toHaveBeenCalled();
     });
 
     it("doesn't log when disposed", () => {
-      const disposable = logStreamErrors(proc, 'test', [], {});
+      const disposable = (0, (_process || _load_process()).logStreamErrors)(proc, 'test', [], {});
       disposable.dispose();
       proc.stderr.emit('error', new Error('Test error'));
       expect(logger.error).not.toHaveBeenCalled();
@@ -747,14 +685,14 @@ describe('commons-node/process', () => {
 
   describe('ProcessSystemError', () => {
     it('contains the correct properties', () => {
-      const proc = (({}: any): child_process$ChildProcess);
+      const proc = {};
       const originalError = {
         errno: 2,
         code: 'ETEST',
         path: 'path value',
-        syscall: 'syscall value',
+        syscall: 'syscall value'
       };
-      const err = new ProcessSystemError(originalError, proc);
+      const err = new (_process || _load_process()).ProcessSystemError(originalError, proc);
       expect(err.errno).toBe(2);
       expect(err.code).toBe('ETEST');
       expect(err.path).toBe('path value');
@@ -767,25 +705,18 @@ describe('commons-node/process', () => {
     if (process.platform === 'linux') {
       it('escapes correctly on linux', async () => {
         await (async () => {
-          const output = await runCommand(
-            ...scriptifyCommand('echo', [
-              'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'',
-              'one   two',
-            ]),
-          ).toPromise();
-          expect(output.trim()).toBe(
-            'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
-          );
+          const output = await (0, (_process || _load_process()).runCommand)(...(0, (_process || _load_process()).scriptifyCommand)('echo', ['a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'', 'one   two'])).toPromise();
+          expect(output.trim()).toBe('a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two');
         })();
       });
     }
   });
 });
 
-function makeExitMessage(exitCode: number): ProcessExitMessage {
+function makeExitMessage(exitCode) {
   return {
     kind: 'exit',
     exitCode,
-    signal: null,
+    signal: null
   };
 }

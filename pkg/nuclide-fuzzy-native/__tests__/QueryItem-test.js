@@ -1,3 +1,25 @@
+'use strict';
+
+var _QueryItem;
+
+function _load_QueryItem() {
+  return _QueryItem = _interopRequireDefault(require('../lib/QueryItem'));
+}
+
+var _QueryItem2;
+
+function _load_QueryItem2() {
+  return _QueryItem2 = require('../lib/QueryItem');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,22 +27,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import QueryItem from '../lib/QueryItem';
-
 describe('QueryItem', () => {
   describe('"Hello"', () => {
-    const item = new QueryItem('Hello');
+    const item = new (_QueryItem || _load_QueryItem()).default('Hello');
 
     it('should return 0 for empty queries', () => {
       expect(item.score('')).toEqual({
         score: 0,
         value: 'Hello',
-        matchIndexes: [],
+        matchIndexes: []
       });
     });
 
@@ -35,8 +54,15 @@ describe('QueryItem', () => {
     it('should ignore query case', () => {
       const score1 = item.score('He');
       const score2 = item.score('he');
-      invariant(score1);
-      invariant(score2);
+
+      if (!score1) {
+        throw new Error('Invariant violation: "score1"');
+      }
+
+      if (!score2) {
+        throw new Error('Invariant violation: "score2"');
+      }
+
       expect(score1.score).toEqual(score2.score);
     });
 
@@ -44,22 +70,36 @@ describe('QueryItem', () => {
       const score1 = item.score('he');
       const score2 = item.score('hl');
       const score3 = item.score('ho');
-      invariant(score1);
-      invariant(score2);
-      invariant(score3);
+
+      if (!score1) {
+        throw new Error('Invariant violation: "score1"');
+      }
+
+      if (!score2) {
+        throw new Error('Invariant violation: "score2"');
+      }
+
+      if (!score3) {
+        throw new Error('Invariant violation: "score3"');
+      }
+
       expect(score1.score).toBeLessThan(score2.score);
       expect(score2.score).toBeLessThan(score3.score);
     });
   });
 
   describe('Path Separator', () => {
-    const item = new QueryItem('He/y/Hello');
+    const item = new (_QueryItem || _load_QueryItem()).default('He/y/Hello');
 
     // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
     // eslint-disable-next-line jasmine/no-disabled-tests
     xit('should prefer matches after the last path separator', () => {
       const score = item.score('h');
-      invariant(score);
+
+      if (!score) {
+        throw new Error('Invariant violation: "score"');
+      }
+
       expect(score.matchIndexes).toEqual([5]);
     });
 
@@ -76,14 +116,18 @@ describe('QueryItem', () => {
     // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
     // eslint-disable-next-line jasmine/no-disabled-tests
     xit('should prefer matches with an initialism', () => {
-      const item = new QueryItem('AbBa');
+      const item = new (_QueryItem || _load_QueryItem()).default('AbBa');
       const score = item.score('ab');
-      invariant(score);
+
+      if (!score) {
+        throw new Error('Invariant violation: "score"');
+      }
+
       expect(score.matchIndexes).toEqual([0, 2]);
     });
 
     it('should be able to fall back to substring match when an initialism skip fails', () => {
-      const item = new QueryItem('AbBa');
+      const item = new (_QueryItem || _load_QueryItem()).default('AbBa');
 
       // If the query could initially trigger a skip then fail, still treturn a result.
       expect(item.score('bb')).not.toBe(null);
@@ -92,31 +136,25 @@ describe('QueryItem', () => {
 
   describe('Extensions', () => {
     it('should match full filenames', () => {
-      const item = new QueryItem('Hello.h');
+      const item = new (_QueryItem || _load_QueryItem()).default('Hello.h');
       expect(item.score('hello.h')).not.toBe(null);
       expect(item.score('Hello.h')).not.toBe(null);
     });
   });
 });
 
-import {__test__} from '../lib/QueryItem';
 const {
   checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
-  scoreCommonSubsequence,
-} = __test__;
+  scoreCommonSubsequence
+} = (_QueryItem2 || _load_QueryItem2()).__test__;
 
 describe('checkIfMatchesCamelCaseLetters', () => {
   it('matches when all letters in `needle` are present as uppercase letters in `haystack`', () => {
     expect(checkIfMatchesCamelCaseLetters('fbide', 'fbide')).toBe(false);
     expect(checkIfMatchesCamelCaseLetters('fbide', 'FBIDE')).toBe(true);
-    expect(
-      checkIfMatchesCamelCaseLetters(
-        'fbide',
-        'FaceBookIntegratedDevelopmentEnvironment',
-      ),
-    ).toBe(true);
+    expect(checkIfMatchesCamelCaseLetters('fbide', 'FaceBookIntegratedDevelopmentEnvironment')).toBe(true);
     expect(checkIfMatchesCamelCaseLetters('fb', 'FooBar.js')).toBe(true);
     expect(checkIfMatchesCamelCaseLetters('fb', 'FooBarBaz.js')).toBe(false);
   });
@@ -188,30 +226,14 @@ describe('isLetterImportant', () => {
   });
 });
 
-import {areSetsEqual} from 'nuclide-commons/collection';
-
 describe('importantCharactersForString', () => {
   it('returns the set of important characters for a given string', () => {
-    expect(
-      areSetsEqual(importantCharactersForString('foobar'), new Set(['f', 'o'])),
-    ).toBe(true);
+    expect((0, (_collection || _load_collection()).areSetsEqual)(importantCharactersForString('foobar'), new Set(['f', 'o']))).toBe(true);
 
-    expect(
-      areSetsEqual(
-        importantCharactersForString('fooBar'),
-        new Set(['f', 'o', 'B']),
-      ),
-    ).toBe(true);
+    expect((0, (_collection || _load_collection()).areSetsEqual)(importantCharactersForString('fooBar'), new Set(['f', 'o', 'B']))).toBe(true);
 
-    expect(
-      areSetsEqual(
-        importantCharactersForString('foo.bar'),
-        new Set(['f', 'o', 'b']),
-      ),
-    ).toBe(true);
+    expect((0, (_collection || _load_collection()).areSetsEqual)(importantCharactersForString('foo.bar'), new Set(['f', 'o', 'b']))).toBe(true);
 
-    expect(
-      areSetsEqual(importantCharactersForString('foobar'), new Set(['f', 'o'])),
-    ).toBe(true);
+    expect((0, (_collection || _load_collection()).areSetsEqual)(importantCharactersForString('foobar'), new Set(['f', 'o']))).toBe(true);
   });
 });

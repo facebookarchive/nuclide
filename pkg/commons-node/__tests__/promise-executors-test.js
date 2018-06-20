@@ -1,3 +1,19 @@
+'use strict';
+
+var _promiseExecutors;
+
+function _load_promiseExecutors() {
+  return _promiseExecutors = require('../promise-executors');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,16 +21,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import {PromisePool, PromiseQueue} from '../promise-executors';
-import waitsFor from '../../../jest/waits_for';
-
 describe('PromiseQueue', () => {
   it('Run three async operations serially and make sure they do not overlap', async () => {
-    const queue = new PromiseQueue();
+    const queue = new (_promiseExecutors || _load_promiseExecutors()).PromiseQueue();
     let res1Start = 0;
     let res1End = 0;
     let res2Start = 0;
@@ -26,7 +39,7 @@ describe('PromiseQueue', () => {
       res1Start = Date.now();
       await new Promise(resolve => {
         setTimeout(() => {
-          resolve((res1End = Date.now()));
+          resolve(res1End = Date.now());
         }, 100);
       });
     });
@@ -34,7 +47,7 @@ describe('PromiseQueue', () => {
       res2Start = Date.now();
       await new Promise(resolve => {
         setTimeout(() => {
-          resolve((res2End = Date.now()));
+          resolve(res2End = Date.now());
         }, 200);
       });
     });
@@ -42,12 +55,12 @@ describe('PromiseQueue', () => {
       res3Start = Date.now();
       await new Promise(resolve => {
         setTimeout(() => {
-          resolve((res3End = Date.now()));
+          resolve(res3End = Date.now());
         }, 300);
       });
     });
 
-    await waitsFor(() => Boolean(res1End && res2End && res3End));
+    await (0, (_waits_for || _load_waits_for()).default)(() => Boolean(res1End && res2End && res3End));
 
     // Make sure that none of the executors overlapped.
     expect(res1Start).not.toBeGreaterThan(res1End);
@@ -82,13 +95,11 @@ describe('PromisePool', () => {
       });
     }
 
-    const queue = new PromisePool(poolSize);
+    const queue = new (_promiseExecutors || _load_promiseExecutors()).PromisePool(poolSize);
 
     const start = Date.now();
     await Promise.all(executors.map(executor => queue.submit(executor)));
     const end = Date.now();
-    expect(end - start).toBeLessThan(
-      (numDelayedExecutors * delayMs) / (poolSize - 1),
-    );
+    expect(end - start).toBeLessThan(numDelayedExecutors * delayMs / (poolSize - 1));
   });
 });

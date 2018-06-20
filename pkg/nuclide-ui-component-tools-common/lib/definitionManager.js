@@ -1,34 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type TextDocument from '../../nuclide-lsp-implementation-common/TextDocument';
-import type {
-  TextDocumentPositionParams,
-  CompletionItem,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import type {ComponentDefinition} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getSnippetFromDefinition = getSnippetFromDefinition;
+exports.getDocumentationObject = getDocumentationObject;
 
-import invariant from 'assert';
-import {Matcher} from '../../nuclide-fuzzy-native';
-import {lspPositionToAtomPoint} from '../../nuclide-lsp-implementation-common/lsp-utils';
-import {
-  CompletionItemKind,
-  InsertTextFormat,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import {removePrefix} from './utils';
-import {LEADING_COMMENT_LIMIT} from './constants';
+var _nuclideFuzzyNative;
 
-export function getSnippetFromDefinition(
-  definition: ComponentDefinition,
-): string {
+function _load_nuclideFuzzyNative() {
+  return _nuclideFuzzyNative = require('../../nuclide-fuzzy-native');
+}
+
+var _lspUtils;
+
+function _load_lspUtils() {
+  return _lspUtils = require('../../nuclide-lsp-implementation-common/lsp-utils');
+}
+
+var _protocol;
+
+function _load_protocol() {
+  return _protocol = require('../../nuclide-vscode-language-service-rpc/lib/protocol');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function getSnippetFromDefinition(definition) {
   let snippet = definition.name;
   if (definition.requiredProps.length === 0) {
     snippet += ' $1/>';
@@ -39,19 +47,13 @@ export function getSnippetFromDefinition(
   let i = 1;
   definition.requiredProps.forEach((prop, index) => {
     // This is naive and quadratic time but N is really small.
-    if (
-      !definition.defaultProps.includes(prop.name) &&
-      prop.name !== 'children'
-    ) {
+    if (!definition.defaultProps.includes(prop.name) && prop.name !== 'children') {
       // There's different behavior depending on the type annotation.
       // String props have a nested tabstop that gives the user the opportunity
       // to either delete the quotes in exchange for braces, or to tab into the
       // quotes.
       // Other types of props simply render {$tabstop}.
-      const value =
-        prop.typeAnnotation === 'string' || prop.typeAnnotation === 'Fbt'
-          ? `\${${i++}:"$${i++}"}`
-          : `{$${i++}}`;
+      const value = prop.typeAnnotation === 'string' || prop.typeAnnotation === 'Fbt' ? `\${${i++}:"$${i++}"}` : `{$${i++}}`;
       snippet += `  ${prop.name}=${value}\n`;
     }
   });
@@ -69,14 +71,22 @@ export function getSnippetFromDefinition(
 // like a createElement call with a JSX snippet. Note: this is not the most
 // robust regex to match React identifiers and some false negatives are
 // possible.
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ *  strict-local
+ * @format
+ */
+
 const componentNameRegexp = new RegExp('<[a-zA-Z_]+');
 
-function getComponentNameFromPositionParams(
-  document: TextDocument,
-  positionParams: TextDocumentPositionParams,
-): ?string {
+function getComponentNameFromPositionParams(document, positionParams) {
   const rowRange = document.buffer.rangeForRow(positionParams.position.line);
-  rowRange.end = lspPositionToAtomPoint(positionParams.position);
+  rowRange.end = (0, (_lspUtils || _load_lspUtils()).lspPositionToAtomPoint)(positionParams.position);
 
   let word = null;
   document.buffer.backwardsScanInRange(componentNameRegexp, rowRange, arg => {
@@ -85,21 +95,16 @@ function getComponentNameFromPositionParams(
   return word;
 }
 
-export function getDocumentationObject(
-  definition: ComponentDefinition,
-): {documentation?: string} {
-  if (
-    definition.leadingComment == null ||
-    !definition.leadingComment.startsWith('@explorer-desc') ||
-    definition.leadingComment.includes('@no-completion-description')
-  ) {
+function getDocumentationObject(definition) {
+  if (definition.leadingComment == null || !definition.leadingComment.startsWith('@explorer-desc') || definition.leadingComment.includes('@no-completion-description')) {
     return {};
   }
 
-  invariant(definition.leadingComment != null);
-  let candidate = removePrefix('@explorer-desc', definition.leadingComment)
-    .split('\n')
-    .find(l => l.length > 0);
+  if (!(definition.leadingComment != null)) {
+    throw new Error('Invariant violation: "definition.leadingComment != null"');
+  }
+
+  let candidate = (0, (_utils || _load_utils()).removePrefix)('@explorer-desc', definition.leadingComment).split('\n').find(l => l.length > 0);
   if (candidate == null) {
     return {};
   } else {
@@ -109,51 +114,39 @@ export function getDocumentationObject(
     // This is probably too short and not a real component description. Exclude
     // it.
     return {};
-  } else if (candidate.length < LEADING_COMMENT_LIMIT) {
-    return {documentation: candidate};
+  } else if (candidate.length < (_constants || _load_constants()).LEADING_COMMENT_LIMIT) {
+    return { documentation: candidate };
   }
-  return {documentation: candidate.substr(0, LEADING_COMMENT_LIMIT) + '…'};
+  return { documentation: candidate.substr(0, (_constants || _load_constants()).LEADING_COMMENT_LIMIT) + '…' };
 }
 
-export default class DefinitionManager {
-  definitionForComponentName: Map<string, ComponentDefinition>;
-  matcher: Matcher;
+class DefinitionManager {
 
   constructor() {
     this.definitionForComponentName = new Map();
-    this.matcher = new Matcher([]);
+    this.matcher = new (_nuclideFuzzyNative || _load_nuclideFuzzyNative()).Matcher([]);
   }
 
-  addDefinition(definition: ComponentDefinition) {
+  addDefinition(definition) {
     const key = definition.name;
     this.definitionForComponentName.set(key, definition);
     this.matcher.addCandidates([key]);
   }
 
-  getCompletions(
-    document: TextDocument,
-    positionParams: TextDocumentPositionParams,
-  ): Array<CompletionItem> {
-    const componentName = getComponentNameFromPositionParams(
-      document,
-      positionParams,
-    );
+  getCompletions(document, positionParams) {
+    const componentName = getComponentNameFromPositionParams(document, positionParams);
     if (componentName == null) {
       return [];
     }
 
-    return this.matcher
-      .match(componentName.substring(1))
-      .map(({value}) => this.definitionForComponentName.get(value))
-      .filter(Boolean)
-      .map(definition => {
-        return {
-          insertText: getSnippetFromDefinition(definition),
-          insertTextFormat: InsertTextFormat.Snippet,
-          kind: CompletionItemKind.Snippet,
-          label: definition.name,
-          ...getDocumentationObject(definition),
-        };
-      });
+    return this.matcher.match(componentName.substring(1)).map(({ value }) => this.definitionForComponentName.get(value)).filter(Boolean).map(definition => {
+      return Object.assign({
+        insertText: getSnippetFromDefinition(definition),
+        insertTextFormat: (_protocol || _load_protocol()).InsertTextFormat.Snippet,
+        kind: (_protocol || _load_protocol()).CompletionItemKind.Snippet,
+        label: definition.name
+      }, getDocumentationObject(definition));
+    });
   }
 }
+exports.default = DefinitionManager;

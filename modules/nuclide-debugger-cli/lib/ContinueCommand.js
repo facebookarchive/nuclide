@@ -1,3 +1,15 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _DebuggerInterface;
+
+function _load_DebuggerInterface() {
+  return _DebuggerInterface = require('./DebuggerInterface');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +18,21 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Command} from './Command';
-import {DebuggerInterface} from './DebuggerInterface';
+class ContinueCommand {
 
-export default class ContinueCommand implements Command {
-  name = 'continue';
-  helpText = 'Continue execution of the target.';
+  constructor(debug) {
+    this.name = 'continue';
+    this.helpText = 'Continue execution of the target.';
 
-  _debugger: DebuggerInterface;
-
-  constructor(debug: DebuggerInterface) {
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
+  async execute() {
     await this._debugger.continue();
   }
 }
+exports.default = ContinueCommand;

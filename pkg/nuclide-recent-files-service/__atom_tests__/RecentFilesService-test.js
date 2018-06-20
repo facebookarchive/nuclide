@@ -1,33 +1,29 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
-import fsPromise from 'nuclide-commons/fsPromise';
+var _fsPromise;
 
-import RecentFilesService from '../lib/RecentFilesService';
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _RecentFilesService;
+
+function _load_RecentFilesService() {
+  return _RecentFilesService = _interopRequireDefault(require('../lib/RecentFilesService'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('RecentFilesService', () => {
   let filePath1;
   let filePath2;
   let filePath3;
-  let recentFilesService: any;
+  let recentFilesService;
 
   beforeEach(async () => {
-    recentFilesService = new RecentFilesService();
+    recentFilesService = new (_RecentFilesService || _load_RecentFilesService()).default();
 
-    [filePath1, filePath2, filePath3] = await Promise.all([
-      fsPromise.tempfile('1'),
-      fsPromise.tempfile('2'),
-      fsPromise.tempfile('3'),
-    ]);
+    [filePath1, filePath2, filePath3] = await Promise.all([(_fsPromise || _load_fsPromise()).default.tempfile('1'), (_fsPromise || _load_fsPromise()).default.tempfile('2'), (_fsPromise || _load_fsPromise()).default.tempfile('3')]);
   });
 
   describe('getRecentFiles', () => {
@@ -101,22 +97,28 @@ describe('RecentFilesService', () => {
   describe('initialization and de-serialization', () => {
     it('correctly restores itself from serialized state', () => {
       const serializedState = {
-        filelist: [
-          {resultType: 'FILE', path: filePath1, timestamp: 100},
-          {resultType: 'FILE', path: filePath2, timestamp: 200},
-          {resultType: 'FILE', path: filePath3, timestamp: 300},
-        ],
+        filelist: [{ resultType: 'FILE', path: filePath1, timestamp: 100 }, { resultType: 'FILE', path: filePath2, timestamp: 200 }, { resultType: 'FILE', path: filePath3, timestamp: 300 }]
       };
-      const restoredRecentFilesService = new RecentFilesService(
-        serializedState,
-      );
+      const restoredRecentFilesService = new (_RecentFilesService || _load_RecentFilesService()).default(serializedState);
       const mostRecentFiles = restoredRecentFilesService.getRecentFiles();
       expect(mostRecentFiles).toEqual(serializedState.filelist);
     });
 
     it('starts out empty if no serialized state is passed to the constructor', () => {
-      invariant(recentFilesService);
+      if (!recentFilesService) {
+        throw new Error('Invariant violation: "recentFilesService"');
+      }
+
       expect(recentFilesService.getRecentFiles().length).toEqual(0);
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */

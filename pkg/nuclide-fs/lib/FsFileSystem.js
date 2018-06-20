@@ -1,3 +1,64 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FsFileSystem = undefined;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('../../../modules/nuclide-commons/stream');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _admZip;
+
+function _load_admZip() {
+  return _admZip = _interopRequireDefault(require('adm-zip'));
+}
+
+var _FileSystem;
+
+function _load_FileSystem() {
+  return _FileSystem = require('./FileSystem');
+}
+
+var _ZipFileSystem;
+
+function _load_ZipFileSystem() {
+  return _ZipFileSystem = require('./ZipFileSystem');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +66,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
@@ -15,169 +76,134 @@
  * readFile, writeFile, etc.
  */
 
-import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import fs from 'fs';
-import {arrayCompact} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {runCommand} from 'nuclide-commons/process';
-import {observeRawStream} from 'nuclide-commons/stream';
-import {Observable} from 'rxjs';
-import AdmZip from 'adm-zip';
-import {FileSystem, READFILE_SIZE_LIMIT} from './FileSystem';
-import {ZipFileSystem} from './ZipFileSystem';
-
-import type {DirectoryEntry, ReadOptions, WriteOptions} from './FileSystem';
-
-export class FsFileSystem implements FileSystem {
-  exists(path: NuclideUri): Promise<boolean> {
-    return fsPromise.exists(path);
+class FsFileSystem {
+  exists(path) {
+    return (_fsPromise || _load_fsPromise()).default.exists(path);
   }
 
-  findNearestFile(name: string, directory: NuclideUri): Promise<?NuclideUri> {
-    return fsPromise.findNearestFile(name, directory);
+  findNearestFile(name, directory) {
+    return (_fsPromise || _load_fsPromise()).default.findNearestFile(name, directory);
   }
 
-  findInDirectories(
-    name: string,
-    directories: Array<NuclideUri>,
-  ): ConnectableObservable<Array<NuclideUri>> {
+  findInDirectories(name, directories) {
     if (directories.length === 0) {
-      return Observable.throw(
-        new Error('No directories to search in!'),
-      ).publish();
+      return _rxjsBundlesRxMinJs.Observable.throw(new Error('No directories to search in!')).publish();
     }
     const findArgs = [...directories, '-type', 'f', '-name', name];
-    return runCommand('find', findArgs)
-      .map(stdout => stdout.split('\n').filter(filePath => filePath !== ''))
-      .publish();
+    return (0, (_process || _load_process()).runCommand)('find', findArgs).map(stdout => stdout.split('\n').filter(filePath => filePath !== '')).publish();
   }
 
-  stat(path: NuclideUri): Promise<fs.Stats> {
-    return fsPromise.stat(path);
+  stat(path) {
+    return (_fsPromise || _load_fsPromise()).default.stat(path);
   }
 
-  lstat(path: NuclideUri): Promise<fs.Stats> {
-    return fsPromise.lstat(path);
+  lstat(path) {
+    return (_fsPromise || _load_fsPromise()).default.lstat(path);
   }
 
-  mkdir(path: NuclideUri): Promise<void> {
-    return fsPromise.mkdir(path);
+  mkdir(path) {
+    return (_fsPromise || _load_fsPromise()).default.mkdir(path);
   }
 
-  mkdirp(path: NuclideUri): Promise<boolean> {
-    return fsPromise.mkdirp(path);
+  mkdirp(path) {
+    return (_fsPromise || _load_fsPromise()).default.mkdirp(path);
   }
 
-  chmod(path: NuclideUri, mode: number): Promise<void> {
-    return fsPromise.chmod(path, mode);
+  chmod(path, mode) {
+    return (_fsPromise || _load_fsPromise()).default.chmod(path, mode);
   }
 
-  chown(path: NuclideUri, uid: number, gid: number): Promise<void> {
-    return fsPromise.chown(path, uid, gid);
+  chown(path, uid, gid) {
+    return (_fsPromise || _load_fsPromise()).default.chown(path, uid, gid);
   }
 
-  async newFile(filePath: NuclideUri): Promise<boolean> {
-    const isExistingFile = await fsPromise.exists(filePath);
+  async newFile(filePath) {
+    const isExistingFile = await (_fsPromise || _load_fsPromise()).default.exists(filePath);
     if (isExistingFile) {
       return false;
     }
-    await fsPromise.mkdirp(nuclideUri.dirname(filePath));
-    await fsPromise.writeFile(filePath, '');
+    await (_fsPromise || _load_fsPromise()).default.mkdirp((_nuclideUri || _load_nuclideUri()).default.dirname(filePath));
+    await (_fsPromise || _load_fsPromise()).default.writeFile(filePath, '');
     return true;
   }
 
-  async readdir(path: NuclideUri): Promise<Array<DirectoryEntry>> {
-    const files = await fsPromise.readdir(path);
-    const entries = await Promise.all(
-      files.map(async file => {
-        const fullpath = nuclideUri.join(path, file);
-        const lstats = await fsPromise.lstat(fullpath);
-        if (!lstats.isSymbolicLink()) {
-          return {file, stats: lstats, isSymbolicLink: false};
-        } else {
-          try {
-            const stats = await fsPromise.stat(fullpath);
-            return {file, stats, isSymbolicLink: true};
-          } catch (error) {
-            return null;
-          }
+  async readdir(path) {
+    const files = await (_fsPromise || _load_fsPromise()).default.readdir(path);
+    const entries = await Promise.all(files.map(async file => {
+      const fullpath = (_nuclideUri || _load_nuclideUri()).default.join(path, file);
+      const lstats = await (_fsPromise || _load_fsPromise()).default.lstat(fullpath);
+      if (!lstats.isSymbolicLink()) {
+        return { file, stats: lstats, isSymbolicLink: false };
+      } else {
+        try {
+          const stats = await (_fsPromise || _load_fsPromise()).default.stat(fullpath);
+          return { file, stats, isSymbolicLink: true };
+        } catch (error) {
+          return null;
         }
-      }),
-    );
+      }
+    }));
     // TODO: Return entries directly and change client to handle error.
     // $FlowFixMe
-    return arrayCompact(entries).map(entry => {
+    return (0, (_collection || _load_collection()).arrayCompact)(entries).map(entry => {
       return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
     });
   }
 
-  realpath(path: NuclideUri): Promise<NuclideUri> {
-    return fsPromise.realpath(path);
+  realpath(path) {
+    return (_fsPromise || _load_fsPromise()).default.realpath(path);
   }
 
-  move(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {
-    return fsPromise.mv(sourcePath, destinationPath, {
+  move(sourcePath, destinationPath) {
+    return (_fsPromise || _load_fsPromise()).default.mv(sourcePath, destinationPath, {
       mkdirp: true,
-      clobber: false,
+      clobber: false
     });
   }
 
-  copy(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {
-    return fsPromise.copy(sourcePath, destinationPath);
+  copy(sourcePath, destinationPath) {
+    return (_fsPromise || _load_fsPromise()).default.copy(sourcePath, destinationPath);
   }
 
-  rimraf(path: NuclideUri): Promise<void> {
-    return fsPromise.rimraf(path);
+  rimraf(path) {
+    return (_fsPromise || _load_fsPromise()).default.rimraf(path);
   }
 
-  unlink(path: NuclideUri): Promise<void> {
-    return fsPromise.unlink(path).catch(error => {
+  unlink(path) {
+    return (_fsPromise || _load_fsPromise()).default.unlink(path).catch(error => {
       if (error.code !== 'ENOENT') {
         throw error;
       }
     });
   }
 
-  async readFile(path: NuclideUri, options?: ReadOptions): Promise<Buffer> {
-    const stats = await fsPromise.stat(path);
-    if (stats.size > READFILE_SIZE_LIMIT) {
+  async readFile(path, options) {
+    const stats = await (_fsPromise || _load_fsPromise()).default.stat(path);
+    if (stats.size > (_FileSystem || _load_FileSystem()).READFILE_SIZE_LIMIT) {
       throw new Error(`File is too large (${stats.size} bytes)`);
     }
-    return fsPromise.readFile(path, options);
+    return (_fsPromise || _load_fsPromise()).default.readFile(path, options);
   }
 
-  createReadStream(
-    path: NuclideUri,
-    options?: ReadOptions,
-  ): ConnectableObservable<Buffer> {
-    return observeRawStream(fs.createReadStream(path, options)).publish();
+  createReadStream(path, options) {
+    return (0, (_stream || _load_stream()).observeRawStream)(_fs.default.createReadStream(path, options)).publish();
   }
 
-  writeFile(
-    path: NuclideUri,
-    data: string,
-    options?: WriteOptions,
-  ): Promise<void> {
-    return fsPromise.writeFile(path, data, options);
+  writeFile(path, data, options) {
+    return (_fsPromise || _load_fsPromise()).default.writeFile(path, data, options);
   }
 
-  isNfs(path: NuclideUri): Promise<boolean> {
-    return fsPromise.isNfs(path);
+  isNfs(path) {
+    return (_fsPromise || _load_fsPromise()).default.isNfs(path);
   }
 
-  isFuse(path: NuclideUri): Promise<boolean> {
-    return fsPromise.isFuse(path);
+  isFuse(path) {
+    return (_fsPromise || _load_fsPromise()).default.isFuse(path);
   }
 
-  async openArchive(path: NuclideUri): Promise<FileSystem> {
-    const [buffer, stat, lstat] = await Promise.all([
-      fsPromise.readFile(path),
-      this.stat(path),
-      this.lstat(path),
-    ]);
-    return new ZipFileSystem(new AdmZip(buffer), stat, lstat);
+  async openArchive(path) {
+    const [buffer, stat, lstat] = await Promise.all([(_fsPromise || _load_fsPromise()).default.readFile(path), this.stat(path), this.lstat(path)]);
+    return new (_ZipFileSystem || _load_ZipFileSystem()).ZipFileSystem(new (_admZip || _load_admZip()).default(buffer), stat, lstat);
   }
 }
+exports.FsFileSystem = FsFileSystem;

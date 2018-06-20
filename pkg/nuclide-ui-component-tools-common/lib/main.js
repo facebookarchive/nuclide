@@ -1,41 +1,52 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
-import {
-  getComponentNameFromUri,
-  getDefaultPropNames,
-  getLeadingCommentForComponent,
-  getRequiredPropsFromAst,
-} from './uiComponentAst';
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ComponentDefinition} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UI_COMPONENT_TOOLS_INDEXING_GK = undefined;
+exports.getComponentDefinitionFromAst = getComponentDefinitionFromAst;
 
-export function getComponentDefinitionFromAst(
-  fileUri: NuclideUri,
-  ast: File,
-): ?ComponentDefinition {
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+Object.defineProperty(exports, 'UI_COMPONENT_TOOLS_INDEXING_GK', {
+  enumerable: true,
+  get: function () {
+    return (_constants || _load_constants()).UI_COMPONENT_TOOLS_INDEXING_GK;
+  }
+});
+
+var _uiComponentAst;
+
+function _load_uiComponentAst() {
+  return _uiComponentAst = require('./uiComponentAst');
+}
+
+function getComponentDefinitionFromAst(fileUri, ast) {
   // The component must have a matching file name and component.
-  const componentName = getComponentNameFromUri(fileUri);
+  const componentName = (0, (_uiComponentAst || _load_uiComponentAst()).getComponentNameFromUri)(fileUri);
   if (componentName == null) {
     return null;
   }
-  const requiredProps = getRequiredPropsFromAst(componentName, ast);
-  const defaultProps = getDefaultPropNames(componentName, ast);
-  const leadingComment = getLeadingCommentForComponent(componentName, ast);
+  const requiredProps = (0, (_uiComponentAst || _load_uiComponentAst()).getRequiredPropsFromAst)(componentName, ast);
+  const defaultProps = (0, (_uiComponentAst || _load_uiComponentAst()).getDefaultPropNames)(componentName, ast);
+  const leadingComment = (0, (_uiComponentAst || _load_uiComponentAst()).getLeadingCommentForComponent)(componentName, ast);
   return {
     name: componentName,
     requiredProps,
     defaultProps,
-    leadingComment,
+    leadingComment
   };
-}
-
-export {UI_COMPONENT_TOOLS_INDEXING_GK} from './constants';
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   *  strict-local
+   * @format
+   */

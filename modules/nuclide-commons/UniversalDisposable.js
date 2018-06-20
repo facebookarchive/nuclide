@@ -1,3 +1,14 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+/**
+ * Like a CompositeDisposable, but in addition to Disposable instances it can
+ * also accept plain functions and Rx subscriptions.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +17,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-export type IDestructible = {
-  destroy(): void,
-  onDidDestroy(callback: () => mixed): IDisposable,
-};
+class UniversalDisposable {
 
-export type AnyTeardown =
-  | (() => mixed)
-  | rxjs$ISubscription
-  | IDisposable
-  | IDestructible;
-
-/**
- * Like a CompositeDisposable, but in addition to Disposable instances it can
- * also accept plain functions and Rx subscriptions.
- */
-export default class UniversalDisposable {
-  disposed: boolean;
-  teardowns: Set<AnyTeardown>;
-
-  constructor(...teardowns: Array<AnyTeardown>) {
+  constructor(...teardowns) {
     this.teardowns = new Set();
     this.disposed = false;
     if (teardowns.length) {
@@ -37,7 +31,7 @@ export default class UniversalDisposable {
     }
   }
 
-  add(...teardowns: Array<AnyTeardown>): void {
+  add(...teardowns) {
     if (this.disposed) {
       throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
@@ -56,30 +50,24 @@ export default class UniversalDisposable {
    * - we need to make sure that all teardowns are also removed on destroy
    * - we also need to ensure that we don't leak the onDidDestroy disposable
    */
-  addUntilDestroyed(
-    destructible: IDestructible,
-    ...teardowns: Array<AnyTeardown>
-  ) {
+  addUntilDestroyed(destructible, ...teardowns) {
     if (this.disposed) {
       throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
-    const destroyDisposable = new UniversalDisposable(
-      ...teardowns,
-      destructible.onDidDestroy(() => {
-        destroyDisposable.dispose();
-        this.remove(destroyDisposable);
-      }),
-    );
+    const destroyDisposable = new UniversalDisposable(...teardowns, destructible.onDidDestroy(() => {
+      destroyDisposable.dispose();
+      this.remove(destroyDisposable);
+    }));
     this.add(destroyDisposable);
   }
 
-  remove(teardown: AnyTeardown): void {
+  remove(teardown) {
     if (!this.disposed) {
       this.teardowns.delete(teardown);
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (!this.disposed) {
       this.disposed = true;
       this.teardowns.forEach(teardown => {
@@ -93,31 +81,25 @@ export default class UniversalDisposable {
           teardown();
         }
       });
-      this.teardowns = (null: any);
+      this.teardowns = null;
     }
   }
 
-  unsubscribe(): void {
+  unsubscribe() {
     this.dispose();
   }
 
-  clear(): void {
+  clear() {
     if (!this.disposed) {
       this.teardowns.clear();
     }
   }
 }
 
-function assertTeardown(teardown: AnyTeardown): void {
-  if (
-    typeof teardown.dispose === 'function' ||
-    typeof teardown.unsubscribe === 'function' ||
-    typeof teardown.destroy === 'function' ||
-    typeof teardown === 'function'
-  ) {
+exports.default = UniversalDisposable;
+function assertTeardown(teardown) {
+  if (typeof teardown.dispose === 'function' || typeof teardown.unsubscribe === 'function' || typeof teardown.destroy === 'function' || typeof teardown === 'function') {
     return;
   }
-  throw new TypeError(
-    'Arguments to UniversalDisposable.add must be disposable',
-  );
+  throw new TypeError('Arguments to UniversalDisposable.add must be disposable');
 }

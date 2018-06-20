@@ -1,31 +1,20 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {NavigationStackController} from '../lib/NavigationStackController';
+var _NavigationStackController;
+
+function _load_NavigationStackController() {
+  return _NavigationStackController = require('../lib/NavigationStackController');
+}
 
 describe('NavigationStackController test suite', () => {
-  let controller: NavigationStackController;
+  let controller;
 
   beforeEach(() => {
-    jest
-      .spyOn(require('../lib/Location'), 'getPathOfLocation')
-      .mockImplementation(location => location.editor.getPath());
-    jest
-      .spyOn(require('../lib/Location'), 'getLocationOfEditor')
-      .mockImplementation(editor => editor.location);
-    jest
-      .spyOn(require('../lib/Location'), 'editorOfLocation')
-      .mockImplementation(location => location.editor);
+    jest.spyOn(require('../lib/Location'), 'getPathOfLocation').mockImplementation(location => location.editor.getPath());
+    jest.spyOn(require('../lib/Location'), 'getLocationOfEditor').mockImplementation(editor => editor.location);
+    jest.spyOn(require('../lib/Location'), 'editorOfLocation').mockImplementation(location => location.editor);
 
-    controller = new NavigationStackController();
+    controller = new (_NavigationStackController || _load_NavigationStackController()).NavigationStackController();
   });
 
   it('startup activation', () => {
@@ -60,9 +49,7 @@ describe('NavigationStackController test suite', () => {
       await controller.navigateBackwards();
       expect(controller.getIndex()).toEqual(0);
       expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(editor1.setCursorBufferPosition).toHaveBeenCalledWith(
-        location1.bufferPosition,
-      );
+      expect(editor1.setCursorBufferPosition).toHaveBeenCalledWith(location1.bufferPosition);
 
       // noop nav backwards
       await controller.navigateBackwards();
@@ -72,9 +59,7 @@ describe('NavigationStackController test suite', () => {
       await controller.navigateForwards();
       expect(controller.getIndex()).toEqual(1);
       expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(editor2.setCursorBufferPosition).toHaveBeenCalledWith(
-        location2.bufferPosition,
-      );
+      expect(editor2.setCursorBufferPosition).toHaveBeenCalledWith(location2.bufferPosition);
     })();
   });
 
@@ -167,7 +152,7 @@ describe('NavigationStackController test suite', () => {
 
   it('open of current file', () => {
     const editor = toEditor('filename', 10);
-    const startLocation = {...editor.location};
+    const startLocation = Object.assign({}, editor.location);
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
 
@@ -181,7 +166,7 @@ describe('NavigationStackController test suite', () => {
 
   it('opt-in navigation', () => {
     const editor = toEditor('filename', 10);
-    const startLocation = {...editor.location};
+    const startLocation = Object.assign({}, editor.location);
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
 
@@ -221,23 +206,16 @@ describe('NavigationStackController test suite', () => {
     controller.onDestroy(editor1);
 
     expect(controller.getIndex()).toEqual(1);
-    expect(controller.getLocations()).toEqual([
-      {
-        type: 'uri',
-        uri: '/a/f1',
-        bufferPosition: toPoint(10),
-      },
-      location2,
-    ]);
+    expect(controller.getLocations()).toEqual([{
+      type: 'uri',
+      uri: '/a/f1',
+      bufferPosition: toPoint(10)
+    }, location2]);
 
     setPosition(editor1, 11);
     const location3 = editor1.location;
     controller.onCreate(editor1);
-    expect(controller.getLocations()).toEqual([
-      location1,
-      location2,
-      location3,
-    ]);
+    expect(controller.getLocations()).toEqual([location1, location2, location3]);
   });
 
   it('close unsaved file', () => {
@@ -281,35 +259,43 @@ describe('NavigationStackController test suite', () => {
 
     expect(controller.getLocations().length).toEqual(100);
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */
 
-function toPoint(line: number): any {
+function toPoint(line) {
   return {
     row: line,
-    column: 0,
+    column: 0
   };
 }
 
-function toEditor(filePath: ?string, line: number) {
-  const editor: any = {
+function toEditor(filePath, line) {
+  const editor = {
     getPath() {
       return filePath;
     },
     location: {
       type: 'editor',
-      bufferPosition: toPoint(line),
+      bufferPosition: toPoint(line)
     },
-    setCursorBufferPosition: jest.fn(),
+    setCursorBufferPosition: jest.fn()
   };
   editor.location.editor = editor;
   return editor;
 }
 
 function setPosition(editor, line) {
-  editor.location = {
-    ...editor.location,
-    bufferPosition: toPoint(line),
-  };
+  editor.location = Object.assign({}, editor.location, {
+    bufferPosition: toPoint(line)
+  });
 }
 
 function getRow(editor) {

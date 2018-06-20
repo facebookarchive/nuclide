@@ -1,39 +1,55 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
+
+var _immutableSnapshot;
+
+function _load_immutableSnapshot() {
+  return _immutableSnapshot = require('../immutable-snapshot');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+var _performanceNow;
+
+function _load_performanceNow() {
+  return _performanceNow = _interopRequireDefault(require('../../../modules/nuclide-commons/performanceNow'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ITER = 1000; /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    * @format
+                    */
 
 /* eslint-disable no-console */
-
-import {List, ImmutableSnapshotter, Map, Record} from '../immutable-snapshot';
-import Immutable from 'immutable';
-import performanceNow from 'nuclide-commons/performanceNow';
-
-const ITER = 1000;
 
 describe('Benchmark', () => {
   it('checks List performance', () => {
     const LIST_SIZE = 1000;
     // console.log(`Benchmark: List.push * ${LIST_SIZE} * ${ITER}`);
 
-    let startTime = performanceNow();
+    let startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     for (let i = 0; i < ITER; i++) {
-      let list = Immutable.List();
+      let list = (_immutable || _load_immutable()).default.List();
       for (let j = 0; j < LIST_SIZE; j++) {
         list = list.push(j);
       }
     }
     // console.log('Immutable.List:', performanceNow() - startTime);
 
-    startTime = performanceNow();
+    startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     for (let i = 0; i < ITER; i++) {
-      let list = List();
+      let list = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
       for (let j = 0; j < LIST_SIZE; j++) {
         list = list.push(j);
       }
@@ -41,11 +57,11 @@ describe('Benchmark', () => {
     // console.log('ImmutableSnapshot.List:', performanceNow() - startTime);
 
     // Snapshot testList so mutations start becoming tracked.
-    const testList = List([0]);
-    const snapshotter = new ImmutableSnapshotter();
+    const testList = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([0]);
+    const snapshotter = new (_immutableSnapshot || _load_immutableSnapshot()).ImmutableSnapshotter();
     snapshotter.createDeltaSnapshot(testList);
 
-    startTime = performanceNow();
+    startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     for (let i = 0; i < ITER; i++) {
       let list = testList;
       for (let j = 0; j < LIST_SIZE; j++) {
@@ -73,60 +89,60 @@ function arrayOfSize(s) {
 describe('compatibility with Immutable.List', () => {
   it('determines assignment of unspecified value types', () => {
     const t = {
-      list: List(),
+      list: (0, (_immutableSnapshot || _load_immutableSnapshot()).List)()
     };
 
     expect(t.list.size).toBe(0);
   });
 
   it('of provides initial values', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     expect(v.get(0)).toBe('a');
     expect(v.get(1)).toBe('b');
     expect(v.get(2)).toBe('c');
   });
 
   it('toArray provides a JS array', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
   });
 
   it('does not accept a scalar', () => {
     expect(() => {
-      List((3: any));
+      (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(3);
     }).toThrow('Expected Array or collection object of values: 3');
   });
 
   it('accepts an array', () => {
-    const v = List(['a', 'b', 'c']);
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['a', 'b', 'c']);
     expect(v.get(1)).toBe('b');
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
   });
 
   it('accepts an array-like', () => {
-    const v = List(({length: 3, '1': 'b'}: any));
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)({ length: 3, '1': 'b' });
     expect(v.get(1)).toBe('b');
     expect(v.toArray()).toEqual([undefined, 'b', undefined]);
   });
 
   it('accepts any array-like collection, including strings', () => {
-    const v = List('abc');
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)('abc');
     expect(v.get(1)).toBe('b');
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
   });
 
   it('accepts an indexed Immutable.Seq', () => {
-    const seq = Immutable.Seq(['a', 'b', 'c']);
-    const v = List(seq);
+    const seq = (_immutable || _load_immutable()).default.Seq(['a', 'b', 'c']);
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(seq);
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
   });
 
   it('accepts a keyed Immutable.Seq as a list of entries', () => {
-    const seq = Immutable.Seq({a: null, b: null, c: null}).flip();
-    const v = List(seq);
+    const seq = (_immutable || _load_immutable()).default.Seq({ a: null, b: null, c: null }).flip();
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(seq);
     expect(v.toArray()).toEqual([[null, 'a'], [null, 'b'], [null, 'c']]);
     // Explicitly getting the values sequence
-    const v2 = List(seq.valueSeq());
+    const v2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(seq.valueSeq());
     expect(v2.toArray()).toEqual(['a', 'b', 'c']);
     // toList() does this for you.
     const v3 = seq.toList();
@@ -134,54 +150,48 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('can set and get a value', () => {
-    let v = List();
+    let v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
     expect(v.get(0)).toBe(undefined);
     v = v.set(0, 'value');
     expect(v.get(0)).toBe('value');
   });
 
   it('can setIn and getIn a deep value', () => {
-    let v = List([
-      Map({
-        aKey: List(['bad', 'good']),
-      }),
-    ]);
+    let v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([(0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({
+      aKey: (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['bad', 'good'])
+    })]);
     expect(v.getIn([0, 'aKey', 1])).toBe('good');
     v = v.setIn([0, 'aKey', 1], 'great');
     expect(v.getIn([0, 'aKey', 1])).toBe('great');
   });
 
   it('can update a value', () => {
-    const l = List.of(5);
+    const l = (_immutableSnapshot || _load_immutableSnapshot()).List.of(5);
     expect(l.update(0, v => v * v).toArray()).toEqual([25]);
   });
 
   it('can updateIn a deep value', () => {
-    let l = List([
-      Map({
-        aKey: List(['bad', 'good']),
-      }),
-    ]);
+    let l = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([(0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({
+      aKey: (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['bad', 'good'])
+    })]);
     l = l.updateIn([0, 'aKey', 1], v => v + v);
-    expect(l.toJS()).toEqual([
-      {
-        aKey: ['bad', 'goodgood'],
-      },
-    ]);
+    expect(l.toJS()).toEqual([{
+      aKey: ['bad', 'goodgood']
+    }]);
   });
 
   it('returns undefined when getting a null value', () => {
-    const v = List([1, 2, 3]);
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]);
     // $FlowIgnore
     expect(v.get(null)).toBe(undefined);
 
-    const o = List([{a: 1}, {b: 2}, {c: 3}]);
+    const o = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([{ a: 1 }, { b: 2 }, { c: 3 }]);
     // $FlowIgnore
     expect(o.get(null)).toBe(undefined);
   });
 
   it('counts from the end of the list on negative index', () => {
-    const i = List.of(1, 2, 3, 4, 5, 6, 7);
+    const i = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5, 6, 7);
     expect(i.get(-1)).toBe(7);
     expect(i.get(-5)).toBe(3);
     expect(i.get(-9)).toBe(undefined);
@@ -190,7 +200,7 @@ describe('compatibility with Immutable.List', () => {
 
   it('coerces numeric-string keys', () => {
     // Of course, TypeScript protects us from this, so cast to "any" to test.
-    const i: any = List.of(1, 2, 3, 4, 5, 6);
+    const i = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5, 6);
     expect(i.get('1')).toBe(2);
     expect(i.set('3', 10).get('3')).toBe(10);
     // Like array, string negative numbers do not qualify
@@ -200,57 +210,57 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('uses not set value for string index', () => {
-    const list: any = List();
+    const list = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
     expect(list.get('stringKey', 'NOT-SET')).toBe('NOT-SET');
   });
 
   it('uses not set value for index {}', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.get({}, 'NOT-SET')).toBe('NOT-SET');
   });
 
   it('uses not set value for index void 0', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.get(undefined, 'NOT-SET')).toBe('NOT-SET');
   });
 
   it('uses not set value for index undefined', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.get(undefined, 'NOT-SET')).toBe('NOT-SET');
   });
 
   it('doesnt coerce empty strings to index 0', () => {
-    const list: any = List.of(1, 2, 3);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3);
     expect(list.has('')).toBe(false);
   });
 
   it('doesnt contain elements at non-empty string keys', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.has('str')).toBe(false);
   });
 
   it('hasIn doesnt contain elements at non-empty string keys', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.hasIn(['str'])).toBe(false);
   });
 
   it('hasIn doesnt throw for bad key-path', () => {
-    const list = List.of(1, 2, 3, 4, 5);
+    const list = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5);
     expect(list.hasIn([1, 2, 3])).toBe(false);
 
-    const list2 = List([{}]);
+    const list2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([{}]);
     expect(list2.hasIn([0, 'bad'])).toBe(false);
   });
 
   it('setting creates a new instance', () => {
-    const v0 = List.of('a');
+    const v0 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a');
     const v1 = v0.set(0, 'A');
     expect(v0.get(0)).toBe('a');
     expect(v1.get(0)).toBe('A');
   });
 
   it('size includes the highest index', () => {
-    const v0 = List();
+    const v0 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
     const v1 = v0.set(0, 'a');
     const v2 = v1.set(1, 'b');
     const v3 = v2.set(2, 'c');
@@ -261,17 +271,17 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('get helpers make for easier to read code', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     expect(v.first()).toBe('a');
     expect(v.get(1)).toBe('b');
     expect(v.last()).toBe('c');
   });
 
   it('slice helpers make for easier to read code', () => {
-    const v0 = List.of('a', 'b', 'c');
-    const v1 = List.of('a', 'b');
-    const v2 = List.of('a');
-    const v3 = List();
+    const v0 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
+    const v1 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b');
+    const v2 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a');
+    const v3 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
 
     expect(v0.rest().toArray()).toEqual(['b', 'c']);
     expect(v0.butLast().toArray()).toEqual(['a', 'b']);
@@ -287,7 +297,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('can set at arbitrary indices', () => {
-    const v0 = List.of('a', 'b', 'c');
+    const v0 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const v1 = v0.set(1, 'B'); // within existing tail
     const v2 = v1.set(3, 'd'); // at last position
     const v3 = v2.set(31, 'e'); // (testing internal guts)
@@ -305,7 +315,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('can contain a large number of indices', () => {
-    const r = Immutable.Range(0, 20000).toList();
+    const r = (_immutable || _load_immutable()).default.Range(0, 20000).toList();
     let iterations = 0;
     r.forEach(v => {
       expect(v).toBe(iterations);
@@ -314,80 +324,34 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('describes a dense list', () => {
-    const v = List.of('a', 'b', 'c')
-      .push('d')
-      .set(14, 'o')
-      .set(6, undefined)
-      .remove(1);
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c').push('d').set(14, 'o').set(6, undefined).remove(1);
     expect(v.size).toBe(14);
     // eslint-disable-next-line no-sparse-arrays
-    expect(v.toJS()).toEqual(['a', 'c', 'd', , , , , , , , , , , 'o']);
+    expect(v.toJS()).toEqual(['a', 'c', 'd',,,,,,,,,,, 'o']);
   });
 
   it('iterates a dense list', () => {
-    const v = List()
-      .setSize(11)
-      .set(1, 1)
-      .set(3, 3)
-      .set(5, 5)
-      .set(7, 7)
-      .set(9, 9);
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)().setSize(11).set(1, 1).set(3, 3).set(5, 5).set(7, 7).set(9, 9);
     expect(v.size).toBe(11);
 
-    const forEachResults: Array<any> = [];
+    const forEachResults = [];
     v.forEach((val, i) => forEachResults.push([i, val]));
-    expect(forEachResults).toEqual([
-      [0, undefined],
-      [1, 1],
-      [2, undefined],
-      [3, 3],
-      [4, undefined],
-      [5, 5],
-      [6, undefined],
-      [7, 7],
-      [8, undefined],
-      [9, 9],
-      [10, undefined],
-    ]);
+    expect(forEachResults).toEqual([[0, undefined], [1, 1], [2, undefined], [3, 3], [4, undefined], [5, 5], [6, undefined], [7, 7], [8, undefined], [9, 9], [10, undefined]]);
 
     const arrayResults = v.toArray();
-    expect(arrayResults).toEqual([
-      undefined,
-      1,
-      undefined,
-      3,
-      undefined,
-      5,
-      undefined,
-      7,
-      undefined,
-      9,
-      undefined,
-    ]);
+    expect(arrayResults).toEqual([undefined, 1, undefined, 3, undefined, 5, undefined, 7, undefined, 9, undefined]);
 
-    const iteratorResults: Array<any> = [];
+    const iteratorResults = [];
     const iterator = v.entries();
     let step;
     while (!(step = iterator.next()).done) {
       iteratorResults.push(step.value);
     }
-    expect(iteratorResults).toEqual([
-      [0, undefined],
-      [1, 1],
-      [2, undefined],
-      [3, 3],
-      [4, undefined],
-      [5, 5],
-      [6, undefined],
-      [7, 7],
-      [8, undefined],
-      [9, 9],
-      [10, undefined],
-    ]);
+    expect(iteratorResults).toEqual([[0, undefined], [1, 1], [2, undefined], [3, 3], [4, undefined], [5, 5], [6, undefined], [7, 7], [8, undefined], [9, 9], [10, undefined]]);
   });
 
   it('push inserts at highest index', () => {
-    const v0 = List.of('a', 'b', 'c');
+    const v0 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const v1 = v0.push('d', 'e', 'f');
     expect(v0.size).toBe(3);
     expect(v1.size).toBe(6);
@@ -400,7 +364,7 @@ describe('compatibility with Immutable.List', () => {
     const a1 = arrayOfSize(s1);
     const a2 = arrayOfSize(s2);
 
-    const v1 = List(a1);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(a1);
     const v3 = v1.push(...a2);
 
     const a3 = a1.slice();
@@ -411,7 +375,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('pop removes the highest index, decrementing size', () => {
-    let v = List.of('a', 'b', 'c').pop();
+    let v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c').pop();
     expect(v.last()).toBe('b');
     expect(v.toArray()).toEqual(['a', 'b']);
     v = v.set(1230, 'x');
@@ -428,7 +392,7 @@ describe('compatibility with Immutable.List', () => {
   it('pop removes the highest index, just like array', () => {
     const len = 200;
     const a = arrayOfSize(len);
-    let v = List(a);
+    let v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(a);
 
     while (a.length) {
       expect(v.size).toBe(a.length);
@@ -442,8 +406,8 @@ describe('compatibility with Immutable.List', () => {
 
   it('push adds the next highest index, just like array', () => {
     const len = 200;
-    const a: Array<any> = [];
-    let v = List();
+    const a = [];
+    let v = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
 
     for (let ii = 0; ii < len; ii++) {
       expect(v.size).toBe(a.length);
@@ -456,23 +420,16 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('allows popping an empty list', () => {
-    let v = List.of('a').pop();
+    let v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a').pop();
     expect(v.size).toBe(0);
     expect(v.toArray()).toEqual([]);
-    v = v
-      .pop()
-      .pop()
-      .pop()
-      .pop()
-      .pop();
+    v = v.pop().pop().pop().pop().pop();
     expect(v.size).toBe(0);
     expect(v.toArray()).toEqual([]);
   });
 
   it('remove removes any index', () => {
-    let v = List.of('a', 'b', 'c')
-      .remove(2)
-      .remove(0);
+    let v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c').remove(2).remove(0);
     expect(v.size).toBe(1);
     expect(v.get(0)).toBe('b');
     expect(v.get(1)).toBe(undefined);
@@ -485,13 +442,13 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('shifts values from the front', () => {
-    const v = List.of('a', 'b', 'c').shift();
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c').shift();
     expect(v.first()).toBe('b');
     expect(v.size).toBe(2);
   });
 
   it('unshifts values to the front', () => {
-    const v = List.of('a', 'b', 'c').unshift('x', 'y', 'z');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c').unshift('x', 'y', 'z');
     expect(v.first()).toBe('x');
     expect(v.size).toBe(6);
     expect(v.toArray()).toEqual(['x', 'y', 'z', 'a', 'b', 'c']);
@@ -503,7 +460,7 @@ describe('compatibility with Immutable.List', () => {
     const a1 = arrayOfSize(s1);
     const a2 = arrayOfSize(s2);
 
-    const v1 = List(a1);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(a1);
     const v3 = v1.unshift(...a2);
 
     const a3 = a1.slice();
@@ -514,42 +471,39 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('finds values using indexOf', () => {
-    const v = List.of('a', 'b', 'c', 'b', 'a');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'b', 'a');
     expect(v.indexOf('b')).toBe(1);
     expect(v.indexOf('c')).toBe(2);
     expect(v.indexOf('d')).toBe(-1);
   });
 
   it('finds values using lastIndexOf', () => {
-    const v = List.of('a', 'b', 'c', 'b', 'a');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'b', 'a');
     expect(v.lastIndexOf('b')).toBe(3);
     expect(v.lastIndexOf('c')).toBe(2);
     expect(v.lastIndexOf('d')).toBe(-1);
   });
 
   it('finds values using findIndex', () => {
-    const v = List.of('a', 'b', 'c', 'B', 'a');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'B', 'a');
     expect(v.findIndex(value => value.toUpperCase() === value)).toBe(3);
     expect(v.findIndex(value => value.length > 1)).toBe(-1);
   });
 
   it('finds values using findEntry', () => {
-    const v = List.of('a', 'b', 'c', 'B', 'a');
-    expect(v.findEntry(value => value.toUpperCase() === value)).toEqual([
-      3,
-      'B',
-    ]);
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'B', 'a');
+    expect(v.findEntry(value => value.toUpperCase() === value)).toEqual([3, 'B']);
     expect(v.findEntry(value => value.length > 1)).toBe(undefined);
   });
 
   it('maps values', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const r = v.map(value => value.toUpperCase());
     expect(r.toArray()).toEqual(['A', 'B', 'C']);
   });
 
   it('filters values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'd', 'e', 'f');
     const r = v.filter((value, index) => index % 2 === 1);
     expect(r.toArray()).toEqual(['b', 'd', 'f']);
   });
@@ -557,16 +511,16 @@ describe('compatibility with Immutable.List', () => {
   it('filters values based on type', () => {
     class A {}
     class B extends A {
-      b(): void {
+      b() {
         return;
       }
     }
     class C extends A {
-      c(): void {
+      c() {
         return;
       }
     }
-    const l1 = List([new B(), new C(), new B(), new C()]);
+    const l1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([new B(), new C(), new B(), new C()]);
     // tslint:disable-next-line:arrow-parens
     const l2 = l1.filter(v => v instanceof C);
     expect(l2.size).toEqual(2);
@@ -574,7 +528,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('reduces values', () => {
-    const v = List.of(1, 10, 100);
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 10, 100);
     const r = v.reduce((reduction, value) => reduction + value);
     expect(r).toEqual(111);
     const r2 = v.reduce((reduction, value) => reduction + value, 1000);
@@ -582,7 +536,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('reduces from the right', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const r = v.reduceRight((reduction, value) => reduction + value);
     expect(r).toEqual('cba');
     const r2 = v.reduceRight((reduction, value) => reduction + value, 'x');
@@ -590,67 +544,60 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('takes maximum number', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const r = v.take(Number.MAX_SAFE_INTEGER);
     expect(r).toBe(v);
   });
 
   it('takes and skips values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'd', 'e', 'f');
     const r = v.skip(2).take(2);
     expect(r.toArray()).toEqual(['c', 'd']);
   });
 
   it('takes and skips no-ops return same reference', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'd', 'e', 'f');
     const r = v.skip(0).take(6);
     expect(r).toBe(v);
   });
 
   it('takeLast and skipLast values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'd', 'e', 'f');
     const r = v.skipLast(1).takeLast(2);
     expect(r.toArray()).toEqual(['d', 'e']);
   });
 
   it('takeLast and skipLast no-ops return same reference', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c', 'd', 'e', 'f');
     const r = v.skipLast(0).takeLast(6);
     expect(r).toBe(v);
   });
 
   it('efficiently chains array methods', () => {
-    const v = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
 
-    const r = v
-      .filter(x => x % 2 === 0)
-      .skip(2)
-      .map(x => x * x)
-      .take(3)
-      .reduce((a: number, b: number) => a + b, 0);
+    const r = v.filter(x => x % 2 === 0).skip(2).map(x => x * x).take(3).reduce((a, b) => a + b, 0);
 
     expect(r).toEqual(200);
   });
 
   it('can convert to a map', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const m = v.toMap();
     expect(m.size).toBe(3);
     expect(m.get(1)).toBe('b');
   });
 
   it('reverses', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     expect(v.reverse().toArray()).toEqual(['c', 'b', 'a']);
   });
 
   it('ensures equality', () => {
     // Make a sufficiently long list.
-    const a = Array(100)
-      .join('abcdefghijklmnopqrstuvwxyz')
-      .split('');
-    const v1 = List(a);
-    const v2 = List(a);
+    const a = Array(100).join('abcdefghijklmnopqrstuvwxyz').split('');
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(a);
+    const v2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(a);
     // eslint-disable-next-line eqeqeq
     expect(v1 == v2).not.toBe(true);
     expect(v1 === v2).not.toBe(true);
@@ -658,7 +605,7 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('works with insert', () => {
-    const v = List.of('a', 'b', 'c');
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
     const m = v.insert(1, 'd');
     expect(m.size).toBe(4);
     expect(m.get(1)).toBe('d');
@@ -677,8 +624,8 @@ describe('compatibility with Immutable.List', () => {
   // TODO: assert that findIndex only calls the function as much as it needs to.
   it('forEach iterates in the correct order', () => {
     let n = 0;
-    const a: Array<any> = [];
-    const v = List.of(0, 1, 2, 3, 4);
+    const a = [];
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of(0, 1, 2, 3, 4);
     v.forEach(x => {
       a.push(x);
       n++;
@@ -689,65 +636,53 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('forEach iteration terminates when callback returns false', () => {
-    const a: Array<any> = [];
+    const a = [];
     function count(x) {
       if (x > 2) {
         return false;
       }
       a.push(x);
     }
-    const v = List.of(0, 1, 2, 3, 4);
+    const v = (_immutableSnapshot || _load_immutableSnapshot()).List.of(0, 1, 2, 3, 4);
     v.forEach(count);
     expect(a).toEqual([0, 1, 2]);
   });
 
   it('concat works like Array.prototype.concat', () => {
-    const v1 = List([1, 2, 3]);
-    const v2 = v1.concat(
-      4,
-      List([5, 6]),
-      [7, 8],
-      Immutable.Seq([9, 10]),
-      List.of(11, 12),
-      null,
-    );
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]);
+    const v2 = v1.concat(4, (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([5, 6]), [7, 8], (_immutable || _load_immutable()).default.Seq([9, 10]), (_immutableSnapshot || _load_immutableSnapshot()).List.of(11, 12), null);
     expect(v1.toArray()).toEqual([1, 2, 3]);
     expect(v2.toArray()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, null]);
   });
 
   it('concat returns self when no changes', () => {
-    const v1 = List([1, 2, 3]);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]);
     expect(v1.concat([])).toBe(v1);
   });
 
   it('concat returns arg when concat to empty', () => {
-    const v1 = List([1, 2, 3]);
-    expect(List().concat(v1)).toBe(v1);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]);
+    expect((0, (_immutableSnapshot || _load_immutableSnapshot()).List)().concat(v1)).toBe(v1);
   });
 
   it('concats a single value', () => {
-    const v1 = Immutable.List([1, 2, 3]);
+    const v1 = (_immutable || _load_immutable()).default.List([1, 2, 3]);
     expect(v1.concat(4).toJS()).toEqual([1, 2, 3, 4]);
   });
 
   it('concat returns List-coerced arg when concat to empty', () => {
-    expect(List().concat([1, 2, 3])).toEqual(List([1, 2, 3]));
+    expect((0, (_immutableSnapshot || _load_immutableSnapshot()).List)().concat([1, 2, 3])).toEqual((0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]));
   });
 
   it('concat does not spread in string characters', () => {
-    const v1 = List([1, 2, 3]);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3]);
     expect(v1.concat('abcdef').toJS()).toEqual([1, 2, 3, 'abcdef']);
   });
 
   it('allows chained mutations', () => {
-    const v1 = List();
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
     const v2 = v1.push(1);
-    const v3 = v2.withMutations(v =>
-      v
-        .push(2)
-        .push(3)
-        .push(4),
-    );
+    const v3 = v2.withMutations(v => v.push(2).push(3).push(4));
     const v4 = v3.push(5);
 
     expect(v1.toArray()).toEqual([]);
@@ -757,14 +692,9 @@ describe('compatibility with Immutable.List', () => {
   });
 
   it('allows chained mutations using alternative API', () => {
-    const v1 = List();
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)();
     const v2 = v1.push(1);
-    const v3 = v2
-      .asMutable()
-      .push(2)
-      .push(3)
-      .push(4)
-      .asImmutable();
+    const v3 = v2.asMutable().push(2).push(3).push(4).asImmutable();
     const v4 = v3.push(5);
 
     expect(v1.toArray()).toEqual([]);
@@ -776,18 +706,13 @@ describe('compatibility with Immutable.List', () => {
   // Sharing empty instances is a TODO.
   // eslint-disable-next-line
   xit('chained mutations does not result in new empty list instance', () => {
-    const v1 = List(['x']);
-    const v2 = v1.withMutations(v =>
-      v
-        .push('y')
-        .pop()
-        .pop(),
-    );
-    expect(v2).toBe(List());
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['x']);
+    const v2 = v1.withMutations(v => v.push('y').pop().pop());
+    expect(v2).toBe((0, (_immutableSnapshot || _load_immutableSnapshot()).List)());
   });
 
   it('allows size to be set', () => {
-    const v1 = Immutable.Range(0, 2000).toList();
+    const v1 = (_immutable || _load_immutable()).default.Range(0, 2000).toList();
     const v2 = v1.setSize(1000);
     const v3 = v2.setSize(1500);
     expect(v1.size).toBe(2000);
@@ -806,30 +731,26 @@ describe('compatibility with Immutable.List', () => {
 
   it('discards truncated elements when using slice', () => {
     const list = [1, 2, 3, 4, 5, 6];
-    const v1 = List(list);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(list);
     const v2 = v1.slice(0, 3);
     const v3 = v2.setSize(6);
 
     expect(v2.toArray()).toEqual(list.slice(0, 3));
-    expect(v3.toArray()).toEqual(
-      list.slice(0, 3).concat([undefined, undefined, undefined]),
-    );
+    expect(v3.toArray()).toEqual(list.slice(0, 3).concat([undefined, undefined, undefined]));
   });
 
   it('discards truncated elements when using setSize', () => {
     const list = [1, 2, 3, 4, 5, 6];
-    const v1 = List(list);
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(list);
     const v2 = v1.setSize(3);
     const v3 = v2.setSize(6);
 
     expect(v2.toArray()).toEqual(list.slice(0, 3));
-    expect(v3.toArray()).toEqual(
-      list.slice(0, 3).concat([undefined, undefined, undefined]),
-    );
+    expect(v3.toArray()).toEqual(list.slice(0, 3).concat([undefined, undefined, undefined]));
   });
 
   it('can be efficiently sliced', () => {
-    const v1 = Immutable.Range(0, 2000).toList();
+    const v1 = (_immutable || _load_immutable()).default.Range(0, 2000).toList();
     const v2 = v1.slice(100, -100).toList();
     const v3 = v2.slice(0, Infinity);
     expect(v1.size).toBe(2000);
@@ -843,22 +764,20 @@ describe('compatibility with Immutable.List', () => {
 
   [NaN, Infinity, -Infinity].forEach(zeroishValue => {
     it(`treats ${zeroishValue} like zero when setting size`, () => {
-      const v1 = List.of('a', 'b', 'c');
+      const v1 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
       const v2 = v1.setSize(zeroishValue);
       expect(v2.size).toBe(0);
     });
   });
 
   it('Does not infinite loop when sliced with NaN #459', () => {
-    const list = List([1, 2, 3, 4, 5]);
+    const list = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([1, 2, 3, 4, 5]);
     const newList = list.slice(0, NaN);
     expect(newList.toJS()).toEqual([]);
   });
 
   it('Accepts NaN for slice and concat #602', () => {
-    const list = List()
-      .slice(0, NaN)
-      .concat(NaN);
+    const list = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)().slice(0, NaN).concat(NaN);
     // toEqual([ NaN ])
     expect(list.size).toBe(1);
     expect(isNaNValue(list.get(0))).toBe(true);
@@ -874,17 +793,17 @@ describe('compatibility with Immutable.List', () => {
   describe('when slicing', () => {
     [NaN, -Infinity].forEach(zeroishValue => {
       it(`considers a ${zeroishValue} begin argument to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
+        const v1 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
         const v2 = v1.slice(zeroishValue, 3);
         expect(v2.size).toBe(3);
       });
       it(`considers a ${zeroishValue} end argument to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
+        const v1 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
         const v2 = v1.slice(0, zeroishValue);
         expect(v2.size).toBe(0);
       });
       it(`considers ${zeroishValue} begin and end arguments to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
+        const v1 = (_immutableSnapshot || _load_immutableSnapshot()).List.of('a', 'b', 'c');
         const v2 = v1.slice(zeroishValue, zeroishValue);
         expect(v2.size).toBe(0);
       });
@@ -895,8 +814,8 @@ describe('compatibility with Immutable.List', () => {
     it('iterates through List', () => {
       const start = 10;
       const len = 100;
-      const l1 = Immutable.Range(0, start + len).toList();
-      const l2: Immutable.List<number> = l1.slice(start, start + len);
+      const l1 = (_immutable || _load_immutable()).default.Range(0, start + len).toList();
+      const l2 = l1.slice(start, start + len);
       expect(l2.size).toBe(len);
       const valueIter = l2.values();
       const keyIter = l2.keys();
@@ -911,8 +830,8 @@ describe('compatibility with Immutable.List', () => {
     it('iterates through List in reverse', () => {
       const start = 10;
       const len = 100;
-      const l1 = Immutable.Range(0, start + len).toList();
-      const l2: Immutable.List<number> = l1.slice(start, start + len);
+      const l1 = (_immutable || _load_immutable()).default.Range(0, start + len).toList();
+      const l2 = l1.slice(start, start + len);
       const s = l2.toSeq().reverse(); // impl calls List.__iterator(REVERSE)
       expect(s.size).toBe(len);
       const valueIter = s.values();
@@ -932,7 +851,7 @@ describe('compatibility with Immutable.List', () => {
 
 describe('compatibility with Immutable.Map', () => {
   it('converts from object', () => {
-    const m = Map({a: 'A', b: 'B', c: 'C'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
     expect(m.size).toBe(3);
     expect(m.get('a')).toBe('A');
     expect(m.get('b')).toBe('B');
@@ -940,7 +859,7 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('constructor provides initial values', () => {
-    const m = Map({a: 'A', b: 'B', c: 'C'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
     expect(m.size).toBe(3);
     expect(m.get('a')).toBe('A');
     expect(m.get('b')).toBe('B');
@@ -948,7 +867,7 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('constructor provides initial values as array of entries', () => {
-    const m = Map([['a', 'A'], ['b', 'B'], ['c', 'C']]);
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([['a', 'A'], ['b', 'B'], ['c', 'C']]);
     expect(m.size).toBe(3);
     expect(m.get('a')).toBe('A');
     expect(m.get('b')).toBe('B');
@@ -956,8 +875,8 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('constructor provides initial values as sequence', () => {
-    const s = Immutable.Seq({a: 'A', b: 'B', c: 'C'});
-    const m = Map(s);
+    const s = (_immutable || _load_immutable()).default.Seq({ a: 'A', b: 'B', c: 'C' });
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)(s);
     expect(m.size).toBe(3);
     expect(m.get('a')).toBe('A');
     expect(m.get('b')).toBe('B');
@@ -965,8 +884,8 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('constructor provides initial values as list of lists', () => {
-    const l = List([List(['a', 'A']), List(['b', 'B']), List(['c', 'C'])]);
-    const m = Map(l);
+    const l = (0, (_immutableSnapshot || _load_immutableSnapshot()).List)([(0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['a', 'A']), (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['b', 'B']), (0, (_immutableSnapshot || _load_immutableSnapshot()).List)(['c', 'C'])]);
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)(l);
     expect(m.size).toBe(3);
     expect(m.get('a')).toBe('A');
     expect(m.get('b')).toBe('B');
@@ -974,40 +893,38 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('constructor is identity when provided map', () => {
-    const m1 = Map({a: 'A', b: 'B', c: 'C'});
-    const m2 = Map(m1);
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
+    const m2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)(m1);
     expect(m2).toBe(m1);
   });
 
   it('does not accept a scalar', () => {
     expect(() => {
-      Map((3: any));
-    }).toThrow(
-      'Expected Array or collection object of [k, v] entries, or keyed object: 3',
-    );
+      (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)(3);
+    }).toThrow('Expected Array or collection object of [k, v] entries, or keyed object: 3');
   });
 
   it('does not accept strings (collection, but scalar)', () => {
     expect(() => {
-      Map(('abc': any));
+      (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)('abc');
     }).toThrow();
   });
 
   it('does not accept non-entries array', () => {
     expect(() => {
-      Map(([1, 2, 3]: any));
+      (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([1, 2, 3]);
     }).toThrow('Expected [K, V] tuple: 1');
   });
 
   it('accepts non-collection array-like objects as keyed collections', () => {
-    const m = Map({length: 3, '1': 'one'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ length: 3, '1': 'one' });
     expect(m.get('length')).toBe(3);
     expect(m.get('1')).toBe('one');
-    expect(m.toJS()).toEqual({length: 3, '1': 'one'});
+    expect(m.toJS()).toEqual({ length: 3, '1': 'one' });
   });
 
   it('accepts flattened pairs via of()', () => {
-    const m: Immutable.Map<any, any> = Map.of(1, 'a', 2, 'b', 3, 'c');
+    const m = (_immutableSnapshot || _load_immutableSnapshot()).Map.of(1, 'a', 2, 'b', 3, 'c');
     expect(m.size).toBe(3);
     expect(m.get(1)).toBe('a');
     expect(m.get(2)).toBe('b');
@@ -1016,42 +933,38 @@ describe('compatibility with Immutable.Map', () => {
 
   it('does not accept mismatched flattened pairs via of()', () => {
     expect(() => {
-      Map.of(1, 2, 3);
+      (_immutableSnapshot || _load_immutableSnapshot()).Map.of(1, 2, 3);
     }).toThrow('Missing value for key: 3');
   });
 
   it('converts back to JS object', () => {
-    const m = Map({a: 'A', b: 'B', c: 'C'});
-    expect(m.toObject()).toEqual({a: 'A', b: 'B', c: 'C'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
+    expect(m.toObject()).toEqual({ a: 'A', b: 'B', c: 'C' });
   });
 
   it('iterates values', () => {
-    const m = Map({a: 'A', b: 'B', c: 'C'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
     const iterator = jest.fn();
     m.forEach(iterator);
-    expect(iterator.mock.calls.map(x => x)).toEqual([
-      ['A', 'a', m],
-      ['B', 'b', m],
-      ['C', 'c', m],
-    ]);
+    expect(iterator.mock.calls.map(x => x)).toEqual([['A', 'a', m], ['B', 'b', m], ['C', 'c', m]]);
   });
 
   it('merges two maps', () => {
-    const m1 = Map({a: 'A', b: 'B', c: 'C'});
-    const m2 = Map({wow: 'OO', d: 'DD', b: 'BB'});
-    expect(m2.toObject()).toEqual({wow: 'OO', d: 'DD', b: 'BB'});
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'A', b: 'B', c: 'C' });
+    const m2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ wow: 'OO', d: 'DD', b: 'BB' });
+    expect(m2.toObject()).toEqual({ wow: 'OO', d: 'DD', b: 'BB' });
     const m3 = m1.merge(m2);
     expect(m3.toObject()).toEqual({
       a: 'A',
       b: 'BB',
       c: 'C',
       wow: 'OO',
-      d: 'DD',
+      d: 'DD'
     });
   });
 
   it('accepts null as a key', () => {
-    const m1 = Map();
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     const m2 = m1.set(null, 'null');
     const m3 = m2.remove(null);
     expect(m1.size).toBe(0);
@@ -1061,7 +974,7 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('is persistent to sets', () => {
-    const m1 = Map();
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     const m2 = m1.set('a', 'Aardvark');
     const m3 = m2.set('b', 'Baboon');
     const m4 = m3.set('c', 'Canary');
@@ -1076,7 +989,7 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('is persistent to deletes', () => {
-    const m1 = Map();
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     const m2 = m1.set('a', 'Aardvark');
     const m3 = m2.set('b', 'Baboon');
     const m4 = m3.set('c', 'Canary');
@@ -1095,17 +1008,17 @@ describe('compatibility with Immutable.Map', () => {
 
   it('deletes down to empty map', () => {
     const size = 20;
-    let m = Immutable.Range(0, size).toMap();
+    let m = (_immutable || _load_immutable()).default.Range(0, size).toMap();
     expect(m.size).toBe(size);
     for (let ii = size - 1; ii >= 0; ii--) {
       m = m.remove(ii);
       expect(m.size).toBe(ii);
     }
-    expect(Immutable.is(m, Map())).toBe(true);
+    expect((_immutable || _load_immutable()).default.is(m, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)())).toBe(true);
   });
 
   it('can map many items', () => {
-    let m = Map();
+    let m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     for (let ii = 0; ii < 2000; ii++) {
       m = m.set('thing:' + ii, ii);
     }
@@ -1115,11 +1028,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('can use weird keys', () => {
     const symbol = Symbol('A');
-    const m: Immutable.Map<any, any> = Map()
-      .set(NaN, 1)
-      .set(Infinity, 2)
-      .set(symbol, 'A')
-      .set(-Infinity, 3);
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)().set(NaN, 1).set(Infinity, 2).set(symbol, 'A').set(-Infinity, 3);
 
     expect(m.get(symbol)).toBe('A');
     expect(m.get(NaN)).toBe(1);
@@ -1129,7 +1038,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('can map items known to hash collide', () => {
     // make a big map, so it hashmaps
-    let m: Immutable.Map<any, any> = Immutable.Range(0, 32).toMap();
+    let m = (_immutable || _load_immutable()).default.Range(0, 32).toMap();
     m = m.set('AAA', 'letters').set(64545, 'numbers');
     expect(m.size).toBe(34);
     expect(m.get('AAA')).toEqual('letters');
@@ -1138,7 +1047,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('can progressively add items known to collide', () => {
     // make a big map, so it hashmaps
-    let map: Immutable.Map<any, any> = Immutable.Range(0, 32).toMap();
+    let map = (_immutable || _load_immutable()).default.Range(0, 32).toMap();
     map = map.set('@', '@');
     map = map.set(64, 64);
     map = map.set(96, 96);
@@ -1149,48 +1058,48 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('maps values', () => {
-    const m = Map({a: 'a', b: 'b', c: 'c'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'a', b: 'b', c: 'c' });
     const r = m.map(value => value.toUpperCase());
-    expect(r.toObject()).toEqual({a: 'A', b: 'B', c: 'C'});
+    expect(r.toObject()).toEqual({ a: 'A', b: 'B', c: 'C' });
   });
 
   it('maps keys', () => {
-    const m = Map({a: 'a', b: 'b', c: 'c'});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 'a', b: 'b', c: 'c' });
     const r = m.mapKeys(key => key.toUpperCase());
-    expect(r.toObject()).toEqual({A: 'a', B: 'b', C: 'c'});
+    expect(r.toObject()).toEqual({ A: 'a', B: 'b', C: 'c' });
   });
 
   it('filters values', () => {
-    const m = Map({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 });
     const r = m.filter(value => value % 2 === 1);
-    expect(r.toObject()).toEqual({a: 1, c: 3, e: 5});
+    expect(r.toObject()).toEqual({ a: 1, c: 3, e: 5 });
   });
 
   it('filterNots values', () => {
-    const m = Map({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 });
     const r = m.filterNot(value => value % 2 === 1);
-    expect(r.toObject()).toEqual({b: 2, d: 4, f: 6});
+    expect(r.toObject()).toEqual({ b: 2, d: 4, f: 6 });
   });
 
   it('derives keys', () => {
-    const v = Map({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6});
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 });
     expect(v.keySeq().toArray()).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
   });
 
   it('flips keys and values', () => {
-    const v = Map({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6});
+    const v = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 });
     expect(v.flip().toObject()).toEqual({
       '1': 'a',
       '2': 'b',
       '3': 'c',
       '4': 'd',
       '5': 'e',
-      '6': 'f',
+      '6': 'f'
     });
   });
 
   it('can convert to a list', () => {
-    const m = Map({a: 1, b: 2, c: 3});
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ a: 1, b: 2, c: 3 });
     const v = m.toList();
     const k = m.keySeq().toList();
     expect(v.size).toBe(3);
@@ -1202,8 +1111,8 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('works like an object', () => {
-    const obj = {a: 1, b: 2, c: 3};
-    let map = Map(obj);
+    const obj = { a: 1, b: 2, c: 3 };
+    let map = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)(obj);
     Object.keys(obj).forEach(key => {
       expect(map.get(key)).toBe(obj[key]);
       expect(map.has(key)).toBe(true);
@@ -1219,23 +1128,18 @@ describe('compatibility with Immutable.Map', () => {
 
   it('sets', () => {
     const len = 20;
-    let map = Map();
+    let map = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     for (let ii = 0; ii < len; ii++) {
       expect(map.size).toBe(ii);
       map = map.set(String(ii), ii);
     }
     expect(map.size).toBe(len);
-    expect(Immutable.is(map.toSet(), Immutable.Range(0, len).toSet())).toBe(
-      true,
-    );
+    expect((_immutable || _load_immutable()).default.is(map.toSet(), (_immutable || _load_immutable()).default.Range(0, len).toSet())).toBe(true);
   });
 
   it('has and get', () => {
     const len = 20;
-    const map = Immutable.Range(0, len)
-      .toKeyedSeq()
-      .mapKeys(x => String(x))
-      .toMap();
+    const map = (_immutable || _load_immutable()).default.Range(0, len).toKeyedSeq().mapKeys(x => String(x)).toMap();
     for (let ii = 0; ii < len; ii++) {
       expect(map.get(String(ii))).toBe(ii);
       expect(map.has(String(ii))).toBe(true);
@@ -1244,7 +1148,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('deletes', () => {
     const len = 20;
-    let map = Immutable.Range(0, len).toMap();
+    let map = (_immutable || _load_immutable()).default.Range(0, len).toMap();
     for (let ii = 0; ii < len; ii++) {
       expect(map.size).toBe(len - ii);
       map = map.remove(ii);
@@ -1255,9 +1159,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('deletes from transient', () => {
     const len = 20;
-    const map = Immutable.Range(0, len)
-      .toMap()
-      .asMutable();
+    const map = (_immutable || _load_immutable()).default.Range(0, len).toMap().asMutable();
     for (let ii = 0; ii < len; ii++) {
       expect(map.size).toBe(len - ii);
       map.remove(ii);
@@ -1268,7 +1170,7 @@ describe('compatibility with Immutable.Map', () => {
 
   it('iterates through all entries', () => {
     const len = 20;
-    const v = Immutable.Range(0, len).toMap();
+    const v = (_immutable || _load_immutable()).default.Range(0, len).toMap();
     const a = v.toArray();
     const iter = v.entries();
     for (let ii = 0; ii < len; ii++) {
@@ -1279,39 +1181,34 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('allows chained mutations', () => {
-    const m1 = Map();
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)();
     const m2 = m1.set('a', 1);
     const m3 = m2.withMutations(m => m.set('b', 2).set('c', 3));
     const m4 = m3.set('d', 4);
 
     expect(m1.toObject()).toEqual({});
-    expect(m2.toObject()).toEqual({a: 1});
-    expect(m3.toObject()).toEqual({a: 1, b: 2, c: 3});
-    expect(m4.toObject()).toEqual({a: 1, b: 2, c: 3, d: 4});
+    expect(m2.toObject()).toEqual({ a: 1 });
+    expect(m3.toObject()).toEqual({ a: 1, b: 2, c: 3 });
+    expect(m4.toObject()).toEqual({ a: 1, b: 2, c: 3, d: 4 });
   });
 
   // Shared empty collections are an explicit TODO.
   // eslint-disable-next-line
   xit('chained mutations does not result in new empty map instance', () => {
-    const v1 = Map({x: 1});
-    const v2 = v1.withMutations(v =>
-      v
-        .set('y', 2)
-        .delete('x')
-        .delete('y'),
-    );
-    expect(v2).toBe(Map());
+    const v1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ x: 1 });
+    const v2 = v1.withMutations(v => v.set('y', 2).delete('x').delete('y'));
+    expect(v2).toBe((0, (_immutableSnapshot || _load_immutableSnapshot()).Map)());
   });
 
   it('expresses value equality with unordered sequences', () => {
-    const m1 = Map({A: 1, B: 2, C: 3});
-    const m2 = Map({C: 3, B: 2, A: 1});
-    expect(Immutable.is(m1, m2)).toBe(true);
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ A: 1, B: 2, C: 3 });
+    const m2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ C: 3, B: 2, A: 1 });
+    expect((_immutable || _load_immutable()).default.is(m1, m2)).toBe(true);
   });
 
   it('deletes all the provided keys', () => {
     const NOT_SET = undefined;
-    const m1 = Map({A: 1, B: 2, C: 3});
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ A: 1, B: 2, C: 3 });
     const m2 = m1.deleteAll(['A', 'B']);
     expect(m2.get('A')).toBe(NOT_SET);
     expect(m2.get('B')).toBe(NOT_SET);
@@ -1320,21 +1217,21 @@ describe('compatibility with Immutable.Map', () => {
   });
 
   it('remains unchanged when no keys are provided', () => {
-    const m1 = Map({A: 1, B: 2, C: 3});
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)({ A: 1, B: 2, C: 3 });
     const m2 = m1.deleteAll([]);
     expect(m1).toBe(m2);
   });
 
   it('uses toString on keys and values', () => {
-    class A extends Record({x: (null: ?number)}) {
+    class A extends (0, (_immutableSnapshot || _load_immutableSnapshot()).Record)({ x: null }) {
       toString() {
         // $FlowIgnore
         return this.x;
       }
     }
 
-    const r = new A({x: 2});
-    const map = Map([[r, r]]);
+    const r = new A({ x: 2 });
+    const map = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[r, r]]);
     expect(map.toString()).toEqual('Map { 2: 2 }');
   });
 
@@ -1342,7 +1239,7 @@ describe('compatibility with Immutable.Map', () => {
     const a = Symbol('a');
     const b = Symbol('b');
     const c = Symbol('c');
-    const m = Map([[a, 'a'], [b, 'b'], [c, 'c']]);
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[a, 'a'], [b, 'b'], [c, 'c']]);
     expect(m.size).toBe(3);
     expect(m.get(a)).toBe('a');
     expect(m.get(b)).toBe('b');
@@ -1352,7 +1249,7 @@ describe('compatibility with Immutable.Map', () => {
   it('Symbol keys are unique', () => {
     const a = Symbol('FooBar');
     const b = Symbol('FooBar');
-    const m = Map([[a, 'FizBuz'], [b, 'FooBar']]);
+    const m = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[a, 'FizBuz'], [b, 'FooBar']]);
     expect(m.size).toBe(2);
     expect(m.get(a)).toBe('FizBuz');
     expect(m.get(b)).toBe('FooBar');
@@ -1369,14 +1266,10 @@ describe('compatibility with Immutable.Map', () => {
 
     // Note the use of nested Map constructors, Map() does not do a
     // deep conversion!
-    const m1 = Map([[a, Map([[b, Map([[c, 1], [d, 2]])]])]]);
-    const m2 = Map([
-      [a, Map([[b, Map([[c, 10], [e, 20], [f, 30], [g, 40]])]])],
-    ]);
+    const m1 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[a, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[b, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[c, 1], [d, 2]])]])]]);
+    const m2 = (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[a, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[b, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[c, 10], [e, 20], [f, 30], [g, 40]])]])]]);
     const merged = m1.mergeDeep(m2);
 
-    expect(merged).toEqual(
-      Map([[a, Map([[b, Map([[c, 10], [d, 2], [e, 20], [f, 30], [g, 40]])]])]]),
-    );
+    expect(merged).toEqual((0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[a, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[b, (0, (_immutableSnapshot || _load_immutableSnapshot()).Map)([[c, 10], [d, 2], [e, 20], [f, 30], [g, 40]])]])]]));
   });
 });

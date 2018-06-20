@@ -1,189 +1,173 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {AdbDevice, AndroidJavaProcess, Process} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDeviceInfo = getDeviceInfo;
+exports.getProcesses = getProcesses;
+exports.stopProcess = stopProcess;
+exports.getDeviceList = getDeviceList;
+exports.getPidFromPackageName = getPidFromPackageName;
+exports.installPackage = installPackage;
+exports.uninstallPackage = uninstallPackage;
+exports.forwardJdwpPortToPid = forwardJdwpPortToPid;
+exports.removeJdwpForwardSpec = removeJdwpForwardSpec;
+exports.launchActivity = launchActivity;
+exports.launchMainActivity = launchMainActivity;
+exports.launchService = launchService;
+exports.activityExists = activityExists;
+exports.getAllAvailablePackages = getAllAvailablePackages;
+exports.getJavaProcesses = getJavaProcesses;
+exports.dumpsysPackage = dumpsysPackage;
+exports.touchFile = touchFile;
+exports.removeFile = removeFile;
+exports.getAPIVersion = getAPIVersion;
+exports.getInstalledPackages = getInstalledPackages;
+exports.killServer = killServer;
+exports.getApkManifest = getApkManifest;
+exports.getVersion = getVersion;
+exports.checkMuxStatus = checkMuxStatus;
+exports.checkInMuxPort = checkInMuxPort;
+exports.checkOutMuxPort = checkOutMuxPort;
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ConnectableObservable} from 'rxjs';
-import {Adb} from './Adb';
-import {Processes} from './common/Processes';
-import {runCommand} from 'nuclide-commons/process';
+var _fsPromise;
 
-export function getDeviceInfo(
-  serial: string,
-): ConnectableObservable<Map<string, string>> {
-  return new Adb(serial).getDeviceInfo().publish();
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../nuclide-commons/fsPromise'));
 }
 
-export function getProcesses(
-  serial: string,
-  timeout: number,
-): ConnectableObservable<Array<Process>> {
-  return new Processes(new Adb(serial)).fetch(timeout).publish();
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../nuclide-commons/nuclideUri'));
 }
 
-export async function stopProcess(
-  serial: string,
-  packageName: string,
-  pid: number,
-): Promise<void> {
-  return new Adb(serial).stopProcess(packageName, pid);
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Adb;
+
+function _load_Adb() {
+  return _Adb = require('./Adb');
 }
 
-export function getDeviceList(): Promise<Array<AdbDevice>> {
-  return Adb.getDevices();
+var _Processes;
+
+function _load_Processes() {
+  return _Processes = require('./common/Processes');
 }
 
-export async function getPidFromPackageName(
-  serial: string,
-  packageName: string,
-): Promise<number> {
-  return new Processes(new Adb(serial)).getPidFromPackageName(packageName);
+var _process;
+
+function _load_process() {
+  return _process = require('../../nuclide-commons/process');
 }
 
-export function installPackage(
-  serial: string,
-  packagePath: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getDeviceInfo(serial) {
+  return new (_Adb || _load_Adb()).Adb(serial).getDeviceInfo().publish();
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
+
+function getProcesses(serial, timeout) {
+  return new (_Processes || _load_Processes()).Processes(new (_Adb || _load_Adb()).Adb(serial)).fetch(timeout).publish();
+}
+
+async function stopProcess(serial, packageName, pid) {
+  return new (_Adb || _load_Adb()).Adb(serial).stopProcess(packageName, pid);
+}
+
+function getDeviceList() {
+  return (_Adb || _load_Adb()).Adb.getDevices();
+}
+
+async function getPidFromPackageName(serial, packageName) {
+  return new (_Processes || _load_Processes()).Processes(new (_Adb || _load_Adb()).Adb(serial)).getPidFromPackageName(packageName);
+}
+
+function installPackage(serial, packagePath) {
   // TODO(T17463635)
-  return new Adb(serial).installPackage(packagePath).publish();
+  return new (_Adb || _load_Adb()).Adb(serial).installPackage(packagePath).publish();
 }
 
-export function uninstallPackage(
-  serial: string,
-  packageName: string,
-): ConnectableObservable<LegacyProcessMessage> {
+function uninstallPackage(serial, packageName) {
   // TODO(T17463635)
-  return new Adb(serial).uninstallPackage(packageName).publish();
+  return new (_Adb || _load_Adb()).Adb(serial).uninstallPackage(packageName).publish();
 }
 
-export async function forwardJdwpPortToPid(
-  serial: string,
-  tcpPort: number,
-  pid: number,
-): Promise<?string> {
-  return new Adb(serial).forwardJdwpPortToPid(tcpPort, pid);
+async function forwardJdwpPortToPid(serial, tcpPort, pid) {
+  return new (_Adb || _load_Adb()).Adb(serial).forwardJdwpPortToPid(tcpPort, pid);
 }
 
-export async function removeJdwpForwardSpec(
-  serial: string,
-  spec: ?string,
-): Promise<string> {
-  return new Adb(serial).removeJdwpForwardSpec(spec);
+async function removeJdwpForwardSpec(serial, spec) {
+  return new (_Adb || _load_Adb()).Adb(serial).removeJdwpForwardSpec(spec);
 }
 
-export async function launchActivity(
-  serial: string,
-  packageName: string,
-  activity: string,
-  debug: boolean,
-  action: ?string,
-  parameters: ?Map<string, string>,
-): Promise<string> {
-  return new Adb(serial).launchActivity(
-    packageName,
-    activity,
-    debug,
-    action,
-    parameters,
-  );
+async function launchActivity(serial, packageName, activity, debug, action, parameters) {
+  return new (_Adb || _load_Adb()).Adb(serial).launchActivity(packageName, activity, debug, action, parameters);
 }
 
-export async function launchMainActivity(
-  serial: string,
-  packageName: string,
-  debug: boolean,
-): Promise<string> {
-  return new Adb(serial).launchMainActivity(packageName, debug);
+async function launchMainActivity(serial, packageName, debug) {
+  return new (_Adb || _load_Adb()).Adb(serial).launchMainActivity(packageName, debug);
 }
 
-export async function launchService(
-  serial: string,
-  packageName: string,
-  serviceName: string,
-  debug: boolean,
-): Promise<string> {
-  return new Adb(serial).launchService(packageName, serviceName, debug);
+async function launchService(serial, packageName, serviceName, debug) {
+  return new (_Adb || _load_Adb()).Adb(serial).launchService(packageName, serviceName, debug);
 }
 
-export async function activityExists(
-  serial: string,
-  packageName: string,
-  activity: string,
-): Promise<boolean> {
-  return new Adb(serial).activityExists(packageName, activity);
+async function activityExists(serial, packageName, activity) {
+  return new (_Adb || _load_Adb()).Adb(serial).activityExists(packageName, activity);
 }
 
-export async function getAllAvailablePackages(
-  serial: string,
-): Promise<Array<string>> {
-  return new Adb(serial).getAllAvailablePackages();
+async function getAllAvailablePackages(serial) {
+  return new (_Adb || _load_Adb()).Adb(serial).getAllAvailablePackages();
 }
 
-export function getJavaProcesses(
-  serial: string,
-): ConnectableObservable<Array<AndroidJavaProcess>> {
-  return new Adb(serial).getJavaProcesses().publish();
+function getJavaProcesses(serial) {
+  return new (_Adb || _load_Adb()).Adb(serial).getJavaProcesses().publish();
 }
 
-export async function dumpsysPackage(
-  serial: string,
-  identifier: string,
-): Promise<?string> {
-  return new Adb(serial).dumpsysPackage(identifier);
+async function dumpsysPackage(serial, identifier) {
+  return new (_Adb || _load_Adb()).Adb(serial).dumpsysPackage(identifier);
 }
 
-export async function touchFile(serial: string, path: string): Promise<string> {
-  return new Adb(serial).touchFile(path);
+async function touchFile(serial, path) {
+  return new (_Adb || _load_Adb()).Adb(serial).touchFile(path);
 }
 
-export async function removeFile(
-  serial: string,
-  path: string,
-): Promise<string> {
-  return new Adb(serial).removeFile(path);
+async function removeFile(serial, path) {
+  return new (_Adb || _load_Adb()).Adb(serial).removeFile(path);
 }
 
-export async function getAPIVersion(serial: string): Promise<string> {
-  return new Adb(serial).getAPIVersion().toPromise();
+async function getAPIVersion(serial) {
+  return new (_Adb || _load_Adb()).Adb(serial).getAPIVersion().toPromise();
 }
 
-export async function getInstalledPackages(
-  serial: string,
-): Promise<Array<string>> {
-  return new Adb(serial).getInstalledPackages();
+async function getInstalledPackages(serial) {
+  return new (_Adb || _load_Adb()).Adb(serial).getInstalledPackages();
 }
 
-export async function killServer(): Promise<void> {
-  return Adb.killServer();
+async function killServer() {
+  return (_Adb || _load_Adb()).Adb.killServer();
 }
 
-async function getAaptBinary(buildToolsVersion: ?string): Promise<string> {
+async function getAaptBinary(buildToolsVersion) {
   if (process.env.ANDROID_SDK == null || buildToolsVersion == null) {
     return 'aapt';
   } else {
-    const allBuildToolsPath = nuclideUri.join(
-      process.env.ANDROID_SDK,
-      'build-tools',
-    );
-    const exactBuildToolPath = nuclideUri.join(
-      allBuildToolsPath,
-      buildToolsVersion,
-    );
-    const aaptPath = nuclideUri.join(exactBuildToolPath, 'aapt');
-    if (await fsPromise.exists(aaptPath)) {
+    const allBuildToolsPath = (_nuclideUri || _load_nuclideUri()).default.join(process.env.ANDROID_SDK, 'build-tools');
+    const exactBuildToolPath = (_nuclideUri || _load_nuclideUri()).default.join(allBuildToolsPath, buildToolsVersion);
+    const aaptPath = (_nuclideUri || _load_nuclideUri()).default.join(exactBuildToolPath, 'aapt');
+    if (await (_fsPromise || _load_fsPromise()).default.exists(aaptPath)) {
       return aaptPath;
     } else {
       return 'aapt';
@@ -191,37 +175,28 @@ async function getAaptBinary(buildToolsVersion: ?string): Promise<string> {
   }
 }
 
-export async function getApkManifest(
-  apkPath: string,
-  buildToolsVersion: ?string,
-): Promise<string> {
+async function getApkManifest(apkPath, buildToolsVersion) {
   const aaptBinary = await getAaptBinary(buildToolsVersion);
-  return runCommand(aaptBinary, ['dump', 'badging', apkPath]).toPromise();
+  return (0, (_process || _load_process()).runCommand)(aaptBinary, ['dump', 'badging', apkPath]).toPromise();
 }
 
-export async function getVersion(): Promise<string> {
-  return Adb.getVersion();
+async function getVersion() {
+  return (_Adb || _load_Adb()).Adb.getVersion();
 }
 
-export async function checkMuxStatus(): Promise<boolean> {
+async function checkMuxStatus() {
   try {
-    await runCommand('adbmux', ['status'])
-      .ignoreElements()
-      .toPromise();
+    await (0, (_process || _load_process()).runCommand)('adbmux', ['status']).ignoreElements().toPromise();
   } catch (_) {
     return false;
   }
   return true;
 }
 
-export function checkInMuxPort(port: number): Promise<void> {
-  return runCommand('adbmux', ['checkin', `${port}`])
-    .ignoreElements()
-    .toPromise();
+function checkInMuxPort(port) {
+  return (0, (_process || _load_process()).runCommand)('adbmux', ['checkin', `${port}`]).ignoreElements().toPromise();
 }
 
-export function checkOutMuxPort(port: number): Promise<void> {
-  return runCommand('adbmux', ['checkout', `${port}`])
-    .ignoreElements()
-    .toPromise();
+function checkOutMuxPort(port) {
+  return (0, (_process || _load_process()).runCommand)('adbmux', ['checkout', `${port}`]).ignoreElements().toPromise();
 }

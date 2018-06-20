@@ -1,336 +1,260 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LanguageService} from './LanguageService';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {CodeHighlightConfig} from './CodeHighlightProvider';
-import type {OutlineViewConfig} from './OutlineViewProvider';
-import type {StatusConfig} from './StatusProvider';
-import type {TypeCoverageConfig} from './TypeCoverageProvider';
-import type {DefinitionConfig} from './DefinitionProvider';
-import type {TypeHintConfig} from './TypeHintProvider';
-import type {CodeFormatConfig} from './CodeFormatProvider';
-import type {FindReferencesConfig} from './FindReferencesProvider';
-import type {CodeActionConfig} from './CodeActionProvider';
-import type {
-  AutocompleteConfig,
-  OnDidInsertSuggestionCallback,
-} from './AutocompleteProvider';
-import type {DiagnosticsConfig} from './DiagnosticsProvider';
-import type {SignatureHelpConfig} from './SignatureHelpProvider';
-import type {SyntacticSelectionConfig} from './SyntacticSelectionProvider';
-import type {BusySignalService} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AtomLanguageService = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {LanguageAdditionalLogFilesProvider} from './AdditionalLogFileProvider';
-import {CodeHighlightProvider} from './CodeHighlightProvider';
-import {OutlineViewProvider} from './OutlineViewProvider';
-import {StatusProvider} from './StatusProvider';
-import {TypeCoverageProvider} from './TypeCoverageProvider';
-import {DefinitionProvider} from './DefinitionProvider';
-import {TypeHintProvider} from './TypeHintProvider';
-import {CodeFormatProvider} from './CodeFormatProvider';
-import {FindReferencesProvider} from './FindReferencesProvider';
-import {AutocompleteProvider} from './AutocompleteProvider';
-import {registerDiagnostics} from './DiagnosticsProvider';
-import {CodeActionProvider} from './CodeActionProvider';
-import {SignatureHelpProvider} from './SignatureHelpProvider';
-import {SyntacticSelectionProvider} from './SyntacticSelectionProvider';
-import {getLogger} from 'log4js';
+var _nuclideRemoteConnection;
 
-export type BusySignalProvider = {
-  reportBusyWhile<T>(message: string, f: () => Promise<T>): Promise<T>,
-};
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-export type AtomLanguageServiceConfig = {|
-  name: string,
-  grammars: Array<string>,
-  highlight?: CodeHighlightConfig,
-  outline?: OutlineViewConfig,
-  coverage?: TypeCoverageConfig,
-  definition?: DefinitionConfig,
-  typeHint?: TypeHintConfig,
-  codeFormat?: CodeFormatConfig,
-  findReferences?: FindReferencesConfig,
-  autocomplete?: AutocompleteConfig,
-  diagnostics?: DiagnosticsConfig,
-  codeAction?: CodeActionConfig,
-  signatureHelp?: SignatureHelpConfig,
-  syntacticSelection?: SyntacticSelectionConfig,
-  status?: StatusConfig,
-|};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export class AtomLanguageService<T: LanguageService> {
-  _config: AtomLanguageServiceConfig;
-  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _subscriptions: UniversalDisposable;
-  _logger: log4js$Logger;
+var _UniversalDisposable;
 
-  constructor(
-    languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
-    config: AtomLanguageServiceConfig,
-    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    logger: log4js$Logger = getLogger('nuclide-language-service'),
-  ) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _AdditionalLogFileProvider;
+
+function _load_AdditionalLogFileProvider() {
+  return _AdditionalLogFileProvider = require('./AdditionalLogFileProvider');
+}
+
+var _CodeHighlightProvider;
+
+function _load_CodeHighlightProvider() {
+  return _CodeHighlightProvider = require('./CodeHighlightProvider');
+}
+
+var _OutlineViewProvider;
+
+function _load_OutlineViewProvider() {
+  return _OutlineViewProvider = require('./OutlineViewProvider');
+}
+
+var _StatusProvider;
+
+function _load_StatusProvider() {
+  return _StatusProvider = require('./StatusProvider');
+}
+
+var _TypeCoverageProvider;
+
+function _load_TypeCoverageProvider() {
+  return _TypeCoverageProvider = require('./TypeCoverageProvider');
+}
+
+var _DefinitionProvider;
+
+function _load_DefinitionProvider() {
+  return _DefinitionProvider = require('./DefinitionProvider');
+}
+
+var _TypeHintProvider;
+
+function _load_TypeHintProvider() {
+  return _TypeHintProvider = require('./TypeHintProvider');
+}
+
+var _CodeFormatProvider;
+
+function _load_CodeFormatProvider() {
+  return _CodeFormatProvider = require('./CodeFormatProvider');
+}
+
+var _FindReferencesProvider;
+
+function _load_FindReferencesProvider() {
+  return _FindReferencesProvider = require('./FindReferencesProvider');
+}
+
+var _AutocompleteProvider;
+
+function _load_AutocompleteProvider() {
+  return _AutocompleteProvider = require('./AutocompleteProvider');
+}
+
+var _DiagnosticsProvider;
+
+function _load_DiagnosticsProvider() {
+  return _DiagnosticsProvider = require('./DiagnosticsProvider');
+}
+
+var _CodeActionProvider;
+
+function _load_CodeActionProvider() {
+  return _CodeActionProvider = require('./CodeActionProvider');
+}
+
+var _SignatureHelpProvider;
+
+function _load_SignatureHelpProvider() {
+  return _SignatureHelpProvider = require('./SignatureHelpProvider');
+}
+
+var _SyntacticSelectionProvider;
+
+function _load_SyntacticSelectionProvider() {
+  return _SyntacticSelectionProvider = require('./SyntacticSelectionProvider');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class AtomLanguageService {
+
+  constructor(languageServiceFactory, config, onDidInsertSuggestion, logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-language-service')) {
     this._config = config;
     this._onDidInsertSuggestion = onDidInsertSuggestion;
     this._logger = logger;
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     const lazy = true;
-    this._connectionToLanguageService = new ConnectionCache(
-      languageServiceFactory,
-      lazy,
-    );
+    this._connectionToLanguageService = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(languageServiceFactory, lazy);
     this._subscriptions.add(this._connectionToLanguageService);
   }
 
-  _selector(): string {
+  _selector() {
     return this._config.grammars.join(', ');
   }
 
-  activate(): void {
-    let busySignalService: ?BusySignalService = null;
+  activate() {
+    let busySignalService = null;
     const busySignalProvider = {
-      reportBusyWhile<U>(message, f: () => Promise<U>): Promise<U> {
+      reportBusyWhile(message, f) {
         if (busySignalService != null) {
           return busySignalService.reportBusyWhile(message, f);
         } else {
           return f();
         }
-      },
+      }
     };
 
-    this._subscriptions.add(
-      atom.packages.serviceHub.consume(
-        'atom-ide-busy-signal',
-        '0.1.0',
-        service => {
-          this._subscriptions.add(service);
-          busySignalService = service;
-          return new UniversalDisposable(() => {
-            this._subscriptions.remove(service);
-            busySignalService = null;
-          });
-        },
-      ),
-    );
+    this._subscriptions.add(atom.packages.serviceHub.consume('atom-ide-busy-signal', '0.1.0', service => {
+      this._subscriptions.add(service);
+      busySignalService = service;
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+        this._subscriptions.remove(service);
+        busySignalService = null;
+      });
+    }));
 
     const highlightConfig = this._config.highlight;
     if (highlightConfig != null) {
-      this._subscriptions.add(
-        CodeHighlightProvider.register(
-          this._config.name,
-          this._config.grammars,
-          highlightConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_CodeHighlightProvider || _load_CodeHighlightProvider()).CodeHighlightProvider.register(this._config.name, this._config.grammars, highlightConfig, this._connectionToLanguageService));
     }
 
     const outlineConfig = this._config.outline;
     if (outlineConfig != null) {
-      this._subscriptions.add(
-        OutlineViewProvider.register(
-          this._config.name,
-          this._config.grammars,
-          outlineConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_OutlineViewProvider || _load_OutlineViewProvider()).OutlineViewProvider.register(this._config.name, this._config.grammars, outlineConfig, this._connectionToLanguageService));
     }
 
     const coverageConfig = this._config.coverage;
     if (coverageConfig != null) {
-      this._subscriptions.add(
-        TypeCoverageProvider.register(
-          this._config.name,
-          this._selector(),
-          coverageConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_TypeCoverageProvider || _load_TypeCoverageProvider()).TypeCoverageProvider.register(this._config.name, this._selector(), coverageConfig, this._connectionToLanguageService));
     }
 
     const definitionConfig = this._config.definition;
     if (definitionConfig != null) {
-      this._subscriptions.add(
-        DefinitionProvider.register(
-          this._config.name,
-          this._config.grammars,
-          definitionConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_DefinitionProvider || _load_DefinitionProvider()).DefinitionProvider.register(this._config.name, this._config.grammars, definitionConfig, this._connectionToLanguageService));
     }
 
     const typeHintConfig = this._config.typeHint;
     if (typeHintConfig != null) {
-      this._subscriptions.add(
-        TypeHintProvider.register(
-          this._config.name,
-          this._selector(),
-          typeHintConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_TypeHintProvider || _load_TypeHintProvider()).TypeHintProvider.register(this._config.name, this._selector(), typeHintConfig, this._connectionToLanguageService));
     }
 
     const codeFormatConfig = this._config.codeFormat;
     if (codeFormatConfig != null) {
-      this._subscriptions.add(
-        CodeFormatProvider.register(
-          this._config.name,
-          this._config.grammars,
-          codeFormatConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_CodeFormatProvider || _load_CodeFormatProvider()).CodeFormatProvider.register(this._config.name, this._config.grammars, codeFormatConfig, this._connectionToLanguageService));
     }
 
     const findReferencesConfig = this._config.findReferences;
     if (findReferencesConfig != null) {
-      this._subscriptions.add(
-        FindReferencesProvider.register(
-          this._config.name,
-          this._config.grammars,
-          findReferencesConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_FindReferencesProvider || _load_FindReferencesProvider()).FindReferencesProvider.register(this._config.name, this._config.grammars, findReferencesConfig, this._connectionToLanguageService));
     }
 
     const autocompleteConfig = this._config.autocomplete;
     if (autocompleteConfig != null) {
-      this._subscriptions.add(
-        AutocompleteProvider.register(
-          this._config.name,
-          this._config.grammars,
-          autocompleteConfig,
-          this._onDidInsertSuggestion,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_AutocompleteProvider || _load_AutocompleteProvider()).AutocompleteProvider.register(this._config.name, this._config.grammars, autocompleteConfig, this._onDidInsertSuggestion, this._connectionToLanguageService));
     }
 
     const diagnosticsConfig = this._config.diagnostics;
     if (diagnosticsConfig != null) {
-      this._subscriptions.add(
-        registerDiagnostics(
-          this._config.name,
-          this._config.grammars,
-          diagnosticsConfig,
-          this._logger,
-          this._connectionToLanguageService,
-          busySignalProvider,
-        ),
-      );
+      this._subscriptions.add((0, (_DiagnosticsProvider || _load_DiagnosticsProvider()).registerDiagnostics)(this._config.name, this._config.grammars, diagnosticsConfig, this._logger, this._connectionToLanguageService, busySignalProvider));
     }
 
     const codeActionConfig = this._config.codeAction;
     if (codeActionConfig != null) {
-      this._subscriptions.add(
-        CodeActionProvider.register(
-          this._config.name,
-          this._config.grammars,
-          codeActionConfig,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_CodeActionProvider || _load_CodeActionProvider()).CodeActionProvider.register(this._config.name, this._config.grammars, codeActionConfig, this._connectionToLanguageService));
     }
 
-    const {signatureHelp} = this._config;
+    const { signatureHelp } = this._config;
     if (signatureHelp != null) {
-      this._subscriptions.add(
-        SignatureHelpProvider.register(
-          this._config.grammars,
-          signatureHelp,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_SignatureHelpProvider || _load_SignatureHelpProvider()).SignatureHelpProvider.register(this._config.grammars, signatureHelp, this._connectionToLanguageService));
     }
 
     const syntacticSelection = this._config.syntacticSelection;
     if (syntacticSelection != null) {
-      this._subscriptions.add(
-        SyntacticSelectionProvider.register(
-          this._config.name,
-          this._config.grammars,
-          syntacticSelection,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_SyntacticSelectionProvider || _load_SyntacticSelectionProvider()).SyntacticSelectionProvider.register(this._config.name, this._config.grammars, syntacticSelection, this._connectionToLanguageService));
     }
 
     const status = this._config.status;
     if (status != null) {
-      this._subscriptions.add(
-        StatusProvider.register(
-          this._config.name,
-          this._config.grammars,
-          status,
-          this._connectionToLanguageService,
-        ),
-      );
+      this._subscriptions.add((_StatusProvider || _load_StatusProvider()).StatusProvider.register(this._config.name, this._config.grammars, status, this._connectionToLanguageService));
     }
 
-    this._subscriptions.add(
-      LanguageAdditionalLogFilesProvider.register(
-        this._config.name,
-        this._connectionToLanguageService,
-      ),
-    );
+    this._subscriptions.add((_AdditionalLogFileProvider || _load_AdditionalLogFileProvider()).LanguageAdditionalLogFilesProvider.register(this._config.name, this._connectionToLanguageService));
   }
 
-  async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?T> {
+  async getLanguageServiceForUri(fileUri) {
     return this._connectionToLanguageService.getForUri(fileUri);
   }
 
-  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    const languageService = this._connectionToLanguageService.getExistingForUri(
-      fileUri,
-    );
+  async isFileInProject(fileUri) {
+    const languageService = this._connectionToLanguageService.getExistingForUri(fileUri);
     if (languageService == null) {
       return false;
     }
     return (await languageService).isFileInProject(fileUri);
   }
 
-  getCachedLanguageServices(): Iterator<[?ServerConnection, Promise<T>]> {
+  getCachedLanguageServices() {
     return this._connectionToLanguageService.entries();
   }
 
-  observeLanguageServices(): Observable<T> {
-    return this._connectionToLanguageService
-      .observeValues()
-      .switchMap(languageService => {
-        return Observable.fromPromise(languageService);
-      });
+  observeLanguageServices() {
+    return this._connectionToLanguageService.observeValues().switchMap(languageService => {
+      return _rxjsBundlesRxMinJs.Observable.fromPromise(languageService);
+    });
   }
 
-  observeConnectionLanguageEntries(): Observable<[?ServerConnection, T]> {
-    return this._connectionToLanguageService
-      .observeEntries()
-      .switchMap(([connection, servicePromise]) => {
-        return Observable.fromPromise(servicePromise).map(languageService => [
-          connection,
-          languageService,
-        ]);
-      });
+  observeConnectionLanguageEntries() {
+    return this._connectionToLanguageService.observeEntries().switchMap(([connection, servicePromise]) => {
+      return _rxjsBundlesRxMinJs.Observable.fromPromise(servicePromise).map(languageService => [connection, languageService]);
+    });
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
+exports.AtomLanguageService = AtomLanguageService; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    *  strict-local
+                                                    * @format
+                                                    */

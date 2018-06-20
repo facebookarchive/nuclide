@@ -1,29 +1,26 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import analytics from 'nuclide-commons/analytics';
-import {getDefinitionPreview as getLocalFileDefinitionPreview} from 'nuclide-commons/symbol-definition-preview';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import React from 'react';
-import type {Datatip} from '../../atom-ide-datatip/lib/types';
+var _analytics;
 
-import type {Definition, DefinitionPreviewProvider} from './types';
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('../../../../nuclide-commons/analytics'));
+}
 
-export default (async function getPreviewDatatipFromDefinition(
-  range: atom$Range,
-  definitions: Array<Definition>,
-  definitionPreviewProvider: ?DefinitionPreviewProvider,
-  grammar: atom$Grammar,
-): Promise<?Datatip> {
+var _symbolDefinitionPreview;
+
+function _load_symbolDefinitionPreview() {
+  return _symbolDefinitionPreview = require('../../../../nuclide-commons/symbol-definition-preview');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = async function getPreviewDatatipFromDefinition(range, definitions, definitionPreviewProvider, grammar) {
   if (definitions.length === 1) {
     const definition = definitions[0];
     // Some providers (e.g. Flow) return negative positions.
@@ -31,10 +28,7 @@ export default (async function getPreviewDatatipFromDefinition(
       return null;
     }
 
-    const definitionPreview = await getPreview(
-      definition,
-      definitionPreviewProvider,
-    );
+    const definitionPreview = await getPreview(definition, definitionPreviewProvider);
 
     if (definitionPreview == null) {
       return null;
@@ -44,54 +38,49 @@ export default (async function getPreviewDatatipFromDefinition(
     //  image contents, otherwise use markedStrings
     if (definitionPreview.mime.startsWith('image/')) {
       return {
-        component: () => (
-          <img
-            src={`data:${definitionPreview.mime};${
-              definitionPreview.encoding
-            },${definitionPreview.contents}`}
-          />
-        ),
-        range,
+        component: () => _react.default.createElement('img', {
+          src: `data:${definitionPreview.mime};${definitionPreview.encoding},${definitionPreview.contents}`
+        }),
+        range
       };
     }
     return {
-      markedStrings: [
-        {
-          type: 'snippet',
-          value: definitionPreview.contents,
-          grammar,
-        },
-      ],
-      range,
+      markedStrings: [{
+        type: 'snippet',
+        value: definitionPreview.contents,
+        grammar
+      }],
+      range
     };
   }
 
   return {
-    markedStrings: [
-      {
-        type: 'markdown',
-        value: `${definitions.length} definitions found. Click to jump.`,
-        grammar,
-      },
-    ],
-    range,
+    markedStrings: [{
+      type: 'markdown',
+      value: `${definitions.length} definitions found. Click to jump.`,
+      grammar
+    }],
+    range
   };
-});
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    *  strict-local
+    * @format
+    */
 
-async function getPreview(
-  definition: Definition,
-  definitionPreviewProvider: ?DefinitionPreviewProvider,
-) {
+async function getPreview(definition, definitionPreviewProvider) {
   let getDefinitionPreviewFn;
   if (definitionPreviewProvider == null) {
-    getDefinitionPreviewFn = getLocalFileDefinitionPreview;
+    getDefinitionPreviewFn = (_symbolDefinitionPreview || _load_symbolDefinitionPreview()).getDefinitionPreview;
   } else {
-    getDefinitionPreviewFn = definitionPreviewProvider.getDefinitionPreview.bind(
-      definitionPreviewProvider,
-    );
+    getDefinitionPreviewFn = definitionPreviewProvider.getDefinitionPreview.bind(definitionPreviewProvider);
   }
 
-  return analytics.trackTiming('hyperclickPreview.getDefinitionPreview', () =>
-    getDefinitionPreviewFn(definition),
-  );
+  return (_analytics || _load_analytics()).default.trackTiming('hyperclickPreview.getDefinitionPreview', () => getDefinitionPreviewFn(definition));
 }

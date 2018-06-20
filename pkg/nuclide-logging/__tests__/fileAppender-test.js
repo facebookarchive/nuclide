@@ -1,55 +1,63 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import fs from 'fs';
-import log4js from 'log4js';
-import temp from 'temp';
+var _fs = _interopRequireDefault(require('fs'));
 
-temp.track();
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+(_temp || _load_temp()).default.track(); /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
 
 jest.unmock('log4js');
 
 describe('fileAppender', () => {
-  let tempFile: string;
+  let tempFile;
   beforeEach(() => {
-    tempFile = temp.openSync().path;
-    log4js.configure({
-      appenders: [
-        {
-          type: require.resolve('../VendorLib/fileAppender'),
-          filename: tempFile,
-          maxLogSize: 1048576,
-          backups: 1,
-          layout: {
-            type: 'pattern',
-            // level category - message
-            pattern: '%p %c - %m',
-          },
-        },
-      ],
+    tempFile = (_temp || _load_temp()).default.openSync().path;
+    (_log4js || _load_log4js()).default.configure({
+      appenders: [{
+        type: require.resolve('../VendorLib/fileAppender'),
+        filename: tempFile,
+        maxLogSize: 1048576,
+        backups: 1,
+        layout: {
+          type: 'pattern',
+          // level category - message
+          pattern: '%p %c - %m'
+        }
+      }]
     });
   });
 
   it('flushes immediately on shutdown', async () => {
     await (async () => {
       const times = 10;
-      const logger = log4js.getLogger('testCategory');
+      const logger = (_log4js || _load_log4js()).default.getLogger('testCategory');
       for (let i = 0; i < times; i++) {
         logger.info('test1234');
       }
-      await new Promise(resolve => log4js.shutdown(resolve));
+      await new Promise(resolve => (_log4js || _load_log4js()).default.shutdown(resolve));
 
-      expect(fs.readFileSync(tempFile, 'utf8')).toBe(
-        'INFO testCategory - test1234\n'.repeat(times),
-      );
+      expect(_fs.default.readFileSync(tempFile, 'utf8')).toBe('INFO testCategory - test1234\n'.repeat(times));
     })();
   });
 });

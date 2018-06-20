@@ -1,3 +1,33 @@
+'use strict';
+
+var _events = _interopRequireDefault(require('events'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _testHelpers;
+
+function _load_testHelpers() {
+  return _testHelpers = require('../../../modules/nuclide-commons/test-helpers');
+}
+
+var _SshHandshake;
+
+function _load_SshHandshake() {
+  return _SshHandshake = require('../lib/SshHandshake');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,120 +35,94 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {SshConnectionConfiguration} from '../lib/SshHandshake';
-
-import EventEmitter from 'events';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {clearRequireCache, uncachedRequire} from 'nuclide-commons/test-helpers';
-import {SshHandshake} from '../lib/SshHandshake';
-import type {ExecOptions, SFTPWrapper, ClientChannel} from 'ssh2';
-import waitsFor from '../../../jest/waits_for';
-
-const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');
+const pathToFakePk = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'fakepk');
 
 describe('SshHandshake', () => {
-  class MockSshConnection extends EventEmitter {
+  class MockSshConnection extends _events.default {
     connect(config) {}
     end() {}
-    exec(
-      command: string,
-      options?: ExecOptions,
-      callback: (err: Error, channel: ClientChannel) => void | Promise<void>,
-    ): boolean {
+    exec(command, options, callback) {
       return false;
     }
 
-    sftp(
-      callback: (err: Error, sftp: SFTPWrapper) => void | Promise<void>,
-    ): boolean {
+    sftp(callback) {
       return false;
     }
 
-    forwardOut(
-      srcIP: string,
-      srcPort: number,
-      dstIP: string,
-      dstPort: number,
-      callback: (err: Error, channel: ClientChannel) => void | Promise<void>,
-    ): boolean {
+    forwardOut(srcIP, srcPort, dstIP, dstPort, callback) {
       return false;
     }
   }
 
   let dns;
-  let handshakeDelegate: any;
+  let handshakeDelegate;
 
   beforeEach(() => {
-    dns = uncachedRequire(require, 'dns');
-    jest
-      .spyOn(((dns: any): Object), 'lookup')
-      .mockImplementation((host, family, callback) => {
-        process.nextTick(() => {
-          callback(
-            /* error */ null,
-            /* address */ 'example.com',
-            /* family */ 4,
-          );
-        });
+    dns = (0, (_testHelpers || _load_testHelpers()).uncachedRequire)(require, 'dns');
+    jest.spyOn(dns, 'lookup').mockImplementation((host, family, callback) => {
+      process.nextTick(() => {
+        callback(
+        /* error */null,
+        /* address */'example.com',
+        /* family */4);
       });
+    });
     handshakeDelegate = {
       onKeyboardInteractive: jest.fn(),
       onWillConnect: jest.fn(),
       onDidConnect: jest.fn(),
-      onError: jest.fn(),
+      onError: jest.fn()
     };
   });
 
   afterEach(() => {
-    clearRequireCache(require, 'dns');
+    (0, (_testHelpers || _load_testHelpers()).clearRequireCache)(require, 'dns');
   });
 
   describe('connect()', () => {
     it('calls delegates onError when ssh connection fails', () => {
       const mockError = new Error('mock error');
-      const sshConnection: any = new MockSshConnection();
-      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config: SshConnectionConfiguration = ({
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new (_SshHandshake || _load_SshHandshake()).SshHandshake(handshakeDelegate, sshConnection);
+      const config = {
         pathToPrivateKey: pathToFakePk,
-        authMethod: 'PRIVATE_KEY',
-      }: any);
+        authMethod: 'PRIVATE_KEY'
+      };
 
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
 
       expect(handshakeDelegate.onWillConnect.mock.calls.length).toBe(1);
       expect(handshakeDelegate.onError.mock.calls.length).toBe(1);
-      expect(handshakeDelegate.onError.mock.calls[0][0]).toBe(
-        SshHandshake.ErrorType.UNKNOWN,
-      );
+      expect(handshakeDelegate.onError.mock.calls[0][0]).toBe((_SshHandshake || _load_SshHandshake()).SshHandshake.ErrorType.UNKNOWN);
       expect(handshakeDelegate.onError.mock.calls[0][1]).toBe(mockError);
       expect(handshakeDelegate.onError.mock.calls[0][2]).toBe(config);
     });
 
     it('calls delegates onError when private key does not exist', async () => {
-      const sshConnection: any = new MockSshConnection();
-      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config: SshConnectionConfiguration = ({
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new (_SshHandshake || _load_SshHandshake()).SshHandshake(handshakeDelegate, sshConnection);
+      const config = {
         pathToPrivateKey: pathToFakePk + '.oops',
-        authMethod: 'PRIVATE_KEY',
-      }: any);
+        authMethod: 'PRIVATE_KEY'
+      };
 
       sshHandshake.connect(config);
 
       let onErrorCalled = false;
 
       handshakeDelegate.onError.mockImplementation((errorType, e, _config) => {
-        expect(errorType).toBe(SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY);
+        expect(errorType).toBe((_SshHandshake || _load_SshHandshake()).SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY);
         expect(e.code).toBe('ENOENT');
         expect(_config).toBe(config);
         onErrorCalled = true;
       });
 
-      await waitsFor(() => {
+      await (0, (_waits_for || _load_waits_for()).default)(() => {
         return onErrorCalled;
       });
 
@@ -127,14 +131,14 @@ describe('SshHandshake', () => {
 
     it('retries with a password when authentication fails', () => {
       const mockError = new Error();
-      (mockError: any).level = 'client-authentication';
-      const sshConnection: any = new MockSshConnection();
-      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config: SshConnectionConfiguration = ({
+      mockError.level = 'client-authentication';
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new (_SshHandshake || _load_SshHandshake()).SshHandshake(handshakeDelegate, sshConnection);
+      const config = {
         host: 'testhost',
         password: 'test',
-        authMethod: 'PASSWORD',
-      }: any);
+        authMethod: 'PASSWORD'
+      };
 
       sshHandshake.connect(config);
       sshConnection.config = config;
@@ -163,11 +167,11 @@ describe('SshHandshake', () => {
 
   describe('cancel()', () => {
     it('calls SshConnection.end()', () => {
-      const sshConnection: any = new MockSshConnection();
-      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config: SshConnectionConfiguration = ({
-        pathToPrivateKey: pathToFakePk,
-      }: any);
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new (_SshHandshake || _load_SshHandshake()).SshHandshake(handshakeDelegate, sshConnection);
+      const config = {
+        pathToPrivateKey: pathToFakePk
+      };
 
       jest.spyOn(sshConnection, 'end').mockImplementation(() => {});
 

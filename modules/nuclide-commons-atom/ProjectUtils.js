@@ -1,28 +1,45 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getLabelFromPath = getLabelFromPath;
+exports.getLocalPathsForProjectRepo = getLocalPathsForProjectRepo;
+exports.getRemotePathsForProjectRepo = getRemotePathsForProjectRepo;
+exports.setLocalPathsForProjectRepo = setLocalPathsForProjectRepo;
+exports.setRemotePathsForProjectRepo = setRemotePathsForProjectRepo;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import featureConfig from './feature-config';
-import invariant from 'assert';
+var _nuclideUri;
 
-export function getLabelFromPath(path: string): string {
-  const basename = nuclideUri.basename(path);
-  const parts = basename.split('.');
-  return humanizeProjectName(parts[0] || basename);
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../nuclide-commons/nuclideUri'));
 }
 
-function formatProjectNameWord(word: string): string {
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('./feature-config'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getLabelFromPath(path) {
+  const basename = (_nuclideUri || _load_nuclideUri()).default.basename(path);
+  const parts = basename.split('.');
+  return humanizeProjectName(parts[0] || basename);
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   *  strict-local
+   * @format
+   */
+
+function formatProjectNameWord(word) {
   switch (word) {
     case 'www':
       return 'WWW';
@@ -33,13 +50,10 @@ function formatProjectNameWord(word: string): string {
   }
 }
 
-function humanizeProjectName(name: string): string {
+function humanizeProjectName(name) {
   const hasCapitalLetters = /[A-Z]/.test(name);
   const id = x => x;
-  return name
-    .split(/[-_]+/)
-    .map(hasCapitalLetters ? id : formatProjectNameWord)
-    .join(' ');
+  return name.split(/[-_]+/).map(hasCapitalLetters ? id : formatProjectNameWord).join(' ');
 }
 
 /**
@@ -47,7 +61,7 @@ function humanizeProjectName(name: string): string {
  * the location of `repo`. For example, if repo := fbsource, then we are getting
  * the paths to fbsource on the user's local machine.
  */
-export function getLocalPathsForProjectRepo(repo: string): Array<string> {
+function getLocalPathsForProjectRepo(repo) {
   return getPathsForProjectRepoFromLocation(repo, 'localPaths');
 }
 
@@ -56,27 +70,25 @@ export function getLocalPathsForProjectRepo(repo: string): Array<string> {
  * the location of `repo`. For example, if repo := fbsource, then we are getting
  * the paths to fbsource on the user's remote machine.
  */
-export function getRemotePathsForProjectRepo(repo: string): Array<string> {
+function getRemotePathsForProjectRepo(repo) {
   return getPathsForProjectRepoFromLocation(repo, 'remotePaths');
 }
 
-function getPathsForProjectRepoFromLocation(
-  repo: string,
-  featureConfigLocation: string,
-): Array<string> {
+function getPathsForProjectRepoFromLocation(repo, featureConfigLocation) {
   if (repo == null) {
     return [];
   }
-  const localPaths = featureConfig.get(
-    `fb-atomprojects.${featureConfigLocation}`,
-  );
+  const localPaths = (_featureConfig || _load_featureConfig()).default.get(`fb-atomprojects.${featureConfigLocation}`);
 
-  invariant(Array.isArray(localPaths));
+  if (!Array.isArray(localPaths)) {
+    throw new Error('Invariant violation: "Array.isArray(localPaths)"');
+  }
+
   const repoPaths = localPaths
-    // $FlowIgnore
-    .filter(obj => obj.repo === repo)
-    // $FlowIgnore
-    .map(obj => obj.path);
+  // $FlowIgnore
+  .filter(obj => obj.repo === repo)
+  // $FlowIgnore
+  .map(obj => obj.path);
 
   if (repoPaths.length === 0) {
     repoPaths.push(`~/${repo}`);
@@ -89,13 +101,8 @@ function getPathsForProjectRepoFromLocation(
  * the location of <repo>. For example, if repo := fbsource, then we are setting
  * the paths to fbsource on the user's local machine.
  */
-export function setLocalPathsForProjectRepo(
-  paths: Array<{
-    path: NuclideUri,
-    repo: string,
-  }>,
-): void {
-  featureConfig.set('fb-atomprojects.localPaths', paths);
+function setLocalPathsForProjectRepo(paths) {
+  (_featureConfig || _load_featureConfig()).default.set('fb-atomprojects.localPaths', paths);
 }
 
 /**
@@ -103,11 +110,6 @@ export function setLocalPathsForProjectRepo(
  * the location of <repo>. For example, if repo := fbsource, then we are setting
  * the paths to fbsource on the user's remote machine.
  */
-export function setRemotePathsForProjectRepo(
-  paths: Array<{
-    path: NuclideUri,
-    repo: string,
-  }>,
-): void {
-  featureConfig.set('fb-atomprojects.remotePaths', paths);
+function setRemotePathsForProjectRepo(paths) {
+  (_featureConfig || _load_featureConfig()).default.set('fb-atomprojects.remotePaths', paths);
 }

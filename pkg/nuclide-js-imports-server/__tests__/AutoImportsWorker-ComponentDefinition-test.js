@@ -1,3 +1,19 @@
+'use strict';
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,44 +21,45 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 jest.mock('../../commons-node/passesGK');
-import invariant from 'assert';
-import passesGK from '../../commons-node/passesGK';
-// $FlowFixMe Jest doesn't have a type safe way to do this.
-(passesGK: any).mockImplementation(async () => true);
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import type {ExportUpdateForFile} from '../src/lib/AutoImportsWorker';
-const {getExportsForFile} = require('../src/lib/AutoImportsWorker');
+// $FlowFixMe Jest doesn't have a type safe way to do this.
+(_passesGK || _load_passesGK()).default.mockImplementation(async () => true);
+
+const { getExportsForFile } = require('../src/lib/AutoImportsWorker');
 
 describe('getExportsForFile component definitions', () => {
   it('gets the component definition for a React component', async () => {
-    const path = nuclideUri.join(
-      __dirname,
-      '..',
-      '__mocks__',
-      'componentDefinitions',
-      'FDSTest.js',
-    );
-    const exportUpdate: ?ExportUpdateForFile = await getExportsForFile(path, {
+    const path = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '..', '__mocks__', 'componentDefinitions', 'FDSTest.js');
+    const exportUpdate = await getExportsForFile(path, {
       isHaste: false,
       useNameReducers: false,
       nameReducers: [],
       nameReducerWhitelist: [],
-      nameReducerBlacklist: [],
+      nameReducerBlacklist: []
     });
     expect(exportUpdate).toBeTruthy();
-    invariant(exportUpdate != null);
+
+    if (!(exportUpdate != null)) {
+      throw new Error('Invariant violation: "exportUpdate != null"');
+    }
+
     expect(exportUpdate.componentDefinition).toBeTruthy();
-    invariant(exportUpdate.componentDefinition);
+
+    if (!exportUpdate.componentDefinition) {
+      throw new Error('Invariant violation: "exportUpdate.componentDefinition"');
+    }
+
     expect(exportUpdate.componentDefinition.name).toBe('FDSTest');
-    invariant(exportUpdate.componentDefinition);
-    expect(
-      exportUpdate.componentDefinition.requiredProps.length,
-    ).toBeGreaterThan(0);
+
+    if (!exportUpdate.componentDefinition) {
+      throw new Error('Invariant violation: "exportUpdate.componentDefinition"');
+    }
+
+    expect(exportUpdate.componentDefinition.requiredProps.length).toBeGreaterThan(0);
   });
 });

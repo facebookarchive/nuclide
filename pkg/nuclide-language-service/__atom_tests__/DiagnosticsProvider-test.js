@@ -1,3 +1,25 @@
+'use strict';
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _DiagnosticsProvider;
+
+function _load_DiagnosticsProvider() {
+  return _DiagnosticsProvider = require('../lib/DiagnosticsProvider');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,47 +27,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ConnectableObservable} from 'rxjs';
-import type {FileDiagnosticMap, LanguageService} from '../lib/LanguageService';
-
-import {getLogger} from 'log4js';
-import {Observable} from 'rxjs';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {
-  FileDiagnosticsProvider,
-  ObservableDiagnosticProvider,
-} from '../lib/DiagnosticsProvider';
 
 beforeEach(() => {
   jest.restoreAllMocks();
 });
 describe('FileDiagnosticsProvider', () => {
-  let diagnosticsProvider: FileDiagnosticsProvider<
-    LanguageService,
-  > = (null: any);
+  let diagnosticsProvider = null;
 
   beforeEach(() => {
     class FakeProviderBase {
       dispose() {}
     }
     const busySignalProvider = {
-      reportBusyWhile<T>(message, f: () => Promise<T>): Promise<T> {
+      reportBusyWhile(message, f) {
         return f();
-      },
+      }
     };
-    diagnosticsProvider = new FileDiagnosticsProvider(
-      'Hack',
-      ['text.html.hack', 'text.html.php'],
-      false,
-      'hack.diagnostics',
-      (null: any), // connectionToLanguageService
-      busySignalProvider,
-      (FakeProviderBase: any),
-    );
+    diagnosticsProvider = new (_DiagnosticsProvider || _load_DiagnosticsProvider()).FileDiagnosticsProvider('Hack', ['text.html.hack', 'text.html.php'], false, 'hack.diagnostics', null, // connectionToLanguageService
+    busySignalProvider, FakeProviderBase);
   });
 
   describe('invalidateProjectPath', () => {
@@ -59,18 +61,16 @@ describe('FileDiagnosticsProvider', () => {
       diagnosticsProvider._projectRootToFilePaths = projectRootToFilePaths;
       // Mock the `publishMessageInvalidation` call to capture call arguments.
       const publishHandler = jest.fn();
-      (diagnosticsProvider._providerBase: any).publishMessageInvalidation = publishHandler;
+      diagnosticsProvider._providerBase.publishMessageInvalidation = publishHandler;
 
       diagnosticsProvider.invalidateProjectPath('/hack/root1');
       expect(publishHandler.mock.calls.length).toBe(1);
       expect(publishHandler.mock.calls[0][0]).toEqual({
         scope: 'file',
-        filePaths: root1Paths,
+        filePaths: root1Paths
       });
       expect(diagnosticsProvider._projectRootToFilePaths.size).toBe(1);
-      expect(
-        diagnosticsProvider._projectRootToFilePaths.get('/hack/root2'),
-      ).toEqual(new Set(root2Paths));
+      expect(diagnosticsProvider._projectRootToFilePaths.get('/hack/root2')).toEqual(new Set(root2Paths));
     });
   });
 });
@@ -80,23 +80,16 @@ describe('ObservableDiagnosticsProvider', () => {
   let diagnosticsProvider;
 
   const TEST_FILE = 'test.txt';
-  const mockLanguageService: LanguageService = ({
-    observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
-      return Observable.of(new Map([[TEST_FILE, []]])).publish();
-    },
-  }: any);
+  const mockLanguageService = {
+    observeDiagnostics() {
+      return _rxjsBundlesRxMinJs.Observable.of(new Map([[TEST_FILE, []]])).publish();
+    }
+  };
 
   beforeEach(() => {
-    connectionCache = new ConnectionCache(
-      () => Promise.resolve(mockLanguageService),
-      /* lazy */ true,
-    );
-    diagnosticsProvider = new ObservableDiagnosticProvider(
-      'Test',
-      ['text.plain.null-grammar'],
-      getLogger('DiagnosticsProvider-spec'),
-      connectionCache,
-    );
+    connectionCache = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(() => Promise.resolve(mockLanguageService),
+    /* lazy */true);
+    diagnosticsProvider = new (_DiagnosticsProvider || _load_DiagnosticsProvider()).ObservableDiagnosticProvider('Test', ['text.plain.null-grammar'], (0, (_log4js || _load_log4js()).getLogger)('DiagnosticsProvider-spec'), connectionCache);
   });
 
   afterEach(() => {
@@ -110,10 +103,8 @@ describe('ObservableDiagnosticsProvider', () => {
 
     await atom.workspace.open(TEST_FILE);
 
-    expect(await connectionCache.getExistingForUri(TEST_FILE)).toBe(
-      mockLanguageService,
-    );
+    expect((await connectionCache.getExistingForUri(TEST_FILE))).toBe(mockLanguageService);
 
-    expect(await updates).toEqual(new Map([[TEST_FILE, []]]));
+    expect((await updates)).toEqual(new Map([[TEST_FILE, []]]));
   });
 });

@@ -1,15 +1,10 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {computeDiff} from '../computeDiff';
+var _computeDiff;
+
+function _load_computeDiff() {
+  return _computeDiff = require('../computeDiff');
+}
 
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
@@ -20,8 +15,8 @@ describe('diff-utils', () => {
         oldLineOffsets,
         newLineOffsets,
         newToOld,
-        oldToNew,
-      } = computeDiff('', '');
+        oldToNew
+      } = (0, (_computeDiff || _load_computeDiff()).computeDiff)('', '');
       expect(addedLines).toEqual([]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets.length).toBe(0);
@@ -37,15 +32,12 @@ describe('diff-utils', () => {
         oldLineOffsets,
         newLineOffsets,
         newToOld,
-        oldToNew,
-      } = computeDiff(
-        `simple text
+        oldToNew
+      } = (0, (_computeDiff || _load_computeDiff()).computeDiff)(`simple text
 on multiline
-same end line`,
-        `on multiline
+same end line`, `on multiline
 added text
-same end line`,
-      );
+same end line`);
 
       expect(addedLines).toEqual([1]); // the second line is newly added.
       expect(removedLines).toEqual([0]); // the first line was removed.
@@ -62,25 +54,22 @@ same end line`,
         oldLineOffsets,
         newLineOffsets,
         newToOld,
-        oldToNew,
-      } = computeDiff(
-        `This text is intended for testing.
+        oldToNew
+      } = (0, (_computeDiff || _load_computeDiff()).computeDiff)(`This text is intended for testing.
 If we test at too low a level,
 testing for matching tags
 with pattern matching,
 our tests will be BAD.
 The slightest change in layout,
 could break a large number of tests.
-`,
-        `This text is intended for testing.
+`, `This text is intended for testing.
 with pattern matching,
 adding different two lines
 replacing the two lines removed above!
 our tests will be BAD.
 The slightest change in layout,
 could break a large number of tests.
-adding a non-new-line line`,
-      );
+adding a non-new-line line`);
 
       expect(addedLines).toEqual([2, 3, 7]); // 2 lines were added in the middle and one at the end.
       // 2 lines were removed in the middle and last new-line replaced.
@@ -98,11 +87,8 @@ adding a non-new-line line`,
         oldLineOffsets,
         newLineOffsets,
         newToOld,
-        oldToNew,
-      } = computeDiff(
-        'first line text\n',
-        'first line text\nsecond line text\n',
-      );
+        oldToNew
+      } = (0, (_computeDiff || _load_computeDiff()).computeDiff)('first line text\n', 'first line text\nsecond line text\n');
       expect(addedLines).toEqual([1]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets).toEqual([[1, 1]]); // offset for the last added line.
@@ -111,4 +97,13 @@ adding a non-new-line line`,
       expect(oldToNew).toEqual([0, 2, 3]);
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict-local
+     * @format
+     */

@@ -1,42 +1,45 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {CodeAction, DiagnosticMessage} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {DEFAULT_FLAGS_WARNING, HEADER_DEFAULT_FLAGS_WARNING} from './constants';
-import {resetForSource} from './libclang';
+var _constants;
 
-export default class CodeActions {
-  static getCodeActions(
-    editor: atom$TextEditor,
-    range: atom$Range,
-    diagnostics: Array<DiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+class CodeActions {
+  static getCodeActions(editor, range, diagnostics) {
     for (const diagnostic of diagnostics) {
-      if (
-        diagnostic.text === DEFAULT_FLAGS_WARNING ||
-        diagnostic.text === HEADER_DEFAULT_FLAGS_WARNING
-      ) {
-        return Promise.resolve([
-          {
-            dispose() {},
-            getTitle: () => Promise.resolve('Clean, rebuild, and save file'),
-            async apply() {
-              await resetForSource(editor);
-              await editor.save();
-            },
-          },
-        ]);
+      if (diagnostic.text === (_constants || _load_constants()).DEFAULT_FLAGS_WARNING || diagnostic.text === (_constants || _load_constants()).HEADER_DEFAULT_FLAGS_WARNING) {
+        return Promise.resolve([{
+          dispose() {},
+          getTitle: () => Promise.resolve('Clean, rebuild, and save file'),
+          async apply() {
+            await (0, (_libclang || _load_libclang()).resetForSource)(editor);
+            await editor.save();
+          }
+        }]);
       }
     }
     return Promise.resolve([]);
   }
 }
+exports.default = CodeActions; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                *  strict-local
+                                * @format
+                                */

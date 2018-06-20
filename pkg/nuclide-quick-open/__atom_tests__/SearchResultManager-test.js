@@ -1,80 +1,85 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {GlobalProviderType, FileResult, Provider} from '../lib/types';
-import type {ProviderSpec} from '../lib/SearchResultManager';
-import type {
-  ProviderResults,
-  GroupedResult,
-  GroupedResults,
-} from '../lib/searchResultHelpers';
+var _nuclideUri;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
 
-import SearchResultManager from '../lib/SearchResultManager';
-import QuickOpenProviderRegistry from '../lib/QuickOpenProviderRegistry';
+var _SearchResultManager;
 
-import {__test__} from '../lib/SearchResultManager';
-const {_getOmniSearchProviderSpec} = __test__;
+function _load_SearchResultManager() {
+  return _SearchResultManager = _interopRequireDefault(require('../lib/SearchResultManager'));
+}
 
-const PROJECT_ROOT1 = nuclideUri.join(__dirname, '../__mocks__/fixtures/root1');
-const PROJECT_ROOT2 = nuclideUri.join(__dirname, '../__mocks__/fixtures/root2');
-const PROJECT_ROOT3 = nuclideUri.join(__dirname, '../__mocks__/fixtures/root3');
+var _SearchResultManager2;
 
-const FakeProvider: GlobalProviderType<FileResult> = {
+function _load_SearchResultManager2() {
+  return _SearchResultManager2 = require('../lib/SearchResultManager');
+}
+
+var _QuickOpenProviderRegistry;
+
+function _load_QuickOpenProviderRegistry() {
+  return _QuickOpenProviderRegistry = _interopRequireDefault(require('../lib/QuickOpenProviderRegistry'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { _getOmniSearchProviderSpec } = (_SearchResultManager2 || _load_SearchResultManager2()).__test__; /**
+                                                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                          * All rights reserved.
+                                                                                                          *
+                                                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                                                          * the root directory of this source tree.
+                                                                                                          *
+                                                                                                          * 
+                                                                                                          * @format
+                                                                                                          */
+
+const PROJECT_ROOT1 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/root1');
+const PROJECT_ROOT2 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/root2');
+const PROJECT_ROOT3 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/root3');
+
+const FakeProvider = {
   providerType: 'GLOBAL',
   name: 'FakeProvider',
   display: {
     title: 'Fake',
     prompt: 'Search FakeProvider',
-    canOpenAll: false,
+    canOpenAll: false
   },
   isEligibleForDirectories: directories => Promise.resolve(true),
-  executeQuery: (query, directories) => Promise.resolve([]),
+  executeQuery: (query, directories) => Promise.resolve([])
 };
 
-const FakeProviderSpec: ProviderSpec = Object.freeze({
+const FakeProviderSpec = Object.freeze({
   action: '',
   canOpenAll: false,
   debounceDelay: 200,
   name: 'FakeProvider',
   prompt: 'Search FakeProvider',
   title: 'Fake',
-  priority: Number.POSITIVE_INFINITY,
+  priority: Number.POSITIVE_INFINITY
 });
 
 const TEST_STRINGS = ['yolo', 'foo', 'bar'];
-const ExactStringMatchProvider: Provider<FileResult> = Object.freeze({
+const ExactStringMatchProvider = Object.freeze({
   providerType: 'GLOBAL',
   name: 'ExactStringMatchProvider',
   display: {
     title: 'ExactString',
-    prompt: 'Nothing to see here',
+    prompt: 'Nothing to see here'
   },
   isEligibleForDirectories: directories => Promise.resolve(true),
-  executeQuery: (query, directories) =>
-    Promise.resolve(
-      TEST_STRINGS.filter(s => s === query).map(s => ({
-        resultType: 'FILE',
-        path: s,
-      })),
-    ),
+  executeQuery: (query, directories) => Promise.resolve(TEST_STRINGS.filter(s => s === query).map(s => ({
+    resultType: 'FILE',
+    path: s
+  })))
 });
 
 // Promise-ify the flux cycle around SearchResultManager::executeQuery.
-function querySingleProvider(
-  searchResultManager: SearchResultManager,
-  query: string,
-  providerName: string,
-): Promise<GroupedResults> {
+function querySingleProvider(searchResultManager, query, providerName) {
   return new Promise((resolve, reject) => {
     searchResultManager.onResultsChanged(() => {
       resolve(searchResultManager.getResults(query, providerName));
@@ -83,18 +88,12 @@ function querySingleProvider(
   });
 }
 
-function queryOmniSearchProvider(
-  quickOpenProviderRegistry: QuickOpenProviderRegistry,
-  searchResultManager: SearchResultManager,
-  query: string,
-): Promise<GroupedResults> {
+function queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, query) {
   return new Promise((resolve, reject) => {
     let pendingUpdates = quickOpenProviderRegistry.getProviders().length;
     searchResultManager.onResultsChanged(() => {
       if (--pendingUpdates === 0) {
-        resolve(
-          searchResultManager.getResults(query, 'OmniSearchResultProvider'),
-        );
+        resolve(searchResultManager.getResults(query, 'OmniSearchResultProvider'));
       }
     });
     searchResultManager.executeQuery(query);
@@ -102,30 +101,26 @@ function queryOmniSearchProvider(
 }
 
 // Helper to construct expected result objects for a global provider.
-function constructSingleProviderResult(
-  provider: Provider<any>,
-  result: ProviderResults,
-): GroupedResults {
-  const groupResult: GroupedResult = {
-    priority:
-      provider.priority != null ? provider.priority : Number.POSITIVE_INFINITY,
+function constructSingleProviderResult(provider, result) {
+  const groupResult = {
+    priority: provider.priority != null ? provider.priority : Number.POSITIVE_INFINITY,
     title: provider.display != null ? provider.display.title : provider.name,
     results: {
-      global: {...result},
+      global: Object.assign({}, result)
     },
-    totalResults: 0,
+    totalResults: 0
   };
-  return {[provider.name]: groupResult};
+  return { [provider.name]: groupResult };
 }
 
 describe('SearchResultManager', () => {
-  let searchResultManager: SearchResultManager = (null: any);
-  let quickOpenProviderRegistry: QuickOpenProviderRegistry = (null: any);
-  let providersChanged: Promise<void>;
+  let searchResultManager = null;
+  let quickOpenProviderRegistry = null;
+  let providersChanged;
 
   beforeEach(() => {
-    quickOpenProviderRegistry = new QuickOpenProviderRegistry();
-    searchResultManager = new SearchResultManager(quickOpenProviderRegistry);
+    quickOpenProviderRegistry = new (_QuickOpenProviderRegistry || _load_QuickOpenProviderRegistry()).default();
+    searchResultManager = new (_SearchResultManager || _load_SearchResultManager()).default(quickOpenProviderRegistry);
     providersChanged = new Promise(resolve => {
       return searchResultManager.onProvidersChanged(resolve);
     });
@@ -160,9 +155,7 @@ describe('SearchResultManager', () => {
           providersChangedCallCount++;
         });
 
-        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider(
-          FakeProvider,
-        );
+        const fakeProviderDisposable = quickOpenProviderRegistry.addProvider(FakeProvider);
 
         // We want to await until updateDirectories has finished, but we don't
         // have access to its returned Promise. So instead we'll await until
@@ -188,99 +181,77 @@ describe('SearchResultManager', () => {
     it('queries providers asynchronously, emits change events and returns filtered results', async () => {
       quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
       await providersChanged;
-      expect(
-        await querySingleProvider(
-          searchResultManager,
-          'yolo',
-          'ExactStringMatchProvider',
-        ),
-      ).toEqual(
-        constructSingleProviderResult(ExactStringMatchProvider, {
-          results: [
-            {
-              resultType: 'FILE',
-              path: 'yolo',
-              sourceProvider: 'ExactStringMatchProvider',
-            },
-          ],
-          loading: false,
-          error: null,
-        }),
-      );
+      expect((await querySingleProvider(searchResultManager, 'yolo', 'ExactStringMatchProvider'))).toEqual(constructSingleProviderResult(ExactStringMatchProvider, {
+        results: [{
+          resultType: 'FILE',
+          path: 'yolo',
+          sourceProvider: 'ExactStringMatchProvider'
+        }],
+        loading: false,
+        error: null
+      }));
     });
 
     it('ignores trailing whitespace in querystring.', async () => {
       await (async () => {
         quickOpenProviderRegistry.addProvider(ExactStringMatchProvider);
         await providersChanged;
-        await Promise.all(
-          ['   yolo', 'yolo   ', '   yolo   \n '].map(async query => {
-            expect(
-              await querySingleProvider(
-                searchResultManager,
-                query,
-                'ExactStringMatchProvider',
-              ),
-            ).toEqual(
-              constructSingleProviderResult(ExactStringMatchProvider, {
-                results: [
-                  {
-                    resultType: 'FILE',
-                    path: query.trim(),
-                    sourceProvider: 'ExactStringMatchProvider',
-                  },
-                ],
-                loading: false,
-                error: null,
-              }),
-            );
-          }),
-        );
+        await Promise.all(['   yolo', 'yolo   ', '   yolo   \n '].map(async query => {
+          expect((await querySingleProvider(searchResultManager, query, 'ExactStringMatchProvider'))).toEqual(constructSingleProviderResult(ExactStringMatchProvider, {
+            results: [{
+              resultType: 'FILE',
+              path: query.trim(),
+              sourceProvider: 'ExactStringMatchProvider'
+            }],
+            loading: false,
+            error: null
+          }));
+        }));
       })();
     });
   });
 
   describe.skip('OmniSearch provider sorting', () => {
-    const FirstProvider: Provider<FileResult> = {
+    const FirstProvider = {
       providerType: 'GLOBAL',
       name: 'FirstProvider',
       priority: 1,
       isEligibleForDirectories: directories => Promise.resolve(true),
-      executeQuery: (query, directories) => Promise.resolve([]),
+      executeQuery: (query, directories) => Promise.resolve([])
     };
-    const SecondProvider: Provider<FileResult> = {
+    const SecondProvider = {
       providerType: 'GLOBAL',
       name: 'SecondProvider',
       priority: 2,
       isEligibleForDirectories: directories => Promise.resolve(true),
-      executeQuery: (query, directories) => Promise.resolve([]),
+      executeQuery: (query, directories) => Promise.resolve([])
     };
-    const ThirdProvider: Provider<FileResult> = {
+    const ThirdProvider = {
       providerType: 'GLOBAL',
       name: 'ThirdProvider',
       priority: 3,
       isEligibleForDirectories: directories => Promise.resolve(true),
-      executeQuery: (query, directories) => Promise.resolve([]),
+      executeQuery: (query, directories) => Promise.resolve([])
     };
-    const allResults: GroupedResults = {
+    const allResults = {
       FirstProvider: {
         title: 'FirstProvider',
         priority: 1,
-        results: {global: {results: [], loading: false, error: null}},
-        totalResults: 0,
+        results: { global: { results: [], loading: false, error: null } },
+        totalResults: 0
       },
       SecondProvider: {
         title: 'SecondProvider',
         priority: 2,
-        results: {global: {results: [], loading: false, error: null}},
-        totalResults: 0,
+        results: { global: { results: [], loading: false, error: null } },
+        totalResults: 0
       },
       ThirdProvider: {
         title: 'ThirdProvider',
         priority: 3,
-        results: {global: {results: [], loading: false, error: null}},
-        totalResults: 0,
-      },
+        results: { global: { results: [], loading: false, error: null } },
+        totalResults: 0
+      }
     };
 
     it('returns results sorted by priority (1, 3, 2)', async () => {
@@ -289,13 +260,7 @@ describe('SearchResultManager', () => {
       quickOpenProviderRegistry.addProvider(SecondProvider);
       await (async () => {
         await providersChanged;
-        expect(
-          await queryOmniSearchProvider(
-            quickOpenProviderRegistry,
-            searchResultManager,
-            '',
-          ),
-        ).toEqual(allResults);
+        expect((await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''))).toEqual(allResults);
       })();
     });
 
@@ -305,13 +270,7 @@ describe('SearchResultManager', () => {
       quickOpenProviderRegistry.addProvider(FirstProvider);
       await (async () => {
         await providersChanged;
-        expect(
-          await queryOmniSearchProvider(
-            quickOpenProviderRegistry,
-            searchResultManager,
-            '',
-          ),
-        ).toEqual(allResults);
+        expect((await queryOmniSearchProvider(quickOpenProviderRegistry, searchResultManager, ''))).toEqual(allResults);
       })();
     });
   });
@@ -333,14 +292,8 @@ describe('SearchResultManager', () => {
 
     describe('with no current working root', () => {
       it('should return the same order as Atom', () => {
-        const sortedPaths = searchResultManager
-          ._sortDirectories()
-          .map(dir => dir.getPath());
-        expect(sortedPaths).toEqual([
-          PROJECT_ROOT1,
-          PROJECT_ROOT2,
-          PROJECT_ROOT3,
-        ]);
+        const sortedPaths = searchResultManager._sortDirectories().map(dir => dir.getPath());
+        expect(sortedPaths).toEqual([PROJECT_ROOT1, PROJECT_ROOT2, PROJECT_ROOT3]);
       });
     });
 
@@ -351,14 +304,8 @@ describe('SearchResultManager', () => {
         searchResultManager.setCurrentWorkingRoot(PROJECT_ROOT3);
       });
       it('should put that root first, without disturbing the relative order of other roots', () => {
-        const sortedPaths = searchResultManager
-          ._sortDirectories()
-          .map(dir => dir.getPath());
-        expect(sortedPaths).toEqual([
-          PROJECT_ROOT3,
-          PROJECT_ROOT1,
-          PROJECT_ROOT2,
-        ]);
+        const sortedPaths = searchResultManager._sortDirectories().map(dir => dir.getPath());
+        expect(sortedPaths).toEqual([PROJECT_ROOT3, PROJECT_ROOT1, PROJECT_ROOT2]);
       });
     });
   });

@@ -1,3 +1,51 @@
+'use strict';
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _testHelpers;
+
+function _load_testHelpers() {
+  return _testHelpers = require('../../../modules/nuclide-commons/test-helpers');
+}
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _FileWatcherService;
+
+function _load_FileWatcherService() {
+  return _FileWatcherService = require('../lib/FileWatcherService');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,46 +53,30 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 jest.setTimeout(25000);
 
-import {Emitter} from 'event-kit';
-
 let emitter;
 
-jest.mock('nuclide-watchman-helpers', () => {
+jest.mock('../../../modules/nuclide-watchman-helpers', () => {
   const mockWatchmanClient = {
     hasSubscription: () => false,
     watchDirectoryRecursive() {
-      emitter = new Emitter();
+      emitter = new (_eventKit || _load_eventKit()).Emitter();
       // $FlowIgnore
       emitter.path = TEST_DIR;
       return Promise.resolve(emitter);
-    },
+    }
   };
 
   return {
-    WatchmanClient: jest.fn(() => mockWatchmanClient),
+    WatchmanClient: jest.fn(() => mockWatchmanClient)
   };
 });
 jest.unmock('log4js');
-
-import type {WatchResult} from '..';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {sleep} from 'nuclide-commons/promise';
-import {generateFixture} from 'nuclide-commons/test-helpers';
-import fs from 'fs';
-import log4js from 'log4js';
-import {
-  watchFile,
-  watchWithNode,
-  watchDirectory,
-  watchDirectoryRecursive,
-} from '../lib/FileWatcherService';
-import waitsFor from '../../../jest/waits_for';
 
 const TEST_FILE = '/path/to/file';
 const TEST_DIR = '/path/to';
@@ -58,10 +90,7 @@ describe('FileWatcherService', () => {
   let nodeTestFilePath;
   const createNodeTestFile = async callback => {
     await (async () => {
-      nodeTestDirPath = await generateFixture(
-        'watchWithNodeTest',
-        new Map([[NODE_TEST_FILE, null]]),
-      );
+      nodeTestDirPath = await (0, (_testHelpers || _load_testHelpers()).generateFixture)('watchWithNodeTest', new Map([[NODE_TEST_FILE, null]]));
       nodeTestFilePath = `${nodeTestDirPath}/${NODE_TEST_FILE}`;
       if (callback) {
         callback();
@@ -71,114 +100,97 @@ describe('FileWatcherService', () => {
 
   beforeEach(async () => {
     jest.restoreAllMocks();
-    statMock = jest.spyOn(fsPromise, 'stat').mockImplementation(path => ({
-      isFile: () => path === TEST_FILE,
+    statMock = jest.spyOn((_fsPromise || _load_fsPromise()).default, 'stat').mockImplementation(path => ({
+      isFile: () => path === TEST_FILE
     }));
 
-    realpathMock = jest.spyOn(fsPromise, 'realpath').mockImplementation(x => x);
-    fsWatchSpy = jest.spyOn(fs, 'watch');
+    realpathMock = jest.spyOn((_fsPromise || _load_fsPromise()).default, 'realpath').mockImplementation(x => x);
+    fsWatchSpy = jest.spyOn(_fs.default, 'watch');
 
     await createNodeTestFile();
   });
 
   it('watches changes to files', async () => {
     const watchReady = jest.fn();
-    watchDirectoryRecursive(TEST_DIR)
-      .refCount()
-      .subscribe({next: watchReady});
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchDirectoryRecursive)(TEST_DIR).refCount().subscribe({ next: watchReady });
 
-    await waitsFor(() => watchReady.mock.calls.length > 0);
+    await (0, (_waits_for || _load_waits_for()).default)(() => watchReady.mock.calls.length > 0);
 
-    const nextMock: (result: WatchResult) => mixed = jest.fn();
-    const nextMockWithNode: (result: WatchResult) => mixed = jest.fn();
+    const nextMock = jest.fn();
+    const nextMockWithNode = jest.fn();
     const parentNextMock = jest.fn();
-    const completeMock: () => mixed = jest.fn();
+    const completeMock = jest.fn();
 
     expect(watchReady).toHaveBeenCalledWith('SUCCESS');
-    watchFile(TEST_FILE)
-      .refCount()
-      .subscribe({next: nextMock, complete: completeMock});
-    watchDirectory(TEST_DIR)
-      .refCount()
-      .subscribe({next: parentNextMock});
-    watchWithNode(nodeTestFilePath)
-      .refCount()
-      .subscribe({next: nextMockWithNode});
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchFile)(TEST_FILE).refCount().subscribe({ next: nextMock, complete: completeMock });
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchDirectory)(TEST_DIR).refCount().subscribe({ next: parentNextMock });
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchWithNode)(nodeTestFilePath).refCount().subscribe({ next: nextMockWithNode });
 
     // Hacky: there's no good way of checking if the inner observables are ready.
     // For now, we know it subscribes after realpath resolves.
-    await waitsFor(() => realpathMock.mock.calls.length === 2);
+    await (0, (_waits_for || _load_waits_for()).default)(() => realpathMock.mock.calls.length === 2);
 
     // Simulate a file creation.
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: true,
-        exists: true,
-        mode: 0,
-      },
-    ]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: true,
+      exists: true,
+      mode: 0
+    }]);
 
-    await waitsFor(
-      () =>
-        nextMock.mock.calls.length > 0 && parentNextMock.mock.calls.length > 0,
-    );
+    await (0, (_waits_for || _load_waits_for()).default)(() => nextMock.mock.calls.length > 0 && parentNextMock.mock.calls.length > 0);
 
     expect(nextMock).toHaveBeenCalledWith({
       path: TEST_FILE,
-      type: 'change',
+      type: 'change'
     });
 
     // The parent dir should change.
     expect(parentNextMock).toHaveBeenCalledWith({
       path: TEST_DIR,
-      type: 'change',
+      type: 'change'
     });
 
     // Simulate a regular file change.
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: false,
-        exists: true,
-        mode: 0,
-      },
-    ]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: false,
+      exists: true,
+      mode: 0
+    }]);
 
     // Write to watcWithNode test file.
     // Add a slight delay to allow fs.watch to start up.
-    await sleep(100);
-    fs.writeFileSync(nodeTestFilePath, 'These are words.');
+    await (0, (_promise || _load_promise()).sleep)(100);
+    _fs.default.writeFileSync(nodeTestFilePath, 'These are words.');
 
-    await waitsFor(() => nextMock.mock.calls.length === 2);
-    await waitsFor(() => nextMockWithNode.mock.calls.length > 0);
+    await (0, (_waits_for || _load_waits_for()).default)(() => nextMock.mock.calls.length === 2);
+    await (0, (_waits_for || _load_waits_for()).default)(() => nextMockWithNode.mock.calls.length > 0);
 
     // Regular changes don't affect parent directories.
     expect(parentNextMock.mock.calls.length).toBe(1);
 
     // Simulate a file deletion.
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: false,
-        exists: false,
-        mode: 0,
-      },
-    ]);
-    fs.unlinkSync(nodeTestFilePath);
+    emitter.emit('change', [{
+      name: 'file',
+      new: false,
+      exists: false,
+      mode: 0
+    }]);
+    _fs.default.unlinkSync(nodeTestFilePath);
 
     // Watch should complete after a delete.
-    await waitsFor(() => completeMock.mock.calls.length > 0);
-    await waitsFor(() => nextMockWithNode.mock.calls.length > 1);
+    await (0, (_waits_for || _load_waits_for()).default)(() => completeMock.mock.calls.length > 0);
+    await (0, (_waits_for || _load_waits_for()).default)(() => nextMockWithNode.mock.calls.length > 1);
 
     expect(nextMock).toHaveBeenCalledWith({
       path: TEST_FILE,
-      type: 'delete',
+      type: 'delete'
     });
 
     expect(nextMockWithNode).toHaveBeenCalledWith({
       path: nodeTestFilePath,
-      type: 'delete',
+      type: 'delete'
     });
 
     // The parent dir should change again.
@@ -188,94 +200,73 @@ describe('FileWatcherService', () => {
     const completeMock2 = jest.fn();
     const nextMockWithNode2 = jest.fn();
 
-    watchFile(TEST_FILE)
-      .refCount()
-      .subscribe({complete: completeMock2});
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchFile)(TEST_FILE).refCount().subscribe({ complete: completeMock2 });
     createNodeTestFile(() => {
-      watchWithNode(nodeTestFilePath)
-        .refCount()
-        .subscribe({next: nextMockWithNode2});
+      (0, (_FileWatcherService || _load_FileWatcherService()).watchWithNode)(nodeTestFilePath).refCount().subscribe({ next: nextMockWithNode2 });
     });
 
     // Use the same hack again..
-    await waitsFor(() => realpathMock.mock.calls.length === 3);
+    await (0, (_waits_for || _load_waits_for()).default)(() => realpathMock.mock.calls.length === 3);
 
     // Delete the file again.
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: false,
-        exists: false,
-        mode: 0,
-      },
-    ]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: false,
+      exists: false,
+      mode: 0
+    }]);
 
     // Give fs.watch some time to start up.
-    await sleep(100);
-    fs.unlinkSync(nodeTestFilePath);
+    await (0, (_promise || _load_promise()).sleep)(100);
+    _fs.default.unlinkSync(nodeTestFilePath);
 
-    await waitsFor(
-      () =>
-        completeMock2.mock.calls.length > 0 &&
-        nextMockWithNode2.mock.calls.length > 0,
-    );
+    await (0, (_waits_for || _load_waits_for()).default)(() => completeMock2.mock.calls.length > 0 && nextMockWithNode2.mock.calls.length > 0);
   });
 
   it('debounces file deletions', async () => {
     const changes = [];
     let completed = false;
 
-    const watch = watchDirectoryRecursive(TEST_DIR).refCount();
+    const watch = (0, (_FileWatcherService || _load_FileWatcherService()).watchDirectoryRecursive)(TEST_DIR).refCount();
     watch.subscribe();
     await watch.take(1).toPromise();
 
-    watchFile(TEST_FILE)
-      .refCount()
-      .subscribe({
-        next: change => changes.push(change),
-        complete: () => {
-          completed = true;
-        },
-      });
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchFile)(TEST_FILE).refCount().subscribe({
+      next: change => changes.push(change),
+      complete: () => {
+        completed = true;
+      }
+    });
 
-    await waitsFor(() => realpathMock.mock.calls.length === 1);
+    await (0, (_waits_for || _load_waits_for()).default)(() => realpathMock.mock.calls.length === 1);
 
     // A file gets deleted and then created.
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: false,
-        exists: false,
-        mode: 0,
-      },
-    ]);
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: true,
-        exists: true,
-        mode: 0,
-      },
-    ]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: false,
+      exists: false,
+      mode: 0
+    }]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: true,
+      exists: true,
+      mode: 0
+    }]);
 
     // The deletion should be cancelled out.
-    expect(changes).toEqual([{path: TEST_FILE, type: 'change'}]);
+    expect(changes).toEqual([{ path: TEST_FILE, type: 'change' }]);
 
-    emitter.emit('change', [
-      {
-        name: 'file',
-        new: false,
-        exists: false,
-        mode: 0,
-      },
-    ]);
+    emitter.emit('change', [{
+      name: 'file',
+      new: false,
+      exists: false,
+      mode: 0
+    }]);
 
-    await waitsFor(() => completed);
+    await (0, (_waits_for || _load_waits_for()).default)(() => completed);
 
-    expect(changes).toEqual([
-      {path: TEST_FILE, type: 'change'},
-      {path: TEST_FILE, type: 'delete'},
-    ]);
+    expect(changes).toEqual([{ path: TEST_FILE, type: 'change' }, { path: TEST_FILE, type: 'delete' }]);
   });
 
   it('errors for missing files', async () => {
@@ -285,33 +276,25 @@ describe('FileWatcherService', () => {
 
     const errorMock = jest.fn();
     const errorMockWithNode = jest.fn();
-    fs.unlinkSync(nodeTestFilePath);
-    watchFile(TEST_FILE)
-      .refCount()
-      .subscribe({error: errorMock});
+    _fs.default.unlinkSync(nodeTestFilePath);
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchFile)(TEST_FILE).refCount().subscribe({ error: errorMock });
     try {
-      watchWithNode(nodeTestFilePath)
-        .refCount()
-        .subscribe({next: x => x});
+      (0, (_FileWatcherService || _load_FileWatcherService()).watchWithNode)(nodeTestFilePath).refCount().subscribe({ next: x => x });
     } catch (err) {
       errorMockWithNode();
     }
 
-    await waitsFor(
-      () =>
-        errorMock.mock.calls.length > 0 &&
-        errorMockWithNode.mock.calls.length > 0,
-    );
+    await (0, (_waits_for || _load_waits_for()).default)(() => errorMock.mock.calls.length > 0 && errorMockWithNode.mock.calls.length > 0);
   });
 
   it('warns when you try to watch the wrong entity type', async () => {
     const warnSpy = jest.fn();
-    jest.spyOn(log4js, 'getLogger').mockReturnValue({warn: warnSpy});
+    jest.spyOn((_log4js || _load_log4js()).default, 'getLogger').mockReturnValue({ warn: warnSpy });
 
-    watchFile(TEST_DIR).refCount();
-    await waitsFor(() => warnSpy.mock.calls.length > 0);
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchFile)(TEST_DIR).refCount();
+    await (0, (_waits_for || _load_waits_for()).default)(() => warnSpy.mock.calls.length > 0);
 
-    watchDirectory(TEST_FILE).refCount();
-    await waitsFor(() => warnSpy.mock.calls.length === 2);
+    (0, (_FileWatcherService || _load_FileWatcherService()).watchDirectory)(TEST_FILE).refCount();
+    await (0, (_waits_for || _load_waits_for()).default)(() => warnSpy.mock.calls.length === 2);
   });
 });

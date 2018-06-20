@@ -1,19 +1,12 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-/**
- * Originally from https://github.com/facebook/flux/blob/55480fb/src/Dispatcher.js
- */
+var _Dispatcher;
 
-import Dispatcher from '../Dispatcher';
+function _load_Dispatcher() {
+  return _Dispatcher = _interopRequireDefault(require('../Dispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('Dispatcher', () => {
   let dispatcher;
@@ -21,7 +14,7 @@ describe('Dispatcher', () => {
   let callbackB;
 
   beforeEach(() => {
-    dispatcher = new Dispatcher();
+    dispatcher = new (_Dispatcher || _load_Dispatcher()).default();
     callbackA = jest.fn();
     callbackB = jest.fn();
   });
@@ -154,12 +147,12 @@ describe('Dispatcher', () => {
       callbackB();
     });
 
-    expect(() => dispatcher.dispatch({shouldThrow: true})).toThrow();
+    expect(() => dispatcher.dispatch({ shouldThrow: true })).toThrow();
 
     // Cannot make assumptions about a failed dispatch.
     const callbackACount = callbackA.mock.calls.length;
 
-    dispatcher.dispatch({shouldThrow: false});
+    dispatcher.dispatch({ shouldThrow: false });
 
     expect(callbackA.mock.calls.length).toBe(callbackACount + 1);
     expect(callbackB.mock.calls.length).toBe(1);
@@ -212,4 +205,17 @@ describe('Dispatcher', () => {
     expect(callbackA.mock.calls.length).toBe(1);
     expect(callbackB.mock.calls.length).toBe(0);
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict
+     * @format
+     */
+
+/**
+ * Originally from https://github.com/facebook/flux/blob/55480fb/src/Dispatcher.js
+ */

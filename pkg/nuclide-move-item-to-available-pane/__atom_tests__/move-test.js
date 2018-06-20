@@ -1,28 +1,33 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _fsPromise;
 
-import {activate} from '../lib/main';
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _main;
+
+function _load_main() {
+  return _main = require('../lib/main');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('nuclide-move-item-to-available-pane', () => {
   it('moves items across panes and creates new ones, as appropriate', async () => {
-    activate();
+    (0, (_main || _load_main()).activate)();
 
-    const tempdir = await fsPromise.tempdir();
-    await atom.workspace.open(nuclideUri.join(tempdir, 'A'));
-    await atom.workspace.open(nuclideUri.join(tempdir, 'B'));
-    await atom.workspace.open(nuclideUri.join(tempdir, 'C'));
+    const tempdir = await (_fsPromise || _load_fsPromise()).default.tempdir();
+    await atom.workspace.open((_nuclideUri || _load_nuclideUri()).default.join(tempdir, 'A'));
+    await atom.workspace.open((_nuclideUri || _load_nuclideUri()).default.join(tempdir, 'B'));
+    await atom.workspace.open((_nuclideUri || _load_nuclideUri()).default.join(tempdir, 'C'));
     atom.workspace.getPanes()[0].activateItemAtIndex(0);
     assertWorkspaceState(['A*', 'B', 'C']);
 
@@ -84,21 +89,30 @@ describe('nuclide-move-item-to-available-pane', () => {
  * item should be displaying. If the element ends with an asterisk, that
  * indicates that it should be the active pane item.
  */
-function assertWorkspaceState(...descriptors: Array<Array<string>>) {
-  const workspaceDescriptors = createDescriptorForWorkspaceState()
-    .map(descriptor => {
-      return descriptor.filter(paneItem => paneItem.length > 0);
-    })
-    .filter(descriptor => descriptor.length > 0);
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ *  strict-local
+ * @format
+ */
+
+function assertWorkspaceState(...descriptors) {
+  const workspaceDescriptors = createDescriptorForWorkspaceState().map(descriptor => {
+    return descriptor.filter(paneItem => paneItem.length > 0);
+  }).filter(descriptor => descriptor.length > 0);
   expect(workspaceDescriptors).toEqual(descriptors);
 }
 
-function createDescriptorForWorkspaceState(): Array<Array<string>> {
+function createDescriptorForWorkspaceState() {
   const activeItem = atom.workspace.getActiveTextEditor();
   return atom.workspace.getPanes().map(pane => {
     return pane.getItems().map(item => {
       const fileName = item.getPath();
-      let name = nuclideUri.basename(fileName);
+      let name = (_nuclideUri || _load_nuclideUri()).default.basename(fileName);
       if (item === activeItem) {
         name += '*';
       }
@@ -109,22 +123,24 @@ function createDescriptorForWorkspaceState(): Array<Array<string>> {
 
 function dispatchCmdKRight() {
   const activeEditor = atom.workspace.getActiveTextEditor();
-  invariant(activeEditor);
-  const wasDispatched = atom.commands.dispatch(
-    atom.views.getView(activeEditor),
-    'nuclide-move-item-to-available-pane:right',
-  );
+
+  if (!activeEditor) {
+    throw new Error('Invariant violation: "activeEditor"');
+  }
+
+  const wasDispatched = atom.commands.dispatch(atom.views.getView(activeEditor), 'nuclide-move-item-to-available-pane:right');
   expect(wasDispatched).toBeTruthy();
 }
 
 // eslint-disable-next-line no-unused-vars
 function dispatchCmdKLeft() {
   const activeEditor = atom.workspace.getActiveTextEditor();
-  invariant(activeEditor);
-  const wasDispatched = atom.commands.dispatch(
-    atom.views.getView(activeEditor),
-    'nuclide-move-item-to-available-pane:left',
-  );
+
+  if (!activeEditor) {
+    throw new Error('Invariant violation: "activeEditor"');
+  }
+
+  const wasDispatched = atom.commands.dispatch(atom.views.getView(activeEditor), 'nuclide-move-item-to-available-pane:left');
   expect(wasDispatched).toBeTruthy();
 }
 
@@ -136,11 +152,12 @@ function dispatchCmdKCmdLeft() {
   const index = panes.indexOf(activePane);
 
   const activeEditor = atom.workspace.getActiveTextEditor();
-  invariant(activeEditor);
-  const wasDispatched = atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'window:focus-pane-on-left',
-  );
+
+  if (!activeEditor) {
+    throw new Error('Invariant violation: "activeEditor"');
+  }
+
+  const wasDispatched = atom.commands.dispatch(atom.views.getView(atom.workspace), 'window:focus-pane-on-left');
   expect(wasDispatched).toBeTruthy();
 
   const newIndex = Math.max(0, index - 1);
@@ -156,11 +173,12 @@ function dispatchCmdKCmdRight() {
   const index = panes.indexOf(activePane);
 
   const activeEditor = atom.workspace.getActiveTextEditor();
-  invariant(activeEditor);
-  const wasDispatched = atom.commands.dispatch(
-    atom.views.getView(activeEditor),
-    'window:focus-pane-on-right',
-  );
+
+  if (!activeEditor) {
+    throw new Error('Invariant violation: "activeEditor"');
+  }
+
+  const wasDispatched = atom.commands.dispatch(atom.views.getView(activeEditor), 'window:focus-pane-on-right');
   expect(wasDispatched).toBe(true);
 
   const newIndex = Math.min(panes.length - 1, index + 1);

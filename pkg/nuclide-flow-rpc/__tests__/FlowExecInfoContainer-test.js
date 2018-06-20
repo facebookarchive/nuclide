@@ -1,37 +1,28 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
+var _FlowExecInfoContainer;
 
-import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+function _load_FlowExecInfoContainer() {
+  return _FlowExecInfoContainer = require('../lib/FlowExecInfoContainer');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('FlowExecInfoContainer', () => {
-  const dummyFlowPath = nuclideUri.join(
-    __dirname,
-    '../__mocks__/fixtures/dummyflow',
-  );
-  const withFlowBinProjectPath = nuclideUri.join(
-    __dirname,
-    '../__mocks__/fixtures/with-flow-bin',
-  );
-  const withoutFlowBinProjectPath = nuclideUri.join(
-    __dirname,
-    '../__mocks__/fixtures/without-flow-bin',
-  );
+  const dummyFlowPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dummyflow');
+  const withFlowBinProjectPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/with-flow-bin');
+  const withoutFlowBinProjectPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/without-flow-bin');
 
-  let infoContainer: FlowExecInfoContainer = (null: any);
+  let infoContainer = null;
 
   beforeEach(() => {
-    infoContainer = new FlowExecInfoContainer();
+    infoContainer = new (_FlowExecInfoContainer || _load_FlowExecInfoContainer()).FlowExecInfoContainer();
     infoContainer._pathToFlow = dummyFlowPath;
 
     // These tests are run in stock Node, and rely on that fact. The code under test checks for the
@@ -48,10 +39,12 @@ describe('FlowExecInfoContainer', () => {
       describe('in a directory without flow-bin', () => {
         it('should return the system Flow binary', async () => {
           await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withoutFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
+            const execInfo = await infoContainer._computeFlowExecInfo(withoutFlowBinProjectPath);
+
+            if (!(execInfo != null)) {
+              throw new Error('Invariant violation: "execInfo != null"');
+            }
+
             expect(execInfo.pathToFlow).toBe(dummyFlowPath);
           })();
         });
@@ -59,10 +52,12 @@ describe('FlowExecInfoContainer', () => {
       describe('in a directory with flow-bin', () => {
         it('should return the system Flow binary', async () => {
           await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
+            const execInfo = await infoContainer._computeFlowExecInfo(withFlowBinProjectPath);
+
+            if (!(execInfo != null)) {
+              throw new Error('Invariant violation: "execInfo != null"');
+            }
+
             expect(execInfo.pathToFlow).toBe(dummyFlowPath);
           })();
         });
@@ -70,9 +65,7 @@ describe('FlowExecInfoContainer', () => {
           await (async () => {
             // If somebody has this on their PATH I'm going to be upset
             infoContainer._pathToFlow = 'notAValidExecutable';
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withFlowBinProjectPath,
-            );
+            const execInfo = await infoContainer._computeFlowExecInfo(withFlowBinProjectPath);
             expect(execInfo).toBeNull();
           })();
         });
@@ -81,7 +74,11 @@ describe('FlowExecInfoContainer', () => {
         it('should return the system Flow binary', async () => {
           await (async () => {
             const execInfo = await infoContainer._computeFlowExecInfo(null);
-            invariant(execInfo != null);
+
+            if (!(execInfo != null)) {
+              throw new Error('Invariant violation: "execInfo != null"');
+            }
+
             expect(execInfo.pathToFlow).toBe(dummyFlowPath);
           })();
         });
@@ -95,24 +92,25 @@ describe('FlowExecInfoContainer', () => {
       describe('in a directory without flow-bin', () => {
         it('should return the system Flow binary', async () => {
           await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withoutFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
+            const execInfo = await infoContainer._computeFlowExecInfo(withoutFlowBinProjectPath);
+
+            if (!(execInfo != null)) {
+              throw new Error('Invariant violation: "execInfo != null"');
+            }
+
             expect(execInfo.pathToFlow).toBe(dummyFlowPath);
           })();
         });
       });
       describe('in a directory with flow-bin', () => {
         it('should return the local flow-bin binary', async () => {
-          const execInfo = await infoContainer._computeFlowExecInfo(
-            withFlowBinProjectPath,
-          );
-          invariant(execInfo != null);
-          const flowBinPath = nuclideUri.join(
-            withFlowBinProjectPath,
-            'node_modules/.bin/flow',
-          );
+          const execInfo = await infoContainer._computeFlowExecInfo(withFlowBinProjectPath);
+
+          if (!(execInfo != null)) {
+            throw new Error('Invariant violation: "execInfo != null"');
+          }
+
+          const flowBinPath = (_nuclideUri || _load_nuclideUri()).default.join(withFlowBinProjectPath, 'node_modules/.bin/flow');
           expect(execInfo.pathToFlow).toBe(flowBinPath);
         });
       });
@@ -120,11 +118,24 @@ describe('FlowExecInfoContainer', () => {
         it('should return the system Flow binary', async () => {
           await (async () => {
             const execInfo = await infoContainer._computeFlowExecInfo(null);
-            invariant(execInfo != null);
+
+            if (!(execInfo != null)) {
+              throw new Error('Invariant violation: "execInfo != null"');
+            }
+
             expect(execInfo.pathToFlow).toBe(dummyFlowPath);
           })();
         });
       });
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */

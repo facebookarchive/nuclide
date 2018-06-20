@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.wordAtPosition = wordAtPosition;
+exports.trimRange = trimRange;
+exports.getWordFromMouseEvent = getWordFromMouseEvent;
+exports.getWordFromCursorOrSelection = getWordFromCursorOrSelection;
+
+var _atom = require('atom');
+
+var _range;
+
+function _load_range() {
+  return _range = require('../nuclide-commons/range');
+}
+
+/**
+ * Finds the word at the position. You can either provide a word regex yourself,
+ * or have Atom use the word regex in force at the scopes at that position,
+ * in which case it uses the optional includeNonWordCharacters, default true.
+ * (I know that's a weird default but it follows Atom's convention...)
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,25 +30,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import {Range} from 'atom';
-import invariant from 'assert';
-import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-
-/**
- * Finds the word at the position. You can either provide a word regex yourself,
- * or have Atom use the word regex in force at the scopes at that position,
- * in which case it uses the optional includeNonWordCharacters, default true.
- * (I know that's a weird default but it follows Atom's convention...)
- */
-export function wordAtPosition(
-  editor: atom$TextEditor,
-  position: atom$PointObject,
-  wordRegex?: RegExp | {includeNonWordCharacters: boolean},
-): ?{wordMatch: Array<string>, range: atom$Range} {
+function wordAtPosition(editor, position, wordRegex) {
   let wordRegex_;
   if (wordRegex instanceof RegExp) {
     wordRegex_ = wordRegex;
@@ -45,7 +55,7 @@ export function wordAtPosition(
     }
     wordRegex_ = new RegExp(r, 'g');
   }
-  return wordAtPositionFromBuffer(editor.getBuffer(), position, wordRegex_);
+  return (0, (_range || _load_range()).wordAtPositionFromBuffer)(editor.getBuffer(), position, wordRegex_);
 }
 
 /**
@@ -59,28 +69,21 @@ export function wordAtPosition(
  *   defaults to first non-whitespace character
  * @return atom$Range  the trimmed range
  */
-export function trimRange(
-  editor: atom$TextEditor,
-  rangeToTrim: atom$Range,
-  stopRegex: RegExp = /\S/,
-): atom$Range {
+function trimRange(editor, rangeToTrim, stopRegex = /\S/) {
   const buffer = editor.getBuffer();
-  let {start, end} = rangeToTrim;
-  buffer.scanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  let { start, end } = rangeToTrim;
+  buffer.scanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     start = range.start;
     stop();
   });
-  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     end = range.end;
     stop();
   });
-  return new Range(start, end);
+  return new _atom.Range(start, end);
 }
 
-function getSingleWordAtPosition(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): ?string {
+function getSingleWordAtPosition(editor, position) {
   const match = wordAtPosition(editor, position);
   // We should only receive a single identifier from a single point.
   if (match == null || match.wordMatch.length !== 1) {
@@ -98,17 +101,19 @@ function getSingleWordAtPosition(
  *   from
  * @param event   the MouseEvent containing the screen position of the click
  */
-export function getWordFromMouseEvent(
-  editor: atom$TextEditor,
-  event: MouseEvent,
-): ?string {
+function getWordFromMouseEvent(editor, event) {
   // We can't immediately get the identifier right-clicked on from
   // the MouseEvent. Using its target element content would work in
   // some cases but wouldn't work if there was additional content
   // in the same element, such as in a comment.
   const component = editor.getElement().component;
-  invariant(component);
+
+  if (!component) {
+    throw new Error('Invariant violation: "component"');
+  }
   // This solution doesn't feel ideal but it is the way hyperclick does it.
+
+
   const point = component.screenPositionForMouseEvent(event);
   return getSingleWordAtPosition(editor, point);
 }
@@ -121,7 +126,7 @@ export function getWordFromMouseEvent(
  * @param editor  the editor containing the 'active' word when the keybinding is
  *   triggered
  */
-export function getWordFromCursorOrSelection(editor: atom$TextEditor): ?string {
+function getWordFromCursorOrSelection(editor) {
   const selection = editor.getSelectedText();
   if (selection && selection.length > 0) {
     return selection;

@@ -1,72 +1,77 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = exports.SERVER_CONFIG_REQUEST_EVENT = exports.SERVER_CONFIG_RESPONSE_EVENT = undefined;
+exports.getConnectionConfig = getConnectionConfig;
+exports.setConnectionConfig = setConnectionConfig;
+exports.clearConnectionConfig = clearConnectionConfig;
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _keytarWrapper;
+
+function _load_keytarWrapper() {
+  return _keytarWrapper = _interopRequireDefault(require('../../commons-node/keytarWrapper'));
+}
+
+var _electron = _interopRequireDefault(require('electron'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const CONFIG_DIR = 'nuclide-connections'; /**
+                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                           * All rights reserved.
+                                           *
+                                           * This source code is licensed under the license found in the LICENSE file in
+                                           * the root directory of this source tree.
+                                           *
+                                           *  strict-local
+                                           * @format
+                                           */
 
 /* global localStorage */
 
-import type {
-  ServerConnectionConfiguration,
-  ServerConnectionVersion,
-} from './ServerConnection';
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-remote-connection');
+const remote = _electron.default.remote;
+const ipc = _electron.default.ipcRenderer;
 
-import crypto from 'crypto';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import keytarWrapper from '../../commons-node/keytarWrapper';
-import electron from 'electron';
+if (!remote) {
+  throw new Error('Invariant violation: "remote"');
+}
 
-const CONFIG_DIR = 'nuclide-connections';
-const logger = getLogger('nuclide-remote-connection');
-const remote = electron.remote;
-const ipc = electron.ipcRenderer;
+if (!ipc) {
+  throw new Error('Invariant violation: "ipc"');
+}
 
-invariant(remote);
-invariant(ipc);
-
-export const SERVER_CONFIG_RESPONSE_EVENT = 'server-config-response';
-export const SERVER_CONFIG_REQUEST_EVENT = 'server-config-request';
+const SERVER_CONFIG_RESPONSE_EVENT = exports.SERVER_CONFIG_RESPONSE_EVENT = 'server-config-response';
+const SERVER_CONFIG_REQUEST_EVENT = exports.SERVER_CONFIG_REQUEST_EVENT = 'server-config-request';
 
 /**
  * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
  * be translated directly to/from JSON.
  */
-type SerializableServerConnectionConfiguration = {
-  host: string,
-  port: number,
-  family?: 4 | 6,
-  certificateAuthorityCertificate?: string,
-  clientCertificate?: string,
-  clientKey?: string,
-  version?: ServerConnectionVersion,
-};
+
 
 // Insecure configs are used for testing only.
-function isInsecure(config: ServerConnectionConfiguration): boolean {
-  return (
-    config.clientKey == null &&
-    config.clientCertificate == null &&
-    config.certificateAuthorityCertificate == null
-  );
+function isInsecure(config) {
+  return config.clientKey == null && config.clientCertificate == null && config.certificateAuthorityCertificate == null;
 }
 
-function getStorageKey(host: string): string {
+function getStorageKey(host) {
   return `${CONFIG_DIR}:${host}`;
 }
 
-async function getConnectionConfigViaIPC(
-  host: string,
-): Promise<?ServerConnectionConfiguration> {
+async function getConnectionConfigViaIPC(host) {
   const thisWindowsId = remote.getCurrentWindow().id;
-  const otherWindows = remote.BrowserWindow.getAllWindows().filter(
-    win => win.isVisible() && win.id !== thisWindowsId,
-  );
+  const otherWindows = remote.BrowserWindow.getAllWindows().filter(win => win.isVisible() && win.id !== thisWindowsId);
   const timeoutInMilliseconds = 5000;
 
   return new Promise(resolve => {
@@ -85,21 +90,18 @@ async function getConnectionConfigViaIPC(
       ipc.removeAllListeners(SERVER_CONFIG_RESPONSE_EVENT);
     }, timeoutInMilliseconds);
 
-    ipc.on(
-      SERVER_CONFIG_RESPONSE_EVENT,
-      (event, config: ?ServerConnectionConfiguration) => {
-        responseCount++;
+    ipc.on(SERVER_CONFIG_RESPONSE_EVENT, (event, config) => {
+      responseCount++;
 
-        if (config != null || responseCount === otherWindows.length) {
-          if (config != null) {
-            logger.info('received the config! removing other listeners');
-          }
-          resolve(config);
-          clearTimeout(timeout);
-          ipc.removeAllListeners(SERVER_CONFIG_RESPONSE_EVENT);
+      if (config != null || responseCount === otherWindows.length) {
+        if (config != null) {
+          logger.info('received the config! removing other listeners');
         }
-      },
-    );
+        resolve(config);
+        clearTimeout(timeout);
+        ipc.removeAllListeners(SERVER_CONFIG_RESPONSE_EVENT);
+      }
+    });
 
     otherWindows.forEach(window => {
       logger.info(`requesting config from window ${window.id}`);
@@ -112,9 +114,7 @@ async function getConnectionConfigViaIPC(
   });
 }
 
-export async function getConnectionConfig(
-  host: string,
-): Promise<?ServerConnectionConfiguration> {
+async function getConnectionConfig(host) {
   const storedConfig = localStorage.getItem(getStorageKey(host));
   if (storedConfig == null) {
     return null;
@@ -131,10 +131,7 @@ export async function getConnectionConfig(
   }
 }
 
-export async function setConnectionConfig(
-  config: ServerConnectionConfiguration,
-  ipAddress: string,
-): Promise<void> {
+async function setConnectionConfig(config, ipAddress) {
   // Don't attempt to store insecure connections.
   // Insecure connections are used for testing and will fail the encryption call below.
   if (isInsecure(config)) {
@@ -142,7 +139,7 @@ export async function setConnectionConfig(
   }
 
   try {
-    const encrypted = JSON.stringify(await encryptConfig(config));
+    const encrypted = JSON.stringify((await encryptConfig(config)));
     localStorage.setItem(getStorageKey(config.host), encrypted);
     // Store configurations by their IP address as well.
     // This way, multiple aliases for the same hostname can reuse a single connection.
@@ -152,7 +149,7 @@ export async function setConnectionConfig(
   }
 }
 
-export async function clearConnectionConfig(host: string): Promise<void> {
+async function clearConnectionConfig(host) {
   try {
     localStorage.removeItem(getStorageKey(host));
   } catch (e) {
@@ -165,31 +162,34 @@ export async function clearConnectionConfig(host: string): Promise<void> {
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-async function encryptConfig(
-  remoteProjectConfig: ServerConnectionConfiguration,
-): Promise<SerializableServerConnectionConfiguration> {
-  const sha1 = crypto.createHash('sha1');
+async function encryptConfig(remoteProjectConfig) {
+  const sha1 = _crypto.default.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
 
   const {
     certificateAuthorityCertificate,
     clientCertificate,
-    clientKey,
+    clientKey
   } = remoteProjectConfig;
-  invariant(clientKey);
+
+  if (!clientKey) {
+    throw new Error('Invariant violation: "clientKey"');
+  }
+
   const realClientKey = clientKey.toString(); // Convert from Buffer to string.
-  const {salt, password, encryptedString} = encryptString(realClientKey);
-  await keytarWrapper.replacePassword(
-    'nuclide.remoteProjectConfig',
-    sha1sum,
-    password,
-  );
+  const { salt, password, encryptedString } = encryptString(realClientKey);
+  await (_keytarWrapper || _load_keytarWrapper()).default.replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
 
   const clientKeyWithSalt = encryptedString + '.' + salt;
 
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
+  if (!certificateAuthorityCertificate) {
+    throw new Error('Invariant violation: "certificateAuthorityCertificate"');
+  }
+
+  if (!clientCertificate) {
+    throw new Error('Invariant violation: "clientCertificate"');
+  }
 
   return {
     host: remoteProjectConfig.host,
@@ -198,7 +198,7 @@ async function encryptConfig(
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
-    version: remoteProjectConfig.version,
+    version: remoteProjectConfig.version
   };
 }
 
@@ -207,17 +207,12 @@ async function encryptConfig(
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-async function decryptConfig(
-  remoteProjectConfig: SerializableServerConnectionConfiguration,
-): Promise<ServerConnectionConfiguration> {
-  const sha1 = crypto.createHash('sha1');
+async function decryptConfig(remoteProjectConfig) {
+  const sha1 = _crypto.default.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
 
-  const password = await keytarWrapper.getPassword(
-    'nuclide.remoteProjectConfig',
-    sha1sum,
-  );
+  const password = await (_keytarWrapper || _load_keytarWrapper()).default.getPassword('nuclide.remoteProjectConfig', sha1sum);
 
   if (password == null) {
     throw new Error('Cannot find password for encrypted client key');
@@ -226,10 +221,14 @@ async function decryptConfig(
   const {
     certificateAuthorityCertificate,
     clientCertificate,
-    clientKey,
+    clientKey
   } = remoteProjectConfig;
   // flowlint-next-line sketchy-null-string:off
-  invariant(clientKey);
+
+  if (!clientKey) {
+    throw new Error('Invariant violation: "clientKey"');
+  }
+
   const [encryptedString, salt] = clientKey.split('.');
 
   if (!encryptedString || !salt) {
@@ -238,37 +237,36 @@ async function decryptConfig(
 
   const restoredClientKey = decryptString(encryptedString, password, salt);
   if (
-    // @lint-ignore PRIVATEKEY1
-    !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')
-  ) {
-    getLogger('nuclide-remote-connection').error(
-      `decrypted client key did not start with expected header: ${restoredClientKey}`,
-    );
+  // @lint-ignore PRIVATEKEY1
+  !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
+    (0, (_log4js || _load_log4js()).getLogger)('nuclide-remote-connection').error(`decrypted client key did not start with expected header: ${restoredClientKey}`);
   }
 
   // flowlint-next-line sketchy-null-string:off
-  invariant(certificateAuthorityCertificate);
+
+  if (!certificateAuthorityCertificate) {
+    throw new Error('Invariant violation: "certificateAuthorityCertificate"');
+  }
   // flowlint-next-line sketchy-null-string:off
-  invariant(clientCertificate);
+
+
+  if (!clientCertificate) {
+    throw new Error('Invariant violation: "clientCertificate"');
+  }
+
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     family: remoteProjectConfig.family,
-    certificateAuthorityCertificate: new Buffer(
-      certificateAuthorityCertificate,
-    ),
+    certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),
-    version: remoteProjectConfig.version,
+    version: remoteProjectConfig.version
   };
 }
 
-function decryptString(text: string, password: string, salt: string): string {
-  const decipher = crypto.createDecipheriv(
-    'aes-128-cbc',
-    new Buffer(password, 'base64'),
-    new Buffer(salt, 'base64'),
-  );
+function decryptString(text, password, salt) {
+  const decipher = _crypto.default.createDecipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
   let decryptedString = decipher.update(text, 'base64', 'utf8');
   decryptedString += decipher.final('utf8');
@@ -276,33 +274,25 @@ function decryptString(text: string, password: string, salt: string): string {
   return decryptedString;
 }
 
-function encryptString(
-  text: string,
-): {password: string, salt: string, encryptedString: string} {
-  const password = crypto.randomBytes(16).toString('base64');
-  const salt = crypto.randomBytes(16).toString('base64');
+function encryptString(text) {
+  const password = _crypto.default.randomBytes(16).toString('base64');
+  const salt = _crypto.default.randomBytes(16).toString('base64');
 
-  const cipher = crypto.createCipheriv(
-    'aes-128-cbc',
-    new Buffer(password, 'base64'),
-    new Buffer(salt, 'base64'),
-  );
+  const cipher = _crypto.default.createCipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
-  let encryptedString = cipher.update(
-    text,
-    /* input_encoding */ 'utf8',
-    /* output_encoding */ 'base64',
-  );
+  let encryptedString = cipher.update(text,
+  /* input_encoding */'utf8',
+  /* output_encoding */'base64');
   encryptedString += cipher.final('base64');
 
   return {
     password,
     salt,
-    encryptedString,
+    encryptedString
   };
 }
 
-export const __test__ = {
+const __test__ = exports.__test__ = {
   decryptString,
-  encryptString,
+  encryptString
 };

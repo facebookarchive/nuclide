@@ -1,36 +1,87 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {Directory} from 'atom';
-import FileTreeActions from '../lib/FileTreeActions';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
-import FileTreeStore from '../lib/FileTreeStore';
-import * as Selectors from '../lib/FileTreeSelectors';
-import type {FileTreeNode} from '../lib/FileTreeNode';
+var _atom = require('atom');
 
-import {copyFixture} from '../../nuclide-test-helpers';
-import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import path from 'path';
-import waitsFor from '../../../jest/waits_for';
+var _FileTreeActions;
 
-import {denodeify} from 'nuclide-commons/promise';
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
 
-import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
+var _FileTreeHelpers;
 
-import tempModule from 'temp';
-tempModule.track();
-const tempCleanup = denodeify(tempModule.cleanup);
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('../lib/FileTreeHelpers'));
+}
 
-import invariant from 'assert';
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = _interopRequireDefault(require('../lib/FileTreeStore'));
+}
+
+var _FileTreeSelectors;
+
+function _load_FileTreeSelectors() {
+  return _FileTreeSelectors = _interopRequireWildcard(require('../lib/FileTreeSelectors'));
+}
+
+var _nuclideTestHelpers;
+
+function _load_nuclideTestHelpers() {
+  return _nuclideTestHelpers = require('../../nuclide-test-helpers');
+}
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _path = _interopRequireDefault(require('path'));
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _BuildTempDirTree;
+
+function _load_BuildTempDirTree() {
+  return _BuildTempDirTree = require('../__mocks__/helpers/BuildTempDirTree');
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+(_temp || _load_temp()).default.track(); /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
+
+const tempCleanup = (0, (_promise || _load_promise()).denodeify)((_temp || _load_temp()).default.cleanup);
 
 class MockRepository {
   isProjectAtRoot() {
@@ -47,35 +98,33 @@ describe('FileTreeStore', () => {
   let fooTxt = '';
   let dir2 = '';
 
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const store = new (_FileTreeStore || _load_FileTreeStore()).default();
+  const actions = new (_FileTreeActions || _load_FileTreeActions()).default(store);
 
   /*
    * Trigger the fetch through the **internal-only** API. Enables the
    * tests to await loading children.
    */
-  function loadChildKeys(rootKey: string, nodeKey: string): Promise<void> {
+  function loadChildKeys(rootKey, nodeKey) {
     return store._getLoading(nodeKey) || Promise.resolve();
   }
 
-  function getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    const node = Selectors.getNode(store, rootKey, nodeKey);
-    invariant(node);
+  function getNode(rootKey, nodeKey) {
+    const node = (_FileTreeSelectors || _load_FileTreeSelectors()).getNode(store, rootKey, nodeKey);
+
+    if (!node) {
+      throw new Error('Invariant violation: "node"');
+    }
+
     return node;
   }
 
-  function shownChildren(
-    rootKey: string,
-    nodeKey: string,
-  ): Array<FileTreeNode> {
+  function shownChildren(rootKey, nodeKey) {
     const node = getNode(rootKey, nodeKey);
-    return node.children
-      .filter(n => n.shouldBeShown)
-      .valueSeq()
-      .toArray();
+    return node.children.filter(n => n.shouldBeShown).valueSeq().toArray();
   }
 
-  function isExpanded(rootKey: string, nodeKey: string): boolean {
+  function isExpanded(rootKey, nodeKey) {
     return getNode(rootKey, nodeKey).isExpanded;
   }
 
@@ -84,41 +133,38 @@ describe('FileTreeStore', () => {
     await tempCleanup();
     jest.clearAllMocks();
     jest.resetAllMocks();
-    const tmpFixturesDir = await copyFixture(
-      '.',
-      path.resolve(__dirname, '../__mocks__'),
-    );
-    dir1 = nuclideUri.join(tmpFixturesDir, 'dir1/');
-    fooTxt = nuclideUri.join(dir1, 'foo.txt');
-    dir2 = nuclideUri.join(tmpFixturesDir, 'dir2/');
+    const tmpFixturesDir = await (0, (_nuclideTestHelpers || _load_nuclideTestHelpers()).copyFixture)('.', _path.default.resolve(__dirname, '../__mocks__'));
+    dir1 = (_nuclideUri || _load_nuclideUri()).default.join(tmpFixturesDir, 'dir1/');
+    fooTxt = (_nuclideUri || _load_nuclideUri()).default.join(dir1, 'foo.txt');
+    dir2 = (_nuclideUri || _load_nuclideUri()).default.join(tmpFixturesDir, 'dir2/');
   });
 
   it('should be initialized with no root keys', () => {
-    const rootKeys = Selectors.getRootKeys(store);
+    const rootKeys = (_FileTreeSelectors || _load_FileTreeSelectors()).getRootKeys(store);
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.length).toBe(0);
   });
 
   describe('isEmpty', () => {
     it('returns true when the store is empty, has no roots', () => {
-      expect(Selectors.isEmpty(store)).toBe(true);
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).isEmpty(store)).toBe(true);
     });
 
     it('returns false when the store has data, has roots', () => {
       actions.setRootKeys([dir1]);
-      expect(Selectors.isEmpty(store)).toBe(false);
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).isEmpty(store)).toBe(false);
     });
   });
 
   it('should update root keys via actions', () => {
     actions.setRootKeys([dir1, dir2]);
-    const rootKeys = Selectors.getRootKeys(store);
+    const rootKeys = (_FileTreeSelectors || _load_FileTreeSelectors()).getRootKeys(store);
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
   });
 
   it('should expand root keys as they are added', () => {
-    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
+    const rootKey = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'fixtures') + '/';
     actions.setRootKeys([rootKey]);
     const node = getNode(rootKey, rootKey);
     expect(node.isExpanded).toBe(true);
@@ -159,16 +205,12 @@ describe('FileTreeStore', () => {
       actions.addSelectedNode(dir2, dir2);
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = Selectors.getSelectedNodes(store)
-        .map(node => node.uri)
-        .toArray();
+      const selectedNodes = (_FileTreeSelectors || _load_FileTreeSelectors()).getSelectedNodes(store).map(node => node.uri).toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
-      const selectedNodes = Selectors.getSelectedNodes(store)
-        .map(node => node.uri)
-        .toArray();
+      const selectedNodes = (_FileTreeSelectors || _load_FileTreeSelectors()).getSelectedNodes(store).map(node => node.uri).toArray();
       expect(selectedNodes).toEqual([]);
     });
   });
@@ -185,20 +227,24 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null when no nodes are selected', () => {
-      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getSingleSelectedNode(store)).toBeNull();
     });
 
     it('returns null when more than 1 node is selected', () => {
       actions.addSelectedNode(dir1, dir1);
       actions.addSelectedNode(dir2, dir2);
-      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getSingleSelectedNode(store)).toBeNull();
     });
 
     it('returns a node when only 1 is selected', () => {
       actions.setSelectedNode(dir2, dir2);
-      const singleSelectedNode = Selectors.getSingleSelectedNode(store);
+      const singleSelectedNode = (_FileTreeSelectors || _load_FileTreeSelectors()).getSingleSelectedNode(store);
       expect(singleSelectedNode).not.toBeNull();
-      invariant(singleSelectedNode);
+
+      if (!singleSelectedNode) {
+        throw new Error('Invariant violation: "singleSelectedNode"');
+      }
+
       expect(singleSelectedNode.uri).toEqual(dir2);
     });
   });
@@ -211,15 +257,17 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null if path does not belong to any root', () => {
-      expect(
-        Selectors.getRootForPath(store, 'random/path/file.txt'),
-      ).toBeNull();
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getRootForPath(store, 'random/path/file.txt')).toBeNull();
     });
 
     it('returns a root node if path exists in a root', () => {
-      const node = Selectors.getRootForPath(store, fooTxt);
+      const node = (_FileTreeSelectors || _load_FileTreeSelectors()).getRootForPath(store, fooTxt);
       expect(node).not.toBeNull();
-      invariant(node);
+
+      if (!node) {
+        throw new Error('Invariant violation: "node"');
+      }
+
       expect(node.uri).toEqual(dir1);
     });
   });
@@ -230,19 +278,19 @@ describe('FileTreeStore', () => {
       actions.setTrackedNode(dir1, dir1);
 
       // Root is tracked after setting it.
-      const trackedNode = Selectors.getTrackedNode(store);
+      const trackedNode = (_FileTreeSelectors || _load_FileTreeSelectors()).getTrackedNode(store);
       expect(trackedNode && trackedNode.uri).toBe(dir1);
       actions.setSelectedNode(dir1, dir1);
 
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
-      expect(Selectors.getTrackedNode(store)).toBe(getNode(dir1, dir1));
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getTrackedNode(store)).toBe(getNode(dir1, dir1));
     });
   });
 
   describe('getChildKeys', () => {
     it("clears loading and expanded states when there's an error fetching children", async () => {
-      jest.spyOn(FileTreeHelpers, 'fetchChildren').mockImplementation(() => {
+      jest.spyOn((_FileTreeHelpers || _load_FileTreeHelpers()).default, 'fetchChildren').mockImplementation(() => {
         return Promise.reject(new Error('This error **should** be thrown.'));
       });
 
@@ -259,7 +307,7 @@ describe('FileTreeStore', () => {
         // effects after this try/catch capture the purpose of this test.
       } finally {
         // $FlowFixMe
-        FileTreeHelpers.fetchChildren.mockRestore();
+        (_FileTreeHelpers || _load_FileTreeHelpers()).default.fetchChildren.mockRestore();
       }
 
       node = getNode(dir1, dir1);
@@ -283,18 +331,18 @@ describe('FileTreeStore', () => {
     }
 
     function updateFilter() {
-      expect(Selectors.getFilter(store)).toEqual('');
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getFilter(store)).toEqual('');
       actions.setRootKeys([dir1]);
       checkNode('', true);
       actions.addFilterLetter(node.name);
-      expect(Selectors.getFilter(store)).toEqual(node.name);
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getFilter(store)).toEqual(node.name);
       checkNode(node.name, true);
     }
 
     function doubleFilter() {
       updateFilter();
       actions.addFilterLetter(node.name);
-      expect(Selectors.getFilter(store)).toEqual(node.name + node.name);
+      expect((_FileTreeSelectors || _load_FileTreeSelectors()).getFilter(store)).toEqual(node.name + node.name);
       checkNode('', false);
     }
 
@@ -366,16 +414,14 @@ describe('FileTreeStore', () => {
 
   describe('recovering from failed subscriptions', () => {
     it('fetches children on re-expansion of failed directories', async () => {
-      const unsubscribeableDir = new Directory(dir1);
+      const unsubscribeableDir = new _atom.Directory(dir1);
       // Force subscription to fail to mimic network failure, etc.
       jest.spyOn(unsubscribeableDir, 'onDidChange').mockImplementation(() => {
         throw new Error('This error **should** be thrown.');
       });
 
       // Return the always-fail directory when it is expanded.
-      jest
-        .spyOn(FileTreeHelpers, 'getDirectoryByKey')
-        .mockReturnValue(unsubscribeableDir);
+      jest.spyOn((_FileTreeHelpers || _load_FileTreeHelpers()).default, 'getDirectoryByKey').mockReturnValue(unsubscribeableDir);
 
       actions.setRootKeys([dir1]);
       actions.expandNode(dir1, dir1);
@@ -386,8 +432,8 @@ describe('FileTreeStore', () => {
 
       // Add a new file, 'bar.baz', for which the store will not get a notification because
       // the subscription failed.
-      const barBaz = nuclideUri.join(dir1, 'bar.baz');
-      fs.writeFileSync(barBaz, '');
+      const barBaz = (_nuclideUri || _load_nuclideUri()).default.join(dir1, 'bar.baz');
+      _fs.default.writeFileSync(barBaz, '');
       await loadChildKeys(dir1, dir1);
       expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
 
@@ -399,12 +445,9 @@ describe('FileTreeStore', () => {
 
       // The subscription should fail again, but the children should be refetched and match the
       // changed structure (i.e. include the new 'bar.baz' file).
-      expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([
-        barBaz,
-        fooTxt,
-      ]);
+      expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([barBaz, fooTxt]);
       // $FlowFixMe
-      FileTreeHelpers.getDirectoryByKey.mockRestore();
+      (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDirectoryByKey.mockRestore();
     });
   });
 
@@ -417,7 +460,7 @@ describe('FileTreeStore', () => {
 
       const mockRepo = new MockRepository();
       store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
+        conf.reposByRoot[dir1] = mockRepo;
       });
 
       await loadChildKeys(dir1, dir1);
@@ -434,7 +477,7 @@ describe('FileTreeStore', () => {
 
       const mockRepo = new MockRepository();
       store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
+        conf.reposByRoot[dir1] = mockRepo;
       });
 
       await loadChildKeys(dir1, dir1);
@@ -451,7 +494,7 @@ describe('FileTreeStore', () => {
 
       const mockRepo = new MockRepository();
       store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
+        conf.reposByRoot[dir1] = mockRepo;
       });
 
       await loadChildKeys(dir1, dir1);
@@ -461,14 +504,15 @@ describe('FileTreeStore', () => {
 
   it('expands deep nested structure of the node', async () => {
     await (async () => {
-      const map: Map<string, string> = await buildTempDirTree(
-        'dir3/dir31/foo31.txt',
-        'dir3/dir32/bar32.txt',
-      );
+      const map = await (0, (_BuildTempDirTree || _load_BuildTempDirTree()).buildTempDirTree)('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
-      invariant(dir3 && dir31);
+
+      if (!(dir3 && dir31)) {
+        throw new Error('Invariant violation: "dir3 && dir31"');
+      }
+
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -481,14 +525,15 @@ describe('FileTreeStore', () => {
 
   it('collapses deep nested structore', async () => {
     await (async () => {
-      const map: Map<string, string> = await buildTempDirTree(
-        'dir3/dir31/foo31.txt',
-        'dir3/dir32/bar32.txt',
-      );
+      const map = await (0, (_BuildTempDirTree || _load_BuildTempDirTree()).buildTempDirTree)('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
-      invariant(dir3 && dir31);
+
+      if (!(dir3 && dir31)) {
+        throw new Error('Invariant violation: "dir3 && dir31"');
+      }
+
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -508,12 +553,16 @@ describe('FileTreeStore', () => {
       }
       arrFiles.push('dir3/dir32/bar.txt');
 
-      const map: Map<string, string> = await buildTempDirTree(...arrFiles);
+      const map = await (0, (_BuildTempDirTree || _load_BuildTempDirTree()).buildTempDirTree)(...arrFiles);
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
       const dir32 = map.get('dir3/dir32');
       // flowlint-next-line sketchy-null-string:off
-      invariant(dir3 && dir31 && dir32);
+
+      if (!(dir3 && dir31 && dir32)) {
+        throw new Error('Invariant violation: "dir3 && dir31 && dir32"');
+      }
+
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -524,28 +573,28 @@ describe('FileTreeStore', () => {
     })();
   });
   it('should be able to add, remove, then re-add a file', async () => {
-    const foo2Txt = nuclideUri.join(dir1, 'foo2.txt');
+    const foo2Txt = (_nuclideUri || _load_nuclideUri()).default.join(dir1, 'foo2.txt');
 
     actions.setRootKeys([dir1]);
     actions.expandNode(dir1, dir1);
     await loadChildKeys(dir1, dir1);
-    fs.writeFileSync(foo2Txt, '');
+    _fs.default.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
+    await (0, (_waits_for || _load_waits_for()).default)(() => Boolean((_FileTreeSelectors || _load_FileTreeSelectors()).getNode(store, dir1, foo2Txt)));
 
     // Ensure the child did not inherit the parent subscription.
     const child = getNode(dir1, foo2Txt);
     expect(child.subscription).toBe(null);
-    fs.unlinkSync(foo2Txt);
+    _fs.default.unlinkSync(foo2Txt);
 
     // Ensure that file disappears from the tree.
-    await waitsFor(() => Selectors.getNode(store, dir1, foo2Txt) == null);
+    await (0, (_waits_for || _load_waits_for()).default)(() => (_FileTreeSelectors || _load_FileTreeSelectors()).getNode(store, dir1, foo2Txt) == null);
 
     // Add the file back.
-    fs.writeFileSync(foo2Txt, '');
+    _fs.default.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
+    await (0, (_waits_for || _load_waits_for()).default)(() => Boolean((_FileTreeSelectors || _load_FileTreeSelectors()).getNode(store, dir1, foo2Txt)));
   });
 });

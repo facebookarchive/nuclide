@@ -1,30 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {FileChange, WatchmanSubscription} from 'nuclide-watchman-helpers';
-import type {PathSet} from './PathSet';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import fs from 'nuclide-commons/fsPromise';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
+var _fsPromise;
 
-import {hgRunCommand} from '../../../nuclide-hg-rpc/lib/hg-utils';
-import {WatchmanClient} from 'nuclide-watchman-helpers';
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../../../modules/nuclide-commons/event');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _hgUtils;
+
+function _load_hgUtils() {
+  return _hgUtils = require('../../../nuclide-hg-rpc/lib/hg-utils');
+}
+
+var _nuclideWatchmanHelpers;
+
+function _load_nuclideWatchmanHelpers() {
+  return _nuclideWatchmanHelpers = require('../../../../modules/nuclide-watchman-helpers');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // TODO: This probably won't work on Windows, but we'll worry about that
 // when Watchman officially supports Windows.
-const S_IFDIR = 16384;
+const S_IFDIR = 16384; /**
+                        * Copyright (c) 2015-present, Facebook, Inc.
+                        * All rights reserved.
+                        *
+                        * This source code is licensed under the license found in the LICENSE file in
+                        * the root directory of this source tree.
+                        *
+                        * 
+                        * @format
+                        */
+
 const WATCHMAN_SUBSCRIPTION_BUFFER_TIME = 3000;
 const CONCURRENT_HG_STATUS = 2;
 const HG_STATUS_TIMEOUT = 10000;
@@ -36,9 +68,7 @@ const HG_STATUS_FILE_CAP = 1000;
  * This class currently relies on the Nuclide WatchmanClient, which requires fb-watchman.
  */
 // TODO (t7298196) Investigate falling back to Node watchers.
-export default class PathSetUpdater {
-  _pathSetToSubscription: Map<PathSet, WatchmanSubscription>;
-  _watchmanClient: ?WatchmanClient;
+class PathSetUpdater {
 
   constructor() {
     this._pathSetToSubscription = new Map();
@@ -59,39 +89,18 @@ export default class PathSetUpdater {
    * was created from.
    * @return Disposable that can be disposed to stop updating the PathSet.
    */
-  async startUpdatingPathSet(
-    pathSet: PathSet,
-    localDirectory: string,
-  ): Promise<IDisposable> {
-    const isHgRepo = (await fs.findNearestFile('.hg', localDirectory)) != null;
+  async startUpdatingPathSet(pathSet, localDirectory) {
+    const isHgRepo = (await (_fsPromise || _load_fsPromise()).default.findNearestFile('.hg', localDirectory)) != null;
     const subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);
 
-    const changeSubscription = observableFromSubscribeFunction(callback => {
+    const changeSubscription = (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => {
       return subscription.on('change', callback);
-    })
-      .bufferTime(WATCHMAN_SUBSCRIPTION_BUFFER_TIME)
-      .mergeMap(bufferedFiles => this._flattenBufferedChanges(bufferedFiles))
-      .mergeMap(
-        files =>
-          isHgRepo
-            ? this._filterIgnoredFiles(localDirectory, files)
-            : Observable.of(files),
-        CONCURRENT_HG_STATUS,
-      )
-      .subscribe(files =>
-        this._processWatchmanUpdate(
-          subscription.pathFromSubscriptionRootToSubscriptionPath,
-          pathSet,
-          files,
-        ),
-      );
-    return new UniversalDisposable(changeSubscription, () =>
-      this._stopUpdatingPathSet(pathSet),
-    );
+    }).bufferTime(WATCHMAN_SUBSCRIPTION_BUFFER_TIME).mergeMap(bufferedFiles => this._flattenBufferedChanges(bufferedFiles)).mergeMap(files => isHgRepo ? this._filterIgnoredFiles(localDirectory, files) : _rxjsBundlesRxMinJs.Observable.of(files), CONCURRENT_HG_STATUS).subscribe(files => this._processWatchmanUpdate(subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files));
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(changeSubscription, () => this._stopUpdatingPathSet(pathSet));
   }
 
-  _stopUpdatingPathSet(pathSet: PathSet) {
+  _stopUpdatingPathSet(pathSet) {
     const subscription = this._pathSetToSubscription.get(pathSet);
     if (subscription) {
       this._pathSetToSubscription.delete(pathSet);
@@ -105,20 +114,22 @@ export default class PathSetUpdater {
     if (this._watchmanClient) {
       return;
     }
-    this._watchmanClient = new WatchmanClient();
+    this._watchmanClient = new (_nuclideWatchmanHelpers || _load_nuclideWatchmanHelpers()).WatchmanClient();
   }
 
-  async _addWatchmanSubscription(
-    localDirectory: string,
-  ): Promise<WatchmanSubscription> {
+  async _addWatchmanSubscription(localDirectory) {
     if (!this._watchmanClient) {
       this._setupWatcherService();
     }
-    invariant(this._watchmanClient);
+
+    if (!this._watchmanClient) {
+      throw new Error('Invariant violation: "this._watchmanClient"');
+    }
+
     return this._watchmanClient.watchDirectoryRecursive(localDirectory);
   }
 
-  _removeWatchmanSubscription(subscription: WatchmanSubscription): void {
+  _removeWatchmanSubscription(subscription) {
     if (!this._watchmanClient) {
       return;
     }
@@ -139,11 +150,7 @@ export default class PathSetUpdater {
    * @param files The `files` field of an fb-watchman update. Each file in the
    *   update is expected to contain fields for `name`, `new`, and `exists`.
    */
-  _processWatchmanUpdate(
-    pathFromSubscriptionRootToDir: ?string,
-    pathSet: PathSet,
-    files: any,
-  ): void {
+  _processWatchmanUpdate(pathFromSubscriptionRootToDir, pathSet, files) {
     const newPaths = [];
     const deletedPaths = [];
 
@@ -176,22 +183,20 @@ export default class PathSetUpdater {
    * @param bufferedFiles Buffered FileChanges.
    * @return Flattened and deduped FileChanges.
    */
-  _flattenBufferedChanges(
-    bufferedFiles: Array<Array<FileChange>>,
-  ): Observable<Array<FileChange>> {
+  _flattenBufferedChanges(bufferedFiles) {
     const filesMap = new Map();
     bufferedFiles.forEach(files => {
       files.forEach(file => {
         const existing = filesMap.get(file.name);
         // If a file gets created and then modified, we have to preserve the 'new' bit.
         if (existing != null && file.exists && existing.new) {
-          filesMap.set(file.name, {...file, new: true});
+          filesMap.set(file.name, Object.assign({}, file, { new: true }));
         } else {
           filesMap.set(file.name, file);
         }
       });
     });
-    return Observable.of(Array.from(filesMap.values()));
+    return _rxjsBundlesRxMinJs.Observable.of(Array.from(filesMap.values()));
   }
 
   // Section: Filtering Ignored Files
@@ -203,56 +208,41 @@ export default class PathSetUpdater {
    * @param changes FileChanges to be filtered
    * @return Filtered FileChanges. Upon error, original changes are returned.
    */
-  _filterIgnoredFiles(
-    directory: string,
-    changes: Array<FileChange>,
-  ): Observable<Array<FileChange>> {
+  _filterIgnoredFiles(directory, changes) {
     // Filter out hg internals because hg status will trigger changes in .hg/,
     // which will result in infinite loop.
 
     // Divide changes into new changes and deleted changes
     const newChanges = [];
     const deletedChanges = [];
-    changes.forEach(
-      change =>
-        change.new ? newChanges.push(change) : deletedChanges.push(change),
-    );
+    changes.forEach(change => change.new ? newChanges.push(change) : deletedChanges.push(change));
 
     // Filter out hg internals because hg status will trigger changes in .hg/,
     // which will result in infinite loop.
-    const realNewChanges = newChanges.filter(
-      change => !nuclideUri.contains('.hg', change.name),
-    );
+    const realNewChanges = newChanges.filter(change => !(_nuclideUri || _load_nuclideUri()).default.contains('.hg', change.name));
 
     // Calling status -i without args takes forever and isn't productive.
     // Also, just give up on calling hg if there are too many files changed.
-    if (
-      realNewChanges.length === 0 ||
-      realNewChanges.length > HG_STATUS_FILE_CAP
-    ) {
-      return new Observable.of(changes);
+    if (realNewChanges.length === 0 || realNewChanges.length > HG_STATUS_FILE_CAP) {
+      return new _rxjsBundlesRxMinJs.Observable.of(changes);
     }
 
     let args = ['status', '-i', '-Tjson'];
     const execOptions = {
-      cwd: directory,
+      cwd: directory
     };
 
     args = args.concat(realNewChanges.map(change => change.name));
-    return hgRunCommand(args, execOptions)
-      .map(stdout => {
-        const ignoredFiles = new Set();
-        const statuses = JSON.parse(stdout);
-        for (const status of statuses) {
-          ignoredFiles.add(status.path);
-        }
+    return (0, (_hgUtils || _load_hgUtils()).hgRunCommand)(args, execOptions).map(stdout => {
+      const ignoredFiles = new Set();
+      const statuses = JSON.parse(stdout);
+      for (const status of statuses) {
+        ignoredFiles.add(status.path);
+      }
 
-        // Return filtered new changes along with all deleted changes.
-        return realNewChanges
-          .filter(change => !ignoredFiles.has(change.name))
-          .concat(deletedChanges);
-      })
-      .timeout(HG_STATUS_TIMEOUT)
-      .catch(() => Observable.of(changes));
+      // Return filtered new changes along with all deleted changes.
+      return realNewChanges.filter(change => !ignoredFiles.has(change.name)).concat(deletedChanges);
+    }).timeout(HG_STATUS_TIMEOUT).catch(() => _rxjsBundlesRxMinJs.Observable.of(changes));
   }
 }
+exports.default = PathSetUpdater;

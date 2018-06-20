@@ -1,29 +1,31 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {observeStream, observeRawStream, writeToStream} from '../stream';
-import fsPromise from '../fsPromise';
-import Stream from 'stream';
-import fs from 'fs';
-import path from 'path';
+var _stream;
+
+function _load_stream() {
+  return _stream = require('../stream');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../fsPromise'));
+}
+
+var _stream2 = _interopRequireDefault(require('stream'));
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _path = _interopRequireDefault(require('path'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('commons-node/stream', () => {
   it('observeStream', async () => {
     await (async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-      const stream = new Stream.PassThrough();
-      const promise = observeStream(stream)
-        .toArray()
-        .toPromise();
+      const stream = new _stream2.default.PassThrough();
+      const promise = (0, (_stream || _load_stream()).observeStream)(stream).toArray().toPromise();
       input.forEach(value => {
         stream.write(value, 'utf8');
       });
@@ -35,15 +37,11 @@ describe('commons-node/stream', () => {
 
   it('observeStream - error', async () => {
     await (async () => {
-      const stream = new Stream.PassThrough();
+      const stream = new _stream2.default.PassThrough();
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
       const output = [];
       const promise = new Promise((resolve, reject) => {
-        observeStream(stream).subscribe(
-          v => output.push(v),
-          e => resolve(e),
-          () => {},
-        );
+        (0, (_stream || _load_stream()).observeStream)(stream).subscribe(v => output.push(v), e => resolve(e), () => {});
       });
       const error = new Error('Had an error');
 
@@ -60,22 +58,27 @@ describe('commons-node/stream', () => {
 
   it('writeToStream', async () => {
     await (async () => {
-      const tempPath = await fsPromise.tempfile();
-      const fixturePath = path.resolve(
-        __dirname,
-        '../__mocks__/fixtures/lyrics',
-      );
-      const stream = fs.createWriteStream(tempPath, {highWaterMark: 10});
+      const tempPath = await (_fsPromise || _load_fsPromise()).default.tempfile();
+      const fixturePath = _path.default.resolve(__dirname, '../__mocks__/fixtures/lyrics');
+      const stream = _fs.default.createWriteStream(tempPath, { highWaterMark: 10 });
       // Read faster than we write to test buffering
-      const observable = observeRawStream(
-        fs.createReadStream(fixturePath, {highWaterMark: 100}),
-      );
+      const observable = (0, (_stream || _load_stream()).observeRawStream)(_fs.default.createReadStream(fixturePath, { highWaterMark: 100 }));
 
-      await writeToStream(observable, stream).toPromise();
+      await (0, (_stream || _load_stream()).writeToStream)(observable, stream).toPromise();
 
-      const writtenFile = await fsPromise.readFile(tempPath);
-      const fixtureFile = await fsPromise.readFile(fixturePath);
+      const writtenFile = await (_fsPromise || _load_fsPromise()).default.readFile(tempPath);
+      const fixtureFile = await (_fsPromise || _load_fsPromise()).default.readFile(fixturePath);
       expect(writtenFile).toEqual(fixtureFile);
     })();
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     *  strict-local
+     * @format
+     */

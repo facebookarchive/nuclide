@@ -1,3 +1,54 @@
+'use strict';
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _PythonService;
+
+function _load_PythonService() {
+  return _PythonService = require('../lib/PythonService');
+}
+
+var _DefinitionHelpers;
+
+function _load_DefinitionHelpers() {
+  return _DefinitionHelpers = require('../lib/DefinitionHelpers');
+}
+
+var _AutocompleteHelpers;
+
+function _load_AutocompleteHelpers() {
+  return _AutocompleteHelpers = require('../lib/AutocompleteHelpers');
+}
+
+var _JediServerManager;
+
+function _load_JediServerManager() {
+  return _JediServerManager = _interopRequireDefault(require('../lib/JediServerManager'));
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = _interopRequireDefault(require('simple-text-buffer'));
+}
+
+var _simpleTextBuffer2;
+
+function _load_simpleTextBuffer2() {
+  return _simpleTextBuffer2 = require('simple-text-buffer');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+jest.setTimeout(20000);
+
+// make sure we don't save absolute paths in snapshots
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,63 +56,49 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {_getReferences} from '../lib/PythonService';
-import {getDefinition} from '../lib/DefinitionHelpers';
-import {getCompletions} from '../lib/AutocompleteHelpers';
-import JediServerManager from '../lib/JediServerManager';
-import TextBuffer from 'simple-text-buffer';
-import {Point} from 'simple-text-buffer';
-
-jest.setTimeout(20000);
-
-// make sure we don't save absolute paths in snapshots
 const replacePath = str => str.replace(/.*__mocks__/, '<REPLACED>/__mocks__');
 
 // Test python file located at fixtures/serverdummy.py
-const TEST_FILE = nuclideUri.join(
-  __dirname,
-  '../__mocks__/fixtures',
-  'serverdummy.py',
-);
-const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
+const TEST_FILE = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', 'serverdummy.py');
+const FILE_CONTENTS = _fs.default.readFileSync(TEST_FILE).toString('utf8');
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
 
-function bufferOfContents(contents: string): simpleTextBuffer$TextBuffer {
-  return new TextBuffer(contents);
+function bufferOfContents(contents) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).default(contents);
 }
 
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
 describe('PythonService', () => {
-  let serverManager: JediServerManager = (null: any);
+  let serverManager = null;
 
-  beforeEach(function() {
-    serverManager = new JediServerManager();
+  beforeEach(function () {
+    serverManager = new (_JediServerManager || _load_JediServerManager()).default();
     // Don't try to retrieve additional paths from Buck/etc.
     jest.spyOn(serverManager, 'getSysPath').mockReturnValue([]);
   });
 
   afterEach(() => {
     serverManager.reset();
-    serverManager = (null: any);
+    serverManager = null;
   });
 
   describe('Completions', () => {
     it('gives a rejected promise when an invalid request is given', async () => {
       // Basically everything is wrong here, but politely reject the promise.
       try {
-        await getCompletions(serverManager, 'potato', 'tomato', 6, 15);
+        await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, 'potato', 'tomato', 6, 15);
         // Fail - this line should not be reachable.
-        invariant(false);
+
+        if (!false) {
+          throw new Error('Invariant violation: "false"');
+        }
       } catch (e) {
         // Python process should respond with a Traceback for what went wrong while
         // processing the request.
@@ -71,14 +108,12 @@ describe('PythonService', () => {
 
     it('can make completion suggestions for imported module member functions', async () => {
       // line 12: def hello = os.path.isab
-      const response = await getCompletions(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        11,
-        20,
-      );
-      invariant(response);
+      const response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, TEST_FILE, FILE_CONTENTS, 11, 20);
+
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       expect(response.length).toBeGreaterThan(0);
 
       const completion = response[0];
@@ -90,14 +125,12 @@ describe('PythonService', () => {
 
     it('can make completion suggestions for locally defined variables', async () => {
       // line 14: potato2 = po
-      const response = await getCompletions(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        13,
-        12,
-      );
-      invariant(response);
+      const response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, TEST_FILE, FILE_CONTENTS, 13, 12);
+
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       expect(response.length).toBeGreaterThan(0);
 
       const completion = response[0];
@@ -107,14 +140,12 @@ describe('PythonService', () => {
 
     it('does not return params for @property methods', async () => {
       // line 18: a.t
-      const response = await getCompletions(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        17,
-        3,
-      );
-      invariant(response);
+      const response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, TEST_FILE, FILE_CONTENTS, 17, 3);
+
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       expect(response.length).toBeGreaterThan(0);
 
       const completion = response[0];
@@ -125,14 +156,12 @@ describe('PythonService', () => {
 
     it('includes parameters for assignment completions', async () => {
       // line 26: a = Tes
-      const response = await getCompletions(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        25,
-        7,
-      );
-      invariant(response);
+      const response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, TEST_FILE, FILE_CONTENTS, 25, 7);
+
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       expect(response.length).toBeGreaterThan(0);
 
       const completion = response[0];
@@ -143,14 +172,12 @@ describe('PythonService', () => {
 
     it('does not include parameters for import statement completions', async () => {
       // line 9: from decorated import Test
-      const response = await getCompletions(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        8,
-        26,
-      );
-      invariant(response);
+      const response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, TEST_FILE, FILE_CONTENTS, 8, 26);
+
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       expect(response.length).toBeGreaterThan(0);
 
       const completion = response[0];
@@ -167,7 +194,10 @@ describe('PythonService', () => {
         const service = await serverManager.getJediService();
         await service.get_definitions('potato', 'tomato', [], 6, 15);
         // Fail - this line should not be reachable.
-        invariant(false);
+
+        if (!false) {
+          throw new Error('Invariant violation: "false"');
+        }
       } catch (e) {
         // Python process should respond with a Traceback for what went wrong while
         // processing the request.
@@ -177,13 +207,12 @@ describe('PythonService', () => {
 
     it('can find definitions for imported modules', async () => {
       // line 9: import os
-      const response = await getDefinition(
-        serverManager,
-        TEST_FILE,
-        bufferOfContents(FILE_CONTENTS),
-        new Point(7, 8),
-      );
-      invariant(response != null);
+      const response = await (0, (_DefinitionHelpers || _load_DefinitionHelpers()).getDefinition)(serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new (_simpleTextBuffer2 || _load_simpleTextBuffer2()).Point(7, 8));
+
+      if (!(response != null)) {
+        throw new Error('Invariant violation: "response != null"');
+      }
+
       expect(response.definitions.length).toBeGreaterThan(0);
 
       const definition = response.definitions[0];
@@ -194,13 +223,12 @@ describe('PythonService', () => {
 
     it('follows imports until a non-import definition when possible', async () => {
       // line 17: a = Test()
-      const response = await getDefinition(
-        serverManager,
-        TEST_FILE,
-        bufferOfContents(FILE_CONTENTS),
-        new Point(16, 7),
-      );
-      invariant(response != null);
+      const response = await (0, (_DefinitionHelpers || _load_DefinitionHelpers()).getDefinition)(serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new (_simpleTextBuffer2 || _load_simpleTextBuffer2()).Point(16, 7));
+
+      if (!(response != null)) {
+        throw new Error('Invariant violation: "response != null"');
+      }
+
       expect(response.definitions.length).toBeGreaterThan(0);
 
       const definition = response.definitions[0];
@@ -213,24 +241,18 @@ describe('PythonService', () => {
 
     it('does not follow unresolvable imports', async () => {
       // line 27: b = Test2()
-      const response = await getDefinition(
-        serverManager,
-        TEST_FILE,
-        bufferOfContents(FILE_CONTENTS),
-        new Point(26, 7),
-      );
+      const response = await (0, (_DefinitionHelpers || _load_DefinitionHelpers()).getDefinition)(serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new (_simpleTextBuffer2 || _load_simpleTextBuffer2()).Point(26, 7));
       expect(response).toBe(null);
     });
 
     it('can find the definitions of locally defined variables', async () => {
       // line 15: potato3 = potato
-      const response = await getDefinition(
-        serverManager,
-        TEST_FILE,
-        bufferOfContents(FILE_CONTENTS),
-        new Point(14, 12),
-      );
-      invariant(response != null);
+      const response = await (0, (_DefinitionHelpers || _load_DefinitionHelpers()).getDefinition)(serverManager, TEST_FILE, bufferOfContents(FILE_CONTENTS), new (_simpleTextBuffer2 || _load_simpleTextBuffer2()).Point(14, 12));
+
+      if (!(response != null)) {
+        throw new Error('Invariant violation: "response != null"');
+      }
+
       expect(response.definitions.length).toBeGreaterThan(0);
 
       const definition = response.definitions[0];
@@ -244,69 +266,53 @@ describe('PythonService', () => {
   describe('References', () => {
     it('can find the references of locally defined variables', async () => {
       // line 13: potato = 5
-      const response = await _getReferences(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        12,
-        2,
-      );
-      invariant(response);
+      const response = await (0, (_PythonService || _load_PythonService())._getReferences)(serverManager, TEST_FILE, FILE_CONTENTS, 12, 2);
 
-      expect(response).toEqual([
-        {
-          type: 'statement',
-          text: 'potato',
-          file: TEST_FILE,
-          line: 12,
-          column: 0,
-        },
-        {
-          type: 'statement',
-          text: 'potato',
-          file: TEST_FILE,
-          line: 14,
-          column: 10,
-        },
-      ]);
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
+      expect(response).toEqual([{
+        type: 'statement',
+        text: 'potato',
+        file: TEST_FILE,
+        line: 12,
+        column: 0
+      }, {
+        type: 'statement',
+        text: 'potato',
+        file: TEST_FILE,
+        line: 14,
+        column: 10
+      }]);
     });
 
     it('can find the references of imported modules', async () => {
       // line 29: import decorated
-      const response = await _getReferences(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        28,
-        8,
-      );
-      invariant(response);
+      const response = await (0, (_PythonService || _load_PythonService())._getReferences)(serverManager, TEST_FILE, FILE_CONTENTS, 28, 8);
 
-      expect(
-        response.map(o => {
-          o.file = replacePath(o.file);
-          return o;
-        }),
-      ).toMatchSnapshot();
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
+      expect(response.map(o => {
+        o.file = replacePath(o.file);
+        return o;
+      })).toMatchSnapshot();
     });
 
     it('displays the caller name for references within functions', async () => {
       // line 13: potato = 5
-      const response = await _getReferences(
-        serverManager,
-        TEST_FILE,
-        FILE_CONTENTS,
-        19,
-        2,
-      );
-      invariant(response);
+      const response = await (0, (_PythonService || _load_PythonService())._getReferences)(serverManager, TEST_FILE, FILE_CONTENTS, 19, 2);
 
-      expect(
-        response.map(o => {
-          o.file = replacePath(o.file);
-          return o;
-        }),
-      ).toMatchSnapshot();
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
+      expect(response.map(o => {
+        o.file = replacePath(o.file);
+        return o;
+      })).toMatchSnapshot();
     });
   });
 
@@ -316,15 +322,11 @@ describe('PythonService', () => {
       return service.get_outline(src, contents);
     }
 
-    async function checkOutlineTree(testName: string) {
-      const dirName = nuclideUri.join(
-        __dirname,
-        '../__mocks__/fixtures',
-        'outline-tests',
-      );
+    async function checkOutlineTree(testName) {
+      const dirName = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', 'outline-tests');
 
-      const srcPath = nuclideUri.join(dirName, testName + '.py');
-      const srcContents = fs.readFileSync(srcPath).toString('utf8');
+      const srcPath = (_nuclideUri || _load_nuclideUri()).default.join(dirName, testName + '.py');
+      const srcContents = _fs.default.readFileSync(srcPath).toString('utf8');
 
       const response = await getOutline(srcPath, srcContents);
       expect(response).toMatchSnapshot();
@@ -353,11 +355,8 @@ describe('PythonService', () => {
 
   describe('Module Resolution', () => {
     it('can resolve imports that are relative to the top-level module', async () => {
-      const projectFile = nuclideUri.join(
-        __dirname,
-        '../__mocks__/fixtures/test-project/testdir/lib/test2.py',
-      );
-      const src = fs.readFileSync(projectFile).toString('utf8');
+      const projectFile = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/test-project/testdir/lib/test2.py');
+      const src = _fs.default.readFileSync(projectFile).toString('utf8');
 
       // Test completion of a module name relative to the tlm.
       let response;
@@ -366,10 +365,13 @@ describe('PythonService', () => {
       while (response == null || response.length === 0) {
         // line 7: from potato import h
         // eslint-disable-next-line no-await-in-loop
-        response = await getCompletions(serverManager, projectFile, src, 6, 28);
+        response = await (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getCompletions)(serverManager, projectFile, src, 6, 28);
       }
 
-      invariant(response);
+      if (!response) {
+        throw new Error('Invariant violation: "response"');
+      }
+
       const completion = response[0];
       expect(completion.text).toEqual('hello_world');
       expect(completion.type).toEqual('function');
@@ -379,15 +381,12 @@ describe('PythonService', () => {
   describe('Hover', () => {
     it('displays the docblock for a definition', async () => {
       const service = await serverManager.getJediService();
-      const response = await service.get_hover(
-        TEST_FILE,
-        FILE_CONTENTS,
-        [],
-        'Test',
-        30,
-        16,
-      );
-      invariant(response != null);
+      const response = await service.get_hover(TEST_FILE, FILE_CONTENTS, [], 'Test', 30, 16);
+
+      if (!(response != null)) {
+        throw new Error('Invariant violation: "response != null"');
+      }
+
       expect(response).toBe('This is a \\*test class.');
     });
   });

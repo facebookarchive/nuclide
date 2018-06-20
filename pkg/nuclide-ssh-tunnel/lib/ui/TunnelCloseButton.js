@@ -1,31 +1,34 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = TunnelCloseButton;
 
-import {Button} from 'nuclide-commons-ui/Button';
-import * as React from 'react';
+var _Button;
 
-type Props = {
-  tunnel: ResolvedTunnel,
-  closeTunnel: (tunnel: ResolvedTunnel) => void,
-};
-
-export default function TunnelCloseButton(props: Props) {
-  return (
-    <Button
-      className="nuclide-ssh-tunnel-close-button"
-      size="SMALL"
-      icon="x"
-      onClick={() => props.closeTunnel(props.tunnel)}
-    />
-  );
+function _load_Button() {
+  return _Button = require('../../../../modules/nuclide-commons-ui/Button');
 }
+
+var _react = _interopRequireWildcard(require('react'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function TunnelCloseButton(props) {
+  return _react.createElement((_Button || _load_Button()).Button, {
+    className: 'nuclide-ssh-tunnel-close-button',
+    size: 'SMALL',
+    icon: 'x',
+    onClick: () => props.closeTunnel(props.tunnel)
+  });
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

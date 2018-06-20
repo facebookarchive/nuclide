@@ -1,3 +1,64 @@
+'use strict';
+
+var _os = _interopRequireDefault(require('os'));
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../../modules/nuclide-commons/process');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../../modules/nuclide-commons/promise');
+}
+
+var _SafeStreamMessageReader;
+
+function _load_SafeStreamMessageReader() {
+  return _SafeStreamMessageReader = _interopRequireDefault(require('../../../../modules/nuclide-commons/SafeStreamMessageReader'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _vscodeJsonrpc;
+
+function _load_vscodeJsonrpc() {
+  return _vscodeJsonrpc = require('vscode-jsonrpc');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../../nuclide-analytics');
+}
+
+var _MessageHandler;
+
+function _load_MessageHandler() {
+  return _MessageHandler = require('./MessageHandler');
+}
+
+var _WindowLogAppender;
+
+function _load_WindowLogAppender() {
+  return _WindowLogAppender = require('./WindowLogAppender');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Percentage of total memory cquery may not exceed.
+const DEFAULT_MEMORY_LIMIT = 30;
+// Time between checking cquery memory usage, in millseconds.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +66,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import os from 'os';
-import child_process from 'child_process';
-import log4js from 'log4js';
-import {memoryUsagePerPid} from 'nuclide-commons/process';
-import {serializeAsyncCall} from 'nuclide-commons/promise';
-import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
-import {Observable} from 'rxjs';
-import {StreamMessageWriter} from 'vscode-jsonrpc';
-import {track} from '../../../nuclide-analytics';
-import {MessageHandler} from './MessageHandler';
-import {setMessageWriter} from './WindowLogAppender';
-
-// Percentage of total memory cquery may not exceed.
-const DEFAULT_MEMORY_LIMIT = 30;
-// Time between checking cquery memory usage, in millseconds.
 const MEMORY_CHECK_INTERVAL = 15000;
 
 // Read and store arguments.
@@ -33,30 +79,27 @@ const libclangLogging = process.argv[4] === 'true';
 
 // Log to stderr to avoid polluting the JsonRpc stdout.
 // Also send errors to the client's log.
-log4js.configure({
-  appenders: [
-    {type: 'stderr'},
-    {type: require.resolve('./WindowLogAppender'), level: 'error'},
-  ],
+(_log4js || _load_log4js()).default.configure({
+  appenders: [{ type: 'stderr' }, { type: require.resolve('./WindowLogAppender'), level: 'error' }]
 });
-const logger = log4js.getLogger('nuclide-cquery-wrapper');
+const logger = (_log4js || _load_log4js()).default.getLogger('nuclide-cquery-wrapper');
 
-function onChildSpawn(childProcess): void {
+function onChildSpawn(childProcess) {
   // client reader/writer reads/writes to Nuclide.
   // server reader/writer reads/writes to cquery.
-  const clientReader = new SafeStreamMessageReader(process.stdin);
-  const serverWriter = new StreamMessageWriter(childProcess.stdin);
-  const clientWriter = new StreamMessageWriter(process.stdout);
-  setMessageWriter(clientWriter);
+  const clientReader = new (_SafeStreamMessageReader || _load_SafeStreamMessageReader()).default(process.stdin);
+  const serverWriter = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).StreamMessageWriter(childProcess.stdin);
+  const clientWriter = new (_vscodeJsonrpc || _load_vscodeJsonrpc()).StreamMessageWriter(process.stdout);
+  (0, (_WindowLogAppender || _load_WindowLogAppender()).setMessageWriter)(clientWriter);
 
   // If child process quits, we also quit.
   childProcess.on('exit', code => process.exit(code));
   childProcess.on('close', code => process.exit(code));
-  const clientMessageHandler = new MessageHandler(serverWriter, clientWriter);
+  const clientMessageHandler = new (_MessageHandler || _load_MessageHandler()).MessageHandler(serverWriter, clientWriter);
 
   clientReader.listen(message => {
     // Message would have a method if it's a request or notification.
-    const method: ?string = ((message: any): {method: ?string}).method;
+    const method = message.method;
     if (method != null && clientMessageHandler.canHandle(message)) {
       try {
         clientMessageHandler.handle(message);
@@ -70,22 +113,18 @@ function onChildSpawn(childProcess): void {
 
   // Every 15 seconds, check the server memory usage.
   // Note: totalmem() reports bytes, ps reports kilobytes.
-  const memoryLimit = ((os.totalmem() / 1024) * DEFAULT_MEMORY_LIMIT) / 100;
-  const serializedMemoryCheck = serializeAsyncCall(async () =>
-    (await memoryUsagePerPid([childProcess.pid])).get(childProcess.pid),
-  );
-  Observable.interval(MEMORY_CHECK_INTERVAL).subscribe(async () => {
+  const memoryLimit = _os.default.totalmem() / 1024 * DEFAULT_MEMORY_LIMIT / 100;
+  const serializedMemoryCheck = (0, (_promise || _load_promise()).serializeAsyncCall)(async () => (await (0, (_process || _load_process()).memoryUsagePerPid)([childProcess.pid])).get(childProcess.pid));
+  _rxjsBundlesRxMinJs.Observable.interval(MEMORY_CHECK_INTERVAL).subscribe(async () => {
     const memoryUsed = await serializedMemoryCheck();
     if (memoryUsed != null) {
-      track('nuclide-cquery-lsp:memory-used', {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-cquery-lsp:memory-used', {
         projects: clientMessageHandler.knownProjects(),
         memoryUsed,
-        memoryLimit,
+        memoryLimit
       });
       if (memoryUsed > memoryLimit) {
-        logger.error(
-          `Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery`,
-        );
+        logger.error(`Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery`);
         childProcess.kill();
       }
     }
@@ -93,19 +132,11 @@ function onChildSpawn(childProcess): void {
 }
 
 function spawnChild() {
-  onChildSpawn(
-    child_process.spawn(
-      'cquery',
-      ['--log-file', loggingFile, '--record', recordingFile],
-      {
-        env: libclangLogging
-          ? {LIBCLANG_LOGGING: 1, ...process.env}
-          : process.env,
-        // only pipe stdin and stdout, and inherit stderr
-        stdio: ['pipe', 'inherit', 'inherit'],
-      },
-    ),
-  );
+  onChildSpawn(_child_process.default.spawn('cquery', ['--log-file', loggingFile, '--record', recordingFile], {
+    env: libclangLogging ? Object.assign({ LIBCLANG_LOGGING: 1 }, process.env) : process.env,
+    // only pipe stdin and stdout, and inherit stderr
+    stdio: ['pipe', 'inherit', 'inherit']
+  }));
 }
 
 spawnChild();

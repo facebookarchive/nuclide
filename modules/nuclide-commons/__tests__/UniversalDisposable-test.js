@@ -1,21 +1,17 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import UniversalDisposable from '../UniversalDisposable';
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('UniversalDisposable', () => {
   it('disposes of the Disposable arguments', () => {
     const dispose = jest.fn();
-    const universal = new UniversalDisposable({dispose});
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default({ dispose });
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     universal.dispose();
@@ -23,7 +19,7 @@ describe('UniversalDisposable', () => {
   });
 
   it('throws if you add after disposing', () => {
-    const universal = new UniversalDisposable();
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     universal.dispose();
     expect(() => {
       universal.add(() => {});
@@ -32,7 +28,7 @@ describe('UniversalDisposable', () => {
 
   it('calls function arguments', () => {
     const foo = jest.fn();
-    const universal = new UniversalDisposable(foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(foo);
 
     expect(foo.mock.calls.length > 0).toBe(false);
     universal.dispose();
@@ -41,7 +37,7 @@ describe('UniversalDisposable', () => {
 
   it('calls unsubscribe arguments', () => {
     const unsubscribe = jest.fn();
-    const universal = new UniversalDisposable(unsubscribe);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(unsubscribe);
 
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
     universal.dispose();
@@ -52,7 +48,7 @@ describe('UniversalDisposable', () => {
     const dispose = jest.fn();
     const unsubscribe = jest.fn();
     const foo = jest.fn();
-    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default({ dispose }, { unsubscribe }, foo);
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
@@ -67,10 +63,10 @@ describe('UniversalDisposable', () => {
     const dispose = jest.fn();
     const unsubscribe = jest.fn();
     const destroy = jest.fn();
-    const destroyable = {destroy, onDidDestroy: jest.fn()};
+    const destroyable = { destroy, onDidDestroy: jest.fn() };
     const foo = jest.fn();
-    const universal = new UniversalDisposable();
-    universal.add({dispose}, {unsubscribe}, destroyable, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    universal.add({ dispose }, { unsubscribe }, destroyable, foo);
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
@@ -87,7 +83,7 @@ describe('UniversalDisposable', () => {
     const dispose = jest.fn();
     const unsubscribe = jest.fn();
     const foo = jest.fn();
-    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default({ dispose }, { unsubscribe }, foo);
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
@@ -102,7 +98,7 @@ describe('UniversalDisposable', () => {
     const dispose = jest.fn();
     const unsubscribe = jest.fn();
     const foo = jest.fn();
-    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default({ dispose }, { unsubscribe }, foo);
 
     expect(dispose.mock.calls.length > 0).toBe(false);
     expect(unsubscribe.mock.calls.length > 0).toBe(false);
@@ -117,10 +113,10 @@ describe('UniversalDisposable', () => {
   });
 
   it('supports removal of the teardowns', () => {
-    const dispose = {dispose: jest.fn()};
-    const unsubscribe = {unsubscribe: jest.fn()};
+    const dispose = { dispose: jest.fn() };
+    const unsubscribe = { unsubscribe: jest.fn() };
     const foo = jest.fn();
-    const universal = new UniversalDisposable(dispose, unsubscribe, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(dispose, unsubscribe, foo);
 
     universal.remove(unsubscribe);
     universal.remove(dispose);
@@ -134,10 +130,10 @@ describe('UniversalDisposable', () => {
   });
 
   it('can clear all of the teardowns', () => {
-    const dispose = {dispose: jest.fn()};
-    const unsubscribe = {unsubscribe: jest.fn()};
+    const dispose = { dispose: jest.fn() };
+    const unsubscribe = { unsubscribe: jest.fn() };
     const foo = jest.fn();
-    const universal = new UniversalDisposable(dispose, unsubscribe, foo);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(dispose, unsubscribe, foo);
 
     universal.clear();
 
@@ -156,7 +152,7 @@ describe('UniversalDisposable', () => {
     const foo3 = () => ids.push(3);
     const foo4 = () => ids.push(4);
 
-    const universal = new UniversalDisposable(foo1, foo3);
+    const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(foo1, foo3);
     universal.add(foo4, foo2);
 
     universal.dispose();
@@ -166,11 +162,11 @@ describe('UniversalDisposable', () => {
 
   describe('teardown priority', () => {
     it('calls dispose()', () => {
-      const foo: Function = jest.fn();
+      const foo = jest.fn();
       foo.dispose = jest.fn();
       foo.unsubscribe = jest.fn();
 
-      const universal = new UniversalDisposable(foo);
+      const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(foo);
       universal.dispose();
 
       expect(foo.dispose.mock.calls.length > 0).toBe(true);
@@ -179,11 +175,11 @@ describe('UniversalDisposable', () => {
     });
 
     it('calls unsubscribe()', () => {
-      const foo: Function = jest.fn();
+      const foo = jest.fn();
       foo.dispose = null;
       foo.unsubscribe = jest.fn();
 
-      const universal = new UniversalDisposable(foo);
+      const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(foo);
       universal.dispose();
 
       expect(foo.unsubscribe.mock.calls.length > 0).toBe(true);
@@ -191,11 +187,11 @@ describe('UniversalDisposable', () => {
     });
 
     it('calls the function', () => {
-      const foo: Function = jest.fn();
+      const foo = jest.fn();
       foo.dispose = null;
       foo.unsubscribe = null;
 
-      const universal = new UniversalDisposable(foo);
+      const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default(foo);
       universal.dispose();
 
       expect(foo.mock.calls.length > 0).toBe(true);
@@ -204,23 +200,26 @@ describe('UniversalDisposable', () => {
 
   describe('addUntilDestroyed', () => {
     class MockDestructible {
-      destroyCallbacks = new Set();
+      constructor() {
+        this.destroyCallbacks = new Set();
+      }
+
       destroy() {
         this.destroyCallbacks.forEach(x => x());
       }
       onDidDestroy(callback) {
         this.destroyCallbacks.add(callback);
-        return new UniversalDisposable(() => {
+        return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
           this.destroyCallbacks.delete(callback);
         });
       }
     }
 
     it('cleans everything up on destroy', () => {
-      const universal = new UniversalDisposable();
+      const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default();
       const mockDestructible = new MockDestructible();
-      const disposable1 = new UniversalDisposable();
-      const disposable2 = new UniversalDisposable();
+      const disposable1 = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+      const disposable2 = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
       universal.addUntilDestroyed(mockDestructible, disposable1, disposable2);
       expect(universal.teardowns.size).toBe(1);
@@ -232,9 +231,9 @@ describe('UniversalDisposable', () => {
     });
 
     it('cleans up destroy handlers on dispose', () => {
-      const universal = new UniversalDisposable();
+      const universal = new (_UniversalDisposable || _load_UniversalDisposable()).default();
       const mockDestructible = new MockDestructible();
-      const disposable1 = new UniversalDisposable();
+      const disposable1 = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
       universal.addUntilDestroyed(mockDestructible, disposable1);
       expect(universal.teardowns.size).toBe(1);
@@ -244,4 +243,14 @@ describe('UniversalDisposable', () => {
       expect(mockDestructible.destroyCallbacks.size).toBe(0);
     });
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     * 
+     * @format
+     */

@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TunnelsPanelContents = undefined;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _ManualTunnelSection;
+
+function _load_ManualTunnelSection() {
+  return _ManualTunnelSection = _interopRequireDefault(require('./ManualTunnelSection'));
+}
+
+var _TunnelsPanelTable;
+
+function _load_TunnelsPanelTable() {
+  return _TunnelsPanelTable = require('./TunnelsPanelTable');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = require('immutable');
+}
+
+var _runtimeInfo;
+
+function _load_runtimeInfo() {
+  return _runtimeInfo = require('../../../commons-node/runtime-info');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,53 +42,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ResolvedTunnel, Tunnel} from 'nuclide-adb/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ActiveTunnel} from '../types';
+class TunnelsPanelContents extends _react.Component {
 
-import * as React from 'react';
-import ManualTunnelSection from './ManualTunnelSection';
-import {TunnelsPanelTable} from './TunnelsPanelTable';
-import {List} from 'immutable';
-import {__DEV__} from '../../../commons-node/runtime-info';
-
-export type Props = {
-  tunnels: List<ActiveTunnel>,
-  closeTunnel: ResolvedTunnel => void,
-  workingDirectoryHost: 'localhost' | ?NuclideUri,
-  openTunnel(tunnel: Tunnel): void,
-};
-
-export class TunnelsPanelContents extends React.Component<Props> {
-  props: Props;
-
-  render(): React.Element<any> {
-    if (__DEV__) {
-      return (
-        <div className="nuclide-ssh-tunnels-panel-contents">
-          <TunnelsPanelTable
-            tunnels={this.props.tunnels}
-            closeTunnel={this.props.closeTunnel}
-          />
-          <ManualTunnelSection
-            workingDirectoryHost={this.props.workingDirectoryHost}
-            openTunnel={this.props.openTunnel}
-          />
-        </div>
+  render() {
+    if ((_runtimeInfo || _load_runtimeInfo()).__DEV__) {
+      return _react.createElement(
+        'div',
+        { className: 'nuclide-ssh-tunnels-panel-contents' },
+        _react.createElement((_TunnelsPanelTable || _load_TunnelsPanelTable()).TunnelsPanelTable, {
+          tunnels: this.props.tunnels,
+          closeTunnel: this.props.closeTunnel
+        }),
+        _react.createElement((_ManualTunnelSection || _load_ManualTunnelSection()).default, {
+          workingDirectoryHost: this.props.workingDirectoryHost,
+          openTunnel: this.props.openTunnel
+        })
       );
     } else {
-      return (
-        <div className="nuclide-ssh-tunnels-panel-contents">
-          <TunnelsPanelTable
-            tunnels={this.props.tunnels}
-            closeTunnel={this.props.closeTunnel}
-          />
-        </div>
+      return _react.createElement(
+        'div',
+        { className: 'nuclide-ssh-tunnels-panel-contents' },
+        _react.createElement((_TunnelsPanelTable || _load_TunnelsPanelTable()).TunnelsPanelTable, {
+          tunnels: this.props.tunnels,
+          closeTunnel: this.props.closeTunnel
+        })
       );
     }
   }
 }
+exports.TunnelsPanelContents = TunnelsPanelContents;

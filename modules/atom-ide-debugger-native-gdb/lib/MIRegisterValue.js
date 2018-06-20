@@ -1,14 +1,45 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class MIRegisterValue {
+  toString() {
+    return '';
+  }
+
+  isContainer() {
+    return false;
+  }
+
+  containedValues() {
+    return [];
+  }
+
+  get containerKeyIsString() {
+    return false;
+  }
+
+  get length() {
+    return 0;
+  }
+
+  valueAt(index) {
+    return null;
+  }
+}
+
+exports.MIRegisterValue = MIRegisterValue; /**
+                                            * Copyright (c) 2017-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the BSD-style license found in the
+                                            * LICENSE file in the root directory of this source tree. An additional grant
+                                            * of patent rights can be found in the PATENTS file in the same directory.
+                                            *
+                                            * 
+                                            * @format
+                                            */
 
 // The MI documentation doesn't cover this, but gdb will return structured values
 // for registers which contain packed arrays of simple types (MMX et al.)
@@ -22,153 +53,117 @@
 // indexed_list => '{' value ( ',' value ) *  '}'
 //
 
-import invariant from 'assert';
+class MIRegisterSimpleValue extends MIRegisterValue {
 
-export type MINamedRegisterValue = {
-  name: string,
-  expressionSuffix: string,
-  value: MIRegisterValue,
-};
-
-export class MIRegisterValue {
-  toString(): string {
-    return '';
-  }
-
-  isContainer(): boolean {
-    return false;
-  }
-
-  containedValues(): Array<MINamedRegisterValue> {
-    return [];
-  }
-
-  get containerKeyIsString(): boolean {
-    return false;
-  }
-
-  get length(): number {
-    return 0;
-  }
-
-  valueAt(index: string): ?MIRegisterValue {
-    return null;
-  }
-}
-
-export class MIRegisterSimpleValue extends MIRegisterValue {
-  _value: string;
-
-  constructor(value: string) {
+  constructor(value) {
     super();
     this._value = value;
   }
 
-  get value(): string {
+  get value() {
     return this._value;
   }
 
-  toString(): string {
+  toString() {
     return this._value;
   }
 }
 
-export class MIRegisterNamedValues extends MIRegisterValue {
-  _values: Map<string, MIRegisterValue>;
+exports.MIRegisterSimpleValue = MIRegisterSimpleValue;
+class MIRegisterNamedValues extends MIRegisterValue {
 
-  constructor(values: Map<string, MIRegisterValue>) {
+  constructor(values) {
     super();
     this._values = values;
   }
 
-  isContainer(): boolean {
+  isContainer() {
     return true;
   }
 
-  get names(): Array<string> {
+  get names() {
     return [...this._values.keys()];
   }
 
-  get containerKeyIsString(): boolean {
+  get containerKeyIsString() {
     return true;
   }
 
-  get length(): number {
+  get length() {
     return this._values.size;
   }
 
-  valueAt(index: string): ?MIRegisterValue {
+  valueAt(index) {
     return this._values.get(index);
   }
 
-  containedValues(): Array<MINamedRegisterValue> {
+  containedValues() {
     return [...this._values].map(entry => {
       return {
         name: entry[0],
         expressionSuffix: `.${entry[0]}`,
-        value: entry[1],
+        value: entry[1]
       };
     });
   }
 
-  toString(): string {
-    return `{${[...this._values]
-      .map(([k, v]) => `${k}:${v.toString()}`)
-      .join(',')}}`;
+  toString() {
+    return `{${[...this._values].map(([k, v]) => `${k}:${v.toString()}`).join(',')}}`;
   }
 }
 
-export class MIRegisterIndexedValues extends MIRegisterValue {
-  _values: Array<MIRegisterValue>;
+exports.MIRegisterNamedValues = MIRegisterNamedValues;
+class MIRegisterIndexedValues extends MIRegisterValue {
 
-  constructor(values: Array<MIRegisterValue>) {
+  constructor(values) {
     super();
     this._values = values;
   }
 
-  isContainer(): boolean {
+  isContainer() {
     return true;
   }
 
-  get length(): number {
+  get length() {
     return this._values.length;
   }
 
-  valueAt(index: string): ?MIRegisterValue {
+  valueAt(index) {
     return this._values[parseInt(index, 10)];
   }
 
-  get values(): Array<MIRegisterValue> {
+  get values() {
     return this._values;
   }
 
-  containedValues(): Array<MINamedRegisterValue> {
+  containedValues() {
     return this._values.map((entry, index) => {
       return {
         name: `${index}`,
         expressionSuffix: `[${index}]`,
-        value: entry,
+        value: entry
       };
     });
   }
 
-  toString(): string {
+  toString() {
     return `[${this._values.map(_ => _.toString()).join(',')}]`;
   }
 }
 
-export class MIRegisterValueParser {
-  _originalExpression: string;
-  _expression: string;
+exports.MIRegisterIndexedValues = MIRegisterIndexedValues;
+class MIRegisterValueParser {
 
-  // matches name = something
-  _namePattern: RegExp = /^\s*([a-zA-Z_][a-zA-Z_0-9]*)\s*=(.*)/;
+  constructor(expression) {
+    this._namePattern = /^\s*([a-zA-Z_][a-zA-Z_0-9]*)\s*=(.*)/;
 
-  constructor(expression: string) {
     this._originalExpression = expression;
   }
 
-  parse(): MIRegisterValue {
+  // matches name = something
+
+
+  parse() {
     this._expression = this._originalExpression;
 
     const value = this._parse();
@@ -178,7 +173,7 @@ export class MIRegisterValueParser {
     return value;
   }
 
-  _parse(): MIRegisterValue {
+  _parse() {
     this._expression = this._expression.trim();
 
     if (this._expression === '') {
@@ -188,7 +183,10 @@ export class MIRegisterValueParser {
     if (this._expression[0] !== '{') {
       // expression value goes until the next ',', '}', or end of string.
       const match = this._expression.match(/^([^,}]*)(.*)$/);
-      invariant(match != null);
+
+      if (!(match != null)) {
+        throw new Error('Invariant violation: "match != null"');
+      }
 
       const [, value, rest] = match;
 
@@ -207,8 +205,8 @@ export class MIRegisterValueParser {
     return this._parseIndexedList();
   }
 
-  _parseIndexedList(): MIRegisterValue {
-    const values: Array<MIRegisterValue> = [];
+  _parseIndexedList() {
+    const values = [];
 
     while (true) {
       const value = this._parse();
@@ -227,10 +225,7 @@ export class MIRegisterValueParser {
   // gdb/MI will sometimes reformat an array if it contains multiple repeated
   // values. This is great for saving space in displayable output, but we want
   // the expansion to be available to be expanded in tree display.
-  _expandArrayInto(
-    value: MIRegisterValue,
-    values: Array<MIRegisterValue>,
-  ): boolean {
+  _expandArrayInto(value, values) {
     if (value instanceof MIRegisterSimpleValue) {
       const repeatedValuePattern = /^(.*) <repeats (\d+) times>$/;
       const match = value.value.match(repeatedValuePattern);
@@ -247,8 +242,8 @@ export class MIRegisterValueParser {
     return false;
   }
 
-  _parseNamedList(): MIRegisterValue {
-    const values: Map<string, MIRegisterValue> = new Map();
+  _parseNamedList() {
+    const values = new Map();
 
     while (true) {
       const match = this._expression.match(this._namePattern);
@@ -269,7 +264,7 @@ export class MIRegisterValueParser {
     return new MIRegisterNamedValues(values);
   }
 
-  _checkEndOfList(): boolean {
+  _checkEndOfList() {
     this._expression = this._expression.trim();
     if (this._expression !== '') {
       const sepChar = this._expression[0];
@@ -284,3 +279,4 @@ export class MIRegisterValueParser {
     throw new Error('Improperly formatted list in register value');
   }
 }
+exports.MIRegisterValueParser = MIRegisterValueParser;

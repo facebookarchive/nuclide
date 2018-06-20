@@ -1,31 +1,19 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DispatcherInterface} from './DispatcherInterface';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class HelpCommand {
 
-export default class HelpCommand implements Command {
-  name = 'help';
-  helpText = 'Give help about the debugger command set.';
-  _console: ConsoleIO;
-  _dispatcher: DispatcherInterface;
+  constructor(con, dispatcher) {
+    this.name = 'help';
+    this.helpText = 'Give help about the debugger command set.';
 
-  constructor(con: ConsoleIO, dispatcher: DispatcherInterface) {
     this._console = con;
     this._dispatcher = dispatcher;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     const [command] = args;
 
     if (command != null) {
@@ -36,10 +24,10 @@ export default class HelpCommand implements Command {
     this._displayHelp();
   }
 
-  _displayHelp(): void {
+  _displayHelp() {
     const commands = this._dispatcher.getCommands();
     const commandDict = {};
-    commands.forEach(x => (commandDict[x.name] = x));
+    commands.forEach(x => commandDict[x.name] = x);
 
     const commandNames = commands.map(x => x.name).sort();
 
@@ -48,7 +36,7 @@ export default class HelpCommand implements Command {
     });
   }
 
-  _displayDetailedHelp(cmd: string): void {
+  _displayDetailedHelp(cmd) {
     const commands = this._dispatcher.getCommandsMatching(cmd);
     if (commands.length === 0) {
       throw new Error(`There is no command "${cmd}"`);
@@ -69,3 +57,14 @@ export default class HelpCommand implements Command {
     this._console.outputLine(command.helpText);
   }
 }
+exports.default = HelpCommand; /**
+                                * Copyright (c) 2017-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the BSD-style license found in the
+                                * LICENSE file in the root directory of this source tree. An additional grant
+                                * of patent rights can be found in the PATENTS file in the same directory.
+                                *
+                                *  strict
+                                * @format
+                                */

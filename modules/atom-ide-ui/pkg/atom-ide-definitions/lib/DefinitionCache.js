@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../../../nuclide-commons-atom/range');
+}
+
+var _range2;
+
+function _load_range2() {
+  return _range2 = require('../../../../nuclide-commons/range');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// An atom$Range-aware, single-item cache for the common case of requerying
+// a definition (such as previewing hyperclick and then jumping to the
+// destination). It invalidates whenever the originating editor changes.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,46 +35,26 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DefinitionQueryResult} from './types';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {isPositionInRange} from 'nuclide-commons/range';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-// An atom$Range-aware, single-item cache for the common case of requerying
-// a definition (such as previewing hyperclick and then jumping to the
-// destination). It invalidates whenever the originating editor changes.
 class DefinitionCache {
-  _cachedResultEditor: ?atom$TextEditor;
-  _cachedResultPromise: ?Promise<?DefinitionQueryResult>;
-  _cachedResultRange: ?atom$Range;
-  _disposables: UniversalDisposable = new UniversalDisposable();
+  constructor() {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  getCached(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): ?Promise<?DefinitionQueryResult> {
-    if (
-      this._cachedResultRange != null &&
-      this._cachedResultEditor === editor &&
-      isPositionInRange(position, this._cachedResultRange)
-    ) {
+  getCached(editor, position) {
+    if (this._cachedResultRange != null && this._cachedResultEditor === editor && (0, (_range2 || _load_range2()).isPositionInRange)(position, this._cachedResultRange)) {
       return this._cachedResultPromise;
     }
   }
 
-  async get(
-    editor: atom$TextEditor,
-    position: atom$Point,
-    getImpl: () => Promise<?DefinitionQueryResult>,
-  ): Promise<?DefinitionQueryResult> {
+  async get(editor, position, getImpl) {
     const cached = this.getCached(editor, position);
     if (cached != null) {
       return cached;
@@ -62,13 +71,10 @@ class DefinitionCache {
       this._disposables.remove(editorDisposables);
       editorDisposables.dispose();
     };
-    const editorDisposables = new UniversalDisposable(
-      editor.getBuffer().onDidChangeText(invalidateAndStopListening),
-      editor.onDidDestroy(invalidateAndStopListening),
-    );
+    const editorDisposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(editor.getBuffer().onDidChangeText(invalidateAndStopListening), editor.onDidDestroy(invalidateAndStopListening));
     this._disposables.add(editorDisposables);
 
-    const wordGuess = wordAtPosition(editor, position);
+    const wordGuess = (0, (_range || _load_range()).wordAtPosition)(editor, position);
     this._cachedResultRange = wordGuess && wordGuess.range;
     this._cachedResultEditor = editor;
     const promise = getImpl().then(result => {
@@ -85,4 +91,4 @@ class DefinitionCache {
   }
 }
 
-export default DefinitionCache;
+exports.default = DefinitionCache;

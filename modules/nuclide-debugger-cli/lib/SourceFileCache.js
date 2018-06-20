@@ -1,30 +1,26 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import LineByLineReader from 'line-by-line';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class SourceFileCache {
-  _files: Map<string, string[]> = new Map();
-  _getSourceByReference: (sourceReference: number) => Promise<string>;
+var _lineByLine;
 
-  constructor(
-    getSourceByReference: (sourceReference: number) => Promise<string>,
-  ) {
+function _load_lineByLine() {
+  return _lineByLine = _interopRequireDefault(require('line-by-line'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class SourceFileCache {
+
+  constructor(getSourceByReference) {
+    this._files = new Map();
+
     this._getSourceByReference = getSourceByReference;
   }
 
-  async getFileDataBySourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
+  async getFileDataBySourceReference(sourceReference) {
     const path = `sourceref://${sourceReference}`;
     let data = this._files.get(path);
 
@@ -36,7 +32,7 @@ export default class SourceFileCache {
     return data;
   }
 
-  async getFileDataByPath(path: string): Promise<string[]> {
+  async getFileDataByPath(path) {
     let data = this._files.get(path);
 
     if (data == null) {
@@ -47,27 +43,33 @@ export default class SourceFileCache {
     return data;
   }
 
-  flush(): void {
+  flush() {
     this._files = new Map();
   }
 
-  async _fillCacheFromLocalFileSystem(path: string): Promise<string[]> {
+  async _fillCacheFromLocalFileSystem(path) {
     return new Promise((resolve, reject) => {
-      const lines: string[] = [];
+      const lines = [];
 
       // LineByLineReader splits the file on the fly so we don't
       // have to read into memory first
-      new LineByLineReader(path)
-        .on('line', line => lines.push(line))
-        .on('end', () => resolve(lines))
-        .on('error', e => reject(e));
+      new (_lineByLine || _load_lineByLine()).default(path).on('line', line => lines.push(line)).on('end', () => resolve(lines)).on('error', e => reject(e));
     });
   }
 
-  async _fillCacheWithSourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
+  async _fillCacheWithSourceReference(sourceReference) {
     const data = await this._getSourceByReference(sourceReference);
     return data.split(/\n|\r\n|\r/);
   }
 }
+exports.default = SourceFileCache; /**
+                                    * Copyright (c) 2017-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the BSD-style license found in the
+                                    * LICENSE file in the root directory of this source tree. An additional grant
+                                    * of patent rights can be found in the PATENTS file in the same directory.
+                                    *
+                                    * 
+                                    * @format
+                                    */
