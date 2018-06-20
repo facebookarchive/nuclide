@@ -23,19 +23,19 @@ describe('repositoryContainsPath', () => {
   let tempFolder: string = (null: any);
   let repoRoot: string = (null: any);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Create a temporary Hg repository.
-    waitsForPromise(async () => {
+    await (async () => {
       tempFolder = await generateFixture(
         'hg-git-bridge',
         new Map([['repoRoot/file.txt', 'hello world']]),
       );
       repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
-    });
+    })();
   });
 
-  it('is accurate for GitRepository.', () => {
-    waitsForPromise(async () => {
+  it('is accurate for GitRepository.', async () => {
+    await (async () => {
       // Create a temporary Git repository.
       await runCommand('git', ['init'], {cwd: repoRoot}).toPromise();
 
@@ -45,7 +45,7 @@ describe('repositoryContainsPath', () => {
       // which makes the Directory::contains method inaccurate in
       // `repositoryContainsPath`. We mock out the method here to get the
       // expected behavior.
-      spyOn(gitRepository, 'getWorkingDirectory').andCallFake(() => {
+      jest.spyOn(gitRepository, 'getWorkingDirectory').mockImplementation(() => {
         return repoRoot;
       });
 
@@ -54,11 +54,11 @@ describe('repositoryContainsPath', () => {
       expect(repositoryContainsPath(gitRepository, subdir)).toBe(true);
       const parentDir = nuclideUri.resolve(tempFolder, '..');
       expect(repositoryContainsPath(gitRepository, parentDir)).toBe(false);
-    });
+    })();
   });
 
-  it('is accurate for HgRepositoryClient.', () => {
-    waitsForPromise(async () => {
+  it('is accurate for HgRepositoryClient.', async () => {
+    await (async () => {
       // Create temporary Hg repository.
       await runCommand('hg', ['init'], {cwd: repoRoot}).toPromise();
 
@@ -84,6 +84,6 @@ describe('repositoryContainsPath', () => {
       expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
       const parentDir = nuclideUri.resolve(tempFolder, '..');
       expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
-    });
+    })();
   });
 });

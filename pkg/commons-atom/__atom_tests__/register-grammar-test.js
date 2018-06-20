@@ -14,17 +14,15 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import registerGrammar from '../register-grammar';
 
 describe('registerGrammar', () => {
-  it('works', () => {
-    waitsForPromise(async () => {
-      atom.grammars.loadGrammarSync(
-        nuclideUri.join(__dirname, 'grammars/javascript.cson'),
-      );
-      registerGrammar('source.js', ['cats']);
-      const textEditor = await atom.workspace.open(
-        `${await fsPromise.tempfile()}.cats`,
-      );
-      expect(textEditor.getGrammar().scopeName).toBe('source.js');
-      textEditor.destroy();
-    });
+  it('works', async () => {
+    atom.grammars.loadGrammarSync(
+      nuclideUri.join(__dirname, '../__mocks__/grammars/javascript.cson'),
+    );
+    registerGrammar('source.js', ['cats']);
+    const textEditor = await atom.workspace.open(
+      `${await fsPromise.tempfile()}.cats`,
+    );
+    expect(textEditor.getGrammar().scopeName).toBe('source.js');
+    textEditor.destroy();
   });
 });

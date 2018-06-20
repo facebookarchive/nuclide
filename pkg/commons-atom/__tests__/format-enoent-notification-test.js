@@ -17,13 +17,13 @@ describe('formatEnoentNotification', () => {
   let formatted;
 
   beforeEach(() => {
-    spyOn(featureConfig, 'getSchema').andReturn({
+    jest.spyOn(featureConfig, 'getSchema').mockReturnValue({
       title: 'Path to Node Executable',
       type: 'string',
       default: 'node',
       description: 'Absolute path to the node executable on your system.',
     });
-    spyOn(featureConfig, 'get').andReturn('/path/to/node');
+    jest.spyOn(featureConfig, 'get').mockReturnValue('/path/to/node');
     formatted = formatEnoentNotification({
       feature: 'awesome stuff creation',
       toolName: 'node',

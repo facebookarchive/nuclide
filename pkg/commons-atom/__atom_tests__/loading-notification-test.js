@@ -12,17 +12,22 @@
 import invariant from 'assert';
 import loadingNotification from '../loading-notification';
 
+const sleep = n => new Promise(r => setTimeout(r, n));
+
+beforeEach(() => {
+  jest.restoreAllMocks();
+});
 describe('loadingNotification', () => {
   let mockNotif;
   beforeEach(() => {
     mockNotif = {
-      dismiss: jasmine.createSpy('dismiss'),
+      dismiss: jest.fn(),
     };
-    spyOn(atom.notifications, 'addInfo').andReturn(mockNotif);
+    jest.spyOn(atom.notifications, 'addInfo').mockReturnValue(mockNotif);
   });
 
-  it('displays and closes a loading notification', () => {
-    waitsForPromise(async () => {
+  it('displays and closes a loading notification', async () => {
+    await (async () => {
       const testValue = 1;
       const promise = new Promise((resolve, reject) => {
         setTimeout(() => resolve(testValue), 10);
@@ -32,16 +37,16 @@ describe('loadingNotification', () => {
         'test message',
         /* delayMs */ 0,
       );
-      advanceClock(10);
+      await sleep(10);
       expect(await resultPromise).toEqual(testValue);
       expect(atom.notifications.addInfo).toHaveBeenCalled();
       invariant(mockNotif);
       expect(mockNotif.dismiss).toHaveBeenCalled();
-    });
+    })();
   });
 
-  it('displays and closes a loading notification for errors', () => {
-    waitsForPromise(async () => {
+  it('displays and closes a loading notification for errors', async () => {
+    await (async () => {
       const promise = new Promise((resolve, reject) => {
         setTimeout(() => reject(new Error()), 10);
       });
@@ -51,17 +56,17 @@ describe('loadingNotification', () => {
           'test message',
           /* delayMs */ 0,
         );
-        advanceClock(10);
+        await sleep(10);
         await resultPromise;
       } catch (e) {}
       expect(atom.notifications.addInfo).toHaveBeenCalled();
       invariant(mockNotif);
       expect(mockNotif.dismiss).toHaveBeenCalled();
-    });
+    })();
   });
 
-  it('does nothing for fast promises', () => {
-    waitsForPromise(async () => {
+  it('does nothing for fast promises', async () => {
+    await (async () => {
       const testValue = 1;
       const promise = new Promise((resolve, reject) => {
         setTimeout(() => resolve(testValue), 1);
@@ -71,11 +76,11 @@ describe('loadingNotification', () => {
         'test message',
         /* delayMs */ 10,
       );
-      advanceClock(1);
+      await sleep(1);
       expect(await resultPromise).toEqual(testValue);
-      expect(atom.notifications.addInfo.calls.length).toEqual(0);
+      expect(atom.notifications.addInfo.mock.calls.length).toEqual(0);
       invariant(mockNotif);
-      expect(mockNotif.dismiss.calls.length).toEqual(0);
-    });
+      expect(mockNotif.dismiss.mock.calls.length).toEqual(0);
+    })();
   });
 });
