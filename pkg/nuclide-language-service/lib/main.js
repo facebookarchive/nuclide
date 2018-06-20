@@ -9,8 +9,12 @@
  * @format
  */
 
-export {AtomLanguageService} from './AtomLanguageService';
+export {
+  AtomLanguageService,
+  AtomLanguageServiceConfig,
+} from './AtomLanguageService';
 export {getHostServices} from './HostServices';
+export {LanguageService} from './LanguageService';
 export {
   updateAutocompleteResults,
   updateAutocompleteFirstResults,
