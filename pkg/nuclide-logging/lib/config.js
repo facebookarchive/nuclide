@@ -24,6 +24,10 @@ export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 const MAX_LOG_SIZE = 1024 * 1024;
 const MAX_LOG_BACKUPS = 10;
 
+export function getPathToLogDir(): string {
+  return LOG_DIRECTORY;
+}
+
 export function getPathToLogFile(): string {
   return LOG_FILE_PATH;
 }

@@ -27,6 +27,7 @@ import {observeRawStream} from 'nuclide-commons/stream';
 import {Observable} from 'rxjs';
 import {getNuclideRealDir} from '../../../commons-node/system-info';
 import {ROOT_FS} from '../../../nuclide-fs';
+import {getPathToLogDir} from '../../../nuclide-logging';
 
 //------------------------------------------------------------------------------
 // Services
@@ -383,4 +384,8 @@ export async function tempdir(prefix: string = ''): Promise<string> {
 
 export async function getNuclideDir(): Promise<NuclideUri> {
   return getNuclideRealDir();
+}
+
+export async function getNuclideLogDir(): Promise<NuclideUri> {
+  return getPathToLogDir();
 }

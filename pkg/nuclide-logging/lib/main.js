@@ -23,9 +23,9 @@ import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import * as rawAnalyticsService from '../../nuclide-analytics/lib/track';
 
 import once from '../../commons-node/once';
-import {getDefaultConfig, getPathToLogFile} from './config';
+import {getDefaultConfig, getPathToLogDir, getPathToLogFile} from './config';
 
-export {getDefaultConfig, getPathToLogFile};
+export {getDefaultConfig, getPathToLogDir, getPathToLogFile};
 
 export function flushLogsAndExit(exitCode: number): void {
   log4js.shutdown(() => process.exit(exitCode));
