@@ -108,6 +108,7 @@ export function provideDefinitions(): DefinitionProvider {
     name: PACKAGE_NAME,
     priority: 20,
     grammarScopes: GRAMMARS,
+    wordRegExp: null,
     getDefinition(
       editor: TextEditor,
       position: atom$Point,

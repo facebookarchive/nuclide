@@ -62,6 +62,7 @@ describe('ContextViewManager', () => {
     defProvider = {
       priority: 1,
       grammarScopes: ['text.plain.null-grammar'],
+      wordRegExp: null,
       getDefinition: (editor: TextEditor, position: atom$Point) => {
         return Promise.resolve(null);
       },

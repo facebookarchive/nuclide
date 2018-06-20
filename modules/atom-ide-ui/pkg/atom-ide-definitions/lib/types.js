@@ -45,6 +45,7 @@ export type DefinitionProvider = {
   // the one with the highest priority will be used.
   priority: number,
   grammarScopes: Array<string>,
+  wordRegExp: ?RegExp,
   // Obtains the definition in an editor at the given point.
   // This should return null if no definition is available.
   getDefinition: (

@@ -26,6 +26,7 @@ describe('DefinitionHyperclick', () => {
     priority: 20,
     name: '',
     grammarScopes: ['text.plain.null-grammar'],
+    wordRegExp: null,
     getDefinition: () => Promise.resolve(null),
   };
   let editor: TextEditor;
