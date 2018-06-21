@@ -17,6 +17,8 @@ export type Projection = {
   alternate?: string | Array<string>,
   console?: string,
   dispatch?: string,
+  // This is not supported by vim-projectionist but does not conflict with it.
+  exclude?: string | Array<string>,
   make?: string,
   path?: string,
   start?: string,

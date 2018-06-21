@@ -78,13 +78,20 @@ function mapProjections<T>(
         matchBase: true,
       });
 
-      if (
+      const shouldBeExcluded =
+        projection.exclude != null &&
+        matchesAny(projectRelativePath, projection.exclude);
+      if (shouldBeExcluded) {
+        return;
+      }
+
+      const doesMatch =
         matches != null ||
         // basename matches ('*.c' to glob any c file) are treated specially
         matchesBaseName ||
         // an exact prefix match is okay too
-        projectRelativePath.startsWith(pattern)
-      ) {
+        projectRelativePath.startsWith(pattern);
+      if (doesMatch) {
         return mapFn(projection, matches);
       }
     }
@@ -152,4 +159,17 @@ function normalizePattern(pattern: string) {
 
 function basenameWithoutExtension(pathString) {
   return path.basename(pathString, path.extname(pathString));
+}
+
+function matchesAny(
+  projectRelativePath: string,
+  patterns: string | Array<string>,
+): boolean {
+  if (Array.isArray(patterns)) {
+    return patterns.some(pattern =>
+      micromatch.isMatch(projectRelativePath, normalizePattern(pattern)),
+    );
+  }
+
+  return micromatch.isMatch(projectRelativePath, normalizePattern(patterns));
 }
