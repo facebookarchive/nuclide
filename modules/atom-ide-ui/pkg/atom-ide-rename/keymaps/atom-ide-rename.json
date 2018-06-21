@@ -1,0 +1,5 @@
+{
+  ".rename-container": {
+    "enter": "core:confirm"
+  }
+}

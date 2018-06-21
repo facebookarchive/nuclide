@@ -48,7 +48,10 @@ import type {
   Command,
   SignatureHelp as LspSignatureHelpType,
 } from './protocol';
-import type {TextEdit as LspTextEditType} from './protocol';
+import type {
+  TextEdit as LspTextEditType,
+  WorkspaceEdit as WorkspaceEditType,
+} from './protocol';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
@@ -100,6 +103,26 @@ export function lspTextEdits_atomTextEdits(
       newText: lspTextEdit.newText,
     };
   });
+}
+
+//    WorkspaceEdits can either provide `changes` (a mapping of document URIs to their TextEdits)
+//        or `documentChanges` (an array of TextDocumentEdits where
+//        each text document edit addresses a specific version of a text document).
+//    TODO: `documentChanges` is currently unsupported
+export function lspWorkspaceEdit_atomWorkspaceEdit(
+  lspWorkspaceEdit: WorkspaceEditType,
+): Map<NuclideUri, Array<TextEdit>> {
+  const workspaceEdit = new Map();
+  const lspChanges = lspWorkspaceEdit.changes;
+  if (lspChanges != null) {
+    Object.keys(lspChanges).forEach(lspUri => {
+      const path = lspUri_localPath(lspUri);
+      const textEdits = lspTextEdits_atomTextEdits(lspChanges[lspUri]);
+
+      workspaceEdit.set(path, textEdits);
+    });
+  }
+  return workspaceEdit;
 }
 
 export function lspLocation_atomFoundReference(location: Location): Reference {

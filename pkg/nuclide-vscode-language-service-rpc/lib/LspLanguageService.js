@@ -1931,12 +1931,37 @@ export class LspLanguageService {
     };
   }
 
-  rename(
+  async rename(
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
   ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-    return Promise.resolve(null);
+    if (
+      this._state !== 'Running' ||
+      !this._serverCapabilities.renameProvider ||
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
+    ) {
+      return null;
+    }
+
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      position: convert.atomPoint_lspPosition(position),
+      newName,
+    };
+
+    let response;
+    try {
+      response = await this._lspConnection.rename(params);
+      invariant(response != null, 'null textDocument/rename');
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
+
+    return convert.lspWorkspaceEdit_atomWorkspaceEdit(response);
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

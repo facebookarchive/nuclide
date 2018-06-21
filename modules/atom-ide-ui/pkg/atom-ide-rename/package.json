@@ -1,0 +1,28 @@
+{
+  "name": "atom-ide-rename",
+  "displayName": "Rename",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Provides a rename refactoring provider API",
+  "author": "NEEDS OWNER",
+  "atomTestRunner": "../../../scripts/atom-test-runner.js",
+  "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Rename"
+      ]
+    }
+  },
+  "consumedServices": {
+    "nuclide-rename.provider": {
+      "versions": {
+        "0.1.0": "consumeRenameProvider"
+      }
+    }
+  },
+  "activationHooks": [
+    "nuclide_ide_rename:gk:nuclide"
+  ]
+}

@@ -14,6 +14,7 @@ import type {LanguageService} from './LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
 import type {OutlineViewConfig} from './OutlineViewProvider';
+import type {RenameConfig} from './RenameProvider';
 import type {StatusConfig} from './StatusProvider';
 import type {TypeCoverageConfig} from './TypeCoverageProvider';
 import type {DefinitionConfig} from './DefinitionProvider';
@@ -36,6 +37,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {LanguageAdditionalLogFilesProvider} from './AdditionalLogFileProvider';
 import {CodeHighlightProvider} from './CodeHighlightProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
+import {RenameProvider} from './RenameProvider';
 import {StatusProvider} from './StatusProvider';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {DefinitionProvider} from './DefinitionProvider';
@@ -58,6 +60,7 @@ export type AtomLanguageServiceConfig = {|
   grammars: Array<string>,
   highlight?: CodeHighlightConfig,
   outline?: OutlineViewConfig,
+  rename?: RenameConfig,
   coverage?: TypeCoverageConfig,
   definition?: DefinitionConfig,
   typeHint?: TypeHintConfig,
@@ -206,6 +209,18 @@ export class AtomLanguageService<T: LanguageService> {
           this._config.name,
           this._config.grammars,
           findReferencesConfig,
+          this._connectionToLanguageService,
+        ),
+      );
+    }
+
+    const renameConfig = this._config.rename;
+    if (renameConfig != null) {
+      this._subscriptions.add(
+        RenameProvider.register(
+          this._config.name,
+          this._config.grammars,
+          renameConfig,
           this._connectionToLanguageService,
         ),
       );

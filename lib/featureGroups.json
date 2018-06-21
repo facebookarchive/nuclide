@@ -16,6 +16,7 @@
     "atom-ide-diagnostics",
     "atom-ide-diagnostics-ui",
     "atom-ide-find-references",
+    "atom-ide-rename",
     "atom-ide-global",
     "atom-ide-outline-view",
     "atom-ide-signature-help",
