@@ -89,7 +89,9 @@ export default class FileFamilyDashProvider
         .filter(uri => query === '' || fuzzAldrinPlus.score(uri, query) > 0)
         .sort(
           (a, b) =>
-            fuzzAldrinPlus.score(a, query) - fuzzAldrinPlus.score(b, query),
+            query === ''
+              ? 0
+              : fuzzAldrinPlus.score(a, query) - fuzzAldrinPlus.score(b, query),
         )
         .map(alternateUri => ({
           type: 'openable',

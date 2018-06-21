@@ -21,6 +21,15 @@ export function getAlternatesFromGraph(graph: FileGraph, activeUri: string) {
           r.from === activeUri &&
           (r.labels.has('test') || r.labels.has('alternate')),
       )
+      .sort((rA, rB) => {
+        // Have existing files come before non-existing files.
+        const a = graph.files.get(rA.to);
+        const b = graph.files.get(rB.to);
+        if (a == null || b == null) {
+          return 0;
+        }
+        return !a.exists && b.exists ? 1 : a.exists && !b.exists ? -1 : 0;
+      })
       .map(relation => relation.to),
   );
 }
