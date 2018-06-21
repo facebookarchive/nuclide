@@ -87,32 +87,42 @@ export default class ProjectionistFileFamilyProvider {
       };
     }
 
-    const alternates = projectionist.getAlternates(
-      nuclideUri.relative(cwd, path),
+    const alternates = await Promise.all(
+      projectionist
+        .getAlternates(nuclideUri.relative(cwd, path))
+        .map(async uri => {
+          const fullUri = nuclideUri.join(cwd, uri);
+          const fsService = getFileSystemServiceByNuclideUri(fullUri);
+          return {
+            uri,
+            exists: await fsService.exists(fullUri),
+          };
+        }),
     );
 
     const files: FileMap = new Map([
       [path, {labels: new Set()}],
-      ...alternates.map(alternate => {
-        const type = projectionist.getType(alternate);
+      ...alternates.map(({uri, exists}) => {
+        const type = projectionist.getType(uri);
         return [
-          nuclideUri.resolve(cwd, alternate),
+          nuclideUri.resolve(cwd, uri),
           {
             labels: type == null ? new Set() : new Set([type]),
+            exists,
           },
         ];
       }),
     ]);
 
-    const relations: RelationList = alternates.map(alternate => {
+    const relations: RelationList = alternates.map(({uri}) => {
       const labels = new Set(['alternate']);
-      const type = projectionist.getType(alternate);
+      const type = projectionist.getType(uri);
       if (type != null) {
         labels.add(type);
       }
       return {
         from: path,
-        to: nuclideUri.resolve(cwd, alternate),
+        to: nuclideUri.resolve(cwd, uri),
         labels,
         directed: true,
       };
