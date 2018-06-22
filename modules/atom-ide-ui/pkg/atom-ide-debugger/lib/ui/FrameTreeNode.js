@@ -12,6 +12,7 @@
 
 import type {IStackFrame, IDebugService} from '../types';
 
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import * as React from 'react';
 import {TreeItem} from 'nuclide-commons-ui/Tree';
 
@@ -32,17 +33,24 @@ export default class FrameTreeNode extends React.Component<Props> {
   };
 
   render(): React.Node {
-    const {frame, service} = this.props;
+    const {frame, service, text} = this.props;
     const activeFrame = service.viewModel.focusedStackFrame;
     const className = (activeFrame == null
     ? false
-    : frame.frameId === activeFrame.frameId)
+    : frame === activeFrame)
       ? 'debugger-tree-frame-selected'
       : '';
 
     const treeItem = (
-      <TreeItem className={className} onSelect={this.handleSelect}>
-        {this.props.text}
+      <TreeItem
+        className={className}
+        onSelect={this.handleSelect}
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+        ref={addTooltip({
+          title: 'Frame ID: ' + frame.frameId + ', Name: ' + frame.name,
+          delay: 0,
+        })}>
+        {text}
       </TreeItem>
     );
 

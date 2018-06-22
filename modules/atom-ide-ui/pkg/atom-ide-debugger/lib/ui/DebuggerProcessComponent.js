@@ -91,7 +91,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
             .map((frame, frameIndex) => {
               return (
                 <FrameTreeNode
-                  text={'Frame ID: ' + frame.frameId + ', Name: ' + frame.name}
+                  text={frame.name}
                   frame={frame}
                   key={frameIndex}
                   service={service}
@@ -100,7 +100,9 @@ export default class DebuggerProcessComponent extends React.PureComponent<
             });
           return (
             <ThreadTreeNode
-              title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}
+              title={
+                thread.name + (thread.stopped ? ' (Paused)' : ' (Running)')
+              }
               key={threadIndex}
               childItems={stackFrameElements}
               thread={thread}

@@ -255,10 +255,6 @@ export default class DebugService implements IDebugService {
         if (uri.startsWith(DEBUG_SOURCES_URI)) {
           if (this._debuggerMode !== DebuggerMode.STOPPED) {
             return this._openSourceView(uri);
-          } else {
-            throw new Error(
-              'Cannot open debug source views - no active debug session',
-            );
           }
         }
       }),
@@ -360,6 +356,7 @@ export default class DebugService implements IDebugService {
     let selectedFrameMarker: ?atom$Marker = null;
     let threadChangeDatatip: ?IDisposable;
     let lastFocusedThreadId: ?number;
+    let lastFocusedProcess: ?IProcess;
 
     const cleaupMarkers = () => {
       if (selectedFrameMarker != null) {
@@ -425,9 +422,30 @@ export default class DebugService implements IDebugService {
             !explicit &&
             stackFrame.thread.threadId !== lastFocusedThreadId
           ) {
-            const message = `Active thread changed from ${lastFocusedThreadId} to ${
+            let message = `Active thread changed from ${lastFocusedThreadId} to ${
               stackFrame.thread.threadId
             }`;
+            const process = stackFrame.thread.process;
+            if (
+              lastFocusedProcess != null &&
+              !explicit &&
+              process !== lastFocusedProcess
+            ) {
+              if (
+                lastFocusedProcess.configuration.processName != null &&
+                process.configuration.processName != null
+              ) {
+                message =
+                  'Active Process changed from ' +
+                  lastFocusedProcess.configuration.processName +
+                  ' to ' +
+                  process.configuration.processName +
+                  ' AND ' +
+                  message;
+              } else {
+                message = 'Active Process changed AND ' + message;
+              }
+            }
             threadChangeDatatip = datatipService.createPinnedDataTip(
               {
                 component: () => (
@@ -443,6 +461,7 @@ export default class DebugService implements IDebugService {
             );
           }
           lastFocusedThreadId = stackFrame.thread.threadId;
+          lastFocusedProcess = stackFrame.thread.process;
         }),
 
       cleaupMarkers,
@@ -634,7 +653,7 @@ export default class DebugService implements IDebugService {
             });
           });
         } else {
-          this._onSessionEnd();
+          this._onSessionEnd(session);
           session.disconnect().catch(onUnexpectedError);
         }
       }),
@@ -825,7 +844,7 @@ export default class DebugService implements IDebugService {
     this._sessionEndDisposables.add(
       session.observeAdapterExitedEvents().subscribe(event => {
         // 'Run without debugging' mode VSCode must terminate the extension host. More details: #3905
-        this._onSessionEnd();
+        this._onSessionEnd(session);
       }),
     );
 
@@ -1185,8 +1204,13 @@ export default class DebugService implements IDebugService {
       atom.notifications.addError(
         `Failed to start debugger process: ${errorMessage}`,
       );
-      this._consoleDisposables.dispose();
-      this._updateModeAndEmit(DebuggerMode.STOPPED);
+      if (
+        this._model.getProcesses() == null ||
+        this._model.getProcesses().length === 0
+      ) {
+        this._consoleDisposables.dispose();
+        this._updateModeAndEmit(DebuggerMode.STOPPED);
+      }
       if (session != null && !session.isDisconnected()) {
         this._onSessionEnd();
         session.disconnect().catch(onUnexpectedError);
@@ -1457,11 +1481,13 @@ export default class DebugService implements IDebugService {
    */
   async startDebugging(config: IProcessConfig): Promise<void> {
     this._timer = startTracking('debugger-atom:startDebugging');
+    /*
     if (this._viewModel.focusedProcess != null) {
       // We currently support only running only one debug session at a time,
       // so stop the current debug session.
       this.stopProcess();
     }
+    */
 
     this._updateModeAndEmit(DebuggerMode.STARTING);
     // Open the console window if it's not already opened.
@@ -1471,22 +1497,47 @@ export default class DebugService implements IDebugService {
     await this._doCreateProcess(config, uuid.v4());
   }
 
-  _onSessionEnd = (): void => {
-    const session = this._getCurrentSession();
+  _onSessionEnd = (givenSession: ?VsDebugSession): void => {
+    const session =
+      givenSession == null ? this._getCurrentSession() : givenSession;
     if (session == null) {
       return;
     }
     track(AnalyticsEvents.DEBUGGER_STOP);
     this._model.removeProcess(session.getId());
-    this._sessionEndDisposables.dispose();
-    this._consoleDisposables.dispose();
+    if (
+      this._model.getProcesses() == null ||
+      this._model.getProcesses().length === 0
+    ) {
+      this._sessionEndDisposables.dispose();
+      this._consoleDisposables.dispose();
+      this.focusStackFrame(null, null, null);
+      this._updateModeAndEmit(DebuggerMode.STOPPED);
+    } else {
+      if (
+        this._viewModel.focusedProcess != null &&
+        this._viewModel.focusedProcess.getId() === session.getId()
+      ) {
+        const processToFocus = this._model.getProcesses()[
+          this._model.getProcesses().length - 1
+        ];
+        const threadToFocus =
+          processToFocus.getAllThreads().length > 0
+            ? processToFocus.getAllThreads()[0]
+            : null;
+        const frameToFocus =
+          threadToFocus != null && threadToFocus.getCallStack.length > 0
+            ? threadToFocus.getCallStack()[0]
+            : null;
+
+        this.focusStackFrame(frameToFocus, threadToFocus, processToFocus);
+      }
+    }
+
     if (this._timer != null) {
       this._timer.onSuccess();
       this._timer = null;
     }
-
-    this.focusStackFrame(null, null, null);
-    this._updateModeAndEmit(DebuggerMode.STOPPED);
 
     // set breakpoints back to unverified since the session ended.
     const data: {

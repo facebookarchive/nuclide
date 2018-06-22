@@ -211,7 +211,7 @@ export default class DebuggerLayoutManager {
           // override the layout to shrink the pane and remove extra vertical whitespace.
           const debuggerMode = this._service.getDebuggerMode();
           if (debuggerMode !== DebuggerMode.STOPPED) {
-            this._overridePaneInitialHeight(dockPane, newFlexScale, 100);
+            this._overridePaneInitialHeight(dockPane, newFlexScale, 250);
           }
 
           // If newFlexScale !== 1, that means the user must have resized this pane.
@@ -281,6 +281,10 @@ export default class DebuggerLayoutManager {
           mode !== DebuggerMode.STOPPED,
       },
     ];
+
+    if (_gkService != null) {
+      this.convertToDebuggerTreePanes();
+    }
 
     this._restoreDebuggerPaneLocations();
   }
@@ -387,27 +391,42 @@ export default class DebuggerLayoutManager {
     return docks;
   }
 
-  consumeGatekeeperService(service: GatekeeperService): IDisposable {
-    _gkService = service;
+  convertToDebuggerTreePanes() {
     if (_gkService != null) {
       _gkService.passesGK('nuclide_multitarget_debugging').then(passes => {
         if (passes) {
           this._debuggerPanes.splice(1, 0, {
-            uri: DEBUGGER_URI_BASE + 'multitargetteddebugger',
+            uri: DEBUGGER_URI_BASE + 'debuggertree',
             isLifetimeView: false,
             defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
-            title: () => 'Multi-Targetted Debugger',
+            title: () => 'Debugger Tree',
             isEnabled: () => true,
             createView: () => (
               <DebuggerProcessTreeView service={this._service} />
             ),
+            debuggerModeFilter: (mode: DebuggerModeType) =>
+              mode !== DebuggerMode.STOPPED,
           });
+          for (let i = 0; i < this._debuggerPanes.length; i++) {
+            const uri = this._debuggerPanes[i].uri;
+            if (
+              uri === DEBUGGER_URI_BASE + 'callstack' ||
+              uri === DEBUGGER_URI_BASE + 'threads'
+            ) {
+              this._debuggerPanes.splice(i, 1);
+            }
+          }
           if (this._debuggerVisible) {
             this.showDebuggerViews();
           }
         }
       });
     }
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    _gkService = service;
+    this.convertToDebuggerTreePanes();
     return new UniversalDisposable(() => (_gkService = null));
   }
 

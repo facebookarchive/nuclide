@@ -231,7 +231,7 @@ export function getNativeAutoGenConfig(
     properties: [pid, sourcePath],
     header: <p>Attach to a running native process {debugTypeMessage}</p>,
     getProcessName(values) {
-      return 'Pid: ' + pid.name + ' (' + debugTypeMessage + ')';
+      return 'Pid: ' + values.pid + ' (' + debugTypeMessage + ')';
     },
   };
   return {

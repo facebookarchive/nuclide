@@ -78,47 +78,54 @@ export default class DebuggerControlsView extends React.PureComponent<
         <div className="debugger-pane-content">
           <div className="debugger-state-notice">
             <span>The debugger is not attached.</span>
-            <div className="padded">
-              <TruncatedButton
-                onClick={() =>
-                  atom.commands.dispatch(
-                    atom.views.getView(atom.workspace),
-                    'debugger:show-attach-dialog',
-                  )
-                }
-                icon="nuclicon-debugger"
-                label="Attach debugger..."
-              />
-              <TruncatedButton
-                onClick={() =>
-                  atom.commands.dispatch(
-                    atom.views.getView(atom.workspace),
-                    'debugger:show-launch-dialog',
-                  )
-                }
-                icon="nuclicon-debugger"
-                label="Launch debugger..."
-              />
-              {this.state.hasDevicePanelService ? (
-                <TruncatedButton
-                  onClick={() => goToLocation(DEVICE_PANEL_URL)}
-                  icon="device-mobile"
-                  label="Manage devices..."
-                />
-              ) : null}
-            </div>
           </div>
         </div>
       );
 
-    const debugeeRunningNotice =
+    const debuggerRunningNotice =
       mode !== DebuggerMode.RUNNING ? null : (
         <div className="debugger-pane-content">
           <div className="debugger-state-notice">
-            The debug target is currently running.
+            {(service.viewModel.focusedProcess == null ||
+            service.viewModel.focusedProcess.configuration.processName == null
+              ? 'The debug target'
+              : service.viewModel.focusedProcess.configuration.processName) +
+              ' is currently running.'}
           </div>
         </div>
       );
+
+    const debuggerNotice = (
+      <div className="padded">
+        <TruncatedButton
+          onClick={() =>
+            atom.commands.dispatch(
+              atom.views.getView(atom.workspace),
+              'debugger:show-attach-dialog',
+            )
+          }
+          icon="nuclicon-debugger"
+          label="Attach debugger..."
+        />
+        <TruncatedButton
+          onClick={() =>
+            atom.commands.dispatch(
+              atom.views.getView(atom.workspace),
+              'debugger:show-launch-dialog',
+            )
+          }
+          icon="nuclicon-debugger"
+          label="Launch debugger..."
+        />
+        {this.state.hasDevicePanelService ? (
+          <TruncatedButton
+            onClick={() => goToLocation(DEVICE_PANEL_URL)}
+            icon="device-mobile"
+            label="Manage devices..."
+          />
+        ) : null}
+      </div>
+    );
 
     return (
       <div className="debugger-container-new">
@@ -128,8 +135,9 @@ export default class DebuggerControlsView extends React.PureComponent<
         <div className="debugger-section-header debugger-controls-section">
           <DebuggerSteppingComponent service={service} />
         </div>
-        {debugeeRunningNotice}
+        {debuggerRunningNotice}
         {debuggerStoppedNotice}
+        {debuggerNotice}
       </div>
     );
   }

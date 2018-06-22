@@ -183,6 +183,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
 
   render(): React.Node {
     const {scopes} = this.state;
+    const {service} = this.props;
     if (scopes.isError) {
       return <span>Error fetching scopes: {scopes.error.toString()}</span>;
     } else if (scopes.isPending) {
@@ -193,8 +194,19 @@ export default class ScopesComponent extends React.Component<Props, State> {
     const scopeSections = scopes.value.map(scope =>
       this._renderScopeSection(scope),
     );
+    const processName =
+      (service.viewModel.focusedProcess == null ||
+      service.viewModel.focusedProcess.configuration.processName == null
+        ? 'Unknown Process'
+        : service.viewModel.focusedProcess.configuration.processName) +
+      (service.viewModel.focusedStackFrame == null
+        ? ' (Unknown Frame)'
+        : ' (' + service.viewModel.focusedStackFrame.name + ')');
     return (
-      <div className="debugger-expression-value-list">{scopeSections}</div>
+      <div>
+        <span>{processName}</span>
+        <div className="debugger-expression-value-list">{scopeSections}</div>
+      </div>
     );
   }
 }
