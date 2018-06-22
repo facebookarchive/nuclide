@@ -116,6 +116,12 @@ export default class ConsoleView extends React.Component<Props, State> {
           }
         },
       }),
+      atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'atom-ide-console:scroll-to-bottom': () => {
+          this._scrollToBottom();
+        },
+      }),
       atom.commands.add(
         nullthrows(this._consoleBodyEl),
         'atom-ide:filter',
