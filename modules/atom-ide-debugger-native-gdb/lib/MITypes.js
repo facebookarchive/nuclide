@@ -284,3 +284,8 @@ export function dataDisassembleResult(
   invariant(!record.error);
   return ((record.result: any): MIDataDisassembleResult);
 }
+
+export type StopReason = {
+  reason: string,
+  description: string,
+};

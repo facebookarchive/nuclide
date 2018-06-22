@@ -12,7 +12,7 @@
 
 import type {Variable} from 'vscode-debugprotocol';
 
-import {logVerbose} from './MIDebugSession';
+import {logVerbose} from './Logger';
 import MIProxy from './MIProxy';
 import VariableReference from './VariableReference';
 

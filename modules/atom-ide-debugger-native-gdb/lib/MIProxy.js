@@ -13,7 +13,7 @@
 import * as child_process from 'child_process';
 
 import invariant from 'assert';
-import {logVerbose} from './MIDebugSession';
+import {logVerbose} from './Logger';
 
 import MILineParser from './MILineParser';
 import {

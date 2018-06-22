@@ -44,11 +44,7 @@ import {
 import StackFrames from './StackFrames';
 import Variables from './Variables';
 import {debugSymSizeByProcess, debugSymSizeByBinary} from './DebugSymbolsSize';
-
-export type StopReason = {
-  reason: string,
-  description: string,
-};
+import {logVerbose} from './Logger';
 
 // NB that trace is not actually exposed in package.json as it's only used for
 // debugging the adapter itself
@@ -1107,35 +1103,6 @@ class MIDebugSession extends LoggingDebugSession {
     response.message = message;
     this.sendResponse(response);
   }
-}
-
-function timestamp(): string {
-  let ts = `${new Date().getTime()}`;
-
-  // This code put seperators in the timestamp in groups of thousands
-  // to make it easier to read, i.e.
-  // 123456789 => 123_456_789
-  let fmt = '';
-  while (ts.length >= 3) {
-    if (fmt !== '') {
-      fmt = '_' + fmt;
-    }
-    fmt = ts.substring(ts.length - 3) + fmt;
-    ts = ts.substring(0, ts.length - 3);
-  }
-
-  if (ts !== '') {
-    if (fmt !== '') {
-      fmt = '_' + fmt;
-    }
-    fmt = ts + fmt;
-  }
-
-  return fmt;
-}
-
-export function logVerbose(line: string): void {
-  logger.verbose(`${timestamp()} ${line}`);
 }
 
 LoggingDebugSession.run(MIDebugSession);

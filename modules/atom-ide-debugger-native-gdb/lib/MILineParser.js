@@ -23,7 +23,7 @@ import type {
   Value,
 } from './MIRecord';
 
-import {logVerbose} from './MIDebugSession';
+import {logVerbose} from './Logger';
 import {
   MIAsyncRecord,
   MIRecord,

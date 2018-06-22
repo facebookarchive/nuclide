@@ -14,7 +14,7 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import invariant from 'assert';
 import Breakpoints from './Breakpoints';
 import {Breakpoint} from './Breakpoints';
-import {logVerbose} from './MIDebugSession';
+import {logVerbose} from './Logger';
 import MIProxy from './MIProxy';
 import {MIResultRecord} from './MIRecord';
 import {breakInsertResult, toCommandError} from './MITypes';

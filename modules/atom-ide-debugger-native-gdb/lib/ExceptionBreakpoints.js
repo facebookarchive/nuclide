@@ -10,8 +10,7 @@
  * @format
  */
 
-import type {MIStoppedEventResult} from './MITypes';
-import type {StopReason} from './MIDebugSession';
+import type {MIStoppedEventResult, StopReason} from './MITypes';
 
 import invariant from 'assert';
 import MIProxy from './MIProxy';
