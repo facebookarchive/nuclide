@@ -11,9 +11,9 @@
  */
 
 import type {Observable} from 'rxjs';
-import type WS from 'ws';
-import type https from 'https';
 
+import WS from 'ws';
+import https from 'https';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import url from 'url';
@@ -22,6 +22,34 @@ import {getVersion} from '../common/getVersion';
 
 import {WebSocketTransport} from '../socket/WebSocketTransport';
 import {QueuedAckTransport} from '../socket/QueuedAckTransport';
+import {scanPortsToListen} from '../common/ports';
+
+export type LauncherParameters = {
+  server: BigDigServer,
+  // Any sort of JSON-serializable object is fine.
+  serverParams: mixed,
+};
+
+// The absolutePathToServerMain must export a single function of this type.
+export type LauncherType = (params: LauncherParameters) => Promise<void>;
+
+export type ServerLauncherOptions = {
+  // These options will be passed verbatim to https.createServer(). Admittedly,
+  // this is not the complete list of options that it takes, but these are the
+  // ones we intentionally work with.
+  webServer: {
+    // Optional private keys in PEM format.
+    key?: string | Array<string> | Buffer | Array<Buffer>,
+    // Optional cert chains in PEM format
+    cert?: string | Array<string> | Buffer | Array<Buffer>,
+    // Optionally override the trusted CA certificates.
+    ca?: string | Array<string> | Buffer | Array<Buffer>,
+  },
+  ports: string,
+  absolutePathToServerMain: string,
+  // Any sort of JSON-serializable object is fine.
+  serverParams: mixed,
+};
 
 export const HEARTBEAT_CHANNEL = 'big-dig-heartbeat';
 export const CLOSE_TAG = 'big-dig-close-connection';
@@ -58,6 +86,41 @@ export default class BigDigServer {
       'connection',
       this._onWebSocketConnection.bind(this),
     );
+  }
+
+  static async createServer(options: ServerLauncherOptions): Promise<number> {
+    const webServer = https.createServer(options.webServer);
+
+    if (!(await scanPortsToListen(webServer, options.ports))) {
+      throw new Error(
+        `All ports in range "${options.ports}" are already in use`,
+      );
+    }
+
+    const webSocketServer = new WS.Server({
+      server: webServer,
+      perMessageDeflate: true,
+    });
+
+    // Let unhandled WS server errors go through to the global exception handler.
+
+    // $FlowIgnore
+    const launcher: LauncherType = require(options.absolutePathToServerMain);
+    const tunnelLauncher: LauncherType = require('../services/tunnel/launcher');
+
+    const bigDigServer = new BigDigServer(webServer, webSocketServer);
+
+    await launcher({
+      server: bigDigServer,
+      serverParams: options.serverParams,
+    });
+
+    await tunnelLauncher({
+      server: bigDigServer,
+      serverParams: options.serverParams,
+    });
+
+    return webServer.address().port;
   }
 
   addSubscriber(tag: string, subscriber: Subscriber) {

@@ -17,7 +17,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {psTree} from 'nuclide-commons/process';
 import os from 'os';
 import fsPromise from '../common/fs';
-import {launchServer} from './ServerLauncher';
+import BigDigServer from './BigDigServer';
 
 export type LauncherScriptParams = {|
   key: string,
@@ -53,7 +53,7 @@ async function handleLaunchParams(params: LauncherScriptParams) {
     await enforceExclusive(params.exclusive);
   }
 
-  const port = await launchServer({
+  const port = await BigDigServer.createServer({
     ports: params.ports,
     webServer: {
       key: params.key,
