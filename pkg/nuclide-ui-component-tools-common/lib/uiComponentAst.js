@@ -175,7 +175,7 @@ export function getDefaultPropNames(
     n =>
       n.type === 'ClassProperty' && n.static && n.key.name === 'defaultProps',
   );
-  if (!defaultPropsStaticNode) {
+  if (!defaultPropsStaticNode || !defaultPropsStaticNode.value) {
     return [];
   }
   if (defaultPropsStaticNode.value.type === 'Identifier') {

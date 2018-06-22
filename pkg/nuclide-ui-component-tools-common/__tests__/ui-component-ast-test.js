@@ -96,6 +96,19 @@ class FDSTest extends React.PureComponent<Props> {
 
     expect(defaultProps).toEqual(['value', 'type']);
   });
+
+  it('parses a component with a blank object', () => {
+    const code = `
+type Props = {};
+type DefaultProps = {};
+
+class FDSTest extends React.PureComponent<Props> {
+  static defaultProps: DefaultProps;
+}`;
+
+    expect(getDefaultPropNames('FDSTest', parseCode(code))).toEqual([]);
+    expect(getRequiredProps('FDSTest', code)).toEqual([]);
+  });
 });
 
 describe('formatLeadingComment', () => {
