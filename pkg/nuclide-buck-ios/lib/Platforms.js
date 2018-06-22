@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Platform} from '../../nuclide-buck/lib/types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
-import type {Device} from '../../nuclide-fbsimctl-rpc/lib/types';
+import type {FbsimctlDevice} from '../../nuclide-fbsimctl-rpc/lib/types';
 
 import {getTasks, runTask} from './Tasks';
 
@@ -126,7 +126,9 @@ export function getDevicePlatform(
   });
 }
 
-function groupByOs(devices: Array<Device>): Map<string, Array<Device>> {
+function groupByOs(
+  devices: Array<FbsimctlDevice>,
+): Map<string, Array<FbsimctlDevice>> {
   const devicesByOs = devices.reduce((memo, device) => {
     let devicesForOs = memo.get(device.os);
     if (devicesForOs == null) {

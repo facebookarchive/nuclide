@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Device} from '../../nuclide-fbsimctl-rpc/lib/types';
+import type {FbsimctlDevice} from '../../nuclide-fbsimctl-rpc/lib/types';
 
 import {Observable} from 'rxjs';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -20,11 +20,11 @@ import {getFbsimctlServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const poller = createPoller();
 
-export function getDevices(): Observable<Array<Device> | Error> {
+export function getDevices(): Observable<Array<FbsimctlDevice> | Error> {
   return poller;
 }
 
-function createPoller(): Observable<Array<Device> | Error> {
+function createPoller(): Observable<Array<FbsimctlDevice> | Error> {
   return Observable.interval(2000)
     .startWith(0)
     .switchMap(() =>

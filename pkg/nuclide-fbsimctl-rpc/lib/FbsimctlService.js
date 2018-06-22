@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from './types';
+import type {FbsimctlDevice} from './types';
 
 import {runCommand} from 'nuclide-commons/process';
 import fetch from '../../commons-node/xfetch';
@@ -20,7 +20,7 @@ import AdmZip from 'adm-zip';
 import bplist from 'bplist-parser';
 import {parseFbsimctlJsonOutput} from './Parsing';
 
-export async function getDevices(): Promise<Array<Device>> {
+export async function getDevices(): Promise<Array<FbsimctlDevice>> {
   const output = await runCommand('fbsimctl', [
     '--json',
     '--format=%n%u%s%o%a',

@@ -9,9 +9,9 @@
  * @format
  */
 
-import type {Device, DeviceType} from './types';
+import type {FbsimctlDevice, DeviceType} from './types';
 
-export function parseFbsimctlJsonOutput(output: string): Array<Device> {
+export function parseFbsimctlJsonOutput(output: string): Array<FbsimctlDevice> {
   const devices = [];
 
   output.split('\n').forEach(line => {
