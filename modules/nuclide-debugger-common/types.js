@@ -301,7 +301,6 @@ export type Device = {|
   name: string,
   displayName: string,
   architecture: DeviceArchitecture,
-  rawArchitecture: string,
   ignoresSelection?: boolean,
 |};
 

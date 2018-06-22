@@ -50,7 +50,6 @@ class Activation {
                   name: device.udid,
                   displayName: device.name,
                   architecture: devicePanelArchitecture(device.arch),
-                  rawArchitecture: device.arch,
                   ignoresSelection: true,
                 })),
               );
