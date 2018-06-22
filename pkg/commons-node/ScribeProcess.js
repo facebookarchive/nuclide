@@ -15,6 +15,7 @@ import os from 'os';
 import {spawn} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
 import once from './once';
+import passesGK from './passesGK';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
@@ -56,9 +57,15 @@ export default class ScribeProcess {
   /**
    * Check if `scribe_cat` exists in PATH.
    */
-  static isScribeCatOnPath: () => Promise<boolean> = once(() =>
-    which(SCRIBE_CAT_COMMAND).then(cmd => cmd != null),
-  );
+  static isScribeCatOnPath: () => Promise<boolean> = once(async () => {
+    const [whichCmd, gkEnabled] = await Promise.all([
+      which(SCRIBE_CAT_COMMAND),
+      process.platform === 'darwin'
+        ? passesGK('nuclide_scribe_macos')
+        : Promise.resolve(true),
+    ]);
+    return whichCmd != null && gkEnabled;
+  });
 
   static isEnabled(): boolean {
     return ScribeProcess._enabled;
