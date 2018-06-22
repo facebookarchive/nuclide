@@ -158,7 +158,7 @@ log4js.configure({
       filename: nuclideUri.join(os.tmpdir(), 'big-dig.log'),
     },
     {
-      type: 'console',
+      type: 'stderr',
     },
   ],
 });
