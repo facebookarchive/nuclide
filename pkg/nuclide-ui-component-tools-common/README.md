@@ -2,7 +2,6 @@
 
 ## Overview
 
-See [fb-ui-component-tools/README.md](../fb-ui-component-tools/README.md).
 This package provides functionality for indexing metadata about React components
 such as their required props and deprecation status.
 It is intended that a Language Server Protocol provider such as
@@ -12,23 +11,20 @@ LSP provider.
 
 ## Why does this package exist?
 
-`fb-ui-component-tools` is an Atom package/Nuclide module and as such cannot
-have its contents imported from a node module containing an LSP provider.
-This package is thus a separate node package that will aim to be decoupled from
-the details of `watchman` and running a server.
+This package is intended to be decoupled from Atom/Nuclide and LSP
+implementation details. The goal is that this package exists to provide the
+logic for an LSP client and server to index React components. The index is
+intended to provide autocompletion functionality (see completions in
+`nuclide-js-imports-server`).
 
 ## Support & Filing Bugs
 
-It's likely that bugs produced by this package are discovered by its
-accompanying Nuclide package, `fb-ui-component-tools`.
-
-- Task template: https://fburl.com/tasks/xc9m2db6
-- Workplace Group: https://fb.facebook.com/groups/168429210503909/
+If you are a Facebook engineer then see the README in `fb-ui-component-tools`
+for information on support and feedback. Otherwise, please use GitHub issues.
 
 ## Features
 
-…
-
-## Architecture
-
-…
+* Get the leading comment, required props, and default props from a given
+  babylon/babel-parser AST. See `getComponentDefinitionFromAst`.
+* Run `./scripts/index-prototype.js <directory>` to see the component
+  definitions parsed within a directory.
