@@ -31,7 +31,7 @@ export default function ThreadTreeNode(props: Props): React.Node {
 
   const formattedTitle = (
     <span
-      className={isFocused ? 'debugger-tree-frame-selected' : ''}
+      className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
       title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
       {title}
     </span>

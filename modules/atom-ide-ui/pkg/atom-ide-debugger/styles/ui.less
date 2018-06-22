@@ -436,6 +436,24 @@
   width: 100%;
 }
 
+@backgroundColor: fade(@background-color-info, 30%);
+@pseudoBorderColor: fade(@background-color-info, 80%);
 .debugger-tree-frame-selected {
-  background: @button-background-color-selected;
+  background: linear-gradient(
+    to bottom,
+    @pseudoBorderColor 0%,
+    @pseudoBorderColor 5%,
+    @backgroundColor 5%,
+    @backgroundColor 95%,
+    @pseudoBorderColor 95%,
+    @pseudoBorderColor 100%
+  )
+}
+
+.debugger-tree-process-thread-selected {
+  font-weight: 900
+}
+
+.debugger-tree-frame {
+  padding-left: 20px;
 }

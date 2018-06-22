@@ -41,7 +41,7 @@ export default function ProcessTreeNode(props: Props): React.Node {
 
   const formattedTitle = (
     <span
-      className={isFocused ? 'debugger-tree-frame-selected' : ''}
+      className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
       title={tooltipTitle}>
       {title}
     </span>
