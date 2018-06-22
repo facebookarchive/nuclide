@@ -35,7 +35,7 @@ function staticInitializationOptions(): Object {
     diagnostics: {
       blacklist: [],
       onParse: true,
-      onType: false,
+      onType: true,
     },
     index: {
       blacklist: [],
