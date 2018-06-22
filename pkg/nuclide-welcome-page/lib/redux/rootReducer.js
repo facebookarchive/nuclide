@@ -12,7 +12,10 @@
 import type {AppState, Action, WelcomePage, ShowOption} from '../types';
 
 import {getLogger} from 'log4js';
+import {track} from '../../../nuclide-analytics';
 import * as ActionTypes from './ActionTypes';
+
+const log = getLogger('nuclide-welcome-page');
 
 export default function rootReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -40,9 +43,7 @@ function _addWelcomePage(state: AppState, welcomePage: WelcomePage): AppState {
   const {topic, content} = welcomePage;
   const priority = welcomePage.priority != null ? welcomePage.priority : 1000;
   if (welcomePages.has(topic)) {
-    getLogger('nuclide-welcome-page').warn(
-      `Duplicate welcome page for topic '${topic}'`,
-    );
+    log.warn(`Duplicate welcome page for topic '${topic}'`);
     return state;
   }
   welcomePages.set(topic, {content, priority});
@@ -64,8 +65,20 @@ function _hideUnhideTopics(
   topicsToHide.forEach(topic => {
     hiddenTopics.add(topic);
   });
+  const hidden = Array.from(topicsToHide);
+  if (hidden.length > 0) {
+    log.info(`Hiding topics: [${hidden.join(', ')}]`);
+  }
   topicsToUnhide.forEach(topic => {
     hiddenTopics.delete(topic);
+  });
+  const unhidden = Array.from(topicsToUnhide);
+  if (unhidden.length > 0) {
+    log.info(`Unhiding topics: [${unhidden.join(', ')}]`);
+  }
+  track('nuclide-welcome-page-hide-unhide-topics', {
+    hidden,
+    unhidden,
   });
   return {...state, hiddenTopics};
 }
