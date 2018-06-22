@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {BusySignalService} from '../../atom-ide-busy-signal/lib/types';
 import type {
   FileCodeFormatProvider,
@@ -153,7 +154,7 @@ export default class CodeFormatManager {
     );
   }
 
-  _handleEvent(event: FormatEvent): Observable<void> {
+  _handleEvent(event: FormatEvent): Observable<mixed> {
     const {editor} = event;
     switch (event.type) {
       case 'command':
@@ -285,7 +286,7 @@ export default class CodeFormatManager {
   _formatCodeOnTypeInTextEditor(
     editor: atom$TextEditor,
     aggregatedEvent: atom$AggregatedTextEditEvent,
-  ): Observable<void> {
+  ): Observable<Array<TextEdit>> {
     return Observable.defer(() => {
       // Don't try to format changes with multiple cursors.
       if (aggregatedEvent.changes.length !== 1) {
@@ -328,7 +329,7 @@ export default class CodeFormatManager {
             character,
           ),
         )
-        .map(edits => {
+        .do(edits => {
           if (edits.length === 0) {
             return;
           }
@@ -340,8 +341,7 @@ export default class CodeFormatManager {
           if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
             throw new Error('Could not apply edits to text buffer.');
           }
-        })
-        .finally(() => {
+
           if (provider.keepCursorPosition) {
             editor.setCursorBufferPosition(cursorPosition);
           }
