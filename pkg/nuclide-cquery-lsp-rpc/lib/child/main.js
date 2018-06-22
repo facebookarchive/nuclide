@@ -17,9 +17,10 @@ import {serializeAsyncCall} from 'nuclide-commons/promise';
 import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {Observable} from 'rxjs';
 import {StreamMessageWriter} from 'vscode-jsonrpc';
+import {createConnection} from 'vscode-languageserver';
 import {track} from '../../../nuclide-analytics';
 import {MessageHandler} from './MessageHandler';
-import {setMessageWriter} from './WindowLogAppender';
+import {initializeLogging} from './messages';
 
 // Percentage of total memory cquery may not exceed.
 const DEFAULT_MEMORY_LIMIT = 30;
@@ -31,24 +32,17 @@ const loggingFile = process.argv[2];
 const recordingFile = process.argv[3];
 const libclangLogging = process.argv[4] === 'true';
 
-// Log to stderr to avoid polluting the JsonRpc stdout.
-// Also send errors to the client's log.
-log4js.configure({
-  appenders: [
-    {type: 'stderr'},
-    {type: require.resolve('./WindowLogAppender'), level: 'error'},
-  ],
-});
+// client reader/writer reads/writes to Nuclide.
+const clientReader = new SafeStreamMessageReader(process.stdin);
+const clientWriter = new StreamMessageWriter(process.stdout);
+const clientConnection = createConnection(clientReader, clientWriter);
+initializeLogging(clientConnection);
+
 const logger = log4js.getLogger('nuclide-cquery-wrapper');
 
 function onChildSpawn(childProcess): void {
-  // client reader/writer reads/writes to Nuclide.
-  // server reader/writer reads/writes to cquery.
-  const clientReader = new SafeStreamMessageReader(process.stdin);
+  // server writer writes to cquery.
   const serverWriter = new StreamMessageWriter(childProcess.stdin);
-  const clientWriter = new StreamMessageWriter(process.stdout);
-  setMessageWriter(clientWriter);
-
   // If child process quits, we also quit.
   childProcess.on('exit', code => process.exit(code));
   childProcess.on('close', code => process.exit(code));
@@ -76,18 +70,16 @@ function onChildSpawn(childProcess): void {
   );
   Observable.interval(MEMORY_CHECK_INTERVAL).subscribe(async () => {
     const memoryUsed = await serializedMemoryCheck();
-    if (memoryUsed != null) {
+    if (memoryUsed != null && memoryUsed > memoryLimit) {
       track('nuclide-cquery-lsp:memory-used', {
         projects: clientMessageHandler.knownProjects(),
         memoryUsed,
         memoryLimit,
       });
-      if (memoryUsed > memoryLimit) {
-        logger.error(
-          `Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery`,
-        );
-        childProcess.kill();
-      }
+      logger.error(
+        `Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery`,
+      );
+      childProcess.kill();
     }
   });
 }

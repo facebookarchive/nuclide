@@ -10,6 +10,30 @@
  */
 
 import type {Message} from 'vscode-jsonrpc';
+import log4js from 'log4js';
+import {IConnection} from 'vscode-languageserver';
+import {setupLoggingService} from '../../../nuclide-logging';
+
+export function initializeLogging(connection: IConnection) {
+  setupLoggingService();
+  // Log to stderr to avoid polluting the JsonRpc stdout.
+  // Also send errors to the client's log.
+  log4js.configure({
+    appenders: [
+      {type: 'stderr'},
+      {
+        type: 'logLevelFilter',
+        level: 'WARN',
+        appender: {
+          connection,
+          type: require.resolve(
+            '../../../nuclide-lsp-implementation-common/connectionConsoleAppender',
+          ),
+        },
+      },
+    ],
+  });
+}
 
 // Construct a LSP window/logMessage of given text and severity.
 export function windowMessage(type: number, message: string): Message {
