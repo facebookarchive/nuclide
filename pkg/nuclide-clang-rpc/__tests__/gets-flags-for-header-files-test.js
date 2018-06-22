@@ -24,6 +24,10 @@ let requestSettings;
 let emptyRequestSettings;
 let testDir;
 beforeEach(async () => {
+  global.performance.mark = jest.fn();
+  global.performance.measure = jest.fn();
+  global.performance.clearMarks = jest.fn();
+  global.performance.clearMeasures = jest.fn();
   testDir = await copyFixture(
     'cpp_buck_project',
     path.resolve(__dirname, '../__mocks__'),

@@ -10,20 +10,15 @@
  */
 
 jest.unmock('log4js');
-jest.unmock('nuclide-commons/analytics');
-jest.unmock('../../nuclide-analytics');
 
 global.NUCLIDE_DO_NOT_LOG = false;
 
-import log4js from 'log4js';
 import {runCommand, LOG_CATEGORY} from 'nuclide-commons/process';
+import {trackSampled} from 'nuclide-commons/analytics';
+import log4js from 'log4js';
 import waitsFor from '../../../jest/waits_for';
 
 describe('processTrackingAppender', () => {
-  const trackSpy = jest.spyOn(
-    require('nuclide-commons/analytics'),
-    'trackSampled',
-  );
   it('captures process exits', async () => {
     log4js.configure({
       appenders: [
@@ -36,9 +31,9 @@ describe('processTrackingAppender', () => {
 
     await runCommand('true', ['1']).toPromise();
 
-    await waitsFor(() => trackSpy.mock.calls.length > 0);
+    await waitsFor(() => (trackSampled: any).mock.calls.length > 0);
 
-    expect(trackSpy).toHaveBeenCalledWith('process-exit', 10, {
+    expect(trackSampled).toHaveBeenCalledWith('process-exit', 10, {
       command: 'true 1',
       duration: jasmine.any(Number),
     });
