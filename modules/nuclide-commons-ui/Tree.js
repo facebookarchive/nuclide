@@ -43,6 +43,7 @@ type TreeItemProps = {|
   onMouseLeave?: (e: SyntheticMouseEvent<>) => mixed,
   path?: string,
   name?: string,
+  title?: string,
 |};
 
 export class TreeItem extends React.Component<TreeItemProps> {
@@ -65,34 +66,37 @@ export class TreeItem extends React.Component<TreeItemProps> {
       onMouseLeave,
       path,
       name,
+      title,
     } = this.props;
 
     return (
-      <li
-        aria-selected={selected}
-        className={classnames(
-          className,
-          {
-            selected,
-          },
-          'list-item',
-        )}
-        onMouseDown={onMouseDown}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        data-path={path}
-        data-name={name}
-        onClick={this._handleClick}
-        ref={liNode => (this._liNode = liNode)}
-        role="treeitem"
-        tabIndex={selected ? '0' : '-1'}>
-        {selected && typeof children === 'string' ? (
-          // String children must be wrapped to receive correct styles when selected.
-          <span>{children}</span>
-        ) : (
-          children
-        )}
-      </li>
+      <div title={title}>
+        <li
+          aria-selected={selected}
+          className={classnames(
+            className,
+            {
+              selected,
+            },
+            'list-item',
+          )}
+          onMouseDown={onMouseDown}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          data-path={path}
+          data-name={name}
+          onClick={this._handleClick}
+          ref={liNode => (this._liNode = liNode)}
+          role="treeitem"
+          tabIndex={selected ? '0' : '-1'}>
+          {selected && typeof children === 'string' ? (
+            // String children must be wrapped to receive correct styles when selected.
+            <span>{children}</span>
+          ) : (
+            children
+          )}
+        </li>
+      </div>
     );
   }
 }
