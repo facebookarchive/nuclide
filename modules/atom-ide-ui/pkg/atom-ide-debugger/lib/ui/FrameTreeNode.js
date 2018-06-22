@@ -12,7 +12,6 @@
 
 import type {IStackFrame, IDebugService} from '../types';
 
-import addTooltip from 'nuclide-commons-ui/addTooltip';
 import * as React from 'react';
 import {TreeItem} from 'nuclide-commons-ui/Tree';
 
@@ -45,11 +44,7 @@ export default class FrameTreeNode extends React.Component<Props> {
       <TreeItem
         className={className}
         onSelect={this.handleSelect}
-        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-        ref={addTooltip({
-          title: 'Frame ID: ' + frame.frameId + ', Name: ' + frame.name,
-          delay: 0,
-        })}>
+        title={`Frame ID: ${frame.frameId}, Name: ${frame.name}`}>
         {text}
       </TreeItem>
     );

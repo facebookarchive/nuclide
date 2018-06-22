@@ -12,7 +12,6 @@
 
 import type {IThread, IDebugService} from '../types';
 
-import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {TreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
 import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
@@ -33,11 +32,7 @@ export default function ThreadTreeNode(props: Props): React.Node {
   const formattedTitle = (
     <span
       className={isFocused ? 'debugger-tree-frame-selected' : ''}
-      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-      ref={addTooltip({
-        title: 'Thread ID: ' + thread.threadId + ', Name: ' + thread.name,
-        delay: 0,
-      })}>
+      title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
       {title}
     </span>
   );

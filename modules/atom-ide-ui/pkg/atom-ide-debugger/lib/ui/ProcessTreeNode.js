@@ -12,7 +12,6 @@
 
 import type {IProcess, IDebugService} from '../types';
 
-import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {TreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
 import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
@@ -43,11 +42,7 @@ export default function ProcessTreeNode(props: Props): React.Node {
   const formattedTitle = (
     <span
       className={isFocused ? 'debugger-tree-frame-selected' : ''}
-      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-      ref={addTooltip({
-        title: tooltipTitle,
-        delay: 0,
-      })}>
+      title={tooltipTitle}>
       {title}
     </span>
   );
