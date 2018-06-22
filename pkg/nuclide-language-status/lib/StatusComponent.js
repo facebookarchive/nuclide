@@ -215,6 +215,7 @@ export default class StatusComponent extends React.Component<Props, State> {
     if (iconMarkdown != null) {
       return (
         <div
+          className="nuclide-language-status-icon"
           dangerouslySetInnerHTML={{
             __html: marked(iconMarkdown),
           }}
