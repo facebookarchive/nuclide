@@ -14,6 +14,7 @@ import type {MINamedRegisterValue} from './MIRegisterValue';
 import type {SetChildResponse} from './VariableReference';
 import type {Variable} from 'vscode-debugprotocol';
 import type {VariableTypeClass} from './VariableReference';
+import type {VariablesInterface} from './VariablesInterface';
 
 import invariant from 'assert';
 import MIProxy from './MIProxy';
@@ -21,7 +22,6 @@ import {MIRegisterValue} from './MIRegisterValue';
 import RegistersVariableReference from './RegistersVariableReference';
 import {toCommandError, dataEvaluateExpressionResult} from './MITypes';
 import VariableReference from './VariableReference';
-import Variables from './Variables';
 
 export default class RegisterElementVariableReference extends VariableReference {
   _value: MIRegisterValue;
@@ -31,7 +31,7 @@ export default class RegisterElementVariableReference extends VariableReference 
 
   constructor(
     client: MIProxy,
-    variables: Variables,
+    variables: VariablesInterface,
     name: string,
     expression: string,
     value: MIRegisterValue,

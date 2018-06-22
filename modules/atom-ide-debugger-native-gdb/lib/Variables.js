@@ -11,6 +11,7 @@
  */
 
 import type {Variable} from 'vscode-debugprotocol';
+import type {VariablesInterface} from './VariablesInterface';
 
 import HandleMap from './HandleMap';
 import MIProxy from './MIProxy';
@@ -23,7 +24,7 @@ import ScopeVariableReference from './ScopeVariableReference';
 import StackFrames from './StackFrames';
 import VariableReference from './VariableReference';
 
-export default class Variables {
+export default class Variables implements VariablesInterface {
   _client: MIProxy;
   _frames: StackFrames;
   _variables: HandleMap<VariableReference>;
