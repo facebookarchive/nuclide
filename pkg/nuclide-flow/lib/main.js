@@ -26,6 +26,7 @@ import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-refe
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
+import {trackTiming} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
@@ -424,55 +425,59 @@ async function registerMultiHopFindReferencesCommand(
       if (editor == null) {
         return;
       }
-      const path = editor.getPath();
-      if (path == null) {
-        return;
-      }
-      const cursors = editor.getCursors();
-      if (cursors.length !== 1) {
-        return;
-      }
-      const cursor = cursors[0];
-      const position =
-        lastMouseEvent != null
-          ? bufferPositionForMouseEvent(lastMouseEvent, editor)
-          : cursor.getBufferPosition();
-      lastMouseEvent = null;
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const flowLS = await getConnectionCache().getForUri(path);
-      if (flowLS == null) {
-        return;
-      }
-      if (fileVersion == null) {
-        return;
-      }
-      const getReferences = () =>
-        flowLS
-          .customFindReferences(fileVersion, position, true, true)
-          .refCount()
-          .toPromise();
-      let result;
-      if (busySignalService == null) {
-        result = await getReferences();
-      } else {
-        result = await busySignalService.reportBusyWhile(
-          'Running Flow find-indirect-references (this may take a while)',
-          getReferences,
-          {
-            revealTooltip: true,
-            waitingFor: 'computer',
-          },
-        );
-      }
-      if (result == null) {
-        atom.notifications.addInfo('No find references results available');
-      } else if (result.type === 'data') {
-        service.viewResults(result);
-      } else {
-        atom.notifications.addWarning(
-          `Flow find-indirect-references issued an error: "${result.message}"`,
-        );
-      }
+      return trackTiming('flow.find-indirect-references', async () => {
+        const path = editor.getPath();
+        if (path == null) {
+          return;
+        }
+        const cursors = editor.getCursors();
+        if (cursors.length !== 1) {
+          return;
+        }
+        const cursor = cursors[0];
+        const position =
+          lastMouseEvent != null
+            ? bufferPositionForMouseEvent(lastMouseEvent, editor)
+            : cursor.getBufferPosition();
+        lastMouseEvent = null;
+        const fileVersion = await getFileVersionOfEditor(editor);
+        const flowLS = await getConnectionCache().getForUri(path);
+        if (flowLS == null) {
+          return;
+        }
+        if (fileVersion == null) {
+          return;
+        }
+        const getReferences = () =>
+          flowLS
+            .customFindReferences(fileVersion, position, true, true)
+            .refCount()
+            .toPromise();
+        let result;
+        if (busySignalService == null) {
+          result = await getReferences();
+        } else {
+          result = await busySignalService.reportBusyWhile(
+            'Running Flow find-indirect-references (this may take a while)',
+            getReferences,
+            {
+              revealTooltip: true,
+              waitingFor: 'computer',
+            },
+          );
+        }
+        if (result == null) {
+          atom.notifications.addInfo('No find references results available');
+        } else if (result.type === 'data') {
+          service.viewResults(result);
+        } else {
+          atom.notifications.addWarning(
+            `Flow find-indirect-references issued an error: "${
+              result.message
+            }"`,
+          );
+        }
+      });
     },
   );
 }
