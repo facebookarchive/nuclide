@@ -31,7 +31,7 @@ import ExceptionBreakpoints from './ExceptionBreakpoints';
 import FunctionBreakpoints from './FunctionBreakpoints';
 import invariant from 'assert';
 import MIProxy from './MIProxy';
-import {MIAsyncRecord, MIResultRecord} from './MIRecord';
+import {MIAsyncRecord, MIResultRecord, MIStreamRecord} from './MIRecord';
 import * as pty from 'nuclide-prebuilt-libs/pty';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -129,6 +129,7 @@ class MIDebugSession extends LoggingDebugSession {
     });
 
     client.on('async', record => this._asyncRecord(record));
+    client.on('stream', record => this._streamRecord(record));
 
     this._asyncHandlers = new Map([
       [
@@ -149,6 +150,23 @@ class MIDebugSession extends LoggingDebugSession {
     const handler = this._asyncHandlers.get(record.asyncClass);
     if (handler != null) {
       handler(record);
+    }
+  }
+
+  _streamRecord(record: MIStreamRecord): void {
+    // NB we never get target output here, that's handled by the pty. The
+    // output here is mainly from raw pass-through gdb commands.
+    if (record.streamTarget === 'console' || record.streamTarget === 'log') {
+      const event = new OutputEvent();
+      event.body = {
+        category: 'log',
+        data: {
+          type: record.streamTarget === 'console' ? 'success' : 'log',
+        },
+        output: record.text,
+      };
+
+      return this.sendEvent(event);
     }
   }
 
@@ -738,6 +756,11 @@ class MIDebugSession extends LoggingDebugSession {
     response: DebugProtocol.EvaluateResponse,
     args: DebugProtocol.EvaluateArguments,
   ): Promise<void> {
+    // Hack to allow raw gdb commands from the console.
+    if (args.expression.startsWith('`')) {
+      return this._escapedCommandRequest(response, args.expression.substr(1));
+    }
+
     await this._setOutputFormat(
       args.format != null && args.format.hex != null && args.format.hex,
     );
@@ -775,6 +798,33 @@ class MIDebugSession extends LoggingDebugSession {
         variablesReference: variable.variablesReference,
         namedVariables: variable.namedVariables,
         indexedVariables: variable.indexedVariables,
+      };
+
+      this.sendResponse(response);
+    } catch (err) {
+      this._sendFailureResponse(response, err.message);
+    }
+  }
+
+  async _escapedCommandRequest(
+    response: DebugProtocol.EvaluateResponse,
+    command: string,
+  ): Promise<void> {
+    try {
+      if (this._running) {
+        this._logToConsole(
+          'gdb commands may only be issued when the target is stopped.\n',
+        );
+        this._sendFailureResponse(response, 'failed');
+        return;
+      }
+
+      await this._client.sendRawCommand(command);
+
+      response.body = {
+        result: '',
+        type: 'void',
+        variablesReference: 0,
       };
 
       this.sendResponse(response);

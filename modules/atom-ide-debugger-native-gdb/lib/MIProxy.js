@@ -39,6 +39,8 @@ export default class MIProxy extends EventEmitter {
   _nextToken: number;
   _pendingCommands: Map<number, PendingCommand>;
 
+  _pendingRawCommandResolve: ?() => void;
+
   constructor() {
     super();
 
@@ -124,6 +126,24 @@ export default class MIProxy extends EventEmitter {
     });
   }
 
+  async sendRawCommand(command: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const dbg = this._miServer;
+      if (dbg == null) {
+        reject(
+          new Error('Attempt to send a command when no MI server connected'),
+        );
+        return;
+      }
+
+      // We're making the assumption here that if we've stopped gdb at the prompt
+      // and sent a real gdb (not MI) command, that it will execute synchronously
+      // with no intermixed MI traffic.
+      this._pendingRawCommandResolve = resolve;
+      dbg.stdin.write(`${command}\n`);
+    });
+  }
+
   _onData(buffer: Buffer): void {
     // NB data coming back from gdb will be ASCII, and data from the target
     // does not come over this channel.
@@ -155,6 +175,14 @@ export default class MIProxy extends EventEmitter {
   _emitRecord(record: MIRecord, line: string): void {
     if (record instanceof MIResultRecord) {
       const token = record.token;
+      // if we have a raw gdb command, it won't have an associated token
+      const rawResolve = this._pendingRawCommandResolve;
+      if (token == null && rawResolve != null) {
+        rawResolve();
+        this._pendingRawCommandResolve = null;
+        return;
+      }
+
       invariant(token != null, 'token should always exist in a result record');
       const pending = this._pendingCommands.get(token);
       if (pending != null) {
