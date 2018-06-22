@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DirectorySearchConfig, FileSearchResult} from './rpc-types';
 
 import LRU from 'lru-cache';
+import {trackTiming} from '../../nuclide-analytics';
 import {
   fileSearchForDirectory,
   getExistingSearchDirectories,
@@ -85,18 +86,27 @@ export async function queryFuzzyFile(config: {|
   }
 
   const searchConfig = await searchConfigPromise;
-  if (searchConfig.useCustomSearch) {
-    return searchConfig.search(config.queryString, rootDirectory);
-  } else {
-    const search = await fileSearchForDirectory(
-      rootDirectory,
-      config.ignoredNames,
-    );
-    return search.query(config.queryString, {
-      queryRoot: config.queryRoot,
-      smartCase: config.smartCase,
-    });
-  }
+  return trackTiming(
+    'fuzzy-file-search',
+    async () => {
+      if (searchConfig.useCustomSearch) {
+        return searchConfig.search(config.queryString, rootDirectory);
+      } else {
+        const search = await fileSearchForDirectory(
+          rootDirectory,
+          config.ignoredNames,
+        );
+        return search.query(config.queryString, {
+          queryRoot: config.queryRoot,
+          smartCase: config.smartCase,
+        });
+      }
+    },
+    {
+      path: rootDirectory,
+      useCustomSearch: searchConfig.useCustomSearch,
+    },
+  );
 }
 
 export async function queryAllExistingFuzzyFile(
