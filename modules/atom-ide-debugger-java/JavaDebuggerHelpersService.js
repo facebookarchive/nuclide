@@ -186,7 +186,8 @@ async function _getClassPath(): Promise<string> {
       const java = (await runCommand('which', ['java']).toPromise()).trim();
       const javaHome = await fsPromise.realpath(java);
 
-      const matches = /(.*)\/java/.exec(javaHome);
+      // $FlowFixMe (>= v0.75.0)
+      const matches: RegExp$matchResult = /(.*)\/java/.exec(javaHome);
       toolsJarPath = matches.length > 1 ? matches[1] + '/../lib/tools.jar' : '';
       break;
     }

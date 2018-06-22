@@ -211,12 +211,13 @@ export default class DiagnosticsParser {
 
     let ocamlMatch;
     while ((ocamlMatch = OCAML_ERROR_REGEX.exec(message))) {
-      const [, file, strLine, column, problem, hint] = ocamlMatch;
+      const [, file, strLine, strCol, problem, hint] = ocamlMatch;
       fileSystemService = getFileSystemServiceIfNecessary(
         fileSystemService,
         root,
       );
       const line = parseInt(strLine, 10);
+      const column = parseInt(strCol, 10);
       const text = hint ? problem + ', ' + hint : problem;
       const ocamlLevel = problem.startsWith('Error') ? 'error' : level;
 

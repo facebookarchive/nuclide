@@ -75,8 +75,8 @@ export function mergeOutputToResults(
             results.map(parseResult => {
               const {file, row, line} = parseResult;
               const allMatches = [];
-              let match;
-              while ((match = regex.exec(line)) != null) {
+              let match = regex.exec(line);
+              while (match != null) {
                 // Some invalid regex (e.g. /||/g) will always match,
                 // but with an empty match string, so the exec loop becomes infinite.
                 // Check for this case and abort early.
@@ -96,6 +96,7 @@ export function mergeOutputToResults(
                   // looping exec on a non-global regex is an infinite loop.
                   break;
                 }
+                match = regex.exec(line);
               }
               regex.lastIndex = 0;
               return allMatches;

@@ -131,7 +131,8 @@ export default class ObjectiveCBracketBalancer {
         currentRowPlusOne !== closeBracketPosition.row
       ) {
         const targetLine = buffer.lineForRow(currentRowPlusOne);
-        const targetMatch = /\S/.exec(targetLine);
+        // $FlowFixMe (>= v0.75.0)
+        const targetMatch: RegExp$matchResult = /\S/.exec(targetLine);
 
         if (targetLine[targetMatch.index] === '[') {
           return null;
