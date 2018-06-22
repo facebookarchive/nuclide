@@ -53,7 +53,7 @@ async function handleLaunchParams(params: LauncherScriptParams) {
     await enforceExclusive(params.exclusive);
   }
 
-  const port = await BigDigServer.createServer({
+  const server: BigDigServer = await BigDigServer.createServer({
     ports: params.ports,
     webServer: {
       key: params.key,
@@ -63,6 +63,8 @@ async function handleLaunchParams(params: LauncherScriptParams) {
     absolutePathToServerMain: params.absolutePathToServerMain,
     serverParams: params.serverParams,
   });
+
+  const port = server.getPort();
 
   invariant(process.send != null);
   process.send({port}, () => {

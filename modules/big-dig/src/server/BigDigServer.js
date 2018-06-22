@@ -88,7 +88,9 @@ export default class BigDigServer {
     );
   }
 
-  static async createServer(options: ServerLauncherOptions): Promise<number> {
+  static async createServer(
+    options: ServerLauncherOptions,
+  ): Promise<BigDigServer> {
     const webServer = https.createServer(options.webServer);
 
     if (!(await scanPortsToListen(webServer, options.ports))) {
@@ -120,7 +122,7 @@ export default class BigDigServer {
       serverParams: options.serverParams,
     });
 
-    return webServer.address().port;
+    return bigDigServer;
   }
 
   addSubscriber(tag: string, subscriber: Subscriber) {
@@ -138,6 +140,10 @@ export default class BigDigServer {
     } else {
       throw new Error(`subscriber is already registered for ${tag}`);
     }
+  }
+
+  getPort(): number {
+    return this._httpsServer.address().port;
   }
 
   _onHttpsRequest(
