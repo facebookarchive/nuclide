@@ -16,21 +16,21 @@
   */
 
 const path = require('path');
+const p = nuclidePath => path.resolve(__dirname, '..', nuclidePath);
 
 module.exports = {
   displayName: 'atom',
-  rootDir: path.resolve(__dirname, '../../..'),
-  roots: ['<rootDir>/xplat/nuclide'],
+  rootDir: p('../..'),
+  roots: [p('')],
   testMatch: ['**/__atom_tests__/**/*.js?(x)'],
   transform: {
-    '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
+    '\\.js$': p('modules/nuclide-jest/jestTransformer.js'),
   },
-  setupTestFrameworkScriptFile: '<rootDir>/xplat/nuclide/jest/setupTestFrameworkScriptFile.atom.js',
-  testPathIgnorePatterns: ['/node_modules/'],
-  runner: path.resolve(__dirname, '../modules/jest-atom-runner/build/index.js'),
+  setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.atom.js'),
+  runner: p('modules/jest-atom-runner/build/index.js'),
   moduleNameMapper: {
-    oniguruma: path.resolve(__dirname, './__mocks__/emptyObject.js'),
+    oniguruma: p('jest/__mocks__/emptyObject.js'),
   },
-  testEnvironment:
-    '<rootDir>/xplat/nuclide/modules/jest-atom-runner/build/environment.js',
+  testEnvironment: p('modules/jest-atom-runner/build/environment.js'),
+  testPathIgnorePatterns: ['/node_modules/'],
 };
