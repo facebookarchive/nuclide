@@ -656,3 +656,22 @@ export function getCompilationDatabase(
     getCompilationDatabaseHandler(params).getCompilationDatabase(src),
   ).publish();
 }
+
+export function isNativeExoPackage(
+  rootPath: NuclideUri,
+  target: string,
+): ConnectableObservable<boolean> {
+  return Observable.defer(async () => {
+    const attributes = await queryWithAttributes(rootPath, target, [
+      'exopackage_modes',
+    ]);
+    if (
+      attributes[target] != null &&
+      typeof attributes[target].exopackage_modes === 'string'
+    ) {
+      return attributes[target].exopackage_modes.indexOf('native_library') >= 0;
+    } else {
+      return false;
+    }
+  }).publish();
+}
