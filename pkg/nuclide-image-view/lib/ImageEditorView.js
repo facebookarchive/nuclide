@@ -11,8 +11,13 @@
 
 import type ImageEditor from './ImageEditor';
 
+import fs from 'fs';
+import {Message} from 'nuclide-commons-ui/Message';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AtomImageEditorView from '../VendorLib/image-view/lib/image-editor-view';
+import nullthrows from 'nullthrows';
+import * as React from 'react';
 
 /**
  * This view wraps the vendored one. This is necessary because the Atom ImageEditorView performs
@@ -30,6 +35,18 @@ export default class ImageEditorView {
       // We need to defer loading the real view until the local file is ready because it assumes it
       // exists.
       editor.whenReady(() => {
+        // In some weird cases (e.g. Dash cached a deleted file path?), we might have tried to open
+        // a nonexistent file. In that case, just show an error. It's important that we don't create
+        // an AtomImageEditorView because that will try to stat the nonexistent file and error.
+        if (!fs.existsSync(nullthrows(editor.getLocalPath()))) {
+          const message = renderReactRoot(
+            <Message type="error">Image doesn't exist</Message>,
+          );
+          message.style.flexDirection = 'column';
+          this.element.appendChild(message);
+          return;
+        }
+
         // AtomImageEditorView tries to do a stat using the result of `getPath()` so we give it a
         // proxy that always returns the local path instead of the real editor. (We don't want to
         // change the editor's `getPath()` because other things use that for display purposes and we
