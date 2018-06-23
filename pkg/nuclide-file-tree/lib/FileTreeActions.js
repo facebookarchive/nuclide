@@ -9,6 +9,7 @@
  * @format
  */
 
+import {isGkEnabled} from '../../commons-node/passesGK';
 import {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
@@ -21,7 +22,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
-import {mapEqual} from 'nuclide-commons/collection';
+import {mapEqual, setDifference} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Selectors from './FileTreeSelectors';
@@ -414,6 +415,28 @@ export default class FileTreeActions {
   }
 
   updateWorkingSet(workingSet: WorkingSet): void {
+    // TODO (T30814717): Make this the default behavior after some research.
+    if (isGkEnabled('nuclide_projects') === true) {
+      const prevWorkingSet = Selectors.getWorkingSet(this._store);
+      const prevUris = new Set(prevWorkingSet.getUris());
+      const nextUris = new Set(workingSet.getUris());
+      const addedUris = setDifference(nextUris, prevUris);
+      // Reveal all of the added paths. This is a little gross. The WorkingSetStore API will return
+      // absolute paths (`/a/b/c`) for remote directories instead of `nuclide://` URIs. In other
+      // words, we don't have enough information to know what paths to reveal. So we'll just try to
+      // reveal the path in every root.
+      addedUris.forEach(uri => {
+        Selectors.getRootKeys(this._store).forEach(rootUri => {
+          const filePath = nuclideUri.resolve(rootUri, uri);
+          const nodeKey = FileTreeHelpers.dirPathToKey(filePath);
+          this.revealFilePath(nodeKey, false);
+          if (nextUris.size === 1) {
+            // There's only a single URI in the working set, expand it.
+            this.expandNode(rootUri, nodeKey);
+          }
+        });
+      });
+    }
     this._store.dispatch({
       actionType: ActionTypes.SET_WORKING_SET,
       workingSet,
