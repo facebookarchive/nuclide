@@ -19,7 +19,11 @@ import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 import {getJavaVSAdapterExecutableInfo} from '../JavaDebuggerHelpersService';
 
 const logger = getLogger('vscode-java-debugger-spec');
-const JAVA_FIXTURES = nuclideUri.join(__dirname, 'fixtures', 'java');
+const JAVA_FIXTURES = nuclideUri.join(
+  __dirname,
+  '../__mocks__/fixtures',
+  'java',
+);
 const THREAD_ID = 1;
 const JAVA_DEBUGGER_PKG = nuclideUri.join(__dirname, '..');
 
@@ -157,8 +161,8 @@ async function verifyUnverifiedBreakpoints(
 // eslint-disable-next-line jasmine/no-disabled-tests
 xdescribe('vscode-java-debugger', () => {
   let hasDoneSetup = false;
-  beforeEach(() => {
-    waitsForPromise({timeout: 120000}, async () => {
+  beforeEach(async () => {
+    await (async () => {
       if (hasDoneSetup) {
         return;
       }
@@ -184,7 +188,7 @@ xdescribe('vscode-java-debugger', () => {
       );
 
       hasDoneSetup = true;
-    });
+    })();
   });
 
   afterEach(() => {
@@ -194,8 +198,8 @@ xdescribe('vscode-java-debugger', () => {
     waits(2000);
   });
 
-  it('launches and outputs console messages', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('launches and outputs console messages', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -216,11 +220,11 @@ xdescribe('vscode-java-debugger', () => {
             });
         },
       );
-    });
+    })();
   });
 
-  it('breaks at a breakpoint', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('breaks at a breakpoint', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -238,11 +242,11 @@ xdescribe('vscode-java-debugger', () => {
           await checkLine(session, 11);
         },
       );
-    });
+    })();
   });
 
-  it('sets multiple breakpoints', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('sets multiple breakpoints', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -267,11 +271,11 @@ xdescribe('vscode-java-debugger', () => {
           await checkLine(session, 23);
         },
       );
-    });
+    })();
   });
 
-  it('supports step-over, step-in, and step-out', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('supports step-over, step-in, and step-out', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -297,11 +301,11 @@ xdescribe('vscode-java-debugger', () => {
           await checkLine(session, 12);
         },
       );
-    });
+    })();
   });
 
-  it('evaluates expressions', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('evaluates expressions', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -335,11 +339,11 @@ xdescribe('vscode-java-debugger', () => {
           );
         },
       );
-    });
+    })();
   });
 
-  it('checks threads', () => {
-    waitsForPromise({timeout: 10000}, async () => {
+  it('checks threads', async () => {
+    await (async () => {
       await withSessionLaunch(
         'SimpleClass',
         {
@@ -381,7 +385,7 @@ xdescribe('vscode-java-debugger', () => {
           });
         },
       );
-    });
+    })();
   });
   // end
 });
