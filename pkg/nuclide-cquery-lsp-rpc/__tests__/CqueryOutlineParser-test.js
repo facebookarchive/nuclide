@@ -18,20 +18,15 @@ import {
   type,
   className as class_,
 } from 'nuclide-commons/tokenized-text';
-import {addMatchers} from '../../nuclide-test-helpers';
 import {parseOutlineTree} from '../lib/outline/CqueryOutlineParser';
 import {
   simplifyNodeForTesting,
   createFunction,
   createVariable,
   createClass,
-} from './utils';
+} from '../__mocks__/utils';
 
 describe('CqueryOutlineParser', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   it('parses correctly obj-c functions with _nonNull and __strong', () => {
     const containerName =
       'Ret * _Nonnull (NSUInteger * _Nonnull __strong) funct';
@@ -53,7 +48,7 @@ describe('CqueryOutlineParser', () => {
       simplifyNodeForTesting(
         parseOutlineTree([createFunction(name, containerName)]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -81,7 +76,7 @@ describe('CqueryOutlineParser', () => {
           createFunction('fun3', 'int fun3()', 2, 2, 5, 25),
         ]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -117,7 +112,7 @@ describe('CqueryOutlineParser', () => {
       simplifyNodeForTesting(
         parseOutlineTree([createFunction(methodName, methodContainerName)]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -169,7 +164,7 @@ describe('CqueryOutlineParser', () => {
           createVariable(paramName2, paramContainerName2, 1),
         ]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -248,7 +243,7 @@ describe('CqueryOutlineParser', () => {
           createVariable(localVariableName, localVariableContainerName, 2),
         ]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -324,7 +319,7 @@ describe('CqueryOutlineParser', () => {
           createVariable(localVariableName, localVariableContainerName, 2),
         ]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
@@ -405,7 +400,7 @@ describe('CqueryOutlineParser', () => {
           createVariable(memberName, memberContainerName, 6),
         ]),
       ),
-    ).diffJson({
+    ).toEqual({
       kind: 'module',
       tokenizedText: [type('')],
       children: [
