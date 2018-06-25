@@ -12,18 +12,30 @@
 
 import type {TerminalOptions} from 'xterm';
 
-import {boolean, constant, either3, object, number, guard} from 'decoders';
+import {
+  boolean,
+  constant,
+  either3,
+  object,
+  number,
+  string,
+  guard,
+} from 'decoders';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Terminal as XTerminal} from 'xterm';
 import * as Fit from 'xterm/lib/addons/fit/fit';
 import * as WebLinks from 'xterm/lib/addons/webLinks/webLinks';
-
-const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
-const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
-const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
-const OPTION_IS_META_CONFIG = 'atom-ide-terminal.optionIsMeta';
-const TRANSPARENCY_CONFIG = 'atom-ide-terminal.allowTransparency';
-const CHAR_ATLAS_CONFIG = 'atom-ide-terminal.charAtlas';
+import {
+  CHAR_ATLAS_CONFIG,
+  CURSOR_BLINK_CONFIG,
+  CURSOR_STYLE_CONFIG,
+  FONT_FAMILY_CONFIG,
+  LINE_HEIGHT_CONFIG,
+  OPTION_IS_META_CONFIG,
+  SCROLLBACK_CONFIG,
+  TRANSPARENCY_CONFIG,
+  getFontSize,
+} from './config';
 
 export type Terminal = TerminalClass;
 declare class TerminalClass extends XTerminal {
@@ -40,8 +52,6 @@ declare class TerminalClass extends XTerminal {
 
 const assertTerminalOptionsInFeatureConfig = guard(
   object({
-    cols: number,
-    rows: number,
     cursorBlink: boolean,
     cursorStyle: either3(
       constant('block'),
@@ -49,6 +59,9 @@ const assertTerminalOptionsInFeatureConfig = guard(
       constant('bar'),
     ),
     scrollback: number,
+    fontFamily: string,
+    fontSize: number,
+    lineHeight: number,
     macOptionIsMeta: boolean,
     allowTransparency: boolean,
     experimentalCharAtlas: either3(
@@ -76,11 +89,12 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
   const terminal = new XTerminal(
     // $FlowIssue: xterms type needs to be updated to include experimentalCharAtlas
     assertTerminalOptionsInFeatureConfig({
-      cols: 512,
-      rows: 512,
       cursorBlink: featureConfig.get(CURSOR_BLINK_CONFIG),
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
+      fontFamily: featureConfig.get(FONT_FAMILY_CONFIG),
+      fontSize: getFontSize(),
+      lineHeight: featureConfig.get(LINE_HEIGHT_CONFIG),
       macOptionIsMeta: featureConfig.get(OPTION_IS_META_CONFIG),
       allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
       experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),

@@ -35,6 +35,19 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
+import {
+  ADD_ESCAPE_COMMAND,
+  COLOR_CONFIGS,
+  CURSOR_BLINK_CONFIG,
+  CURSOR_STYLE_CONFIG,
+  DOCUMENTATION_MESSAGE_CONFIG,
+  FONT_FAMILY_CONFIG,
+  FONT_SCALE_CONFIG,
+  LINE_HEIGHT_CONFIG,
+  PRESERVED_COMMANDS_CONFIG,
+  SCROLLBACK_CONFIG,
+  getFontSize,
+} from './config';
 import {removePrefixSink, patternCounterSink} from './sink';
 
 import type {Terminal} from './createTerminal';
@@ -46,35 +59,6 @@ import type {InstantiatedTerminalInfo} from './nuclide-terminal-uri';
 
 import type {Sink} from './sink';
 
-export const COLOR_CONFIGS = Object.freeze({
-  // dark
-  black: 'atom-ide-terminal.black',
-  red: 'atom-ide-terminal.red',
-  green: 'atom-ide-terminal.green',
-  blue: 'atom-ide-terminal.blue',
-  yellow: 'atom-ide-terminal.yellow',
-  cyan: 'atom-ide-terminal.cyan',
-  magenta: 'atom-ide-terminal.magenta',
-  white: 'atom-ide-terminal.white',
-  // bright
-  brightBlack: 'atom-ide-terminal.brightBlack',
-  brightRed: 'atom-ide-terminal.brightRed',
-  brightGreen: 'atom-ide-terminal.brightGreen',
-  brightBlue: 'atom-ide-terminal.brightBlue',
-  brightYellow: 'atom-ide-terminal.brightYellow',
-  brightCyan: 'atom-ide-terminal.brightCyan',
-  brightMagenta: 'atom-ide-terminal.brightMagenta',
-  brightWhite: 'atom-ide-terminal.brightWhite',
-});
-const PRESERVED_COMMANDS_CONFIG = 'atom-ide-terminal.preservedCommands';
-const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
-const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
-const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
-const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
-const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
-const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
-const DOCUMENTATION_MESSAGE_CONFIG = 'atom-ide-terminal.documentationMessage';
-const ADD_ESCAPE_COMMAND = 'atom-ide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
@@ -248,19 +232,19 @@ export class TerminalView implements PtyClient, TerminalInstance {
         .observeAsStream(CURSOR_STYLE_CONFIG)
         .skip(1)
         .subscribe(cursorStyle =>
-          this._terminal.setOption('cursorStyle', cursorStyle),
+          this._setTerminalOption('cursorStyle', cursorStyle),
         ),
       featureConfig
         .observeAsStream(CURSOR_BLINK_CONFIG)
         .skip(1)
         .subscribe(cursorBlink =>
-          this._terminal.setOption('cursorBlink', cursorBlink),
+          this._setTerminalOption('cursorBlink', cursorBlink),
         ),
       featureConfig
         .observeAsStream(SCROLLBACK_CONFIG)
         .skip(1)
         .subscribe(scrollback =>
-          this._terminal.setOption('scrollback', scrollback),
+          this._setTerminalOption('scrollback', scrollback),
         ),
       Observable.merge(
         observableFromSubscribeFunction(cb =>
@@ -393,20 +377,23 @@ export class TerminalView implements PtyClient, TerminalInstance {
   // Since changing the font settings may resize the contents, we have to
   // trigger a re-fit when updating font settings.
   _syncFontAndFit = (): void => {
-    const scaledFont =
-      parseFloat(featureConfig.get(FONT_SCALE_CONFIG)) *
-      parseFloat(atom.config.get('editor.fontSize'));
-    this._terminal.setOption('fontSize', scaledFont);
-    this._terminal.setOption(
+    this._setTerminalOption('fontSize', getFontSize());
+    this._setTerminalOption(
       'lineHeight',
       featureConfig.get(LINE_HEIGHT_CONFIG),
     );
-    this._terminal.setOption(
+    this._setTerminalOption(
       'fontFamily',
       featureConfig.get(FONT_FAMILY_CONFIG),
     );
     this._fitAndResize();
   };
+
+  _setTerminalOption(optionName: string, value: mixed): void {
+    if (this._terminal.getOption(optionName) !== value) {
+      this._terminal.setOption(optionName, value);
+    }
+  }
 
   _fitAndResize(): void {
     // Force character measure before 'fit' runs.
@@ -422,9 +409,8 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   _syncAtomTheme(): void {
-    const terminal = this._terminal;
     const div = this._div;
-    terminal.setOption('theme', getTerminalTheme(div));
+    this._setTerminalOption('theme', getTerminalTheme(div));
   }
 
   _clear(): void {
