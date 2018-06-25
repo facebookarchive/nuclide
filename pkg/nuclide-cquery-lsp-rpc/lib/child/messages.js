@@ -10,9 +10,29 @@
  */
 
 import type {Message} from 'vscode-jsonrpc';
+import type {ShowStatusParams} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
+
 import log4js from 'log4js';
 import {IConnection} from 'vscode-languageserver';
 import {setupLoggingService} from '../../../nuclide-logging';
+
+import uuid from 'uuid';
+
+export type CqueryProgressNotification = {
+  indexRequestCount: number,
+  doIdMapCount: number,
+  loadPreviousIndexCount: number,
+  onIdMappedCount: number,
+  onIndexedCount: number,
+};
+
+// Generate an instanceid to avoid collisions after restart.
+const instanceId = uuid.v4();
+let nextRequestId = 0;
+function generateId(): string {
+  // Pick a prefix that will not collide with cquery.
+  return `nuclide-cquery-${instanceId}-${nextRequestId++}`;
+}
 
 export function initializeLogging(connection: IConnection) {
   setupLoggingService();
@@ -44,6 +64,15 @@ export function windowMessage(type: number, message: string): Message {
       message,
       type,
     },
+  };
+}
+
+export function windowStatusMessage(params: ShowStatusParams): Message {
+  return {
+    jsonrpc: '2.0',
+    method: 'window/showStatus',
+    id: generateId(),
+    params,
   };
 }
 

@@ -16,6 +16,7 @@ import type {
   DidCloseTextDocumentParams,
 } from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {FlagsInfo} from './FlagUtils';
+import type {CqueryProgressNotification} from './messages';
 
 import log4js from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -24,11 +25,9 @@ import {readCompilationFlags} from '../../../nuclide-clang-rpc/lib/clang-flags-r
 import {lspUri_localPath} from '../../../nuclide-vscode-language-service-rpc/lib/convert';
 import {MessageType} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
 import {flagsInfoForPath} from './FlagUtils';
-import {windowMessage, addDbMessage} from './messages';
+import {windowMessage, addDbMessage, windowStatusMessage} from './messages';
 
 const logger = log4js.getLogger('nuclide-cquery-wrapper');
-
-const KNOWN_METHODS = ['textDocument/didOpen', 'textDocument/didClose'];
 
 /**
  * Message handlers defined here perform processing on messages from the
@@ -48,6 +47,8 @@ export class MessageHandler {
   // its compile commands from Buck or the filesystem.
   // Used to resolve races between open/close events.
   _pendingOpenRequests: Map<string, Promise<?FlagsInfo>> = new Map();
+  // The last output of $cquery/progress.
+  _lastJobsTotal: number = 0;
 
   constructor(
     serverWriter: StreamMessageWriter,
@@ -55,28 +56,40 @@ export class MessageHandler {
   ) {
     this._serverWriter = serverWriter;
     this._clientWriter = clientWriter;
+    this._updateStatus();
   }
 
   /**
-   * Return whether this message handler can handle the message.
+   * Attempt to handle a message from the client editor.
    */
-  canHandle(message: Message): boolean {
-    const method: ?string = ((message: any): {method: ?string}).method;
-    return KNOWN_METHODS.indexOf(method) !== -1;
-  }
-  /**
-   * Attempt to handle the given message.
-   */
-  async handle(message: Message): mixed {
+  handleFromClient(message: Message): boolean {
     const method: ?string = ((message: any): {method: ?string}).method;
     if (method != null) {
       switch (method) {
         case 'textDocument/didOpen':
-          return this._didOpen(message);
+          this._didOpen(message);
+          return true;
         case 'textDocument/didClose':
-          return this._didClose(message);
+          this._didClose(message);
+          return true;
       }
     }
+    return false;
+  }
+
+  /**
+   * Attempt to handle a message from the cquery server.
+   */
+  handleFromServer(message: Message): boolean {
+    const method: ?string = ((message: any): {method: ?string}).method;
+    if (method != null) {
+      switch (method) {
+        case '$cquery/progress':
+          this._progress(message);
+          return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -111,6 +124,7 @@ export class MessageHandler {
         resolveOpenRequest = resolve;
       }),
     );
+    this._updateStatus();
     try {
       flagsInfo = await flagsInfoForPath(path);
     } catch (e) {
@@ -148,9 +162,11 @@ export class MessageHandler {
         ),
       );
     }
+    this._updateStatus();
     this._serverWriter.write(openMessage);
     resolveOpenRequest();
   }
+
   async _didClose(closeMessage: Message): mixed {
     const params = ((closeMessage: any).params: DidCloseTextDocumentParams);
     const path = lspUri_localPath(params.textDocument.uri);
@@ -170,6 +186,49 @@ export class MessageHandler {
       }
     } finally {
       this._serverWriter.write(closeMessage);
+    }
+  }
+
+  _progress(progressMessage: Message): mixed {
+    const params = ((progressMessage: any).params: CqueryProgressNotification);
+    const {
+      indexRequestCount,
+      doIdMapCount,
+      loadPreviousIndexCount,
+      onIdMappedCount,
+      onIndexedCount,
+    } = params;
+    const total =
+      indexRequestCount +
+      doIdMapCount +
+      loadPreviousIndexCount +
+      onIdMappedCount +
+      onIndexedCount;
+    // Only trigger the status update if the total has changed.
+    if (this._lastJobsTotal !== total) {
+      this._lastJobsTotal = total;
+      this._updateStatus();
+    }
+  }
+
+  _updateStatus(): void {
+    const buildingFiles = Array.from(this._pendingOpenRequests.keys());
+    if (this._lastJobsTotal === 0 && buildingFiles.length === 0) {
+      this._clientWriter.write(
+        windowStatusMessage({type: MessageType.Info, message: 'cquery ready'}),
+      );
+    } else {
+      const jobsMessage = `cquery: ${this._lastJobsTotal} jobs`;
+      const buildingMessage =
+        buildingFiles.length > 0
+          ? 'Fetching flags for:\n - ' + buildingFiles.join('\n - ')
+          : '';
+      const status = {
+        type: MessageType.Warning,
+        // Double newline for markdown line break.
+        message: jobsMessage + '\n\n' + buildingMessage,
+      };
+      this._clientWriter.write(windowStatusMessage(status));
     }
   }
 }

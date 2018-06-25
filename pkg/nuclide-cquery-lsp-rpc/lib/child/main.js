@@ -41,24 +41,37 @@ initializeLogging(clientConnection);
 const logger = log4js.getLogger('nuclide-cquery-wrapper');
 
 function onChildSpawn(childProcess): void {
-  // server writer writes to cquery.
+  // server reader/writer reads/writes to cquery.
+  const serverReader = new SafeStreamMessageReader(childProcess.stdout);
   const serverWriter = new StreamMessageWriter(childProcess.stdin);
   // If child process quits, we also quit.
   childProcess.on('exit', code => process.exit(code));
   childProcess.on('close', code => process.exit(code));
-  const clientMessageHandler = new MessageHandler(serverWriter, clientWriter);
+  const messageHandler = new MessageHandler(serverWriter, clientWriter);
 
   clientReader.listen(message => {
-    // Message would have a method if it's a request or notification.
-    const method: ?string = ((message: any): {method: ?string}).method;
-    if (method != null && clientMessageHandler.canHandle(message)) {
-      try {
-        clientMessageHandler.handle(message);
-      } catch (e) {
-        logger.error(`Uncaught error in ${method} override handler:`, e);
-      }
-    } else {
+    let handled = false;
+    try {
+      handled = messageHandler.handleFromClient(message);
+    } catch (e) {
+      const method = ((message: any): {method: string}).method;
+      logger.error(`Uncaught error in ${method} override handler:`, e);
+    }
+    if (!handled) {
       serverWriter.write(message);
+    }
+  });
+
+  serverReader.listen(message => {
+    let handled = false;
+    try {
+      handled = messageHandler.handleFromServer(message);
+    } catch (e) {
+      const method = ((message: any): {method: string}).method;
+      logger.error(`Uncaught error in ${method} override handler:`, e);
+    }
+    if (!handled) {
+      clientWriter.write(message);
     }
   });
 
@@ -72,7 +85,7 @@ function onChildSpawn(childProcess): void {
     const memoryUsed = await serializedMemoryCheck();
     if (memoryUsed != null && memoryUsed > memoryLimit) {
       track('nuclide-cquery-lsp:memory-used', {
-        projects: clientMessageHandler.knownProjects(),
+        projects: messageHandler.knownProjects(),
         memoryUsed,
         memoryLimit,
       });
@@ -94,7 +107,7 @@ function spawnChild() {
           ? {LIBCLANG_LOGGING: 1, ...process.env}
           : process.env,
         // only pipe stdin and stdout, and inherit stderr
-        stdio: ['pipe', 'inherit', 'inherit'],
+        stdio: ['pipe', 'pipe', 'inherit'],
       },
     ),
   );

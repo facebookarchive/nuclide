@@ -12,7 +12,6 @@
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Subscription} from 'rxjs';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileCache} from '../../nuclide-open-files-rpc';
 import type {
@@ -22,7 +21,6 @@ import type {
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {RequestLocationsResult} from './types';
 
-import {Observable} from 'rxjs';
 import {
   lspUri_localPath,
   localPath_lspUri,
@@ -32,19 +30,6 @@ import {
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
 import {parseOutlineTree} from './outline/CqueryOutlineParser';
-
-type CqueryProgressNotification = {
-  indexRequestCount: number,
-  doIdMapCount: number,
-  loadPreviousIndexCount: number,
-  onIdMappedCount: number,
-  onIndexedCount: number,
-};
-
-type ProgressInfo = {
-  label: string,
-  id: string,
-};
 
 // FIXME pelmers: tracking cquery/issues/30
 // https://github.com/jacobdufault/cquery/issues/30#issuecomment-345536318
@@ -60,15 +45,8 @@ function shortenByOneCharacter({newText, range}: TextEdit): TextEdit {
 
 export class CqueryLanguageClient extends LspLanguageService {
   _projectKey: string;
-  _progressInfo: ProgressInfo;
   _logFile: string;
   _cacheDirectory: string;
-  _progressSubscription: ?Subscription;
-
-  start(): Promise<void> {
-    // Workaround for https://github.com/babel/babel/issues/3930
-    return super.start().then(() => this.startCquery());
-  }
 
   constructor(
     logger: log4js$Logger,
@@ -84,7 +62,6 @@ export class CqueryLanguageClient extends LspLanguageService {
     additionalLogFilesRetentionPeriod: number,
     logFile: string,
     cacheDirectory: string,
-    progressInfo: ProgressInfo,
     useOriginalEnvironment?: boolean = false,
   ) {
     super(
@@ -104,63 +81,6 @@ export class CqueryLanguageClient extends LspLanguageService {
     );
     this._logFile = logFile;
     this._cacheDirectory = cacheDirectory;
-    this._progressInfo = progressInfo;
-  }
-
-  async startCquery(): Promise<void> {
-    const progressObservable = Observable.create(subscriber => {
-      this._lspConnection._jsonRpcConnection.onNotification(
-        {method: '$cquery/progress'},
-        (args: CqueryProgressNotification) => {
-          const {
-            indexRequestCount,
-            doIdMapCount,
-            loadPreviousIndexCount,
-            onIdMappedCount,
-            onIndexedCount,
-          } = args;
-          const total =
-            indexRequestCount +
-            doIdMapCount +
-            loadPreviousIndexCount +
-            onIdMappedCount +
-            onIndexedCount;
-          subscriber.next(total);
-        },
-      );
-    }).distinctUntilChanged();
-    if (this._progressInfo != null) {
-      const {id, label} = this._progressInfo;
-      // Because of the 'freshen' command, cquery may finish
-      // (i.e. progress reaches 0) then start emitting progress events again.
-      // So each time it reaches 0 create a new id by adding a monotonic number.
-      let progressId = 0;
-      this._progressSubscription = progressObservable.subscribe(totalJobs => {
-        const taggedId = id + progressId;
-        if (totalJobs === 0) {
-          // label null clears the indicator.
-          this._handleProgressNotification({
-            id: taggedId,
-            label: null,
-          });
-          progressId++;
-        } else {
-          this._handleProgressNotification({
-            id: taggedId,
-            label: `cquery ${label}: ${totalJobs} jobs`,
-          });
-        }
-      });
-    }
-    // TODO pelmers Register handlers for other custom cquery messages.
-    // TODO pelmers hook into refactorizer for renaming?
-  }
-
-  dispose(): void {
-    if (this._progressSubscription != null) {
-      this._progressSubscription.unsubscribe();
-    }
-    super.dispose();
   }
 
   getCacheDirectory(): string {

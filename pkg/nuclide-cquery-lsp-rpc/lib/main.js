@@ -27,6 +27,7 @@ import type {
   AutocompleteResult,
   FormatOptions,
   FileDiagnosticMessage,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -70,6 +71,14 @@ export interface CqueryLanguageService extends LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData>;
+
+  clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void>;
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
@@ -261,7 +270,6 @@ export async function createCqueryService(params: {|
       5 * 60 * 1000, // 5 minutes
       logFile,
       cacheDirectory,
-      {id: projectRoot, label: projectRoot},
     );
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
