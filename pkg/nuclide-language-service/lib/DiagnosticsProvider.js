@@ -26,7 +26,7 @@ import type {BusySignalProvider} from './AtomLanguageService';
 import {Cache} from 'nuclide-commons/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from '../../nuclide-analytics';
 import {RequestSerializer} from 'nuclide-commons/promise';
 import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
 import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';
@@ -355,7 +355,6 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             );
           })
           .map((updates: FileDiagnosticMap) => {
-            track(this._analyticsEventName);
             const filePathToMessages = new Map();
             updates.forEach((messages, filePath) => {
               const fileCache = this._connectionToFiles.get(connection);
