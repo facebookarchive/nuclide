@@ -43,11 +43,13 @@ class Activation {
     };
   }
 
-  createDebuggerConfigurator(): DebuggerConfigurationProvider {
-    return {
-      resolveConfiguration,
-      adapterType: VsAdapterTypes.JAVA,
-    };
+  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
+    return [
+      {
+        resolveConfiguration,
+        adapterType: VsAdapterTypes.JAVA,
+      },
+    ];
   }
 
   consumeRpcService(rpcService: nuclide$RpcService): IDisposable {

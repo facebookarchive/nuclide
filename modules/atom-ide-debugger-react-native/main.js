@@ -60,11 +60,13 @@ class Activation {
     return new UniversalDisposable(() => (this._gkService = null));
   }
 
-  createDebuggerConfigurator(): DebuggerConfigurationProvider {
-    return {
-      resolveConfiguration,
-      adapterType: VsAdapterTypes.REACT_NATIVE,
-    };
+  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
+    return [
+      {
+        resolveConfiguration,
+        adapterType: VsAdapterTypes.REACT_NATIVE,
+      },
+    ];
   }
 }
 

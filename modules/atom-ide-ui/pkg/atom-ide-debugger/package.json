@@ -68,7 +68,7 @@
     },
     "debugger.configurator": {
       "versions": {
-        "0.0.0": "consumeDebuggerConfigurationProvider"
+        "0.0.0": "consumeDebuggerConfigurationProviders"
       }
     },
     "nuclide-current-working-directory": {

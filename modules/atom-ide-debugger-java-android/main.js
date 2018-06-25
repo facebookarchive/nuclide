@@ -37,11 +37,13 @@ class Activation {
     };
   }
 
-  createDebuggerConfigurator(): DebuggerConfigurationProvider {
-    return {
-      resolveConfiguration,
-      adapterType: VsAdapterTypes.JAVA_ANDROID,
-    };
+  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
+    return [
+      {
+        resolveConfiguration,
+        adapterType: VsAdapterTypes.JAVA_ANDROID,
+      },
+    ];
   }
 }
 

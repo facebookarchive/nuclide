@@ -867,10 +867,15 @@ class Activation {
     });
   }
 
-  consumeDebuggerConfigurationProvider(
-    provider: DebuggerConfigurationProvider,
+  consumeDebuggerConfigurationProviders(
+    providers: Array<DebuggerConfigurationProvider>,
   ): IDisposable {
-    return addDebugConfigurationProvider(provider);
+    invariant(Array.isArray(providers));
+    const disposable = new UniversalDisposable();
+    providers.forEach(provider =>
+      disposable.add(addDebugConfigurationProvider(provider)),
+    );
+    return disposable;
   }
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {

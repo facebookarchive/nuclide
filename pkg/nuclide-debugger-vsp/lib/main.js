@@ -88,11 +88,13 @@ class Activation {
     });
   }
 
-  createDebuggerConfigurator(): DebuggerConfigurationProvider {
-    return {
-      resolveConfiguration,
-      adapterType: VsAdapterTypes.NATIVE_LLDB,
-    };
+  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
+    return [
+      {
+        resolveConfiguration,
+        adapterType: VsAdapterTypes.NATIVE_LLDB,
+      },
+    ];
   }
 
   consumeDebuggerSourcePaths(
