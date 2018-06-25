@@ -112,6 +112,11 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       version: '0.1.0',
       analyticsEventName: 'ocaml.findReferences',
     },
+    rename: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'ocaml.rename',
+    },
     autocomplete: {
       inclusionPriority: 1,
       // OCaml completions are more relevant than snippets.

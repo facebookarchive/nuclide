@@ -51,6 +51,7 @@ import type {
 import type {
   TextEdit as LspTextEditType,
   WorkspaceEdit as WorkspaceEditType,
+  TextDocumentEdit as TextDocumentEditType,
 } from './protocol';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -108,20 +109,36 @@ export function lspTextEdits_atomTextEdits(
 //    WorkspaceEdits can either provide `changes` (a mapping of document URIs to their TextEdits)
 //        or `documentChanges` (an array of TextDocumentEdits where
 //        each text document edit addresses a specific version of a text document).
-//    TODO: `documentChanges` is currently unsupported
+//
+//    TODO: Compare the versions of the documents being edited with
+//            the version numbers contained within `documentChanges`.
+//          Right now, we use `documentChanges` while ignoring version numbers.
 export function lspWorkspaceEdit_atomWorkspaceEdit(
   lspWorkspaceEdit: WorkspaceEditType,
 ): Map<NuclideUri, Array<TextEdit>> {
   const workspaceEdit = new Map();
   const lspChanges = lspWorkspaceEdit.changes;
+  const lspDocChanges = lspWorkspaceEdit.documentChanges;
+
   if (lspChanges != null) {
-    Object.keys(lspChanges).forEach(lspUri => {
+    Object.keys(lspChanges).forEach((lspUri: string) => {
       const path = lspUri_localPath(lspUri);
       const textEdits = lspTextEdits_atomTextEdits(lspChanges[lspUri]);
 
       workspaceEdit.set(path, textEdits);
     });
+  } else if (lspDocChanges != null) {
+    lspDocChanges.forEach((textDocumentEdit: TextDocumentEditType) => {
+      const lspUri = textDocumentEdit.textDocument.uri;
+      const lspTextEdits = textDocumentEdit.edits;
+
+      const path = lspUri_localPath(lspUri);
+      const textEdits = lspTextEdits_atomTextEdits(lspTextEdits);
+
+      workspaceEdit.set(path, textEdits);
+    });
   }
+
   return workspaceEdit;
 }
 
