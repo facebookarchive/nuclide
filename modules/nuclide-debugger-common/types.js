@@ -339,9 +339,4 @@ export interface DebuggerSourcePathsService {
   observeSuggestedAndroidProjectPaths(
     callback: (Array<SuggestedProjectPath>) => void,
   ): IDisposable;
-
-  addKnownNativeSubdirectoryPaths(
-    buckRoot: string,
-    searchPaths: Array<string>,
-  ): void;
 }
