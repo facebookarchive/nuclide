@@ -352,7 +352,7 @@ export default class DebugService implements IDebugService {
     this.focusStackFrame(stackFrameToFocus, null, null);
   }
 
-  _registerMarkers(): IDisposable {
+  _registerMarkers(process: IProcess): IDisposable {
     let selectedFrameMarker: ?atom$Marker = null;
     let threadChangeDatatip: ?IDisposable;
     let lastFocusedThreadId: ?number;
@@ -420,30 +420,31 @@ export default class DebugService implements IDebugService {
           if (
             lastFocusedThreadId != null &&
             !explicit &&
-            stackFrame.thread.threadId !== lastFocusedThreadId
+            stackFrame.thread.threadId !== lastFocusedThreadId &&
+            process === lastFocusedProcess
           ) {
             let message = `Active thread changed from ${lastFocusedThreadId} to ${
               stackFrame.thread.threadId
             }`;
-            const process = stackFrame.thread.process;
+            const newFocusedProcess = stackFrame.thread.process;
             if (
               lastFocusedProcess != null &&
               !explicit &&
-              process !== lastFocusedProcess
+              newFocusedProcess !== lastFocusedProcess
             ) {
               if (
                 lastFocusedProcess.configuration.processName != null &&
-                process.configuration.processName != null
+                newFocusedProcess.configuration.processName != null
               ) {
                 message =
-                  'Active Process changed from ' +
+                  'Active process changed from ' +
                   lastFocusedProcess.configuration.processName +
                   ' to ' +
-                  process.configuration.processName +
+                  newFocusedProcess.configuration.processName +
                   ' AND ' +
                   message;
               } else {
-                message = 'Active Process changed AND ' + message;
+                message = 'Active process changed AND ' + message;
               }
             }
             threadChangeDatatip = datatipService.createPinnedDataTip(
@@ -470,7 +471,7 @@ export default class DebugService implements IDebugService {
 
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
     this._sessionEndDisposables = new UniversalDisposable(session);
-    this._sessionEndDisposables.add(this._registerMarkers());
+    this._sessionEndDisposables.add(this._registerMarkers(process));
 
     const sessionId = session.getId();
 
