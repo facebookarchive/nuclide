@@ -10,10 +10,7 @@
  */
 
 import type {Transport} from 'big-dig/src/server/BigDigServer';
-import type {
-  LauncherParameters,
-  LauncherType,
-} from 'big-dig/src/server/BigDigServer';
+import type {BigDigServer, LauncherType} from 'big-dig/src/server/BigDigServer';
 import type {Transport as RpcTransportType} from '../../nuclide-rpc';
 
 import {initializeLogging} from '../../nuclide-logging';
@@ -24,13 +21,12 @@ import {NUCLIDE_RPC_TAG} from './constants';
 
 initializeLogging();
 
-function launch(launcherParams: LauncherParameters): Promise<void> {
+function launch(server: BigDigServer): Promise<void> {
   const rpcServiceRegistry = new ServiceRegistry(
     getServerSideMarshalers,
     servicesConfig,
   );
 
-  const {server} = launcherParams;
   server.addSubscriber(NUCLIDE_RPC_TAG, {
     onConnection(transport: Transport) {
       const rpcTransport: RpcTransportType = {

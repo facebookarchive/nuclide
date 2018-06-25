@@ -24,16 +24,10 @@ import {WebSocketTransport} from '../socket/WebSocketTransport';
 import {QueuedAckTransport} from '../socket/QueuedAckTransport';
 import {scanPortsToListen} from '../common/ports';
 
-export type LauncherParameters = {
-  server: BigDigServer,
-  // Any sort of JSON-serializable object is fine.
-  serverParams: mixed,
-};
-
 // The absolutePathToServerMain must export a single function of this type.
-export type LauncherType = (params: LauncherParameters) => Promise<void>;
+export type LauncherType = (server: BigDigServer) => Promise<void>;
 
-export type ServerLauncherOptions = {
+export type BigDigServerOptions = {
   // These options will be passed verbatim to https.createServer(). Admittedly,
   // this is not the complete list of options that it takes, but these are the
   // ones we intentionally work with.
@@ -63,7 +57,7 @@ type Subscriber = {
   onConnection(transport: Transport): mixed,
 };
 
-export default class BigDigServer {
+export class BigDigServer {
   _logger: log4js$Logger;
   _tagToSubscriber: Map<string, Subscriber>;
   _clientIdToTransport: Map<string, QueuedAckTransport>;
@@ -89,7 +83,7 @@ export default class BigDigServer {
   }
 
   static async createServer(
-    options: ServerLauncherOptions,
+    options: BigDigServerOptions,
   ): Promise<BigDigServer> {
     const webServer = https.createServer(options.webServer);
 
@@ -112,15 +106,8 @@ export default class BigDigServer {
 
     const bigDigServer = new BigDigServer(webServer, webSocketServer);
 
-    await launcher({
-      server: bigDigServer,
-      serverParams: options.serverParams,
-    });
-
-    await tunnelLauncher({
-      server: bigDigServer,
-      serverParams: options.serverParams,
-    });
+    await launcher(bigDigServer);
+    await tunnelLauncher(bigDigServer);
 
     return bigDigServer;
   }

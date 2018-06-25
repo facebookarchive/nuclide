@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {LauncherParameters} from '../../server/BigDigServer';
+import type {BigDigServer} from '../../server/BigDigServer';
 import type {Transport} from '../../server/BigDigServer';
 
 import {TunnelManager} from './TunnelManager';
@@ -20,10 +20,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('tunnel-service');
 
 // eslint-disable-next-line nuclide-internal/no-commonjs
-module.exports = function launch(
-  launcherParams: LauncherParameters,
-): Promise<void> {
-  const {server} = launcherParams;
+module.exports = function launch(server: BigDigServer): Promise<void> {
   logger.info('adding tunnel subscriber!');
 
   server.addSubscriber('tunnel', {
