@@ -149,7 +149,7 @@ class Activation {
             const nuxRoot = renderReactRoot(
               <PulseButtonWithTooltip
                 ariaLabel="Try the Terminal"
-                tooltipText="There's now a new built-in terminal. Click here to launch one!"
+                tooltipText="There's now a new built-in terminal. Launch one here!"
                 onDismiss={() => AsyncStorage.set(NUX_SEEN_KEY, true)}
               />,
             );
