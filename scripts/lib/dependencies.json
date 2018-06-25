@@ -5,9 +5,9 @@
       "atom",
       "--version"
     ],
-    "version-output": "Atom    : 1.27.0\nElectron: 1.7.11\nChrome  : 58.0.3029.110\nNode    : 7.9.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.27.0/atom-mac.zip",
-    "shasum": "c4dd638f88efff92ffe644d664fbc1cb5c1fcbb9deb6fafedfb35034739b0826"
+    "version-output": "Atom    : 1.28.0\nElectron: 2.0.3\nChrome  : 61.0.3163.100\nNode    : 8.9.3",
+    "url": "https://github.com/atom/atom/releases/download/v1.28.0/atom-mac.zip",
+    "shasum": "dbfc5529364b7cf7f10d89f30613ad49ba13d9d3c1caf32493da2c72209ae96e"
   },
   "flow": {
     "clientOnly": false,
@@ -25,9 +25,9 @@
       "node",
       "--version"
     ],
-    "version-output": "v7.9.0",
-    "url": "https://nodejs.org/dist/v7.9.0/node-v7.9.0-darwin-x64.tar.gz",
-    "shasum": "fbeff9aa20adfb69e0a2977578713ac0a33d20d895816af4c9eb9f75aa2b0c31"
+    "version-output": "v8.9.3",
+    "url": "https://nodejs.org/dist/v8.9.3/node-v8.9.3-darwin-x64.tar.gz",
+    "shasum": "fa7962f25db420a374e9e60d8a410188bd690a2f0ce8d403aa9b09d9b7ae8c1f"
   },
   "npm": {
     "clientOnly": false,
@@ -35,7 +35,7 @@
       "npm",
       "--version"
     ],
-    "version-output": "4.2.0",
+    "version-output": "5.5.1",
     "url": null,
     "shasum": null
   }
