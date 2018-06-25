@@ -15,7 +15,7 @@ import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 
-import {observeAndroidDevicesX} from 'nuclide-adb/lib/AdbDevicePoller';
+import {observeAndroidDevices} from 'nuclide-adb/lib/AdbDevicePoller';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -60,7 +60,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
 
   componentDidMount(): void {
     this._disposables.add(
-      observeAndroidDevicesX(this.props.targetUri)
+      observeAndroidDevices(this.props.targetUri)
         .startWith(Expect.pendingValue([]))
         .distinctUntilChanged((a, b) => {
           if (a.isPending || b.isPending) {

@@ -12,7 +12,7 @@
 
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from 'nuclide-debugger-common/types';
+import type {Device} from 'nuclide-debugger-common';
 import type {AdbDevice} from './types';
 
 import {getLogger} from 'log4js';
@@ -26,17 +26,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAdbServiceByNuclideUri} from './utils';
 
 export function observeAndroidDevices(
-  host: NuclideUri,
-): Observable<Array<Device>> {
-  return observeAndroidDevicesX(host).map(devices => devices.getOrDefault([]));
-}
-
-const pollersForUris: SimpleCache<
-  string,
-  Observable<Expected<Array<Device>>>,
-> = new SimpleCache();
-
-export function observeAndroidDevicesX(
   host: NuclideUri,
 ): Observable<Expected<Array<Device>>> {
   const serviceUri = nuclideUri.isRemote(host)
@@ -83,6 +72,11 @@ export function observeAndroidDevicesX(
       .refCount();
   });
 }
+
+const pollersForUris: SimpleCache<
+  string,
+  Observable<Expected<Array<Device>>>,
+> = new SimpleCache();
 
 async function fetch(hostname: NuclideUri): Promise<Array<Device>> {
   try {
