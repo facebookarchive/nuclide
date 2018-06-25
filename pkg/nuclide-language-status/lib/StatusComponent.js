@@ -137,7 +137,7 @@ export default class StatusComponent extends React.Component<Props, State> {
       this._providersCache = newCache;
     }
 
-    return (
+    return this.props.serverStatuses.length === 0 ? null : (
       <div
         className="nuclide-language-status-provider nuclide-language-status-provider-settings"
         data-name={SETTINGS_NAME}
