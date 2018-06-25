@@ -15,6 +15,7 @@ import type {BusySignalOptions} from '../lib/types';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {MessageStore} from '../lib/MessageStore';
 import BusySignalSingleton from '../lib/BusySignalSingleton';
+import waitsFor from '../../../../../jest/waits_for';
 
 describe('BusySignalSingleton', () => {
   let messageStore: MessageStore;
@@ -44,23 +45,23 @@ describe('BusySignalSingleton', () => {
       });
   });
 
-  it('should record messages before and after a call', () => {
+  it('should record messages before and after a call', async () => {
     expect(messages.length).toBe(0);
     singleton.reportBusyWhile('foo', () => Promise.resolve(5), options);
     expect(messages.length).toBe(1);
-    waitsFor(
+    await waitsFor(
       () => messages.length === 2,
       'It should publish a second message',
       100,
     );
   });
 
-  it("should send the 'done' message even if the promise rejects", () => {
+  it("should send the 'done' message even if the promise rejects", async () => {
     singleton
       .reportBusyWhile('foo', () => Promise.reject(new Error()), options)
       .catch(() => {});
     expect(messages.length).toBe(1);
-    waitsFor(
+    await waitsFor(
       () => messages.length === 2,
       'It should publish a second message',
       100,
@@ -91,13 +92,11 @@ describe('BusySignalSingleton', () => {
     let editor3: atom$TextEditor = (null: any);
     let file2;
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
-        editor1 = await atom.workspace.open(await fsPromise.tempfile());
-        file2 = await fsPromise.tempfile();
-        editor2 = await atom.workspace.open(file2);
-        editor3 = await atom.workspace.open();
-      });
+    beforeEach(async () => {
+      editor1 = await atom.workspace.open(await fsPromise.tempfile());
+      file2 = await fsPromise.tempfile();
+      editor2 = await atom.workspace.open(file2);
+      editor3 = await atom.workspace.open();
     });
 
     afterEach(() => {
@@ -131,22 +130,20 @@ describe('BusySignalSingleton', () => {
     });
   });
 
-  it('correctly sets revealTooltip when provided', () => {
-    waitsForPromise(async () => {
-      function getCurrentMessages() {
-        return messageStore
-          .getMessageStream()
-          .take(1)
-          .toPromise();
-      }
+  it('correctly sets revealTooltip when provided', async () => {
+    function getCurrentMessages() {
+      return messageStore
+        .getMessageStream()
+        .take(1)
+        .toPromise();
+    }
 
-      singleton.reportBusy('foo', {
-        debounce: false,
-        revealTooltip: true,
-      });
-      const curMessages = await getCurrentMessages();
-      expect(curMessages.length).toBe(1);
-      expect(curMessages[0].shouldRevealTooltip()).toBe(true);
+    singleton.reportBusy('foo', {
+      debounce: false,
+      revealTooltip: true,
     });
+    const curMessages = await getCurrentMessages();
+    expect(curMessages.length).toBe(1);
+    expect(curMessages[0].shouldRevealTooltip()).toBe(true);
   });
 });
