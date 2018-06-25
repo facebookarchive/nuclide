@@ -134,7 +134,6 @@ export type DesktopPlatform = {
     type: TaskType,
     buildTarget: ResolvedBuildTarget,
     taskSettings: TaskSettings,
-    device: ?Device,
   ) => Observable<TaskEvent>,
 };
 

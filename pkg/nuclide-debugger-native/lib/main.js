@@ -17,11 +17,7 @@ import type {PlatformGroup} from '../../nuclide-buck/lib/types';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {
-  Device,
-  TaskSettings,
-  TaskType,
-} from '../../nuclide-buck/lib/types';
+import type {TaskSettings, TaskType} from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
@@ -120,7 +116,7 @@ class Activation {
           tasksForBuildRuleType: buildRuleType => {
             return availableActions;
           },
-          runTask: (builder, taskType, target, settings, device) => {
+          runTask: (builder, taskType, target, settings) => {
             const subcommand = taskType === 'debug' ? 'build' : taskType;
             if (isDebugTask(taskType)) {
               return this._runDebugTask(
@@ -128,7 +124,6 @@ class Activation {
                 taskType,
                 target,
                 settings,
-                device,
                 buckRoot,
                 underlyingRuleType,
               );
@@ -191,7 +186,6 @@ class Activation {
     taskType: TaskType,
     buildTarget: ResolvedBuildTarget,
     taskSettings: TaskSettings,
-    device: ?Device,
     buckRoot: NuclideUri,
     ruleType: string,
   ): Observable<TaskEvent> {

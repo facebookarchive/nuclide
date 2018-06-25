@@ -337,22 +337,26 @@ export class BuckTaskRunner {
           const trace = NuclideArtilleryTrace.begin('nuclide_buck', taskType);
           if (selectedDeploymentTarget) {
             const {platform, device} = selectedDeploymentTarget;
-            return platform
-              .runTask(
-                this._buildSystem,
-                ((taskType: any): TaskType),
-                buildRuleType.buildTarget,
-                taskSettings,
-                device,
-              )
-              .do({
-                error() {
-                  trace.end();
-                },
-                complete() {
-                  trace.end();
-                },
-              });
+            let runTask;
+            if (platform.isMobile) {
+              runTask = () =>
+                platform.runTask(
+                  this._buildSystem,
+                  ((taskType: any): TaskType),
+                  buildRuleType.buildTarget,
+                  taskSettings,
+                  device,
+                );
+            } else {
+              runTask = () =>
+                platform.runTask(
+                  this._buildSystem,
+                  ((taskType: any): TaskType),
+                  buildRuleType.buildTarget,
+                  taskSettings,
+                );
+            }
+            return runTask().finally(() => trace.end());
           } else {
             let subcommand;
             if (isDebugTask(taskType)) {
