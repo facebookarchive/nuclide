@@ -163,15 +163,19 @@ class Activation {
     editor: atom$TextEditor,
     event: ?MouseEvent,
   ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-    const newName = await this._getUserInput(editor);
-    if (newName == null) {
-      return null;
-    }
-
+    // Currently, when the UI is rendered, it pushes the cursor to the very end of the word.
+    // However, the end position of the word does not count as a valid renaming position.
+    //  Thus, if the keyboard shortcut is being used, the position of the cursor
+    //    must be obtained BEFORE rendering the UI.
     const position =
       event != null
         ? bufferPositionForMouseEvent(event, editor)
         : editor.getCursorBufferPosition();
+
+    const newName = await this._getUserInput(editor);
+    if (newName == null) {
+      return null;
+    }
 
     const providers = this._providers.getAllProvidersForEditor(editor);
     const resultPromise = asyncFind(

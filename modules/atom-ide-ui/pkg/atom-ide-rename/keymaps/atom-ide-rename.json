@@ -1,5 +1,14 @@
 {
   ".rename-container": {
     "enter": "core:confirm"
+  },
+  ".platform-darwin atom-workspace atom-text-editor:not(.mini)": {
+    "f2": "rename:activate"
+  },
+  ".platform-win32 atom-workspace atom-text-editor:not(.mini)": {
+    "f2": "rename:activate"
+  },
+  ".platform-linux atom-workspace atom-text-editor:not(.mini)": {
+    "f2": "rename:activate"
   }
 }
