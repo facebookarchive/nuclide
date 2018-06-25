@@ -80,7 +80,12 @@ export default class ProjectionistFileFamilyProvider {
   async getRelatedFiles(path: NuclideUri): Promise<FileGraph> {
     const projectionist = this._projectionist;
     const cwd = this._cwd;
-    if (projectionist == null || cwd == null) {
+
+    if (
+      projectionist == null ||
+      cwd == null ||
+      !nuclideUri.contains(cwd, path)
+    ) {
       return {
         files: new Map(),
         relations: [],
