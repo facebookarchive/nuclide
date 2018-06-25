@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {MatcherOptions} from '../../nuclide-fuzzy-native';
 import type TextDocument from '../../nuclide-lsp-implementation-common/TextDocument';
 import type {
   TextDocumentPositionParams,
@@ -115,6 +116,24 @@ export function getDocumentationObject(
   return {documentation: candidate.substr(0, LEADING_COMMENT_LIMIT) + '…'};
 }
 
+const matcherOptions: MatcherOptions = {
+  // We want "fds" to match "FDSButton".
+  caseSensitive: false,
+  // We're dealing with component names which are fairly short.
+  maxGap: 20,
+  // There can be thousands of component definitions in a large codebase. The
+  // results should be limited so that we don't provide thousands of completion
+  // suggestions and perform wasted map calls.
+  maxResults: 50,
+  // Explicit default.
+  numThreads: 1,
+  // Explicit default.
+  recordMatchIndexes: false,
+  // Prefer case-sensitive matches if the user signals casing, e.g., "Component"
+  // would prefer "ComponentGroup" over "componentWrapper".
+  smartCase: true,
+};
+
 export default class DefinitionManager {
   definitionForComponentName: Map<string, ComponentDefinition>;
   matcher: Matcher;
@@ -143,7 +162,7 @@ export default class DefinitionManager {
     }
 
     return this.matcher
-      .match(componentName.substring(1))
+      .match(componentName.substring(1), matcherOptions)
       .map(({value}) => this.definitionForComponentName.get(value))
       .filter(Boolean)
       .map(definition => {
