@@ -28,6 +28,13 @@ export function getComponentDefinitionFromAst(
     return null;
   }
   const requiredProps = getRequiredPropsFromAst(componentName, ast);
+  if (requiredProps == null) {
+    // There is a difference between having no required props and being unable
+    // to traverse for required props. If this case is the latter, it probably
+    // isn't an actual React component and we wouldn't want to supply the wrong
+    // ComponentDefinition.
+    return null;
+  }
   const defaultProps = getDefaultPropNames(componentName, ast);
   const leadingComment = getLeadingCommentForComponent(componentName, ast);
   return {

@@ -26,7 +26,7 @@ describe('getExportsForFile component definitions', () => {
       '..',
       '__mocks__',
       'componentDefinitions',
-      'FDSTest.js',
+      'FDSTest.react.js',
     );
     const exportUpdate: ?ExportUpdateForFile = await getExportsForFile(path, {
       isHaste: false,

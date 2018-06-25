@@ -25,8 +25,10 @@ describe('getComponentNameFromUri', () => {
     );
   });
 
-  it('returns a component name for identity path', () => {
-    expect(getComponentNameFromUri('Component')).toBe('Component');
+  it('returns null for invalid path', () => {
+    expect(getComponentNameFromUri('Component')).toBeNull();
+    expect(getComponentNameFromUri('Component.react.example.js')).toBeNull();
+    expect(getComponentNameFromUri('Component.js')).toBeNull();
   });
 });
 

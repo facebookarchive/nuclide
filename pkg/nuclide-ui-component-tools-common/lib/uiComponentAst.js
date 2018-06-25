@@ -22,7 +22,14 @@ const babelParserOptions = babylonOptions;
 
 export function getComponentNameFromUri(uri: NuclideUri): ?string {
   const basename = nuclideUri.basename(uri);
-  const componentName = basename.split('.')[0];
+  const parts = basename.split('.');
+  if (!(parts.length === 3 && parts[1] === 'react' && parts[2] === 'js')) {
+    // This must be exactly ComponentName.react.js.
+    // We don't want to index ComponentName.example.react.js and clobber over
+    // the ComponentName definition.
+    return null;
+  }
+  const componentName = parts[0];
   if (componentName.length === 0) {
     return null;
   }
@@ -220,8 +227,11 @@ function getObjectTypeProperties(node: Node): ?Array<Node> {
 export function getRequiredPropsFromAst(
   componentName: string,
   ast: File,
-): Array<ComponentProp> {
+): ?Array<ComponentProp> {
   const typeParameterNames = getTypeParameterNames(componentName, ast);
+  if (typeParameterNames.length === 0) {
+    return null;
+  }
 
   const requiredProps = ast.program.body
     .filter(
@@ -264,7 +274,7 @@ export function getRequiredPropsFromAst(
 export function getRequiredProps(
   componentName: string,
   code: string,
-): Array<ComponentProp> {
+): ?Array<ComponentProp> {
   const ast = parseCode(code);
   if (ast == null) {
     return [];
