@@ -38,6 +38,8 @@ export class MessageHandler {
   _serverWriter: StreamMessageWriter;
   // Writes to client.
   _clientWriter: StreamMessageWriter;
+  // Absolute path to project root.
+  _projectRoot: string;
   // Map source file to its flags def file (either buck or compile_commands.json)
   _knownFileMap: Map<string, string> = new Map();
   // Set of known compilation database folders.
@@ -51,9 +53,11 @@ export class MessageHandler {
   _lastJobsTotal: number = 0;
 
   constructor(
+    projectRoot: string,
     serverWriter: StreamMessageWriter,
     clientWriter: StreamMessageWriter,
   ) {
+    this._projectRoot = projectRoot;
     this._serverWriter = serverWriter;
     this._clientWriter = clientWriter;
     this._updateStatus();
@@ -102,19 +106,20 @@ export class MessageHandler {
   async _didOpen(openMessage: Message): mixed {
     const params = ((openMessage: any).params: DidOpenTextDocumentParams);
     const path = lspUri_localPath(params.textDocument.uri);
+    const displayPath = this._stripRoot(path);
     if (this._knownFileMap.has(path)) {
       // If we have seen the path then don't find a compilation database again.
       return this._serverWriter.write(openMessage);
     } else if (this._pendingOpenRequests.has(path)) {
       // If there's another open request still in flight then drop the request.
       this._clientWriter.write(
-        windowMessage(MessageType.Info, `${path} still being opened`),
+        windowMessage(MessageType.Info, `${displayPath} still being opened`),
       );
       return;
     }
     const startTime = performanceNow();
     this._clientWriter.write(
-      windowMessage(MessageType.Info, `Looking for flags of ${path}`),
+      windowMessage(MessageType.Info, `Looking for flags of ${displayPath}`),
     );
     let flagsInfo = null;
     let resolveOpenRequest = () => {};
@@ -128,7 +133,7 @@ export class MessageHandler {
     try {
       flagsInfo = await flagsInfoForPath(path);
     } catch (e) {
-      logger.error(`Error finding flags for ${path}, ${e}`);
+      logger.error(`Error finding flags for ${displayPath}, ${e}`);
     } finally {
       this._pendingOpenRequests.delete(path);
     }
@@ -142,7 +147,7 @@ export class MessageHandler {
       this._clientWriter.write(
         windowMessage(
           MessageType.Info,
-          `Found flags for ${path} at ${flagsFile} in ${duration}ms`,
+          `Found flags for ${displayPath} at ${flagsFile} in ${duration}ms`,
         ),
       );
       this._knownFileMap.set(path, flagsFile);
@@ -158,7 +163,7 @@ export class MessageHandler {
       this._clientWriter.write(
         windowMessage(
           MessageType.Warning,
-          `Could not find flags for ${path} in ${duration}ms, diagnostics may not be correct.`,
+          `Could not find flags for ${displayPath} in ${duration}ms, diagnostics may not be correct.`,
         ),
       );
     }
@@ -170,6 +175,7 @@ export class MessageHandler {
   async _didClose(closeMessage: Message): mixed {
     const params = ((closeMessage: any).params: DidCloseTextDocumentParams);
     const path = lspUri_localPath(params.textDocument.uri);
+    const displayPath = this._stripRoot(path);
     // If user closes the file while the open request is pending, then wait
     // for the open request to finish before emitting the close notification.
     // Otherwise we could end up with inconsistent state with server thinking
@@ -179,7 +185,7 @@ export class MessageHandler {
         this._clientWriter.write(
           windowMessage(
             MessageType.Warning,
-            `${path} closed before we finished opening it`,
+            `${displayPath} closed before we finished opening it`,
           ),
         );
         await this._pendingOpenRequests.get(path);
@@ -211,8 +217,17 @@ export class MessageHandler {
     }
   }
 
+  _stripRoot(path: string): string {
+    // Return path with project root removed from the prefix.
+    return path.startsWith(this._projectRoot)
+      ? path.slice(this._projectRoot.length)
+      : path;
+  }
+
   _updateStatus(): void {
-    const buildingFiles = Array.from(this._pendingOpenRequests.keys());
+    const buildingFiles = Array.from(this._pendingOpenRequests.keys()).map(
+      path => this._stripRoot(path),
+    );
     if (this._lastJobsTotal === 0 && buildingFiles.length === 0) {
       this._clientWriter.write(
         windowStatusMessage({type: MessageType.Info, message: 'cquery ready'}),

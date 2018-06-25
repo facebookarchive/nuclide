@@ -259,6 +259,7 @@ export async function createCqueryService(params: {|
       process.execPath,
       [
         require.resolve('./child/main-entry'),
+        nuclideUri.ensureTrailingSeparator(projectRoot),
         logFile,
         recordFile,
         String(params.enableLibclangLogs),
