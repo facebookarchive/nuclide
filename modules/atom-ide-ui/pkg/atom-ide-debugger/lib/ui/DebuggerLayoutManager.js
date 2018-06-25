@@ -399,7 +399,7 @@ export default class DebuggerLayoutManager {
             uri: DEBUGGER_URI_BASE + 'debuggertree',
             isLifetimeView: false,
             defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
-            title: () => 'Debugger Tree',
+            title: () => 'Processes',
             isEnabled: () => true,
             createView: () => (
               <DebuggerProcessTreeView service={this._service} />
