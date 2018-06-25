@@ -13,7 +13,9 @@
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
 import PulseButtonWithTooltip from 'nuclide-commons-ui/PulseButtonWithTooltip';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import os from 'os';
 import nullthrows from 'nullthrows';
 import React from 'react';
@@ -120,30 +122,49 @@ class Activation {
       },
       Observable.defer(() => AsyncStorage.get(NUX_SEEN_KEY))
         .filter(seen => !seen)
+        // monitor changes in the tool-bar's position, size, and visibility
+        // and recreate the PulseButton on every significant change
         .switchMap(() =>
-          Observable.create(() => {
+          Observable.combineLatest(
+            observableFromSubscribeFunction(cb =>
+              atom.config.observe('tool-bar.visible', cb),
+            ),
+            observableFromSubscribeFunction(cb =>
+              atom.config.observe('tool-bar.position', cb),
+            ),
+            observableFromSubscribeFunction(cb =>
+              atom.config.observe('tool-bar.iconSize', cb),
+            ),
+          ),
+        )
+        .map(([visibility]) => visibility)
+        // only show if the tool-bar is open
+        .switchMap(isVisible => {
+          if (!isVisible) {
+            return Observable.empty();
+          }
+
+          return Observable.create(() => {
             const rect = buttonView.element.getBoundingClientRect();
-            const nuxRoot = document.createElement('div');
-            nuxRoot.style.position = 'absolute';
-            // attach a pulse button, offset so not to obscure the icon
-            nuxRoot.style.top = rect.top + 15 + 'px';
-            nuxRoot.style.left = rect.left + 18 + 'px';
-            ReactDOM.render(
+            const nuxRoot = renderReactRoot(
               <PulseButtonWithTooltip
                 ariaLabel="Try the Terminal"
                 tooltipText="There's now a new built-in terminal. Click here to launch one!"
                 onDismiss={() => AsyncStorage.set(NUX_SEEN_KEY, true)}
               />,
-              nuxRoot,
             );
+            nuxRoot.style.position = 'absolute';
+            // attach a pulse button, offset so not to obscure the icon
+            nuxRoot.style.top = rect.top + 15 + 'px';
+            nuxRoot.style.left = rect.left + 18 + 'px';
             nullthrows(document.body).appendChild(nuxRoot);
 
             return () => {
               ReactDOM.unmountComponentAtNode(nuxRoot);
               nuxRoot.remove();
             };
-          }),
-        )
+          });
+        })
         .subscribe(),
     );
     this._subscriptions.add(disposable);
