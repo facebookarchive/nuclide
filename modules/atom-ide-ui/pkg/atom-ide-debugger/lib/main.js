@@ -455,7 +455,9 @@ class Activation {
   }
 
   consumeGatekeeperService(service: GatekeeperService): IDisposable {
-    return this._layoutManager.consumeGatekeeperService(service);
+    const disposable = this._layoutManager.consumeGatekeeperService(service);
+    disposable.add(this._service.consumeGatekeeperService(service));
+    return disposable;
   }
 
   _registerCommandsContextMenuAndOpener(): UniversalDisposable {

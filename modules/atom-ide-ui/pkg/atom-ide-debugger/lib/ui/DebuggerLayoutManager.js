@@ -393,7 +393,7 @@ export default class DebuggerLayoutManager {
 
   convertToDebuggerTreePanes() {
     if (_gkService != null) {
-      _gkService.passesGK('nuclide_multitarget_debugging').then(passes => {
+      _gkService.passesGK('nuclide_processtree_debugging').then(passes => {
         if (passes) {
           this._debuggerPanes.splice(1, 0, {
             uri: DEBUGGER_URI_BASE + 'debuggertree',
@@ -424,7 +424,7 @@ export default class DebuggerLayoutManager {
     }
   }
 
-  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+  consumeGatekeeperService(service: GatekeeperService): UniversalDisposable {
     _gkService = service;
     this.convertToDebuggerTreePanes();
     return new UniversalDisposable(() => (_gkService = null));

@@ -40,6 +40,7 @@ SOFTWARE.
 */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
 import type {
   DebuggerModeType,
@@ -130,6 +131,8 @@ const CHANGE_EXPRESSION_CONTEXT = 'CHANGE_EXPRESSION_CONTEXT';
 
 // Berakpoint events may arrive sooner than breakpoint responses.
 const MAX_BREAKPOINT_EVENT_DELAY_MS = 5 * 1000;
+
+let _gkService: ?GatekeeperService;
 
 class ViewModel implements IViewModel {
   _focusedProcess: ?IProcess;
@@ -1482,13 +1485,22 @@ export default class DebugService implements IDebugService {
    */
   async startDebugging(config: IProcessConfig): Promise<void> {
     this._timer = startTracking('debugger-atom:startDebugging');
-    /*
+
     if (this._viewModel.focusedProcess != null) {
       // We currently support only running only one debug session at a time,
       // so stop the current debug session.
-      this.stopProcess();
+
+      if (_gkService != null) {
+        const passes = await _gkService.passesGK(
+          'nuclide_multitarget_debugging',
+        );
+        if (!passes) {
+          this.stopProcess();
+        }
+      } else {
+        this.stopProcess();
+      }
     }
-    */
 
     this._updateModeAndEmit(DebuggerMode.STARTING);
     // Open the console window if it's not already opened.
@@ -1496,6 +1508,11 @@ export default class DebugService implements IDebugService {
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
     this._consoleDisposables = this._registerConsoleExecutor();
     await this._doCreateProcess(config, uuid.v4());
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    _gkService = service;
+    return new UniversalDisposable(() => (_gkService = null));
   }
 
   _onSessionEnd = (givenSession: ?VsDebugSession): void => {
