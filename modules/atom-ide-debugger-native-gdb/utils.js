@@ -22,44 +22,44 @@ let _sourcePathsService: ?DebuggerSourcePathsService;
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  let sourcePath: ?string = configuration.config.sourcePath;
-
   const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
     configuration.targetUri,
   );
 
-  if (sourcePath == null || sourcePath.trim() === '') {
-    if (configuration.debugMode === 'launch') {
-      sourcePath = await debuggerService.getBuckRootFromUri(
-        configuration.config.program,
-      );
-    } else {
-      sourcePath = await debuggerService.getBuckRootFromPid(
-        configuration.config.pid,
-      );
-    }
+  let sourcePath: ?string = null;
+
+  if (configuration.debugMode === 'launch') {
+    sourcePath = await debuggerService.getBuckRootFromUri(
+      configuration.config.program,
+    );
+  } else {
+    sourcePath = await debuggerService.getBuckRootFromPid(
+      configuration.config.pid,
+    );
   }
 
-  const config = configuration.config;
-  if (sourcePath != null && sourcePath.trim() !== '') {
-    const canonicalSourcePath = await debuggerService.realpath(sourcePath);
-    const sourcePaths: Array<string> = [];
+  if (sourcePath == null) {
+    return configuration;
+  }
 
-    if (_sourcePathsService != null) {
-      _sourcePathsService.addKnownNativeSubdirectoryPaths(
-        canonicalSourcePath,
-        sourcePaths,
-      );
-    } else {
-      sourcePaths.push(sourcePath);
-    }
+  const canonicalSourcePath = await debuggerService.realpath(sourcePath);
+  const sourcePaths: Array<string> = [];
 
-    config.sourcePaths = sourcePaths;
+  if (_sourcePathsService != null) {
+    _sourcePathsService.addKnownNativeSubdirectoryPaths(
+      canonicalSourcePath,
+      sourcePaths,
+    );
+  } else {
+    sourcePaths.push(sourcePath);
   }
 
   return {
     ...configuration,
-    config,
+    config: {
+      ...configuration.config,
+      sourcePaths,
+    },
   };
 }
 

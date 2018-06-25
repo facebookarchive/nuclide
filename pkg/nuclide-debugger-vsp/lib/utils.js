@@ -101,53 +101,55 @@ export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
   const {adapterExecutable, targetUri} = configuration;
+  const {program, pid} = configuration.config;
+
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
 
-  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
-    configuration.targetUri,
-  );
-  let sourcePath = configuration.config.sourcePath;
-
-  if (sourcePath == null || sourcePath.trim() === '') {
-    if (configuration.debugMode === 'launch') {
-      sourcePath = await debuggerService.getBuckRootFromUri(
-        configuration.config.program,
-      );
-    } else if (configuration.config.pid != null) {
-      sourcePath = await debuggerService.getBuckRootFromPid(
-        configuration.config.pid,
-      );
-    }
-  }
-
-  const config = configuration.config;
-  if (sourcePath != null && sourcePath.trim() !== '') {
-    const canonicalSourcePath = await debuggerService.realpath(sourcePath);
-    const sourcePaths: Array<string> = [];
-
-    if (_sourcePathsService != null) {
-      _sourcePathsService.addKnownNativeSubdirectoryPaths(
-        canonicalSourcePath,
-        sourcePaths,
-      );
-    } else {
-      sourcePaths.push(sourcePath);
-    }
-
-    config.sourceMap = sourcePaths.map(path => ['.', path]);
-  }
-
   adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
 
-  const newConfig = {
-    ...configuration,
-    config,
-    adapterExecutable,
-  };
+  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
+    targetUri,
+  );
+  let sourcePath: ?string = null;
 
-  return newConfig;
+  if (configuration.debugMode === 'launch') {
+    sourcePath = await debuggerService.getBuckRootFromUri(program);
+  } else if (pid != null) {
+    sourcePath = await debuggerService.getBuckRootFromPid(pid);
+  }
+
+  if (sourcePath == null) {
+    return {
+      ...configuration,
+      config: {
+        ...configuration.config,
+        adapterExecutable,
+      },
+    };
+  }
+
+  const canonicalSourcePath = await debuggerService.realpath(sourcePath);
+  const sourcePaths: Array<string> = [];
+
+  if (_sourcePathsService != null) {
+    _sourcePathsService.addKnownNativeSubdirectoryPaths(
+      canonicalSourcePath,
+      sourcePaths,
+    );
+  } else {
+    sourcePaths.push(sourcePath);
+  }
+
+  return {
+    ...configuration,
+    config: {
+      ...configuration.config,
+      adapterExecutable,
+      sourceMap: sourcePaths.map(path => ['.', path]),
+    },
+  };
 }
 
 export function getNativeAutoGenConfig(

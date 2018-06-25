@@ -100,14 +100,6 @@ export function getNativeAutoGenConfig(
     defaultValue: '',
     visible: true,
   };
-  const sourcePath = {
-    name: 'sourcePath',
-    type: 'path',
-    description: '(Optional) base path for sources',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
 
   const debugTypeMessage = `using ${
     vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
@@ -117,7 +109,7 @@ export function getNativeAutoGenConfig(
     launch: true,
     vsAdapterType,
     threads: true,
-    properties: [program, cwd, args, env, sourcePath],
+    properties: [program, cwd, args, env],
     scriptPropertyName: 'program',
     scriptExtension: '.c',
     cwdPropertyName: 'working directory',
@@ -143,7 +135,7 @@ export function getNativeAutoGenConfig(
     launch: false,
     vsAdapterType,
     threads: true,
-    properties: [pid, sourcePath],
+    properties: [pid],
     header: <p>Attach to a running native process {debugTypeMessage}</p>,
     getProcessName(values) {
       return 'Pid: ' + values.pid + ' (' + debugTypeMessage + ')';
