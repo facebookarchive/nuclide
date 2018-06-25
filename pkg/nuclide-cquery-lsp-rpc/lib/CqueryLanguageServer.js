@@ -11,10 +11,13 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {StatusData} from '../../nuclide-language-service/lib/LanguageService';
 import type {RequestLocationsResult} from './types';
 import type {CqueryLanguageService} from '..';
 
 import fsPromise from 'nuclide-commons/fsPromise';
+import {Observable, ConnectableObservable} from 'rxjs';
 import {MultiProjectLanguageService} from '../../nuclide-language-service-rpc';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 
@@ -75,5 +78,25 @@ export default class CqueryLanguageServer
         'Could not restart: no cquery index found for ' + file,
       );
     }
+  }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    this._observeStatusPromiseResolver();
+    // Concat the observable to itself in case the language service for a file
+    // changes but the version has not (e.g. the underlying service restarts).
+    const factory = () =>
+      Observable.fromPromise(
+        this.getLanguageServiceForFile(fileVersion.filePath),
+      ).flatMap(
+        ls =>
+          // If we receive a null language service then don't restart.
+          ls != null
+            ? ls
+                .observeStatus(fileVersion)
+                .refCount()
+                .concat(Observable.defer(factory))
+            : Observable.empty(),
+      );
+    return factory().publish();
   }
 }
