@@ -14,8 +14,8 @@
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",
     "nullthrows": "1.0.0",
-    "react": "16.3.2",
-    "react-dom": "16.3.2",
+    "react": "16.4.1",
+    "react-dom": "16.4.1",
     "temp": "0.8.3",
     "yargs": "3.32.0"
   }
