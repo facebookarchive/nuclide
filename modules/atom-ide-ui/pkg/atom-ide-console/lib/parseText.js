@@ -18,10 +18,13 @@ const DIFF_PATTERN = '\\b[dD][1-9][0-9]{5,}\\b';
 const TASK_PATTERN = '\\b[tT]\\d+\\b';
 
 /**
- * This does NOT contain a pattern to match file references. It's difficult to write such a pattern
- * that matches all and only file references, and it's even worse when you add remote development
- * into the mix. The upshot is that it adds more confusion than convenience, and a proper solution
- * will require moving to a more robust parsing and rendering approach entirely.
+ * This does NOT contain a pattern to match file references. This is because file paths do not
+ * contain sufficient information to locate a file. Consider `b/c/d.txt`. What is it relative to?
+ * Only the thing that generated the message knows. Even absolute paths aren't enough. (Are they
+ * local? Remote? Which host?) In addition, pattern matching filenames isn't reliable (`b.txt`,
+ * `b.com`). The upshot is that "best guess" solutions add more confusion than convenience; a proper
+ * solution probably requires both standardization on remote path (e.g. NuclideUris) and some
+ * mechanism for message creators to mark up their messages with this information (e.g. `<a>`).
  */
 const CLICKABLE_PATTERNS = `(${DIFF_PATTERN})|(${TASK_PATTERN})|(${
   URL_REGEX.source
