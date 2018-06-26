@@ -165,7 +165,8 @@ class Activation {
     const lineNumber = parseInt(line, 10);
     if (Number.isNaN(lineNumber)) {
       goToLocation(navUri);
-    } else {
+    } else if (addBreakpoint !== 'true') {
+      // If addBreakpoint === 'true', we will run the goToLocation later.
       // NOTE: line numbers start at 0, so subtract 1.
       goToLocation(navUri, {line: lineNumber - 1});
     }
@@ -173,8 +174,12 @@ class Activation {
     if (startDebugger) {
       if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
         // Insert a breakpoint if requested.
-        // NOTE: Nuclide protocol breakpoint line numbers start at 0, so subtract 1.
-        // TODO debuggerService.addBreakpoint(navUri, lineNumber - 1);
+        // NOTE: line numbers start at 0, so subtract 1.
+        await goToLocation(navUri, {line: lineNumber - 1});
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'debugger:add-breakpoint',
+        );
       }
 
       await startAttachProcessConfig(

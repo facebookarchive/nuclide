@@ -1045,6 +1045,15 @@ export default class DebugService implements IDebugService {
     return this._sendBreakpoints(uri);
   }
 
+  addSourceBreakpoint(uri: string, line: number): Promise<void> {
+    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_SINGLE_ADD);
+    const existing = this._model.getBreakpointAtLine(uri, line);
+    if (existing == null) {
+      return this.addBreakpoints(uri, [{line}]);
+    }
+    return Promise.resolve(undefined);
+  }
+
   toggleSourceBreakpoint(uri: string, line: number): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE);
     const existing = this._model.getBreakpointAtLine(uri, line);

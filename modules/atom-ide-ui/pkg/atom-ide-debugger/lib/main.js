@@ -198,6 +198,10 @@ class Activation {
         'debugger:step-out': this._stepOut.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'debugger:add-breakpoint': this._addBreakpoint.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
         'debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -563,6 +567,12 @@ class Activation {
       track(AnalyticsEvents.DEBUGGER_STEP_OUT);
       focusedThread.stepOut();
     }
+  }
+
+  _addBreakpoint(event: any) {
+    return this._executeWithEditorPath(event, (filePath, lineNumber) => {
+      this._service.addSourceBreakpoint(filePath, lineNumber);
+    });
   }
 
   _toggleBreakpoint(event: any) {
