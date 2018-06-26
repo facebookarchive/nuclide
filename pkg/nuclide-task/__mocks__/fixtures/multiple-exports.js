@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +7,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -15,18 +17,18 @@ function increment() {
   ++total;
 }
 
-function getTotal(): number {
+function getTotal() {
   return total;
 }
 
-function product(...factors: Array<number>): number {
-  return factors.reduce((prev: number, current: number) => prev * current, 1);
+function product(...factors) {
+  return factors.reduce((prev, current) => prev * current, 1);
 }
 
-function asyncFetch(): Promise<any> {
+function asyncFetch() {
   return Promise.resolve({
     ignoredByJsonSerialization: undefined,
-    shouldShowUpInJsonSerialization: null,
+    shouldShowUpInJsonSerialization: null
   });
 }
 
@@ -35,5 +37,5 @@ module.exports = {
   asyncFetch,
   getTotal,
   increment,
-  product,
+  product
 };

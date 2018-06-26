@@ -1,3 +1,48 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.POSIX_TOOLS = exports.WINDOWS_TOOLS = undefined;
+exports.resolveTool = resolveTool;
+exports.searchWithTool = searchWithTool;
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _which;
+
+function _load_which() {
+  return _which = _interopRequireDefault(require('../../../modules/nuclide-commons/which'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _AckHandler;
+
+function _load_AckHandler() {
+  return _AckHandler = require('./AckHandler');
+}
+
+var _GrepHandler;
+
+function _load_GrepHandler() {
+  return _GrepHandler = require('./GrepHandler');
+}
+
+var _RgHandler;
+
+function _load_RgHandler() {
+  return _RgHandler = require('./RgHandler');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,49 +50,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CodeSearchResult, CodeSearchParams, CodeSearchTool} from './types';
-import {asyncFind} from 'nuclide-commons/promise';
-import os from 'os';
-
-import which from 'nuclide-commons/which';
-import {Observable} from 'rxjs';
-import {search as ackSearch} from './AckHandler';
-import {search as grepSearch} from './GrepHandler';
-import {search as rgSearch} from './RgHandler';
-
-export const WINDOWS_TOOLS = ['rg', 'grep'];
-export const POSIX_TOOLS = ['rg', 'ack', 'grep'];
+const WINDOWS_TOOLS = exports.WINDOWS_TOOLS = ['rg', 'grep'];
+const POSIX_TOOLS = exports.POSIX_TOOLS = ['rg', 'ack', 'grep'];
 
 const searchToolHandlers = Object.freeze({
-  ack: ackSearch,
-  rg: rgSearch,
-  grep: grepSearch,
+  ack: (_AckHandler || _load_AckHandler()).search,
+  rg: (_RgHandler || _load_RgHandler()).search,
+  grep: (_GrepHandler || _load_GrepHandler()).search
 });
 
-export async function resolveTool(
-  tool: ?CodeSearchTool,
-): Promise<?CodeSearchTool> {
+async function resolveTool(tool) {
   if (tool != null) {
     return tool;
   }
-  return asyncFind(os.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, t =>
-    which(t).then(cmd => (cmd != null ? t : null)),
-  );
+  return (0, (_promise || _load_promise()).asyncFind)(_os.default.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, t => (0, (_which || _load_which()).default)(t).then(cmd => cmd != null ? t : null));
 }
 
-export function searchWithTool(
-  tool: ?CodeSearchTool,
-  params: CodeSearchParams,
-): Observable<CodeSearchResult> {
-  return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
+function searchWithTool(tool, params) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
     if (actualTool != null) {
       const handler = searchToolHandlers[actualTool];
       return handler(params);
     }
-    return Observable.empty();
+    return _rxjsBundlesRxMinJs.Observable.empty();
   });
 }

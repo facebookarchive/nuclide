@@ -1,3 +1,37 @@
+'use strict';
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _testHelpers;
+
+function _load_testHelpers() {
+  return _testHelpers = require('../../../modules/nuclide-commons/test-helpers');
+}
+
+var _clangFlagsReader;
+
+function _load_clangFlagsReader() {
+  return _clangFlagsReader = require('../lib/clang-flags-reader');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,38 +39,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 jest.setTimeout(40000);
-import {range} from 'nuclide-commons/collection';
-import nullthrows from 'nullthrows';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {generateFixture} from 'nuclide-commons/test-helpers';
-import {
-  readCompilationFlags,
-  fallbackReadCompilationFlags,
-} from '../lib/clang-flags-reader';
 
 // Generate a compilation database entry with
 // given number of files and number of args per file, return the path on disk.
-async function generateDbFixture(
-  directory: string,
-  files: number,
-  args: number,
-): Promise<string> {
+async function generateDbFixture(directory, files, args) {
   const filename = 'compile_commands.json';
   // For very large objects, calling JSON.stringify directly will fail.
   // So we manually construct the start and end of the files.
   let dbString = '[';
-  const argList = Array.from(range(0, args)).map(i => `-argNumber${i}`);
+  const argList = Array.from((0, (_collection || _load_collection()).range)(0, args)).map(i => `-argNumber${i}`);
   for (let i = 0; i < files; i++) {
     const entry = {
       file: `${directory}/file${i}.cpp`,
       directory,
-      arguments: argList,
+      arguments: argList
     };
     dbString += JSON.stringify(entry);
     if (i !== files - 1) {
@@ -45,32 +67,25 @@ async function generateDbFixture(
     }
   }
   dbString += ']';
-  const dir = await generateFixture(
-    'clang_rpc',
-    new Map([[filename, dbString]]),
-  );
-  return nuclideUri.join(dir, filename);
+  const dir = await (0, (_testHelpers || _load_testHelpers()).generateFixture)('clang_rpc', new Map([[filename, dbString]]));
+  return (_nuclideUri || _load_nuclideUri()).default.join(dir, filename);
 }
 
 describe('unit tests for clang-flags-reader.js', () => {
-  async function expectFallback(files: number, args: number): Promise<void> {
+  async function expectFallback(files, args) {
     const db = await generateDbFixture('/a/b', files, args);
-    const entries = await readCompilationFlags(db)
-      .toArray()
-      .toPromise();
-    const fallbackEntries = await fallbackReadCompilationFlags(db);
+    const entries = await (0, (_clangFlagsReader || _load_clangFlagsReader()).readCompilationFlags)(db).toArray().toPromise();
+    const fallbackEntries = await (0, (_clangFlagsReader || _load_clangFlagsReader()).fallbackReadCompilationFlags)(db);
     expect(entries).toEqual(fallbackEntries);
   }
-  async function checkLengths(files: number, args: number): Promise<void> {
+  async function checkLengths(files, args) {
     const db = await generateDbFixture('/a/b', files, args);
-    const entries = await readCompilationFlags(db)
-      .toArray()
-      .toPromise();
+    const entries = await (0, (_clangFlagsReader || _load_clangFlagsReader()).readCompilationFlags)(db).toArray().toPromise();
     expect(entries.length).toEqual(files);
     for (const entry of entries) {
       expect(entry.directory).toEqual('/a/b');
       expect(entry.file.startsWith('/a/b/')).toBeTruthy();
-      expect(nullthrows(entry.arguments).length).toEqual(args);
+      expect((0, (_nullthrows || _load_nullthrows()).default)(entry.arguments).length).toEqual(args);
     }
   }
 
@@ -87,11 +102,9 @@ describe('unit tests for clang-flags-reader.js', () => {
   it('fails with embedded braces, but fallback works', async () => {
     await (async () => {
       const db = await generateDbFixture('/a/{b}', 3, 3);
-      const fallbackEntries = await fallbackReadCompilationFlags(db);
+      const fallbackEntries = await (0, (_clangFlagsReader || _load_clangFlagsReader()).fallbackReadCompilationFlags)(db);
       let hadError = false;
-      await readCompilationFlags(db)
-        .toPromise()
-        .catch(() => (hadError = true));
+      await (0, (_clangFlagsReader || _load_clangFlagsReader()).readCompilationFlags)(db).toPromise().catch(() => hadError = true);
       expect(hadError).toBeTruthy();
       // ...but the fallback should still work.
       expect(fallbackEntries.length).toEqual(3);

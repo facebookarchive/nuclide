@@ -1,102 +1,100 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nullthrows from 'nullthrows';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class Breakpoint {
-  // index is the name of the breakpoint we show externally in the UI
-  _index: number;
+var _nullthrows;
 
-  // id is the attached breakpoint in the adapter (if the adapter supports it)
-  _id: ?number;
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
 
-  // verified tracks if the breakpoint was successfully set by the adapter.
-  // it may not be if the referenced code was not yet loaded
-  _verified: boolean;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  // enabled tracks if the breakpoint has been enabled or disabled by the user.
-  _enabled: boolean;
-
-  // The source file of the breakpoint (which may be undefined if we have an
-  // unresolved function breakpoint.)
-  _path: ?string;
+class Breakpoint {
 
   // The line number of the breakpoint (which may be undefined if we have an
   // unresolved function breakpoint.)
-  _line: ?number;
 
-  // The function name of the breakpoint (only defined if the breakpoint is
-  // a function breakpoint.)
-  _func: ?string;
 
-  constructor(index: number) {
+  // enabled tracks if the breakpoint has been enabled or disabled by the user.
+
+
+  // id is the attached breakpoint in the adapter (if the adapter supports it)
+  constructor(index) {
     this._index = index;
     this._verified = false;
     this._enabled = true;
   }
 
-  get index(): number {
+  // The function name of the breakpoint (only defined if the breakpoint is
+  // a function breakpoint.)
+
+
+  // The source file of the breakpoint (which may be undefined if we have an
+  // unresolved function breakpoint.)
+
+
+  // verified tracks if the breakpoint was successfully set by the adapter.
+  // it may not be if the referenced code was not yet loaded
+
+  // index is the name of the breakpoint we show externally in the UI
+
+
+  get index() {
     return this._index;
   }
 
-  get id(): ?number {
+  get id() {
     return this._id;
   }
 
-  setId(id: number): void {
+  setId(id) {
     this._id = id;
   }
 
-  setVerified(verified: boolean): void {
+  setVerified(verified) {
     this._verified = verified;
   }
 
-  get verified(): boolean {
+  get verified() {
     return this._verified;
   }
 
-  setEnabled(enabled: boolean): void {
+  setEnabled(enabled) {
     this._enabled = enabled;
   }
 
-  get enabled(): boolean {
+  get enabled() {
     return this._enabled;
   }
 
-  setPath(path: string) {
+  setPath(path) {
     this._path = path;
   }
 
-  get path(): ?string {
+  get path() {
     return this._path;
   }
 
-  setLine(line: number) {
+  setLine(line) {
     this._line = line;
   }
 
-  get line(): ?number {
+  get line() {
     return this._line;
   }
 
-  setFunc(func: string) {
+  setFunc(func) {
     this._func = func;
   }
 
-  get func(): ?string {
+  get func() {
     return this._func;
   }
 
-  toString(): string {
+  toString() {
     const func = this._func;
 
     if (func != null) {
@@ -106,6 +104,17 @@ export default class Breakpoint {
       return `${func}() [${this._path}:${this._line}]`;
     }
 
-    return `${nullthrows(this._path)}:${nullthrows(this._line)}`;
+    return `${(0, (_nullthrows || _load_nullthrows()).default)(this._path)}:${(0, (_nullthrows || _load_nullthrows()).default)(this._line)}`;
   }
 }
+exports.default = Breakpoint; /**
+                               * Copyright (c) 2017-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the BSD-style license found in the
+                               * LICENSE file in the root directory of this source tree. An additional grant
+                               * of patent rights can be found in the PATENTS file in the same directory.
+                               *
+                               * 
+                               * @format
+                               */

@@ -1,3 +1,19 @@
+'use strict';
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _memoryLogger;
+
+function _load_memoryLogger() {
+  return _memoryLogger = require('../memoryLogger');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,18 +21,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 jest.unmock('log4js');
-import log4js from 'log4js';
-import {MemoryLogger} from '../memoryLogger';
+
 
 describe('memoryLogger', () => {
   let time = 0;
-  let logger: MemoryLogger = ((null: any): MemoryLogger);
-  const underlyingLogger = log4js.getLogger('test');
+  let logger = null;
+  const underlyingLogger = (_log4js || _load_log4js()).default.getLogger('test');
   underlyingLogger.setLevel('OFF');
 
   beforeEach(() => {
@@ -24,7 +39,7 @@ describe('memoryLogger', () => {
     time = 0;
     const time0 = new Date(0).getTimezoneOffset() * 60 * 1000; // midnight
     jest.spyOn(Date, 'now').mockImplementation(() => time0 + time);
-    logger = new MemoryLogger(underlyingLogger, 5 * 60 * 1000);
+    logger = new (_memoryLogger || _load_memoryLogger()).MemoryLogger(underlyingLogger, 5 * 60 * 1000);
   });
 
   it('logs and formats correctly', () => {
@@ -46,18 +61,14 @@ describe('memoryLogger', () => {
     logger.info('4min');
     time = 5 * 60 * 1000;
     logger.info('5min');
-    expect(logger.dump()).toBe(
-      '00:01:00 INFO - 1min\n00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n',
-    );
+    expect(logger.dump()).toBe('00:01:00 INFO - 1min\n00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n');
     time = 6 * 60 * 1000 + 1;
     logger.info('6min');
-    expect(logger.dump()).toBe(
-      '00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n00:06:00 INFO - 6min\n',
-    );
+    expect(logger.dump()).toBe('00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n00:06:00 INFO - 6min\n');
   });
 
   it('declines to store anything given zero retention period', () => {
-    logger = new MemoryLogger(underlyingLogger, 0);
+    logger = new (_memoryLogger || _load_memoryLogger()).MemoryLogger(underlyingLogger, 0);
     time = 1000;
     logger.info('msg1');
     expect(logger.dump()).toBe('');
@@ -65,7 +76,7 @@ describe('memoryLogger', () => {
 
   it('limits storage size', () => {
     time = 0;
-    logger = new MemoryLogger(null, 1000, '00:00:00 INFO - '.length + 10);
+    logger = new (_memoryLogger || _load_memoryLogger()).MemoryLogger(null, 1000, '00:00:00 INFO - '.length + 10);
     logger.info('123456789');
     logger.info('11');
     expect(logger.dump()).toBe('00:00:00 INFO - 11\n');
@@ -83,10 +94,7 @@ describe('memoryLogger', () => {
     logger.info(nextToLastLog);
     logger.info(lastLog);
 
-    const tail = logger
-      .dump(2)
-      .split('\n')
-      .filter(line => line !== '');
+    const tail = logger.dump(2).split('\n').filter(line => line !== '');
 
     expect(tail.length).toBe(2);
     expect(tail[0].indexOf(nextToLastLog)).toBeGreaterThan(-1);
@@ -104,24 +112,15 @@ describe('memoryLogger', () => {
     logger.info('next to last log');
     logger.info(lastLog);
 
-    let tail = logger
-      .dump(10)
-      .split('\n')
-      .filter(line => line !== '');
+    let tail = logger.dump(10).split('\n').filter(line => line !== '');
 
     expect(tail.length).toBe(6);
 
-    tail = logger
-      .dump(6)
-      .split('\n')
-      .filter(line => line !== '');
+    tail = logger.dump(6).split('\n').filter(line => line !== '');
 
     expect(tail.length).toBe(6);
 
-    tail = logger
-      .dump(1)
-      .split('\n')
-      .filter(line => line !== '');
+    tail = logger.dump(1).split('\n').filter(line => line !== '');
 
     expect(tail.length).toBe(1);
     expect(tail[0].indexOf(lastLog)).toBeGreaterThan(-1);

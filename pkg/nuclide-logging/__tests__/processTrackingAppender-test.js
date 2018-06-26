@@ -1,3 +1,31 @@
+'use strict';
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = require('../../../modules/nuclide-commons/analytics');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +33,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -13,29 +41,22 @@ jest.unmock('log4js');
 
 global.NUCLIDE_DO_NOT_LOG = false;
 
-import {runCommand, LOG_CATEGORY} from 'nuclide-commons/process';
-import {trackSampled} from 'nuclide-commons/analytics';
-import log4js from 'log4js';
-import waitsFor from '../../../jest/waits_for';
-
 describe('processTrackingAppender', () => {
   it('captures process exits', async () => {
-    log4js.configure({
-      appenders: [
-        {
-          type: require.resolve('../lib/processTrackingAppender'),
-          category: LOG_CATEGORY,
-        },
-      ],
+    (_log4js || _load_log4js()).default.configure({
+      appenders: [{
+        type: require.resolve('../lib/processTrackingAppender'),
+        category: (_process || _load_process()).LOG_CATEGORY
+      }]
     });
 
-    await runCommand('true', ['1']).toPromise();
+    await (0, (_process || _load_process()).runCommand)('true', ['1']).toPromise();
 
-    await waitsFor(() => (trackSampled: any).mock.calls.length > 0);
+    await (0, (_waits_for || _load_waits_for()).default)(() => (_analytics || _load_analytics()).trackSampled.mock.calls.length > 0);
 
-    expect(trackSampled).toHaveBeenCalledWith('process-exit', 10, {
+    expect((_analytics || _load_analytics()).trackSampled).toHaveBeenCalledWith('process-exit', 10, {
       command: 'true 1',
-      duration: jasmine.any(Number),
+      duration: jasmine.any(Number)
     });
   });
 });

@@ -1,47 +1,73 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getLogger} from 'log4js';
-import * as DebugProtocol from 'vscode-debugprotocol';
-import * as fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
-import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
-import {getJavaVSAdapterExecutableInfo} from '../JavaDebuggerHelpersService';
+var _log4js;
 
-const logger = getLogger('vscode-java-debugger-spec');
-const JAVA_FIXTURES = nuclideUri.join(
-  __dirname,
-  '../__mocks__/fixtures',
-  'java',
-);
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _fs = _interopRequireWildcard(require('fs'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../nuclide-commons/process');
+}
+
+var _VsDebugSession;
+
+function _load_VsDebugSession() {
+  return _VsDebugSession = _interopRequireDefault(require('../../nuclide-debugger-common/VsDebugSession'));
+}
+
+var _JavaDebuggerHelpersService;
+
+function _load_JavaDebuggerHelpersService() {
+  return _JavaDebuggerHelpersService = require('../JavaDebuggerHelpersService');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('vscode-java-debugger-spec'); /**
+                                                                                         * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                         * All rights reserved.
+                                                                                         *
+                                                                                         * This source code is licensed under the BSD-style license found in the
+                                                                                         * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                         * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                         *
+                                                                                         * 
+                                                                                         * @format
+                                                                                         */
+
+const JAVA_FIXTURES = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', 'java');
 const THREAD_ID = 1;
-const JAVA_DEBUGGER_PKG = nuclideUri.join(__dirname, '..');
+const JAVA_DEBUGGER_PKG = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '..');
 
-function makeSource(name: string): DebugProtocol.Source {
+function makeSource(name) {
   return {
     name,
-    path: nuclideUri.join(JAVA_FIXTURES, name),
+    path: (_nuclideUri || _load_nuclideUri()).default.join(JAVA_FIXTURES, name)
   };
 }
 
-async function checkResponse<T: DebugProtocol.base$Response>(
-  responsePromise: Promise<T>,
-  additionalValidation?: T => void,
-): Promise<T> {
+async function checkResponse(responsePromise, additionalValidation) {
   const response = await responsePromise;
-  expect(response.success).toBeTruthy(
-    `Expected successful response, got ${JSON.stringify(response)}`,
-  );
+  expect(response.success).toBeTruthy(`Expected successful response, got ${JSON.stringify(response)}`);
 
   if (additionalValidation != null) {
     additionalValidation(response);
@@ -50,71 +76,41 @@ async function checkResponse<T: DebugProtocol.base$Response>(
   return response;
 }
 
-async function checkLine(
-  session: VsDebugSession,
-  expectedLine: number,
-): Promise<void> {
-  await checkResponse(session.stackTrace({threadId: THREAD_ID}), response => {
+async function checkLine(session, expectedLine) {
+  await checkResponse(session.stackTrace({ threadId: THREAD_ID }), response => {
     expect(response.body.stackFrames[0].line).toBe(expectedLine);
   });
 }
 
-async function withSessionLaunch(
-  className: string,
-  breakpoints?: DebugProtocol.SetBreakpointsArguments,
-  sessionContinuation: (VsDebugSession, any) => Promise<void>,
-): Promise<void> {
+async function withSessionLaunch(className, breakpoints, sessionContinuation) {
   let session = null;
   try {
-    session = new VsDebugSession(
-      process.pid.toString(),
-      logger,
-      await getJavaVSAdapterExecutableInfo(false),
-    );
-    await checkResponse(
-      session.initialize({
-        adapterID: 'java',
-        clientID: 'Nuclide-Spec',
-        columnsStartAt1: true,
-        linesStartAt1: true,
-        pathFormat: 'path',
-      }),
-    );
+    session = new (_VsDebugSession || _load_VsDebugSession()).default(process.pid.toString(), logger, (await (0, (_JavaDebuggerHelpersService || _load_JavaDebuggerHelpersService()).getJavaVSAdapterExecutableInfo)(false)));
+    await checkResponse(session.initialize({
+      adapterID: 'java',
+      clientID: 'Nuclide-Spec',
+      columnsStartAt1: true,
+      linesStartAt1: true,
+      pathFormat: 'path'
+    }));
 
-    await Promise.all([
-      checkResponse(
-        session.launch({
-          classPath: JAVA_FIXTURES,
-          entryPointClass: className,
-        }),
-      ),
-      session
-        .observeThreadEvents()
-        .take(4)
-        .toPromise(),
-      session
-        .observeInitializeEvents()
-        .take(1)
-        .toPromise(),
-    ]);
+    await Promise.all([checkResponse(session.launch({
+      classPath: JAVA_FIXTURES,
+      entryPointClass: className
+    })), session.observeThreadEvents().take(4).toPromise(), session.observeInitializeEvents().take(1).toPromise()]);
 
-    await checkResponse(session.setExceptionBreakpoints({filters: []}));
+    await checkResponse(session.setExceptionBreakpoints({ filters: [] }));
 
     let unverifiedBreakpoints = [];
     if (breakpoints != null) {
       await checkResponse(session.setBreakpoints(breakpoints), response => {
-        unverifiedBreakpoints = response.body.breakpoints.filter(
-          bp => !bp.verified,
-        );
+        unverifiedBreakpoints = response.body.breakpoints.filter(bp => !bp.verified);
       });
     }
 
     await checkResponse(session.configurationDone());
 
-    await session
-      .observeContinuedEvents()
-      .take(1)
-      .toPromise();
+    await session.observeContinuedEvents().take(1).toPromise();
 
     await sessionContinuation(session, unverifiedBreakpoints);
   } catch (error) {
@@ -127,34 +123,16 @@ async function withSessionLaunch(
   }
 }
 
-async function continueSession(session: VsDebugSession): Promise<void> {
-  await Promise.all([
-    session
-      .observeContinuedEvents()
-      .take(1)
-      .toPromise(),
-    checkResponse(session.continue({threadId: THREAD_ID})),
-  ]);
+async function continueSession(session) {
+  await Promise.all([session.observeContinuedEvents().take(1).toPromise(), checkResponse(session.continue({ threadId: THREAD_ID }))]);
 }
 
-async function verifyUnverifiedBreakpoints(
-  session: VsDebugSession,
-  unverifiedBreakpoints: any,
-): Promise<void> {
+async function verifyUnverifiedBreakpoints(session, unverifiedBreakpoints) {
   if (unverifiedBreakpoints.length > 0) {
     let allBreakpointsVerified = false;
-    await session
-      .observeBreakpointEvents()
-      .take(unverifiedBreakpoints.length)
-      .toArray()
-      .toPromise()
-      .then(result => (allBreakpointsVerified = true));
+    await session.observeBreakpointEvents().take(unverifiedBreakpoints.length).toArray().toPromise().then(result => allBreakpointsVerified = true);
 
-    expect(allBreakpointsVerified).toBeTruthy(
-      `The following breakpoints could not be set: ${JSON.stringify(
-        unverifiedBreakpoints,
-      )}`,
-    );
+    expect(allBreakpointsVerified).toBeTruthy(`The following breakpoints could not be set: ${JSON.stringify(unverifiedBreakpoints)}`);
   }
 }
 
@@ -167,12 +145,12 @@ xdescribe('vscode-java-debugger', () => {
         return;
       }
 
-      await runCommand('env', ['-u', 'NO_BUCKD', './scripts/build'], {
-        cwd: JAVA_DEBUGGER_PKG,
+      await (0, (_process || _load_process()).runCommand)('env', ['-u', 'NO_BUCKD', './scripts/build'], {
+        cwd: JAVA_DEBUGGER_PKG
       }).toPromise();
 
       const javaFiles = await new Promise((resolve, reject) => {
-        fs.readdir(JAVA_FIXTURES, (err, files) => {
+        _fs.readdir(JAVA_FIXTURES, (err, files) => {
           if (err) {
             reject(err);
           }
@@ -181,11 +159,7 @@ xdescribe('vscode-java-debugger', () => {
         });
       });
 
-      await Promise.all(
-        javaFiles.map(file =>
-          runCommand('javac', ['-g', file], {cwd: JAVA_FIXTURES}).toPromise(),
-        ),
-      );
+      await Promise.all(javaFiles.map(file => (0, (_process || _load_process()).runCommand)('javac', ['-g', file], { cwd: JAVA_FIXTURES }).toPromise()));
 
       hasDoneSetup = true;
     })();
@@ -200,191 +174,121 @@ xdescribe('vscode-java-debugger', () => {
 
   it('launches and outputs console messages', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await session
-            .observeOutputEvents()
-            .filter(response => response.body.category === 'stdout')
-            .map(response => response.body.output)
-            .take(1)
-            .toPromise()
-            .then(output => {
-              expect(output).toEqual(
-                'Name: Not Aman Agarwal with id: 1234567890\n',
-              );
-            });
-        },
-      );
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 11 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await session.observeOutputEvents().filter(response => response.body.category === 'stdout').map(response => response.body.output).take(1).toPromise().then(output => {
+          expect(output).toEqual('Name: Not Aman Agarwal with id: 1234567890\n');
+        });
+      });
     })();
   });
 
   it('breaks at a breakpoint', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 11 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
+        await session.observeStopEvents().take(1).toPromise();
 
-          await checkLine(session, 11);
-        },
-      );
+        await checkLine(session, 11);
+      });
     })();
   });
 
   it('sets multiple breakpoints', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 8}, {line: 23}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 8 }, { line: 23 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 8);
+        await session.observeStopEvents().take(1).toPromise();
+        await checkLine(session, 8);
 
-          await continueSession(session);
+        await continueSession(session);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 23);
-        },
-      );
+        await session.observeStopEvents().take(1).toPromise();
+        await checkLine(session, 23);
+      });
     })();
   });
 
   it('supports step-over, step-in, and step-out', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 11 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 11);
+        await session.observeStopEvents().take(1).toPromise();
+        await checkLine(session, 11);
 
-          await checkResponse(session.next({threadId: THREAD_ID}));
-          await checkLine(session, 12);
+        await checkResponse(session.next({ threadId: THREAD_ID }));
+        await checkLine(session, 12);
 
-          await checkResponse(session.stepIn({threadId: THREAD_ID}));
-          await checkLine(session, 22);
+        await checkResponse(session.stepIn({ threadId: THREAD_ID }));
+        await checkLine(session, 22);
 
-          await checkResponse(session.stepOut({threadId: THREAD_ID}));
-          await checkLine(session, 12);
-        },
-      );
+        await checkResponse(session.stepOut({ threadId: THREAD_ID }));
+        await checkLine(session, 12);
+      });
     })();
   });
 
   it('evaluates expressions', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 11 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 11);
+        await session.observeStopEvents().take(1).toPromise();
+        await checkLine(session, 11);
 
-          const frameId = (await checkResponse(
-            session.stackTrace({threadId: THREAD_ID}),
-          )).body.stackFrames[0].id;
-          await checkResponse(
-            session.evaluate({expression: 'tc', frameId}),
-            response => {
-              // we do not check the exact id of the class because any changes made in the class
-              //   preparation code causes this id to change, I may add the id back into the test
-              //   once the Java debugger codebase has stabilized
-              expect(
-                response.body.result.includes(
-                  'class SimpleClass (loaded by instance of sun.misc.Launcher$AppClassLoader(id=',
-                ),
-              ).toBeTruthy();
-            },
-          );
-        },
-      );
+        const frameId = (await checkResponse(session.stackTrace({ threadId: THREAD_ID }))).body.stackFrames[0].id;
+        await checkResponse(session.evaluate({ expression: 'tc', frameId }), response => {
+          // we do not check the exact id of the class because any changes made in the class
+          //   preparation code causes this id to change, I may add the id back into the test
+          //   once the Java debugger codebase has stabilized
+          expect(response.body.result.includes('class SimpleClass (loaded by instance of sun.misc.Launcher$AppClassLoader(id=')).toBeTruthy();
+        });
+      });
     })();
   });
 
   it('checks threads', async () => {
     await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+      await withSessionLaunch('SimpleClass', {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{ line: 11 }]
+      }, async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
+        await session.observeStopEvents().take(1).toPromise();
 
-          await checkLine(session, 11);
+        await checkLine(session, 11);
 
-          await checkResponse(session.threads(), response => {
-            const {threads} = response.body;
-            expect(threads.length).toEqual(4);
-            const threadNames = new Set(threads.map(t => t.name));
-            const THREAD_NAMES = [
-              'Signal Dispatcher',
-              'Finalizer',
-              'Reference Handler',
-              'main',
-            ];
-            expect(
-              THREAD_NAMES.every(name => {
-                const foundThread = threadNames.has(name);
-                expect(foundThread).toBeTruthy(
-                  'Could not find thread with name: ' + name,
-                );
-                return foundThread;
-              }),
-            ).toBeTruthy('We are missing some threads');
-            expect(
-              threads.filter(t => t.name === 'main' && t.id === 1).length,
-            ).toBe(1, 'Main thread not found with correct id');
-          });
-        },
-      );
+        await checkResponse(session.threads(), response => {
+          const { threads } = response.body;
+          expect(threads.length).toEqual(4);
+          const threadNames = new Set(threads.map(t => t.name));
+          const THREAD_NAMES = ['Signal Dispatcher', 'Finalizer', 'Reference Handler', 'main'];
+          expect(THREAD_NAMES.every(name => {
+            const foundThread = threadNames.has(name);
+            expect(foundThread).toBeTruthy('Could not find thread with name: ' + name);
+            return foundThread;
+          })).toBeTruthy('We are missing some threads');
+          expect(threads.filter(t => t.name === 'main' && t.id === 1).length).toBe(1, 'Main thread not found with correct id');
+        });
+      });
     })();
   });
   // end

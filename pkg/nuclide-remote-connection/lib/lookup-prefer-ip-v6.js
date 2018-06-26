@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _dns = _interopRequireDefault(require('dns'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,23 +15,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
-import invariant from 'assert';
-import dns from 'dns';
-
-export type DnsFamily = 4 | 6;
-
-export type DnsLookup = {
-  address: string,
-  family: DnsFamily,
-};
-
-export default (async function lookupPreferIpv6(
-  host: string,
-): Promise<DnsLookup> {
+exports.default = async function lookupPreferIpv6(host) {
   try {
     return await lookup(host, 6);
   } catch (e) {
@@ -30,23 +28,22 @@ export default (async function lookupPreferIpv6(
     }
     throw e;
   }
-});
+};
 
-function lookup(host: string, family: DnsFamily): Promise<DnsLookup> {
+function lookup(host, family) {
   return new Promise((resolve, reject) => {
-    dns.lookup(
-      host,
-      family,
-      (error: ?Error, address: ?string, resultFamily: ?number) => {
-        if (error) {
-          reject(error);
-        } else if (address != null) {
-          invariant(resultFamily === 4 || resultFamily === 6);
-          resolve({address, family: resultFamily});
-        } else {
-          reject(new Error('One of error or address must be set.'));
+    _dns.default.lookup(host, family, (error, address, resultFamily) => {
+      if (error) {
+        reject(error);
+      } else if (address != null) {
+        if (!(resultFamily === 4 || resultFamily === 6)) {
+          throw new Error('Invariant violation: "resultFamily === 4 || resultFamily === 6"');
         }
-      },
-    );
+
+        resolve({ address, family: resultFamily });
+      } else {
+        reject(new Error('One of error or address must be set.'));
+      }
+    });
   });
 }

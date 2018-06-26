@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Proxy = undefined;
+
+var _net = _interopRequireDefault(require('net'));
+
+var _Encoder;
+
+function _load_Encoder() {
+  return _Encoder = _interopRequireDefault(require('./Encoder'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,43 +31,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Observable} from 'rxjs';
-import type {TunnelMessage} from './types';
+const logger = (0, (_log4js || _load_log4js()).getLogger)('tunnel-proxy');
 
-import net from 'net';
-import Encoder from './Encoder';
+class Proxy extends _events.default {
 
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-import EventEmitter from 'events';
-
-const logger = getLogger('tunnel-proxy');
-
-export type Transport = {
-  send(string): void,
-  onMessage(): Observable<string>,
-};
-
-export class Proxy extends EventEmitter {
-  _localPort: number;
-  _remotePort: number;
-  _transport: Transport;
-  _server: ?net.Server;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
-  _useIPv4: boolean;
-
-  constructor(
-    tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
-    transport: Transport,
-  ) {
+  constructor(tunnelId, localPort, remotePort, useIPv4, transport) {
     super();
     this._tunnelId = tunnelId;
     this._localPort = localPort;
@@ -53,33 +50,21 @@ export class Proxy extends EventEmitter {
     this._socketByClientId = new Map();
   }
 
-  static async createProxy(
-    tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
-    transport: Transport,
-  ): Promise<Proxy> {
-    const proxy = new Proxy(
-      tunnelId,
-      localPort,
-      remotePort,
-      useIPv4,
-      transport,
-    );
+  static async createProxy(tunnelId, localPort, remotePort, useIPv4, transport) {
+    const proxy = new Proxy(tunnelId, localPort, remotePort, useIPv4, transport);
     await proxy.startListening();
 
     return proxy;
   }
 
-  async startListening(): Promise<void> {
+  async startListening() {
     return new Promise((resolve, reject) => {
-      this._server = net.createServer(socket => {
-        const clientId: number = socket.remotePort;
+      this._server = _net.default.createServer(socket => {
+        const clientId = socket.remotePort;
         this._socketByClientId.set(clientId, socket);
         this._sendMessage({
           event: 'connection',
-          clientId,
+          clientId
         });
 
         // forward events over the transport
@@ -88,7 +73,7 @@ export class Proxy extends EventEmitter {
             this._sendMessage({
               event,
               arg,
-              clientId,
+              clientId
             });
           });
         });
@@ -100,57 +85,76 @@ export class Proxy extends EventEmitter {
         socket.once('close', this._closeSocket.bind(this, clientId));
       });
 
-      this._server.listen({port: this._localPort}, () => {
+      this._server.listen({ port: this._localPort }, () => {
         // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',
           port: this._localPort,
           useIPv4: this._useIPv4,
-          remotePort: this._remotePort,
+          remotePort: this._remotePort
         });
         resolve();
       });
     });
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  receive(msg: TunnelMessage): void {
+  receive(msg) {
     const clientId = msg.clientId;
-    invariant(clientId != null);
+
+    if (!(clientId != null)) {
+      throw new Error('Invariant violation: "clientId != null"');
+    }
+
     const socket = this._socketByClientId.get(clientId);
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error('Invariant violation: "socket"');
+    }
+
     const arg = msg.arg;
-    invariant(arg != null);
+
+    if (!(arg != null)) {
+      throw new Error('Invariant violation: "arg != null"');
+    }
 
     if (msg.event === 'data') {
       socket.write(arg);
     }
   }
 
-  _closeSocket(id: number) {
+  _closeSocket(id) {
     logger.info(`socket ${id} closed`);
     const socket = this._socketByClientId.get(id);
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error('Invariant violation: "socket"');
+    }
+
     socket.removeAllListeners();
     this._socketByClientId.delete(id);
   }
 
-  _destroySocket(id: number, error: Error) {
+  _destroySocket(id, error) {
     logger.error('error on socket: ', error);
     const socket = this._socketByClientId.get(id);
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error('Invariant violation: "socket"');
+    }
+
     socket.destroy(error);
     this._closeSocket(id);
   }
 
-  _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(Encoder.encode({tunnelId: this._tunnelId, ...msg}));
+  _sendMessage(msg) {
+    this._transport.send((_Encoder || _load_Encoder()).default.encode(Object.assign({ tunnelId: this._tunnelId }, msg)));
   }
 
-  close(): void {
+  close() {
     if (this._server != null) {
       this._server.close();
       this._server = null;
@@ -159,6 +163,7 @@ export class Proxy extends EventEmitter {
       socket.end();
     });
     this.removeAllListeners();
-    this._sendMessage({event: 'proxyClosed'});
+    this._sendMessage({ event: 'proxyClosed' });
   }
 }
+exports.Proxy = Proxy;

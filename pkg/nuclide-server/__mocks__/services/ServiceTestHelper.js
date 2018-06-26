@@ -1,39 +1,54 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ConfigEntry} from '../../../nuclide-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import NuclideServer from '../../lib/NuclideServer';
-import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
-import {RpcConnection} from '../../../nuclide-rpc';
-import {getRemoteNuclideUriMarshalers} from '../../../nuclide-marshalers-common';
+var _NuclideServer;
 
-type Services = Array<ConfigEntry>;
+function _load_NuclideServer() {
+  return _NuclideServer = _interopRequireDefault(require('../../lib/NuclideServer'));
+}
 
-const HEARTBEAT_CHANNEL = 'test-heartbeat';
+var _ReliableSocket;
 
-export default class ServiceTestHelper {
-  _server: NuclideServer;
-  _client: RpcConnection<ReliableSocket>;
+function _load_ReliableSocket() {
+  return _ReliableSocket = require('../../../../modules/big-dig/src/socket/ReliableSocket');
+}
 
-  async start(customServices: Services): Promise<void> {
-    this._server = new NuclideServer({port: 0}, customServices);
+var _nuclideRpc;
+
+function _load_nuclideRpc() {
+  return _nuclideRpc = require('../../../nuclide-rpc');
+}
+
+var _nuclideMarshalersCommon;
+
+function _load_nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon = require('../../../nuclide-marshalers-common');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const HEARTBEAT_CHANNEL = 'test-heartbeat'; /**
+                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                             * All rights reserved.
+                                             *
+                                             * This source code is licensed under the license found in the LICENSE file in
+                                             * the root directory of this source tree.
+                                             *
+                                             * 
+                                             * @format
+                                             */
+
+class ServiceTestHelper {
+
+  async start(customServices) {
+    this._server = new (_NuclideServer || _load_NuclideServer()).default({ port: 0 }, customServices);
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    this._client = RpcConnection.createRemote(
-      new ReliableSocket(`http://localhost:${port}`, HEARTBEAT_CHANNEL, null),
-      [getRemoteNuclideUriMarshalers('localhost')],
-      customServices,
-    );
+    this._client = (_nuclideRpc || _load_nuclideRpc()).RpcConnection.createRemote(new (_ReliableSocket || _load_ReliableSocket()).ReliableSocket(`http://localhost:${port}`, HEARTBEAT_CHANNEL, null), [(0, (_nuclideMarshalersCommon || _load_nuclideMarshalersCommon()).getRemoteNuclideUriMarshalers)('localhost')], customServices);
   }
 
   async stop() {
@@ -41,11 +56,12 @@ export default class ServiceTestHelper {
     await this._server.close();
   }
 
-  getRemoteService(serviceName: string): any {
+  getRemoteService(serviceName) {
     return this._client.getService(serviceName);
   }
 
-  getUriOfRemotePath(remotePath: string): string {
+  getUriOfRemotePath(remotePath) {
     return `nuclide://localhost${remotePath}`;
   }
 }
+exports.default = ServiceTestHelper;

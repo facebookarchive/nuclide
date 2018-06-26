@@ -1,19 +1,12 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {_DOMObserverObservable as DOMObserverObservable} from '../observable-dom';
+var _observableDom;
+
+function _load_observableDom() {
+  return _observableDom = require('../observable-dom');
+}
 
 describe('new DOMObserverObservable', () => {
   let observerInstance;
@@ -23,16 +16,13 @@ describe('new DOMObserverObservable', () => {
   });
 
   class MockDOMObserver {
-    _args: Array<any>;
-    _callback: Function;
-    _connected: boolean;
 
     constructor(callback) {
       this._callback = callback;
       observerInstance = this;
     }
 
-    observe(...args: any[]) {
+    observe(...args) {
       this._args = args;
       this._connected = true;
     }
@@ -44,76 +34,64 @@ describe('new DOMObserverObservable', () => {
 
   it('does not construct a DOM Observer until the Rx Observable is subscribed to', () => {
     // $FlowFixMe(>=0.55.0) Flow suppress
-    const o = new DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
-      args: true,
+    const o = new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
+      args: true
     });
     expect(observerInstance).toBe(null);
 
     const subscription = o.subscribe(() => {});
-    invariant(observerInstance != null);
-    expect(observerInstance._args).toEqual([
-      'some',
-      'additional',
-      {args: true},
-    ]);
+
+    if (!(observerInstance != null)) {
+      throw new Error('Invariant violation: "observerInstance != null"');
+    }
+
+    expect(observerInstance._args).toEqual(['some', 'additional', { args: true }]);
     expect(observerInstance._connected).toBe(true);
     subscription.unsubscribe();
   });
 
   it('calls disconnect on the underlying DOM Observer when unsubscribe is called', () => {
-    const o = new DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
-      args: true,
+    const o = new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
+      args: true
     });
     const subscription = o.subscribe(() => {});
 
-    invariant(observerInstance != null);
+    if (!(observerInstance != null)) {
+      throw new Error('Invariant violation: "observerInstance != null"');
+    }
+
     expect(observerInstance._connected).toBe(true);
 
     subscription.unsubscribe();
     expect(observerInstance._connected).toBe(false);
   });
 
-  it(
-    'by default (without a call to .flattenEntries()) creates an observable of ' +
-      'the elements emitted from the DOM Observer',
-    async () => {
-      class MockDOMObserverEmitsArray extends MockDOMObserver {
-        observe(...args: Array<any>) {
-          super.observe(...args);
-          Observable.interval(1)
-            .mapTo(['foo', 'bar', 'baz'])
-            .take(2)
-            .subscribe(this._callback);
-        }
+  it('by default (without a call to .flattenEntries()) creates an observable of ' + 'the elements emitted from the DOM Observer', async () => {
+    class MockDOMObserverEmitsArray extends MockDOMObserver {
+      observe(...args) {
+        super.observe(...args);
+        _rxjsBundlesRxMinJs.Observable.interval(1).mapTo(['foo', 'bar', 'baz']).take(2).subscribe(this._callback);
       }
+    }
 
-      await (async () => {
-        const output = await new DOMObserverObservable(
-          MockDOMObserverEmitsArray,
-          'arg',
-        )
-          .take(2)
-          .toArray()
-          .toPromise();
-        expect(output).toEqual([['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']]);
-      })();
-    },
-  );
+    await (async () => {
+      const output = await new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserverEmitsArray, 'arg').take(2).toArray().toPromise();
+      expect(output).toEqual([['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']]);
+    })();
+  });
 
   describe('multiple subscribers', () => {
     it('only disconnects the underlying observer when all subscribers have unsubscribed', () => {
-      const o = new DOMObserverObservable(
-        MockDOMObserver,
-        'some',
-        'additional',
-        {
-          args: true,
-        },
-      );
+      const o = new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
+        args: true
+      });
       const subscription = o.subscribe(() => {});
       const subscription2 = o.subscribe(() => {});
 
-      invariant(observerInstance != null);
+      if (!(observerInstance != null)) {
+        throw new Error('Invariant violation: "observerInstance != null"');
+      }
+
       expect(observerInstance._connected).toBe(true);
 
       subscription.unsubscribe();
@@ -128,139 +106,105 @@ describe('new DOMObserverObservable', () => {
       expect(observerInstance._connected).toBe(false);
     });
 
-    it(
-      'creates a new underlying observable and connects it for new' +
-        'subscriptions that happen after a disconnect',
-      () => {
-        const o = new DOMObserverObservable(
-          MockDOMObserver,
-          'some',
-          'additional',
-          {
-            args: true,
-          },
-        );
-        const subscription = o.subscribe(() => {});
-        const subscription2 = o.subscribe(() => {});
+    it('creates a new underlying observable and connects it for new' + 'subscriptions that happen after a disconnect', () => {
+      const o = new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserver, 'some', 'additional', {
+        args: true
+      });
+      const subscription = o.subscribe(() => {});
+      const subscription2 = o.subscribe(() => {});
 
-        invariant(observerInstance != null);
-        const oldObserver = observerInstance;
+      if (!(observerInstance != null)) {
+        throw new Error('Invariant violation: "observerInstance != null"');
+      }
 
-        subscription.unsubscribe();
-        subscription2.unsubscribe();
+      const oldObserver = observerInstance;
 
-        expect(observerInstance._connected).toBe(false);
-        const newSubscription = o.subscribe(() => {});
-        // creates a new underlying observer
-        expect(observerInstance).not.toBe(oldObserver);
-        expect(observerInstance._connected).toBe(true);
-        newSubscription.unsubscribe();
-      },
-    );
+      subscription.unsubscribe();
+      subscription2.unsubscribe();
+
+      expect(observerInstance._connected).toBe(false);
+      const newSubscription = o.subscribe(() => {});
+      // creates a new underlying observer
+      expect(observerInstance).not.toBe(oldObserver);
+      expect(observerInstance._connected).toBe(true);
+      newSubscription.unsubscribe();
+    });
   });
 
   describe('flattenEntries operator', () => {
     it('implements lift to cause subsequent operators to return DOMObserverObservables', () => {
       class MockDOMObserverEmitsArray extends MockDOMObserver {
-        observe(...args: Array<any>) {
+        observe(...args) {
           super.observe(...args);
-          Observable.interval(1)
-            .mapTo(['foo', 'bar', 'baz'])
-            .take(2)
-            .subscribe(this._callback);
+          _rxjsBundlesRxMinJs.Observable.interval(1).mapTo(['foo', 'bar', 'baz']).take(2).subscribe(this._callback);
         }
       }
 
-      expect(
-        new DOMObserverObservable(MockDOMObserverEmitsArray, 'arg')
-          .flattenEntries()
-          .map(x => x) instanceof DOMObserverObservable,
-      ).toBe(true);
+      expect(new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserverEmitsArray, 'arg').flattenEntries().map(x => x) instanceof (_observableDom || _load_observableDom())._DOMObserverObservable).toBe(true);
     });
 
     it('creates an observable of the individual elements of the array emitted from the DOM Observer', async () => {
       class MockDOMObserverEmitsArray extends MockDOMObserver {
-        observe(...args: Array<any>) {
+        observe(...args) {
           super.observe(...args);
-          Observable.interval(1)
-            .mapTo(['foo', 'bar', 'baz'])
-            .take(2)
-            .subscribe(this._callback);
+          _rxjsBundlesRxMinJs.Observable.interval(1).mapTo(['foo', 'bar', 'baz']).take(2).subscribe(this._callback);
         }
       }
 
       await (async () => {
-        const output = await new DOMObserverObservable(
-          MockDOMObserverEmitsArray,
-          'arg',
-        )
-          .flattenEntries()
-          .take(6)
-          .toArray()
-          .toPromise();
+        const output = await new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserverEmitsArray, 'arg').flattenEntries().take(6).toArray().toPromise();
         expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
       })();
     });
 
-    it(
-      'creates an observable of the individual elements of the array returned ' +
-        'from the getEntries method of the entrylist emitted from the DOM Observer',
-      async () => {
-        class MockDOMObserverEmitsEntryList extends MockDOMObserver {
-          observe(...args: Array<any>) {
-            super.observe(...args);
-            Observable.interval(1)
-              .mapTo({
-                getEntries: () => ['foo', 'bar', 'baz'],
-              })
-              .take(2)
-              .subscribe(this._callback);
-          }
+    it('creates an observable of the individual elements of the array returned ' + 'from the getEntries method of the entrylist emitted from the DOM Observer', async () => {
+      class MockDOMObserverEmitsEntryList extends MockDOMObserver {
+        observe(...args) {
+          super.observe(...args);
+          _rxjsBundlesRxMinJs.Observable.interval(1).mapTo({
+            getEntries: () => ['foo', 'bar', 'baz']
+          }).take(2).subscribe(this._callback);
         }
+      }
 
-        await (async () => {
-          const output = await new DOMObserverObservable(
-            MockDOMObserverEmitsEntryList,
-            'arg',
-          )
-            .flattenEntries()
-            .take(6)
-            .toArray()
-            .toPromise();
-          expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
-        })();
-      },
-    );
+      await (async () => {
+        const output = await new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserverEmitsEntryList, 'arg').flattenEntries().take(6).toArray().toPromise();
+        expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
+      })();
+    });
 
     it('throws if neither an iterable nor an EntryList is emitted from the DOM Observer', async () => {
       class MockDOMObserverEmitsNonStandard extends MockDOMObserver {
-        observe(...args: Array<any>) {
+        observe(...args) {
           super.observe(...args);
-          Observable.interval(1)
-            .take(2)
-            .subscribe(this._callback);
+          _rxjsBundlesRxMinJs.Observable.interval(1).take(2).subscribe(this._callback);
         }
       }
 
       await (async () => {
         let error;
         try {
-          await new DOMObserverObservable(
-            MockDOMObserverEmitsNonStandard,
-            'arg',
-          )
-            .flattenEntries()
-            .take(2)
-            .toArray()
-            .toPromise();
+          await new (_observableDom || _load_observableDom())._DOMObserverObservable(MockDOMObserverEmitsNonStandard, 'arg').flattenEntries().take(2).toArray().toPromise();
         } catch (e) {
           error = e;
         }
-        invariant(error != null);
-        expect(error.message).toEqual(
-          'Tried to merge DOM Observer entries, but they were not iterable nor were they an EntryList.',
-        );
+
+        if (!(error != null)) {
+          throw new Error('Invariant violation: "error != null"');
+        }
+
+        expect(error.message).toEqual('Tried to merge DOM Observer entries, but they were not iterable nor were they an EntryList.');
       })();
     });
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     * 
+     * @format
+     */

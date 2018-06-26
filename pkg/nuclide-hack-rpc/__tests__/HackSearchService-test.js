@@ -1,50 +1,54 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {convertSearchResults, parseQueryString} from '../lib/SymbolSearch';
+var _SymbolSearch;
+
+function _load_SymbolSearch() {
+  return _SymbolSearch = require('../lib/SymbolSearch');
+}
 
 describe('Hack Symbol Search', () => {
   describe('convertSearchResults', () => {
     it('empty results are returned when getSearchResults() returns null', () => {
-      expect(convertSearchResults('/hackroot', null)).toEqual([]);
+      expect((0, (_SymbolSearch || _load_SymbolSearch()).convertSearchResults)('/hackroot', null)).toEqual([]);
     });
   });
 
   describe('parseQueryString', () => {
     it('normal query', () => {
-      expect(parseQueryString('asdf')).toEqual({
+      expect((0, (_SymbolSearch || _load_SymbolSearch()).parseQueryString)('asdf')).toEqual({
         queryString: 'asdf',
-        searchPostfix: null,
+        searchPostfix: null
       });
     });
 
     it('function query', () => {
-      expect(parseQueryString('@asdf')).toEqual({
+      expect((0, (_SymbolSearch || _load_SymbolSearch()).parseQueryString)('@asdf')).toEqual({
         queryString: 'asdf',
-        searchPostfix: '-function',
+        searchPostfix: '-function'
       });
     });
 
     it('class query', () => {
-      expect(parseQueryString('#asdf')).toEqual({
+      expect((0, (_SymbolSearch || _load_SymbolSearch()).parseQueryString)('#asdf')).toEqual({
         queryString: 'asdf',
-        searchPostfix: '-class',
+        searchPostfix: '-class'
       });
     });
 
     it('constant query', () => {
-      expect(parseQueryString('%asdf')).toEqual({
+      expect((0, (_SymbolSearch || _load_SymbolSearch()).parseQueryString)('%asdf')).toEqual({
         queryString: 'asdf',
-        searchPostfix: '-constant',
+        searchPostfix: '-constant'
       });
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict-local
+     * @format
+     */

@@ -1,17 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import blocked from '../lib/blocked';
+var _blocked;
 
-let now = 0;
+function _load_blocked() {
+  return _blocked = _interopRequireDefault(require('../lib/blocked'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let now = 0; /**
+              * Copyright (c) 2015-present, Facebook, Inc.
+              * All rights reserved.
+              *
+              * This source code is licensed under the license found in the LICENSE file in
+              * the root directory of this source tree.
+              *
+              *  strict-local
+              * @format
+              */
 
 describe('blocked()', () => {
   let blockHandler;
@@ -22,7 +28,7 @@ describe('blocked()', () => {
     jest.useFakeTimers();
     jest.spyOn(Date, 'now').mockImplementation(() => now);
 
-    intervalHandler = blocked(blockHandler, 100, 10);
+    intervalHandler = (0, (_blocked || _load_blocked()).default)(blockHandler, 100, 10);
   });
 
   afterEach(() => {

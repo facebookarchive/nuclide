@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = humanizeKeystroke;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +12,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -24,7 +30,7 @@ const MAC_MODIFIER_KEYMAP = {
   option: '\u2325',
   right: '\u2192',
   shift: '\u21e7',
-  up: '\u2191',
+  up: '\u2191'
 };
 
 const NON_MAC_MODIFIER_KEYMAP = {
@@ -37,7 +43,7 @@ const NON_MAC_MODIFIER_KEYMAP = {
   option: 'Alt',
   right: 'Right',
   shift: 'Shift',
-  up: 'Up',
+  up: 'Up'
 };
 
 // Human key combos should always explicitly state the shift key. This map is a disambiguator.
@@ -53,13 +59,13 @@ const SHIFT_KEYMAP = {
   '<': ',',
   '>': '.',
   '|': '\\',
-  '~': '`',
+  '~': '`'
 };
 
 const FN_KEY_RE = /f[0-9]{1,2}/;
 
 // $FlowIssue
-function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
+function flatten(arr) {
   let flattened = [];
   for (const el of arr) {
     if (Array.isArray(el)) {
@@ -71,18 +77,17 @@ function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
   return flattened;
 }
 
-function capitalize(word: string): string {
+function capitalize(word) {
   const first = word[0] || '';
   const rest = word.slice(1);
   return first.toUpperCase() + rest;
 }
 
-function humanizeKey(key: string, platform: ?string): string | Array<string> {
+function humanizeKey(key, platform) {
   if (!key) {
     return key;
   }
-  const modifierKeyMap =
-    platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
+  const modifierKeyMap = platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
   if (modifierKeyMap[key]) {
     return modifierKeyMap[key];
   }
@@ -111,10 +116,7 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
  * @param platform An optional String platform to humanize for (default: `process.platform`).
  * @return a humanized representation of the keystroke.
  */
-export default function humanizeKeystroke(
-  keystroke: string,
-  platform_: ?string,
-): string {
+function humanizeKeystroke(keystroke, platform_) {
   let platform = platform_;
   if (!keystroke) {
     return keystroke;

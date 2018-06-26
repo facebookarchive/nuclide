@@ -1,28 +1,23 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {DiagnosticTrace} from '../../../atom-ide-diagnostics/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsTraceItem = undefined;
 
-import * as React from 'react';
-import {DiagnosticsMessageText} from './DiagnosticsMessageText';
+var _react = _interopRequireWildcard(require('react'));
 
-type DiagnosticsTraceItemProps = {
-  trace: DiagnosticTrace,
-  goToLocation: (path: string, line: number) => mixed,
-};
+var _DiagnosticsMessageText;
+
+function _load_DiagnosticsMessageText() {
+  return _DiagnosticsMessageText = require('./DiagnosticsMessageText');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
-  const {trace, goToLocation} = props;
+const DiagnosticsTraceItem = exports.DiagnosticsTraceItem = props => {
+  const { trace, goToLocation } = props;
   let locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
   const path = trace.filePath;
@@ -33,23 +28,36 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
-    const onClick = (event: SyntheticMouseEvent<>) => {
+    const onClick = event => {
       event.stopPropagation();
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
-    locSpan = (
-      <span>
-        :{' '}
-        <a href="#" onClick={onClick}>
-          {locString}
-        </a>
-      </span>
+    locSpan = _react.createElement(
+      'span',
+      null,
+      ':',
+      ' ',
+      _react.createElement(
+        'a',
+        { href: '#', onClick: onClick },
+        locString
+      )
     );
   }
-  return (
-    <div>
-      <DiagnosticsMessageText message={trace} />
-      {locSpan}
-    </div>
+  return _react.createElement(
+    'div',
+    null,
+    _react.createElement((_DiagnosticsMessageText || _load_DiagnosticsMessageText()).DiagnosticsMessageText, { message: trace }),
+    locSpan
   );
-};
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    *  strict-local
+    * @format
+    */

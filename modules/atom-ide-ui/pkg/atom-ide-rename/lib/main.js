@@ -1,49 +1,90 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {RenameProvider} from './types';
+'use strict';
 
-import {Range} from 'atom';
-import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
-import ReactDOM from 'react-dom';
-import * as React from 'react';
-import {getLogger} from 'log4js';
-import ContextMenu from 'nuclide-commons-atom/ContextMenu';
-import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {asyncFind} from 'nuclide-commons/promise';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {applyTextEditsForMultipleFiles} from 'nuclide-commons-atom/text-edit';
-import {Observable} from 'rxjs';
-import RenameComponent from './RenameComponent';
+var _atom = require('atom');
+
+var _ReactMountRootElement;
+
+function _load_ReactMountRootElement() {
+  return _ReactMountRootElement = _interopRequireDefault(require('../../../../nuclide-commons-ui/ReactMountRootElement'));
+}
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _ContextMenu;
+
+function _load_ContextMenu() {
+  return _ContextMenu = _interopRequireDefault(require('../../../../nuclide-commons-atom/ContextMenu'));
+}
+
+var _mouseToPosition;
+
+function _load_mouseToPosition() {
+  return _mouseToPosition = require('../../../../nuclide-commons-atom/mouse-to-position');
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../../../nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../../nuclide-commons/promise');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../../../nuclide-commons-atom/createPackage'));
+}
+
+var _textEdit;
+
+function _load_textEdit() {
+  return _textEdit = require('../../../../nuclide-commons-atom/text-edit');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _RenameComponent;
+
+function _load_RenameComponent() {
+  return _RenameComponent = _interopRequireDefault(require('./RenameComponent'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _providers: ProviderRegistry<RenameProvider>;
-  _subscriptions: UniversalDisposable;
-  lastMouseEvent: MouseEvent;
 
   constructor() {
-    this._providers = new ProviderRegistry();
-    this._subscriptions = new UniversalDisposable();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._subscriptions.add(this.registerOpenerAndCommand());
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 
-  consumeRenameProvider(provider: RenameProvider): IDisposable {
+  consumeRenameProvider(provider) {
     const disposable = this._providers.addProvider(provider);
     this._subscriptions.add(disposable);
     // $FlowFixMe
@@ -53,93 +94,64 @@ class Activation {
     };
   }
 
-  registerOpenerAndCommand(): IDisposable {
-    return new UniversalDisposable(
-      atom.commands.add('atom-text-editor', 'rename:activate', async event => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (!editor) {
-          return null;
-        }
+  registerOpenerAndCommand() {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('atom-text-editor', 'rename:activate', async event => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (!editor) {
+        return null;
+      }
 
-        await this._doRename(
-          this._getProviderData(
-            editor,
-            ContextMenu.isEventFromContextMenu(event)
-              ? this.lastMouseEvent
-              : null,
-          ),
-        );
-      }),
-      atom.contextMenu.add({
-        'atom-text-editor': [
-          {
-            label: 'Rename',
-            command: 'rename:activate',
-            created: event => {
-              this.lastMouseEvent = event;
-            },
-          },
-        ],
-      }),
-    );
+      await this._doRename(this._getProviderData(editor, (_ContextMenu || _load_ContextMenu()).default.isEventFromContextMenu(event) ? this.lastMouseEvent : null));
+    }), atom.contextMenu.add({
+      'atom-text-editor': [{
+        label: 'Rename',
+        command: 'rename:activate',
+        created: event => {
+          this.lastMouseEvent = event;
+        }
+      }]
+    }));
   }
 
-  renderRenameInput(
-    editor: atom$TextEditor,
-    resolveNewName: (string | void) => void,
-  ): React.Element<$FlowFixMe> {
+  renderRenameInput(editor, resolveNewName) {
     editor.selectWordsContainingCursors();
     const selectedText = editor.getSelectedText();
 
-    return (
-      <RenameComponent
-        selectedText={selectedText}
-        submitNewName={resolveNewName}
-      />
-    );
+    return _react.createElement((_RenameComponent || _load_RenameComponent()).default, {
+      selectedText: selectedText,
+      submitNewName: resolveNewName
+    });
   }
 
-  mountRenameInput(
-    editor: atom$TextEditor,
-    container: ReactMountRootElement,
-    element: React.Element<$FlowFixMe>,
-  ): IDisposable {
+  mountRenameInput(editor, container, element) {
     const position = editor.getSelectedBufferRange().start;
 
-    const overlayMarker = editor.markBufferRange(
-      new Range(position, position),
-      {
-        invalidate: 'never',
-      },
-    );
+    const overlayMarker = editor.markBufferRange(new _atom.Range(position, position), {
+      invalidate: 'never'
+    });
 
     editor.decorateMarker(overlayMarker, {
       type: 'overlay',
       position: 'tail',
-      item: container,
+      item: container
     });
 
-    return new UniversalDisposable(
-      () => overlayMarker.destroy(),
-      () => ReactDOM.unmountComponentAtNode(container),
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => overlayMarker.destroy(), () => _reactDom.default.unmountComponentAtNode(container),
 
-      // The editor may not mount the marker until the next update.
-      // It's not safe to render anything until that point, as overlayed containers
-      // often need to measure their size in the DOM.
-      Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
-        () => {
-          container.style.display = 'block';
-          ReactDOM.render(element, container);
-        },
-      ),
-    );
+    // The editor may not mount the marker until the next update.
+    // It's not safe to render anything until that point, as overlayed containers
+    // often need to measure their size in the DOM.
+    _rxjsBundlesRxMinJs.Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(() => {
+      container.style.display = 'block';
+      _reactDom.default.render(element, container);
+    }));
   }
 
-  async _getUserInput(editor: atom$TextEditor): Promise<?string> {
+  async _getUserInput(editor) {
     // TODO: Should only be instantiated once.
     //       However, the node has trouble rendering at the correct position
     //       when it is instantiated once in the constructor and re-mounted
-    const container = new ReactMountRootElement();
+    const container = new (_ReactMountRootElement || _load_ReactMountRootElement()).default();
     container.className = 'rename-container';
 
     let disposable = null;
@@ -159,43 +171,41 @@ class Activation {
     return newName;
   }
 
-  async _getProviderData(
-    editor: atom$TextEditor,
-    event: ?MouseEvent,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+  async _getProviderData(editor, event) {
     const newName = await this._getUserInput(editor);
     if (newName == null) {
       return null;
     }
 
-    const position =
-      event != null
-        ? bufferPositionForMouseEvent(event, editor)
-        : editor.getCursorBufferPosition();
+    const position = event != null ? (0, (_mouseToPosition || _load_mouseToPosition()).bufferPositionForMouseEvent)(event, editor) : editor.getCursorBufferPosition();
 
     const providers = this._providers.getAllProvidersForEditor(editor);
-    const resultPromise = asyncFind(
-      Array.from(providers).map(provider =>
-        provider.rename(editor, position, newName).catch(err => {
-          getLogger('rename').error('Error renaming', err);
-          return new Map();
-        }),
-      ),
-      x => x,
-    );
+    const resultPromise = (0, (_promise || _load_promise()).asyncFind)(Array.from(providers).map(provider => provider.rename(editor, position, newName).catch(err => {
+      (0, (_log4js || _load_log4js()).getLogger)('rename').error('Error renaming', err);
+      return new Map();
+    })), x => x);
 
     return resultPromise;
   }
 
-  async _doRename(
-    changes: Promise<?Map<NuclideUri, Array<TextEdit>>>,
-  ): Promise<boolean> {
+  async _doRename(changes) {
     const renameChanges = await changes;
     if (!renameChanges) {
       return false;
     }
-    return applyTextEditsForMultipleFiles(renameChanges);
+    return (0, (_textEdit || _load_textEdit()).applyTextEditsForMultipleFiles)(renameChanges);
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   *  strict-local
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

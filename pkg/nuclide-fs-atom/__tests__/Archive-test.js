@@ -1,51 +1,61 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {ArchiveDirectory} from '../lib/ArchiveDirectory';
-import {ArchiveFile} from '../lib/ArchiveFile';
-import {ArchiveFileAsDirectory} from '../lib/ArchiveFileAsDirectory';
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
+var _ArchiveDirectory;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+function _load_ArchiveDirectory() {
+  return _ArchiveDirectory = require('../lib/ArchiveDirectory');
+}
 
-type Directory = ArchiveDirectory | ArchiveFileAsDirectory;
-type ArchiveEntry = ArchiveDirectory | ArchiveFileAsDirectory | ArchiveFile;
+var _ArchiveFile;
 
-const fixtures = nuclideUri.join(
-  __dirname,
-  '../../nuclide-fs/__mocks__/fixtures',
-);
+function _load_ArchiveFile() {
+  return _ArchiveFile = require('../lib/ArchiveFile');
+}
+
+var _ArchiveFileAsDirectory;
+
+function _load_ArchiveFileAsDirectory() {
+  return _ArchiveFileAsDirectory = require('../lib/ArchiveFileAsDirectory');
+}
+
+var _nuclideFsAtom;
+
+function _load_nuclideFsAtom() {
+  return _nuclideFsAtom = require('../../nuclide-fs-atom');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const fixtures = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../../nuclide-fs/__mocks__/fixtures'); /**
+                                                                                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                      * All rights reserved.
+                                                                                                                      *
+                                                                                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                      * the root directory of this source tree.
+                                                                                                                      *
+                                                                                                                      *  strict-local
+                                                                                                                      * @format
+                                                                                                                      */
 
 const PARENT_TEXT = 'Parent directory text file contents\n';
 const CHILD_TEXT = 'Child directory text file contents\n';
-const PARENT_DIR = [
-  'Directory',
-  'EmptyDirectory',
-  'EmptyFile',
-  'LinkDirectory',
-  'LinkDirectorySlashTextFile.txt',
-  'LinkLinkDirectory',
-  'LinkLinkDirectorySlashTextFile.txt',
-  'TextFile.txt',
-];
+const PARENT_DIR = ['Directory', 'EmptyDirectory', 'EmptyFile', 'LinkDirectory', 'LinkDirectorySlashTextFile.txt', 'LinkLinkDirectory', 'LinkLinkDirectorySlashTextFile.txt', 'TextFile.txt'];
 const CHILD_DIR = ['LinkDotDotSlashTextFile.txt', 'TextFile.txt'];
 
 const DIR_ZIP_DIR = fixture('dir.zip', 'dir');
 
 describe('dir.zip/dir', () => {
-  const dir = ROOT_ARCHIVE_FS.newArchiveDirectory(DIR_ZIP_DIR);
+  const dir = (_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveDirectory(DIR_ZIP_DIR);
   checkRoot(dir);
 });
 
-function checkRoot(root: Directory) {
+function checkRoot(root) {
   describe('root', () => {
     checkGetEntries(root, PARENT_DIR);
   });
@@ -73,43 +83,40 @@ function checkRoot(root: Directory) {
   });
 }
 
-function checkGetEntries(directory: Directory, expected: Array<string>): void {
+function checkGetEntries(directory, expected) {
   checkDirectory(directory);
   checkExistingPath(directory);
   describe('getEntries', () => {
     it('returns expected names', async () => {
-      await (() =>
-        new Promise((resolve, reject) =>
-          directory.getEntries((error, entries) => {
-            if (entries != null) {
-              expect(names(entries)).toEqual(expected);
-              resolve();
-            } else {
-              reject(error);
-            }
-          }),
-        ))();
+      await (() => new Promise((resolve, reject) => directory.getEntries((error, entries) => {
+        if (entries != null) {
+          expect(names(entries)).toEqual(expected);
+          resolve();
+        } else {
+          reject(error);
+        }
+      })))();
     });
   });
 }
 
-function checkTextFile(entry: ArchiveFile, contents: string) {
+function checkTextFile(entry, contents) {
   checkFile(entry);
   checkExistingPath(entry);
   checkText(entry, contents);
 }
 
-function checkText(entry: ArchiveFile, contents: string): void {
+function checkText(entry, contents) {
   describe(`text file ${entry.getBaseName()}`, () => {
     it('has expected contents', async () => {
       await (async () => {
-        expect(await entry.read()).toEqual(contents);
+        expect((await entry.read())).toEqual(contents);
       })();
     });
   });
 }
 
-function checkDirectory(entry: ArchiveEntry): void {
+function checkDirectory(entry) {
   describe('directory isDirectory', () => {
     it('is true', () => {
       expect(entry.isDirectory()).toBeTruthy();
@@ -122,7 +129,7 @@ function checkDirectory(entry: ArchiveEntry): void {
   });
 }
 
-function checkFile(entry: ArchiveEntry): void {
+function checkFile(entry) {
   describe('file isDirectory', () => {
     it('is false', () => {
       expect(entry.isDirectory()).toBeFalsy();
@@ -135,25 +142,25 @@ function checkFile(entry: ArchiveEntry): void {
   });
 }
 
-function checkExistingPath(entry: ArchiveEntry): void {
+function checkExistingPath(entry) {
   describe('existence', () => {
     it('is true', async () => {
       await (async () => {
-        expect(await entry.exists()).toBeTruthy();
+        expect((await entry.exists())).toBeTruthy();
       })();
     });
   });
 }
 
-function fixture(dir: string, archiveOffset?: string): string {
-  const fsDir = nuclideUri.join(fixtures, dir);
+function fixture(dir, archiveOffset) {
+  const fsDir = (_nuclideUri || _load_nuclideUri()).default.join(fixtures, dir);
   if (archiveOffset == null) {
     return fsDir;
   } else {
-    return nuclideUri.archiveJoin(fsDir, archiveOffset);
+    return (_nuclideUri || _load_nuclideUri()).default.archiveJoin(fsDir, archiveOffset);
   }
 }
 
-function names(entries: Array<ArchiveEntry>): Array<string> {
+function names(entries) {
   return entries.map(x => x.getBaseName());
 }

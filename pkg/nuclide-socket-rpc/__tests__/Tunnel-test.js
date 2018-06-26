@@ -1,51 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import * as Tunnel from '../lib/Tunnel';
-import {ConnectionFactory} from '../lib/Connection';
-import net from 'net';
-import invariant from 'assert';
-import {ConnectableObservable} from 'rxjs';
-import {getLogger} from 'log4js';
+var _Tunnel;
 
-import type {SocketEvent} from '../lib/types.js';
+function _load_Tunnel() {
+  return _Tunnel = _interopRequireWildcard(require('../lib/Tunnel'));
+}
 
-const TEST_PORT = 5004;
-const cf = new ConnectionFactory();
+var _Connection;
+
+function _load_Connection() {
+  return _Connection = require('../lib/Connection');
+}
+
+var _net = _interopRequireDefault(require('net'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const TEST_PORT = 5004; /**
+                         * Copyright (c) 2015-present, Facebook, Inc.
+                         * All rights reserved.
+                         *
+                         * This source code is licensed under the license found in the LICENSE file in
+                         * the root directory of this source tree.
+                         *
+                         *  strict-local
+                         * @format
+                         */
+
+const cf = new (_Connection || _load_Connection()).ConnectionFactory();
 
 describe.skip('createTunnel', () => {
   let td;
 
   beforeEach(() => {
-    getLogger('SocketService-spec').debug('--SPEC START--');
+    (0, (_log4js || _load_log4js()).getLogger)('SocketService-spec').debug('--SPEC START--');
     td = {
       to: {
         host: 'localhost',
         port: TEST_PORT + 1,
-        family: 6,
+        family: 6
       },
       from: {
         host: 'localhost',
         port: TEST_PORT,
-        family: 6,
-      },
+        family: 6
+      }
     };
   });
 
   afterEach(() => {
-    getLogger('SocketService-spec').debug('--SPEC END--');
+    (0, (_log4js || _load_log4js()).getLogger)('SocketService-spec').debug('--SPEC END--');
   });
 
   it('should set up a listener that a client can connect to', async () => {
-    const events = Tunnel.createTunnel(td, new ConnectionFactory());
+    const events = (_Tunnel || _load_Tunnel()).createTunnel(td, new (_Connection || _load_Connection()).ConnectionFactory());
     let serverListening = false;
     let subscription;
 
@@ -56,28 +74,29 @@ describe.skip('createTunnel', () => {
             serverListening = true;
             resolve();
           }
-        },
+        }
       });
     });
 
     expect(serverListening).toBe(true);
     await testConnectability(TEST_PORT);
-    invariant(subscription);
+
+    if (!subscription) {
+      throw new Error('Invariant violation: "subscription"');
+    }
+
     subscription.unsubscribe();
   });
 
   it('should return a ConnectableObservable that emits listener events', async () => {
-    const events: ConnectableObservable<SocketEvent> = Tunnel.createTunnel(
-      td,
-      cf,
-    );
+    const events = (_Tunnel || _load_Tunnel()).createTunnel(td, cf);
     const eventList = [];
     let types;
 
     const subscription = events.refCount().subscribe({
       next: event => {
         eventList.push(event);
-      },
+      }
     });
 
     await testConnectability(TEST_PORT);
@@ -94,21 +113,19 @@ describe.skip('createTunnel', () => {
     let echoServer;
 
     // start echo server
-    echoServer = net.createServer(socket => {
+    echoServer = _net.default.createServer(socket => {
       socket.pipe(socket);
     });
     await new Promise(resolve => {
-      echoServer.listen({host: '::', port: TEST_PORT + 1}, resolve);
+      echoServer.listen({ host: '::', port: TEST_PORT + 1 }, resolve);
     });
 
     // create tunnel
-    const subscription = Tunnel.createTunnel(td, cf)
-      .refCount()
-      .subscribe();
+    const subscription = (_Tunnel || _load_Tunnel()).createTunnel(td, cf).refCount().subscribe();
 
     // create connection and send data
     await new Promise(resolve => {
-      const socket = net.createConnection(TEST_PORT, () => {
+      const socket = _net.default.createConnection(TEST_PORT, () => {
         socket.on('data', data => {
           response = data.toString();
           resolve();
@@ -119,47 +136,51 @@ describe.skip('createTunnel', () => {
 
     expect(message).toEqual(response);
     subscription.unsubscribe();
-    invariant(done);
+
+    if (!done) {
+      throw new Error('Invariant violation: "done"');
+    }
+
     echoServer.close(done);
   });
 
   it('should re-tunnel if the port is already bound on a tunnel', async done => {
     let subscription = null;
     await new Promise(resolve => {
-      subscription = Tunnel.createTunnel(td, cf)
-        .refCount()
-        .subscribe({
-          next: resolve,
-        });
+      subscription = (_Tunnel || _load_Tunnel()).createTunnel(td, cf).refCount().subscribe({
+        next: resolve
+      });
     });
 
     await new Promise(resolve => {
-      subscription = Tunnel.createTunnel(td, cf)
-        .refCount()
-        .subscribe({
-          next: resolve,
-        });
+      subscription = (_Tunnel || _load_Tunnel()).createTunnel(td, cf).refCount().subscribe({
+        next: resolve
+      });
     });
 
-    invariant(subscription);
+    if (!subscription) {
+      throw new Error('Invariant violation: "subscription"');
+    }
+
     subscription.unsubscribe();
-    invariant(done);
+
+    if (!done) {
+      throw new Error('Invariant violation: "done"');
+    }
+
     done();
   });
 
   it('should stop listening when the observable is unsubscribed', async () => {
-    const observable = Tunnel.createTunnel(td, cf);
+    const observable = (_Tunnel || _load_Tunnel()).createTunnel(td, cf);
 
     await new Promise(resolve => {
-      const subscription = observable
-        .refCount()
-        .take(1)
-        .subscribe({
-          next: event => {
-            resolve(event);
-            subscription.unsubscribe();
-          },
-        });
+      const subscription = observable.refCount().take(1).subscribe({
+        next: event => {
+          resolve(event);
+          subscription.unsubscribe();
+        }
+      });
     });
 
     await testConnectability(TEST_PORT);
@@ -167,29 +188,27 @@ describe.skip('createTunnel', () => {
 
   it('should allow for multiple clients to connect and interact', async done => {
     let toServer;
-    const sockets: Array<net.Socket> = [];
+    const sockets = [];
     let subscription = null;
 
     // create the 'to' server
     await new Promise(resolve => {
-      toServer = net.createServer(socket => {
+      toServer = _net.default.createServer(socket => {
         socket.pipe(socket);
       });
-      toServer.listen({host: '::', port: TEST_PORT + 1}, resolve);
+      toServer.listen({ host: '::', port: TEST_PORT + 1 }, resolve);
     });
 
     await new Promise(resolve => {
-      subscription = Tunnel.createTunnel(td, cf)
-        .refCount()
-        .subscribe({next: resolve});
+      subscription = (_Tunnel || _load_Tunnel()).createTunnel(td, cf).refCount().subscribe({ next: resolve });
     });
 
     await new Promise(resolve => {
-      sockets.push(net.createConnection(TEST_PORT, resolve));
+      sockets.push(_net.default.createConnection(TEST_PORT, resolve));
     });
 
     await new Promise(resolve => {
-      sockets.push(net.createConnection(TEST_PORT, resolve));
+      sockets.push(_net.default.createConnection(TEST_PORT, resolve));
     });
 
     await new Promise(resolve => {
@@ -202,9 +221,16 @@ describe.skip('createTunnel', () => {
       resolve();
     });
 
-    invariant(subscription);
+    if (!subscription) {
+      throw new Error('Invariant violation: "subscription"');
+    }
+
     subscription.unsubscribe();
-    invariant(toServer);
+
+    if (!toServer) {
+      throw new Error('Invariant violation: "toServer"');
+    }
+
     toServer.close(done);
   });
 
@@ -214,38 +240,47 @@ describe.skip('createTunnel', () => {
 
     // create the 'to' server
     await new Promise(resolve => {
-      toServer = net.createServer(socket => {
+      toServer = _net.default.createServer(socket => {
         socket.pipe(socket);
       });
-      toServer.listen({host: '::', port: TEST_PORT + 1}, resolve);
+      toServer.listen({ host: '::', port: TEST_PORT + 1 }, resolve);
     });
 
     await new Promise(resolve => {
-      subscription = Tunnel.createTunnel(td, cf)
-        .refCount()
-        .subscribe({next: resolve});
+      subscription = (_Tunnel || _load_Tunnel()).createTunnel(td, cf).refCount().subscribe({ next: resolve });
     });
 
     await new Promise(resolve => {
-      const socket = net.createConnection(TEST_PORT, () => {
+      const socket = _net.default.createConnection(TEST_PORT, () => {
         socket.destroy(new Error('boom'));
         resolve();
       });
       socket.on('error', () => {});
     });
 
-    invariant(subscription);
+    if (!subscription) {
+      throw new Error('Invariant violation: "subscription"');
+    }
+
     subscription.unsubscribe();
-    invariant(toServer);
+
+    if (!toServer) {
+      throw new Error('Invariant violation: "toServer"');
+    }
+
     toServer.close(done);
   });
 });
 
-async function testConnectability(port: number): Promise<void> {
+async function testConnectability(port) {
   return new Promise((resolve, reject) => {
-    const socket = net.connect(port);
+    const socket = _net.default.connect(port);
     socket.on('error', err => reject(err));
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error('Invariant violation: "socket"');
+    }
+
     socket.on('connect', async () => {
       socket.write(new Buffer('hello world'));
       socket.on('end', () => resolve());

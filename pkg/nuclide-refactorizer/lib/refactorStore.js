@@ -1,51 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {RefactorProvider} from '..';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getStore = getStore;
+exports.getErrors = getErrors;
 
-import type {Store} from './types';
+var _reduxMin;
 
-import {createStore, applyMiddleware} from 'redux';
-import {Subject} from 'rxjs';
+function _load_reduxMin() {
+  return _reduxMin = require('redux/dist/redux.min.js');
+}
 
-import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {
-  createEpicMiddleware,
-  combineEpics,
-} from 'nuclide-commons/redux-observable';
-import {getLogger} from 'log4js';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import refactorReducers from './refactorReducers';
-import {getEpics} from './refactorEpics';
+var _reduxObservable;
+
+function _load_reduxObservable() {
+  return _reduxObservable = require('../../../modules/nuclide-commons/redux-observable');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _refactorReducers;
+
+function _load_refactorReducers() {
+  return _refactorReducers = _interopRequireDefault(require('./refactorReducers'));
+}
+
+var _refactorEpics;
+
+function _load_refactorEpics() {
+  return _refactorEpics = require('./refactorEpics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // TODO create this lazily
-const errors: Subject<mixed> = new Subject();
+const errors = new _rxjsBundlesRxMinJs.Subject(); /**
+                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                   * All rights reserved.
+                                                   *
+                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                   * the root directory of this source tree.
+                                                   *
+                                                   * 
+                                                   * @format
+                                                   */
 
-function handleError(error: mixed): void {
-  getLogger('nuclide-refactorizer').error(
-    'Uncaught exception in refactoring:',
-    error,
-  );
+function handleError(error) {
+  (0, (_log4js || _load_log4js()).getLogger)('nuclide-refactorizer').error('Uncaught exception in refactoring:', error);
   errors.next(error);
 }
 
-export function getStore(providers: ProviderRegistry<RefactorProvider>): Store {
+function getStore(providers) {
   const rootEpic = (actions, store) => {
-    return combineEpics(...getEpics(providers))(actions, store).catch(
-      (error, stream) => {
-        handleError(error);
-        return stream;
-      },
-    );
+    return (0, (_reduxObservable || _load_reduxObservable()).combineEpics)(...(0, (_refactorEpics || _load_refactorEpics()).getEpics)(providers))(actions, store).catch((error, stream) => {
+      handleError(error);
+      return stream;
+    });
   };
   const exceptionHandler = store => next => action => {
     try {
@@ -54,12 +71,9 @@ export function getStore(providers: ProviderRegistry<RefactorProvider>): Store {
       handleError(e);
     }
   };
-  return createStore(
-    refactorReducers,
-    applyMiddleware(exceptionHandler, createEpicMiddleware(rootEpic)),
-  );
+  return (0, (_reduxMin || _load_reduxMin()).createStore)((_refactorReducers || _load_refactorReducers()).default, (0, (_reduxMin || _load_reduxMin()).applyMiddleware)(exceptionHandler, (0, (_reduxObservable || _load_reduxObservable()).createEpicMiddleware)(rootEpic)));
 }
 
-export function getErrors(): Observable<mixed> {
+function getErrors() {
   return errors.asObservable();
 }

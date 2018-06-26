@@ -1,171 +1,180 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _atom = require('atom');
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('../../../../nuclide-commons/analytics'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../../../nuclide-commons-atom/createPackage'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../../../nuclide-commons-atom/feature-config'));
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../../../nuclide-commons-atom/range');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../../nuclide-commons/nuclideUri'));
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../../../nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _performanceNow;
+
+function _load_performanceNow() {
+  return _performanceNow = _interopRequireDefault(require('../../../../nuclide-commons/performanceNow'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../../../nuclide-commons-atom/go-to-location');
+}
+
+var _DefinitionCache;
+
+function _load_DefinitionCache() {
+  return _DefinitionCache = _interopRequireDefault(require('./DefinitionCache'));
+}
+
+var _getPreviewDatatipFromDefinitionResult;
+
+function _load_getPreviewDatatipFromDefinitionResult() {
+  return _getPreviewDatatipFromDefinitionResult = _interopRequireDefault(require('./getPreviewDatatipFromDefinitionResult'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const TRACK_TIMING_SAMPLE_RATIO = 0.1; /**
+                                        * Copyright (c) 2017-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the BSD-style license found in the
+                                        * LICENSE file in the root directory of this source tree. An additional grant
+                                        * of patent rights can be found in the PATENTS file in the same directory.
+                                        *
+                                        * 
+                                        * @format
+                                        */
 
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick/lib/types';
-
-import type {
-  Datatip,
-  DatatipService,
-  ModifierDatatipProvider,
-  ModifierKey,
-} from '../../atom-ide-datatip/lib/types';
-
-import type {
-  DefinitionQueryResult,
-  DefinitionProvider,
-  DefinitionPreviewProvider,
-} from './types';
-
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import {Range} from 'atom';
-
-import analytics from 'nuclide-commons/analytics';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import FeatureConfig from 'nuclide-commons-atom/feature-config';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import performanceNow from 'nuclide-commons/performanceNow';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-
-import DefinitionCache from './DefinitionCache';
-import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
-
-const TRACK_TIMING_SAMPLE_RATIO = 0.1;
-
 class Activation {
-  _providers: ProviderRegistry<DefinitionProvider>;
-  _definitionPreviewProvider: ?DefinitionPreviewProvider;
-  _definitionCache: DefinitionCache;
-  _disposables: UniversalDisposable;
-  _triggerKeys: Set<ModifierKey>;
 
   constructor() {
-    this._providers = new ProviderRegistry();
-    this._definitionCache = new DefinitionCache();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._definitionCache = new (_DefinitionCache || _load_DefinitionCache()).default();
     this._triggerKeys = new Set();
 
-    this._disposables = new UniversalDisposable(
-      FeatureConfig.observe(
-        getPlatformKeys(process.platform),
-        (newValue: ?string) => {
-          this._triggerKeys = (new Set(
-            // flowlint-next-line sketchy-null-string:off
-            newValue ? newValue.split(',') : null,
-          ): Set<any>);
-        },
-      ),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default((_featureConfig || _load_featureConfig()).default.observe(getPlatformKeys(process.platform), newValue => {
+      this._triggerKeys = new Set(
+      // flowlint-next-line sketchy-null-string:off
+      newValue ? newValue.split(',') : null);
+    }));
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  async _getDefinition(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
+  async _getDefinition(editor, position) {
     for (const provider of this._providers.getAllProvidersForEditor(editor)) {
       try {
         // eslint-disable-next-line no-await-in-loop
         const result = await provider.getDefinition(editor, position);
         if (result != null) {
           if (result.queryRange == null) {
-            const match = wordAtPosition(
-              editor,
-              position,
-              provider.wordRegExp != null
-                ? provider.wordRegExp
-                : {
-                    includeNonWordCharacters: false,
-                  },
-            );
-            result.queryRange = [
-              match != null ? match.range : new Range(position, position),
-            ];
+            const match = (0, (_range || _load_range()).wordAtPosition)(editor, position, provider.wordRegExp != null ? provider.wordRegExp : {
+              includeNonWordCharacters: false
+            });
+            result.queryRange = [match != null ? match.range : new _atom.Range(position, position)];
           }
           return result;
         }
       } catch (err) {
-        getLogger('atom-ide-definitions').error(
-          `Error getting definition for ${String(editor.getPath())}`,
-          err,
-        );
+        (0, (_log4js || _load_log4js()).getLogger)('atom-ide-definitions').error(`Error getting definition for ${String(editor.getPath())}`, err);
       }
     }
     return null;
   }
 
-  _getDefinitionCached(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
+  _getDefinitionCached(editor, position) {
     return this._definitionCache.get(editor, position, () => {
-      return analytics.trackTimingSampled(
-        'get-definition',
-        () => this._getDefinition(editor, position),
-        TRACK_TIMING_SAMPLE_RATIO,
-        {path: editor.getPath()},
-      );
+      return (_analytics || _load_analytics()).default.trackTimingSampled('get-definition', () => this._getDefinition(editor, position), TRACK_TIMING_SAMPLE_RATIO, { path: editor.getPath() });
     });
   }
 
-  async getSuggestion(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?HyperclickSuggestion> {
-    const startTime = performanceNow();
+  async getSuggestion(editor, position) {
+    const startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     const result = await this._getDefinitionCached(editor, position);
-    const duration = performanceNow() - startTime;
+    const duration = (0, (_performanceNow || _load_performanceNow()).default)() - startTime;
     if (result == null) {
       return null;
     }
 
-    const {queryRange, definitions} = result;
-    invariant(definitions.length > 0);
+    const { queryRange, definitions } = result;
+
+    if (!(definitions.length > 0)) {
+      throw new Error('Invariant violation: "definitions.length > 0"');
+    }
     // queryRange might be null coming out of the provider, but the output
     // of _getDefinition has ensured it's not null.
-    invariant(queryRange != null);
+
+
+    if (!(queryRange != null)) {
+      throw new Error('Invariant violation: "queryRange != null"');
+    }
 
     function createCallback(definition) {
       return () => {
-        goToLocation(definition.path, {
+        (0, (_goToLocation || _load_goToLocation()).goToLocation)(definition.path, {
           line: definition.position.row,
-          column: definition.position.column,
+          column: definition.position.column
         });
-        analytics.track('go-to-definition', {
+        (_analytics || _load_analytics()).default.track('go-to-definition', {
           path: definition.path,
           line: definition.position.row,
           column: definition.position.column,
           from: editor.getPath(),
-          duration,
+          duration
         });
       };
     }
 
     function createTitle(definition) {
-      const filePath =
-        definition.projectRoot == null
-          ? definition.path
-          : nuclideUri.relative(definition.projectRoot, definition.path);
+      const filePath = definition.projectRoot == null ? definition.path : (_nuclideUri || _load_nuclideUri()).default.relative(definition.projectRoot, definition.path);
       if (definition.name == null) {
         // Fall back to just displaying the path:line.
         return `${filePath}:${definition.position.row + 1}`;
@@ -176,7 +185,7 @@ class Activation {
     if (definitions.length === 1) {
       return {
         range: queryRange,
-        callback: createCallback(definitions[0]),
+        callback: createCallback(definitions[0])
       };
     } else {
       return {
@@ -184,23 +193,17 @@ class Activation {
         callback: definitions.map(definition => {
           return {
             title: createTitle(definition),
-            callback: createCallback(definition),
+            callback: createCallback(definition)
           };
-        }),
+        })
       };
     }
   }
 
-  async getPreview(
-    editor: atom$TextEditor,
-    position: atom$Point,
-    heldKeys: Set<ModifierKey>,
-  ): Promise<?Datatip> {
-    if (
-      !this._triggerKeys ||
-      // are the required keys held down?
-      !Array.from(this._triggerKeys).every(key => heldKeys.has(key))
-    ) {
+  async getPreview(editor, position, heldKeys) {
+    if (!this._triggerKeys ||
+    // are the required keys held down?
+    !Array.from(this._triggerKeys).every(key => heldKeys.has(key))) {
       return;
     }
 
@@ -215,46 +218,40 @@ class Activation {
     const queryRange = result.queryRange;
     // queryRange might be null coming out of the provider, but the output
     // of _getDefinition has ensured it's not null.
-    invariant(queryRange != null);
+
+    if (!(queryRange != null)) {
+      throw new Error('Invariant violation: "queryRange != null"');
+    }
 
     const grammar = editor.getGrammar();
-    const previewDatatip = getPreviewDatatipFromDefinitionResult(
-      queryRange[0],
-      result.definitions,
-      this._definitionPreviewProvider,
-      grammar,
-    );
+    const previewDatatip = (0, (_getPreviewDatatipFromDefinitionResult || _load_getPreviewDatatipFromDefinitionResult()).default)(queryRange[0], result.definitions, this._definitionPreviewProvider, grammar);
 
     // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (previewDatatip != null && previewDatatip.markedStrings) {
-      analytics.track('hyperclick-preview-popup', {
+      (_analytics || _load_analytics()).default.track('hyperclick-preview-popup', {
         grammar: grammar.name,
-        definitionCount: result.definitions.length,
+        definitionCount: result.definitions.length
       });
     }
 
     return previewDatatip;
   }
 
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+  consumeDefinitionProvider(provider) {
     const disposable = this._providers.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 
-  consumeDefinitionPreviewProvider(provider: DefinitionPreviewProvider) {
+  consumeDefinitionPreviewProvider(provider) {
     this._definitionPreviewProvider = provider;
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: ModifierDatatipProvider = {
+  consumeDatatipService(service) {
+    const datatipProvider = {
       providerName: 'hyperclick-preview',
       priority: 1,
-      modifierDatatip: (
-        editor: atom$TextEditor,
-        bufferPosition: atom$Point,
-        heldKeys: Set<ModifierKey>,
-      ) => this.getPreview(editor, bufferPosition, heldKeys),
+      modifierDatatip: (editor, bufferPosition, heldKeys) => this.getPreview(editor, bufferPosition, heldKeys)
     };
 
     const disposable = service.addModifierProvider(datatipProvider);
@@ -262,11 +259,11 @@ class Activation {
     return disposable;
   }
 
-  getHyperclickProvider(): HyperclickProvider {
+  getHyperclickProvider() {
     return {
       priority: 20,
       providerName: 'atom-ide-definitions',
-      getSuggestion: (editor, position) => this.getSuggestion(editor, position),
+      getSuggestion: (editor, position) => this.getSuggestion(editor, position)
     };
   }
 }
@@ -280,4 +277,4 @@ function getPlatformKeys(platform) {
   return 'hyperclick.linuxTriggerKeys';
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

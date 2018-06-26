@@ -1,40 +1,55 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'assert';
-import {WORKSPACE_VIEW_URI} from '../lib/HealthPaneItem';
-import waitsFor from '../../../jest/waits_for';
+var _nuclideUri;
 
-const sleep = n => new Promise(r => setTimeout(r, n));
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _HealthPaneItem;
+
+function _load_HealthPaneItem() {
+  return _HealthPaneItem = require('../lib/HealthPaneItem');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const sleep = n => new Promise(r => setTimeout(r, n)); /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        * @format
+                                                        */
 
 const openHealthPane = () => {
   // eslint-disable-next-line nuclide-internal/atom-apis
-  atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+  atom.workspace.open((_HealthPaneItem || _load_HealthPaneItem()).WORKSPACE_VIEW_URI, { searchAllPanes: true });
 };
 
-function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
+function findHealthPaneAndItem() {
   for (const pane of atom.workspace.getPanes()) {
     for (const item of pane.getItems()) {
       if (item.getTitle() === 'Health') {
-        return {pane, item};
+        return { pane, item };
       }
     }
   }
-  return {pane: null, item: null};
+  return { pane: null, item: null };
 }
 
 describe.skip('Health', () => {
   beforeEach(async () => {
-    await atom.packages.activatePackage(nuclideUri.join(__dirname, '..'));
+    await atom.packages.activatePackage((_nuclideUri || _load_nuclideUri()).default.join(__dirname, '..'));
   });
 
   it('contains stats after its first refresh', async () => {
@@ -43,16 +58,20 @@ describe.skip('Health', () => {
     let item;
     openHealthPane();
     await sleep(2000);
-    await waitsFor(() => {
-      const {pane: pane_, item: item_} = findHealthPaneAndItem();
+    await (0, (_waits_for || _load_waits_for()).default)(() => {
+      const { pane: pane_, item: item_ } = findHealthPaneAndItem();
       pane = pane_;
       item = item_;
       return item != null && pane != null;
     });
-    invariant(item != null);
+
+    if (!(item != null)) {
+      throw new Error('Invariant violation: "item != null"');
+    }
+
     expect(item.getTitle()).toEqual('Health');
     element = atom.views.getView(item);
-    await waitsFor(() => element.innerHTML.trim() !== '');
+    await (0, (_waits_for || _load_waits_for()).default)(() => element.innerHTML.trim() !== '');
     expect(element.innerHTML).toContain('Stats');
     expect(element.innerHTML).toContain('CPU');
     expect(element.innerHTML).toContain('Heap');
@@ -65,14 +84,21 @@ describe.skip('Health', () => {
     openHealthPane();
     let pane;
     let item;
-    await waitsFor(() => {
-      const {pane: pane_, item: item_} = findHealthPaneAndItem();
+    await (0, (_waits_for || _load_waits_for()).default)(() => {
+      const { pane: pane_, item: item_ } = findHealthPaneAndItem();
       pane = pane_;
       item = item_;
       return item != null && pane != null;
     });
-    invariant(pane != null);
-    invariant(item != null);
+
+    if (!(pane != null)) {
+      throw new Error('Invariant violation: "pane != null"');
+    }
+
+    if (!(item != null)) {
+      throw new Error('Invariant violation: "item != null"');
+    }
+
     pane.activateItem(item);
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
     await sleep(500);

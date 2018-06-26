@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ClangFlagsFileWatcher = undefined;
+
+var _SimpleCache;
+
+function _load_SimpleCache() {
+  return _SimpleCache = require('../../../modules/nuclide-commons/SimpleCache');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _SharedObservableCache;
+
+function _load_SharedObservableCache() {
+  return _SharedObservableCache = _interopRequireDefault(require('../../commons-node/SharedObservableCache'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,60 +34,42 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {SimpleCache} from 'nuclide-commons/SimpleCache';
-import {Subscription} from 'rxjs';
-import SharedObservableCache from '../../commons-node/SharedObservableCache';
-import {getFileWatcherServiceByNuclideUri} from '../../nuclide-remote-connection';
+class ClangFlagsFileWatcher {
 
-export class ClangFlagsFileWatcher {
-  _flagsFileForSourceCache: SimpleCache<string, string> = new SimpleCache();
-  _watchedFilesCache: SimpleCache<string, Subscription> = new SimpleCache({
-    dispose: subscription => subscription.unsubscribe(),
-  });
+  constructor(host) {
+    this._flagsFileForSourceCache = new (_SimpleCache || _load_SimpleCache()).SimpleCache();
+    this._watchedFilesCache = new (_SimpleCache || _load_SimpleCache()).SimpleCache({
+      dispose: subscription => subscription.unsubscribe()
+    });
 
-  _watchedFilesObservablesCache: SharedObservableCache<string, *>;
-
-  constructor(host: string) {
-    this._watchedFilesObservablesCache = new SharedObservableCache(buildFile =>
-      getFileWatcherServiceByNuclideUri(host)
-        .watchWithNode(buildFile)
-        .refCount()
-        .share()
-        .take(1),
-    );
+    this._watchedFilesObservablesCache = new (_SharedObservableCache || _load_SharedObservableCache()).default(buildFile => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileWatcherServiceByNuclideUri)(host).watchWithNode(buildFile).refCount().share().take(1));
   }
 
-  watch(
-    flagsFile: string,
-    src: string,
-    onChange: () => Promise<void> | void,
-  ): void {
+  watch(flagsFile, src, onChange) {
     const watchedFile = this._flagsFileForSourceCache.get(src);
     if (watchedFile != null) {
       return;
     }
     this._flagsFileForSourceCache.set(src, flagsFile);
-    this._watchedFilesCache.set(
-      src,
-      this._watchedFilesObservablesCache.get(flagsFile).subscribe(() => {
-        try {
-          onChange();
-        } catch (_) {}
-      }),
-    );
+    this._watchedFilesCache.set(src, this._watchedFilesObservablesCache.get(flagsFile).subscribe(() => {
+      try {
+        onChange();
+      } catch (_) {}
+    }));
   }
 
-  reset(): void {
+  reset() {
     this._flagsFileForSourceCache.clear();
     this._watchedFilesCache.clear();
   }
 
-  resetForSource(src: string): void {
+  resetForSource(src) {
     this._flagsFileForSourceCache.delete(src);
     this._watchedFilesCache.delete(src);
   }
 }
+exports.ClangFlagsFileWatcher = ClangFlagsFileWatcher;

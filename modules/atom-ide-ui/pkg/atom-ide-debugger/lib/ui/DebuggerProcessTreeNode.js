@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _Tree;
+
+function _load_Tree() {
+  return _Tree = require('../../../../../nuclide-commons-ui/Tree');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +22,37 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import * as React from 'react';
-import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
-
-type Props = {
-  formattedTitle: React.Element<any>,
-  childItems: Array<React.Element<any>>,
-};
-type State = {
-  isCollapsed: boolean,
-};
-
-export default class DebuggerProcessTreeNode extends React.Component<
-  Props,
-  State,
-> {
-  constructor(props: Props) {
+class DebuggerProcessTreeNode extends _react.Component {
+  constructor(props) {
     super(props);
+
+    this.handleSelect = () => {
+      this.setState(prevState => ({
+        isCollapsed: !prevState.isCollapsed
+      }));
+    };
+
     this.state = {
-      isCollapsed: false,
+      isCollapsed: false
     };
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  handleSelect = () => {
-    this.setState(prevState => ({
-      isCollapsed: !prevState.isCollapsed,
-    }));
-  };
+  render() {
+    const { formattedTitle, childItems } = this.props;
 
-  render(): React.Node {
-    const {formattedTitle, childItems} = this.props;
-
-    return (
-      <NestedTreeItem
-        title={formattedTitle}
-        collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelect}>
-        {childItems}
-      </NestedTreeItem>
+    return _react.createElement(
+      (_Tree || _load_Tree()).NestedTreeItem,
+      {
+        title: formattedTitle,
+        collapsed: this.state.isCollapsed,
+        onSelect: this.handleSelect },
+      childItems
     );
   }
 }
+exports.default = DebuggerProcessTreeNode;

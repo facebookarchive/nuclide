@@ -1,37 +1,43 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Transport} from './Proxy';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SocketManager = undefined;
 
-import net from 'net';
-import {getLogger} from 'log4js';
-import Encoder from './Encoder';
-import EventEmitter from 'events';
+var _net = _interopRequireDefault(require('net'));
 
-const logger = getLogger('tunnel-socket-manager');
+var _log4js;
 
-export class SocketManager extends EventEmitter {
-  _port: number;
-  _transport: Transport;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
-  _useIPv4: boolean;
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
 
-  constructor(
-    tunnelId: string,
-    port: number,
-    useIPv4: boolean,
-    transport: Transport,
-  ) {
+var _Encoder;
+
+function _load_Encoder() {
+  return _Encoder = _interopRequireDefault(require('./Encoder'));
+}
+
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('tunnel-socket-manager'); /**
+                                                                                     * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                     * All rights reserved.
+                                                                                     *
+                                                                                     * This source code is licensed under the BSD-style license found in the
+                                                                                     * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                     * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                     *
+                                                                                     * 
+                                                                                     * @format
+                                                                                     */
+
+class SocketManager extends _events.default {
+
+  constructor(tunnelId, port, useIPv4, transport) {
     super();
     this._tunnelId = tunnelId;
     this._port = port;
@@ -40,15 +46,15 @@ export class SocketManager extends EventEmitter {
     this._socketByClientId = new Map();
   }
 
-  receive(message: Object) {
+  receive(message) {
     this._handleMessage(message);
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  _handleMessage(message: Object) {
+  _handleMessage(message) {
     if (message.event === 'connection') {
       this._createConnection(message);
     } else if (message.event === 'data') {
@@ -58,14 +64,14 @@ export class SocketManager extends EventEmitter {
     }
   }
 
-  _createConnection(message: Object) {
+  _createConnection(message) {
     const connectOptions = {
       port: this._port,
-      family: this._useIPv4 ? 4 : 6,
+      family: this._useIPv4 ? 4 : 6
     };
 
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
-    const socket = net.createConnection(connectOptions);
+    const socket = _net.default.createConnection(connectOptions);
 
     socket.on('error', error => {
       this.emit('error', error);
@@ -78,14 +84,14 @@ export class SocketManager extends EventEmitter {
         event: 'data',
         arg: data,
         clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        tunnelId: this._tunnelId
       });
     });
 
     this._socketByClientId.set(message.clientId, socket);
   }
 
-  _forwardData(message: Object) {
+  _forwardData(message) {
     const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
       socket.write(message.arg);
@@ -94,12 +100,12 @@ export class SocketManager extends EventEmitter {
     }
   }
 
-  _handleError(message: Object) {
+  _handleError(message) {
     this.emit('error', message.arg);
   }
 
-  _sendMessage(msg: Object): void {
-    this._transport.send(Encoder.encode(msg));
+  _sendMessage(msg) {
+    this._transport.send((_Encoder || _load_Encoder()).default.encode(msg));
   }
 
   close() {
@@ -108,3 +114,4 @@ export class SocketManager extends EventEmitter {
     });
   }
 }
+exports.SocketManager = SocketManager;

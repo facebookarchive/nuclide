@@ -1,195 +1,96 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {
-  FindReferencesReturn,
-  DefinitionQueryResult,
-  Outline,
-  CodeAction,
-  SignatureHelp,
-} from 'atom-ide-ui';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  LanguageService,
-  FileDiagnosticMap,
-  AutocompleteRequest,
-  AutocompleteResult,
-  FormatOptions,
-  FileDiagnosticMessage,
-  StatusData,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.findNearestCompilationDbDir = findNearestCompilationDbDir;
+exports.createCqueryService = createCqueryService;
 
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {RequestLocationsResult} from './types';
+var _fsPromise;
 
-import invariant from 'assert';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-import which from 'nuclide-commons/which';
-import {getLogger} from 'log4js';
-import {forkHostServices} from '../../nuclide-language-service-rpc';
-import {FileCache} from '../../nuclide-open-files-rpc';
-import {
-  findNearestCompilationDbDir as _findNearestCompilationDbDir,
-  COMPILATION_DATABASE_FILE,
-} from './CompilationDatabaseFinder';
-import {getInitializationOptions, createCacheDir} from './CqueryInitialization';
-import {CqueryLanguageClient} from './CqueryLanguageClient';
-import CqueryLanguageServer from './CqueryLanguageServer';
-
-const EXTENSIONS = ['.c', '.cpp', '.h', '.hpp', '.cc', '.tcc', '.m', 'mm'];
-
-export interface CqueryLanguageService extends LanguageService {
-  freshenIndexForFile(file: NuclideUri): Promise<void>;
-  restartProcessForFile(file: NuclideUri): Promise<void>;
-  requestLocationsCommand(
-    methodName: string,
-    path: NuclideUri,
-    point: atom$Point,
-  ): Promise<RequestLocationsResult>;
-  // Below copied from LanguageService
-  // TODO pelmers: why doesn't service-parser handle extends?
-  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
-
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData>;
-
-  clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void>;
-
-  getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult>;
-
-  getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult>;
-
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): ConnectableObservable<?FindReferencesReturn>;
-
-  rename(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>>;
-
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
-
-  onToggleCoverage(set: boolean): Promise<void>;
-
-  getOutline(fileVersion: FileVersion): Promise<?Outline>;
-
-  getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>>;
-
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>;
-
-  signatureHelp(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?SignatureHelp>;
-
-  highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>>;
-
-  formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>>;
-
-  formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }>;
-
-  formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>>;
-
-  getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>>;
-
-  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
-
-  symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>>;
-
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>;
-
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>;
-
-  getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range>;
-
-  getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range>;
-
-  dispose(): void;
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
 }
 
-export function findNearestCompilationDbDir(
-  source: NuclideUri,
-): Promise<?NuclideUri> {
-  return _findNearestCompilationDbDir(source);
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
 }
 
-async function ensureCommandExists(
-  command: string,
-  logger: log4js$Logger,
-  host: HostServices,
-  languageId: string,
-): Promise<boolean> {
-  if ((await which(command)) == null) {
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _which;
+
+function _load_which() {
+  return _which = _interopRequireDefault(require('../../../modules/nuclide-commons/which'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _CompilationDatabaseFinder;
+
+function _load_CompilationDatabaseFinder() {
+  return _CompilationDatabaseFinder = require('./CompilationDatabaseFinder');
+}
+
+var _CqueryInitialization;
+
+function _load_CqueryInitialization() {
+  return _CqueryInitialization = require('./CqueryInitialization');
+}
+
+var _CqueryLanguageClient;
+
+function _load_CqueryLanguageClient() {
+  return _CqueryLanguageClient = require('./CqueryLanguageClient');
+}
+
+var _CqueryLanguageServer;
+
+function _load_CqueryLanguageServer() {
+  return _CqueryLanguageServer = _interopRequireDefault(require('./CqueryLanguageServer'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const EXTENSIONS = ['.c', '.cpp', '.h', '.hpp', '.cc', '.tcc', '.m', 'mm']; /**
+                                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                                             * All rights reserved.
+                                                                             *
+                                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                                             * the root directory of this source tree.
+                                                                             *
+                                                                             *  strict-local
+                                                                             * @format
+                                                                             */
+
+function findNearestCompilationDbDir(source) {
+  return (0, (_CompilationDatabaseFinder || _load_CompilationDatabaseFinder()).findNearestCompilationDbDir)(source);
+}
+
+async function ensureCommandExists(command, logger, host, languageId) {
+  if ((await (0, (_which || _load_which()).default)(command)) == null) {
     const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
     logger.warn(message);
     return false;
@@ -197,8 +98,8 @@ async function ensureCommandExists(
   return true;
 }
 
-function createLogger(logCategory: string, logLevel: LogLevel): log4js$Logger {
-  const logger = getLogger(logCategory);
+function createLogger(logCategory, logLevel) {
+  const logger = (0, (_log4js || _load_log4js()).getLogger)(logCategory);
   logger.setLevel(logLevel);
   return logger;
 }
@@ -208,14 +109,7 @@ function createLogger(logCategory: string, logLevel: LogLevel): log4js$Logger {
  *
  * TODO: Document all of the fields below.
  */
-export async function createCqueryService(params: {|
-  fileNotifier: FileNotifier,
-  host: HostServices,
-  logCategory: string,
-  logLevel: LogLevel,
-  enableLibclangLogs: boolean,
-  defaultFlags: Array<string>,
-|}): Promise<?CqueryLanguageService> {
+async function createCqueryService(params) {
   const command = 'cquery';
   const languageId = 'cquery';
   const logger = createLogger(params.logCategory, params.logLevel);
@@ -225,64 +119,30 @@ export async function createCqueryService(params: {|
   }
 
   const fileCache = params.fileNotifier;
-  invariant(fileCache instanceof FileCache);
 
-  const forkedHost = await forkHostServices(params.host, logger);
-  const multiLsp = new CqueryLanguageServer(forkedHost);
-  const cqueryFactory = async (projectRoot: string) => {
-    const cacheDirectory = await createCacheDir(projectRoot);
-    const initializationOptions = getInitializationOptions(
-      cacheDirectory,
-      projectRoot,
-      params.defaultFlags,
-    );
-    const logFile = nuclideUri.join(cacheDirectory, '..', 'diagnostics');
-    const recordFile = nuclideUri.join(cacheDirectory, '..', 'record');
-    const [, host] = await Promise.all([
-      multiLsp.hasObservedDiagnostics(),
-      forkHostServices(params.host, logger),
-    ]);
-    const stderrFd = await fsPromise.open(
-      nuclideUri.join(cacheDirectory, '..', 'stderr'),
-      'a',
-    );
+  if (!(fileCache instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+    throw new Error('Invariant violation: "fileCache instanceof FileCache"');
+  }
+
+  const forkedHost = await (0, (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).forkHostServices)(params.host, logger);
+  const multiLsp = new (_CqueryLanguageServer || _load_CqueryLanguageServer()).default(forkedHost);
+  const cqueryFactory = async projectRoot => {
+    const cacheDirectory = await (0, (_CqueryInitialization || _load_CqueryInitialization()).createCacheDir)(projectRoot);
+    const initializationOptions = (0, (_CqueryInitialization || _load_CqueryInitialization()).getInitializationOptions)(cacheDirectory, projectRoot, params.defaultFlags);
+    const logFile = (_nuclideUri || _load_nuclideUri()).default.join(cacheDirectory, '..', 'diagnostics');
+    const recordFile = (_nuclideUri || _load_nuclideUri()).default.join(cacheDirectory, '..', 'record');
+    const [, host] = await Promise.all([multiLsp.hasObservedDiagnostics(), (0, (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).forkHostServices)(params.host, logger)]);
+    const stderrFd = await (_fsPromise || _load_fsPromise()).default.open((_nuclideUri || _load_nuclideUri()).default.join(cacheDirectory, '..', 'stderr'), 'a');
     const spawnOptions = {
       stdio: ['pipe', 'pipe', stderrFd],
-      env: {...(await getOriginalEnvironment())},
+      env: Object.assign({}, (await (0, (_process || _load_process()).getOriginalEnvironment)()))
     };
 
-    const lsp = new CqueryLanguageClient(
-      logger,
-      fileCache,
-      host,
-      command,
-      process.execPath,
-      [
-        require.resolve('./child/main-entry'),
-        nuclideUri.ensureTrailingSeparator(projectRoot),
-        logFile,
-        recordFile,
-        String(params.enableLibclangLogs),
-      ],
-      spawnOptions,
-      projectRoot,
-      EXTENSIONS,
-      initializationOptions,
-      5 * 60 * 1000, // 5 minutes
-      logFile,
-      cacheDirectory,
-    );
+    const lsp = new (_CqueryLanguageClient || _load_CqueryLanguageClient()).CqueryLanguageClient(logger, fileCache, host, command, process.execPath, [require.resolve('./child/main-entry'), (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator(projectRoot), logFile, recordFile, String(params.enableLibclangLogs)], spawnOptions, projectRoot, EXTENSIONS, initializationOptions, 5 * 60 * 1000, // 5 minutes
+    logFile, cacheDirectory);
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
   };
-  multiLsp.initialize(
-    logger,
-    fileCache,
-    forkedHost,
-    ['.buckconfig', COMPILATION_DATABASE_FILE],
-    'nearest',
-    EXTENSIONS,
-    cqueryFactory,
-  );
-  return (multiLsp: CqueryLanguageService);
+  multiLsp.initialize(logger, fileCache, forkedHost, ['.buckconfig', (_CompilationDatabaseFinder || _load_CompilationDatabaseFinder()).COMPILATION_DATABASE_FILE], 'nearest', EXTENSIONS, cqueryFactory);
+  return multiLsp;
 }

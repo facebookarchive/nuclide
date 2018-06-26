@@ -1,3 +1,61 @@
+'use strict';
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = _interopRequireDefault(require('../lib/FileTreeStore'));
+}
+
+var _FileTreeNode;
+
+function _load_FileTreeNode() {
+  return _FileTreeNode = require('../lib/FileTreeNode');
+}
+
+var _FileTreeEntryComponent;
+
+function _load_FileTreeEntryComponent() {
+  return _FileTreeEntryComponent = require('../components/FileTreeEntryComponent');
+}
+
+var _nuclideWorkingSetsCommon;
+
+function _load_nuclideWorkingSetsCommon() {
+  return _nuclideWorkingSetsCommon = require('../../nuclide-working-sets-common');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireWildcard(require('immutable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _testUtils;
+
+function _load_testUtils() {
+  return _testUtils = _interopRequireDefault(require('react-dom/test-utils'));
+}
+
+var _FileTreeSelectionManager;
+
+function _load_FileTreeSelectionManager() {
+  return _FileTreeSelectionManager = require('../lib/FileTreeSelectionManager');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,73 +63,50 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 /* global Element */
 
-import FileTreeActions from '../lib/FileTreeActions';
-import FileTreeStore from '../lib/FileTreeStore';
-import {FileTreeNode} from '../lib/FileTreeNode';
-import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-
-import invariant from 'assert';
-import * as Immutable from 'immutable';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import TestUtils from 'react-dom/test-utils';
-import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
-
-function renderEntryComponentIntoDocument(
-  componentKlass: Object,
-  store,
-  actions,
-  props: Object = {},
-  conf: Object = {},
-): React.Component<any, any> {
-  const selectionManager = new FileTreeSelectionManager(() => {});
-  const nodeProps = {
+function renderEntryComponentIntoDocument(componentKlass, store, actions, props = {}, conf = {}) {
+  const selectionManager = new (_FileTreeSelectionManager || _load_FileTreeSelectionManager()).FileTreeSelectionManager(() => {});
+  const nodeProps = Object.assign({
     isExpanded: false,
     isLoading: false,
     isSelected: false,
-    isCwd: false,
-    ...props,
-  };
+    isCwd: false
+  }, props);
 
-  const nodeConf = {
-    vcsStatuses: Immutable.Map(),
-    workingSet: new WorkingSet(),
-    editedWorkingSet: new WorkingSet(),
+  const nodeConf = Object.assign({
+    vcsStatuses: (_immutable || _load_immutable()).Map(),
+    workingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
+    editedWorkingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
     hideIgnoredNames: true,
     excludeVcsIgnoredPaths: true,
-    ignoredPatterns: Immutable.Set(),
-    repositories: Immutable.Set(),
+    ignoredPatterns: (_immutable || _load_immutable()).Set(),
+    repositories: (_immutable || _load_immutable()).Set(),
     usePreviewTabs: true,
     focusEditorOnFileSelection: false,
     isEditingWorkingSet: false,
-    openFilesWorkingSet: new WorkingSet(),
+    openFilesWorkingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
     reposByRoot: {},
-    selectionManager,
-    ...conf,
-  };
+    selectionManager
+  }, conf);
 
-  const node = new FileTreeNode(nodeProps, nodeConf);
-  return TestUtils.renderIntoDocument(
-    React.createElement(componentKlass, {
-      store,
-      actions,
-      node,
-      selectedNodes: selectionManager.selectedNodes(),
-      focusedNodes: selectionManager.focusedNodes(),
-    }),
-  );
+  const node = new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode(nodeProps, nodeConf);
+  return (_testUtils || _load_testUtils()).default.renderIntoDocument(_react.createElement(componentKlass, {
+    store,
+    actions,
+    node,
+    selectedNodes: selectionManager.selectedNodes(),
+    focusedNodes: selectionManager.focusedNodes()
+  }));
 }
 
 describe('Directory FileTreeEntryComponent', () => {
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const store = new (_FileTreeStore || _load_FileTreeStore()).default();
+  const actions = new (_FileTreeActions || _load_FileTreeActions()).default(store);
 
   describe('when expanding/collapsing dir component', () => {
     beforeEach(() => {
@@ -79,30 +114,25 @@ describe('Directory FileTreeEntryComponent', () => {
     });
 
     it('expands on click when node is selected', () => {
-      const nodeComponent = renderEntryComponentIntoDocument(
-        FileTreeEntryComponent,
-        store,
-        actions,
-        {
-          rootUri: '/a/',
-          uri: '/a/b/',
-          isSelected: true,
-          isContainer: true,
-        },
-      );
+      const nodeComponent = renderEntryComponentIntoDocument((_FileTreeEntryComponent || _load_FileTreeEntryComponent()).FileTreeEntryComponent, store, actions, {
+        rootUri: '/a/',
+        uri: '/a/b/',
+        isSelected: true,
+        isContainer: true
+      });
 
       // The onClick is listened not by the <li> element, but by its first child.
       // $FlowFixMe
-      const domNode = ReactDOM.findDOMNode(nodeComponent).children[0];
-      TestUtils.Simulate.click(domNode);
+      const domNode = _reactDom.default.findDOMNode(nodeComponent).children[0];
+      (_testUtils || _load_testUtils()).default.Simulate.click(domNode);
       expect(actions.expandNode).toHaveBeenCalled();
     });
   });
 });
 
 describe('File FileTreeEntryComponent', () => {
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const store = new (_FileTreeStore || _load_FileTreeStore()).default();
+  const actions = new (_FileTreeActions || _load_FileTreeActions()).default(store);
 
   describe('when expanding/collapsing file component', () => {
     beforeEach(() => {
@@ -110,20 +140,19 @@ describe('File FileTreeEntryComponent', () => {
     });
 
     it('does not expand on click when node is selected', () => {
-      const nodeComponent = renderEntryComponentIntoDocument(
-        FileTreeEntryComponent,
-        store,
-        actions,
-        {
-          rootUri: '/a/',
-          uri: '/a/b',
-          isSelected: true,
-          isContainer: false,
-        },
-      );
-      const domNode = ReactDOM.findDOMNode(nodeComponent);
-      invariant(domNode instanceof Element);
-      TestUtils.Simulate.click(domNode);
+      const nodeComponent = renderEntryComponentIntoDocument((_FileTreeEntryComponent || _load_FileTreeEntryComponent()).FileTreeEntryComponent, store, actions, {
+        rootUri: '/a/',
+        uri: '/a/b',
+        isSelected: true,
+        isContainer: false
+      });
+      const domNode = _reactDom.default.findDOMNode(nodeComponent);
+
+      if (!(domNode instanceof Element)) {
+        throw new Error('Invariant violation: "domNode instanceof Element"');
+      }
+
+      (_testUtils || _load_testUtils()).default.Simulate.click(domNode);
       expect(actions.expandNode).not.toHaveBeenCalled();
     });
   });
@@ -134,21 +163,20 @@ describe('File FileTreeEntryComponent', () => {
     });
 
     it('opens a file if a selected node is clicked', () => {
-      const nodeComponent = renderEntryComponentIntoDocument(
-        FileTreeEntryComponent,
-        store,
-        actions,
-        {
-          rootUri: '/a/',
-          uri: '/a/b',
-          isSelected: true,
-          isContainer: false,
-          usePreviewTabs: true,
-        },
-      );
-      const domNode = ReactDOM.findDOMNode(nodeComponent);
-      invariant(domNode instanceof Element);
-      TestUtils.Simulate.click(domNode);
+      const nodeComponent = renderEntryComponentIntoDocument((_FileTreeEntryComponent || _load_FileTreeEntryComponent()).FileTreeEntryComponent, store, actions, {
+        rootUri: '/a/',
+        uri: '/a/b',
+        isSelected: true,
+        isContainer: false,
+        usePreviewTabs: true
+      });
+      const domNode = _reactDom.default.findDOMNode(nodeComponent);
+
+      if (!(domNode instanceof Element)) {
+        throw new Error('Invariant violation: "domNode instanceof Element"');
+      }
+
+      (_testUtils || _load_testUtils()).default.Simulate.click(domNode);
       expect(actions.confirmNode).toHaveBeenCalled();
     });
   });

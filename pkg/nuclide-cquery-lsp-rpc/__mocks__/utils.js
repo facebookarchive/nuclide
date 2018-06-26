@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.simplifyNodeForTesting = simplifyNodeForTesting;
+exports.createFunction = createFunction;
+exports.createVariable = createVariable;
+exports.createClass = createClass;
+
+var _protocol;
+
+function _load_protocol() {
+  return _protocol = require('../../nuclide-vscode-language-service-rpc/lib/protocol');
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,158 +27,82 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {OutlineTree} from 'atom-ide-ui';
-import type {OutlineTreeKind} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/types';
-import type {TokenizedText} from 'nuclide-commons/tokenized-text';
-import type {SymbolInformation} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-
-import {SymbolKind} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import {Point} from 'simple-text-buffer';
-
-type SimplifiedNode = {
-  tokenizedText?: TokenizedText,
-  children: Array<SimplifiedNode>,
-  kind?: OutlineTreeKind,
-};
-
-function createFunctionSymbol(
-  name: string,
-  containerName: string,
-  fromLine: number,
-  toLine: number,
-  fromChar: number,
-  toChar: number,
-): SymbolInformation {
+function createFunctionSymbol(name, containerName, fromLine, toLine, fromChar, toChar) {
   return {
     name,
-    kind: SymbolKind.Function,
+    kind: (_protocol || _load_protocol()).SymbolKind.Function,
     location: {
       uri: '',
       range: {
-        start: {line: fromLine, character: fromChar},
-        end: {line: toLine, character: toChar},
-      },
+        start: { line: fromLine, character: fromChar },
+        end: { line: toLine, character: toChar }
+      }
     },
-    containerName,
+    containerName
   };
 }
 
-function createClassSymbol(
-  name: string,
-  containerName: string,
-  fromLine: number,
-  toLine: number,
-  fromChar: number,
-  toChar: number,
-): SymbolInformation {
+function createClassSymbol(name, containerName, fromLine, toLine, fromChar, toChar) {
   return {
     name,
-    kind: SymbolKind.Class,
+    kind: (_protocol || _load_protocol()).SymbolKind.Class,
     location: {
       uri: '',
       range: {
-        start: {line: fromLine, character: fromChar},
-        end: {line: toLine, character: toChar},
-      },
+        start: { line: fromLine, character: fromChar },
+        end: { line: toLine, character: toChar }
+      }
     },
-    containerName,
+    containerName
   };
 }
 
-function createVariableSymbol(
-  name: string,
-  containerName: string,
-  line: number,
-  fromChar: number,
-  toChar: number,
-): SymbolInformation {
+function createVariableSymbol(name, containerName, line, fromChar, toChar) {
   return {
     name,
-    kind: SymbolKind.Variable,
+    kind: (_protocol || _load_protocol()).SymbolKind.Variable,
     location: {
       uri: '',
       range: {
-        start: {line, character: fromChar},
-        end: {line, character: toChar},
-      },
+        start: { line, character: fromChar },
+        end: { line, character: toChar }
+      }
     },
-    containerName,
+    containerName
   };
 }
 
-function createNode(
-  name: string,
-  kind: OutlineTreeKind,
-  line: number,
-  fromChar: number,
-  toChar: number,
-): OutlineTree {
+function createNode(name, kind, line, fromChar, toChar) {
   return {
     plainText: name,
     representativeName: name,
-    startPosition: new Point(line, fromChar),
-    endPosition: new Point(line, toChar),
+    startPosition: new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(line, fromChar),
+    endPosition: new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(line, toChar),
     children: [],
-    kind,
+    kind
   };
 }
 
-export function simplifyNodeForTesting(node: OutlineTree): SimplifiedNode {
+function simplifyNodeForTesting(node) {
   return {
     children: node.children.map(n => simplifyNodeForTesting(n)),
     tokenizedText: node.tokenizedText,
-    kind: node.kind,
+    kind: node.kind
   };
 }
 
-export function createFunction(
-  name: string,
-  containerName: string,
-  fromLine: number = 0,
-  toLine: number = 0,
-  fromChar: number = 0,
-  toChar: number = 0,
-): [SymbolInformation, OutlineTree] {
-  return [
-    createFunctionSymbol(
-      name,
-      containerName,
-      fromLine,
-      toLine,
-      fromChar,
-      toChar,
-    ),
-    createNode(name, 'method', fromLine, fromChar, toChar),
-  ];
+function createFunction(name, containerName, fromLine = 0, toLine = 0, fromChar = 0, toChar = 0) {
+  return [createFunctionSymbol(name, containerName, fromLine, toLine, fromChar, toChar), createNode(name, 'method', fromLine, fromChar, toChar)];
 }
 
-export function createVariable(
-  name: string,
-  containerName: string,
-  line: number,
-  fromChar: number = 0,
-  toChar: number = 0,
-): [SymbolInformation, OutlineTree] {
-  return [
-    createVariableSymbol(name, containerName, line, fromChar, toChar),
-    createNode(name, 'variable', line, fromChar, toChar),
-  ];
+function createVariable(name, containerName, line, fromChar = 0, toChar = 0) {
+  return [createVariableSymbol(name, containerName, line, fromChar, toChar), createNode(name, 'variable', line, fromChar, toChar)];
 }
 
-export function createClass(
-  name: string,
-  containerName: string,
-  fromLine: number = 0,
-  toLine: number = 0,
-  fromChar: number = 0,
-  toChar: number = 0,
-): [SymbolInformation, OutlineTree] {
-  return [
-    createClassSymbol(name, containerName, fromLine, toLine, fromChar, toChar),
-    createNode(name, 'class', fromLine, fromChar, toChar),
-  ];
+function createClass(name, containerName, fromLine = 0, toLine = 0, fromChar = 0, toChar = 0) {
+  return [createClassSymbol(name, containerName, fromLine, toLine, fromChar, toChar), createNode(name, 'class', fromLine, fromChar, toChar)];
 }

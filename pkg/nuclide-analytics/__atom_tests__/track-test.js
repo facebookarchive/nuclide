@@ -1,3 +1,25 @@
+'use strict';
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = require('../../../modules/nuclide-commons/analytics');
+}
+
+var _track;
+
+function _load_track() {
+  return _track = _interopRequireDefault(require('../lib/track'));
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,31 +27,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-jest.unmock('nuclide-commons/analytics');
+jest.unmock('../../../modules/nuclide-commons/analytics');
 jest.mock('../lib/track', () => {
   return {
-    track: jest.fn(() => Promise.resolve(1)),
+    track: jest.fn(() => Promise.resolve(1))
   };
 });
-
-import {
-  setRawAnalyticsService,
-  startTracking,
-  trackImmediate,
-} from 'nuclide-commons/analytics';
-import service from '../lib/track';
-import invariant from 'assert';
-import waitsFor from '../../../jest/waits_for';
 
 const sleep = n => new Promise(r => setTimeout(r, n));
 
 beforeEach(() => {
   jest.restoreAllMocks();
-  setRawAnalyticsService(service);
+  (0, (_analytics || _load_analytics()).setRawAnalyticsService)((_track || _load_track()).default);
 });
 
 describe('startTracking', () => {
@@ -52,7 +65,7 @@ describe('startTracking', () => {
     trackKey = null;
     trackValues = null;
 
-    service.track.mockImplementation((key, values) => {
+    (_track || _load_track()).default.track.mockImplementation((key, values) => {
       trackKey = key;
       trackValues = values;
       return Promise.resolve(1);
@@ -60,12 +73,16 @@ describe('startTracking', () => {
   });
 
   it('startTracking - success', async () => {
-    const timer = startTracking('st-success');
+    const timer = (0, (_analytics || _load_analytics()).startTracking)('st-success');
     await sleep(10);
     timer.onSuccess();
-    expect(service.track).toHaveBeenCalled();
+    expect((_track || _load_track()).default.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
-    invariant(trackValues != null);
+
+    if (!(trackValues != null)) {
+      throw new Error('Invariant violation: "trackValues != null"');
+    }
+
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
     expect(trackValues.eventName).toBe('st-success');
     expect(trackValues.error).toBe('0');
@@ -73,12 +90,16 @@ describe('startTracking', () => {
   });
 
   it('startTracking - success with values', async () => {
-    const timer = startTracking('st-success', {newValue: 'value'});
+    const timer = (0, (_analytics || _load_analytics()).startTracking)('st-success', { newValue: 'value' });
     await sleep(10);
     timer.onSuccess();
-    expect(service.track).toHaveBeenCalled();
+    expect((_track || _load_track()).default.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
-    invariant(trackValues != null);
+
+    if (!(trackValues != null)) {
+      throw new Error('Invariant violation: "trackValues != null"');
+    }
+
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
     expect(trackValues.eventName).toBe('st-success');
     expect(trackValues.error).toBe('0');
@@ -87,12 +108,16 @@ describe('startTracking', () => {
   });
 
   it('startTracking - error', async () => {
-    const timer = startTracking('st-error');
+    const timer = (0, (_analytics || _load_analytics()).startTracking)('st-error');
     await sleep(11);
     timer.onError(new Error());
-    expect(service.track).toHaveBeenCalled();
+    expect((_track || _load_track()).default.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
-    invariant(trackValues != null);
+
+    if (!(trackValues != null)) {
+      throw new Error('Invariant violation: "trackValues != null"');
+    }
+
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
@@ -100,12 +125,16 @@ describe('startTracking', () => {
   });
 
   it('startTracking - error with values', async () => {
-    const timer = startTracking('st-error', {newValue: 'value'});
+    const timer = (0, (_analytics || _load_analytics()).startTracking)('st-error', { newValue: 'value' });
     await sleep(11);
     timer.onError(new Error());
-    expect(service.track).toHaveBeenCalled();
+    expect((_track || _load_track()).default.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
-    invariant(trackValues != null);
+
+    if (!(trackValues != null)) {
+      throw new Error('Invariant violation: "trackValues != null"');
+    }
+
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
@@ -116,8 +145,8 @@ describe('startTracking', () => {
 
 describe('trackImmediate', () => {
   it('calls track with immediate = true', async () => {
-    const result = await trackImmediate('test', {});
+    const result = await (0, (_analytics || _load_analytics()).trackImmediate)('test', {});
     expect(result).toBe(1);
-    expect(service.track).toHaveBeenCalledWith('test', {}, true);
+    expect((_track || _load_track()).default.track).toHaveBeenCalledWith('test', {}, true);
   });
 });

@@ -1,18 +1,17 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {logger} from 'vscode-debugadapter';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.logVerbose = logVerbose;
 
-function timestamp(): string {
+var _vscodeDebugadapter;
+
+function _load_vscodeDebugadapter() {
+  return _vscodeDebugadapter = require('vscode-debugadapter');
+}
+
+function timestamp() {
   let ts = `${new Date().getTime()}`;
 
   // This code put seperators in the timestamp in groups of thousands
@@ -35,8 +34,18 @@ function timestamp(): string {
   }
 
   return fmt;
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-export function logVerbose(line: string): void {
-  logger.verbose(`${timestamp()} ${line}`);
+function logVerbose(line) {
+  (_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.verbose(`${timestamp()} ${line}`);
 }

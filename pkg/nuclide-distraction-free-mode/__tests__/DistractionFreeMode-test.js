@@ -1,23 +1,18 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {DistractionFreeMode} from '../lib/DistractionFreeMode';
+var _DistractionFreeMode;
+
+function _load_DistractionFreeMode() {
+  return _DistractionFreeMode = require('../lib/DistractionFreeMode');
+}
 
 describe('DistractionFreeMode', () => {
-  let distractionFreeMode: DistractionFreeMode = (null: any);
-  let provider1: FakeProvider = (null: any);
-  let provider2: FakeProvider = (null: any);
+  let distractionFreeMode = null;
+  let provider1 = null;
+  let provider2 = null;
 
   beforeEach(() => {
-    distractionFreeMode = new DistractionFreeMode(undefined);
+    distractionFreeMode = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode(undefined);
     provider1 = new FakeProvider('provider1');
     provider2 = new FakeProvider('provider2');
   });
@@ -83,7 +78,7 @@ describe('DistractionFreeMode', () => {
 
     it('should serialize properly when not in distraction-free-mode mode', () => {
       expect(distractionFreeMode.serialize()).toEqual({
-        restoreState: null,
+        restoreState: null
       });
     });
 
@@ -91,14 +86,14 @@ describe('DistractionFreeMode', () => {
       provider1.toggle();
       distractionFreeMode.toggleDistractionFreeMode();
       expect(distractionFreeMode.serialize()).toEqual({
-        restoreState: ['provider2'],
+        restoreState: ['provider2']
       });
     });
   });
 
   describe('deserialization', () => {
     it('should properly deserialize from a non-distraction-free-mode state', () => {
-      distractionFreeMode = new DistractionFreeMode({restoreState: null});
+      distractionFreeMode = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode({ restoreState: null });
       distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
       distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
 
@@ -116,8 +111,8 @@ describe('DistractionFreeMode', () => {
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      distractionFreeMode = new DistractionFreeMode({
-        restoreState: ['provider1', 'provider2'],
+      distractionFreeMode = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode({
+        restoreState: ['provider1', 'provider2']
       });
       distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
       distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
@@ -133,8 +128,8 @@ describe('DistractionFreeMode', () => {
       expect(provider1.isVisible()).toBeFalsy();
       expect(provider2.isVisible()).toBeFalsy();
 
-      distractionFreeMode = new DistractionFreeMode({
-        restoreState: ['provider1', 'provider2'],
+      distractionFreeMode = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode({
+        restoreState: ['provider1', 'provider2']
       });
       distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
 
@@ -164,8 +159,8 @@ describe('DistractionFreeMode', () => {
       expect(provider2.isVisible()).toBeTruthy();
 
       // Exited in distraction-free mode -- it had hidden both providers
-      distractionFreeMode = new DistractionFreeMode({
-        restoreState: ['provider1', 'provider2'],
+      distractionFreeMode = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode({
+        restoreState: ['provider1', 'provider2']
       });
       distractionFreeMode.consumeDistractionFreeModeProvider(provider1);
       distractionFreeMode.consumeDistractionFreeModeProvider(provider2);
@@ -183,22 +178,29 @@ describe('DistractionFreeMode', () => {
       expect(provider2.isVisible()).toBeTruthy();
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */
 
 class FakeProvider {
-  _isVisible: boolean;
-  name: string;
 
-  constructor(name: string) {
+  constructor(name) {
     this._isVisible = true;
     this.name = name;
   }
 
-  isVisible(): boolean {
+  isVisible() {
     return this._isVisible;
   }
 
-  toggle(): void {
+  toggle() {
     this._isVisible = !this._isVisible;
   }
 }

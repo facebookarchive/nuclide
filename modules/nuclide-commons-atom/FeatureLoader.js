@@ -1,3 +1,59 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.INITIAL_FEATURE_GROUP = exports.REQUIRED_FEATURE_GROUP = undefined;
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../nuclide-commons/event');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../nuclide-commons/UniversalDisposable'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _activatePackages;
+
+function _load_activatePackages() {
+  return _activatePackages = _interopRequireDefault(require('./experimental-packages/activatePackages'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('./feature-config'));
+}
+
+var _path2 = _interopRequireDefault(require('path'));
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../nuclide-commons/collection');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// eslint-disable-line nuclide-internal/prefer-nuclide-uri
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,90 +62,39 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* global localStorage */
 
-import invariant from 'assert';
-import idx from 'idx';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nullthrows from 'nullthrows';
-import activateExperimentalPackages from './experimental-packages/activatePackages';
-import featureConfig from './feature-config';
-import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
-import {MultiMap, setIntersect, setUnion} from 'nuclide-commons/collection';
-import {Observable} from 'rxjs';
-
-type FeaturePkg = {
-  name: string,
-  atomConfig?: Object,
-  consumedServices?: Object,
-  description?: string,
-  displayName?: string,
-  nuclide?: {
-    config?: Object,
-  },
-  providedServices?: Object,
-  featureGroups?: Array<string>,
-};
-
-export type Feature = {
-  path: string,
-  pkg: FeaturePkg,
-};
-
-type FeatureLoaderParams = {
-  path: string,
-  features: Array<Feature>,
-  featureGroups?: {
-    [string]: Array<string>,
-  },
-};
-
-type UseFeatureRules = {
-  [name: string]: 'always' | 'never' | 'default',
-};
-
 const ALWAYS_ENABLED = 'always';
 const NEVER_ENABLED = 'never';
 const DEFAULT = 'default';
 
-const {devMode} = atom.getLoadSettings();
+const { devMode } = atom.getLoadSettings();
 
-export const REQUIRED_FEATURE_GROUP = 'nuclide-required';
-export const INITIAL_FEATURE_GROUP = 'nuclide-core';
+const REQUIRED_FEATURE_GROUP = exports.REQUIRED_FEATURE_GROUP = 'nuclide-required';
+const INITIAL_FEATURE_GROUP = exports.INITIAL_FEATURE_GROUP = 'nuclide-core';
 
-export default class FeatureLoader {
-  _activationDisposable: ?UniversalDisposable;
-  _loadDisposable: UniversalDisposable;
+class FeatureLoader {
 
-  _config: ?Object;
-  _features: Array<Feature>;
-  _featureBeingActivated: ?Feature;
-  _featureBeingDeactivated: ?Feature;
-  _featureGroups: MultiMap<string, Feature>;
-  _deferringFeatureActivation: boolean = true;
-  _pkgName: string;
-  _path: string;
-  _currentlyActiveFeatures: Set<Feature> = new Set();
+  constructor({ features, path: _path, featureGroups }) {
+    this._deferringFeatureActivation = true;
+    this._currentlyActiveFeatures = new Set();
 
-  constructor({features, path: _path, featureGroups}: FeatureLoaderParams) {
     this._path = _path;
     this._features = reorderFeatures(features);
-    this._loadDisposable = new UniversalDisposable();
+    this._loadDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._pkgName = packageNameFromPath(this._path);
-    this._featureGroups = groupFeatures(
-      this._features,
-      featureGroups == null ? {} : featureGroups,
-    );
+    this._featureGroups = groupFeatures(this._features, featureGroups == null ? {} : featureGroups);
   }
 
   // Build the config. Should occur with root package's load
-  load(): void {
-    invariant(!this._loadDisposable.disposed);
+  load() {
+    if (!!this._loadDisposable.disposed) {
+      throw new Error('Invariant violation: "!this._loadDisposable.disposed"');
+    }
 
     patchPackageManager();
 
@@ -103,14 +108,12 @@ export default class FeatureLoader {
     // features would never load again!
     //
     // [1] https://github.com/atom/atom/blob/v1.9.8/src/package.coffee#L442
-    this._loadDisposable.add(
-      atom.deserializers.add({
-        name: `${this._pkgName}.ForceMainModuleLoad`,
-        deserialize() {},
-      }),
-    );
+    this._loadDisposable.add(atom.deserializers.add({
+      name: `${this._pkgName}.ForceMainModuleLoad`,
+      deserialize() {}
+    }));
 
-    featureConfig.setPackageName(this._pkgName);
+    (_featureConfig || _load_featureConfig()).default.setPackageName(this._pkgName);
 
     //
     // Build the "config" object. This determines the config defaults and
@@ -128,109 +131,87 @@ export default class FeatureLoader {
     // https://atom.io/docs/api/latest/PackageManager
     const featuresToLoad = this.getEnabledFeatures();
     this._loadDisposable.add(
-      // Nesting loads within loads leads to reverse activation order- that is, if
-      // the root package loads feature packages, then the feature package activations will
-      // happen before the root package's. So we wait until the root package is done loading,
-      // but before it activates, to load the features.
-      didLoadPackage(this._pkgName).subscribe(() => {
-        // Load "regular" feature packages.
-        featuresToLoad.forEach(feature => {
-          atom.packages.loadPackage(feature.path);
-        });
-      }),
-      // Load "experimental" format packages.
-      didLoadPackage(this._pkgName)
-        .switchMap(() =>
-          Observable.create(
-            () =>
-              new UniversalDisposable(
-                activateExperimentalPackages([...featuresToLoad]),
-              ),
-          ),
-        )
-        .subscribe(),
-    );
+    // Nesting loads within loads leads to reverse activation order- that is, if
+    // the root package loads feature packages, then the feature package activations will
+    // happen before the root package's. So we wait until the root package is done loading,
+    // but before it activates, to load the features.
+    didLoadPackage(this._pkgName).subscribe(() => {
+      // Load "regular" feature packages.
+      featuresToLoad.forEach(feature => {
+        atom.packages.loadPackage(feature.path);
+      });
+    }),
+    // Load "experimental" format packages.
+    didLoadPackage(this._pkgName).switchMap(() => _rxjsBundlesRxMinJs.Observable.create(() => new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_activatePackages || _load_activatePackages()).default)([...featuresToLoad])))).subscribe());
 
-    const featureNames = new Set(
-      this._features.map(feature => feature.pkg.name),
-    );
+    const featureNames = new Set(this._features.map(feature => feature.pkg.name));
 
     // Ensure that the root package is initialized before all of its features. This is important
     // because the root package defines the config for all managed features and we need to make
     // sure that it's present before they're initialized (i.e. before their deserializers are
     // called).
     // $FlowIssue: Need to upstream this.
-    const onWillInitializePackageDisposable = atom.packages.onWillInitializePackage(
-      pack => {
-        if (featureNames.has(pack.name)) {
-          onWillInitializePackageDisposable.dispose();
-          const rootPackage = atom.packages.getLoadedPackage(this._pkgName);
-          nullthrows(rootPackage).initializeIfNeeded();
-        }
-      },
-    );
+    const onWillInitializePackageDisposable = atom.packages.onWillInitializePackage(pack => {
+      if (featureNames.has(pack.name)) {
+        onWillInitializePackageDisposable.dispose();
+        const rootPackage = atom.packages.getLoadedPackage(this._pkgName);
+        (0, (_nullthrows || _load_nullthrows()).default)(rootPackage).initializeIfNeeded();
+      }
+    });
     this._loadDisposable.add(onWillInitializePackageDisposable);
 
     // Clean up when the package is unloaded.
-    this._loadDisposable.add(
-      atom.packages.onDidUnloadPackage(pack => {
-        if (pack.name === this._pkgName) {
-          this._loadDisposable.dispose();
-        }
-      }),
-    );
+    this._loadDisposable.add(atom.packages.onDidUnloadPackage(pack => {
+      if (pack.name === this._pkgName) {
+        this._loadDisposable.dispose();
+      }
+    }));
   }
 
-  activate(): void {
-    invariant(this._activationDisposable == null);
+  activate() {
+    if (!(this._activationDisposable == null)) {
+      throw new Error('Invariant violation: "this._activationDisposable == null"');
+    }
+
     const rootPackage = atom.packages.getLoadedPackage(this._pkgName);
-    invariant(rootPackage != null);
+
+    if (!(rootPackage != null)) {
+      throw new Error('Invariant violation: "rootPackage != null"');
+    }
 
     // This is a failsafe in case the `.ForceMainModuleLoad` deserializer
     // defined above does not register in time, or if the defer key has been set
     // w/o our knowledge. This can happen during OSS upgrades.
-    localStorage.removeItem(
-      rootPackage.getCanDeferMainModuleRequireStorageKey(),
-    );
+
+
+    localStorage.removeItem(rootPackage.getCanDeferMainModuleRequireStorageKey());
 
     this.updateActiveFeatures();
 
     // Watch things that should trigger reevaluation of active features. Note that we do this
     // *after* the initial `updateActiveFeatures()` call because that could trigger one of these
     // events.
-    this._activationDisposable = new UniversalDisposable(
-      atom.config.onDidChange(this.getUseKeyPath(), () => {
-        this.updateActiveFeatures();
-      }),
-      atom.config.onDidChange(this.getEnabledFeatureGroupsKeyPath(), () => {
-        this.updateActiveFeatures();
-      }),
-      Observable.merge(didAddFirstPath, didAddFirstTextEditor)
-        .take(1)
-        .subscribe(() => {
-          // Hopefully we've opened a project so we don't have to load all the features.
-          this._deferringFeatureActivation = false;
-          this.updateActiveFeatures();
-        }),
-    );
+    this._activationDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.config.onDidChange(this.getUseKeyPath(), () => {
+      this.updateActiveFeatures();
+    }), atom.config.onDidChange(this.getEnabledFeatureGroupsKeyPath(), () => {
+      this.updateActiveFeatures();
+    }), _rxjsBundlesRxMinJs.Observable.merge(didAddFirstPath, didAddFirstTextEditor).take(1).subscribe(() => {
+      // Hopefully we've opened a project so we don't have to load all the features.
+      this._deferringFeatureActivation = false;
+      this.updateActiveFeatures();
+    }));
   }
 
   updateActiveFeatures() {
     // `updateActiveFeatures()` can't be called recursively. If it is, just warn and bail.
     if (this._featureBeingActivated != null) {
       // eslint-disable-next-line no-console
-      console.warn(
-        `Activating ${this._featureBeingActivated.pkg.name} caused a` +
-          ' reevaluation of active features.',
-      );
+      console.warn(`Activating ${this._featureBeingActivated.pkg.name} caused a` + ' reevaluation of active features.');
       return;
     }
     if (this._featureBeingDeactivated != null) {
       // eslint-disable-next-line no-console
-      console.warn(
-        `Deactivating ${this._featureBeingDeactivated.pkg.name} caused a` +
-          ' reevaluation of active features.',
-      );
+      console.warn(`Deactivating ${this._featureBeingDeactivated.pkg.name} caused a` + ' reevaluation of active features.');
       return;
     }
     this.updateActiveFeaturesNow();
@@ -241,15 +222,7 @@ export default class FeatureLoader {
    */
   updateActiveFeaturesNow() {
     const enabledFeatures = this.getEnabledFeatures();
-    const featuresToActivate = setUnion(
-      this._featureGroups.get(REQUIRED_FEATURE_GROUP),
-      this._deferringFeatureActivation
-        ? setIntersect(
-            enabledFeatures,
-            this._featureGroups.get(INITIAL_FEATURE_GROUP),
-          )
-        : enabledFeatures,
-    );
+    const featuresToActivate = (0, (_collection || _load_collection()).setUnion)(this._featureGroups.get(REQUIRED_FEATURE_GROUP), this._deferringFeatureActivation ? (0, (_collection || _load_collection()).setIntersect)(enabledFeatures, this._featureGroups.get(INITIAL_FEATURE_GROUP)) : enabledFeatures);
 
     // Enable all packages in featuresToActivate but not in currentState.
     // Disable all packages not in featuresToActivate but in currentState.
@@ -272,10 +245,10 @@ export default class FeatureLoader {
     this._currentlyActiveFeatures = featuresToActivate;
   }
 
-  deactivate(): void {
-    invariant(
-      this._activationDisposable && !this._activationDisposable.disposed,
-    );
+  deactivate() {
+    if (!(this._activationDisposable && !this._activationDisposable.disposed)) {
+      throw new Error('Invariant violation: "this._activationDisposable && !this._activationDisposable.disposed"');
+    }
 
     this._currentlyActiveFeatures.forEach(feature => {
       // Deactivate the package, but don't serialize. That needs to be done in a separate phase so that
@@ -284,7 +257,11 @@ export default class FeatureLoader {
     });
     this._currentlyActiveFeatures = new Set();
 
-    invariant(this._activationDisposable); // reasserting for flow
+    if (!this._activationDisposable) {
+      throw new Error('Invariant violation: "this._activationDisposable"');
+    } // reasserting for flow
+
+
     this._activationDisposable.dispose();
     this._activationDisposable = null;
   }
@@ -293,53 +270,38 @@ export default class FeatureLoader {
    * Determine which features are enabled based on the current state of the configuration. This set
    * is then used to load and activate the features.
    */
-  getEnabledFeatures(): Set<Feature> {
+  getEnabledFeatures() {
     // we know enabledFeatureGroups must be ?Array, and useFeatureRules must be ?UseFeatureRules,
     // since it's in our schema. However, flow thinks it's a mixed type, since it doesn't know about
-    // the schema enforcements.
-    const useFeatureRules: ?UseFeatureRules = (atom.config.get(
-      this.getUseKeyPath(),
-    ): any);
-    const enabledFeatureGroups: ?Array<string> = (atom.config.get(
-      this.getEnabledFeatureGroupsKeyPath(),
-    ): any);
+    const useFeatureRules = atom.config.get(this.getUseKeyPath());
+    const enabledFeatureGroups = atom.config.get(this.getEnabledFeatureGroupsKeyPath());
 
-    const featuresInEnabledGroups =
-      enabledFeatureGroups == null
-        ? new Set(this._features) // If featuregroups is undefined, assume all features should be enabled.
-        : setUnion(
-            ...enabledFeatureGroups.map(featureGroup =>
-              this._featureGroups.get(featureGroup),
-            ),
-          );
+    const featuresInEnabledGroups = enabledFeatureGroups == null ? new Set(this._features) // If featuregroups is undefined, assume all features should be enabled.
+    : (0, (_collection || _load_collection()).setUnion)(...enabledFeatureGroups.map(featureGroup => this._featureGroups.get(featureGroup)));
 
-    const requiredFeatures =
-      this._featureGroups.get(REQUIRED_FEATURE_GROUP) || new Set();
+    const requiredFeatures = this._featureGroups.get(REQUIRED_FEATURE_GROUP) || new Set();
 
     // If a feature is "always enabled", it should be on whether or not a feature-group includes it.
     // If a feature is "default", it should be on if and only if a feature-group includes it.
-    return new Set(
-      this._features.filter(feature => {
-        const featureName = packageNameFromPath(feature.path);
-        const rawRule = idx(useFeatureRules, _ => _[featureName]);
-        const rule =
-          rawRule == null ? getFeatureDefaultValue(feature) : rawRule;
-        return (
-          rule === ALWAYS_ENABLED ||
-          rule === true ||
-          (featuresInEnabledGroups.has(feature) && rule === DEFAULT) ||
-          requiredFeatures.has(feature)
-        );
-      }),
-    );
+    return new Set(this._features.filter(feature => {
+      var _ref;
+
+      const featureName = packageNameFromPath(feature.path);
+      const rawRule = (_ref = useFeatureRules) != null ? _ref[featureName] : _ref;
+      const rule = rawRule == null ? getFeatureDefaultValue(feature) : rawRule;
+      return rule === ALWAYS_ENABLED || rule === true || featuresInEnabledGroups.has(feature) && rule === DEFAULT || requiredFeatures.has(feature);
+    }));
   }
 
-  getConfig(): Object {
-    invariant(this._config != null);
+  getConfig() {
+    if (!(this._config != null)) {
+      throw new Error('Invariant violation: "this._config != null"');
+    }
+
     return this._config;
   }
 
-  serialize(): void {
+  serialize() {
     // When the root package is serialized, all of its features need to be serialized. This is an abuse of
     // `serialize()` since we're using it to do side effects instead of returning the serialization,
     // but it ensures that serialization of the Atom packages happens at the right point in the
@@ -348,19 +310,17 @@ export default class FeatureLoader {
     this._features.forEach(safeSerialize);
   }
 
-  getUseKeyPath(): string {
+  getUseKeyPath() {
     return `${this._pkgName}.use`;
   }
 
-  getEnabledFeatureGroupsKeyPath(): string {
+  getEnabledFeatureGroupsKeyPath() {
     return `${this._pkgName}.enabledFeatureGroups`;
   }
 }
 
-function safeDeactivate(
-  feature: Feature,
-  suppressSerialization: boolean = false,
-) {
+exports.default = FeatureLoader;
+function safeDeactivate(feature, suppressSerialization = false) {
   const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getLoadedPackage(name);
@@ -373,14 +333,12 @@ function safeDeactivate(
   }
 }
 
-function getFeatureDefaultValue(feature: Feature): string {
+function getFeatureDefaultValue(feature) {
   const name = packageNameFromPath(feature.path);
-  return name.startsWith('sample-') || name.startsWith('fb-sample-')
-    ? NEVER_ENABLED
-    : DEFAULT;
+  return name.startsWith('sample-') || name.startsWith('fb-sample-') ? NEVER_ENABLED : DEFAULT;
 }
 
-function safeSerialize(feature: Feature) {
+function safeSerialize(feature) {
   const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getActivePackage(name);
@@ -396,44 +354,39 @@ function safeSerialize(feature: Feature) {
 
 // this could be inlined into its use above, but this makes the intent more
 // explicit, and unifies it in the case this ever needs to change.
-function packageNameFromPath(pkgPath: string): string {
-  return path.basename(pkgPath);
+function packageNameFromPath(pkgPath) {
+  return _path2.default.basename(pkgPath);
 }
 
-function packageIsRepositoryProvider(pkg: FeaturePkg): boolean {
-  return Boolean(idx(pkg, _ => _.providedServices['atom.repository-provider']));
+function packageIsRepositoryProvider(pkg) {
+  var _ref2, _ref3;
+
+  return Boolean((_ref2 = pkg) != null ? (_ref3 = _ref2.providedServices) != null ? _ref3['atom.repository-provider'] : _ref3 : _ref2);
 }
 
-function buildConfig(features: Array<Feature>): Object {
+function buildConfig(features) {
   const config = {
     use: {
       title: 'Enabled Features',
       description: 'Enable and disable individual features',
       type: 'object',
       collapsed: true,
-      properties: {},
-    },
+      properties: {}
+    }
   };
   features.forEach(feature => {
     const featurePkg = feature.pkg;
     const name = packageNameFromPath(feature.path);
 
     const setting = {
-      title:
-        featurePkg.displayName == null
-          ? `Enable the "${name}" feature`
-          : `Enable ${featurePkg.displayName}`,
+      title: featurePkg.displayName == null ? `Enable the "${name}" feature` : `Enable ${featurePkg.displayName}`,
       description: featurePkg.description || '',
       type: 'string',
-      enum: [
-        {value: ALWAYS_ENABLED, description: 'Always enabled'},
-        {value: NEVER_ENABLED, description: 'Never enabled'},
-        {
-          value: DEFAULT,
-          description: 'Only when in an enabled package group',
-        },
-      ],
-      default: getFeatureDefaultValue(feature),
+      enum: [{ value: ALWAYS_ENABLED, description: 'Always enabled' }, { value: NEVER_ENABLED, description: 'Never enabled' }, {
+        value: DEFAULT,
+        description: 'Only when in an enabled package group'
+      }],
+      default: getFeatureDefaultValue(feature)
     };
 
     if (devMode) {
@@ -450,9 +403,7 @@ function buildConfig(features: Array<Feature>): Object {
     config.use.properties[name] = setting;
 
     // Merge in the feature's config
-    const featurePkgConfig =
-      featurePkg.atomConfig ||
-      (featurePkg.nuclide && featurePkg.nuclide.config);
+    const featurePkgConfig = featurePkg.atomConfig || featurePkg.nuclide && featurePkg.nuclide.config;
 
     if (featurePkgConfig) {
       config[name] = {
@@ -460,13 +411,12 @@ function buildConfig(features: Array<Feature>): Object {
         title: featurePkg.displayName,
         description: featurePkg.description,
         collapsed: true,
-        properties: {},
+        properties: {}
       };
       Object.keys(featurePkgConfig).forEach(key => {
-        config[name].properties[key] = {
-          ...featurePkgConfig[key],
-          title: featurePkgConfig[key].title || key,
-        };
+        config[name].properties[key] = Object.assign({}, featurePkgConfig[key], {
+          title: featurePkgConfig[key].title || key
+        });
       });
     }
   });
@@ -481,7 +431,7 @@ function buildConfig(features: Array<Feature>): Object {
  * codepaths that make that difficult. As a temporary (I hope) workaround, we prioritize
  * activation of the features that provide this service.
  */
-function reorderFeatures(features_: Array<Feature>): Array<Feature> {
+function reorderFeatures(features_) {
   const features = features_.slice();
   const originalOrder = new Map(features.map((feature, i) => [feature, i]));
   features.sort((a, b) => {
@@ -490,8 +440,8 @@ function reorderFeatures(features_: Array<Feature>): Array<Feature> {
     if (aIsRepoProvider !== bIsRepoProvider) {
       return aIsRepoProvider ? -1 : 1;
     }
-    const aIndex = nullthrows(originalOrder.get(a));
-    const bIndex = nullthrows(originalOrder.get(b));
+    const aIndex = (0, (_nullthrows || _load_nullthrows()).default)(originalOrder.get(a));
+    const bIndex = (0, (_nullthrows || _load_nullthrows()).default)(originalOrder.get(b));
     return aIndex - bIndex;
   });
   return features;
@@ -501,23 +451,16 @@ function reorderFeatures(features_: Array<Feature>): Array<Feature> {
  * Construct a map whose keys are feature group names and values are sets of features belonging to
  * the group.
  */
-function groupFeatures(
-  features: Array<Feature>,
-  rawFeatureGroups: {
-    [string]: Array<string>,
-  },
-): MultiMap<string, Feature> {
+function groupFeatures(features, rawFeatureGroups) {
   const namesToFeatures = new Map();
   features.forEach(feature => {
-    namesToFeatures.set(path.basename(feature.path), feature);
+    namesToFeatures.set(_path2.default.basename(feature.path), feature);
   });
 
-  const featureGroups = new MultiMap();
+  const featureGroups = new (_collection || _load_collection()).MultiMap();
   for (const key of Object.keys(rawFeatureGroups)) {
     if (Array.isArray(rawFeatureGroups[key])) {
-      const featuresForKey = rawFeatureGroups[key]
-        .map(featureName => namesToFeatures.get(featureName))
-        .filter(Boolean);
+      const featuresForKey = rawFeatureGroups[key].map(featureName => namesToFeatures.get(featureName)).filter(Boolean);
       if (featuresForKey != null) {
         featureGroups.set(key, featuresForKey);
       }
@@ -532,21 +475,18 @@ function groupFeatures(
  * schema is ready when its deserializers are called). This should be removed once these changes
  * are upstreamed.
  */
-function patchPackageManager(): void {
-  if (
-    (atom.packages: any).onWillInitializePackage == null &&
-    !(atom.packages: any).__onWillInitializePackagePatched
-  ) {
-    (atom.packages: any).onWillInitializePackage = function(callback) {
-      (atom.packages: any).__onWillInitializePackagePatched = true;
+function patchPackageManager() {
+  if (atom.packages.onWillInitializePackage == null && !atom.packages.__onWillInitializePackagePatched) {
+    atom.packages.onWillInitializePackage = function (callback) {
+      atom.packages.__onWillInitializePackagePatched = true;
       return this.emitter.on('will-initialize-package', callback);
     };
   }
 
-  if (!(atom.packages: any).__packageLookupPatched) {
-    (atom.packages: any).__packageLookupPatched = true;
+  if (!atom.packages.__packageLookupPatched) {
+    atom.packages.__packageLookupPatched = true;
     const loadPackage = atom.packages.loadPackage;
-    (atom.packages: any).loadPackage = function(nameOrPath, ...args) {
+    atom.packages.loadPackage = function (nameOrPath, ...args) {
       const pack = loadPackage.call(this, nameOrPath, ...args);
       if (pack == null) {
         return null;
@@ -556,7 +496,7 @@ function patchPackageManager(): void {
     };
 
     const getLoadedPackage = atom.packages.getLoadedPackage;
-    (atom.packages: any).getLoadedPackage = function(name, ...args) {
+    atom.packages.getLoadedPackage = function (name, ...args) {
       const pack = getLoadedPackage.call(this, name, ...args);
       if (pack == null) {
         return null;
@@ -567,18 +507,18 @@ function patchPackageManager(): void {
   }
 }
 
-function patchPackage(pack): void {
-  if ((pack: any).__initializeIfNeededPatched) {
+function patchPackage(pack) {
+  if (pack.__initializeIfNeededPatched) {
     return;
   }
-  (pack: any).__initializeIfNeededPatched = true;
+  pack.__initializeIfNeededPatched = true;
 
-  const initializeIfNeeded = (pack: any).initializeIfNeeded;
-  (pack: any).initializeIfNeeded = function() {
+  const initializeIfNeeded = pack.initializeIfNeeded;
+  pack.initializeIfNeeded = function () {
     if (this.mainInitialized) {
       return;
     }
-    if ((atom.packages: any).__onWillInitializePackagePatched) {
+    if (atom.packages.__onWillInitializePackagePatched) {
       // If we didn't apply our patch for this, Atom is already dispatching the event.
       atom.packages.emitter.emit('will-initialize-package', pack);
     }
@@ -587,22 +527,8 @@ function patchPackage(pack): void {
   };
 }
 
-const didLoadPackage = (pkgName: string) =>
-  observableFromSubscribeFunction(cb => atom.packages.onDidLoadPackage(cb))
-    .startWith(null)
-    .filter(() => atom.packages.getLoadedPackage(pkgName) != null)
-    .take(1);
+const didLoadPackage = pkgName => (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.packages.onDidLoadPackage(cb)).startWith(null).filter(() => atom.packages.getLoadedPackage(pkgName) != null).take(1);
 
-const didAddFirstPath = observableFromSubscribeFunction(cb =>
-  atom.project.onDidChangePaths(cb),
-)
-  .startWith(null)
-  .filter(() => atom.project.getDirectories().length > 0)
-  .take(1);
+const didAddFirstPath = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.project.onDidChangePaths(cb)).startWith(null).filter(() => atom.project.getDirectories().length > 0).take(1);
 
-const didAddFirstTextEditor = observableFromSubscribeFunction(cb =>
-  atom.workspace.getCenter().onDidAddTextEditor(cb),
-)
-  .startWith(null)
-  .filter(() => atom.workspace.getCenter().getTextEditors().length > 0)
-  .take(1);
+const didAddFirstTextEditor = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.workspace.getCenter().onDidAddTextEditor(cb)).startWith(null).filter(() => atom.workspace.getCenter().getTextEditors().length > 0).take(1);

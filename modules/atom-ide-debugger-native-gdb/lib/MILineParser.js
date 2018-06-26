@@ -1,58 +1,38 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * A parser for MI output records. See the grammar at
- * https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Output-Syntax.html#GDB_002fMI-Output-Syntax
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {
-  AsyncRecordType,
-  MICommandResult,
-  ResultClass,
-  StreamTarget,
-  Value,
-} from './MIRecord';
+var _Logger;
 
-import {logVerbose} from './Logger';
-import {
-  MIAsyncRecord,
-  MIRecord,
-  MIResultRecord,
-  MIStreamRecord,
-} from './MIRecord';
+function _load_Logger() {
+  return _Logger = require('./Logger');
+}
 
-export default class MILineParser {
-  _completeInput: string = '';
-  _line: string = '';
+var _MIRecord;
 
-  _lineParserDispatch: Map<string, (token: ?number) => MIRecord> = new Map([
-    ['~', (token: ?number) => this._parseStream('console', token)],
-    ['@', (token: ?number) => this._parseStream('target', token)],
-    ['&', (token: ?number) => this._parseStream('log', token)],
-    ['^', (token: ?number) => this._parseResult(token)],
-    ['*', (token: ?number) => this._parseAsyncOutput('async-exec', token)],
-    ['+', (token: ?number) => this._parseAsyncOutput('async-status', token)],
-    ['=', (token: ?number) => this._parseAsyncOutput('async-notify', token)],
-  ]);
+function _load_MIRecord() {
+  return _MIRecord = require('./MIRecord');
+}
 
-  parseMILine(line: string): MIRecord {
+class MILineParser {
+  constructor() {
+    this._completeInput = '';
+    this._line = '';
+    this._lineParserDispatch = new Map([['~', token => this._parseStream('console', token)], ['@', token => this._parseStream('target', token)], ['&', token => this._parseStream('log', token)], ['^', token => this._parseResult(token)], ['*', token => this._parseAsyncOutput('async-exec', token)], ['+', token => this._parseAsyncOutput('async-status', token)], ['=', token => this._parseAsyncOutput('async-notify', token)]]);
+    this._cEncoded = new Map([['a', 'a'], ['b', '\b'], ['f', '\f'], ['n', '\n'], ['t', '\t'], ['v', '\v']]);
+    this._valueParsers = new Map([['"', () => this._parseCStringTail()], ['{', () => this._parseTuple()], ['[', () => this._parseList()]]);
+  }
+
+  parseMILine(line) {
     this._completeInput = line;
 
     // gdb still sends the prompt, but it isn't significant, so just return an
     // empty record.
     let trimmed = line.trim();
     if (trimmed.startsWith('(gdb)')) {
-      return new MIRecord();
+      return new (_MIRecord || _load_MIRecord()).MIRecord();
     }
 
     let end = 0;
@@ -69,7 +49,7 @@ export default class MILineParser {
 
     if (parser == null) {
       const error = `Line is not an MI record at: '${line}'`;
-      logVerbose(error);
+      (0, (_Logger || _load_Logger()).logVerbose)(error);
       throw new Error(error);
     }
 
@@ -80,28 +60,17 @@ export default class MILineParser {
   // console-stream-output -> "~" c-string nl
   // target-stream-output -> "@" c-string nl
   // log-stream-output -> "&" c-string nl
-  _parseStream(target: StreamTarget, token: ?number): MIRecord {
+  _parseStream(target, token) {
     if (token != null) {
-      throw new Error(
-        `Token is not expected on stream record: '${this._completeInput}'`,
-      );
+      throw new Error(`Token is not expected on stream record: '${this._completeInput}'`);
     }
 
     const text = this._parseCString();
-    return new MIStreamRecord(target, text);
+    return new (_MIRecord || _load_MIRecord()).MIStreamRecord(target, text);
   }
 
-  _cEncoded: Map<string, string> = new Map([
-    ['a', 'a'],
-    ['b', '\b'],
-    ['f', '\f'],
-    ['n', '\n'],
-    ['t', '\t'],
-    ['v', '\v'],
-  ]);
-
   // parse a C string as returned by gdb
-  _parseCString(): string {
+  _parseCString() {
     const match = this._line.match(/^"(.*)/);
     if (match == null) {
       throw new Error(`Value is not quoted as a C string at: ${this._line}`);
@@ -113,13 +82,9 @@ export default class MILineParser {
 
   // result-record -> [token] "^" result-class ( "," result )* nl
   // result-class -> "done" | "running" | "connected" | "error" | "exit"
-  _parseResult(token: ?number): MIRecord {
+  _parseResult(token) {
     let end = 0;
-    while (
-      this._line[end] != null &&
-      this._line[end] >= 'a' &&
-      this._line[end] <= 'z'
-    ) {
+    while (this._line[end] != null && this._line[end] >= 'a' && this._line[end] <= 'z') {
       end++;
     }
 
@@ -132,7 +97,7 @@ export default class MILineParser {
 
     const result = this._parseResultMap();
 
-    return new MIResultRecord(token, result, resultClass);
+    return new (_MIRecord || _load_MIRecord()).MIResultRecord(token, result, resultClass);
   }
 
   // exec-async-output -> [ token ] "*" async-output nl
@@ -141,16 +106,12 @@ export default class MILineParser {
   // async-output -> async-class ( "," result )*
 
   // matches the header of an async record
-  _parseAsyncOutput(type: AsyncRecordType, token: ?number): MIRecord {
+  _parseAsyncOutput(type, token) {
     // NB the grammar doesn't precisely specify what characters may
     // constitute async-class, but throughout gdb the convention is
     // lower-case alphabetics so it's probably safe to assume that.
     let end = 0;
-    while (
-      this._line[end] != null &&
-      ((this._line[end] >= 'a' && this._line[end] <= 'z') ||
-        this._line[end] === '-')
-    ) {
+    while (this._line[end] != null && (this._line[end] >= 'a' && this._line[end] <= 'z' || this._line[end] === '-')) {
       end++;
     }
 
@@ -166,13 +127,13 @@ export default class MILineParser {
       result = this._parseResultMap();
     }
 
-    return new MIAsyncRecord(token, result, asyncClass, type);
+    return new (_MIRecord || _load_MIRecord()).MIAsyncRecord(token, result, asyncClass, type);
   }
 
   // at this point we have (, result)+ nl from multiple rules
   //
-  _parseResultMap(): MICommandResult {
-    const result: MICommandResult = {};
+  _parseResultMap() {
+    const result = {};
 
     while (this._line != null) {
       if (this._line[0] !== ',') {
@@ -216,15 +177,11 @@ export default class MILineParser {
   // list -> "[]" | "[" value ( "," value )* "]" | "[" result ( "," result )* "]"
 
   // matches the leading part of a value
-  _valueParsers: Map<string, () => any> = new Map([
-    ['"', () => this._parseCStringTail()],
-    ['{', () => this._parseTuple()],
-    ['[', () => this._parseList()],
-  ]);
 
-  _parseValue(): Value {
+
+  _parseValue() {
     this._line = this._line.trim();
-    const handler: ?() => any = this._valueParsers.get(this._line[0]);
+    const handler = this._valueParsers.get(this._line[0]);
     this._line = this._line.substr(1);
 
     if (handler == null) {
@@ -236,7 +193,7 @@ export default class MILineParser {
 
   // tuple -> "{}" | "{" result ( "," result )* "}"
   // The leading { has already been removed
-  _parseTuple(endChar: string = '}'): Value {
+  _parseTuple(endChar = '}') {
     if (this._line[0] === endChar) {
       this._line = this._line.substr(1);
       return {};
@@ -269,8 +226,8 @@ export default class MILineParser {
   //
 
   // matches a result (varname=value)
-  _parseList(): Value {
-    const result: Array<Value | MICommandResult> = [];
+  _parseList() {
+    const result = [];
 
     if (this._line[0] === ']') {
       this._line = this._line.substr(1);
@@ -290,7 +247,7 @@ export default class MILineParser {
         const varname = this._line.substr(0, equals);
         this._line = this._line.substr(equals + 1);
         const value = this._parseValue();
-        result.push({[varname]: value});
+        result.push({ [varname]: value });
       }
 
       this._line = this._line.trim();
@@ -309,14 +266,8 @@ export default class MILineParser {
     return result;
   }
 
-  _ensureResultClass(resultClass: string): ResultClass {
-    if (
-      resultClass !== 'done' &&
-      resultClass !== 'running' &&
-      resultClass !== 'connected' &&
-      resultClass !== 'error' &&
-      resultClass !== 'exit'
-    ) {
+  _ensureResultClass(resultClass) {
+    if (resultClass !== 'done' && resultClass !== 'running' && resultClass !== 'connected' && resultClass !== 'error' && resultClass !== 'exit') {
       throw new Error(`Result class expected at '${this._line}'`);
     }
 
@@ -325,16 +276,16 @@ export default class MILineParser {
 
   // $TODO escapes that include values, e.g. "A\x42C" should be "ABC"
   // Parse a C string for which the leading quote has already been stripped
-  _parseCStringTail(): string {
-    let parsed: string = '';
-    let ended: boolean = false;
-    let escaped: boolean = false;
-    let i: number;
+  _parseCStringTail() {
+    let parsed = '';
+    let ended = false;
+    let escaped = false;
+    let i;
 
     for (i = 0; i < this._line.length && !ended; i++) {
-      const c: string = this._line[i];
+      const c = this._line[i];
       if (escaped) {
-        const translated: ?string = this._cEncoded.get(c);
+        const translated = this._cEncoded.get(c);
         parsed += translated != null ? translated : c;
         escaped = false;
       } else if (c === '\\') {
@@ -354,3 +305,19 @@ export default class MILineParser {
     return parsed;
   }
 }
+exports.default = MILineParser; /**
+                                 * Copyright (c) 2017-present, Facebook, Inc.
+                                 * All rights reserved.
+                                 *
+                                 * This source code is licensed under the BSD-style license found in the
+                                 * LICENSE file in the root directory of this source tree. An additional grant
+                                 * of patent rights can be found in the PATENTS file in the same directory.
+                                 *
+                                 * 
+                                 * @format
+                                 */
+
+/**
+ * A parser for MI output records. See the grammar at
+ * https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Output-Syntax.html#GDB_002fMI-Output-Syntax
+ */

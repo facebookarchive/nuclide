@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.toCommandError = toCommandError;
+exports.breakInsertResult = breakInsertResult;
+exports.dataEvaluateExpressionResult = dataEvaluateExpressionResult;
+exports.dataListRegisterNamesResult = dataListRegisterNamesResult;
+exports.dataListRegisterValuesResult = dataListRegisterValuesResult;
+exports.threadInfoResult = threadInfoResult;
+exports.stackInfoDepthResult = stackInfoDepthResult;
+exports.stackListFramesResult = stackListFramesResult;
+exports.stackListVariablesResult = stackListVariablesResult;
+exports.varCreateResult = varCreateResult;
+exports.varListChildrenResult = varListChildrenResult;
+exports.varInfoNumChildrenResult = varInfoNumChildrenResult;
+exports.varInfoTypeResult = varInfoTypeResult;
+exports.varEvaluateExpressionResult = varEvaluateExpressionResult;
+exports.varAssignResult = varAssignResult;
+exports.stoppedEventResult = stoppedEventResult;
+exports.breakpointModifiedEventResult = breakpointModifiedEventResult;
+exports.dataDisassembleResult = dataDisassembleResult;
+
+var _MIRecord;
+
+function _load_MIRecord() {
+  return _MIRecord = require('./MIRecord');
+}
+
+// Type conversions from a generic MI record to command-specfic results
+
+// failure from any command where resultClass is 'error'
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,286 +39,167 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import {MIAsyncRecord, MIResultRecord} from './MIRecord';
+function toCommandError(record) {
+  if (!record.error) {
+    throw new Error('Invariant violation: "record.error"');
+  }
 
-// Type conversions from a generic MI record to command-specfic results
-
-// failure from any command where resultClass is 'error'
-export type MICommandError = {
-  msg: string,
-};
-
-export function toCommandError(record: MIResultRecord): MICommandError {
-  invariant(record.error);
-  return ((record.result: any): MICommandError);
+  return record.result;
 }
 
 // break-insert
-export type MIBreakpoint = {
-  number: string,
-  line?: string,
-  'original-location'?: string,
-  file?: string,
-  fullname?: string,
-  pending?: string,
-};
+function breakInsertResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIBreakInsertResult = {
-  bkpt: [MIBreakpoint],
-};
-
-export function breakInsertResult(record: MIResultRecord): MIBreakInsertResult {
-  invariant(!record.error);
-  return ((record.result: any): MIBreakInsertResult);
+  return record.result;
 }
 
 // data-evaluate-expression
-export type MIDataEvaluateExpressionResult = {
-  value: string,
-};
+function dataEvaluateExpressionResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function dataEvaluateExpressionResult(
-  record: MIResultRecord,
-): MIDataEvaluateExpressionResult {
-  invariant(!record.error);
-  return ((record.result: any): MIDataEvaluateExpressionResult);
+  return record.result;
 }
 
 // data-list-register-names
-export type MIDataListRegisterNamesResult = {
-  'register-names': Array<string>,
-};
+function dataListRegisterNamesResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function dataListRegisterNamesResult(
-  record: MIResultRecord,
-): MIDataListRegisterNamesResult {
-  invariant(!record.error);
-  return ((record.result: any): MIDataListRegisterNamesResult);
+  return record.result;
 }
 
 // data-list-register-values
-export type MIDataListRegisterValuesResult = {
-  'register-values': Array<{
-    number: string,
-    value: string,
-  }>,
-};
+function dataListRegisterValuesResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function dataListRegisterValuesResult(
-  record: MIResultRecord,
-): MIDataListRegisterValuesResult {
-  invariant(!record.error);
-  return ((record.result: any): MIDataListRegisterValuesResult);
+  return record.result;
 }
 
 // thread-info
-export type MIThreadInfo = {
-  id: string, // this is a globally unique id for the thread
-  'target-id': string, // this is an id that is only unique in the target the thread is running in
-  details?: string,
-  name?: string,
-  frame: MIStackFrame,
-  state: 'stopped' | 'running',
-  core?: string,
-};
+function threadInfoResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIThreadInfoResult = {
-  threads: [MIThreadInfo],
-  'current-thread-id': string,
-};
-
-export function threadInfoResult(record: MIResultRecord): MIThreadInfoResult {
-  invariant(!record.error);
-  return ((record.result: any): MIThreadInfoResult);
+  return record.result;
 }
 
 // stack-info-depth
-export type MIStackInfoDepthResult = {
-  depth: string,
-};
+function stackInfoDepthResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function stackInfoDepthResult(
-  record: MIResultRecord,
-): MIStackInfoDepthResult {
-  invariant(!record.error);
-  return ((record.result: any): MIStackInfoDepthResult);
+  return record.result;
 }
 
 // stack-list-frames
-export type MIStackFrame = {
-  level: string, // a decimal integer, 0 is the most recent frame
-  addr: string,
-  func: string,
-  file?: string,
-  fullname?: string,
-  line?: string,
-  from?: string,
-};
+function stackListFramesResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIStackListFramesResult = {
-  stack: Array<{
-    frame: MIStackFrame,
-  }>,
-};
-
-export function stackListFramesResult(
-  record: MIResultRecord,
-): MIStackListFramesResult {
-  invariant(!record.error);
-  return ((record.result: any): MIStackListFramesResult);
+  return record.result;
 }
 
 // stack-list-variables
-export type MIVariable = {
-  name: string,
-  arg?: string, // if present, flags if variable is a function argument
-  value?: string, // if missing, means this is a container (array, struct, etc.)
-};
+function stackListVariablesResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIStackListVariablesResult = {
-  variables: Array<MIVariable>,
-};
-
-export function stackListVariablesResult(
-  record: MIResultRecord,
-): MIStackListVariablesResult {
-  invariant(!record.error);
-  return ((record.result: any): MIStackListVariablesResult);
+  return record.result;
 }
 
 // var-create
-export type MIVarCreateResult = {
-  name: string,
-  numchild: string,
-  value: string,
-  type: string,
-  'thread-id': string,
-  has_more: string,
-};
+function varCreateResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function varCreateResult(record: MIResultRecord): MIVarCreateResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarCreateResult);
+  return record.result;
 }
 
 // var-list-children
-export type MIVarChild = {
-  child: {
-    name: string,
-    exp: string,
-    numchild: string,
-    value?: string,
-    type: string,
-    'thread-id': string,
-  },
-};
+function varListChildrenResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIVarListChildrenResult = {
-  numchild: string,
-  children: Array<MIVarChild>,
-  has_more: string,
-};
-
-export function varListChildrenResult(
-  record: MIResultRecord,
-): MIVarListChildrenResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarListChildrenResult);
+  return record.result;
 }
 
 // var-info-num-children
-export type MIVarInfoNumChildrenResult = {
-  numchild: string,
-};
+function varInfoNumChildrenResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function varInfoNumChildrenResult(
-  record: MIResultRecord,
-): MIVarInfoNumChildrenResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarInfoNumChildrenResult);
+  return record.result;
 }
 
 // var-info-type
-export type MIVarInfoTypeResult = {
-  type: string,
-};
+function varInfoTypeResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function varInfoTypeResult(record: MIResultRecord): MIVarInfoTypeResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarInfoTypeResult);
+  return record.result;
 }
 
 // var-evaluate-expression
-export type MIVarEvaluateExpressionResult = {
-  value: string,
-};
+function varEvaluateExpressionResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function varEvaluateExpressionResult(
-  record: MIResultRecord,
-): MIVarEvaluateExpressionResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarEvaluateExpressionResult);
+  return record.result;
 }
 
 // var-assign
-export type MIVarAssignResult = {
-  value: string,
-};
+function varAssignResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export function varAssignResult(record: MIResultRecord): MIVarAssignResult {
-  invariant(!record.error);
-  return ((record.result: any): MIVarAssignResult);
+  return record.result;
 }
 
 // stopped async event
-export type MIStoppedEventResult = {
-  reason: string,
-  bkptno: ?string,
-  'thread-id': string,
-};
+function stoppedEventResult(record) {
+  if (!(record.asyncClass === 'stopped')) {
+    throw new Error('Invariant violation: "record.asyncClass === \'stopped\'"');
+  }
 
-export function stoppedEventResult(
-  record: MIAsyncRecord,
-): MIStoppedEventResult {
-  invariant(record.asyncClass === 'stopped');
-  return ((record.result: any): MIStoppedEventResult);
+  return record.result;
 }
 
 // breakpoint modified event
-export type MIBreakpointModifiedEventResult = {
-  bkpt: [MIBreakpoint],
-};
+function breakpointModifiedEventResult(record) {
+  if (!(record.asyncClass === 'breakpoint-modified')) {
+    throw new Error('Invariant violation: "record.asyncClass === \'breakpoint-modified\'"');
+  }
 
-export function breakpointModifiedEventResult(
-  record: MIAsyncRecord,
-): MIBreakpointModifiedEventResult {
-  invariant(record.asyncClass === 'breakpoint-modified');
-  return ((record.result: any): MIBreakpointModifiedEventResult);
+  return record.result;
 }
 
 // data-disassemble result
-export type MIDisassembleInstruction = {
-  address: string,
-  inst: string,
-};
+function dataDisassembleResult(record) {
+  if (!!record.error) {
+    throw new Error('Invariant violation: "!record.error"');
+  }
 
-export type MIDataDisassembleResult = {
-  asm_insns: Array<MIDisassembleInstruction>,
-};
-
-export function dataDisassembleResult(
-  record: MIResultRecord,
-): MIDataDisassembleResult {
-  invariant(!record.error);
-  return ((record.result: any): MIDataDisassembleResult);
+  return record.result;
 }
-
-export type StopReason = {
-  reason: string,
-  description: string,
-};

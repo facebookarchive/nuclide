@@ -1,28 +1,23 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.removePrefixSink = removePrefixSink;
+exports.patternCounterSink = patternCounterSink;
 
-// A Sink is a simplfiication of a writable stream.  This facilitates
-// setting up a pipeline of transformations on a string stream in cases
-// where there is no need to consider errors, buffering, encoding, or EOF.
-export type Sink = string => void;
 
 // Creates a pass-through Sink that skips over a literal prefix if present.
 //
 // Parameters:
 //   prefix - literal prefix to match.
 //   next - next Sink in the data processing chain.
-export function removePrefixSink(prefix: string, next: Sink): Sink {
+
+
+// A Sink is a simplfiication of a writable stream.  This facilitates
+// setting up a pipeline of transformations on a string stream in cases
+// where there is no need to consider errors, buffering, encoding, or EOF.
+function removePrefixSink(prefix, next) {
   let doneMatching = false;
   let matched = 0;
   return data => {
@@ -42,7 +37,11 @@ export function removePrefixSink(prefix: string, next: Sink): Sink {
     }
     // At this point everything we have seen so far has matched.
     matched += limit;
-    invariant(matched <= prefix.length);
+
+    if (!(matched <= prefix.length)) {
+      throw new Error('Invariant violation: "matched <= prefix.length"');
+    }
+
     if (matched === prefix.length) {
       // Matched the whole prefix.  Remove prefix and forward remainder (if any).
       doneMatching = true;
@@ -60,14 +59,22 @@ export function removePrefixSink(prefix: string, next: Sink): Sink {
 //   pattern - sequence of characters to match.
 //   notify - called each time a match occurs. This can return false to disable future notifications.
 //   next - next Sink in the data processing chain.
-export function patternCounterSink(
-  pattern: string,
-  notify: () => boolean,
-  next: Sink,
-): Sink {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ *  strict
+ * @format
+ */
+
+function patternCounterSink(pattern, notify, next) {
   let enabled = true;
-  let partial: Array<number> = [];
-  let nextPartial: Array<number> = [];
+  let partial = [];
+  let nextPartial = [];
   return data => {
     for (let i = 0; enabled && i < data.length; i++) {
       const dataCh = data.charAt(i);

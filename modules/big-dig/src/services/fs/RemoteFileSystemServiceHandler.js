@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteFileSystemServiceHandler = undefined;
+
+var _filesystem_types;
+
+function _load_filesystem_types() {
+  return _filesystem_types = _interopRequireDefault(require('./gen-nodejs/filesystem_types'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../../nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Create a service handler class to manage server methods
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +30,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import filesystem_types from './gen-nodejs/filesystem_types';
-import fsPromise from 'nuclide-commons/fsPromise';
-
-/**
- * Create a service handler class to manage server methods
- */
-export class RemoteFileSystemServiceHandler {
+class RemoteFileSystemServiceHandler {
   // We need to initialize necessary server handler state later
   constructor() {}
 
-  async createDirectory(uri: string): Promise<void> {
+  async createDirectory(uri) {
     try {
-      return await fsPromise.mkdir(uri);
+      return await (_fsPromise || _load_fsPromise()).default.mkdir(uri);
     } catch (err) {
       throw this._createThriftError(err);
     }
   }
 
-  _createThriftError(err: Object): filesystem_types.Error {
-    const error = new filesystem_types.Error();
+  _createThriftError(err) {
+    const error = new (_filesystem_types || _load_filesystem_types()).default.Error();
     error.code = err.code;
-    error.message =
-      filesystem_types.ERROR_MAP[filesystem_types.ErrorCode[err.code]];
+    error.message = (_filesystem_types || _load_filesystem_types()).default.ERROR_MAP[(_filesystem_types || _load_filesystem_types()).default.ErrorCode[err.code]];
     return error;
   }
 }
+exports.RemoteFileSystemServiceHandler = RemoteFileSystemServiceHandler;

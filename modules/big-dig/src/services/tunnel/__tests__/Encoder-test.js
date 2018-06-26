@@ -1,3 +1,13 @@
+'use strict';
+
+var _Encoder;
+
+function _load_Encoder() {
+  return _Encoder = _interopRequireDefault(require('../Encoder'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +16,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-declare var jest;
-
-import Encoder from '../Encoder';
 
 describe('Encoder', () => {
   it('should and decode correctly', () => {
     const test = {
       name: 'thing',
       number: 5,
-      buf: Buffer.from('hello world'),
+      buf: Buffer.from('hello world')
     };
-    const encoded = Encoder.encode(test);
-    const decoded = Encoder.decode(encoded);
+    const encoded = (_Encoder || _load_Encoder()).default.encode(test);
+    const decoded = (_Encoder || _load_Encoder()).default.decode(encoded);
 
     expect(decoded.name).toEqual(test.name);
     expect(decoded.number).toEqual(test.number);
@@ -36,12 +42,12 @@ describe('Encoder', () => {
       buf: Buffer.from('this is a test'),
       subObj: {
         name: 'anotherObject',
-        anotherBuf: Buffer.from('another test'),
-      },
+        anotherBuf: Buffer.from('another test')
+      }
     };
 
-    const encoded = Encoder.encode(test);
-    const decoded = Encoder.decode(encoded);
+    const encoded = (_Encoder || _load_Encoder()).default.encode(test);
+    const decoded = (_Encoder || _load_Encoder()).default.decode(encoded);
 
     expect(decoded.name).toEqual(test.name);
     expect(decoded.number).toEqual(test.number);

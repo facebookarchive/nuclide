@@ -1,3 +1,39 @@
+'use strict';
+
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _HgRepositoryProvider;
+
+function _load_HgRepositoryProvider() {
+  return _HgRepositoryProvider = _interopRequireDefault(require('../lib/HgRepositoryProvider'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _testHelpers;
+
+function _load_testHelpers() {
+  return _testHelpers = require('../../../modules/nuclide-commons/test-helpers');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +41,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {Directory} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import HgRepositoryProvider from '../lib/HgRepositoryProvider';
-import invariant from 'assert';
-import {runCommand} from 'nuclide-commons/process';
-import {generateFixture} from 'nuclide-commons/test-helpers';
-import fsPromise from 'nuclide-commons/fsPromise';
-
 describe('HgRepositoryProvider', () => {
-  const provider = new HgRepositoryProvider();
+  const provider = new (_HgRepositoryProvider || _load_HgRepositoryProvider()).default();
   it('shares underlying repository for multiple directories in the same repo', async () => {
     await (async () => {
-      const tempDir = await generateFixture(
-        'hg_repo_provider_test',
-        new Map([['folder/foo', 'foo']]),
-      );
+      const tempDir = await (0, (_testHelpers || _load_testHelpers()).generateFixture)('hg_repo_provider_test', new Map([['folder/foo', 'foo']]));
 
-      const repoPath = await fsPromise.realpath(tempDir);
-      await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
+      const repoPath = await (_fsPromise || _load_fsPromise()).default.realpath(tempDir);
+      await (0, (_process || _load_process()).runCommand)('hg', ['init'], { cwd: repoPath }).toPromise();
 
-      const folderPath = nuclideUri.join(repoPath, 'folder');
+      const folderPath = (_nuclideUri || _load_nuclideUri()).default.join(repoPath, 'folder');
 
-      const baseDirectory = new Directory(repoPath);
-      const folderDirectory = new Directory(folderPath);
+      const baseDirectory = new _atom.Directory(repoPath);
+      const folderDirectory = new _atom.Directory(folderPath);
 
       const baseRepo = provider.repositoryForDirectorySync(baseDirectory);
       const folderRepo = provider.repositoryForDirectorySync(folderDirectory);
-      invariant(baseRepo != null && folderRepo != null);
 
-      expect(baseRepo.getProjectDirectory()).not.toBe(
-        folderRepo.getProjectDirectory(),
-      );
+      if (!(baseRepo != null && folderRepo != null)) {
+        throw new Error('Invariant violation: "baseRepo != null && folderRepo != null"');
+      }
+
+      expect(baseRepo.getProjectDirectory()).not.toBe(folderRepo.getProjectDirectory());
 
       // compare private members to guarantee they have the same underlying HgRepositoryClient
       // arbitrarily chose _emitter
@@ -59,10 +85,12 @@ describe('HgRepositoryProvider', () => {
       expect(folderRepoRootDestroyed).toBe(false);
 
       const folderRepo2 = provider.repositoryForDirectorySync(folderDirectory);
-      invariant(folderRepo2 != null);
-      expect(baseRepo.getRootRepoClient()).toBe(
-        folderRepo2.getRootRepoClient(),
-      );
+
+      if (!(folderRepo2 != null)) {
+        throw new Error('Invariant violation: "folderRepo2 != null"');
+      }
+
+      expect(baseRepo.getRootRepoClient()).toBe(folderRepo2.getRootRepoClient());
 
       folderRepo2.destroy();
       baseRepo.destroy();
@@ -71,17 +99,17 @@ describe('HgRepositoryProvider', () => {
       expect(folderRepoRootDestroyed).toBe(true);
 
       const baseRepo2 = provider.repositoryForDirectorySync(baseDirectory);
-      invariant(baseRepo2 != null);
-      expect(baseRepo.getRootRepoClient()).not.toBe(
-        baseRepo2.getRootRepoClient(),
-      );
-      expect(baseRepo.getProjectDirectory()).toBe(
-        baseRepo2.getProjectDirectory(),
-      );
+
+      if (!(baseRepo2 != null)) {
+        throw new Error('Invariant violation: "baseRepo2 != null"');
+      }
+
+      expect(baseRepo.getRootRepoClient()).not.toBe(baseRepo2.getRootRepoClient());
+      expect(baseRepo.getProjectDirectory()).toBe(baseRepo2.getProjectDirectory());
 
       baseRepo2.destroy();
 
-      await fsPromise.rimraf(repoPath);
+      await (_fsPromise || _load_fsPromise()).default.rimraf(repoPath);
     })();
   });
 });

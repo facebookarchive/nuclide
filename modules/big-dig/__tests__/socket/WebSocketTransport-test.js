@@ -1,3 +1,21 @@
+'use strict';
+
+var _events = _interopRequireDefault(require('events'));
+
+var _WebSocketTransport;
+
+function _load_WebSocketTransport() {
+  return _WebSocketTransport = require('../../src/socket/WebSocketTransport');
+}
+
+var _compression;
+
+function _load_compression() {
+  return _compression = require('../../src/socket/compression');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,18 +24,12 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type WS from 'ws';
-
-import EventEmitter from 'events';
-import {WebSocketTransport} from '../../src/socket/WebSocketTransport';
-import {compress, decompress} from '../../src/socket/compression';
-
-function mockSocket(): WS {
-  const result = (new EventEmitter(): any);
+function mockSocket() {
+  const result = new _events.default();
   result.close = () => {
     result.emit('close');
   };
@@ -26,12 +38,12 @@ function mockSocket(): WS {
 }
 
 describe('WebSocketTransport', () => {
-  let socket: WS = (null: any);
-  let transport: WebSocketTransport = (null: any);
+  let socket = null;
+  let transport = null;
 
   beforeEach(() => {
     socket = mockSocket();
-    transport = new WebSocketTransport('42', socket, {syncCompression: false});
+    transport = new (_WebSocketTransport || _load_WebSocketTransport()).WebSocketTransport('42', socket, { syncCompression: false });
   });
 
   it('constructor', () => {
@@ -42,7 +54,7 @@ describe('WebSocketTransport', () => {
   });
 
   it('can receive a message', () => {
-    const payload = JSON.stringify({foo: 42});
+    const payload = JSON.stringify({ foo: 42 });
     let result;
     transport.onMessage().subscribe(message => {
       result = message;
@@ -52,29 +64,21 @@ describe('WebSocketTransport', () => {
   });
 
   it('send - success', async () => {
-    const s: any = socket;
+    const s = socket;
     s.send = jest.fn((data, _, callback) => callback(null));
-    const data = JSON.stringify({foo: 42});
+    const data = JSON.stringify({ foo: 42 });
     const result = await transport.send(data);
     expect(result).toBe(true);
-    expect(socket.send).toBeCalledWith(
-      data,
-      expect.any(Object),
-      expect.any(Function),
-    );
+    expect(socket.send).toBeCalledWith(data, expect.any(Object), expect.any(Function));
   });
 
   it('send - error', async () => {
-    const s: any = socket;
+    const s = socket;
     s.send = jest.fn((data, _, callback) => callback(new Error()));
-    const data = JSON.stringify({foo: 42});
+    const data = JSON.stringify({ foo: 42 });
     const result = await transport.send(data);
     expect(result).toBe(false);
-    expect(socket.send).toBeCalledWith(
-      data,
-      expect.any(Object),
-      expect.any(Function),
-    );
+    expect(socket.send).toBeCalledWith(data, expect.any(Object), expect.any(Function));
   });
 
   it('close event', () => {
@@ -119,8 +123,8 @@ describe('WebSocketTransport', () => {
   });
 
   it('can send compressed messages', async () => {
-    transport = new WebSocketTransport('42', socket, {syncCompression: true});
-    const s: any = socket;
+    transport = new (_WebSocketTransport || _load_WebSocketTransport()).WebSocketTransport('42', socket, { syncCompression: true });
+    const s = socket;
     s.send = jest.fn((data, _, callback) => callback(null));
     const data = 'a'.repeat(10000);
     const result = await transport.send(data);
@@ -128,16 +132,16 @@ describe('WebSocketTransport', () => {
     expect(s.send).toBeCalled();
     const buffer = s.send.mock.calls[0][0];
     expect(buffer instanceof Buffer).toBe(true);
-    expect(decompress(buffer)).toBe(data);
+    expect((0, (_compression || _load_compression()).decompress)(buffer)).toBe(data);
   });
 
   it('can receive compressed messages', () => {
-    const payload = compress('abcd');
+    const payload = (0, (_compression || _load_compression()).compress)('abcd');
     let result;
     transport.onMessage().subscribe(message => {
       result = message;
     });
-    socket.emit('message', payload, {binary: true});
+    socket.emit('message', payload, { binary: true });
     expect(result).toEqual('abcd');
   });
 });

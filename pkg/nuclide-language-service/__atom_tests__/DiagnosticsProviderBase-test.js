@@ -1,3 +1,19 @@
+'use strict';
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _DiagnosticsProviderBase;
+
+function _load_DiagnosticsProviderBase() {
+  return _DiagnosticsProviderBase = require('../lib/DiagnosticsProviderBase');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +21,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {DiagnosticsProviderBase} from '../lib/DiagnosticsProviderBase';
 
 const grammar = 'testgrammar';
 
 describe('DiagnosticsProviderBase', () => {
-  let providerBase: any;
+  let providerBase;
 
-  let eventCallback: any;
-  let subscribedToAny: any;
-  let fakeEditor: any;
+  let eventCallback;
+  let subscribedToAny;
+  let fakeEditor;
 
-  let textEventCallback: any;
+  let textEventCallback;
 
   class FakeEventDispatcher {
     onFileChange(grammars, callback) {
       eventCallback = callback;
-      return new UniversalDisposable();
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
 
     onAnyFileChange(callback) {
       subscribedToAny = true;
       eventCallback = callback;
-      return new UniversalDisposable();
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
   }
 
   function newProviderBase(options) {
-    return new DiagnosticsProviderBase(
-      options,
-      (new FakeEventDispatcher(): any),
-    );
+    return new (_DiagnosticsProviderBase || _load_DiagnosticsProviderBase()).DiagnosticsProviderBase(options, new FakeEventDispatcher());
   }
 
   beforeEach(() => {
@@ -49,18 +59,18 @@ describe('DiagnosticsProviderBase', () => {
         return 'foo';
       },
       getGrammar() {
-        return {scopeName: grammar};
-      },
+        return { scopeName: grammar };
+      }
     };
     eventCallback = null;
     subscribedToAny = null;
 
     // Flow complains that a spy is not callable.
-    textEventCallback = (jest.fn(): any);
+    textEventCallback = jest.fn();
     const options = {
       grammarScopes: new Set([grammar]),
       onTextEditorEvent: textEventCallback,
-      shouldRunOnTheFly: true,
+      shouldRunOnTheFly: true
     };
     providerBase = newProviderBase(options);
   });
@@ -74,7 +84,7 @@ describe('DiagnosticsProviderBase', () => {
     newProviderBase({
       grammarScopes: new Set([]),
       enableForAllGrammars: true,
-      shouldRunOnTheFly: true,
+      shouldRunOnTheFly: true
     });
     expect(subscribedToAny).toBe(true);
   });

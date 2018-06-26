@@ -1,19 +1,30 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import http from 'http';
-import querystring from 'querystring';
-import * as utils from '../lib/utils';
-import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
-import waitsFor from '../../../jest/waits_for';
+var _http = _interopRequireDefault(require('http'));
+
+var _querystring = _interopRequireDefault(require('querystring'));
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireWildcard(require('../lib/utils'));
+}
+
+var _asyncRequest;
+
+function _load_asyncRequest() {
+  return _asyncRequest = _interopRequireDefault(require('../../../modules/big-dig/src/client/utils/asyncRequest'));
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('NuclideServer utils test', () => {
   let server;
@@ -21,18 +32,18 @@ describe('NuclideServer utils test', () => {
 
   beforeEach(async () => {
     let connected = false;
-    server = http.createServer((req, res) => {
+    server = _http.default.createServer((req, res) => {
       if (customHandler) {
         customHandler(req, res);
       } else {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('okay');
       }
     });
     server.listen(36845, '127.0.0.1', 511 /* backlog */, () => {
       connected = true;
     });
-    await waitsFor(() => connected);
+    await (0, (_waits_for || _load_waits_for()).default)(() => connected);
   });
 
   afterEach(() => {
@@ -43,69 +54,72 @@ describe('NuclideServer utils test', () => {
   it('parses the request body', async () => {
     const bodyHandler = jest.fn();
     customHandler = (req, res) => {
-      utils
-        // $FlowFixMe(asuarez): Use Flow builtin defs for IncomingMessage.
-        .parseRequestBody(req)
-        .then(bodyHandler)
-        .then(() => res.end());
+      (_utils || _load_utils()
+      // $FlowFixMe(asuarez): Use Flow builtin defs for IncomingMessage.
+      ).parseRequestBody(req).then(bodyHandler).then(() => res.end());
     };
-    asyncRequest({
+    (0, (_asyncRequest || _load_asyncRequest()).default)({
       uri: 'http://127.0.0.1:36845/abc',
       method: 'POST',
-      body: 'string_abc',
+      body: 'string_abc'
     });
-    await waitsFor(() => bodyHandler.mock.calls.length > 0);
+    await (0, (_waits_for || _load_waits_for()).default)(() => bodyHandler.mock.calls.length > 0);
     expect(bodyHandler.mock.calls[0][0]).toBe('string_abc');
   });
 
   it('gets query params', () => {
-    const params = utils.getQueryParameters('http://fburil.com?one=2&yoga=def');
-    expect(params).toEqual({one: '2', yoga: 'def'});
+    const params = (_utils || _load_utils()).getQueryParameters('http://fburil.com?one=2&yoga=def');
+    expect(params).toEqual({ one: '2', yoga: 'def' });
   });
 
   describe('serializeArgs', () => {
     it('serializes empty args', () => {
-      const {args, argTypes} = utils.serializeArgs([]);
+      const { args, argTypes } = (_utils || _load_utils()).serializeArgs([]);
       expect(args).toEqual([]);
       expect(argTypes).toEqual([]);
     });
 
     it('serializes undefined args', () => {
-      const {args, argTypes} = utils.serializeArgs(['abc', undefined]);
+      const { args, argTypes } = (_utils || _load_utils()).serializeArgs(['abc', undefined]);
       expect(args).toEqual(['abc', '']);
       expect(argTypes).toEqual(['string', 'undefined']);
     });
 
     it('serializes object args', () => {
-      const {args, argTypes} = utils.serializeArgs([{def: 'lol'}]);
-      expect(args).toEqual([JSON.stringify({def: 'lol'})]);
+      const { args, argTypes } = (_utils || _load_utils()).serializeArgs([{ def: 'lol' }]);
+      expect(args).toEqual([JSON.stringify({ def: 'lol' })]);
       expect(argTypes).toEqual(['object']);
     });
   });
 
   describe('deserializeArgs', () => {
     it('deserializes strings and undefined', () => {
-      const url =
-        'http://localhost:8090/?args=abc&args=&argTypes=string&argTypes=undefined';
-      const [str, undef] = utils.deserializeArgs(url);
+      const url = 'http://localhost:8090/?args=abc&args=&argTypes=string&argTypes=undefined';
+      const [str, undef] = (_utils || _load_utils()).deserializeArgs(url);
       expect(str).toBe('abc');
       expect(undef).not.toBeDefined();
     });
 
     it('deserializes objects', () => {
-      const escapedObj = querystring.escape(JSON.stringify({def: 'lol'}));
-      const url =
-        'http://localhost:8090/?args=' + escapedObj + '&argTypes=object';
-      const [obj] = utils.deserializeArgs(url);
-      expect(obj).toEqual({def: 'lol'});
+      const escapedObj = _querystring.default.escape(JSON.stringify({ def: 'lol' }));
+      const url = 'http://localhost:8090/?args=' + escapedObj + '&argTypes=object';
+      const [obj] = (_utils || _load_utils()).deserializeArgs(url);
+      expect(obj).toEqual({ def: 'lol' });
     });
   });
 
   it('serializeArgs then deserializeArgs for strings with non-escaped chars', () => {
-    const {args, argTypes} = utils.serializeArgs(['a d+']);
-    const [str] = utils.deserializeArgs(
-      'http://localhost:8090/?' + querystring.stringify({args, argTypes}),
-    );
+    const { args, argTypes } = (_utils || _load_utils()).serializeArgs(['a d+']);
+    const [str] = (_utils || _load_utils()).deserializeArgs('http://localhost:8090/?' + _querystring.default.stringify({ args, argTypes }));
     expect(str).toBe('a d+');
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict-local
+     * @format
+     */

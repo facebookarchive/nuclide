@@ -1,43 +1,15 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {Variable} from 'vscode-debugprotocol';
+var _MIRegisterValue;
 
-import {MIRegisterValue} from './MIRegisterValue';
-import VariableReference from './VariableReference';
-
-export interface VariablesInterface {
-  clearCachedVariables(): Promise<void>;
-  variableReferenceForStackFrame(frameId: number): number;
-  registersVariableReference(): ?number;
-  registerElementVariableReference(
-    value: MIRegisterValue,
-    name: string,
-    expression: string,
-  ): number;
-  nestedVariableReference(
-    container: VariableReference,
-    exp: string,
-    name: ?string,
-  ): number;
-  expressionVariableReference(
-    threadId: ?number,
-    frameIndex: ?number,
-    expression: string,
-  ): number;
-  getVariableReference(handle: number): ?VariableReference;
-  getVariables(
-    varrefHandle: number,
-    start: ?number,
-    count: ?number,
-  ): Promise<Array<Variable>>;
+function _load_MIRegisterValue() {
+  return _MIRegisterValue = require('./MIRegisterValue');
 }
+
+var _VariableReference;
+
+function _load_VariableReference() {
+  return _VariableReference = _interopRequireDefault(require('./VariableReference'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

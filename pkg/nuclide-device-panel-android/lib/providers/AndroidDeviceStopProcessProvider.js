@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AndroidDeviceStopProcessProvider = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../../../../modules/nuclide-adb/lib/utils');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +20,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from 'nuclide-debugger-common/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {Observable} from 'rxjs';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
-
-export class AndroidDeviceStopProcessProvider
-  implements DeviceProcessTaskProvider {
-  getType(): string {
+class AndroidDeviceStopProcessProvider {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'KILL';
   }
 
-  getName(): string {
+  getName() {
     return 'Stop process/package';
   }
 
-  isSupported(proc: Process): boolean {
+  isSupported(proc) {
     return true;
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(new Set(procs.map(proc => proc.pid)));
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.map(proc => proc.pid)));
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return getAdbServiceByNuclideUri(host).stopProcess(
-      device.name,
-      proc.name,
-      proc.pid,
-    );
+  async run(host, device, proc) {
+    return (0, (_utils || _load_utils()).getAdbServiceByNuclideUri)(host).stopProcess(device.name, proc.name, proc.pid);
   }
 }
+exports.AndroidDeviceStopProcessProvider = AndroidDeviceStopProcessProvider;

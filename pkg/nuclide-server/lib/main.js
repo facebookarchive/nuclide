@@ -1,45 +1,71 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  flushLogsAndAbort,
-  flushLogsAndExit,
-  initializeLogging,
-} from '../../nuclide-logging';
-import {startTracking} from '../../nuclide-analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import NuclideServer from './NuclideServer';
-import servicesConfig from './servicesConfig';
+var _fsPromise;
 
-import yargs from 'yargs';
-import {getLogger} from 'log4js';
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
 
-const DEFAULT_PORT = 9090;
+var _nuclideLogging;
 
-const logger = getLogger('nuclide-server');
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _NuclideServer;
+
+function _load_NuclideServer() {
+  return _NuclideServer = _interopRequireDefault(require('./NuclideServer'));
+}
+
+var _servicesConfig;
+
+function _load_servicesConfig() {
+  return _servicesConfig = _interopRequireDefault(require('./servicesConfig'));
+}
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DEFAULT_PORT = 9090; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            * @format
+                            */
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-server');
 
 async function getServerCredentials(args) {
-  const {key, cert, ca} = args;
+  const { key, cert, ca } = args;
   if (key && cert && ca) {
-    const [
-      serverKey,
-      serverCertificate,
-      certificateAuthorityCertificate,
-    ] = await Promise.all([
-      fsPromise.readFile(key),
-      fsPromise.readFile(cert),
-      fsPromise.readFile(ca),
-    ]);
-    return {serverKey, serverCertificate, certificateAuthorityCertificate};
+    const [serverKey, serverCertificate, certificateAuthorityCertificate] = await Promise.all([(_fsPromise || _load_fsPromise()).default.readFile(key), (_fsPromise || _load_fsPromise()).default.readFile(cert), (_fsPromise || _load_fsPromise()).default.readFile(ca)]);
+    return { serverKey, serverCertificate, certificateAuthorityCertificate };
   }
   return null;
 }
@@ -48,27 +74,22 @@ async function main(args) {
   let serverStartTimer;
   try {
     process.on('SIGHUP', () => {});
-    initializeLogging();
-    serverStartTimer = startTracking('nuclide-server:start');
+    (0, (_nuclideLogging || _load_nuclideLogging()).initializeLogging)();
+    serverStartTimer = (0, (_nuclideAnalytics || _load_nuclideAnalytics()).startTracking)('nuclide-server:start');
 
-    const {port, expirationDays} = args;
+    const { port, expirationDays } = args;
     if (expirationDays) {
       setTimeout(() => {
-        logger.warn(
-          `NuclideServer exiting - ${expirationDays} day expiration time reached.`,
-        );
-        flushLogsAndExit(0);
+        logger.warn(`NuclideServer exiting - ${expirationDays} day expiration time reached.`);
+        (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndExit)(0);
       }, expirationDays * 24 * 60 * 60 * 1000);
     }
     const serverCredentials = await getServerCredentials(args);
-    const server = new NuclideServer(
-      {
-        port,
-        ...serverCredentials,
-        trackEventLoop: true,
-      },
-      servicesConfig,
-    );
+    const server = new (_NuclideServer || _load_NuclideServer()).default(Object.assign({
+      port
+    }, serverCredentials, {
+      trackEventLoop: true
+    }), (_servicesConfig || _load_servicesConfig()).default);
     await server.connect();
     serverStartTimer.onSuccess();
     logger.info(`NuclideServer started on port ${port}.`);
@@ -79,7 +100,7 @@ async function main(args) {
       serverStartTimer.onError(e);
     }
     logger.fatal(e);
-    flushLogsAndAbort();
+    (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndAbort)();
   }
 }
 
@@ -93,7 +114,7 @@ process.on('uncaughtException', err => {
   logger.fatal('uncaughtException:', err);
   // According to the docs, we need to close our server when this happens once we logged or
   // handled it: https://nodejs.org/api/process.html#process_event_uncaughtexception
-  flushLogsAndAbort();
+  (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndAbort)();
 });
 
 // This works in io.js as of v2.4.0 (possibly earlier versions, as well). Support for this was
@@ -107,9 +128,8 @@ process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
 });
 
-const argv = yargs.default('port', DEFAULT_PORT).argv;
+const argv = (_yargs || _load_yargs()).default.default('port', DEFAULT_PORT).argv;
 
 main(argv);
 
 // Make it clear that this is not a types module by adding an empty export.
-export {};

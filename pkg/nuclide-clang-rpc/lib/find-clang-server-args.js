@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,33 +25,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+let fbFindClangServerArgs;
 
-import {runCommand} from 'nuclide-commons/process';
-
-let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
-
-export type PartialClangServerArgs = {
-  libClangLibraryFile?: string,
-  pythonExecutable?: string,
-  pythonPathEnv?: string,
-};
-
-export type ClangServerArgs = {
-  libClangLibraryFile: ?string,
-  pythonExecutable: string,
-  pythonPathEnv: ?string,
-};
-
-export default (async function findClangServerArgs(
-  src?: string,
-  libclangPath: ?string = null,
-  configLibclangPath: ?string,
-): Promise<ClangServerArgs> {
+exports.default = async function findClangServerArgs(src, libclangPath = null, configLibclangPath) {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
     try {
@@ -45,12 +45,10 @@ export default (async function findClangServerArgs(
   let libClangLibraryFile;
   if (process.platform === 'darwin') {
     try {
-      const stdout = await runCommand('xcode-select', [
-        '--print-path',
-      ]).toPromise();
+      const stdout = await (0, (_process || _load_process()).runCommand)('xcode-select', ['--print-path']).toPromise();
       libClangLibraryFile = stdout.trim();
       // If the user only has Xcode Command Line Tools installed, the path is different.
-      if (nuclideUri.basename(libClangLibraryFile) !== 'CommandLineTools') {
+      if ((_nuclideUri || _load_nuclideUri()).default.basename(libClangLibraryFile) !== 'CommandLineTools') {
         libClangLibraryFile += '/Toolchains/XcodeDefault.xctoolchain';
       }
       libClangLibraryFile += '/usr/lib/libclang.dylib';
@@ -64,19 +62,16 @@ export default (async function findClangServerArgs(
   let clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python2.7',
-    pythonPathEnv: nuclideUri.join(__dirname, '../VendorLib'),
+    pythonPathEnv: (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../VendorLib')
   };
 
   if (typeof fbFindClangServerArgs === 'function') {
     const clangServerArgsOverrides = await fbFindClangServerArgs(src);
-    clangServerArgs = {
-      ...clangServerArgs,
-      ...clangServerArgsOverrides,
-    };
+    clangServerArgs = Object.assign({}, clangServerArgs, clangServerArgsOverrides);
   }
 
   if (libclangPath != null) {
     clangServerArgs.libClangLibraryFile = libclangPath;
   }
   return clangServerArgs;
-});
+};

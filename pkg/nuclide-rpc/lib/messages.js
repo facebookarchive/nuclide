@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.decodeError = decodeError;
+exports.createCallMessage = createCallMessage;
+exports.createCallObjectMessage = createCallObjectMessage;
+exports.createPromiseMessage = createPromiseMessage;
+exports.createNextMessage = createNextMessage;
+exports.createCompleteMessage = createCompleteMessage;
+exports.createObserveErrorMessage = createObserveErrorMessage;
+exports.createDisposeMessage = createDisposeMessage;
+exports.createUnsubscribeMessage = createUnsubscribeMessage;
+exports.createErrorResponseMessage = createErrorResponseMessage;
+
+
+// Encodes the structure of messages that can be sent from the server to the client.
+const ERROR_MESSAGE_LIMIT = 1000;
+
+// TODO: This should be a custom marshaller registered in the TypeRegistry
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,114 +26,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 // Encodes the structure of messages that can be sent from the client to the server.
-export type RequestMessage =
-  | CallMessage
-  | CallObjectMessage
-  | DisposeMessage
-  | UnsubscribeMessage;
-
-export type CallMessage = {
-  protocol: string,
-  type: 'call',
-  method: string,
-  id: number,
-  args: Object,
-};
-
-export type CallObjectMessage = {
-  protocol: string,
-  type: 'call-object',
-  method: string,
-  id: number,
-  objectId: number,
-  args: Object,
-};
-
-export type DisposeMessage = {
-  protocol: string,
-  type: 'dispose',
-  id: number,
-  objectId: number,
-};
-
-export type UnsubscribeMessage = {
-  protocol: string,
-  type: 'unsubscribe',
-  id: number,
-};
-
-// Encodes the structure of messages that can be sent from the server to the client.
-export type ResponseMessage =
-  | PromiseResponseMessage
-  | ErrorResponseMessage
-  | NextMessage
-  | CompleteMessage
-  | ErrorMessage;
-
-export type ErrorResponseMessage = {
-  protocol: string,
-  type: 'error-response',
-  id: number,
-  responseId: number,
-  error: any,
-};
-
-export type PromiseResponseMessage = {
-  protocol: string,
-  type: 'response',
-  id: number,
-  responseId: number,
-  result: any,
-};
-
-export type NextMessage = {
-  protocol: string,
-  type: 'next',
-  id: number,
-  responseId: number,
-  value: any,
-};
-
-export type CompleteMessage = {
-  protocol: string,
-  type: 'complete',
-  responseId: number,
-  id: number,
-};
-
-export type ErrorMessage = {
-  protocol: string,
-  type: 'error',
-  id: number,
-  responseId: number,
-  error: any,
-};
-
-const ERROR_MESSAGE_LIMIT = 1000;
-
-// TODO: This should be a custom marshaller registered in the TypeRegistry
-export function decodeError(
-  message: Object,
-  encodedError: ?(Object | string),
-): ?(Error | string) {
+function decodeError(message, encodedError) {
   if (encodedError != null && typeof encodedError === 'object') {
     const resultError = new Error();
     let messageStr = JSON.stringify(message);
     if (messageStr.length > ERROR_MESSAGE_LIMIT) {
-      messageStr =
-        messageStr.substr(0, ERROR_MESSAGE_LIMIT) +
-        `<${messageStr.length - ERROR_MESSAGE_LIMIT} bytes>`;
+      messageStr = messageStr.substr(0, ERROR_MESSAGE_LIMIT) + `<${messageStr.length - ERROR_MESSAGE_LIMIT} bytes>`;
     }
-    resultError.message =
-      `Remote Error: ${
-        encodedError.message
-      } processing message ${messageStr}\n` +
-      JSON.stringify(encodedError.stack);
+    resultError.message = `Remote Error: ${encodedError.message} processing message ${messageStr}\n` + JSON.stringify(encodedError.stack);
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;
     resultError.stack = encodedError.stack;
@@ -122,132 +48,90 @@ export function decodeError(
   }
 }
 
-export function createCallMessage(
-  protocol: string,
-  functionName: string,
-  id: number,
-  args: Object,
-): CallMessage {
+function createCallMessage(protocol, functionName, id, args) {
   return {
     protocol,
     type: 'call',
     method: functionName,
     id,
-    args,
+    args
   };
 }
 
-export function createCallObjectMessage(
-  protocol: string,
-  methodName: string,
-  objectId: number,
-  id: number,
-  args: Object,
-): CallObjectMessage {
+function createCallObjectMessage(protocol, methodName, objectId, id, args) {
   return {
     protocol,
     type: 'call-object',
     method: methodName,
     objectId,
     id,
-    args,
+    args
   };
 }
 
-export function createPromiseMessage(
-  protocol: string,
-  id: number,
-  responseId: number,
-  result: any,
-): PromiseResponseMessage {
+function createPromiseMessage(protocol, id, responseId, result) {
   return {
     protocol,
     type: 'response',
     id,
     responseId,
-    result,
+    result
   };
 }
 
-export function createNextMessage(
-  protocol: string,
-  id: number,
-  responseId: number,
-  value: any,
-): NextMessage {
+function createNextMessage(protocol, id, responseId, value) {
   return {
     protocol,
     type: 'next',
     id,
     responseId,
-    value,
+    value
   };
 }
 
-export function createCompleteMessage(
-  protocol: string,
-  id: number,
-  responseId: number,
-): CompleteMessage {
+function createCompleteMessage(protocol, id, responseId) {
   return {
     protocol,
     type: 'complete',
     id,
-    responseId,
+    responseId
   };
 }
 
-export function createObserveErrorMessage(
-  protocol: string,
-  id: number,
-  responseId: number,
-  error: any,
-): ErrorMessage {
+function createObserveErrorMessage(protocol, id, responseId, error) {
   return {
     protocol,
     type: 'error',
     id,
     responseId,
-    error: formatError(error),
+    error: formatError(error)
   };
 }
 
-export function createDisposeMessage(
-  protocol: string,
-  id: number,
-  objectId: number,
-): DisposeMessage {
+function createDisposeMessage(protocol, id, objectId) {
   return {
     protocol,
     type: 'dispose',
     id,
-    objectId,
+    objectId
   };
 }
 
-export function createUnsubscribeMessage(
-  protocol: string,
-  id: number,
-): UnsubscribeMessage {
+function createUnsubscribeMessage(protocol, id) {
   return {
     protocol,
     type: 'unsubscribe',
-    id,
+    id
   };
 }
 
-export function createErrorResponseMessage(
-  protocol: string,
-  id: number,
-  responseId: number,
-  error: any,
-): ErrorResponseMessage {
+function createErrorResponseMessage(protocol, id, responseId, error) {
   return {
     protocol,
     type: 'error-response',
     id,
     responseId,
-    error: formatError(error),
+    error: formatError(error)
   };
 }
 
@@ -255,12 +139,12 @@ export function createErrorResponseMessage(
  * Format the error before sending over the web socket.
  * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error: any): ?(Object | string) {
+function formatError(error) {
   if (error instanceof Error) {
     return {
       message: error.message,
       code: error.code,
-      stack: error.stack,
+      stack: error.stack
     };
   } else if (typeof error === 'string') {
     return error.toString();

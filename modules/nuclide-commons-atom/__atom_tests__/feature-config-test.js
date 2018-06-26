@@ -1,61 +1,67 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import featureConfig from '../feature-config';
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../feature-config'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('main', () => {
   it('returns numbers when numbers are set', () => {
-    featureConfig.set('foobar', 5);
-    expect(featureConfig.get('foobar')).toEqual(5);
+    (_featureConfig || _load_featureConfig()).default.set('foobar', 5);
+    expect((_featureConfig || _load_featureConfig()).default.get('foobar')).toEqual(5);
   });
 
   it('returns booleans when numbers are set', () => {
-    featureConfig.set('cat', true);
-    expect(featureConfig.get('cat')).toEqual(true);
+    (_featureConfig || _load_featureConfig()).default.set('cat', true);
+    expect((_featureConfig || _load_featureConfig()).default.get('cat')).toEqual(true);
   });
 
   it('passes values to observers on change', () => {
     const spy = jest.fn();
-    featureConfig.observe('animal', spy);
-    featureConfig.set('animal', 'yup');
+    (_featureConfig || _load_featureConfig()).default.observe('animal', spy);
+    (_featureConfig || _load_featureConfig()).default.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('can observeAsStream', () => {
     const spy = jest.fn();
-    featureConfig.observeAsStream('animal').subscribe(spy);
-    featureConfig.set('animal', 'yup');
+    (_featureConfig || _load_featureConfig()).default.observeAsStream('animal').subscribe(spy);
+    (_featureConfig || _load_featureConfig()).default.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('passes options to observe', () => {
     const spy = jest.fn();
-    featureConfig.observe('animal', {scope: []}, spy);
-    featureConfig.set('animal', 'yup');
+    (_featureConfig || _load_featureConfig()).default.observe('animal', { scope: [] }, spy);
+    (_featureConfig || _load_featureConfig()).default.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('calls callbacks passed to `onDidChange`', () => {
     const spy = jest.fn();
-    featureConfig.onDidChange('mars.attacks', spy);
-    featureConfig.set('mars.attacks', 42);
+    (_featureConfig || _load_featureConfig()).default.onDidChange('mars.attacks', spy);
+    (_featureConfig || _load_featureConfig()).default.set('mars.attacks', 42);
     expect(spy).toHaveBeenCalled();
   });
 
   it('resets to defaults with "unset"', () => {
-    featureConfig.setSchema('purple.pants', {type: 'number', default: 15});
-    featureConfig.set('purple.pants', 25);
-    expect(featureConfig.get('purple.pants')).toEqual(25);
-    featureConfig.unset('purple.pants');
-    expect(featureConfig.get('purple.pants')).toEqual(15);
+    (_featureConfig || _load_featureConfig()).default.setSchema('purple.pants', { type: 'number', default: 15 });
+    (_featureConfig || _load_featureConfig()).default.set('purple.pants', 25);
+    expect((_featureConfig || _load_featureConfig()).default.get('purple.pants')).toEqual(25);
+    (_featureConfig || _load_featureConfig()).default.unset('purple.pants');
+    expect((_featureConfig || _load_featureConfig()).default.get('purple.pants')).toEqual(15);
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     *  strict-local
+     * @format
+     */

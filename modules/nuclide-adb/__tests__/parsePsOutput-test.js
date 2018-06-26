@@ -1,26 +1,16 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {parsePsTableOutput} from '../lib/common/ps';
+var _ps;
+
+function _load_ps() {
+  return _ps = require('../lib/common/ps');
+}
 
 describe('parsePsOutput', () => {
   it('splits the output by message', () => {
-    const fakePsOutput =
-      'USER      PID   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' +
-      'u0_a2    2326  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' +
-      'u0_a16   2359  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' +
-      'u0_a48   2386  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
+    const fakePsOutput = 'USER      PID   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' + 'u0_a2    2326  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' + 'u0_a16   2359  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' + 'u0_a48   2386  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
 
-    let parsed = parsePsTableOutput(fakePsOutput, ['user', 'pid', 'name']);
+    let parsed = (0, (_ps || _load_ps()).parsePsTableOutput)(fakePsOutput, ['user', 'pid', 'name']);
     expect(parsed.length).toBe(3);
 
     expect(parsed[0].user).toEqual('u0_a2');
@@ -36,13 +26,9 @@ describe('parsePsOutput', () => {
     expect(parsed[2].name).toEqual('com.google.android.apps.maps');
 
     // Try another output with different column ordering to confirm column mapping is working.
-    const fakePsOutput2 =
-      'PID      USER   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' +
-      '2326   u0_a2  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' +
-      '2359   u0_a16  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' +
-      '2386   u0_a48  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
+    const fakePsOutput2 = 'PID      USER   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' + '2326   u0_a2  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' + '2359   u0_a16  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' + '2386   u0_a48  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
 
-    parsed = parsePsTableOutput(fakePsOutput2, ['user', 'pid']);
+    parsed = (0, (_ps || _load_ps()).parsePsTableOutput)(fakePsOutput2, ['user', 'pid']);
     expect(parsed.length).toBe(3);
 
     expect(parsed[0].user).toEqual('u0_a2');
@@ -58,12 +44,9 @@ describe('parsePsOutput', () => {
     expect(parsed[2].name).toBeUndefined();
 
     // Test Android 8.0 format
-    const newPsOutput =
-      'USER           PID  PPID     VSZ    RSS WCHAN            ADDR S NAME\n' +
-      'root             1     0   10612   3528 SyS_epoll_wait      0 S init\n' +
-      'root             2     0       0      0 kthreadd            0 S [kthreadd]\n';
+    const newPsOutput = 'USER           PID  PPID     VSZ    RSS WCHAN            ADDR S NAME\n' + 'root             1     0   10612   3528 SyS_epoll_wait      0 S init\n' + 'root             2     0       0      0 kthreadd            0 S [kthreadd]\n';
 
-    parsed = parsePsTableOutput(newPsOutput, ['user', 'pid', 'name']);
+    parsed = (0, (_ps || _load_ps()).parsePsTableOutput)(newPsOutput, ['user', 'pid', 'name']);
     expect(parsed.length).toBe(2);
 
     expect(parsed[0].user).toEqual('root');
@@ -74,4 +57,14 @@ describe('parsePsOutput', () => {
     expect(parsed[1].pid).toEqual('2');
     expect(parsed[1].name).toEqual('[kthreadd]');
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     *  strict-local
+     * @format
+     */

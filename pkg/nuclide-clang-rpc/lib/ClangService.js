@@ -1,3 +1,58 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ClangCursorTypes = exports.ClangCursorToDeclarationTypes = undefined;
+exports.compile = compile;
+exports.getCompletions = getCompletions;
+exports.getDeclaration = getDeclaration;
+exports.getDeclarationInfo = getDeclarationInfo;
+exports.getRelatedSourceOrHeader = getRelatedSourceOrHeader;
+exports.getOutline = getOutline;
+exports.getLocalReferences = getLocalReferences;
+exports.formatCode = formatCode;
+exports.loadFilesFromCompilationDatabaseAndCacheThem = loadFilesFromCompilationDatabaseAndCacheThem;
+exports.loadFlagsFromCompilationDatabaseAndCacheThem = loadFlagsFromCompilationDatabaseAndCacheThem;
+exports.resetForSource = resetForSource;
+exports.reset = reset;
+exports.dispose = dispose;
+exports.setMemoryLimit = setMemoryLimit;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _ClangServerManager;
+
+function _load_ClangServerManager() {
+  return _ClangServerManager = _interopRequireDefault(require('./ClangServerManager'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,40 +60,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as ClangProcessService from './ClangProcessService';
-import type {
-  ClangCompileResult,
-  ClangCompletion,
-  ClangCursor,
-  ClangDeclaration,
-  ClangLocalReferences,
-  ClangOutlineTree,
-  ClangRequestSettings,
-  ClangFlags,
-  ClangServerSettings,
-} from './rpc-types';
-import type {ConnectableObservable} from 'rxjs';
-
-import {keyMirror} from 'nuclide-commons/collection';
-import {Observable} from 'rxjs';
-import {runCommand} from 'nuclide-commons/process';
-import ClangServerManager from './ClangServerManager';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-
-const serverManager = new ClangServerManager();
+const serverManager = new (_ClangServerManager || _load_ClangServerManager()).default();
 
 // Maps clang's cursor types to the actual declaration types: for a full list see
 // https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td
 //
 // Keep in sync with the clang Python binding (../fb/lib/python/clang/cindex.py)
 // The order of the keys matches the ordering in cindex.py.
-export const ClangCursorToDeclarationTypes = Object.freeze({
+const ClangCursorToDeclarationTypes = exports.ClangCursorToDeclarationTypes = Object.freeze({
   UNEXPOSED_DECL: '',
   STRUCT_DECL: 'Record',
   UNION_DECL: 'Record',
@@ -79,24 +112,13 @@ export const ClangCursorToDeclarationTypes = Object.freeze({
   OBJC_DYNAMIC_DECL: 'ObjCDynamic',
   CXX_ACCESS_SPEC_DECL: 'AccessSpec',
   OVERLOAD_CANDIDATE: 'Function',
-  MACRO_DEFINITION: 'Macro',
+  MACRO_DEFINITION: 'Macro'
 });
 
-export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
+const ClangCursorTypes = exports.ClangCursorTypes = (0, (_collection || _load_collection()).keyMirror)(ClangCursorToDeclarationTypes);
 
-async function getClangService(
-  src: NuclideUri,
-  contents: string,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-  blocking?: boolean,
-): Promise<?ClangProcessService> {
-  const server = serverManager.getClangServer(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-  );
+async function getClangService(src, contents, requestSettings, defaultSettings, blocking) {
+  const server = serverManager.getClangServer(src, contents, requestSettings, defaultSettings);
   if (!server.isReady()) {
     if (blocking) {
       await server.waitForReady();
@@ -116,69 +138,26 @@ async function getClangService(
  * It currently returns an Observable just to circumvent the 60s service timeout for Promises.
  * TODO(9519963): Stream back more detailed compile status message.
  */
-export function compile(
-  src: NuclideUri,
-  contents: string,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): ConnectableObservable<?ClangCompileResult> {
+function compile(src, contents, requestSettings, defaultSettings) {
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
-    const server = serverManager.getClangServer(
-      src,
-      contents,
-      requestSettings,
-      defaultSettings,
-      true,
-    );
+    const server = serverManager.getClangServer(src, contents, requestSettings, defaultSettings, true);
     if (!server.isDisposed()) {
       return server.compile(contents);
     }
   };
-  return Observable.fromPromise(doCompile()).publish();
+  return _rxjsBundlesRxMinJs.Observable.fromPromise(doCompile()).publish();
 }
 
-export async function getCompletions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-  tokenStartColumn: number,
-  prefix: string,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): Promise<?Array<ClangCompletion>> {
-  const service = await getClangService(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-  );
+async function getCompletions(src, contents, line, column, tokenStartColumn, prefix, requestSettings, defaultSettings) {
+  const service = await getClangService(src, contents, requestSettings, defaultSettings);
   if (service != null) {
-    return service.get_completions(
-      contents,
-      line,
-      column,
-      tokenStartColumn,
-      prefix,
-    );
+    return service.get_completions(contents, line, column, tokenStartColumn, prefix);
   }
 }
 
-export async function getDeclaration(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): Promise<?ClangDeclaration> {
-  const service = await getClangService(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-  );
+async function getDeclaration(src, contents, line, column, requestSettings, defaultSettings) {
+  const service = await getClangService(src, contents, requestSettings, defaultSettings);
   if (service != null) {
     return service.get_declaration(contents, line, column);
   }
@@ -187,82 +166,32 @@ export async function getDeclaration(
 // Fetches information for a declaration and all its parents.
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
-export async function getDeclarationInfo(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): Promise<?Array<ClangCursor>> {
-  const service = await getClangService(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-  );
+async function getDeclarationInfo(src, contents, line, column, requestSettings, defaultSettings) {
+  const service = await getClangService(src, contents, requestSettings, defaultSettings);
   if (service != null) {
     return service.get_declaration_info(contents, line, column);
   }
 }
 
-export async function getRelatedSourceOrHeader(
-  src: NuclideUri,
-  requestSettings: ?ClangRequestSettings,
-): Promise<?NuclideUri> {
-  return serverManager
-    .getClangFlagsManager()
-    .getRelatedSourceOrHeader(
-      src,
-      requestSettings || {compilationDatabase: null, projectRoot: null},
-    );
+async function getRelatedSourceOrHeader(src, requestSettings) {
+  return serverManager.getClangFlagsManager().getRelatedSourceOrHeader(src, requestSettings || { compilationDatabase: null, projectRoot: null });
 }
 
-export async function getOutline(
-  src: NuclideUri,
-  contents: string,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): Promise<?Array<ClangOutlineTree>> {
-  const service = await getClangService(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-    true,
-  );
+async function getOutline(src, contents, requestSettings, defaultSettings) {
+  const service = await getClangService(src, contents, requestSettings, defaultSettings, true);
   if (service != null) {
     return service.get_outline(contents);
   }
 }
 
-export async function getLocalReferences(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-  requestSettings: ?ClangRequestSettings,
-  defaultSettings?: ClangServerSettings,
-): Promise<?ClangLocalReferences> {
-  const service = await getClangService(
-    src,
-    contents,
-    requestSettings,
-    defaultSettings,
-    true,
-  );
+async function getLocalReferences(src, contents, line, column, requestSettings, defaultSettings) {
+  const service = await getClangService(src, contents, requestSettings, defaultSettings, true);
   if (service != null) {
     return service.get_local_references(contents, line, column);
   }
 }
 
-export async function formatCode(
-  src: NuclideUri,
-  contents: string,
-  cursor: number,
-  offset?: number,
-  length?: number,
-): Promise<{newCursor: number, formatted: string}> {
+async function formatCode(src, contents, cursor, offset, length) {
   const args = ['-style=file', `-assume-filename=${src}`, `-cursor=${cursor}`];
   if (offset != null) {
     args.push(`-offset=${offset}`);
@@ -272,26 +201,23 @@ export async function formatCode(
   }
   const binary = await getArcanistClangFormatBinary(src);
   const command = binary == null ? 'clang-format' : binary;
-  const stdout = await runCommand(command, args, {
-    input: contents,
+  const stdout = await (0, (_process || _load_process()).runCommand)(command, args, {
+    input: contents
   }).toPromise();
 
   // The first line is a JSON blob indicating the new cursor position.
   const newLine = stdout.indexOf('\n');
   return {
     newCursor: JSON.parse(stdout.substring(0, newLine)).Cursor,
-    formatted: stdout.substring(newLine + 1),
+    formatted: stdout.substring(newLine + 1)
   };
 }
 
-async function getArcanistClangFormatBinary(src: string): Promise<?string> {
+async function getArcanistClangFormatBinary(src) {
   try {
     // $FlowFB
     const arcService = require('../../fb-arcanist-rpc/lib/ArcanistService');
-    const [arcConfigDirectory, arcConfig] = await Promise.all([
-      arcService.findArcConfigDirectory(src),
-      arcService.readArcConfig(src),
-    ]);
+    const [arcConfigDirectory, arcConfig] = await Promise.all([arcService.findArcConfigDirectory(src), arcService.readArcConfig(src)]);
     if (arcConfigDirectory == null || arcConfig == null) {
       return null;
     }
@@ -299,10 +225,7 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
     if (lintClangFormatBinary == null) {
       return null;
     }
-    return nuclideUri.join(
-      await fsPromise.realpath(arcConfigDirectory),
-      lintClangFormatBinary,
-    );
+    return (_nuclideUri || _load_nuclideUri()).default.join((await (_fsPromise || _load_fsPromise()).default.realpath(arcConfigDirectory)), lintClangFormatBinary);
   } catch (err) {
     return null;
   }
@@ -310,28 +233,15 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
 
 // Read the provided database file, optionally associate it with the provided
 // flags file, and return an observable of the filenames it contains.
-export function loadFilesFromCompilationDatabaseAndCacheThem(
-  dbFile: string,
-  flagsFile: ?string,
-): ConnectableObservable<string> {
+function loadFilesFromCompilationDatabaseAndCacheThem(dbFile, flagsFile) {
   const flagsManager = serverManager.getClangFlagsManager();
-  return Observable.from(
-    flagsManager.loadFlagsFromCompilationDatabase(dbFile, flagsFile),
-  )
-    .flatMap(flagsMap => flagsMap.keys())
-    .publish();
+  return _rxjsBundlesRxMinJs.Observable.from(flagsManager.loadFlagsFromCompilationDatabase(dbFile, flagsFile)).flatMap(flagsMap => flagsMap.keys()).publish();
 }
 
 // Remark: this isn't really rpc-safe, the big databases can be > 1 GB.
-export async function loadFlagsFromCompilationDatabaseAndCacheThem(
-  dbFile: string,
-  flagsFile: ?string,
-): Promise<Map<string, ClangFlags>> {
+async function loadFlagsFromCompilationDatabaseAndCacheThem(dbFile, flagsFile) {
   const flagsManager = serverManager.getClangFlagsManager();
-  const flagHandles = await flagsManager.loadFlagsFromCompilationDatabase(
-    dbFile,
-    flagsFile,
-  );
+  const flagHandles = await flagsManager.loadFlagsFromCompilationDatabase(dbFile, flagsFile);
   const compilationFlags = new Map();
   for (const [src, handle] of flagHandles) {
     const flags = flagsManager.getFlags(handle);
@@ -346,21 +256,21 @@ export async function loadFlagsFromCompilationDatabaseAndCacheThem(
  * Kill the Clang server for a particular source file,
  * as well as all the cached compilation flags.
  */
-export function resetForSource(src: NuclideUri): void {
+function resetForSource(src) {
   serverManager.reset(src);
 }
 
 /**
  * Reset all servers
  */
-export function reset(): void {
+function reset() {
   serverManager.reset();
 }
 
-export function dispose(): void {
+function dispose() {
   serverManager.dispose();
 }
 
-export function setMemoryLimit(percent: number): void {
+function setMemoryLimit(percent) {
   serverManager.setMemoryLimit(percent);
 }
