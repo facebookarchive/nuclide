@@ -27,7 +27,7 @@ import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import RadioGroup from 'nuclide-commons-ui/RadioGroup';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {capitalize, shellParse} from 'nuclide-commons/string';
+import {capitalize, shellParseWithGlobs} from 'nuclide-commons/string';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {
@@ -534,10 +534,10 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             } else if (type === 'string') {
               stringValues.set(name, value);
             } else if (type === 'array' && itemType === 'string') {
-              stringArrayValues.set(name, shellParse(value));
+              stringArrayValues.set(name, shellParseWithGlobs(value));
             } else if (type === 'object') {
               const objectValue = {};
-              shellParse(value).forEach(variable => {
+              shellParseWithGlobs(value).forEach(variable => {
                 const [lhs, rhs] = variable.split('=');
                 objectValue[lhs] = rhs;
               });
