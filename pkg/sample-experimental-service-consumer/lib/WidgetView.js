@@ -36,9 +36,15 @@ export default class WidgetView {
     // TODO: Type action
     switch (action.type) {
       case 'increment':
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({count: this.state.count + 1});
         break;
       case 'decrement':
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({count: this.state.count - 1});
         break;
       default:

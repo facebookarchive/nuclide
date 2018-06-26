@@ -255,6 +255,9 @@ export default class DropdownResults extends React.Component<Props, State> {
       const optionsSize = this.props.options.length + 1;
       this.setState({
         selectedIndex:
+          // TODO: (wbinnssmith) T30771435 this setState depends on current state
+          // and should use an updater function rather than an object
+          // eslint-disable-next-line react/no-access-state-in-setstate
           ((this.state.selectedIndex + increment + optionsSize + 1) %
             optionsSize) -
           1,

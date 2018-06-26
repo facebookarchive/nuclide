@@ -163,6 +163,9 @@ export class TreeRootComponent extends React.Component<Props, State> {
   }
 
   _deselectDescendants(root: LazyTreeNode): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedKeys = this.state.selectedKeys;
 
     forEachCachedNode(root, node => {
@@ -187,6 +190,9 @@ export class TreeRootComponent extends React.Component<Props, State> {
   }
 
   _toggleNodeExpanded(node: LazyTreeNode, forceExpanded?: ?boolean): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const expandedKeys = this.state.expandedKeys;
     const keyAdded = toggleSetHas(expandedKeys, node.getKey(), forceExpanded);
 
@@ -200,6 +206,9 @@ export class TreeRootComponent extends React.Component<Props, State> {
   }
 
   _toggleNodeSelected(node: LazyTreeNode, forceSelected?: ?boolean): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedKeys = this.state.selectedKeys;
     toggleSetHas(selectedKeys, node.getKey(), forceSelected);
     this.setState({selectedKeys});
@@ -439,6 +448,9 @@ export class TreeRootComponent extends React.Component<Props, State> {
       this.removeStateForSubtree(root);
     });
 
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const expandedKeys = this.state.expandedKeys;
     roots.forEach(root => expandedKeys.add(root.getKey()));
 
@@ -488,7 +500,13 @@ export class TreeRootComponent extends React.Component<Props, State> {
   }
 
   removeStateForSubtree(root: LazyTreeNode): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const expandedKeys = this.state.expandedKeys;
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedKeys = this.state.selectedKeys;
 
     forEachCachedNode(root, node => {

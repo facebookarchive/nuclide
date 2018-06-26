@@ -143,6 +143,9 @@ export default class InputArea extends React.Component<Props, State> {
       }
       event.preventDefault();
       event.stopImmediatePropagation();
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       const historyIndex = Math.max(this.state.historyIndex - 1, -1);
       this.setState({historyIndex});
       if (historyIndex === -1) {

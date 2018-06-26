@@ -190,6 +190,9 @@ class SuggestionList extends React.Component<Props, State> {
 
   _moveSelectionDown(event) {
     if (this.state.selectedIndex < this._items.length - 1) {
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.setState({selectedIndex: this.state.selectedIndex + 1});
     } else {
       this._moveSelectionToTop();
@@ -201,6 +204,9 @@ class SuggestionList extends React.Component<Props, State> {
 
   _moveSelectionUp(event) {
     if (this.state.selectedIndex > 0) {
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.setState({selectedIndex: this.state.selectedIndex - 1});
     } else {
       this._moveSelectionToBottom();

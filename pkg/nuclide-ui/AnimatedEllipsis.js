@@ -31,6 +31,9 @@ export default class AnimatedEllipsis extends React.Component<Props, State> {
   componentDidMount(): void {
     this._disposables.add(
       Observable.interval(DOT_ANIMATION_INTERVAL).subscribe(_ =>
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({n: this.state.n + 1}),
       ),
     );

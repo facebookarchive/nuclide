@@ -193,6 +193,9 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
   }
 
   _switchToAndFrom(): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    /* eslint-disable react/no-access-state-in-setstate */
     this.setState({
       fromCurrentWorkingRoot: !this.state.fromCurrentWorkingRoot,
       fromPortString: this.state.toPortString,
@@ -200,6 +203,7 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
       fromPort: this.state.toPort,
       toPort: this.state.fromPort,
     });
+    /* eslint-enable */
   }
 
   _parsePort(text: string): number | void {

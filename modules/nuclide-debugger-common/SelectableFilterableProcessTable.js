@@ -173,6 +173,9 @@ export default class SelectableFilterableProcessTable extends React.Component<
       this.state.processList,
       filterText,
     );
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     let selectedProcess = this.state.selectedProcess;
     if (filteredProcesses.length === 1) {
       // Check if we've filtered down to one option and select if so

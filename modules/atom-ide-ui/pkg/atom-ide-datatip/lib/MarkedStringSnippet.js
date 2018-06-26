@@ -41,6 +41,9 @@ export default class MarkedStringSnippet extends React.Component<Props, State> {
       <div
         className="datatip-marked-text-editor-container"
         onClick={(e: SyntheticEvent<>) => {
+          // TODO: (wbinnssmith) T30771435 this setState depends on current state
+          // and should use an updater function rather than an object
+          // eslint-disable-next-line react/no-access-state-in-setstate
           this.setState({isExpanded: !this.state.isExpanded});
           e.stopPropagation();
         }}>

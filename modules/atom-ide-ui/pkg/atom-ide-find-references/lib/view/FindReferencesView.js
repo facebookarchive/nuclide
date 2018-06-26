@@ -62,8 +62,12 @@ export default class FindReferencesView extends React.Component<Props, State> {
     );
     this.setState({
       loading: false,
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      /* eslint-disable react/no-access-state-in-setstate */
       fetched: this.state.fetched + PAGE_SIZE,
       references: this.state.references.concat(next),
+      /* eslint-enable react/no-access-state-in-setstate */
     });
   }
 
@@ -81,6 +85,9 @@ export default class FindReferencesView extends React.Component<Props, State> {
   }
 
   _childClick(i: number) {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({selected: this.state.selected === i ? -1 : i});
   }
 

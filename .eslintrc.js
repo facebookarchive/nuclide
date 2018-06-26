@@ -387,6 +387,7 @@ module.exports = {
     'react/display-name': 0,
     'react/forbid-component-props:': 0,
     'react/forbid-prop-types': 1,
+    'react/no-access-state-in-setstate': 1,
     'react/no-array-index-key': 0,
     'react/no-children-prop': 0,
     'react/no-danger': 0,

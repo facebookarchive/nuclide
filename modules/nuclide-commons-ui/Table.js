@@ -286,6 +286,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             // orignal size, their original column widths are restored.
             const preferredColumnWidths = _calculatePreferredColumnWidths({
               currentWidths: this._calculateColumnWidths(),
+              // TODO: (wbinnssmith) T30771435 this setState depends on current state
+              // and should use an updater function rather than an object
+              // eslint-disable-next-line react/no-access-state-in-setstate
               tableWidth: this.state.tableWidth,
               minWidths: getMinWidths(this.props.columns),
             });

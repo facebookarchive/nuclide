@@ -175,6 +175,9 @@ export default class ChangedFilesList extends React.Component<Props, State> {
           })}
           onClick={() =>
             this.setState({
+              // TODO: (wbinnssmith) T30771435 this setState depends on current state
+              // and should use an updater function rather than an object
+              // eslint-disable-next-line react/no-access-state-in-setstate
               visiblePagesCount: this.state.visiblePagesCount + 1,
             })
           }
@@ -189,6 +192,9 @@ export default class ChangedFilesList extends React.Component<Props, State> {
               className="list-item"
               key={this.props.rootPath}
               onClick={() =>
+                // TODO: (wbinnssmith) T30771435 this setState depends on current state
+                // and should use an updater function rather than an object
+                // eslint-disable-next-line react/no-access-state-in-setstate
                 this.setState({isCollapsed: !this.state.isCollapsed})
               }>
               <span

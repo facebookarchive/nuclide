@@ -23,6 +23,9 @@ class HighlightedCodeExample extends React.Component<{}, {|count: number|}> {
   _addOneMore = () => {
     // $FlowIgnore
     ReactDOM.unstable_deferredUpdates(() => {
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.setState({count: this.state.count + 1});
     });
   };

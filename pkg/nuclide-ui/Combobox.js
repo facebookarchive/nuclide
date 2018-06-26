@@ -144,6 +144,9 @@ export class Combobox extends React.Component<Props, State> {
   receiveUpdate = (newOptions: Array<string>) => {
     const filteredOptions = this._getFilteredOptions(
       newOptions,
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.state.textInput,
     );
     this.setState({
@@ -246,6 +249,9 @@ export class Combobox extends React.Component<Props, State> {
     }
     this.requestUpdate(newText);
     const filteredOptions = this._getFilteredOptions(
+      // TODO: (wbinnssmith) T30771435 this setState depends on current state
+      // and should use an updater function rather than an object
+      // eslint-disable-next-line react/no-access-state-in-setstate
       this.state.options,
       newText,
     );
@@ -312,8 +318,12 @@ export class Combobox extends React.Component<Props, State> {
       {
         selectedIndex: Math.min(
           this.props.maxOptionCount - 1,
+          // TODO: (wbinnssmith) T30771435 this setState depends on current state
+          // and should use an updater function rather than an object
+          /* eslint-disable react/no-access-state-in-setstate */
           this.state.selectedIndex + 1,
           this.state.filteredOptions.length - 1,
+          /* eslint-enable react/no-access-state-in-setstate */
         ),
       },
       this._scrollSelectedOptionIntoViewIfNeeded,
@@ -323,6 +333,9 @@ export class Combobox extends React.Component<Props, State> {
   _handleMoveUp = () => {
     this.setState(
       {
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
         selectedIndex: Math.max(0, this.state.selectedIndex - 1),
       },
       this._scrollSelectedOptionIntoViewIfNeeded,

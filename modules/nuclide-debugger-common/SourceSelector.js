@@ -64,6 +64,9 @@ export class SourceSelector extends React.Component<Props, State> {
       observeProjectPathsAllFromSourcePathsService(
         (projectPaths: Array<SuggestedProjectPath>) => {
           const newSelectedSource = this._getNewlySelectedSource(
+            // TODO: (wbinnssmith) T30771435 this setState depends on current state
+            // and should use an updater function rather than an object
+            // eslint-disable-next-line react/no-access-state-in-setstate
             this.state.selectedSource,
             projectPaths,
             this.props.deserialize(),

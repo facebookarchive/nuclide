@@ -62,6 +62,9 @@ export class SourceFilePathsModal extends React.Component<
               onClick={() => {
                 this.state.currentPaths.splice(idx, 1);
                 this.setState({
+                  // TODO: (wbinnssmith) T30771435 this setState depends on current state
+                  // and should use an updater function rather than an object
+                  // eslint-disable-next-line react/no-access-state-in-setstate
                   currentPaths: this.state.currentPaths,
                 });
               }}
@@ -85,6 +88,9 @@ export class SourceFilePathsModal extends React.Component<
       this.state.currentPaths.push(text);
       nullthrows(this._newSourcePath).setText('');
       this.setState({
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
         currentPaths: this.state.currentPaths,
       });
     }
