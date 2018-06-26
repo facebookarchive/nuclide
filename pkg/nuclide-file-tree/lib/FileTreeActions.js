@@ -804,7 +804,7 @@ export default class FileTreeActions {
     }
   }
 
-  _openAndRevealDirectoryPath(path: ?string): void {
+  openAndRevealDirectoryPath(path: ?string): void {
     if (path != null) {
       this.revealNodeKey(FileTreeHelpers.dirPathToKey(path));
     }

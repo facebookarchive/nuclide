@@ -100,7 +100,7 @@ export default function registerCommands(
       },
       'tree-view:add-folder': () => {
         actions.openAddFolderDialog(filePath => {
-          actions.openAndRevealFilePath(filePath);
+          actions.openAndRevealDirectoryPath(filePath);
         });
       },
       'tree-view:collapse-directory': () => {
