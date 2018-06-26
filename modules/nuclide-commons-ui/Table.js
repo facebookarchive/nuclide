@@ -372,7 +372,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._tableBody.focus();
   }
 
-  componentWillReceiveProps(nextProps: Props<T>): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props<T>): void {
     // Did the columns change? If so, we need to recalculate the widths.
     const currentColumns = this.props.columns;
     const nextColumns = nextProps.columns;

@@ -161,7 +161,7 @@ export default class QuickSelectionComponent extends React.Component<
   /**
    * Private API
    */
-  componentWillReceiveProps(nextProps: Props): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     // Prevent clowniness:
     if (this.props.searchResultManager !== nextProps.searchResultManager) {
       throw new Error('quick-open: searchResultManager instance changed.');

@@ -87,7 +87,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._subscriptions.dispose();
   }
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     this.setState((state, props) => ({
       focusedPath: props.selectedPaths[props.selectedPaths.length - 1],
     }));

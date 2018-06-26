@@ -60,7 +60,7 @@ export default class RegExpFilter extends React.Component<Props, State> {
     this._currentValue = props.value;
   }
 
-  componentWillReceiveProps(props: Props): void {
+  UNSAFE_componentWillReceiveProps(props: Props): void {
     // We need to store this so that we can use it in the event handlers.
     this._currentValue = props.value;
   }

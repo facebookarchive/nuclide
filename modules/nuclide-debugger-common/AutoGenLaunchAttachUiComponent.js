@@ -250,13 +250,13 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     );
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     if (nextProps.debuggerTypeName !== this.props.debuggerTypeName) {
       this._deserializeDebuggerConfig(nextProps);
     }
   }
 
-  componentWillMount(): void {
+  UNSAFE_componentWillMount(): void {
     this._deserializeDebuggerConfig(this.props);
   }
 

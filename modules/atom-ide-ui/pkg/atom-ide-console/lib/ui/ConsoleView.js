@@ -179,7 +179,7 @@ export default class ConsoleView extends React.Component<Props, State> {
     return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     // If the messages were cleared, hide the notification.
     if (nextProps.displayableRecords.length === 0) {
       this._isScrolledNearBottom = true;

@@ -35,7 +35,7 @@ export class LockableHeight extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     if (this.props.isLocked !== nextProps.isLocked) {
       const lockedHeight = nextProps.isLocked ? this._currentHeight() : null;
       this.setState({lockedHeight});

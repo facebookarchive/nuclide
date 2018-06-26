@@ -46,7 +46,7 @@ export function highlightOnUpdate<
       this.showFlash = false;
     }
 
-    componentWillUpdate(nextProps: P, nextState: void): void {
+    UNSAFE_componentWillUpdate(nextProps: P, nextState: void): void {
       if (arePropsEqual(nextProps, this.props)) {
         // Skip if prop values didn't actually change.
         return;

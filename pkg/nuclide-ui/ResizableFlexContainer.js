@@ -56,7 +56,7 @@ export class ResizableFlexContainer extends React.Component<Props> {
     this._renderPanes();
   }
 
-  componentWillReceiveProps(newProps: Props): void {
+  UNSAFE_componentWillReceiveProps(newProps: Props): void {
     if (
       !arrayEqual(
         getChildrenFlexScales(this.props.children),

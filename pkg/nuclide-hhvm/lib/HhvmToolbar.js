@@ -91,7 +91,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
     });
   }
 
-  componentWillReceiveProps(nextProps: Object) {
+  UNSAFE_componentWillReceiveProps(nextProps: Object) {
     // Reset selected item to webserver if target is not launchable anymore.
     // TODO[jeffreytan]: this is ugly, refactor to make it more elegant.
     const store = this.props.projectStore;

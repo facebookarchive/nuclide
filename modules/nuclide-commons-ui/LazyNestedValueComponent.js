@@ -200,7 +200,9 @@ class ValueComponent extends React.Component<
     this.setState(this._getNextState(this.props));
   }
 
-  componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
+  UNSAFE_componentWillReceiveProps(
+    nextProps: LazyNestedValueComponentProps,
+  ): void {
     this.setState(this._getNextState(nextProps));
   }
 

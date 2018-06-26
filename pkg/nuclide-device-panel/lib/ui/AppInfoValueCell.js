@@ -47,7 +47,7 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     if (this.state.editingState === 'none') {
       this.setState({value: nextProps.data.value});
     }

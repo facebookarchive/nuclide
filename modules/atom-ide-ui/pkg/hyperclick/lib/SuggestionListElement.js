@@ -73,7 +73,7 @@ class SuggestionList extends React.Component<Props, State> {
     this._boundConfirm = this._confirm.bind(this);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const {suggestionList} = this.props;
     const suggestion = suggestionList.getSuggestion();
     // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true

@@ -78,7 +78,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     );
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     if (nextProps.node.isLoading !== this.props.node.isLoading) {
       if (this._loadingTimeout != null) {
         clearTimeout(this._loadingTimeout);

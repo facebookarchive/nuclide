@@ -65,7 +65,7 @@ export class DefinitionPreviewView extends React.Component<
     );
   }
 
-  componentWillReceiveProps(newProps: ContextElementProps): void {
+  UNSAFE_componentWillReceiveProps(newProps: ContextElementProps): void {
     if (newProps.definition != null) {
       const definition = newProps.definition;
       // The buffer always needs to point to the right file path, so create a new one with

@@ -98,7 +98,7 @@ export class WorkingSetSelectionComponent extends React.Component<
     this._disposables.dispose();
   }
 
-  componentWillUpdate(nextProps: Props, nextState: State): void {
+  UNSAFE_componentWillUpdate(nextProps: Props, nextState: State): void {
     const applicableLength = nextState.applicableDefinitions.length;
 
     if (applicableLength > 0) {

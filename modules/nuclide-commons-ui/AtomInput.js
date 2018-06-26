@@ -195,7 +195,7 @@ export class AtomInput extends React.Component<Props, State> {
     this._updateWidth();
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
     }

@@ -99,10 +99,10 @@ type Props = {
   onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
   path?: string,
   placeholderText?: string,
+  syncTextContents: boolean,
   /* eslint-enable react/no-unused-prop-types */
   readOnly: boolean,
   textBuffer?: TextBuffer,
-  syncTextContents: boolean,
   tabIndex: string,
   softWrapped: boolean,
   onConfirm?: () => mixed,
@@ -194,7 +194,7 @@ export class AtomTextEditor extends React.Component<Props, void> {
     }
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     if (
       nextProps.textBuffer !== this.props.textBuffer ||
       nextProps.readOnly !== this.props.readOnly

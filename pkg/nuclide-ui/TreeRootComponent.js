@@ -375,7 +375,7 @@ export class TreeRootComponent extends React.Component<Props, State> {
     return <div className="nuclide-tree-root">{children}</div>;
   }
 
-  componentWillMount(): void {
+  UNSAFE_componentWillMount(): void {
     const allKeys = [];
     const keyToNode = {};
 

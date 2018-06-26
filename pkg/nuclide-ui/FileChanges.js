@@ -153,7 +153,7 @@ export class HunkDiff extends React.Component<HunkProps> {
     this._createLineNumbers(editor);
   }
 
-  componentWillReceiveProps(nextProps: HunkProps): void {
+  UNSAFE_componentWillReceiveProps(nextProps: HunkProps): void {
     const {hunk, grammar} = nextProps;
     const changes = hunk.changes;
     const prevHunk = this.props.hunk;

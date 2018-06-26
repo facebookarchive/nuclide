@@ -32,7 +32,7 @@ export class Modal extends React.Component<Props> {
   _innerElement: ?HTMLElement;
   _panel: atom$Panel;
 
-  componentWillMount(): void {
+  UNSAFE_componentWillMount(): void {
     this._container = document.createElement('div');
     this._panel = atom.workspace.addModalPanel({
       item: this._container,

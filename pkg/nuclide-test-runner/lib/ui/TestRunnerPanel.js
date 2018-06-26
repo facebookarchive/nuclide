@@ -98,7 +98,7 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
     });
   }
 
-  componentWillReceiveProps(nextProps: Object) {
+  UNSAFE_componentWillReceiveProps(nextProps: Object) {
     const currSelectedIndex = this.state.selectedTestRunnerIndex;
     if (currSelectedIndex === -1 && nextProps.testRunners.length > 0) {
       this.setState({selectedTestRunnerIndex: 0});

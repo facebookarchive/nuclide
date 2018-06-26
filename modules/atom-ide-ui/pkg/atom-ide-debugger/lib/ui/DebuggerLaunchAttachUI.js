@@ -128,7 +128,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const host = nuclideUri.isRemote(this.props.connection)
       ? nuclideUri.getHostname(this.props.connection)
       : 'local';
@@ -149,7 +149,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
     });
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     const host = nuclideUri.isRemote(nextProps.connection)
       ? nuclideUri.getHostname(nextProps.connection)
       : 'local';
