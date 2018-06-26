@@ -175,7 +175,7 @@
     "eslint-plugin-jsx-a11y": "6.0.2",
     "eslint-plugin-prefer-object-spread": "1.2.1",
     "eslint-plugin-prettier": "2.3.1",
-    "eslint-plugin-react": "7.4.0",
+    "eslint-plugin-react": "7.9.1",
     "eslint-plugin-unicorn": "4.0.3",
     "flow-bin": "0.75.0",
     "jasmine-node": "1.14.5",
