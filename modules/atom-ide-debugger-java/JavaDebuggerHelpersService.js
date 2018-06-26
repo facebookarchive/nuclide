@@ -228,9 +228,6 @@ export async function getSdkVersionSourcePath(
   sdkVersion: string,
 ): Promise<?NuclideUri> {
   if (Number.isNaN(parseInt(sdkVersion, 10))) {
-    atom.notifications.addWarning(
-      'Unable to find Android Sdk Sources for version: ' + sdkVersion,
-    );
     return null;
   }
 
@@ -252,19 +249,7 @@ export async function getSdkVersionSourcePath(
     // try again
     if (await fsPromise.exists(sourcesDirectory)) {
       return sourcesDirectory;
-    } else {
-      atom.notifications.addWarning(
-        'sdkmanager was unable to install android sources. ' +
-          'Debugger will be missing Android Sdk Sources.',
-      );
     }
-  } else {
-    atom.notifications.addWarning(
-      'sdkmanager not found at: ' +
-        sdkManagerPath +
-        '. Please install sdkmanager and try again to get Android SDK source' +
-        ' information while debugging.',
-    );
   }
 
   return null;

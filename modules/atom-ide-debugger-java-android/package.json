@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
+    "atom-ide-ui": "0.7.1-dev",
     "atom-ide-debugger-java": "0.7.1-dev",
     "idx": "1.2.0",
     "nuclide-adb": "0.7.1-dev",
@@ -45,8 +46,5 @@
     "vscode-chrome-debug-core": "3.17.10",
     "vscode-debugadapter": "1.24.0",
     "vscode-nls": "2.0.2"
-  },
-  "package-deps": [
-    "atom-ide-ui"
-  ]
+  }
 }

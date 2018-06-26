@@ -19,6 +19,7 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {Device} from 'nuclide-debugger-common/types';
 
+import {AnalyticsEvents} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/constants';
 import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -30,6 +31,7 @@ import {
   getSourcePathClickSubscriptions,
 } from 'atom-ide-debugger-java/utils';
 import nullthrows from 'nullthrows';
+import {track} from 'nuclide-commons/analytics';
 import {
   getAdbAttachPortTargetInfo,
   launchAndroidServiceOrActivity,
@@ -187,6 +189,16 @@ async function _getAndroidSdkSourcePaths(
           targetUri,
         ).getSdkVersionSourcePath(sdkVersion)
       : null;
+  if (sdkSourcePath == null) {
+    atom.notifications.addWarning(
+      'Unable to find Android Sdk Sources for version: ' +
+        sdkVersion +
+        '. Install the Android Sdk Sources so that the debugger has access to them.',
+    );
+  }
+  track(AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
+    sdkSourcePath,
+  });
   const sdkSourcePathResolved =
     sdkSourcePath != null ? nuclideUri.getPath(sdkSourcePath) : null;
   return sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
