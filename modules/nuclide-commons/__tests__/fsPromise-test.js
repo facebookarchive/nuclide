@@ -12,6 +12,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
+import path from 'path';
 import temp from 'temp';
 import nuclideUri from '../nuclideUri';
 import fsPromise from '../fsPromise';
@@ -64,6 +65,80 @@ describe('fsPromise test suite', () => {
         expect(foundPath).toBe(null);
       })();
     });
+  });
+  describe('mv', () => {
+    let dirPath;
+    beforeEach(async () => {
+      dirPath = await generateFixture(
+        'move',
+        new Map([['foo/bar', 'bar content'], ['baz/biz', 'bar content']]),
+      );
+    });
+    test('Dest dir exists and clobber is false', async () => {
+      const source = nuclideUri.join(dirPath, 'foo');
+      const dest = nuclideUri.join(dirPath, 'baz');
+
+      await expect(
+        fsPromise.mv(source, dest, {mkdirp: true, clobber: false}),
+      ).rejects.toMatchObject({
+        message: 'Destination file exists',
+        path: dest,
+        code: 'EEXIST',
+      });
+    });
+    test('Dest dir exists and clobber is true', async () => {
+      const source = nuclideUri.join(dirPath, 'foo');
+      const dest = nuclideUri.join(dirPath, 'baz');
+
+      expect(
+        fsPromise.mv(source, dest, {mkdirp: true, clobber: true}),
+      ).rejects.toMatchObject({
+        message: expect.stringMatching(/directory not empty/),
+      });
+    });
+
+    test('Dest dir is the same as source and clobber is true', async () => {
+      const source = nuclideUri.join(dirPath, 'foo');
+      const dest = nuclideUri.join(dirPath, 'foo');
+
+      await fsPromise.mv(source, dest, {mkdirp: true, clobber: true});
+      expect(fs.existsSync(nuclideUri.join(dirPath, 'foo/bar'))).toBe(true);
+    });
+    test('Dest dir is the same as source and clobber is false', async () => {
+      const source = nuclideUri.join(dirPath, 'foo');
+      const dest = nuclideUri.join(dirPath, 'foo');
+
+      await expect(
+        fsPromise.mv(source, dest, {mkdirp: true, clobber: false}),
+      ).rejects.toMatchObject({
+        message: 'Destination file exists',
+        path: dest,
+        code: 'EEXIST',
+      });
+    });
+
+    if (process.platform === 'darwin' || process.platform === 'win32') {
+      test('Dest dir is case insenstively the same as source and clobber is true', async () => {
+        const source = nuclideUri.join(dirPath, 'foo');
+        const dest = nuclideUri.join(dirPath, 'Foo');
+
+        await fsPromise.mv(source, dest, {mkdirp: true, clobber: true});
+        expect(fs.existsSync(nuclideUri.join(dirPath, 'foo/bar'))).toBe(true);
+        expect(fs.existsSync(nuclideUri.join(dirPath, 'Foo/bar'))).toBe(true);
+      });
+      test('Dest dir is case insenstively the same as source and clobber is false', async () => {
+        const source = nuclideUri.join(dirPath, 'foo');
+        const dest = nuclideUri.join(dirPath, 'Foo');
+
+        await expect(
+          fsPromise.mv(source, dest, {mkdirp: true, clobber: false}),
+        ).rejects.toMatchObject({
+          message: 'Destination file exists',
+          path: dest,
+          code: 'EEXIST',
+        });
+      });
+    }
   });
 
   describe('findFurthestFile()', () => {
@@ -185,13 +260,11 @@ describe('fsPromise test suite', () => {
       fs.writeFileSync(pathToWriteFile, 'test');
       fs.chmodSync(pathToWriteFile, 0o700);
 
-      await (async () => {
-        await fsPromise.writeFileAtomic(pathToWriteFile, 'test2');
-        expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('test2');
-        const stat = fs.statSync(pathToWriteFile);
-        // eslint-disable-next-line no-bitwise
-        expect(stat.mode & 0o777).toEqual(0o700);
-      })();
+      await fsPromise.writeFileAtomic(pathToWriteFile, 'test2');
+      expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('test2');
+      const stat = fs.statSync(pathToWriteFile);
+      // eslint-disable-next-line no-bitwise
+      expect(stat.mode & 0o777).toEqual(0o700);
     });
 
     it('errors if file cannot be written', async () => {

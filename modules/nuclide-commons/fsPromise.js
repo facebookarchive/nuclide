@@ -424,11 +424,21 @@ export type MvOptions = {
  * The key difference between 'mv' and 'rename' is that 'mv' works across devices.
  * It's not uncommon to have temporary files in a different disk, for instance.
  */
-function mv(
+async function mv(
   sourcePath: string,
   destinationPath: string,
   options?: MvOptions = {},
 ): Promise<void> {
+  // mv-node fails to account for the case where a destination directory exists
+  // and `clobber` is false. This can result in the source directory getting
+  // deleted but the destination not getting written.
+  // https://github.com/andrewrk/node-mv/issues/30
+  if (options.clobber === false && (await exists(destinationPath))) {
+    const err: ErrnoError = new Error('Destination file exists');
+    err.code = 'EEXIST';
+    err.path = destinationPath;
+    throw err;
+  }
   return new Promise((resolve, reject) => {
     mvLib(sourcePath, destinationPath, options, error => {
       if (error) {

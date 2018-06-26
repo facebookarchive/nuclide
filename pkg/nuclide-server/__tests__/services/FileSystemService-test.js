@@ -279,7 +279,7 @@ describe('FileSystemService', () => {
         }
 
         invariant(err != null);
-        expect(err).toMatch('EEXIST');
+        expect(err.code).toMatch('EEXIST');
       })();
     });
   });
