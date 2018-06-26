@@ -14,6 +14,7 @@ import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
+import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
@@ -329,7 +330,17 @@ export default class ChangedFile extends React.Component<Props> {
           onChange={this._onCheckboxChange}
         />
       ) : null;
-    const relativePath = nuclideUri.relative(rootPath, filePath);
+    let relativePath = filePath;
+    try {
+      relativePath = nuclideUri.relative(rootPath, filePath);
+    } catch (err) {
+      getLogger('nuclide-ui').error(
+        'ChangedFile failed to get relative path for %s, %s\nDid the cwd change? ',
+        rootPath,
+        filePath,
+        err,
+      );
+    }
     return (
       <li
         data-name={displayPath}
