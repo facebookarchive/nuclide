@@ -71,7 +71,7 @@ class Subscription {
     try {
       this._observer.error(decodeError(this._message, error));
     } catch (e) {
-      logger.error(`Caught exception in Subscription.error: ${e.toString()}`);
+      logger.error('Caught exception in Subscription.error', e);
     }
   }
 
@@ -81,7 +81,7 @@ class Subscription {
       // TODO: consider implementing a rate limit
       this._totalBytes += bytes;
     } catch (e) {
-      logger.error(`Caught exception in Subscription.next: ${e.toString()}`);
+      logger.error('Caught exception in Subscription.next', e);
     }
   }
 
@@ -89,9 +89,7 @@ class Subscription {
     try {
       this._observer.complete();
     } catch (e) {
-      logger.error(
-        `Caught exception in Subscription.complete: ${e.toString()}`,
-      );
+      logger.error('Caught exception in Subscription.complete', e);
     }
   }
 
