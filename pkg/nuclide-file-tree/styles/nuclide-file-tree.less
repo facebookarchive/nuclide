@@ -251,3 +251,10 @@
   padding-top: 0;
   margin-top: 0;
 }
+
+// Override the One themes' negative margins which make the row too wide and
+// force the horizontal scrollbar always.
+// See https://github.com/atom/one-light-ui/blob/739a62d551183a464045bf08d9ca43dda3dc56c3/styles/config.less#L114
+.tree-view.tree-view.tree-view .project-root.project-root {
+  margin-right: 0;
+}
