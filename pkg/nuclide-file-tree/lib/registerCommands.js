@@ -182,11 +182,13 @@ function copyFullPath(event: Event): void {
 }
 
 function revealActiveFile(event: Event, actions: FileTreeActions): void {
-  let path = getElementFilePath(((event.target: any): HTMLElement));
+  let path = getElementFilePath(((event.target: any): HTMLElement), true);
 
   if (path == null) {
+    // If there's no path attached to the element element or active text edtior,
+    // check if the Currently active pane resembles a text editor.
     const paneItem = atom.workspace.getActivePaneItem();
-    // hacky, but covers at LEAST atom's TextEditor and ImageEditor
+    // hacky, but covers at LEAST ImageEditor
     if (paneItem != null && typeof paneItem.getPath === 'function') {
       path = paneItem.getPath();
     }
