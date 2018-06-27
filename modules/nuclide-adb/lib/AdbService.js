@@ -160,6 +160,10 @@ export async function getAPIVersion(serial: string): Promise<string> {
   return new Adb(serial).getAPIVersion().toPromise();
 }
 
+export async function getDeviceArchitecture(serial: string): Promise<string> {
+  return new Adb(serial).getDeviceArchitecture().toPromise();
+}
+
 export async function getInstalledPackages(
   serial: string,
 ): Promise<Array<string>> {
