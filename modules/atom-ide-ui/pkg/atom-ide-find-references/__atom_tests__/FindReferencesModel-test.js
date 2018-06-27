@@ -22,23 +22,23 @@ function range(startLine, startColumn, endLine, endColumn) {
   );
 }
 
-describe('FindReferencesModel', () => {
+describe.skip('FindReferencesModel', () => {
   let TEST1: string;
   let TEST2: string;
   const nullGrammar = atom.grammars.grammarForScopeName(
     'text.plain.null-grammar',
   );
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
-      const fixtureDir = nuclideUri.join(__dirname, 'fixtures');
+  beforeEach(async () => {
+    await (async () => {
+      const fixtureDir = nuclideUri.join(__dirname, '../__mocks__/fixtures');
       TEST1 = nuclideUri.join(fixtureDir, 'test1');
       TEST2 = nuclideUri.join(fixtureDir, 'test2');
-    });
+    })();
   });
 
-  it('should group references by file', () => {
-    waitsForPromise(async () => {
+  it('should group references by file', async () => {
+    await (async () => {
       const refs = [
         // These should be sorted in the final output.
         {uri: TEST1, name: 'test1', range: range(8, 0, 9, 1)},
@@ -79,11 +79,11 @@ describe('FindReferencesModel', () => {
       const res1 = await model.getFileReferences(0, 1);
       const res2 = await model.getFileReferences(1, 1);
       expect(res1.concat(res2)).toEqual(expectedResult);
-    });
+    })();
   });
 
-  it('should group overlapping references', () => {
-    waitsForPromise(async () => {
+  it('should group overlapping references', async () => {
+    await (async () => {
       // Adjacent blocks (including context) should get merged into a single group.
       const refs = [
         {uri: TEST1, name: 'test1', range: range(0, 0, 0, 1)},
@@ -124,11 +124,11 @@ describe('FindReferencesModel', () => {
           refGroups: [{references: refs.slice(5, 7), startLine: 0, endLine: 4}],
         },
       ]);
-    });
+    })();
   });
 
-  it('should hide bad files', () => {
-    waitsForPromise(async () => {
+  it('should hide bad files', async () => {
+    await (async () => {
       const refs = [
         {uri: TEST1, name: 'test1', range: range(0, 0, 0, 1)},
         {uri: 'bad', name: 'bad', range: range(1, 0, 1, 1)},
@@ -152,6 +152,6 @@ describe('FindReferencesModel', () => {
           refGroups: [{references: [refs[0]], startLine: 0, endLine: 1}],
         },
       ]);
-    });
+    })();
   });
 });
