@@ -43,17 +43,17 @@ export type SignatureHelpProvider = {
 
 export type SignatureHelp = {
   signatures: Array<Signature>,
-  activeSignature?: number,
-  activeParameter?: number,
+  activeSignature?: ?number,
+  activeParameter?: ?number,
 };
 
 export type Signature = {
   label: string,
-  documentation?: string,
-  parameters?: Array<SignatureParameter>,
+  documentation?: ?string,
+  parameters?: ?Array<SignatureParameter>,
 };
 
 export type SignatureParameter = {
   label: string,
-  documentation?: string,
+  documentation?: ?string,
 };
