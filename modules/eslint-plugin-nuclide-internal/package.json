@@ -10,7 +10,7 @@
     "test": "true"
   },
   "devDependencies": {
-    "babel-eslint": "8.2.3",
+    "babel-eslint": "8.2.5",
     "eslint": "4.9.0",
     "idx": "1.2.0",
     "resolve-from": "2.0.0",
