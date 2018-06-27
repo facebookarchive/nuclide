@@ -21,7 +21,7 @@ import {SimpleCache} from 'nuclide-commons/SimpleCache';
 // $FlowIgnore untyped import
 import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
-import {Expect} from 'nuclide-commons/expected';
+import {Expect, expectedEqual} from 'nuclide-commons/expected';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAdbServiceByNuclideUri} from './utils';
 
@@ -57,17 +57,15 @@ export function observeAndroidDevices(
             fetching = false;
           });
       })
-      .distinctUntilChanged((a, b) => {
-        if (a.isError && b.isError) {
-          return a.error.message === b.error.message;
-        } else if (a.isPending && b.isPending) {
-          return true;
-        } else if (!a.isError && !b.isError && !a.isPending && !b.isPending) {
-          return arrayEqual(a.value, b.value, shallowEqual);
-        } else {
-          return false;
-        }
-      })
+      .startWith(Expect.pendingValue([]))
+      .distinctUntilChanged((a, b) =>
+        expectedEqual(
+          a,
+          b,
+          (v1, v2) => arrayEqual(v1, v2, shallowEqual),
+          (e1, e2) => e1.message === e2.message,
+        ),
+      )
       .publishReplay(1)
       .refCount();
   });

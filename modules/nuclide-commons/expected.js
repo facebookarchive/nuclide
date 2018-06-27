@@ -21,6 +21,7 @@ type ExpectedError<T> = {
   isPending: false,
   error: Error,
   getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
 };
 
 type ExpectedValue<T> = {
@@ -28,6 +29,7 @@ type ExpectedValue<T> = {
   isPending: false,
   value: T,
   getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
 };
 
 type ExpectedPendingValue<T> = {
@@ -35,6 +37,7 @@ type ExpectedPendingValue<T> = {
   isPending: true,
   value: T,
   getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
 };
 
 export type Expected<T> =
@@ -51,6 +54,9 @@ export class Expect {
       getOrDefault(def: T): T {
         return def;
       },
+      map<U>(fn: T => U): Expected<U> {
+        return Expect.error(error);
+      },
     };
   }
 
@@ -61,6 +67,9 @@ export class Expect {
       value,
       getOrDefault(def: T): T {
         return this.value;
+      },
+      map<U>(fn: T => U): Expected<U> {
+        return Expect.value(fn(value));
       },
     };
   }
@@ -73,6 +82,26 @@ export class Expect {
       getOrDefault(def: T): T {
         return this.value;
       },
+      map<U>(fn: T => U): Expected<U> {
+        return Expect.pendingValue(fn(value));
+      },
     };
+  }
+}
+
+export function expectedEqual<T>(
+  a: Expected<T>,
+  b: Expected<T>,
+  valueEqual: (valueA: T, valueB: T) => boolean,
+  errorEqual: (errorA: Error, errorB: Error) => boolean,
+): boolean {
+  if (a.isError && b.isError) {
+    return errorEqual(a.error, b.error);
+  } else if (a.isPending && b.isPending) {
+    return true;
+  } else if (!a.isError && !b.isError && !a.isPending && !b.isPending) {
+    return valueEqual(a.value, b.value);
+  } else {
+    return false;
   }
 }
