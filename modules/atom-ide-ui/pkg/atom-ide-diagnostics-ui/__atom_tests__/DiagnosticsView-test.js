@@ -47,7 +47,7 @@ describe('DiagnosticsView', () => {
 
     const filterComponent = diagnosticsView._filterComponent;
     invariant(filterComponent != null);
-    const filterFocusSpy = spyOn(filterComponent, 'focus');
+    const filterFocusSpy = jest.spyOn(filterComponent, 'focus');
 
     const diagnosticsTableTarget = workspaceEl.querySelector(
       '.atom-ide-filterable',

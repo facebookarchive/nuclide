@@ -28,5 +28,8 @@ module.exports = {
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.node.js'),
   setupFiles: [p('jest/setup.js')],
+  moduleNameMapper: {
+    electron: p('jest/__mocks__/emptyObject.js'),
+  },
   testPathIgnorePatterns: ['/node_modules/'],
 };
