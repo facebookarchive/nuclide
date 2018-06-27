@@ -163,6 +163,18 @@ export class RemoteFileSystemServiceHandler {
     }
   }
 
+  async rename(
+    oldUri: string,
+    newUri: string,
+    options: filesystem_types.RenameOpt,
+  ): Promise<void> {
+    try {
+      await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
   dispose() {
     this._fileChangeWatcher.close();
   }
