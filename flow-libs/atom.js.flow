@@ -1584,6 +1584,10 @@ declare class atom$GrammarRegistry {
   autoAssignLanguageMode(buffer: atom$TextBuffer): void,
   assignLanguageMode(buffer: atom$TextBuffer, languageId: string): void,
 
+  // Extended
+  getGrammarScore(grammar: atom$Grammar, filePath: string, contents?: string): number,
+  forEachGrammar(callback: (grammar: atom$Grammar) => mixed): void,
+
   // Private API
   clear(): IDisposable,
 }
