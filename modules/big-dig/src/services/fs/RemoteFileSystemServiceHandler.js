@@ -19,11 +19,47 @@ import {getLogger} from 'log4js';
  * Create a service handler class to manage server methods
  */
 export class RemoteFileSystemServiceHandler {
+  _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
+  _fileChangeWatcher: any;
   _logger: log4js$Logger;
 
-  // We need to initialize necessary server handler state later
   constructor() {
+    this._fileChangeEvents = [];
     this._logger = getLogger('fs-thrift-server-handler');
+  }
+
+  watch(uri: string, options: filesystem_types.WatchOpt): void {
+    this._logger.info('--------- start to watch: %s', uri);
+    this._logger.info(options);
+    try {
+      this._fileChangeWatcher = fs.watch(uri, options, (eventType, fname) => {
+        const event = new filesystem_types.FileChangeEvent();
+        if (eventType === 'change') {
+          event.eventType = filesystem_types.FileChangeEventType.CHANGE;
+        } else if (eventType === 'rename') {
+          event.eventType = filesystem_types.FileChangeEventType.RENAME;
+        } else {
+          event.eventType = filesystem_types.FileChangeEventType.UNKNOWN;
+        }
+        event.fname = fname;
+        this._fileChangeEvents.push(event);
+      });
+    } catch (err) {
+      throw this._createThriftError(err);
+    }
+  }
+
+  pollFileChanges(): Array<filesystem_types.FileChangeEvent> {
+    let count = this._fileChangeEvents.length;
+    const retEventChangeList = [];
+    try {
+      while (count--) {
+        retEventChangeList.push(this._fileChangeEvents.shift());
+      }
+      return retEventChangeList;
+    } catch (err) {
+      throw this._createThriftError(err);
+    }
   }
 
   async createDirectory(uri: string): Promise<void> {
@@ -108,5 +144,9 @@ export class RemoteFileSystemServiceHandler {
     error.message =
       filesystem_types.ERROR_MAP[filesystem_types.ErrorCode[err.code]];
     return error;
+  }
+
+  dispose() {
+    this._fileChangeWatcher.close();
   }
 }

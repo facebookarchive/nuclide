@@ -40,6 +40,12 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
       return;
     }
     this._server = thrift.createServer(RemoteFileSystemService, {
+      watch: (uri, options) => {
+        return this._serviceHandler.watch(uri, options);
+      },
+      pollFileChanges: () => {
+        return this._serviceHandler.pollFileChanges();
+      },
       createDirectory: uri => {
         return this._serviceHandler.createDirectory(uri);
       },

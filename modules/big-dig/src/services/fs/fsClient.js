@@ -18,6 +18,8 @@ import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import {getLogger} from 'log4js';
 
+const POLLING_INTERVAL_MS = 3000;
+
 /**
  * Wrapper class of raw thrift client which provide more methods, e.g. close()
  * e.g. initialze(), close() etc.
@@ -27,10 +29,12 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
   _client: thrift.client;
   _options: createThriftClientOptions;
   _logger: log4js$Logger;
+  _pollingInterval: any;
 
   constructor(options: createThriftClientOptions) {
     this._options = options;
     this._logger = getLogger('fs-thrift-client');
+    this._pollingInterval = null;
   }
 
   async initialize(): Promise<void> {
@@ -56,6 +60,34 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
       RemoteFileSystemService,
       this._connection,
     );
+  }
+
+  startPolling() {
+    this.pollFileChanges();
+    this._pollingInterval = setInterval(
+      () => this.pollFileChanges(),
+      POLLING_INTERVAL_MS,
+    );
+  }
+
+  async watch(path: string, options: filesystem_types.WatchOpt): Promise<void> {
+    const watchOpts = options || {recursive: true, excludes: []};
+    try {
+      return this._client.watch(path, watchOpts);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async pollFileChanges(): Promise<Array<filesystem_types.FileChangeEvent>> {
+    try {
+      const result = await this._client.pollFileChanges();
+      this._logger.info('-- Received remote file chagnes: ');
+      this._logger.info(result);
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 
   mkdir(path: string): Promise<void> {
@@ -85,6 +117,7 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
   close() {
     this._logger.info('Close remote file system thrift service client...');
     this._connection.end();
+    clearInterval(this._pollingInterval);
   }
 }
 
@@ -94,7 +127,12 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
 export async function createThriftClient(
   options: createThriftClientOptions,
 ): Promise<RemoteFileSystemClient> {
-  const client = new RemoteFileSystemClient(options);
-  await client.initialize();
-  return client;
+  try {
+    const client = new RemoteFileSystemClient(options);
+    await client.initialize();
+    return client;
+  } catch (err) {
+    getLogger().error('Failed to created remote file system thrift client!');
+    throw err;
+  }
 }
