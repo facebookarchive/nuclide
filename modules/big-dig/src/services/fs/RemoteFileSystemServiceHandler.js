@@ -19,6 +19,7 @@ import {
   convertToThriftFileStat,
   genWatchExcludedExpressions,
   createThriftError,
+  createThriftErrorWithCode,
 } from './converter';
 
 const commonWatchIgnoredExpressions = [
@@ -170,6 +171,25 @@ export class RemoteFileSystemServiceHandler {
   ): Promise<void> {
     try {
       await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async copy(
+    source: string,
+    destination: string,
+    options: filesystem_types.CopyOpt,
+  ): Promise<void> {
+    try {
+      const {overwrite} = options;
+      if (!overwrite && (await fsPromise.exists(destination))) {
+        throw createThriftErrorWithCode(filesystem_types.ErrorCode.EEXIST, {
+          source,
+          destination,
+        });
+      }
+      await fsPromise.copy(source, destination);
     } catch (err) {
       throw createThriftError(err);
     }

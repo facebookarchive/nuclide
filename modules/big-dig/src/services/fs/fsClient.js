@@ -98,6 +98,14 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     return this._client.rename(oldUri, newUri, options);
   }
 
+  copy(
+    source: string,
+    destination: string,
+    options: filesystem_types.CopyOpt,
+  ): Promise<void> {
+    return this._client.copy(source, destination, options);
+  }
+
   getOptions(): createThriftClientOptions {
     return this._options;
   }

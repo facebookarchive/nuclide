@@ -47,6 +47,7 @@ const map<ErrorCode, string> ERROR_MAP = {
 exception Error {
   1: ErrorCode code,
   2: string message,
+  3: string details, /* Json.stringify */
 }
 
 /**

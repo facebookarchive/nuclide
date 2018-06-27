@@ -56,12 +56,16 @@ var Error = module.exports.Error = function(args) {
   this.name = "Error";
   this.code = null;
   this.message = null;
+  this.details = null;
   if (args) {
     if (args.code !== undefined && args.code !== null) {
       this.code = args.code;
     }
     if (args.message !== undefined && args.message !== null) {
       this.message = args.message;
+    }
+    if (args.details !== undefined && args.details !== null) {
+      this.details = args.details;
     }
   }
 };
@@ -94,6 +98,13 @@ Error.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.details = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -113,6 +124,11 @@ Error.prototype.write = function(output) {
   if (this.message !== null && this.message !== undefined) {
     output.writeFieldBegin('message', Thrift.Type.STRING, 2);
     output.writeString(this.message);
+    output.writeFieldEnd();
+  }
+  if (this.details !== null && this.details !== undefined) {
+    output.writeFieldBegin('details', Thrift.Type.STRING, 3);
+    output.writeString(this.details);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

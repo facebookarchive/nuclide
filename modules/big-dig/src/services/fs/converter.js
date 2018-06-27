@@ -55,10 +55,32 @@ export function genWatchExcludedExpressions(
   });
 }
 
-export function createThriftError(err: Object): filesystem_types.Error {
+/**
+ * Create Thrift Error based on raw error object and more `details` (optional
+ * argument, default is empty object)
+ */
+export function createThriftError(
+  err: Object,
+  details: Object = {},
+): filesystem_types.Error {
   const error = new filesystem_types.Error();
   error.code = err.code;
   error.message =
     filesystem_types.ERROR_MAP[filesystem_types.ErrorCode[err.code]];
+  error.details = JSON.stringify(details);
+  return error;
+}
+
+/**
+ * Create Thrift Error based on given known Thrift ErrorCode and details
+ */
+export function createThriftErrorWithCode(
+  errorCode: filesystem_types.ErrorCode,
+  details: Object = {},
+): filesystem_types.Error {
+  const error = new filesystem_types.Error();
+  error.code = errorCode;
+  error.message = filesystem_types.ERROR_MAP[errorCode];
+  error.details = JSON.stringify(details);
   return error;
 }
