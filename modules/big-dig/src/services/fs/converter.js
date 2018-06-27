@@ -64,10 +64,16 @@ export function createThriftError(
   details: Object = {},
 ): filesystem_types.Error {
   const error = new filesystem_types.Error();
-  error.code = err.code;
-  error.message =
-    filesystem_types.ERROR_MAP[filesystem_types.ErrorCode[err.code]];
+  const rawErrorCode = err.code;
+  const thriftErrorCode = filesystem_types.ErrorCode[rawErrorCode];
   error.details = JSON.stringify(details);
+  if (rawErrorCode != null && thriftErrorCode != null) {
+    error.code = thriftErrorCode;
+    error.message = filesystem_types.ERROR_MAP[thriftErrorCode];
+    return error;
+  }
+  error.code = filesystem_types.ErrorCode.EUNKNOWN;
+  error.message = err.message || 'Unknow error type';
   return error;
 }
 

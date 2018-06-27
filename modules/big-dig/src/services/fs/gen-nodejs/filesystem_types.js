@@ -37,7 +37,8 @@ ttypes.ErrorCode = {
   'ENOSPC' : 28,
   'EROFS' : 30,
   'ENOTEMPTY' : 39,
-  'ENOTSUP' : 95
+  'ENOTSUP' : 95,
+  'EUNKNOWN' : 97
 };
 ttypes.FileChangeEventType = {
   'UNKNOWN' : 1,

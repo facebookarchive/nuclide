@@ -24,6 +24,7 @@ enum ErrorCode {
   EROFS     = 30,
   ENOTEMPTY = 39,
   ENOTSUP   = 95,
+  EUNKNOWN  = 97,
 }
 
 const map<ErrorCode, string> ERROR_MAP = {
