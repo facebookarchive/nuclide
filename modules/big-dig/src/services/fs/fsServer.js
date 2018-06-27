@@ -67,6 +67,9 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
       copy: (source, destination, options) => {
         return this._serviceHandler.copy(source, destination, options);
       },
+      deletePath: (uri, options) => {
+        return this._serviceHandler.deletePath(uri, options);
+      },
     });
     this._server.on('error', error => {
       throw error;

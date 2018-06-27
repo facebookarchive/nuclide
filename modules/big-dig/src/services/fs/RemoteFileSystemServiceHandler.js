@@ -11,6 +11,7 @@
  */
 
 import fs from 'fs';
+import rimraf from 'rimraf';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
@@ -189,6 +190,34 @@ export class RemoteFileSystemServiceHandler {
         });
       }
       await fsPromise.copy(source, destination);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async deletePath(
+    uri: string,
+    options: filesystem_types.DeleteOpt,
+  ): Promise<void> {
+    try {
+      if (options.recursive) {
+        return new Promise((resolve, reject) => {
+          rimraf(uri, {disableGlobs: true}, (err, result) => {
+            if (err == null) {
+              resolve();
+            } else {
+              reject(createThriftError(err));
+            }
+          });
+        });
+      } else {
+        const stats = await fsPromise.lstat(uri);
+        if (stats.isDirectory()) {
+          await fsPromise.rmdir(uri);
+        } else {
+          await fsPromise.unlink(uri);
+        }
+      }
     } catch (err) {
       throw createThriftError(err);
     }
