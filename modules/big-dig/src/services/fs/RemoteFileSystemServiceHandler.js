@@ -44,6 +44,16 @@ export class RemoteFileSystemServiceHandler {
     }
   }
 
+  // Always returns a Buffer
+  async readFile(uri: string): Promise<Buffer> {
+    try {
+      const contents = await fsPromise.readFile(uri);
+      return contents;
+    } catch (err) {
+      throw this._createThriftError(err);
+    }
+  }
+
   _toFileStat(statData: fs.Stats): filesystem_types.FileStat {
     const {size, atime, mtime, ctime} = statData;
     const fileStat = new filesystem_types.FileStat();

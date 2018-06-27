@@ -66,6 +66,10 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     return this._client.stat(path);
   }
 
+  readFile(path: string): Promise<Buffer> {
+    return this._client.readFile(path);
+  }
+
   getOptions(): createThriftClientOptions {
     return this._options;
   }
