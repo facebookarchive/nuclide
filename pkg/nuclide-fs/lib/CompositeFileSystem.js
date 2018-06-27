@@ -176,6 +176,16 @@ export class CompositeFileSystem implements FileSystem {
     return this._rootFs.copy(from, to);
   }
 
+  symlink(
+    source: NuclideUri,
+    target: NuclideUri,
+    type?: string,
+  ): Promise<void> {
+    rejectArchivePaths(source, 'symlink');
+    rejectArchivePaths(target, 'symlink');
+    return this._rootFs.symlink(source, target, type);
+  }
+
   rimraf(fullPath: NuclideUri): Promise<void> {
     rejectArchivePaths(fullPath, 'rimraf');
     return this._rootFs.rimraf(fullPath);

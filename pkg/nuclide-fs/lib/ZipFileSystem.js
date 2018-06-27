@@ -171,6 +171,14 @@ export class ZipFileSystem implements FileSystem {
     return rejectWrite();
   }
 
+  symlink(
+    source: NuclideUri,
+    target: NuclideUri,
+    type?: string,
+  ): Promise<void> {
+    return rejectWrite();
+  }
+
   rimraf(path: NuclideUri): Promise<void> {
     return rejectWrite();
   }

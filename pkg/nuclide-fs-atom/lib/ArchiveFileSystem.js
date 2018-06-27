@@ -93,6 +93,14 @@ export class ArchiveFileSystem implements FileSystem {
     return this._fs.copy(from, to);
   }
 
+  symlink(
+    source: NuclideUri,
+    target: NuclideUri,
+    type?: string,
+  ): Promise<void> {
+    return this._fs.symlink(source, target, type);
+  }
+
   rimraf(path: NuclideUri): Promise<void> {
     return this._fs.rimraf(path);
   }

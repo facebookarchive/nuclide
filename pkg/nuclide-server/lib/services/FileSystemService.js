@@ -202,11 +202,15 @@ export async function copy(
   sourcePath: NuclideUri,
   destinationPath: NuclideUri,
 ): Promise<boolean> {
-  const isExistingFile = await ROOT_FS.exists(destinationPath);
-  if (isExistingFile) {
-    return false;
+  try {
+    await ROOT_FS.copy(sourcePath, destinationPath);
+  } catch (err) {
+    if (err.code === 'EEXIST') {
+      // expected if the targetPath already exists
+      return false;
+    }
+    throw err;
   }
-  await ROOT_FS.copy(sourcePath, destinationPath);
   // TODO: May need to move into ROOT_FS if future filesystems support writing.
   await fsPromise.copyFilePermissions(sourcePath, destinationPath);
   return true;
@@ -239,6 +243,30 @@ export async function copyDir(
   );
   // Are all the resulting booleans true?
   return didCopyAll.every(b => b);
+}
+
+/**
+ * Runs the equivalent of `ln -s sourcePath targetPath`
+ * `type` is an argument particular to Windows platforms, and will be ignored
+ * on any others.
+ * @return true if the operation was successful; false if it wasn't.
+ */
+export async function symlink(
+  sourcePath: NuclideUri,
+  targetPath: NuclideUri,
+  type?: 'dir' | 'file' | 'junction',
+): Promise<boolean> {
+  try {
+    await ROOT_FS.symlink(sourcePath, targetPath, type);
+  } catch (err) {
+    if (err.code === 'EEXIST') {
+      // expected if the targetPath already exists
+      return false;
+    }
+    throw err;
+  }
+  await fsPromise.copyFilePermissions(sourcePath, targetPath);
+  return true;
 }
 
 /**

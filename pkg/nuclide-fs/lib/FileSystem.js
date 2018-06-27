@@ -51,6 +51,7 @@ export interface FileSystem {
   realpath(path: NuclideUri): Promise<NuclideUri>;
   move(from: NuclideUri, to: NuclideUri): Promise<void>;
   copy(from: NuclideUri, to: NuclideUri): Promise<void>;
+  symlink(source: NuclideUri, target: NuclideUri, type?: string): Promise<void>;
   rimraf(path: NuclideUri): Promise<void>;
   unlink(path: NuclideUri): Promise<void>;
   readFile(path: NuclideUri, options?: ReadOptions): Promise<Buffer>;

@@ -129,6 +129,14 @@ export class FsFileSystem implements FileSystem {
     return fsPromise.copy(sourcePath, destinationPath);
   }
 
+  symlink(
+    source: NuclideUri,
+    target: NuclideUri,
+    type?: string,
+  ): Promise<void> {
+    return fsPromise.symlink(source, target, type);
+  }
+
   rimraf(path: NuclideUri): Promise<void> {
     return fsPromise.rimraf(path);
   }
