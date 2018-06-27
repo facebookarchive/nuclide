@@ -110,6 +110,11 @@ function tokensToHtml(tokens: Array<HighlightedToken>): string {
   return html;
 }
 
+/**
+ * Ready-to-render component for highlighted code.
+ * Can be used with React's experimental AsyncMode component for
+ * asynchronous highlighting.
+ */
 export function HighlightedCode({
   grammar,
   code,
@@ -120,11 +125,6 @@ export function HighlightedCode({
   code: string,
   className?: string,
 }): React.Node {
-  const lines = code.split('\n');
-  // This is really hacky but we need a way to pass the parsed rule stack from one line to the next.
-  // We'll give each component a shared array of rule stacks that can be written / read from.
-  // React needs to render each line in order to make this work (but this assumption seems safe).
-  const ruleStacks = new Array(lines.length);
   return (
     <pre
       className={classnames(
@@ -135,20 +135,39 @@ export function HighlightedCode({
       tabIndex={-1}
       {...otherProps}>
       <code>
-        {lines.map((line, i) => {
-          return (
-            <HighlightedLine
-              key={i}
-              grammar={grammar}
-              line={line}
-              lineNumber={i}
-              ruleStacks={ruleStacks}
-            />
-          );
-        })}
+        <HighlightedLines grammar={grammar} code={code} />
       </code>
     </pre>
   );
+}
+
+/**
+ * Renders only the raw highlighted tokens used in HighlightedCode.
+ * (you'll need to provide the styling yourself.)
+ */
+export function HighlightedLines({
+  grammar,
+  code,
+}: {
+  grammar: atom$Grammar,
+  code: string,
+}): React.Node {
+  const lines = code.split('\n');
+  // This is really hacky but we need a way to pass the parsed rule stack from one line to the next.
+  // We'll give each component a shared array of rule stacks that can be written / read from.
+  // React needs to render each line in order to make this work (but this assumption seems safe).
+  const ruleStacks = new Array(lines.length);
+  return lines.map((line, i) => {
+    return (
+      <HighlightedLine
+        key={i}
+        grammar={grammar}
+        line={line}
+        lineNumber={i}
+        ruleStacks={ruleStacks}
+      />
+    );
+  });
 }
 
 function HighlightedLine({grammar, line, lineNumber, ruleStacks}): React.Node {
