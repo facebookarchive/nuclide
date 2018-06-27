@@ -61,7 +61,7 @@ export function startTunnelingAdb(
       .catch(e => {
         getLogger('nuclide-adb').error(e);
         track('nuclide-adb:tunneling:error', {host: uri, error: e});
-        return Observable.empty();
+        throw e;
       })
       .publishReplay(1);
 
