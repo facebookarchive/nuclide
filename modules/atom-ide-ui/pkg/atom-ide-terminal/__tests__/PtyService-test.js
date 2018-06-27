@@ -31,8 +31,8 @@ describe('PtyService', () => {
       runner = new LocalRunner();
     });
 
-    it('adds numbers in bash', () => {
-      waitsForPromise(async () => {
+    it('adds numbers in bash', async () => {
+      await (async () => {
         invariant(ptyInfo.command != null);
         ptyInfo.command.file = '/bin/bash';
         ptyInfo.command.args = ['--norc', '-c', 'echo $((1 + 1))'];
@@ -40,7 +40,7 @@ describe('PtyService', () => {
         const result = await runner.promise;
         expect(result.output.trim()).toBe('2');
         expect(result.code).toBe(0);
-      });
+      })();
     });
   });
 });

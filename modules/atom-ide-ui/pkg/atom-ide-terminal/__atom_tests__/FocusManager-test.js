@@ -19,9 +19,9 @@ describe('LastItemManager', () => {
     const b = {};
     const c = {};
     const pane = new FakePane([a, b, c]);
-    spyOn(atom.workspace, 'paneForItem').andCallFake(
-      item => (pane.hasItem(item) ? pane : null),
-    );
+    jest
+      .spyOn(atom.workspace, 'paneForItem')
+      .mockImplementation(item => (pane.hasItem(item) ? pane : null));
 
     // Verify initial state.
     const manager = new LastItemManager();
