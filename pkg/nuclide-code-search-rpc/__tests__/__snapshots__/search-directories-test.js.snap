@@ -1,0 +1,348 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Remote Atom Search by directory Can execute a case sensitive search 1`] = `
+Array [
+  Object {
+    "filePath": "file1.js",
+    "matches": Array [
+      Object {
+        "lineText": "        console.error(\\"hello world!\\");",
+        "lineTextOffset": 0,
+        "matchText": "hello world",
+        "range": Array [
+          Array [
+            3,
+            23,
+          ],
+          Array [
+            3,
+            34,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Can execute a search of subdirectories. 1`] = `
+Array [
+  Object {
+    "filePath": "dir2/file.txt",
+    "matches": Array [
+      Object {
+        "lineText": "console.log(\\"Hello World!\\");",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            0,
+            13,
+          ],
+          Array [
+            0,
+            24,
+          ],
+        ],
+      },
+    ],
+  },
+  Object {
+    "filePath": "dir3/file.txt",
+    "matches": Array [
+      Object {
+        "lineText": "console.log(\\"Hello World!\\");",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            0,
+            13,
+          ],
+          Array [
+            0,
+            24,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Does not crash with no results 1`] = `Array []`;
+
+exports[`Remote Atom Search by directory Git repo: should ignore untracked files or files listed in .gitignore 1`] = `
+Array [
+  Object {
+    "filePath": "tracked.txt",
+    "matches": Array [
+      Object {
+        "lineText": "Hello World!",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            0,
+            0,
+          ],
+          Array [
+            0,
+            11,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Hg repo: should ignore untracked files or files listed in .gitignore 1`] = `
+Array [
+  Object {
+    "filePath": "tracked.txt",
+    "matches": Array [
+      Object {
+        "lineText": "Hello World!",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            0,
+            0,
+          ],
+          Array [
+            0,
+            11,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Should include multiple results matching on the same line 1`] = `
+Array [
+  Object {
+    "filePath": "foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "const foo = require(\\"foo\\");",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            6,
+          ],
+          Array [
+            0,
+            9,
+          ],
+        ],
+      },
+      Object {
+        "lineText": "const foo = require(\\"foo\\");",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            21,
+          ],
+          Array [
+            0,
+            24,
+          ],
+        ],
+      },
+    ],
+  },
+  Object {
+    "filePath": "test/foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "const foo = require(\\"foo\\");",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            6,
+          ],
+          Array [
+            0,
+            9,
+          ],
+        ],
+      },
+      Object {
+        "lineText": "const foo = require(\\"foo\\");",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            21,
+          ],
+          Array [
+            0,
+            24,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Should include results from files matching wildcard path name 1`] = `
+Array [
+  Object {
+    "filePath": "foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "console.log(\\"a wildcard appears!\\");",
+        "lineTextOffset": 0,
+        "matchText": "a wildcard appears",
+        "range": Array [
+          Array [
+            0,
+            13,
+          ],
+          Array [
+            0,
+            31,
+          ],
+        ],
+      },
+    ],
+  },
+  Object {
+    "filePath": "test/foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "console.log(\\"a wildcard appears!\\");",
+        "lineTextOffset": 0,
+        "matchText": "a wildcard appears",
+        "range": Array [
+          Array [
+            0,
+            13,
+          ],
+          Array [
+            0,
+            31,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Should include results from hidden files. 1`] = `
+Array [
+  Object {
+    "filePath": ".foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "const foo = 1;",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            6,
+          ],
+          Array [
+            0,
+            9,
+          ],
+        ],
+      },
+    ],
+  },
+  Object {
+    "filePath": "test/.foo.js",
+    "matches": Array [
+      Object {
+        "lineText": "const foo = 1;",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": Array [
+          Array [
+            0,
+            6,
+          ],
+          Array [
+            0,
+            9,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Should recursively scan all files in a directory 1`] = `
+Array [
+  Object {
+    "filePath": "directory/file2.js",
+    "matches": Array [
+      Object {
+        "lineText": "        console.log(\\"Hello World!\\");",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            1,
+            21,
+          ],
+          Array [
+            1,
+            32,
+          ],
+        ],
+      },
+    ],
+  },
+  Object {
+    "filePath": "file1.js",
+    "matches": Array [
+      Object {
+        "lineText": "        console.log(\\"Hello World!\\");",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            1,
+            21,
+          ],
+          Array [
+            1,
+            32,
+          ],
+        ],
+      },
+      Object {
+        "lineText": "        console.error(\\"Hello World!\\");",
+        "lineTextOffset": 0,
+        "matchText": "Hello World",
+        "range": Array [
+          Array [
+            3,
+            23,
+          ],
+          Array [
+            3,
+            34,
+          ],
+        ],
+      },
+    ],
+  },
+]
+`;

@@ -12,356 +12,252 @@
 import type {search$FileResult} from '../lib/types';
 
 import {remoteAtomSearch} from '../lib/CodeSearchService';
-import {POSIX_TOOLS} from '../lib/searchTools';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
-import which from 'nuclide-commons/which';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 
-describe('Remote Atom Search by directory', () => {
-  const tools = POSIX_TOOLS.map(t =>
-    which(t).then(cmd => (cmd != null ? t : null)),
-  );
+const TOOL = 'grep';
 
-  tools.forEach(toolPromise => {
-    /* UNIX GREP TESTS */
-    it('Should recursively scan all files in a directory', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup the test folder.
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            [
-              'file1.js',
-              `var a = 4;
+describe('Remote Atom Search by directory', () => {
+  /* UNIX GREP TESTS */
+  it('Should recursively scan all files in a directory', async () => {
+    // Setup the test folder.
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        [
+          'file1.js',
+          `var a = 4;
         console.log("Hello World!");
         console.log(a);
         console.error("Hello World!");`,
-            ],
-            [
-              'directory/file2.js',
-              `var a = 4;
+        ],
+        [
+          'directory/file2.js',
+          `var a = 4;
         console.log("Hello World!");
         console.log(a);`,
-            ],
-          ]),
-        );
+        ],
+      ]),
+    );
 
-        const results = await remoteAtomSearch(
-          folder,
-          /hello world/i,
-          [],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'basic.json');
-        sortResults(results);
+    const results = await remoteAtomSearch(
+      folder,
+      /hello world/i,
+      [],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-        expect(results).toEqual(expected);
-      })();
-    });
-
-    it('Can execute a case sensitive search', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup the test folder.
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            [
-              'file1.js',
-              `var a = 4;
+  it('Can execute a case sensitive search', async () => {
+    // Setup the test folder.
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        [
+          'file1.js',
+          `var a = 4;
         console.log("Hello World!");
         console.log(a);
         console.error("hello world!");`,
-            ],
-          ]),
-        );
+        ],
+      ]),
+    );
 
-        const results = await remoteAtomSearch(
-          folder,
-          /hello world/,
-          [],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'casesensitive.json');
-        sortResults(results);
+    const results = await remoteAtomSearch(
+      folder,
+      /hello world/,
+      [],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-        expect(results).toEqual(expected);
-      })();
-    });
+  it('Does not crash with no results', async () => {
+    // Setup the (empty) test folder.
+    const folder = await generateFixture('grep-rpc', new Map());
 
-    it('Does not crash with no results', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup the (empty) test folder.
-        const folder = await generateFixture('grep-rpc', new Map());
+    const results = await remoteAtomSearch(folder, /hello/, [], false, TOOL)
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-        const results = await remoteAtomSearch(folder, /hello/, [], false, tool)
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = [];
-        expect(results).toEqual(expected);
-      })();
-    });
+  it('Can execute a search of subdirectories.', async () => {
+    // Setup the test folder.
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        ['dir1/file.txt', 'console.log("Hello World!");'],
+        ['dir2/file.txt', 'console.log("Hello World!");'],
+        ['dir3/file.txt', 'console.log("Hello World!");'],
+      ]),
+    );
+    const results = await remoteAtomSearch(
+      folder,
+      /hello world/i,
+      ['dir2', 'dir3', 'nonexistantdir'],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-    it('Can execute a search of subdirectories.', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup the test folder.
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            ['dir1/file.txt', 'console.log("Hello World!");'],
-            ['dir2/file.txt', 'console.log("Hello World!");'],
-            ['dir3/file.txt', 'console.log("Hello World!");'],
-          ]),
-        );
-        const results = await remoteAtomSearch(
-          folder,
-          /hello world/i,
-          ['dir2', 'dir3', 'nonexistantdir'],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'subdirs.json');
-        sortResults(results);
+  it('Should include results from files matching wildcard path name', async () => {
+    // Create test folders and files
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        ['foo.js', 'console.log("a wildcard appears!");'],
+        ['foo.py', 'console.log("a wildcard appears!");'],
+        ['test/foo.js', 'console.log("a wildcard appears!");'],
+      ]),
+    );
+    const results = await remoteAtomSearch(
+      folder,
+      /a wildcard appears/i,
+      ['*.js', 'test'],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-        expect(results).toEqual(expected);
-      })();
-    });
+  it('Should include multiple results matching on the same line', async () => {
+    // Setup test files
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        ['foo.js', 'const foo = require("foo");'],
+        ['test/foo.js', 'const foo = require("foo");'],
+      ]),
+    );
+    const results = await remoteAtomSearch(
+      // Need 'g' flag to search all matches. Normally, Atom inserts it for us.
+      folder,
+      /foo/g,
+      ['*.js', 'test'],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-    it('Should include results from files matching wildcard path name', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Create test folders and files
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            ['foo.js', 'console.log("a wildcard appears!");'],
-            ['foo.py', 'console.log("a wildcard appears!");'],
-            ['test/foo.js', 'console.log("a wildcard appears!");'],
-          ]),
-        );
-        const results = await remoteAtomSearch(
-          folder,
-          /a wildcard appears/i,
-          ['*.js', 'test'],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'wildcard.json');
-        sortResults(results);
+  it('Should include results from hidden files.', async () => {
+    // Setup test files
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([
+        ['.foo.js', 'const foo = 1;'],
+        ['test/.foo.js', 'const foo = 1;'],
+      ]),
+    );
+    const results = await remoteAtomSearch(
+      // Need 'g' flag to search all matches. Normally, Atom inserts it for us.
+      folder,
+      /foo/g,
+      ['*.js', 'test'],
+      false,
+      TOOL,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-        expect(results).toEqual(expected);
-      })();
-    });
+  /* GIT GREP TESTS */
+  it('Git repo: should ignore untracked files or files listed in .gitignore', async () => {
+    // Create a git repo in a temporary folder.
+    const folder = await generateFixture('grep-rpc');
+    await runCommand('git', ['init'], {cwd: folder}).toPromise();
 
-    it('Should include multiple results matching on the same line', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup test files
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            ['foo.js', 'const foo = require("foo");'],
-            ['test/foo.js', 'const foo = require("foo");'],
-          ]),
-        );
-        const results = await remoteAtomSearch(
-          // Need 'g' flag to search all matches. Normally, Atom inserts it for us.
-          folder,
-          /foo/g,
-          ['*.js', 'test'],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(
-          folder,
-          'multipleMatchesOnSameLine.json',
-        );
-        sortResults(results);
+    // Create a file that is ignored.
+    fs.writeFileSync(nuclideUri.join(folder, '.gitignore'), 'ignored.txt');
+    fs.writeFileSync(nuclideUri.join(folder, 'ignored.txt'), 'Hello World!');
 
-        expect(results).toEqual(expected);
-      })();
-    });
+    // Create a file that is tracked.
+    fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
+    await runCommand('git', ['add', 'tracked.txt'], {
+      cwd: folder,
+    }).toPromise();
 
-    it('Should include results from hidden files.', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        if (tool == null) {
-          return;
-        }
-        // Setup test files
-        const folder = await generateFixture(
-          'grep-rpc',
-          new Map([
-            ['.foo.js', 'const foo = 1;'],
-            ['test/.foo.js', 'const foo = 1;'],
-          ]),
-        );
-        const results = await remoteAtomSearch(
-          // Need 'g' flag to search all matches. Normally, Atom inserts it for us.
-          folder,
-          /foo/g,
-          ['*.js', 'test'],
-          false,
-          tool,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'hiddenFiles.json');
-        sortResults(results);
+    // Create a file that is untracked.
+    fs.writeFileSync(nuclideUri.join(folder, 'untracked.txt'), 'Hello World!');
 
-        expect(results).toEqual(expected);
-      })();
-    });
+    const results = await remoteAtomSearch(folder, /hello world/i, [], true)
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
 
-    /* GIT GREP TESTS */
-    it('Git repo: should ignore untracked files or files listed in .gitignore', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        // Run this test once since it tests git grep only.
-        if (tool == null || tool !== POSIX_TOOLS[0]) {
-          return;
-        }
-        // Create a git repo in a temporary folder.
-        const folder = await generateFixture('grep-rpc');
-        await runCommand('git', ['init'], {cwd: folder}).toPromise();
+  it('Hg repo: should ignore untracked files or files listed in .gitignore', async () => {
+    // Create an hg repo in a temporary folder.
+    const folder = await generateFixture('grep-rpc');
+    await runCommand('hg', ['init'], {cwd: folder}).toPromise();
 
-        // Create a file that is ignored.
-        fs.writeFileSync(nuclideUri.join(folder, '.gitignore'), 'ignored.txt');
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'ignored.txt'),
-          'Hello World!',
-        );
+    // Create a file that is ignored.
+    fs.writeFileSync(nuclideUri.join(folder, '.gitignore'), 'ignored.txt\n');
+    fs.writeFileSync(nuclideUri.join(folder, 'ignored.txt'), 'Hello World!');
 
-        // Create a file that is tracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'tracked.txt'),
-          'Hello World!',
-        );
-        await runCommand('git', ['add', 'tracked.txt'], {
-          cwd: folder,
-        }).toPromise();
+    // Create a file that is tracked.
+    fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
+    await runCommand('hg', ['add', 'tracked.txt'], {
+      cwd: folder,
+    }).toPromise();
 
-        // Create a file that is untracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'untracked.txt'),
-          'Hello World!',
-        );
+    // Create a file that is untracked.
+    fs.writeFileSync(nuclideUri.join(folder, 'untracked.txt'), 'Hello World!');
 
-        const results = await remoteAtomSearch(folder, /hello world/i, [], true)
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'repo.json');
-        sortResults(results);
+    await runCommand('hg', ['commit', '-m', 'test commit'], {
+      cwd: folder,
+    }).toPromise();
 
-        expect(results).toEqual(expected);
-      })();
-    });
-
-    // HG Grep test. This test is disabled due to differences in the behavior of
-    // Mercurial between v3.3 (where hg grep searches the revision history), and v3.4
-    // (where hg grep) searches the working directory.
-    // eslint-disable-next-line jasmine/no-disabled-tests
-    xit('Hg repo: should ignore untracked files or files listed in .hgignore', async () => {
-      await (async () => {
-        const tool = await toolPromise;
-        // Run this test once since it tests hg grep only.
-        if (tool == null || tool !== POSIX_TOOLS[0]) {
-          return;
-        }
-        // Create a git repo in a temporary folder.
-        const folder = await generateFixture('grep-rpc');
-        await runCommand('hg', ['init'], {cwd: folder}).toPromise();
-
-        // Create a file that is ignored.
-        fs.writeFileSync(nuclideUri.join(folder, '.hgignore'), 'ignored.txt');
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'ignored.txt'),
-          'Hello World!',
-        );
-
-        // Create a file that is tracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'tracked.txt'),
-          'Hello World!',
-        );
-        await runCommand('hg', ['add', 'tracked.txt'], {
-          cwd: folder,
-        }).toPromise();
-
-        // Create a file that is untracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'untracked.txt'),
-          'Hello World!',
-        );
-
-        await runCommand('hg', ['commit', '-m', 'test commit'], {
-          cwd: folder,
-        }).toPromise();
-
-        const results = await remoteAtomSearch(
-          folder,
-          /hello world()/i,
-          [],
-          false,
-        )
-          .refCount()
-          .toArray()
-          .toPromise();
-        const expected = loadExpectedFixture(folder, 'repo.json');
-        sortResults(results);
-
-        expect(results).toEqual(expected);
-      })();
-    });
+    const results = await remoteAtomSearch(folder, /hello world/i, [], true)
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
   });
 });
 
 // Helper function to sort an array of file results - first by their filepath,
 // and then by the number of matches.
-function sortResults(results: Array<search$FileResult>) {
+// This also relativizes paths (since they're in a tmpdir).
+function sortResults(results: Array<search$FileResult>, folder: string) {
+  results.forEach(result => {
+    result.filePath = nuclideUri.relative(folder, result.filePath);
+  });
   results.sort((a, b) => {
     if (a.filePath < b.filePath) {
       return -1;
@@ -371,22 +267,4 @@ function sortResults(results: Array<search$FileResult>) {
       return a.matches.length - b.matches.length;
     }
   });
-}
-
-// Helper function to load a result fixture by name and absolutize its paths.
-function loadExpectedFixture(
-  folder: string,
-  fixtureName: string,
-): Array<search$FileResult> {
-  const fixture = JSON.parse(
-    fs.readFileSync(
-      nuclideUri.join(__dirname, '../__mocks__/fixtures', fixtureName),
-      'utf8',
-    ),
-  );
-  // Join paths in fixtures to make them absolute.
-  for (const result of fixture) {
-    result.filePath = nuclideUri.join(folder, result.filePath);
-  }
-  return fixture;
 }
