@@ -43,6 +43,9 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
       createDirectory: uri => {
         return this._serviceHandler.createDirectory(uri);
       },
+      stat: uri => {
+        return this._serviceHandler.stat(uri);
+      },
     });
     this._server.on('error', error => {
       throw error;

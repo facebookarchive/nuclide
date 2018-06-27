@@ -15,6 +15,7 @@ import type {IThriftServiceClient} from '../../common/thriftService-types';
 
 import thrift from 'thrift';
 import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
+import filesystem_types from './gen-nodejs/filesystem_types';
 import {getLogger} from 'log4js';
 
 /**
@@ -59,6 +60,10 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
 
   mkdir(path: string): Promise<void> {
     return this._client.createDirectory(path);
+  }
+
+  stat(path: string): Promise<filesystem_types.FileStat> {
+    return this._client.stat(path);
   }
 
   getOptions(): createThriftClientOptions {
