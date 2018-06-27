@@ -180,6 +180,12 @@ export class Combobox extends React.Component<Props, State> {
     nullthrows(this._freeformInput).focus();
   }
 
+  scrollToEnd(): void {
+    nullthrows(this._freeformInput)
+      .getTextEditor()
+      .moveToEndOfLine();
+  }
+
   _getFilteredOptions(
     options: Array<string>,
     filterValue: string,
@@ -464,7 +470,8 @@ export class Combobox extends React.Component<Props, State> {
         className={
           'select-list popover-list popover-list-subtle ' + this.props.className
         }
-        style={wrapperStyle}>
+        style={wrapperStyle}
+        title={this._freeformInput != null ? this.getText() : ''}>
         <AtomInput
           initialValue={initialTextInput}
           onBlur={this._handleInputBlur}

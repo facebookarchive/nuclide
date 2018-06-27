@@ -36,6 +36,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
 
   _cachedOwners: ?Promise<Array<string>>;
   _cachedOwnersPath: ?string;
+  _comboBox: ?Combobox;
 
   constructor(props: Props) {
     super(props);
@@ -137,11 +138,18 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
   }
 
   _handleBuildTargetChange = (value: string) => {
+    this._scrollToEnd();
     const trimmed = value.trim();
     if (this.props.appState.buildTarget === trimmed) {
       return;
     }
     this.props.setBuildTarget(trimmed);
+  };
+
+  _scrollToEnd = () => {
+    if (this._comboBox != null) {
+      this._comboBox.scrollToEnd();
+    }
   };
 
   render(): React.Node {
@@ -162,6 +170,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
         onBlur={this._handleBuildTargetChange}
         placeholderText="Buck build target"
         width={null}
+        ref={box => (this._comboBox = box)}
       />
     );
   }
