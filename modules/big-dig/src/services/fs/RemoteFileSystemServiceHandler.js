@@ -14,6 +14,21 @@ import fs from 'fs';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
+
+const commonWatchIgnoredExpressions = [
+  ['not', ['dirname', '.hg']],
+  ['not', ['match', 'hg-checkexec-*', 'wholename']],
+  ['not', ['match', 'hg-checklink-*', 'wholename']],
+  ['not', ['dirname', '.buckd']],
+  ['not', ['dirname', '.idea']],
+  ['not', ['dirname', '_build']],
+  ['not', ['dirname', 'buck-cache']],
+  ['not', ['dirname', 'buck-out']],
+  ['not', ['dirname', '.fbbuild/generated']],
+  ['not', ['match', '.fbbuild/generated*', 'wholename']],
+  ['not', ['match', '_build-junk*', 'wholename']],
+];
 
 /**
  * Create a service handler class to manage server methods
@@ -22,44 +37,78 @@ export class RemoteFileSystemServiceHandler {
   _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
   _fileChangeWatcher: any;
   _logger: log4js$Logger;
+  _watcher: WatchmanClient;
 
-  constructor() {
+  constructor(watcher: WatchmanClient) {
     this._fileChangeEvents = [];
+    this._watcher = watcher;
     this._logger = getLogger('fs-thrift-server-handler');
   }
 
-  watch(uri: string, options: filesystem_types.WatchOpt): void {
-    this._logger.info('--------- start to watch: %s', uri);
-    this._logger.info(options);
+  async watch(uri: string, options: filesystem_types.WatchOpt): Promise<void> {
+    const {recursive, excludes} = options;
+
+    const excludeExpr = this._genWatchExcludedExpressions(excludes);
+    if (!recursive) {
+      // Do not match files in subdirectories:
+      excludeExpr.push(['not', ['dirname', '', ['depth', 'ge', 2]]]);
+    }
+    const opts = {
+      expression: ['allof', ...commonWatchIgnoredExpressions, ...excludeExpr],
+    };
+
+    this._logger.info(`Watching ${uri} ${JSON.stringify(opts)}`);
+    const subName = `big-dig-thrift-filewatcher-${uri}`;
     try {
-      this._fileChangeWatcher = fs.watch(uri, options, (eventType, fname) => {
-        const event = new filesystem_types.FileChangeEvent();
-        if (eventType === 'change') {
-          event.eventType = filesystem_types.FileChangeEventType.CHANGE;
-        } else if (eventType === 'rename') {
-          event.eventType = filesystem_types.FileChangeEventType.RENAME;
-        } else {
-          event.eventType = filesystem_types.FileChangeEventType.UNKNOWN;
-        }
-        event.fname = fname;
-        this._fileChangeEvents.push(event);
+      const sub = await this._watcher.watchDirectoryRecursive(
+        uri,
+        subName,
+        opts,
+      );
+
+      sub.on('error', error => {
+        this._logger.error(
+          `Watchman Subscription Error: big-dig-thrift-filewatcher-${uri}`,
+        );
+        this._logger.error(error);
+      });
+      sub.on('change', entries => {
+        const changes = entries.map(
+          (entry): filesystem_types.FileChangeEvent => {
+            if (!entry.exists) {
+              return {
+                fname: entry.name,
+                eventType: filesystem_types.FileChangeEventType.DELETE,
+              };
+            } else if (entry.new) {
+              return {
+                fname: entry.name,
+                eventType: filesystem_types.FileChangeEventType.ADD,
+              };
+            } else {
+              return {
+                fname: entry.name,
+                eventType: filesystem_types.FileChangeEventType.UPDATE,
+              };
+            }
+          },
+        );
+        // Add new changes into the list of file changes
+        this._fileChangeEvents.push(...changes);
       });
     } catch (err) {
-      throw this._createThriftError(err);
+      this._logger.error(
+        'BigDig Thrift FS Server Watchman Subscription Creation Error',
+      );
+      this._logger.error(err);
     }
+    return;
   }
 
   pollFileChanges(): Array<filesystem_types.FileChangeEvent> {
-    let count = this._fileChangeEvents.length;
-    const retEventChangeList = [];
-    try {
-      while (count--) {
-        retEventChangeList.push(this._fileChangeEvents.shift());
-      }
-      return retEventChangeList;
-    } catch (err) {
-      throw this._createThriftError(err);
-    }
+    const retEventChangeList = this._fileChangeEvents;
+    this._fileChangeEvents = [];
+    return retEventChangeList;
   }
 
   async createDirectory(uri: string): Promise<void> {
@@ -136,6 +185,15 @@ export class RemoteFileSystemServiceHandler {
     } else {
       return filesystem_types.FileType.UNKNOWN;
     }
+  }
+
+  _genWatchExcludedExpressions(excludes: Array<string>): Array<mixed> {
+    return excludes.map(patternToIgnore => {
+      return [
+        'not',
+        ['match', patternToIgnore, 'wholename', {includedotfiles: true}],
+      ];
+    });
   }
 
   _createThriftError(err: Object): filesystem_types.Error {

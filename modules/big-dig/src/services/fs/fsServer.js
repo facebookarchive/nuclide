@@ -18,6 +18,7 @@ import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 import {RemoteFileSystemServiceHandler} from './RemoteFileSystemServiceHandler';
 import {scanPortsToListen} from '../../common/ports';
 import {getLogger} from 'log4js';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 
 /**
  * Wrapper class of raw thrift server which provide more methods
@@ -28,11 +29,13 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
   _server: thrift.Server;
   _options: createThriftServerOptions;
   _logger: log4js$Logger;
+  _watcher: WatchmanClient;
 
   constructor(options: createThriftServerOptions) {
-    this._serviceHandler = new RemoteFileSystemServiceHandler();
-    this._logger = getLogger('fs-thrift-server');
     this._options = options;
+    this._logger = getLogger('fs-thrift-server');
+    this._watcher = new WatchmanClient();
+    this._serviceHandler = new RemoteFileSystemServiceHandler(this._watcher);
   }
 
   async initialize(): Promise<void> {
@@ -72,6 +75,7 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
   close() {
     this._logger.info('Close remote file system thrift service server...');
     this._server = null;
+    this._watcher.dispose();
   }
 }
 

@@ -70,24 +70,16 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     );
   }
 
-  async watch(path: string, options: filesystem_types.WatchOpt): Promise<void> {
+  watch(path: string, options: filesystem_types.WatchOpt): Promise<void> {
     const watchOpts = options || {recursive: true, excludes: []};
-    try {
-      return this._client.watch(path, watchOpts);
-    } catch (err) {
-      throw err;
-    }
+    return this._client.watch(path, watchOpts);
   }
 
-  async pollFileChanges(): Promise<Array<filesystem_types.FileChangeEvent>> {
-    try {
-      const result = await this._client.pollFileChanges();
-      this._logger.info('-- Received remote file chagnes: ');
-      this._logger.info(result);
-      return result;
-    } catch (err) {
-      throw err;
-    }
+  /**
+   * @return Promise<Array<filesystem_types.FileChangeEvent>>
+   */
+  pollFileChanges(): Promise<any> {
+    return this._client.pollFileChanges();
   }
 
   mkdir(path: string): Promise<void> {

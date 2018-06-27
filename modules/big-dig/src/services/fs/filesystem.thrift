@@ -59,8 +59,9 @@ exception Error {
 */
 enum FileChangeEventType {
   UNKNOWN = 1,
-  CHANGE = 2,
-  RENAME = 3,
+  ADD = 2,
+  DELETE = 3,
+  UPDATE = 4,
 }
 
 /**
