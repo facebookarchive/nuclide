@@ -57,8 +57,8 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     );
   }
 
-  async mkdir(path: string): Promise<void> {
-    await this._client.createDirectory(path);
+  mkdir(path: string): Promise<void> {
+    return this._client.createDirectory(path);
   }
 
   getOptions(): createThriftClientOptions {
