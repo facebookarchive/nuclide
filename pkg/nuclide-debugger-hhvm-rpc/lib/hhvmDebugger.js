@@ -58,6 +58,15 @@ class HHVMDebuggerWrapper {
   }
 
   debug() {
+    process.on('SIGUSR2', () => {
+      this._writeOutputWithHeader({
+        seq: ++this._sequenceNumber,
+        type: 'event',
+        event: 'hhvmSigUsr2',
+      });
+      process.exit();
+    });
+
     process.stdin.on('data', chunk => {
       this._processClientMessage(chunk);
     });
