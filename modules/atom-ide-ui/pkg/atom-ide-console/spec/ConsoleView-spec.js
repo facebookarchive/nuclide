@@ -17,7 +17,7 @@ import TestUtils from 'react-dom/test-utils';
 import ConsoleView from '../lib/ui/ConsoleView';
 
 describe('ConsoleView', () => {
-  it('focuses the filter when "/" is pressed', () => {
+  it('focuses the filter when "/" is pressed inside the console-scroll-pane-wrapper div', () => {
     const consoleView: ConsoleView = (TestUtils.renderIntoDocument(
       <ConsoleView
         clearRecords={() => {}}
@@ -53,9 +53,11 @@ describe('ConsoleView', () => {
     invariant(consoleHeaderComponent != null);
     const filterFocusSpy = spyOn(consoleHeaderComponent, 'focusFilter');
 
-    const consoleBodyTarget = workspaceEl.querySelector('.console-body');
-    invariant(consoleBodyTarget != null);
-    atom.commands.dispatch(consoleBodyTarget, 'atom-ide:filter');
+    const consoleScrollPaneTarget = workspaceEl.querySelector(
+      '.console-scroll-pane-wrapper',
+    );
+    invariant(consoleScrollPaneTarget != null);
+    atom.commands.dispatch(consoleScrollPaneTarget, 'atom-ide:filter');
 
     expect(filterFocusSpy).toHaveBeenCalled();
     workspaceEl.removeChild(consoleViewNode);
