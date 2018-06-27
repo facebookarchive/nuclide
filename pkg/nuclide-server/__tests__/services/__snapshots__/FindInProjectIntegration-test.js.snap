@@ -6,6 +6,7 @@ Array [
     "filePath": "nuclide:VARIABLE/services/fixtures/basic/test.js.txt",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "Console.log('Hello World.');",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -19,8 +20,10 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
       Object {
+        "leadingContextLines": Array [],
         "lineText": "Console.log('Hello World.');",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -34,6 +37,7 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },

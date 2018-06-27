@@ -204,7 +204,10 @@ describe('Remote Atom Search by directory', () => {
     fs.writeFileSync(nuclideUri.join(folder, 'ignored.txt'), 'Hello World!');
 
     // Create a file that is tracked.
-    fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
+    fs.writeFileSync(
+      nuclideUri.join(folder, 'tracked.txt'),
+      'Hello World!\ntest',
+    );
     await runCommand('git', ['add', 'tracked.txt'], {
       cwd: folder,
     }).toPromise();
@@ -212,7 +215,37 @@ describe('Remote Atom Search by directory', () => {
     // Create a file that is untracked.
     fs.writeFileSync(nuclideUri.join(folder, 'untracked.txt'), 'Hello World!');
 
-    const results = await remoteAtomSearch(folder, /hello world/i, [], true)
+    const results = await remoteAtomSearch(
+      folder,
+      /hello world/i,
+      [],
+      true,
+      null,
+      /* leadingLines */ 1,
+      /* trailingLines */ 1,
+    )
+      .refCount()
+      .toArray()
+      .toPromise();
+    sortResults(results, folder);
+    expect(results).toMatchSnapshot();
+  });
+
+  it('Should include leading and trailing context', async () => {
+    // Create test folders and files
+    const folder = await generateFixture(
+      'grep-rpc',
+      new Map([['foo.js', 'test1\ntest2\ntest3\n']]),
+    );
+    const results = await remoteAtomSearch(
+      folder,
+      /test2/i,
+      ['*.js', 'test'],
+      false,
+      TOOL,
+      /* leadingLines */ 2,
+      /* trailingLines */ 2,
+    )
       .refCount()
       .toArray()
       .toPromise();
@@ -230,7 +263,10 @@ describe('Remote Atom Search by directory', () => {
     fs.writeFileSync(nuclideUri.join(folder, 'ignored.txt'), 'Hello World!');
 
     // Create a file that is tracked.
-    fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
+    fs.writeFileSync(
+      nuclideUri.join(folder, 'tracked.txt'),
+      'Hello World!\ntest',
+    );
     await runCommand('hg', ['add', 'tracked.txt'], {
       cwd: folder,
     }).toPromise();
@@ -242,7 +278,15 @@ describe('Remote Atom Search by directory', () => {
       cwd: folder,
     }).toPromise();
 
-    const results = await remoteAtomSearch(folder, /hello world/i, [], true)
+    const results = await remoteAtomSearch(
+      folder,
+      /hello world/i,
+      [],
+      true,
+      null,
+      /* leadingLines */ 1,
+      /* trailingLines */ 1,
+    )
       .refCount()
       .toArray()
       .toPromise();

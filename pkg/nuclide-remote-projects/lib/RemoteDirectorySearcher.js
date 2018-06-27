@@ -79,6 +79,8 @@ export default class RemoteDirectorySearcher {
                 inclusion,
                 config.remoteUseVcsSearch,
                 config.remoteTool.length === 0 ? null : config.remoteTool,
+                options.leadingContextLineCount,
+                options.trailingContextLineCount,
               )
               .refCount()
           : Observable.empty(),

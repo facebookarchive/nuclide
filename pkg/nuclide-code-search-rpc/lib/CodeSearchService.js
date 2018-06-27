@@ -91,25 +91,31 @@ export function searchFiles(
 
 /**
  * Searches for all instances of a pattern in subdirectories.
- * @param directory - The directory in which to perform a search.
- * @param regex - The pattern to match.
- * @param subdirs - An array of subdirectories to search within `directory`. If subdirs is an
- *   empty array, then simply search in directory.
- * @param useVcsSearch - Whether to try to use hg/git grep to find the pattern.
- * @param tool - Which tool to use from POSIX_TOOLS or WINDOWS_TOOLS,
- *   default to first one available.
  * @returns An observable that emits match events.
  */
 export function remoteAtomSearch(
+  // The directory in which to perform a search.
   directory: NuclideUri,
+  // The pattern to match.
   regex: RegExp,
+  // An array of subdirectories to search within `directory`. If subdirs is an
+  // empty array, then simply search in directory.
   subdirs: Array<string>,
+  // Whether to try to use hg/git grep to find the pattern.
   useVcsSearch: boolean,
+  // Which tool to use from POSIX_TOOLS or WINDOWS_TOOLS,
+  // default to first one available.
   tool: ?CodeSearchTool,
+  // Number of leading context lines to include.
+  leadingLines?: ?number,
+  // Number of trailing context lines to include.
+  trailingLines?: ?number,
 ): ConnectableObservable<search$FileResult> {
   return mergeSearchResults(
     searchInDirectories(subdirs, tool, useVcsSearch, {
       regex,
+      leadingLines,
+      trailingLines,
       recursive: true,
       directory,
     }),
@@ -121,15 +127,27 @@ function mergeSearchResults(
   codeSearchResults: Observable<CodeSearchResult>,
 ): Observable<search$FileResult> {
   const results = codeSearchResults
-    .map(({file, row, line, column, matchLength}) => ({
-      filePath: file,
-      match: {
-        lineText: line,
-        lineTextOffset: 0,
-        matchText: line.slice(column, column + matchLength),
-        range: [[row, column], [row, column + matchLength]],
-      },
-    }))
+    .map(
+      ({
+        file,
+        row,
+        line,
+        column,
+        matchLength,
+        leadingContext,
+        trailingContext,
+      }) => ({
+        filePath: file,
+        match: {
+          lineText: line,
+          lineTextOffset: 0,
+          matchText: line.slice(column, column + matchLength),
+          range: [[row, column], [row, column + matchLength]],
+          leadingContextLines: leadingContext,
+          trailingContextLines: trailingContext,
+        },
+      }),
+    )
     .share();
 
   return (

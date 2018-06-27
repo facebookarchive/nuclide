@@ -16,8 +16,8 @@ export type CodeSearchTool = 'rg' | 'ack' | 'grep';
 type CodeSearchParamsBase = {
   regex: RegExp,
   limit?: number,
-  leadingLines?: number,
-  trailingLines?: number,
+  leadingLines?: ?number,
+  trailingLines?: ?number,
 };
 
 export type DirectoryCodeSearchParams = CodeSearchParamsBase & {
@@ -48,6 +48,8 @@ export type search$Match = {
   lineTextOffset: number,
   matchText: string,
   range: Array<Array<number>>,
+  leadingContextLines: Array<string>,
+  trailingContextLines: Array<string>,
 };
 
 export type search$FileResult = {

@@ -6,6 +6,7 @@ Array [
     "filePath": "file1.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "        console.error(\\"hello world!\\");",
         "lineTextOffset": 0,
         "matchText": "hello world",
@@ -19,6 +20,7 @@ Array [
             34,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -31,6 +33,7 @@ Array [
     "filePath": "dir2/file.txt",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "console.log(\\"Hello World!\\");",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -44,6 +47,7 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -51,6 +55,7 @@ Array [
     "filePath": "dir3/file.txt",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "console.log(\\"Hello World!\\");",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -64,6 +69,7 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -78,6 +84,7 @@ Array [
     "filePath": "tracked.txt",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "Hello World!",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -90,6 +97,9 @@ Array [
             0,
             11,
           ],
+        ],
+        "trailingContextLines": Array [
+          "test",
         ],
       },
     ],
@@ -103,6 +113,7 @@ Array [
     "filePath": "tracked.txt",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "Hello World!",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -116,6 +127,40 @@ Array [
             11,
           ],
         ],
+        "trailingContextLines": Array [
+          "test",
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Remote Atom Search by directory Should include leading and trailing context 1`] = `
+Array [
+  Object {
+    "filePath": "foo.js",
+    "matches": Array [
+      Object {
+        "leadingContextLines": Array [
+          "test1",
+        ],
+        "lineText": "test2",
+        "lineTextOffset": 0,
+        "matchText": "test2",
+        "range": Array [
+          Array [
+            1,
+            0,
+          ],
+          Array [
+            1,
+            5,
+          ],
+        ],
+        "trailingContextLines": Array [
+          "test3",
+        ],
       },
     ],
   },
@@ -128,6 +173,7 @@ Array [
     "filePath": "foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = require(\\"foo\\");",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -141,8 +187,10 @@ Array [
             9,
           ],
         ],
+        "trailingContextLines": Array [],
       },
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = require(\\"foo\\");",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -156,6 +204,7 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -163,6 +212,7 @@ Array [
     "filePath": "test/foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = require(\\"foo\\");",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -176,8 +226,10 @@ Array [
             9,
           ],
         ],
+        "trailingContextLines": Array [],
       },
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = require(\\"foo\\");",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -191,6 +243,7 @@ Array [
             24,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -203,6 +256,7 @@ Array [
     "filePath": "foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "console.log(\\"a wildcard appears!\\");",
         "lineTextOffset": 0,
         "matchText": "a wildcard appears",
@@ -216,6 +270,7 @@ Array [
             31,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -223,6 +278,7 @@ Array [
     "filePath": "test/foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "console.log(\\"a wildcard appears!\\");",
         "lineTextOffset": 0,
         "matchText": "a wildcard appears",
@@ -236,6 +292,7 @@ Array [
             31,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -248,6 +305,7 @@ Array [
     "filePath": ".foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = 1;",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -261,6 +319,7 @@ Array [
             9,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -268,6 +327,7 @@ Array [
     "filePath": "test/.foo.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "const foo = 1;",
         "lineTextOffset": 0,
         "matchText": "foo",
@@ -281,6 +341,7 @@ Array [
             9,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -293,6 +354,7 @@ Array [
     "filePath": "directory/file2.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "        console.log(\\"Hello World!\\");",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -306,6 +368,7 @@ Array [
             32,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },
@@ -313,6 +376,7 @@ Array [
     "filePath": "file1.js",
     "matches": Array [
       Object {
+        "leadingContextLines": Array [],
         "lineText": "        console.log(\\"Hello World!\\");",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -326,8 +390,10 @@ Array [
             32,
           ],
         ],
+        "trailingContextLines": Array [],
       },
       Object {
+        "leadingContextLines": Array [],
         "lineText": "        console.error(\\"Hello World!\\");",
         "lineTextOffset": 0,
         "matchText": "Hello World",
@@ -341,6 +407,7 @@ Array [
             34,
           ],
         ],
+        "trailingContextLines": Array [],
       },
     ],
   },

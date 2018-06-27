@@ -42,9 +42,9 @@ describe('RemoteDirectorySearcher.processPaths', () => {
 
   it('adds working set directories to search path', () => {
     const workingSetPaths = ['a/b', 'a/c/d'];
-    jest.spyOn(workingSetsStore, 'getApplicableDefinitions').mockReturnValue([
-      {name: 'foo', active: true, uris: workingSetPaths},
-    ]);
+    jest
+      .spyOn(workingSetsStore, 'getApplicableDefinitions')
+      .mockReturnValue([{name: 'foo', active: true, uris: workingSetPaths}]);
     expect(searcher.processPaths('a', [WORKING_SET_PATH_MARKER])).toEqual([
       'b',
       'c/d',
@@ -60,20 +60,26 @@ describe('RemoteDirectorySearcher.processPaths', () => {
       remoteUseVcsSearch: true,
     });
     const workingSetPaths = ['nuclide://host/a/b'];
-    jest.spyOn(workingSetsStore, 'getApplicableDefinitions').mockReturnValue([
-      {name: 'foo', active: true, uris: workingSetPaths},
-    ]);
+    jest
+      .spyOn(workingSetsStore, 'getApplicableDefinitions')
+      .mockReturnValue([{name: 'foo', active: true, uris: workingSetPaths}]);
     const connection: any = null;
     const directories = ['nuclide://host/a', 'nuclide://host/c'].map(
       path => new RemoteDirectory(connection, path),
     );
-    searcher.search(directories, /./, {inclusions: [WORKING_SET_PATH_MARKER]});
+    searcher.search(directories, /./, {
+      inclusions: [WORKING_SET_PATH_MARKER],
+      leadingContextLineCount: 1,
+      trailingContextLineCount: 2,
+    });
     expect(serviceSpy.remoteAtomSearch).toHaveBeenCalledWith(
       'nuclide://host/a',
       /./,
       ['b'],
       true,
       'grep',
+      1,
+      2,
     );
   });
 });
