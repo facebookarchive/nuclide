@@ -18,8 +18,6 @@ import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import {getLogger} from 'log4js';
 
-const POLLING_INTERVAL_MS = 3000;
-
 /**
  * Wrapper class of raw thrift client which provide more methods, e.g. close()
  * e.g. initialze(), close() etc.
@@ -29,12 +27,10 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
   _client: thrift.client;
   _options: createThriftClientOptions;
   _logger: log4js$Logger;
-  _pollingInterval: any;
 
   constructor(options: createThriftClientOptions) {
     this._options = options;
     this._logger = getLogger('fs-thrift-client');
-    this._pollingInterval = null;
   }
 
   async initialize(): Promise<void> {
@@ -59,14 +55,6 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     this._client = thrift.createClient(
       RemoteFileSystemService,
       this._connection,
-    );
-  }
-
-  startPolling() {
-    this.pollFileChanges();
-    this._pollingInterval = setInterval(
-      () => this.pollFileChanges(),
-      POLLING_INTERVAL_MS,
     );
   }
 
@@ -109,7 +97,6 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
   close() {
     this._logger.info('Close remote file system thrift service client...');
     this._connection.end();
-    clearInterval(this._pollingInterval);
   }
 }
 

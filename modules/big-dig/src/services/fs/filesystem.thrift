@@ -50,12 +50,8 @@ exception Error {
 }
 
 /**
-* File change types may be different on different platforms. However, on most
-* platforms, 'rename' is emitted whenever a filename appears or disappears
-* in the directory.
-*
-* Refer to:
-* https://nodejs.org/docs/latest/api/fs.html#fs_fs_watch_filename_options_listener
+* File change types may be different on different platforms. Need to write
+* converter methods to convert file change events on different platforms.
 */
 enum FileChangeEventType {
   UNKNOWN = 1,
