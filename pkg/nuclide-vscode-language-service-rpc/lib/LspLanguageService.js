@@ -74,6 +74,7 @@ import type {
   Registration,
   FileSystemWatcher,
   CompletionItem,
+  DocumentFormattingParams,
 } from './protocol';
 
 import {WatchmanClient} from 'nuclide-watchman-helpers';
@@ -2477,6 +2478,24 @@ export class LspLanguageService {
     return response.map(convertHighlight);
   }
 
+  _constructDocumentFormattingParams(
+    fileVersion: FileVersion,
+    options: FormatOptions,
+  ): DocumentFormattingParams {
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      options,
+    };
+    const additionalFormattingOptions =
+      this._lspPreferences.additionalFormattingOptions || new Map();
+    for (const [key, value] of additionalFormattingOptions) {
+      params.options[key] = value;
+    }
+    return params;
+  }
+
   async formatSource(
     fileVersion: FileVersion,
     atomRange: atom$Range,
@@ -2505,19 +2524,11 @@ export class LspLanguageService {
       );
       return null;
     }
-    const params = {
-      textDocument: convert.localPath_lspTextDocumentIdentifier(
-        fileVersion.filePath,
-      ),
+    const params = this._constructDocumentFormattingParams(
+      fileVersion,
       options,
-    };
-    const additionalFormattingOptions =
-      this._lspPreferences.additionalFormattingOptions || new Map();
-    for (const [key, value] of additionalFormattingOptions) {
-      params.options[key] = value;
-    }
+    );
     let response;
-
     // The user might have requested to format either some or all of the buffer.
     // And the LSP server might have the capability to format some or all.
     // We'll match up the request+capability as best we can...
@@ -2561,7 +2572,7 @@ export class LspLanguageService {
     return convert.lspTextEdits_atomTextEdits(response);
   }
 
-  formatEntireFile(
+  async formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
     options: FormatOptions,
@@ -2569,12 +2580,39 @@ export class LspLanguageService {
     newCursor?: number,
     formatted: string,
   }> {
-    // A language service implements either formatSource or formatEntireFile,
-    // and we should pick formatSource in our AtomLanguageServiceConfig.
-    this._logger.error(
-      'LSP CodeFormat providers should use formatEntireFile: false',
+    if (!this._serverCapabilities.documentFormattingProvider) {
+      return null;
+    }
+    if (this._state !== 'Running') {
+      return null;
+    }
+    const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
+      fileVersion,
     );
-    return Promise.resolve(null);
+    if (buffer == null) {
+      this._logger.error(
+        'LSP.formatSource - buffer changed before we could format',
+      );
+      return null;
+    }
+    const params = this._constructDocumentFormattingParams(
+      fileVersion,
+      options,
+    );
+    let response;
+    try {
+      response = await this._lspConnection.documentFormatting(params);
+      invariant(response != null, 'null textDocument/documentFormatting');
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
+    response = convert.lspTextEdits_atomTextEdits(response);
+    if (response.length !== 2 || response[1] == null) {
+      return null;
+    } else {
+      return {formatted: response[1].newText};
+    }
   }
 
   async formatAtPosition(
