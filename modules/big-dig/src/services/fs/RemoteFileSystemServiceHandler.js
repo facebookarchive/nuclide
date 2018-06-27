@@ -41,7 +41,6 @@ const commonWatchIgnoredExpressions = [
  */
 export class RemoteFileSystemServiceHandler {
   _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
-  _fileChangeWatcher: any;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;
 
@@ -195,7 +194,5 @@ export class RemoteFileSystemServiceHandler {
     }
   }
 
-  dispose() {
-    this._fileChangeWatcher.close();
-  }
+  dispose() {}
 }
