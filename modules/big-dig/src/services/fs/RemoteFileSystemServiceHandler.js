@@ -54,6 +54,26 @@ export class RemoteFileSystemServiceHandler {
     }
   }
 
+  async writeFile(
+    uri: string,
+    content: Buffer,
+    options: filesystem_types.WriteFileOpt,
+  ): Promise<void> {
+    try {
+      const flags = [
+        fs.constants.O_WRONLY,
+        fs.constants.O_TRUNC,
+        options.create ? fs.constants.O_CREAT : 0,
+        options.overwrite || !options.create ? 0 : fs.constants.O_EXCL,
+      ] // eslint-disable-next-line no-bitwise
+        .reduce((acc, f) => acc | f, 0);
+
+      await fsPromise.writeFile(uri, content, {flags});
+    } catch (err) {
+      throw this._createThriftError(err);
+    }
+  }
+
   _toFileStat(statData: fs.Stats): filesystem_types.FileStat {
     const {size, atime, mtime, ctime} = statData;
     const fileStat = new filesystem_types.FileStat();

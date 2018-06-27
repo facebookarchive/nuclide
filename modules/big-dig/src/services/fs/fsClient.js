@@ -70,6 +70,14 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     return this._client.readFile(path);
   }
 
+  writeFile(
+    path: string,
+    content: Buffer,
+    options: filesystem_types.WriteFileOpt,
+  ): Promise<void> {
+    return this._client.writeFile(path, content, options);
+  }
+
   getOptions(): createThriftClientOptions {
     return this._options;
   }

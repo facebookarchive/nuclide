@@ -49,6 +49,9 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
       readFile: uri => {
         return this._serviceHandler.readFile(uri);
       },
+      writeFile: (uri, content, options) => {
+        return this._serviceHandler.writeFile(uri, content, options);
+      },
     });
     this._server.on('error', error => {
       throw error;
