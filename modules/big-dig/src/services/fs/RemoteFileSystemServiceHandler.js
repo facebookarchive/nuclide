@@ -15,6 +15,11 @@ import filesystem_types from './gen-nodejs/filesystem_types';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import {WatchmanClient} from 'nuclide-watchman-helpers';
+import {
+  convertToThriftFileStat,
+  genWatchExcludedExpressions,
+  createThriftError,
+} from './converter';
 
 const commonWatchIgnoredExpressions = [
   ['not', ['dirname', '.hg']],
@@ -48,7 +53,7 @@ export class RemoteFileSystemServiceHandler {
   async watch(uri: string, options: filesystem_types.WatchOpt): Promise<void> {
     const {recursive, excludes} = options;
 
-    const excludeExpr = this._genWatchExcludedExpressions(excludes);
+    const excludeExpr = genWatchExcludedExpressions(excludes);
     if (!recursive) {
       // Do not match files in subdirectories:
       excludeExpr.push(['not', ['dirname', '', ['depth', 'ge', 2]]]);
@@ -115,16 +120,16 @@ export class RemoteFileSystemServiceHandler {
     try {
       return await fsPromise.mkdir(uri);
     } catch (err) {
-      throw this._createThriftError(err);
+      throw createThriftError(err);
     }
   }
 
   async stat(uri: string): Promise<filesystem_types.FileStat> {
     try {
       const statData = await fsPromise.lstat(uri);
-      return this._toFileStat(statData);
+      return convertToThriftFileStat(statData);
     } catch (err) {
-      throw this._createThriftError(err);
+      throw createThriftError(err);
     }
   }
 
@@ -134,7 +139,7 @@ export class RemoteFileSystemServiceHandler {
       const contents = await fsPromise.readFile(uri);
       return contents;
     } catch (err) {
-      throw this._createThriftError(err);
+      throw createThriftError(err);
     }
   }
 
@@ -154,53 +159,8 @@ export class RemoteFileSystemServiceHandler {
 
       await fsPromise.writeFile(uri, content, {flags});
     } catch (err) {
-      throw this._createThriftError(err);
+      throw createThriftError(err);
     }
-  }
-
-  _toFileStat(statData: fs.Stats): filesystem_types.FileStat {
-    const {size, atime, mtime, ctime} = statData;
-    const fileStat = new filesystem_types.FileStat();
-    fileStat.fsize = size;
-    fileStat.atime = atime.toString();
-    fileStat.mtime = mtime.toString();
-    fileStat.ctime = ctime.toString();
-    fileStat.ftype = this._toFileType(statData);
-    return fileStat;
-  }
-
-  _toFileType(statData: fs.Stats): filesystem_types.FileType {
-    if (statData.isFile() && statData.isDirectory()) {
-      this._logger.warn(
-        'Encountered a path that is both a file and directory.',
-      );
-    }
-    if (statData.isFile()) {
-      return filesystem_types.FileType.FILE;
-    } else if (statData.isDirectory()) {
-      return filesystem_types.FileType.DIRECTORY;
-    } else if (statData.isSymbolicLink()) {
-      return filesystem_types.FileType.SYMLINK;
-    } else {
-      return filesystem_types.FileType.UNKNOWN;
-    }
-  }
-
-  _genWatchExcludedExpressions(excludes: Array<string>): Array<mixed> {
-    return excludes.map(patternToIgnore => {
-      return [
-        'not',
-        ['match', patternToIgnore, 'wholename', {includedotfiles: true}],
-      ];
-    });
-  }
-
-  _createThriftError(err: Object): filesystem_types.Error {
-    const error = new filesystem_types.Error();
-    error.code = err.code;
-    error.message =
-      filesystem_types.ERROR_MAP[filesystem_types.ErrorCode[err.code]];
-    return error;
   }
 
   dispose() {
