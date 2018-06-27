@@ -122,8 +122,7 @@ export class RemoteFileSystemServiceHandler {
   async stat(uri: string): Promise<filesystem_types.FileStat> {
     try {
       const statData = await fsPromise.lstat(uri);
-      const fileStat = this._toFileStat(statData);
-      return fileStat;
+      return this._toFileStat(statData);
     } catch (err) {
       throw this._createThriftError(err);
     }
