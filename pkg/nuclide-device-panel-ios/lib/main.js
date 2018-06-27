@@ -19,7 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Expect} from 'nuclide-commons/expected';
-import {getDevices} from '../../nuclide-fbsimctl';
+import {observeIosDevices} from '../../nuclide-fbsimctl';
 
 class Activation {
   _disposables = new UniversalDisposable();
@@ -41,20 +41,16 @@ class Activation {
             ),
           );
         } else {
-          return getDevices().map(devices => {
-            if (devices instanceof Error) {
-              return Expect.error(devices);
-            } else {
-              return Expect.value(
-                devices.map(device => ({
-                  name: device.udid,
-                  displayName: device.name,
-                  architecture: devicePanelArchitecture(device.arch),
-                  ignoresSelection: true,
-                })),
-              );
-            }
-          });
+          return observeIosDevices().map(expected =>
+            expected.map(devices =>
+              devices.map(device => ({
+                name: device.udid,
+                displayName: device.name,
+                architecture: devicePanelArchitecture(device.arch),
+                ignoresSelection: true,
+              })),
+            ),
+          );
         }
       },
       getType: () => this._type,

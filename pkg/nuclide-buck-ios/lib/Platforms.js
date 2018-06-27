@@ -27,50 +27,51 @@ export function getSimulatorPlatform(
     Observable<LegacyProcessMessage>,
   ) => Observable<BuckEvent>,
 ): Observable<Platform> {
-  return fbsimctl.getDevices().map(devices => {
-    let simulators;
-    if (devices instanceof Error) {
+  return fbsimctl
+    .observeIosDevices()
+    .filter(expected => !expected.isPending)
+    .map(expected => {
       // TODO: Come up with a way to surface the error in UI
-      simulators = [];
-    } else {
-      simulators = devices.filter(device => device.type === 'simulator');
-    }
-    let deviceGroups;
-    if (simulators.length === 0) {
-      deviceGroups = BUILD_ONLY_SIMULATOR_GROUPS;
-    } else {
-      deviceGroups = Array.from(groupByOs(simulators).entries()).map(
-        ([os, simsForOs]) => ({
-          name: os,
-          devices: simsForOs.map(simulator => ({
-            name: simulator.name,
-            udid: simulator.udid,
-            arch: simulator.arch,
-            type: 'simulator',
-          })),
-        }),
-      );
-    }
+      const simulators = expected
+        .getOrDefault([])
+        .filter(device => device.type === 'simulator');
 
-    return {
-      isMobile: true,
-      name: 'Simulator',
-      tasksForDevice: device =>
-        getTasks(buckRoot, ruleType, device, debuggerCallback != null),
-      runTask: (builder, taskType, target, settings, device) =>
-        runTask(
-          builder,
-          taskType,
-          ruleType,
-          target,
-          settings,
-          device,
-          buckRoot,
-          debuggerCallback,
-        ),
-      deviceGroups,
-    };
-  });
+      let deviceGroups;
+      if (simulators.length === 0) {
+        deviceGroups = BUILD_ONLY_SIMULATOR_GROUPS;
+      } else {
+        deviceGroups = Array.from(groupByOs(simulators).entries()).map(
+          ([os, simsForOs]) => ({
+            name: os,
+            devices: simsForOs.map(simulator => ({
+              name: simulator.name,
+              udid: simulator.udid,
+              arch: simulator.arch,
+              type: 'simulator',
+            })),
+          }),
+        );
+      }
+
+      return {
+        isMobile: true,
+        name: 'Simulator',
+        tasksForDevice: device =>
+          getTasks(buckRoot, ruleType, device, debuggerCallback != null),
+        runTask: (builder, taskType, target, settings, device) =>
+          runTask(
+            builder,
+            taskType,
+            ruleType,
+            target,
+            settings,
+            device,
+            buckRoot,
+            debuggerCallback,
+          ),
+        deviceGroups,
+      };
+    });
 }
 
 export function getDevicePlatform(
@@ -80,10 +81,12 @@ export function getDevicePlatform(
     Observable<LegacyProcessMessage>,
   ) => Observable<BuckEvent>,
 ): Observable<Platform> {
-  return fbsimctl.getDevices().map(devices => {
-    let deviceGroups = [];
-
-    if (devices instanceof Array) {
+  return fbsimctl
+    .observeIosDevices()
+    .filter(expected => !expected.isPending)
+    .map(expected => {
+      let deviceGroups = [];
+      const devices = expected.getOrDefault([]);
       const physicalDevices = devices.filter(
         device => device.type === 'physical_device',
       );
@@ -101,29 +104,28 @@ export function getDevicePlatform(
           }),
         );
       }
-    }
 
-    deviceGroups.push(BUILD_ONLY_DEVICES_GROUP);
+      deviceGroups.push(BUILD_ONLY_DEVICES_GROUP);
 
-    return {
-      isMobile: true,
-      name: 'Device',
-      tasksForDevice: device =>
-        getTasks(buckRoot, ruleType, device, debuggerCallback != null),
-      runTask: (builder, taskType, target, settings, device) =>
-        runTask(
-          builder,
-          taskType,
-          ruleType,
-          target,
-          settings,
-          device,
-          buckRoot,
-          debuggerCallback,
-        ),
-      deviceGroups,
-    };
-  });
+      return {
+        isMobile: true,
+        name: 'Device',
+        tasksForDevice: device =>
+          getTasks(buckRoot, ruleType, device, debuggerCallback != null),
+        runTask: (builder, taskType, target, settings, device) =>
+          runTask(
+            builder,
+            taskType,
+            ruleType,
+            target,
+            settings,
+            device,
+            buckRoot,
+            debuggerCallback,
+          ),
+        deviceGroups,
+      };
+    });
 }
 
 function groupByOs(

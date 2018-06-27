@@ -57,7 +57,6 @@ export function observeAndroidDevices(
             fetching = false;
           });
       })
-      .startWith(Expect.pendingValue([]))
       .distinctUntilChanged((a, b) =>
         expectedEqual(
           a,
