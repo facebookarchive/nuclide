@@ -1531,7 +1531,7 @@ export default class DebugService implements IDebugService {
       return;
     }
     track(AnalyticsEvents.DEBUGGER_STOP);
-    this._model.removeProcess(session.getId());
+    const removedProcesses = this._model.removeProcess(session.getId());
     if (
       this._model.getProcesses() == null ||
       this._model.getProcesses().length === 0
@@ -1559,6 +1559,26 @@ export default class DebugService implements IDebugService {
 
         this.focusStackFrame(frameToFocus, threadToFocus, processToFocus);
       }
+    }
+
+    const createConsole = getConsoleService();
+    if (createConsole != null) {
+      const name = 'Nuclide Debugger';
+      const consoleApi = createConsole({
+        id: name,
+        name,
+      });
+
+      removedProcesses.forEach(p =>
+        consoleApi.append({
+          text:
+            'Process exited' +
+            (p.configuration.processName == null
+              ? ''
+              : ' (' + p.configuration.processName + ')'),
+          level: 'log',
+        }),
+      );
     }
 
     if (this._timer != null) {

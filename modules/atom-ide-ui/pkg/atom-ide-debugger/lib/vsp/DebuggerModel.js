@@ -1063,9 +1063,18 @@ export class Model implements IModel {
     return process;
   }
 
-  removeProcess(id: string): void {
-    this._processes = this._processes.filter(p => p.getId() !== id);
+  removeProcess(id: string): Array<Process> {
+    const removedProcesses = [];
+    this._processes = this._processes.filter(p => {
+      if (p.getId() === id) {
+        removedProcesses.push(p);
+        return false;
+      } else {
+        return true;
+      }
+    });
     this._emitter.emit(CALLSTACK_CHANGED);
+    return removedProcesses;
   }
 
   onDidChangeBreakpoints(
