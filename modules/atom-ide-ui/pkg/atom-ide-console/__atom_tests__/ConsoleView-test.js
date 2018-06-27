@@ -51,7 +51,7 @@ describe('ConsoleView', () => {
 
     const consoleHeaderComponent = consoleView._consoleHeaderComponent;
     invariant(consoleHeaderComponent != null);
-    const filterFocusSpy = spyOn(consoleHeaderComponent, 'focusFilter');
+    const filterFocusSpy = jest.spyOn(consoleHeaderComponent, 'focusFilter');
 
     const consoleScrollPaneTarget = workspaceEl.querySelector(
       '.console-scroll-pane-wrapper',

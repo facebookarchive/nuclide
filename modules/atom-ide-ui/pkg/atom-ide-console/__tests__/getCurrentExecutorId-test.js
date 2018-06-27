@@ -10,9 +10,20 @@
  * @format
  */
 
+import {Observable} from 'rxjs';
+import type {Executor} from '../lib/types';
 import getCurrentExecutorId from '../lib/getCurrentExecutorId';
 import * as Immutable from 'immutable';
-import {createDummyExecutor} from './Reducers-spec';
+
+export function createDummyExecutor(id: string): Executor {
+  return {
+    id,
+    name: id,
+    scopeName: 'text.plain',
+    send: (code: string) => {},
+    output: Observable.create(observer => {}),
+  };
+}
 
 const baseAppState = {
   createPasteFunction: null,
