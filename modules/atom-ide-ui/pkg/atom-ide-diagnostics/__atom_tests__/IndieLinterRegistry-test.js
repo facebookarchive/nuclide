@@ -68,19 +68,19 @@ describe('IndieLinterRegistry', () => {
     });
 
     it('supports onDidChange', () => {
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       delegate.onDidUpdate(spy);
       delegate.setMessages('test.txt', [message1]);
       expect(spy).toHaveBeenCalledWith([message1]);
     });
 
     it('supports onDidDestroy', () => {
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       delegate.onDidDestroy(spy);
-      expect(spy.callCount).toBe(0);
+      expect(spy.mock.calls.length).toBe(0);
       delegate.dispose();
       delegate.dispose();
-      expect(spy.callCount).toBe(1);
+      expect(spy.mock.calls.length).toBe(1);
     });
   });
 });

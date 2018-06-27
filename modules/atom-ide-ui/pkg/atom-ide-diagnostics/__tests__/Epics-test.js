@@ -30,7 +30,7 @@ describe('Epics', () => {
     const TEST_DIAGNOSTIC = {};
     const fakeMessages: Array<DiagnosticMessage> = ([TEST_DIAGNOSTIC, {}]: any);
 
-    it('fetches code actions for a set of diagnostics', () => {
+    it('fetches code actions for a set of diagnostics', async () => {
       const store = createStore(fakeMessageRangeTracker);
       store.dispatch(
         Actions.setCodeActionFetcher({
@@ -43,7 +43,7 @@ describe('Epics', () => {
         }),
       );
 
-      waitsForPromise(async () => {
+      await (async () => {
         expect(
           await fetchCodeActions(
             new ActionsObservable(
@@ -65,7 +65,7 @@ describe('Epics', () => {
             ]),
           ),
         ]);
-      });
+      })();
     });
   });
 });

@@ -30,10 +30,10 @@ describe('MessageRangeTracker', () => {
 
   let initiallyOpenEditor: atom$TextEditor = (null: any);
 
-  beforeEach(() => {
+  beforeEach(async () => {
     tracker = new MessageRangeTracker();
 
-    const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
+    const fixturesPath = nuclideUri.join(__dirname, '../__mocks__/fixtures');
     initiallyOpenFilePath = nuclideUri.join(
       fixturesPath,
       'initiallyOpenFile.txt',
@@ -69,9 +69,7 @@ describe('MessageRangeTracker', () => {
       },
     };
 
-    waitsForPromise(async () => {
-      initiallyOpenEditor = await atom.workspace.open(initiallyOpenFilePath);
-    });
+    initiallyOpenEditor = await atom.workspace.open(initiallyOpenFilePath);
   });
 
   afterEach(() => {
@@ -108,8 +106,8 @@ describe('MessageRangeTracker', () => {
     checkRep(tracker);
   });
 
-  it('should add markers to files when they are opened', () => {
-    waitsForPromise(async () => {
+  it('should add markers to files when they are opened', async () => {
+    await (async () => {
       tracker.addFileMessages([messageForInitiallyClosedFile]);
       checkRep(tracker);
       expect(tracker.getCurrentRange(messageForInitiallyClosedFile)).toBeNull();
@@ -129,7 +127,7 @@ describe('MessageRangeTracker', () => {
       invariant(range != null);
       expect(range.isEqual(new Range([2, 4], [2, 31]))).toBeTruthy();
       checkRep(tracker);
-    });
+    })();
   });
 
   // The tests below break the MessageRangeTracker abstraction so that they can ensure that disposal

@@ -19,12 +19,13 @@ const grammar = 'testgrammar';
 
 describe('createAdapter', () => {
   function createAdapterWithMock(linterProviders) {
-    return createAdapter(linterProviders, jasmine.createSpy());
+    return createAdapter(linterProviders, jest.fn());
   }
 
   let fakeLinter: any;
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     const fakeEditor = {
       getPath() {
         return 'foo';
@@ -33,7 +34,9 @@ describe('createAdapter', () => {
         return {scopeName: grammar};
       },
     };
-    spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
+    jest
+      .spyOn(atom.workspace, 'getActiveTextEditor')
+      .mockReturnValue(fakeEditor);
     fakeLinter = {
       name: 'test',
       grammarScopes: [grammar],
@@ -41,10 +44,6 @@ describe('createAdapter', () => {
       lintOnFly: true,
       lint: () => Promise.resolve([]),
     };
-  });
-
-  afterEach(() => {
-    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
   });
 
   it('should return a linter adapter', () => {
