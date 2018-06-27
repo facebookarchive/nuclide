@@ -9,25 +9,39 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CodeSearchResult} from './types';
+import type {CodeSearchResult, DirectoryCodeSearchParams} from './types';
 
 import {Observable} from 'rxjs';
 import {observeProcess} from 'nuclide-commons/process';
 import {mergeOutputToResults} from './handlerCommon';
 import {parseVcsGrepLine} from './parser';
 
-export function search(
-  directory: NuclideUri,
-  regex: RegExp,
-): Observable<CodeSearchResult> {
-  const sharedArgs = (regex.ignoreCase ? ['-i'] : []).concat([
+export function search({
+  regex,
+  directory,
+  leadingLines,
+  trailingLines,
+}: DirectoryCodeSearchParams): Observable<CodeSearchResult> {
+  const sharedArgs = [];
+  if (regex.ignoreCase) {
+    sharedArgs.push('-i');
+  }
+  // hg grep actually requires no space between A/B and the parameter!
+  // git grep doesn't seem to mind.
+  if (leadingLines != null) {
+    sharedArgs.push('-B' + String(leadingLines));
+  }
+  if (trailingLines != null) {
+    sharedArgs.push('-A' + String(trailingLines));
+  }
+  // TODO: handle limit in params
+  sharedArgs.push(
     // print line number
     '-n',
     '-E',
     regex.source,
     directory,
-  ]);
+  );
   const observeVcsGrepProcess = (command, subcommand) => {
     return observeProcess(command, [subcommand].concat(sharedArgs), {
       cwd: directory,
@@ -48,7 +62,7 @@ export function search(
     ),
     event => parseVcsGrepLine(event, directory, regex),
     regex,
-    0,
-    0,
+    leadingLines || 0,
+    trailingLines || 0,
   );
 }

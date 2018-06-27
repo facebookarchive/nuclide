@@ -20,7 +20,7 @@ export const PARSE_REGEXES = Object.freeze({
   rg: /^(.+)\0(\d+)[:-](.*)$/,
   ack: /^(.+)[:-](\d+)[:-](.*)$/,
   grep: /^(.+)\0(\d+)[:-](.*)$/,
-  vcsGrep: /^(.+):(\d+):(.*)$/,
+  vcsGrep: /^(.+)[:-](\d+)[:-](.*)$/,
 });
 
 export type ParseResult = {

@@ -54,7 +54,11 @@ export function codeSearch(
   tool: ?CodeSearchTool,
   maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
-  return searchInDirectory(directory, regex, tool, useVcsSearch)
+  return searchInDirectory(tool, useVcsSearch, {
+    regex,
+    directory,
+    recursive: true,
+  })
     .take(maxResults)
     .publish();
 }
@@ -104,7 +108,11 @@ export function remoteAtomSearch(
   tool: ?CodeSearchTool,
 ): ConnectableObservable<search$FileResult> {
   return mergeSearchResults(
-    searchInDirectories(directory, regex, subdirs, useVcsSearch, tool),
+    searchInDirectories(subdirs, tool, useVcsSearch, {
+      regex,
+      recursive: true,
+      directory,
+    }),
   ).publish();
 }
 

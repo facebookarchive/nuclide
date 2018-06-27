@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {CodeSearchResult, CodeSearchTool} from './types';
+import type {
+  CodeSearchResult,
+  CodeSearchTool,
+  DirectoryCodeSearchParams,
+} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Minimatch} from 'minimatch';
@@ -20,29 +24,27 @@ import {searchWithTool, resolveTool} from './searchTools';
 import {search as vcsSearch} from './VcsSearchHandler';
 
 export function searchInDirectory(
-  directory: NuclideUri,
-  regex: RegExp,
   tool: ?CodeSearchTool,
   useVcsSearch: boolean,
+  params: DirectoryCodeSearchParams,
 ): Observable<CodeSearchResult> {
-  const params = {regex, directory, recursive: true};
   return useVcsSearch
-    ? vcsSearch(directory, regex).catch(() => searchWithTool(tool, params))
+    ? vcsSearch(params).catch(() => searchWithTool(tool, params))
     : searchWithTool(tool, params);
 }
 
 export function searchInDirectories(
-  directory: NuclideUri,
-  regex: RegExp,
-  subdirs: Array<string>,
-  useVcsSearch: boolean,
+  subdirs: Array<NuclideUri>,
   tool: ?CodeSearchTool,
+  useVcsSearch: boolean,
+  options: DirectoryCodeSearchParams,
 ): Observable<CodeSearchResult> {
+  const {directory} = options;
   // Resolve tool once here so we do not call 'which' for each subdir.
   return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
     if (!subdirs || subdirs.length === 0) {
       // Since no subdirs were specified, run search on the root directory.
-      return searchInDirectory(directory, regex, actualTool, useVcsSearch);
+      return searchInDirectory(tool, useVcsSearch, options);
     } else if (subdirs.find(subdir => subdir.includes('*'))) {
       // Mimic Atom and use minimatch for glob matching.
       const matchers = subdirs.map(subdir => {
@@ -54,12 +56,7 @@ export function searchInDirectories(
         return new Minimatch(pattern, {matchBase: true, dot: true});
       });
       // TODO: This should walk the subdirectories and filter by glob before searching.
-      return searchInDirectory(
-        directory,
-        regex,
-        actualTool,
-        useVcsSearch,
-      ).filter(result =>
+      return searchInDirectory(tool, useVcsSearch, options).filter(result =>
         Boolean(matchers.find(matcher => matcher.match(result.file))),
       );
     } else {
@@ -71,12 +68,10 @@ export function searchInDirectories(
               nuclideUri.join(directory, subdir),
             );
             if (stat.isDirectory()) {
-              return searchInDirectory(
-                nuclideUri.join(directory, subdir),
-                regex,
-                actualTool,
-                useVcsSearch,
-              );
+              return searchInDirectory(tool, useVcsSearch, {
+                ...options,
+                directory: nuclideUri.join(directory, subdir),
+              });
             } else {
               return Observable.empty();
             }

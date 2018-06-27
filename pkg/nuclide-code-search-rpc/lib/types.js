@@ -20,15 +20,17 @@ type CodeSearchParamsBase = {
   trailingLines?: number,
 };
 
-export type CodeSearchParams =
-  | (CodeSearchParamsBase & {
-      recursive: true,
-      directory: string,
-    })
-  | (CodeSearchParamsBase & {
-      recursive: false,
-      files: Array<string>,
-    });
+export type DirectoryCodeSearchParams = CodeSearchParamsBase & {
+  recursive: true,
+  directory: string,
+};
+
+export type FileCodeSearchParams = CodeSearchParamsBase & {
+  recursive: false,
+  files: Array<string>,
+};
+
+export type CodeSearchParams = DirectoryCodeSearchParams | FileCodeSearchParams;
 
 // Note: rows and columns are 0-based.
 export type CodeSearchResult = {
