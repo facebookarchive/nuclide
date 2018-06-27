@@ -77,14 +77,16 @@ function checkQueryPs(
 
     beforeEach(() => {
       originalPid = setProcessPid(mockPid);
-      jest.spyOn(nuclideProcess, 'runCommand').mockImplementation((cmd, args, options) => {
-        expect(cmd).toEqual('ps');
-        expect(args).toEqual(['-eo', 'pid,ppid,pcpu,time,rss,vsz,command']);
-        return Observable.of(
-          '  PID  PPID  %CPU      TIME    RSS      VSZ COMMAND\n' +
-            data.map(entry => entry.line + '\n').join(''),
-        );
-      });
+      jest
+        .spyOn(nuclideProcess, 'runCommand')
+        .mockImplementation((cmd, args, options) => {
+          expect(cmd).toEqual('ps');
+          expect(args).toEqual(['-eo', 'pid,ppid,pcpu,time,rss,vsz,command']);
+          return Observable.of(
+            '  PID  PPID  %CPU      TIME    RSS      VSZ COMMAND\n' +
+              data.map(entry => entry.line + '\n').join(''),
+          );
+        });
     });
     afterEach(() => {
       setProcessPid(originalPid);

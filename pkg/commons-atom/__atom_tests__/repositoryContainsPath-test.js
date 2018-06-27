@@ -45,9 +45,11 @@ describe('repositoryContainsPath', () => {
       // which makes the Directory::contains method inaccurate in
       // `repositoryContainsPath`. We mock out the method here to get the
       // expected behavior.
-      jest.spyOn(gitRepository, 'getWorkingDirectory').mockImplementation(() => {
-        return repoRoot;
-      });
+      jest
+        .spyOn(gitRepository, 'getWorkingDirectory')
+        .mockImplementation(() => {
+          return repoRoot;
+        });
 
       expect(repositoryContainsPath(gitRepository, repoRoot)).toBe(true);
       const subdir = nuclideUri.join(repoRoot, 'subdir');

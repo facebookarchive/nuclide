@@ -43,13 +43,15 @@ describe('BuckBuildSystem', () => {
     });
 
     it('emits diagnostics', async () => {
-      const diagnostics = []
+      const diagnostics = [];
       const subscription = buckBuildSystem
         .getDiagnosticProvider()
         .updates.subscribe(update => {
           // Make a deep copy (since the messages will change.)
-          const deepCopy = Array.from(update.entries())
-            .map(([key, value]) => [key, Array.from(value)]);
+          const deepCopy = Array.from(update.entries()).map(([key, value]) => [
+            key,
+            Array.from(value),
+          ]);
           diagnostics.push(new Map(deepCopy));
         });
 

@@ -274,8 +274,12 @@ describe('HgRepositoryClient', () => {
         return projectDirectoryClone.contains(filePath);
       });
 
-      jest.spyOn(repo, '_updateDiffInfo').mockReturnValue(Observable.of('fake'));
-      jest.spyOn(repo, '_observePaneItemVisibility').mockReturnValue(Observable.of(true));
+      jest
+        .spyOn(repo, '_updateDiffInfo')
+        .mockReturnValue(Observable.of('fake'));
+      jest
+        .spyOn(repo, '_observePaneItemVisibility')
+        .mockReturnValue(Observable.of(true));
     });
   });
 
@@ -294,13 +298,14 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      jest.spyOn(repo, '_getCurrentHeadId').mockReturnValue(Observable.of('test'));
-      jest.spyOn(
-        repo._sharedMembers.service,
-        'fetchFileContentAtRevision',
-      ).mockImplementation(filePath => {
-        return new Observable.of('test').publish();
-      });
+      jest
+        .spyOn(repo, '_getCurrentHeadId')
+        .mockReturnValue(Observable.of('test'));
+      jest
+        .spyOn(repo._sharedMembers.service, 'fetchFileContentAtRevision')
+        .mockImplementation(filePath => {
+          return new Observable.of('test').publish();
+        });
       jest.spyOn(repo, '_getFileDiffs').mockImplementation(pathsToFetch => {
         const diffs = [];
         for (const filePath of pathsToFetch) {

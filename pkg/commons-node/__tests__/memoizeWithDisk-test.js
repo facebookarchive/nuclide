@@ -18,15 +18,13 @@ describe('memoizeWithDisk', () => {
   it('memoizes the result of a function', () => {
     const tempdir = temp.mkdirSync();
 
-    const func1 = jest.fn()
-      .mockImplementation((map: Map<string, number>) => {
-        return map.get('x');
-      });
+    const func1 = jest.fn().mockImplementation((map: Map<string, number>) => {
+      return map.get('x');
+    });
 
-    const func2 = jest.fn()
-      .mockImplementation((map: Map<string, number>) => {
-        return map.get('y');
-      });
+    const func2 = jest.fn().mockImplementation((map: Map<string, number>) => {
+      return map.get('y');
+    });
 
     // Spies are a bit special because they're a wrapper function.
     // Mock out .toString() to make the stringable values different.

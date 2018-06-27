@@ -16,12 +16,14 @@ import {Observable} from 'rxjs';
 describe('createMessageStream', () => {
   it('splits the output by message', async () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
-      name =>
-        name === 'nuclide-adb-logcat.whitelistedTags'
-          ? Observable.of('.*')
-          : original(name),
-    );
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-adb-logcat.whitelistedTags'
+            ? Observable.of('.*')
+            : original(name),
+      );
 
     await (async () => {
       const output = Observable.from([
@@ -47,12 +49,14 @@ describe('createMessageStream', () => {
 
   it('only includes messages with whitelisted tags', async () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
-      name =>
-        name === 'nuclide-adb-logcat.whitelistedTags'
-          ? Observable.of('ExampleTag')
-          : original(name),
-    );
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-adb-logcat.whitelistedTags'
+            ? Observable.of('ExampleTag')
+            : original(name),
+      );
 
     await (async () => {
       const output = Observable.from([
@@ -76,12 +80,14 @@ describe('createMessageStream', () => {
   it('shows an error (once) if the regular expression is invalid', async () => {
     jest.spyOn(atom.notifications, 'addError').mockImplementation(() => {});
     const original = featureConfig.observeAsStream.bind(featureConfig);
-    jest.spyOn(featureConfig, 'observeAsStream').mockImplementation(
-      name =>
-        name === 'nuclide-adb-logcat.whitelistedTags'
-          ? Observable.of('(')
-          : original(name),
-    );
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-adb-logcat.whitelistedTags'
+            ? Observable.of('(')
+            : original(name),
+      );
 
     await (async () => {
       const output = Observable.from([

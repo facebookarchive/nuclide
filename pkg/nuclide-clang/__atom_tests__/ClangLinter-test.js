@@ -26,11 +26,13 @@ describe('ClangDiagnosticsProvider', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(range, 'wordAtPosition').mockImplementation((editor, pos, regex) => {
-      return {
-        range: new Range(pos, [pos.row, pos.column + 1]),
-      };
-    });
+    jest
+      .spyOn(range, 'wordAtPosition')
+      .mockImplementation((editor, pos, regex) => {
+        return {
+          range: new Range(pos, [pos.row, pos.column + 1]),
+        };
+      });
   });
 
   describe('processDiagnostics', () => {

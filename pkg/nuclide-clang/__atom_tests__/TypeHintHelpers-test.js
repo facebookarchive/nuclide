@@ -18,7 +18,9 @@ describe('TypeHintHelpers', () => {
   const mockEditor: atom$TextEditor = (null: any);
   let mockDeclaration;
   beforeEach(() => {
-    jest.spyOn(libclang, 'getDeclaration').mockImplementation(async () => mockDeclaration);
+    jest
+      .spyOn(libclang, 'getDeclaration')
+      .mockImplementation(async () => mockDeclaration);
   });
 
   it('can return a typehint', async () => {
