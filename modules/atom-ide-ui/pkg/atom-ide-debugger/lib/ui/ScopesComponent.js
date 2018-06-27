@@ -95,7 +95,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
     if (focusedStackFrame == null) {
       return Observable.of(Expect.value([]));
     } else {
-      return Observable.of(Expect.pendingValue([])).concat(
+      return Observable.of(Expect.pending()).concat(
         Observable.fromPromise(
           focusedStackFrame
             .getScopes()
@@ -152,7 +152,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
   };
 
   _getScopeVariables(scope: IScope): Observable<Expected<Array<IVariable>>> {
-    return Observable.of(Expect.pendingValue([])).concat(
+    return Observable.of(Expect.pending()).concat(
       Observable.fromPromise(
         scope
           .getChildren()

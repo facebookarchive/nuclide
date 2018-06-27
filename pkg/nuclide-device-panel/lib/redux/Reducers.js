@@ -24,9 +24,9 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         device: null,
-        devices: Expect.pendingValue([]),
-        infoTables: Expect.pendingValue(new Map()),
-        processes: Expect.pendingValue([]),
+        devices: Expect.pending(),
+        infoTables: Expect.pending(),
+        processes: Expect.pending(),
         actions: [],
         processTasks: [],
         deviceTypeComponents: Immutable.Map(),
@@ -43,9 +43,9 @@ export function app(state: AppState, action: Action): AppState {
         ...state,
         deviceType,
         device: null,
-        devices: Expect.pendingValue([]),
-        infoTables: Expect.pendingValue(new Map()),
-        processes: Expect.pendingValue([]),
+        devices: Expect.pending(),
+        infoTables: Expect.pending(),
+        processes: Expect.pending(),
         actions: [],
         processTasks: [],
         deviceTypeComponents: Immutable.Map(),
@@ -147,7 +147,7 @@ function isDeviceConnected(
   device: ?Device,
   deviceList: Expected<Device[]>,
 ): boolean {
-  if (device == null || deviceList.isError) {
+  if (device == null || !deviceList.isValue) {
     return false;
   }
   for (const _device of deviceList.value) {

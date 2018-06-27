@@ -163,7 +163,7 @@ export class DeviceTable extends React.Component<Props> {
       }
     }
     if (
-      !this.props.devices.isError &&
+      this.props.devices.isValue &&
       this.props.devices.value[selectedIndex].ignoresSelection
     ) {
       return false;
@@ -175,7 +175,7 @@ export class DeviceTable extends React.Component<Props> {
     item: any,
     selectedDeviceIndex: number,
   ): void => {
-    if (!this.props.devices.isError) {
+    if (this.props.devices.isValue) {
       this.props.setDevice(this.props.devices.value[selectedDeviceIndex]);
     }
   };

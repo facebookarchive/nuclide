@@ -11,45 +11,47 @@
  */
 
 /**
- * Expected<T> tries to mimic llvm's Expected class.
- * This is specially useful for Observables that can return a stream of errors instead of closing
- * the subscription.
+ * This is a wrapper type useful for Observables to return errors during its stream
+ * and later switch back to regular values if they recover. Normally, a source finishes after
+ * passing an uncaught error.
  */
-
-type ExpectedError<T> = {
-  isError: true,
-  isPending: false,
-  error: Error,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-};
-
-type ExpectedValue<T> = {
-  isError: false,
-  isPending: false,
-  value: T,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-};
-
-type ExpectedPendingValue<T> = {
-  isError: false,
-  isPending: true,
-  value: T,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-};
-
 export type Expected<T> =
   | ExpectedError<T>
   | ExpectedValue<T>
-  | ExpectedPendingValue<T>;
+  | ExpectedPending<T>;
+
+type ExpectedError<T> = {|
+  isError: true,
+  isPending: false,
+  isValue: false,
+  error: Error,
+  getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
+|};
+
+type ExpectedValue<T> = {|
+  isError: false,
+  isPending: false,
+  isValue: true,
+  value: T,
+  getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
+|};
+
+type ExpectedPending<T> = {|
+  isError: false,
+  isPending: true,
+  isValue: false,
+  getOrDefault: (def: T) => T,
+  map<U>(fn: (T) => U): Expected<U>,
+|};
 
 export class Expect {
   static error<T>(error: Error): ExpectedError<T> {
     return {
       isError: true,
       isPending: false,
+      isValue: false,
       error,
       getOrDefault(def: T): T {
         return def;
@@ -64,6 +66,7 @@ export class Expect {
     return {
       isError: false,
       isPending: false,
+      isValue: true,
       value,
       getOrDefault(def: T): T {
         return this.value;
@@ -74,16 +77,16 @@ export class Expect {
     };
   }
 
-  static pendingValue<T>(value: T): ExpectedPendingValue<T> {
+  static pending<T>(): ExpectedPending<T> {
     return {
       isError: false,
       isPending: true,
-      value,
+      isValue: false,
       getOrDefault(def: T): T {
-        return this.value;
+        return def;
       },
       map<U>(fn: T => U): Expected<U> {
-        return Expect.pendingValue(fn(value));
+        return Expect.pending();
       },
     };
   }
@@ -95,12 +98,12 @@ export function expectedEqual<T>(
   valueEqual: (valueA: T, valueB: T) => boolean,
   errorEqual: (errorA: Error, errorB: Error) => boolean,
 ): boolean {
-  if (a.isError && b.isError) {
+  if (a.isValue && b.isValue) {
+    return valueEqual(a.value, b.value);
+  } else if (a.isError && b.isError) {
     return errorEqual(a.error, b.error);
   } else if (a.isPending && b.isPending) {
     return true;
-  } else if (!a.isError && !b.isError && !a.isPending && !b.isPending) {
-    return valueEqual(a.value, b.value);
   } else {
     return false;
   }

@@ -99,8 +99,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
     this.setState({
       selectedDevice: device,
-      javaProcesses:
-        device == null ? Expect.value([]) : Expect.pendingValue([]),
+      javaProcesses: device == null ? Expect.value([]) : Expect.pending(),
       selectedProcess: null,
       selectedProcessName: this.props.deserialize(),
     });
@@ -127,18 +126,14 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       this.state.selectedProcess == null
         ? null
         : this.state.selectedProcess.pid;
-    let selectedProcess =
-      javaProcesses.isPending || javaProcesses.isError
-        ? null
-        : javaProcesses.value.find(process => process.pid === selectedPid);
+    let selectedProcess = javaProcesses
+      .getOrDefault([])
+      .find(process => process.pid === selectedPid);
 
     if (this.state.selectedProcessName != null) {
-      selectedProcess =
-        javaProcesses.isPending || javaProcesses.isError
-          ? null
-          : javaProcesses.value.find(
-              process => process.name === this.state.selectedProcessName,
-            );
+      selectedProcess = javaProcesses
+        .getOrDefault([])
+        .find(process => process.name === this.state.selectedProcessName);
     }
 
     this.setState({
@@ -227,21 +222,18 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       </div>
     );
 
-    const processListRows =
-      !this.state.javaProcesses.isPending && !this.state.javaProcesses.isError
-        ? this._sortRows(
-            this.state.javaProcesses.value.map(processRow => {
-              const data = {
-                pid: processRow.pid,
-                user: processRow.user,
-                name: processRow.name,
-              };
-              return {data};
-            }),
-            this.state.sortedColumn,
-            this.state.sortDescending,
-          )
-        : [];
+    const processListRows = this._sortRows(
+      this.state.javaProcesses.getOrDefault([]).map(processRow => {
+        const data = {
+          pid: processRow.pid,
+          user: processRow.user,
+          name: processRow.name,
+        };
+        return {data};
+      }),
+      this.state.sortedColumn,
+      this.state.sortDescending,
+    );
 
     const selectedRows =
       this.state.selectedProcess == null

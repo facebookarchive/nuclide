@@ -21,7 +21,6 @@ import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {arrayEqual} from 'nuclide-commons/collection';
 import invariant from 'assert';
 
 const NO_DEVICES_MSG = 'No adb devices attached!';
@@ -32,7 +31,7 @@ type Props = {
 };
 
 type State = {
-  deviceList: Expected<Device[]>,
+  deviceList: Expected<Array<Device>>,
   selectedDevice: ?Device,
 };
 
@@ -53,7 +52,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     );
 
     this.state = {
-      deviceList: Expect.pendingValue([]),
+      deviceList: Expect.pending(),
       selectedDevice: null,
     };
   }
@@ -61,25 +60,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
   componentDidMount(): void {
     this._disposables.add(
       observeAndroidDevices(this.props.targetUri)
-        .startWith(Expect.pendingValue([]))
-        .distinctUntilChanged((a, b) => {
-          if (a.isPending || b.isPending) {
-            return a.isPending === b.isPending;
-          }
-
-          if (a.isError || b.isError) {
-            return a.isError === b.isError;
-          }
-
-          invariant(!a.isPending && !b.isPending && !a.isError && !b.isError);
-          return arrayEqual(
-            a.value != null ? a.value : [],
-            b.value != null ? b.value : [],
-            (x, y) => {
-              return x.name === y.name;
-            },
-          );
-        })
+        .startWith(Expect.pending())
         .subscribe(deviceList => this._handleDeviceListChange(deviceList)),
     );
   }
@@ -88,18 +69,16 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  _handleDeviceListChange(deviceList: Expected<Device[]>): void {
+  _handleDeviceListChange(deviceList: Expected<Array<Device>>): void {
     const previousDevice = this.state.selectedDevice;
     let selectedDevice =
-      deviceList.isError || deviceList.isPending || previousDevice == null
+      previousDevice == null
         ? null
-        : deviceList.value.find(device => device.name === previousDevice.name);
+        : deviceList
+            .getOrDefault([])
+            .find(device => device.name === previousDevice.name);
 
-    if (
-      selectedDevice == null &&
-      !deviceList.isError &&
-      !deviceList.isPending
-    ) {
+    if (selectedDevice == null && deviceList.isValue) {
       selectedDevice = deviceList.value[0];
     }
 
@@ -111,9 +90,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
   }
 
   _getDeviceItems(): Array<MenuItem> {
-    invariant(
-      !this.state.deviceList.isError && !this.state.deviceList.isPending,
-    );
+    invariant(this.state.deviceList.isValue);
     if (this.state.deviceList.value.length === 0) {
       return [{value: null, label: NO_DEVICES_MSG}];
     }

@@ -93,7 +93,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       pathMenuItems: this._getPathMenuItems(),
       attachPort: null,
       attachType: 'webserver',
-      attachTargets: Expect.pendingValue([]),
+      attachTargets: Expect.pending(),
     };
   }
 
@@ -188,15 +188,12 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
           </div>
         );
 
-    const rows =
-      this.state.attachTargets.isPending || this.state.attachTargets.isError
-        ? []
-        : this.state.attachTargets.value.map(target => ({
-            data: {
-              pid: target.pid,
-              command: target.command,
-            },
-          }));
+    const rows = this.state.attachTargets.getOrDefault([]).map(target => ({
+      data: {
+        pid: target.pid,
+        command: target.command,
+      },
+    }));
 
     let selectedIndex = -1;
     if (this.state.attachPort != null) {

@@ -74,7 +74,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
   _handleDeviceChange = (device: ?Device): void => {
     const state: $Shape<State> = {
       selectedDevice: device,
-      packages: device == null ? Expect.value([]) : Expect.pendingValue([]),
+      packages: device == null ? Expect.value([]) : Expect.pending(),
     };
     const value = this.props.deserialize();
     if (
@@ -105,13 +105,9 @@ export class DeviceAndPackage extends React.Component<Props, State> {
         ) : (
           <Dropdown
             disabled={this.state.selectedDevice == null}
-            options={
-              this.state.packages.isPending || this.state.packages.isError
-                ? []
-                : this.state.packages.value.map(packageName => {
-                    return {value: packageName, label: packageName};
-                  })
-            }
+            options={this.state.packages.getOrDefault([]).map(packageName => {
+              return {value: packageName, label: packageName};
+            })}
             onChange={value => this.setState({launchPackage: value})}
             value={this.state.launchPackage}
           />
