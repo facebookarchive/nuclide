@@ -11,6 +11,7 @@
  */
 
 import fs from 'fs';
+import path from 'path';
 import rimraf from 'rimraf';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -21,6 +22,7 @@ import {
   genWatchExcludedExpressions,
   createThriftError,
   createThriftErrorWithCode,
+  convertToThriftFileEntry,
 } from './converter';
 
 const commonWatchIgnoredExpressions = [
@@ -218,6 +220,22 @@ export class RemoteFileSystemServiceHandler {
           await fsPromise.unlink(uri);
         }
       }
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
+    try {
+      const files: Array<string> = await fsPromise.readdir(uri);
+      // Promise.all either resolves with an array of all resolved promises, or
+      // it rejects with a single error
+      return Promise.all(
+        files.map(async file => {
+          const statData = await this.stat(path.join(uri, file));
+          return convertToThriftFileEntry(file, statData);
+        }),
+      );
     } catch (err) {
       throw createThriftError(err);
     }

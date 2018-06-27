@@ -110,6 +110,10 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     return this._client.deletePath(uri, options);
   }
 
+  readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
+    return this._client.readDirectory(uri);
+  }
+
   getOptions(): createThriftClientOptions {
     return this._options;
   }

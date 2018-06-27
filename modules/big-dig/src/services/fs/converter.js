@@ -84,3 +84,13 @@ export function createThriftErrorWithCode(
   error.details = JSON.stringify(details);
   return error;
 }
+
+export function convertToThriftFileEntry(
+  fname: string,
+  statData: filesystem_types.FileStat,
+): filesystem_types.FileEntry {
+  return {
+    fname,
+    ftype: statData.ftype,
+  };
+}
