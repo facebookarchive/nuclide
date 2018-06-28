@@ -30,13 +30,6 @@ export type AdbDevice = {|
   transportId: ?string,
 |};
 
-export type DeviceDescription = {|
-  name: string,
-  architecture: string,
-  apiVersion: string,
-  model: string,
-|};
-
 export type Process = {
   user: string,
   pid: number,

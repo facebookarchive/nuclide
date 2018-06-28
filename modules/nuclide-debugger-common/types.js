@@ -295,12 +295,9 @@ export interface DeviceTypeComponentProvider {
 // Basic objects
 //
 
-export type DeviceArchitecture = 'x86' | 'x86_64' | 'arm' | 'arm64' | '';
-
 export type Device = {|
   name: string,
   displayName: string,
-  architecture: DeviceArchitecture,
   ignoresSelection?: boolean,
 |};
 

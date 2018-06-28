@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  DeviceArchitecture,
-  DevicePanelServiceApi,
-} from 'nuclide-debugger-common/types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -46,7 +43,6 @@ class Activation {
               devices.map(device => ({
                 name: device.udid,
                 displayName: device.name,
-                architecture: devicePanelArchitecture(device.arch),
                 ignoresSelection: true,
               })),
             ),
@@ -55,22 +51,6 @@ class Activation {
       },
       getType: () => this._type,
     });
-  }
-}
-
-function devicePanelArchitecture(arch: string): DeviceArchitecture {
-  switch (arch) {
-    case 'x86_64':
-      return 'x86_64';
-    case 'i386':
-      return 'x86';
-    case 'arm64':
-      return 'arm64';
-    case 'armv7':
-    case 'armv7s':
-      return 'arm';
-    default:
-      return '';
   }
 }
 

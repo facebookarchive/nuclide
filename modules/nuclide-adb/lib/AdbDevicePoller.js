@@ -97,6 +97,5 @@ function parseRawDevice(device: AdbDevice): Device {
   return {
     name: device.serial,
     displayName,
-    architecture: '',
   };
 }
