@@ -436,8 +436,16 @@ export class Adb {
               break;
           }
         }
+        const prettyName =
+          serial.startsWith('emulator') ||
+          serial.startsWith('localhost:') ||
+          model == null
+            ? serial
+            : model;
+
         return {
           serial,
+          prettyName,
           product,
           model,
           device,

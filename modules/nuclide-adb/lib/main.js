@@ -11,3 +11,4 @@
  */
 
 export {getAdbServiceByNuclideUri} from './utils';
+export {adbDeviceForIdentifier, observeAndroidDevices} from './AdbDevicePoller';

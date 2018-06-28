@@ -103,21 +103,21 @@ export type PlatformGroup = {
   platforms: Array<Platform>,
 };
 
-export type MobilePlatform = {
+export type MobilePlatform = {|
   isMobile: true,
   name: string,
-  tasksForDevice: (device: ?Device) => Set<TaskType>,
+  tasksForDevice: (device: Device) => Set<TaskType>,
   runTask: (
     builder: BuckBuildSystem,
     type: TaskType,
     buildTarget: ResolvedBuildTarget,
     taskSettings: TaskSettings,
-    device: ?Device,
+    device: Device,
   ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
   extraUiWhenSelected?: (device: ?Device) => ?PlatformProviderUi,
   getCompilationDatabaseParams?: () => CompilationDatabaseParams,
-};
+|};
 
 export type CompilationDatabaseParams = {
   flavorsForTarget: Array<string>,
@@ -125,7 +125,7 @@ export type CompilationDatabaseParams = {
   useDefaultPlatform?: boolean,
 };
 
-export type DesktopPlatform = {
+export type DesktopPlatform = {|
   isMobile: false,
   name: string,
   tasksForBuildRuleType: (ruleType: ResolvedRuleType) => Set<TaskType>,
@@ -135,7 +135,7 @@ export type DesktopPlatform = {
     buildTarget: ResolvedBuildTarget,
     taskSettings: TaskSettings,
   ) => Observable<TaskEvent>,
-};
+|};
 
 export type Platform = MobilePlatform | DesktopPlatform;
 
@@ -145,6 +145,7 @@ export type DeviceGroup = {
 };
 
 export type Device = {
+  identifier: string,
   name: string,
 };
 

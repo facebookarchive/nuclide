@@ -11,7 +11,7 @@
 
 import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
-import {observeAndroidDevices} from 'nuclide-adb/lib/AdbDevicePoller';
+import {observeAndroidDevices} from 'nuclide-adb';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AndroidDeviceInfoProvider} from './providers/AndroidDeviceInfoProvider';
 import {AndroidDeviceProcessesProvider} from './providers/AndroidDeviceProcessesProvider';
@@ -25,7 +25,15 @@ export function registerDevicePanelProviders(
   return new UniversalDisposable(
     api.registerListProvider({
       getType: () => 'Android',
-      observe: host => observeAndroidDevices(host),
+      observe: host =>
+        observeAndroidDevices(host).map(expected =>
+          expected.map(devices =>
+            devices.map(d => ({
+              displayName: d.prettyName,
+              name: d.serial,
+            })),
+          ),
+        ),
     }),
     api.registerInfoProvider(new AndroidDeviceInfoProvider()),
     api.registerProcessesProvider(new AndroidDeviceProcessesProvider()),

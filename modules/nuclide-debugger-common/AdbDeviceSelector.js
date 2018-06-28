@@ -10,12 +10,13 @@
  * @format
  */
 
-import type {Device} from 'nuclide-debugger-common/types';
+import type {AdbDevice} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
+import type {Device} from './types';
 
-import {observeAndroidDevices} from 'nuclide-adb/lib/AdbDevicePoller';
+import {observeAndroidDevices} from 'nuclide-adb';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -31,8 +32,8 @@ type Props = {
 };
 
 type State = {
-  deviceList: Expected<Array<Device>>,
-  selectedDevice: ?Device,
+  deviceList: Expected<Array<AdbDevice>>,
+  selectedDevice: ?AdbDevice,
 };
 
 export class AdbDeviceSelector extends React.Component<Props, State> {
@@ -69,14 +70,14 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  _handleDeviceListChange(deviceList: Expected<Array<Device>>): void {
+  _handleDeviceListChange(deviceList: Expected<Array<AdbDevice>>): void {
     const previousDevice = this.state.selectedDevice;
     let selectedDevice =
       previousDevice == null
         ? null
         : deviceList
             .getOrDefault([])
-            .find(device => device.name === previousDevice.name);
+            .find(device => device.serial === previousDevice.serial);
 
     if (selectedDevice == null && deviceList.isValue) {
       selectedDevice = deviceList.value[0];
@@ -86,7 +87,14 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
       deviceList,
       selectedDevice,
     });
-    this.props.onChange(selectedDevice);
+    this.props.onChange(
+      selectedDevice != null
+        ? {
+            displayName: selectedDevice.prettyName,
+            name: selectedDevice.serial,
+          }
+        : null,
+    );
   }
 
   _getDeviceItems(): Array<MenuItem> {
@@ -97,7 +105,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
 
     return this.state.deviceList.value.map(device => ({
       value: device,
-      label: device.displayName,
+      label: device.prettyName,
     }));
   }
 
@@ -124,10 +132,17 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     );
   }
 
-  _handleDeviceDropdownChange(selectedDevice: ?Device): void {
+  _handleDeviceDropdownChange(selectedDevice: ?AdbDevice): void {
     this.setState({
       selectedDevice,
     });
-    this.props.onChange(selectedDevice);
+    this.props.onChange(
+      selectedDevice != null
+        ? {
+            displayName: selectedDevice.prettyName,
+            name: selectedDevice.serial,
+          }
+        : null,
+    );
   }
 }

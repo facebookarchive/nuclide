@@ -211,9 +211,11 @@ export class BuckTaskRunner {
           selectedDeploymentTarget != null &&
           selectedDeploymentTarget.platform.isMobile
         ) {
-          selectedDeploymentTarget.platform
-            .tasksForDevice(selectedDeploymentTarget.device)
-            .forEach(taskType => tasksFromPlatform.add(taskType));
+          if (selectedDeploymentTarget.device != null) {
+            selectedDeploymentTarget.platform
+              .tasksForDevice(selectedDeploymentTarget.device)
+              .forEach(taskType => tasksFromPlatform.add(taskType));
+          }
         } else if (buildRuleType != null) {
           const ruleType = buildRuleType;
           platformGroups.forEach(platformGroup => {
@@ -339,6 +341,7 @@ export class BuckTaskRunner {
             const {platform, device} = selectedDeploymentTarget;
             let runTask;
             if (platform.isMobile) {
+              invariant(device);
               runTask = () =>
                 platform.runTask(
                   this._buildSystem,

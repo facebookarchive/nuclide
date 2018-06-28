@@ -44,6 +44,7 @@ export function getSimulatorPlatform(
           ([os, simsForOs]) => ({
             name: os,
             devices: simsForOs.map(simulator => ({
+              identifier: simulator.udid,
               name: simulator.name,
               udid: simulator.udid,
               arch: simulator.arch,
@@ -96,6 +97,7 @@ export function getDevicePlatform(
           ([os, devicesForOs]) => ({
             name: os,
             devices: devicesForOs.map(device => ({
+              identifier: device.udid,
               name: device.name,
               udid: device.udid,
               arch: device.arch,
@@ -155,6 +157,7 @@ const BUILD_ONLY_SIMULATOR_GROUPS = [
     name: 'Generic',
     devices: [
       {
+        identifier: 'build-only-x86_64',
         name: '64-bit',
         udid: '',
         arch: 'x86_64',
@@ -162,6 +165,7 @@ const BUILD_ONLY_SIMULATOR_GROUPS = [
         buildOnly: true,
       },
       {
+        identifier: 'build-only-i386',
         name: '32-bit',
         udid: '',
         arch: 'i386',
@@ -176,6 +180,7 @@ const BUILD_ONLY_DEVICES_GROUP = {
   name: 'Generic',
   devices: [
     {
+      identifier: 'build-only-arm64',
       name: '64-bit',
       udid: '',
       arch: 'arm64',
@@ -183,6 +188,7 @@ const BUILD_ONLY_DEVICES_GROUP = {
       buildOnly: true,
     },
     {
+      identifier: 'build-only-armv7',
       name: '32-bit',
       udid: '',
       arch: 'armv7',
