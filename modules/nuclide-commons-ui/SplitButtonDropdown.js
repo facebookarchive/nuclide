@@ -36,6 +36,7 @@ type Props = {
   options: Array<Option>,
   size?: ?ButtonSize,
   value: any,
+  selectionComparator?: (dropdownValue: any, optionValue: any) => boolean,
 };
 
 export class SplitButtonDropdown extends React.Component<Props> {
@@ -50,6 +51,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
       options,
       size,
       value,
+      selectionComparator,
     } = this.props;
     const selectedOption = this._findSelectedOption(options) || options[0];
     invariant(selectedOption.type !== 'separator');
@@ -79,6 +81,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
           options={dropdownOptions}
           value={value}
           onChange={onChange}
+          selectionComparator={selectionComparator}
         />
       </ButtonGroup>
     );
@@ -99,13 +102,17 @@ export class SplitButtonDropdown extends React.Component<Props> {
 
   _findSelectedOption(options: Array<Option>): ?Option {
     let result = null;
+    const selectionComparator =
+      this.props.selectionComparator == null
+        ? (a, b) => a === b
+        : this.props.selectionComparator;
     for (const option of options) {
       if (option.type === 'separator') {
         continue;
       } else if (option.type === 'submenu') {
         const submenu = ((option.submenu: any): Array<Option>);
         result = this._findSelectedOption(submenu);
-      } else if (option.value === this.props.value) {
+      } else if (selectionComparator(option.value, this.props.value)) {
         result = option;
       }
 
