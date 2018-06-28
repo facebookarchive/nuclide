@@ -667,7 +667,7 @@ export function isNativeExoPackage(
     ]);
     if (
       attributes[target] != null &&
-      typeof attributes[target].exopackage_modes === 'string'
+      attributes[target].exopackage_modes instanceof Array
     ) {
       return attributes[target].exopackage_modes.indexOf('native_library') >= 0;
     } else {
