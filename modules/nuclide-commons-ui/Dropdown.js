@@ -11,6 +11,7 @@
  */
 
 import type {IconName} from './Icon';
+import type {ButtonType} from './Button';
 
 import {Button, ButtonSizes} from './Button';
 import {Icon} from './Icon';
@@ -66,6 +67,7 @@ type Props = {
   // If provided, this string will always be used as the label
   label?: string,
   buttonComponent?: React.ComponentType<any>,
+  buttonType?: ?ButtonType,
   options: $ReadOnlyArray<Option>,
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
@@ -125,6 +127,7 @@ export class Dropdown extends React.Component<Props> {
 
     return (
       <DropdownButton
+        buttonType={this.props.buttonType}
         className={this.props.className}
         disabled={this.props.disabled}
         isFlat={this.props.isFlat}
@@ -221,6 +224,7 @@ export class Dropdown extends React.Component<Props> {
 
 type DropdownButtonProps = {
   buttonComponent?: React.ComponentType<any>,
+  buttonType?: ?ButtonType,
   children?: any,
   className: string,
   disabled?: boolean,
@@ -251,6 +255,7 @@ export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
 
   return (
     <ButtonComponent
+      buttonType={props.buttonType}
       tooltip={props.tooltip}
       size={getButtonSize(props.size)}
       className={className}

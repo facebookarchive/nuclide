@@ -11,6 +11,7 @@
  */
 
 import type {Option} from './Dropdown';
+import type {ButtonType} from './Button';
 
 import invariant from 'assert';
 import * as React from 'react';
@@ -26,6 +27,7 @@ type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 
 type Props = {
   buttonComponent?: React.ComponentType<any>,
+  buttonType?: ?ButtonType,
   changeDisabled?: boolean,
   className?: string,
   confirmDisabled?: boolean,
@@ -62,6 +64,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
       <ButtonGroup
         className={classnames(className, 'nuclide-ui-split-button-dropdown')}>
         <ButtonComponent
+          buttonType={this.props.buttonType}
           size={size == null ? undefined : size}
           disabled={confirmDisabled === true}
           icon={selectedOption.icon || undefined}
@@ -70,6 +73,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
           selectedOption.selectedLabel || selectedOption.label || ''}
         </ButtonComponent>
         <Dropdown
+          buttonType={this.props.buttonType}
           size={this._getDropdownSize(size)}
           disabled={changeDisabled === true}
           options={dropdownOptions}
