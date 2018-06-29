@@ -63,13 +63,26 @@ function runParent() {
 
   console.log('%s workers. %s files...', numWorkers, jsFiles.length);
 
+  const ProgressBar = require('progress');
+  const progressBar = new ProgressBar(
+    'transpiling [:bar] (:current/:total) :etas',
+    {
+      complete: '=',
+      incomplete: ' ',
+      width: 20,
+      total: jsFiles.length,
+    }
+  );
+
   for (let i = 0; i < numWorkers; i++) {
     child_process.fork(__filename)
       .on('message', function(m) {
         if (m.transpiled === true) {
           count.transpiled++;
+          progressBar.tick();
         } else if (m.skipped === true) {
           count.skipped++;
+          progressBar.tick();
         }
         if (jsFiles.length) {
           this.send({cmd: 'next', filename: jsFiles.pop()});
