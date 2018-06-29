@@ -114,7 +114,7 @@ export class ConnectionHealthNotifier {
           HEARTBEAT_NOTIFICATION_WARNING,
           code,
           `Nuclide server cannot be reached at "${uri}".<br/>` +
-            'Nuclide will reconnect when the network is restored.',
+            ' Nuclide will reconnect when the network is restored.',
           /* dismissable */ true,
           /* askToReload */ false,
         );
