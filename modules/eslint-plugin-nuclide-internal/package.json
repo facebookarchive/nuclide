@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "babel-eslint": "8.2.5",
-    "eslint": "4.9.0",
+    "eslint": "5.0.1",
     "idx": "1.2.0",
     "resolve-from": "2.0.0",
     "temp": "0.8.3"
