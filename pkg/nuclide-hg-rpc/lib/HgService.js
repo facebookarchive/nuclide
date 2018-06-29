@@ -145,7 +145,8 @@ export type SuccessorTypeValue =
   | 'rebase'
   | 'split'
   | 'fold'
-  | 'histedit';
+  | 'histedit'
+  | 'rewritten';
 
 export type HisteditActionsValue = 'pick';
 

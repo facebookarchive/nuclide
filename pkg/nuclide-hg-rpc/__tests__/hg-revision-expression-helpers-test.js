@@ -14,6 +14,7 @@ import {
   parseRevisionInfoOutput,
   INFO_REV_END_MARK,
   NULL_CHAR,
+  parseSuccessorData,
 } from '../lib/hg-revision-expression-helpers';
 import {SuccessorType} from '../lib/hg-constants';
 
@@ -57,6 +58,7 @@ a343fb211111${NULL_CHAR}000000000000${NULL_CHAR}
 
 
 
+
 ${commit1Description}
 ${INFO_REV_END_MARK}
 123
@@ -74,6 +76,7 @@ abc123411111${NULL_CHAR}000000000000${NULL_CHAR}
 ["temp.txt"]
 
 af3435454321
+
 
 
 
@@ -125,6 +128,35 @@ ${INFO_REV_END_MARK}
 
     it('skips an entry if invalid - should never happen', () => {
       expect(parseRevisionInfoOutput('revision:123')).toEqual([]);
+    });
+  });
+
+  describe('parseSuccessorData', () => {
+    it('handles multiple successors', () => {
+      expect(
+        parseSuccessorData([
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '111111111111, 222222222222, 333333333333',
+        ]),
+      ).toEqual({hash: '111111111111', type: SuccessorType.REWRITTEN});
+    });
+    it('uses rewritten last', () => {
+      expect(
+        parseSuccessorData([
+          '',
+          '',
+          '',
+          '444444444444',
+          '',
+          '',
+          '111111111111',
+        ]),
+      ).toEqual({hash: '444444444444', type: SuccessorType.SPLIT});
     });
   });
 });

@@ -96,6 +96,7 @@ const SuccessorType = Object.freeze({
   SPLIT: 'split',
   FOLD: 'fold',
   HISTEDIT: 'histedit',
+  REWRITTEN: 'rewritten', // used by commit cloud as a "catch-all" successor
 });
 
 // This is to work around flow's missing support of enums.
