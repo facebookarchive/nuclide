@@ -59,10 +59,12 @@ export default (async function passesGK(
   // timeout in ms
   timeout?: number,
 ): Promise<boolean> {
+  const gatekeeper = getGatekeeper();
   try {
-    return (await getGatekeeper().asyncIsGkEnabled(name, timeout)) === true;
+    return (await gatekeeper.asyncIsGkEnabled(name, timeout)) === true;
   } catch (e) {
-    return false;
+    // If the Gatekeeper class implements caching, this may retrieve a cached value.
+    return gatekeeper.isGkEnabled(name) === true;
   }
 });
 
