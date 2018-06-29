@@ -10,7 +10,6 @@
  * @format
  */
 
-import idx from 'idx';
 import fs from 'fs';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
@@ -66,14 +65,14 @@ describe('FeatureLoader', () => {
 
     it('sets a description including provided and consumed services', () => {
       expect(
-        idx(loader.getConfig(), _ => _.use.properties[featureName].description),
+        loader.getConfig()?.use?.properties?.[featureName]?.description,
       ).toEqual(
         'Hyperclick UI<br/>**Provides:** _hyperclick.observeTextEditor_<br/>**Consumes:** _hyperclick_',
       );
     });
 
     it("merges the feature config into the passed config's feature properties", () => {
-      expect(idx(loader.getConfig(), _ => _[featureName].properties)).toEqual(
+      expect(loader.getConfig()?.[featureName]?.properties).toEqual(
         featurePkg.atomConfig,
       );
     });

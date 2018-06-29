@@ -25,6 +25,7 @@ flow-libs/
 
 [options]
 emoji=true
+esproposal.optional_chaining=enable
 experimental.const_params=true
 module.use_strict=true
 module.system.node.resolve_dirname=node_modules
