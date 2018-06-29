@@ -15,7 +15,6 @@ import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {TaskEvent, ProcessMessage} from 'nuclide-commons/process';
 import type {Expected} from 'nuclide-commons/expected';
-import type {Device as DeviceIdType} from './types';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {Observable, ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -211,15 +210,12 @@ export type DevicePanelServiceApi = {
 };
 
 export interface DeviceListProvider {
-  observe(host: NuclideUri): Observable<Expected<Device[]>>;
+  observe(host: NuclideUri): Observable<Expected<Array<Device>>>;
   getType(): string;
 }
 
 export interface DeviceInfoProvider {
-  fetch(
-    host: NuclideUri,
-    device: DeviceIdType,
-  ): Observable<Map<string, string>>;
+  fetch(host: NuclideUri, device: Device): Observable<Map<string, string>>;
   getType(): string;
   getTitle(): string;
   getPriority(): number;
@@ -227,12 +223,12 @@ export interface DeviceInfoProvider {
 }
 
 export interface DeviceProcessesProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<Process[]>;
+  observe(host: NuclideUri, device: Device): Observable<Process[]>;
   getType(): string;
 }
 
 export interface DeviceTaskProvider {
-  getTask(host: NuclideUri, device: DeviceIdType): Observable<TaskEvent>;
+  getTask(host: NuclideUri, device: Device): Observable<TaskEvent>;
   getName(): string;
   getType(): string;
   isSupported(host: NuclideUri): Observable<boolean>;
@@ -245,19 +241,19 @@ export interface DeviceTypeTaskProvider {
 }
 
 export interface DeviceProcessTaskProvider {
-  run(host: NuclideUri, device: DeviceIdType, proc: Process): Promise<void>;
+  run(host: NuclideUri, device: Device, proc: Process): Promise<void>;
   getTaskType(): ProcessTaskType;
   getType(): string;
   getSupportedPIDs(
     host: NuclideUri,
-    device: DeviceIdType,
+    device: Device,
     procs: Process[],
   ): Observable<Set<number>>;
   getName(): string;
 }
 
 export interface DeviceAppInfoProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<string>;
+  observe(host: NuclideUri, device: Device): Observable<string>;
   getName(): string;
   getType(): string;
   getProcessName(): string;

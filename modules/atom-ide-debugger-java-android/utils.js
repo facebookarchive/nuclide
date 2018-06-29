@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {AdbDevice} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenConfig,
@@ -17,7 +18,6 @@ import type {
   ControlButtonSpecification,
   DebuggerConfigAction,
 } from 'nuclide-debugger-common/types';
-import type {Device} from 'nuclide-debugger-common/types';
 
 import {AnalyticsEvents} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/constants';
 import idx from 'idx';
@@ -132,11 +132,11 @@ function _getPackageName(debugMode: DebuggerConfigAction, config): string {
   );
 }
 
-function _getDevice(debugMode: DebuggerConfigAction, config): Device {
+function _getDevice(debugMode: DebuggerConfigAction, config): AdbDevice {
   return nullthrows(
     debugMode === 'launch'
-      ? (idx(config, _ => _.deviceAndPackage.device): ?Device)
-      : (idx(config, _ => _.deviceAndProcess.device): ?Device),
+      ? (idx(config, _ => _.deviceAndPackage.device): ?AdbDevice)
+      : (idx(config, _ => _.deviceAndProcess.device): ?AdbDevice),
   );
 }
 
@@ -144,7 +144,7 @@ async function _getPid(
   debugMode: DebuggerConfigAction,
   config,
   adbServiceUri: string,
-  device: Device,
+  device: AdbDevice,
   packageName: string,
 ): Promise<number> {
   const selectedProcessPidString = idx(
@@ -178,11 +178,11 @@ function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
 async function _getAndroidSdkSourcePaths(
   targetUri: NuclideUri,
   adbServiceUri: NuclideUri,
-  device: Device,
+  device: AdbDevice,
 ): Promise<Array<string>> {
   const sdkVersion = await getAdbServiceByNuclideUri(
     adbServiceUri,
-  ).getAPIVersion(device.name);
+  ).getAPIVersion(device.serial);
   const sdkSourcePath =
     sdkVersion !== ''
       ? await getJavaDebuggerHelpersServiceByNuclideUri(

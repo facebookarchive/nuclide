@@ -14,7 +14,6 @@ import type {AdbDevice} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
-import type {Device} from './types';
 
 import {observeAndroidDevices} from 'nuclide-adb';
 import * as React from 'react';
@@ -28,7 +27,7 @@ const NO_DEVICES_MSG = 'No adb devices attached!';
 
 type Props = {
   targetUri: NuclideUri,
-  onChange: (value: ?Device) => void,
+  onChange: (value: ?AdbDevice) => void,
 };
 
 type State = {
@@ -87,14 +86,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
       deviceList,
       selectedDevice,
     });
-    this.props.onChange(
-      selectedDevice != null
-        ? {
-            displayName: selectedDevice.prettyName,
-            name: selectedDevice.serial,
-          }
-        : null,
-    );
+    this.props.onChange(selectedDevice);
   }
 
   _getDeviceItems(): Array<MenuItem> {
@@ -136,13 +128,6 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     this.setState({
       selectedDevice,
     });
-    this.props.onChange(
-      selectedDevice != null
-        ? {
-            displayName: selectedDevice.prettyName,
-            name: selectedDevice.serial,
-          }
-        : null,
-    );
+    this.props.onChange(selectedDevice);
   }
 }

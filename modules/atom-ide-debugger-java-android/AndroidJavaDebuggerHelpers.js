@@ -10,10 +10,9 @@
  * @format
  */
 
-import type {SshTunnelService} from 'nuclide-adb/lib/types';
+import type {SshTunnelService, AdbDevice} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JavaAttachPortTargetConfig} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
-import type {Device} from 'nuclide-debugger-common/types';
 
 import nullthrows from 'nullthrows';
 import invariant from 'assert';
@@ -39,13 +38,13 @@ export async function launchAndroidServiceOrActivity(
   service: ?string,
   activity: ?string,
   action: ?string,
-  device: Device,
+  device: AdbDevice,
   packageName: string,
 ): Promise<void> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
   if (service != null) {
     await adbService.launchService(
-      device.name,
+      device.serial,
       packageName,
       service || '',
       true,
@@ -55,13 +54,13 @@ export async function launchAndroidServiceOrActivity(
     // This will allow us to bubble up a useful error message instead of a cryptic
     // adb failure if the user simply mistyped the activity or package name.
     const activityExists = await adbService.activityExists(
-      device.name,
+      device.serial,
       packageName,
       activity || '',
     );
 
     if (!activityExists) {
-      const packages = await adbService.getAllAvailablePackages(device.name);
+      const packages = await adbService.getAllAvailablePackages(device.serial);
       const availableActivities = new Set(
         packages.filter(line => line.includes(packageName + '/')),
       );
@@ -78,7 +77,7 @@ export async function launchAndroidServiceOrActivity(
     }
 
     await adbService.launchActivity(
-      device.name,
+      device.serial,
       packageName,
       activity || '',
       true,
@@ -89,11 +88,14 @@ export async function launchAndroidServiceOrActivity(
 
 export async function getPidFromPackageName(
   adbServiceUri: NuclideUri,
-  device: Device,
+  device: AdbDevice,
   packageName: string,
 ): Promise<number> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  const pid = await adbService.getPidFromPackageName(device.name, packageName);
+  const pid = await adbService.getPidFromPackageName(
+    device.serial,
+    packageName,
+  );
   if (!Number.isInteger(pid)) {
     throw new Error(`Fail to get pid for package: ${packageName}`);
   }
@@ -101,7 +103,7 @@ export async function getPidFromPackageName(
 }
 
 export async function getAdbAttachPortTargetInfo(
-  device: Device,
+  device: AdbDevice,
   adbServiceUri: NuclideUri,
   targetUri: NuclideUri,
   pid: ?number,
@@ -123,7 +125,7 @@ export async function getAdbAttachPortTargetInfo(
         adbServiceUri,
       ).getPortForJavaDebugger();
   const forwardSpec = await adbService.forwardJdwpPortToPid(
-    device.name,
+    device.serial,
     adbPort,
     pid || 0,
   );
@@ -134,7 +136,7 @@ export async function getAdbAttachPortTargetInfo(
   cleanupSubject = new Subject();
   subscriptions.add(async () => {
     const result = await adbService.removeJdwpForwardSpec(
-      device.name,
+      device.serial,
       forwardSpec,
     );
     if (result.trim().startsWith('error')) {
@@ -142,7 +144,7 @@ export async function getAdbAttachPortTargetInfo(
       // redirection, which confuses adb and prevents proper removal of
       // the forward spec.  Fall back to removing all specs to avoid leaking
       // the port.
-      await adbService.removeJdwpForwardSpec(device.name, null);
+      await adbService.removeJdwpForwardSpec(device.serial, null);
     }
 
     if (cleanupSubject != null) {

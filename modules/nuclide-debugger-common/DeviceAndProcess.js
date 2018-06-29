@@ -10,12 +10,11 @@
  * @format
  */
 
-import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
+import type {AdbDevice, AndroidJavaProcess} from 'nuclide-adb/lib/types';
 import type {Column, Row} from 'nuclide-commons-ui/Table';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
-import type {Device} from './types';
 
 import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
@@ -32,12 +31,12 @@ type ColumnName = 'pid' | 'user' | 'name';
 
 type Props = {|
   +targetUri: NuclideUri,
-  +onSelect: (device: ?Device, javaProcess: ?AndroidJavaProcess) => void,
+  +onSelect: (device: ?AdbDevice, javaProcess: ?AndroidJavaProcess) => void,
   +deserialize: () => ?string,
 |};
 
 type State = {
-  selectedDevice: ?Device,
+  selectedDevice: ?AdbDevice,
   javaProcesses: Expected<Array<AndroidJavaProcess>>,
   selectedProcess: ?AndroidJavaProcess,
   selectedProcessName: ?string,
@@ -85,9 +84,13 @@ export class DeviceAndProcess extends React.Component<Props, State> {
     });
   }
 
-  _handleDeviceChange = (device: ?Device): void => {
+  _handleDeviceChange = (device: ?AdbDevice): void => {
     const oldDevice = this.state.selectedDevice;
-    if (oldDevice != null && device != null && oldDevice.name === device.name) {
+    if (
+      oldDevice != null &&
+      device != null &&
+      oldDevice.serial === device.serial
+    ) {
       // Same device selected.
       return;
     }
@@ -109,7 +112,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
       this._javaProcessSubscription = Observable.interval(2000)
         .startWith(0)
-        .switchMap(() => adbService.getJavaProcesses(device.name).refCount())
+        .switchMap(() => adbService.getJavaProcesses(device.serial).refCount())
         .distinctUntilChanged((a, b) =>
           arrayEqual(a, b, (x, y) => {
             return x.user === y.user && x.pid === y.pid && x.name === y.name;

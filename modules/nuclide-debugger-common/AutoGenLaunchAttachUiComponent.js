@@ -10,14 +10,13 @@
  * @format
  */
 
-import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
+import type {AndroidJavaProcess, AdbDevice} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenProperty,
   AutoGenLaunchOrAttachConfig,
   AutoGenPropertyType,
   AutoGenPropertyPrimitiveType,
-  Device,
 } from './types';
 import * as React from 'react';
 
@@ -50,12 +49,12 @@ type Props = {|
 |};
 
 type DeviceAndPackageType = {|
-  +device: ?Device,
+  +device: ?AdbDevice,
   +selectedPackage: string,
 |};
 
 type DeviceAndProcessType = {|
-  +device: ?Device,
+  +device: ?AdbDevice,
   +selectedProcess: ?AndroidJavaProcess,
 |};
 

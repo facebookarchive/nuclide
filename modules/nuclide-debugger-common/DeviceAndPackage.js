@@ -10,9 +10,9 @@
  * @format
  */
 
+import type {AdbDevice} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from './types';
 
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
@@ -23,12 +23,12 @@ import {AdbDeviceSelector} from './AdbDeviceSelector';
 
 type Props = {|
   +targetUri: NuclideUri,
-  +onSelect: (device: ?Device, javaPackage: string) => void,
+  +onSelect: (device: ?AdbDevice, javaPackage: string) => void,
   +deserialize: () => ?string,
 |};
 
 type State = {
-  selectedDevice: ?Device,
+  selectedDevice: ?AdbDevice,
   launchPackage: string,
   packages: Expected<Array<string>>,
 };
@@ -43,12 +43,12 @@ export class DeviceAndPackage extends React.Component<Props, State> {
     };
   }
 
-  async _refreshPackageList(device: ?Device) {
+  async _refreshPackageList(device: ?AdbDevice) {
     if (device != null) {
       const packages = Expect.value(
         (await getAdbServiceByNuclideUri(
           this.props.targetUri,
-        ).getInstalledPackages(device.name)).sort(),
+        ).getInstalledPackages(device.serial)).sort(),
       );
       this.setState({
         packages,
@@ -71,7 +71,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
     });
   }
 
-  _handleDeviceChange = (device: ?Device): void => {
+  _handleDeviceChange = (device: ?AdbDevice): void => {
     const state: $Shape<State> = {
       selectedDevice: device,
       packages: device == null ? Expect.value([]) : Expect.pending(),
@@ -80,7 +80,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
     if (
       device != null &&
       (this.state.selectedDevice == null ||
-        device.name !== this.state.selectedDevice.name) &&
+        device.serial !== this.state.selectedDevice.serial) &&
       value != null
     ) {
       state.launchPackage = value;
