@@ -16,13 +16,12 @@
   nuclide-internal/no-commonjs: 0,
   */
 
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const dedent = require('dedent');
 
 function transform(source) {
   return babel.transform(source, {
     plugins: [
-      require('babel-plugin-syntax-flow'),
       require('../lib/inline-invariant-tr'),
     ],
   }).code;
@@ -35,7 +34,7 @@ describe('inline-invariant transform', () => {
       invariant(false);
     `)).toEqual(dedent`
       if (!false) {
-        throw new Error('Invariant violation: "false"');
+        throw new Error("Invariant violation: \"false\"");
       }
     `);
   });
@@ -46,7 +45,7 @@ describe('inline-invariant transform', () => {
       invariant(false != true);
     `)).toEqual(dedent`
       if (!(false != true)) {
-        throw new Error('Invariant violation: "false != true"');
+        throw new Error("Invariant violation: \"false != true\"");
       }
     `);
   });
@@ -57,7 +56,7 @@ describe('inline-invariant transform', () => {
       invariant(foo() ? !!bar : baz.qux());
     `)).toEqual(dedent`
       if (!(foo() ? !!bar : baz.qux())) {
-        throw new Error('Invariant violation: "foo() ? !!bar : baz.qux()"');
+        throw new Error("Invariant violation: \"foo() ? !!bar : baz.qux()\"");
       }
     `);
   });
@@ -114,7 +113,7 @@ describe('inline-invariant transform', () => {
       invariant(true);
     `)).toEqual(dedent`
       if (!true) {
-        throw new Error('Invariant violation: "true"');
+        throw new Error("Invariant violation: \"true\"");
       }
     `);
   });
@@ -141,6 +140,7 @@ describe('inline-invariant transform', () => {
       invariant(true);
     `)).toEqual(dedent`
       var invariant = require('invariant');
+
       invariant(true);
     `);
   });
@@ -149,7 +149,7 @@ describe('inline-invariant transform', () => {
     expect(transform(dedent`
       import invariant from 'invariant';
       foo;
-    `)).toEqual('\nfoo;');
+    `)).toEqual('foo;');
   });
 
   it('works 13', () => {
@@ -159,7 +159,7 @@ describe('inline-invariant transform', () => {
         if (invariant(true)) {}
       `);
     }).toThrow(
-      new SyntaxError('unknown: `invariant()` must be used as an expression statement.')
+      'undefined: `invariant()` must be used as an expression statement.'
     );
   });
 
@@ -170,7 +170,7 @@ describe('inline-invariant transform', () => {
         invariant();
       `);
     }).toThrow(
-      new SyntaxError('unknown: `invariant()` must at least one argument.')
+      'undefined: `invariant()` must at least one argument.'
     );
   });
 });

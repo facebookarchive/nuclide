@@ -77,7 +77,7 @@ describe('NodeTranspiler', () => {
 
   describe('NodeTranspiler#getConfigDigest', () => {
     it('works with real babel', () => {
-      const realBabel = require('babel-core');
+      const realBabel = require('@babel/core');
       const nodeTranspilerReal = new NodeTranspiler();
 
       const fakeBabel = {

@@ -23,8 +23,8 @@ module.exports = context => {
   const template = context.template;
 
   const buildIfThrow = template(`
-    if (!$0) {
-      throw new Error($1);
+    if (!CONDITION) {
+      throw new Error(MESSAGE);
     }
   `);
 
@@ -49,13 +49,13 @@ module.exports = context => {
     }
 
     stmtParent.replaceWith(
-      buildIfThrow(
-        node.arguments[0],
-        node.arguments[1] || t.stringLiteral(
+      buildIfThrow({
+        CONDITION: node.arguments[0],
+        MESSAGE: node.arguments[1] || t.stringLiteral(
           'Invariant violation: '
           + JSON.stringify(path.get('arguments.0').getSource())
-        )
-      )
+        ),
+      })
     );
   }
 

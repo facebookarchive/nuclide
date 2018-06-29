@@ -25,7 +25,6 @@
     "yargs": "3.32.0"
   },
   "devDependencies": {
-    "babel-plugin-idx": "1.4.0",
     "dedent": "0.7.0",
     "invariant": "2.2.2",
     "nuclide-node-transpiler": "0.7.1-dev",

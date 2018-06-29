@@ -28,7 +28,7 @@ describe('path-rules', () => {
 
       expect(includedFiles.includes(__filename)).toBe(true);
 
-      const pathToNodeModulesFile = require.resolve('babel-core');
+      const pathToNodeModulesFile = require.resolve('@babel/core');
       expect(!includedFiles.includes(pathToNodeModulesFile)).toBe(true);
     });
   });

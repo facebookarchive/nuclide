@@ -33,6 +33,7 @@
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
+const isBuiltinModule = require('is-builtin-module');
 const path = require('path');
 const os = require('os');
 
@@ -45,15 +46,15 @@ const MODULE_ALIASES = {
   rxjs: 'rxjs/bundles/Rx.min.js',
 };
 
+const NON_LAZY_MODULES = new Set([
+  'atom',
+  'electron',
+  'react',
+  'react-dom',
+  'rxjs/bundles/Rx.min.js',
+]);
+
 const BABEL_OPTIONS = {
-  parserOpts: {
-    plugins: [
-      'classProperties',
-      'flow',
-      'jsx',
-      'objectRestSpread',
-    ],
-  },
   plugins: [
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('babel-plugin-module-resolver'), {
@@ -67,28 +68,35 @@ const BABEL_OPTIONS = {
       cwd: NUCLIDE_ROOT,
     }],
 
+    // Note: @babel/plugin-proposal-class-properties doesn't work for us.
     [require.resolve('babel-plugin-transform-class-properties')],
-    [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
+    [require.resolve('@babel/plugin-proposal-object-rest-spread'), {
+      loose: true,
+      useBuiltIns: true,
+    }],
 
     // babel-preset-react:
-    [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],
-    [require.resolve('babel-plugin-transform-flow-strip-types')],
-    [require.resolve('babel-plugin-transform-react-display-name')],
+    [require.resolve('@babel/plugin-transform-react-jsx'), {useBuiltIns: true}],
+    [require.resolve('@babel/plugin-transform-flow-strip-types')],
+    [require.resolve('@babel/plugin-transform-react-display-name')],
 
     [require.resolve('babel-plugin-relay')],
 
-    // Toggle these to control inline-imports:
-    // [require.resolve('babel-plugin-transform-es2015-modules-commonjs')],
-    [require.resolve('babel-plugin-transform-inline-imports-commonjs'), {
-      excludeModules: [
-        'atom',
-        'electron',
-        'react',
-        'react-dom',
-        'rxjs/bundles/Rx.min.js',
-      ],
-      excludeNodeBuiltins: true,
+    [require.resolve('@babel/plugin-transform-modules-commonjs'), {
+      // Determines which imports to lazy-require.
+      lazy(moduleName) {
+        if (NON_LAZY_MODULES.has(moduleName)) {
+          return false;
+        }
+        return !isBuiltinModule(moduleName);
+      },
     }],
+    // The modules-commonjs transform only inserts 'use strict' for files with an ES6 import/export.
+    [require.resolve('@babel/plugin-transform-strict-mode')],
+
+    // Experimental syntax:
+    [require.resolve('@babel/plugin-proposal-nullish-coalescing-operator')],
+    [require.resolve('@babel/plugin-proposal-optional-chaining')],
   ],
 };
 
@@ -168,8 +176,8 @@ class NodeTranspiler {
   }
 
   constructor() {
-    this._babelVersion = require('babel-core/package.json').version;
-    this._getBabel = () => require('babel-core');
+    this._babelVersion = require('@babel/core/package.json').version;
+    this._getBabel = () => require('@babel/core');
     this._babel = null;
     this._cacheDir = null;
     this._configDigest = null;
@@ -181,7 +189,7 @@ class NodeTranspiler {
       const optsOnly = Object.assign({}, BABEL_OPTIONS, {plugins: null});
       const hash = crypto
         .createHash('sha1')
-        .update('babel-core', 'utf8')
+        .update('@babel/core', 'utf8')
         .update('\0', 'utf8')
         .update(this._babelVersion, 'utf8')
         .update('\0', 'utf8')

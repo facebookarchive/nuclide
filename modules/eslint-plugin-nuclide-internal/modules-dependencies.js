@@ -80,7 +80,11 @@ module.exports = function(context) {
       return;
     }
 
-    const depName = dep.split('/')[0];
+    const depParts = dep.split('/');
+    let depName = depParts[0];
+    if (depName.startsWith('@') && depParts.length > 1) {
+      depName += '/' + depParts[1];
+    }
     if (
       !Object.hasOwnProperty.call(modulePkg.dependencies || {}, depName) &&
       (!allowDevDependencies ||
