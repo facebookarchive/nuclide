@@ -115,6 +115,7 @@ import {
   WatchKind,
   FileChangeType,
   InsertTextFormat,
+  TextDocumentSaveReason,
 } from './protocol';
 
 const WORD_REGEX = /\w+/gi;
@@ -632,7 +633,7 @@ export class LspLanguageService {
           synchronization: {
             dynamicRegistration: false,
             willSave: false,
-            willSaveWaitUntil: false,
+            willSaveWaitUntil: true,
             didSave: true,
           },
           completion: {
@@ -2713,6 +2714,38 @@ export class LspLanguageService {
     }
 
     return response.map(convert.lspSymbolInformation_atomSymbolResult);
+  }
+
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
+    const cancellationSource = new rpc.CancellationTokenSource();
+    const cancelRequest = () => {
+      cancellationSource.cancel();
+    };
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      reason: TextDocumentSaveReason.Manual,
+    };
+    return Observable.create(observer => {
+      this._lspConnection
+        .willSaveWaitUntilTextDocument(params, cancellationSource.token)
+        .then(
+          edits => {
+            for (const edit of convert.lspTextEdits_atomTextEdits(edits)) {
+              observer.next(edit);
+            }
+            observer.complete();
+          },
+          error => {
+            // Log the error here, but just return an observable that completes
+            // without any edits emitted.
+            this._logLspException(error);
+            observer.complete();
+          },
+        );
+      return cancelRequest;
+    }).publish();
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

@@ -927,6 +927,23 @@ export type DidChangeTextDocumentParams = {
   contentChanges: Array<TextDocumentContentChangeEvent>,
 };
 
+export type WillSaveWaitUntilTextDocumentParams = {
+  // The document that will be saved.
+  textDocument: TextDocumentIdentifier,
+  // The 'TextDocumentSaveReason'.
+  reason: number,
+};
+
+export const TextDocumentSaveReason = {
+  // Manually triggered, e.g. by the user pressing save, by starting debugging,
+  // or by an API call.
+  Manual: 1,
+  // Automatic after a delay.
+  AfterDelay: 2,
+  // When the editor lost focus.
+  FocusOut: 3,
+};
+
 // An event describing a change to a text document. If range and rangeLength are omitted
 // the new text is considered to be the full content of the document.
 export type TextDocumentContentChangeEvent = {

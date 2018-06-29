@@ -337,6 +337,8 @@ export interface FlowLanguageServiceType {
     button: string,
   ): Promise<void>;
 
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit>;
+
   dispose(): void;
 }
 

@@ -52,6 +52,7 @@
     "nuclide-infer-al",
     "nuclide-json",
     "nuclide-key-binding-hint-status",
+    "nuclide-language-service-client",
     "nuclide-language-status",
     "nuclide-move-item-to-available-pane",
     "nuclide-navigation-stack",

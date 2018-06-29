@@ -29,8 +29,11 @@ import type {
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
 import type {SignatureHelpConfig} from './SignatureHelpProvider';
 import type {SyntacticSelectionConfig} from './SyntacticSelectionProvider';
+import type {FileEventHandlersConfig} from './FileEventHandlers';
 import type {BusySignalService} from 'atom-ide-ui';
 
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import {registerOnWillSave} from './FileEventHandlers';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -72,6 +75,7 @@ export type AtomLanguageServiceConfig = {|
   signatureHelp?: SignatureHelpConfig,
   syntacticSelection?: SyntacticSelectionConfig,
   status?: StatusConfig,
+  fileEventHandlers?: FileEventHandlersConfig,
 |};
 
 export class AtomLanguageService<T: LanguageService> {
@@ -300,6 +304,15 @@ export class AtomLanguageService<T: LanguageService> {
       );
     }
 
+    const fileEventHandlersConfig = this._config.fileEventHandlers;
+    if (fileEventHandlersConfig != null) {
+      if (fileEventHandlersConfig.supportsOnWillSave) {
+        this._subscriptions.add(
+          this._registerOnWillSave(fileEventHandlersConfig),
+        );
+      }
+    }
+
     this._subscriptions.add(
       LanguageAdditionalLogFilesProvider.register(
         this._config.name,
@@ -343,6 +356,33 @@ export class AtomLanguageService<T: LanguageService> {
           languageService,
         ]);
       });
+  }
+
+  _registerOnWillSave(config: FileEventHandlersConfig): IDisposable {
+    const callback = (editor: atom$TextEditor) => {
+      return Observable.defer(async () => {
+        const fileVersion = await getFileVersionOfEditor(editor);
+        const languageService = await this._connectionToLanguageService.getForUri(
+          editor.getPath(),
+        );
+        return [languageService, fileVersion];
+      }).flatMap(([languageService, fileVersion]) => {
+        if (languageService == null || fileVersion == null) {
+          return Observable.empty();
+        }
+        return languageService.onWillSave(fileVersion).refCount();
+      });
+    };
+
+    const {onWillSavePriority, onWillSaveTimeout} = config;
+
+    return registerOnWillSave({
+      name: this._config.name,
+      grammarScopes: this._config.grammars,
+      callback,
+      priority: onWillSavePriority == null ? 0 : onWillSavePriority,
+      timeout: onWillSaveTimeout == null ? 50 : onWillSaveTimeout,
+    });
   }
 
   dispose(): void {

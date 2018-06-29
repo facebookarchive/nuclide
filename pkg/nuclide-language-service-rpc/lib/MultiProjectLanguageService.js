@@ -529,6 +529,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     );
   }
 
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
+    return Observable.fromPromise(
+      this._getLanguageServiceForFile(fileVersion.filePath),
+    )
+      .flatMap(languageService =>
+        languageService.onWillSave(fileVersion).refCount(),
+      )
+      .publish();
+  }
+
   dispose(): void {
     this._resources.dispose();
   }

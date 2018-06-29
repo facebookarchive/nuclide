@@ -662,6 +662,10 @@ export class FlowSingleProjectLanguageService {
   ): Promise<?atom$Range> {
     throw new Error('Not Yet Implemented');
   }
+
+  onWillSave(filePath: NuclideUri): Promise<Array<TextEdit>> {
+    throw new Error('Not Yet Implemented');
+  }
 }
 
 // FlowSingleProjectLanguageService should satisfy the SingleFileLanguageService interface

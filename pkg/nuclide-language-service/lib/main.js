@@ -8,7 +8,6 @@
  * @flow strict-local
  * @format
  */
-
 export {
   AtomLanguageService,
   AtomLanguageServiceConfig,

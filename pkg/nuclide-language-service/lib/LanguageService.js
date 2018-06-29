@@ -272,5 +272,7 @@ export interface LanguageService {
     originalCursorPosition: atom$Point,
   ): Promise<?atom$Range>;
 
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit>;
+
   dispose(): void;
 }

@@ -445,6 +445,10 @@ export class ServerLanguageService<
     return Observable.of({kind: 'null'}).publish();
   }
 
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
+    return Observable.empty().publish();
+  }
+
   async clickStatus(
     fileVersion: FileVersion,
     id: string,

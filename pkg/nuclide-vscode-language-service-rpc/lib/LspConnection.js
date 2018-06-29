@@ -86,6 +86,17 @@ export class LspConnection {
     this._jsonRpcConnection.sendNotification('textDocument/didSave', params);
   }
 
+  willSaveWaitUntilTextDocument(
+    params: p.WillSaveWaitUntilTextDocumentParams,
+    token: CancellationToken,
+  ): Promise<Array<p.TextEdit>> {
+    return this._jsonRpcConnection.sendRequest(
+      'textDocument/willSaveWaitUntil',
+      params,
+      token,
+    );
+  }
+
   didChangeWatchedFiles(params: p.DidChangeWatchedFilesParams): void {
     this._jsonRpcConnection.sendNotification(
       'workspace/didChangeWatchedFiles',

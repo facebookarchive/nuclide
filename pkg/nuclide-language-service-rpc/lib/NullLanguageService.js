@@ -211,6 +211,10 @@ export class NullLanguageService {
     button: string,
   ): Promise<void> {}
 
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
+    return Observable.empty().publish();
+  }
+
   dispose(): void {}
 }
 
