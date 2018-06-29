@@ -26,6 +26,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {Observable, Subject} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
+import {track} from '../../../nuclide-analytics';
 import AvdTable from '../ui/AvdTable';
 
 export type Avd = {
@@ -169,6 +170,7 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
   };
 
   _startAvd = (avd: Avd): void => {
+    track('nuclide-device-panel-android.start-emulator');
     invariant(this._emulator != null);
     runCommand(this._emulator, ['@' + avd.name]).subscribe(
       stdout => {},
