@@ -13,6 +13,7 @@
     "atom-workspace": [
       "nuclide-clipboard-path:copy-absolute-path",
       "nuclide-clipboard-path:copy-hostname-of-current-path",
+      "nuclide-clipboard-path:copy-basename-of-current-path",
       "nuclide-clipboard-path:copy-repository-relative-path",
       "nuclide-clipboard-path:copy-project-relative-path"
     ]

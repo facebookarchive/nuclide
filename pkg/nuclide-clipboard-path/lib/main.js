@@ -86,8 +86,21 @@ function copyRepositoryRelativePath(): void {
   });
 }
 
+function copyBasename(): void {
+  trackOperation('copyBasename', async () => {
+    const uri = getCurrentNuclideUri();
+    if (uri == null) {
+      return;
+    }
+    copyToClipboard(
+      'Copied basename',
+      nuclideUri.basename(uri, nuclideUri.extname(uri)),
+    );
+  });
+}
+
 function copyHostname(): void {
-  trackOperation('copyRepositoryRelativePath', async () => {
+  trackOperation('copyHostname', async () => {
     const uri = getCurrentNuclideUri();
     if (uri == null) {
       return;
@@ -155,29 +168,27 @@ class Activation {
   _subscriptions: UniversalDisposable;
 
   constructor(state: ?Object) {
-    this._subscriptions = new UniversalDisposable();
-    this._subscriptions.add(
+    this._subscriptions = new UniversalDisposable(
       atom.commands.add(
         'atom-workspace',
         'nuclide-clipboard-path:copy-absolute-path',
         copyAbsolutePath,
       ),
-    );
-    this._subscriptions.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-clipboard-path:copy-basename-of-current-path',
+        copyBasename,
+      ),
       atom.commands.add(
         'atom-workspace',
         'nuclide-clipboard-path:copy-hostname-of-current-path',
         copyHostname,
       ),
-    );
-    this._subscriptions.add(
       atom.commands.add(
         'atom-workspace',
         'nuclide-clipboard-path:copy-repository-relative-path',
         copyRepositoryRelativePath,
       ),
-    );
-    this._subscriptions.add(
       atom.commands.add(
         'atom-workspace',
         'nuclide-clipboard-path:copy-project-relative-path',
