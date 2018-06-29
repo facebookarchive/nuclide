@@ -42,6 +42,28 @@ function filesCreateOrDeleteToObserver(
 }
 
 /**
+ * Query the list of files for their existance at a given moment.
+ * Returns an observable that emits a map of all file's existance.
+ */
+export function getFilesInstantaneousExistance(
+  repoPath: string,
+  fileNames: Array<string>,
+): Observable<Map<string, boolean>> {
+  return Observable.merge(
+    ...fileNames.map(fileName => {
+      const qualifiedFileName = nuclideUri.join(repoPath, fileName);
+      return Observable.fromPromise(fsPromise.exists(qualifiedFileName)).map(
+        exists => [fileName, exists],
+      );
+    }),
+  )
+    .toArray()
+    .map((pairs: Array<[string, boolean]>) => {
+      return new Map(pairs);
+    });
+}
+
+/**
  * Set up a watchman subscription to watch for a file's creation and deletion.
  * Returns a Promise so that all such subscriptions can be awaited in bulk.
  */

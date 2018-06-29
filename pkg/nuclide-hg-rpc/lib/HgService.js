@@ -53,7 +53,10 @@ import debounce from 'nuclide-commons/debounce';
 import * as BookmarkHelpers from './hg-bookmark-helpers';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
-import {subscribeToFilesCreateAndDelete} from './watchFileCreationAndDeletion';
+import {
+  subscribeToFilesCreateAndDelete,
+  getFilesInstantaneousExistance,
+} from './watchFileCreationAndDeletion';
 
 const logger = getLogger('nuclide-hg-rpc');
 const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
@@ -915,6 +918,15 @@ export async function fetchDiffInfo(
     );
   }
   return absolutePathToDiffInfo;
+}
+
+export function getLockFilesInstantaneousExistance(
+  workingDirectory: string,
+): Promise<Map<string, boolean>> {
+  return getFilesInstantaneousExistance(
+    workingDirectory,
+    LockFilesList,
+  ).toPromise();
 }
 
 /**

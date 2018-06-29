@@ -181,6 +181,7 @@ export class HgRepositoryClient {
     isDestroyed: boolean,
     isFetchingPathStatuses: Subject<boolean>,
     manualStatusRefreshRequests: Subject<void>,
+    refreshLocksFilesObserver: Subject<Map<string, boolean>>,
 
     // absolute path of file to DiffInfo
     bufferDiffsFromHeadCache: Map<NuclideUri, DiffInfo>,
@@ -219,6 +220,7 @@ export class HgRepositoryClient {
     );
     this._sharedMembers.isFetchingPathStatuses = new Subject();
     this._sharedMembers.manualStatusRefreshRequests = new Subject();
+    this._sharedMembers.refreshLocksFilesObserver = new Subject();
     this._sharedMembers.hgStatusCache = new Map();
     this._sharedMembers.bookmarks = new BehaviorSubject({
       isLoading: true,
@@ -432,6 +434,7 @@ export class HgRepositoryClient {
     this._sharedMembers.subscriptions.dispose();
     this._sharedMembers.revisionIdToFileChanges.reset();
     this._sharedMembers.fileContentsAtRevisionIds.reset();
+    this._sharedMembers.refreshLocksFilesObserver.complete();
     this._sharedMembers.repoSubscriptions.then(repoSubscriptions => {
       if (repoSubscriptions != null) {
         repoSubscriptions.dispose();
@@ -521,7 +524,10 @@ export class HgRepositoryClient {
   }
 
   observeLockFiles(): Observable<Map<string, boolean>> {
-    return this._tryObserve(s => s.observeLockFilesDidChange().refCount());
+    return Observable.merge(
+      this._tryObserve(s => s.observeLockFilesDidChange().refCount()),
+      this._sharedMembers.refreshLocksFilesObserver.asObservable(),
+    );
   }
 
   observeHeadRevision(): Observable<RevisionInfo> {
@@ -1099,6 +1105,13 @@ export class HgRepositoryClient {
 
   refreshRevisions(): void {
     this._sharedMembers.revisionsCache.refreshRevisions();
+    this._sharedMembers.service
+      .getLockFilesInstantaneousExistance(
+        this._sharedMembers.workingDirectoryPath,
+      )
+      .then(result => {
+        this._sharedMembers.refreshLocksFilesObserver.next(result);
+      });
   }
 
   refreshRevisionsStatuses(): void {
