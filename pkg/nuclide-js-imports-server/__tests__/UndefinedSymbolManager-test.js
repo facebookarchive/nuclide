@@ -14,7 +14,7 @@ import {UndefinedSymbolManager} from '../src/lib/UndefinedSymbolManager';
 
 const babylonOptions = {
   sourceType: 'module',
-  plugins: ['jsx', 'flow', 'exportExtensions'],
+  plugins: ['jsx', 'flow', 'exportExtensions', 'optionalChaining'],
 };
 
 describe('UndefinedSymbolManager', () => {
@@ -336,6 +336,16 @@ describe('UndefinedSymbolManager', () => {
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should work with optional chaining', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const a = x?.y?.z;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('x');
+    expect(undefinedSymbols[0].type).toBe('value');
   });
 
   it('should not error with non-standard environments', () => {
