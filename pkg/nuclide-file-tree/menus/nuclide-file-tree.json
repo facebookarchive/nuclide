@@ -37,7 +37,7 @@
     }
   ],
   "context-menu": {
-    "atom-pane atom-text-editor, [data-path]:not(.nuclide-file-tree-path)": [
+    "atom-pane atom-text-editor, [data-path]:not(.nuclide-file-tree):not(.nuclide-file-tree-entry-item):not(.nuclide-file-tree-path)": [
       {
         "command": "tree-view:reveal-active-file",
         "label": "Reveal in File Tree"

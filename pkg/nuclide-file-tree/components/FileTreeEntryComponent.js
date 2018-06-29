@@ -140,6 +140,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       selected: isSelected || node.isDragHovered,
       'nuclide-file-tree-softened': node.shouldBeSoftened,
       'nuclide-file-tree-root-being-reordered': node.isBeingReordered,
+      'nuclide-file-tree-entry-item': true,
     });
     const listItemClassName = classnames({
       'header list-item': node.isContainer,
