@@ -82,6 +82,9 @@ type Props = {|
     selections: Array<ProviderResult>,
     providerName: string,
     query: string,
+    // selectionIndex will be null iff for cases where more than one selection
+    // is made at once (i.e. when the user hits "Open All")
+    selectionIndex: ?number,
   ) => void,
   onItemsChanged?: (newItems: GroupedResults) => void,
   onSelectionChanged?: (
@@ -413,7 +416,12 @@ export default class QuickSelectionComponent extends React.Component<
     } else {
       const providerName = this.props.searchResultManager.getActiveProviderName();
       const query = this._getTextEditor().getText();
-      this.props.onSelection([selectedItem], providerName, query);
+      this.props.onSelection(
+        [selectedItem],
+        providerName,
+        query,
+        this.state.selectedItemIndex,
+      );
     }
   };
 
@@ -726,7 +734,7 @@ export default class QuickSelectionComponent extends React.Component<
     const selections = flattenResults(this.state.resultsByService);
     const providerName = this.props.searchResultManager.getActiveProviderName();
     const query = this._getTextEditor().getText();
-    this.props.onSelection(selections, providerName, query);
+    this.props.onSelection(selections, providerName, query, null);
   }
 
   render(): React.Node {

@@ -101,7 +101,10 @@ class Activation {
     selections: Array<ProviderResult>,
     providerName: string,
     query: string,
+    selectionIndex: ?number,
   ): void {
+    const multipleSelections = selectionIndex == null;
+    invariant(multipleSelections === selections.length > 1);
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
       // TODO: Having a callback to call shouldn't necessarily preclude
@@ -127,6 +130,12 @@ class Activation {
         track('quickopen-select-file', {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,
+          'quickopen-index':
+            // If a selection index is provided, then it's only a single selection.
+            // Otherwise, we're selecting via "Open All", so indexes go in order.
+            // $FlowFixMe
+            multipleSelections ? i : selectionIndex.toString(),
+          'quickopen-openmultiple': multipleSelections,
           // The currently open "tab".
           'quickopen-provider': providerName,
           'quickopen-session': this._analyticsSessionId || '',
