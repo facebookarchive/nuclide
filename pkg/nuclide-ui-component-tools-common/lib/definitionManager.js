@@ -12,8 +12,9 @@
 import type {MatcherOptions} from '../../nuclide-fuzzy-native';
 import type TextDocument from '../../nuclide-lsp-implementation-common/TextDocument';
 import type {
-  TextDocumentPositionParams,
   CompletionItem,
+  Hover,
+  TextDocumentPositionParams,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {ComponentDefinition} from './types';
 
@@ -116,6 +117,65 @@ export function getDocumentationObject(
   return {documentation: candidate.substr(0, LEADING_COMMENT_LIMIT) + '…'};
 }
 
+/**
+ * Performs some minimal changes to convert Remarkup from leading comments
+ * (originally intended for consumption by UICE) to Markdown consumable by
+ * Nuclide. This function does not fully convert Remarkup to Markdown.
+ */
+function remarkupToMarkdown(remarkup: string): string {
+  return remarkup.replace(/^={6}/gm, '###');
+}
+
+function countMinimumLeadingSpaces(text: string): number {
+  const whitespaceRegexp = /^\s+/;
+  let min = -1;
+  // Avoiding reduce so that we can terminate early on 0.
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim().length === 0) {
+      continue;
+    }
+    const match = lines[i].match(whitespaceRegexp);
+    if (match == null) {
+      return 0;
+    }
+    const newMin = match[0].length;
+    if (min === -1 || newMin < min) {
+      min = newMin;
+    }
+  }
+  return min === -1 ? 0 : min;
+}
+
+export function getHoverFromComponentDefinition(
+  definition: ?ComponentDefinition,
+): Hover {
+  if (definition == null || definition.leadingComment == null) {
+    return emptyHoverObject;
+  }
+
+  const min = countMinimumLeadingSpaces(definition.leadingComment);
+  invariant(definition.leadingComment != null);
+  const value = definition.leadingComment
+    .split('\n')
+    .map(l => l.substr(min).trimRight())
+    .filter(l => l.length > 0 && !l.startsWith('@'))
+    .join('\n');
+
+  return {
+    contents: {
+      language: 'markdown',
+      value: remarkupToMarkdown(value),
+    },
+    // Excluding the optional range property means the hover is valid for the
+    // whole word around the cursor, exactly what we want here.
+  };
+}
+
+const emptyHoverObject = {
+  contents: [],
+};
+
 const matcherOptions: MatcherOptions = {
   // We want "fds" to match "FDSButton".
   caseSensitive: false,
@@ -174,5 +234,34 @@ export default class DefinitionManager {
           ...getDocumentationObject(definition),
         };
       });
+  }
+
+  getHover(
+    document: TextDocument,
+    positionParams: TextDocumentPositionParams,
+  ): Hover {
+    const {position} = positionParams;
+    // Nuclide doesn't give us the word we've hovering on directly, so grab the
+    // text on the line being hovered on and then scan for a word.
+    let word = null;
+    document.buffer.scanInRange(
+      /[A-Za-z_]+/g,
+      document.buffer.rangeForRow(position.line),
+      ({matchText, range, stop}) => {
+        // This will iterate through every match on the line, so we need to find
+        // the word that intersects the hover position.
+        if (range.containsPoint(lspPositionToAtomPoint(position))) {
+          word = matchText;
+          stop();
+        }
+      },
+    );
+    if (!word) {
+      return emptyHoverObject;
+    }
+
+    return getHoverFromComponentDefinition(
+      this.definitionForComponentName.get(word),
+    );
   }
 }

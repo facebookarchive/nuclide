@@ -101,6 +101,11 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     diagnostics: diagnosticsConfig,
     autocomplete: autocompleteConfig,
     codeAction: codeActionConfig,
+    typeHint: {
+      version: '0.0.0',
+      priority: 0.1,
+      analyticsEventName: 'jsimports.typeHint',
+    },
   };
   return new AtomLanguageService(
     connectToJSImportsService,

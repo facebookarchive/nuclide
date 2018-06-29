@@ -13,6 +13,7 @@ import type {ComponentDefinition} from '../lib/types';
 import {
   getSnippetFromDefinition,
   getDocumentationObject,
+  getHoverFromComponentDefinition,
 } from '../lib/definitionManager';
 
 describe('getSnippetFromDefinition', () => {
@@ -180,5 +181,27 @@ describe('getDocumentationObject', () => {
         leadingComment: '@explorer-desc\n\n' + 'a'.repeat(241),
       }),
     ).toEqual({documentation: 'a'.repeat(240) + '…'});
+  });
+});
+
+describe('getHoverFromComponentDefinition', () => {
+  it('should return a hover object', () => {
+    const definition = {
+      name: 'FDSTest',
+      requiredProps: [],
+      defaultProps: [],
+      leadingComment: `  @explorer-desc
+  ====== Foo
+      // Example!
+      // Some code!
+  Bar`,
+    };
+    expect(getHoverFromComponentDefinition(definition).contents).toEqual({
+      language: 'markdown',
+      value: `### Foo
+    // Example!
+    // Some code!
+Bar`,
+    });
   });
 });

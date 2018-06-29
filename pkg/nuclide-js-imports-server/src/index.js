@@ -37,6 +37,7 @@ import type {
   Command,
   CompletionItem,
   ExecuteCommandParams,
+  Hover,
   InitializeResult,
   SymbolInformation,
   TextDocumentPositionParams,
@@ -117,6 +118,7 @@ connection.onInitialize(
           Object.keys(CommandExecutor.COMMANDS),
         ),
         workspaceSymbolProvider: true,
+        hoverProvider: true,
       },
     };
   },
@@ -160,6 +162,14 @@ function findAndSendDiagnostics(text: string, uri: NuclideUri): void {
     });
   }
 }
+
+connection.onHover(
+  (hoverRequest: TextDocumentPositionParams): Hover => {
+    return autoImportsManager
+      .getDefinitionManager()
+      .getHover(documents.get(hoverRequest.textDocument.uri), hoverRequest);
+  },
+);
 
 // Code completion:
 connection.onCompletion(

@@ -2418,6 +2418,10 @@ export class LspLanguageService {
           // If we only get one response, assume it's a snippet.
           return {type: 'snippet', value: h};
         }
+      } else if (h.language === 'markdown') {
+        // Give single-response MarkedString objects a chance to render as a
+        // markdown hint.
+        return {type: 'markdown', value: h.value};
       } else {
         // TODO: would be nice if there was some way to pass the language
         // through too.
