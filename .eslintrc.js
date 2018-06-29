@@ -316,7 +316,12 @@ module.exports = {
 
     // dependencies (https://github.com/zertosh/eslint-plugin-dependencies)
     'dependencies/case-sensitive': 1,
-    'dependencies/no-cycles': [0, {skip: ['/spec/', '/sample-[^/]+/']}],
+    'dependencies/no-cycles': [1, {skip: [
+      '/VendorLib/',
+      '/sample-[^/]+/',
+      '/scripts/',
+      '/spec/',
+    ]}],
     'dependencies/no-unresolved': 0,
     'dependencies/require-json-ext': 1,
 

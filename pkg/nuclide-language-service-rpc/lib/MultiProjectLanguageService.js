@@ -49,7 +49,8 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {compact} from 'nuclide-commons/observable';
 import {arrayCompact, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {ConfigCache} from 'nuclide-commons/ConfigCache';
-import {ensureInvalidations, NullLanguageService} from '..';
+import {ensureInvalidations} from './ServerLanguageService';
+import {NullLanguageService} from './NullLanguageService';
 
 export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   // Maps project dir => LanguageService

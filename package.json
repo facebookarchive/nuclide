@@ -188,7 +188,6 @@
     "nyc": "11.2.1",
     "prettier": "1.13.6",
     "relay-compiler": "1.6.0",
-    "sabor": "0.9.0",
     "touch": "1.0.0",
     "webfonts-generator": "0.3.5"
   },

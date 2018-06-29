@@ -1240,7 +1240,7 @@ babel-plugin-transform-strict-mode@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-polyfill@6.16.0, babel-polyfill@^6.16.0:
+babel-polyfill@6.16.0:
   version "6.16.0"
   resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.16.0.tgz#2d45021df87e26a374b6d4d1a9c65964d17f2422"
   dependencies:
@@ -1366,7 +1366,7 @@ babylon@7.0.0-beta.47:
   version "7.0.0-beta.47"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-7.0.0-beta.47.tgz#6d1fa44f0abec41ab7c780481e62fd9aafbdea80"
 
-babylon@^6.17.0, babylon@^6.17.4, babylon@^6.18.0:
+babylon@^6.17.4, babylon@^6.18.0:
   version "6.18.0"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.18.0.tgz#af2f3b88fa6f5c1e4c634d1a0f8eac4f55b395e3"
 
@@ -2585,10 +2585,6 @@ es-to-primitive@^1.1.1:
     is-callable "^1.1.1"
     is-date-object "^1.0.1"
     is-symbol "^1.0.1"
-
-es6-promise@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-3.0.2.tgz#010d5858423a5f118979665f46486a95c6ee2bb6"
 
 escape-carriage@1.2.0, escape-carriage@^1.2.0:
   version "1.2.0"
@@ -7037,13 +7033,13 @@ resolve-url@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
 
-resolve@1.1.6, resolve@^1.1.6:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.1.6.tgz#d3492ad054ca800f5befa612e61beac1eec98f8f"
-
 resolve@1.1.7:
   version "1.1.7"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
+
+resolve@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.1.6.tgz#d3492ad054ca800f5befa612e61beac1eec98f8f"
 
 resolve@^1.3.2:
   version "1.8.1"
@@ -7117,16 +7113,6 @@ rxjs@^5.5.2:
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-5.5.11.tgz#f733027ca43e3bec6b994473be4ab98ad43ced87"
   dependencies:
     symbol-observable "1.0.1"
-
-sabor@0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/sabor/-/sabor-0.9.0.tgz#7167c7eba24a31881f8c7ce60ad952da3071dda2"
-  dependencies:
-    babel-polyfill "^6.16.0"
-    babel-types "^6.24.1"
-    babylon "^6.17.0"
-    es6-promise "3.0.2"
-    resolve "1.1.6"
 
 safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.1"
