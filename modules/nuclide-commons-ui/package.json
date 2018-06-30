@@ -19,7 +19,7 @@
     "escape-string-regexp": "1.0.5",
     "idx": "1.2.0",
     "invariant": "2.2.2",
-    "lodash": "4.17.4",
+    "lodash": "4.17.10",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-atom": "0.7.1-dev",
     "nullthrows": "1.0.0",
