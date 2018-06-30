@@ -105,7 +105,7 @@ type State = {
   initialQuery: string,
 };
 
-export default class QuickSelectionComponent extends React.Component<
+export default class QuickSelectionComponent extends React.PureComponent<
   Props,
   State,
 > {
@@ -799,7 +799,7 @@ export default class QuickSelectionComponent extends React.Component<
                   })}
                   key={serviceName + dirName + itemIndex}
                   onMouseDown={this._select}
-                  onMouseEnter={this._setSelectedIndex.bind(
+                  onMouseMove={this._setSelectedIndex.bind(
                     this,
                     serviceName,
                     dirName,
