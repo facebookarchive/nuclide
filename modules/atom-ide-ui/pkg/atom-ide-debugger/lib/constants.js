@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DEBUG_SOURCES_URI = exports.UNKNOWN_SOURCE = exports.BreakpointEventReasons = exports.DEBUGGER_PANELS_DEFAULT_WIDTH_PX = exports.DEBUGGER_PANELS_DEFAULT_LOCATION = exports.DebuggerMode = exports.AnalyticsEvents = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,13 +13,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DebuggerModeType} from './types';
-
-export const AnalyticsEvents = Object.freeze({
+const AnalyticsEvents = Object.freeze({
   ANDROID_DEBUGGER_SDK_SOURCES: 'android-debugger-sdk-sources',
   DEBUGGER_BREAKPOINT_ADD: 'debugger-breakpoint-add',
   DEBUGGER_BREAKPOINT_DELETE: 'debugger-breakpoint-delete',
@@ -40,28 +44,30 @@ export const AnalyticsEvents = Object.freeze({
   DEBUGGER_WATCH_REMOVE_EXPRESSION: 'debugger-watch-remove-expression',
   DEBUGGER_WATCH_UPDATE_EXPRESSION: 'debugger-watch-update-expression',
   DEBUGGER_EDIT_BREAKPOINT_FROM_ICON: 'debugger-edit-breakpoint-from-icon',
-  DEBUGGER_DELETE_BREAKPOINT_FROM_ICON: 'debugger-delete-breakpoint-from-icon',
+  DEBUGGER_DELETE_BREAKPOINT_FROM_ICON: 'debugger-delete-breakpoint-from-icon'
 });
-
-export const DebuggerMode = Object.freeze({
+exports.AnalyticsEvents = AnalyticsEvents;
+const DebuggerMode = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
   PAUSED: 'paused',
   STOPPED: 'stopped',
-  STOPPING: 'stopping',
-});
+  STOPPING: 'stopping'
+}); // This is to work around flow's missing support of enums.
 
-// This is to work around flow's missing support of enums.
-(DebuggerMode: {[key: string]: DebuggerModeType});
-
-export const DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
-export const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
-
-export const BreakpointEventReasons = Object.freeze({
+exports.DebuggerMode = DebuggerMode;
+DebuggerMode;
+const DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
+exports.DEBUGGER_PANELS_DEFAULT_LOCATION = DEBUGGER_PANELS_DEFAULT_LOCATION;
+const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
+exports.DEBUGGER_PANELS_DEFAULT_WIDTH_PX = DEBUGGER_PANELS_DEFAULT_WIDTH_PX;
+const BreakpointEventReasons = Object.freeze({
   NEW: 'new',
   CHANGED: 'changed',
-  REMOVED: 'removed',
+  REMOVED: 'removed'
 });
-
-export const UNKNOWN_SOURCE = 'Unknown';
-export const DEBUG_SOURCES_URI = 'atom://debug-sources';
+exports.BreakpointEventReasons = BreakpointEventReasons;
+const UNKNOWN_SOURCE = 'Unknown';
+exports.UNKNOWN_SOURCE = UNKNOWN_SOURCE;
+const DEBUG_SOURCES_URI = 'atom://debug-sources';
+exports.DEBUG_SOURCES_URI = DEBUG_SOURCES_URI;

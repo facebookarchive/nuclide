@@ -1,3 +1,86 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _TruncatedButton() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/TruncatedButton"));
+
+  _TruncatedButton = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerSteppingComponent() {
+  const data = _interopRequireDefault(require("./DebuggerSteppingComponent"));
+
+  _DebuggerSteppingComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerControllerView() {
+  const data = _interopRequireDefault(require("./DebuggerControllerView"));
+
+  _DebuggerControllerView = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _goToLocation() {
+  const data = require("../../../../../nuclide-commons-atom/go-to-location");
+
+  _goToLocation = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,139 +89,86 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DebuggerModeType, IDebugService} from '../types';
-
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
-import DebuggerSteppingComponent from './DebuggerSteppingComponent';
-import {DebuggerMode} from '../constants';
-import DebuggerControllerView from './DebuggerControllerView';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-
 const DEVICE_PANEL_URL = 'atom://nuclide/devices';
 
-type Props = {
-  service: IDebugService,
-};
-
-type State = {
-  mode: DebuggerModeType,
-  hasDevicePanelService: boolean,
-};
-
-export default class DebuggerControlsView extends React.PureComponent<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+class DebuggerControlsView extends React.PureComponent {
+  constructor(props) {
     super(props);
-
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
     this.state = {
       mode: props.service.getDebuggerMode(),
-      hasDevicePanelService: false,
+      hasDevicePanelService: false
     };
   }
 
-  componentDidMount(): void {
-    const {service} = this.props;
-    this._disposables.add(
-      observableFromSubscribeFunction(
-        service.onDidChangeMode.bind(service),
-      ).subscribe(mode => this.setState({mode})),
-      atom.packages.serviceHub.consume('nuclide.devices', '0.0.0', provider =>
-        this.setState({
-          hasDevicePanelService: true,
-        }),
-      ),
-    );
+  componentDidMount() {
+    const {
+      service
+    } = this.props;
+
+    this._disposables.add((0, _event().observableFromSubscribeFunction)(service.onDidChangeMode.bind(service)).subscribe(mode => this.setState({
+      mode
+    })), atom.packages.serviceHub.consume('nuclide.devices', '0.0.0', provider => this.setState({
+      hasDevicePanelService: true
+    })));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    const {service} = this.props;
-    const {mode} = this.state;
-    const debuggerStoppedNotice =
-      mode !== DebuggerMode.STOPPED ? null : (
-        <div className="debugger-pane-content">
-          <div className="debugger-state-notice">
-            <span>The debugger is not attached.</span>
-          </div>
-        </div>
-      );
-
-    const debuggerRunningNotice =
-      mode !== DebuggerMode.RUNNING ? null : (
-        <div className="debugger-pane-content">
-          <div className="debugger-state-notice">
-            {(service.viewModel.focusedProcess == null ||
-            service.viewModel.focusedProcess.configuration.processName == null
-              ? 'The debug target'
-              : service.viewModel.focusedProcess.configuration.processName) +
-              ' is currently running.'}
-          </div>
-        </div>
-      );
-
-    const debuggerNotice = (
-      <div className="padded">
-        <TruncatedButton
-          onClick={() =>
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'debugger:show-attach-dialog',
-            )
-          }
-          icon="nuclicon-debugger"
-          label="Attach debugger..."
-        />
-        <TruncatedButton
-          onClick={() =>
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'debugger:show-launch-dialog',
-            )
-          }
-          icon="nuclicon-debugger"
-          label="Launch debugger..."
-        />
-        {this.state.hasDevicePanelService ? (
-          <TruncatedButton
-            onClick={() => goToLocation(DEVICE_PANEL_URL)}
-            icon="device-mobile"
-            label="Manage devices..."
-          />
-        ) : null}
-      </div>
-    );
-
-    return (
-      <div className="debugger-container-new">
-        <div className="debugger-section-header">
-          <DebuggerControllerView service={service} />
-        </div>
-        <div className="debugger-section-header debugger-controls-section">
-          <DebuggerSteppingComponent service={service} />
-        </div>
-        {debuggerRunningNotice}
-        {debuggerStoppedNotice}
-        {debuggerNotice}
-      </div>
-    );
+  render() {
+    const {
+      service
+    } = this.props;
+    const {
+      mode
+    } = this.state;
+    const debuggerStoppedNotice = mode !== _constants().DebuggerMode.STOPPED ? null : React.createElement("div", {
+      className: "debugger-pane-content"
+    }, React.createElement("div", {
+      className: "debugger-state-notice"
+    }, React.createElement("span", null, "The debugger is not attached.")));
+    const debuggerRunningNotice = mode !== _constants().DebuggerMode.RUNNING ? null : React.createElement("div", {
+      className: "debugger-pane-content"
+    }, React.createElement("div", {
+      className: "debugger-state-notice"
+    }, (service.viewModel.focusedProcess == null || service.viewModel.focusedProcess.configuration.processName == null ? 'The debug target' : service.viewModel.focusedProcess.configuration.processName) + ' is currently running.'));
+    const debuggerNotice = React.createElement("div", {
+      className: "padded"
+    }, React.createElement(_TruncatedButton().default, {
+      onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'debugger:show-attach-dialog'),
+      icon: "nuclicon-debugger",
+      label: "Attach debugger..."
+    }), React.createElement(_TruncatedButton().default, {
+      onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'debugger:show-launch-dialog'),
+      icon: "nuclicon-debugger",
+      label: "Launch debugger..."
+    }), this.state.hasDevicePanelService ? React.createElement(_TruncatedButton().default, {
+      onClick: () => (0, _goToLocation().goToLocation)(DEVICE_PANEL_URL),
+      icon: "device-mobile",
+      label: "Manage devices..."
+    }) : null);
+    return React.createElement("div", {
+      className: "debugger-container-new"
+    }, React.createElement("div", {
+      className: "debugger-section-header"
+    }, React.createElement(_DebuggerControllerView().default, {
+      service: service
+    })), React.createElement("div", {
+      className: "debugger-section-header debugger-controls-section"
+    }, React.createElement(_DebuggerSteppingComponent().default, {
+      service: service
+    })), debuggerRunningNotice, debuggerStoppedNotice, debuggerNotice);
   }
+
 }
+
+exports.default = DebuggerControlsView;

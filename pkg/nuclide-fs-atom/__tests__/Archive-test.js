@@ -1,3 +1,57 @@
+"use strict";
+
+function _ArchiveDirectory() {
+  const data = require("../lib/ArchiveDirectory");
+
+  _ArchiveDirectory = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ArchiveFile() {
+  const data = require("../lib/ArchiveFile");
+
+  _ArchiveFile = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ArchiveFileAsDirectory() {
+  const data = require("../lib/ArchiveFileAsDirectory");
+
+  _ArchiveFileAsDirectory = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideFsAtom() {
+  const data = require("../../nuclide-fs-atom");
+
+  _nuclideFsAtom = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,55 +59,29 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {ArchiveDirectory} from '../lib/ArchiveDirectory';
-import {ArchiveFile} from '../lib/ArchiveFile';
-import {ArchiveFileAsDirectory} from '../lib/ArchiveFileAsDirectory';
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-type Directory = ArchiveDirectory | ArchiveFileAsDirectory;
-type ArchiveEntry = ArchiveDirectory | ArchiveFileAsDirectory | ArchiveFile;
-
-const fixtures = nuclideUri.join(
-  __dirname,
-  '../../nuclide-fs/__mocks__/fixtures',
-);
+const fixtures = _nuclideUri().default.join(__dirname, '../../nuclide-fs/__mocks__/fixtures');
 
 const PARENT_TEXT = 'Parent directory text file contents\n';
 const CHILD_TEXT = 'Child directory text file contents\n';
-const PARENT_DIR = [
-  'Directory',
-  'EmptyDirectory',
-  'EmptyFile',
-  'LinkDirectory',
-  'LinkDirectorySlashTextFile.txt',
-  'LinkLinkDirectory',
-  'LinkLinkDirectorySlashTextFile.txt',
-  'TextFile.txt',
-];
+const PARENT_DIR = ['Directory', 'EmptyDirectory', 'EmptyFile', 'LinkDirectory', 'LinkDirectorySlashTextFile.txt', 'LinkLinkDirectory', 'LinkLinkDirectorySlashTextFile.txt', 'TextFile.txt'];
 const CHILD_DIR = ['LinkDotDotSlashTextFile.txt', 'TextFile.txt'];
-
 const DIR_ZIP_DIR = fixture('dir.zip', 'dir');
-
 describe('dir.zip/dir', () => {
-  const dir = ROOT_ARCHIVE_FS.newArchiveDirectory(DIR_ZIP_DIR);
+  const dir = _nuclideFsAtom().ROOT_ARCHIVE_FS.newArchiveDirectory(DIR_ZIP_DIR);
+
   checkRoot(dir);
 });
 
-function checkRoot(root: Directory) {
+function checkRoot(root) {
   describe('root', () => {
     checkGetEntries(root, PARENT_DIR);
   });
-
   describe('Directory', () => {
     const directory = root.getSubdirectory('Directory');
     checkGetEntries(directory, CHILD_DIR);
-
     describe('TextFile', () => {
       const directoryTextFile = directory.getFile('TextFile.txt');
       checkTextFile(directoryTextFile, CHILD_TEXT);
@@ -73,43 +101,40 @@ function checkRoot(root: Directory) {
   });
 }
 
-function checkGetEntries(directory: Directory, expected: Array<string>): void {
+function checkGetEntries(directory, expected) {
   checkDirectory(directory);
   checkExistingPath(directory);
   describe('getEntries', () => {
     it('returns expected names', async () => {
-      await (() =>
-        new Promise((resolve, reject) =>
-          directory.getEntries((error, entries) => {
-            if (entries != null) {
-              expect(names(entries)).toEqual(expected);
-              resolve();
-            } else {
-              reject(error);
-            }
-          }),
-        ))();
+      await (() => new Promise((resolve, reject) => directory.getEntries((error, entries) => {
+        if (entries != null) {
+          expect(names(entries)).toEqual(expected);
+          resolve();
+        } else {
+          reject(error);
+        }
+      })))();
     });
   });
 }
 
-function checkTextFile(entry: ArchiveFile, contents: string) {
+function checkTextFile(entry, contents) {
   checkFile(entry);
   checkExistingPath(entry);
   checkText(entry, contents);
 }
 
-function checkText(entry: ArchiveFile, contents: string): void {
+function checkText(entry, contents) {
   describe(`text file ${entry.getBaseName()}`, () => {
     it('has expected contents', async () => {
       await (async () => {
-        expect(await entry.read()).toEqual(contents);
+        expect((await entry.read())).toEqual(contents);
       })();
     });
   });
 }
 
-function checkDirectory(entry: ArchiveEntry): void {
+function checkDirectory(entry) {
   describe('directory isDirectory', () => {
     it('is true', () => {
       expect(entry.isDirectory()).toBeTruthy();
@@ -122,7 +147,7 @@ function checkDirectory(entry: ArchiveEntry): void {
   });
 }
 
-function checkFile(entry: ArchiveEntry): void {
+function checkFile(entry) {
   describe('file isDirectory', () => {
     it('is false', () => {
       expect(entry.isDirectory()).toBeFalsy();
@@ -135,25 +160,26 @@ function checkFile(entry: ArchiveEntry): void {
   });
 }
 
-function checkExistingPath(entry: ArchiveEntry): void {
+function checkExistingPath(entry) {
   describe('existence', () => {
     it('is true', async () => {
       await (async () => {
-        expect(await entry.exists()).toBeTruthy();
+        expect((await entry.exists())).toBeTruthy();
       })();
     });
   });
 }
 
-function fixture(dir: string, archiveOffset?: string): string {
-  const fsDir = nuclideUri.join(fixtures, dir);
+function fixture(dir, archiveOffset) {
+  const fsDir = _nuclideUri().default.join(fixtures, dir);
+
   if (archiveOffset == null) {
     return fsDir;
   } else {
-    return nuclideUri.archiveJoin(fsDir, archiveOffset);
+    return _nuclideUri().default.archiveJoin(fsDir, archiveOffset);
   }
 }
 
-function names(entries: Array<ArchiveEntry>): Array<string> {
+function names(entries) {
   return entries.map(x => x.getBaseName());
 }

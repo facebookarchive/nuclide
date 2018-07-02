@@ -1,3 +1,53 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _projects() {
+  const data = require("../../../modules/nuclide-commons-atom/projects");
+
+  _projects = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAnalytics() {
+  const data = require("../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,128 +55,121 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
-import {trackTiming} from '../../nuclide-analytics';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-function copyAbsolutePath(): void {
+function copyAbsolutePath() {
   trackOperation('copyAbsolutePath', () => {
-    const uri = getCurrentNuclideUri();
-    // flowlint-next-line sketchy-null-string:off
+    const uri = getCurrentNuclideUri(); // flowlint-next-line sketchy-null-string:off
+
     if (!uri) {
       return;
     }
-    copyToClipboard('Copied absolute path', nuclideUri.getPath(uri));
+
+    copyToClipboard('Copied absolute path', _nuclideUri().default.getPath(uri));
   });
 }
 
-function copyProjectRelativePath(): void {
+function copyProjectRelativePath() {
   trackOperation('copyProjectRelativePath', () => {
-    const uri = getCurrentNuclideUri();
-    // flowlint-next-line sketchy-null-string:off
+    const uri = getCurrentNuclideUri(); // flowlint-next-line sketchy-null-string:off
+
     if (!uri) {
       return;
     }
 
-    const projectRelativePath = getAtomProjectRelativePath(uri);
-    // flowlint-next-line sketchy-null-string:off
+    const projectRelativePath = (0, _projects().getAtomProjectRelativePath)(uri); // flowlint-next-line sketchy-null-string:off
+
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard(
-        'Path not contained in any open project.\nCopied absolute path',
-        nuclideUri.getPath(uri),
-      );
+      copyToClipboard('Path not contained in any open project.\nCopied absolute path', _nuclideUri().default.getPath(uri));
     }
   });
 }
 
-function copyRepositoryRelativePath(): void {
+function copyRepositoryRelativePath() {
   trackOperation('copyRepositoryRelativePath', async () => {
-    const uri = getCurrentNuclideUri();
-    // flowlint-next-line sketchy-null-string:off
+    const uri = getCurrentNuclideUri(); // flowlint-next-line sketchy-null-string:off
+
     if (!uri) {
       return;
-    }
+    } // First source control relative.
 
-    // First source control relative.
-    const repoRelativePath = getRepositoryRelativePath(uri);
-    // flowlint-next-line sketchy-null-string:off
+
+    const repoRelativePath = getRepositoryRelativePath(uri); // flowlint-next-line sketchy-null-string:off
+
     if (repoRelativePath) {
       copyToClipboard('Copied repository relative path', repoRelativePath);
       return;
-    }
+    } // Next try arcanist relative.
 
-    // Next try arcanist relative.
-    const arcRelativePath = await getArcanistRelativePath(uri);
-    // flowlint-next-line sketchy-null-string:off
+
+    const arcRelativePath = await getArcanistRelativePath(uri); // flowlint-next-line sketchy-null-string:off
+
     if (arcRelativePath) {
       copyToClipboard('Copied arc project relative path', arcRelativePath);
       return;
-    }
+    } // Lastly, project and absolute.
 
-    // Lastly, project and absolute.
-    const projectRelativePath = getAtomProjectRelativePath(uri);
-    // flowlint-next-line sketchy-null-string:off
+
+    const projectRelativePath = (0, _projects().getAtomProjectRelativePath)(uri); // flowlint-next-line sketchy-null-string:off
+
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard(
-        'Path not contained in any repository.\nCopied absolute path',
-        nuclideUri.getPath(uri),
-      );
+      copyToClipboard('Path not contained in any repository.\nCopied absolute path', _nuclideUri().default.getPath(uri));
     }
   });
 }
 
-function copyBasename(): void {
+function copyBasename() {
   trackOperation('copyBasename', async () => {
     const uri = getCurrentNuclideUri();
+
     if (uri == null) {
       return;
     }
-    copyToClipboard(
-      'Copied basename',
-      nuclideUri.basename(uri, nuclideUri.extname(uri)),
-    );
+
+    copyToClipboard('Copied basename', _nuclideUri().default.basename(uri, _nuclideUri().default.extname(uri)));
   });
 }
 
-function copyHostname(): void {
+function copyHostname() {
   trackOperation('copyHostname', async () => {
     const uri = getCurrentNuclideUri();
+
     if (uri == null) {
       return;
     }
-    const {hostname} = nuclideUri.parse(uri);
+
+    const {
+      hostname
+    } = _nuclideUri().default.parse(uri);
+
     if (hostname == null) {
       notify('Nothing copied - the path is a local path.');
       return;
     }
+
     copyToClipboard('Copied hostname', hostname);
   });
 }
 
-function getRepositoryRelativePath(path: NuclideUri): ?string {
+function getRepositoryRelativePath(path) {
   // TODO(peterhal): repositoryForPath is the same as projectRelativePath
   // only less robust. We'll need a version of findHgRepository which is
   // aware of remote paths.
   return null;
 }
 
-async function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
+async function getArcanistRelativePath(path) {
   try {
     const {
-      getArcanistServiceByNuclideUri,
-      // $FlowFB
-    } = require('../../commons-atom/fb-remote-connection');
+      getArcanistServiceByNuclideUri // $FlowFB
+
+    } = require("../../commons-atom/fb-remote-connection");
+
     const arcService = getArcanistServiceByNuclideUri(path);
     return await arcService.getProjectRelativePath(path);
   } catch (err) {
@@ -134,20 +177,21 @@ async function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
   }
 }
 
-function copyToClipboard(messagePrefix: string, value: string): void {
+function copyToClipboard(messagePrefix, value) {
   atom.clipboard.write(value);
   notify(`${messagePrefix}: \`\`\`${value}\`\`\``);
 }
 
-function getCurrentNuclideUri(): ?NuclideUri {
+function getCurrentNuclideUri() {
   const editor = atom.workspace.getActiveTextEditor();
+
   if (!editor) {
     notify('Nothing copied. No active text editor.');
     return null;
   }
 
-  const path = editor.getPath();
-  // flowlint-next-line sketchy-null-string:off
+  const path = editor.getPath(); // flowlint-next-line sketchy-null-string:off
+
   if (!path) {
     notify('Nothing copied. Current text editor is unnamed.');
     return null;
@@ -156,61 +200,34 @@ function getCurrentNuclideUri(): ?NuclideUri {
   return path;
 }
 
-function trackOperation(eventName: string, operation: () => mixed): void {
-  trackTiming('nuclide-clipboard-path:' + eventName, operation);
+function trackOperation(eventName, operation) {
+  (0, _nuclideAnalytics().trackTiming)('nuclide-clipboard-path:' + eventName, operation);
 }
 
-function notify(message: string): void {
+function notify(message) {
   atom.notifications.addInfo(message);
 }
 
 class Activation {
-  _subscriptions: UniversalDisposable;
-
-  constructor(state: ?Object) {
-    this._subscriptions = new UniversalDisposable(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-absolute-path',
-        copyAbsolutePath,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-basename-of-current-path',
-        copyBasename,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-hostname-of-current-path',
-        copyHostname,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-repository-relative-path',
-        copyRepositoryRelativePath,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-project-relative-path',
-        copyProjectRelativePath,
-      ),
-    );
+  constructor(state) {
+    this._subscriptions = new (_UniversalDisposable().default)(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath), atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-basename-of-current-path', copyBasename), atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-hostname-of-current-path', copyHostname), atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath), atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath));
   }
 
   dispose() {
     this._subscriptions.dispose();
   }
+
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?mixed): void {
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

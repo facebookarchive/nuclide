@@ -1,3 +1,35 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getInitializationOptions = getInitializationOptions;
+exports.createCacheDir = createCacheDir;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _os = _interopRequireDefault(require("os"));
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,17 +37,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import os from 'os';
-import fsPromise from 'nuclide-commons/fsPromise';
-
 const CQUERY_CACHE_DIR = '.cquery_cache';
 
-function staticInitializationOptions(): Object {
+function staticInitializationOptions() {
   // Copied from the corresponding vs-code plugin
   return {
     resourceDirectory: '',
@@ -26,48 +53,41 @@ function staticInitializationOptions(): Object {
     progressReportFrequencyMs: 500,
     clientVersion: 3,
     codeLens: {
-      localVariables: false,
+      localVariables: false
     },
     completion: {
       enableSnippets: true,
-      includeBlacklist: [],
+      includeBlacklist: []
     },
     diagnostics: {
       blacklist: [],
       onParse: true,
-      onType: true,
+      onType: true
     },
     index: {
-      blacklist: [],
-    },
+      blacklist: []
+    }
   };
 }
 
-export function getInitializationOptions(
-  cacheDirectory: string,
-  compilationDatabaseDirectory: string,
-  extraClangArguments: Array<string> = [],
-): Object {
-  let options = {
-    ...staticInitializationOptions(),
+function getInitializationOptions(cacheDirectory, compilationDatabaseDirectory, extraClangArguments = []) {
+  let options = Object.assign({}, staticInitializationOptions(), {
     cacheDirectory,
     compilationDatabaseDirectory,
-    extraClangArguments,
-  };
+    extraClangArguments
+  });
+
   try {
     // $FlowFB
-    options = require('./fb-init-options').default(options);
+    options = require("./fb-init-options").default(options);
   } catch (e) {}
+
   return options;
 }
 
-export async function createCacheDir(rootDir: string) {
-  const dir = nuclideUri.join(
-    os.tmpdir(),
-    'cquery',
-    nuclideUri.split(rootDir).join('@'),
-    CQUERY_CACHE_DIR,
-  );
-  await fsPromise.mkdirp(dir);
+async function createCacheDir(rootDir) {
+  const dir = _nuclideUri().default.join(_os.default.tmpdir(), 'cquery', _nuclideUri().default.split(rootDir).join('@'), CQUERY_CACHE_DIR);
+
+  await _fsPromise().default.mkdirp(dir);
   return dir;
 }

@@ -1,89 +1,43 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+"use strict";
 
-import classnames from 'classnames';
-import * as React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Icon = void 0;
 
-export type Nuclicon =
-  | 'nuclicon-nuclide'
-  | 'nuclicon-react'
-  | 'nuclicon-buck'
-  | 'nuclicon-hhvm'
-  | 'nuclicon-hack'
-  | 'nuclicon-relay'
-  | 'nuclicon-swift'
-  | 'nuclicon-file-directory'
-  | 'nuclicon-file-directory-starred'
-  | 'nuclicon-debugger'
-  | 'nuclicon-arrow-down'
-  | 'nuclicon-bug'
-  | 'nuclicon-graphql'
-  | 'nuclicon-comment-discussion'
-  | 'nuclicon-comment'
-  | 'nuclicon-jest-outline'
-  | 'nuclicon-flow'
-  | 'nuclicon-react-devtools'
-  | 'nuclicon-funnel'
-  | 'nuclicon-error'
-  // Currently, "nuclicon-warning" is the same as Octicon's "alert" but we duplicate it because the
-  // Octicons aren't vertically centered and the fact that this one's frequently shown next to
-  // nuclicon-error makes it wayyyy more obvious.
-  | 'nuclicon-warning'
-  | 'nuclicon-kebab-horizontal'
-  | 'nuclicon-cs'
-  | 'nuclicon-metro'
-  | 'nuclicon-connected'
-  | 'nuclicon-disconnected'
-  | 'nuclicon-eject'
-  | 'nuclicon-all-items'
-  | 'nuclicon-local'
-  | 'nuclicon-remote'
-  | 'nuclicon-config'
-  | 'nuclicon-snapshot'
-  | 'nuclicon-success'
-  | 'nuclicon-time-start'
-  | 'nuclicon-time-end'
-  | 'nuclicon-metro-disabled'
-  | 'nuclicon-metro-waiting'
-  | 'nuclicon-lightbulb-filled'
-  | 'nuclicon-nt'
-  | 'nuclicon-archive'
-  | 'nuclicon-infinity'
-  | 'nuclicon-desktop'
-  | 'nuclicon-mobile'
-  | 'nuclicon-lightning';
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
 
-export type IconName = Nuclicon | atom$Octicon;
+  _classnames = function () {
+    return data;
+  };
 
-type Props = {
-  /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: IconName,
-  className?: string,
-  /** Optional text content to render next to the icon. */
-  children?: React.Node,
-};
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
 /**
  * Renders an icon with optional text next to it.
  */
-export const Icon = (props: Props) => {
-  const {icon, children, className, ...remainingProps} = props;
-  const newClassName = classnames(
-    className,
-    icon == null ? null : `icon icon-${icon}`,
-  );
-  return (
-    <span className={newClassName} {...remainingProps}>
-      {children}
-    </span>
-  );
+const Icon = props => {
+  const {
+    icon,
+    children,
+    className
+  } = props,
+        remainingProps = _objectWithoutProperties(props, ["icon", "children", "className"]);
+
+  const newClassName = (0, _classnames().default)(className, icon == null ? null : `icon icon-${icon}`);
+  return React.createElement("span", Object.assign({
+    className: newClassName
+  }, remainingProps), children);
 };
+
+exports.Icon = Icon;

@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = DebuggerProcessTreeView;
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Block() {
+  const data = require("../../../../../nuclide-commons-ui/Block");
+
+  _Block = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _DebuggerProcessComponent() {
+  const data = _interopRequireDefault(require("./DebuggerProcessComponent"));
+
+  _DebuggerProcessComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +49,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {IDebugService} from '../types';
-
-import classnames from 'classnames';
-import {Block} from 'nuclide-commons-ui/Block';
-import * as React from 'react';
-import DebuggerProcessComponent from './DebuggerProcessComponent';
-
-export default function DebuggerProcessTreeView(props: {
-  service: IDebugService,
-}): React.Node {
-  return (
-    <div
-      className={classnames(
-        'debugger-container-new',
-        'debugger-breakpoint-list',
-        'debugger-tree',
-      )}>
-      <div className="debugger-pane-content ">
-        <Block>
-          <DebuggerProcessComponent service={props.service} />
-        </Block>
-      </div>
-    </div>
-  );
+function DebuggerProcessTreeView(props) {
+  return React.createElement("div", {
+    className: (0, _classnames().default)('debugger-container-new', 'debugger-breakpoint-list', 'debugger-tree')
+  }, React.createElement("div", {
+    className: "debugger-pane-content "
+  }, React.createElement(_Block().Block, null, React.createElement(_DebuggerProcessComponent().default, {
+    service: props.service
+  }))));
 }

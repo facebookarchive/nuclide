@@ -1,3 +1,17 @@
+"use strict";
+
+function _ProjectManager() {
+  const data = _interopRequireWildcard(require("../ProjectManager"));
+
+  _ProjectManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,50 +20,38 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import ProjectManager, {_validateProjectSpec} from '../ProjectManager';
-
 describe('_validateProjectSpec', () => {
   test('local', () => {
-    expect(
-      _validateProjectSpec({
-        originPath: '/a/b/c/my.project.toml',
-        paths: ['d/e/f', '/x/y/z'],
-      }),
-    ).toEqual({
+    expect((0, _ProjectManager()._validateProjectSpec)({
       originPath: '/a/b/c/my.project.toml',
-      paths: ['/a/b/c/d/e/f', '/x/y/z'],
+      paths: ['d/e/f', '/x/y/z']
+    })).toEqual({
+      originPath: '/a/b/c/my.project.toml',
+      paths: ['/a/b/c/d/e/f', '/x/y/z']
     });
-    expect(
-      _validateProjectSpec({
-        originPath: '/a/b/c/my.project.toml',
-      }),
-    ).toEqual({
+    expect((0, _ProjectManager()._validateProjectSpec)({
+      originPath: '/a/b/c/my.project.toml'
+    })).toEqual({
       originPath: '/a/b/c/my.project.toml',
-      paths: ['/a/b/c'],
+      paths: ['/a/b/c']
     });
   });
-
   test('remote', () => {
-    expect(
-      _validateProjectSpec({
-        originPath: 'nuclide://a.com/b/c/my.project.toml',
-        paths: ['d/e/f', '/x/y/z'],
-      }),
-    ).toEqual({
+    expect((0, _ProjectManager()._validateProjectSpec)({
       originPath: 'nuclide://a.com/b/c/my.project.toml',
-      paths: ['/b/c/d/e/f', '/x/y/z'],
+      paths: ['d/e/f', '/x/y/z']
+    })).toEqual({
+      originPath: 'nuclide://a.com/b/c/my.project.toml',
+      paths: ['/b/c/d/e/f', '/x/y/z']
     });
-    expect(
-      _validateProjectSpec({
-        originPath: 'nuclide://a.com/b/c/my.project.toml',
-      }),
-    ).toEqual({
+    expect((0, _ProjectManager()._validateProjectSpec)({
+      originPath: 'nuclide://a.com/b/c/my.project.toml'
+    })).toEqual({
       originPath: 'nuclide://a.com/b/c/my.project.toml',
-      paths: ['/b/c'],
+      paths: ['/b/c']
     });
   });
 });

@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.Breakpoint = void 0;
+
+function _HandleMap() {
+  const data = _interopRequireDefault(require("./HandleMap"));
+
+  _HandleMap = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +25,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import HandleMap from './HandleMap';
-
-export class Breakpoint {
-  _id: ?number;
-  _source: ?string;
-  _line: ?number;
-  _condition: ?string;
-  _verified: boolean;
-
-  constructor(
-    id: ?number,
-    source: ?string,
-    line: ?number,
-    condition: ?string,
-    verified: boolean,
-  ) {
+class Breakpoint {
+  constructor(id, source, line, condition, verified) {
     this._id = id;
     this._source = source;
     this._line = line;
@@ -33,63 +37,67 @@ export class Breakpoint {
     this._verified = verified;
   }
 
-  get id(): ?number {
+  get id() {
     return this._id;
   }
 
-  setId(n: number): void {
+  setId(n) {
     this._id = n;
   }
 
-  get source(): ?string {
+  get source() {
     return this._source;
   }
 
-  get line(): ?number {
+  get line() {
     return this._line;
   }
 
-  get condition(): ?string {
+  get condition() {
     return this._condition;
   }
 
-  get verified(): boolean {
+  get verified() {
     return this._verified;
   }
 
-  setVerified(): void {
+  setVerified() {
     this._verified = true;
   }
+
 }
 
-export default class Breakpoints {
-  _breakpoints: HandleMap<Breakpoint>;
+exports.Breakpoint = Breakpoint;
 
+class Breakpoints {
   constructor() {
-    this._breakpoints = new HandleMap();
+    this._breakpoints = new (_HandleMap().default)();
   }
 
-  addBreakpoint(bkpt: Breakpoint): number {
+  addBreakpoint(bkpt) {
     return this._breakpoints.put(bkpt);
   }
 
-  removeBreakpoint(bkpt: Breakpoint): void {
+  removeBreakpoint(bkpt) {
     this._breakpoints.removeObject(bkpt);
   }
 
-  handleForBreakpoint(bkpt: Breakpoint): ?number {
+  handleForBreakpoint(bkpt) {
     return this._breakpoints.getHandleByObject(bkpt);
   }
 
-  breakpointByHandle(handle: number): ?Breakpoint {
+  breakpointByHandle(handle) {
     return this._breakpoints.getObjectByHandle(handle);
   }
 
-  breakpointByDebuggerId(id: number): ?Breakpoint {
+  breakpointByDebuggerId(id) {
     return this._breakpoints.allObjects.find(_ => id === _.id);
   }
 
-  breakpointsWithNoDebuggerId(): Array<Breakpoint> {
+  breakpointsWithNoDebuggerId() {
     return this._breakpoints.allObjects.filter(_ => _.id == null);
   }
+
 }
+
+exports.default = Breakpoints;

@@ -1,3 +1,88 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DeviceAndProcess = void 0;
+
+function _nuclideAdb() {
+  const data = require("../nuclide-adb");
+
+  _nuclideAdb = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Table() {
+  const data = require("../nuclide-commons-ui/Table");
+
+  _Table = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _AdbDeviceSelector() {
+  const data = require("./AdbDeviceSelector");
+
+  _AdbDeviceSelector = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,53 +91,85 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {AdbDevice, AndroidJavaProcess} from 'nuclide-adb/lib/types';
-import type {Column, Row} from 'nuclide-commons-ui/Table';
-import type {Expected} from 'nuclide-commons/expected';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Subscription} from 'rxjs';
-
-import idx from 'idx';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {Table} from 'nuclide-commons-ui/Table';
-import {arrayEqual} from 'nuclide-commons/collection';
-import {Expect} from 'nuclide-commons/expected';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import {Observable} from 'rxjs';
-import {AdbDeviceSelector} from './AdbDeviceSelector';
-
-type ColumnName = 'pid' | 'user' | 'name';
-
-type Props = {|
-  +targetUri: NuclideUri,
-  +onSelect: (device: ?AdbDevice, javaProcess: ?AndroidJavaProcess) => void,
-  +deserialize: () => ?string,
-|};
-
-type State = {
-  selectedDevice: ?AdbDevice,
-  javaProcesses: Expected<Array<AndroidJavaProcess>>,
-  selectedProcess: ?AndroidJavaProcess,
-  selectedProcessName: ?string,
-  sortedColumn: ?ColumnName,
-  sortDescending: boolean,
-};
-
-export class DeviceAndProcess extends React.Component<Props, State> {
-  _disposables: UniversalDisposable;
-  _javaProcessSubscription: ?Subscription;
-
-  constructor(props: Props) {
+class DeviceAndProcess extends React.Component {
+  constructor(props) {
     super(props);
 
-    this._disposables = new UniversalDisposable();
+    this._handleDeviceChange = device => {
+      const oldDevice = this.state.selectedDevice;
+
+      if (oldDevice != null && device != null && oldDevice.serial === device.serial) {
+        // Same device selected.
+        return;
+      }
+
+      if (this._javaProcessSubscription != null) {
+        this._javaProcessSubscription.unsubscribe();
+
+        this._javaProcessSubscription = null;
+      }
+
+      this.setState({
+        selectedDevice: device,
+        javaProcesses: device == null ? _expected().Expect.value([]) : _expected().Expect.pending(),
+        selectedProcess: null,
+        selectedProcessName: this.props.deserialize()
+      });
+
+      if (device != null) {
+        // If a device is selected, observe the Java processes on the device.
+        const adbService = (0, _nuclideAdb().getAdbServiceByNuclideUri)(this.props.targetUri);
+        this._javaProcessSubscription = _RxMin.Observable.interval(2000).startWith(0).switchMap(() => adbService.getJavaProcesses(device.serial).refCount()).distinctUntilChanged((a, b) => (0, _collection().arrayEqual)(a, b, (x, y) => {
+          return x.user === y.user && x.pid === y.pid && x.name === y.name;
+        })).subscribe(javaProcesses => {
+          this._javaProcessListChanged(_expected().Expect.value(javaProcesses));
+        });
+      }
+    };
+
+    this._handleSort = (sortedColumn, sortDescending) => {
+      this.setState({
+        sortedColumn,
+        sortDescending
+      });
+    };
+
+    this._sortRows = (processes, sortedColumnName, sortDescending) => {
+      if (sortedColumnName == null) {
+        return processes;
+      } // Use a numerical comparison for the pid column, string compare for all the others.
+
+
+      const compare = sortedColumnName === 'pid' ? (a, b, isAsc) => {
+        const cmp = (a || 0) - (b || 0);
+        return isAsc ? cmp : -cmp;
+      } : (a, b, isAsc) => {
+        const cmp = String(a).toLowerCase().localeCompare(String(b).toLowerCase());
+        return isAsc ? cmp : -cmp;
+      };
+
+      const getter = row => row.data[sortedColumnName];
+
+      return [...processes].sort((a, b) => {
+        return compare(getter(a), getter(b), !sortDescending);
+      });
+    };
+
+    this._handleSelectTableRow = (item, selectedIndex) => {
+      var _ref;
+
+      this.setState({
+        selectedProcess: item,
+        selectedProcessName: (_ref = item) != null ? _ref.name : _ref
+      });
+    };
+
+    this._disposables = new (_UniversalDisposable().default)();
     this._javaProcessSubscription = null;
+
     this._disposables.add(() => {
       if (this._javaProcessSubscription != null) {
         this._javaProcessSubscription.unsubscribe();
@@ -61,11 +178,11 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
     this.state = {
       selectedDevice: null,
-      javaProcesses: Expect.value([]),
+      javaProcesses: _expected().Expect.value([]),
       selectedProcess: null,
       selectedProcessName: null,
       sortedColumn: 'name',
-      sortDescending: false,
+      sortDescending: false
     };
   }
 
@@ -73,208 +190,88 @@ export class DeviceAndProcess extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  setState(partialState: Object, callback?: () => mixed): void {
-    const fullState: State = {
-      ...this.state,
-      ...partialState,
-    };
+  setState(partialState, callback) {
+    const fullState = Object.assign({}, this.state, partialState);
     super.setState(fullState, () => {
       this.props.onSelect(fullState.selectedDevice, fullState.selectedProcess);
       callback && callback();
     });
   }
 
-  _handleDeviceChange = (device: ?AdbDevice): void => {
-    const oldDevice = this.state.selectedDevice;
-    if (
-      oldDevice != null &&
-      device != null &&
-      oldDevice.serial === device.serial
-    ) {
-      // Same device selected.
-      return;
-    }
-
-    if (this._javaProcessSubscription != null) {
-      this._javaProcessSubscription.unsubscribe();
-      this._javaProcessSubscription = null;
-    }
-
-    this.setState({
-      selectedDevice: device,
-      javaProcesses: device == null ? Expect.value([]) : Expect.pending(),
-      selectedProcess: null,
-      selectedProcessName: this.props.deserialize(),
-    });
-
-    if (device != null) {
-      // If a device is selected, observe the Java processes on the device.
-      const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
-      this._javaProcessSubscription = Observable.interval(2000)
-        .startWith(0)
-        .switchMap(() => adbService.getJavaProcesses(device.serial).refCount())
-        .distinctUntilChanged((a, b) =>
-          arrayEqual(a, b, (x, y) => {
-            return x.user === y.user && x.pid === y.pid && x.name === y.name;
-          }),
-        )
-        .subscribe(javaProcesses => {
-          this._javaProcessListChanged(Expect.value(javaProcesses));
-        });
-    }
-  };
-
-  _javaProcessListChanged(javaProcesses: Expected<Array<AndroidJavaProcess>>) {
-    const selectedPid =
-      this.state.selectedProcess == null
-        ? null
-        : this.state.selectedProcess.pid;
-    let selectedProcess = javaProcesses
-      .getOrDefault([])
-      .find(process => process.pid === selectedPid);
+  _javaProcessListChanged(javaProcesses) {
+    const selectedPid = this.state.selectedProcess == null ? null : this.state.selectedProcess.pid;
+    let selectedProcess = javaProcesses.getOrDefault([]).find(process => process.pid === selectedPid);
 
     if (this.state.selectedProcessName != null) {
-      selectedProcess = javaProcesses
-        .getOrDefault([])
-        .find(process => process.name === this.state.selectedProcessName);
+      selectedProcess = javaProcesses.getOrDefault([]).find(process => process.name === this.state.selectedProcessName);
     }
 
     this.setState({
       javaProcesses,
       selectedProcess,
-      selectedProcessName:
-        selectedProcess == null ? null : selectedProcess.name,
+      selectedProcessName: selectedProcess == null ? null : selectedProcess.name
     });
   }
 
-  _getColumns(): Array<Column<*>> {
-    return [
-      {
-        key: 'pid',
-        title: 'PID',
-        width: 0.1,
-      },
-      {
-        key: 'user',
-        title: 'User',
-        width: 0.1,
-      },
-      {
-        key: 'name',
-        title: 'Name',
-        width: 0.8,
-      },
-    ];
+  _getColumns() {
+    return [{
+      key: 'pid',
+      title: 'PID',
+      width: 0.1
+    }, {
+      key: 'user',
+      title: 'User',
+      width: 0.1
+    }, {
+      key: 'name',
+      title: 'Name',
+      width: 0.8
+    }];
   }
 
-  _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {
-    this.setState({sortedColumn, sortDescending});
-  };
+  render() {
+    const emptyMessage = this.state.selectedDevice == null ? 'No device selected' : 'No debuggable Java processes found!';
 
-  _sortRows = (
-    processes: Array<Row<*>>,
-    sortedColumnName: ?ColumnName,
-    sortDescending: boolean,
-  ): Array<Row<*>> => {
-    if (sortedColumnName == null) {
-      return processes;
-    }
+    const emptyComponent = () => React.createElement("div", null, this.state.javaProcesses.isPending ? React.createElement(_LoadingSpinner().LoadingSpinner, {
+      size: "EXTRA_SMALL"
+    }) : emptyMessage);
 
-    // Use a numerical comparison for the pid column, string compare for all the others.
-    const compare: any =
-      sortedColumnName === 'pid'
-        ? (a: ?number, b: ?number, isAsc: boolean): number => {
-            const cmp = (a || 0) - (b || 0);
-            return isAsc ? cmp : -cmp;
-          }
-        : (a: ?string, b: ?string, isAsc: boolean): number => {
-            const cmp = String(a)
-              .toLowerCase()
-              .localeCompare(String(b).toLowerCase());
-            return isAsc ? cmp : -cmp;
-          };
+    const processListRows = this._sortRows(this.state.javaProcesses.getOrDefault([]).map(processRow => {
+      const data = {
+        pid: processRow.pid,
+        user: processRow.user,
+        name: processRow.name
+      };
+      return {
+        data
+      };
+    }), this.state.sortedColumn, this.state.sortDescending);
 
-    const getter = row => row.data[sortedColumnName];
-    return [...processes].sort((a, b) => {
-      return compare(getter(a), getter(b), !sortDescending);
-    });
-  };
-
-  _handleSelectTableRow = (
-    item: ?AndroidJavaProcess,
-    selectedIndex: number,
-  ): void => {
-    this.setState({
-      selectedProcess: item,
-      selectedProcessName: idx(item, _ => _.name),
-    });
-  };
-
-  render(): React.Node {
-    const emptyMessage: string =
-      this.state.selectedDevice == null
-        ? 'No device selected'
-        : 'No debuggable Java processes found!';
-    const emptyComponent = () => (
-      <div>
-        {this.state.javaProcesses.isPending ? (
-          <LoadingSpinner size="EXTRA_SMALL" />
-        ) : (
-          emptyMessage
-        )}
-      </div>
-    );
-
-    const processListRows = this._sortRows(
-      this.state.javaProcesses.getOrDefault([]).map(processRow => {
-        const data = {
-          pid: processRow.pid,
-          user: processRow.user,
-          name: processRow.name,
-        };
-        return {data};
-      }),
-      this.state.sortedColumn,
-      this.state.sortDescending,
-    );
-
-    const selectedRows =
-      this.state.selectedProcess == null
-        ? []
-        : processListRows.filter(
-            row =>
-              this.state.selectedProcess == null ||
-              (row.data.pid === this.state.selectedProcess.pid &&
-                row.data.name === this.state.selectedProcess.name),
-          );
-    const selectedRowIndex =
-      selectedRows.length === 1 ? processListRows.indexOf(selectedRows[0]) : -1;
-
-    return (
-      <div className="block">
-        <label>Device:</label>
-        <AdbDeviceSelector
-          onChange={this._handleDeviceChange}
-          targetUri={this.props.targetUri}
-        />
-        <label>Debuggable Java processes: </label>
-        <Table
-          tabIndex="12"
-          collapsable={false}
-          columns={this._getColumns()}
-          emptyComponent={emptyComponent}
-          fixedHeader={true}
-          maxBodyHeight="99999px"
-          rows={processListRows}
-          sortable={true}
-          onSort={this._handleSort}
-          sortedColumn={this.state.sortedColumn}
-          sortDescending={this.state.sortDescending}
-          selectable={true}
-          selectedIndex={selectedRowIndex}
-          onSelect={this._handleSelectTableRow}
-        />
-      </div>
-    );
+    const selectedRows = this.state.selectedProcess == null ? [] : processListRows.filter(row => this.state.selectedProcess == null || row.data.pid === this.state.selectedProcess.pid && row.data.name === this.state.selectedProcess.name);
+    const selectedRowIndex = selectedRows.length === 1 ? processListRows.indexOf(selectedRows[0]) : -1;
+    return React.createElement("div", {
+      className: "block"
+    }, React.createElement("label", null, "Device:"), React.createElement(_AdbDeviceSelector().AdbDeviceSelector, {
+      onChange: this._handleDeviceChange,
+      targetUri: this.props.targetUri
+    }), React.createElement("label", null, "Debuggable Java processes: "), React.createElement(_Table().Table, {
+      tabIndex: "12",
+      collapsable: false,
+      columns: this._getColumns(),
+      emptyComponent: emptyComponent,
+      fixedHeader: true,
+      maxBodyHeight: "99999px",
+      rows: processListRows,
+      sortable: true,
+      onSort: this._handleSort,
+      sortedColumn: this.state.sortedColumn,
+      sortDescending: this.state.sortDescending,
+      selectable: true,
+      selectedIndex: selectedRowIndex,
+      onSelect: this._handleSelectTableRow
+    }));
   }
+
 }
+
+exports.DeviceAndProcess = DeviceAndProcess;

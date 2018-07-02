@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = ProcessTreeNode;
+
+function _Tree() {
+  const data = require("../../../../../nuclide-commons-ui/Tree");
+
+  _Tree = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _DebuggerProcessTreeNode() {
+  const data = _interopRequireDefault(require("./DebuggerProcessTreeNode"));
+
+  _DebuggerProcessTreeNode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,53 +39,25 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {IProcess, IDebugService} from '../types';
-
-import {TreeItem} from 'nuclide-commons-ui/Tree';
-import * as React from 'react';
-import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
-
-type Props = {
-  process: IProcess,
-  service: IDebugService,
-  childItems: Array<React.Element<any>>,
-  title: string,
-};
-
-export default function ProcessTreeNode(props: Props): React.Node {
-  const {process, service, title, childItems} = props;
+function ProcessTreeNode(props) {
+  const {
+    process,
+    service,
+    title,
+    childItems
+  } = props;
   const focusedProcess = service.viewModel.focusedProcess;
-
   const isFocused = process === focusedProcess;
-
-  const tooltipTitle =
-    service.viewModel.focusedProcess == null ||
-    service.viewModel.focusedProcess.configuration.adapterExecutable == null
-      ? 'Unknown Command'
-      : service.viewModel.focusedProcess.configuration.adapterExecutable
-          .command +
-        service.viewModel.focusedProcess.configuration.adapterExecutable.args.join(
-          ' ',
-        );
-
-  const formattedTitle = (
-    <span
-      className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
-      title={tooltipTitle}>
-      {title}
-    </span>
-  );
-
-  return childItems == null || childItems.length === 0 ? (
-    <TreeItem>{formattedTitle}</TreeItem>
-  ) : (
-    <DebuggerProcessTreeNode
-      formattedTitle={formattedTitle}
-      childItems={childItems}
-    />
-  );
+  const tooltipTitle = service.viewModel.focusedProcess == null || service.viewModel.focusedProcess.configuration.adapterExecutable == null ? 'Unknown Command' : service.viewModel.focusedProcess.configuration.adapterExecutable.command + service.viewModel.focusedProcess.configuration.adapterExecutable.args.join(' ');
+  const formattedTitle = React.createElement("span", {
+    className: isFocused ? 'debugger-tree-process-thread-selected' : '',
+    title: tooltipTitle
+  }, title);
+  return childItems == null || childItems.length === 0 ? React.createElement(_Tree().TreeItem, null, formattedTitle) : React.createElement(_DebuggerProcessTreeNode().default, {
+    formattedTitle: formattedTitle,
+    childItems: childItems
+  });
 }

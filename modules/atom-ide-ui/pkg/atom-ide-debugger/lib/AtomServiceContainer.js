@@ -1,3 +1,35 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setConsoleService = setConsoleService;
+exports.getConsoleService = getConsoleService;
+exports.setConsoleRegisterExecutor = setConsoleRegisterExecutor;
+exports.getConsoleRegisterExecutor = getConsoleRegisterExecutor;
+exports.setDatatipService = setDatatipService;
+exports.getDatatipService = getDatatipService;
+exports.setNotificationService = setNotificationService;
+exports.getNotificationService = getNotificationService;
+exports.setTerminalService = setTerminalService;
+exports.getTerminalService = getTerminalService;
+exports.setRpcService = setRpcService;
+exports.isNuclideEnvironment = isNuclideEnvironment;
+exports.addDebugConfigurationProvider = addDebugConfigurationProvider;
+exports.resolveDebugConfiguration = resolveDebugConfiguration;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,132 +38,97 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+let _raiseNativeNotification = null;
+let _registerExecutor = null;
+let _datatipService = null;
+let _createConsole = null;
+let _terminalService = null;
+let _rpcService = null;
 
-import type {
-  DatatipService,
-  ConsoleService,
-  RegisterExecutorFunction,
-  TerminalApi,
-} from 'atom-ide-ui';
-import type {
-  DebuggerConfigurationProvider,
-  IProcessConfig,
-  VsAdapterType,
-} from 'nuclide-debugger-common';
+const _configurationProviders = new Map();
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-type raiseNativeNotificationFunc = ?(
-  title: string,
-  body: string,
-  timeout: number,
-  raiseIfAtomHasFocus: boolean,
-) => ?IDisposable;
-
-let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
-let _registerExecutor: ?RegisterExecutorFunction = null;
-let _datatipService: ?DatatipService = null;
-let _createConsole: ?ConsoleService = null;
-let _terminalService: ?TerminalApi = null;
-let _rpcService: ?nuclide$RpcService = null;
-const _configurationProviders: Map<
-  VsAdapterType,
-  DebuggerConfigurationProvider,
-> = new Map();
-
-export function setConsoleService(createConsole: ConsoleService): IDisposable {
+function setConsoleService(createConsole) {
   _createConsole = createConsole;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _createConsole = null;
   });
 }
 
-export function getConsoleService(): ?ConsoleService {
+function getConsoleService() {
   return _createConsole;
 }
 
-export function setConsoleRegisterExecutor(
-  registerExecutor: RegisterExecutorFunction,
-): IDisposable {
+function setConsoleRegisterExecutor(registerExecutor) {
   _registerExecutor = registerExecutor;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _registerExecutor = null;
   });
 }
 
-export function getConsoleRegisterExecutor(): ?RegisterExecutorFunction {
+function getConsoleRegisterExecutor() {
   return _registerExecutor;
 }
 
-export function setDatatipService(datatipService: DatatipService): IDisposable {
+function setDatatipService(datatipService) {
   _datatipService = datatipService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _datatipService = null;
   });
 }
 
-export function getDatatipService(): ?DatatipService {
+function getDatatipService() {
   return _datatipService;
 }
 
-export function setNotificationService(
-  raiseNativeNotification: raiseNativeNotificationFunc,
-): void {
+function setNotificationService(raiseNativeNotification) {
   _raiseNativeNotification = raiseNativeNotification;
 }
 
-export function getNotificationService(): ?raiseNativeNotificationFunc {
+function getNotificationService() {
   return _raiseNativeNotification;
 }
 
-export function setTerminalService(terminalService: TerminalApi): IDisposable {
+function setTerminalService(terminalService) {
   _terminalService = terminalService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _terminalService = null;
   });
 }
 
-export function getTerminalService(): ?TerminalApi {
+function getTerminalService() {
   return _terminalService;
 }
 
-export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
+function setRpcService(rpcService) {
   _rpcService = rpcService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _rpcService = null;
   });
 }
 
-export function isNuclideEnvironment(): boolean {
+function isNuclideEnvironment() {
   return _rpcService != null;
 }
 
-export function addDebugConfigurationProvider(
-  provider: DebuggerConfigurationProvider,
-): IDisposable {
+function addDebugConfigurationProvider(provider) {
   const existingProvider = _configurationProviders.get(provider.adapterType);
+
   if (existingProvider != null) {
-    throw new Error(
-      'Debug Configuration Provider already exists for adapter type: ' +
-        provider.adapterType,
-    );
+    throw new Error('Debug Configuration Provider already exists for adapter type: ' + provider.adapterType);
   }
+
   _configurationProviders.set(provider.adapterType, provider);
-  return new UniversalDisposable(() => {
+
+  return new (_UniversalDisposable().default)(() => {
     _configurationProviders.delete(provider.adapterType);
   });
 }
 
-export async function resolveDebugConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
-  const existingProvider = _configurationProviders.get(
-    configuration.adapterType,
-  );
-  return existingProvider != null
-    ? existingProvider.resolveConfiguration(configuration)
-    : configuration;
+async function resolveDebugConfiguration(configuration) {
+  const existingProvider = _configurationProviders.get(configuration.adapterType);
+
+  return existingProvider != null ? existingProvider.resolveConfiguration(configuration) : configuration;
 }

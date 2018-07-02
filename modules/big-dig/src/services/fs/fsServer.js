@@ -1,3 +1,73 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createThriftServer = createThriftServer;
+exports.RemoteFileSystemServer = void 0;
+
+function _thrift() {
+  const data = _interopRequireDefault(require("thrift"));
+
+  _thrift = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFileSystemService() {
+  const data = _interopRequireDefault(require("./gen-nodejs/RemoteFileSystemService"));
+
+  _RemoteFileSystemService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFileSystemServiceHandler() {
+  const data = require("./RemoteFileSystemServiceHandler");
+
+  _RemoteFileSystemServiceHandler = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ports() {
+  const data = require("../../common/ports");
+
+  _ports = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideWatchmanHelpers() {
+  const data = require("../../../../nuclide-watchman-helpers");
+
+  _nuclideWatchmanHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,43 +76,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {createThriftServerOptions} from '../../common/thriftService-types';
-import type {IThriftServiceServer} from '../../common/thriftService-types';
-
-import thrift from 'thrift';
-import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
-import {RemoteFileSystemServiceHandler} from './RemoteFileSystemServiceHandler';
-import {scanPortsToListen} from '../../common/ports';
-import {getLogger} from 'log4js';
-import {WatchmanClient} from 'nuclide-watchman-helpers';
 
 /**
  * Wrapper class of raw thrift server which provide more methods
  * e.g. initialze(), close() etc.
  */
-export class RemoteFileSystemServer implements IThriftServiceServer {
-  _serviceHandler: RemoteFileSystemServiceHandler;
-  _server: thrift.Server;
-  _options: createThriftServerOptions;
-  _logger: log4js$Logger;
-  _watcher: WatchmanClient;
-
-  constructor(options: createThriftServerOptions) {
+class RemoteFileSystemServer {
+  constructor(options) {
     this._options = options;
-    this._logger = getLogger('fs-thrift-server');
-    this._watcher = new WatchmanClient();
-    this._serviceHandler = new RemoteFileSystemServiceHandler(this._watcher);
+    this._logger = (0, _log4js().getLogger)('fs-thrift-server');
+    this._watcher = new (_nuclideWatchmanHelpers().WatchmanClient)();
+    this._serviceHandler = new (_RemoteFileSystemServiceHandler().RemoteFileSystemServiceHandler)(this._watcher);
   }
 
-  async initialize(): Promise<void> {
+  async initialize() {
     if (this._server != null) {
       return;
     }
-    this._server = thrift.createServer(RemoteFileSystemService, {
+
+    this._server = _thrift().default.createServer(_RemoteFileSystemService().default, {
       watch: (uri, options) => {
         return this._serviceHandler.watch(uri, options);
       },
@@ -72,33 +127,37 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
       },
       readDirectory: uri => {
         return this._serviceHandler.readDirectory(uri);
-      },
+      }
     });
+
     this._server.on('error', error => {
       throw error;
     });
-    if (!(await scanPortsToListen(this._server, this._options.ports))) {
-      throw new Error(
-        `All ports in range "${this._options.ports}" are already in use`,
-      );
+
+    if (!(await (0, _ports().scanPortsToListen)(this._server, this._options.ports))) {
+      throw new Error(`All ports in range "${this._options.ports}" are already in use`);
     }
   }
 
   close() {
     this._logger.info('Close remote file system thrift service server...');
+
     this._server = null;
+
     this._watcher.dispose();
   }
-}
 
+}
 /**
  * Creates a remote file system thrift server.
  */
-export async function createThriftServer(
-  options: createThriftServerOptions,
-): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(options);
-  // Make sure we successfully start a thrift server
+
+
+exports.RemoteFileSystemServer = RemoteFileSystemServer;
+
+async function createThriftServer(options) {
+  const server = new RemoteFileSystemServer(options); // Make sure we successfully start a thrift server
+
   await server.initialize();
   return server;
 }

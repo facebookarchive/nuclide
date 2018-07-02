@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function DebugProtocol() {
+  const data = _interopRequireWildcard(require("vscode-debugprotocol"));
+
+  DebugProtocol = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,87 +47,63 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Observable} from 'rxjs';
-import type {IDebugService, IProcess, RemoteDebuggerService} from './types';
-import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
-
-import {DebuggerMode} from './constants';
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class RemoteControlService implements RemoteDebuggerService {
-  _service: IDebugService;
-  _disposables: UniversalDisposable;
-
-  constructor(service: IDebugService) {
+class RemoteControlService {
+  constructor(service) {
     this._service = service;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  _onSessionEnd(
-    focusedProcess: IProcess,
-    disposables: UniversalDisposable,
-  ): void {
-    disposables.add(
-      this._service.viewModel.onDidFocusProcess(() => {
-        if (
-          !this._service
-            .getModel()
-            .getProcesses()
-            .includes(focusedProcess)
-        ) {
-          disposables.dispose();
-        }
-      }),
-    );
+  _onSessionEnd(focusedProcess, disposables) {
+    disposables.add(this._service.viewModel.onDidFocusProcess(() => {
+      if (!this._service.getModel().getProcesses().includes(focusedProcess)) {
+        disposables.dispose();
+      }
+    }));
   }
 
-  async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
+  async startVspDebugging(config) {
     await this._service.startDebugging(config);
+    const {
+      viewModel
+    } = this._service;
+    const {
+      focusedProcess
+    } = viewModel;
 
-    const {viewModel} = this._service;
-    const {focusedProcess} = viewModel;
-    invariant(focusedProcess != null);
+    if (!(focusedProcess != null)) {
+      throw new Error("Invariant violation: \"focusedProcess != null\"");
+    }
 
-    const isFocusedProcess = (): boolean => {
-      return (
-        this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
-        viewModel.focusedProcess === focusedProcess
-      );
+    const isFocusedProcess = () => {
+      return this._service.getDebuggerMode() !== _constants().DebuggerMode.STOPPED && viewModel.focusedProcess === focusedProcess;
     };
 
-    const customRequest = async (
-      request: string,
-      args: any,
-    ): Promise<DebugProtocol.CustomResponse> => {
+    const customRequest = async (request, args) => {
       if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+        throw new Error('Cannot send custom requests to a no longer active debug session!');
       }
+
       return focusedProcess.session.custom(request, args);
     };
 
-    const observeCustomEvents = (): Observable<DebugProtocol.DebugEvent> => {
+    const observeCustomEvents = () => {
       if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+        throw new Error('Cannot send custom requests to a no longer active debug session!');
       }
+
       return focusedProcess.session.observeCustomEvents();
     };
 
-    const disposables = new UniversalDisposable();
-    const addCustomDisposable = (disposable: IDisposable): void => {
+    const disposables = new (_UniversalDisposable().default)();
+
+    const addCustomDisposable = disposable => {
       disposables.add(disposable);
     };
 
@@ -95,7 +112,10 @@ export default class RemoteControlService implements RemoteDebuggerService {
     return Object.freeze({
       customRequest,
       observeCustomEvents,
-      addCustomDisposable,
+      addCustomDisposable
     });
   }
+
 }
+
+exports.default = RemoteControlService;

@@ -1,3 +1,108 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _bindObservableAsProps() {
+  const data = require("../../../../../nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _LazyNestedValueComponent() {
+  const data = require("../../../../../nuclide-commons-ui/LazyNestedValueComponent");
+
+  _LazyNestedValueComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _SimpleValueComponent() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/SimpleValueComponent"));
+
+  _SimpleValueComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _Section() {
+  const data = require("../../../../../nuclide-commons-ui/Section");
+
+  _Section = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("../utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../../../../../nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../../../../../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,227 +111,194 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const NO_VARIABLES = React.createElement("div", {
+  className: "debugger-expression-value-row"
+}, React.createElement("span", {
+  className: "debugger-expression-value-content"
+}, "(no variables)"));
+const LOADING = React.createElement("div", {
+  className: "debugger-expression-value-row"
+}, React.createElement("span", {
+  className: "debugger-expression-value-content"
+}, React.createElement(_LoadingSpinner().LoadingSpinner, {
+  size: "MEDIUM"
+})));
 
-import type {IDebugService, IScope, IVariable} from '../types';
-import type {Expected} from 'nuclide-commons/expected';
-
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import {Section} from 'nuclide-commons-ui/Section';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {
-  fetchChildrenForLazyComponent,
-  expressionAsEvaluationResult,
-} from '../utils';
-import {Expect} from 'nuclide-commons/expected';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-
-type Props = {|
-  +service: IDebugService,
-|};
-
-const NO_VARIABLES = (
-  <div className="debugger-expression-value-row">
-    <span className="debugger-expression-value-content">(no variables)</span>
-  </div>
-);
-
-const LOADING = (
-  <div className="debugger-expression-value-row">
-    <span className="debugger-expression-value-content">
-      <LoadingSpinner size="MEDIUM" />
-    </span>
-  </div>
-);
-
-type State = {|
-  scopes: Expected<Array<IScope>>,
-  expandedScopes: Set<string>,
-|};
-
-export default class ScopesComponent extends React.Component<Props, State> {
-  _disposables: UniversalDisposable;
-  _expansionStates: Map<
-    string /* expression */,
-    Object /* unique reference for expression */,
-  >;
-
-  constructor(props: Props) {
+class ScopesComponent extends React.Component {
+  constructor(props) {
     super(props);
+
+    this._getExpansionStateIdForExpression = expression => {
+      let expansionStateId = this._expansionStates.get(expression);
+
+      if (expansionStateId == null) {
+        expansionStateId = {};
+
+        this._expansionStates.set(expression, expansionStateId);
+      }
+
+      return expansionStateId;
+    };
+
     this.state = {
-      scopes: Expect.value([]),
+      scopes: _expected().Expect.value([]),
       // UX: Local scope names should be expanded by default.
-      expandedScopes: new Set(['Local', 'Locals']),
+      expandedScopes: new Set(['Local', 'Locals'])
     };
     this._expansionStates = new Map();
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  componentDidMount(): void {
-    const {viewModel} = this.props.service;
-    this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(
-          viewModel.onDidChangeExpressionContext.bind(viewModel),
-        ),
-      )
-        .debounceTime(100)
-        .startWith(null)
-        .switchMap(() => this._getScopes())
-        .subscribe(scopes => {
-          this.setState({scopes});
-        }),
-    );
+  componentDidMount() {
+    const {
+      viewModel
+    } = this.props.service;
+
+    this._disposables.add(_RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(viewModel.onDidFocusStackFrame.bind(viewModel)), (0, _event().observableFromSubscribeFunction)(viewModel.onDidChangeExpressionContext.bind(viewModel))).debounceTime(100).startWith(null).switchMap(() => this._getScopes()).subscribe(scopes => {
+      this.setState({
+        scopes
+      });
+    }));
   }
 
-  _getScopes(): Observable<Expected<Array<IScope>>> {
-    const {focusedStackFrame} = this.props.service.viewModel;
+  _getScopes() {
+    const {
+      focusedStackFrame
+    } = this.props.service.viewModel;
+
     if (focusedStackFrame == null) {
-      return Observable.of(Expect.value([]));
+      return _RxMin.Observable.of(_expected().Expect.value([]));
     } else {
-      return Observable.of(Expect.pending()).concat(
-        Observable.fromPromise(
-          focusedStackFrame
-            .getScopes()
-            .then(scopes => Expect.value(scopes), error => Expect.error(error)),
-        ),
-      );
+      return _RxMin.Observable.of(_expected().Expect.pending()).concat(_RxMin.Observable.fromPromise(focusedStackFrame.getScopes().then(scopes => _expected().Expect.value(scopes), error => _expected().Expect.error(error))));
     }
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _renderScopeSection(scope: IScope): ?React.Element<any> {
+  _renderScopeSection(scope) {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const expanded = this._isScopeExpanded(scope);
-    const {focusedProcess} = this.props.service.viewModel;
-    const canSetVariables =
-      focusedProcess != null &&
-      focusedProcess.session.capabilities.supportsSetVariable;
+
+    const {
+      focusedProcess
+    } = this.props.service.viewModel;
+    const canSetVariables = focusedProcess != null && focusedProcess.session.capabilities.supportsSetVariable;
 
     let ScopeBodyComponent = () => null;
+
     if (expanded) {
-      ScopeBodyComponent = bindObservableAsProps(
-        this._getScopeVariables(scope).map(variables => ({
-          variables,
-          canSetVariables,
-          getExpansionStateIdForExpression: this
-            ._getExpansionStateIdForExpression,
-        })),
-        ScopeComponent,
-      );
+      ScopeBodyComponent = (0, _bindObservableAsProps().bindObservableAsProps)(this._getScopeVariables(scope).map(variables => ({
+        variables,
+        canSetVariables,
+        getExpansionStateIdForExpression: this._getExpansionStateIdForExpression
+      })), ScopeComponent);
     }
-    return (
-      <Section
-        key={scope.getId()}
-        collapsable={true}
-        collapsed={!expanded}
-        onChange={isCollapsed => this._setScopeExpanded(scope, !isCollapsed)}
-        headline={scope.name}
-        size="small">
-        <ScopeBodyComponent />
-      </Section>
-    );
+
+    return React.createElement(_Section().Section, {
+      key: scope.getId(),
+      collapsable: true,
+      collapsed: !expanded,
+      onChange: isCollapsed => this._setScopeExpanded(scope, !isCollapsed),
+      headline: scope.name,
+      size: "small"
+    }, React.createElement(ScopeBodyComponent, null));
   }
 
-  _getExpansionStateIdForExpression = (expression: string): Object => {
-    let expansionStateId = this._expansionStates.get(expression);
-    if (expansionStateId == null) {
-      expansionStateId = {};
-      this._expansionStates.set(expression, expansionStateId);
-    }
-    return expansionStateId;
-  };
-
-  _getScopeVariables(scope: IScope): Observable<Expected<Array<IVariable>>> {
-    return Observable.of(Expect.pending()).concat(
-      Observable.fromPromise(
-        scope
-          .getChildren()
-          .then(
-            variables => Expect.value(variables),
-            error => Expect.error(error),
-          ),
-      ),
-    );
+  _getScopeVariables(scope) {
+    return _RxMin.Observable.of(_expected().Expect.pending()).concat(_RxMin.Observable.fromPromise(scope.getChildren().then(variables => _expected().Expect.value(variables), error => _expected().Expect.error(error))));
   }
 
-  _isScopeExpanded(scope: IScope): boolean {
+  _isScopeExpanded(scope) {
     return this.state.expandedScopes.has(scope.name);
   }
 
-  _setScopeExpanded(scope: IScope, expanded: boolean): void {
+  _setScopeExpanded(scope, expanded) {
     if (expanded === this.state.expandedScopes.has(scope.name)) {
       return;
-    }
-    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    } // TODO: (wbinnssmith) T30771435 this setState depends on current state
     // and should use an updater function rather than an object
     // eslint-disable-next-line react/no-access-state-in-setstate
+
+
     const expandedScopes = new Set(this.state.expandedScopes);
+
     if (expanded) {
       expandedScopes.add(scope.name);
     } else {
       expandedScopes.delete(scope.name);
     }
-    this.setState({expandedScopes});
+
+    this.setState({
+      expandedScopes
+    });
   }
 
-  render(): React.Node {
-    const {scopes} = this.state;
-    const {service} = this.props;
+  render() {
+    const {
+      scopes
+    } = this.state;
+    const {
+      service
+    } = this.props;
+
     if (scopes.isError) {
-      return <span>Error fetching scopes: {scopes.error.toString()}</span>;
+      return React.createElement("span", null, "Error fetching scopes: ", scopes.error.toString());
     } else if (scopes.isPending) {
       return LOADING;
     } else if (scopes.value.length === 0) {
-      return <span>(no variables)</span>;
+      return React.createElement("span", null, "(no variables)");
     }
-    const scopeSections = scopes.value.map(scope =>
-      this._renderScopeSection(scope),
-    );
-    const processName =
-      (service.viewModel.focusedProcess == null ||
-      service.viewModel.focusedProcess.configuration.processName == null
-        ? 'Unknown Process'
-        : service.viewModel.focusedProcess.configuration.processName) +
-      (service.viewModel.focusedStackFrame == null
-        ? ' (Unknown Frame)'
-        : ' (' + service.viewModel.focusedStackFrame.name + ')');
-    return (
-      <div>
-        <span>{processName}</span>
-        <div className="debugger-expression-value-list">{scopeSections}</div>
-      </div>
-    );
+
+    const scopeSections = scopes.value.map(scope => this._renderScopeSection(scope));
+    const processName = (service.viewModel.focusedProcess == null || service.viewModel.focusedProcess.configuration.processName == null ? 'Unknown Process' : service.viewModel.focusedProcess.configuration.processName) + (service.viewModel.focusedStackFrame == null ? ' (Unknown Frame)' : ' (' + service.viewModel.focusedStackFrame.name + ')');
+    return React.createElement("div", null, React.createElement("span", null, processName), React.createElement("div", {
+      className: "debugger-expression-value-list"
+    }, scopeSections));
   }
+
 }
 
-type ScopeProps = {
-  variables: Expected<Array<IVariable>>,
-  canSetVariables: boolean,
-  getExpansionStateIdForExpression: (name: string) => Object,
-};
+exports.default = ScopesComponent;
 
-class ScopeComponent extends React.Component<ScopeProps> {
+class ScopeComponent extends React.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._setVariable = (expression, newValue) => {
+      const {
+        variables
+      } = this.props;
+
+      if (!Boolean(expression) || !Boolean(newValue) || variables.isError || variables.isPending) {
+        return;
+      }
+
+      const variable = variables.value.find(v => v.name === expression);
+
+      if (variable == null) {
+        return;
+      }
+
+      if (!(newValue != null)) {
+        throw new Error("Invariant violation: \"newValue != null\"");
+      }
+
+      variable.setVariable(newValue).then(() => this.forceUpdate());
+    }, _temp;
+  }
+
   render() {
-    const {variables} = this.props;
+    const {
+      variables
+    } = this.props;
+
     if (variables.isError) {
-      return (
-        <div>Error fetching scope variables {variables.error.toString()}</div>
-      );
+      return React.createElement("div", null, "Error fetching scope variables ", variables.error.toString());
     } else if (variables.isPending) {
       return LOADING;
     } else if (variables.value.length === 0) {
@@ -236,42 +308,20 @@ class ScopeComponent extends React.Component<ScopeProps> {
     }
   }
 
-  _setVariable = (expression: ?string, newValue: ?string): void => {
-    const {variables} = this.props;
-    if (
-      !Boolean(expression) ||
-      !Boolean(newValue) ||
-      variables.isError ||
-      variables.isPending
-    ) {
-      return;
-    }
-    const variable = variables.value.find(v => v.name === expression);
-    if (variable == null) {
-      return;
-    }
-    invariant(newValue != null);
-    variable.setVariable(newValue).then(() => this.forceUpdate());
-  };
-
-  _renderVariable(expression: IVariable): ?React.Element<any> {
-    return (
-      <div
-        className="debugger-expression-value-row debugger-scope native-key-bindings"
-        key={expression.getId()}>
-        <div className="debugger-expression-value-content">
-          <LazyNestedValueComponent
-            expression={expression.name}
-            evaluationResult={expressionAsEvaluationResult(expression)}
-            fetchChildren={(fetchChildrenForLazyComponent: any)}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this.props.getExpansionStateIdForExpression(
-              expression.name,
-            )}
-            setVariable={this.props.canSetVariables ? this._setVariable : null}
-          />
-        </div>
-      </div>
-    );
+  _renderVariable(expression) {
+    return React.createElement("div", {
+      className: "debugger-expression-value-row debugger-scope native-key-bindings",
+      key: expression.getId()
+    }, React.createElement("div", {
+      className: "debugger-expression-value-content"
+    }, React.createElement(_LazyNestedValueComponent().LazyNestedValueComponent, {
+      expression: expression.name,
+      evaluationResult: (0, _utils().expressionAsEvaluationResult)(expression),
+      fetchChildren: _utils().fetchChildrenForLazyComponent,
+      simpleValueComponent: _SimpleValueComponent().default,
+      expansionStateId: this.props.getExpansionStateIdForExpression(expression.name),
+      setVariable: this.props.canSetVariables ? this._setVariable : null
+    })));
   }
+
 }

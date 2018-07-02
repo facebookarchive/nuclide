@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.patchErrorsOfLoggingEvent = patchErrorsOfLoggingEvent;
+exports.serializeLoggingEvent = serializeLoggingEvent;
+exports.deserializeLoggingEvent = deserializeLoggingEvent;
+
+function _log4js() {
+  const data = _interopRequireDefault(require("log4js"));
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _stackTrace() {
+  const data = _interopRequireDefault(require("stack-trace"));
+
+  _stackTrace = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _jsonStringifySafe() {
+  const data = _interopRequireDefault(require("json-stringify-safe"));
+
+  _jsonStringifySafe = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +46,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import log4js from 'log4js';
-import StackTrace from 'stack-trace';
-
-import type {LoggingEvent} from './types';
-import safeStringify from 'json-stringify-safe';
 
 /**
  * JSON.stringify can't stringify instance of Error. To solve this problem, we
@@ -23,10 +58,8 @@ import safeStringify from 'json-stringify-safe';
  * loggingEvent.data, so that we could get stack information which helps categorization in
  * logview.
  */
-export function patchErrorsOfLoggingEvent(
-  loggingEvent: LoggingEvent,
-): LoggingEvent {
-  const loggingEventCopy = {...loggingEvent};
+function patchErrorsOfLoggingEvent(loggingEvent) {
+  const loggingEventCopy = Object.assign({}, loggingEvent);
   loggingEventCopy.data = (loggingEventCopy.data || []).slice();
 
   if (!loggingEventCopy.data.some(item => item instanceof Error)) {
@@ -37,36 +70,34 @@ export function patchErrorsOfLoggingEvent(
     if (item instanceof Error) {
       // Atom already parses stack traces and stores them as rawStack -
       // so no need to manually parse things in that case.
-      const rawStack = Array.isArray(item.rawStack)
-        ? item.rawStack
-        : StackTrace.parse(item);
+      const rawStack = Array.isArray(item.rawStack) ? item.rawStack : _stackTrace().default.parse(item);
       const stackTrace = rawStack.map(callsite => ({
         functionName: callsite.getFunctionName(),
         methodName: callsite.getMethodName(),
         fileName: callsite.getFileName(),
         lineNumber: callsite.getLineNumber(),
-        columnNumber: callsite.getColumnNumber(),
+        columnNumber: callsite.getColumnNumber()
       }));
       return {
         name: item.name,
         message: item.message,
         stack: item.stack,
-        stackTrace,
+        stackTrace
       };
     }
+
     return item;
   });
-
   return loggingEventCopy;
 }
-
 /**
  * Takes a loggingEvent object, returns string representation of it.
  */
-export function serializeLoggingEvent(loggingEvent: mixed): string {
-  return safeStringify(loggingEvent);
-}
 
+
+function serializeLoggingEvent(loggingEvent) {
+  return (0, _jsonStringifySafe().default)(loggingEvent);
+}
 /**
  * Takes a string, returns an object with the correct log properties.
  *
@@ -77,22 +108,24 @@ export function serializeLoggingEvent(loggingEvent: mixed): string {
  * so we need smart deserialization that will recreate log date and level for further processing by
  * log4js internals.
  */
-export function deserializeLoggingEvent(
-  loggingEventString: string,
-): LoggingEvent {
+
+
+function deserializeLoggingEvent(loggingEventString) {
   let loggingEvent;
+
   try {
     loggingEvent = JSON.parse(loggingEventString);
     loggingEvent.startTime = new Date(loggingEvent.startTime);
-    loggingEvent.level = log4js.levels.toLevel(loggingEvent.level.levelStr);
+    loggingEvent.level = _log4js().default.levels.toLevel(loggingEvent.level.levelStr);
   } catch (e) {
     // JSON.parse failed, just log the contents probably a naughty.
     loggingEvent = {
       startTime: new Date(),
       categoryName: 'log4js',
-      level: log4js.levels.ERROR,
-      data: ['Unable to parse log:', loggingEventString],
+      level: _log4js().default.levels.ERROR,
+      data: ['Unable to parse log:', loggingEventString]
     };
   }
+
   return loggingEvent;
 }

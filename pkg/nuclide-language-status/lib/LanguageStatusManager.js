@@ -1,3 +1,78 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LanguageStatusManager = void 0;
+
+function _ProviderRegistry() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/ProviderRegistry"));
+
+  _ProviderRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _bindObservableAsProps() {
+  const data = require("../../../modules/nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TextEditorBanner() {
+  const data = require("../../../modules/nuclide-commons-ui/TextEditorBanner");
+
+  _TextEditorBanner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _nuclideAnalytics() {
+  const data = require("../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _StatusComponent() {
+  const data = _interopRequireDefault(require("./StatusComponent"));
+
+  _StatusComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,70 +80,132 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const DEFAULT_SETTINGS_KIND = 'yellow';
 
-import type {LanguageStatusProvider, StatusKind} from './types';
-
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable, BehaviorSubject} from 'rxjs';
-import {track} from '../../nuclide-analytics';
-import StatusComponent from './StatusComponent';
-
-import * as React from 'react';
-
-const DEFAULT_SETTINGS_KIND: StatusKind = 'yellow';
-
-export class LanguageStatusManager {
-  _providerRegistry: ProviderRegistry<LanguageStatusProvider>;
-  _providersChanged: BehaviorSubject<void>;
-  _settings: Map<LanguageStatusProvider, StatusKind>;
+class LanguageStatusManager {
   // TODO (T30575384): This is currently a hack for deserializing settings.
   // The (key,value) pairs in _deserializedSettings are (server name, kind)
   // are populated immediately after LanguageStatusManager is constructed.
   // When new entries are inserted into _settings, we look up whether or not
   // there is an entry in _deserializedSettings first and use it if there is
   // one, defaulting to DEFAULT_SETTINGS_KIND otherwise.
-  _deserializedSettings: Map<string, StatusKind> = new Map();
-  _statusComponentDisposables: Map<atom$TextEditor, IDisposable>;
-  _disposables: UniversalDisposable;
-
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
-    this._providersChanged = new BehaviorSubject();
+    this._deserializedSettings = new Map();
+
+    this._onActiveTextEditor = _ => {
+      const activePaneItems = atom.workspace.getPanes().map(pane => pane.getActiveItem());
+      const textEditors = atom.workspace.getTextEditors();
+      const activeTextEditors = activePaneItems.filter(item => textEditors.includes(item)); // Dispose of status components on text editors that are no longer active.
+
+      for (const [editor, disposable] of this._statusComponentDisposables) {
+        if (!activeTextEditors.includes(editor)) {
+          disposable.dispose();
+
+          this._statusComponentDisposables.delete(editor);
+        }
+      } // Add status components to text editors that are now active.
+
+
+      for (const editor of activeTextEditors) {
+        if (editor == null) {
+          continue;
+        }
+
+        if (!this._statusComponentDisposables.has(editor)) {
+          this._statusComponentDisposables.set(editor, this._addStatusComponent(editor));
+        }
+      }
+    };
+
+    this._onUpdateSettings = newSettings => {
+      const changedSettings = {};
+
+      for (const [provider, kind] of newSettings) {
+        if (this._settings.get(provider) !== kind) {
+          changedSettings[provider.name] = kind;
+        }
+      }
+
+      this._settings = newSettings;
+
+      this._providersChanged.next();
+
+      (0, _nuclideAnalytics().track)('nuclide-language-status.settings-changed', {
+        settings: this.serialize().settings,
+        changedSettings
+      });
+    };
+
+    this._addStatusComponent = editor => {
+      const props = this._providersChanged.switchMap(() => {
+        const providers = Array.from(this._providerRegistry.getAllProvidersForEditor(editor)); // Add providers to settings map.
+
+        for (const provider of providers) {
+          if (!this._settings.has(provider)) {
+            // TODO (T30575384): This is a hack for deserialization
+            const deserializedKind = this._deserializedSettings.get(provider.name);
+
+            this._settings.set(provider, deserializedKind != null ? deserializedKind : DEFAULT_SETTINGS_KIND);
+          }
+        }
+
+        return providers.map(provider => {
+          return provider.observeStatus(editor).startWith({
+            kind: 'null'
+          }).map(data => ({
+            provider,
+            data
+          }));
+        }).reduce((a, b) => _RxMin.Observable.combineLatest(a, b, (x, y) => x.concat(y)), _RxMin.Observable.of([]));
+      }).map(serverStatuses => ({
+        serverStatuses,
+        editor,
+        settings: this._settings,
+        onUpdateSettings: this._onUpdateSettings
+      }));
+
+      const StatusComponentWithProps = (0, _bindObservableAsProps().bindObservableAsProps)(props, _StatusComponent().default);
+      const statusComponentWrapper = new (_TextEditorBanner().TextEditorBanner)(editor);
+      statusComponentWrapper.renderUnstyled(React.createElement(StatusComponentWithProps, null));
+
+      this._disposables.addUntilDestroyed(editor, statusComponentWrapper);
+
+      return statusComponentWrapper;
+    };
+
+    this._providerRegistry = new (_ProviderRegistry().default)();
+    this._providersChanged = new _RxMin.BehaviorSubject();
     this._statusComponentDisposables = new Map();
     this._settings = new Map();
-    this._disposables = new UniversalDisposable();
-    this._disposables.add(() =>
-      this._statusComponentDisposables.forEach(d => d.dispose),
-    );
-    this._disposables.add(
-      atom.workspace.observeActiveTextEditor(this._onActiveTextEditor),
-    );
+    this._disposables = new (_UniversalDisposable().default)();
+
+    this._disposables.add(() => this._statusComponentDisposables.forEach(d => d.dispose));
+
+    this._disposables.add(atom.workspace.observeActiveTextEditor(this._onActiveTextEditor));
   }
 
-  serialize(): any {
-    const serializedSettings = {};
-    // TODO (T30575384): Figure out how to serialize information to uniquely
+  serialize() {
+    const serializedSettings = {}; // TODO (T30575384): Figure out how to serialize information to uniquely
     // identify a provider instead of just the name.
+
     for (const [providerName, kind] of this._deserializedSettings) {
       serializedSettings[providerName] = kind;
-    }
-    // Add any changes made to the settings during this Nuclide session.
+    } // Add any changes made to the settings during this Nuclide session.
+
+
     for (const [provider, kind] of this._settings) {
       serializedSettings[provider.name] = kind;
     }
 
     return {
-      settings: serializedSettings,
+      settings: serializedSettings
     };
   }
 
-  deserialize(state: any): void {
+  deserialize(state) {
     for (const key in state.settings) {
       this._deserializedSettings.set(key, state.settings[key]);
     }
@@ -78,117 +215,23 @@ export class LanguageStatusManager {
     this._disposables.dispose();
   }
 
-  addProvider(provider: LanguageStatusProvider): IDisposable {
+  addProvider(provider) {
     this._disposables.add(this._providerRegistry.addProvider(provider));
+
     this._providersChanged.next();
 
-    return new UniversalDisposable(() => this._removeProvider(provider));
+    return new (_UniversalDisposable().default)(() => this._removeProvider(provider));
   }
 
-  _removeProvider(provider: LanguageStatusProvider): void {
+  _removeProvider(provider) {
     this._providerRegistry.removeProvider(provider);
-    this._providersChanged.next();
-  }
 
-  // Atom doesn't provide a way to observe all text editors that are
+    this._providersChanged.next();
+  } // Atom doesn't provide a way to observe all text editors that are
   // visible. We manage this manually by looking at all the panes and
   // keeping track of the active text editors.
-  _onActiveTextEditor = (_: atom$TextEditor): void => {
-    const activePaneItems = atom.workspace
-      .getPanes()
-      .map(pane => pane.getActiveItem());
-    const textEditors = atom.workspace.getTextEditors();
-    const activeTextEditors = activePaneItems.filter(item =>
-      textEditors.includes(item),
-    );
-    // Dispose of status components on text editors that are no longer active.
-    for (const [editor, disposable] of this._statusComponentDisposables) {
-      if (!activeTextEditors.includes(editor)) {
-        disposable.dispose();
-        this._statusComponentDisposables.delete(editor);
-      }
-    }
-    // Add status components to text editors that are now active.
-    for (const editor of activeTextEditors) {
-      if (editor == null) {
-        continue;
-      }
 
-      if (!this._statusComponentDisposables.has(editor)) {
-        this._statusComponentDisposables.set(
-          editor,
-          this._addStatusComponent(editor),
-        );
-      }
-    }
-  };
 
-  _onUpdateSettings = (
-    newSettings: Map<LanguageStatusProvider, StatusKind>,
-  ) => {
-    const changedSettings = {};
-    for (const [provider, kind] of newSettings) {
-      if (this._settings.get(provider) !== kind) {
-        changedSettings[provider.name] = kind;
-      }
-    }
-    this._settings = newSettings;
-    this._providersChanged.next();
-    track('nuclide-language-status.settings-changed', {
-      settings: this.serialize().settings,
-      changedSettings,
-    });
-  };
-
-  _addStatusComponent = (editor: atom$TextEditor): IDisposable => {
-    const props = this._providersChanged
-      .switchMap(() => {
-        const providers = Array.from(
-          this._providerRegistry.getAllProvidersForEditor(editor),
-        );
-        // Add providers to settings map.
-        for (const provider of providers) {
-          if (!this._settings.has(provider)) {
-            // TODO (T30575384): This is a hack for deserialization
-            const deserializedKind = this._deserializedSettings.get(
-              provider.name,
-            );
-            this._settings.set(
-              provider,
-              deserializedKind != null
-                ? deserializedKind
-                : DEFAULT_SETTINGS_KIND,
-            );
-          }
-        }
-        return providers
-          .map(provider => {
-            return provider
-              .observeStatus(editor)
-              .startWith({kind: 'null'})
-              .map(data => ({
-                provider,
-                data,
-              }));
-          })
-          .reduce(
-            (a, b) => Observable.combineLatest(a, b, (x, y) => x.concat(y)),
-            Observable.of([]),
-          );
-      })
-      .map(serverStatuses => ({
-        serverStatuses,
-        editor,
-        settings: this._settings,
-        onUpdateSettings: this._onUpdateSettings,
-      }));
-    const StatusComponentWithProps = bindObservableAsProps(
-      props,
-      StatusComponent,
-    );
-    const statusComponentWrapper = new TextEditorBanner(editor);
-    statusComponentWrapper.renderUnstyled(<StatusComponentWithProps />);
-    this._disposables.addUntilDestroyed(editor, statusComponentWrapper);
-    return statusComponentWrapper;
-  };
 }
+
+exports.LanguageStatusManager = LanguageStatusManager;

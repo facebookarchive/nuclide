@@ -1,3 +1,51 @@
+"use strict";
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function BuckService() {
+  const data = _interopRequireWildcard(require("../../nuclide-buck-rpc"));
+
+  BuckService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LinkTreeManager() {
+  const data = _interopRequireDefault(require("../lib/LinkTreeManager"));
+
+  _LinkTreeManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideTestHelpers() {
+  const data = require("../../nuclide-test-helpers");
+
+  _nuclideTestHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _path = _interopRequireDefault(require("path"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +53,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+jest.setTimeout(60000); // Disable buckd so it doesn't linger around after the test.
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as BuckService from '../../nuclide-buck-rpc';
-import LinkTreeManager from '../lib/LinkTreeManager';
-import {copyBuildFixture} from '../../nuclide-test-helpers';
-import path from 'path';
-
-jest.setTimeout(60000);
-
-// Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
-
 describe('LinkTreeManager', () => {
-  let linkTreeManager: LinkTreeManager = (null: any);
-  let projectDir: string = (null: any);
-
+  let linkTreeManager = null;
+  let projectDir = null;
   beforeEach(async () => {
     global.performance.mark = jest.fn();
     global.performance.measure = jest.fn();
@@ -31,20 +69,16 @@ describe('LinkTreeManager', () => {
     global.performance.clearMeasures = jest.fn();
 
     if (projectDir == null) {
-      projectDir = await copyBuildFixture(
-        'test-buck-project',
-        path.resolve(__dirname, '../__mocks__'),
-      );
+      projectDir = await (0, _nuclideTestHelpers().copyBuildFixture)('test-buck-project', _path.default.resolve(__dirname, '../__mocks__'));
     }
-    linkTreeManager = new LinkTreeManager();
-  });
 
-  // this test is very slow because it runs buck under the hood
+    linkTreeManager = new (_LinkTreeManager().default)();
+  }); // this test is very slow because it runs buck under the hood
+
   it("resolves a link tree path with a buck project's source file", async () => {
-    const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
+    const srcPath = _nuclideUri().default.join(projectDir, 'test1/test1.py');
+
     const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
-    expect(linkTreePaths).toEqual([
-      nuclideUri.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree'),
-    ]);
+    expect(linkTreePaths).toEqual([_nuclideUri().default.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree')]);
   });
 });
