@@ -49,7 +49,7 @@ class SettingsTooltipComponent extends React.PureComponent<Props> {
     this._styleTooltip();
     const servers = relevantProviders.map(([provider, kind]) => {
       return (
-        <div
+        <p
           className="nuclide-language-status-settings-item"
           key={provider.name}>
           {provider.name}:{' '}
@@ -60,14 +60,13 @@ class SettingsTooltipComponent extends React.PureComponent<Props> {
             options={dropdownItems}
             value={kind}
           />
-        </div>
+        </p>
       );
     });
     return (
       <div className="nuclide-language-status-tooltip-content">
-        <div className="nuclide-language-status-settings-header">
-          Language Status Settings:
-        </div>
+        <p>Language Status Settings:</p>
+        <hr />
         {servers}
       </div>
     );
