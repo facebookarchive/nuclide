@@ -86,11 +86,9 @@ class Activation {
 
   renderRenameInput(
     editor: atom$TextEditor,
+    selectedText: string,
     resolveNewName: (string | void) => void,
   ): React.Element<$FlowFixMe> {
-    editor.selectWordsContainingCursors();
-    const selectedText = editor.getSelectedText();
-
     return (
       <RenameComponent
         selectedText={selectedText}
@@ -101,13 +99,12 @@ class Activation {
 
   mountRenameInput(
     editor: atom$TextEditor,
+    mountPosition: atom$Point,
     container: ReactMountRootElement,
     element: React.Element<$FlowFixMe>,
   ): IDisposable {
-    const position = editor.getSelectedBufferRange().start;
-
     const overlayMarker = editor.markBufferRange(
-      new Range(position, position),
+      new Range(mountPosition, mountPosition),
       {
         invalidate: 'never',
       },
@@ -135,7 +132,10 @@ class Activation {
     );
   }
 
-  async _getUserInput(editor: atom$TextEditor): Promise<?string> {
+  async _getUserInput(
+    position: atom$Point,
+    editor: atom$TextEditor,
+  ): Promise<?string> {
     // TODO: Should only be instantiated once.
     //       However, the node has trouble rendering at the correct position
     //       when it is instantiated once in the constructor and re-mounted
@@ -145,8 +145,23 @@ class Activation {
     let disposable = null;
 
     const newName = await new Promise((resolve, reject) => {
-      const renameElement = this.renderRenameInput(editor, resolve);
-      disposable = this.mountRenameInput(editor, container, renameElement);
+      editor.setCursorBufferPosition(position);
+      editor.selectWordsContainingCursors();
+      const selectedText = editor.getSelectedText();
+      const startOfWord = editor.getSelectedBufferRange().start;
+
+      const renameElement = this.renderRenameInput(
+        editor,
+        selectedText,
+        resolve,
+      );
+
+      disposable = this.mountRenameInput(
+        editor,
+        startOfWord,
+        container,
+        renameElement,
+      );
 
       atom.commands.add(container, 'core:cancel', () => {
         resolve();
@@ -172,7 +187,7 @@ class Activation {
         ? bufferPositionForMouseEvent(event, editor)
         : editor.getCursorBufferPosition();
 
-    const newName = await this._getUserInput(editor);
+    const newName = await this._getUserInput(position, editor);
     if (newName == null) {
       return null;
     }
