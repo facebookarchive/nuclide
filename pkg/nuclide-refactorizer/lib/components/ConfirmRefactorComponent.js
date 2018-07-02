@@ -20,7 +20,7 @@ import {pluralize} from 'nuclide-commons/string';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
-import PathWithFileIcon from '../../../nuclide-ui/PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 
 import * as Actions from '../refactorActions';
 

@@ -15,7 +15,7 @@ import * as React from 'react';
 import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 
 export default class FileResultComponent {
   static getComponentForItem(

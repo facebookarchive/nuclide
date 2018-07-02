@@ -19,7 +19,7 @@ import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller'
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import FileTreeStore from '../lib/FileTreeStore';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import {track} from '../../nuclide-analytics';

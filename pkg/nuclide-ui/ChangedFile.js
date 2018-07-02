@@ -28,7 +28,7 @@ import {
 import * as React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from 'nuclide-commons-ui/Icon';
-import PathWithFileIcon from './PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import nullthrows from 'nullthrows';
 import ReactDOM from 'react-dom';

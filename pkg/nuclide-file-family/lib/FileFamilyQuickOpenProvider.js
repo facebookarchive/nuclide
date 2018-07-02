@@ -15,7 +15,7 @@ import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {Matcher} from '../../nuclide-fuzzy-native';
 import {BehaviorSubject, Observable} from 'rxjs';
 import FileFamilyAggregator from './FileFamilyAggregator';

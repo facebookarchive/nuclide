@@ -27,7 +27,7 @@ import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 

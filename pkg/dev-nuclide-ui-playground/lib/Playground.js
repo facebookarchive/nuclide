@@ -35,7 +35,7 @@ import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChange
 import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
 import {MessageExamples} from 'nuclide-commons-ui/Message.example';
-import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.example';
+import {PathWithFileIconExamples} from 'nuclide-commons-ui/PathWithFileIcon.example';
 import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
 import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
