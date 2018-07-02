@@ -9,30 +9,15 @@
  * @format
  */
 
-import type {
-  FileList,
-  FilePath,
-  TimeStamp,
-  RecentFilesSerializedState,
-} from '..';
-import type {LRUCache} from 'lru-cache';
+import type {FileList} from '..';
 
-import LRU from 'lru-cache';
+import * as RecentFilesDB from './RecentFilesDB';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class RecentFilesService {
-  // Map uses `Map`'s insertion ordering to keep files in order.
-  _fileList: LRUCache<FilePath, TimeStamp>;
   _subscriptions: UniversalDisposable;
 
-  constructor(state: ?RecentFilesSerializedState) {
-    this._fileList = LRU({max: 100});
-    if (state != null && state.filelist != null) {
-      // Serialized state is in reverse chronological order. Reverse it to insert items correctly.
-      state.filelist.reduceRight((_, fileItem) => {
-        this._fileList.set(fileItem.path, fileItem.timestamp);
-      }, null);
-    }
+  constructor() {
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
       atom.workspace.onDidChangeActivePaneItem((item: ?mixed) => {
@@ -49,15 +34,16 @@ export default class RecentFilesService {
     );
   }
 
-  touchFile(path: string): void {
-    this._fileList.set(path, Date.now());
+  async touchFile(path: string): Promise<void> {
+    await RecentFilesDB.touchFileDB(path, Date.now());
   }
 
   /**
    * Returns a reverse-chronological list of recently opened files.
    */
-  getRecentFiles(): FileList {
-    return this._fileList.dump().map(({k, v}) => ({
+  async getRecentFiles(): Promise<FileList> {
+    const fileList = await RecentFilesDB.getAllRecents();
+    return fileList.dump().map(({k, v}) => ({
       resultType: 'FILE',
       path: k,
       timestamp: v,
@@ -66,5 +52,9 @@ export default class RecentFilesService {
 
   dispose() {
     this._subscriptions.dispose();
+    // Try one last time to sync back. Changes should be periodically saved,
+    // so if this doesn't run before we quit, that's OK. If package deactivation
+    // were async, then we could wait for the DB save to complete.
+    RecentFilesDB.syncCache(true);
   }
 }

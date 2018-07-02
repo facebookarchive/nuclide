@@ -10,7 +10,9 @@ declare module 'lru-cache' {
     del: (key: K) => void;
     reset: () => void;
     has: (key: K) => boolean;
-    dump: () => Array<{k: K, v: V}>,
+    dump: () => Array<{k: K, v: V}>;
+    load: (Array<{k: K, v: V}>) => void;
+    itemCount: number,
     // TODO add the rest of the things documented at https://www.npmjs.com/package/lru-cache
   };
 

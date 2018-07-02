@@ -39,8 +39,8 @@ const FAKE_RECENT_FILES = FILE_PATHS.map((path, i) => ({
 }));
 
 const FakeRecentFilesService = {
-  getRecentFiles: () => FAKE_RECENT_FILES,
-  touchFile: (path: string) => {},
+  getRecentFiles: () => Promise.resolve(FAKE_RECENT_FILES),
+  touchFile: (path: string) => Promise.resolve(),
 };
 
 let fakeGetProjectPathsImpl = () => [];

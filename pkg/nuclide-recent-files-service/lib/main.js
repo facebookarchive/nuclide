@@ -9,7 +9,6 @@
  * @format
  */
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import RecentFilesService from './RecentFilesService';
 
@@ -19,26 +18,18 @@ export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 export type RecentFilesSerializedState = {filelist?: FileList};
 
 class Activation {
-  _subscriptions: UniversalDisposable;
   _service: RecentFilesService;
 
-  constructor(state: ?RecentFilesSerializedState) {
-    this._service = new RecentFilesService(state);
-    this._subscriptions = new UniversalDisposable(this._service);
+  constructor() {
+    this._service = new RecentFilesService();
   }
 
   provideRecentFilesService(): RecentFilesService {
     return this._service;
   }
 
-  serialize(): Object {
-    return {
-      filelist: this._service.getRecentFiles(),
-    };
-  }
-
   dispose() {
-    this._subscriptions.dispose();
+    this._service.dispose();
   }
 }
 

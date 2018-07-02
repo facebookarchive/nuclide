@@ -181,7 +181,6 @@ async function loadRecentProjects(): Promise<
   const recentProjectsEntries = await AsyncStorage.get(RECENT_PROJECTS_KEY);
   const recentProjects = new LRUCache({max: 100});
   if (recentProjectsEntries) {
-    // $FlowFixMe
     recentProjects.load(recentProjectsEntries);
   }
 
