@@ -45,6 +45,7 @@ type Action = {type: any};
 type Store<T: Action, U> = {
   dispatch(action: T): void,
   getState(): U,
+  replaceReducer(reducer: () => mixed): void,
 };
 type Next<T: Action> = (action: T) => T;
 export type Epic<T: Action, U, E> = (
