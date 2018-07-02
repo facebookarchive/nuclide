@@ -14,6 +14,7 @@
     "anser": "1.4.6",
     "classnames": "2.2.5",
     "dedent": "0.7.0",
+    "diffparser": "1.1.0",
     "escape-carriage": "1.2.0",
     "escape-html": "1.0.3",
     "escape-string-regexp": "1.0.5",

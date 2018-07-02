@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -11,15 +12,15 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
+import {AtomTextEditor} from './AtomTextEditor';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nullthrows from 'nullthrows';
 import {pluralize, ZERO_WIDTH_SPACE} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {Section} from 'nuclide-commons-ui/Section';
+import {renderReactRoot} from './renderReactRoot';
+import {Section} from './Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import classnames from 'classnames';
 
