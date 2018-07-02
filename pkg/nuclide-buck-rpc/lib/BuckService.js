@@ -662,16 +662,34 @@ export function isNativeExoPackage(
   target: string,
 ): ConnectableObservable<boolean> {
   return Observable.defer(async () => {
-    const attributes = await queryWithAttributes(rootPath, target, [
-      'exopackage_modes',
-    ]);
-    if (
-      attributes[target] != null &&
-      attributes[target].exopackage_modes instanceof Array
-    ) {
-      return attributes[target].exopackage_modes.indexOf('native_library') >= 0;
-    } else {
-      return false;
-    }
+    const exoPackageModes = await getExoPackageModes(rootPath, target);
+    return exoPackageModes.indexOf('native_library') >= 0;
   }).publish();
+}
+
+export function isExoPackage(
+  rootPath: NuclideUri,
+  target: string,
+): ConnectableObservable<boolean> {
+  return Observable.defer(async () => {
+    const exoPackageModes = await getExoPackageModes(rootPath, target);
+    return exoPackageModes.length >= 0;
+  }).publish();
+}
+
+async function getExoPackageModes(
+  rootPath: NuclideUri,
+  target: string,
+): Promise<Array<string>> {
+  const attributes = await queryWithAttributes(rootPath, target, [
+    'exopackage_modes',
+  ]);
+  if (
+    attributes[target] != null &&
+    attributes[target].exopackage_modes instanceof Array
+  ) {
+    return attributes[target].exopackage_modes;
+  } else {
+    return [];
+  }
 }
