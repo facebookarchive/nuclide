@@ -92,10 +92,13 @@ export default class StatusComponent extends React.Component<Props, State> {
         // A status tab will be either "visible" (because of a combination
         // of the user's preference plus the current status.data.kind) or just
         // "contingently-visible" (i.e. visible only when you hover)
+        // There's no extra value in showing the tab when things are working
+        // so visible === false whenever status.data.kind === 'green'.
         const kind = settings.get(status.provider);
         const visible =
+          status.data.kind !== 'green' &&
           kindPriorities.indexOf(kind) >=
-          kindPriorities.indexOf(status.data.kind);
+            kindPriorities.indexOf(status.data.kind);
         return [status, visible];
       })
       .sort(([a, aVisible], [b, bVisible]) => {
@@ -160,8 +163,15 @@ export default class StatusComponent extends React.Component<Props, State> {
   }
 
   _renderBar = (statuses: Array<[ServerStatus, boolean]>): React.Node => {
+    const {settings} = this.props;
     const kind: ?StatusKind = statuses
-      .map(([s, visible]) => s.data.kind)
+      .filter(([status, _]) => {
+        // Don't show the success bar for servers unless the setting is
+        // 'Show Always'.
+        const setting = settings.get(status.provider);
+        return !(setting !== 'green' && status.data.kind === 'green');
+      })
+      .map(([s, _]) => s.data.kind)
       .sort(
         (k1, k2) => kindPriorities.indexOf(k1) - kindPriorities.indexOf(k2),
       )[0];
