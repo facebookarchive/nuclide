@@ -1,0 +1,23 @@
+{
+  "name": "nuclide-debugger-prepack",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Prepack debugger engine",
+  "author": "Prepack",
+  "atomTestRunner": "../../modules/nuclide-jest/atom-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "debugger.provider": {
+      "description": "Prepack debugger engine.",
+      "versions": {
+        "0.0.0": "createDebuggerProvider"
+      }
+    }
+  },
+  "activationHooks": [
+    "nuclide_debugger_prepack:gk:nuclide"
+  ]
+}

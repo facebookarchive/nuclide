@@ -33,6 +33,7 @@
     "nuclide-code-search",
     "nuclide-context-view",
     "nuclide-debugger-vsp",
+    "nuclide-debugger-prepack",
     "nuclide-deep-link",
     "nuclide-definition-preview",
     "nuclide-definition-preview-provider",
