@@ -170,7 +170,7 @@ export type RevisionInfo = {
   successorInfo: ?RevisionSuccessorInfo,
   tags: Array<string>,
   title: string,
-  files: Array<NuclideUri>,
+  files: Array<string>,
 };
 
 export type RevisionShowInfo = {
