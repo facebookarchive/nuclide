@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,6 +26,8 @@ import {createThriftServer} from './createThriftServer';
 import {genConfigId, encodeMessage, decodeMessage} from './util';
 import {RemoteFileSystemServer} from '../fs/fsServer';
 
+type ServerCacheEntry = {server: RemoteFileSystemServer, refCount: number};
+
 /**
  * This class manages the creation and disposal of thrift servers. A new server
  * processes will be spawned by a recieving `create_server` command with its
@@ -44,7 +46,7 @@ export class ThriftServerManager {
   _subscription: Subscription;
 
   _availableServices: Set<string>;
-  _configIdToServer: Map<string, RemoteFileSystemServer>;
+  _configIdToServer: Map<string, ServerCacheEntry>;
 
   constructor(transport: Transport) {
     this._transport = transport;
@@ -125,19 +127,22 @@ export class ThriftServerManager {
     // the serviceName to service config mapping becomes 1:n, the following
     // configId will still work
     const configId = genConfigId(serverConfig);
-    const server = this._configIdToServer.get(configId);
+    const serverCacheEntry = this._configIdToServer.get(configId);
     let messagePayload;
     // server already exist, increase server refCount
-    if (server != null) {
+    if (serverCacheEntry != null) {
+      const {server, refCount} = serverCacheEntry;
       this._logger.info('Server is already running for %s', configId);
+      this._configIdToServer.set(configId, {
+        server,
+        refCount: refCount + 1,
+      });
       messagePayload = this._createSuccessResponse(String(server.getPort()));
     } else {
       try {
-        const newserver = await createThriftServer(serverConfig);
-        this._configIdToServer.set(configId, newserver);
-        messagePayload = this._createSuccessResponse(
-          String(newserver.getPort()),
-        );
+        const server = await createThriftServer(serverConfig);
+        this._configIdToServer.set(configId, {refCount: 1, server});
+        messagePayload = this._createSuccessResponse(String(server.getPort()));
       } catch (error) {
         messagePayload = this._createFailureResponse('Failed to create server');
         this._logger.error('Failed to create server ', error);
@@ -152,10 +157,19 @@ export class ThriftServerManager {
     serverConfig: ThriftServerConfig,
   ): Promise<void> {
     const configId = genConfigId(serverConfig);
-    const server = this._configIdToServer.get(configId);
-    if (server != null) {
-      server.close();
-      this._configIdToServer.delete(configId);
+    const serverCacheEntry = this._configIdToServer.get(configId);
+    if (serverCacheEntry != null) {
+      const {server, refCount} = serverCacheEntry;
+      if (refCount > 1) {
+        this._configIdToServer.set(configId, {
+          server,
+          refCount: refCount - 1,
+        });
+      } else {
+        // If refCount == 1, the close message send from its last Thrift client
+        server.close();
+        this._configIdToServer.delete(configId);
+      }
     }
     const messagePayload = {type: 'response', success: true};
     const responseMessage = {id, payload: messagePayload};

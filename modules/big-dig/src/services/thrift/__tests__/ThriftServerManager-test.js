@@ -177,6 +177,84 @@ describe('ThriftServerManager', () => {
     expect(response).toEqual(responseMessage);
     expect(mockCloseServerFn).toHaveBeenCalled();
   });
+
+  it('reuse existing server', async () => {
+    const firstStartServerMessage = {
+      id: '1',
+      payload: {
+        type: 'request',
+        command: 'start-server',
+        serverConfig,
+      },
+    };
+    const firstResponsePromise = serverMessage.take(1).toPromise();
+    clientMessage.next(convertMessage(firstStartServerMessage));
+    await firstResponsePromise;
+
+    const secondStartServerMessage = {
+      id: '2',
+      payload: {
+        type: 'request',
+        command: 'start-server',
+        serverConfig,
+      },
+    };
+    const expectedSecondResponse = {
+      id: '2',
+      payload: {
+        type: 'response',
+        success: true,
+        port: String(mockPort),
+      },
+    };
+    const secondResponsePromise = serverMessage.take(1).toPromise();
+    clientMessage.next(convertMessage(secondStartServerMessage));
+    const secondResponse = JSON.parse(await secondResponsePromise);
+    expect(secondResponse).toEqual(expectedSecondResponse);
+    expect(createThriftServer).toHaveBeenCalledTimes(1);
+
+    const firstStopServerMessage = {
+      id: '3',
+      payload: {
+        type: 'request',
+        command: 'stop-server',
+        serverConfig,
+      },
+    };
+    const expectedThirdResponse = {
+      id: '3',
+      payload: {
+        type: 'response',
+        success: true,
+      },
+    };
+    const thirdResponsePromise = serverMessage.take(1).toPromise();
+    clientMessage.next(convertMessage(firstStopServerMessage));
+    const thirdResponse = JSON.parse(await thirdResponsePromise);
+    expect(thirdResponse).toEqual(expectedThirdResponse);
+    expect(mockCloseServerFn).not.toHaveBeenCalled();
+
+    const secondStopServerMessage = {
+      id: '4',
+      payload: {
+        type: 'request',
+        command: 'stop-server',
+        serverConfig,
+      },
+    };
+    const expectedFourthResponse = {
+      id: '4',
+      payload: {
+        type: 'response',
+        success: true,
+      },
+    };
+    const fourthResponsePromise = serverMessage.take(1).toPromise();
+    clientMessage.next(convertMessage(secondStopServerMessage));
+    const fourthResponse = JSON.parse(await fourthResponsePromise);
+    expect(fourthResponse).toEqual(expectedFourthResponse);
+    expect(mockCloseServerFn).toHaveBeenCalled();
+  });
 });
 
 function convertMessage(message: ThriftMessage): string {
