@@ -177,6 +177,126 @@ describe('ThriftClientManager', () => {
     await manager.createThriftClient(mockedServiceName);
     expect(callServer).not.toHaveBeenCalled();
   });
+
+  it('stop server used by multiple clients', async () => {
+    class MockedConnection extends EventEmitter {
+      end() {
+        this.emit('end');
+      }
+    }
+    const mockedConnection1 = new MockedConnection();
+    const mockedConnection2 = new MockedConnection();
+    jest
+      .spyOn(thrift, 'createClient')
+      .mockImplementationOnce(() => {})
+      .mockImplementationOnce(() => {});
+    jest
+      .spyOn(thrift, 'createConnection')
+      .mockImplementationOnce(() => mockedConnection1)
+      .mockImplementationOnce(() => mockedConnection2);
+    mockClientServerCommunication(clientMessage, serverMessage);
+    // mock createThriftClient
+    getMock(createThriftClient).mockImplementation(
+      (clientId: string, serviceConfig: ThriftServiceConfig, port: number) => {
+        const mockedConnection = thrift.createConnection();
+        const mockedClient = thrift.createClient();
+        return new MockedThriftClientClass(
+          clientId,
+          mockedConnection,
+          mockedClient,
+        );
+      },
+    );
+    // monitor calls to server
+    const callServer = jest.fn();
+    clientMessage.subscribe(callServer);
+
+    // 1. create the first client
+    const client1 = await manager.createThriftClient(mockedServiceName);
+    expect(callServer).toHaveBeenCalledTimes(1);
+
+    // 2. create the second client, since we reuse tunnel and server, so still called once
+    const client2 = await manager.createThriftClient(mockedServiceName);
+    expect(callServer).toHaveBeenCalledTimes(1);
+
+    // 3.stop client2, only reduce tunnel refCount, not yet need to stop server
+    client2.close();
+    expect(callServer).toHaveBeenCalledTimes(1);
+
+    // 4. stop client1, tunnel refCount reduce to 0, need to stop server this time
+    client1.close();
+    expect(callServer).toHaveBeenCalledTimes(2);
+  });
+
+  // test plan: create two clients of the same service, one client of another service
+  // when close() called, we should only need to close send two 'stop-server' messages
+  it('close ThriftClientManager instance', async () => {
+    class MockedConnection extends EventEmitter {
+      end() {
+        this.emit('end');
+      }
+    }
+    const mockedConnection1 = new MockedConnection();
+    const mockedConnection2 = new MockedConnection();
+    const mockedConnection3 = new MockedConnection();
+    jest
+      .spyOn(thrift, 'createClient')
+      .mockImplementationOnce(() => {})
+      .mockImplementationOnce(() => {})
+      .mockImplementationOnce(() => {});
+    jest
+      .spyOn(thrift, 'createConnection')
+      .mockImplementationOnce(() => mockedConnection1)
+      .mockImplementationOnce(() => mockedConnection2)
+      .mockImplementationOnce(() => mockedConnection3);
+    mockClientServerCommunication(clientMessage, serverMessage);
+    // mock createThriftClient
+    getMock(createThriftClient).mockImplementation(
+      (clientId: string, serviceConfig: ThriftServiceConfig, port: number) => {
+        const mockedConnection = thrift.createConnection();
+        const mockedClient = thrift.createClient();
+        return new MockedThriftClientClass(
+          clientId,
+          mockedConnection,
+          mockedClient,
+        );
+      },
+    );
+    // add a new service
+    const anotherServiceName = 'mock-service';
+    manager.addThriftService({
+      name: anotherServiceName,
+      remoteUri: '',
+      remoteCommand: '',
+      remoteCommandArgs: [],
+      remotePort: 0,
+      remotePortRange: '9000',
+      localPort: 0,
+      localPortRange: '9000',
+      thriftTransport: 'buffered',
+      thriftProtocol: 'binary',
+      thriftService: RemoteFileSystemService,
+      killOldThriftServerProcess: true,
+    });
+    // monitor calls to server
+    const callServer = jest.fn();
+    clientMessage.subscribe(callServer);
+
+    // create three clients
+    const client1Service1 = await manager.createThriftClient(mockedServiceName);
+    const client2Service1 = await manager.createThriftClient(mockedServiceName);
+    expect(callServer).toHaveBeenCalledTimes(1);
+    const client1Service2 = await manager.createThriftClient(
+      anotherServiceName,
+    );
+    expect(callServer).toHaveBeenCalledTimes(2);
+
+    // close ThriftClientManager, close all tunnels and clients
+    await manager.close();
+    // due to async
+    expect(callServer.mock.calls.length).toBeGreaterThanOrEqual(4);
+    expect(callServer.mock.calls.length).toBeLessThanOrEqual(6);
+  });
 });
 
 function mockClientServerCommunication(

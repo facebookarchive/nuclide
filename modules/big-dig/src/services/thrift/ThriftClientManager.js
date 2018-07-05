@@ -17,6 +17,7 @@ import type {
   ThriftServerConfig,
   ThriftServiceConfig,
   ThriftClient,
+  ClientCloseCallBack,
   ThriftMessage,
 } from './types';
 
@@ -144,6 +145,30 @@ export class ThriftClientManager {
   }
 
   /**
+   * each client will increase tunnel and server's refCount by 1, so here
+   * reduce refCount by 1 while closing client
+   */
+  async _handleClientCloseEvent(clientId: string): Promise<void> {
+    const serviceName = clientId.split('\0')[0];
+    // 1. Reduce tunnel refCount by 1 [and close tunnel]
+    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+    invariant(tunnelCacheEntry != null);
+    const {tunnel, refCount} = tunnelCacheEntry;
+    this._clientMap.delete(clientId);
+    // When handling the last ref, also close the tunnel (actually it will just
+    // reduce refCount by 1 on the Tunnel side) and also delete the map entry
+    // for the serviceName:  <serviceName, TunnelCacheEntry>
+    if (refCount === 1) {
+      this._nameToTunnel.delete(serviceName);
+      tunnel.close();
+      // to close tunnel also means to reduce remote server refCount by 1
+      await this._closeRemoteServer(serviceName);
+    } else {
+      this._nameToTunnel.set(serviceName, {tunnel, refCount: refCount - 1});
+    }
+  }
+
+  /**
    * Before, the method name was `getOrCreateThriftClient`, we then decided to
    * return a new Thrift client every single time, but they will reuse tunnel
    * and Thrift server if possible. Each module will maintain its own singleton
@@ -184,6 +209,11 @@ export class ThriftClientManager {
       clientId,
       serviceConfig,
       tunnel.getLocalPort(),
+    );
+    client.onConnectionEnd(
+      (id => {
+        this._handleClientCloseEvent(id);
+      }: ClientCloseCallBack),
     );
     this._clientMap.set(clientId, client);
     return client;
@@ -257,5 +287,30 @@ export class ThriftClientManager {
     return tunnel;
   }
 
-  close(): void {}
+  close(): void {
+    if (this._isClosed) {
+      return;
+    }
+    this._logger.info('Close Big-Dig thrift client manager!');
+    // close all clients
+    for (const client of this._clientMap.values()) {
+      client.close();
+    }
+    // Close all tunnels, closing each tunnel means to reduce its corresponding
+    // remote server refCount by 1
+    for (const [
+      serviceName,
+      tunnelCacheEntry,
+    ] of this._nameToTunnel.entries()) {
+      const {tunnel} = tunnelCacheEntry;
+      tunnel.close();
+
+      this._closeRemoteServer(serviceName);
+    }
+    this._clientMap.clear();
+    this._nameToTunnel.clear();
+    this._availableServices.clear();
+    this._emitter.removeAllListeners();
+    this._isClosed = true;
+  }
 }
