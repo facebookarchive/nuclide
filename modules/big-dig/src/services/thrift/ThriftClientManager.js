@@ -122,9 +122,6 @@ export class ThriftClientManager {
       remoteCommand: '',
       remoteCommandArgs: [],
       remotePort: 0,
-      remotePortRange: '9000',
-      localPort: 0,
-      localPortRange: '9000',
       thriftTransport: 'buffered',
       thriftProtocol: 'binary',
       thriftService: RemoteFileSystemService,
@@ -303,9 +300,8 @@ export class ThriftClientManager {
       tunnelCacheEntry,
     ] of this._nameToTunnel.entries()) {
       const {tunnel} = tunnelCacheEntry;
-      tunnel.close();
-
       this._closeRemoteServer(serviceName);
+      tunnel.close();
     }
     this._clientMap.clear();
     this._nameToTunnel.clear();

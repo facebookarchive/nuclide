@@ -16,7 +16,7 @@ import {RemoteFileSystemServer} from '../fs/fsServer';
 export async function createThriftServer(
   serverConfig: ThriftServerConfig,
 ): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(serverConfig);
+  const server = new RemoteFileSystemServer(serverConfig.remotePort);
   // Make sure we successfully start a thrift server
   await server.initialize();
   return server;

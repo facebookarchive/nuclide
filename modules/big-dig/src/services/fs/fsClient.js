@@ -118,10 +118,3 @@ export class RemoteFileSystemClient {
     this._closeCallBack(this._clientId);
   }
 }
-
-/**
- * temporary
- */
-export async function createThriftClient(clientConfig: any): Promise<any> {
-  Promise.resolve({});
-}

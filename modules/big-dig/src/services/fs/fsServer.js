@@ -10,8 +10,6 @@
  * @format
  */
 
-import type {ThriftServerConfig} from '../thrift/types';
-
 import thrift from 'thrift';
 import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 import {RemoteFileSystemServiceHandler} from './RemoteFileSystemServiceHandler';
@@ -26,12 +24,12 @@ import {WatchmanClient} from 'nuclide-watchman-helpers';
 export class RemoteFileSystemServer {
   _serviceHandler: RemoteFileSystemServiceHandler;
   _server: thrift.Server;
-  _serverConfig: ThriftServerConfig;
+  _port: number;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;
 
-  constructor(serverConfig: ThriftServerConfig) {
-    this._serverConfig = serverConfig;
+  constructor(port: number) {
+    this._port = port;
     this._logger = getLogger('fs-thrift-server');
     this._watcher = new WatchmanClient();
     this._serviceHandler = new RemoteFileSystemServiceHandler(this._watcher);
@@ -78,14 +76,10 @@ export class RemoteFileSystemServer {
     });
     const isServerListening = await scanPortsToListen(
       this._server,
-      String(this._serverConfig.remotePort),
+      String(this._port),
     );
     if (!isServerListening) {
-      throw new Error(
-        `All ports in range "${
-          this._serverConfig.remotePort
-        }" are already in use`,
-      );
+      throw new Error(`All ports in range "${this._port}" are already in use`);
     }
   }
 
@@ -98,16 +92,4 @@ export class RemoteFileSystemServer {
     this._server = null;
     this._watcher.dispose();
   }
-}
-
-/**
- * Creates a remote file system thrift server.
- */
-export async function createThriftServer(
-  serverConfig: ThriftServerConfig,
-): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(serverConfig);
-  // Make sure we successfully start a thrift server
-  await server.initialize();
-  return server;
 }

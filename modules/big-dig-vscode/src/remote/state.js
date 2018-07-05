@@ -166,7 +166,7 @@ function createRemoteFileSystem(
   server: Server,
 ): RemoteFileSystem {
   const useThriftFs = false;
-  logger.info(`-- Using Thrift remote file system: ${useThriftFs.toString()}`);
+  logger.info(`Using Thrift remote file system: ${useThriftFs.toString()}`);
   if (useThriftFs) {
     return new ThriftRemoteFileSystem(hostname, server);
   }
