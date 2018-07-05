@@ -1,0 +1,8 @@
+// @lint-ignore-every JSON1
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "flowtype.flow-for-vscode",
+    "ms-vscode.js-atom-grammar"
+  ]
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# This is to enable typing `code $filename` on your devserver to open up a file
+# in the connected vscode instance.
+echo "$BIG_DIG_SESSION" "$PWD" "$@" | nc -U /tmp/big-dig-vscode

@@ -1,0 +1,7 @@
+// @lint-ignore-every JSON1
+{
+    "editor.tabSize": 2,
+    "eslint.autoFixOnSave": true,
+    "javascript.format.enable": false,
+    "javascript.validate.enable": false
+}

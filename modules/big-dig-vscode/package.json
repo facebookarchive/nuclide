@@ -1,0 +1,276 @@
+{
+  "name": "big-dig-vscode",
+  "displayName": "Big Dig",
+  "description": "Enables remote development.",
+  "author": "Facebook",
+  "version": "0.7.1-dev",
+  "private": true,
+  "publisher": "Facebook",
+  "repository": "https://github.com/big-dig/vscode",
+  "engines": {
+    "vscode": "^1.22.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*",
+    "onFileSystemAccess:big-dig",
+    "onDebug"
+  ],
+  "main": "./src/extension-entry",
+  "enableProposedApi": true,
+  "contributes": {
+    "breakpoints": [
+      {
+        "language": "php"
+      }
+    ],
+    "commands": [
+      {
+        "command": "big-dig.explorer.openInTerminal",
+        "title": "Open in Terminal",
+        "category": "Big Dig"
+      },
+      {
+        "command": "big-dig.explorer.openCurrentFileInTerminal",
+        "title": "Open Terminal Here",
+        "category": "Big Dig"
+      },
+      {
+        "command": "big-dig.explorer.openTerminal",
+        "title": "Open Terminal",
+        "category": "Big Dig"
+      },
+      {
+        "command": "big-dig.quickAddFolderToWorkspace",
+        "title": "Quick-Add Folder to Workspace",
+        "category": "Big Dig"
+      },
+      {
+        "command": "big-dig.addFolderToWorkspace",
+        "title": "Add Remote Folder to Workspace",
+        "category": "Big Dig"
+      },
+      {
+        "command": "big-dig.shutdown",
+        "title": "Shut down remote server",
+        "category": "Big Dig"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "big-dig",
+        "label": "Remote Debugging"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ocaml",
+        "scopeName": "source.ocaml",
+        "path": "./third-party/reasonml-editor/syntaxes/ocaml.json"
+      },
+      {
+        "language": "reason",
+        "scopeName": "source.reason",
+        "path": "./third-party/reasonml-editor/syntaxes/reason.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "ocaml",
+        "aliases": [
+          "OCaml"
+        ],
+        "extensions": [
+          ".ml",
+          ".mli"
+        ],
+        "configuration": "./third-party/reasonml-editor/ocaml.configuration.json"
+      },
+      {
+        "id": "reason",
+        "aliases": [
+          "Reason"
+        ],
+        "extensions": [
+          ".re",
+          ".rei"
+        ],
+        "configuration": "./third-party/reasonml-editor/reason.configuration.json"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "big-dig.explorer.openInTerminal",
+          "group": "navigation@30",
+          "when": "resourceScheme == big-dig"
+        },
+        {
+          "command": "big-dig.addFolderToWorkspace",
+          "group": "2_workspace",
+          "when": "resourceScheme == big-dig && explorerResourceIsFolder"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "big-dig.addFolderToWorkspace",
+          "when": "false"
+        },
+        {
+          "command": "big-dig.explorer.openInTerminal",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Big Dig",
+      "properties": {
+        "big-dig.terminal.integrated": {
+          "type": "object",
+          "required": "shell",
+          "default": {
+            "shell": "bash",
+            "shellArgs": [
+              "-l",
+              "-i"
+            ]
+          },
+          "properties": {
+            "shell": {
+              "type": "string",
+              "description": "Path to shell executable to run when opening a remote terminal"
+            },
+            "shellArgs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Shell arguments for the remote terminal"
+            }
+          }
+        },
+        "big-dig.connection.profiles": {
+          "type": "array",
+          "default": [{}],
+          "description": "A list of profiles for connecting to remote repositories",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hostname": {
+                "type": "string",
+                "description": "The remote server name. If `address` is unset, then this is used for the DNS lookup. Otherwise, this acts as a local alias to the given address.",
+                "default": "localhost"
+              },
+              "username": {
+                "type": "string",
+                "description": "Your username for the remote connection. If undefined, then this will default to your local username. [optional]"
+              },
+              "address": {
+                "type": "string",
+                "description": "An optional address that overrides the hostname. If set, then `hostname` acts as an alias to this address.",
+                "default": "localhost"
+              },
+              "ports": {
+                "type": "string",
+                "description": "Comma-delimited list of ports to try. Ranges are accepted, such as 9090-9093.",
+                "default": "9090-9093"
+              },
+              "authentication": {
+                "type": "string",
+                "enum": [
+                  "private-key",
+                  "password"
+                ],
+                "description": "Authentication method to use when making the initial ssh connection.",
+                "default": "private-key"
+              },
+              "privateKey": {
+                "type": "string",
+                "description": "The path to the private key file to use.",
+                "default": "~/.ssh/id_rsa"
+              },
+              "deployServer": {
+                "type": "object",
+                "description": "Deploy a server to provide remote editing",
+                "properties": {
+                  "node": {
+                    "type": "string",
+                    "description": "The remote command to run Node.js.",
+                    "default": "node"
+                  },
+                  "installationPath": {
+                    "type": "string",
+                    "description": "The remote directory to install the server within.",
+                    "default": "~/.big-dig/big-dig-vscode/"
+                  },
+                  "extractFileCommand": {
+                    "type": "string",
+                    "description": "The remote command to extract a zip file to a given directory. The command should use variables ${file} and ${dest}",
+                    "default": "unzip -q ${file} -d ${dest}"
+                  },
+                  "autoUpdate": {
+                    "type": "boolean",
+                    "description": "If the remote server is the wrong version, automatically install an update. If `false`, this will prompt the user.",
+                    "default": true
+                  }
+                }
+              },
+              "folders": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Remote folders that are commonly added to workspaces. These will be used to provide a quick-pick UI for adding folders to a workspace.",
+                "default": null
+              },
+              "aliases": {
+                "type": "object",
+                "description": "Maps aliases to remote paths",
+                "default": {}
+              }
+            }
+          }
+        },
+        "big-dig.logging.lsp": {
+          "description": "Names of LSPs (as defined in .bigdig.toml) whose JSON-RPC messages should be logged. (This is for debugging purposes.)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "adm-zip": "0.4.7",
+    "big-dig": "0.7.1-dev",
+    "copy-paste": "1.3.0",
+    "globby": "5.0.0",
+    "log4js": "1.1.1",
+    "multimatch": "2.1.0",
+    "node-fetch": "1.6.3",
+    "nuclide-commons": "0.7.1-dev",
+    "nuclide-debugger-common": "0.7.1-dev",
+    "nuclide-prebuilt-libs": "0.5.1",
+    "resolve-from": "2.0.0",
+    "rxjs": "5.5.5",
+    "vscode-jsonrpc": "3.3.0",
+    "vscode-languageclient": "4.0.1",
+    "ws": "3.2.0"
+  },
+  "devDependencies": {
+    "big-dig-vscode-server": "0.7.1-dev",
+    "nuclide-jest": "0.7.1-dev",
+    "vsce": "1.30.0",
+    "vscode": "1.1.4"
+  },
+  "scripts": {
+    "test": "true",
+    "jest": "../../jest/fb-jest big-dig-vscode",
+    "try-vsix": "scripts/try-vsix.py",
+    "vsix": "scripts/build-vsix.py"
+  }
+}
