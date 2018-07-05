@@ -10,27 +10,29 @@
  * @format
  */
 
-import type {createThriftClientOptions} from '../../common/thriftService-types';
-import type {IThriftServiceClient} from '../../common/thriftService-types';
-
 import thrift from 'thrift';
 import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import {getLogger} from 'log4js';
 
+type CloseCallBack = (clientId: string) => Promise<void>;
 /**
  * Wrapper class of raw thrift client which provide more methods, e.g. close()
  * e.g. initialze(), close() etc.
  */
-export class RemoteFileSystemClient implements IThriftServiceClient {
+export class RemoteFileSystemClient {
   _connection: thrift.Connection;
   _client: thrift.client;
-  _options: createThriftClientOptions;
   _logger: log4js$Logger;
+  _port: number;
+  _closeCallBack: CloseCallBack;
+  _clientId: string;
 
-  constructor(options: createThriftClientOptions) {
-    this._options = options;
+  constructor(clientId: string, port: number, callBack: CloseCallBack) {
+    this._clientId = clientId;
+    this._port = port;
     this._logger = getLogger('fs-thrift-client');
+    this._closeCallBack = callBack;
   }
 
   async initialize(): Promise<void> {
@@ -41,14 +43,10 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     const protocol = thrift.TBinaryProtocol();
 
     // Here we always create connection connected to localhost
-    this._connection = thrift.createConnection(
-      'localhost',
-      this._options.port,
-      {
-        transport,
-        protocol,
-      },
-    );
+    this._connection = thrift.createConnection('localhost', this._port, {
+      transport,
+      protocol,
+    });
     this._connection.on('error', error => {
       throw error;
     });
@@ -114,28 +112,16 @@ export class RemoteFileSystemClient implements IThriftServiceClient {
     return this._client.readDirectory(uri);
   }
 
-  getOptions(): createThriftClientOptions {
-    return this._options;
-  }
-
   close() {
     this._logger.info('Close remote file system thrift service client...');
     this._connection.end();
+    this._closeCallBack(this._clientId);
   }
 }
 
 /**
- * Creates a remote file system thrift client.
+ * temporary
  */
-export async function createThriftClient(
-  options: createThriftClientOptions,
-): Promise<RemoteFileSystemClient> {
-  try {
-    const client = new RemoteFileSystemClient(options);
-    await client.initialize();
-    return client;
-  } catch (err) {
-    getLogger().error('Failed to created remote file system thrift client!');
-    throw err;
-  }
+export async function createThriftClient(clientConfig: any): Promise<any> {
+  Promise.resolve({});
 }

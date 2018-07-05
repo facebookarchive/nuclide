@@ -13,7 +13,6 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export const THRIFT_SERVICE_TAG = 'thrift-services';
-
 export type ThriftServiceCommand = 'start-server' | 'stop-server';
 
 export type ThriftServiceConfig = {

@@ -168,8 +168,8 @@ export class ConnectionWrapper implements IDisposable {
       return this._fsThriftClientPromise;
     }
 
-    const options = {port: 9000};
-    this._fsThriftClientPromise = createThriftClient(options).then(
+    const clientConfig = {port: 9000};
+    this._fsThriftClientPromise = createThriftClient(clientConfig).then(
       client => {
         this._fsThriftClientPromise = null;
         this._fsThriftClient = client;
