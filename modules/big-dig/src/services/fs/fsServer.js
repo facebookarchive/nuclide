@@ -10,8 +10,7 @@
  * @format
  */
 
-import type {createThriftServerOptions} from '../../common/thriftService-types';
-import type {IThriftServiceServer} from '../../common/thriftService-types';
+import type {ThriftServerConfig} from '../thrift/types';
 
 import thrift from 'thrift';
 import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
@@ -24,15 +23,15 @@ import {WatchmanClient} from 'nuclide-watchman-helpers';
  * Wrapper class of raw thrift server which provide more methods
  * e.g. initialze(), close() etc.
  */
-export class RemoteFileSystemServer implements IThriftServiceServer {
+export class RemoteFileSystemServer {
   _serviceHandler: RemoteFileSystemServiceHandler;
   _server: thrift.Server;
-  _options: createThriftServerOptions;
+  _serverConfig: ThriftServerConfig;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;
 
-  constructor(options: createThriftServerOptions) {
-    this._options = options;
+  constructor(serverConfig: ThriftServerConfig) {
+    this._serverConfig = serverConfig;
     this._logger = getLogger('fs-thrift-server');
     this._watcher = new WatchmanClient();
     this._serviceHandler = new RemoteFileSystemServiceHandler(this._watcher);
@@ -77,11 +76,21 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
     this._server.on('error', error => {
       throw error;
     });
-    if (!(await scanPortsToListen(this._server, this._options.ports))) {
+    const isServerListening = await scanPortsToListen(
+      this._server,
+      String(this._serverConfig.remotePort),
+    );
+    if (!isServerListening) {
       throw new Error(
-        `All ports in range "${this._options.ports}" are already in use`,
+        `All ports in range "${
+          this._serverConfig.remotePort
+        }" are already in use`,
       );
     }
+  }
+
+  getPort(): number {
+    return this._server.address().port;
   }
 
   close() {
@@ -95,9 +104,9 @@ export class RemoteFileSystemServer implements IThriftServiceServer {
  * Creates a remote file system thrift server.
  */
 export async function createThriftServer(
-  options: createThriftServerOptions,
+  serverConfig: ThriftServerConfig,
 ): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(options);
+  const server = new RemoteFileSystemServer(serverConfig);
   // Make sure we successfully start a thrift server
   await server.initialize();
   return server;
