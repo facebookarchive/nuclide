@@ -103,11 +103,13 @@ export class BigDigServer {
     // $FlowIgnore
     const launcher: LauncherType = require(options.absolutePathToServerMain);
     const tunnelLauncher: LauncherType = require('../services/tunnel/launcher');
+    const thriftLauncher: LauncherType = require('../services/thrift/launcher');
 
     const bigDigServer = new BigDigServer(webServer, webSocketServer);
 
     await launcher(bigDigServer);
     await tunnelLauncher(bigDigServer);
+    await thriftLauncher(bigDigServer);
 
     return bigDigServer;
   }
