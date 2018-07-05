@@ -259,12 +259,11 @@ export class DeviceAndProcess extends React.Component<Props, State> {
         />
         <label>Debuggable Java processes: </label>
         <Table
-          tabIndex="12"
           collapsable={false}
           columns={this._getColumns()}
           emptyComponent={emptyComponent}
           fixedHeader={true}
-          maxBodyHeight="99999px"
+          maxBodyHeight="30em"
           rows={processListRows}
           sortable={true}
           onSort={this._handleSort}
