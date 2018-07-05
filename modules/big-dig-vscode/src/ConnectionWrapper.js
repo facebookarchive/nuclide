@@ -61,14 +61,13 @@ import type {
   ServerGetStatusResult,
   Range,
 } from 'big-dig-vscode-server/Protocol';
-import type {RemoteFileSystemClient} from 'big-dig/src/services/fs/fsClient';
 
+import {RemoteFileSystemClient} from 'big-dig/src/services/fs/fsClient';
 import * as vscode from 'vscode';
 import EventEmitter from 'events';
 import {Observable} from 'rxjs';
 import {Deferred} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
-import {createThriftClient} from 'big-dig/src/services/fs/fsClient';
 
 const BUFFER_ENCODING: BufferEncoding = 'utf-8';
 const TAG = 'json-rpc';
@@ -168,18 +167,19 @@ export class ConnectionWrapper implements IDisposable {
       return this._fsThriftClientPromise;
     }
 
-    const clientConfig = {port: 9000};
-    this._fsThriftClientPromise = createThriftClient(clientConfig).then(
-      client => {
-        this._fsThriftClientPromise = null;
-        this._fsThriftClient = client;
-        return client;
-      },
-      error => {
-        this._fsThriftClientPromise = null;
-        return Promise.reject(error);
-      },
-    );
+    this._fsThriftClientPromise = this._bigDigClient
+      .getOrCreateThriftClient('thrift-rfs')
+      .then(
+        client => {
+          this._fsThriftClientPromise = null;
+          this._fsThriftClient = client.getClient();
+          return client.getClient();
+        },
+        error => {
+          this._fsThriftClientPromise = null;
+          return Promise.reject(error);
+        },
+      );
     return this._fsThriftClientPromise;
   }
 

@@ -18,8 +18,10 @@ import type {Tunnel} from '../services/tunnel/Tunnel';
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 import {CLOSE_TAG} from '../server/BigDigServer';
+import {THRIFT_SERVICE_TAG, ThriftClient} from '../services/thrift/types';
 
 import {TunnelManager} from '../services/tunnel/TunnelManager';
+import {ThriftClientManager} from '../services/thrift/ThriftClientManager';
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
@@ -31,6 +33,7 @@ export class BigDigClient {
   _tagToSubject: Map<string, Subject<string>>;
   _transport: ReliableSocket;
   _tunnelManager: TunnelManager;
+  _thriftClientManager: ThriftClientManager;
 
   constructor(reliableSocketTransport: ReliableSocket) {
     this._logger = getLogger();
@@ -44,6 +47,18 @@ export class BigDigClient {
         this.sendMessage('tunnel', message);
       },
     });
+
+    this._thriftClientManager = new ThriftClientManager(
+      {
+        onMessage: () => {
+          return this.onMessage(THRIFT_SERVICE_TAG);
+        },
+        send: (message: string) => {
+          this.sendMessage(THRIFT_SERVICE_TAG, message);
+        },
+      },
+      this._tunnelManager,
+    );
 
     const observable = reliableSocketTransport.onMessage();
     observable.subscribe({
@@ -93,9 +108,14 @@ export class BigDigClient {
     }
   }
 
+  getOrCreateThriftClient(serviceName: string): Promise<ThriftClient> {
+    return this._thriftClientManager.createThriftClient(serviceName);
+  }
+
   close(): void {
     this._logger.info('close called');
     this._tunnelManager.close();
+    this._thriftClientManager.close();
     if (!this.isClosed()) {
       this.sendMessage(CLOSE_TAG, '');
     }

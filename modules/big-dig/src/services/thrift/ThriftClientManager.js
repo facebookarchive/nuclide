@@ -20,13 +20,16 @@ import type {
   ThriftMessage,
 } from './types';
 
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import RemoteFileSystemService from '../fs/gen-nodejs/RemoteFileSystemService';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Tunnel} from '../tunnel/Tunnel';
 import {TunnelManager} from '../tunnel/TunnelManager';
 import EventEmitter from 'events';
-import {encodeMessage, decodeMessage} from './util';
+
+import {createThriftClient} from './createThriftClient';
+import {convertToServerConfig, encodeMessage, decodeMessage} from './util';
 
 // Every client increase tunnel's refCount by 1, while closing it, we need to
 // reduce tunnel refCount by 1. The reason we want to let ThriftClientManager
@@ -149,7 +152,41 @@ export class ThriftClientManager {
    *  tunnel and Thrift server.
    */
   async createThriftClient(serviceName: string): Promise<ThriftClient> {
-    return Promise.resolve(({}: any));
+    invariant(!this._isClosed, 'big-dig thrift client manager close!');
+    invariant(
+      this._availableServices.has(serviceName),
+      `No available thrift service for ${serviceName}`,
+    );
+
+    const serviceConfig = this._getServiceConfig(serviceName);
+    const serverConfig = convertToServerConfig(serviceConfig);
+
+    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+    let tunnel = null;
+    if (tunnelCacheEntry != null) {
+      this._logger.info(
+        `Tunnel and remote server already exist for ${serviceName}!`,
+      );
+      const {refCount} = tunnelCacheEntry;
+      tunnel = tunnelCacheEntry.tunnel;
+      this._nameToTunnel.set(serviceName, {
+        tunnel,
+        refCount: refCount + 1,
+      });
+    } else {
+      // Step 1: launch remote thrift server, get remote port number
+      const remotePort = await this._createRemoteServer(serverConfig);
+      // Step 2: Then create/get a new big-dig tunnel
+      tunnel = await this._createTunnel(serviceName, remotePort);
+    }
+    const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
+    const client = await createThriftClient(
+      clientId,
+      serviceConfig,
+      tunnel.getLocalPort(),
+    );
+    this._clientMap.set(clientId, client);
+    return client;
   }
 
   _sendMessage(message: ThriftMessage) {
@@ -164,7 +201,24 @@ export class ThriftClientManager {
     command: ThriftServiceCommand,
     serverConfig: ThriftServerConfig,
   ): Promise<any> {
-    return Promise.resolve({});
+    const id = (this._messageId++).toString(16);
+    const response = new Promise((resolve, reject) => {
+      function onResponse(message): void {
+        if (message.payload.success) {
+          resolve(message.payload.port);
+        } else {
+          reject(new Error(message.payload.error));
+        }
+      }
+      this._emitter.once(id, onResponse);
+      // Still need to consider: this._emitter.removeListener(id, onResponse)
+    });
+    const message = {
+      id,
+      payload: {type: 'request', command, serverConfig},
+    };
+    this._sendMessage((message: any));
+    return response;
   }
 
   _createRemoteServer(serverConfig: ThriftServerConfig): Promise<number> {
@@ -181,7 +235,26 @@ export class ThriftClientManager {
     remotePort: number,
     useIPv4: ?boolean = false,
   ): Promise<Tunnel> {
-    return Promise.reject(new Error('No implementation yet!'));
+    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+    if (tunnelCacheEntry != null) {
+      this._logger.info(`Tunnel already exists for ${serviceName}!`);
+      const {tunnel, refCount} = tunnelCacheEntry;
+      this._nameToTunnel.set(serviceName, {tunnel, refCount: refCount + 1});
+      return tunnel;
+    }
+    // Otherise, if there is no available tunnel for the service, we need to
+    // find an available localPort and let big-dig tunnel manager to create a
+    // new tunnel for the service
+    const localPort = await getAvailableServerPort();
+    // may need to try multiple times incease the following method throw error
+    // if there is already
+    const tunnel = await this._tunnelManager.createTunnel(
+      localPort,
+      remotePort,
+      useIPv4,
+    );
+    this._nameToTunnel.set(serviceName, {tunnel, refCount: 1});
+    return tunnel;
   }
 
   close(): void {}
