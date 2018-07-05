@@ -1133,8 +1133,12 @@
         'name': 'keyword.operator.arithmetic.php'
       }
       {
-        'match': '(?i)(!|&&|\\|\\|)|\\b(and|or|xor|as)\\b'
+        'match': '(?i)(!|&&|\\|\\|)|\\b(and|or|xor)\\b'
         'name': 'keyword.operator.logical.php'
+      }
+      {
+        'match': '(?i)\\b(is|as)\\b'
+        'name': 'keyword.operator.type.php'
       }
       {
         'include': '#function-call'
