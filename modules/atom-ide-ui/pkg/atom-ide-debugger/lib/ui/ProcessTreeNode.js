@@ -12,9 +12,8 @@
 
 import type {IProcess, IDebugService} from '../types';
 
-import {TreeItem} from 'nuclide-commons-ui/Tree';
+import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
-import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
 
 type Props = {
   process: IProcess,
@@ -23,37 +22,77 @@ type Props = {
   title: string,
 };
 
-export default function ProcessTreeNode(props: Props): React.Node {
-  const {process, service, title, childItems} = props;
-  const focusedProcess = service.viewModel.focusedProcess;
+type State = {
+  isCollapsed: boolean,
+};
 
-  const isFocused = process === focusedProcess;
+export default class ProcessTreeNode extends React.Component<Props, State> {
+  isFocused: boolean;
 
-  const tooltipTitle =
-    service.viewModel.focusedProcess == null ||
-    service.viewModel.focusedProcess.configuration.adapterExecutable == null
-      ? 'Unknown Command'
-      : service.viewModel.focusedProcess.configuration.adapterExecutable
-          .command +
-        service.viewModel.focusedProcess.configuration.adapterExecutable.args.join(
-          ' ',
-        );
+  constructor(props: Props) {
+    super(props);
+    this.updateFocused();
+    this.state = {
+      isCollapsed: !this.isFocused,
+    };
+    this.handleSelect = this.handleSelect.bind(this);
+  }
 
-  const formattedTitle = (
-    <span
-      className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
-      title={tooltipTitle}>
-      {title}
-    </span>
-  );
+  updateFocused() {
+    const {service, process} = this.props;
+    const focusedProcess = service.viewModel.focusedProcess;
+    this.isFocused = process === focusedProcess;
+  }
 
-  return childItems == null || childItems.length === 0 ? (
-    <TreeItem>{formattedTitle}</TreeItem>
-  ) : (
-    <DebuggerProcessTreeNode
-      isFocused={isFocused}
-      formattedTitle={formattedTitle}
-      childItems={childItems}
-    />
-  );
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    // Handle the scenario when the user stepped or continued running.
+    this.updateFocused;
+    if (prevState === this.state) {
+      this.setState({
+        isCollapsed: !(this.isFocused || !prevState.isCollapsed),
+      });
+    }
+  }
+
+  handleSelect = () => {
+    this.setState(prevState => ({
+      isCollapsed: !prevState.isCollapsed,
+    }));
+  };
+
+  render() {
+    const {service, title, childItems} = this.props;
+    this.updateFocused();
+
+    const tooltipTitle =
+      service.viewModel.focusedProcess == null ||
+      service.viewModel.focusedProcess.configuration.adapterExecutable == null
+        ? 'Unknown Command'
+        : service.viewModel.focusedProcess.configuration.adapterExecutable
+            .command +
+          service.viewModel.focusedProcess.configuration.adapterExecutable.args.join(
+            ' ',
+          );
+
+    const formattedTitle = (
+      <span
+        className={
+          this.isFocused ? 'debugger-tree-process-thread-selected' : ''
+        }
+        title={tooltipTitle}>
+        {title}
+      </span>
+    );
+
+    return childItems == null || childItems.length === 0 ? (
+      <TreeItem>{formattedTitle}</TreeItem>
+    ) : (
+      <NestedTreeItem
+        title={formattedTitle}
+        collapsed={this.state.isCollapsed}
+        onSelect={this.handleSelect}>
+        {childItems}
+      </NestedTreeItem>
+    );
+  }
 }

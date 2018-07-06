@@ -12,9 +12,8 @@
 
 import type {IThread, IDebugService} from '../types';
 
-import {TreeItem} from 'nuclide-commons-ui/Tree';
+import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
-import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
 
 type Props = {
   thread: IThread,
@@ -23,43 +22,79 @@ type Props = {
   title: string,
 };
 
-export default class ThreadTreeNode extends React.Component<Props> {
+type State = {
+  isCollapsed: boolean,
+};
+
+export default class ThreadTreeNode extends React.Component<Props, State> {
+  isFocused: boolean;
+
   constructor(props: Props) {
     super(props);
+    this.updateFocused();
+    this.state = {
+      isCollapsed: !this.isFocused,
+    };
     this.handleSelect = this.handleSelect.bind(this);
+  }
+
+  updateFocused() {
+    const {service, thread} = this.props;
+    const focusedThread = service.viewModel.focusedThread;
+    this.isFocused =
+      focusedThread == null
+        ? false
+        : thread.threadId === focusedThread.threadId;
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    // Handle the scenario when the user stepped or continued running.
+    this.updateFocused();
+    if (prevState === this.state) {
+      this.setState({
+        isCollapsed: !(this.isFocused || !prevState.isCollapsed),
+      });
+    }
   }
 
   handleSelect = async () => {
     if (this.props.childItems.length === 0) {
       await this.props.thread.fetchCallStack();
     }
+    this.setState(prevState => ({
+      isCollapsed: !prevState.isCollapsed,
+    }));
+  };
+
+  handleSelectNoChildren = () => {
     this.props.service.focusStackFrame(null, this.props.thread, null, true);
   };
 
   render(): React.Node {
-    const {thread, service, title, childItems} = this.props;
-    const focusedThread = service.viewModel.focusedThread;
-    const isFocused =
-      focusedThread == null
-        ? false
-        : thread.threadId === focusedThread.threadId;
+    const {thread, title, childItems} = this.props;
+    this.updateFocused;
 
     const formattedTitle = (
       <span
-        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
+        className={
+          this.isFocused ? 'debugger-tree-process-thread-selected' : ''
+        }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
         {title}
       </span>
     );
 
     return childItems == null || childItems.length === 0 ? (
-      <TreeItem onSelect={this.handleSelect}>{formattedTitle}</TreeItem>
+      <TreeItem onSelect={this.handleSelectNoChildren}>
+        {formattedTitle}
+      </TreeItem>
     ) : (
-      <DebuggerProcessTreeNode
-        isFocused={isFocused}
-        formattedTitle={formattedTitle}
-        childItems={childItems}
-      />
+      <NestedTreeItem
+        title={formattedTitle}
+        collapsed={this.state.isCollapsed}
+        onSelect={this.handleSelect}>
+        {childItems}
+      </NestedTreeItem>
     );
   }
 }
