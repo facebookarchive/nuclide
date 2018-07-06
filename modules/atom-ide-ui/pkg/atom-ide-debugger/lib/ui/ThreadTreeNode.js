@@ -37,7 +37,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = this._getState();
+    this.state = this._getInitialState();
     this._disposables = new UniversalDisposable();
     this.handleSelect = this.handleSelect.bind(this);
   }
@@ -50,14 +50,34 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       : thread.threadId === focusedThread.threadId;
   }
 
-  _getState(shouldBeCollapsed: ?boolean) {
+  _getInitialState() {
     const {thread} = this.props;
     const isFocused = this._computeIsFocused();
 
-    const isCollapsed =
-      shouldBeCollapsed != null ? shouldBeCollapsed : !isFocused;
+    const isCollapsed = !isFocused;
     return {
       isCollapsed,
+      isFocused,
+      childItems: thread.getCallStack(),
+    };
+  }
+
+  async _getState(handlingClick: boolean) {
+    const {service, thread} = this.props;
+    const {isCollapsed} = this.state;
+    const {focusedThread} = service.viewModel;
+    const isFocused =
+      focusedThread == null
+        ? false
+        : thread.threadId === focusedThread.threadId;
+    const updatedCollapsed = handlingClick
+      ? !isCollapsed
+      : !(isFocused || !isCollapsed);
+    if (!updatedCollapsed) {
+      await thread.fetchCallStack();
+    }
+    return {
+      isCollapsed: updatedCollapsed,
       isFocused,
       childItems: thread.getCallStack(),
     };
@@ -76,13 +96,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
         .let(fastDebounce(15))
-        .subscribe(() =>
-          this.setState(prevState =>
-            this._getState(
-              !(this._computeIsFocused() || !prevState.isCollapsed),
-            ),
-          ),
-        ),
+        .subscribe(async () => {
+          this.setState(await this._getState(false));
+        }),
     );
   }
 
@@ -90,9 +106,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     if (this.state.childItems.length === 0) {
       await this.props.thread.fetchCallStack();
     }
-    this.setState(prevState => ({
-      isCollapsed: !prevState.isCollapsed,
-    }));
+    this.setState(await this._getState(true));
   };
 
   handleSelectNoChildren = () => {
