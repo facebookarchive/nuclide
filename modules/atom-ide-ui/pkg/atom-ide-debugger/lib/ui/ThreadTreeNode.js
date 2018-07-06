@@ -29,7 +29,10 @@ export default class ThreadTreeNode extends React.Component<Props> {
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  handleSelect = () => {
+  handleSelect = async () => {
+    if (this.props.childItems.length === 0) {
+      await this.props.thread.fetchCallStack();
+    }
     this.props.service.focusStackFrame(null, this.props.thread, null, true);
   };
 
@@ -53,6 +56,7 @@ export default class ThreadTreeNode extends React.Component<Props> {
       <TreeItem onSelect={this.handleSelect}>{formattedTitle}</TreeItem>
     ) : (
       <DebuggerProcessTreeNode
+        isFocused={isFocused}
         formattedTitle={formattedTitle}
         childItems={childItems}
       />

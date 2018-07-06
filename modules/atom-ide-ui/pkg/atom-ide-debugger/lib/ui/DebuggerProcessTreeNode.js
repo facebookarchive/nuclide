@@ -16,6 +16,7 @@ import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
 type Props = {
   formattedTitle: React.Element<any>,
   childItems: Array<React.Element<any>>,
+  isFocused: boolean,
 };
 type State = {
   isCollapsed: boolean,
@@ -28,9 +29,18 @@ export default class DebuggerProcessTreeNode extends React.Component<
   constructor(props: Props) {
     super(props);
     this.state = {
-      isCollapsed: false,
+      isCollapsed: !this.props.isFocused,
     };
     this.handleSelect = this.handleSelect.bind(this);
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    // Handle the scenario when the user stepped or continued running.
+    if (prevState === this.state) {
+      this.setState({
+        isCollapsed: !(this.props.isFocused || !prevState.isCollapsed),
+      });
+    }
   }
 
   handleSelect = () => {

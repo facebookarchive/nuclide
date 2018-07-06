@@ -51,6 +51,7 @@ export default function ProcessTreeNode(props: Props): React.Node {
     <TreeItem>{formattedTitle}</TreeItem>
   ) : (
     <DebuggerProcessTreeNode
+      isFocused={isFocused}
       formattedTitle={formattedTitle}
       childItems={childItems}
     />

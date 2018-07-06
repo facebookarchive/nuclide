@@ -117,8 +117,8 @@ import {
 import logger from '../logger';
 import stripAnsi from 'strip-ansi';
 import url from 'url';
-import idx from 'idx';
 import os from 'os';
+import idx from 'idx';
 
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
