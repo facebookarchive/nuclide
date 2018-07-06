@@ -13,53 +13,72 @@
 import type {IThread, IStackFrame, IDebugService} from '../types';
 
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
+import {Observable} from 'rxjs';
 import FrameTreeNode from './FrameTreeNode';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type Props = {
   thread: IThread,
   service: IDebugService,
-  childItems: Array<IStackFrame>,
   title: string,
 };
 
 type State = {
   isCollapsed: boolean,
+  childItems: Array<IStackFrame>,
+  isFocused: boolean,
 };
 
 export default class ThreadTreeNode extends React.Component<Props, State> {
-  isFocused: boolean;
+  _disposables: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this.updateFocused();
-    this.state = {
-      isCollapsed: !this.isFocused,
-    };
+    this.state = this._getState();
+    this._disposables = new UniversalDisposable();
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  updateFocused() {
+  _getState(shouldBeCollapsed: ?boolean) {
     const {service, thread} = this.props;
     const focusedThread = service.viewModel.focusedThread;
-    this.isFocused =
+    const isFocused =
       focusedThread == null
         ? false
         : thread.threadId === focusedThread.threadId;
+    const isCollapsed =
+      shouldBeCollapsed != null ? shouldBeCollapsed : !isFocused;
+    return {
+      isCollapsed,
+      isFocused,
+      childItems: thread.getCallStack(),
+    };
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    // Handle the scenario when the user stepped or continued running.
-    this.updateFocused();
-    if (prevState === this.state) {
-      this.setState({
-        isCollapsed: !(this.isFocused || !prevState.isCollapsed),
-      });
-    }
+  componentDidMount(): void {
+    const {service} = this.props;
+    const model = service.getModel();
+    const {viewModel} = service;
+    this._disposables.add(
+      Observable.merge(
+        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
+        observableFromSubscribeFunction(
+          viewModel.onDidFocusStackFrame.bind(viewModel),
+        ),
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+      )
+        .let(fastDebounce(15))
+        .subscribe(() =>
+          this.setState(prevState => this._getState(prevState.isCollapsed)),
+        ),
+    );
   }
 
   handleSelect = async () => {
-    if (this.props.childItems.length === 0) {
+    if (this.state.childItems.length === 0) {
       await this.props.thread.fetchCallStack();
     }
     this.setState(prevState => ({
@@ -72,14 +91,12 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const {thread, title, childItems, service} = this.props;
-    this.updateFocused;
+    const {thread, title, service} = this.props;
+    const {isFocused, childItems} = this.state;
 
     const formattedTitle = (
       <span
-        className={
-          this.isFocused ? 'debugger-tree-process-thread-selected' : ''
-        }
+        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
         {title}
       </span>
