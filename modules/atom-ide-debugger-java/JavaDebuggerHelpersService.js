@@ -147,7 +147,6 @@ async function _getJavaArgs(debug: boolean): Promise<Array<string>> {
     '-classpath',
     await _getClassPath(),
     'com.facebook.nuclide.debugger.JavaDbg',
-    '--vsp',
   ];
   const debugArgs = debug
     ? [
