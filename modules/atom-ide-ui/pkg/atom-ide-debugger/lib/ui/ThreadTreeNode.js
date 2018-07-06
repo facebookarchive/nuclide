@@ -12,7 +12,7 @@
 
 import type {IThread, IStackFrame, IDebugService} from '../types';
 
-import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
@@ -109,10 +109,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     this.setState(await this._getState(true));
   };
 
-  handleSelectNoChildren = () => {
-    this.props.service.focusStackFrame(null, this.props.thread, null, true);
-  };
-
   render(): React.Node {
     const {thread, title, service} = this.props;
     const {isFocused, childItems} = this.state;
@@ -124,17 +120,11 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         {title}
       </span>
     );
-
-    return childItems == null || childItems.length === 0 ? (
-      <TreeItem onSelect={this.handleSelectNoChildren}>
-        {formattedTitle}
-      </TreeItem>
-    ) : (
-      <NestedTreeItem
-        title={formattedTitle}
-        collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelect}>
-        {childItems.map((frame, frameIndex) => {
+    const innerHTML =
+      childItems.length === 0 ? (
+        <span className="debugger-tree-no-frames">Call frames unavailable</span>
+      ) : (
+        childItems.map((frame, frameIndex) => {
           return (
             <FrameTreeNode
               text={frame.name}
@@ -143,7 +133,15 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
               service={service}
             />
           );
-        })}
+        })
+      );
+
+    return (
+      <NestedTreeItem
+        title={formattedTitle}
+        collapsed={this.state.isCollapsed}
+        onSelect={this.handleSelect}>
+        {innerHTML}
       </NestedTreeItem>
     );
   }
