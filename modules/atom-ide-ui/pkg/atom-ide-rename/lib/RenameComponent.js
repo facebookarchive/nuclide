@@ -23,13 +23,27 @@ type State = {
 };
 
 export default class RenameComponent extends React.Component<Props, State> {
+  _atomInput: ?AtomInput;
+
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      newName: '',
+      newName: this.props.selectedText,
     };
   }
+
+  componentDidMount() {
+    this.highlightTextWithin();
+  }
+
+  highlightTextWithin = (): void => {
+    if (this._atomInput == null) {
+      return;
+    }
+    const editor = this._atomInput.getTextEditor();
+    editor.selectAll();
+  };
 
   _handleSubmit = (event: $FlowFixMe): void => {
     event.preventDefault();
@@ -55,9 +69,9 @@ export default class RenameComponent extends React.Component<Props, State> {
     };
     return (
       <AtomInput
+        ref={atomInput => (this._atomInput = atomInput)}
         style={widthStyle}
         autofocus={true}
-        placeholderText={this.props.selectedText}
         value={this.state.newName}
         onDidChange={this._handleChange}
         onBlur={this._handleBlur}
