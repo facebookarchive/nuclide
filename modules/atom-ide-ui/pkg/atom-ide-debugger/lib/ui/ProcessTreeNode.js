@@ -55,16 +55,25 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
         .let(fastDebounce(15))
-        .subscribe(() =>
-          this.setState(prevState => this._getState(prevState.isCollapsed)),
-        ),
+        .subscribe(this._handleThreadsChanged),
     );
   }
 
-  _getState(shouldBeCollapsed: ?boolean) {
+  _handleThreadsChanged = (): void => {
+    this.setState(prevState =>
+      this._getState(!(this._computeIsFocused() || !prevState.isCollapsed)),
+    );
+  };
+
+  _computeIsFocused(): boolean {
     const {service, process} = this.props;
     const focusedProcess = service.viewModel.focusedProcess;
-    const isFocused = process === focusedProcess;
+    return process === focusedProcess;
+  }
+
+  _getState(shouldBeCollapsed: ?boolean) {
+    const {process} = this.props;
+    const isFocused = this._computeIsFocused();
     const isCollapsed =
       shouldBeCollapsed != null ? shouldBeCollapsed : !isFocused;
     return {

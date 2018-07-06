@@ -42,13 +42,18 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  _getState(shouldBeCollapsed: ?boolean) {
+  _computeIsFocused(): boolean {
     const {service, thread} = this.props;
     const focusedThread = service.viewModel.focusedThread;
-    const isFocused =
-      focusedThread == null
-        ? false
-        : thread.threadId === focusedThread.threadId;
+    return focusedThread == null
+      ? false
+      : thread.threadId === focusedThread.threadId;
+  }
+
+  _getState(shouldBeCollapsed: ?boolean) {
+    const {thread} = this.props;
+    const isFocused = this._computeIsFocused();
+
     const isCollapsed =
       shouldBeCollapsed != null ? shouldBeCollapsed : !isFocused;
     return {
@@ -72,7 +77,11 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       )
         .let(fastDebounce(15))
         .subscribe(() =>
-          this.setState(prevState => this._getState(prevState.isCollapsed)),
+          this.setState(prevState =>
+            this._getState(
+              !(this._computeIsFocused() || !prevState.isCollapsed),
+            ),
+          ),
         ),
     );
   }
