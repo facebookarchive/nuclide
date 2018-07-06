@@ -10,15 +10,16 @@
  * @format
  */
 
-import type {IThread, IDebugService} from '../types';
+import type {IThread, IStackFrame, IDebugService} from '../types';
 
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
+import FrameTreeNode from './FrameTreeNode';
 
 type Props = {
   thread: IThread,
   service: IDebugService,
-  childItems: Array<React.Element<any>>,
+  childItems: Array<IStackFrame>,
   title: string,
 };
 
@@ -71,7 +72,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const {thread, title, childItems} = this.props;
+    const {thread, title, childItems, service} = this.props;
     this.updateFocused;
 
     const formattedTitle = (
@@ -93,7 +94,16 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         title={formattedTitle}
         collapsed={this.state.isCollapsed}
         onSelect={this.handleSelect}>
-        {childItems}
+        {childItems.map((frame, frameIndex) => {
+          return (
+            <FrameTreeNode
+              text={frame.name}
+              frame={frame}
+              key={frameIndex}
+              service={service}
+            />
+          );
+        })}
       </NestedTreeItem>
     );
   }

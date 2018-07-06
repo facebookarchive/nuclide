@@ -15,12 +15,10 @@ import type {IDebugService, IProcess} from '../types';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {TreeList} from 'nuclide-commons-ui/Tree';
-import FrameTreeNode from './FrameTreeNode';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import ProcessTreeNode from './ProcessTreeNode';
-import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
   service: IDebugService,
@@ -80,43 +78,15 @@ export default class DebuggerProcessComponent extends React.PureComponent<
   render(): React.Node {
     const {processList} = this.state;
     const {service} = this.props;
-
     const processElements = processList.map((process, processIndex) => {
       const {adapterType, processName} = process.configuration;
-      const threadElements = process
-        .getAllThreads()
-        .map((thread, threadIndex) => {
-          const stackFrameElements = thread
-            .getCallStack()
-            .map((frame, frameIndex) => {
-              return (
-                <FrameTreeNode
-                  text={frame.name}
-                  frame={frame}
-                  key={frameIndex}
-                  service={service}
-                />
-              );
-            });
-          return (
-            <ThreadTreeNode
-              title={
-                thread.name + (thread.stopped ? ' (Paused)' : ' (Running)')
-              }
-              key={threadIndex}
-              childItems={stackFrameElements}
-              thread={thread}
-              service={service}
-            />
-          );
-        });
       return process == null ? (
         'No processes are currently being debugged'
       ) : (
         <ProcessTreeNode
           title={processName != null ? processName : adapterType}
           key={processIndex}
-          childItems={threadElements}
+          childItems={process.getAllThreads()}
           process={process}
           service={service}
         />

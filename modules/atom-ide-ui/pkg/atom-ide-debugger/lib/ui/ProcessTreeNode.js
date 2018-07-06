@@ -10,15 +10,16 @@
  * @format
  */
 
-import type {IProcess, IDebugService} from '../types';
+import type {IProcess, IDebugService, IThread} from '../types';
 
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import * as React from 'react';
+import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
   process: IProcess,
   service: IDebugService,
-  childItems: Array<React.Element<any>>,
+  childItems: Array<IThread>,
   title: string,
 };
 
@@ -46,7 +47,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     // Handle the scenario when the user stepped or continued running.
-    this.updateFocused;
+    this.updateFocused();
     if (prevState === this.state) {
       this.setState({
         isCollapsed: !(this.isFocused || !prevState.isCollapsed),
@@ -91,7 +92,19 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         title={formattedTitle}
         collapsed={this.state.isCollapsed}
         onSelect={this.handleSelect}>
-        {childItems}
+        {childItems.map((thread, threadIndex) => {
+          return (
+            <ThreadTreeNode
+              title={
+                thread.name + (thread.stopped ? ' (Paused)' : ' (Running)')
+              }
+              key={threadIndex}
+              childItems={thread.getCallStack()}
+              thread={thread}
+              service={service}
+            />
+          );
+        })}
       </NestedTreeItem>
     );
   }
