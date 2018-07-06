@@ -3,12 +3,12 @@
     "enter": "core:confirm"
   },
   ".platform-darwin atom-workspace atom-text-editor:not(.mini)": {
-    "f2": "rename:activate"
+    "cmd-r cmd-r": "rename:activate"
   },
   ".platform-win32 atom-workspace atom-text-editor:not(.mini)": {
-    "f2": "rename:activate"
+    "ctrl-r ctrl-r": "rename:activate"
   },
   ".platform-linux atom-workspace atom-text-editor:not(.mini)": {
-    "f2": "rename:activate"
+    "ctrl-r ctrl-r": "rename:activate"
   }
 }
