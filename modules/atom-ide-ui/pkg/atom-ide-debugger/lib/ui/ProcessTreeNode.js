@@ -13,57 +13,74 @@
 import type {IProcess, IDebugService, IThread} from '../types';
 
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
+import {Observable} from 'rxjs';
 import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
   process: IProcess,
   service: IDebugService,
-  childItems: Array<IThread>,
   title: string,
 };
 
 type State = {
   isCollapsed: boolean,
+  childItems: Array<IThread>,
+  isFocused: boolean,
 };
 
 export default class ProcessTreeNode extends React.Component<Props, State> {
-  isFocused: boolean;
+  _disposables: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this.updateFocused();
-    this.state = {
-      isCollapsed: !this.isFocused,
-    };
+    this.state = this._getState();
+    this._disposables = new UniversalDisposable();
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  updateFocused() {
-    const {service, process} = this.props;
-    const focusedProcess = service.viewModel.focusedProcess;
-    this.isFocused = process === focusedProcess;
+  componentDidMount(): void {
+    const {service} = this.props;
+    const model = service.getModel();
+    const {viewModel} = service;
+    this._disposables.add(
+      Observable.merge(
+        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
+        observableFromSubscribeFunction(
+          viewModel.onDidFocusStackFrame.bind(viewModel),
+        ),
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+      )
+        .let(fastDebounce(15))
+        .subscribe(() =>
+          this.setState(prevState => this._getState(prevState.isCollapsed)),
+        ),
+    );
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    // Handle the scenario when the user stepped or continued running.
-    this.updateFocused();
-    if (prevState === this.state) {
-      this.setState({
-        isCollapsed: !(this.isFocused || !prevState.isCollapsed),
-      });
-    }
+  _getState(shouldBeCollapsed: ?boolean) {
+    const {service, process} = this.props;
+    const focusedProcess = service.viewModel.focusedProcess;
+    const isFocused = process === focusedProcess;
+    const isCollapsed =
+      shouldBeCollapsed != null ? shouldBeCollapsed : !isFocused;
+    return {
+      isFocused,
+      childItems: process.getAllThreads(),
+      isCollapsed,
+    };
   }
 
   handleSelect = () => {
-    this.setState(prevState => ({
-      isCollapsed: !prevState.isCollapsed,
-    }));
+    this.setState(prevState => this._getState(!prevState.isCollapsed));
   };
 
   render() {
-    const {service, title, childItems} = this.props;
-    this.updateFocused();
+    const {service, title} = this.props;
+    const {childItems, isFocused} = this.state;
 
     const tooltipTitle =
       service.viewModel.focusedProcess == null ||
@@ -77,9 +94,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
 
     const formattedTitle = (
       <span
-        className={
-          this.isFocused ? 'debugger-tree-process-thread-selected' : ''
-        }
+        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
         title={tooltipTitle}>
         {title}
       </span>
