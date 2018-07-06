@@ -197,41 +197,46 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
             .collect(Collectors.toSet());
 
     List<JSONObject> responseBreakpointsList =
-        arguments
-            .breakpoints
-            .stream()
-            .map(
-                newSourceBreakpoint -> {
-                  // see if we already have this breakpoint
-                  BreakpointSpec breakpointSpec =
-                      registeredBreakpointsForCurrentPath
-                          .stream()
-                          .filter(
-                              oldBreakpointSpec ->
-                                  oldBreakpointSpec.getLine() == newSourceBreakpoint.line)
-                          .filter(
-                              oldBreakpointSpec ->
-                                  oldBreakpointSpec
-                                      .getCondition()
-                                      .equals(newSourceBreakpoint.condition))
-                          .findAny()
-                          .orElse(null);
-                  // otherwise, create a new breakpoint
-                  if (breakpointSpec == null) {
-                    String breakpointId =
-                        bm.setFileLineBreakpoint(
-                            path, newSourceBreakpoint.line, hint, newSourceBreakpoint.condition);
-                    breakpointSpec = bm.getBreakpointFromId(breakpointId);
+        path.endsWith(".java")
+            ? arguments
+                .breakpoints
+                .stream()
+                .map(
+                    newSourceBreakpoint -> {
+                      // see if we already have this breakpoint
+                      BreakpointSpec breakpointSpec =
+                          registeredBreakpointsForCurrentPath
+                              .stream()
+                              .filter(
+                                  oldBreakpointSpec ->
+                                      oldBreakpointSpec.getLine() == newSourceBreakpoint.line)
+                              .filter(
+                                  oldBreakpointSpec ->
+                                      oldBreakpointSpec
+                                          .getCondition()
+                                          .equals(newSourceBreakpoint.condition))
+                              .findAny()
+                              .orElse(null);
+                      // otherwise, create a new breakpoint
+                      if (breakpointSpec == null) {
+                        String breakpointId =
+                            bm.setFileLineBreakpoint(
+                                path,
+                                newSourceBreakpoint.line,
+                                hint,
+                                newSourceBreakpoint.condition);
+                        breakpointSpec = bm.getBreakpointFromId(breakpointId);
 
-                    breakpointIdToSource.put(breakpointId, source);
-                    registeredBreakpoints.put(breakpointId, breakpointSpec);
-                    registeredBreakpointsForCurrentPath.add(breakpointSpec);
-                  }
-                  return breakpointSpec;
-                })
-            .map(this::breakpointSpecToBreakpoint)
-            .map(Breakpoint::toJSON)
-            .collect(Collectors.toList());
+                        breakpointIdToSource.put(breakpointId, source);
+                        registeredBreakpoints.put(breakpointId, breakpointSpec);
+                        registeredBreakpointsForCurrentPath.add(breakpointSpec);
+                      }
+                      return breakpointSpec;
+                    })
+                .map(this::breakpointSpecToBreakpoint)
+                .map(Breakpoint::toJSON)
+                .collect(Collectors.toList())
+            : new ArrayList();
 
     breakpointSpecsToRemove
         .stream()
