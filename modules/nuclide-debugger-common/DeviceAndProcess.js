@@ -225,6 +225,13 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       </div>
     );
 
+    let shouldHighlightRow = _ => false;
+    try {
+      // $FlowFB
+      shouldHighlightRow = require('./fb-shouldHighlightRow')
+        .shouldHighlightRow;
+    } catch (e) {}
+
     const processListRows = this._sortRows(
       this.state.javaProcesses.getOrDefault([]).map(processRow => {
         const data = {
@@ -232,7 +239,13 @@ export class DeviceAndProcess extends React.Component<Props, State> {
           user: processRow.user,
           name: processRow.name,
         };
-        return {data};
+        const highlightRow = shouldHighlightRow(processRow.name);
+        return {
+          data,
+          className: highlightRow
+            ? 'device-and-process-table-highlight-row'
+            : undefined,
+        };
       }),
       this.state.sortedColumn,
       this.state.sortDescending,
