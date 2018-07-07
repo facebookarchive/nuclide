@@ -64,42 +64,6 @@
         "label": "Remote Debugging"
       }
     ],
-    "grammars": [
-      {
-        "language": "ocaml",
-        "scopeName": "source.ocaml",
-        "path": "./third-party/reasonml-editor/syntaxes/ocaml.json"
-      },
-      {
-        "language": "reason",
-        "scopeName": "source.reason",
-        "path": "./third-party/reasonml-editor/syntaxes/reason.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "ocaml",
-        "aliases": [
-          "OCaml"
-        ],
-        "extensions": [
-          ".ml",
-          ".mli"
-        ],
-        "configuration": "./third-party/reasonml-editor/ocaml.configuration.json"
-      },
-      {
-        "id": "reason",
-        "aliases": [
-          "Reason"
-        ],
-        "extensions": [
-          ".re",
-          ".rei"
-        ],
-        "configuration": "./third-party/reasonml-editor/reason.configuration.json"
-      }
-    ],
     "menus": {
       "explorer/context": [
         {
@@ -154,7 +118,9 @@
         },
         "big-dig.connection.profiles": {
           "type": "array",
-          "default": [{}],
+          "default": [
+            {}
+          ],
           "description": "A list of profiles for connecting to remote repositories",
           "items": {
             "type": "object",
