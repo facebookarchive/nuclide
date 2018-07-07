@@ -4,6 +4,3 @@
 **/flow-typed/**
 **/gen-nodejs/**
 **/build/**
-
-# TODO(dabramov): these have lint errors - fix them
-**/__mocks__/**

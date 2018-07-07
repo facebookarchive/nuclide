@@ -18,6 +18,7 @@ const tempMkDir = denodeify(tempModule.mkdir);
 import {makeTree} from 'fs-plus';
 const mkdir = denodeify(makeTree);
 
+// eslint-disable-next-line nuclide-internal/no-unresolved
 import touchModule from 'touch';
 const touch = denodeify(touchModule);
 

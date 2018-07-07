@@ -10,6 +10,11 @@
  */
 'use strict';
 
+/* eslint-disable nuclide-internal/no-unresolved */
+/* eslint-disable nuclide-internal/no-commonjs */
+/* eslint-disable dependencies/case-sensitive */
+/* eslint-disable react/no-unused-prop-types */
+
 const React = require('React');
 
 export type FDSType = 'regular' | 'special';
@@ -50,4 +55,5 @@ class FDSTest extends React.PureComponent<Props> {
   };
 }
 
+// eslint-disable-next-line
 module.exports = FDSTest;
