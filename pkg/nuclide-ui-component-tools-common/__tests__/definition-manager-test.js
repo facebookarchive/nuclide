@@ -40,8 +40,8 @@ describe('getSnippetFromDefinition', () => {
       leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(`FDSTest
-  value={\$1}
-\$2/>`);
+  value={$1}
+$2/>`);
   });
 
   it('should render a string annotated prop with nested tabstop', () => {
@@ -110,8 +110,8 @@ $4/>',
       leadingComment: null,
     };
     expect(getSnippetFromDefinition(definition)).toBe(`FDSTest
-  value={\$1}
-\$2/>`);
+  value={$1}
+$2/>`);
   });
 });
 

@@ -11,7 +11,6 @@
  */
 
 import type {ThriftServiceConfig, Subscription} from '../types';
-import type {Transport} from '../../../server/BigDigServer';
 
 import {Observable, Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
@@ -19,11 +18,9 @@ import {describe, expect, it, jest} from 'nuclide-jest/globals';
 import {TunnelManager} from '../../tunnel/TunnelManager';
 import {ThriftClientManager} from '../ThriftClientManager';
 import thrift from 'thrift';
-import * as portHelper from '../../../common/ports';
 import RemoteFileSystemService from '../../fs/gen-nodejs/RemoteFileSystemService';
-import {encodeMessage, decodeMessage} from '../util';
+import {encodeMessage} from '../util';
 import EventEmitter from 'events';
-import {ThriftClientClass} from '../createThriftClient';
 
 jest.mock(require.resolve('../createThriftClient'));
 jest.mock(require.resolve('../../tunnel/TunnelManager'), () => {
@@ -280,12 +277,10 @@ describe('ThriftClientManager', () => {
     clientMessage.subscribe(callServer);
 
     // create three clients
-    const client1Service1 = await manager.createThriftClient(mockedServiceName);
-    const client2Service1 = await manager.createThriftClient(mockedServiceName);
+    await manager.createThriftClient(mockedServiceName);
+    await manager.createThriftClient(mockedServiceName);
     expect(callServer).toHaveBeenCalledTimes(1);
-    const client1Service2 = await manager.createThriftClient(
-      anotherServiceName,
-    );
+    await manager.createThriftClient(anotherServiceName);
     expect(callServer).toHaveBeenCalledTimes(2);
 
     // close ThriftClientManager, close all tunnels and clients

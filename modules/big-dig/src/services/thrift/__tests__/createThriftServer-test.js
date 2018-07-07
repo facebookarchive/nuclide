@@ -12,7 +12,6 @@
 
 import type {ThriftServerConfig} from '../types';
 
-import {RemoteFileSystemServer} from '../../fs/fsServer';
 import {expect, jest} from 'nuclide-jest/globals';
 import {createThriftServer} from '../createThriftServer';
 import thrift from 'thrift';
@@ -31,15 +30,15 @@ jest
   .spyOn(portHelper, 'scanPortsToListen')
   .mockImplementation(async (server: any, ports: string) => true);
 
-jest.spyOn(thrift, 'createServer').mockImplementation(function() {
+jest.spyOn(thrift, 'createServer').mockImplementation(() => {
   return {
-    address: function() {
+    address() {
       return {port: mockPort};
     },
-    on: function(tag: string, cb: any) {},
-    once: function(tag: string, cb: any) {},
-    listen: function(port: number, cb: any) {},
-    removeListener: function(tag: string, cb: any) {},
+    on(tag: string, cb: any) {},
+    once(tag: string, cb: any) {},
+    listen(port: number, cb: any) {},
+    removeListener(tag: string, cb: any) {},
   };
 });
 

@@ -1,33 +1,30 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
+
+import type {Observable} from 'rxjs';
 
 import {describe, expect, it, jest} from 'nuclide-jest/globals';
 
 jest.mock(require.resolve('../createThriftServer'));
 
 import type {ThriftServerConfig, ThriftMessage} from '../types';
-import type {Transport} from '../../../server/BigDigServer';
 
-import EventEmitter from 'events';
-import {Observable, Subject} from 'rxjs';
+import {Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
-import {RemoteFileSystemServer} from '../../fs/fsServer';
 import {ThriftServerManager} from '../ThriftServerManager';
 import {createThriftServer} from '../createThriftServer';
-import thrift from 'thrift';
-import * as portHelper from '../../../common/ports';
 
 describe('ThriftServerManager', () => {
   let mockedTransport;
-  let manager;
   let serverMessage;
   let clientMessage;
 
@@ -74,7 +71,8 @@ describe('ThriftServerManager', () => {
     serverMessage = new Subject();
     clientMessage = new Subject();
     mockedTransport = new MockedTransport();
-    manager = new ThriftServerManager(mockedTransport);
+    // eslint-disable-next-line no-new
+    new ThriftServerManager(mockedTransport);
   });
 
   afterEach(() => {

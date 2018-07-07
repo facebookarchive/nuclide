@@ -18,7 +18,6 @@ import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import {Observable, Scheduler, Subject} from 'rxjs';
-import waitsFor from '../../../jest/waits_for';
 
 import {
   spawn,

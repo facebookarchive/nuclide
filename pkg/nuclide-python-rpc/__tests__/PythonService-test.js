@@ -44,7 +44,7 @@ function bufferOfContents(contents: string): simpleTextBuffer$TextBuffer {
 describe('PythonService', () => {
   let serverManager: JediServerManager = (null: any);
 
-  beforeEach(function() {
+  beforeEach(() => {
     serverManager = new JediServerManager();
     // Don't try to retrieve additional paths from Buck/etc.
     jest.spyOn(serverManager, 'getSysPath').mockReturnValue([]);

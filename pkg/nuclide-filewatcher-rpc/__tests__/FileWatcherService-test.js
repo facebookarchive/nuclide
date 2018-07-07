@@ -53,7 +53,6 @@ const NODE_TEST_FILE = 'node_test_file';
 describe('FileWatcherService', () => {
   let statMock;
   let realpathMock;
-  let fsWatchSpy;
   let nodeTestDirPath;
   let nodeTestFilePath;
   const createNodeTestFile = async callback => {
@@ -76,7 +75,7 @@ describe('FileWatcherService', () => {
     }));
 
     realpathMock = jest.spyOn(fsPromise, 'realpath').mockImplementation(x => x);
-    fsWatchSpy = jest.spyOn(fs, 'watch');
+    jest.spyOn(fs, 'watch');
 
     await createNodeTestFile();
   });

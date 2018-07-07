@@ -10,7 +10,7 @@
  * @format
  */
 
-import ProjectManager, {_validateProjectSpec} from '../ProjectManager';
+import {_validateProjectSpec} from '../ProjectManager';
 
 describe('_validateProjectSpec', () => {
   test('local', () => {

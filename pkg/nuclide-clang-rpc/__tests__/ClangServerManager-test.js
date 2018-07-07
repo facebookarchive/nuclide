@@ -152,12 +152,8 @@ describe('ClangServerManager', () => {
         return runCommand(command, ...args);
       });
 
-    let server;
-    let server2;
-    let server3;
-
     serverManager.setMemoryLimit(0);
-    server = serverManager.getClangServer(
+    const server = serverManager.getClangServer(
       'test.cpp',
       '',
       null,
@@ -165,7 +161,7 @@ describe('ClangServerManager', () => {
     );
 
     // We're still over the limit, but keep the last one alive.
-    server2 = serverManager.getClangServer(
+    const server2 = serverManager.getClangServer(
       'test2.cpp',
       '',
       null,
@@ -179,7 +175,7 @@ describe('ClangServerManager', () => {
     expect(server2.isDisposed()).toBe(false);
 
     // It should be disposed once the next server gets created.
-    server3 = serverManager.getClangServer(
+    const server3 = serverManager.getClangServer(
       'test3.cpp',
       '',
       null,

@@ -19,7 +19,6 @@ import {
 } from '../lib/diagnosticsParser';
 
 import flowChildrenOutput from '../__mocks__/fixtures/flow-children-output.json';
-import flowChildrenDiagnostic from '../__mocks__/fixtures/flow-children-diagnostic.json';
 
 const flowOutput = {
   passed: false,

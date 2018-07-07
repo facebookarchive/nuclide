@@ -10,7 +10,6 @@
  */
 
 import {convertReferences} from '../lib/FindReferences';
-import {addMatchers} from '../../nuclide-test-helpers';
 
 const projectRoot = '/test/';
 const file1Path = '/test/file1.php';

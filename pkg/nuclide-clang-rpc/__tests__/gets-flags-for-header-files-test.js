@@ -15,7 +15,6 @@ import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 import {copyFixture} from '../../../pkg/nuclide-test-helpers';
-import {guessBuildFile} from '../lib/utils';
 import path from 'path';
 
 let flagsManager: ClangFlagsManager;

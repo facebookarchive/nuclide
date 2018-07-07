@@ -12,7 +12,6 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
 import {itemsToOutline} from '../lib/outline';
-import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('Python outline', () => {
   it('converts from JSON to outline', () => {

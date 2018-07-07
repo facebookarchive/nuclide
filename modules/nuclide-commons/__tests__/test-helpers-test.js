@@ -66,7 +66,9 @@ describe('expectAsyncFailure', () => {
       ++callCount;
       const expectedMessage = 'I failed badly.';
       if (error.message !== expectedMessage) {
-        throw Error(`Expected '${expectedMessage}', but was ${error.message}.`);
+        throw new Error(
+          `Expected '${expectedMessage}', but was ${error.message}.`,
+        );
       }
     }
 
@@ -82,7 +84,9 @@ describe('expectAsyncFailure', () => {
       ++callCount;
       const expectedMessage = 'I failed badly.';
       if (error.message !== expectedMessage) {
-        throw Error(`Expected '${expectedMessage}', but was ${error.message}.`);
+        throw new Error(
+          `Expected '${expectedMessage}', but was ${error.message}.`,
+        );
       }
     }
 

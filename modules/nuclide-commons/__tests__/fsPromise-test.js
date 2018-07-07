@@ -12,7 +12,6 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
 import temp from 'temp';
 import nuclideUri from '../nuclideUri';
 import fsPromise from '../fsPromise';

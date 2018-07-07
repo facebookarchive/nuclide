@@ -118,7 +118,7 @@ describe('ObservablePool', () => {
     let error;
     pool
       .schedule(() => {
-        throw Error('test');
+        throw new Error('test');
       })
       .subscribe({
         error(err) {

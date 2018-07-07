@@ -117,7 +117,7 @@ describe('formatLeadingComment', () => {
   });
 
   it('strips asterisks', () => {
-    expect(formatLeadingComment(` * Hello!`)).toBe('Hello!');
+    expect(formatLeadingComment(' * Hello!')).toBe('Hello!');
   });
 
   it('removes trailing blank lines', () => {

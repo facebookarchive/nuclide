@@ -12,11 +12,7 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as HgService from '../lib/HgService';
 import * as hgUtils from '../lib/hg-utils';
-import {
-  AmendMode,
-  StatusCodeId,
-  MergeConflictStatus,
-} from '../lib/hg-constants';
+import {AmendMode, MergeConflictStatus} from '../lib/hg-constants';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
@@ -89,10 +85,6 @@ describe('HgService', () => {
   const hgService = HgService;
   const TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
   const PATH_1 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test1.js');
-  const PATH_2 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test2.js');
-  function relativize(filePath: string): string {
-    return nuclideUri.relative(TEST_WORKING_DIRECTORY, filePath);
-  }
 
   describe('::createBookmark', () => {
     const BOOKMARK_NAME = 'fakey456';

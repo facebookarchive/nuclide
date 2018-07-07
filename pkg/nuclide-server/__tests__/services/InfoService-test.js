@@ -33,5 +33,5 @@ describe('InfoService', () => {
     expect(version).toBe(getVersion());
   });
 
-  afterEach(async () => await testHelper.stop());
+  afterEach(async () => testHelper.stop());
 });

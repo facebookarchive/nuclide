@@ -9,7 +9,7 @@
  * @format
  */
 
-import {Range, Point} from 'simple-text-buffer';
+import {Point} from 'simple-text-buffer';
 import invariant from 'assert';
 import fs from 'fs';
 import {Subject} from 'rxjs';
@@ -49,7 +49,7 @@ describe('ClangServer', () => {
     invariant(response);
     expect(
       JSON.stringify(response, null, 2).replace(
-        /file\"\:\s+.*test\.cpp/g,
+        /file":\s+.*test\.cpp/g,
         'file": "<REPLACED>',
       ),
     ).toMatchSnapshot();

@@ -43,7 +43,6 @@ describe.skip('Connection', () => {
   it('should create a connection to an already listening server', async () => {
     const connectionSpy = jest.fn();
     let localServer;
-    let connection: Connection;
 
     const port = TEST_PORT;
 
@@ -52,7 +51,7 @@ describe.skip('Connection', () => {
       localServer.listen({port}, resolve);
     });
 
-    connection = await connectionFactory.createConnection(
+    const connection: Connection = await connectionFactory.createConnection(
       TEST_TUNNEL_HOST,
       remoteSocket,
     );
@@ -70,7 +69,6 @@ describe.skip('Connection', () => {
     const remoteServerWriteSpy = jest.fn();
     const connectionSpy = jest.fn();
     let localServer: net.Server;
-    let connection: Connection;
 
     remoteServer.socket.on('data', remoteServerWriteSpy);
 
@@ -85,7 +83,7 @@ describe.skip('Connection', () => {
       localServer.listen({port}, resolve);
     });
 
-    connection = await connectionFactory.createConnection(
+    const connection: Connection = await connectionFactory.createConnection(
       TEST_TUNNEL_HOST,
       remoteSocket,
     );

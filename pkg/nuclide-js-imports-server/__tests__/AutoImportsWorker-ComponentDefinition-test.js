@@ -17,6 +17,7 @@ import passesGK from '../../commons-node/passesGK';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import type {ExportUpdateForFile} from '../src/lib/AutoImportsWorker';
+// eslint-disable-next-line
 const {getExportsForFile} = require('../src/lib/AutoImportsWorker');
 
 describe('getExportsForFile component definitions', () => {

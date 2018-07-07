@@ -15,7 +15,6 @@ import generate from '@babel/generator';
 import createProxyGenerator from '../lib/proxy-generator';
 import {parseServiceDefinition} from '../lib/service-parser';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import vm from 'vm';
 
 const {generateProxy, __test__} = createProxyGenerator(t, generate);
 

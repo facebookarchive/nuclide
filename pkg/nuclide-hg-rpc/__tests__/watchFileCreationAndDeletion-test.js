@@ -12,7 +12,6 @@
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {nextTick} from 'nuclide-commons/promise';
-import {Subject} from 'rxjs';
 import {getFilesInstantaneousExistance} from '../lib/watchFileCreationAndDeletion';
 
 describe('watchFileCreationAndDeletion', () => {
@@ -49,7 +48,7 @@ describe('watchFileCreationAndDeletion', () => {
             case qualifiedFileC:
               return fileCPromise;
           }
-          throw `unknown file ${filename} had existance checked`;
+          throw new Error(`unknown file ${filename} had existance checked`);
         });
 
       const files = [fileA, fileB, fileC];

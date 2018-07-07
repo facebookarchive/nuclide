@@ -13,7 +13,6 @@
 
 import {List, ImmutableSnapshotter, Map, Record} from '../immutable-snapshot';
 import Immutable from 'immutable';
-import performanceNow from 'nuclide-commons/performanceNow';
 
 const ITER = 1000;
 
@@ -22,40 +21,31 @@ describe('Benchmark', () => {
     const LIST_SIZE = 1000;
     // console.log(`Benchmark: List.push * ${LIST_SIZE} * ${ITER}`);
 
-    let startTime = performanceNow();
     for (let i = 0; i < ITER; i++) {
       let list = Immutable.List();
       for (let j = 0; j < LIST_SIZE; j++) {
         list = list.push(j);
       }
     }
-    // console.log('Immutable.List:', performanceNow() - startTime);
 
-    startTime = performanceNow();
     for (let i = 0; i < ITER; i++) {
       let list = List();
       for (let j = 0; j < LIST_SIZE; j++) {
         list = list.push(j);
       }
     }
-    // console.log('ImmutableSnapshot.List:', performanceNow() - startTime);
 
     // Snapshot testList so mutations start becoming tracked.
     const testList = List([0]);
     const snapshotter = new ImmutableSnapshotter();
     snapshotter.createDeltaSnapshot(testList);
 
-    startTime = performanceNow();
     for (let i = 0; i < ITER; i++) {
       let list = testList;
       for (let j = 0; j < LIST_SIZE; j++) {
         list = list.push(j);
       }
     }
-    // console.log(
-    //   'ImmutableSnapshot.List (with deltas):',
-    //   performanceNow() - startTime,
-    // );
   });
 });
 

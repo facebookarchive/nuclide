@@ -11,7 +11,6 @@
 
 jest.setTimeout(15000);
 
-import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ServiceTestHelper from '../../__mocks__/services/ServiceTestHelper';
 

@@ -568,6 +568,16 @@ module.exports = {
     'unicorn/prefer-add-event-listener': 0,
   },
 
+  overrides: [
+    {
+      files: '**/__tests__/**/*',
+      rules: {
+        'nuclide-internal/prefer-nuclide-uri': 0,
+        'nuclide-internal/modules-dependencies': 0,
+      },
+    },
+  ],
+
   plugins: [
     'dependencies',
     'flowtype',

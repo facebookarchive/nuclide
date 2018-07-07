@@ -144,26 +144,26 @@ describe('BuckService (test-project-with-failing-targets)', () => {
 
       {
         // Strip out flavors.
-        const resolved = await BuckService.buildRuleTypeFor(
+        const resolved2 = await BuckService.buildRuleTypeFor(
           buckRoot,
           '//:good_rule#',
         );
-        invariant(resolved != null);
-        expect(resolved.type).toBe('genrule');
-        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
-        expect(resolved.buildTarget.flavors[0]).toBe('');
+        invariant(resolved2 != null);
+        expect(resolved2.type).toBe('genrule');
+        expect(resolved2.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved2.buildTarget.flavors[0]).toBe('');
       }
 
       {
         // Strip out flavors.
-        const resolved = await BuckService.buildRuleTypeFor(
+        const resolved3 = await BuckService.buildRuleTypeFor(
           buckRoot,
           '//:good_rule#foo',
         );
-        invariant(resolved != null);
-        expect(resolved.type).toBe('genrule');
-        expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
-        expect(resolved.buildTarget.flavors[0]).toBe('foo');
+        invariant(resolved3 != null);
+        expect(resolved3.type).toBe('genrule');
+        expect(resolved3.buildTarget.qualifiedName).toBe('//:good_rule');
+        expect(resolved3.buildTarget.flavors[0]).toBe('foo');
       }
     });
 

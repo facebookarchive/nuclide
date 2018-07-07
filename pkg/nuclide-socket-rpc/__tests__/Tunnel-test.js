@@ -72,7 +72,6 @@ describe.skip('createTunnel', () => {
       cf,
     );
     const eventList = [];
-    let types;
 
     const subscription = events.refCount().subscribe({
       next: event => {
@@ -82,7 +81,7 @@ describe.skip('createTunnel', () => {
 
     await testConnectability(TEST_PORT);
     subscription.unsubscribe();
-    types = eventList.map(event => event.type);
+    const types = eventList.map(event => event.type);
     expect(types).toContain('server_started');
     expect(types).toContain('client_connected');
     expect(types).toContain('client_disconnected');
@@ -91,10 +90,9 @@ describe.skip('createTunnel', () => {
   it('should send replies back to the originating client', async done => {
     const message = 'HELLO WORLD';
     let response = null;
-    let echoServer;
 
     // start echo server
-    echoServer = net.createServer(socket => {
+    const echoServer = net.createServer(socket => {
       socket.pipe(socket);
     });
     await new Promise(resolve => {

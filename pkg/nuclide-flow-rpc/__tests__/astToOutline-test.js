@@ -9,10 +9,6 @@
  * @format
  */
 
-import type {OutlineTree} from 'atom-ide-ui';
-
-import {Point} from 'simple-text-buffer';
-
 import {astToOutline} from '../lib/astToOutline';
 
 import classASTOld from '../__mocks__/fixtures/class-ast-old.json';
