@@ -96,14 +96,13 @@ describe.skip('AutocompleteProvider', () => {
     await atom.packages.activatePackage('nuclide-autocomplete');
 
     // Insert some text...
-    let expectedUndoText;
     editor.setText(startingText);
     editor.setCursorBufferPosition(mainCursorPos);
     for (const secondaryCursor of secondaryCursorPos) {
       editor.addCursorAtBufferPosition(secondaryCursor);
     }
     editor.insertText('_');
-    expectedUndoText = editor.getText();
+    const expectedUndoText = editor.getText();
     await nextTick();
     atom.commands.dispatch(
       atom.views.getView(editor),
@@ -310,7 +309,7 @@ describe('updateAutocompleteResultRanges', () => {
   }
 
   it('updates ranges that match', async () =>
-    await withEditor(editor => {
+    withEditor(editor => {
       expect(
         updateAutocompleteResultRanges(
           makeRequest([0, 3], editor),
@@ -321,7 +320,7 @@ describe('updateAutocompleteResultRanges', () => {
     }));
 
   it("ignores ranges that don't", async () =>
-    await withEditor(editor => {
+    withEditor(editor => {
       expect(
         updateAutocompleteResultRanges(
           makeRequest([0, 3], editor),
@@ -332,7 +331,7 @@ describe('updateAutocompleteResultRanges', () => {
     }));
 
   it('can handle some elements without text edits', async () =>
-    await withEditor(editor => {
+    withEditor(editor => {
       expect(
         updateAutocompleteResultRanges(
           makeRequest([0, 3], editor),
@@ -343,7 +342,7 @@ describe('updateAutocompleteResultRanges', () => {
     }));
 
   it('can handle elements with multiple text edits', async () =>
-    await withEditor(editor => {
+    withEditor(editor => {
       expect(
         updateAutocompleteResultRanges(
           makeRequest([0, 3], editor),
@@ -368,7 +367,7 @@ describe('updateAutocompleteResultRanges', () => {
     }));
 
   it('works with interleaved requests when caching is enabled', async () =>
-    await withEditor(async editor => {
+    withEditor(async editor => {
       function makeResponsePromise(
         range: ?atom$Range,
       ): {promise: Promise<?AutocompleteResult>, resolve: () => void} {

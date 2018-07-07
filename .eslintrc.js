@@ -570,10 +570,11 @@ module.exports = {
 
   overrides: [
     {
-      files: '**/__tests__/**/*',
+      files: '**/__{atom_,}tests__/**/*',
       rules: {
         'nuclide-internal/prefer-nuclide-uri': 0,
         'nuclide-internal/modules-dependencies': 0,
+        'nuclide-internal/atom-apis': 0,
       },
     },
   ],

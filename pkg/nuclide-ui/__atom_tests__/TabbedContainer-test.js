@@ -44,7 +44,7 @@ describe('TabbedContainer', () => {
     }
     const tabbedContainer = renderTabbedContainer(
       ['tab1', 'tab2'],
-      [<Child1 />, <Child1 />],
+      [<Child1 key={1} />, <Child1 key={2} />],
     );
     expect(tabbedContainer.state.activeTabName).toBe('tab1');
 
@@ -59,7 +59,7 @@ describe('TabbedContainer', () => {
     expect(tabbedContainer.state.activeTabName).toBe('tab2');
 
     // now the second tab's content becomes null
-    renderTabbedContainer(['tab1', 'tab2'], [<Child1 />, null]);
+    renderTabbedContainer(['tab1', 'tab2'], [<Child1 key={1} />, null]);
     // we should be put onto the first tab
     expect(tabbedContainer.state.activeTabName).toBe('tab1');
 

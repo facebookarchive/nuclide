@@ -26,8 +26,8 @@ describe('QuickOpenHelpers', () => {
   }: any);
 
   beforeEach(() => {
-    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
     jest
+      // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
       .spyOn(require('../../nuclide-hack/lib/config'), 'getConfig')
       .mockReturnValue({
         hhClientPath: 'hh_client',

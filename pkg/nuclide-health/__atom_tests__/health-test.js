@@ -38,7 +38,6 @@ describe.skip('Health', () => {
   });
 
   it('contains stats after its first refresh', async () => {
-    let element;
     let pane;
     let item;
     openHealthPane();
@@ -51,7 +50,7 @@ describe.skip('Health', () => {
     });
     invariant(item != null);
     expect(item.getTitle()).toEqual('Health');
-    element = atom.views.getView(item);
+    const element = atom.views.getView(item);
     await waitsFor(() => element.innerHTML.trim() !== '');
     expect(element.innerHTML).toContain('Stats');
     expect(element.innerHTML).toContain('CPU');

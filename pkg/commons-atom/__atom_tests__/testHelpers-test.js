@@ -15,7 +15,6 @@ import {dispatchKeyboardEvent} from '../testHelpers';
 import invariant from 'assert';
 
 const attachToDom = el => {
-  const workspaceElement = atom.views.getView(atom.workspace);
   // Attach the workspace to the DOM so focus can be determined in tests below.
   const testContainer = document.createElement('div');
   invariant(document.body);

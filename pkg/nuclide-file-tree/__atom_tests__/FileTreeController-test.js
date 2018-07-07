@@ -14,7 +14,6 @@ import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import path from 'path';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
@@ -24,8 +23,6 @@ import * as Selectors from '../lib/FileTreeSelectors';
 describe('FileTreeController', () => {
   const store = new FileTreeStore();
   const actions = new FileTreeActions(store);
-
-  let workspaceElement;
 
   function getNode(rootKey: string, nodeKey: string): FileTreeNode {
     const node = Selectors.getNode(store, rootKey, nodeKey);

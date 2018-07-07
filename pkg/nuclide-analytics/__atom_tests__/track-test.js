@@ -23,7 +23,6 @@ import {
 } from 'nuclide-commons/analytics';
 import service from '../lib/track';
 import invariant from 'assert';
-import waitsFor from '../../../jest/waits_for';
 
 const sleep = n => new Promise(r => setTimeout(r, n));
 

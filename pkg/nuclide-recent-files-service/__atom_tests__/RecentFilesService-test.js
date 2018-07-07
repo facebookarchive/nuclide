@@ -9,7 +9,6 @@
  * @format
  */
 
-import invariant from 'assert';
 import fsPromise from 'nuclide-commons/fsPromise';
 import AsyncStorage from 'idb-keyval';
 

@@ -91,16 +91,14 @@ describe('LinkTreeLinter', () => {
 
     expect(messages.length).toBe(1);
     {
-      const message = messages[0];
-      expect(message.location.file).toBe(file2);
+      const message1 = messages[0];
+      expect(message1.location.file).toBe(file2);
     }
 
-    {
-      // Finishing the Buck task should also dismiss the message.
-      // $FlowFixMe
-      onDidCompleteTask({buildTarget: TEST_TARGET});
-      expect(messages).toEqual([]);
-    }
+    // Finishing the Buck task should also dismiss the message.
+    // $FlowFixMe
+    onDidCompleteTask({buildTarget: TEST_TARGET});
+    expect(messages).toEqual([]);
     mockCwdApi.getCwd.mockRestore();
     await atom.workspace.open(file1);
     await sleep(1000); // debounce delay

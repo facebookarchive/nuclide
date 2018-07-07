@@ -26,7 +26,6 @@ describe.skip('SettingsPaneItem', () => {
     const settingsViewEl = document.querySelector('.settings-view');
     invariant(settingsViewEl != null);
 
-    console.log(settingsViewEl.innerHTML);
     expect(settingsViewEl.contains(document.activeElement)).toBe(true);
   });
 });

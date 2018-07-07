@@ -6,5 +6,4 @@
 **/build/**
 
 # TODO(dabramov): these have lint errors - fix them
-**/__atom_tests__/**
 **/__mocks__/**

@@ -19,7 +19,6 @@ import updateKeymap from '../lib/updateKeymap';
 describe('updateKeymap', () => {
   it('updates a user keymap', async () => {
     let notification;
-    let updatePromise;
     const {path} = temp.openSync({suffix: 'test.cson'});
 
     fs.writeFileSync(path, '"alt-w": "command"\n"ctrl-w": "command-1"');
@@ -31,7 +30,7 @@ describe('updateKeymap', () => {
         return {dismiss: () => {}};
       });
 
-    updatePromise = updateKeymap(path, {
+    const updatePromise = updateKeymap(path, {
       command: 'new-command',
       'command-1': 'new-command-1',
     });
