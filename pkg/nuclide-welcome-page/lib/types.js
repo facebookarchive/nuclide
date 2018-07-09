@@ -49,16 +49,10 @@ export type AppState = {
   isWelcomePageVisible: boolean,
 };
 
-export type SerializedState = {
-  hiddenTopics: Array<string>,
-};
-
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
-  // subscribe isn't present in the version of Store provided to Epics
-  // for some reason, uncommenting it (even making it optional) makes flow upset
-  // subscribe(listener: () => mixed): () => void,
+  subscribe(listener: () => mixed): () => void,
 };
 
 export type AddWelcomePageAction = {

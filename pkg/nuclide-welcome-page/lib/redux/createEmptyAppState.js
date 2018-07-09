@@ -9,14 +9,12 @@
  * @format
  */
 
-import type {AppState, SerializedState} from '../types';
+import type {AppState} from '../types';
 
 export function createEmptyAppState(
-  serializedState: ?SerializedState,
+  hiddenTopics: Set<string>,
   overriddenDefaults: Object = {},
 ): AppState {
-  const hiddenTopics =
-    serializedState == null ? new Set() : new Set(serializedState.hiddenTopics);
   return {
     welcomePages: new Map(),
     hiddenTopics,

@@ -11,7 +11,6 @@
 
 import type {
   WelcomePage,
-  SerializedState,
   Store,
   WelcomePageApi,
   ShowPageOptions,
@@ -24,6 +23,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createStore} from 'redux';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {getHiddenTopics, setHiddenTopics} from './config';
 import * as Actions from './redux/Actions';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import rootReducer from './redux/rootReducer';
@@ -39,13 +39,14 @@ class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
 
-  constructor(serializedState: ?SerializedState) {
-    this._store = createStore(
-      rootReducer,
-      createEmptyAppState(serializedState),
-    );
+  constructor() {
+    const hiddenTopics = getHiddenTopics();
+    this._store = createStore(rootReducer, createEmptyAppState(hiddenTopics));
     this._disposables = new UniversalDisposable(
       this._registerDisplayCommandAndOpener(),
+      this._store.subscribe(() => {
+        setHiddenTopics(this._store.getState().hiddenTopics);
+      }),
     );
   }
 
@@ -112,12 +113,6 @@ class Activation {
       this._store.dispatch(Actions.setShowOne(topic));
       goToLocation(WELCOME_PAGE_VIEW_URI);
     }
-  }
-
-  serialize(): SerializedState {
-    return {
-      hiddenTopics: Array.from(this._store.getState().hiddenTopics),
-    };
   }
 }
 
