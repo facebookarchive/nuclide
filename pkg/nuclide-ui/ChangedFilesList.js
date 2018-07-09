@@ -83,6 +83,11 @@ export function computeDisplayPaths(
 }
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
+const GENERATED_TYPE_PRIORITY: Array<GeneratedFileType> = [
+  'manual',
+  'partial',
+  'generated',
+];
 
 type Props = {
   rootPath: NuclideUri,
@@ -153,11 +158,19 @@ export default class ChangedFilesList extends React.Component<Props, State> {
           generatedType,
         };
       })
-      .sort((change1, change2) =>
-        nuclideUri
+      .sort((change1, change2) => {
+        // Generated files always go after manually edited files
+        if (change1.generatedType !== change2.generatedType) {
+          return (
+            GENERATED_TYPE_PRIORITY.indexOf(change1.generatedType) -
+            GENERATED_TYPE_PRIORITY.indexOf(change2.generatedType)
+          );
+        }
+
+        return nuclideUri
           .basename(change1.filePath)
-          .localeCompare(nuclideUri.basename(change2.filePath)),
-      );
+          .localeCompare(nuclideUri.basename(change2.filePath));
+      });
 
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
