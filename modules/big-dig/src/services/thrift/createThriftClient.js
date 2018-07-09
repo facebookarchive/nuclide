@@ -10,7 +10,11 @@
  * @format
  */
 
-import type {ThriftServiceConfig, ThriftClient, Subscription} from './types';
+import type {
+  ThriftServiceConfig,
+  ThriftClient,
+  ThrifClientSubscription,
+} from './types';
 
 import thrift from 'thrift';
 import {getTransport, getProtocol} from './config-utils';
@@ -18,14 +22,12 @@ import {getTransport, getProtocol} from './config-utils';
 export class ThriftClientClass {
   _status: 'CONNECTED' | 'CLOSED_MANUALLY' | 'CLOSED_BY_CONNECTION';
   _client: Object;
-  _clientId: string;
   _connection: Object;
 
-  constructor(clientId: string, connection: Object, client: Object) {
+  constructor(connection: Object, client: Object) {
     this._status = 'CONNECTED';
     this._connection = connection;
     this._client = client;
-    this._clientId = clientId;
 
     this._connection.on('end', () => {
       if (this._status === 'CONNECTED') {
@@ -55,22 +57,17 @@ export class ThriftClientClass {
     }
   }
 
-  onConnectionEnd(handler: (clientId: string) => void): Subscription {
-    // need to send back clientId so the caller knows which client this is
-    const cb = () => {
-      handler(this._clientId);
-    };
-    this._connection.on('end', cb);
+  onConnectionEnd(handler: () => void): ThrifClientSubscription {
+    this._connection.on('end', handler);
     return {
       unsubscribe: () => {
-        this._connection.removeListener('end', cb);
+        this._connection.removeListener('end', handler);
       },
     };
   }
 }
 
 export async function createThriftClient(
-  clientId: string,
   serviceConfig: ThriftServiceConfig,
   port: number,
 ): Promise<ThriftClient> {
@@ -79,5 +76,5 @@ export async function createThriftClient(
     protocol: getProtocol(serviceConfig),
   });
   const client = thrift.createClient(serviceConfig.thriftService, connection);
-  return new ThriftClientClass(clientId, connection, client);
+  return new ThriftClientClass(connection, client);
 }

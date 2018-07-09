@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {ThriftServiceConfig, Subscription} from '../types';
+import type {ThriftServiceConfig, ThrifClientSubscription} from '../types';
 
 import {Observable, Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
@@ -54,12 +54,8 @@ export class MockedThriftClientClass {
     this._connection.end();
   }
 
-  onConnectionEnd(handler: (clientId: string) => void): Subscription {
-    // need to send back clientId so the caller knows which client this is
-    const cb = () => {
-      handler(this._clientId);
-    };
-    this._connection.on('end', cb);
+  onConnectionEnd(handler: () => void): ThrifClientSubscription {
+    this._connection.on('end', handler);
     return {
       unsubscribe: () => {},
     };

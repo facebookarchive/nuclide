@@ -203,13 +203,12 @@ export class ThriftClientManager {
     }
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
     const client = await createThriftClient(
-      clientId,
       serviceConfig,
       tunnel.getLocalPort(),
     );
     client.onConnectionEnd(
-      (id => {
-        this._handleClientCloseEvent(id);
+      (() => {
+        this._handleClientCloseEvent(clientId);
       }: ClientCloseCallBack),
     );
     this._clientMap.set(clientId, client);

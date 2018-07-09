@@ -85,12 +85,12 @@ export type ThriftMessage = {
   payload: ThriftMessagePayload,
 };
 
-export type Subscription = {unsubscribe: () => void};
+export type ThrifClientSubscription = {unsubscribe: () => void};
 
-export type ClientCloseCallBack = (clientId: string) => void;
+export type ClientCloseCallBack = () => void;
 
 export interface ThriftClient {
   getClient<T>(): T;
   close(): void;
-  onConnectionEnd(handler: ClientCloseCallBack): Subscription;
+  onConnectionEnd(handler: ClientCloseCallBack): ThrifClientSubscription;
 }
