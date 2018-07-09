@@ -16,65 +16,48 @@ import findHgRepository from '../lib/hg-repository';
 
 describe('findHgRepository', () => {
   it('finds an hg repo without an hgrc', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture(
-        'hg-repo',
-        new Map([['a/b/.hg/fakefile', ''], ['a/b/c/d/e', '']]),
-      );
-      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
-        {
-          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-          originURL: null,
-          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-        },
-      );
-    })();
+    const fixturePath = await generateFixture(
+      'hg-repo',
+      new Map([['a/b/.hg/fakefile', ''], ['a/b/c/d/e', '']]),
+    );
+    expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual({
+      repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+      originURL: null,
+      workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+    });
   });
 
   it('finds an hg repo with an hgrc', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture(
-        'hg-repo',
-        new Map([
-          ['a/b/.hg/hgrc', '[paths]\ndefault = foo'],
-          ['a/b/c/d/e', ''],
-        ]),
-      );
-      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
-        {
-          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-          originURL: 'foo',
-          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-        },
-      );
-    })();
+    const fixturePath = await generateFixture(
+      'hg-repo',
+      new Map([['a/b/.hg/hgrc', '[paths]\ndefault = foo'], ['a/b/c/d/e', '']]),
+    );
+    expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual({
+      repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+      originURL: 'foo',
+      workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+    });
   });
 
   it('finds the first hg repo', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture(
-        'hg-repo',
-        new Map([['a/b/.hg/hgrc', ''], ['a/.hg/hgrc', ''], ['a/b/c/d/e', '']]),
-      );
-      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
-        {
-          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-          originURL: null,
-          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-        },
-      );
-    })();
+    const fixturePath = await generateFixture(
+      'hg-repo',
+      new Map([['a/b/.hg/hgrc', ''], ['a/.hg/hgrc', ''], ['a/b/c/d/e', '']]),
+    );
+    expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual({
+      repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+      originURL: null,
+      workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+    });
   });
 
   it('works with no hg repo', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture(
-        'hg-repo',
-        new Map([['a/b/.git/fakefile', ''], ['a/b/c/d/e', '']]),
-      );
-      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toBe(
-        null,
-      );
-    })();
+    const fixturePath = await generateFixture(
+      'hg-repo',
+      new Map([['a/b/.git/fakefile', ''], ['a/b/c/d/e', '']]),
+    );
+    expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toBe(
+      null,
+    );
   });
 });

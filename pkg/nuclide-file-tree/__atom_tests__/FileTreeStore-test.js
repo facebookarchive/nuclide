@@ -352,16 +352,14 @@ describe('FileTreeStore', () => {
   });
 
   it('obeys the hideIgnoredNames setting', async () => {
-    await (async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setIgnoredNames(['foo.*']);
-      actions.setHideIgnoredNames(false);
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setIgnoredNames(['foo.*']);
+    actions.setHideIgnoredNames(false);
 
-      await loadChildKeys(dir1, dir1);
+    await loadChildKeys(dir1, dir1);
 
-      expect(shownChildren(dir1, dir1).length).toBe(1);
-    })();
+    expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
   describe('recovering from failed subscriptions', () => {
@@ -409,54 +407,48 @@ describe('FileTreeStore', () => {
   });
 
   it('omits vcs-excluded paths', async () => {
-    await (async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setExcludeVcsIgnoredPaths(true);
-      actions.setHideVcsIgnoredPaths(true);
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setExcludeVcsIgnoredPaths(true);
+    actions.setHideVcsIgnoredPaths(true);
 
-      const mockRepo = new MockRepository();
-      store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
-      });
+    const mockRepo = new MockRepository();
+    store._updateConf(conf => {
+      conf.reposByRoot[dir1] = (mockRepo: any);
+    });
 
-      await loadChildKeys(dir1, dir1);
-      expect(shownChildren(dir1, dir1).length).toBe(0);
-    })();
+    await loadChildKeys(dir1, dir1);
+    expect(shownChildren(dir1, dir1).length).toBe(0);
   });
 
   it('includes vcs-excluded paths when told to', async () => {
-    await (async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setExcludeVcsIgnoredPaths(false);
-      actions.setHideVcsIgnoredPaths(false);
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setExcludeVcsIgnoredPaths(false);
+    actions.setHideVcsIgnoredPaths(false);
 
-      const mockRepo = new MockRepository();
-      store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
-      });
+    const mockRepo = new MockRepository();
+    store._updateConf(conf => {
+      conf.reposByRoot[dir1] = (mockRepo: any);
+    });
 
-      await loadChildKeys(dir1, dir1);
-      expect(shownChildren(dir1, dir1).length).toBe(1);
-    })();
+    await loadChildKeys(dir1, dir1);
+    expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
   it('includes vcs-excluded paths when explicitly told to', async () => {
-    await (async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setExcludeVcsIgnoredPaths(true);
-      actions.setHideVcsIgnoredPaths(false);
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setExcludeVcsIgnoredPaths(true);
+    actions.setHideVcsIgnoredPaths(false);
 
-      const mockRepo = new MockRepository();
-      store._updateConf(conf => {
-        conf.reposByRoot[dir1] = (mockRepo: any);
-      });
+    const mockRepo = new MockRepository();
+    store._updateConf(conf => {
+      conf.reposByRoot[dir1] = (mockRepo: any);
+    });
 
-      await loadChildKeys(dir1, dir1);
-      expect(shownChildren(dir1, dir1).length).toBe(1);
-    })();
+    await loadChildKeys(dir1, dir1);
+    expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
   it('expands deep nested structure of the node', async () => {

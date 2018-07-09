@@ -18,33 +18,31 @@ describe('loadServicesConfig()', () => {
   let configPath: ?string;
 
   beforeEach(async () => {
-    await (async () => {
-      const services3json = [
-        {
-          implementation: './FooService.js',
-          name: 'FooService',
-        },
-        {
-          definition: './BarServiceDefinition.js',
-          implementation: './BarServiceImplementation.js',
-          name: 'BarService',
-        },
-      ];
-      const fbservices3json = [
-        {
-          implementation: './BazService.js',
-          name: 'BazService',
-          preserveFunctionNames: true,
-        },
-      ];
-      configPath = await generateFixture(
-        'services',
-        new Map([
-          ['services-3.json', JSON.stringify(services3json)],
-          ['fb-services-3.json', JSON.stringify(fbservices3json)],
-        ]),
-      );
-    })();
+    const services3json = [
+      {
+        implementation: './FooService.js',
+        name: 'FooService',
+      },
+      {
+        definition: './BarServiceDefinition.js',
+        implementation: './BarServiceImplementation.js',
+        name: 'BarService',
+      },
+    ];
+    const fbservices3json = [
+      {
+        implementation: './BazService.js',
+        name: 'BazService',
+        preserveFunctionNames: true,
+      },
+    ];
+    configPath = await generateFixture(
+      'services',
+      new Map([
+        ['services-3.json', JSON.stringify(services3json)],
+        ['fb-services-3.json', JSON.stringify(fbservices3json)],
+      ]),
+    );
   });
 
   it('resolves absolute paths', () => {

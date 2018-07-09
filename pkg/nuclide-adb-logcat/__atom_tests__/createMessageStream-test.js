@@ -25,26 +25,24 @@ describe('createMessageStream', () => {
             : original(name),
       );
 
-    await (async () => {
-      const output = Observable.from([
-        '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
-        'Prepared write state in 0ms',
-        '',
-        '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
-        'Prepared write state in 0ms',
-        '',
-      ]);
+    const output = Observable.from([
+      '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
+      'Prepared write state in 0ms',
+      '',
+      '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
+      'Prepared write state in 0ms',
+      '',
+    ]);
 
-      const messages = await createMessageStream(output)
-        .map(message => message.text)
-        .toArray()
-        .toPromise();
+    const messages = await createMessageStream(output)
+      .map(message => message.text)
+      .toArray()
+      .toPromise();
 
-      expect(messages.length).toBe(2);
-      messages.forEach(message => {
-        expect(message).toBe('Prepared write state in 0ms');
-      });
-    })();
+    expect(messages.length).toBe(2);
+    messages.forEach(message => {
+      expect(message).toBe('Prepared write state in 0ms');
+    });
   });
 
   it('only includes messages with whitelisted tags', async () => {
@@ -58,23 +56,21 @@ describe('createMessageStream', () => {
             : original(name),
       );
 
-    await (async () => {
-      const output = Observable.from([
-        '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
-        'Bad',
-        '',
-        '[ 01-14 17:15:01.003   640:  654 I/ExampleTag ]',
-        'Good',
-        '',
-      ]);
+    const output = Observable.from([
+      '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
+      'Bad',
+      '',
+      '[ 01-14 17:15:01.003   640:  654 I/ExampleTag ]',
+      'Good',
+      '',
+    ]);
 
-      const messages = await createMessageStream(output)
-        .map(message => message.text)
-        .toArray()
-        .toPromise();
+    const messages = await createMessageStream(output)
+      .map(message => message.text)
+      .toArray()
+      .toPromise();
 
-      expect(messages).toEqual(['Good']);
-    })();
+    expect(messages).toEqual(['Good']);
   });
 
   it('shows an error (once) if the regular expression is invalid', async () => {
@@ -89,17 +85,15 @@ describe('createMessageStream', () => {
             : original(name),
       );
 
-    await (async () => {
-      const output = Observable.from([
-        '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
-        'Bad',
-        '',
-        '[ 01-14 17:15:01.003   640:  654 I/ExampleTag ]',
-        'Good',
-        '',
-      ]);
-      await createMessageStream(output).toPromise();
-      expect(atom.notifications.addError.mock.calls.length).toBe(1);
-    })();
+    const output = Observable.from([
+      '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
+      'Bad',
+      '',
+      '[ 01-14 17:15:01.003   640:  654 I/ExampleTag ]',
+      'Good',
+      '',
+    ]);
+    await createMessageStream(output).toPromise();
+    expect(atom.notifications.addError.mock.calls.length).toBe(1);
   });
 });

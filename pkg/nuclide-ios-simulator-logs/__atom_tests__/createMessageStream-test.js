@@ -28,34 +28,30 @@ describe('createMessageStream', () => {
             ? Observable.of('.*')
             : original(name),
       );
-    await (async () => {
-      const output = Observable.from(OUTPUT_LINES);
-      const messages = await createMessageStream(output)
-        .map(message => message.text)
-        .toArray()
-        .toPromise();
-      expect(messages).toEqual(['Message 1', 'Message 2']);
-    })();
+    const output = Observable.from(OUTPUT_LINES);
+    const messages = await createMessageStream(output)
+      .map(message => message.text)
+      .toArray()
+      .toPromise();
+    expect(messages).toEqual(['Message 1', 'Message 2']);
   });
 
   it('only includes messages with whitelisted tags', async () => {
-    await (async () => {
-      const original = featureConfig.observeAsStream.bind(featureConfig);
-      jest
-        .spyOn(featureConfig, 'observeAsStream')
-        .mockImplementation(
-          name =>
-            name === 'nuclide-ios-simulator-logs.whitelistedTags'
-              ? Observable.of('X|ExampleTag')
-              : original(name),
-        );
-      const output = Observable.from(OUTPUT_LINES);
-      const messages = await createMessageStream(output)
-        .map(message => message.text)
-        .toArray()
-        .toPromise();
-      expect(messages).toEqual(['Message 2']);
-    })();
+    const original = featureConfig.observeAsStream.bind(featureConfig);
+    jest
+      .spyOn(featureConfig, 'observeAsStream')
+      .mockImplementation(
+        name =>
+          name === 'nuclide-ios-simulator-logs.whitelistedTags'
+            ? Observable.of('X|ExampleTag')
+            : original(name),
+      );
+    const output = Observable.from(OUTPUT_LINES);
+    const messages = await createMessageStream(output)
+      .map(message => message.text)
+      .toArray()
+      .toPromise();
+    expect(messages).toEqual(['Message 2']);
   });
 
   it('shows an error (once) if the regular expression is invalid', async () => {
@@ -70,11 +66,9 @@ describe('createMessageStream', () => {
             : original(name),
       );
 
-    await (async () => {
-      const output = Observable.from(OUTPUT_LINES);
-      await createMessageStream(output).toPromise();
-      expect(atom.notifications.addError.mock.calls.length).toBe(1);
-    })();
+    const output = Observable.from(OUTPUT_LINES);
+    await createMessageStream(output).toPromise();
+    expect(atom.notifications.addError.mock.calls.length).toBe(1);
   });
 });
 

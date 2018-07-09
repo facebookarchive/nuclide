@@ -78,89 +78,79 @@ describe('RpcProcess', () => {
   });
 
   it('should be able to handle multiple calls', async () => {
-    await (async () => {
-      const service = await getService();
-      const responses = await Promise.all([
-        service.a(),
-        service.b(),
-        service.c(),
-        service.d(),
-      ]);
-      expect(responses.length).toBe(4);
-      expect(responses).toEqual([
-        {hello: 'Hello World'},
-        {hello: 'Hello World'},
-        {hello: 'Hello World'},
-        {hello: 'Hello World'},
-      ]);
-    })();
+    const service = await getService();
+    const responses = await Promise.all([
+      service.a(),
+      service.b(),
+      service.c(),
+      service.d(),
+    ]);
+    expect(responses.length).toBe(4);
+    expect(responses).toEqual([
+      {hello: 'Hello World'},
+      {hello: 'Hello World'},
+      {hello: 'Hello World'},
+      {hello: 'Hello World'},
+    ]);
   });
 
   it('should reject pending calls upon error', async () => {
-    await (async () => {
-      try {
-        await (await getService()).error();
-        invariant(false, 'Fail - expected promise to reject');
-      } catch (e) {
-        expect(e).toEqual('Command to error received');
-      }
-    })();
+    try {
+      await (await getService()).error();
+      invariant(false, 'Fail - expected promise to reject');
+    } catch (e) {
+      expect(e).toEqual('Command to error received');
+    }
   });
 
   it('should reject pending calls upon the child process exiting', async () => {
-    await (async () => {
-      const message = server
-        .observeExitMessage()
-        .take(1)
-        .toPromise();
-      try {
-        await (await getService()).kill();
-        invariant(false, 'Fail - expected promise to reject');
-      } catch (e) {
-        expect(
-          e.message.startsWith(
-            'Remote Error: Connection Closed processing message',
-          ),
-        ).toBeTruthy();
-      }
-      expect((await message).exitCode).toBe(0);
-    })();
+    const message = server
+      .observeExitMessage()
+      .take(1)
+      .toPromise();
+    try {
+      await (await getService()).kill();
+      invariant(false, 'Fail - expected promise to reject');
+    } catch (e) {
+      expect(
+        e.message.startsWith(
+          'Remote Error: Connection Closed processing message',
+        ),
+      ).toBeTruthy();
+    }
+    expect((await message).exitCode).toBe(0);
   });
 
   it('should recover gracefully after the child process exits', async () => {
-    await (async () => {
-      try {
-        await (await getService()).kill();
-        invariant(false, 'Fail - expected promise to reject');
-      } catch (e) {
-        // Ignore.
-      }
+    try {
+      await (await getService()).kill();
+      invariant(false, 'Fail - expected promise to reject');
+    } catch (e) {
+      // Ignore.
+    }
 
-      // Subsequent request should process successfully, meaning the killed
-      // child process has been restarted.
-      const response = await (await getService()).polarbears();
-      expect(response).toEqual({
-        hello: 'Hello World',
-      });
-      expect(server.isDisposed()).toBe(false);
-    })();
+    // Subsequent request should process successfully, meaning the killed
+    // child process has been restarted.
+    const response = await (await getService()).polarbears();
+    expect(response).toEqual({
+      hello: 'Hello World',
+    });
+    expect(server.isDisposed()).toBe(false);
   });
 
   it('dispose should kill the process', async () => {
-    await (async () => {
-      await getService();
-      const process = server._process;
-      invariant(process != null);
-      const spy = jasmine.createSpy();
-      process.on('exit', spy);
-      server.dispose();
-      waitsFor(() => spy.wasCalled);
+    await getService();
+    const process = server._process;
+    invariant(process != null);
+    const spy = jasmine.createSpy();
+    process.on('exit', spy);
+    server.dispose();
+    waitsFor(() => spy.wasCalled);
 
-      const exitSpy = jasmine.createSpy();
-      server.observeExitMessage().subscribe(() => exitSpy());
-      // Manual dispose should not trigger any side effects.
-      expect(exitSpy).not.toHaveBeenCalled();
-    })();
+    const exitSpy = jasmine.createSpy();
+    server.observeExitMessage().subscribe(() => exitSpy());
+    // Manual dispose should not trigger any side effects.
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 
   it('should respond to dispose immediately if the process is created asynchronously', async () => {

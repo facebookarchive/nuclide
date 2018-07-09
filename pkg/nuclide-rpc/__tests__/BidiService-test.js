@@ -54,16 +54,14 @@ describe('BidiService', () => {
   });
 
   it('Test calls from server back to client', async () => {
-    await (async () => {
-      const i1 = new I1();
-      const i2 = new I2();
+    const i1 = new I1();
+    const i2 = new I2();
 
-      const r1 = await service.f('call1', i1);
-      const r2 = await service.f('call2', i2);
+    const r1 = await service.f('call1', i1);
+    const r2 = await service.f('call2', i2);
 
-      expect(r1).toBe('I1:call1');
-      expect(r2).toBe('I2:call2');
-    })();
+    expect(r1).toBe('I1:call1');
+    expect(r2).toBe('I2:call2');
   });
 
   afterEach(() => testHelper.stop());

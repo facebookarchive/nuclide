@@ -66,15 +66,13 @@ describe('HyperclickProvider', () => {
 
   describe('parseLoadTarget', () => {
     it('resolves a path for //pkg/subpkg:ext.bzl', async () => {
-      await (async () => {
-        const target = await resolveLoadTargetPath(
-          (['//pkg/subpkg:ext.bzl', '', '//pkg/subpkg', 'ext.bzl']: Array<
-            string,
-          >),
-          projectPath,
-        );
-        expect(target).toEqual(projectPath + 'pkg/subpkg/ext.bzl');
-      })();
+      const target = await resolveLoadTargetPath(
+        (['//pkg/subpkg:ext.bzl', '', '//pkg/subpkg', 'ext.bzl']: Array<
+          string,
+        >),
+        projectPath,
+      );
+      expect(target).toEqual(projectPath + 'pkg/subpkg/ext.bzl');
     });
   });
 

@@ -72,27 +72,23 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     it('should return the location', async () => {
-      await (async () => {
-        line = 2;
-        column = 4;
-        // Flow uses 1-based indexing, Atom uses 0-based.
-        const result = await runWith({path: file, line: 5, start: 8});
-        invariant(result != null);
-        expect(result.definitions[0]).toEqual({
-          path: file,
-          position: new Point(4, 7),
-          language: 'Flow',
-        });
-      })();
+      line = 2;
+      column = 4;
+      // Flow uses 1-based indexing, Atom uses 0-based.
+      const result = await runWith({path: file, line: 5, start: 8});
+      invariant(result != null);
+      expect(result.definitions[0]).toEqual({
+        path: file,
+        position: new Point(4, 7),
+        language: 'Flow',
+      });
     });
 
     it('should return null if no location is found', async () => {
-      await (async () => {
-        line = 2;
-        column = 4;
-        expect(await runWith({})).toBe(null);
-        expect(flowRoot._process.execFlow).toHaveBeenCalled();
-      })();
+      line = 2;
+      column = 4;
+      expect(await runWith({})).toBe(null);
+      expect(flowRoot._process.execFlow).toHaveBeenCalled();
     });
   });
 
@@ -103,14 +99,12 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     it('should call flow status', async () => {
-      await (async () => {
-        await runWith([], file);
-        const flowArgs =
-          flowRoot._process.execFlow.mock.calls[
-            flowRoot._process.execFlow.mock.calls.length - 1
-          ][0];
-        expect(flowArgs[0]).toBe('status');
-      })();
+      await runWith([], file);
+      const flowArgs =
+        flowRoot._process.execFlow.mock.calls[
+          flowRoot._process.execFlow.mock.calls.length - 1
+        ][0];
+      expect(flowArgs[0]).toBe('status');
     });
   });
 
@@ -144,43 +138,33 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     it('should return the type on success', async () => {
-      await (async () => {
-        expect(await runWith('thisIsAType', 1, 1, 1, 4)).toEqual({
-          hint: [{type: 'snippet', value: 'thisIsAType'}],
-          range: new Range([0, 0], [0, 4]),
-        });
-      })();
+      expect(await runWith('thisIsAType', 1, 1, 1, 4)).toEqual({
+        hint: [{type: 'snippet', value: 'thisIsAType'}],
+        range: new Range([0, 0], [0, 4]),
+      });
     });
 
     it('should return null if the type is unknown', async () => {
-      await (async () => {
-        expect(await runWith('(unknown)', 1, 1, 1, 4)).toBe(null);
-      })();
+      expect(await runWith('(unknown)', 1, 1, 1, 4)).toBe(null);
     });
 
     it('should return null if the type is empty', async () => {
-      await (async () => {
-        expect(await runWith('', 1, 1, 1, 4)).toBe(null);
-      })();
+      expect(await runWith('', 1, 1, 1, 4)).toBe(null);
     });
 
     it('should return null on failure', async () => {
-      await (async () => {
-        expect(await runWithString('invalid json')).toBe(null);
-      })();
+      expect(await runWithString('invalid json')).toBe(null);
     });
 
     it('should return null if the flow process fails', async () => {
-      await (async () => {
-        fakeExecFlow = () => {
-          throw new Error('error');
-        };
-        // this causes some errors to get logged, but I don't think it's a big
-        // deal and I don't know how to mock a module
-        expect(
-          await flowRoot.typeHint(file, buffer, new Point(line, column)),
-        ).toBe(null);
-      })();
+      fakeExecFlow = () => {
+        throw new Error('error');
+      };
+      // this causes some errors to get logged, but I don't think it's a big
+      // deal and I don't know how to mock a module
+      expect(
+        await flowRoot.typeHint(file, buffer, new Point(line, column)),
+      ).toBe(null);
     });
   });
 
@@ -191,12 +175,10 @@ describe('FlowSingleProjectLanguageService', () => {
     let activatedManually: boolean = (undefined: any);
 
     beforeEach(async () => {
-      await (async () => {
-        prefix = '';
-        activatedManually = false;
-        resultNames = ['Foo', 'foo', 'Bar', 'BigLongNameOne', 'BigLongNameTwo'];
-        result = resultNames.map(name => ({name, type: 'foo'}));
-      })();
+      prefix = '';
+      activatedManually = false;
+      resultNames = ['Foo', 'foo', 'Bar', 'BigLongNameOne', 'BigLongNameTwo'];
+      result = resultNames.map(name => ({name, type: 'foo'}));
     });
 
     function run() {
@@ -235,27 +217,21 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     it('should not provide suggestions when no characters have been typed', async () => {
-      await (async () => {
-        expect(hasEqualElements(await getNameSet(), new Set())).toBe(true);
-      })();
+      expect(hasEqualElements(await getNameSet(), new Set())).toBe(true);
     });
 
     it('should always provide suggestions when activated manually', async () => {
       activatedManually = true;
-      await (async () => {
-        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
-          true,
-        );
-      })();
+      expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
+        true,
+      );
     });
 
     it('should always provide suggestions when the prefix contains .', async () => {
       prefix = '   .   ';
-      await (async () => {
-        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
-          true,
-        );
-      })();
+      expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
+        true,
+      );
     });
 
     it('should expose extra information about a function', async () => {
@@ -321,163 +297,152 @@ describe('FlowSingleProjectLanguageService', () => {
 // switch to Sets as long as toEqual (or similar) is extended to compare Sets structurally.
 describe('push diagnostics collation', () => {
   it('should clear all previous errors upon each message if we are not in a recheck', async () => {
-    await (async () => {
-      const messages = [
+    const messages = [
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('bar', '/path1'),
+          makeFakeFlowError('foo', '/path1'),
+        ),
+      },
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(),
+      },
+    ];
+    const expected: Array<Array<AbbreviatedResult>> = [
+      [],
+      [
         {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('bar', '/path1'),
-            makeFakeFlowError('foo', '/path1'),
-          ),
+          filePath: '/path1',
+          messages: [['bar', false], ['foo', false]],
         },
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(),
-        },
-      ];
-      const expected: Array<Array<AbbreviatedResult>> = [
-        [],
-        [
-          {
-            filePath: '/path1',
-            messages: [['bar', false], ['foo', false]],
-          },
-        ],
-        [{filePath: '/path1', messages: []}],
-      ];
-      const results = await getAbbreviatedResults(messages);
-      expect(results).toEqual(expected);
-    })();
+      ],
+      [{filePath: '/path1', messages: []}],
+    ];
+    const results = await getAbbreviatedResults(messages);
+    expect(results).toEqual(expected);
   });
 
   it('should accumulate errors during a recheck', async () => {
-    await (async () => {
-      const messages = [
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('foo', '/path1'),
-            makeFakeFlowError('bar', '/path2'),
-          ),
-        },
-        {kind: 'start-recheck'},
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(makeFakeFlowError('new', '/path1')),
-        },
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(makeFakeFlowError('asdf', '/path3')),
-        },
-        {kind: 'end-recheck'},
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('another new', '/path2'),
-            makeFakeFlowError('asdf', '/path3'),
-          ),
-        },
-      ];
-      const expected: Array<Array<AbbreviatedResult>> = [
-        [],
-        [
-          {filePath: '/path1', messages: [['foo', false]]},
-          {filePath: '/path2', messages: [['bar', false]]},
-        ],
-        [
-          {filePath: '/path1', messages: [['foo', true]]},
-          {filePath: '/path2', messages: [['bar', true]]},
-        ],
-        [{filePath: '/path1', messages: [['foo', true], ['new', false]]}],
-        [{filePath: '/path3', messages: [['asdf', false]]}],
-        [
-          {filePath: '/path1', messages: [['new', false]]},
-          {filePath: '/path2', messages: []},
-        ],
-        [
-          // 'new' is not included here since this message came after the 'end-recheck' message.
-          // Because of that, it is considered to be a complete set of errors.
-          {filePath: '/path2', messages: [['another new', false]]},
-          {filePath: '/path3', messages: [['asdf', false]]},
-          {filePath: '/path1', messages: []},
-        ],
-      ];
-      const results = await getAbbreviatedResults(messages);
-      expect(results).toEqual(expected);
-    })();
+    const messages = [
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('foo', '/path1'),
+          makeFakeFlowError('bar', '/path2'),
+        ),
+      },
+      {kind: 'start-recheck'},
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(makeFakeFlowError('new', '/path1')),
+      },
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(makeFakeFlowError('asdf', '/path3')),
+      },
+      {kind: 'end-recheck'},
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('another new', '/path2'),
+          makeFakeFlowError('asdf', '/path3'),
+        ),
+      },
+    ];
+    const expected: Array<Array<AbbreviatedResult>> = [
+      [],
+      [
+        {filePath: '/path1', messages: [['foo', false]]},
+        {filePath: '/path2', messages: [['bar', false]]},
+      ],
+      [
+        {filePath: '/path1', messages: [['foo', true]]},
+        {filePath: '/path2', messages: [['bar', true]]},
+      ],
+      [{filePath: '/path1', messages: [['foo', true], ['new', false]]}],
+      [{filePath: '/path3', messages: [['asdf', false]]}],
+      [
+        {filePath: '/path1', messages: [['new', false]]},
+        {filePath: '/path2', messages: []},
+      ],
+      [
+        // 'new' is not included here since this message came after the 'end-recheck' message.
+        // Because of that, it is considered to be a complete set of errors.
+        {filePath: '/path2', messages: [['another new', false]]},
+        {filePath: '/path3', messages: [['asdf', false]]},
+        {filePath: '/path1', messages: []},
+      ],
+    ];
+    const results = await getAbbreviatedResults(messages);
+    expect(results).toEqual(expected);
   });
 
   it('should remove all diagnostics when the IDE connection is lost outside of a recheck', async () => {
-    await (async () => {
-      const messages = [
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('foo', '/path1'),
-            makeFakeFlowError('bar', '/path2'),
-          ),
-        },
-        null,
-      ];
-      const expected: Array<Array<AbbreviatedResult>> = [
-        [],
-        [
-          {filePath: '/path1', messages: [['foo', false]]},
-          {filePath: '/path2', messages: [['bar', false]]},
-        ],
-        [
-          {filePath: '/path1', messages: []},
-          {filePath: '/path2', messages: []},
-        ],
-      ];
-      const results = await getAbbreviatedResults(messages);
-      expect(results).toEqual(expected);
-    })();
+    const messages = [
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('foo', '/path1'),
+          makeFakeFlowError('bar', '/path2'),
+        ),
+      },
+      null,
+    ];
+    const expected: Array<Array<AbbreviatedResult>> = [
+      [],
+      [
+        {filePath: '/path1', messages: [['foo', false]]},
+        {filePath: '/path2', messages: [['bar', false]]},
+      ],
+      [{filePath: '/path1', messages: []}, {filePath: '/path2', messages: []}],
+    ];
+    const results = await getAbbreviatedResults(messages);
+    expect(results).toEqual(expected);
   });
 
   it('should remove all diagnostics when the IDE connection is lost during a recheck', async () => {
-    await (async () => {
-      const messages = [
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('foo', '/path1'),
-            makeFakeFlowError('bar', '/path2'),
-          ),
-        },
-        {kind: 'start-recheck'},
-        {
-          kind: 'errors',
-          errors: makeFakeFlowOutput(
-            makeFakeFlowError('baz', '/path1'),
-            makeFakeFlowError('asdf', '/path3'),
-          ),
-        },
-        null,
-      ];
-      const expected: Array<Array<AbbreviatedResult>> = [
-        [],
-        [
-          {filePath: '/path1', messages: [['foo', false]]},
-          {filePath: '/path2', messages: [['bar', false]]},
-        ],
-        [
-          {filePath: '/path1', messages: [['foo', true]]},
-          {filePath: '/path2', messages: [['bar', true]]},
-        ],
-        [
-          {filePath: '/path1', messages: [['foo', true], ['baz', false]]},
-          {filePath: '/path3', messages: [['asdf', false]]},
-        ],
-        [
-          {filePath: '/path1', messages: []},
-          {filePath: '/path2', messages: []},
-          {filePath: '/path3', messages: []},
-        ],
-      ];
-      const results = await getAbbreviatedResults(messages);
-      expect(results).toEqual(expected);
-    })();
+    const messages = [
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('foo', '/path1'),
+          makeFakeFlowError('bar', '/path2'),
+        ),
+      },
+      {kind: 'start-recheck'},
+      {
+        kind: 'errors',
+        errors: makeFakeFlowOutput(
+          makeFakeFlowError('baz', '/path1'),
+          makeFakeFlowError('asdf', '/path3'),
+        ),
+      },
+      null,
+    ];
+    const expected: Array<Array<AbbreviatedResult>> = [
+      [],
+      [
+        {filePath: '/path1', messages: [['foo', false]]},
+        {filePath: '/path2', messages: [['bar', false]]},
+      ],
+      [
+        {filePath: '/path1', messages: [['foo', true]]},
+        {filePath: '/path2', messages: [['bar', true]]},
+      ],
+      [
+        {filePath: '/path1', messages: [['foo', true], ['baz', false]]},
+        {filePath: '/path3', messages: [['asdf', false]]},
+      ],
+      [
+        {filePath: '/path1', messages: []},
+        {filePath: '/path2', messages: []},
+        {filePath: '/path3', messages: []},
+      ],
+    ];
+    const results = await getAbbreviatedResults(messages);
+    expect(results).toEqual(expected);
   });
 });
 

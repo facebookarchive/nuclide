@@ -269,64 +269,56 @@ describe('RemoteDirectory::delete()', () => {
   });
 
   it('deletes the existing directory', async () => {
-    await (async () => {
-      const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
-      fs.mkdirSync(directoryPath);
-      fs.mkdirSync(nuclideUri.join(directoryPath, 'subdir'));
-      const directory = new RemoteDirectory(
-        connectionMock,
-        `nuclide://host13${directoryPath}`,
-      );
-      expect(fs.existsSync(directoryPath)).toBe(true);
-      await directory.delete();
-      expect(fs.existsSync(directoryPath)).toBe(false);
-    })();
+    const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
+    fs.mkdirSync(directoryPath);
+    fs.mkdirSync(nuclideUri.join(directoryPath, 'subdir'));
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13${directoryPath}`,
+    );
+    expect(fs.existsSync(directoryPath)).toBe(true);
+    await directory.delete();
+    expect(fs.existsSync(directoryPath)).toBe(false);
   });
 
   it('deletes the non-existent directory', async () => {
-    await (async () => {
-      const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
-      const directory = new RemoteDirectory(
-        connectionMock,
-        `nuclide://host13${directoryPath}`,
-      );
-      await directory.delete();
-      expect(fs.existsSync(directoryPath)).toBe(false);
-    })();
+    const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13${directoryPath}`,
+    );
+    await directory.delete();
+    expect(fs.existsSync(directoryPath)).toBe(false);
   });
 });
 
 describe('RemoteDirectory::exists()', () => {
   it('verifies existence', async () => {
-    await (async () => {
-      const directoryPath = temp.mkdirSync('exists_test');
-      expect(fs.existsSync(directoryPath)).toBe(true);
+    const directoryPath = temp.mkdirSync('exists_test');
+    expect(fs.existsSync(directoryPath)).toBe(true);
 
-      const directory = new RemoteDirectory(
-        connectionMock,
-        `nuclide://host13${directoryPath}`,
-      );
-      const exists = await directory.exists();
-      expect(exists).toBe(true);
-    })();
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13${directoryPath}`,
+    );
+    const exists = await directory.exists();
+    expect(exists).toBe(true);
   });
 
   it('verifies non-existence', async () => {
-    await (async () => {
-      const tempDir = temp.mkdirSync('exists_test');
-      const directoryPath = nuclideUri.join(
-        tempDir,
-        '/directory_that_doesnt_exist',
-      );
-      expect(fs.existsSync(directoryPath)).toBe(false);
+    const tempDir = temp.mkdirSync('exists_test');
+    const directoryPath = nuclideUri.join(
+      tempDir,
+      '/directory_that_doesnt_exist',
+    );
+    expect(fs.existsSync(directoryPath)).toBe(false);
 
-      const directory = new RemoteDirectory(
-        connectionMock,
-        `nuclide://host13${directoryPath}`,
-      );
-      const exists = await directory.exists();
-      expect(exists).toBe(false);
-    })();
+    const directory = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13${directoryPath}`,
+    );
+    const exists = await directory.exists();
+    expect(exists).toBe(false);
   });
 });
 
@@ -479,16 +471,14 @@ describe('RemoteDirectory::onDidDelete()', () => {
   });
 
   it('calls on delete', async () => {
-    await (async () => {
-      const dirPath = nuclideUri.join(tempDir, 'dir_to_delete');
-      const dir = new RemoteDirectory(
-        connectionMock,
-        `nuclide://host13${dirPath}`,
-      );
-      const callbackSpy = jest.fn();
-      dir.onDidDelete(callbackSpy);
-      await dir.delete();
-      expect(callbackSpy.mock.calls.length).toBe(1);
-    })();
+    const dirPath = nuclideUri.join(tempDir, 'dir_to_delete');
+    const dir = new RemoteDirectory(
+      connectionMock,
+      `nuclide://host13${dirPath}`,
+    );
+    const callbackSpy = jest.fn();
+    dir.onDidDelete(callbackSpy);
+    await dir.delete();
+    expect(callbackSpy.mock.calls.length).toBe(1);
   });
 });

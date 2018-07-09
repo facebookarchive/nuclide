@@ -23,11 +23,9 @@ let client;
 xdescribe('NuclideSearch test suite', () => {
   beforeEach(async () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
-    await (async () => {
-      server = new NuclideServer({port: 8176}, servicesConfig);
-      await server.connect();
-      // client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
-    })();
+    server = new NuclideServer({port: 8176}, servicesConfig);
+    await server.connect();
+    // client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
   });
 
   afterEach(() => {
@@ -37,40 +35,32 @@ xdescribe('NuclideSearch test suite', () => {
 
   describe('Querying', () => {
     it('should return query results for the given directory', async () => {
-      await (async () => {
-        const results = await client.searchDirectory(pathToTestDir, 'te');
-        expect(results.length).toBe(1);
-        expect(results[0].path).toBe(
-          nuclideUri.join(pathToTestDir, 'testfile.txt'),
-        );
-      })();
+      const results = await client.searchDirectory(pathToTestDir, 'te');
+      expect(results.length).toBe(1);
+      expect(results[0].path).toBe(
+        nuclideUri.join(pathToTestDir, 'testfile.txt'),
+      );
     });
 
     it('should return query results for the given directory if it has a hostname', async () => {
-      await (async () => {
-        const results = await client.searchDirectory(
-          `nuclide://some.host.com${pathToTestDir}`,
-          'te',
-        );
-        expect(results.length).toBe(1);
-        expect(results[0].path).toBe(
-          `nuclide://some.host.com${pathToTestDir}/testfile.txt`,
-        );
-      })();
+      const results = await client.searchDirectory(
+        `nuclide://some.host.com${pathToTestDir}`,
+        'te',
+      );
+      expect(results.length).toBe(1);
+      expect(results[0].path).toBe(
+        `nuclide://some.host.com${pathToTestDir}/testfile.txt`,
+      );
     });
   });
 
   describe('Errors', () => {
     it('should throw an error if the directory does not exist', async () => {
-      await (async () => {
-        await client.searchDirectory('not-a-folder', 'query');
-      })();
+      await client.searchDirectory('not-a-folder', 'query');
     });
 
     it('should throw an error if the specified path is not a directory', async () => {
-      await (async () => {
-        await client.searchDirectory(pathToTestFile, 'query');
-      })();
+      await client.searchDirectory(pathToTestFile, 'query');
     });
   });
 });

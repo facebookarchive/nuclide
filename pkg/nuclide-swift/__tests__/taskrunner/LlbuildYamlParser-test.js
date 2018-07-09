@@ -90,10 +90,8 @@ describe('readCompileCommands', () => {
     });
 
     it('returns an empty mapping', async () => {
-      await (async () => {
-        const commands = await readCompileCommands(path);
-        expect(commands.size).toBe(0);
-      })();
+      const commands = await readCompileCommands(path);
+      expect(commands.size).toBe(0);
     });
   });
 

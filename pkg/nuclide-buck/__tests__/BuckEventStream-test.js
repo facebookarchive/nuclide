@@ -22,118 +22,108 @@ describe('combineEventStreams', () => {
   });
 
   it('takes non-log-level messages from the process', async () => {
-    await (async () => {
-      const combinedStream = combineEventStreams(
-        'build',
-        socketSubject,
-        processSubject,
-      );
-      const promise = combinedStream.toArray().toPromise();
+    const combinedStream = combineEventStreams(
+      'build',
+      socketSubject,
+      processSubject,
+    );
+    const promise = combinedStream.toArray().toPromise();
 
-      socketSubject.next({type: 'progress', progress: 0});
+    socketSubject.next({type: 'progress', progress: 0});
 
-      processSubject.next({type: 'log', message: 'skip', level: 'log'});
-      processSubject.next({type: 'log', message: 'take1', level: 'error'});
-      processSubject.next({type: 'log', message: 'take2', level: 'log'});
-      processSubject.complete();
+    processSubject.next({type: 'log', message: 'skip', level: 'log'});
+    processSubject.next({type: 'log', message: 'take1', level: 'error'});
+    processSubject.next({type: 'log', message: 'take2', level: 'log'});
+    processSubject.complete();
 
-      const result = await promise;
-      expect(result).toEqual([
-        {type: 'progress', progress: 0},
-        {type: 'log', message: 'take1', level: 'error'},
-        {type: 'log', message: 'take2', level: 'log'},
-      ]);
-    })();
+    const result = await promise;
+    expect(result).toEqual([
+      {type: 'progress', progress: 0},
+      {type: 'log', message: 'take1', level: 'error'},
+      {type: 'log', message: 'take2', level: 'log'},
+    ]);
   });
 
   it('falls back to process output when socket is empty', async () => {
-    await (async () => {
-      const combinedStream = combineEventStreams(
-        'build',
-        socketSubject,
-        processSubject,
-      );
-      const promise = combinedStream.toArray().toPromise();
+    const combinedStream = combineEventStreams(
+      'build',
+      socketSubject,
+      processSubject,
+    );
+    const promise = combinedStream.toArray().toPromise();
 
-      processSubject.next({type: 'log', message: 'take1', level: 'log'});
-      processSubject.next({type: 'log', message: 'take2', level: 'log'});
-      processSubject.next({type: 'log', message: 'take3', level: 'error'});
-      processSubject.complete();
+    processSubject.next({type: 'log', message: 'take1', level: 'log'});
+    processSubject.next({type: 'log', message: 'take2', level: 'log'});
+    processSubject.next({type: 'log', message: 'take3', level: 'error'});
+    processSubject.complete();
 
-      const result = await promise;
-      expect(result).toEqual([
-        {type: 'log', message: 'take1', level: 'log'},
-        {type: 'log', message: 'take2', level: 'log'},
-        {type: 'log', message: 'take3', level: 'error'},
-      ]);
-    })();
+    const result = await promise;
+    expect(result).toEqual([
+      {type: 'log', message: 'take1', level: 'log'},
+      {type: 'log', message: 'take2', level: 'log'},
+      {type: 'log', message: 'take3', level: 'error'},
+    ]);
   });
 
   it('test: takes process messages after build finishes', async () => {
-    await (async () => {
-      const combinedStream = combineEventStreams(
-        'test',
-        socketSubject,
-        processSubject,
-      );
-      const promise = combinedStream.toArray().toPromise();
+    const combinedStream = combineEventStreams(
+      'test',
+      socketSubject,
+      processSubject,
+    );
+    const promise = combinedStream.toArray().toPromise();
 
-      processSubject.next({type: 'log', message: 'take', level: 'log'});
-      socketSubject.next({type: 'progress', progress: 1});
-      processSubject.next({type: 'log', message: 'take', level: 'log'});
-      processSubject.complete();
+    processSubject.next({type: 'log', message: 'take', level: 'log'});
+    socketSubject.next({type: 'progress', progress: 1});
+    processSubject.next({type: 'log', message: 'take', level: 'log'});
+    processSubject.complete();
 
-      const result = await promise;
-      expect(result).toEqual([
-        {type: 'log', message: 'take', level: 'log'},
-        {type: 'progress', progress: null},
-        {type: 'log', message: 'take', level: 'log'},
-      ]);
-    })();
+    const result = await promise;
+    expect(result).toEqual([
+      {type: 'log', message: 'take', level: 'log'},
+      {type: 'progress', progress: null},
+      {type: 'log', message: 'take', level: 'log'},
+    ]);
   });
 
   it('run: takes process messages after build finishes', async () => {
-    await (async () => {
-      const combinedStream = combineEventStreams(
-        'test',
-        socketSubject,
-        processSubject,
-      );
-      const promise = combinedStream.toArray().toPromise();
+    const combinedStream = combineEventStreams(
+      'test',
+      socketSubject,
+      processSubject,
+    );
+    const promise = combinedStream.toArray().toPromise();
 
-      processSubject.next({type: 'log', message: 'take', level: 'log'});
-      socketSubject.next({type: 'progress', progress: 1});
-      processSubject.next({type: 'log', message: 'take', level: 'log'});
-      processSubject.complete();
+    processSubject.next({type: 'log', message: 'take', level: 'log'});
+    socketSubject.next({type: 'progress', progress: 1});
+    processSubject.next({type: 'log', message: 'take', level: 'log'});
+    processSubject.complete();
 
-      const result = await promise;
-      expect(result).toEqual([
-        {type: 'log', message: 'take', level: 'log'},
-        {type: 'progress', progress: null},
-        {type: 'log', message: 'take', level: 'log'},
-      ]);
-    })();
+    const result = await promise;
+    expect(result).toEqual([
+      {type: 'log', message: 'take', level: 'log'},
+      {type: 'progress', progress: null},
+      {type: 'log', message: 'take', level: 'log'},
+    ]);
   });
 
   it('install: adds installing message after build finish', async () => {
-    await (async () => {
-      const combinedStream = combineEventStreams(
-        'install',
-        socketSubject,
-        processSubject,
-      );
-      const promise = combinedStream.toArray().toPromise();
+    const combinedStream = combineEventStreams(
+      'install',
+      socketSubject,
+      processSubject,
+    );
+    const promise = combinedStream.toArray().toPromise();
 
-      socketSubject.next({type: 'progress', progress: 1});
-      processSubject.next({type: 'log', message: 'skip', level: 'log'});
-      processSubject.complete();
+    socketSubject.next({type: 'progress', progress: 1});
+    processSubject.next({type: 'log', message: 'skip', level: 'log'});
+    processSubject.complete();
 
-      const result = await promise;
-      expect(result).toEqual([
-        {type: 'progress', progress: 1},
-        {type: 'progress', progress: null},
-        {type: 'log', message: 'Installing...', level: 'info'},
-      ]);
-    })();
+    const result = await promise;
+    expect(result).toEqual([
+      {type: 'progress', progress: 1},
+      {type: 'progress', progress: null},
+      {type: 'log', message: 'Installing...', level: 'info'},
+    ]);
   });
 });

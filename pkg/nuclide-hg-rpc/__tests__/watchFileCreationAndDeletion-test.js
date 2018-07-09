@@ -57,16 +57,17 @@ describe('watchFileCreationAndDeletion', () => {
         files,
       );
 
-      await (async () => {
-        resolveFileB(false);
-        await nextTick();
-        resolveFileA(true);
-        resolveFileC(false);
-        const existanceResult = await existanceObservable.toPromise();
-        expect(existanceResult).toEqual(
-          new Map([[fileA, true], [fileB, false], [fileC, false]]),
-        );
-      })();
+      // $FlowFixMe
+      resolveFileB(false);
+      await nextTick();
+      // $FlowFixMe
+      resolveFileA(true);
+      // $FlowFixMe
+      resolveFileC(false);
+      const existanceResult = await existanceObservable.toPromise();
+      expect(existanceResult).toEqual(
+        new Map([[fileA, true], [fileB, false], [fileC, false]]),
+      );
 
       existsSpy.mockReset();
     });

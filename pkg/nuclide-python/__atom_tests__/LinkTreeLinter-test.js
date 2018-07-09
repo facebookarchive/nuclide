@@ -61,10 +61,8 @@ describe('LinkTreeLinter', () => {
       messages = m;
     });
 
-    await (async () => {
-      await atom.workspace.open(file1);
-      await sleep(1000); // debounce delay
-    })();
+    await atom.workspace.open(file1);
+    await sleep(1000); // debounce delay
 
     await waitsFor(() => messages.length > 0, 'a diagnostic to appear');
 
@@ -82,10 +80,8 @@ describe('LinkTreeLinter', () => {
     expect(messages).toEqual([]);
     expect(mockBuckTaskRunner.setBuildTarget).toHaveBeenCalledWith(TEST_TARGET);
 
-    await (async () => {
-      await atom.workspace.open(file2);
-      await sleep(1000); // debounce delay
-    })();
+    await atom.workspace.open(file2);
+    await sleep(1000); // debounce delay
 
     await waitsFor(() => messages.length > 0, 'a diagnostic to appear');
 

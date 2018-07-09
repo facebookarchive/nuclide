@@ -133,11 +133,9 @@ describe('FileTreeSelectionRange', () => {
     });
 
     afterEach(async () => {
-      await (async () => {
-        actions.updateWorkingSet(new WorkingSet([]));
-        actions.reset();
-        await tempCleanup();
-      })();
+      actions.updateWorkingSet(new WorkingSet([]));
+      actions.reset();
+      await tempCleanup();
     });
 
     describe('findSelectedNode', () => {

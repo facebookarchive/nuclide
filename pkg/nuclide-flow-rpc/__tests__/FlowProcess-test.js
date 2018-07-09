@@ -112,9 +112,7 @@ describe('FlowProcess', () => {
       jest.spyOn(childSpy, 'kill').mockImplementation(() => {});
       jest.spyOn(childSpy, 'on').mockImplementation(() => {});
 
-      await (async () => {
-        await execFlow();
-      })();
+      await execFlow();
     });
 
     describe('execFlow', () => {
@@ -150,29 +148,23 @@ describe('FlowProcess', () => {
       });
 
       it('should blacklist the root', async () => {
-        await (async () => {
-          expect(event).toBe('exit');
-          expect(await execFlow()).toBeNull();
-        })();
+        expect(event).toBe('exit');
+        expect(await execFlow()).toBeNull();
       });
 
       it('should allow the server to restart if allowServerRestart is called', async () => {
-        await (async () => {
-          expect(event).toBe('exit');
+        expect(event).toBe('exit');
 
-          flowProcess.allowServerRestart();
+        flowProcess.allowServerRestart();
 
-          expect(await execFlow()).not.toBeNull();
-        })();
+        expect(await execFlow()).not.toBeNull();
       });
     });
 
     describe('dispose', () => {
       it('should kill flow server', async () => {
-        await (async () => {
-          flowProcess.dispose();
-          expect(childSpy.kill).toHaveBeenCalledWith('SIGKILL');
-        })();
+        flowProcess.dispose();
+        expect(childSpy.kill).toHaveBeenCalledWith('SIGKILL');
       });
     });
   });
@@ -212,13 +204,11 @@ describe('FlowProcess', () => {
     ];
     exitCodeStatusPairs.forEach(([exitCode, status]) => {
       it(`should be ${status} when Flow returns ${exitCode}`, async () => {
-        await (async () => {
-          fakeRunCommandDetailed = () => Observable.of({exitCode});
-          await execFlow(/* waitForServer */ false).catch(e => {
-            expect(e.exitCode).toBe(exitCode);
-          });
-          expect(currentStatus).toEqual(status);
-        })();
+        fakeRunCommandDetailed = () => Observable.of({exitCode});
+        await execFlow(/* waitForServer */ false).catch(e => {
+          expect(e.exitCode).toBe(exitCode);
+        });
+        expect(currentStatus).toEqual(status);
       });
     });
 
@@ -252,19 +242,17 @@ describe('FlowProcess', () => {
 
   describe('execFlowClient', () => {
     it('should call runCommandDetailed', async () => {
-      await (async () => {
-        await FlowProcess.execFlowClient(
-          ['arg'],
-          null,
-          new FlowExecInfoContainer(),
-        );
-        expect(fakeRunCommandDetailed.mock.calls[0][0]).toEqual(binary);
-        expect(fakeRunCommandDetailed.mock.calls[0][1]).toEqual([
-          'arg',
-          '--from',
-          'nuclide',
-        ]);
-      })();
+      await FlowProcess.execFlowClient(
+        ['arg'],
+        null,
+        new FlowExecInfoContainer(),
+      );
+      expect(fakeRunCommandDetailed.mock.calls[0][0]).toEqual(binary);
+      expect(fakeRunCommandDetailed.mock.calls[0][1]).toEqual([
+        'arg',
+        '--from',
+        'nuclide',
+      ]);
     });
   });
 });

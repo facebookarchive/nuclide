@@ -20,68 +20,64 @@ import fsPromise from 'nuclide-commons/fsPromise';
 describe('HgRepositoryProvider', () => {
   const provider = new HgRepositoryProvider();
   it('shares underlying repository for multiple directories in the same repo', async () => {
-    await (async () => {
-      const tempDir = await generateFixture(
-        'hg_repo_provider_test',
-        new Map([['folder/foo', 'foo']]),
-      );
+    const tempDir = await generateFixture(
+      'hg_repo_provider_test',
+      new Map([['folder/foo', 'foo']]),
+    );
 
-      const repoPath = await fsPromise.realpath(tempDir);
-      await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
+    const repoPath = await fsPromise.realpath(tempDir);
+    await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
 
-      const folderPath = nuclideUri.join(repoPath, 'folder');
+    const folderPath = nuclideUri.join(repoPath, 'folder');
 
-      const baseDirectory = new Directory(repoPath);
-      const folderDirectory = new Directory(folderPath);
+    const baseDirectory = new Directory(repoPath);
+    const folderDirectory = new Directory(folderPath);
 
-      const baseRepo = provider.repositoryForDirectorySync(baseDirectory);
-      const folderRepo = provider.repositoryForDirectorySync(folderDirectory);
-      invariant(baseRepo != null && folderRepo != null);
+    const baseRepo = provider.repositoryForDirectorySync(baseDirectory);
+    const folderRepo = provider.repositoryForDirectorySync(folderDirectory);
+    invariant(baseRepo != null && folderRepo != null);
 
-      expect(baseRepo.getProjectDirectory()).not.toBe(
-        folderRepo.getProjectDirectory(),
-      );
+    expect(baseRepo.getProjectDirectory()).not.toBe(
+      folderRepo.getProjectDirectory(),
+    );
 
-      // compare private members to guarantee they have the same underlying HgRepositoryClient
-      // arbitrarily chose _emitter
-      expect(baseRepo.getRootRepoClient()).toBe(folderRepo.getRootRepoClient());
+    // compare private members to guarantee they have the same underlying HgRepositoryClient
+    // arbitrarily chose _emitter
+    expect(baseRepo.getRootRepoClient()).toBe(folderRepo.getRootRepoClient());
 
-      let folderRepoDestroyed = false;
-      let folderRepoRootDestroyed = false;
-      folderRepo.onDidDestroy(() => {
-        folderRepoDestroyed = true;
-      });
-      folderRepo.getRootRepoClient().onDidDestroy(() => {
-        folderRepoRootDestroyed = true;
-      });
-      folderRepo.destroy();
-      expect(folderRepoDestroyed).toBe(true);
-      expect(folderRepoRootDestroyed).toBe(false);
+    let folderRepoDestroyed = false;
+    let folderRepoRootDestroyed = false;
+    folderRepo.onDidDestroy(() => {
+      folderRepoDestroyed = true;
+    });
+    folderRepo.getRootRepoClient().onDidDestroy(() => {
+      folderRepoRootDestroyed = true;
+    });
+    folderRepo.destroy();
+    expect(folderRepoDestroyed).toBe(true);
+    expect(folderRepoRootDestroyed).toBe(false);
 
-      const folderRepo2 = provider.repositoryForDirectorySync(folderDirectory);
-      invariant(folderRepo2 != null);
-      expect(baseRepo.getRootRepoClient()).toBe(
-        folderRepo2.getRootRepoClient(),
-      );
+    const folderRepo2 = provider.repositoryForDirectorySync(folderDirectory);
+    invariant(folderRepo2 != null);
+    expect(baseRepo.getRootRepoClient()).toBe(folderRepo2.getRootRepoClient());
 
-      folderRepo2.destroy();
-      baseRepo.destroy();
-      // refCount should hit 0 and remove the original underlying HgRepositoryClient
-      // thus triggering the onDidDestroy for the underlying repo
-      expect(folderRepoRootDestroyed).toBe(true);
+    folderRepo2.destroy();
+    baseRepo.destroy();
+    // refCount should hit 0 and remove the original underlying HgRepositoryClient
+    // thus triggering the onDidDestroy for the underlying repo
+    expect(folderRepoRootDestroyed).toBe(true);
 
-      const baseRepo2 = provider.repositoryForDirectorySync(baseDirectory);
-      invariant(baseRepo2 != null);
-      expect(baseRepo.getRootRepoClient()).not.toBe(
-        baseRepo2.getRootRepoClient(),
-      );
-      expect(baseRepo.getProjectDirectory()).toBe(
-        baseRepo2.getProjectDirectory(),
-      );
+    const baseRepo2 = provider.repositoryForDirectorySync(baseDirectory);
+    invariant(baseRepo2 != null);
+    expect(baseRepo.getRootRepoClient()).not.toBe(
+      baseRepo2.getRootRepoClient(),
+    );
+    expect(baseRepo.getProjectDirectory()).toBe(
+      baseRepo2.getProjectDirectory(),
+    );
 
-      baseRepo2.destroy();
+    baseRepo2.destroy();
 
-      await fsPromise.rimraf(repoPath);
-    })();
+    await fsPromise.rimraf(repoPath);
   });
 });

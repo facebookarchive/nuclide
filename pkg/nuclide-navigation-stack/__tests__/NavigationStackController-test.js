@@ -38,44 +38,42 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('switch tabs and nav back/forwards', async () => {
-    await (async () => {
-      const editor1 = toEditor('filename', 10);
-      const location1 = editor1.location;
-      controller.onActivate(editor1);
-      controller.onActiveStopChanging(editor1);
-      const editor2 = toEditor('filename2', 20);
-      const location2 = editor2.location;
-      controller.onActivate(editor2);
-      controller.onActiveStopChanging(editor2);
+    const editor1 = toEditor('filename', 10);
+    const location1 = editor1.location;
+    controller.onActivate(editor1);
+    controller.onActiveStopChanging(editor1);
+    const editor2 = toEditor('filename2', 20);
+    const location2 = editor2.location;
+    controller.onActivate(editor2);
+    controller.onActiveStopChanging(editor2);
 
-      expect(controller.getIndex()).toEqual(1);
-      expect(controller.getLocations()).toEqual([location1, location2]);
+    expect(controller.getIndex()).toEqual(1);
+    expect(controller.getLocations()).toEqual([location1, location2]);
 
-      // noop nav forwards
-      await controller.navigateForwards();
-      expect(controller.getIndex()).toEqual(1);
-      expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(editor1.setCursorBufferPosition).not.toHaveBeenCalled();
+    // noop nav forwards
+    await controller.navigateForwards();
+    expect(controller.getIndex()).toEqual(1);
+    expect(controller.getLocations()).toEqual([location1, location2]);
+    expect(editor1.setCursorBufferPosition).not.toHaveBeenCalled();
 
-      await controller.navigateBackwards();
-      expect(controller.getIndex()).toEqual(0);
-      expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(editor1.setCursorBufferPosition).toHaveBeenCalledWith(
-        location1.bufferPosition,
-      );
+    await controller.navigateBackwards();
+    expect(controller.getIndex()).toEqual(0);
+    expect(controller.getLocations()).toEqual([location1, location2]);
+    expect(editor1.setCursorBufferPosition).toHaveBeenCalledWith(
+      location1.bufferPosition,
+    );
 
-      // noop nav backwards
-      await controller.navigateBackwards();
-      expect(controller.getIndex()).toEqual(0);
-      expect(controller.getLocations()).toEqual([location1, location2]);
+    // noop nav backwards
+    await controller.navigateBackwards();
+    expect(controller.getIndex()).toEqual(0);
+    expect(controller.getLocations()).toEqual([location1, location2]);
 
-      await controller.navigateForwards();
-      expect(controller.getIndex()).toEqual(1);
-      expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(editor2.setCursorBufferPosition).toHaveBeenCalledWith(
-        location2.bufferPosition,
-      );
-    })();
+    await controller.navigateForwards();
+    expect(controller.getIndex()).toEqual(1);
+    expect(controller.getLocations()).toEqual([location1, location2]);
+    expect(editor2.setCursorBufferPosition).toHaveBeenCalledWith(
+      location2.bufferPosition,
+    );
   });
 
   it('update position', () => {
@@ -98,23 +96,21 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('update position of non-top', async () => {
-    await (async () => {
-      const editor1 = toEditor('filename', 10);
-      const location1 = editor1.location;
-      controller.onActivate(editor1);
-      controller.onActiveStopChanging(editor1);
-      const editor2 = toEditor('filename2', 20);
-      const location2 = editor2.location;
-      controller.onActivate(editor2);
-      controller.onActiveStopChanging(editor2);
+    const editor1 = toEditor('filename', 10);
+    const location1 = editor1.location;
+    controller.onActivate(editor1);
+    controller.onActiveStopChanging(editor1);
+    const editor2 = toEditor('filename2', 20);
+    const location2 = editor2.location;
+    controller.onActivate(editor2);
+    controller.onActiveStopChanging(editor2);
 
-      await controller.navigateBackwards();
-      setPosition(editor1, 11);
-      expect(getRow(editor1)).toEqual(11);
-      controller.updatePosition(editor1, toPoint(11));
-      expect(controller.getIndex()).toEqual(0);
-      expect(controller.getLocations()).toEqual([location1, location2]);
-    })();
+    await controller.navigateBackwards();
+    setPosition(editor1, 11);
+    expect(getRow(editor1)).toEqual(11);
+    controller.updatePosition(editor1, toPoint(11));
+    expect(controller.getIndex()).toEqual(0);
+    expect(controller.getLocations()).toEqual([location1, location2]);
   });
 
   it('open of closed file', () => {

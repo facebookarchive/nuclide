@@ -72,28 +72,24 @@ describe('xfetch', () => {
     });
 
     it('can do a 2xx GET request', async () => {
-      await (async () => {
-        const realFilename = __filename;
-        const response = await xfetch(`http://0.0.0.0:${port}${realFilename}`);
-        expect(response.ok).toBe(true);
+      const realFilename = __filename;
+      const response = await xfetch(`http://0.0.0.0:${port}${realFilename}`);
+      expect(response.ok).toBe(true);
 
-        const text = await response.text();
-        const contents = await fsPromise.readFile(realFilename, 'utf8');
-        expect(text).toEqual(contents);
-      })();
+      const text = await response.text();
+      const contents = await fsPromise.readFile(realFilename, 'utf8');
+      expect(text).toEqual(contents);
     });
 
     it('can do a 404 GET request', async () => {
-      await (async () => {
-        // eslint-disable-next-line no-path-concat
-        const nonexistingFilename = __filename + 'XXX';
-        const response = await xfetch(
-          `http://0.0.0.0:${port}${nonexistingFilename}`,
-        );
-        expect(response.ok).toBe(false);
-        expect(response.status).toBe(404);
-        expect(response.statusText).toBe('Not Found');
-      })();
+      // eslint-disable-next-line no-path-concat
+      const nonexistingFilename = __filename + 'XXX';
+      const response = await xfetch(
+        `http://0.0.0.0:${port}${nonexistingFilename}`,
+      );
+      expect(response.ok).toBe(false);
+      expect(response.status).toBe(404);
+      expect(response.statusText).toBe('Not Found');
     });
   });
 });

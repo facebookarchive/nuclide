@@ -90,16 +90,14 @@ describe('Task', () => {
     });
 
     it('synchronous function that throws Error returns a rejected Promise', async () => {
-      await (async () => {
-        invariant(task);
-        const promise = task.invokeRemoteMethod({
-          file: require.resolve('../__mocks__/fixtures/exports-that-fail'),
-          method: 'throwsErrorSynchronously',
-        });
-        await expectAsyncFailure(promise, error => {
-          expect(error.message).toBe('All I do is fail.');
-        });
-      })();
+      invariant(task);
+      const promise = task.invokeRemoteMethod({
+        file: require.resolve('../__mocks__/fixtures/exports-that-fail'),
+        method: 'throwsErrorSynchronously',
+      });
+      await expectAsyncFailure(promise, error => {
+        expect(error.message).toBe('All I do is fail.');
+      });
     });
 
     it('synchronous function that returns a rejected Promise returns a rejected Promise', async () => {
@@ -116,16 +114,14 @@ describe('Task', () => {
     });
 
     it('async function that throws returns a rejected Promise', async () => {
-      await (async () => {
-        invariant(task);
-        const promise = task.invokeRemoteMethod({
-          file: require.resolve('../__mocks__/fixtures/exports-that-fail'),
-          method: 'asyncFunctionThatThrows',
-        });
-        await expectAsyncFailure(promise, error => {
-          expect(error.message).toBe('All I do is fail *asynchronously*.');
-        });
-      })();
+      invariant(task);
+      const promise = task.invokeRemoteMethod({
+        file: require.resolve('../__mocks__/fixtures/exports-that-fail'),
+        method: 'asyncFunctionThatThrows',
+      });
+      await expectAsyncFailure(promise, error => {
+        expect(error.message).toBe('All I do is fail *asynchronously*.');
+      });
     });
   });
 

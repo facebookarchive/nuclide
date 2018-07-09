@@ -21,25 +21,23 @@ describe('BuckBuildSystem', () => {
 
   describe('_consumeEventStream', () => {
     it("doesn't swallow log messages", async () => {
-      await (async () => {
-        const result = await buckBuildSystem
-          ._consumeEventStream(
-            Observable.from([
-              {type: 'log', message: 'test', level: 'error'},
-              {type: 'log', message: 'test2', level: 'warning'},
-              {type: 'progress', progress: 1},
-            ]),
-            '',
-          )
-          .toArray()
-          .toPromise();
+      const result = await buckBuildSystem
+        ._consumeEventStream(
+          Observable.from([
+            {type: 'log', message: 'test', level: 'error'},
+            {type: 'log', message: 'test2', level: 'warning'},
+            {type: 'progress', progress: 1},
+          ]),
+          '',
+        )
+        .toArray()
+        .toPromise();
 
-        expect(result).toEqual([
-          {type: 'message', message: {text: 'test', level: 'error'}},
-          {type: 'message', message: {text: 'test2', level: 'warning'}},
-          {type: 'progress', progress: 1},
-        ]);
-      })();
+      expect(result).toEqual([
+        {type: 'message', message: {text: 'test', level: 'error'}},
+        {type: 'message', message: {text: 'test2', level: 'warning'}},
+        {type: 'progress', progress: 1},
+      ]);
     });
 
     it('emits diagnostics', async () => {

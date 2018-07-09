@@ -31,92 +31,80 @@ describe('observeGrammarForTextEditors', () => {
       nuclideUri.join(__dirname, '../__mocks__/grammars/javascript.cson'),
     );
     jsGrammar = nullthrows(atom.grammars.grammarForScopeName('source.js'));
-    await (async () => {
-      tempFilename = `${await fsPromise.tempfile()}.m`;
-    })();
+    tempFilename = `${await fsPromise.tempfile()}.m`;
   });
 
   it('calls for existing text editors', async () => {
-    await (async () => {
-      const textEditor = await atom.workspace.open(tempFilename);
+    const textEditor = await atom.workspace.open(tempFilename);
 
-      const fn: any = jest.fn();
-      const subscription = observeGrammarForTextEditors(fn);
-      expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn.mock.calls.length).toBe(1);
+    const fn: any = jest.fn();
+    const subscription = observeGrammarForTextEditors(fn);
+    expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn.mock.calls.length).toBe(1);
 
-      subscription.dispose();
-      textEditor.destroy();
-    })();
+    subscription.dispose();
+    textEditor.destroy();
   });
 
   it('calls for new text editors', async () => {
-    await (async () => {
-      const fn: any = jest.fn();
-      const subscription = observeGrammarForTextEditors(fn);
-      const textEditor = await atom.workspace.open(tempFilename);
+    const fn: any = jest.fn();
+    const subscription = observeGrammarForTextEditors(fn);
+    const textEditor = await atom.workspace.open(tempFilename);
 
-      expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn.mock.calls.length).toBe(1);
+    expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn.mock.calls.length).toBe(1);
 
-      subscription.dispose();
-      textEditor.destroy();
-    })();
+    subscription.dispose();
+    textEditor.destroy();
   });
 
   it('calls when a text editor changes grammars', async () => {
-    await (async () => {
-      const fn: any = jest.fn();
-      const subscription = observeGrammarForTextEditors(fn);
-      const textEditor = await atom.workspace.open(tempFilename);
-      textEditor.setGrammar(jsGrammar);
+    const fn: any = jest.fn();
+    const subscription = observeGrammarForTextEditors(fn);
+    const textEditor = await atom.workspace.open(tempFilename);
+    textEditor.setGrammar(jsGrammar);
 
-      expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn).toHaveBeenCalledWith(textEditor, jsGrammar);
-      expect(fn.mock.calls.length).toBe(2);
+    expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn).toHaveBeenCalledWith(textEditor, jsGrammar);
+    expect(fn.mock.calls.length).toBe(2);
 
-      subscription.dispose();
-      textEditor.destroy();
-    })();
+    subscription.dispose();
+    textEditor.destroy();
   });
 
   it('does not call after the return value is disposed', async () => {
-    await (async () => {
-      const fn: any = jest.fn();
-      const subscription = observeGrammarForTextEditors(fn);
-      const textEditor = await atom.workspace.open(tempFilename);
+    const fn: any = jest.fn();
+    const subscription = observeGrammarForTextEditors(fn);
+    const textEditor = await atom.workspace.open(tempFilename);
 
-      subscription.dispose();
-      textEditor.setGrammar(jsGrammar);
+    subscription.dispose();
+    textEditor.setGrammar(jsGrammar);
 
-      expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn.mock.calls.length).toBe(1);
+    expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn.mock.calls.length).toBe(1);
 
-      subscription.dispose();
-      textEditor.destroy();
-    })();
+    subscription.dispose();
+    textEditor.destroy();
   });
 
   it('calls for other clients after another listener is disposed', async () => {
-    await (async () => {
-      const fn: any = jest.fn();
-      const subscription = observeGrammarForTextEditors(fn);
-      const fn2: any = jest.fn();
-      const subscription2 = observeGrammarForTextEditors(fn2);
-      const textEditor = await atom.workspace.open(tempFilename);
+    const fn: any = jest.fn();
+    const subscription = observeGrammarForTextEditors(fn);
+    const fn2: any = jest.fn();
+    const subscription2 = observeGrammarForTextEditors(fn2);
+    const textEditor = await atom.workspace.open(tempFilename);
 
-      subscription.dispose();
+    subscription.dispose();
 
-      textEditor.setGrammar(jsGrammar);
+    textEditor.setGrammar(jsGrammar);
 
-      expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn.mock.calls.length).toBe(1);
-      expect(fn2).toHaveBeenCalledWith(textEditor, objcGrammar);
-      expect(fn2).toHaveBeenCalledWith(textEditor, jsGrammar);
-      expect(fn2.mock.calls.length).toBe(2);
+    expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn.mock.calls.length).toBe(1);
+    expect(fn2).toHaveBeenCalledWith(textEditor, objcGrammar);
+    expect(fn2).toHaveBeenCalledWith(textEditor, jsGrammar);
+    expect(fn2.mock.calls.length).toBe(2);
 
-      subscription2.dispose();
-      textEditor.destroy();
-    })();
+    subscription2.dispose();
+    textEditor.destroy();
   });
 });

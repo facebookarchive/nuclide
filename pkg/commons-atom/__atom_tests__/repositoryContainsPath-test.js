@@ -24,14 +24,11 @@ describe('repositoryContainsPath', () => {
   let repoRoot: string = (null: any);
 
   beforeEach(async () => {
-    // Create a temporary Hg repository.
-    await (async () => {
-      tempFolder = await generateFixture(
-        'hg-git-bridge',
-        new Map([['repoRoot/file.txt', 'hello world']]),
-      );
-      repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
-    })();
+    tempFolder = await generateFixture(
+      'hg-git-bridge',
+      new Map([['repoRoot/file.txt', 'hello world']]),
+    );
+    repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
   });
 
   it('is accurate for GitRepository.', async () => {
@@ -60,32 +57,30 @@ describe('repositoryContainsPath', () => {
   });
 
   it('is accurate for HgRepositoryClient.', async () => {
-    await (async () => {
-      // Create temporary Hg repository.
-      await runCommand('hg', ['init'], {cwd: repoRoot}).toPromise();
+    // Create temporary Hg repository.
+    await runCommand('hg', ['init'], {cwd: repoRoot}).toPromise();
 
-      const mockService = new MockHgService();
-      const mockHgService: HgServiceType = (mockService: any);
-      const hgRepositoryClient = new HgRepositoryClient(
-        /* repoPath */
-        nuclideUri.join(repoRoot, '.hg'),
-        /* hgService */
-        mockHgService,
-        /* options */
-        {
-          originURL: 'testURL',
-          workingDirectoryPath: repoRoot,
-          projectDirectoryPath: repoRoot,
-        },
-      );
+    const mockService = new MockHgService();
+    const mockHgService: HgServiceType = (mockService: any);
+    const hgRepositoryClient = new HgRepositoryClient(
+      /* repoPath */
+      nuclideUri.join(repoRoot, '.hg'),
+      /* hgService */
+      mockHgService,
+      /* options */
+      {
+        originURL: 'testURL',
+        workingDirectoryPath: repoRoot,
+        projectDirectoryPath: repoRoot,
+      },
+    );
 
-      const hgRepository: atom$Repository = (hgRepositoryClient: any);
+    const hgRepository: atom$Repository = (hgRepositoryClient: any);
 
-      expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
-      const subdir = nuclideUri.join(repoRoot, 'subdir');
-      expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
-      const parentDir = nuclideUri.resolve(tempFolder, '..');
-      expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
-    })();
+    expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
+    const subdir = nuclideUri.join(repoRoot, 'subdir');
+    expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
+    const parentDir = nuclideUri.resolve(tempFolder, '..');
+    expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
   });
 });

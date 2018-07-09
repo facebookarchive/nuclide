@@ -14,10 +14,8 @@ import {getInfoServiceByNuclideUri} from '..';
 
 describe('setUseLocalRpc', () => {
   it('successfully starts up a local RPC server', async () => {
-    await (async () => {
-      const infoService = getInfoServiceByNuclideUri('');
-      const version = await infoService.getServerVersion();
-      expect(version).toBe(getVersion());
-    })();
+    const infoService = getInfoServiceByNuclideUri('');
+    const version = await infoService.getServerVersion();
+    expect(version).toBe(getVersion());
   });
 });

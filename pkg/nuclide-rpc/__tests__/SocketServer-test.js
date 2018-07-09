@@ -26,56 +26,47 @@ describe('SocketServer', () => {
   let configPath: ?string;
 
   beforeEach(async () => {
-    await (async () => {
-      const services3json = [
-        {
-          implementation: nuclideUri.join(
-            __dirname,
-            '../__mocks__/EchoService.js',
-          ),
-          name: 'EchoService',
-        },
-      ];
-      const fbservices3json = [];
-      configPath = await generateFixture(
-        'services',
-        new Map([
-          ['services-3.json', JSON.stringify(services3json)],
-          ['fb-services-3.json', JSON.stringify(fbservices3json)],
-        ]),
-      );
-    })();
+    const services3json = [
+      {
+        implementation: nuclideUri.join(
+          __dirname,
+          '../__mocks__/EchoService.js',
+        ),
+        name: 'EchoService',
+      },
+    ];
+    const fbservices3json = [];
+    configPath = await generateFixture(
+      'services',
+      new Map([
+        ['services-3.json', JSON.stringify(services3json)],
+        ['fb-services-3.json', JSON.stringify(fbservices3json)],
+      ]),
+    );
   });
 
   it.skip('connect and send message', async () => {
-    await (async () => {
-      // flowlint-next-line sketchy-null-string:off
-      invariant(configPath);
-      const services = loadServicesConfig(configPath);
-      const registry = new ServiceRegistry(
-        [localNuclideUriMarshalers],
-        services,
-      );
-      const server = new SocketServer(registry);
-      const address = await server.getAddress();
-      invariant(address.port !== 0);
+    // flowlint-next-line sketchy-null-string:off
+    invariant(configPath);
+    const services = loadServicesConfig(configPath);
+    const registry = new ServiceRegistry([localNuclideUriMarshalers], services);
+    const server = new SocketServer(registry);
+    const address = await server.getAddress();
+    invariant(address.port !== 0);
 
-      const clientSocket = net.connect(address.port);
-      const clientTransport = new SocketTransport(clientSocket);
-      const clientConnection = RpcConnection.createLocal(
-        clientTransport,
-        [localNuclideUriMarshalers],
-        services,
-      );
+    const clientSocket = net.connect(address.port);
+    const clientTransport = new SocketTransport(clientSocket);
+    const clientConnection = RpcConnection.createLocal(
+      clientTransport,
+      [localNuclideUriMarshalers],
+      services,
+    );
 
-      const echoService: EchoService = clientConnection.getService(
-        'EchoService',
-      );
-      const result = await echoService.echoString('Hello World!');
+    const echoService: EchoService = clientConnection.getService('EchoService');
+    const result = await echoService.echoString('Hello World!');
 
-      expect(result).toBe('Hello World!');
+    expect(result).toBe('Hello World!');
 
-      server.dispose();
-    })();
+    server.dispose();
   });
 });

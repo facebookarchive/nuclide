@@ -50,10 +50,8 @@ describe('HackSymbolProvider', () => {
 
   describe('executeQuery()', () => {
     it('returns an empty array for an empty query', async () => {
-      await (async () => {
-        const results = await HackSymbolProvider.executeQuery('', []);
-        expect(results).toEqual([]);
-      })();
+      const results = await HackSymbolProvider.executeQuery('', []);
+      expect(results).toEqual([]);
     });
 
     it('local search returns local paths when searching local directories', async () => {

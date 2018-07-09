@@ -163,24 +163,18 @@ describe('CompositeFS nonexist.jar', () => {
   describe('nonexist.jar', () => {
     const dir = fixture('nonexist.jar');
     it('does not exist', async () => {
-      await (async () => {
-        expect(await compositeFs.exists(dir)).toBe(false);
-      })();
+      expect(await compositeFs.exists(dir)).toBe(false);
     });
     describe('!no.txt', () => {
       const notxt = nuclideUri.archiveJoin(dir, 'no.txt');
       it('does not exist', async () => {
-        await (async () => {
-          expect(await compositeFs.exists(notxt)).toBe(false);
-        })();
+        expect(await compositeFs.exists(notxt)).toBe(false);
       });
     });
     describe('!no/no.txt', () => {
       const notxt = nuclideUri.archiveJoin(dir, 'no/no.txt');
       it('does not exist', async () => {
-        await (async () => {
-          expect(await compositeFs.exists(notxt)).toBe(false);
-        })();
+        expect(await compositeFs.exists(notxt)).toBe(false);
       });
     });
   });
@@ -192,17 +186,13 @@ describe('ComposeFS nonfile.zip', () => {
   describe('EmptyFile', () => {
     const empty = nuclideUri.join(nonfile, 'EmptyFile');
     it('exists', async () => {
-      await (async () => {
-        expect(await compositeFs.exists(empty)).toBe(true);
-      })();
+      expect(await compositeFs.exists(empty)).toBe(true);
     });
   });
   it('contains EmptyFile', async () => {
-    await (async () => {
-      expect(await compositeFs.findNearestFile('EmptyFile', nonfile)).toBe(
-        nonfile,
-      );
-    })();
+    expect(await compositeFs.findNearestFile('EmptyFile', nonfile)).toBe(
+      nonfile,
+    );
   });
 });
 
@@ -313,21 +303,15 @@ function checkRoot(
   function checkExistingPath(path: NuclideUri): void {
     describe(path, () => {
       it('exists', async () => {
-        await (async () => {
-          expect(await checkFs.exists(path)).toBeTruthy();
-        })();
+        expect(await checkFs.exists(path)).toBeTruthy();
       });
       it('can be found', async () => {
-        await (async () => {
-          const dir = nuclideUri.dirname(path);
-          const base = nuclideUri.basename(path);
-          expect(await checkFs.findNearestFile(base, dir)).toEqual(dir);
-        })();
+        const dir = nuclideUri.dirname(path);
+        const base = nuclideUri.basename(path);
+        expect(await checkFs.findNearestFile(base, dir)).toEqual(dir);
       });
       it('is not NFS', async () => {
-        await (async () => {
-          expect(await checkFs.isNfs(path)).toBe(false);
-        })();
+        expect(await checkFs.isNfs(path)).toBe(false);
       });
     });
   }
@@ -335,9 +319,7 @@ function checkRoot(
   function checkNonExistingPath(path: NuclideUri): void {
     describe(path, () => {
       it('does not exist', async () => {
-        await (async () => {
-          expect(await checkFs.exists(path)).toBe(false);
-        })();
+        expect(await checkFs.exists(path)).toBe(false);
       });
     });
   }
@@ -372,9 +354,7 @@ function checkRoot(
   ) {
     let actual;
     beforeEach(async () => {
-      await (async () => {
-        actual = await get();
-      })();
+      actual = await get();
     });
     // Symlinks' mode on Linux is always ignored
     if (options.checkLinksMode !== false) {
@@ -405,9 +385,7 @@ function checkRoot(
     describe('readdir', () => {
       let actual;
       beforeEach(async () => {
-        await (async () => {
-          actual = await checkFs.readdir(path);
-        })();
+        actual = await checkFs.readdir(path);
       });
       it('has expected names', () => {
         expect(names(actual)).toEqual(names(expected));
@@ -418,9 +396,7 @@ function checkRoot(
   function checkRealPath(path: NuclideUri, expected: NuclideUri) {
     describe('realpath', () => {
       it('has expected value', async () => {
-        await (async () => {
-          expect(await checkFs.realpath(path)).toEqual(expected);
-        })();
+        expect(await checkFs.realpath(path)).toEqual(expected);
       });
     });
   }
@@ -435,9 +411,7 @@ function checkRoot(
   function checkText(path: NuclideUri, contents: string): void {
     describe(path, () => {
       it('has expected contents', async () => {
-        await (async () => {
-          expect((await checkFs.readFile(path)).toString()).toEqual(contents);
-        })();
+        expect((await checkFs.readFile(path)).toString()).toEqual(contents);
       });
     });
   }

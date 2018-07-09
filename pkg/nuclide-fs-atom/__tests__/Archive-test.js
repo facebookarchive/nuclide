@@ -102,9 +102,7 @@ function checkTextFile(entry: ArchiveFile, contents: string) {
 function checkText(entry: ArchiveFile, contents: string): void {
   describe(`text file ${entry.getBaseName()}`, () => {
     it('has expected contents', async () => {
-      await (async () => {
-        expect(await entry.read()).toEqual(contents);
-      })();
+      expect(await entry.read()).toEqual(contents);
     });
   });
 }
@@ -138,9 +136,7 @@ function checkFile(entry: ArchiveEntry): void {
 function checkExistingPath(entry: ArchiveEntry): void {
   describe('existence', () => {
     it('is true', async () => {
-      await (async () => {
-        expect(await entry.exists()).toBeTruthy();
-      })();
+      expect(await entry.exists()).toBeTruthy();
     });
   });
 }

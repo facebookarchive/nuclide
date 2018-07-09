@@ -39,17 +39,15 @@ describe('fileAppender', () => {
   });
 
   it('flushes immediately on shutdown', async () => {
-    await (async () => {
-      const times = 10;
-      const logger = log4js.getLogger('testCategory');
-      for (let i = 0; i < times; i++) {
-        logger.info('test1234');
-      }
-      await new Promise(resolve => log4js.shutdown(resolve));
+    const times = 10;
+    const logger = log4js.getLogger('testCategory');
+    for (let i = 0; i < times; i++) {
+      logger.info('test1234');
+    }
+    await new Promise(resolve => log4js.shutdown(resolve));
 
-      expect(fs.readFileSync(tempFile, 'utf8')).toBe(
-        'INFO testCategory - test1234\n'.repeat(times),
-      );
-    })();
+    expect(fs.readFileSync(tempFile, 'utf8')).toBe(
+      'INFO testCategory - test1234\n'.repeat(times),
+    );
   });
 });

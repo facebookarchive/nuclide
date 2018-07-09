@@ -42,58 +42,50 @@ describe('ErrorServer', () => {
   });
 
   it('ErrorService - error message', async () => {
-    await (async () => {
-      try {
-        invariant(service);
-        await service.promiseError('msg');
-        expect(false).toBe(true);
-      } catch (e) {
-        expect(e instanceof Error).toBe(true);
-        expect(
-          e.message.startsWith(
-            'Remote Error: msg processing message {"protocol":"error_protocol","type":' +
-              '"call","method":"ErrorService/promiseError","id":1,"args":{"message":"msg"}}',
-          ),
-        ).toBe(true);
-      }
-    })();
+    try {
+      invariant(service);
+      await service.promiseError('msg');
+      expect(false).toBe(true);
+    } catch (e) {
+      expect(e instanceof Error).toBe(true);
+      expect(
+        e.message.startsWith(
+          'Remote Error: msg processing message {"protocol":"error_protocol","type":' +
+            '"call","method":"ErrorService/promiseError","id":1,"args":{"message":"msg"}}',
+        ),
+      ).toBe(true);
+    }
   });
 
   it('ErrorService - error string', async () => {
-    await (async () => {
-      try {
-        invariant(service);
-        await service.promiseErrorString('msg');
-        expect(false).toBe(true);
-      } catch (e) {
-        expect(e).toBe('msg');
-      }
-    })();
+    try {
+      invariant(service);
+      await service.promiseErrorString('msg');
+      expect(false).toBe(true);
+    } catch (e) {
+      expect(e).toBe('msg');
+    }
   });
 
   it('ErrorService - error undefined', async () => {
-    await (async () => {
-      try {
-        invariant(service);
-        await service.promiseErrorUndefined();
-        expect(false).toBe(true);
-      } catch (e) {
-        expect(e).toBe(undefined);
-      }
-    })();
+    try {
+      invariant(service);
+      await service.promiseErrorUndefined();
+      expect(false).toBe(true);
+    } catch (e) {
+      expect(e).toBe(undefined);
+    }
   });
 
   it('ErrorService - error code', async () => {
-    await (async () => {
-      try {
-        invariant(service);
-        await service.promiseErrorCode(42);
-        expect(false).toBe(true);
-      } catch (e) {
-        expect(e instanceof Error).toBe(true);
-        expect(e.code).toBe(42);
-      }
-    })();
+    try {
+      invariant(service);
+      await service.promiseErrorCode(42);
+      expect(false).toBe(true);
+    } catch (e) {
+      expect(e instanceof Error).toBe(true);
+      expect(e.code).toBe(42);
+    }
   });
 
   it('ErrorService - observable error.message', () => {

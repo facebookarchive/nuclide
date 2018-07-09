@@ -69,11 +69,9 @@ describe('QuickOpenHelpers', () => {
   });
 
   it('it activates for valid directories', async () => {
-    await (async () => {
-      const {isEligibleForDirectory} = QuickOpenHelpers;
-      invariant(isEligibleForDirectory);
-      expect(await isEligibleForDirectory(mockDirectory)).toBe(true);
-    })();
+    const {isEligibleForDirectory} = QuickOpenHelpers;
+    invariant(isEligibleForDirectory);
+    expect(await isEligibleForDirectory(mockDirectory)).toBe(true);
   });
 
   it('is able to return and render tag results', async () => {

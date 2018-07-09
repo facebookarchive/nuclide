@@ -31,13 +31,11 @@ describe('PathSetFactory', () => {
   let ignoredFile: string;
 
   beforeEach(async () => {
-    await (async () => {
-      const tempDir = await generateFixture('fuzzy-file-search-rpc');
-      testDir = fs.realpathSync(tempDir);
-      trackedFile = nuclideUri.join(testDir, TRACKED_FILE_BASE);
-      untrackedFile = nuclideUri.join(testDir, UNTRACKED_FILE_BASE);
-      ignoredFile = nuclideUri.join(testDir, IGNORED_FILE_BASE);
-    })();
+    const tempDir = await generateFixture('fuzzy-file-search-rpc');
+    testDir = fs.realpathSync(tempDir);
+    trackedFile = nuclideUri.join(testDir, TRACKED_FILE_BASE);
+    untrackedFile = nuclideUri.join(testDir, UNTRACKED_FILE_BASE);
+    ignoredFile = nuclideUri.join(testDir, IGNORED_FILE_BASE);
   });
 
   describe('getFilesFromGit()', () => {
@@ -59,13 +57,11 @@ describe('PathSetFactory', () => {
     };
 
     it('returns tracked and untracked files, but not ignored files.', async () => {
-      await (async () => {
-        await setUpGitRepo();
-        const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
-        invariant(testDir);
-        const fetchedFiles = await getFilesFromGit(testDir);
-        expect(fetchedFiles).toEqual(expectedOutput);
-      })();
+      await setUpGitRepo();
+      const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
+      invariant(testDir);
+      const fetchedFiles = await getFilesFromGit(testDir);
+      expect(fetchedFiles).toEqual(expectedOutput);
     });
   });
 
@@ -88,13 +84,11 @@ describe('PathSetFactory', () => {
     };
 
     it('returns tracked and untracked files, but not ignored files.', async () => {
-      await (async () => {
-        await setUpHgRepo();
-        const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
-        invariant(testDir);
-        const fetchedFiles = await getFilesFromHg(testDir);
-        expect(fetchedFiles).toEqual(expectedOutput);
-      })();
+      await setUpHgRepo();
+      const expectedOutput = [TRACKED_FILE_BASE, UNTRACKED_FILE_BASE];
+      invariant(testDir);
+      const fetchedFiles = await getFilesFromHg(testDir);
+      expect(fetchedFiles).toEqual(expectedOutput);
     });
   });
 });

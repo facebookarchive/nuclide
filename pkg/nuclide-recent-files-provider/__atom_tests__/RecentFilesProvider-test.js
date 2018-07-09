@@ -67,68 +67,60 @@ describe('RecentFilesProvider', () => {
 
   describe('getRecentFiles', () => {
     it('returns all recently opened files for currently mounted project directories', async () => {
-      await (async () => {
-        invariant(provider != null);
-        fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
-        invariant(provider.providerType === 'GLOBAL');
-        fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
-        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
-      })();
+      invariant(provider != null);
+      fakeGetProjectPathsImpl = () => [PROJECT_PATH];
+      invariant(provider.providerType === 'GLOBAL');
+      expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
+      invariant(provider.providerType === 'GLOBAL');
+      fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
+      expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
     });
 
     it('does not return files for project directories that are not currently mounted', async () => {
-      await (async () => {
-        invariant(provider != null);
-        fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
-        invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('', [])).toEqual([]);
+      invariant(provider != null);
+      fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
+      invariant(provider.providerType === 'GLOBAL');
+      expect(await provider.executeQuery('', [])).toEqual([]);
 
-        fakeGetProjectPathsImpl = () => [];
-        invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('', [])).toEqual([]);
-      })();
+      fakeGetProjectPathsImpl = () => [];
+      invariant(provider.providerType === 'GLOBAL');
+      expect(await provider.executeQuery('', [])).toEqual([]);
     });
 
     it('does not return files that are currently open in Atom', async () => {
-      await (async () => {
-        invariant(provider != null);
-        fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        const textEditor = await atom.workspace.open(FILE_PATHS[0]);
-        invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('', [])).toEqual([
-          FAKE_RECENT_FILES[1],
-          FAKE_RECENT_FILES[2],
-        ]);
-        textEditor.destroy();
-        invariant(provider.providerType === 'GLOBAL');
-        expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
-      })();
+      invariant(provider != null);
+      fakeGetProjectPathsImpl = () => [PROJECT_PATH];
+      const textEditor = await atom.workspace.open(FILE_PATHS[0]);
+      invariant(provider.providerType === 'GLOBAL');
+      expect(await provider.executeQuery('', [])).toEqual([
+        FAKE_RECENT_FILES[1],
+        FAKE_RECENT_FILES[2],
+      ]);
+      textEditor.destroy();
+      invariant(provider.providerType === 'GLOBAL');
+      expect(await provider.executeQuery('', [])).toEqual(FAKE_RECENT_FILES);
     });
 
     it('filters results according to the query string', async () => {
-      await (async () => {
-        invariant(provider != null);
-        fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
-        invariant(provider.providerType === 'GLOBAL');
-        const results = await provider.executeQuery('bba', []);
-        // Do not cement exact scores or match indices in this test, since they are determined by
-        // Fuzzy-native. Jasmine 1.3 does not support `jasmine.objectContaining`,
-        // so we need to check the results manually:
-        expect(results.length).toEqual(2);
+      invariant(provider != null);
+      fakeGetProjectPathsImpl = () => [PROJECT_PATH];
+      // 'foo/bla/foo.js' does not match 'bba', but `bar.js` and `baz.js` do.
+      invariant(provider.providerType === 'GLOBAL');
+      const results = await provider.executeQuery('bba', []);
+      // Do not cement exact scores or match indices in this test, since they are determined by
+      // Fuzzy-native. Jasmine 1.3 does not support `jasmine.objectContaining`,
+      // so we need to check the results manually:
+      expect(results.length).toEqual(2);
 
-        expect(results[0].path).toEqual(FAKE_RECENT_FILES[1].path);
-        expect(results[0].timestamp).toEqual(FAKE_RECENT_FILES[1].timestamp);
-        expect(results[0].matchIndexes).toBeDefined();
-        expect(results[0].score).toBeGreaterThan(0);
+      expect(results[0].path).toEqual(FAKE_RECENT_FILES[1].path);
+      expect(results[0].timestamp).toEqual(FAKE_RECENT_FILES[1].timestamp);
+      expect(results[0].matchIndexes).toBeDefined();
+      expect(results[0].score).toBeGreaterThan(0);
 
-        expect(results[1].path).toEqual(FAKE_RECENT_FILES[2].path);
-        expect(results[1].timestamp).toEqual(FAKE_RECENT_FILES[2].timestamp);
-        expect(results[1].matchIndexes).toBeDefined();
-        expect(results[1].score).toBeGreaterThan(0);
-      })();
+      expect(results[1].path).toEqual(FAKE_RECENT_FILES[2].path);
+      expect(results[1].timestamp).toEqual(FAKE_RECENT_FILES[2].timestamp);
+      expect(results[1].matchIndexes).toBeDefined();
+      expect(results[1].score).toBeGreaterThan(0);
     });
   });
 

@@ -45,20 +45,16 @@ describe('RemoteFile', () => {
     });
 
     it('gets realpath of a file', async () => {
-      await (async () => {
-        const file = new RemoteFile(connectionMock, symlinkedFilePath);
-        const realpath = await file.getRealPath();
-        expect(realpath).toBe(fs.realpathSync(symlinkedFilePath));
-      })();
+      const file = new RemoteFile(connectionMock, symlinkedFilePath);
+      const realpath = await file.getRealPath();
+      expect(realpath).toBe(fs.realpathSync(symlinkedFilePath));
     });
 
     it('caches the getRealPath result', async () => {
-      await (async () => {
-        const file = new RemoteFile(connectionMock, symlinkedFilePath);
-        expect(file.getRealPathSync()).toBe(symlinkedFilePath);
-        await file.getRealPath();
-        expect(file.getRealPathSync()).toBe(filePath);
-      })();
+      const file = new RemoteFile(connectionMock, symlinkedFilePath);
+      expect(file.getRealPathSync()).toBe(symlinkedFilePath);
+      await file.getRealPath();
+      expect(file.getRealPathSync()).toBe(filePath);
     });
   });
 
@@ -70,23 +66,19 @@ describe('RemoteFile', () => {
     });
 
     it('deletes the existing file', async () => {
-      await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
-        fs.writeFileSync(filePath, '');
-        const file = new RemoteFile(connectionMock, filePath);
-        expect(fs.existsSync(filePath)).toBe(true);
-        await file.delete();
-        expect(fs.existsSync(filePath)).toBe(false);
-      })();
+      const filePath = nuclideUri.join(tempDir, 'file_to_delete');
+      fs.writeFileSync(filePath, '');
+      const file = new RemoteFile(connectionMock, filePath);
+      expect(fs.existsSync(filePath)).toBe(true);
+      await file.delete();
+      expect(fs.existsSync(filePath)).toBe(false);
     });
 
     it('deletes the non-existent file', async () => {
-      await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
-        const file = new RemoteFile(connectionMock, filePath);
-        await file.delete();
-        expect(fs.existsSync(filePath)).toBe(false);
-      })();
+      const filePath = nuclideUri.join(tempDir, 'file_to_delete');
+      const file = new RemoteFile(connectionMock, filePath);
+      await file.delete();
+      expect(fs.existsSync(filePath)).toBe(false);
     });
   });
 
@@ -160,25 +152,21 @@ describe('RemoteFile', () => {
     // Adding the other cases is misleading and incorrect since it's actually
     // delegating to `fsPromise` here.
     it('copying existing files', async () => {
-      await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_copy');
-        const fileContents = 'copy me!';
-        fs.writeFileSync(filePath, fileContents);
-        const newFilePath = nuclideUri.join(tempDir, 'copied_file');
-        expect(fs.existsSync(filePath)).toBe(true);
-        expect(fs.existsSync(newFilePath)).toBe(false);
+      const filePath = nuclideUri.join(tempDir, 'file_to_copy');
+      const fileContents = 'copy me!';
+      fs.writeFileSync(filePath, fileContents);
+      const newFilePath = nuclideUri.join(tempDir, 'copied_file');
+      expect(fs.existsSync(filePath)).toBe(true);
+      expect(fs.existsSync(newFilePath)).toBe(false);
 
-        const file = new RemoteFile(connectionMock, filePath);
-        jest
-          .spyOn(file, '_subscribeToNativeChangeEvents')
-          .mockReturnValue(null);
-        const result = await file.copy(newFilePath);
-        const newFile = new RemoteFile(connectionMock, newFilePath);
-        const digest = await newFile.getDigest();
-        expect(result).toBe(true);
-        expect(fs.existsSync(newFilePath)).toBe(true);
-        expect(digest).toBe(computeDigest(fileContents));
-      })();
+      const file = new RemoteFile(connectionMock, filePath);
+      jest.spyOn(file, '_subscribeToNativeChangeEvents').mockReturnValue(null);
+      const result = await file.copy(newFilePath);
+      const newFile = new RemoteFile(connectionMock, newFilePath);
+      const digest = await newFile.getDigest();
+      expect(result).toBe(true);
+      expect(fs.existsSync(newFilePath)).toBe(true);
+      expect(digest).toBe(computeDigest(fileContents));
     });
   });
 
@@ -204,10 +192,8 @@ describe('RemoteFile', () => {
     });
 
     afterEach(async () => {
-      await (async () => {
-        await file._unsubscribeFromNativeChangeEvents();
-        await connectionMock.getFsService().unwatchDirectoryRecursive(tempDir);
-      })();
+      await file._unsubscribeFromNativeChangeEvents();
+      await connectionMock.getFsService().unwatchDirectoryRecursive(tempDir);
     });
 
     describe('when the contents of the file change', () => {
@@ -262,14 +248,12 @@ describe('RemoteFile', () => {
           skippedError = error;
           handle();
         });
-        await (async () => {
-          try {
-            // Simulate an change event comes, but the file doesn't exist!
-            await notExistingFile._handleNativeChangeEvent('change');
-          } catch (error) {
-            handleError = error;
-          }
-        })();
+        try {
+          // Simulate an change event comes, but the file doesn't exist!
+          await notExistingFile._handleNativeChangeEvent('change');
+        } catch (error) {
+          handleError = error;
+        }
         waitsFor(() => skippedError);
         runs(() => {
           expect(skippedError.code).toBe('ENOENT');
@@ -287,12 +271,10 @@ describe('RemoteFile', () => {
     });
 
     it('returns true when file creation is successful', async () => {
-      await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'create.txt');
-        const remoteFile = new RemoteFile(connectionMock, filePath);
-        const wasCreated = await remoteFile.create();
-        expect(wasCreated).toBe(true);
-      })();
+      const filePath = nuclideUri.join(tempDir, 'create.txt');
+      const remoteFile = new RemoteFile(connectionMock, filePath);
+      const wasCreated = await remoteFile.create();
+      expect(wasCreated).toBe(true);
     });
   });
 
@@ -304,24 +286,20 @@ describe('RemoteFile', () => {
     });
 
     it('exists resolves to true when the file exists', async () => {
-      await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'sample contents');
-        const existingFile = new RemoteFile(connectionMock, filePath);
-        const exists = await existingFile.exists();
-        expect(exists).toBe(true);
-      })();
+      const filePath = nuclideUri.join(tempDir, 'file.txt');
+      fs.writeFileSync(filePath, 'sample contents');
+      const existingFile = new RemoteFile(connectionMock, filePath);
+      const exists = await existingFile.exists();
+      expect(exists).toBe(true);
     });
 
     it('exists resolves to false when the file does not exist', async () => {
-      await (async () => {
-        const notExistingFile = new RemoteFile(
-          connectionMock,
-          nuclideUri.join(tempDir, 'no_existing.txt'),
-        );
-        const exists = await notExistingFile.exists();
-        expect(exists).toBe(false);
-      })();
+      const notExistingFile = new RemoteFile(
+        connectionMock,
+        nuclideUri.join(tempDir, 'no_existing.txt'),
+      );
+      const exists = await notExistingFile.exists();
+      expect(exists).toBe(false);
     });
   });
 
@@ -340,26 +318,20 @@ describe('RemoteFile', () => {
     });
 
     it('getDigest even if the file was not read before', async () => {
-      await (async () => {
-        const digest = await file.getDigest();
-        expect(digest).toBe(computeDigest(fileContents));
-      })();
+      const digest = await file.getDigest();
+      expect(digest).toBe(computeDigest(fileContents));
     });
 
     it('getDigestSync cached the digest value', async () => {
-      await (async () => {
-        await file.getDigest();
-        const digest = file.getDigestSync();
-        expect(digest).toBe(computeDigest(fileContents));
-      })();
+      await file.getDigest();
+      const digest = file.getDigestSync();
+      expect(digest).toBe(computeDigest(fileContents));
     });
 
     it('file reading sets the digest', async () => {
-      await (async () => {
-        await file.read();
-        const digest = file.getDigestSync();
-        expect(digest).toBe(computeDigest(fileContents));
-      })();
+      await file.read();
+      const digest = file.getDigestSync();
+      expect(digest).toBe(computeDigest(fileContents));
     });
 
     it('getDigestSync sets the digest for an empty string if no digest is cached', () => {
@@ -368,11 +340,9 @@ describe('RemoteFile', () => {
     });
 
     it('_setDigest sets the digest', async () => {
-      await (async () => {
-        const newContents = 'new contents 2!';
-        file._setDigest(newContents);
-        expect(file.getDigestSync()).toBe(computeDigest(newContents));
-      })();
+      const newContents = 'new contents 2!';
+      file._setDigest(newContents);
+      expect(file.getDigestSync()).toBe(computeDigest(newContents));
     });
   });
 
@@ -437,56 +407,48 @@ describe('RemoteFile', () => {
 
   describe('RemoteFile::createReadStream()', () => {
     it('is able to read file contents', async () => {
-      await (async () => {
-        const tempDir = temp.mkdirSync('stream_test');
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'test1234');
+      const tempDir = temp.mkdirSync('stream_test');
+      const filePath = nuclideUri.join(tempDir, 'file.txt');
+      fs.writeFileSync(filePath, 'test1234');
 
-        const file = new RemoteFile(connectionMock, filePath);
-        const readStream = file.createReadStream();
-        const data = await observeStream(readStream)
-          .toArray()
-          .toPromise();
-        expect(data).toEqual(['test1234']);
-      })();
+      const file = new RemoteFile(connectionMock, filePath);
+      const readStream = file.createReadStream();
+      const data = await observeStream(readStream)
+        .toArray()
+        .toPromise();
+      expect(data).toEqual(['test1234']);
     });
 
     it('handles errors', async () => {
-      await (async () => {
-        const file = new RemoteFile(connectionMock, 'test');
-        const readStream = file.createReadStream();
-        const data = await observeStream(readStream)
-          .toArray()
-          .toPromise()
-          .catch(e => e);
-        expect(data instanceof Error).toBe(true);
-      })();
+      const file = new RemoteFile(connectionMock, 'test');
+      const readStream = file.createReadStream();
+      const data = await observeStream(readStream)
+        .toArray()
+        .toPromise()
+        .catch(e => e);
+      expect(data instanceof Error).toBe(true);
     });
   });
 
   describe('RemoteFile::createWriteStream()', () => {
     it('is able to write file contents', async () => {
-      await (async () => {
-        const tempDir = temp.mkdirSync('stream_test');
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        const file = new RemoteFile(connectionMock, filePath);
-        const writeStream = file.createWriteStream();
-        writeStream.write('test1234');
-        await new Promise(resolve => writeStream.end(resolve));
-        expect(fs.readFileSync(filePath, 'utf8')).toBe('test1234');
-      })();
+      const tempDir = temp.mkdirSync('stream_test');
+      const filePath = nuclideUri.join(tempDir, 'file.txt');
+      const file = new RemoteFile(connectionMock, filePath);
+      const writeStream = file.createWriteStream();
+      writeStream.write('test1234');
+      await new Promise(resolve => writeStream.end(resolve));
+      expect(fs.readFileSync(filePath, 'utf8')).toBe('test1234');
     });
 
     it('handles errors', async () => {
-      await (async () => {
-        const file = new RemoteFile(connectionMock, 'a/');
-        const writeStream = file.createWriteStream();
-        writeStream.write('test1234');
-        let error: ?Error = null;
-        writeStream.on('error', e => (error = e));
-        await new Promise(resolve => writeStream.end(resolve));
-        expect(error).not.toBeNull();
-      })();
+      const file = new RemoteFile(connectionMock, 'a/');
+      const writeStream = file.createWriteStream();
+      writeStream.write('test1234');
+      let error: ?Error = null;
+      writeStream.on('error', e => (error = e));
+      await new Promise(resolve => writeStream.end(resolve));
+      expect(error).not.toBeNull();
     });
   });
 });

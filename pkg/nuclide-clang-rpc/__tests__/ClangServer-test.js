@@ -95,86 +95,75 @@ describe('ClangServer', () => {
   });
 
   it('gracefully handles server crashes', async () => {
-    await (async () => {
-      const serverArgs = findClangServerArgs();
-      const server = new ClangServer(
-        TEST_FILE,
-        FILE_CONTENTS,
-        serverArgs,
-        serverFlags,
-      );
-      let response = await server.compile(FILE_CONTENTS);
-      expect(response).not.toBe(null);
+    const serverArgs = findClangServerArgs();
+    const server = new ClangServer(
+      TEST_FILE,
+      FILE_CONTENTS,
+      serverArgs,
+      serverFlags,
+    );
+    let response = await server.compile(FILE_CONTENTS);
+    expect(response).not.toBe(null);
 
-      const {_process} = server._rpcProcess;
-      invariant(_process);
-      _process.kill();
+    const {_process} = server._rpcProcess;
+    invariant(_process);
+    _process.kill();
 
-      // This request should fail, but cleanup should occur.
-      let thrown = false;
-      try {
-        response = await server.compile(FILE_CONTENTS);
-      } catch (e) {
-        thrown = true;
-      }
-      expect(thrown).toBe(true);
+    // This request should fail, but cleanup should occur.
+    let thrown = false;
+    try {
+      response = await server.compile(FILE_CONTENTS);
+    } catch (e) {
+      thrown = true;
+    }
+    expect(thrown).toBe(true);
 
-      // The next request should work as expected.
-      const service = await server.getService();
-      response = await service.get_declaration(FILE_CONTENTS, 4, 2);
-      expect(response).not.toBe(null);
-    })();
+    // The next request should work as expected.
+    const service = await server.getService();
+    response = await service.get_declaration(FILE_CONTENTS, 4, 2);
+    expect(response).not.toBe(null);
   });
 
   it('supports get_local_references', async () => {
-    await (async () => {
-      const file = nuclideUri.join(
-        __dirname,
-        '../__mocks__',
-        'fixtures',
-        'cpp_buck_project',
-        'references.cpp',
-      );
-      const fileContents = fs.readFileSync(file).toString('utf8');
-      const serverArgs = findClangServerArgs();
-      const server = new ClangServer(
-        file,
-        fileContents,
-        serverArgs,
-        serverFlags,
-      );
-      const service = await server.getService();
+    const file = nuclideUri.join(
+      __dirname,
+      '../__mocks__',
+      'fixtures',
+      'cpp_buck_project',
+      'references.cpp',
+    );
+    const fileContents = fs.readFileSync(file).toString('utf8');
+    const serverArgs = findClangServerArgs();
+    const server = new ClangServer(file, fileContents, serverArgs, serverFlags);
+    const service = await server.getService();
 
-      const compileResponse = await server.compile(fileContents);
+    const compileResponse = await server.compile(fileContents);
 
-      invariant(compileResponse != null);
-      expect(compileResponse.diagnostics).toEqual([]);
+    invariant(compileResponse != null);
+    expect(compileResponse.diagnostics).toEqual([]);
 
-      // param var1
-      expect(
-        await service.get_local_references(fileContents, 1, 24),
-      ).toMatchSnapshot();
-      // var2 (from a reference)
-      expect(
-        await service.get_local_references(fileContents, 4, 9),
-      ).toMatchSnapshot();
+    // param var1
+    expect(
+      await service.get_local_references(fileContents, 1, 24),
+    ).toMatchSnapshot();
+    // var2 (from a reference)
+    expect(
+      await service.get_local_references(fileContents, 4, 9),
+    ).toMatchSnapshot();
 
-      // var3
-      expect(
-        await service.get_local_references(fileContents, 2, 26),
-      ).toMatchSnapshot();
+    // var3
+    expect(
+      await service.get_local_references(fileContents, 2, 26),
+    ).toMatchSnapshot();
 
-      // inner var1
-      expect(
-        await service.get_local_references(fileContents, 6, 11),
-      ).toMatchSnapshot();
+    // inner var1
+    expect(
+      await service.get_local_references(fileContents, 6, 11),
+    ).toMatchSnapshot();
 
-      // nothing
-      expect(await service.get_local_references(fileContents, 0, 0)).toBe(null);
-      expect(await service.get_local_references(fileContents, 11, 0)).toBe(
-        null,
-      );
-    })();
+    // nothing
+    expect(await service.get_local_references(fileContents, 0, 0)).toBe(null);
+    expect(await service.get_local_references(fileContents, 11, 0)).toBe(null);
   });
 
   it('tracks server status', async () => {

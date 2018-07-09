@@ -93,20 +93,16 @@ function checkQueryPs(
     });
 
     it('parses', async () => {
-      await (async () => {
-        const expected = new Map(data.map(entry => [entry.ps.pid, entry.ps]));
-        const actual = await queryPs('command').toPromise();
-        expect(actual).toEqual(expected);
-      })();
+      const expected = new Map(data.map(entry => [entry.ps.pid, entry.ps]));
+      const actual = await queryPs('command').toPromise();
+      expect(actual).toEqual(expected);
     });
 
     it('summarizes', async () => {
-      await (async () => {
-        const actual = await queryPs('command')
-          .map(childProcessSummary)
-          .toPromise();
-        expect(actual).toEqual(summary);
-      })();
+      const actual = await queryPs('command')
+        .map(childProcessSummary)
+        .toPromise();
+      expect(actual).toEqual(summary);
     });
 
     it('converts to tree', async () => {

@@ -28,27 +28,23 @@ describe('parseMessages', () => {
       lines.connect();
 
       it('parses the preamble (skipping the ceremony)', async () => {
-        await (async () => {
-          const output = await parseMessages(lines)
-            .toArray()
-            .toPromise();
-          expect((output[0]: any).message.text).toBe(
-            'Running Metro on port 8081.',
-          );
-        })();
+        const output = await parseMessages(lines)
+          .toArray()
+          .toPromise();
+        expect((output[0]: any).message.text).toBe(
+          'Running Metro on port 8081.',
+        );
       });
 
       it('finds the ready line', async () => {
-        await (async () => {
-          const output = await parseMessages(lines)
-            .toArray()
-            .toPromise();
-          const readyLines = output.filter(line => line.type === 'ready');
-          expect(readyLines.length).toBe(
-            1,
-            'Expected exactly one ready message.',
-          );
-        })();
+        const output = await parseMessages(lines)
+          .toArray()
+          .toPromise();
+        const readyLines = output.filter(line => line.type === 'ready');
+        expect(readyLines.length).toBe(
+          1,
+          'Expected exactly one ready message.',
+        );
       });
     });
   });

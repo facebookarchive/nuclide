@@ -109,37 +109,35 @@ describe('CounterService', () => {
   });
 
   it('can subscribe/unsubscribe to the same observable multiple times.', async () => {
-    await (async () => {
-      invariant(service);
+    invariant(service);
 
-      const obs = service.Counter.watchNewCounters().refCount();
+    const obs = service.Counter.watchNewCounters().refCount();
 
-      let watchedCounters1 = 0;
-      const sub1 = obs.subscribe(counter => {
-        sub1.unsubscribe();
-        ++watchedCounters1;
-      });
-      let watchedCounters2 = 0;
-      const sub2 = obs.subscribe(counter => {
-        ++watchedCounters2;
-        if (watchedCounters2 === 2) {
-          sub2.unsubscribe();
-        }
-      });
+    let watchedCounters1 = 0;
+    const sub1 = obs.subscribe(counter => {
+      sub1.unsubscribe();
+      ++watchedCounters1;
+    });
+    let watchedCounters2 = 0;
+    const sub2 = obs.subscribe(counter => {
+      ++watchedCounters2;
+      if (watchedCounters2 === 2) {
+        sub2.unsubscribe();
+      }
+    });
 
-      // Create two services.
-      const counter1 = await service.Counter.createCounter(3);
-      await counter1.getCount();
+    // Create two services.
+    const counter1 = await service.Counter.createCounter(3);
+    await counter1.getCount();
 
-      const counter2 = await service.Counter.createCounter(5);
-      await counter2.getCount();
+    const counter2 = await service.Counter.createCounter(5);
+    await counter2.getCount();
 
-      const counter3 = await service.Counter.createCounter(7);
-      await counter3.getCount();
+    const counter3 = await service.Counter.createCounter(7);
+    await counter3.getCount();
 
-      expect(watchedCounters1).toBe(1);
-      expect(watchedCounters2).toBe(2);
-    })();
+    expect(watchedCounters1).toBe(1);
+    expect(watchedCounters2).toBe(2);
   });
 
   afterEach(() => testHelper.stop());

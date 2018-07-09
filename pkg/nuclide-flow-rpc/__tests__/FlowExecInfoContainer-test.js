@@ -47,43 +47,35 @@ describe('FlowExecInfoContainer', () => {
     describe('with flow-bin disallowed (default)', () => {
       describe('in a directory without flow-bin', () => {
         it('should return the system Flow binary', async () => {
-          await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withoutFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
-            expect(execInfo.pathToFlow).toBe(dummyFlowPath);
-          })();
+          const execInfo = await infoContainer._computeFlowExecInfo(
+            withoutFlowBinProjectPath,
+          );
+          invariant(execInfo != null);
+          expect(execInfo.pathToFlow).toBe(dummyFlowPath);
         });
       });
       describe('in a directory with flow-bin', () => {
         it('should return the system Flow binary', async () => {
-          await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
-            expect(execInfo.pathToFlow).toBe(dummyFlowPath);
-          })();
+          const execInfo = await infoContainer._computeFlowExecInfo(
+            withFlowBinProjectPath,
+          );
+          invariant(execInfo != null);
+          expect(execInfo.pathToFlow).toBe(dummyFlowPath);
         });
         it('should return null if Flow cannot be found', async () => {
-          await (async () => {
-            // If somebody has this on their PATH I'm going to be upset
-            infoContainer._pathToFlow = 'notAValidExecutable';
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withFlowBinProjectPath,
-            );
-            expect(execInfo).toBeNull();
-          })();
+          // If somebody has this on their PATH I'm going to be upset
+          infoContainer._pathToFlow = 'notAValidExecutable';
+          const execInfo = await infoContainer._computeFlowExecInfo(
+            withFlowBinProjectPath,
+          );
+          expect(execInfo).toBeNull();
         });
       });
       describe('outside of a Flow root', () => {
         it('should return the system Flow binary', async () => {
-          await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(null);
-            invariant(execInfo != null);
-            expect(execInfo.pathToFlow).toBe(dummyFlowPath);
-          })();
+          const execInfo = await infoContainer._computeFlowExecInfo(null);
+          invariant(execInfo != null);
+          expect(execInfo.pathToFlow).toBe(dummyFlowPath);
         });
       });
     });
@@ -94,13 +86,11 @@ describe('FlowExecInfoContainer', () => {
       });
       describe('in a directory without flow-bin', () => {
         it('should return the system Flow binary', async () => {
-          await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(
-              withoutFlowBinProjectPath,
-            );
-            invariant(execInfo != null);
-            expect(execInfo.pathToFlow).toBe(dummyFlowPath);
-          })();
+          const execInfo = await infoContainer._computeFlowExecInfo(
+            withoutFlowBinProjectPath,
+          );
+          invariant(execInfo != null);
+          expect(execInfo.pathToFlow).toBe(dummyFlowPath);
         });
       });
       describe('in a directory with flow-bin', () => {
@@ -118,11 +108,9 @@ describe('FlowExecInfoContainer', () => {
       });
       describe('outside of a Flow root', () => {
         it('should return the system Flow binary', async () => {
-          await (async () => {
-            const execInfo = await infoContainer._computeFlowExecInfo(null);
-            invariant(execInfo != null);
-            expect(execInfo.pathToFlow).toBe(dummyFlowPath);
-          })();
+          const execInfo = await infoContainer._computeFlowExecInfo(null);
+          invariant(execInfo != null);
+          expect(execInfo.pathToFlow).toBe(dummyFlowPath);
         });
       });
     });

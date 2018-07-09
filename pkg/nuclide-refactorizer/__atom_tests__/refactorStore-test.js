@@ -121,7 +121,24 @@ describe('refactorStore', () => {
   });
 
   it('handles a missing editor', async () => {
-    await (async () => {
+    store.dispatch(Actions.open('generic'));
+    await expectObservableToStartWith(stateStream, [
+      {type: 'closed'},
+      {
+        type: 'open',
+        ui: 'generic',
+        phase: {type: 'get-refactorings'},
+      },
+      {type: 'closed'},
+    ]);
+  });
+
+  describe('with an open text editor', () => {
+    let openEditor: atom$TextEditor = (null: any);
+    beforeEach(async () => {
+      openEditor = await atom.workspace.open(TEST_FILE);
+    });
+    it('handles a missing provider', async () => {
       store.dispatch(Actions.open('generic'));
       await expectObservableToStartWith(stateStream, [
         {type: 'closed'},
@@ -132,18 +149,38 @@ describe('refactorStore', () => {
         },
         {type: 'closed'},
       ]);
-    })();
-  });
-
-  describe('with an open text editor', () => {
-    let openEditor: atom$TextEditor = (null: any);
-    beforeEach(async () => {
-      await (async () => {
-        openEditor = await atom.workspace.open(TEST_FILE);
-      })();
     });
-    it('handles a missing provider', async () => {
-      await (async () => {
+
+    describe('with an available provider', () => {
+      beforeEach(() => {
+        providers.addProvider(provider);
+      });
+
+      it('runs the refactor', async () => {
+        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
+        refactorReturn = Observable.of({
+          type: 'edit',
+          edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
+        });
+
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        await waitForPhase('rename');
+        const rename: RenameRequest = {
+          kind: 'rename',
+          originalPoint: TEST_FILE_POINT,
+          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          editor: openEditor,
+          newName: 'bar',
+        };
+        store.dispatch(Actions.execute(provider, rename));
+        await waitForClose();
+        expect(openEditor.getText()).toEqual('bar\nbar\nbar\n');
+      });
+
+      it('does not allow refactoring of an unsaved file', async () => {
+        await atom.workspace.open();
         store.dispatch(Actions.open('generic'));
         await expectObservableToStartWith(stateStream, [
           {type: 'closed'},
@@ -154,197 +191,138 @@ describe('refactorStore', () => {
           },
           {type: 'closed'},
         ]);
-      })();
-    });
-
-    describe('with an available provider', () => {
-      beforeEach(() => {
-        providers.addProvider(provider);
-      });
-
-      it('runs the refactor', async () => {
-        await (async () => {
-          refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.of({
-            type: 'edit',
-            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
-          });
-
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
-          await waitForPhase('rename');
-          const rename: RenameRequest = {
-            kind: 'rename',
-            originalPoint: TEST_FILE_POINT,
-            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-            editor: openEditor,
-            newName: 'bar',
-          };
-          store.dispatch(Actions.execute(provider, rename));
-          await waitForClose();
-          expect(openEditor.getText()).toEqual('bar\nbar\nbar\n');
-        })();
-      });
-
-      it('does not allow refactoring of an unsaved file', async () => {
-        await (async () => {
-          await atom.workspace.open();
-          store.dispatch(Actions.open('generic'));
-          await expectObservableToStartWith(stateStream, [
-            {type: 'closed'},
-            {
-              type: 'open',
-              ui: 'generic',
-              phase: {type: 'get-refactorings'},
-            },
-            {type: 'closed'},
-          ]);
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       it('tolerates a provider returning available refactorings after a close action', async () => {
-        await (async () => {
-          const deferred = new Deferred();
-          refactoringsAtPointReturn = deferred.promise;
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('get-refactorings');
-          store.dispatch(Actions.close());
-          await waitForClose();
-          deferred.resolve([]);
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        const deferred = new Deferred();
+        refactoringsAtPointReturn = deferred.promise;
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('get-refactorings');
+        store.dispatch(Actions.close());
+        await waitForClose();
+        deferred.resolve([]);
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       it('tolerates a provider returning refactor results after a close action', async () => {
-        await (async () => {
-          const deferred = new Subject();
-          refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = deferred;
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
-          await waitForPhase('rename');
-          const rename: RenameRequest = {
-            kind: 'rename',
-            originalPoint: TEST_FILE_POINT,
-            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-            editor: openEditor,
-            newName: 'bar',
-          };
-          store.dispatch(Actions.execute(provider, rename));
-          await waitForPhase('execute');
-          store.dispatch(Actions.close());
-          await waitForClose();
-          deferred.next({
-            type: 'edit',
-            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
-          });
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        const deferred = new Subject();
+        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
+        refactorReturn = deferred;
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        await waitForPhase('rename');
+        const rename: RenameRequest = {
+          kind: 'rename',
+          originalPoint: TEST_FILE_POINT,
+          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          editor: openEditor,
+          newName: 'bar',
+        };
+        store.dispatch(Actions.execute(provider, rename));
+        await waitForPhase('execute');
+        store.dispatch(Actions.close());
+        await waitForClose();
+        deferred.next({
+          type: 'edit',
+          edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
+        });
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       // TODO also test the method actually throwing, as well as returning a rejected promise.
       it('tolerates a provider throwing in refactoringsAtPoint', async () => {
-        await (async () => {
-          refactoringsAtPointReturn = Promise.reject(new Error());
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('get-refactorings');
-          await waitForClose();
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        refactoringsAtPointReturn = Promise.reject(new Error());
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('get-refactorings');
+        await waitForClose();
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       // TODO also test the method actually throwing, as well as returning a rejected promise.
       it('tolerates a provider throwing in refactor', async () => {
-        await (async () => {
-          refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.throw(new Error());
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
-          await waitForPhase('rename');
-          const rename: RenameRequest = {
-            kind: 'rename',
-            originalPoint: TEST_FILE_POINT,
-            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-            editor: openEditor,
-            newName: 'bar',
-          };
-          store.dispatch(Actions.execute(provider, rename));
-          await waitForClose();
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
+        refactorReturn = Observable.throw(new Error());
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        await waitForPhase('rename');
+        const rename: RenameRequest = {
+          kind: 'rename',
+          originalPoint: TEST_FILE_POINT,
+          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          editor: openEditor,
+          newName: 'bar',
+        };
+        store.dispatch(Actions.execute(provider, rename));
+        await waitForClose();
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       it('tolerates a provider returning empty from refactor', async () => {
-        await (async () => {
-          refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.empty();
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
-          await waitForPhase('rename');
-          const rename: RenameRequest = {
-            kind: 'rename',
-            originalPoint: TEST_FILE_POINT,
-            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-            editor: openEditor,
-            newName: 'bar',
-          };
-          store.dispatch(Actions.execute(provider, rename));
-          await waitForClose();
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
+        refactorReturn = Observable.empty();
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        await waitForPhase('rename');
+        const rename: RenameRequest = {
+          kind: 'rename',
+          originalPoint: TEST_FILE_POINT,
+          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          editor: openEditor,
+          newName: 'bar',
+        };
+        store.dispatch(Actions.execute(provider, rename));
+        await waitForClose();
+        await nextTick();
+        expectNoUncaughtErrors();
       });
 
       it('fails gracefully when the edits do not apply', async () => {
-        await (async () => {
-          refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          const edits = [
-            {
-              oldRange: new Range([0, 0], [0, 3]),
-              // intentionally not 'foo' in order to trigger a conflict when we attempt to apply this
-              // edit.
-              oldText: 'foz',
-              newText: 'bar',
-            },
-          ];
-          refactorReturn = Observable.of({
-            type: 'edit',
-            edits: new Map([[TEST_FILE, edits]]),
-          });
+        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
+        const edits = [
+          {
+            oldRange: new Range([0, 0], [0, 3]),
+            // intentionally not 'foo' in order to trigger a conflict when we attempt to apply this
+            // edit.
+            oldText: 'foz',
+            newText: 'bar',
+          },
+        ];
+        refactorReturn = Observable.of({
+          type: 'edit',
+          edits: new Map([[TEST_FILE, edits]]),
+        });
 
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
-          await waitForPhase('rename');
-          const rename: RenameRequest = {
-            kind: 'rename',
-            originalPoint: TEST_FILE_POINT,
-            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-            editor: openEditor,
-            newName: 'bar',
-          };
-          store.dispatch(Actions.execute(provider, rename));
-          // TODO should display an error somewhere
-          await waitForClose();
-          expect(openEditor.getText()).toEqual('foo\nbar\nfoo\n');
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        await waitForPhase('rename');
+        const rename: RenameRequest = {
+          kind: 'rename',
+          originalPoint: TEST_FILE_POINT,
+          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          editor: openEditor,
+          newName: 'bar',
+        };
+        store.dispatch(Actions.execute(provider, rename));
+        // TODO should display an error somewhere
+        await waitForClose();
+        expect(openEditor.getText()).toEqual('foo\nbar\nfoo\n');
 
-          // TODO test this with multiple files. it will become much more complex. We need to make
-          // sure that we can apply the entire refactoring transactionally. this means if something
-          // goes wrong we need to roll back the rest.
+        // TODO test this with multiple files. it will become much more complex. We need to make
+        // sure that we can apply the entire refactoring transactionally. this means if something
+        // goes wrong we need to roll back the rest.
 
-          await nextTick();
-          expectNoUncaughtErrors();
-        })();
+        await nextTick();
+        expectNoUncaughtErrors();
       });
     });
 
@@ -391,29 +369,27 @@ describe('refactorStore', () => {
       });
 
       it('runs the refactor', async () => {
-        await (async () => {
-          store.dispatch(Actions.open('generic'));
-          await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(refactoring));
+        store.dispatch(Actions.open('generic'));
+        await waitForPhase('pick');
+        store.dispatch(Actions.pickedRefactor(refactoring));
 
-          await waitForPhase('freeform');
-          const state = store.getState();
-          invariant(state.type === 'open');
-          invariant(state.phase.type === 'freeform');
-          expect(state.phase.refactoring).toEqual(refactoring);
+        await waitForPhase('freeform');
+        const state = store.getState();
+        invariant(state.type === 'open');
+        invariant(state.phase.type === 'freeform');
+        expect(state.phase.refactoring).toEqual(refactoring);
 
-          const asyncify: FreeformRefactorRequest = {
-            kind: 'freeform',
-            originalRange: new Range(TEST_FILE_POINT, TEST_FILE_POINT),
-            editor: openEditor,
-            id: 'asyncify',
-            range: new Range([0, 0], [0, 0]),
-            arguments: new Map([['new_name', 'test']]),
-          };
-          store.dispatch(Actions.execute(provider, asyncify));
-          await waitForClose();
-          expect(openEditor.getText()).toEqual('test\nbar\nfoo\n');
-        })();
+        const asyncify: FreeformRefactorRequest = {
+          kind: 'freeform',
+          originalRange: new Range(TEST_FILE_POINT, TEST_FILE_POINT),
+          editor: openEditor,
+          id: 'asyncify',
+          range: new Range([0, 0], [0, 0]),
+          arguments: new Map([['new_name', 'test']]),
+        };
+        store.dispatch(Actions.execute(provider, asyncify));
+        await waitForClose();
+        expect(openEditor.getText()).toEqual('test\nbar\nfoo\n');
       });
     });
   });

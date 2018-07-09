@@ -17,12 +17,10 @@ describe('existingBufferForUri', () => {
   it('should open an editor with the same buffer, if previously cached', async () => {
     const existingBuffer = existingBufferForUri(file1);
     expect(existingBuffer).toBeUndefined();
-    await (async () => {
-      const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
-      expect(secondFile1Buffer).toBeDefined();
-      const bufferAfterCreation = existingBufferForUri(file1);
-      expect(bufferAfterCreation).toBeDefined();
-    })();
+    const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
+    expect(secondFile1Buffer).toBeDefined();
+    const bufferAfterCreation = existingBufferForUri(file1);
+    expect(bufferAfterCreation).toBeDefined();
   });
 });
 
@@ -37,17 +35,13 @@ describe('bufferForUri', () => {
   });
 
   it('should open an editor with the same buffer, if previously cached', async () => {
-    await (async () => {
-      const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
-      expect(secondFile1Buffer).toBe(file1Buffer);
-    })();
+    const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
+    expect(secondFile1Buffer).toBe(file1Buffer);
   });
 
   it('should return the same buffer after creating an editor for it', async () => {
-    await (async () => {
-      const file2Buffer = (await atom.workspace.open(file2)).getBuffer();
-      expect(bufferForUri(file2)).toBe(file2Buffer);
-    })();
+    const file2Buffer = (await atom.workspace.open(file2)).getBuffer();
+    expect(bufferForUri(file2)).toBe(file2Buffer);
   });
 
   it('should throw an error if remote connection not found', () => {

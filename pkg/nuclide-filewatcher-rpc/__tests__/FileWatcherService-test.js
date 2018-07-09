@@ -56,16 +56,14 @@ describe('FileWatcherService', () => {
   let nodeTestDirPath;
   let nodeTestFilePath;
   const createNodeTestFile = async callback => {
-    await (async () => {
-      nodeTestDirPath = await generateFixture(
-        'watchWithNodeTest',
-        new Map([[NODE_TEST_FILE, null]]),
-      );
-      nodeTestFilePath = `${nodeTestDirPath}/${NODE_TEST_FILE}`;
-      if (callback) {
-        callback();
-      }
-    })();
+    nodeTestDirPath = await generateFixture(
+      'watchWithNodeTest',
+      new Map([[NODE_TEST_FILE, null]]),
+    );
+    nodeTestFilePath = `${nodeTestDirPath}/${NODE_TEST_FILE}`;
+    if (callback) {
+      callback();
+    }
   };
 
   beforeEach(async () => {
