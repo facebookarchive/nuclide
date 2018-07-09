@@ -193,11 +193,6 @@ function mountDatatipWithMarker(
   const overlayMarker = editor.markBufferRange(new Range(position, position), {
     invalidate: 'never',
   });
-  editor.decorateMarker(overlayMarker, {
-    type: 'overlay',
-    position: 'tail',
-    item: element,
-  });
 
   return new UniversalDisposable(
     () => highlightMarker.destroy(),
@@ -207,6 +202,11 @@ function mountDatatipWithMarker(
     // often need to measure their size in the DOM.
     Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
       () => {
+        editor.decorateMarker(overlayMarker, {
+          type: 'overlay',
+          position: 'tail',
+          item: element,
+        });
         element.style.display = 'block';
         ReactDOM.render(renderedProviders, element);
       },
