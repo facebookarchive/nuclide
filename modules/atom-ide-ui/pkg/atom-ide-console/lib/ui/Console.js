@@ -338,6 +338,16 @@ export class Console {
     this._model.setState({unselectedSourceIds});
   };
 
+  /** Unselects the sources from the given IDs */
+  unselectSources(ids: Array<string>): void {
+    const newIds = ids.filter(
+      id => !this._model.state.unselectedSourceIds.includes(id),
+    );
+    this._model.setState({
+      unselectedSourceIds: this._model.state.unselectedSourceIds.concat(newIds),
+    });
+  }
+
   _updateFilter = (change: RegExpFilterChange): void => {
     const {text, isRegExp} = change;
     this._model.setState({
