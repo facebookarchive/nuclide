@@ -17,6 +17,7 @@ import {Proxy} from './Proxy';
 import {Tunnel, ReverseTunnel} from './Tunnel';
 import Encoder from './Encoder';
 
+import EventEmitter from 'events';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 
@@ -37,7 +38,7 @@ import {getLogger} from 'log4js';
  * the associated component that is running on the server.
  */
 
-export class TunnelManager {
+export class TunnelManager extends EventEmitter {
   _transport: Transport;
   // on the client (where tunnels are created), we always map to a Tunnel.
   // on the server, we map to either a SocketManager or a Proxy, depending
@@ -48,6 +49,7 @@ export class TunnelManager {
   _isClosed: boolean;
 
   constructor(transport: Transport) {
+    super();
     this._transport = transport;
     this._idToTunnel = new Map();
     this._logger = getLogger('tunnel-manager');
@@ -91,12 +93,24 @@ export class TunnelManager {
     );
 
     this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
-    return this._createTunnel(
-      localPort,
-      remotePort,
-      useIPv4 != null ? useIPv4 : false,
-      true,
-    );
+
+    return new Promise(async (resolve, reject) => {
+      const tunnel = await this._createTunnel(
+        localPort,
+        remotePort,
+        useIPv4 != null ? useIPv4 : false,
+        true,
+      );
+
+      // now wait until we get the 'proxyCreated' or 'proxyError' message
+      this.once(`proxyMessage:${tunnel.getId()}`, msg => {
+        if (msg.event === 'proxyCreated') {
+          resolve(tunnel);
+        } else {
+          reject(JSON.parse(msg.error));
+        }
+      });
+    });
   }
 
   async _createTunnel(
@@ -205,6 +219,10 @@ export class TunnelManager {
 
         this._idToTunnel.set(msg.tunnelId, socketManager);
       }
+      this.emit(`proxyMessage:${msg.tunnelId}`, msg);
+    } else if (msg.event === 'proxyError') {
+      this._logger.error('error creating proxy: ', msg);
+      this.emit(`proxyMessage:${msg.tunnelId}`, msg);
     } else if (msg.event === 'proxyClosed') {
       // in the case of a reverse tunnel, we get the proxyClosed event
       // after we actually close the tunnel, so we ignore it.

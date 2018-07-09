@@ -14,6 +14,7 @@ export type TunnelMessage = {
   event:
     | 'proxyCreated'
     | 'proxyClosed'
+    | 'proxyError'
     | 'data'
     | 'timeout'
     | 'error'
