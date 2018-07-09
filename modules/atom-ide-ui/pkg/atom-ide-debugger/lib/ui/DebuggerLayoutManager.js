@@ -94,6 +94,7 @@ export default class DebuggerLayoutManager {
   _leftPaneContainerModel: ?DebuggerPaneContainerViewModel;
   _rightPaneContainerModel: ?DebuggerPaneContainerViewModel;
   _debuggerVisible: boolean;
+  _isInMultiGK: boolean;
 
   constructor(service: IDebugService, state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
@@ -105,6 +106,7 @@ export default class DebuggerLayoutManager {
     this._debuggerVisible = false;
     this._initializeDebuggerPanes();
     this._reshowDebuggerPanes(state);
+    this._isInMultiGK = false;
 
     this._disposables.add(() => {
       if (this._leftPaneContainerModel != null) {
@@ -204,7 +206,12 @@ export default class DebuggerLayoutManager {
         title: () => 'Debugger',
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         isEnabled: () => true,
-        createView: () => <DebuggerControlsView service={this._service} />,
+        createView: () => (
+          <DebuggerControlsView
+            service={this._service}
+            passesMultiGK={this._isInMultiGK}
+          />
+        ),
         onPaneResize: (dockPane, newFlexScale) => {
           // If the debugger is stopped, let the controls pane keep its default
           // layout to make room for the buttons and additional content. Otherwise,
@@ -427,6 +434,11 @@ export default class DebuggerLayoutManager {
   consumeGatekeeperService(service: GatekeeperService): UniversalDisposable {
     _gkService = service;
     this.convertToDebuggerTreePanes();
+    if (_gkService != null) {
+      _gkService.passesGK('nuclide_multitarget_debugging').then(passes => {
+        this._isInMultiGK = passes;
+      });
+    }
     return new UniversalDisposable(() => (_gkService = null));
   }
 

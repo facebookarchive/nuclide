@@ -25,6 +25,7 @@ const DEVICE_PANEL_URL = 'atom://nuclide/devices';
 
 type Props = {
   service: IDebugService,
+  passesMultiGK: boolean,
 };
 
 type State = {
@@ -37,6 +38,7 @@ export default class DebuggerControlsView extends React.PureComponent<
   State,
 > {
   _disposables: UniversalDisposable;
+  debuggerNotice: React.Element<'div'>;
 
   constructor(props: Props) {
     super(props);
@@ -71,7 +73,7 @@ export default class DebuggerControlsView extends React.PureComponent<
   }
 
   render(): React.Node {
-    const {service} = this.props;
+    const {service, passesMultiGK} = this.props;
     const {mode} = this.state;
     const debuggerStoppedNotice =
       mode !== DebuggerMode.STOPPED ? null : (
@@ -95,37 +97,38 @@ export default class DebuggerControlsView extends React.PureComponent<
         </div>
       );
 
-    const debuggerNotice = (
-      <div className="padded">
-        <TruncatedButton
-          onClick={() =>
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'debugger:show-attach-dialog',
-            )
-          }
-          icon="nuclicon-debugger"
-          label="Attach debugger..."
-        />
-        <TruncatedButton
-          onClick={() =>
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'debugger:show-launch-dialog',
-            )
-          }
-          icon="nuclicon-debugger"
-          label="Launch debugger..."
-        />
-        {this.state.hasDevicePanelService ? (
+    const debuggerNotice =
+      mode !== DebuggerMode.STOPPED && !passesMultiGK ? null : (
+        <div className="padded">
           <TruncatedButton
-            onClick={() => goToLocation(DEVICE_PANEL_URL)}
-            icon="device-mobile"
-            label="Manage devices..."
+            onClick={() =>
+              atom.commands.dispatch(
+                atom.views.getView(atom.workspace),
+                'debugger:show-attach-dialog',
+              )
+            }
+            icon="nuclicon-debugger"
+            label="Attach debugger..."
           />
-        ) : null}
-      </div>
-    );
+          <TruncatedButton
+            onClick={() =>
+              atom.commands.dispatch(
+                atom.views.getView(atom.workspace),
+                'debugger:show-launch-dialog',
+              )
+            }
+            icon="nuclicon-debugger"
+            label="Launch debugger..."
+          />
+          {this.state.hasDevicePanelService ? (
+            <TruncatedButton
+              onClick={() => goToLocation(DEVICE_PANEL_URL)}
+              icon="device-mobile"
+              label="Manage devices..."
+            />
+          ) : null}
+        </div>
+      );
 
     return (
       <div className="debugger-container-new">
