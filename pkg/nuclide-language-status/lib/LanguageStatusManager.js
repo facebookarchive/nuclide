@@ -11,15 +11,16 @@
 
 import type {LanguageStatusProvider, StatusKind} from './types';
 
+import nullthrows from 'nullthrows';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
 import {track} from '../../nuclide-analytics';
 import StatusComponent from './StatusComponent';
 
 import * as React from 'react';
+import ReactDOM from 'react-dom';
 
 const DEFAULT_SETTINGS_KIND: StatusKind = 'yellow';
 
@@ -186,9 +187,31 @@ export class LanguageStatusManager {
       props,
       StatusComponent,
     );
-    const statusComponentWrapper = new TextEditorBanner(editor);
-    statusComponentWrapper.renderUnstyled(<StatusComponentWithProps />);
-    this._disposables.addUntilDestroyed(editor, statusComponentWrapper);
-    return statusComponentWrapper;
+
+    const disposable = this._renderStatusComponent(
+      editor,
+      <StatusComponentWithProps />,
+    );
+    this._disposables.addUntilDestroyed(editor, disposable);
+    return disposable;
   };
+
+  _renderStatusComponent(
+    editor: atom$TextEditor,
+    component: React.Element<any>,
+  ): IDisposable {
+    const parentDiv: Element = nullthrows(editor.getElement().parentElement);
+    const div = document.createElement('div');
+    div.style.height = '0';
+    const disposable: IDisposable = {
+      dispose: () => {
+        ReactDOM.unmountComponentAtNode(div);
+        div.remove();
+      },
+    };
+
+    parentDiv.appendChild(div);
+    ReactDOM.render(component, div);
+    return disposable;
+  }
 }
