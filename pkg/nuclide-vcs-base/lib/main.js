@@ -135,7 +135,7 @@ export const FileChangeStatusToTextColor: {
   [FileChangeStatus.MODIFIED]: 'text-warning',
   [FileChangeStatus.MISSING]: 'text-error',
   [FileChangeStatus.REMOVED]: 'text-error',
-  [FileChangeStatus.UNTRACKED]: 'text-error',
+  [FileChangeStatus.UNTRACKED]: 'status-ignored',
   [FileChangeStatus.BOTH_CHANGED]: 'text-warning',
   [FileChangeStatus.CHANGE_DELETE]: 'text-warning',
 });
