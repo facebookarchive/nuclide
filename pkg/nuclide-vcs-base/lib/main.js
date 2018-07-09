@@ -131,10 +131,10 @@ export const FileChangeStatusToIcon: {
 export const FileChangeStatusToTextColor: {
   [key: ?FileChangeStatusValue]: string,
 } = Object.freeze({
-  [FileChangeStatus.ADDED]: 'text-success',
-  [FileChangeStatus.MODIFIED]: 'text-warning',
-  [FileChangeStatus.MISSING]: 'text-error',
-  [FileChangeStatus.REMOVED]: 'text-error',
+  [FileChangeStatus.ADDED]: 'status-added',
+  [FileChangeStatus.MODIFIED]: 'status-modified',
+  [FileChangeStatus.MISSING]: 'status-renamed',
+  [FileChangeStatus.REMOVED]: 'status-removed',
   [FileChangeStatus.UNTRACKED]: 'status-ignored',
   [FileChangeStatus.BOTH_CHANGED]: 'text-warning',
   [FileChangeStatus.CHANGE_DELETE]: 'text-warning',
