@@ -38,7 +38,6 @@ export default class DebuggerControlsView extends React.PureComponent<
   State,
 > {
   _disposables: UniversalDisposable;
-  debuggerNotice: React.Element<'div'>;
 
   constructor(props: Props) {
     super(props);
