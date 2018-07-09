@@ -32,15 +32,13 @@ describe('PtyService', () => {
     });
 
     it('adds numbers in bash', async () => {
-      await (async () => {
-        invariant(ptyInfo.command != null);
-        ptyInfo.command.file = '/bin/bash';
-        ptyInfo.command.args = ['--norc', '-c', 'echo $((1 + 1))'];
-        await spawn(ptyInfo, runner);
-        const result = await runner.promise;
-        expect(result.output.trim()).toBe('2');
-        expect(result.code).toBe(0);
-      })();
+      invariant(ptyInfo.command != null);
+      ptyInfo.command.file = '/bin/bash';
+      ptyInfo.command.args = ['--norc', '-c', 'echo $((1 + 1))'];
+      await spawn(ptyInfo, runner);
+      const result = await runner.promise;
+      expect(result.output.trim()).toBe('2');
+      expect(result.code).toBe(0);
     });
   });
 });

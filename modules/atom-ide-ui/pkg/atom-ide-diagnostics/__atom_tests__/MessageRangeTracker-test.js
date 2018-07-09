@@ -107,27 +107,25 @@ describe('MessageRangeTracker', () => {
   });
 
   it('should add markers to files when they are opened', async () => {
-    await (async () => {
-      tracker.addFileMessages([messageForInitiallyClosedFile]);
-      checkRep(tracker);
-      expect(tracker.getCurrentRange(messageForInitiallyClosedFile)).toBeNull();
-      const initiallyClosedEditor = await atom.workspace.open(
-        initiallyClosedFilePath,
-      );
-      let range = tracker.getCurrentRange(messageForInitiallyClosedFile);
-      invariant(range != null);
-      expect(range.isEqual(new Range([1, 4], [1, 31]))).toBeTruthy();
+    tracker.addFileMessages([messageForInitiallyClosedFile]);
+    checkRep(tracker);
+    expect(tracker.getCurrentRange(messageForInitiallyClosedFile)).toBeNull();
+    const initiallyClosedEditor = await atom.workspace.open(
+      initiallyClosedFilePath,
+    );
+    let range = tracker.getCurrentRange(messageForInitiallyClosedFile);
+    invariant(range != null);
+    expect(range.isEqual(new Range([1, 4], [1, 31]))).toBeTruthy();
 
-      initiallyClosedEditor.setTextInBufferRange(
-        new Range([0, 16], [0, 16]),
-        '\n',
-      );
+    initiallyClosedEditor.setTextInBufferRange(
+      new Range([0, 16], [0, 16]),
+      '\n',
+    );
 
-      range = tracker.getCurrentRange(messageForInitiallyClosedFile);
-      invariant(range != null);
-      expect(range.isEqual(new Range([2, 4], [2, 31]))).toBeTruthy();
-      checkRep(tracker);
-    })();
+    range = tracker.getCurrentRange(messageForInitiallyClosedFile);
+    invariant(range != null);
+    expect(range.isEqual(new Range([2, 4], [2, 31]))).toBeTruthy();
+    checkRep(tracker);
   });
 
   // The tests below break the MessageRangeTracker abstraction so that they can ensure that disposal

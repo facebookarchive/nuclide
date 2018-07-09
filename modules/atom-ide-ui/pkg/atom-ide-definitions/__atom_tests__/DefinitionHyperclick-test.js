@@ -69,185 +69,175 @@ describe.skip('DefinitionHyperclick', () => {
   });
 
   it('no definition', async () => {
-    await (async () => {
-      const spy = jest
-        .spyOn(definitionProvider, 'getDefinition')
-        .mockReturnValue(null);
-      invariant(provider != null);
-      invariant(provider.getSuggestion != null);
-      const result = await provider.getSuggestion(editor, position);
+    const spy = jest
+      .spyOn(definitionProvider, 'getDefinition')
+      .mockReturnValue(null);
+    invariant(provider != null);
+    invariant(provider.getSuggestion != null);
+    const result = await provider.getSuggestion(editor, position);
 
-      expect(result).toBe(null);
-      expect(spy).toHaveBeenCalledWith(editor, position);
-    })();
+    expect(result).toBe(null);
+    expect(spy).toHaveBeenCalledWith(editor, position);
   });
 
   it('definition - single', async () => {
-    await (async () => {
-      const definition = {
-        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [
-          {
-            path: 'path1',
-            position: new Point(1, 2),
-            range: null,
-            id: 'symbol-name',
-            name: null,
-            projectRoot: null,
-          },
-        ],
-      };
-      const spy = jest
-        .spyOn(definitionProvider, 'getDefinition')
-        .mockReturnValue(Promise.resolve(definition));
+    const definition = {
+      queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+      definitions: [
+        {
+          path: 'path1',
+          position: new Point(1, 2),
+          range: null,
+          id: 'symbol-name',
+          name: null,
+          projectRoot: null,
+        },
+      ],
+    };
+    const spy = jest
+      .spyOn(definitionProvider, 'getDefinition')
+      .mockReturnValue(Promise.resolve(definition));
 
-      invariant(provider != null);
-      invariant(provider.getSuggestion != null);
-      const result = await provider.getSuggestion(editor, position);
+    invariant(provider != null);
+    invariant(provider.getSuggestion != null);
+    const result = await provider.getSuggestion(editor, position);
 
-      invariant(result != null);
-      expect(result.range).toEqual(definition.queryRange);
-      expect(spy).toHaveBeenCalledWith(editor, position);
-      expect(goToLocation).not.toHaveBeenCalled();
+    invariant(result != null);
+    expect(result.range).toEqual(definition.queryRange);
+    expect(spy).toHaveBeenCalledWith(editor, position);
+    expect(goToLocation).not.toHaveBeenCalled();
 
-      invariant(result != null);
-      invariant(result.callback != null);
-      invariant(typeof result.callback === 'function');
-      result.callback();
-      expect(goToLocation).toHaveBeenCalledWith('path1', {line: 1, column: 2});
-    })();
+    invariant(result != null);
+    invariant(result.callback != null);
+    invariant(typeof result.callback === 'function');
+    result.callback();
+    expect(goToLocation).toHaveBeenCalledWith('path1', {line: 1, column: 2});
   });
 
   it('definition - multiple', async () => {
-    await (async () => {
-      const defs = {
-        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [
-          {
-            path: '/a/b/path1',
-            position: new Point(1, 2),
-            range: null,
-            id: 'symbol-name',
-            name: 'd1',
-            projectRoot: '/a',
-          },
-          {
-            path: '/a/b/path2',
-            position: new Point(3, 4),
-            range: null,
-            id: 'symbol-name2',
-            name: 'd2',
-            projectRoot: '/a',
-          },
-          {
-            path: '/a/b/path3',
-            position: new Point(3, 4),
-            range: null,
-            id: 'symbol-without-name',
-            projectRoot: '/a',
-          },
-        ],
-      };
-      const spy = jest
-        .spyOn(definitionProvider, 'getDefinition')
-        .mockReturnValue(Promise.resolve(defs));
+    const defs = {
+      queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+      definitions: [
+        {
+          path: '/a/b/path1',
+          position: new Point(1, 2),
+          range: null,
+          id: 'symbol-name',
+          name: 'd1',
+          projectRoot: '/a',
+        },
+        {
+          path: '/a/b/path2',
+          position: new Point(3, 4),
+          range: null,
+          id: 'symbol-name2',
+          name: 'd2',
+          projectRoot: '/a',
+        },
+        {
+          path: '/a/b/path3',
+          position: new Point(3, 4),
+          range: null,
+          id: 'symbol-without-name',
+          projectRoot: '/a',
+        },
+      ],
+    };
+    const spy = jest
+      .spyOn(definitionProvider, 'getDefinition')
+      .mockReturnValue(Promise.resolve(defs));
 
-      invariant(provider != null);
-      invariant(provider.getSuggestion != null);
-      const result: ?HyperclickSuggestion = await provider.getSuggestion(
-        editor,
-        position,
-      );
+    invariant(provider != null);
+    invariant(provider.getSuggestion != null);
+    const result: ?HyperclickSuggestion = await provider.getSuggestion(
+      editor,
+      position,
+    );
 
-      invariant(result != null);
-      expect(result.range).toEqual(defs.queryRange);
-      expect(spy).toHaveBeenCalledWith(editor, position);
-      expect(goToLocation).not.toHaveBeenCalled();
-      const callbacks: Array<{
-        title: string,
-        callback: () => mixed,
-      }> = (result.callback: any);
+    invariant(result != null);
+    expect(result.range).toEqual(defs.queryRange);
+    expect(spy).toHaveBeenCalledWith(editor, position);
+    expect(goToLocation).not.toHaveBeenCalled();
+    const callbacks: Array<{
+      title: string,
+      callback: () => mixed,
+    }> = (result.callback: any);
 
-      expect(callbacks.length).toBe(3);
-      expect(callbacks[0].title).toBe('d1 (b/path1)');
-      expect(typeof callbacks[0].callback).toBe('function');
-      expect(callbacks[1].title).toBe('d2 (b/path2)');
-      expect(typeof callbacks[1].callback).toBe('function');
-      expect(callbacks[2].title).toBe('b/path3:4');
-      expect(typeof callbacks[2].callback).toBe('function');
+    expect(callbacks.length).toBe(3);
+    expect(callbacks[0].title).toBe('d1 (b/path1)');
+    expect(typeof callbacks[0].callback).toBe('function');
+    expect(callbacks[1].title).toBe('d2 (b/path2)');
+    expect(typeof callbacks[1].callback).toBe('function');
+    expect(callbacks[2].title).toBe('b/path3:4');
+    expect(typeof callbacks[2].callback).toBe('function');
 
-      callbacks[1].callback();
-      expect(goToLocation).toHaveBeenCalledWith('/a/b/path2', {
-        line: 3,
-        column: 4,
-      });
-    })();
+    callbacks[1].callback();
+    expect(goToLocation).toHaveBeenCalledWith('/a/b/path2', {
+      line: 3,
+      column: 4,
+    });
   });
 
   it('falls back to lower-priority providers', async () => {
-    await (async () => {
-      const def = {
-        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [
-          {
-            path: 'path1',
-            position: new Point(1, 2),
-            range: null,
-            id: 'symbol-name',
-            name: null,
-            projectRoot: null,
-          },
-        ],
-      };
-      const newProvider = {
-        priority: 10,
-        name: '',
-        grammarScopes: ['text.plain.null-grammar'],
-        getDefinition: () => Promise.resolve(def),
-      };
-      atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
-      invariant(provider != null);
-      invariant(provider.getSuggestion != null);
-      const result = await provider.getSuggestion(editor, position);
-      expect(result).not.toBe(null);
-      invariant(result != null);
-      expect(result.range).toEqual(def.queryRange);
-    })();
+    const def = {
+      queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+      definitions: [
+        {
+          path: 'path1',
+          position: new Point(1, 2),
+          range: null,
+          id: 'symbol-name',
+          name: null,
+          projectRoot: null,
+        },
+      ],
+    };
+    const newProvider = {
+      priority: 10,
+      name: '',
+      grammarScopes: ['text.plain.null-grammar'],
+      getDefinition: () => Promise.resolve(def),
+    };
+    atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
+    invariant(provider != null);
+    invariant(provider.getSuggestion != null);
+    const result = await provider.getSuggestion(editor, position);
+    expect(result).not.toBe(null);
+    invariant(result != null);
+    expect(result.range).toEqual(def.queryRange);
   });
 
   it('does not cache null values', async () => {
-    await (async () => {
-      editor.setText('test');
-      const def = {
-        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [
-          {
-            path: 'path1',
-            position: new Point(1, 2),
-            range: null,
-            id: 'symbol-name',
-            name: null,
-            projectRoot: null,
-          },
-        ],
-      };
-      const newProvider = {
-        priority: 10,
-        name: '',
-        grammarScopes: ['text.plain.null-grammar'],
-        getDefinition: () => Promise.resolve(null),
-      };
-      atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
-      invariant(provider != null);
-      invariant(provider.getSuggestion != null);
-      let result = await provider.getSuggestion(editor, position);
-      expect(result).toBe(null);
+    editor.setText('test');
+    const def = {
+      queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+      definitions: [
+        {
+          path: 'path1',
+          position: new Point(1, 2),
+          range: null,
+          id: 'symbol-name',
+          name: null,
+          projectRoot: null,
+        },
+      ],
+    };
+    const newProvider = {
+      priority: 10,
+      name: '',
+      grammarScopes: ['text.plain.null-grammar'],
+      getDefinition: () => Promise.resolve(null),
+    };
+    atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
+    invariant(provider != null);
+    invariant(provider.getSuggestion != null);
+    let result = await provider.getSuggestion(editor, position);
+    expect(result).toBe(null);
 
-      newProvider.getDefinition = () => Promise.resolve(def);
-      invariant(provider.getSuggestion != null);
-      result = await provider.getSuggestion(editor, position);
-      invariant(result != null);
-      expect(result.range).toEqual(def.queryRange);
-    })();
+    newProvider.getDefinition = () => Promise.resolve(def);
+    invariant(provider.getSuggestion != null);
+    result = await provider.getSuggestion(editor, position);
+    invariant(result != null);
+    expect(result.range).toEqual(def.queryRange);
   });
 });

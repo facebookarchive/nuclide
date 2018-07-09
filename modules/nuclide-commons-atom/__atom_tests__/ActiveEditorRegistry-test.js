@@ -65,29 +65,27 @@ describe('ActiveEditorRegistry', () => {
   }
 
   beforeEach(async () => {
-    await (async () => {
-      activeEditors = new Subject();
-      editorChanges = new Subject();
-      editorSaves = new Subject();
-      shouldProviderError = false;
+    activeEditors = new Subject();
+    editorChanges = new Subject();
+    editorSaves = new Subject();
+    shouldProviderError = false;
 
-      resultFunction = jest.fn().mockImplementation(async () => {
-        if (shouldProviderError) {
-          throw new Error('baaaaad');
-        }
-      });
-      config = {};
-      eventSources = {
-        activeEditors,
-        changesForEditor: () => editorChanges,
-        savesForEditor: () => editorSaves,
-      };
+    resultFunction = jest.fn().mockImplementation(async () => {
+      if (shouldProviderError) {
+        throw new Error('baaaaad');
+      }
+    });
+    config = {};
+    eventSources = {
+      activeEditors,
+      changesForEditor: () => editorChanges,
+      savesForEditor: () => editorSaves,
+    };
 
-      initializeService();
+    initializeService();
 
-      editor1 = await atom.workspace.open();
-      editor2 = await atom.workspace.open();
-    })();
+    editor1 = await atom.workspace.open();
+    editor2 = await atom.workspace.open();
   });
 
   describe('when there is a provider', () => {
@@ -101,67 +99,63 @@ describe('ActiveEditorRegistry', () => {
     });
 
     it('should create correct event stream during normal use', async () => {
-      await (async () => {
-        activeEditors.next(null);
-        await waitForNextTick();
+      activeEditors.next(null);
+      await waitForNextTick();
 
-        activeEditors.next(editor1);
-        await waitForNextTick();
+      activeEditors.next(editor1);
+      await waitForNextTick();
 
-        editorChanges.next(undefined);
-        await waitForNextTick();
+      editorChanges.next(undefined);
+      await waitForNextTick();
 
-        activeEditors.next(editor2);
+      activeEditors.next(editor2);
 
-        await expectObservableToStartWith(eventNames, [
-          'not-text-editor',
-          'pane-change',
-          'result',
-          'edit',
-          'result',
-          'pane-change',
-          'result',
-        ]);
+      await expectObservableToStartWith(eventNames, [
+        'not-text-editor',
+        'pane-change',
+        'result',
+        'edit',
+        'result',
+        'pane-change',
+        'result',
+      ]);
 
-        const fullEvents = await events
-          .take(4)
-          .toArray()
-          .toPromise();
-        expect(fullEvents[1]).toEqual({
-          kind: 'pane-change',
-          editor: editor1,
-        });
-        expect(fullEvents[2]).toEqual({
-          kind: 'result',
-          editor: editor1,
-          provider,
-          result: undefined,
-        });
-        expect(fullEvents[3]).toEqual({
-          kind: 'edit',
-          editor: editor1,
-        });
-      })();
+      const fullEvents = await events
+        .take(4)
+        .toArray()
+        .toPromise();
+      expect(fullEvents[1]).toEqual({
+        kind: 'pane-change',
+        editor: editor1,
+      });
+      expect(fullEvents[2]).toEqual({
+        kind: 'result',
+        editor: editor1,
+        provider,
+        result: undefined,
+      });
+      expect(fullEvents[3]).toEqual({
+        kind: 'edit',
+        editor: editor1,
+      });
     });
 
     it('should not emit save events when it is configured to respond to edit events', async () => {
-      await (async () => {
-        activeEditors.next(editor1);
-        await waitForNextTick();
+      activeEditors.next(editor1);
+      await waitForNextTick();
 
-        editorChanges.next(undefined);
-        await waitForNextTick();
+      editorChanges.next(undefined);
+      await waitForNextTick();
 
-        editorSaves.next(undefined);
-        await waitForNextTick();
+      editorSaves.next(undefined);
+      await waitForNextTick();
 
-        await expectObservableToStartWith(eventNames, [
-          'pane-change',
-          'result',
-          'edit',
-          'result',
-        ]);
-      })();
+      await expectObservableToStartWith(eventNames, [
+        'pane-change',
+        'result',
+        'edit',
+        'result',
+      ]);
     });
 
     describe('when configured to respond to save events', () => {
@@ -176,32 +170,30 @@ describe('ActiveEditorRegistry', () => {
       });
 
       it('should generate and respond to save events', async () => {
-        await (async () => {
-          activeEditors.next(editor1);
-          await waitForNextTick();
+        activeEditors.next(editor1);
+        await waitForNextTick();
 
-          editorChanges.next(undefined);
-          await waitForNextTick();
+        editorChanges.next(undefined);
+        await waitForNextTick();
 
-          editorSaves.next(undefined);
-          await waitForNextTick();
+        editorSaves.next(undefined);
+        await waitForNextTick();
 
-          await expectObservableToStartWith(eventNames, [
-            'pane-change',
-            'result',
-            'save',
-            'result',
-          ]);
+        await expectObservableToStartWith(eventNames, [
+          'pane-change',
+          'result',
+          'save',
+          'result',
+        ]);
 
-          const fullEvents = await events
-            .take(3)
-            .toArray()
-            .toPromise();
-          expect(fullEvents[2]).toEqual({
-            kind: 'save',
-            editor: editor1,
-          });
-        })();
+        const fullEvents = await events
+          .take(3)
+          .toArray()
+          .toPromise();
+        expect(fullEvents[2]).toEqual({
+          kind: 'save',
+          editor: editor1,
+        });
       });
     });
 
@@ -224,56 +216,52 @@ describe('ActiveEditorRegistry', () => {
       });
 
       it('should generate and respond to the appropriate event', async () => {
-        await (async () => {
-          activeEditors.next(editor1);
-          await waitForNextTick();
-
-          editorChanges.next(undefined);
-          await waitForNextTick();
-
-          editorSaves.next(undefined);
-          await waitForNextTick();
-
-          activeEditors.next(editor2);
-          await waitForNextTick();
-
-          editorChanges.next(undefined);
-          await waitForNextTick();
-
-          editorSaves.next(undefined);
-          await waitForNextTick();
-
-          await expectObservableToStartWith(eventNames, [
-            'pane-change',
-            'result',
-            'edit',
-            'result',
-            'pane-change',
-            'result',
-            'save',
-            'result',
-          ]);
-        })();
-      });
-    });
-
-    it("should produce the 'provider-error' event when a provider errors", async () => {
-      await (async () => {
-        shouldProviderError = true;
-
         activeEditors.next(editor1);
+        await waitForNextTick();
+
+        editorChanges.next(undefined);
+        await waitForNextTick();
+
+        editorSaves.next(undefined);
+        await waitForNextTick();
+
+        activeEditors.next(editor2);
+        await waitForNextTick();
+
+        editorChanges.next(undefined);
+        await waitForNextTick();
+
+        editorSaves.next(undefined);
         await waitForNextTick();
 
         await expectObservableToStartWith(eventNames, [
           'pane-change',
-          'provider-error',
+          'result',
+          'edit',
+          'result',
+          'pane-change',
+          'result',
+          'save',
+          'result',
         ]);
+      });
+    });
 
-        expect(await events.elementAt(1).toPromise()).toEqual({
-          kind: 'provider-error',
-          provider,
-        });
-      })();
+    it("should produce the 'provider-error' event when a provider errors", async () => {
+      shouldProviderError = true;
+
+      activeEditors.next(editor1);
+      await waitForNextTick();
+
+      await expectObservableToStartWith(eventNames, [
+        'pane-change',
+        'provider-error',
+      ]);
+
+      expect(await events.elementAt(1).toPromise()).toEqual({
+        kind: 'provider-error',
+        provider,
+      });
     });
 
     it('should immediately query a better provider', () => {
@@ -291,15 +279,13 @@ describe('ActiveEditorRegistry', () => {
 
   describe('when there is no provider', () => {
     it("should produce the 'no-provider' result when there is no provider", async () => {
-      await (async () => {
-        activeEditors.next(editor1);
-        await waitForNextTick();
+      activeEditors.next(editor1);
+      await waitForNextTick();
 
-        await expectObservableToStartWith(eventNames, [
-          'pane-change',
-          'no-provider',
-        ]);
-      })();
+      await expectObservableToStartWith(eventNames, [
+        'pane-change',
+        'no-provider',
+      ]);
     });
   });
 });

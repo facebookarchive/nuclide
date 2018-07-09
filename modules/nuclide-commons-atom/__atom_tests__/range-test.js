@@ -14,34 +14,28 @@ import {getWordFromCursorOrSelection} from '../range';
 
 describe('getWordFromCursorOrSelection', () => {
   it('matches a word in an editor from a selection before cursor', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open();
-      editor.setText('Darmok and Jalad\nat Tanagra.');
+    const editor = await atom.workspace.open();
+    editor.setText('Darmok and Jalad\nat Tanagra.');
 
-      editor.addCursorAtBufferPosition([1, 4]);
-      editor.setSelectedBufferRange([[0, 7], [0, 10]]);
-      const word = getWordFromCursorOrSelection(editor);
-      expect(word).toBe('and');
-    })();
+    editor.addCursorAtBufferPosition([1, 4]);
+    editor.setSelectedBufferRange([[0, 7], [0, 10]]);
+    const word = getWordFromCursorOrSelection(editor);
+    expect(word).toBe('and');
   });
 
   it('matches a word in an editor from a cursor position', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open();
-      editor.setText('Darmok and Jalad\nat Tanagra.');
+    const editor = await atom.workspace.open();
+    editor.setText('Darmok and Jalad\nat Tanagra.');
 
-      editor.addCursorAtBufferPosition([1, 4]);
-      const word = getWordFromCursorOrSelection(editor);
-      expect(word).toBe('Tanagra');
-    })();
+    editor.addCursorAtBufferPosition([1, 4]);
+    const word = getWordFromCursorOrSelection(editor);
+    expect(word).toBe('Tanagra');
   });
 
   it('does not match a word without a cursor or selection', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open();
+    const editor = await atom.workspace.open();
 
-      const word = getWordFromCursorOrSelection(editor);
-      expect(word).toBeNull();
-    })();
+    const word = getWordFromCursorOrSelection(editor);
+    expect(word).toBeNull();
   });
 });

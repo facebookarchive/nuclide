@@ -24,11 +24,9 @@ describe('existingEditorForUri', () => {
   let secondFile2Editor: atom$TextEditor = (null: any);
 
   beforeEach(async () => {
-    await (async () => {
-      file1Editor = await atom.workspace.open(file1);
-      file2Editor = await atom.workspace.open(file2);
-      secondFile2Editor = await atom.workspace.open(file2);
-    })();
+    file1Editor = await atom.workspace.open(file1);
+    file2Editor = await atom.workspace.open(file2);
+    secondFile2Editor = await atom.workspace.open(file2);
   });
 
   it('should find the one editor for a file', () => {
@@ -71,38 +69,34 @@ describe('enforceReadOnlyEditor', () => {
   }
 
   it('should not be able to write to the text editor', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open('');
-      editor.setText('ABC\nDEF');
-      const buffer = editor.getBuffer();
+    const editor = await atom.workspace.open('');
+    editor.setText('ABC\nDEF');
+    const buffer = editor.getBuffer();
 
-      const operations = getOperations(editor);
+    const operations = getOperations(editor);
 
-      ensureReadOnlyOperations(buffer, operations, false);
+    ensureReadOnlyOperations(buffer, operations, false);
 
-      enforceReadOnlyEditor(editor);
-      ensureReadOnlyOperations(buffer, operations, true);
-      // Underlying buffer's `setText` and `append` are an exception by default.
-      ensureReadOnlyOperations(
-        buffer,
-        [() => buffer.setText('lol'), () => buffer.append('lol')],
-        false,
-      );
-    })();
+    enforceReadOnlyEditor(editor);
+    ensureReadOnlyOperations(buffer, operations, true);
+    // Underlying buffer's `setText` and `append` are an exception by default.
+    ensureReadOnlyOperations(
+      buffer,
+      [() => buffer.setText('lol'), () => buffer.append('lol')],
+      false,
+    );
   });
 
   it('should be able to write to the text editor after cancelling', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open('');
-      editor.setText('ABC\nDEF');
-      const buffer = editor.getBuffer();
+    const editor = await atom.workspace.open('');
+    editor.setText('ABC\nDEF');
+    const buffer = editor.getBuffer();
 
-      const operations = getOperations(editor);
+    const operations = getOperations(editor);
 
-      const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
-      enforceReadOnlyEditorDisposable.dispose();
-      ensureReadOnlyOperations(buffer, operations, false);
-    })();
+    const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
+    enforceReadOnlyEditorDisposable.dispose();
+    ensureReadOnlyOperations(buffer, operations, false);
   });
 });
 
@@ -119,30 +113,26 @@ describe('enforceReadOnlyBuffer', () => {
   }
 
   it('should not be able to write to the text buffer', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open('');
-      const buffer = editor.getBuffer();
-      buffer.setText('ABC\nDEF');
+    const editor = await atom.workspace.open('');
+    const buffer = editor.getBuffer();
+    buffer.setText('ABC\nDEF');
 
-      const operations = getOperations(buffer);
+    const operations = getOperations(buffer);
 
-      ensureReadOnlyOperations(buffer, operations, false);
-      enforceReadOnlyEditor(editor, []);
-      ensureReadOnlyOperations(buffer, operations, true);
-    })();
+    ensureReadOnlyOperations(buffer, operations, false);
+    enforceReadOnlyEditor(editor, []);
+    ensureReadOnlyOperations(buffer, operations, true);
   });
 
   it('should be able to write to the text buffer after cancelling', async () => {
-    await (async () => {
-      const editor = await atom.workspace.open('');
-      const buffer = editor.getBuffer();
-      buffer.setText('ABC\nDEF');
+    const editor = await atom.workspace.open('');
+    const buffer = editor.getBuffer();
+    buffer.setText('ABC\nDEF');
 
-      const operations = getOperations(buffer);
+    const operations = getOperations(buffer);
 
-      const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
-      enforceReadOnlyEditorDisposable.dispose();
-      ensureReadOnlyOperations(buffer, operations, false);
-    })();
+    const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
+    enforceReadOnlyEditorDisposable.dispose();
+    ensureReadOnlyOperations(buffer, operations, false);
   });
 });

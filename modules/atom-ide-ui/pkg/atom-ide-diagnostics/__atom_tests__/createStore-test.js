@@ -330,16 +330,14 @@ describe('createStore', () => {
     let editor: atom$TextEditor = (null: any);
 
     beforeEach(async () => {
-      await (async () => {
-        editor = await atom.workspace.open('/tmp/fileA');
-        editor.setText('foobar\n');
-        store.dispatch(
-          Actions.updateMessages(
-            dummyProviderA,
-            new Map([['/tmp/fileA', [messageWithAutofix]]]),
-          ),
-        );
-      })();
+      editor = await atom.workspace.open('/tmp/fileA');
+      editor.setText('foobar\n');
+      store.dispatch(
+        Actions.updateMessages(
+          dummyProviderA,
+          new Map([['/tmp/fileA', [messageWithAutofix]]]),
+        ),
+      );
     });
 
     describe('applyFix', () => {

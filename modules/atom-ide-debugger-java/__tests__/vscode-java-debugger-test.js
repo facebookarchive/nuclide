@@ -199,147 +199,137 @@ xdescribe('vscode-java-debugger', () => {
   });
 
   it('launches and outputs console messages', async () => {
-    await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await session
-            .observeOutputEvents()
-            .filter(response => response.body.category === 'stdout')
-            .map(response => response.body.output)
-            .take(1)
-            .toPromise()
-            .then(output => {
-              expect(output).toEqual(
-                'Name: Not Aman Agarwal with id: 1234567890\n',
-              );
-            });
-        },
-      );
-    })();
+    await withSessionLaunch(
+      'SimpleClass',
+      {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{line: 11}],
+      },
+      async (session, unverifiedBreakpoints) => {
+        await session
+          .observeOutputEvents()
+          .filter(response => response.body.category === 'stdout')
+          .map(response => response.body.output)
+          .take(1)
+          .toPromise()
+          .then(output => {
+            expect(output).toEqual(
+              'Name: Not Aman Agarwal with id: 1234567890\n',
+            );
+          });
+      },
+    );
   });
 
   it('breaks at a breakpoint', async () => {
-    await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+    await withSessionLaunch(
+      'SimpleClass',
+      {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{line: 11}],
+      },
+      async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
+        await session
+          .observeStopEvents()
+          .take(1)
+          .toPromise();
 
-          await checkLine(session, 11);
-        },
-      );
-    })();
+        await checkLine(session, 11);
+      },
+    );
   });
 
   it('sets multiple breakpoints', async () => {
-    await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 8}, {line: 23}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+    await withSessionLaunch(
+      'SimpleClass',
+      {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{line: 8}, {line: 23}],
+      },
+      async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 8);
+        await session
+          .observeStopEvents()
+          .take(1)
+          .toPromise();
+        await checkLine(session, 8);
 
-          await continueSession(session);
+        await continueSession(session);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 23);
-        },
-      );
-    })();
+        await session
+          .observeStopEvents()
+          .take(1)
+          .toPromise();
+        await checkLine(session, 23);
+      },
+    );
   });
 
   it('supports step-over, step-in, and step-out', async () => {
-    await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+    await withSessionLaunch(
+      'SimpleClass',
+      {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{line: 11}],
+      },
+      async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 11);
+        await session
+          .observeStopEvents()
+          .take(1)
+          .toPromise();
+        await checkLine(session, 11);
 
-          await checkResponse(session.next({threadId: THREAD_ID}));
-          await checkLine(session, 12);
+        await checkResponse(session.next({threadId: THREAD_ID}));
+        await checkLine(session, 12);
 
-          await checkResponse(session.stepIn({threadId: THREAD_ID}));
-          await checkLine(session, 22);
+        await checkResponse(session.stepIn({threadId: THREAD_ID}));
+        await checkLine(session, 22);
 
-          await checkResponse(session.stepOut({threadId: THREAD_ID}));
-          await checkLine(session, 12);
-        },
-      );
-    })();
+        await checkResponse(session.stepOut({threadId: THREAD_ID}));
+        await checkLine(session, 12);
+      },
+    );
   });
 
   it('evaluates expressions', async () => {
-    await (async () => {
-      await withSessionLaunch(
-        'SimpleClass',
-        {
-          source: makeSource('SimpleClass.java'),
-          breakpoints: [{line: 11}],
-        },
-        async (session, unverifiedBreakpoints) => {
-          await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
+    await withSessionLaunch(
+      'SimpleClass',
+      {
+        source: makeSource('SimpleClass.java'),
+        breakpoints: [{line: 11}],
+      },
+      async (session, unverifiedBreakpoints) => {
+        await verifyUnverifiedBreakpoints(session, unverifiedBreakpoints);
 
-          await session
-            .observeStopEvents()
-            .take(1)
-            .toPromise();
-          await checkLine(session, 11);
+        await session
+          .observeStopEvents()
+          .take(1)
+          .toPromise();
+        await checkLine(session, 11);
 
-          const frameId = (await checkResponse(
-            session.stackTrace({threadId: THREAD_ID}),
-          )).body.stackFrames[0].id;
-          await checkResponse(
-            session.evaluate({expression: 'tc', frameId}),
-            response => {
-              // we do not check the exact id of the class because any changes made in the class
-              //   preparation code causes this id to change, I may add the id back into the test
-              //   once the Java debugger codebase has stabilized
-              expect(
-                response.body.result.includes(
-                  'class SimpleClass (loaded by instance of sun.misc.Launcher$AppClassLoader(id=',
-                ),
-              ).toBeTruthy();
-            },
-          );
-        },
-      );
-    })();
+        const frameId = (await checkResponse(
+          session.stackTrace({threadId: THREAD_ID}),
+        )).body.stackFrames[0].id;
+        await checkResponse(
+          session.evaluate({expression: 'tc', frameId}),
+          response => {
+            // we do not check the exact id of the class because any changes made in the class
+            //   preparation code causes this id to change, I may add the id back into the test
+            //   once the Java debugger codebase has stabilized
+            expect(
+              response.body.result.includes(
+                'class SimpleClass (loaded by instance of sun.misc.Launcher$AppClassLoader(id=',
+              ),
+            ).toBeTruthy();
+          },
+        );
+      },
+    );
   });
 
   it('checks threads', async () => {

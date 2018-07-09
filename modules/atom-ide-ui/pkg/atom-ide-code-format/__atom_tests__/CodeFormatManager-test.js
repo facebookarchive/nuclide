@@ -50,21 +50,19 @@ describe('CodeFormatManager', () => {
   });
 
   it('format an editor using formatEntireFile', async () => {
-    await (async () => {
-      const manager = new CodeFormatManager();
-      manager.addFileProvider({
-        grammarScopes: ['text.plain.null-grammar'],
-        priority: 1,
-        formatEntireFile: () => Promise.resolve({formatted: 'ghi'}),
-      });
+    const manager = new CodeFormatManager();
+    manager.addFileProvider({
+      grammarScopes: ['text.plain.null-grammar'],
+      priority: 1,
+      formatEntireFile: () => Promise.resolve({formatted: 'ghi'}),
+    });
 
-      textEditor.setText('abc');
-      atom.commands.dispatch(
-        atom.views.getView(textEditor),
-        'code-format:format-code',
-      );
-      await waitsFor(() => textEditor.getText() === 'ghi');
-    })();
+    textEditor.setText('abc');
+    atom.commands.dispatch(
+      atom.views.getView(textEditor),
+      'code-format:format-code',
+    );
+    await waitsFor(() => textEditor.getText() === 'ghi');
   });
 
   it('formats an editor on type', async () => {
@@ -97,26 +95,24 @@ describe('CodeFormatManager', () => {
   });
 
   it('formats an editor on save', async () => {
-    await (async () => {
-      jest.spyOn(config, 'getFormatOnSave').mockReturnValue(true);
-      const manager = new CodeFormatManager();
-      manager.addOnSaveProvider({
-        grammarScopes: ['text.plain.null-grammar'],
-        priority: 1,
-        formatOnSave: () =>
-          Promise.resolve([
-            {
-              oldRange: new Range([0, 0], [0, 3]),
-              oldText: 'abc',
-              newText: 'def',
-            },
-          ]),
-      });
+    jest.spyOn(config, 'getFormatOnSave').mockReturnValue(true);
+    const manager = new CodeFormatManager();
+    manager.addOnSaveProvider({
+      grammarScopes: ['text.plain.null-grammar'],
+      priority: 1,
+      formatOnSave: () =>
+        Promise.resolve([
+          {
+            oldRange: new Range([0, 0], [0, 3]),
+            oldText: 'abc',
+            newText: 'def',
+          },
+        ]),
+    });
 
-      textEditor.setText('abc');
-      await textEditor.save();
-      expect(textEditor.getText()).toBe('def');
-    })();
+    textEditor.setText('abc');
+    await textEditor.save();
+    expect(textEditor.getText()).toBe('def');
   });
 
   it('should still save on timeout', async () => {

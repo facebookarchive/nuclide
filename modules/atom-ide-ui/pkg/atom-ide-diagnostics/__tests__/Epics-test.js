@@ -43,29 +43,27 @@ describe('Epics', () => {
         }),
       );
 
-      await (async () => {
-        expect(
-          await fetchCodeActions(
-            new ActionsObservable(
-              Observable.of(
-                Actions.fetchCodeActions(fakeEditor, fakeMessages),
-                // Identical requests should be de-deped.
-                Actions.fetchCodeActions(fakeEditor, [...fakeMessages]),
-              ),
+      expect(
+        await fetchCodeActions(
+          new ActionsObservable(
+            Observable.of(
+              Actions.fetchCodeActions(fakeEditor, fakeMessages),
+              // Identical requests should be de-deped.
+              Actions.fetchCodeActions(fakeEditor, [...fakeMessages]),
             ),
-            store,
-          )
-            .toArray()
-            .toPromise(),
-        ).toEqual([
-          Actions.setCodeActions(
-            new Map([
-              [fakeMessages[0], new Map([['test', TEST_ACTION]])],
-              [fakeMessages[1], new Map()],
-            ]),
           ),
-        ]);
-      })();
+          store,
+        )
+          .toArray()
+          .toPromise(),
+      ).toEqual([
+        Actions.setCodeActions(
+          new Map([
+            [fakeMessages[0], new Map([['test', TEST_ACTION]])],
+            [fakeMessages[1], new Map()],
+          ]),
+        ),
+      ]);
     });
   });
 });

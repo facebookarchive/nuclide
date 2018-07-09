@@ -87,16 +87,14 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      await (async () => {
-        const output = await new DOMObserverObservable(
-          MockDOMObserverEmitsArray,
-          'arg',
-        )
-          .take(2)
-          .toArray()
-          .toPromise();
-        expect(output).toEqual([['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']]);
-      })();
+      const output = await new DOMObserverObservable(
+        MockDOMObserverEmitsArray,
+        'arg',
+      )
+        .take(2)
+        .toArray()
+        .toPromise();
+      expect(output).toEqual([['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']]);
     },
   );
 
@@ -189,17 +187,15 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      await (async () => {
-        const output = await new DOMObserverObservable(
-          MockDOMObserverEmitsArray,
-          'arg',
-        )
-          .flattenEntries()
-          .take(6)
-          .toArray()
-          .toPromise();
-        expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
-      })();
+      const output = await new DOMObserverObservable(
+        MockDOMObserverEmitsArray,
+        'arg',
+      )
+        .flattenEntries()
+        .take(6)
+        .toArray()
+        .toPromise();
+      expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
     });
 
     it(
@@ -218,17 +214,15 @@ describe('new DOMObserverObservable', () => {
           }
         }
 
-        await (async () => {
-          const output = await new DOMObserverObservable(
-            MockDOMObserverEmitsEntryList,
-            'arg',
-          )
-            .flattenEntries()
-            .take(6)
-            .toArray()
-            .toPromise();
-          expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
-        })();
+        const output = await new DOMObserverObservable(
+          MockDOMObserverEmitsEntryList,
+          'arg',
+        )
+          .flattenEntries()
+          .take(6)
+          .toArray()
+          .toPromise();
+        expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
       },
     );
 
@@ -242,25 +236,20 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      await (async () => {
-        let error;
-        try {
-          await new DOMObserverObservable(
-            MockDOMObserverEmitsNonStandard,
-            'arg',
-          )
-            .flattenEntries()
-            .take(2)
-            .toArray()
-            .toPromise();
-        } catch (e) {
-          error = e;
-        }
-        invariant(error != null);
-        expect(error.message).toEqual(
-          'Tried to merge DOM Observer entries, but they were not iterable nor were they an EntryList.',
-        );
-      })();
+      let error;
+      try {
+        await new DOMObserverObservable(MockDOMObserverEmitsNonStandard, 'arg')
+          .flattenEntries()
+          .take(2)
+          .toArray()
+          .toPromise();
+      } catch (e) {
+        error = e;
+      }
+      invariant(error != null);
+      expect(error.message).toEqual(
+        'Tried to merge DOM Observer entries, but they were not iterable nor were they an EntryList.',
+      );
     });
   });
 });

@@ -20,10 +20,8 @@ describe('applyTextEdits', () => {
   let editor: atom$TextEditor = (null: any);
 
   beforeEach(async () => {
-    await (async () => {
-      editor = await atom.workspace.open(fakeFile);
-      editor.setText('foo\nbar\nbaz\n');
-    })();
+    editor = await atom.workspace.open(fakeFile);
+    editor.setText('foo\nbar\nbaz\n');
   });
 
   it('should apply a patch', () => {
