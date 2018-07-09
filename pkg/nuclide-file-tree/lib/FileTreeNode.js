@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -90,6 +90,55 @@ export type ImmutableNodeSettableFields = {
   matchesFilter?: boolean,
   isPendingLoad?: boolean,
   generatedStatus?: ?GeneratedFileType,
+};
+
+type DerivedFileTreeNode = {
+  isRoot: boolean,
+  name: string,
+  hashKey: string,
+  relativePath: string,
+  localPath: string,
+  isContainer: boolean,
+  shouldBeShown: boolean,
+  shouldBeSoftened: boolean,
+  vcsStatusCode: StatusCodeNumberValue,
+  repo: ?atom$Repository,
+  isIgnored: boolean,
+  checkedStatus: NodeCheckedStatus,
+};
+
+type DebugState = {
+  uri: NuclideUri,
+  rootUri: NuclideUri,
+  isExpanded: boolean,
+  isDragHovered: boolean,
+  isBeingReordered: boolean,
+  isLoading: boolean,
+  wasFetched: boolean,
+  isCwd: boolean,
+  children: Immutable.OrderedMap<string, FileTreeNode>,
+  connectionTitle: string,
+  highlightedText: string,
+  matchesFilter: boolean,
+  isPendingLoad: boolean,
+  generatedStatus: ?GeneratedFileType,
+  isRoot: boolean,
+  name: string,
+  hashKey: string,
+  relativePath: string,
+  localPath: string,
+  isContainer: boolean,
+  shouldBeShown: boolean,
+  shouldBeSoftened: boolean,
+  vcsStatusCode: StatusCodeNumberValue,
+  isIgnored: boolean,
+  checkedStatus: NodeCheckedStatus,
+  containsDragHover: boolean,
+  containsFilterMatches: boolean,
+  shownChildrenCount: number,
+  containsHidden: boolean,
+  childrenAreLoading: boolean,
+  children: Array<DebugState>,
 };
 
 /**
@@ -357,7 +406,7 @@ export class FileTreeNode {
    * Since in heavy updates, nodes are created by the thousands we need to keep the creation
    * flow performant.
    */
-  _assignDerived(derived: Object): void {
+  _assignDerived(derived: DerivedFileTreeNode): void {
     this.isRoot = derived.isRoot;
     this.name = derived.name;
     this.hashKey = derived.hashKey;
@@ -716,7 +765,7 @@ export class FileTreeNode {
     return null;
   }
 
-  _propsAreTheSame(props: Object): boolean {
+  _propsAreTheSame(props: ImmutableNodeSettableFields): boolean {
     if (
       props.isDragHovered !== undefined &&
       this.isDragHovered !== props.isDragHovered
@@ -865,7 +914,7 @@ export class FileTreeNode {
     return this.conf.selectionManager.isFocused(this);
   }
 
-  collectDebugState(): Object {
+  collectDebugState(): DebugState {
     return {
       uri: this.uri,
       rootUri: this.rootUri,
