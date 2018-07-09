@@ -10,6 +10,7 @@
   margin-top: -2px; // Compensate for shadow
   position: relative;
   white-space: nowrap;
+  pointer-events: all;
 }
 
 .datatip-dragging {
@@ -67,6 +68,10 @@
 }
 
 atom-text-editor {
+
+  .overlay-no-events {
+    pointer-events: none;
+  }
 
   .datatip-highlight-region > .region {
     background: @syntax-selection-color;
