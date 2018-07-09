@@ -62,7 +62,7 @@ import type {
   Range,
 } from 'big-dig-vscode-server/Protocol';
 
-import {RemoteFileSystemClient} from 'big-dig/src/services/fs/fsClient';
+import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import * as vscode from 'vscode';
 import EventEmitter from 'events';
 import {Observable} from 'rxjs';

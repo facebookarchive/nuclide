@@ -10,7 +10,7 @@
  * @format
  */
 
-import {RemoteFileSystemClient} from 'big-dig/src/services/fs/fsClient';
+import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import * as vscode from 'vscode';
 import {Server} from './remote/Server';
 import {RemoteFileSystem} from './RemoteFileSystem';
