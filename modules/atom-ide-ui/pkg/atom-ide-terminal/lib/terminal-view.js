@@ -44,6 +44,7 @@ import {
   FONT_FAMILY_CONFIG,
   FONT_SCALE_CONFIG,
   LINE_HEIGHT_CONFIG,
+  OPTION_IS_META_CONFIG,
   PRESERVED_COMMANDS_CONFIG,
   SCROLLBACK_CONFIG,
   getFontSize,
@@ -228,6 +229,12 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   _subscribeFitEvents(): UniversalDisposable {
     return new UniversalDisposable(
+      featureConfig
+        .observeAsStream(OPTION_IS_META_CONFIG)
+        .skip(1)
+        .subscribe(optionIsMeta => {
+          this._setTerminalOption('macOptionIsMeta', optionIsMeta);
+        }),
       featureConfig
         .observeAsStream(CURSOR_STYLE_CONFIG)
         .skip(1)
