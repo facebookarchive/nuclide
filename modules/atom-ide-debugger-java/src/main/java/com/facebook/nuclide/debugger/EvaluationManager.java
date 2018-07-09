@@ -25,6 +25,8 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VoidValue;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -201,11 +203,28 @@ public class EvaluationManager {
     String[] referencedVariables = scope.getVariableNames();
 
     EvaluationSourceGenerator generator = null;
+    PrintStream oldErr = System.err;
     try {
+      // Redirect System.err because EvaluationSourceGenerator sometimes writes directly to
+      // System.err and we don't want the user to see that.
+      System.err.flush();
+      System.setErr(
+          new PrintStream(
+              new OutputStream() {
+                public void write(int b) {
+                  // no op
+                }
+              }));
       // Prepare evaluation source context.
       generator =
           new EvaluationSourceGenerator(referencedTypes, referencedVariables, expression, _project);
+      // Reset System.err back to normal.
+      System.err.flush();
+      System.setErr(oldErr);
     } catch (Exception ex) {
+      // Reset System.err back to normal.
+      System.err.flush();
+      System.setErr(oldErr);
       throw ex;
     }
 
