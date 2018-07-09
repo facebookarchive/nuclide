@@ -100,7 +100,22 @@ export class Proxy extends EventEmitter {
         socket.once('close', this._closeSocket.bind(this, clientId));
       });
 
+      this._server.on('error', err => {
+        this._sendMessage({
+          event: 'proxyError',
+          port: this._localPort,
+          useIpv4: this._useIPv4,
+          remotePort: this._remotePort,
+          error: JSON.stringify(err),
+        });
+        reject(err);
+      });
+
+      invariant(this._server);
       this._server.listen({port: this._localPort}, () => {
+        logger.info(
+          `successfully started listening on port ${this._localPort}`,
+        );
         // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',

@@ -107,6 +107,7 @@ export class Tunnel extends EventEmitter {
         remotePort: localPort,
       }),
     );
+
     return new ReverseTunnel(
       tunnelId,
       socketManager,

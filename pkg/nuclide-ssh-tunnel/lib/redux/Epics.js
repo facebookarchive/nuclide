@@ -203,18 +203,19 @@ export function requestTunnelEpic(
               remoteTunnelHost.port
             }`,
           );
-          try {
-            newTunnelPromise = bigDigClient.createTunnel(
+
+          newTunnelPromise = bigDigClient
+            .createTunnel(
               localTunnelHost.port,
               remoteTunnelHost.port,
               isReverse,
               useIPv4,
-            );
-          } catch (error) {
-            onOpen(error);
-            store.dispatch(Actions.closeTunnel(tunnel, error));
-            throw error;
-          }
+            )
+            .catch(error => {
+              onOpen(error);
+              store.dispatch(Actions.closeTunnel(tunnel, error));
+              throw error;
+            });
 
           newTunnelPromise.then(newTunnel => {
             newTunnel.on('error', error => {
