@@ -93,6 +93,7 @@ class Activation {
       <RenameComponent
         selectedText={selectedText}
         submitNewName={resolveNewName}
+        parentEditor={editor}
       />
     );
   }

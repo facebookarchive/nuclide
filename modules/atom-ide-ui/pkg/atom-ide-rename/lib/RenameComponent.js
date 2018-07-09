@@ -16,6 +16,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 type Props = {
   selectedText: string,
   submitNewName: (string | void) => void,
+  parentEditor: atom$TextEditor,
 };
 
 type State = {
@@ -34,10 +35,27 @@ export default class RenameComponent extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.highlightTextWithin();
+    this._forceActivateInsertMode();
+    this._highlightTextWithin();
   }
 
-  highlightTextWithin = (): void => {
+  // When using the `vim-mode-plus` package, the user has to press 'i' in 'normal-mode'
+  //  to begin inserting text in an atom-text-editor - doing so sends
+  //  an 'activate-insert-mode' command.
+  // However, when the user wants to type in embedded text editors,
+  //  we must first activate `insert-mode` in the parent editor.
+  _forceActivateInsertMode = (): void => {
+    const {parentEditor} = this.props;
+
+    if (parentEditor != null) {
+      atom.commands.dispatch(
+        atom.views.getView(parentEditor),
+        'vim-mode-plus:activate-insert-mode',
+      );
+    }
+  };
+
+  _highlightTextWithin = (): void => {
     if (this._atomInput == null) {
       return;
     }
@@ -45,7 +63,10 @@ export default class RenameComponent extends React.Component<Props, State> {
     editor.selectAll();
   };
 
-  _handleSubmit = (event: $FlowFixMe): void => {
+  _handleSubmit = (event: ?Event): void => {
+    if (event == null) {
+      return;
+    }
     event.preventDefault();
     const {newName} = this.state;
     const {submitNewName} = this.props;
