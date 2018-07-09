@@ -50,11 +50,9 @@ describe('which', () => {
     });
 
     it('returns the first match', async () => {
-      await (async () => {
-        runCommandReturn = 'hello' + os.EOL + 'hello.exe' + os.EOL;
-        const ret = await which('bla');
-        expect(ret).toEqual('hello');
-      })();
+      runCommandReturn = 'hello' + os.EOL + 'hello.exe' + os.EOL;
+      const ret = await which('bla');
+      expect(ret).toEqual('hello');
     });
   });
 
@@ -79,11 +77,9 @@ describe('which', () => {
     });
 
     it('returns the first match', async () => {
-      await (async () => {
-        runCommandReturn = 'hello' + os.EOL + '/bin/hello' + os.EOL;
-        const ret = await which('bla');
-        expect(ret).toEqual('hello');
-      })();
+      runCommandReturn = 'hello' + os.EOL + '/bin/hello' + os.EOL;
+      const ret = await which('bla');
+      expect(ret).toEqual('hello');
     });
   });
 });

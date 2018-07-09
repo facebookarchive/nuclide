@@ -90,12 +90,10 @@ describe('nice', () => {
   });
 
   it('should call which only once per command and cache the result', async () => {
-    await (async () => {
-      await niceSafeSpawn('echo', []);
-      await niceSafeSpawn('echo', []);
-      expect(whichSpy).toHaveBeenCalledWith('nice');
-      expect(whichSpy).toHaveBeenCalledWith('ionice');
-      expect(whichSpy.mock.calls.length).toBe(2);
-    })();
+    await niceSafeSpawn('echo', []);
+    await niceSafeSpawn('echo', []);
+    expect(whichSpy).toHaveBeenCalledWith('nice');
+    expect(whichSpy).toHaveBeenCalledWith('ionice');
+    expect(whichSpy.mock.calls.length).toBe(2);
   });
 });

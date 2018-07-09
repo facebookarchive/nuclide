@@ -52,23 +52,19 @@ const createDisposable = () => {
 describe('nuclide-commons/observable', () => {
   describe('splitStream', () => {
     it('splits streams', async () => {
-      await (async () => {
-        const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-        const output = await splitStream(Observable.from(input))
-          .toArray()
-          .toPromise();
-        expect(output).toEqual(['foo\n', 'bar\n', '\n', 'baz\n', 'blar']);
-      })();
+      const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
+      const output = await splitStream(Observable.from(input))
+        .toArray()
+        .toPromise();
+      expect(output).toEqual(['foo\n', 'bar\n', '\n', 'baz\n', 'blar']);
     });
 
     it('splits streams without the newline', async () => {
-      await (async () => {
-        const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-        const output = await splitStream(Observable.from(input), false)
-          .toArray()
-          .toPromise();
-        expect(output).toEqual(['foo', 'bar', '', 'baz', 'blar']);
-      })();
+      const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
+      const output = await splitStream(Observable.from(input), false)
+        .toArray()
+        .toPromise();
+      expect(output).toEqual(['foo', 'bar', '', 'baz', 'blar']);
     });
   });
 
@@ -137,125 +133,111 @@ describe('nuclide-commons/observable', () => {
 
   describe('diffSets', () => {
     it('emits a diff for the first item', async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets())
-          .toArray()
-          .toPromise();
-        source.next(new Set([1, 2, 3]));
-        source.complete();
-        const diffs = await diffsPromise;
-        expect(diffs.length).toBe(1);
-        expect(
-          diffsAreEqual(diffs[0], {
-            added: new Set([1, 2, 3]),
-            removed: new Set(),
-          }),
-        ).toBe(true);
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets())
+        .toArray()
+        .toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(diffs.length).toBe(1);
+      expect(
+        diffsAreEqual(diffs[0], {
+          added: new Set([1, 2, 3]),
+          removed: new Set(),
+        }),
+      ).toBe(true);
     });
 
     it('correctly identifies removed items', async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets())
-          .toArray()
-          .toPromise();
-        source.next(new Set([1, 2, 3]));
-        source.next(new Set([1, 2]));
-        source.complete();
-        const diffs = await diffsPromise;
-        expect(setsAreEqual(diffs[1].removed, new Set([3]))).toBe(true);
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets())
+        .toArray()
+        .toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.next(new Set([1, 2]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].removed, new Set([3]))).toBe(true);
     });
 
     it('correctly identifies removed items when a hash function is used', async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets(x => x.key))
-          .toArray()
-          .toPromise();
-        const firstItems = [{key: 1}, {key: 2}, {key: 3}];
-        const secondItems = [{key: 1}, {key: 2}];
-        source.next(new Set(firstItems));
-        source.next(new Set(secondItems));
-        source.complete();
-        const diffs = await diffsPromise;
-        expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(
-          true,
-        );
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets(x => x.key))
+        .toArray()
+        .toPromise();
+      const firstItems = [{key: 1}, {key: 2}, {key: 3}];
+      const secondItems = [{key: 1}, {key: 2}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(
+        true,
+      );
     });
 
     it('correctly identifies added items', async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets())
-          .toArray()
-          .toPromise();
-        source.next(new Set([1, 2]));
-        source.next(new Set([1, 2, 3]));
-        source.complete();
-        const diffs = await diffsPromise;
-        expect(setsAreEqual(diffs[1].added, new Set([3]))).toBe(true);
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets())
+        .toArray()
+        .toPromise();
+      source.next(new Set([1, 2]));
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].added, new Set([3]))).toBe(true);
     });
 
     it('correctly identifies added items when a hash function is used', async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets(x => x.key))
-          .toArray()
-          .toPromise();
-        const firstItems = [{key: 1}, {key: 2}];
-        const secondItems = [{key: 1}, {key: 2}, {key: 3}];
-        source.next(new Set(firstItems));
-        source.next(new Set(secondItems));
-        source.complete();
-        const diffs = await diffsPromise;
-        expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(
-          true,
-        );
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets(x => x.key))
+        .toArray()
+        .toPromise();
+      const firstItems = [{key: 1}, {key: 2}];
+      const secondItems = [{key: 1}, {key: 2}, {key: 3}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(
+        true,
+      );
     });
 
     it("doesn't emit a diff when nothing changes", async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets())
-          .toArray()
-          .toPromise();
-        source.next(new Set([1, 2, 3]));
-        source.next(new Set([1, 2, 3]));
-        source.complete();
-        const diffs = await diffsPromise;
-        // Make sure we only get one diff (from the implicit initial empty set).
-        expect(diffs.length).toBe(1);
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets())
+        .toArray()
+        .toPromise();
+      source.next(new Set([1, 2, 3]));
+      source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      // Make sure we only get one diff (from the implicit initial empty set).
+      expect(diffs.length).toBe(1);
     });
 
     it("doesn't emit a diff when nothing changes and a hash function is used", async () => {
-      await (async () => {
-        const source = new Subject();
-        const diffsPromise = source
-          .let(diffSets(x => x.key))
-          .toArray()
-          .toPromise();
-        const firstItems = [{key: 1}, {key: 2}, {key: 3}];
-        const secondItems = [{key: 1}, {key: 2}, {key: 3}];
-        source.next(new Set(firstItems));
-        source.next(new Set(secondItems));
-        source.complete();
-        const diffs = await diffsPromise;
-        // Make sure we only get one diff (from the implicit initial empty set).
-        expect(diffs.length).toBe(1);
-      })();
+      const source = new Subject();
+      const diffsPromise = source
+        .let(diffSets(x => x.key))
+        .toArray()
+        .toPromise();
+      const firstItems = [{key: 1}, {key: 2}, {key: 3}];
+      const secondItems = [{key: 1}, {key: 2}, {key: 3}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
+      source.complete();
+      const diffs = await diffsPromise;
+      // Make sure we only get one diff (from the implicit initial empty set).
+      expect(diffs.length).toBe(1);
     });
   });
 
@@ -401,25 +383,21 @@ describe('nuclide-commons/observable', () => {
 
   describe('concatLatest', () => {
     it('should work with empty input', async () => {
-      await (async () => {
-        const output = await concatLatest()
-          .toArray()
-          .toPromise();
-        expect(output).toEqual([]);
-      })();
+      const output = await concatLatest()
+        .toArray()
+        .toPromise();
+      expect(output).toEqual([]);
     });
 
     it('should work with several observables', async () => {
-      await (async () => {
-        const output = await concatLatest(
-          Observable.of([], [1]),
-          Observable.of([2]),
-          Observable.of([3], [3, 4]),
-        )
-          .toArray()
-          .toPromise();
-        expect(output).toEqual([[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]);
-      })();
+      const output = await concatLatest(
+        Observable.of([], [1]),
+        Observable.of([2]),
+        Observable.of([3], [3, 4]),
+      )
+        .toArray()
+        .toPromise();
+      expect(output).toEqual([[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]);
     });
   });
 
@@ -499,23 +477,19 @@ describe('nuclide-commons/observable', () => {
 
   describe('bufferUntil', () => {
     it('buffers based on the predicate', async () => {
-      await (async () => {
-        const chunks = await Observable.of(1, 2, 3, 4)
-          .let(bufferUntil(x => x % 2 === 0))
-          .toArray()
-          .toPromise();
-        expect(chunks).toEqual([[1, 2], [3, 4]]);
-      })();
+      const chunks = await Observable.of(1, 2, 3, 4)
+        .let(bufferUntil(x => x % 2 === 0))
+        .toArray()
+        .toPromise();
+      expect(chunks).toEqual([[1, 2], [3, 4]]);
     });
 
     it('provides the current buffer', async () => {
-      await (async () => {
-        const chunks = await Observable.of(1, 2, 3, 4)
-          .let(bufferUntil((x, buffer) => buffer.length === 2))
-          .toArray()
-          .toPromise();
-        expect(chunks).toEqual([[1, 2], [3, 4]]);
-      })();
+      const chunks = await Observable.of(1, 2, 3, 4)
+        .let(bufferUntil((x, buffer) => buffer.length === 2))
+        .toArray()
+        .toPromise();
+      expect(chunks).toEqual([[1, 2], [3, 4]]);
     });
   });
 
@@ -708,10 +682,8 @@ describe('nuclide-commons/observable', () => {
     });
 
     it('works with no signal', async () => {
-      await (async () => {
-        const promise = toAbortablePromise(Observable.of(1));
-        expect(await promise).toBe(1);
-      })();
+      const promise = toAbortablePromise(Observable.of(1));
+      expect(await promise).toBe(1);
     });
   });
 
@@ -730,69 +702,63 @@ describe('nuclide-commons/observable', () => {
     });
 
     it('completing task normally', async () => {
-      await (async () => {
-        const executor = new SingletonExecutor();
-        const source = new Subject();
+      const executor = new SingletonExecutor();
+      const source = new Subject();
 
-        const result = executor.execute(source);
-        expect(executor.isExecuting()).toBe(true);
+      const result = executor.execute(source);
+      expect(executor.isExecuting()).toBe(true);
 
-        source.next(42);
-        source.complete();
-        expect(await result).toBe(42);
-        expect(executor.isExecuting()).toBe(false);
-      })();
+      source.next(42);
+      source.complete();
+      expect(await result).toBe(42);
+      expect(executor.isExecuting()).toBe(false);
     });
 
     it('completing task by error', async () => {
-      await (async () => {
-        const executor = new SingletonExecutor();
-        const source = new Subject();
+      const executor = new SingletonExecutor();
+      const source = new Subject();
 
-        const result = executor.execute(source);
-        expect(executor.isExecuting()).toBe(true);
+      const result = executor.execute(source);
+      expect(executor.isExecuting()).toBe(true);
 
-        source.error(42);
-        let thrown = false;
-        try {
-          await result;
-        } catch (e) {
-          expect(e).toBe(42);
-          thrown = true;
-        }
-        expect(executor.isExecuting()).toBe(false);
-        expect(thrown).toBe(true);
-      })();
+      source.error(42);
+      let thrown = false;
+      try {
+        await result;
+      } catch (e) {
+        expect(e).toBe(42);
+        thrown = true;
+      }
+      expect(executor.isExecuting()).toBe(false);
+      expect(thrown).toBe(true);
     });
 
     it('scheduling second task while first is in flight', async () => {
-      await (async () => {
-        const executor = new SingletonExecutor();
+      const executor = new SingletonExecutor();
 
-        const source1 = new Subject();
-        const result1 = executor.execute(source1);
-        expect(executor.isExecuting()).toBe(true);
+      const source1 = new Subject();
+      const result1 = executor.execute(source1);
+      expect(executor.isExecuting()).toBe(true);
 
-        const source2 = new Subject();
-        const result2 = executor.execute(source2);
-        expect(executor.isExecuting()).toBe(true);
+      const source2 = new Subject();
+      const result2 = executor.execute(source2);
+      expect(executor.isExecuting()).toBe(true);
 
-        let thrown = false;
-        try {
-          await result1;
-        } catch (e) {
-          expect(e.name).toBe('AbortError');
-          thrown = true;
-        }
-        expect(executor.isExecuting()).toBe(true);
-        expect(thrown).toBe(true);
+      let thrown = false;
+      try {
+        await result1;
+      } catch (e) {
+        expect(e.name).toBe('AbortError');
+        thrown = true;
+      }
+      expect(executor.isExecuting()).toBe(true);
+      expect(thrown).toBe(true);
 
-        source2.next(42);
-        source2.complete();
+      source2.next(42);
+      source2.complete();
 
-        expect(await result2).toBe(42);
-        expect(executor.isExecuting()).toBe(false);
-      })();
+      expect(await result2).toBe(42);
+      expect(executor.isExecuting()).toBe(false);
     });
   });
 
@@ -844,14 +810,12 @@ describe('nuclide-commons/observable', () => {
     });
 
     it('polls synchronously completing observables', async () => {
-      await (async () => {
-        const result = await Observable.of('hi')
-          .let(poll(10))
-          .take(2)
-          .toArray()
-          .toPromise();
-        expect(result).toEqual(['hi', 'hi']);
-      })();
+      const result = await Observable.of('hi')
+        .let(poll(10))
+        .take(2)
+        .toArray()
+        .toPromise();
+      expect(result).toEqual(['hi', 'hi']);
     });
   });
 });

@@ -59,16 +59,14 @@ describe('observableFromSubscribeFunction', () => {
   });
 
   it('should send events to the observable stream', async () => {
-    await (async () => {
-      const result = observableFromSubscribeFunction(subscribeFunction)
-        .take(2)
-        .toArray()
-        .toPromise();
-      invariant(callback != null);
-      callback(1);
-      callback(2);
-      expect(await result).toEqual([1, 2]);
-    })();
+    const result = observableFromSubscribeFunction(subscribeFunction)
+      .take(2)
+      .toArray()
+      .toPromise();
+    invariant(callback != null);
+    callback(1);
+    callback(2);
+    expect(await result).toEqual([1, 2]);
   });
 
   it('should properly unsubscribe and resubscribe', () => {

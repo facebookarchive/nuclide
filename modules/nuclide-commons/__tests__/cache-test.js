@@ -80,34 +80,30 @@ describe('Cache', () => {
   });
 
   it('observeValues sees existing and new values', async () => {
-    await (async () => {
-      const factory = jest.fn().mockImplementation(key => key);
-      const cache: Cache<string, string> = new Cache(factory);
+    const factory = jest.fn().mockImplementation(key => key);
+    const cache: Cache<string, string> = new Cache(factory);
 
-      cache.get(key1);
-      const values = cache
-        .observeValues()
-        .toArray()
-        .toPromise();
-      cache.get(key2);
-      cache.dispose();
-      expect(await values).toEqual([key1, key2]);
-    })();
+    cache.get(key1);
+    const values = cache
+      .observeValues()
+      .toArray()
+      .toPromise();
+    cache.get(key2);
+    cache.dispose();
+    expect(await values).toEqual([key1, key2]);
   });
 
   it('observeKeys sees existing and new keys', async () => {
-    await (async () => {
-      const factory = jest.fn().mockImplementation(key => value);
-      const cache: Cache<string, string> = new Cache(factory);
+    const factory = jest.fn().mockImplementation(key => value);
+    const cache: Cache<string, string> = new Cache(factory);
 
-      cache.get(key1);
-      const values = cache
-        .observeKeys()
-        .toArray()
-        .toPromise();
-      cache.get(key2);
-      cache.dispose();
-      expect(await values).toEqual([key1, key2]);
-    })();
+    cache.get(key1);
+    const values = cache
+      .observeKeys()
+      .toArray()
+      .toPromise();
+    cache.get(key2);
+    cache.dispose();
+    expect(await values).toEqual([key1, key2]);
   });
 });

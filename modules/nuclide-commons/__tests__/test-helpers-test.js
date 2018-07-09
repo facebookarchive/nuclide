@@ -97,24 +97,22 @@ describe('expectAsyncFailure', () => {
 
 describe('generateFixture', () => {
   it('should create the directory hierarchy', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture(
-        'fixture-to-generate',
-        new Map([['foo.js', undefined], ['bar/baz.txt', 'some text']]),
-      );
+    const fixturePath = await generateFixture(
+      'fixture-to-generate',
+      new Map([['foo.js', undefined], ['bar/baz.txt', 'some text']]),
+    );
 
-      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
-      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+    expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+    expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
 
-      const fooPath = nuclideUri.join(fixturePath, 'foo.js');
-      const bazPath = nuclideUri.join(fixturePath, 'bar/baz.txt');
+    const fooPath = nuclideUri.join(fixturePath, 'foo.js');
+    const bazPath = nuclideUri.join(fixturePath, 'bar/baz.txt');
 
-      expect(fs.statSync(fooPath).isFile()).toBe(true);
-      expect(fs.statSync(bazPath).isFile()).toBe(true);
+    expect(fs.statSync(fooPath).isFile()).toBe(true);
+    expect(fs.statSync(bazPath).isFile()).toBe(true);
 
-      expect(fs.readFileSync(fooPath, 'utf8')).toBe('');
-      expect(fs.readFileSync(bazPath, 'utf8')).toBe('some text');
-    })();
+    expect(fs.readFileSync(fooPath, 'utf8')).toBe('');
+    expect(fs.readFileSync(bazPath, 'utf8')).toBe('some text');
   });
 
   it(
@@ -136,21 +134,17 @@ describe('generateFixture', () => {
   );
 
   it('should work with no files', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture('fixture-empty', new Map());
-      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
-      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
-      expect(fs.readdirSync(fixturePath)).toEqual([]);
-    })();
+    const fixturePath = await generateFixture('fixture-empty', new Map());
+    expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+    expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+    expect(fs.readdirSync(fixturePath)).toEqual([]);
   });
 
   it('works with no files arg', async () => {
-    await (async () => {
-      const fixturePath = await generateFixture('fixture-empty');
-      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
-      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
-      expect(fs.readdirSync(fixturePath)).toEqual([]);
-    })();
+    const fixturePath = await generateFixture('fixture-empty');
+    expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+    expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+    expect(fs.readdirSync(fixturePath)).toEqual([]);
   });
 });
 

@@ -59,14 +59,12 @@ describe('commons-node/process', () => {
 
   describe('process.killProcess', () => {
     it('should only kill the process when `killTree` is false', async () => {
-      await (async () => {
-        const proc = {
-          kill: jasmine.createSpy(),
-        };
-        jest.spyOn(console, 'log'); // suppress log printing
-        await killProcess((proc: any), false);
-        expect(proc.kill).toHaveBeenCalled();
-      })();
+      const proc = {
+        kill: jasmine.createSpy(),
+      };
+      jest.spyOn(console, 'log'); // suppress log printing
+      await killProcess((proc: any), false);
+      expect(proc.kill).toHaveBeenCalled();
     });
 
     it('should kill the process tree when `killTree` is true', async () => {
@@ -83,19 +81,17 @@ describe('commons-node/process', () => {
     });
 
     it('should kill the process tree on windows when `killTree` is true', async () => {
-      await (async () => {
-        const proc = {
-          pid: 123,
-        };
-        jest.spyOn(console, 'log'); // suppress log printing
-        Object.defineProperty(process, 'platform', {value: 'win32'});
-        jest.spyOn(child_process, 'exec');
-        await killProcess((proc: any), true);
-        expect(child_process.exec.mock.calls).toHaveLength(1);
-        expect(child_process.exec.mock.calls[0][0]).toBe(
-          `taskkill /pid ${proc.pid} /T /F`,
-        );
-      })();
+      const proc = {
+        pid: 123,
+      };
+      jest.spyOn(console, 'log'); // suppress log printing
+      Object.defineProperty(process, 'platform', {value: 'win32'});
+      jest.spyOn(child_process, 'exec');
+      await killProcess((proc: any), true);
+      expect(child_process.exec.mock.calls).toHaveLength(1);
+      expect(child_process.exec.mock.calls[0][0]).toBe(
+        `taskkill /pid ${proc.pid} /T /F`,
+      );
     });
   });
 
@@ -176,65 +172,59 @@ describe('commons-node/process', () => {
 
   describe('getOutputStream', () => {
     it('captures stdout, stderr and exitCode', async () => {
-      await (async () => {
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(0);',
-        ]);
-        const results = await getOutputStream(child)
-          .toArray()
-          .toPromise();
-        expect(results).toEqual([
-          {kind: 'stderr', data: 'stderr\n'},
-          {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 0, signal: null},
-        ]);
-      })();
+      const child = child_process.spawn(process.execPath, [
+        '-e',
+        'console.error("stderr"); console.log("std out"); process.exit(0);',
+      ]);
+      const results = await getOutputStream(child)
+        .toArray()
+        .toPromise();
+      expect(results).toEqual([
+        {kind: 'stderr', data: 'stderr\n'},
+        {kind: 'stdout', data: 'std out\n'},
+        {kind: 'exit', exitCode: 0, signal: null},
+      ]);
     });
 
     it('errors on nonzero exit codes by default', async () => {
-      await (async () => {
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(42);',
-        ]);
-        const results = await getOutputStream(child)
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual([
-          'N',
-          'N',
-          'E',
-        ]);
-        const {error} = results[2];
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.exitCode).toBe(42);
-        expect(error.stderr).toBe('stderr\n');
-      })();
+      const child = child_process.spawn(process.execPath, [
+        '-e',
+        'console.error("stderr"); console.log("std out"); process.exit(42);',
+      ]);
+      const results = await getOutputStream(child)
+        .materialize()
+        .toArray()
+        .toPromise();
+      expect(results.map(notification => notification.kind)).toEqual([
+        'N',
+        'N',
+        'E',
+      ]);
+      const {error} = results[2];
+      expect(error.name).toBe('ProcessExitError');
+      expect(error.exitCode).toBe(42);
+      expect(error.stderr).toBe('stderr\n');
     });
 
     it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', async () => {
-      await (async () => {
-        let error;
-        const child = child_process.spawn(process.execPath, [
-          '-e',
-          'console.error("stderr"); process.exit(42);',
-        ]);
-        try {
-          await getOutputStream(child, {
-            exitErrorBufferSize: 2,
-            isExitError: () => true,
-          })
-            .toArray()
-            .toPromise();
-        } catch (err) {
-          error = err;
-        }
-        expect(error).toBeDefined();
-        invariant(error != null);
-        expect(error.stderr).toBe('st');
-      })();
+      let error;
+      const child = child_process.spawn(process.execPath, [
+        '-e',
+        'console.error("stderr"); process.exit(42);',
+      ]);
+      try {
+        await getOutputStream(child, {
+          exitErrorBufferSize: 2,
+          isExitError: () => true,
+        })
+          .toArray()
+          .toPromise();
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeDefined();
+      invariant(error != null);
+      expect(error.stderr).toBe('st');
     });
   });
 
@@ -277,29 +267,27 @@ describe('commons-node/process', () => {
     });
 
     it('leaves an error handler when you unsubscribe', async () => {
-      await (async () => {
-        jest.spyOn(console, 'log'); // suppress log printing
-        let resolve;
-        const promise = new Promise(r => {
-          resolve = r;
+      jest.spyOn(console, 'log'); // suppress log printing
+      let resolve;
+      const promise = new Promise(r => {
+        resolve = r;
+      });
+      const sub = spawn('cat', undefined, {dontLogInNuclide: true})
+        // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
+        // assigned yet in our `subscribe()` callback, so we use the async scheduler.
+        .subscribeOn(Scheduler.async)
+        .subscribe(proc => {
+          // As soon as we have a process, unsubscribe. This will happen before the error is
+          // thrown.
+          sub.unsubscribe();
+
+          // Make sure that the error handler is still registered. If it isn't, and the process
+          // errors, node will consider the error unhandled and we'll get a redbox.
+          expect(proc.listenerCount('error')).toBe(1);
+
+          resolve();
         });
-        const sub = spawn('cat', undefined, {dontLogInNuclide: true})
-          // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
-          // assigned yet in our `subscribe()` callback, so we use the async scheduler.
-          .subscribeOn(Scheduler.async)
-          .subscribe(proc => {
-            // As soon as we have a process, unsubscribe. This will happen before the error is
-            // thrown.
-            sub.unsubscribe();
-
-            // Make sure that the error handler is still registered. If it isn't, and the process
-            // errors, node will consider the error unhandled and we'll get a redbox.
-            expect(proc.listenerCount('error')).toBe(1);
-
-            resolve();
-          });
-        await promise;
-      })();
+      await promise;
     });
 
     it('can be retried', async () => {
@@ -325,114 +313,102 @@ describe('commons-node/process', () => {
     });
 
     it('can be timed out', async () => {
-      await (async () => {
-        let error;
-        let proc;
-        try {
-          await spawn('sleep', ['10000'], {timeout: 1})
-            .do(p => {
-              proc = p;
-              jest.spyOn(proc, 'kill');
-            })
-            .toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(proc != null);
-        invariant(error != null);
-        expect(error.name).toBe('ProcessTimeoutError');
-        expect(proc.kill).toHaveBeenCalled();
-      })();
+      let error;
+      let proc;
+      try {
+        await spawn('sleep', ['10000'], {timeout: 1})
+          .do(p => {
+            proc = p;
+            jest.spyOn(proc, 'kill');
+          })
+          .toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(proc != null);
+      invariant(error != null);
+      expect(error.name).toBe('ProcessTimeoutError');
+      expect(proc.kill).toHaveBeenCalled();
     });
   });
 
   describe('observeProcess', () => {
     it('errors when the process does', async () => {
-      await (async () => {
-        jest.spyOn(console, 'log'); // suppress log printing
-        const processStream = observeProcess('fakeCommand', []);
-        let error;
-        try {
-          await processStream.toPromise();
-        } catch (err) {
-          error = err;
-        }
-        expect(error).toBeDefined();
-        invariant(error);
-        expect(error.code).toBe('ENOENT');
-        expect(error.message).toBe('spawn fakeCommand ENOENT');
-      })();
+      jest.spyOn(console, 'log'); // suppress log printing
+      const processStream = observeProcess('fakeCommand', []);
+      let error;
+      try {
+        await processStream.toPromise();
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeDefined();
+      invariant(error);
+      expect(error.code).toBe('ENOENT');
+      expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
 
     it('errors on nonzero exit codes by default', async () => {
-      await (async () => {
-        const results = await observeProcess(process.execPath, [
-          '-e',
-          'console.error("stderr"); console.log("std out"); process.exit(42);',
-        ])
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual([
-          'N',
-          'N',
-          'E',
-        ]);
-        const {error} = results[2];
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.exitCode).toBe(42);
-        expect(error.stderr).toBe('stderr\n');
-      })();
+      const results = await observeProcess(process.execPath, [
+        '-e',
+        'console.error("stderr"); console.log("std out"); process.exit(42);',
+      ])
+        .materialize()
+        .toArray()
+        .toPromise();
+      expect(results.map(notification => notification.kind)).toEqual([
+        'N',
+        'N',
+        'E',
+      ]);
+      const {error} = results[2];
+      expect(error.name).toBe('ProcessExitError');
+      expect(error.exitCode).toBe(42);
+      expect(error.stderr).toBe('stderr\n');
     });
 
     it("doesn't get an exit message when there's an exit error", async () => {
-      await (async () => {
-        const results = await observeProcess(process.execPath, [
-          '-e',
-          'process.exit(42);',
-        ])
-          .materialize()
-          .toArray()
-          .toPromise();
-        expect(results.length).toBe(1);
-        expect(results[0].kind).toBe('E');
-      })();
+      const results = await observeProcess(process.execPath, [
+        '-e',
+        'process.exit(42);',
+      ])
+        .materialize()
+        .toArray()
+        .toPromise();
+      expect(results.length).toBe(1);
+      expect(results[0].kind).toBe('E');
     });
 
     it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', async () => {
-      await (async () => {
-        let error;
-        try {
-          await observeProcess(
-            process.execPath,
-            ['-e', 'console.error("stderr"); process.exit(42);'],
-            {exitErrorBufferSize: 2, isExitError: () => true},
-          )
-            .toArray()
-            .toPromise();
-        } catch (err) {
-          error = err;
-        }
-        expect(error).toBeDefined();
-        invariant(error != null);
-        expect(error.stderr).toBe('st');
-      })();
+      let error;
+      try {
+        await observeProcess(
+          process.execPath,
+          ['-e', 'console.error("stderr"); process.exit(42);'],
+          {exitErrorBufferSize: 2, isExitError: () => true},
+        )
+          .toArray()
+          .toPromise();
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeDefined();
+      invariant(error != null);
+      expect(error.stderr).toBe('st');
     });
   });
 
   describe('observeProcessRaw', () => {
     it("doesn't split on line breaks", async () => {
       jest.spyOn(console, 'log'); // suppress log printing
-      await (async () => {
-        const event = await observeProcessRaw(process.execPath, [
-          '-e',
-          'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)',
-        ])
-          .take(1)
-          .toPromise();
-        invariant(event.kind === 'stdout');
-        expect(event.data).toBe('stdout1\nstdout2\n');
-      })();
+      const event = await observeProcessRaw(process.execPath, [
+        '-e',
+        'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)',
+      ])
+        .take(1)
+        .toPromise();
+      invariant(event.kind === 'stdout');
+      expect(event.data).toBe('stdout1\nstdout2\n');
     });
   });
 
@@ -501,61 +477,53 @@ describe('commons-node/process', () => {
     });
 
     it('includes stdout and stderr in ProcessExitErrors', async () => {
-      await (async () => {
-        let error;
-        try {
-          await runCommand(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)',
-          ]).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.stderr).toBe('oopsy');
-        expect(error.stdout).toBe('daisy');
-      })();
+      let error;
+      try {
+        await runCommand(process.execPath, [
+          '-e',
+          'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)',
+        ]).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.name).toBe('ProcessExitError');
+      expect(error.stderr).toBe('oopsy');
+      expect(error.stdout).toBe('daisy');
     });
 
     it('accumulates the stderr if the process exits with a non-zero code', async () => {
-      await (async () => {
-        let error;
-        try {
-          await runCommand(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.exit(1)',
-          ]).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.stderr).toBe('oopsy');
-      })();
+      let error;
+      try {
+        await runCommand(process.execPath, [
+          '-e',
+          'process.stderr.write("oopsy"); process.exit(1)',
+        ]).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.stderr).toBe('oopsy');
     });
 
     // Previously we had a bug where we mutated the seed and subsequent subscriptions would use the
     // mutated value.
     it("doesn't share a mutable seed (regression test)", async () => {
-      await (async () => {
-        const observable = runCommand(process.execPath, [
-          '-e',
-          'process.stdout.write("hello"); process.exit(0)',
-        ]);
-        await observable.toPromise();
-        expect(await observable.toPromise()).toBe('hello');
-      })();
+      const observable = runCommand(process.execPath, [
+        '-e',
+        'process.stdout.write("hello"); process.exit(0)',
+      ]);
+      await observable.toPromise();
+      expect(await observable.toPromise()).toBe('hello');
     });
 
     describe('checkOutput compatibility', () => {
       if (origPlatform !== 'win32') {
         it('returns stdout of the running process', async () => {
-          await (async () => {
-            const val = await runCommand('echo', ['-n', 'foo'], {
-              env: process.env,
-            }).toPromise();
-            expect(val).toEqual('foo');
-          })();
+          const val = await runCommand('echo', ['-n', 'foo'], {
+            env: process.env,
+          }).toPromise();
+          expect(val).toEqual('foo');
         });
         it('throws an error if the exit code !== 0', async () => {
           await expect(
@@ -577,35 +545,29 @@ describe('commons-node/process', () => {
     }
 
     it('sends the stdin to the process', async () => {
-      await (async () => {
-        const output = await runCommandDetailed('cat', [], {
-          input: 'hello',
-        }).toPromise();
-        expect(output.stdout).toBe('hello');
-      })();
+      const output = await runCommandDetailed('cat', [], {
+        input: 'hello',
+      }).toPromise();
+      expect(output.stdout).toBe('hello');
     });
 
     it('enforces maxBuffer', async () => {
-      await (async () => {
-        let error;
-        try {
-          await runCommandDetailed('yes', [], {maxBuffer: 100}).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.message).toContain('maxBuffer');
-      })();
+      let error;
+      try {
+        await runCommandDetailed('yes', [], {maxBuffer: 100}).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.message).toContain('maxBuffer');
     });
 
     it('returns stdout, stderr, and the exit code of the running process', async () => {
-      await (async () => {
-        const val = await runCommandDetailed(process.execPath, [
-          '-e',
-          'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)',
-        ]).toPromise();
-        expect(val).toEqual({stdout: 'out', stderr: 'err', exitCode: 0});
-      })();
+      const val = await runCommandDetailed(process.execPath, [
+        '-e',
+        'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)',
+      ]).toPromise();
+      expect(val).toEqual({stdout: 'out', stderr: 'err', exitCode: 0});
     });
 
     it("throws an error if the process can't be spawned", async () => {
@@ -636,19 +598,17 @@ describe('commons-node/process', () => {
     });
 
     it('accumulates the stderr if the process exits with a non-zero code', async () => {
-      await (async () => {
-        let error;
-        try {
-          await runCommandDetailed(process.execPath, [
-            '-e',
-            'process.stderr.write("oopsy"); process.exit(1)',
-          ]).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.stderr).toBe('oopsy');
-      })();
+      let error;
+      try {
+        await runCommandDetailed(process.execPath, [
+          '-e',
+          'process.stderr.write("oopsy"); process.exit(1)',
+        ]).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.stderr).toBe('oopsy');
     });
   });
 
@@ -765,17 +725,15 @@ describe('commons-node/process', () => {
   describe('scriptifyCommand', () => {
     if (process.platform === 'linux') {
       it('escapes correctly on linux', async () => {
-        await (async () => {
-          const output = await runCommand(
-            ...scriptifyCommand('echo', [
-              'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'',
-              'one   two',
-            ]),
-          ).toPromise();
-          expect(output.trim()).toBe(
-            'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
-          );
-        })();
+        const output = await runCommand(
+          ...scriptifyCommand('echo', [
+            'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'',
+            'one   two',
+          ]),
+        ).toPromise();
+        expect(output.trim()).toBe(
+          'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
+        );
       });
     }
   });

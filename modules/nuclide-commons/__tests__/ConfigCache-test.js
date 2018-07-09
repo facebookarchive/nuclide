@@ -44,37 +44,31 @@ describe('ConfigCache', () => {
   });
 
   it('prefers closer matches with multiple config files', async () => {
-    await (async () => {
-      const cache = new ConfigCache([CONFIG_FILE_NAME, CONFIG_FILE_NAME_2]);
+    const cache = new ConfigCache([CONFIG_FILE_NAME, CONFIG_FILE_NAME_2]);
 
-      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFolder2)).toBe(nestedFolder2);
-    })();
+    expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+    expect(await cache.getConfigDir(nestedFolder2)).toBe(nestedFolder2);
   });
 
   it('prefers further matches when the search strategy is "furthest"', async () => {
-    await (async () => {
-      const cache = new ConfigCache(
-        [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
-        'furthest',
-      );
+    const cache = new ConfigCache(
+      [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
+      'furthest',
+    );
 
-      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFolder)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
-    })();
+    expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+    expect(await cache.getConfigDir(nestedFolder)).toBe(rootFolder);
+    expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
   });
 
   it('prefers priority matches when the search strategy is "priority"', async () => {
-    await (async () => {
-      const cache = new ConfigCache(
-        [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
-        'priority',
-      );
+    const cache = new ConfigCache(
+      [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
+      'priority',
+    );
 
-      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
-    })();
+    expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+    expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
   });
 
   it('matches first path segment when the search strategy is "pathMatch"', async () => {

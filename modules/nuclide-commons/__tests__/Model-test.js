@@ -26,18 +26,16 @@ describe('Model', () => {
   });
 
   it('can be converted to an observable', async () => {
-    await (async () => {
-      const model = new Model({count: 0, other: true});
-      const states = model
-        .toObservable()
-        .take(2)
-        .toArray()
-        .toPromise();
-      model.setState({count: 5});
-      expect(await states).toEqual([
-        {count: 0, other: true},
-        {count: 5, other: true},
-      ]);
-    })();
+    const model = new Model({count: 0, other: true});
+    const states = model
+      .toObservable()
+      .take(2)
+      .toArray()
+      .toPromise();
+    model.setState({count: 5});
+    expect(await states).toEqual([
+      {count: 0, other: true},
+      {count: 5, other: true},
+    ]);
   });
 });
