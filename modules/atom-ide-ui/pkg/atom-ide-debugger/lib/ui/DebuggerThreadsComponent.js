@@ -172,9 +172,10 @@ export default class DebuggerThreadsComponent extends React.Component<
             return isAsc ? cmp : -cmp;
           }
         : (a: string, b: string, isAsc: boolean): number => {
-            const cmp = (a != null ? a.toLowerCase() : '').localeCompare(
-              b != null ? b.toLowerCase() : '',
-            );
+            const cmp = (a != null
+              ? String(a).toLowerCase()
+              : ''
+            ).localeCompare(b != null ? String(b).toLowerCase() : '');
             return isAsc ? cmp : -cmp;
           };
 
