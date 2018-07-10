@@ -161,16 +161,6 @@ export type PickedRefactorAction = {|
   },
 |};
 
-export type InlinePickedRefactorAction = {|
-  type: 'inline-picked-refactor',
-  payload: {
-    originalRange: atom$Range,
-    editor: atom$TextEditor,
-    provider: RefactorProvider,
-    refactoring: AvailableRefactoring,
-  },
-|};
-
 export type ExecuteAction = {|
   type: 'execute',
   payload: {
@@ -223,7 +213,6 @@ export type RefactorAction =
   | CloseAction
   | BackFromDiffPreviewAction
   | PickedRefactorAction
-  | InlinePickedRefactorAction
   | GotRefactoringsAction
   | ErrorAction
   | ExecuteAction

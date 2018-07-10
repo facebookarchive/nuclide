@@ -21,7 +21,6 @@ import type {
   ErrorSource,
   ExecuteAction,
   GotRefactoringsAction,
-  InlinePickedRefactorAction,
   OpenAction,
   Phase,
   ProgressAction,
@@ -82,23 +81,6 @@ export function pickedRefactor(
   return {
     type: 'picked-refactor',
     payload: {
-      refactoring,
-    },
-  };
-}
-
-export function inlinePickedRefactor(
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-  provider: RefactorProvider,
-  refactoring: AvailableRefactoring,
-): InlinePickedRefactorAction {
-  return {
-    type: 'inline-picked-refactor',
-    payload: {
-      originalRange,
-      editor,
-      provider,
       refactoring,
     },
   };

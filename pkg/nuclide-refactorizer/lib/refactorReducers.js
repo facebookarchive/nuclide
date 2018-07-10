@@ -20,7 +20,6 @@ import type {
   LoadDiffPreviewAction,
   OpenAction,
   PickedRefactorAction,
-  InlinePickedRefactorAction,
   ProgressAction,
   RefactorAction,
   RefactoringPhase,
@@ -56,8 +55,6 @@ export default function refactorReducers(
       return backFromDiffPreview(state, action);
     case 'picked-refactor':
       return pickedRefactor(state, action);
-    case 'inline-picked-refactor':
-      return inlinePickedRefactor(state, action);
     case 'execute':
       return executeRefactor(state, action);
     case 'confirm':
@@ -139,22 +136,6 @@ function pickedRefactor(
   return {
     type: 'open',
     ui: state.ui,
-    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
-  };
-}
-
-function inlinePickedRefactor(
-  state: RefactorState,
-  action: InlinePickedRefactorAction,
-): RefactorState {
-  const {provider, editor, originalRange, refactoring} = action.payload;
-
-  invariant(state.type === 'closed');
-  invariant(refactoring.kind === 'freeform');
-
-  return {
-    type: 'open',
-    ui: 'generic',
     phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
   };
 }

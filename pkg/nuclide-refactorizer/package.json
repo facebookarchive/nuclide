@@ -15,12 +15,5 @@
         "0.0.0": "consumeRefactorProvider"
       }
     }
-  },
-  "providedServices": {
-    "code-actions": {
-      "versions": {
-        "0.1.0": "provideCodeActions"
-      }
-    }
   }
 }
