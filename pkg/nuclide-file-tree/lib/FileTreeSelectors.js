@@ -244,10 +244,6 @@ export const collectDebugState = (state: FileTreeStore): Object => {
   };
 };
 
-export const getMaxComponentWidth = (state: FileTreeStore): ?number => {
-  return state._maxComponentWidth;
-};
-
 export const getFoldersExpanded = (state: FileTreeStore) => {
   return state._foldersExpanded;
 };

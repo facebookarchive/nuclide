@@ -633,13 +633,6 @@ export default class FileTreeActions {
     });
   }
 
-  updateMaxComponentWidth(width: ?number): mixed {
-    this._store.dispatch({
-      actionType: ActionTypes.UPDATE_MAX_COMPONENT_WIDTH,
-      width,
-    });
-  }
-
   _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<

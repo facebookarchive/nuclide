@@ -262,10 +262,6 @@ export type FileTreeAction =
     }
   | {
       actionType: 'RESET',
-    }
-  | {
-      actionType: 'UPDATE_MAX_COMPONENT_WIDTH',
-      width: ?number,
     };
 
 export const ActionTypes = Object.freeze({
@@ -330,7 +326,6 @@ export const ActionTypes = Object.freeze({
   ADD_FILTER_LETTER: 'ADD_FILTER_LETTER',
   REMOVE_FILTER_LETTER: 'REMOVE_FILTER_LETTER',
   RESET: 'RESET',
-  UPDATE_MAX_COMPONENT_WIDTH: 'UPDATE_MAX_COMPONENT_WIDTH',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.

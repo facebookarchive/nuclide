@@ -155,8 +155,6 @@ export default class FileTreeStore {
   _isCalculatingChanges: boolean;
   _selectionManager: FileTreeSelectionManager;
 
-  _maxComponentWidth: number;
-
   constructor() {
     // Used to ensure the version we serialized is the same version we are deserializing.
     this.VERSION = 1;
@@ -187,8 +185,6 @@ export default class FileTreeStore {
     this._selectionRange = null;
     this._targetNodeKeys = null;
     this._isCalculatingChanges = false;
-
-    this._maxComponentWidth = -1;
   }
 
   /**
@@ -486,9 +482,6 @@ export default class FileTreeStore {
         break;
       case ActionTypes.RESET:
         this._reset();
-        break;
-      case ActionTypes.UPDATE_MAX_COMPONENT_WIDTH:
-        this._updateMaxComponentWidth(payload.width);
         break;
       default:
         (payload.actionType: empty);
@@ -2087,12 +2080,6 @@ export default class FileTreeStore {
 
   subscribe(listener: ChangeListener): IDisposable {
     return this._emitter.on('change', listener);
-  }
-
-  _updateMaxComponentWidth(width: ?number): void {
-    if (width != null) {
-      this._maxComponentWidth = Math.max(this._maxComponentWidth, width);
-    }
   }
 
   dispatch(action: FileTreeAction): mixed {

@@ -47,7 +47,6 @@ type State = {|
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
-const CHAR_EM_SCALE_FACTOR = 0.9;
 
 export class FileTreeEntryComponent extends React.Component<Props, State> {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
@@ -189,14 +188,6 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       }
     }
 
-    let min_width = 'max-content';
-    if (this.props.store != null) {
-      const size = Selectors.getMaxComponentWidth(this.props.store);
-      if (size != null && typeof size === 'number' && size > 0) {
-        min_width = size * CHAR_EM_SCALE_FACTOR + 'em';
-      }
-    }
-
     return (
       <li
         className={classnames(outerClassName, statusClass, generatedClass, {
@@ -211,7 +202,6 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
               // at one depth level more than they actually are. Compensate by
               // adding the appearance of an extra level of depth for files.
               this.props.node.getDepth() * INDENT_LEVEL + INDENT_LEVEL,
-          minWidth: min_width,
           marginLeft: 0,
         }}
         draggable={true}
@@ -225,9 +215,6 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
           // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={el => {
             this._arrowContainer = el;
-            this.props.actions.updateMaxComponentWidth(
-              this.props.node.name.length,
-            );
           }}>
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
