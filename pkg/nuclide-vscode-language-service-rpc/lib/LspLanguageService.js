@@ -177,7 +177,7 @@ export class LspLanguageService {
 
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
-  _state: State = 'Initial';
+  _state: BehaviorSubject<State> = new BehaviorSubject('Initial');
   _stateIndicator: UniversalDisposable = new UniversalDisposable();
   _progressIndicators: Map<string | number, Promise<Progress>> = new Map();
   _actionRequiredIndicators: Map<
@@ -266,13 +266,17 @@ export class LspLanguageService {
       });
   }
 
+  _getState(): State {
+    return this._state.getValue();
+  }
+
   _setState(
     state: State,
     actionRequiredDialogMessage?: string,
     existingDialogToDismiss?: rxjs$ISubscription,
   ): void {
-    this._logger.trace(`State ${this._state} -> ${state}`);
-    this._state = state;
+    this._logger.trace(`State ${this._getState()} -> ${state}`);
+    this._state.next(state);
     this._stateIndicator.dispose();
     const nextDisposable = new UniversalDisposable();
     this._stateIndicator = nextDisposable;
@@ -386,7 +390,7 @@ export class LspLanguageService {
   }
 
   async start(): Promise<void> {
-    invariant(this._state === 'Initial');
+    invariant(this._getState() === 'Initial');
     this._setState('Starting');
 
     const startTimeMs = Date.now();
@@ -937,14 +941,14 @@ export class LspLanguageService {
 
   async _stop(): Promise<void> {
     this._logger.trace('Lsp._stop');
-    if (this._state === 'Stopping' || this._state === 'Stopped') {
+    if (this._getState() === 'Stopping' || this._getState() === 'Stopped') {
       return;
     }
     if (this._lspConnection == null) {
       this._setState('Stopped');
       return;
     }
-    const mustShutdown = this._state === 'Running';
+    const mustShutdown = this._getState() === 'Running';
 
     this._setState('Stopping');
     try {
@@ -1020,7 +1024,7 @@ export class LspLanguageService {
       exceptionStack,
       callStack,
       remoteStack,
-      state: this._state,
+      state: this._getState(),
       // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       code: typeof e.code === 'number' ? e.code : null,
     });
@@ -1030,12 +1034,12 @@ export class LspLanguageService {
       e.code != null &&
       // eslint-disable-next-line nuclide-internal/api-spelling
       Number(e.code) === ErrorCodes.RequestCancelled &&
-      this._state === 'Running'
+      this._getState() === 'Running'
     ) {
       // RequestCancelled is normal and shouldn't be logged.
       return;
     }
-    let msg = `${this._errorString(e)}\nSTATE=${this._state}`;
+    let msg = `${this._errorString(e)}\nSTATE=${this._getState()}`;
     if (remoteStack != null) {
       msg += `\n  REMOTE STACK:\n${String(remoteStack)}`;
     }
@@ -1046,7 +1050,7 @@ export class LspLanguageService {
 
   _handleError(data: [Error, Object, number]): void {
     this._logger.trace('Lsp._handleError');
-    if (this._state === 'Stopping' || this._state === 'Stopped') {
+    if (this._getState() === 'Stopping' || this._getState() === 'Stopped') {
       return;
     }
 
@@ -1085,12 +1089,12 @@ export class LspLanguageService {
     this._logger.trace('Lsp._handleClose');
     // CARE! This method may be called before initialization has finished.
 
-    if (this._state === 'Stopping' || this._state === 'Stopped') {
+    if (this._getState() === 'Stopping' || this._getState() === 'Stopped') {
       this._logger.info('Lsp.Close');
       return;
     }
 
-    const prevState = this._state;
+    const prevState = this._getState();
     this._setState('Stopped');
     if (this._lspConnection != null) {
       this._lspConnection.dispose();
@@ -1502,7 +1506,7 @@ export class LspLanguageService {
   async tryGetBufferWhenWeAndLspAtSameVersion(
     fileVersion: FileVersion,
   ): Promise<?simpleTextBuffer$TextBuffer> {
-    if (this._state !== 'Running') {
+    if (this._getState() !== 'Running') {
       return null;
     }
 
@@ -1536,8 +1540,10 @@ export class LspLanguageService {
 
   async _fileOpen(fileEvent: FileOpenEvent): Promise<void> {
     invariant(this._lspConnection != null);
-    invariant(this._state === 'Running' || this._state === 'Stopping');
-    if (this._state !== 'Running') {
+    invariant(
+      this._getState() === 'Running' || this._getState() === 'Stopping',
+    );
+    if (this._getState() !== 'Running') {
       return;
     }
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
@@ -1572,8 +1578,10 @@ export class LspLanguageService {
 
   _fileClose(fileEvent: FileCloseEvent): void {
     invariant(this._lspConnection != null);
-    invariant(this._state === 'Running' || this._state === 'Stopping');
-    if (this._state !== 'Running') {
+    invariant(
+      this._getState() === 'Running' || this._getState() === 'Stopping',
+    );
+    if (this._getState() !== 'Running') {
       return;
     }
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
@@ -1590,8 +1598,10 @@ export class LspLanguageService {
 
   _fileEdit(fileEvent: FileEditEvent): void {
     invariant(this._lspConnection != null);
-    invariant(this._state === 'Running' || this._state === 'Stopping');
-    if (this._state !== 'Running') {
+    invariant(
+      this._getState() === 'Running' || this._getState() === 'Stopping',
+    );
+    if (this._getState() !== 'Running') {
       return;
     }
     const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
@@ -1630,8 +1640,10 @@ export class LspLanguageService {
 
   _fileSave(fileEvent: FileSaveEvent): void {
     invariant(this._lspConnection != null);
-    invariant(this._state === 'Running' || this._state === 'Stopping');
-    if (this._state !== 'Running') {
+    invariant(
+      this._getState() === 'Running' || this._getState() === 'Stopping',
+    );
+    if (this._getState() !== 'Running') {
       return;
     }
     let text;
@@ -1687,7 +1699,7 @@ export class LspLanguageService {
     request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       this._serverCapabilities.completionProvider == null ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -1741,7 +1753,10 @@ export class LspLanguageService {
   async resolveAutocompleteSuggestion(
     suggestion: Completion,
   ): Promise<?Completion> {
-    if (this._state !== 'Running' || !this._supportsAutocompleteResolve()) {
+    if (
+      this._getState() !== 'Running' ||
+      !this._supportsAutocompleteResolve()
+    ) {
       return null;
     }
 
@@ -1798,7 +1813,7 @@ export class LspLanguageService {
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.definitionProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -1854,7 +1869,7 @@ export class LspLanguageService {
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.referencesProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -1939,7 +1954,7 @@ export class LspLanguageService {
     newName: string,
   ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.renameProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -1968,7 +1983,7 @@ export class LspLanguageService {
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.typeCoverageProvider
     ) {
       return null;
@@ -2001,7 +2016,7 @@ export class LspLanguageService {
     invariant(this._lspConnection != null);
 
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.typeCoverageProvider
     ) {
       return;
@@ -2013,8 +2028,16 @@ export class LspLanguageService {
   }
 
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
+    // If the LSP process is starting up, let the startup finish before
+    // resolving.
+    if (this._getState() === 'Starting') {
+      await this._state
+        .filter(state => state !== 'Starting')
+        .take(1)
+        .toPromise();
+    }
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.documentSymbolProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -2183,7 +2206,7 @@ export class LspLanguageService {
   /** Returns code lens information for the given file. */
   async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
@@ -2209,7 +2232,7 @@ export class LspLanguageService {
     filePath: NuclideUri,
     data: CodeLensData,
   ): Promise<?CodeLensData> {
-    if (this._state !== 'Running') {
+    if (this._getState() !== 'Running') {
       return null;
     }
 
@@ -2238,7 +2261,7 @@ export class LspLanguageService {
   // the request, the server can't handle this type of request, or if the LSP
   // server throws its own exception (ex: an internal server error exception)
   async _executeCommand(command: string, args?: Array<any>): Promise<void> {
-    if (this._state !== 'Running') {
+    if (this._getState() !== 'Running') {
       throw new Error(
         `${
           this._languageServerName
@@ -2266,7 +2289,7 @@ export class LspLanguageService {
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.codeActionProvider
     ) {
       return [];
@@ -2322,7 +2345,7 @@ export class LspLanguageService {
     let lspAnonymousRage = '';
 
     if (
-      this._state === 'Running' &&
+      this._getState() === 'Running' &&
       Boolean(this._serverCapabilities.rageProvider)
     ) {
       let response = null;
@@ -2379,7 +2402,7 @@ export class LspLanguageService {
     position: atom$Point,
   ): Promise<?TypeHint> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.hoverProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -2453,7 +2476,7 @@ export class LspLanguageService {
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.documentHighlightProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -2506,7 +2529,7 @@ export class LspLanguageService {
     atomRange: atom$Range,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
-    if (this._state !== 'Running') {
+    if (this._getState() !== 'Running') {
       return null;
     }
 
@@ -2629,7 +2652,7 @@ export class LspLanguageService {
     const triggerCharacters = this._derivedServerCapabilities
       .onTypeFormattingTriggerCharacters;
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !triggerCharacters.has(triggerCharacter) ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -2661,7 +2684,7 @@ export class LspLanguageService {
     position: atom$Point,
   ): Promise<?SignatureHelp> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.signatureHelpProvider ||
       !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
@@ -2697,7 +2720,7 @@ export class LspLanguageService {
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
     if (
-      this._state !== 'Running' ||
+      this._getState() !== 'Running' ||
       !this._serverCapabilities.workspaceSymbolProvider
     ) {
       return null;
