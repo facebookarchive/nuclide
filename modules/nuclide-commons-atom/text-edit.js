@@ -176,6 +176,11 @@ function sortEdits(edits: Array<TextEdit>): Array<TextEdit> {
   // stable sort (preserve order of edits starting in the same location)
   return edits
     .map((edit, i) => [edit, i])
-    .sort(([e1, i1], [e2, i2]) => e1.oldRange.compare(e2.oldRange) || i1 - i2)
+    .sort(
+      ([e1, i1], [e2, i2]) =>
+        e1.oldRange.start.compare(e2.oldRange.start) ||
+        e1.oldRange.end.compare(e2.oldRange.end) ||
+        i1 - i2,
+    )
     .map(([edit]) => edit);
 }
