@@ -29,7 +29,7 @@ import invariant from 'assert';
 
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import observeGrammarForTextEditors from '../../commons-atom/observe-grammar-for-text-editors';
+import observeGrammarForTextEditors from 'nuclide-commons-atom/observe-grammar-for-text-editors';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import passesGK from '../../commons-node/passesGK';

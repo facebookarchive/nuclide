@@ -12,7 +12,7 @@
 import fsPromise from 'nuclide-commons/fsPromise';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
+import observeGrammarForTextEditors from 'nuclide-commons-atom/observe-grammar-for-text-editors';
 import observeLanguageTextEditors from '../observe-language-text-editors';
 import path from 'path';
 

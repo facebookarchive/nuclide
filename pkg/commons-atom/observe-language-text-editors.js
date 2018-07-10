@@ -11,7 +11,7 @@
 
 import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import observeGrammarForTextEditors from './observe-grammar-for-text-editors';
+import observeGrammarForTextEditors from 'nuclide-commons-atom/observe-grammar-for-text-editors';
 
 const START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
 const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
