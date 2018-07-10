@@ -15,7 +15,7 @@ import {groupBy} from 'lodash';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import shallowEqual from 'shallowequal';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import {arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual, arrayUnique} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -203,17 +203,17 @@ export class WorkingSetsStore {
       }
     });
 
-    const repos = atom.project.getRepositories().filter(Boolean);
-    const originURLs = repos
-      .map(repo => {
-        const originURL = repo.getOriginURL();
-        if (originURL == null) {
-          return null;
-        }
-        const dir = repo.getProjectDirectory();
-        return workingSet.containsDir(dir) ? originURL : null;
-      })
+    // FIXME: We shouldn't be using `repositoryForDirectorySync()`. It's a bad internal API.
+    // `atom.project.repositoryForDirectory()` is the "right" one but, unfortunately,
+    // `WorkingSetsStore` is currently written to require this to be synchronous.
+    const repos = atom.project
+      .getDirectories()
+      .filter(dir => workingSet.containsDir(dir.getPath()))
+      .map(dir => repositoryForDirectorySync(dir))
       .filter(Boolean);
+    const originURLs = arrayUnique(
+      repos.map(repo => repo.getOriginURL()).filter(Boolean),
+    );
 
     let newDefinitions;
     if (nameIndex < 0) {
@@ -380,4 +380,15 @@ function getProjectWorkingSetDefinition(
     isActiveProject: true,
     uris: paths,
   };
+}
+
+function repositoryForDirectorySync(dir: atom$Directory): ?atom$Repository {
+  // $FlowIgnore: This is an internal API. We really shouldn't use it.
+  for (const provider of atom.project.repositoryProviders) {
+    const repo = provider.repositoryForDirectorySync(dir);
+    if (repo != null) {
+      return repo;
+    }
+  }
+  return null;
 }
