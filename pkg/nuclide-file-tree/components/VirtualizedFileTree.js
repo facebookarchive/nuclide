@@ -249,7 +249,13 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
           footerHeight={this.state.footerHeight}
           onRowsRendered={this._onRowsRendered}
           tabIndex={null}
-          containerStyle={{overflowX: 'scroll'}}
+          /*
+          The normal react-virtualized styling doesn't allow us to scroll horizontally. The
+          following rules make sure that (1) the inner element isn't cropped and (2) the parent
+          element scrolls it.
+          */
+          containerStyle={{overflow: 'visible'}}
+          style={{overflowX: 'auto'}}
           /* This is a workaround. React doesn't detect that a change in this component's state
             should affect the properties of this List's children. Maybe it's an interop problem
             with react-virtualized.
