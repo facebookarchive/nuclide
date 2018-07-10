@@ -2611,7 +2611,7 @@ export class LspLanguageService {
     if (!this._serverCapabilities.documentFormattingProvider) {
       return null;
     }
-    if (this._state !== 'Running') {
+    if (this._getState() !== 'Running') {
       return null;
     }
     const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
