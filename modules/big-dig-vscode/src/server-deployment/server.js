@@ -158,6 +158,11 @@ function getJsTranspiler(): (data: Buffer, filename: string) => Buffer {
     return (data, filename) => data;
   }
 
+  // In the server, Yarn workspaces are copied into node_modules, so we must
+  // specify 'production-modules' to the NodeTranspiler so that import
+  // statements are transpiled appropriately.
+  process.env.NUCLIDE_TRANSPILE_ENV = 'production-modules';
+
   // We load the transpiler dynamically because it will not be available when we are published.
   // eslint-disable-next-line nuclide-internal/modules-dependencies
   const NodeTranspiler = require('nuclide-node-transpiler/lib/NodeTranspiler');
