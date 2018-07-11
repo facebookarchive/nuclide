@@ -207,6 +207,7 @@ class FileParser {
         'objectRestSpread',
         'classProperties',
         'optionalChaining',
+        'optionalCatchBinding',
       ],
     };
     const program = memoizedBabylonParse(source, babylonOptions);
