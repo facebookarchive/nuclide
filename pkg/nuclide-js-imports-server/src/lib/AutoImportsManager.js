@@ -34,6 +34,7 @@ export const babylonOptions = {
     'exportExtensions',
     'objectRestSpread',
     'classProperties',
+    'nullishCoalescingOperator',
     'optionalChaining',
     'optionalCatchBinding',
   ],

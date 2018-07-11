@@ -206,6 +206,7 @@ class FileParser {
         'exportExtensions',
         'objectRestSpread',
         'classProperties',
+        'nullishCoalescingOperator',
         'optionalChaining',
         'optionalCatchBinding',
       ],
