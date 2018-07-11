@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This runs the VS Code Insiders build on MacOS with the development version of
+# the Big Dig extension loaded. This will override any existing installation
+# of the extension that you may have.
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+EXTENSION_DIR=$(dirname "${DIR}")
+exec /Applications/Visual\ Studio\ Code\ -\ Insiders.app/Contents/Resources/app/bin/code --extensionDevelopmentPath "$EXTENSION_DIR"

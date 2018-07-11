@@ -11,11 +11,14 @@ Utility to package the VS Code big-dig extension into a *.vsix file.
 '''
 
 import atexit
+from distutils.version import LooseVersion
 import json
 import optparse
 import os
 import os.path
+import re
 import subprocess
+from subprocess import DEVNULL
 import shutil
 import sys
 import tempfile
@@ -28,6 +31,8 @@ import zipfile
 if sys.version_info[0] != 3 or sys.version_info[1] < 6:
     raise Exception("Must be using Python 3.6+")
 
+# A bug in older Yarn versions causes missing dependencies with workspaces.
+MIN_YARN_VERSION = '1.7.0'
 RELEASE_TRANSPILE = './modules/nuclide-node-transpiler/bin/release-transpile.js'
 
 
@@ -79,8 +84,12 @@ def makeTempDir(prefix):
 def assert_clean_repository():
     '''Verifies that the repository has no changes and no untracked files.'''
     print('Verifying that the repository is clean...')
-    out = subprocess.check_output(['hg', 'summary'])
-    if 'commit: (clean)' not in out.decode('utf-8'):
+    # This should work in both hg and git repositories.
+    if subprocess.call(['hg', 'root'], stdout=DEVNULL, stderr=DEVNULL) == 0:
+        status_output = subprocess.check_output(['hg', 'status'])
+    else:
+        status_output = subprocess.check_output(['git', 'status', '--porcelain'])
+    if status_output != b'':
         eprint('There are uncommitted changes in this repository.')
         eprint('Please commit or revert all changes before running.')
         exit(1)
@@ -115,12 +124,13 @@ class NuclideRoot:
     def setupNodeModules(self):
         '''Essentially calls `yarn install` from the nuclide root'''
         print('Install node_modules in Nuclide...')
-        installer = str(self._installScriptPath())
+        installer = self._yarnCommand()
         subprocess.check_call([installer, '--offline'], cwd=self.nuclidePath)
 
-    def _installScriptPath(self):
+    def _yarnCommand(self):
         root = self.nuclidePath.parent
-        return root / 'third-party' / 'yarn' / 'install-node-modules.sh'
+        install_path = root / 'third-party' / 'yarn' / 'yarn'
+        return str(install_path) if install_path.exists() else 'yarn'
 
     def transpile(self):
         '''Transpiles nuclide and all modules'''
@@ -150,7 +160,7 @@ class NuclideRoot:
         Installs modules/ to the target node_modules/ directory.
         '''
         print('Installing node_modules into {}...'.format(target))
-        installer = str(self._installScriptPath())
+        installer = self._yarnCommand()
         subprocess.check_call(
             [installer, '--offline', '--production', '--modules-folder', str(target)],
             cwd=self._nuclideTranspilePath,
@@ -264,11 +274,16 @@ def run(options):
 def main(argv):
     try:
         options = Options()
-        npm_package_name = os.environ.get('npm_package_name')
-        if npm_package_name is None:
+        npm_user_agent = os.environ.get('npm_config_user_agent')
+        if npm_user_agent is None:
             eprint('Do not run this script directly: instead run `yarn vsix`.')
             exit(1)
-        options.packageName = npm_package_name
+        yarn_version_match = re.match('yarn/(\S+)', str(npm_user_agent))
+        yarn_version = yarn_version_match.groups()[0] if yarn_version_match else None
+        if yarn_version is None or LooseVersion(yarn_version) < MIN_YARN_VERSION:
+            eprint('Yarn >=v%s is required. Current version: %s' % (MIN_YARN_VERSION, yarn_version))
+            exit(1)
+        options.packageName = os.environ.get('npm_package_name')
         options.serverName = options.packageName + '-server'
         scriptDir = Path(__file__).parent.resolve()
         options.nuclidePath = scriptDir.parent.parent.parent
