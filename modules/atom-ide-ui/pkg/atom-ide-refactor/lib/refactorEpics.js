@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -33,7 +34,7 @@ import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {toUnifiedDiff} from 'nuclide-commons-atom/text-edit-diff';
 import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import * as Actions from './refactorActions';
 
@@ -112,7 +113,7 @@ export function getEpics(
 async function getRefactorings(
   providers: ProviderRegistry<RefactorProvider>,
 ): Promise<RefactorAction> {
-  track('nuclide-refactorizer:get-refactorings');
+  analytics.track('nuclide-refactorizer:get-refactorings');
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null || editor.getPath() == null) {
     return Actions.error(
@@ -229,7 +230,7 @@ export function applyRefactoring(
     return Observable.concat(
       editStream,
       Observable.of(Actions.close()).do(() =>
-        track('nuclide-refactorizer:success'),
+        analytics.track('nuclide-refactorizer:success'),
       ),
     );
   });

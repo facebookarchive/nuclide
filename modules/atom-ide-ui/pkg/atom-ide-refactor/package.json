@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-refactorizer",
+  "name": "atom-ide-refactor",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Refactorize your code",

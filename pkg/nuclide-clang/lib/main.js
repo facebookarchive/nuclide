@@ -23,7 +23,7 @@ import type {
   FileGraph,
 } from '../../nuclide-file-family/lib/types';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
-import type {RefactorProvider} from '../../nuclide-refactorizer';
+import type {RefactorProvider} from 'atom-ide-ui';
 import type {
   ClangConfigurationProvider,
   ClangDeclarationInfoProvider,

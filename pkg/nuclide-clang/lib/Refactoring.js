@@ -13,7 +13,7 @@ import type {
   RefactorResponse,
   RefactorRequest,
   AvailableRefactoring,
-} from '../../nuclide-refactorizer';
+} from 'atom-ide-ui';
 
 import invariant from 'assert';
 import {compact} from 'nuclide-commons/observable';
