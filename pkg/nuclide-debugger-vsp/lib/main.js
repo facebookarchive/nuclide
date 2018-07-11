@@ -17,6 +17,7 @@ import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -25,6 +26,21 @@ class Activation {
     this._subscriptions = new UniversalDisposable();
     this._registerLLDBProvider();
     this._registerHHVMDebugProvider();
+  }
+
+  _javaCheck(_gkService: GatekeeperService) {
+    if (_gkService != null) {
+      _gkService.passesGK('nuclide_extrafeatures_debugging').then(passes => {
+        if (passes) {
+          try {
+            this._subscriptions.add(
+              // $FlowFB
+              require('./fb-JavaCheck').javaCheck(),
+            );
+          } catch (_) {}
+        }
+      });
+    }
   }
 
   _registerDebugProvider(provider: NuclideDebuggerProvider): void {
@@ -53,6 +69,12 @@ class Activation {
         return new HhvmLaunchAttachProvider(VsAdapterNames.HHVM, connection);
       },
     });
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    let _gkService = service;
+    this._javaCheck(_gkService);
+    return new UniversalDisposable(() => (_gkService = null));
   }
 
   dispose(): void {

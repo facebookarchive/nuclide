@@ -108,6 +108,7 @@ export async function getAdbAttachPortTargetInfo(
   targetUri: NuclideUri,
   pid: ?number,
   subscriptions: UniversalDisposable,
+  packageName: string,
 ): Promise<JavaAttachPortTargetConfig> {
   const tunnelRequired =
     nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
@@ -183,5 +184,6 @@ export async function getAdbAttachPortTargetInfo(
     debugMode: 'attach',
     machineName: 'localhost',
     port: attachPort,
+    packageName,
   };
 }

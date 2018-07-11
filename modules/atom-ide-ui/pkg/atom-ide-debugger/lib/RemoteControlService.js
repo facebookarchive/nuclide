@@ -32,6 +32,12 @@ export default class RemoteControlService implements RemoteDebuggerService {
     this._disposables.dispose();
   }
 
+  onDidStartDebugSession(
+    callback: (config: IProcessConfig) => mixed,
+  ): IDisposable {
+    return this._service.onDidStartDebugSession(callback);
+  }
+
   _onSessionEnd(
     focusedProcess: IProcess,
     disposables: UniversalDisposable,

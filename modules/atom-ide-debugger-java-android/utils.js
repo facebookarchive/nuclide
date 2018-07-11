@@ -240,6 +240,7 @@ export async function resolveConfiguration(
     resolvedTargetUri,
     pid,
     subscriptions,
+    packageName,
   );
 
   const customDisposable =

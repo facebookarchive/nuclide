@@ -9,5 +9,12 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "private": true
+  "private": true,
+  "consumedServices": {
+    "fb-gatekeeper": {
+      "versions": {
+        "0.0.0": "consumeGatekeeperService"
+      }
+    }
+  }
 }

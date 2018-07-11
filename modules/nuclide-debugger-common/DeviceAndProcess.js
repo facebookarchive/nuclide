@@ -228,8 +228,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
     let shouldHighlightRow = _ => false;
     try {
       // $FlowFB
-      shouldHighlightRow = require('./fb-shouldHighlightRow')
-        .shouldHighlightRow;
+      shouldHighlightRow = require('./fb-isFBProcessName').isFBProcessName;
     } catch (e) {}
 
     const processListRows = this._sortRows(

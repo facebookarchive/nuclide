@@ -124,6 +124,7 @@ const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 const CUSTOM_DEBUG_EVENT = 'CUSTOM_DEBUG_EVENT';
 const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
+const START_DEBUG_SESSION = 'START_DEBUG_SESSION';
 
 const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
 const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
@@ -884,6 +885,12 @@ export default class DebugService implements IDebugService {
     }
   }
 
+  onDidStartDebugSession(
+    callback: (config: IProcessConfig) => mixed,
+  ): IDisposable {
+    return this._emitter.on(START_DEBUG_SESSION, callback);
+  }
+
   onDidCustomEvent(
     callback: (event: DebugProtocol.DebugEvent) => mixed,
   ): IDisposable {
@@ -1260,6 +1267,7 @@ export default class DebugService implements IDebugService {
         );
 
         process = this._model.addProcess(config, newSession);
+        this._emitter.emit(START_DEBUG_SESSION, config);
         this.focusStackFrame(null, null, process);
         this._registerSessionListeners(process, newSession);
         atom.commands.dispatch(

@@ -46,6 +46,9 @@ import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
 
 export interface RemoteDebuggerService {
   startVspDebugging(config: IProcessConfig): Promise<IVspInstance>;
+  onDidStartDebugSession(
+    callback: (config: IProcessConfig) => mixed,
+  ): IDisposable;
 }
 
 export interface ITreeElement {
@@ -316,6 +319,9 @@ export interface IDebugService {
   getDebuggerMode(): DebuggerModeType;
 
   onDidChangeMode(callback: (mode: DebuggerModeType) => mixed): IDisposable;
+  onDidStartDebugSession(
+    callback: (config: IProcessConfig) => mixed,
+  ): IDisposable;
   onDidCustomEvent(
     callback: (event: DebugProtocol.DebugEvent) => mixed,
   ): IDisposable;

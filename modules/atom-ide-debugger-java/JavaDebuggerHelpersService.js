@@ -32,6 +32,7 @@ export type JavaAttachPortTargetConfig = {|
   +debugMode: 'attach',
   +machineName: string,
   +port: number,
+  +packageName: string,
 |};
 
 export type JavaTargetConfig =
