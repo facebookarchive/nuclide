@@ -175,8 +175,14 @@ class Activation {
         },
       }),
       atom.commands.add('atom-workspace', {
-        'debugger:show-launch-dialog': () => {
-          this._showLaunchAttachDialog({dialogMode: 'launch'});
+        'debugger:show-launch-dialog': event => {
+          const selectedTabName: any = event?.detail?.selectedTabName;
+          const config: any = event?.detail?.config;
+          this._showLaunchAttachDialog({
+            dialogMode: 'launch',
+            selectedTabName,
+            config,
+          });
         },
       }),
       atom.commands.add('atom-workspace', {

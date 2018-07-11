@@ -93,7 +93,17 @@ export class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachProvider {
                   : defaultConfig[p.name],
             }),
           );
+
+          // Pass the ignore flag from the properites to the LaunchOrAttachConfigBase
+          if (defaultConfig.ignorePreviousParams !== undefined) {
+            launchOrAttachConfig.ignorePreviousParams = Boolean(
+              defaultConfig.ignorePreviousParams,
+            );
+          } else {
+            launchOrAttachConfig.ignorePreviousParams = false;
+          }
         }
+
         return (
           <AutoGenLaunchAttachUiComponent
             targetUri={this.getTargetUri()}

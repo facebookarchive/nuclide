@@ -133,6 +133,9 @@ type AutoGenLaunchOrAttachConfigBase = {
   scriptExtension?: string,
   scriptPropertyName?: ?string,
   header?: React.Node,
+  // If you want to overwrite the previously saved parameters,
+  // set this flag to true and pass in the new values as the defaultValue in the config.
+  ignorePreviousParams?: ?boolean,
   getProcessName: (values: Object) => string,
 };
 

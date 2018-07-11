@@ -20,6 +20,11 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 
+import type {
+  DeepLinkService,
+  DeepLinkParams,
+} from '../../nuclide-deep-link/lib/types';
+
 class Activation {
   _subscriptions: UniversalDisposable;
 
@@ -40,17 +45,61 @@ class Activation {
     };
   }
 
+  consumeDeepLinkService(service: DeepLinkService): IDisposable {
+    const disposable = service.subscribeToPath(
+      'prepack-debugger',
+      (params: DeepLinkParams) => {
+        const debugDialogConfig = {};
+        // Note: single element arrays are passed as strings.
+        // Arrays in the config must be treated as whitespace separated strings.
+        // The following cleans up both of the above cases.
+        debugDialogConfig.sourceFiles = Array.isArray(params.sourceFiles)
+          ? params.sourceFiles.join(' ')
+          : params.sourceFiles;
+
+        // Prepack Arguments are optional
+        if (params.prepackArguments) {
+          debugDialogConfig.prepackArguments = Array.isArray(
+            params.prepackArguments,
+          )
+            ? params.prepackArguments.join(' ')
+            : params.prepackArguments;
+        } else {
+          debugDialogConfig.prepackArguments = '';
+        }
+
+        debugDialogConfig.prepackRuntime = params.prepackRuntime
+          ? params.prepackRuntime
+          : '';
+
+        debugDialogConfig.ignorePreviousParams = true;
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'debugger:show-launch-dialog',
+          {
+            selectedTabName: VsAdapterNames.PREPACK,
+            config: debugDialogConfig,
+          },
+        );
+      },
+    );
+    this._subscriptions.add(disposable);
+    return disposable;
+  }
+
   dispose(): void {
     this._subscriptions.dispose();
   }
 }
 
 export function getPrepackAutoGenConfig(): AutoGenConfig {
-  const fileToPrepack = {
-    name: 'sourceFile',
-    type: 'string',
-    description: 'Input the file you want to Prepack. Use absolute paths.',
+  const filesToPrepack = {
+    name: 'sourceFiles',
+    type: 'array',
+    itemType: 'string',
+    description: 'Input the file(s) you want to Prepack. Use absolute paths.',
     required: true,
+    defaultValue: '',
     visible: true,
   };
   const prepackRuntimePath = {
@@ -75,13 +124,13 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
     launch: true,
     vsAdapterType: VsAdapterTypes.PREPACK,
     threads: false,
-    properties: [fileToPrepack, prepackRuntimePath, argumentsProperty],
-    scriptPropertyName: 'fileToPrepack',
+    properties: [filesToPrepack, prepackRuntimePath, argumentsProperty],
+    scriptPropertyName: 'filesToPrepack',
     scriptExtension: '.js',
     cwdPropertyName: null,
     header: null,
     getProcessName(values) {
-      return values.fileToPrepack + ' (Prepack)';
+      return 'Prepack (Debugging)';
     },
   };
   return {
