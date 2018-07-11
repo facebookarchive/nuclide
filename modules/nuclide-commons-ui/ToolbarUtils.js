@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.makeToolbarButtonSpec = makeToolbarButtonSpec;
+
+function _humanizeKeystroke() {
+  const data = _interopRequireDefault(require("../nuclide-commons/humanizeKeystroke"));
+
+  _humanizeKeystroke = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,27 +25,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import humanizeKeystroke from 'nuclide-commons/humanizeKeystroke';
-
-export function makeToolbarButtonSpec(
-  options: toolbar$ButtonSpec,
-): toolbar$ButtonSpec {
+function makeToolbarButtonSpec(options) {
   const command = options.callback;
+
   if (typeof command === 'string') {
     const [keyBinding] = atom.keymaps.findKeyBindings({
       command,
-      target: atom.views.getView(atom.workspace),
+      target: atom.views.getView(atom.workspace)
     });
     const tooltipStr = options.tooltip;
+
     if (keyBinding != null && tooltipStr != null) {
-      const keyString = humanizeKeystroke(keyBinding.keystrokes, null);
+      const keyString = (0, _humanizeKeystroke().default)(keyBinding.keystrokes, null);
       options.tooltip = `${tooltipStr} (${keyString})`;
     }
   }
 
-  return {...options};
+  return Object.assign({}, options);
 }

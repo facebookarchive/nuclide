@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +13,23 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-export type BatchHandler<T> = (batch: Array<T>) => void;
-
 // A Queue which will process elements at intervals, only if the
 // queue contains any elements.
-export default class BatchProcessedQueue<T> {
-  _batchPeriod: number;
-  _handler: BatchHandler<T>;
-  _timeoutId: ?TimeoutID;
-  _items: Array<T>;
-
-  constructor(batchPeriod: number, handler: BatchHandler<T>) {
+class BatchProcessedQueue {
+  constructor(batchPeriod, handler) {
     this._batchPeriod = batchPeriod;
     this._handler = handler;
     this._timeoutId = null;
     this._items = [];
   }
 
-  add(item: T): void {
-    this._items.push(item);
-    // eslint-disable-next-line eqeqeq
+  add(item) {
+    this._items.push(item); // eslint-disable-next-line eqeqeq
+
+
     if (this._timeoutId === null) {
       this._timeoutId = setTimeout(() => {
         this._handleBatch();
@@ -41,14 +41,19 @@ export default class BatchProcessedQueue<T> {
     this._timeoutId = null;
     const batch = this._items;
     this._items = [];
+
     this._handler(batch);
   }
 
-  dispose(): void {
+  dispose() {
     // eslint-disable-next-line eqeqeq
     if (this._timeoutId !== null) {
       clearTimeout(this._timeoutId);
+
       this._handleBatch();
     }
   }
+
 }
+
+exports.default = BatchProcessedQueue;

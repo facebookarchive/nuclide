@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _AtomInput() {
+  const data = require("../../../../nuclide-commons-ui/AtomInput");
+
+  _AtomInput = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +27,46 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import * as React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-
-type Props = {
-  selectedText: string,
-  submitNewName: (string | void) => void,
-};
-
-type State = {
-  newName: string,
-};
-
-export default class RenameComponent extends React.Component<Props, State> {
-  _atomInput: ?AtomInput;
-
-  constructor(props: Props) {
+class RenameComponent extends React.Component {
+  constructor(props) {
     super(props);
 
+    this.highlightTextWithin = () => {
+      if (this._atomInput == null) {
+        return;
+      }
+
+      const editor = this._atomInput.getTextEditor();
+
+      editor.selectAll();
+    };
+
+    this._handleSubmit = event => {
+      event.preventDefault();
+      const {
+        newName
+      } = this.state;
+      const {
+        submitNewName
+      } = this.props;
+      return newName === '' ? submitNewName() : submitNewName(newName);
+    };
+
+    this._handleChange = text => {
+      this.setState({
+        newName: text
+      });
+    };
+
+    this._handleBlur = event => {
+      this.props.submitNewName();
+    };
+
     this.state = {
-      newName: this.props.selectedText,
+      newName: this.props.selectedText
     };
   }
 
@@ -37,46 +74,23 @@ export default class RenameComponent extends React.Component<Props, State> {
     this.highlightTextWithin();
   }
 
-  highlightTextWithin = (): void => {
-    if (this._atomInput == null) {
-      return;
-    }
-    const editor = this._atomInput.getTextEditor();
-    editor.selectAll();
-  };
-
-  _handleSubmit = (event: $FlowFixMe): void => {
-    event.preventDefault();
-    const {newName} = this.state;
-    const {submitNewName} = this.props;
-
-    return newName === '' ? submitNewName() : submitNewName(newName);
-  };
-
-  _handleChange = (text: string): void => {
-    this.setState({newName: text});
-  };
-
-  _handleBlur = (event: Event): void => {
-    this.props.submitNewName();
-  };
-
-  render(): React.Node {
+  render() {
     // TODO: Have a min-width, but expand the actual width as necessary based on the length of the selected word
     //      (What VSCode does)
     const widthStyle = {
-      minWidth: '150px',
+      minWidth: '150px'
     };
-    return (
-      <AtomInput
-        ref={atomInput => (this._atomInput = atomInput)}
-        style={widthStyle}
-        autofocus={true}
-        value={this.state.newName}
-        onDidChange={this._handleChange}
-        onBlur={this._handleBlur}
-        onConfirm={this._handleSubmit}
-      />
-    );
+    return React.createElement(_AtomInput().AtomInput, {
+      ref: atomInput => this._atomInput = atomInput,
+      style: widthStyle,
+      autofocus: true,
+      value: this.state.newName,
+      onDidChange: this._handleChange,
+      onBlur: this._handleBlur,
+      onConfirm: this._handleSubmit
+    });
   }
+
 }
+
+exports.default = RenameComponent;

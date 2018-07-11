@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +13,26 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-export default class BreakpointEnableCommand implements Command {
-  name = 'enable';
-  helpText = '[index]: enables a breakpoint.';
-
-  _debugger: DebuggerInterface;
-
-  constructor(debug: DebuggerInterface) {
+class BreakpointEnableCommand {
+  constructor(debug) {
+    this.name = 'enable';
+    this.helpText = '[index]: enables a breakpoint.';
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     let index = -1;
 
-    if (args.length !== 1 || isNaN((index = parseInt(args[0], 10)))) {
+    if (args.length !== 1 || isNaN(index = parseInt(args[0], 10))) {
       throw new Error("Format is 'breakpoint enable index'");
     }
 
     await this._debugger.setBreakpointEnabled(index, true);
   }
+
 }
+
+exports.default = BreakpointEnableCommand;

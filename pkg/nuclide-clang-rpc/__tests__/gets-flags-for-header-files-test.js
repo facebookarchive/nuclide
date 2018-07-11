@@ -1,3 +1,49 @@
+"use strict";
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ClangFlagsManager() {
+  const data = _interopRequireDefault(require("../lib/ClangFlagsManager"));
+
+  _ClangFlagsManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideTestHelpers() {
+  const data = require("../../../pkg/nuclide-test-helpers");
+
+  _nuclideTestHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _path = _interopRequireDefault(require("path"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,19 +51,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
 jest.setTimeout(70000);
-import nullthrows from 'nullthrows';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import ClangFlagsManager from '../lib/ClangFlagsManager';
-import {copyFixture} from '../../../pkg/nuclide-test-helpers';
-import path from 'path';
-
-let flagsManager: ClangFlagsManager;
+let flagsManager;
 let compilationDatabase;
 let requestSettings;
 let emptyRequestSettings;
@@ -27,51 +65,34 @@ beforeEach(async () => {
   global.performance.measure = jest.fn();
   global.performance.clearMarks = jest.fn();
   global.performance.clearMeasures = jest.fn();
-  testDir = await copyFixture(
-    'cpp_buck_project',
-    path.resolve(__dirname, '../__mocks__'),
-  );
-  flagsManager = new ClangFlagsManager();
+  testDir = await (0, _nuclideTestHelpers().copyFixture)('cpp_buck_project', _path.default.resolve(__dirname, '../__mocks__'));
+  flagsManager = new (_ClangFlagsManager().default)();
   compilationDatabase = {
-    file: nuclideUri.join(testDir, 'compile_commands.json'),
-    flagsFile: nuclideUri.join(testDir, 'BUCK'),
-    libclangPath: null,
+    file: _nuclideUri().default.join(testDir, 'compile_commands.json'),
+    flagsFile: _nuclideUri().default.join(testDir, 'BUCK'),
+    libclangPath: null
   };
   requestSettings = {
     compilationDatabase,
-    projectRoot: null,
+    projectRoot: null
   };
   emptyRequestSettings = {
     compilationDatabase: null,
-    projectRoot: null,
+    projectRoot: null
   };
 });
-
 it('gets flags for header files', async () => {
   let result = await flagsManager.getFlagsForSrc('header.h', requestSettings);
   const expectedFlags = ['g++', '-fPIC', '-O3', '-x', 'c++'];
-  expect(nullthrows(result).flags).toEqual(expectedFlags);
-
+  expect((0, _nullthrows().default)(result).flags).toEqual(expectedFlags);
   result = await flagsManager.getFlagsForSrc('header.hpp', requestSettings);
-  expect(nullthrows(result).flags).toEqual(expectedFlags);
-
-  // When headers are not properly owned, we should look for source files
+  expect((0, _nullthrows().default)(result).flags).toEqual(expectedFlags); // When headers are not properly owned, we should look for source files
   // in the same directory.
-  result = await flagsManager.getFlagsForSrc(
-    nuclideUri.join(testDir, 'testInternal.h'),
-    emptyRequestSettings,
-  );
-  expect(nullthrows(result).flags).toEqual(expectedFlags);
 
-  result = await flagsManager.getFlagsForSrc(
-    nuclideUri.join(testDir, 'test-inl.h'),
-    emptyRequestSettings,
-  );
-  expect(nullthrows(result).flags).toEqual(expectedFlags);
-
-  result = await flagsManager.getFlagsForSrc(
-    nuclideUri.join(testDir, 'test2.h'),
-    emptyRequestSettings,
-  );
-  expect(nullthrows(result).flags).not.toBeNull();
+  result = await flagsManager.getFlagsForSrc(_nuclideUri().default.join(testDir, 'testInternal.h'), emptyRequestSettings);
+  expect((0, _nullthrows().default)(result).flags).toEqual(expectedFlags);
+  result = await flagsManager.getFlagsForSrc(_nuclideUri().default.join(testDir, 'test-inl.h'), emptyRequestSettings);
+  expect((0, _nullthrows().default)(result).flags).toEqual(expectedFlags);
+  result = await flagsManager.getFlagsForSrc(_nuclideUri().default.join(testDir, 'test2.h'), emptyRequestSettings);
+  expect((0, _nullthrows().default)(result).flags).not.toBeNull();
 });

@@ -1,3 +1,76 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteFileSystemServiceHandler = void 0;
+
+var _fs = _interopRequireDefault(require("fs"));
+
+var _path = _interopRequireDefault(require("path"));
+
+function _rimraf() {
+  const data = _interopRequireDefault(require("rimraf"));
+
+  _rimraf = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _filesystem_types() {
+  const data = _interopRequireDefault(require("./gen-nodejs/filesystem_types"));
+
+  _filesystem_types = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideWatchmanHelpers() {
+  const data = require("../../../../nuclide-watchman-helpers");
+
+  _nuclideWatchmanHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _converter() {
+  const data = require("./converter");
+
+  _converter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,240 +79,197 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import fs from 'fs';
-import path from 'path';
-import rimraf from 'rimraf';
-import filesystem_types from './gen-nodejs/filesystem_types';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {getLogger} from 'log4js';
-import {WatchmanClient} from 'nuclide-watchman-helpers';
-import {
-  convertToThriftFileStat,
-  genWatchExcludedExpressions,
-  createThriftError,
-  createThriftErrorWithCode,
-  convertToThriftFileEntry,
-} from './converter';
-
-const commonWatchIgnoredExpressions = [
-  ['not', ['dirname', '.hg']],
-  ['not', ['match', 'hg-checkexec-*', 'wholename']],
-  ['not', ['match', 'hg-checklink-*', 'wholename']],
-  ['not', ['dirname', '.buckd']],
-  ['not', ['dirname', '.idea']],
-  ['not', ['dirname', '_build']],
-  ['not', ['dirname', 'buck-cache']],
-  ['not', ['dirname', 'buck-out']],
-  ['not', ['dirname', '.fbbuild/generated']],
-  ['not', ['match', '.fbbuild/generated*', 'wholename']],
-  ['not', ['match', '_build-junk*', 'wholename']],
-];
-
+const commonWatchIgnoredExpressions = [['not', ['dirname', '.hg']], ['not', ['match', 'hg-checkexec-*', 'wholename']], ['not', ['match', 'hg-checklink-*', 'wholename']], ['not', ['dirname', '.buckd']], ['not', ['dirname', '.idea']], ['not', ['dirname', '_build']], ['not', ['dirname', 'buck-cache']], ['not', ['dirname', 'buck-out']], ['not', ['dirname', '.fbbuild/generated']], ['not', ['match', '.fbbuild/generated*', 'wholename']], ['not', ['match', '_build-junk*', 'wholename']]];
 /**
  * Create a service handler class to manage server methods
  */
-export class RemoteFileSystemServiceHandler {
-  _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
-  _logger: log4js$Logger;
-  _watcher: WatchmanClient;
 
-  constructor(watcher: WatchmanClient) {
+class RemoteFileSystemServiceHandler {
+  constructor(watcher) {
     this._fileChangeEvents = [];
     this._watcher = watcher;
-    this._logger = getLogger('fs-thrift-server-handler');
+    this._logger = (0, _log4js().getLogger)('fs-thrift-server-handler');
   }
 
-  async watch(uri: string, options: filesystem_types.WatchOpt): Promise<void> {
-    const {recursive, excludes} = options;
+  async watch(uri, options) {
+    const {
+      recursive,
+      excludes
+    } = options;
+    const excludeExpr = (0, _converter().genWatchExcludedExpressions)(excludes);
 
-    const excludeExpr = genWatchExcludedExpressions(excludes);
     if (!recursive) {
       // Do not match files in subdirectories:
       excludeExpr.push(['not', ['dirname', '', ['depth', 'ge', 2]]]);
     }
+
     const opts = {
-      expression: ['allof', ...commonWatchIgnoredExpressions, ...excludeExpr],
+      expression: ['allof', ...commonWatchIgnoredExpressions, ...excludeExpr]
     };
 
     this._logger.info(`Watching ${uri} ${JSON.stringify(opts)}`);
-    const subName = `big-dig-thrift-filewatcher-${uri}`;
-    try {
-      const sub = await this._watcher.watchDirectoryRecursive(
-        uri,
-        subName,
-        opts,
-      );
 
+    const subName = `big-dig-thrift-filewatcher-${uri}`;
+
+    try {
+      const sub = await this._watcher.watchDirectoryRecursive(uri, subName, opts);
       sub.on('error', error => {
-        this._logger.error(
-          `Watchman Subscription Error: big-dig-thrift-filewatcher-${uri}`,
-        );
+        this._logger.error(`Watchman Subscription Error: big-dig-thrift-filewatcher-${uri}`);
+
         this._logger.error(error);
       });
       sub.on('change', entries => {
-        const changes = entries.map(
-          (entry): filesystem_types.FileChangeEvent => {
-            if (!entry.exists) {
-              return {
-                fname: entry.name,
-                eventType: filesystem_types.FileChangeEventType.DELETE,
-              };
-            } else if (entry.new) {
-              return {
-                fname: entry.name,
-                eventType: filesystem_types.FileChangeEventType.ADD,
-              };
-            } else {
-              return {
-                fname: entry.name,
-                eventType: filesystem_types.FileChangeEventType.UPDATE,
-              };
-            }
-          },
-        );
-        // Add new changes into the list of file changes
+        const changes = entries.map(entry => {
+          if (!entry.exists) {
+            return {
+              fname: entry.name,
+              eventType: _filesystem_types().default.FileChangeEventType.DELETE
+            };
+          } else if (entry.new) {
+            return {
+              fname: entry.name,
+              eventType: _filesystem_types().default.FileChangeEventType.ADD
+            };
+          } else {
+            return {
+              fname: entry.name,
+              eventType: _filesystem_types().default.FileChangeEventType.UPDATE
+            };
+          }
+        }); // Add new changes into the list of file changes
+
         this._fileChangeEvents.push(...changes);
       });
     } catch (err) {
-      this._logger.error(
-        'BigDig Thrift FS Server Watchman Subscription Creation Error',
-      );
+      this._logger.error('BigDig Thrift FS Server Watchman Subscription Creation Error');
+
       this._logger.error(err);
     }
+
     return;
   }
 
-  pollFileChanges(): Array<filesystem_types.FileChangeEvent> {
+  pollFileChanges() {
     const retEventChangeList = this._fileChangeEvents;
     this._fileChangeEvents = [];
     return retEventChangeList;
   }
 
-  async createDirectory(uri: string): Promise<void> {
+  async createDirectory(uri) {
     try {
-      return await fsPromise.mkdir(uri);
+      return await _fsPromise().default.mkdir(uri);
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async stat(uri: string): Promise<filesystem_types.FileStat> {
+  async stat(uri) {
     try {
-      const statData = await fsPromise.lstat(uri);
-      return convertToThriftFileStat(statData);
+      const statData = await _fsPromise().default.lstat(uri);
+      return (0, _converter().convertToThriftFileStat)(statData);
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
-  }
+  } // Always returns a Buffer
 
-  // Always returns a Buffer
-  async readFile(uri: string): Promise<Buffer> {
+
+  async readFile(uri) {
     try {
-      const contents = await fsPromise.readFile(uri);
+      const contents = await _fsPromise().default.readFile(uri);
       return contents;
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async writeFile(
-    uri: string,
-    content: Buffer,
-    options: filesystem_types.WriteFileOpt,
-  ): Promise<void> {
+  async writeFile(uri, content, options) {
     try {
-      const flags = [
-        fs.constants.O_WRONLY,
-        fs.constants.O_TRUNC,
-        options.create ? fs.constants.O_CREAT : 0,
-        options.overwrite || !options.create ? 0 : fs.constants.O_EXCL,
-      ] // eslint-disable-next-line no-bitwise
-        .reduce((acc, f) => acc | f, 0);
-
-      await fsPromise.writeFile(uri, content, {flags});
+      const flags = [_fs.default.constants.O_WRONLY, _fs.default.constants.O_TRUNC, options.create ? _fs.default.constants.O_CREAT : 0, options.overwrite || !options.create ? 0 : _fs.default.constants.O_EXCL] // eslint-disable-next-line no-bitwise
+      .reduce((acc, f) => acc | f, 0);
+      await _fsPromise().default.writeFile(uri, content, {
+        flags
+      });
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async rename(
-    oldUri: string,
-    newUri: string,
-    options: filesystem_types.RenameOpt,
-  ): Promise<void> {
+  async rename(oldUri, newUri, options) {
     try {
-      await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
+      await _fsPromise().default.mv(oldUri, newUri, {
+        clobber: options.overwrite
+      });
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async copy(
-    source: string,
-    destination: string,
-    options: filesystem_types.CopyOpt,
-  ): Promise<void> {
+  async copy(source, destination, options) {
     try {
-      const {overwrite} = options;
-      if (!overwrite && (await fsPromise.exists(destination))) {
-        throw createThriftErrorWithCode(filesystem_types.ErrorCode.EEXIST, {
+      const {
+        overwrite
+      } = options;
+
+      if (!overwrite && (await _fsPromise().default.exists(destination))) {
+        throw (0, _converter().createThriftErrorWithCode)(_filesystem_types().default.ErrorCode.EEXIST, {
           source,
-          destination,
+          destination
         });
       }
-      await fsPromise.copy(source, destination);
+
+      await _fsPromise().default.copy(source, destination);
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async deletePath(
-    uri: string,
-    options: filesystem_types.DeleteOpt,
-  ): Promise<void> {
+  async deletePath(uri, options) {
     try {
       if (options.recursive) {
         return new Promise((resolve, reject) => {
-          rimraf(uri, {disableGlobs: true}, (err, result) => {
+          (0, _rimraf().default)(uri, {
+            disableGlobs: true
+          }, (err, result) => {
             if (err == null) {
               resolve();
             } else {
-              reject(createThriftError(err));
+              reject((0, _converter().createThriftError)(err));
             }
           });
         });
       } else {
-        const stats = await fsPromise.lstat(uri);
+        const stats = await _fsPromise().default.lstat(uri);
+
         if (stats.isDirectory()) {
-          await fsPromise.rmdir(uri);
+          await _fsPromise().default.rmdir(uri);
         } else {
-          await fsPromise.unlink(uri);
+          await _fsPromise().default.unlink(uri);
         }
       }
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
-  async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
+  async readDirectory(uri) {
     try {
-      const files: Array<string> = await fsPromise.readdir(uri);
-      // Promise.all either resolves with an array of all resolved promises, or
+      const files = await _fsPromise().default.readdir(uri); // Promise.all either resolves with an array of all resolved promises, or
       // it rejects with a single error
-      return Promise.all(
-        files.map(async file => {
-          const statData = await this.stat(path.join(uri, file));
-          return convertToThriftFileEntry(file, statData);
-        }),
-      );
+
+      return Promise.all(files.map(async file => {
+        const statData = await this.stat(_path.default.join(uri, file));
+        return (0, _converter().convertToThriftFileEntry)(file, statData);
+      }));
     } catch (err) {
-      throw createThriftError(err);
+      throw (0, _converter().createThriftError)(err);
     }
   }
 
   dispose() {}
+
 }
+
+exports.RemoteFileSystemServiceHandler = RemoteFileSystemServiceHandler;

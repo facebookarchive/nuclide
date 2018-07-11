@@ -1,3 +1,42 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.flagsInfoForPath = flagsInfoForPath;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _BuckClangCompilationDatabase() {
+  const data = require("../../../nuclide-buck-rpc/lib/BuckClangCompilationDatabase");
+
+  _BuckClangCompilationDatabase = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CompilationDatabaseFinder() {
+  const data = require("../CompilationDatabaseFinder");
+
+  _CompilationDatabaseFinder = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,48 +44,50 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getCompilationDatabaseHandler} from '../../../nuclide-buck-rpc/lib/BuckClangCompilationDatabase';
-import {findNearestCompilationDbDir} from '../CompilationDatabaseFinder';
-
-export type FlagsInfo = {flagsFile: string, databaseDirectory: string};
-const compilationDbHandler = getCompilationDatabaseHandler({
+const compilationDbHandler = (0, _BuckClangCompilationDatabase().getCompilationDatabaseHandler)({
   flavorsForTarget: [],
   args: [],
-  useDefaultPlatform: true,
-});
+  useDefaultPlatform: true
+}); // First find a compile commands.json nearby, otherwise get it from buck.
 
-// First find a compile commands.json nearby, otherwise get it from buck.
-export async function flagsInfoForPath(path: string): Promise<?FlagsInfo> {
+async function flagsInfoForPath(path) {
   const flagsInfo = await flagsInfoFromJson(path);
+
   if (flagsInfo != null) {
     return flagsInfo;
   }
+
   return flagsInfoFromBuck(path);
 }
 
-async function flagsInfoFromJson(source: string): Promise<?FlagsInfo> {
-  const databaseDirectory = await findNearestCompilationDbDir(source);
+async function flagsInfoFromJson(source) {
+  const databaseDirectory = await (0, _CompilationDatabaseFinder().findNearestCompilationDbDir)(source);
+
   if (databaseDirectory != null) {
     return {
       databaseDirectory,
-      flagsFile: nuclideUri.join(databaseDirectory, 'compile_commands.json'),
+      flagsFile: _nuclideUri().default.join(databaseDirectory, 'compile_commands.json')
     };
   }
 }
 
-async function flagsInfoFromBuck(source: string): Promise<?FlagsInfo> {
-  const buckDatabase = await compilationDbHandler.getCompilationDatabase(
-    source,
-  );
+async function flagsInfoFromBuck(source) {
+  const buckDatabase = await compilationDbHandler.getCompilationDatabase(source);
+
   if (buckDatabase != null) {
-    const {file, flagsFile} = buckDatabase;
+    const {
+      file,
+      flagsFile
+    } = buckDatabase;
+
     if (file != null && flagsFile != null) {
-      return {databaseDirectory: nuclideUri.dirname(file), flagsFile};
+      return {
+        databaseDirectory: _nuclideUri().default.dirname(file),
+        flagsFile
+      };
     }
   }
 }

@@ -1,14 +1,43 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-export {getAdbServiceByNuclideUri} from './utils';
-export {adbDeviceForIdentifier, observeAndroidDevices} from './AdbDevicePoller';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "getAdbServiceByNuclideUri", {
+  enumerable: true,
+  get: function () {
+    return _utils().getAdbServiceByNuclideUri;
+  }
+});
+Object.defineProperty(exports, "adbDeviceForIdentifier", {
+  enumerable: true,
+  get: function () {
+    return _AdbDevicePoller().adbDeviceForIdentifier;
+  }
+});
+Object.defineProperty(exports, "observeAndroidDevices", {
+  enumerable: true,
+  get: function () {
+    return _AdbDevicePoller().observeAndroidDevices;
+  }
+});
+
+function _utils() {
+  const data = require("./utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AdbDevicePoller() {
+  const data = require("./AdbDevicePoller");
+
+  _AdbDevicePoller = function () {
+    return data;
+  };
+
+  return data;
+}

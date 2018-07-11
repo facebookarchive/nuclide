@@ -1,3 +1,33 @@
+"use strict";
+
+function _stream() {
+  const data = require("../stream");
+
+  _stream = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _stream2 = _interopRequireDefault(require("stream"));
+
+var _fs = _interopRequireDefault(require("fs"));
+
+var _path = _interopRequireDefault(require("path"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +36,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {observeStream, observeRawStream, writeToStream} from '../stream';
-import fsPromise from '../fsPromise';
-import Stream from 'stream';
-import fs from 'fs';
-import path from 'path';
-
 describe('commons-node/stream', () => {
   it('observeStream', async () => {
     const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-    const stream = new Stream.PassThrough();
-    const promise = observeStream(stream)
-      .toArray()
-      .toPromise();
+    const stream = new _stream2.default.PassThrough();
+    const promise = (0, _stream().observeStream)(stream).toArray().toPromise();
     input.forEach(value => {
       stream.write(value, 'utf8');
     });
@@ -30,43 +51,38 @@ describe('commons-node/stream', () => {
     const output = await promise;
     expect(output.join('')).toEqual(input.join(''));
   });
-
   it('observeStream - error', async () => {
-    const stream = new Stream.PassThrough();
+    const stream = new _stream2.default.PassThrough();
     const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
     const output = [];
     const promise = new Promise((resolve, reject) => {
-      observeStream(stream).subscribe(
-        v => output.push(v),
-        e => resolve(e),
-        () => {},
-      );
+      (0, _stream().observeStream)(stream).subscribe(v => output.push(v), e => resolve(e), () => {});
     });
     const error = new Error('Had an error');
-
     input.forEach(value => {
       stream.write(value, 'utf8');
     });
     stream.emit('error', error);
-
     const result = await promise;
     expect(output).toEqual(input);
     expect(result).toBe(error);
   });
-
   it('writeToStream', async () => {
-    const tempPath = await fsPromise.tempfile();
-    const fixturePath = path.resolve(__dirname, '../__mocks__/fixtures/lyrics');
-    const stream = fs.createWriteStream(tempPath, {highWaterMark: 10});
-    // Read faster than we write to test buffering
-    const observable = observeRawStream(
-      fs.createReadStream(fixturePath, {highWaterMark: 100}),
-    );
+    const tempPath = await _fsPromise().default.tempfile();
 
-    await writeToStream(observable, stream).toPromise();
+    const fixturePath = _path.default.resolve(__dirname, '../__mocks__/fixtures/lyrics');
 
-    const writtenFile = await fsPromise.readFile(tempPath);
-    const fixtureFile = await fsPromise.readFile(fixturePath);
+    const stream = _fs.default.createWriteStream(tempPath, {
+      highWaterMark: 10
+    }); // Read faster than we write to test buffering
+
+
+    const observable = (0, _stream().observeRawStream)(_fs.default.createReadStream(fixturePath, {
+      highWaterMark: 100
+    }));
+    await (0, _stream().writeToStream)(observable, stream).toPromise();
+    const writtenFile = await _fsPromise().default.readFile(tempPath);
+    const fixtureFile = await _fsPromise().default.readFile(fixturePath);
     expect(writtenFile).toEqual(fixtureFile);
   });
 });

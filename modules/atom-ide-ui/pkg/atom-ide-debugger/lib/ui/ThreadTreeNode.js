@@ -1,3 +1,88 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _LoadingSpinner() {
+  const data = require("../../../../../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Tree() {
+  const data = require("../../../../../nuclide-commons-ui/Tree");
+
+  _Tree = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _FrameTreeNode() {
+  const data = _interopRequireDefault(require("./FrameTreeNode"));
+
+  _FrameTreeNode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../../../../../nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,63 +91,49 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const LOADING = React.createElement("div", {
+  className: (0, _classnames().default)('debugger-expression-value-row', 'debugger-tree-no-frames')
+}, React.createElement("span", {
+  className: "debugger-expression-value-content"
+}, React.createElement(_LoadingSpinner().LoadingSpinner, {
+  size: "SMALL"
+})));
+const NO_FRAMES = React.createElement("span", {
+  className: "debugger-tree-no-frames"
+}, "Call frames unavailable");
 
-import type {IThread, IStackFrame, IDebugService} from '../types';
-import type {Expected} from 'nuclide-commons/expected';
-
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import * as React from 'react';
-import {Observable, Subject} from 'rxjs';
-import FrameTreeNode from './FrameTreeNode';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Expect} from 'nuclide-commons/expected';
-import classnames from 'classnames';
-
-const LOADING = (
-  <div
-    className={classnames(
-      'debugger-expression-value-row',
-      'debugger-tree-no-frames',
-    )}>
-    <span className="debugger-expression-value-content">
-      <LoadingSpinner size="SMALL" />
-    </span>
-  </div>
-);
-
-const NO_FRAMES = (
-  <span className="debugger-tree-no-frames">Call frames unavailable</span>
-);
-
-type Props = {
-  thread: IThread,
-  service: IDebugService,
-  title: string,
-};
-
-type State = {
-  isCollapsed: boolean,
-  childItems: Expected<Array<IStackFrame>>,
-};
-
-export default class ThreadTreeNode extends React.Component<Props, State> {
-  _disposables: UniversalDisposable;
-  _selectTrigger: Subject<void>;
-
-  constructor(props: Props) {
+class ThreadTreeNode extends React.Component {
+  constructor(props) {
     super(props);
-    this._selectTrigger = new Subject();
+
+    this.handleSelect = () => {
+      if (!this.state.isCollapsed) {
+        this.setState({
+          isCollapsed: true
+        });
+      } else {
+        this.setState({
+          isCollapsed: false,
+          childItems: _expected().Expect.pending()
+        });
+
+        this._selectTrigger.next();
+      }
+    };
+
+    this._selectTrigger = new _RxMin.Subject();
     this.state = this._getInitialState();
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  _computeIsFocused(): boolean {
-    const {service, thread} = this.props;
+  _computeIsFocused() {
+    const {
+      service,
+      thread
+    } = this.props;
     const focusedThread = service.viewModel.focusedThread;
     return focusedThread != null && thread.threadId === focusedThread.threadId;
   }
@@ -70,142 +141,102 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   _getInitialState() {
     return {
       isCollapsed: true,
-      childItems: Expect.pending(),
+      childItems: _expected().Expect.pending()
     };
   }
 
-  _getFrames(fetch: boolean = false): Observable<Expected<Array<IStackFrame>>> {
-    const {thread} = this.props;
-    const getValue = () => Observable.of(Expect.value(thread.getCallStack()));
-    if (
-      fetch ||
-      (!this.state.childItems.isPending &&
-        !this.state.childItems.isError &&
-        this.state.childItems.value.length === 0)
-    ) {
-      return Observable.of(Expect.pending()).concat(
-        Observable.fromPromise(
-          (async () => {
-            await thread.fetchCallStack();
-            return Expect.value(thread.getCallStack());
-          })(),
-        ),
-      );
+  _getFrames(fetch = false) {
+    const {
+      thread
+    } = this.props;
+
+    const getValue = () => _RxMin.Observable.of(_expected().Expect.value(thread.getCallStack()));
+
+    if (fetch || !this.state.childItems.isPending && !this.state.childItems.isError && this.state.childItems.value.length === 0) {
+      return _RxMin.Observable.of(_expected().Expect.pending()).concat(_RxMin.Observable.fromPromise((async () => {
+        await thread.fetchCallStack();
+        return _expected().Expect.value(thread.getCallStack());
+      })()));
     }
+
     return getValue();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  componentDidMount(): void {
-    const {service} = this.props;
+  componentDidMount() {
+    const {
+      service
+    } = this.props;
     const model = service.getModel();
-    const {viewModel} = service;
-    this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
-      ).subscribe(() => {
-        const {isCollapsed} = this.state;
+    const {
+      viewModel
+    } = service;
 
-        const newIsCollapsed = isCollapsed && !this._computeIsFocused();
-        this.setState({
-          isCollapsed: newIsCollapsed,
-        });
-      }),
-      this._selectTrigger
-        .asObservable()
-        .switchMap(() => this._getFrames(true))
-        .subscribe(frames => {
-          this.setState({
-            childItems: frames,
-          });
-        }),
-      observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
-        .debounceTime(100)
-        .startWith(null)
-        .switchMap(() =>
-          this._getFrames().switchMap(frames => {
-            if (
-              !this.state.isCollapsed &&
-              !frames.isPending &&
-              !frames.isError &&
-              frames.value.length === 0
-            ) {
-              return this._getFrames(true);
-            }
-            return Observable.of(frames);
-          }),
-        )
-        .subscribe(frames => {
-          const {isCollapsed} = this.state;
+    this._disposables.add(_RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(viewModel.onDidFocusStackFrame.bind(viewModel)), (0, _event().observableFromSubscribeFunction)(service.onDidChangeMode.bind(service))).subscribe(() => {
+      const {
+        isCollapsed
+      } = this.state;
+      const newIsCollapsed = isCollapsed && !this._computeIsFocused();
+      this.setState({
+        isCollapsed: newIsCollapsed
+      });
+    }), this._selectTrigger.asObservable().switchMap(() => this._getFrames(true)).subscribe(frames => {
+      this.setState({
+        childItems: frames
+      });
+    }), (0, _event().observableFromSubscribeFunction)(model.onDidChangeCallStack.bind(model)).debounceTime(100).startWith(null).switchMap(() => this._getFrames().switchMap(frames => {
+      if (!this.state.isCollapsed && !frames.isPending && !frames.isError && frames.value.length === 0) {
+        return this._getFrames(true);
+      }
 
-          this.setState({
-            childItems: frames,
-            isCollapsed: isCollapsed && !this._computeIsFocused(),
-          });
-        }),
-    );
+      return _RxMin.Observable.of(frames);
+    })).subscribe(frames => {
+      const {
+        isCollapsed
+      } = this.state;
+      this.setState({
+        childItems: frames,
+        isCollapsed: isCollapsed && !this._computeIsFocused()
+      });
+    }));
   }
 
-  handleSelect = () => {
-    if (!this.state.isCollapsed) {
-      this.setState({
-        isCollapsed: true,
-      });
-    } else {
-      this.setState({
-        isCollapsed: false,
-        childItems: Expect.pending(),
-      });
-      this._selectTrigger.next();
-    }
-  };
+  render() {
+    const {
+      thread,
+      title,
+      service
+    } = this.props;
+    const {
+      childItems
+    } = this.state;
 
-  render(): React.Node {
-    const {thread, title, service} = this.props;
-    const {childItems} = this.state;
     const isFocused = this._computeIsFocused();
-    const formattedTitle = (
-      <span
-        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
-        title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
-        {title}
-      </span>
-    );
 
-    const callFramesElements = childItems.isPending ? (
-      LOADING
-    ) : childItems.isError ? (
-      <span className="debugger-tree-no-frames">
-        Error fetching stack frames {childItems.error.toString()}
-      </span>
-    ) : childItems.value.length === 0 ? (
-      NO_FRAMES
-    ) : (
-      childItems.value.map((frame, frameIndex) => {
-        return (
-          <FrameTreeNode
-            text={frame.name}
-            frame={frame}
-            key={frameIndex}
-            service={service}
-          />
-        );
-      })
-    );
-
-    return (
-      <NestedTreeItem
-        title={formattedTitle}
-        collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelect}>
-        {callFramesElements}
-      </NestedTreeItem>
-    );
+    const formattedTitle = React.createElement("span", {
+      className: isFocused ? 'debugger-tree-process-thread-selected' : '',
+      title: 'Thread ID: ' + thread.threadId + ', Name: ' + thread.name
+    }, title);
+    const callFramesElements = childItems.isPending ? LOADING : childItems.isError ? React.createElement("span", {
+      className: "debugger-tree-no-frames"
+    }, "Error fetching stack frames ", childItems.error.toString()) : childItems.value.length === 0 ? NO_FRAMES : childItems.value.map((frame, frameIndex) => {
+      return React.createElement(_FrameTreeNode().default, {
+        text: frame.name,
+        frame: frame,
+        key: frameIndex,
+        service: service
+      });
+    });
+    return React.createElement(_Tree().NestedTreeItem, {
+      title: formattedTitle,
+      collapsed: this.state.isCollapsed,
+      onSelect: this.handleSelect
+    }, callFramesElements);
   }
+
 }
+
+exports.default = ThreadTreeNode;

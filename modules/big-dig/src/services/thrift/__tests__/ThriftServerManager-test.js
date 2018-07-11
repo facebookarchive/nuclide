@@ -1,3 +1,47 @@
+"use strict";
+
+function _globals() {
+  const data = require("../../../../../nuclide-jest/globals");
+
+  _globals = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _jest_mock_utils() {
+  const data = require("../../../../../../jest/jest_mock_utils");
+
+  _jest_mock_utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ThriftServerManager() {
+  const data = require("../ThriftServerManager");
+
+  _ThriftServerManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _createThriftServer() {
+  const data = require("../createThriftServer");
+
+  _createThriftServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,255 +50,233 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+_globals().jest.mock(require.resolve("../createThriftServer"));
 
-import type {Observable} from 'rxjs';
-
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
-
-jest.mock(require.resolve('../createThriftServer'));
-
-import type {ThriftServerConfig, ThriftMessage} from '../types';
-
-import {Subject} from 'rxjs';
-import {getMock} from '../../../../../../jest/jest_mock_utils';
-import {ThriftServerManager} from '../ThriftServerManager';
-import {createThriftServer} from '../createThriftServer';
-
-describe('ThriftServerManager', () => {
+(0, _globals().describe)('ThriftServerManager', () => {
   let mockedTransport;
   let serverMessage;
   let clientMessage;
-
   const mockPort = 9000;
-  const serverConfig: ThriftServerConfig = {
+  const serverConfig = {
     name: 'thrift-rfs',
     remoteCommand: '',
     remoteCommandArgs: [],
     remotePort: mockPort,
-    killOldThriftServerProcess: true,
+    killOldThriftServerProcess: true
   };
   const startServerMessage = {
     id: '1',
     payload: {
       type: 'request',
       command: 'start-server',
-      serverConfig,
-    },
+      serverConfig
+    }
   };
   let mockCloseServerFn;
   let mockGetPortFn;
-
   beforeEach(() => {
     class MockedTransport {
-      onMessage(): Observable<string> {
+      onMessage() {
         // Do not use Observable.of(message) here, which will immediately fire
         // event, use Subject() instead so that we have more controls on it.
         return clientMessage;
       }
-      send(message: string): void {
+
+      send(message) {
         serverMessage.next(message);
       }
+
     }
 
-    mockCloseServerFn = jest.fn();
-    mockGetPortFn = jest.fn().mockReturnValue(mockPort);
-    getMock(createThriftServer).mockImplementation(() => {
+    mockCloseServerFn = _globals().jest.fn();
+    mockGetPortFn = _globals().jest.fn().mockReturnValue(mockPort);
+    (0, _jest_mock_utils().getMock)(_createThriftServer().createThriftServer).mockImplementation(() => {
       return {
         getPort: mockGetPortFn,
-        close: mockCloseServerFn,
+        close: mockCloseServerFn
       };
     });
+    serverMessage = new _RxMin.Subject();
+    clientMessage = new _RxMin.Subject();
+    mockedTransport = new MockedTransport(); // eslint-disable-next-line no-new
 
-    serverMessage = new Subject();
-    clientMessage = new Subject();
-    mockedTransport = new MockedTransport();
-    // eslint-disable-next-line no-new
-    new ThriftServerManager(mockedTransport);
+    new (_ThriftServerManager().ThriftServerManager)(mockedTransport);
   });
-
   afterEach(() => {
-    jest.resetAllMocks();
+    _globals().jest.resetAllMocks();
   });
-
-  it('successfully start server', async () => {
+  (0, _globals().it)('successfully start server', async () => {
     const responseMessage = {
       id: '1',
       payload: {
         type: 'response',
         success: true,
-        port: String(mockPort),
-      },
+        port: String(mockPort)
+      }
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(startServerMessage));
-    const response = JSON.parse(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    const response = JSON.parse((await responsePromise));
+    (0, _globals().expect)(response).toEqual(responseMessage);
   });
-
-  it('responses fail for malformatted message', async () => {
+  (0, _globals().it)('responses fail for malformatted message', async () => {
     const malformattedMessage = {
-      id: '1',
+      id: '1'
     };
     const responseMessage = {
       id: '1',
       payload: {
         type: 'response',
         success: false,
-        error: 'Malformatted request message!',
-      },
+        error: 'Malformatted request message!'
+      }
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
-    const response = JSON.parse(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    const response = JSON.parse((await responsePromise));
+    (0, _globals().expect)(response).toEqual(responseMessage);
   });
-
-  it('responses fail for malformatted message payload', async () => {
+  (0, _globals().it)('responses fail for malformatted message payload', async () => {
     const malformattedMessage = {
       id: '1',
-      payload: {type: 'request'},
+      payload: {
+        type: 'request'
+      }
     };
     const responseMessage = {
       id: '1',
       payload: {
         type: 'response',
         success: false,
-        error: 'Malformatted request message!',
-      },
+        error: 'Malformatted request message!'
+      }
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
-    const response = JSON.parse(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    const response = JSON.parse((await responsePromise));
+    (0, _globals().expect)(response).toEqual(responseMessage);
   });
-
-  it('responses fail when server failed to start', async () => {
+  (0, _globals().it)('responses fail when server failed to start', async () => {
     const responseMessage = {
       id: '1',
       payload: {
         type: 'response',
         success: false,
-        error: 'Failed to create server',
-      },
+        error: 'Failed to create server'
+      }
     };
-    getMock(createThriftServer).mockImplementation(() => {
+    (0, _jest_mock_utils().getMock)(_createThriftServer().createThriftServer).mockImplementation(() => {
       throw new Error('mocked error');
     });
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(startServerMessage));
-    const response = JSON.parse(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    const response = JSON.parse((await responsePromise));
+    (0, _globals().expect)(response).toEqual(responseMessage);
   });
-
-  it('successfully close server', async () => {
+  (0, _globals().it)('successfully close server', async () => {
     const closeServerMessage = {
       id: '2',
       payload: {
         type: 'request',
         command: 'stop-server',
-        serverConfig,
-      },
+        serverConfig
+      }
     };
     const responseMessage = {
       id: '2',
       payload: {
         type: 'response',
-        success: true,
-      },
+        success: true
+      }
     };
-
     const firstResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(startServerMessage));
     await firstResponsePromise;
     const secondResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(closeServerMessage));
-    const response = JSON.parse(await secondResponsePromise);
-    expect(response).toEqual(responseMessage);
-    expect(mockCloseServerFn).toHaveBeenCalled();
+    const response = JSON.parse((await secondResponsePromise));
+    (0, _globals().expect)(response).toEqual(responseMessage);
+    (0, _globals().expect)(mockCloseServerFn).toHaveBeenCalled();
   });
-
-  it('reuse existing server', async () => {
+  (0, _globals().it)('reuse existing server', async () => {
     const firstStartServerMessage = {
       id: '1',
       payload: {
         type: 'request',
         command: 'start-server',
-        serverConfig,
-      },
+        serverConfig
+      }
     };
     const firstResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(firstStartServerMessage));
     await firstResponsePromise;
-
     const secondStartServerMessage = {
       id: '2',
       payload: {
         type: 'request',
         command: 'start-server',
-        serverConfig,
-      },
+        serverConfig
+      }
     };
     const expectedSecondResponse = {
       id: '2',
       payload: {
         type: 'response',
         success: true,
-        port: String(mockPort),
-      },
+        port: String(mockPort)
+      }
     };
     const secondResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(secondStartServerMessage));
-    const secondResponse = JSON.parse(await secondResponsePromise);
-    expect(secondResponse).toEqual(expectedSecondResponse);
-    expect(createThriftServer).toHaveBeenCalledTimes(1);
-
+    const secondResponse = JSON.parse((await secondResponsePromise));
+    (0, _globals().expect)(secondResponse).toEqual(expectedSecondResponse);
+    (0, _globals().expect)(_createThriftServer().createThriftServer).toHaveBeenCalledTimes(1);
     const firstStopServerMessage = {
       id: '3',
       payload: {
         type: 'request',
         command: 'stop-server',
-        serverConfig,
-      },
+        serverConfig
+      }
     };
     const expectedThirdResponse = {
       id: '3',
       payload: {
         type: 'response',
-        success: true,
-      },
+        success: true
+      }
     };
     const thirdResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(firstStopServerMessage));
-    const thirdResponse = JSON.parse(await thirdResponsePromise);
-    expect(thirdResponse).toEqual(expectedThirdResponse);
-    expect(mockCloseServerFn).not.toHaveBeenCalled();
-
+    const thirdResponse = JSON.parse((await thirdResponsePromise));
+    (0, _globals().expect)(thirdResponse).toEqual(expectedThirdResponse);
+    (0, _globals().expect)(mockCloseServerFn).not.toHaveBeenCalled();
     const secondStopServerMessage = {
       id: '4',
       payload: {
         type: 'request',
         command: 'stop-server',
-        serverConfig,
-      },
+        serverConfig
+      }
     };
     const expectedFourthResponse = {
       id: '4',
       payload: {
         type: 'response',
-        success: true,
-      },
+        success: true
+      }
     };
     const fourthResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(convertMessage(secondStopServerMessage));
-    const fourthResponse = JSON.parse(await fourthResponsePromise);
-    expect(fourthResponse).toEqual(expectedFourthResponse);
-    expect(mockCloseServerFn).toHaveBeenCalled();
+    const fourthResponse = JSON.parse((await fourthResponsePromise));
+    (0, _globals().expect)(fourthResponse).toEqual(expectedFourthResponse);
+    (0, _globals().expect)(mockCloseServerFn).toHaveBeenCalled();
   });
 });
 
-function convertMessage(message: ThriftMessage): string {
+function convertMessage(message) {
   return JSON.stringify(message);
 }

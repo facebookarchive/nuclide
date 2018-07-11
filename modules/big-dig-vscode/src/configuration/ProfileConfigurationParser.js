@@ -1,3 +1,16 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createParser = createParser;
+exports.getDefaults = getDefaults;
+exports.ProfileConfigurationParser = void 0;
+
+var _os = _interopRequireDefault(require("os"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,86 +19,40 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import invariant from 'assert';
-import os from 'os';
-
-/**
- * Acceptable values for the `authentication` field of a connection profile in
- * settings.json.
- */
-export type AuthenticationMethod = 'private-key' | 'password';
-
-/** This reflects the raw value that the user entered in settings.json. */
-export interface ConnectionProfileConfiguration {
-  hostname?: string;
-  address?: string;
-  username?: string;
-  folders?: Array<string>;
-  ports?: string;
-  privateKey?: string;
-  authentication?: AuthenticationMethod;
-  deployServer?: DeployServer;
-}
-
-/** This reflects the normalized version of a ConnectionProfileConfiguration. */
-export interface IConnectionProfile {
-  hostname: string;
-  address: string;
-  username: string;
-  ports: string;
-  folders: Array<string>;
-  privateKey: Promise<string>;
-  authMethod: Promise<AuthenticationMethod>;
-  deployServer: DeployServer;
-}
-
-export type DeployServer = {
-  /** Command to run node */
-  node: string,
-  installationPath: string,
-  extractFileCommand?: string,
-  autoUpdate: boolean,
-};
-
-export function createParser(
-  profile: ConnectionProfileConfiguration,
-): ProfileConfigurationParser {
-  const {username, localHomeDir} = getDefaults();
+function createParser(profile) {
+  const {
+    username,
+    localHomeDir
+  } = getDefaults();
   return new ProfileConfigurationParser(profile, username, localHomeDir);
 }
 
-export function getDefaults(): {
-  username: string,
-  localHomeDir: string,
-} {
+function getDefaults() {
   const localHomeDir = process.env.HOME;
-  invariant(localHomeDir != null);
+
+  if (!(localHomeDir != null)) {
+    throw new Error("Invariant violation: \"localHomeDir != null\"");
+  }
+
   return {
-    username: os.userInfo().username,
-    localHomeDir,
+    username: _os.default.userInfo().username,
+    localHomeDir
   };
 }
 
-export class ProfileConfigurationParser {
-  _profile: ConnectionProfileConfiguration;
-  _username: string;
-  _localHomeDir: string;
-  _hostname: string;
-  _address: string;
-  _folders: Array<string>;
-  _authMethod: Promise<AuthenticationMethod>;
-
-  constructor(
-    profile: ConnectionProfileConfiguration,
-    defaultUsername: string,
-    localHomeDir: string,
-  ) {
+class ProfileConfigurationParser {
+  constructor(profile, defaultUsername, localHomeDir) {
     this._profile = profile;
-    const {address, authentication, folders, hostname, username} = profile;
+    const {
+      address,
+      authentication,
+      folders,
+      hostname,
+      username
+    } = profile;
     this._username = username != null ? username : defaultUsername;
     this._localHomeDir = localHomeDir;
     this._hostname = hostname != null ? hostname : this.getDefaultHostname();
@@ -94,7 +61,7 @@ export class ProfileConfigurationParser {
     this._authMethod = this.parseAuthMethod(authentication);
   }
 
-  parse(): IConnectionProfile {
+  parse() {
     return {
       hostname: this.getHostname(),
       address: this.getAddress(),
@@ -103,32 +70,34 @@ export class ProfileConfigurationParser {
       deployServer: this.getDeployServer(),
       username: this.getUsername(),
       authMethod: this.getAuthMethod(),
-      privateKey: this.getPrivateKey(),
+      privateKey: this.getPrivateKey()
     };
   }
 
-  getUsername(): string {
+  getUsername() {
     return this._username;
   }
 
-  getLocalHomeDir(): string {
+  getLocalHomeDir() {
     return this._localHomeDir;
   }
 
-  getHostname(): string {
+  getHostname() {
     return this._hostname;
   }
 
-  getDefaultHostname(): string {
+  getDefaultHostname() {
     return 'localhost';
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._address;
   }
 
-  getPorts(): string {
-    const {ports} = this._profile;
+  getPorts() {
+    const {
+      ports
+    } = this._profile;
 
     if (ports != null) {
       return ports;
@@ -137,21 +106,25 @@ export class ProfileConfigurationParser {
     }
   }
 
-  getDefaultPortsDescriptor(): string {
+  getDefaultPortsDescriptor() {
     return '0';
   }
-
   /** The return value should be treated as read-only. */
-  getFolders(): Array<string> {
+
+
+  getFolders() {
     return this._folders;
   }
 
-  getDefaultFolders(): Array<string> {
+  getDefaultFolders() {
     return ['~'];
   }
 
-  async getPrivateKey(): Promise<string> {
-    let {privateKey} = this._profile;
+  async getPrivateKey() {
+    let {
+      privateKey
+    } = this._profile;
+
     if (privateKey == null) {
       privateKey = await this.getDefaultPrivateKey();
     }
@@ -163,49 +136,62 @@ export class ProfileConfigurationParser {
     return privateKey;
   }
 
-  getDefaultPrivateKey(): Promise<string> {
+  getDefaultPrivateKey() {
     return Promise.resolve('~/.ssh/id_rsa');
   }
 
-  getAuthMethod(): Promise<AuthenticationMethod> {
+  getAuthMethod() {
     return this._authMethod;
   }
-
   /** @param authMethod The raw value for password taken from settings.json. */
-  parseAuthMethod(
-    authMethod: ?AuthenticationMethod,
-  ): Promise<AuthenticationMethod> {
+
+
+  parseAuthMethod(authMethod) {
     return Promise.resolve(authMethod != null ? authMethod : 'password');
   }
 
-  getDeployServer(): DeployServer {
-    let {deployServer} = this._profile;
+  getDeployServer() {
+    let {
+      deployServer
+    } = this._profile;
+
     if (deployServer == null) {
       deployServer = {};
     }
 
-    let {node, installationPath} = deployServer;
+    let {
+      node,
+      installationPath
+    } = deployServer;
+
     if (node == null) {
       node = this.getPathToNode();
     }
+
     if (installationPath == null) {
       installationPath = this.getInstallationPath();
     }
 
-    const {autoUpdate, extractFileCommand} = deployServer;
+    const {
+      autoUpdate,
+      extractFileCommand
+    } = deployServer;
     return {
       node,
       installationPath,
       extractFileCommand,
-      autoUpdate: autoUpdate !== false,
+      autoUpdate: autoUpdate !== false
     };
   }
 
-  getPathToNode(): string {
+  getPathToNode() {
     return 'node';
   }
 
-  getInstallationPath(): string {
+  getInstallationPath() {
     return `/home/${this.getUsername()}/.big-dig/big-dig-vscode`;
   }
+
 }
+
+exports.ProfileConfigurationParser = ProfileConfigurationParser;

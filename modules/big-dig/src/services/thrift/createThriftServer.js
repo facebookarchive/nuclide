@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createThriftServer = createThriftServer;
+
+function _fsServer() {
+  const data = require("../fs/fsServer");
+
+  _fsServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,18 +23,12 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+async function createThriftServer(serverConfig) {
+  const server = new (_fsServer().RemoteFileSystemServer)(serverConfig.remotePort); // Make sure we successfully start a thrift server
 
-import type {ThriftServerConfig} from './types';
-import {RemoteFileSystemServer} from '../fs/fsServer';
-
-export async function createThriftServer(
-  serverConfig: ThriftServerConfig,
-): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(serverConfig.remotePort);
-  // Make sure we successfully start a thrift server
   await server.initialize();
   return server;
 }
