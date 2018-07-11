@@ -1799,8 +1799,10 @@ export async function copy(
  */
 export function getHeadId(
   workingDirectory: NuclideUri,
+  useShortHash: boolean = false,
 ): ConnectableObservable<string> {
-  const args = ['log', '--template', '{node}', '--limit', '1'];
+  const template = useShortHash ? '{node|short}' : '{node}';
+  const args = ['log', '--template', template, '--limit', '1'];
   const execOptions = {
     cwd: workingDirectory,
   };
