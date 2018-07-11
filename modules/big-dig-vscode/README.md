@@ -1,80 +1,149 @@
-# vscode-big-dig-remote-file-demo
+# Big Dig for VS Code
 
-This is a demo to see what is possible with respect to extending VS Code to
-support remote file editing.
+`big-dig-vscode` is a VS Code extension that facilitates developing code on a
+remote host using VS Code. It relies on [Big
+Dig](https://github.com/facebook/nuclide/tree/master/modules/big-dig) to
+transport information between the local and remote hosts. Be sure to verify that
+the host you want to connect to [has the required tools installed for Big
+Dig](../big-dig/#history) (Node, Watchman, etc.).
 
-## How It Works
+## Building the Extension
 
-The goal of this extension is to simulate connecting to a remote directory,
-using a fuzzy search to find files in that directory, and then open them for
-reading in VS Code. (Ideally, it would be for editing, but that is going to be
-a separate demo that requires ExpanDrive.)
+Currently, the only way to use the extension is to build it from source because
+the extension uses [proposed
+APIs](https://github.com/Microsoft/vscode/blob/master/src/vs/vscode.proposed.d.ts),
+so it cannot be published in the [VS Code Extension Marketplace](
+https://marketplace.visualstudio.com/VSCode) today. (Over time, as these
+proposed APIs are frozen and promoted to official APIs, we should be able to
+publish an official version of the extension.)
 
-To introduce the UI for the remote connection dialog and fuzzy search, we use
-the technique introduced by the [vs-code-preview-html](https://github.com/bolinfest/vs-code-preview-html)
-demo that uses the `vscode.previewHtml` API for rendering and a WebSocket for
-communicating between the host extension and the UI.
+Run the following commands to build the extension from source:
 
-To connect and communicate with a remote server, we use the
-[Big Dig](https://www.npmjs.com/package/big-dig) library. (Note that the server
-must run on some sort of *nix system because it runs `/usr/bin/find`.)
-This starts a remote server that supports two RPC methods named `do-file-search`
-and `get-file-contents` that are used by the fuzzy search UI.
-
-## Developing This Extension
-
-In addition to the normal `npm install` stuff, you must also run
-`file-opener-ui/build-extension-ui.js` when building the extension for the
-first time and any time you make a change in the `file-opener-ui` directory.
-
-For testing, it is easiest to use `localhost` as your "remote host." You will
-also need a public/private key pair, so we recommend creating a special one for
-testing that does not require a passphrase to avoid getting prompted for the
-passphrase while testing:
-
-```
-ssh-keygen -f ~/.ssh/test_id_rsa -q -N ''
-cat ~/.ssh/test_id_rsa.pub >> ~/.ssh/authorized_keys
+```sh
+$ git clone https://github.com/facebook/nuclide.git
+$ cd nuclide
+$ yarn --pure-lockfile  # Requires yarn 1.7.0 or later.
+$ cd modules/big-dig-vscode
+$ yarn vsix
 ```
 
-Once you have created this key pair and stored it in `~/.ssh/authorized_keys`,
-now you can run the extension in debug mode just like any other extension.
+Because proposed APIs are a "moving target," we only test the extension for use
+with a specific version of the [VS Code Insiders
+](https://code.visualstudio.com/insiders/) build. Currently (as of 2018-07-10),
+the extension has been tested with the `2018-05-08T05:05:13.439Z` Insiders
+build, which is admittedly quite far behind. We hope to update it soon. (Note
+that, by default, the Insiders build updates itself nightly. If you want to
+disable this behavior, you must add `"update.channel": "none"` to your
+`settings.json`.)
 
-## Running The Extension
+For convenience, we include a script to launch VS Code Insiders with the
+extension on a Mac (it should be straightforward to tweak this for another
+platform):
 
-Once you have created `~/.ssh/test_id_rsa` as described above and you have the
-extension installed, choose `Big Dig remote file opener demo` from the command
-palette, which will open the connection dialog in its own tab. The default
-values should work, but you are free to change them if you need to:
+```sh
+$ ./scripts/mac-insiders-dev
+```
 
-![Populated Connection Dialog](connection-dialog.png)
+## Using the Extension
 
-You can hit enter or click the **CONNECT** button to connect. Assuming the
-connection is successful, you should be able to type a file name into the text
-box and click on the search results to open the files and see their contents:
+Once you have launched Insiders with the extension, you need to add some details
+about the host(s) you want to connect to in your `settings.json`. Note that
+`"big-dig.connection.profiles"` is an array that can contain multiple entries
+(one per host):
 
-![Search in Action](search-results.png)
+```json
+"big-dig.connection.profiles": [
+    {
+        "hostname": "example.com",
+        "folders": [
+            "/home/username/src/nuclide",
+            // You can list more folders here.
+        ],
+        // Port range over which the host can serve HTTP traffic.
+        "ports": "9000-9999",
+    },
+],
+```
 
-Note that the search logic is extremely simple and inefficient because this is
-just a demo, so don't be surprised if it isn't very responsive.
+Once you have set `"big-dig.connection.profiles"` in `settings.json`, choose
+**Big Dig: Quick-Add Folder to Workspace** from the command palette:
 
-## Using a True Remote Connection
+![Quick-Add](quickadd.png)
 
-If you are interested in connecting to a machine that is *actually* remote,
-check out the source code for this extension on a remote machine and run
-`npm install`. You will have to modify the inputs to the connection dialog as
-follows:
+Once you select it, you should see the folder(s) you specified in
+`settings.json`:
 
-* Change the **Host** to the hostname of your remote machine.
-* Change **Private Key** to point to the key you normally use to connect to that machine (most likely, this is `~/.ssh/id_rsa`).
-* Modify **Server Command** to refer to the absolute path of `vs-code-preview-html/server/main.js` on the remote machine.
-* Change the **Search Directory** to the directory on the remote machine that you wish to search.
+![Remote Folders](remote-folder.png)
 
-With the dialog properly populated, you should be able to connect and search
-just as you did with `localhost`. Note that if your remote server requires you to
-2fac, the extension will provide the appropriate prompt.
+Upon selecting the folder, the extension will try to connect to the host and add
+the specified folder as a workspace root in VS Code. Because the initial
+connection is done via SSH, you will get prompted to authenticate as you would
+if you ran `ssh` from the command line.
 
-## Troubleshooting
+Upon successful connection, you should be able to browse the file tree for your
+remote directory as you would if it were a local directory in VS Code.
+Similarly, `ctrl-p` (`cmd-p` on Mac) can be used to search for a remote file,
+just as it would for a local file.
 
-Instead of specifying `node` as the executable in the Search Command,
-you may need to specify the absolute path to it, such as `/usr/local/bin/node`.
+### Text Search
+
+VS Code's built-in text search UI will search the remote filesystem so long as
+[ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) is available on the
+remote host.
+
+### Remote Terminal
+
+Right-click on any folder in the File Tree and choose **Open in Terminal**. You
+will get a terminal to the remote host whose working directory is the one you
+right-clicked on in the File Tree.
+
+One special feature in this terminal is a built-in `code` executable that is
+available on your `$PATH` that takes a file on your remote host as an argument
+and opens it in Insiders.
+
+### Mercurial Integration
+
+If the remote folder you connected to is part of a Mercurial repository and you
+have `hg` available on the remote host, then Big Dig will communicate the
+current state of your Mercurial repo via [VS Code's Source Control
+integration](https://code.visualstudio.com/docs/extensionAPI/api-scm).
+
+### Language Services
+
+If the remote folder (or one of its ancestors) contains a file named
+`.bigdig.toml`, then the extension will try to parse it and load any language
+servers it defines. For example, Nuclide's `.bigdig.toml` includes the following
+content:
+
+```toml
+[lsp]
+
+  [lsp.flow]
+  language = ["javascript"]
+  command = "flow"
+  args = ["lsp", "--from", "big-dig", "--lazy-mode", "ide"]
+```
+
+Upon connection, Big Dig will launch the LSPs specified in `.bigdig.toml` and
+proxy the communication between your local Insiders and the conforming LSP
+server running on the remote host. The net effect is an editing experience with
+full language support that feels like it is local!
+
+### Remote Debugging
+
+This feature is still under active development. If you want to play around with
+it, you will need to add something like the following to your `.bigdig.toml` to
+configure a remote debugger:
+
+```toml
+[debugger]
+
+  [debugger.hhvm]
+  language = ["php"]
+  command = "node"
+  args = ["/home/username/src/nuclide/pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js"]
+  request = "attach"
+```
+
+If you get the configuration right, you should be able to hit `F5` in Insiders
+and choose **Remote Debugging** to attach the specified debugger.
