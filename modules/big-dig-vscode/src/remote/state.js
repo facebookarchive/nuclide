@@ -165,8 +165,10 @@ function createRemoteFileSystem(
   hostname: string,
   server: Server,
 ): RemoteFileSystem {
-  const useThriftFs = false;
-  logger.info(`Using Thrift remote file system: ${useThriftFs.toString()}`);
+  const useThriftFs = vscode.workspace
+    .getConfiguration('big-dig')
+    .get('rfs.option', false);
+  logger.info(`Using Thrift remote file system: ${String(useThriftFs)}`);
   if (useThriftFs) {
     return new ThriftRemoteFileSystem(hostname, server);
   }

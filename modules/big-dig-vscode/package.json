@@ -206,6 +206,11 @@
           "items": {
             "type": "string"
           }
+        },
+        "big-dig.rfs.option": {
+          "description": "Toggle the use of new Thrift remote file system service (RFS). Set `False` to use the old RPC RFS.",
+          "type": "boolean",
+          "default": false
         }
       }
     }

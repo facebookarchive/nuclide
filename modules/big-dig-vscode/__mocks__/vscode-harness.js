@@ -35,3 +35,13 @@ export class EventEmitter<T> {
 export const window = {
   showErrorMessage: (jest.fn(): any),
 };
+
+export const workspace = {
+  getConfiguration(property: string) {
+    return {
+      get: (name: string, defaultValue: boolean): boolean => {
+        return defaultValue;
+      },
+    };
+  },
+};
