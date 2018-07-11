@@ -19,13 +19,18 @@ const logger = getLogger('fs-thrift-server-handler');
 export function convertToThriftFileStat(
   statData: fs.Stats,
 ): filesystem_types.FileStat {
-  const {size, atime, mtime, ctime} = statData;
+  const {size, atime, mtime, ctime, mode, nlink, uid, gid} = statData;
   const fileStat = new filesystem_types.FileStat();
   fileStat.fsize = size;
   fileStat.atime = atime.toString();
   fileStat.mtime = mtime.toString();
   fileStat.ctime = ctime.toString();
+  fileStat.mode = mode;
+  fileStat.nlink = nlink;
+  fileStat.uid = uid;
+  fileStat.gid = gid;
   fileStat.ftype = toThriftFileType(statData);
+
   return fileStat;
 }
 
@@ -98,5 +103,6 @@ export function convertToThriftFileEntry(
   return {
     fname,
     ftype: statData.ftype,
+    fstat: statData,
   };
 }

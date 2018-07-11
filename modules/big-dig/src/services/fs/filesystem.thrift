@@ -99,11 +99,16 @@ struct FileStat {
   3: string mtime,
   4: string ctime,
   5: FileType ftype,
+  6: i32 nlink,
+  7: i32 mode,
+  8: i32 uid,
+  9: i32 gid,
 }
 
 struct FileEntry {
   1: string fname,
   2: FileType ftype,
+  3: FileStat fstat,
 }
 
 struct WatchOpt {

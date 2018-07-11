@@ -209,6 +209,10 @@ var FileStat = module.exports.FileStat = function(args) {
   this.mtime = null;
   this.ctime = null;
   this.ftype = null;
+  this.nlink = null;
+  this.mode = null;
+  this.uid = null;
+  this.gid = null;
   if (args) {
     if (args.fsize !== undefined && args.fsize !== null) {
       this.fsize = args.fsize;
@@ -224,6 +228,18 @@ var FileStat = module.exports.FileStat = function(args) {
     }
     if (args.ftype !== undefined && args.ftype !== null) {
       this.ftype = args.ftype;
+    }
+    if (args.nlink !== undefined && args.nlink !== null) {
+      this.nlink = args.nlink;
+    }
+    if (args.mode !== undefined && args.mode !== null) {
+      this.mode = args.mode;
+    }
+    if (args.uid !== undefined && args.uid !== null) {
+      this.uid = args.uid;
+    }
+    if (args.gid !== undefined && args.gid !== null) {
+      this.gid = args.gid;
     }
   }
 };
@@ -276,6 +292,34 @@ FileStat.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 6:
+      if (ftype == Thrift.Type.I32) {
+        this.nlink = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 7:
+      if (ftype == Thrift.Type.I32) {
+        this.mode = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 8:
+      if (ftype == Thrift.Type.I32) {
+        this.uid = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 9:
+      if (ftype == Thrift.Type.I32) {
+        this.gid = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -312,6 +356,26 @@ FileStat.prototype.write = function(output) {
     output.writeI32(this.ftype);
     output.writeFieldEnd();
   }
+  if (this.nlink !== null && this.nlink !== undefined) {
+    output.writeFieldBegin('nlink', Thrift.Type.I32, 6);
+    output.writeI32(this.nlink);
+    output.writeFieldEnd();
+  }
+  if (this.mode !== null && this.mode !== undefined) {
+    output.writeFieldBegin('mode', Thrift.Type.I32, 7);
+    output.writeI32(this.mode);
+    output.writeFieldEnd();
+  }
+  if (this.uid !== null && this.uid !== undefined) {
+    output.writeFieldBegin('uid', Thrift.Type.I32, 8);
+    output.writeI32(this.uid);
+    output.writeFieldEnd();
+  }
+  if (this.gid !== null && this.gid !== undefined) {
+    output.writeFieldBegin('gid', Thrift.Type.I32, 9);
+    output.writeI32(this.gid);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
@@ -320,12 +384,16 @@ FileStat.prototype.write = function(output) {
 var FileEntry = module.exports.FileEntry = function(args) {
   this.fname = null;
   this.ftype = null;
+  this.fstat = null;
   if (args) {
     if (args.fname !== undefined && args.fname !== null) {
       this.fname = args.fname;
     }
     if (args.ftype !== undefined && args.ftype !== null) {
       this.ftype = args.ftype;
+    }
+    if (args.fstat !== undefined && args.fstat !== null) {
+      this.fstat = new ttypes.FileStat(args.fstat);
     }
   }
 };
@@ -357,6 +425,14 @@ FileEntry.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.fstat = new ttypes.FileStat();
+        this.fstat.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -376,6 +452,11 @@ FileEntry.prototype.write = function(output) {
   if (this.ftype !== null && this.ftype !== undefined) {
     output.writeFieldBegin('ftype', Thrift.Type.I32, 2);
     output.writeI32(this.ftype);
+    output.writeFieldEnd();
+  }
+  if (this.fstat !== null && this.fstat !== undefined) {
+    output.writeFieldBegin('fstat', Thrift.Type.STRUCT, 3);
+    this.fstat.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
