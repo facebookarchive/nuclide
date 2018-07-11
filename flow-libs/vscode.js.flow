@@ -6643,6 +6643,11 @@ declare module 'vscode' {
   }
 
   /* BEGIN PROPOSED *******************************************************************************/
+  declare export interface FileSearchQuery {
+    pattern: string;
+    cacheKey?: string;
+  }
+
   declare export interface TextSearchQuery {
     pattern: string;
     isRegExp?: boolean;
@@ -6650,19 +6655,32 @@ declare module 'vscode' {
     isWordMatch?: boolean;
   }
 
-  declare export interface TextSearchOptions {
+  declare export interface SearchOptions {
+    folder: Uri;
     includes: GlobPattern[];
     excludes: GlobPattern[];
+    useIgnoreFiles?: boolean;
+    followSymlinks?: boolean;
+    maxResults?: number;
+  }
+
+  declare export interface FileSearchOptions extends SearchOptions {
+  }
+
+  declare export interface TextSearchOptions extends SearchOptions {
+    previewOptions?: any;
+    maxFileSize?: number;
+    encoding?: string;
   }
 
   declare export interface TextSearchResult {
     uri: Uri;
     range: Range;
-    preview: { leading: string, matching: string, trailing: string };
+    preview: { text: string, match: Range };
   }
 
   declare export interface SearchProvider {
-    +provideFileSearchResults?: (query: string, progress: Progress<Uri>, token: CancellationToken) => Thenable<void>;
+    +provideFileSearchResults?: (query: FileSearchQuery, options: FileSearchOptions, progress: Progress<Uri>, token: CancellationToken) => Thenable<void>;
     +provideTextSearchResults?: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => Thenable<void>;
   }
 

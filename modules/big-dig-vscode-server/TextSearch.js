@@ -20,14 +20,14 @@ import {observeProcess} from 'nuclide-commons/process';
 import {compact} from 'nuclide-commons/observable';
 
 // Just the file on a line
-const RG_HEADER_REGEX = /^\u001b\[m(.+)\u001b\[m\n$/;
+const RG_HEADER_REGEX = /^\u001b\[0?m(.+)\u001b\[0?m\n$/;
 // Line number, ':', line-text
-const RG_ENTRY_REGEX = /^\u001b\[m(\d+)\u001b\[m:(.*)\r?\n$/;
+const RG_ENTRY_REGEX = /^\u001b\[0?m(\d+)\u001b\[0?m:(.*)\r?\n$/;
 // Separates groups of file-matches
 const RG_END_REGEX = /^\s*$/;
 // We'll tell ripgrep to color the matching text so we can regexp it using the color-escape-codes.
-const RG_MATCH_START = /\u001b\[m\u001b\[31m/g;
-const RG_MATCH_END = /\u001b\[m/g;
+const RG_MATCH_START = /\u001b\[0?m\u001b\[31m/g;
+const RG_MATCH_END = /\u001b\[0?m/g;
 // Don't bother searching lines that are longer than this:
 const MAX_LINE_LENGTH = 1000000;
 

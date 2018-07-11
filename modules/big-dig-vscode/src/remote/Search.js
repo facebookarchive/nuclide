@@ -29,15 +29,27 @@ export function startSearchProviders(): IDisposable {
 
 class Search implements SearchProvider {
   async provideFileSearchResults(
-    query: string,
+    query: vscode.FileSearchQuery,
+    options: vscode.FileSearchOptions,
     progress: vscode.Progress<vscode.Uri>,
     token: vscode.CancellationToken,
   ): Promise<void> {
-    await Promise.all(
-      getConnectedFilesystems().map(({fs, conn}) =>
-        this._fileSearch(fs, conn, query, progress, token),
-      ),
-    );
+    // For compatibility with 1.23's provideFileSearchResults:
+    // https://github.com/Microsoft/vscode/blob/1.23.1/src/vs/vscode.proposed.d.ts#L75
+    if (typeof query === 'string') {
+      await Promise.all(
+        getConnectedFilesystems().map(({fs, conn}) =>
+          this._fileSearch(fs, conn, query, progress, token),
+        ),
+      );
+    } else {
+      // TODO: (hansonw) T31478806 Actually use the fields in FileSearchOptions.
+      await Promise.all(
+        getConnectedFilesystems().map(({fs, conn}) =>
+          this._fileSearch(fs, conn, query.pattern, progress, token),
+        ),
+      );
+    }
   }
 
   async provideTextSearchResults(
@@ -98,6 +110,7 @@ class Search implements SearchProvider {
       return;
     }
 
+    // TODO: (hansonw) T31478806 Use new fields in TextSearchOptions.
     const includes = getGlobalPatterns(options.includes);
     const excludes = getGlobalPatterns(options.excludes);
     const basePaths = paths.map(path => ({
@@ -119,7 +132,16 @@ class Search implements SearchProvider {
         progress.report({
           uri: fs.pathToUri(match.path),
           range: match.range,
-          preview: match.preview,
+          preview: {
+            // For compatibility with 1.23's TextSearchResultPreview:
+            // https://github.com/Microsoft/vscode/blob/1.23.1/src/vs/vscode.proposed.d.ts#L71
+            ...match.preview,
+            text:
+              match.preview.leading +
+              match.preview.matching +
+              match.preview.trailing,
+            match: match.range,
+          },
         });
       })
       .takeUntil(
