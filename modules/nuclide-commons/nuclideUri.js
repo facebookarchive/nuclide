@@ -688,6 +688,8 @@ function _pathModuleFor(uri: NuclideUri): typeof pathModule {
     return pathModule.win32;
   }
 
+  // This little russian roulette here is blocking T29990593. I didn't
+  // clean it because we might see posix paths on windows and vice versa.
   if (
     uri.split(pathModule.win32.sep).length >
     uri.split(pathModule.posix.sep).length
