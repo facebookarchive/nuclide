@@ -673,7 +673,7 @@ export function isExoPackage(
 ): ConnectableObservable<boolean> {
   return Observable.defer(async () => {
     const exoPackageModes = await getExoPackageModes(rootPath, target);
-    return exoPackageModes.length >= 0;
+    return exoPackageModes.length > 0;
   }).publish();
 }
 
