@@ -66,7 +66,6 @@ public class ContextManager {
     synchronized (resumeAfterVMStartAndConfigurationDoneLock) {
       vmStarted = true;
       if (vmStarted && configurationDone) {
-        getBreakpointManager().forceResolveAll();
         resumeVm(true /* needsResponse */);
       }
     }
@@ -76,7 +75,6 @@ public class ContextManager {
     synchronized (resumeAfterVMStartAndConfigurationDoneLock) {
       configurationDone = true;
       if (vmStarted && configurationDone) {
-        getBreakpointManager().forceResolveAll();
         resumeVm(true /* needsResponse */);
       }
     }

@@ -26,6 +26,9 @@ import org.json.JSONObject;
 /** Source line breakpoint spec. Threading: access from both request and event threads. */
 public class FileLineBreakpointSpec extends BreakpointSpec {
   private final FileLineBreakpointRequestInfo _requestInfo;
+  private static final ConcurrentHashMap<String, Optional<ClassPrepareRequest>>
+      _existingClassPrepareRequests =
+          new ConcurrentHashMap<String, Optional<ClassPrepareRequest>>();
   private volatile Optional<ClassPrepareRequest> _classPrepareRequest = Optional.empty();
   private String _className;
   private static final ConcurrentHashMap<String, CompilationUnit> _unitCache =
@@ -102,6 +105,7 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
           .eventRequestManager()
           .deleteEventRequest(_classPrepareRequest.get());
       _classPrepareRequest = Optional.empty();
+      _existingClassPrepareRequests.remove(getClassPrepareKey());
     }
 
     // Now that this is resolved, we should have a bound location. Tell the
@@ -112,13 +116,21 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
     }
   }
 
+  private String getClassPrepareKey() {
+    return _className + _requestInfo.getFilePath();
+  }
+
   /** Watch for future class prepare/load if not resolved yet. */
   private void watchForClassPrepare() {
-    EventRequestManager em = getContextManager().getVirtualMachine().eventRequestManager();
-    _classPrepareRequest = Optional.of(em.createClassPrepareRequest());
-    _classPrepareRequest.get().addClassFilter(_className);
-    _classPrepareRequest.get().setSuspendPolicy(EventRequest.SUSPEND_ALL);
-    _classPrepareRequest.get().enable();
+    // one class prepare request per class name & file name
+    if (!_existingClassPrepareRequests.containsKey(getClassPrepareKey())) {
+      EventRequestManager em = getContextManager().getVirtualMachine().eventRequestManager();
+      _classPrepareRequest = Optional.of(em.createClassPrepareRequest());
+      _classPrepareRequest.get().addClassFilter(_className);
+      _classPrepareRequest.get().setSuspendPolicy(EventRequest.SUSPEND_ALL);
+      _classPrepareRequest.get().enable();
+      _existingClassPrepareRequests.put(getClassPrepareKey(), _classPrepareRequest);
+    }
   }
 
   @Override
