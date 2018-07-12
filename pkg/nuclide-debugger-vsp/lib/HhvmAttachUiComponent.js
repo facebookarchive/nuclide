@@ -24,7 +24,10 @@ import {
 } from 'nuclide-debugger-common';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Observable, Subscription} from 'rxjs';
-import {getHhvmDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+  getHhvmDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {Expect} from 'nuclide-commons/expected';
 
 type AttachType = 'webserver' | 'script';
@@ -41,7 +44,7 @@ type PropsType = {
 
 type StateType = {
   selectedPathIndex: number,
-  pathMenuItems: Array<{label: string, value: number}>,
+  pathMenuItems: Expected<Array<{label: string, value: number}>>,
   attachType: AttachType,
   attachPort: ?number,
   attachTargets: Expected<Array<{pid: number, command: string}>>,
@@ -90,7 +93,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
 
     this.state = {
       selectedPathIndex: 0,
-      pathMenuItems: this._getPathMenuItems(),
+      pathMenuItems: Expect.pending(),
       attachPort: null,
       attachType: 'webserver',
       attachTargets: Expect.pending(),
@@ -108,27 +111,29 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
   }
 
   componentDidMount(): void {
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        const savedPath = this.state.pathMenuItems.find(
-          item => item.label === savedSettings.selectedPath,
-        );
-        if (savedPath != null) {
-          this.setState({
-            // TODO: (wbinnssmith) T30771435 this setState depends on current state
-            // and should use an updater function rather than an object
-            // eslint-disable-next-line react/no-access-state-in-setstate
-            selectedPathIndex: this.state.pathMenuItems.indexOf(savedPath),
-          });
-        }
-        this.setState({
-          attachType:
-            savedSettings.attachType != null
-              ? savedSettings.attachType
-              : 'webserver',
-        });
-      },
+    this._disposables.add(
+      Observable.fromPromise(this._getPathMenuItems()).subscribe(
+        pathMenuItems => {
+          deserializeDebuggerConfig(
+            ...this._getSerializationArgs(),
+            (transientSettings, savedSettings) => {
+              const items = pathMenuItems.getOrDefault([]);
+              const savedPath = items.find(
+                item => item.label === savedSettings.selectedPath,
+              );
+              const savedIndex = items.indexOf(savedPath);
+
+              this.setState({
+                selectedPathIndex: savedIndex < 0 ? 0 : savedIndex,
+                attachType:
+                  savedSettings.attachType != null
+                    ? savedSettings.attachType
+                    : 'webserver',
+              });
+            },
+          );
+        },
+      ),
     );
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
@@ -160,8 +165,14 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
   }
 
   _debugButtonShouldEnable(): boolean {
+    const selectedPath =
+      !this.state.pathMenuItems.isPending && !this.state.pathMenuItems.isError
+        ? this.state.pathMenuItems.value[this.state.selectedPathIndex]
+        : null;
+
     return (
-      this.state.attachType === 'webserver' || this.state.attachPort != null
+      (this.state.attachType === 'webserver' && selectedPath != null) ||
+      this.state.attachPort != null
     );
   }
 
@@ -208,6 +219,10 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       }
     }
 
+    const pathMenuItems: Array<{label: string, value: number}> =
+      this.state.pathMenuItems.isPending || this.state.pathMenuItems.isError
+        ? []
+        : this.state.pathMenuItems.value;
     return (
       <div className="block">
         <div className="nuclide-ui-radiogroup-div">
@@ -225,14 +240,24 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
           </label>
           <div className="debugger-php-launch-attach-ui-select-project">
             <label>Selected Project Directory: </label>
-            {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-            <Dropdown
-              className="inline-block debugger-connection-box"
-              options={this.state.pathMenuItems}
-              onChange={this._handlePathsDropdownChange}
-              value={this.state.selectedPathIndex}
-              disabled={this.state.attachType !== 'webserver'}
-            />
+            {pathMenuItems.length > 0 ? (
+              <Dropdown
+                className="inline-block debugger-connection-box"
+                options={pathMenuItems.map(item => ({
+                  ...item,
+                  disabled: false,
+                }))}
+                onChange={this._handlePathsDropdownChange}
+                value={this.state.selectedPathIndex}
+                disabled={this.state.attachType !== 'webserver'}
+              />
+            ) : (
+              <div>
+                {this.state.pathMenuItems.isPending
+                  ? 'Loading project roots...'
+                  : 'No Hack roots found! Try adding a directory that contains your .hhconfig file to the file tree!'}
+              </div>
+            )}
           </div>
           <div>
             <input
@@ -287,23 +312,42 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
     return match != null && match.length >= 3 ? parseInt(match[2], 10) : null;
   }
 
-  _getPathMenuItems(): Array<{label: string, value: number}> {
+  async _getPathMenuItems(): Promise<
+    Expected<Array<{label: string, value: number}>>,
+  > {
     const connections = RemoteConnection.getByHostname(
       nuclideUri.getHostname(this.props.targetUri),
     );
-    return connections.map((connection, index) => {
-      const pathToProject = connection.getPath();
-      return {
-        label: pathToProject,
-        value: index,
-      };
+
+    const pathMenuItems = (await Promise.all(
+      connections.map(async (connection, index) => {
+        const pathToProject = connection.getPath();
+        const fsSvc = getFileSystemServiceByNuclideUri(connection.getUri());
+        if (
+          (await fsSvc.findNearestAncestorNamed('.hhconfig', pathToProject)) !=
+          null
+        ) {
+          return {
+            label: pathToProject,
+            value: index,
+          };
+        }
+        return null;
+      }),
+    )).filter(p => p != null);
+
+    // Flow missing that pathMenuItems[i] is never null due to the filter above.
+    // $FlowIgnore
+    const val = Expect.value([...pathMenuItems]);
+    this.setState({
+      pathMenuItems: val,
     });
+    return val;
   }
 
   _handlePathsDropdownChange = (newIndex: number): void => {
     this.setState({
       selectedPathIndex: newIndex,
-      pathMenuItems: this._getPathMenuItems(),
     });
   };
 
@@ -311,8 +355,10 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
     // Start a debug session with the user-supplied information.
     const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
     const selectedPath =
-      this.state.attachType === 'webserver'
-        ? this.state.pathMenuItems[this.state.selectedPathIndex].label
+      this.state.attachType === 'webserver' &&
+      !this.state.pathMenuItems.isPending &&
+      !this.state.pathMenuItems.isError
+        ? this.state.pathMenuItems.value[this.state.selectedPathIndex].label
         : '/';
 
     await this.props.startAttachProcessConfig(
