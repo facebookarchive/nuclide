@@ -144,10 +144,14 @@ export function _clearFileParsers(): void {
 const memoizedBabylonParse = memoizeWithDisk(
   function babylonParse(src, options) {
     // External dependency: ensure that it's included in the key below.
-    const babylon = require('babylon');
+    const babylon = require('@babel/parser');
     return babylon.parse(src, options).program;
   },
-  (src, options) => [src, options, require('babylon/package.json').version],
+  (src, options) => [
+    src,
+    options,
+    require('@babel/parser/package.json').version,
+  ],
   nuclideUri.join(os.tmpdir(), 'nuclide-rpc-cache'),
 );
 

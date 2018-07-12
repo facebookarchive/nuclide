@@ -13,7 +13,7 @@ import child_process from 'child_process';
 import DefinitionManager from '../../../nuclide-ui-component-tools-common/lib/definitionManager';
 import {ExportManager} from './ExportManager';
 import {UndefinedSymbolManager} from './UndefinedSymbolManager';
-import * as babylon from 'babylon';
+import * as babylon from '@babel/parser';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {babelLocationToAtomRange} from '../utils/util';

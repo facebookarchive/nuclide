@@ -10,7 +10,7 @@
  */
 
 import {ExportManager} from '../src/lib/ExportManager';
-import * as babylon from 'babylon';
+import * as babylon from '@babel/parser';
 
 const babylonOptions = {
   sourceType: 'module',

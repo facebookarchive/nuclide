@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {Point, Range} from 'atom';
-import * as babylon from 'babylon';
+import * as babylon from '@babel/parser';
 
 type BabelPos = {
   line: number,

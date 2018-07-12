@@ -44,14 +44,14 @@
     "modules/*"
   ],
   "dependencies": {
-    "@babel/traverse": "7.0.0-beta.47",
-    "@babel/types": "7.0.0-beta.47",
+    "@babel/traverse": "7.0.0-beta.48",
+    "@babel/types": "7.0.0-beta.48",
+    "@babel/parser": "7.0.0-beta.48",
     "adm-zip": "0.4.7",
     "anser": "1.4.6",
     "ansi-to-react": "2.0.6",
     "arch": "2.1.0",
     "atom-package-deps": "4.6.0",
-    "babylon": "7.0.0-beta.47",
     "big-integer": "1.6.17",
     "bplist-parser": "0.1.1",
     "chalk": "1.1.3",
@@ -166,7 +166,7 @@
     "yargs": "3.32.0"
   },
   "devDependencies": {
-    "@babel/generator": "7.0.0-beta.47",
+    "@babel/generator": "7.0.0-beta.48",
     "atom-grammar-test": "0.6.3",
     "eslint": "5.1.0",
     "eslint-plugin-dependencies": "2.4.0",

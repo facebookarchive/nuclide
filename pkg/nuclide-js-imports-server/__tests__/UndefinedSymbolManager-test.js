@@ -9,7 +9,7 @@
  * @format
  */
 
-import * as babylon from 'babylon';
+import * as babylon from '@babel/parser';
 import {UndefinedSymbolManager} from '../src/lib/UndefinedSymbolManager';
 
 const babylonOptions = {

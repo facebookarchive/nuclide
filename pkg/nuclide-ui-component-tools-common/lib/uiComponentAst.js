@@ -11,7 +11,7 @@
 
 // TODO: T29733418 Figure out a typed import for babylon or @babel/parser.
 // flowlint-next-line untyped-import:off
-import {File, Node, parse} from 'babylon';
+import {File, Node, parse} from '@babel/parser';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {babylonOptions} from '../../nuclide-js-imports-server/src/lib/AutoImportsManager';
 import {removePrefix} from './utils';
