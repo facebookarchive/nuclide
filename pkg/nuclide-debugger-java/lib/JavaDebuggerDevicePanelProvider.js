@@ -44,7 +44,8 @@ async function _createAndroidDebugAttachConfig(
     adapterType: VsAdapterTypes.JAVA_ANDROID,
     config,
     customDisposable: new UniversalDisposable(),
-    processName: 'Process ' + pid + ' (Android Java ' + device.name + ')',
+    processName:
+      'Process ' + pid + ' (Android Java ' + device.displayName + ')',
   };
 }
 

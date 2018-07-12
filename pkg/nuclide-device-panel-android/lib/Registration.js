@@ -29,8 +29,8 @@ export function registerDevicePanelProviders(
         observeAndroidDevices(host).map(expected =>
           expected.map(devices =>
             devices.map(d => ({
-              displayName: d.prettyName,
-              name: d.serial,
+              identifier: d.serial,
+              displayName: d.displayName,
             })),
           ),
         ),

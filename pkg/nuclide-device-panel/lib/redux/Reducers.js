@@ -151,7 +151,7 @@ function isDeviceConnected(
     return false;
   }
   for (const _device of deviceList.value) {
-    if (device.name === _device.name) {
+    if (device.identifier === _device.identifier) {
       return true;
     }
   }

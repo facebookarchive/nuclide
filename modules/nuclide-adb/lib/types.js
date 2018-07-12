@@ -23,7 +23,7 @@ export type AndroidJavaProcess = SimpleProcess;
 
 export type AdbDevice = {|
   serial: string,
-  prettyName: string,
+  displayName: string,
   usb: ?string,
   product: ?string,
   model: ?string,

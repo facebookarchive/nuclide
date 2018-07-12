@@ -41,7 +41,7 @@ class Activation {
           return observeIosDevices().map(expected =>
             expected.map(devices =>
               devices.map(device => ({
-                name: device.udid,
+                identifier: device.udid,
                 displayName: device.name,
                 ignoresSelection: true,
               })),

@@ -436,7 +436,7 @@ export class Adb {
               break;
           }
         }
-        const prettyName =
+        const displayName =
           serial.startsWith('emulator') ||
           serial.startsWith('localhost:') ||
           model == null
@@ -445,7 +445,7 @@ export class Adb {
 
         return {
           serial,
-          prettyName,
+          displayName,
           product,
           model,
           device,

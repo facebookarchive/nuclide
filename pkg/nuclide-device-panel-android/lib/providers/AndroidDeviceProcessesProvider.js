@@ -30,7 +30,7 @@ export class AndroidDeviceProcessesProvider implements DeviceProcessesProvider {
       .startWith(0)
       .switchMap(() =>
         getAdbServiceByNuclideUri(host)
-          .getProcesses(device.name, intervalTime)
+          .getProcesses(device.identifier, intervalTime)
           .refCount()
           .catch(() => Observable.of([])),
       );

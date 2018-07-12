@@ -295,7 +295,9 @@ export interface DeviceTypeComponentProvider {
 //
 
 export type Device = {|
-  name: string,
+  // Must be unique within platform, not shown to user
+  identifier: string,
+  // Used to display in all UI
   displayName: string,
   ignoresSelection?: boolean,
 |};

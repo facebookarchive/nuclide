@@ -22,7 +22,7 @@ export class AndroidDeviceInfoProvider implements DeviceInfoProvider {
 
   fetch(host: NuclideUri, device: Device): Observable<Map<string, string>> {
     return getAdbServiceByNuclideUri(host)
-      .getDeviceInfo(device.name)
+      .getDeviceInfo(device.identifier)
       .refCount()
       .map(props => {
         const infoMap = new Map();
