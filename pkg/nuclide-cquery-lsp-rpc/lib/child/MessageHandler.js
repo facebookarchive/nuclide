@@ -12,6 +12,7 @@
 import type {StreamMessageWriter} from 'vscode-jsonrpc';
 import type {Message} from 'vscode-jsonrpc';
 import type {
+  InitializeParams,
   DidOpenTextDocumentParams,
   DidCloseTextDocumentParams,
 } from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
@@ -24,6 +25,10 @@ import performanceNow from 'nuclide-commons/performanceNow';
 import {readCompilationFlags} from '../../../nuclide-clang-rpc/lib/clang-flags-reader';
 import {lspUri_localPath} from '../../../nuclide-vscode-language-service-rpc/lib/convert';
 import {MessageType} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
+import {
+  resolveCacheDir,
+  getInitializationOptions,
+} from './CqueryInitialization';
 import {flagsInfoForPath} from './FlagUtils';
 import {windowMessage, addDbMessage, windowStatusMessage} from './messages';
 
@@ -53,11 +58,9 @@ export class MessageHandler {
   _lastJobsTotal: number = 0;
 
   constructor(
-    projectRoot: string,
     serverWriter: StreamMessageWriter,
     clientWriter: StreamMessageWriter,
   ) {
-    this._projectRoot = projectRoot;
     this._serverWriter = serverWriter;
     this._clientWriter = clientWriter;
     this._updateStatus();
@@ -75,6 +78,9 @@ export class MessageHandler {
           return true;
         case 'textDocument/didClose':
           this._didClose(message);
+          return true;
+        case 'initialize':
+          this._initialize(message);
           return true;
       }
     }
@@ -101,6 +107,33 @@ export class MessageHandler {
    */
   knownProjects(): Array<string> {
     return Array.from(this._knownCompileCommandsSet);
+  }
+
+  // Merge default initialization options with client-provided overrides.
+  _initialize(initMessage: Message): void {
+    const originalParams = ((initMessage: any).params: InitializeParams);
+    const originalInitialization = originalParams.initializationOptions;
+    if (originalParams.rootUri != null) {
+      this._projectRoot = lspUri_localPath(originalParams.rootUri);
+    } else if (originalParams.rootPath != null) {
+      this._projectRoot = originalParams.rootPath;
+    } else {
+      logger.fatal('Initialize request had no rootPath or rootUri field.');
+      return;
+    }
+
+    const nuclideInitialization = getInitializationOptions(
+      resolveCacheDir(this._projectRoot),
+      this._projectRoot,
+      [],
+    );
+    // Merge the client-provided and the Nuclide-custom parameters.
+    const initializationOptions = {
+      ...nuclideInitialization,
+      ...originalInitialization,
+    };
+    const params = {...originalParams, initializationOptions};
+    this._serverWriter.write({...initMessage, params});
   }
 
   async _didOpen(openMessage: Message): mixed {

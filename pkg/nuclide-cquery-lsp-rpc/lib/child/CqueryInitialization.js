@@ -61,13 +61,17 @@ export function getInitializationOptions(
   return options;
 }
 
-export async function createCacheDir(rootDir: string) {
-  const dir = nuclideUri.join(
+export function resolveCacheDir(rootDir: string): string {
+  return nuclideUri.join(
     os.tmpdir(),
     'cquery',
     nuclideUri.split(rootDir).join('@'),
     CQUERY_CACHE_DIR,
   );
+}
+
+export async function createCacheDir(rootDir: string): Promise<string> {
+  const dir = resolveCacheDir(rootDir);
   await fsPromise.mkdirp(dir);
   return dir;
 }

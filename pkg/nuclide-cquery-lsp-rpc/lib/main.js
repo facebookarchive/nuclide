@@ -52,7 +52,7 @@ import {
   findNearestCompilationDbDir as _findNearestCompilationDbDir,
   COMPILATION_DATABASE_FILE,
 } from './CompilationDatabaseFinder';
-import {getInitializationOptions, createCacheDir} from './CqueryInitialization';
+import {createCacheDir} from './child/CqueryInitialization';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import CqueryLanguageServer from './CqueryLanguageServer';
 
@@ -231,11 +231,6 @@ export async function createCqueryService(params: {|
   const multiLsp = new CqueryLanguageServer(forkedHost);
   const cqueryFactory = async (projectRoot: string) => {
     const cacheDirectory = await createCacheDir(projectRoot);
-    const initializationOptions = getInitializationOptions(
-      cacheDirectory,
-      projectRoot,
-      params.defaultFlags,
-    );
     const logFile = nuclideUri.join(cacheDirectory, '..', 'diagnostics');
     const recordFile = nuclideUri.join(cacheDirectory, '..', 'record');
     const [, host] = await Promise.all([
@@ -267,7 +262,7 @@ export async function createCqueryService(params: {|
       spawnOptions,
       projectRoot,
       EXTENSIONS,
-      initializationOptions,
+      {extraClangArguments: params.defaultFlags},
       5 * 60 * 1000, // 5 minutes
       logFile,
       cacheDirectory,

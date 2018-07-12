@@ -28,10 +28,9 @@ const DEFAULT_MEMORY_LIMIT = 30;
 const MEMORY_CHECK_INTERVAL = 15000;
 
 // Read and store arguments.
-const projectRoot = process.argv[2];
-const loggingFile = process.argv[3];
-const recordingFile = process.argv[4];
-const libclangLogging = process.argv[5] === 'true';
+const loggingFile = process.argv[2];
+const recordingFile = process.argv[3];
+const libclangLogging = process.argv[4] === 'true';
 
 // client reader/writer reads/writes to Nuclide.
 const clientReader = new SafeStreamMessageReader(process.stdin);
@@ -48,11 +47,7 @@ function onChildSpawn(childProcess): void {
   // If child process quits, we also quit.
   childProcess.on('exit', code => process.exit(code));
   childProcess.on('close', code => process.exit(code));
-  const messageHandler = new MessageHandler(
-    projectRoot,
-    serverWriter,
-    clientWriter,
-  );
+  const messageHandler = new MessageHandler(serverWriter, clientWriter);
 
   clientReader.listen(message => {
     let handled = false;
