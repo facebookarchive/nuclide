@@ -17,21 +17,25 @@ import type {
 } from './types';
 
 import thrift from 'thrift';
+import EventEmitter from 'events';
 import {getTransport, getProtocol} from './config-utils';
 
 export class ThriftClientClass {
-  _status: 'CONNECTED' | 'CLOSED_MANUALLY' | 'CLOSED_BY_CONNECTION';
+  _status: 'CONNECTED' | 'CLOSED_MANUALLY' | 'LOST_CONNECTION';
   _client: Object;
   _connection: Object;
+  _emitter: EventEmitter;
 
   constructor(connection: Object, client: Object) {
     this._status = 'CONNECTED';
     this._connection = connection;
     this._client = client;
+    this._emitter = new EventEmitter();
 
     this._connection.on('end', () => {
       if (this._status === 'CONNECTED') {
-        this._status = 'CLOSED_BY_CONNECTION';
+        this._status = 'LOST_CONNECTION';
+        this._emitter.emit('lost_connection');
       }
     });
   }
@@ -42,7 +46,7 @@ export class ThriftClientClass {
         return (this._client: any);
       case 'CLOSED_MANUALLY':
         throw new Error('Cannot get a closed client');
-      case 'CLOSED_BY_CONNECTION':
+      case 'LOST_CONNECTION':
         throw new Error('Cannot get a client because connection ended');
       default:
         (this._status: empty);
@@ -55,13 +59,28 @@ export class ThriftClientClass {
       this._status = 'CLOSED_MANUALLY';
       this._connection.end();
     }
+    this._emitter.removeAllListeners();
   }
 
   onConnectionEnd(handler: () => void): ThrifClientSubscription {
-    this._connection.on('end', handler);
+    const cb = () => {
+      if (this._status === 'CLOSED_MANUALLY') {
+        handler();
+      }
+    };
+    this._connection.on('end', cb);
     return {
       unsubscribe: () => {
-        this._connection.removeListener('end', handler);
+        this._connection.removeListener('end', cb);
+      },
+    };
+  }
+
+  onUnexpectedConnectionEnd(handler: () => void): ThrifClientSubscription {
+    this._emitter.on('lost_connection', handler);
+    return {
+      unsubscribe: () => {
+        this._emitter.removeListener('lost_connection', handler);
       },
     };
   }

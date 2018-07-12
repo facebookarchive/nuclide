@@ -60,6 +60,13 @@ export class MockedThriftClientClass {
       unsubscribe: () => {},
     };
   }
+
+  onUnexpectedConnectionEnd(handler: () => void): ThrifClientSubscription {
+    this._connection.on('lost_connection', handler);
+    return {
+      unsubscribe: () => {},
+    };
+  }
 }
 
 /**
@@ -149,7 +156,10 @@ describe('ThriftClientManager', () => {
   });
 
   it('successfully start a client', async () => {
-    const mockedClient = {onConnectionEnd: () => {}};
+    const mockedClient = {
+      onConnectionEnd: () => {},
+      onUnexpectedConnectionEnd: () => {},
+    };
     getMock(createThriftClient).mockReturnValue(mockedClient);
     mockClientServerCommunication(clientMessage, serverMessage);
     const client = await manager.createThriftClient(mockedServiceName);
@@ -160,6 +170,7 @@ describe('ThriftClientManager', () => {
     // create the first client -> create new tunnel and new server
     getMock(createThriftClient).mockReturnValue({
       onConnectionEnd: () => {},
+      onUnexpectedConnectionEnd: () => {},
     });
     mockClientServerCommunication(clientMessage, serverMessage);
     await manager.createThriftClient(mockedServiceName);

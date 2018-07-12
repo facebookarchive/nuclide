@@ -93,4 +93,7 @@ export interface ThriftClient {
   getClient<T>(): T;
   close(): void;
   onConnectionEnd(handler: ClientCloseCallBack): ThrifClientSubscription;
+  onUnexpectedConnectionEnd(
+    handler: ClientCloseCallBack,
+  ): ThrifClientSubscription;
 }

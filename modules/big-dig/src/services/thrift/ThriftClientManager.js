@@ -206,7 +206,13 @@ export class ThriftClientManager {
       serviceConfig,
       tunnel.getLocalPort(),
     );
+    // need to do clean up work for both cases: closing a client and client lost connection
     client.onConnectionEnd(
+      (() => {
+        this._handleClientCloseEvent(clientId);
+      }: ClientCloseCallBack),
+    );
+    client.onUnexpectedConnectionEnd(
       (() => {
         this._handleClientCloseEvent(clientId);
       }: ClientCloseCallBack),
