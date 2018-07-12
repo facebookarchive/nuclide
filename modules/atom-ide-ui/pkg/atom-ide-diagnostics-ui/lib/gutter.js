@@ -20,6 +20,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 import {Range} from 'atom';
 import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -28,7 +29,7 @@ import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-locat
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons/analytics';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
@@ -65,6 +66,29 @@ const GUTTER_CSS_GROUPS = {
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
+const handleMouseEnterSpawnPopupEvents = new Subject();
+
+const handleMouseEnterSpawnPopupEventsObservable = handleMouseEnterSpawnPopupEvents
+  .switchMap(({messages, diagnosticUpdater, gutter, item}) => {
+    return spawnPopup(messages, diagnosticUpdater, gutter, item)
+      .let(
+        completingSwitchMap((popupElement: HTMLElement) => {
+          const innerPopupElement = popupElement.firstChild;
+          invariant(innerPopupElement instanceof HTMLElement);
+          // Events which should cause the popup to close.
+          return Observable.merge(
+            hoveringOrAiming(item, innerPopupElement),
+            // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
+            observableFromSubscribeFunction(cb =>
+              atom.workspace.onDidChangeActivePaneItem(cb),
+            ).mapTo(false),
+          );
+        }),
+      )
+
+      .takeWhile(Boolean);
+  })
+  .share();
 
 export function applyUpdateToEditor(
   editor: TextEditor,
@@ -218,56 +242,55 @@ function createGutterItem(
   icon.className = `icon icon-${GroupUtils.getIcon(group)}`;
   item.appendChild(icon);
 
-  const spawnPopup = (): Observable<HTMLElement> => {
-    return Observable.create(observer => {
-      const goToLocation = (path: string, line: number) => {
-        // Before we jump to the location, we want to close the popup.
-        const column = 0;
-        atomGoToLocation(path, {line, column});
-        observer.complete();
-      };
-
-      const popupElement = showPopupFor(
+  const disposable = new UniversalDisposable(
+    handleMouseEnterSpawnPopupEventsObservable.subscribe(),
+    Observable.fromEvent(item, 'mouseenter').subscribe(() => {
+      handleMouseEnterSpawnPopupEvents.next({
         messages,
-        item,
-        goToLocation,
         diagnosticUpdater,
         gutter,
-      );
-      observer.next(popupElement);
+        item,
+      });
+    }),
+  );
 
-      return () => {
-        ReactDOM.unmountComponentAtNode(popupElement);
-        invariant(popupElement.parentNode != null);
-        popupElement.parentNode.removeChild(popupElement);
-      };
-    });
+  return {
+    item,
+    dispose() {
+      disposable.dispose();
+    },
   };
+}
 
-  const hoverSubscription = Observable.fromEvent(item, 'mouseenter')
-    .exhaustMap((event: MouseEvent) => {
-      return spawnPopup()
-        .let(
-          completingSwitchMap((popupElement: HTMLElement) => {
-            const innerPopupElement = popupElement.firstChild;
-            invariant(innerPopupElement instanceof HTMLElement);
+function spawnPopup(
+  messages: Array<DiagnosticMessage>,
+  diagnosticUpdater: DiagnosticUpdater,
+  gutter: atom$Gutter,
+  item: HTMLElement,
+): Observable<HTMLElement> {
+  return Observable.create(observer => {
+    const goToLocation = (path: string, line: number) => {
+      // Before we jump to the location, we want to close the popup.
+      const column = 0;
+      atomGoToLocation(path, {line, column});
+      observer.complete();
+    };
 
-            // Events which should cause the popup to close.
-            return Observable.merge(
-              hoveringOrAiming(item, innerPopupElement),
-              // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
-              observableFromSubscribeFunction(cb =>
-                atom.workspace.onDidChangeActivePaneItem(cb),
-              ).mapTo(false),
-            );
-          }),
-        )
-        .takeWhile(Boolean);
-    })
-    .subscribe();
+    const popupElement = showPopupFor(
+      messages,
+      item,
+      goToLocation,
+      diagnosticUpdater,
+      gutter,
+    );
+    observer.next(popupElement);
 
-  const dispose = () => hoverSubscription.unsubscribe();
-  return {item, dispose};
+    return () => {
+      ReactDOM.unmountComponentAtNode(popupElement);
+      invariant(popupElement.parentNode != null);
+      popupElement.parentNode.removeChild(popupElement);
+    };
+  });
 }
 
 /**
