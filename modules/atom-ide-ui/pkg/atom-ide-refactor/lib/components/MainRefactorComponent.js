@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -32,7 +32,7 @@ type Props = {
 };
 
 export class MainRefactorComponent extends React.Component<Props> {
-  render(): React.Element<any> | null {
+  render(): React.Node | null {
     if (this.props.appState.type === 'closed') {
       return null;
     } else {
@@ -42,7 +42,7 @@ export class MainRefactorComponent extends React.Component<Props> {
     }
   }
 
-  _render(): React.Element<any> {
+  _render(): React.Node {
     return (
       <div>
         {this.getHeaderElement()}
@@ -51,7 +51,7 @@ export class MainRefactorComponent extends React.Component<Props> {
     );
   }
 
-  _getBackButton(): React.Node {
+  _getBackButton(): React.Node | null {
     const appState = this.props.appState;
     const previousPhase =
       (appState.phase && appState.phase.previousPhase) || null;
@@ -65,7 +65,7 @@ export class MainRefactorComponent extends React.Component<Props> {
     ) : null;
   }
 
-  getHeaderElement(): React.Element<any> {
+  getHeaderElement(): React.Node {
     const appState = this.props.appState;
     invariant(appState.type === 'open');
     return (
@@ -81,7 +81,7 @@ export class MainRefactorComponent extends React.Component<Props> {
     );
   }
 
-  getInnerElement(): React.Element<any> {
+  getInnerElement(): React.Node {
     const appState = this.props.appState;
     invariant(appState.type === 'open');
     const phase = appState.phase;
@@ -109,7 +109,6 @@ export class MainRefactorComponent extends React.Component<Props> {
       case 'diff-preview':
         return <DiffPreviewComponent phase={phase} />;
       default:
-        (phase: empty);
         return <div />;
     }
   }

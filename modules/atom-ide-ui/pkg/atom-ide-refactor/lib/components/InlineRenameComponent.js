@@ -13,7 +13,7 @@
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 
-type Props = {
+export type Props = {
   selectedText: string,
   submitNewName: (string | void) => void,
   parentEditor: atom$TextEditor,
@@ -23,7 +23,10 @@ type State = {
   newName: string,
 };
 
-export default class RenameComponent extends React.Component<Props, State> {
+export default class InlineRenameComponent extends React.Component<
+  Props,
+  State,
+> {
   _atomInput: ?AtomInput;
 
   constructor(props: Props) {

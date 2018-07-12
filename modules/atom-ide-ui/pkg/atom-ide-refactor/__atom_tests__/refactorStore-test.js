@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AvailableRefactoring,
   FreeformRefactorRequest,
@@ -48,6 +50,7 @@ describe('refactorStore', () => {
     Array<AvailableRefactoring>,
   > = (null: any);
   let refactorReturn: Observable<RefactorResponse> = (null: any);
+  let renameReturn: Promise<?Map<NuclideUri, Array<TextEdit>>>;
 
   let lastError: mixed = null;
   function expectNoUncaughtErrors(): void {
@@ -92,10 +95,15 @@ describe('refactorStore', () => {
       refactor(request: RefactorRequest): Observable<RefactorResponse> {
         return refactorReturn;
       },
+      rename(editor: TextEditor, position: atom$Point, newName: string) {
+        return renameReturn;
+      },
     };
+
     // TODO spy on the provider and call through
     refactoringsAtPointReturn = Promise.resolve([]);
     refactorReturn = Observable.empty();
+    renameReturn = Promise.resolve();
 
     providers = new ProviderRegistry();
     store = getStore(providers);

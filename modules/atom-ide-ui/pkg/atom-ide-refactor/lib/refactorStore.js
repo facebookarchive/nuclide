@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,6 +15,7 @@ import type {Observable} from 'rxjs';
 
 import type {Store} from './types';
 
+// $FlowFixMe - Redux is currently untyped!!
 import {createStore, applyMiddleware} from 'redux';
 import {Subject} from 'rxjs';
 

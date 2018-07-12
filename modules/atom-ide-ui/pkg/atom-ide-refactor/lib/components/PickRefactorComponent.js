@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -99,7 +99,7 @@ export class PickRefactorComponent extends React.Component<
           'nuclide-refactorizer-unselectable': !selectable,
         });
         props.onMouseEnter = () => this._select(refactoring);
-        if (!refactoring.disabled) {
+        if (refactoring.disabled == null || refactoring.disabled === false) {
           props.onClick = () => {
             this._pickRefactor(refactoring);
           };

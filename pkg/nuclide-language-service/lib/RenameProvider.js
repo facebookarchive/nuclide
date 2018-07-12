@@ -12,7 +12,7 @@
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {LanguageService} from './LanguageService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {RenameProvider as RenameProviderType} from 'atom-ide-ui/pkg/atom-ide-rename/lib/types';
+import type {RefactorProvider as RefactorProviderType} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -20,7 +20,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type RenameConfig = {|
-  +version: '0.1.0',
+  +version: '0.0.0',
   priority: number,
   analyticsEventName: string,
 |};
@@ -54,7 +54,7 @@ export class RenameProvider<T: LanguageService> {
   ): IDisposable {
     const disposable = new UniversalDisposable(
       atom.packages.serviceHub.provide(
-        'nuclide-rename.provider',
+        'nuclide-refactor',
         config.version,
         new RenameProvider(
           name,
@@ -69,7 +69,7 @@ export class RenameProvider<T: LanguageService> {
     return disposable;
   }
 
-  provide(): RenameProviderType {
+  provide(): RefactorProviderType {
     return {
       rename: this.rename.bind(this),
       grammarScopes: this.grammarScopes,

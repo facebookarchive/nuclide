@@ -113,7 +113,7 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       analyticsEventName: 'ocaml.findReferences',
     },
     rename: {
-      version: '0.1.0',
+      version: '0.0.0',
       priority: 1,
       analyticsEventName: 'ocaml.rename',
     },

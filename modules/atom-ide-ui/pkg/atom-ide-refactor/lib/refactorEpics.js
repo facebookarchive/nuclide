@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -121,12 +121,17 @@ async function getRefactorings(
       Error('Must be run from a saved file.'),
     );
   }
-  const provider = providers.getProviderForEditor(editor);
-  if (provider == null) {
-    return Actions.error('get-refactorings', Error('No providers found.'));
-  }
   try {
     const selectedRange = editor.getSelectedBufferRange();
+
+    const provider = Array.from(
+      providers.getAllProvidersForEditor(editor),
+    ).find(p => p.refactorings != null);
+
+    if (provider == null || provider.refactorings == null) {
+      return Actions.error('get-refactorings', Error('No providers found.'));
+    }
+
     const availableRefactorings = await provider.refactorings(
       editor,
       selectedRange,
@@ -147,6 +152,13 @@ async function getRefactorings(
 
 function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
   const {refactoring, provider} = action.payload;
+
+  if (provider.refactor == null) {
+    return Observable.of(
+      Actions.error('execute', Error('No appropriate provider found.')),
+    );
+  }
+
   return provider
     .refactor(refactoring)
     .map(response => {
