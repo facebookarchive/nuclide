@@ -251,7 +251,7 @@ public class EventThread extends Thread {
     _contextManager.handleVMDeath();
 
     // There is no more VM to talk to. Kill the debug server.
-    System.exit(-1);
+    System.exit(0);
   }
 
   private void handleVMDisconnectEvent(VMDisconnectEvent event) {
@@ -263,7 +263,7 @@ public class EventThread extends Thread {
       _contextManager.handleVMDisconnect();
 
       // There is no more VM to talk to. Kill the debug server.
-      System.exit(-1);
+      System.exit(0);
     }
   }
 }

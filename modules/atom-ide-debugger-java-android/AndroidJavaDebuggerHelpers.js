@@ -97,7 +97,9 @@ export async function getPidFromPackageName(
     packageName,
   );
   if (!Number.isInteger(pid)) {
-    throw new Error(`Fail to get pid for package: ${packageName}`);
+    throw new Error(
+      `Fail to get pid for package: ${packageName}. Instead got: ${pid}`,
+    );
   }
   return pid;
 }

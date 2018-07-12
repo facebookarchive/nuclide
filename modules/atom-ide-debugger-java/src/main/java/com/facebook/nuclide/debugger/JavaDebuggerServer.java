@@ -31,6 +31,24 @@ import org.json.JSONObject;
 
 public class JavaDebuggerServer extends CommandInterpreterBase {
   private static final String UNKNOWN = "Unknown";
+  private static final Comparator<Variable> VARIABLE_COMPARATOR =
+      ((Variable v1, Variable v2) -> {
+        String n1 = v1.getName();
+        String n2 = v2.getName();
+        try {
+          if (n1.startsWith("[") && n2.startsWith("[") && n1.endsWith("]") && n2.endsWith("]")) {
+            // n1 and n2 are of the form \[.*\]
+            String subString1 = n1.substring(1, n1.length() - 1);
+            String subString2 = n2.substring(1, n2.length() - 1);
+            Integer arrayIndex1 = Integer.valueOf(subString1);
+            Integer arrayIndex2 = Integer.valueOf(subString2);
+            return arrayIndex1 - arrayIndex2;
+          }
+        } catch (NumberFormatException ex) {
+          // default to natural order compare
+        }
+        return n1.compareTo(n2);
+      });
   private InputStream inputStream = System.in;
   private OutputStream outputStream = System.out;
   private int stackFrameSeq = 0;
@@ -436,15 +454,17 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
   private void handleVariablesRequest(VariablesArguments arguments, VariablesResponse response) {
     RemoteObject remoteObject =
         getContextManager().getRemoteObjectManager().getObject(arguments.variablesReference);
-    List<JSONObject> variables =
+    JSONArray remoteObjectProperties =
         remoteObject != null
-            ? Utils.jsonObjectArrayListFrom(remoteObject.getProperties().optJSONArray("result"))
-                .parallelStream()
-                .map(Variable::new)
-                .sorted(Comparator.comparing(Variable::getName))
-                .map(Variable::toJSON)
-                .collect(Collectors.toList())
-            : new ArrayList<JSONObject>();
+            ? remoteObject.getProperties().optJSONArray("result")
+            : new JSONArray();
+    List<JSONObject> variables =
+        Utils.jsonObjectArrayListFrom(remoteObjectProperties)
+            .stream()
+            .map(Variable::new)
+            .sorted(VARIABLE_COMPARATOR)
+            .map(Variable::toJSON)
+            .collect(Collectors.toList());
     send(response.setVariables(variables));
   }
 
