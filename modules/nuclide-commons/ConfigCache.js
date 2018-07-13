@@ -18,7 +18,7 @@ import {findSubArrayIndex} from './collection';
 import fsPromise from './fsPromise';
 import nuclideUri from './nuclideUri';
 
-export type SearchStrategy = 'nearest' | 'furthest' | 'priority' | 'pathMatch';
+export type SearchStrategy = 'nearest' | 'eclipse' | 'ocaml' | 'thrift';
 
 export class ConfigCache {
   _configPatterns: Array<string>;
@@ -49,7 +49,7 @@ export class ConfigCache {
   async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
     const configDirs = await Promise.all(
       this._configPatterns.map(configFile => {
-        if (this._searchStrategy === 'furthest') {
+        if (this._searchStrategy === 'eclipse') {
           return fsPromise.findFurthestFile(configFile, path);
         } else {
           return fsPromise.findNearestFile(configFile, path);
@@ -57,22 +57,14 @@ export class ConfigCache {
       }),
     );
 
-    if (this._searchStrategy === 'nearest') {
-      // Find the result with the greatest length (the closest match).
-      return configDirs.filter(Boolean).reduce((previous, configDir) => {
-        if (previous == null || configDir.length > previous.length) {
-          return configDir;
-        }
-        return previous;
-      }, null);
-    } else if (this._searchStrategy === 'furthest') {
+    if (this._searchStrategy === 'eclipse') {
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length < previous.length) {
           return configDir;
         }
         return previous;
       }, null);
-    } else if (this._searchStrategy === 'pathMatch') {
+    } else if (this._searchStrategy === 'thrift') {
       // Find the first occurrence of a config segment in the path.
       const pathSplit = nuclideUri.split(path);
       return this._configPatterns
@@ -86,9 +78,18 @@ export class ConfigCache {
             : null;
         })
         .find(Boolean);
-    } else {
+    } else if (this._searchStrategy === 'ocaml') {
       // Find the first match.
       return configDirs.find(Boolean);
+    } else {
+      (this._searchStrategy: 'nearest');
+      // Find the result with the greatest length (the closest match).
+      return configDirs.filter(Boolean).reduce((previous, configDir) => {
+        if (previous == null || configDir.length > previous.length) {
+          return configDir;
+        }
+        return previous;
+      }, null);
     }
   }
 

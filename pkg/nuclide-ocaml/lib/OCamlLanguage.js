@@ -52,7 +52,7 @@ async function createOCamlLanguageService(
       fileNotifier,
       host,
       projectFileNames: ['esy', 'esy.json', 'package.json', '.merlin'],
-      projectFileSearchStrategy: 'priority',
+      projectFileSearchStrategy: 'ocaml',
       useOriginalEnvironment: true,
       fileExtensions: ['.ml', '.mli', '.re', '.rei'],
       additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
