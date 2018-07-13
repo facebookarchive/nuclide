@@ -392,9 +392,40 @@ export class LspLanguageService {
   async start(): Promise<void> {
     invariant(this._getState() === 'Initial');
     this._setState('Starting');
-
     const startTimeMs = Date.now();
-    const spawnCommandForLogs = `${this._command} ${this._args.join(' ')}`;
+
+    let command;
+    try {
+      if (this._command == null) {
+        throw new Error('No command provided for launching language server');
+        // if we try to spawn an empty command, node itself throws a "bad
+        // type" error, which is jolly confusing. So we catch it ourselves.
+      } else {
+        command = this._command;
+      }
+    } catch (e) {
+      this._logLspException(e);
+      track('lsp-start', {
+        name: this._languageServerName,
+        status: 'getCommand failed',
+        command: this._command,
+        message: e.message,
+        stack: e.stack,
+        timeTakenMs: Date.now() - startTimeMs,
+      });
+
+      const message =
+        `Couldn't start ${this._languageServerName} server` +
+        ` - ${this._errorString(e)}`;
+      const dialog = this._masterHost
+        .dialogNotification('error', message)
+        .refCount()
+        .subscribe();
+      this._setState('StartFailed', message, dialog);
+      return;
+    }
+
+    const spawnCommandForLogs = `${command} ${this._args.join(' ')}`;
 
     try {
       const perConnectionDisposables = new UniversalDisposable();
@@ -425,11 +456,6 @@ export class LspLanguageService {
       let childProcess;
       try {
         this._logger.info(`Spawn: ${spawnCommandForLogs}`);
-        if (this._command === '') {
-          throw new Error('No command provided for launching language server');
-          // if we try to spawn an empty command, node itself throws a "bad
-          // type" error, which is jolly confusing. So we catch it ourselves.
-        }
 
         const lspSpawnOptions = {
           cwd: this._projectRoot,
@@ -472,8 +498,8 @@ export class LspLanguageService {
         }
 
         const childProcessStream = this._spawnWithFork
-          ? fork(this._command, this._args, lspSpawnOptions).publish()
-          : spawn(this._command, this._args, lspSpawnOptions).publish();
+          ? fork(command, this._args, lspSpawnOptions).publish()
+          : spawn(command, this._args, lspSpawnOptions).publish();
         // disposing of the stream will kill the process, if it still exists
         const processPromise = childProcessStream.take(1).toPromise();
         perConnectionDisposables.add(childProcessStream.connect());
@@ -493,7 +519,7 @@ export class LspLanguageService {
 
         const message =
           `Couldn't start ${this._languageServerName} server` +
-          ` - ${this._errorString(e, this._command)}`;
+          ` - ${this._errorString(e, command)}`;
         const dialog = this._masterHost
           .dialogNotification('error', message)
           .refCount()
