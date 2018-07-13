@@ -14,11 +14,12 @@ import type {IThread, IStackFrame, IDebugService} from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import {Table} from 'nuclide-commons-ui/Table';
 import {NestedTreeItem, TreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
-import FrameTreeNode from './FrameTreeNode';
+import {DebuggerMode} from '../constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
 import classnames from 'classnames';
@@ -169,8 +170,73 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     this.props.service.focusStackFrame(null, this.props.thread, null, true);
   };
 
+  _handleStackFrameClick = (
+    clickedRow: {frame: IStackFrame},
+    callFrameIndex: number,
+  ): void => {
+    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
+  };
+
+  _generateTable(childItems: Array<IStackFrame>) {
+    const {service} = this.props;
+    const rows = childItems.map((frame, frameIndex) => {
+      const activeFrame = service.viewModel.focusedStackFrame;
+      const isSelected = activeFrame != null ? frame === activeFrame : false;
+      const cellData = {
+        data: {
+          name: frame.name,
+          source:
+            frame.source != null && frame.source.name != null
+              ? `${frame.source.name}`
+              : '',
+          line: `${frame.range.end.row}`,
+          frame,
+          isSelected,
+        },
+        className: isSelected ? 'debugger-callstack-item-selected' : undefined,
+      };
+      return cellData;
+    });
+    const columns = [
+      {
+        title: 'Name',
+        key: 'name',
+        width: 0.5,
+      },
+      {
+        title: 'Source',
+        key: 'source',
+        width: 0.35,
+      },
+      {
+        title: 'Line',
+        key: 'line',
+        width: 0.15,
+      },
+    ];
+    return (
+      <div
+        className={classnames('debugger-container-new', {
+          'debugger-container-new-disabled':
+            service.getDebuggerMode() === DebuggerMode.RUNNING,
+        })}>
+        <div className="debugger-pane-content">
+          <Table
+            className="debugger-callstack-table"
+            columns={columns}
+            rows={rows}
+            selectable={cellData => cellData.frame.source.available}
+            resizable={true}
+            onSelect={this._handleStackFrameClick}
+            sortable={false}
+          />
+        </div>
+      </div>
+    );
+  }
+
   render(): React.Node {
-    const {thread, service} = this.props;
+    const {thread} = this.props;
     const {childItems} = this.state;
     const isFocused = this._computeIsFocused();
     const formattedTitle = (
@@ -203,11 +269,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     ) : childItems.value.length === 0 ? (
       NO_FRAMES
     ) : (
-      childItems.value.map((frame, frameIndex) => {
-        return (
-          <FrameTreeNode frame={frame} key={frameIndex} service={service} />
-        );
-      })
+      this._generateTable(childItems.value)
     );
 
     return (
