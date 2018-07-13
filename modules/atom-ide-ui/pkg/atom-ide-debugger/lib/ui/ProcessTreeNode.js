@@ -119,9 +119,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         {childItems.map((thread, threadIndex) => {
           return (
             <ThreadTreeNode
-              title={
-                thread.name + (thread.stopped ? ' (Paused)' : ' (Running)')
-              }
               key={threadIndex}
               childItems={thread.getCallStack()}
               thread={thread}

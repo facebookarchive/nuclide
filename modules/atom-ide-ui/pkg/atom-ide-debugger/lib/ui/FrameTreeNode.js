@@ -18,7 +18,6 @@ import classnames from 'classnames';
 
 type Props = {
   frame: IStackFrame, // The frame that this node represents.
-  text: string,
   service: IDebugService,
 };
 
@@ -33,7 +32,7 @@ export default class FrameTreeNode extends React.Component<Props> {
   };
 
   render(): React.Node {
-    const {frame, service, text} = this.props;
+    const {frame, service} = this.props;
     const activeFrame = service.viewModel.focusedStackFrame;
     const className = (activeFrame == null
     ? false
@@ -54,7 +53,7 @@ export default class FrameTreeNode extends React.Component<Props> {
             ? `, Stopped at: ${frame.source.name}: ${frame.range.end.row}`
             : '')
         }>
-        {text}
+        {frame.name}
       </TreeItem>
     );
 

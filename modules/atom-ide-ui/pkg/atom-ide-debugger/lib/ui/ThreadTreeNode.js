@@ -42,7 +42,6 @@ const NO_FRAMES = (
 type Props = {
   thread: IThread,
   service: IDebugService,
-  title: string,
 };
 
 type State = {
@@ -167,14 +166,15 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const {thread, title, service} = this.props;
+    const {thread, service} = this.props;
     const {childItems} = this.state;
     const isFocused = this._computeIsFocused();
     const formattedTitle = (
       <span
         className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
-        {title}
+        {thread.name +
+          (thread.stoppedDetails == null ? ' (Running)' : ' (Paused)')}
       </span>
     );
 
@@ -189,12 +189,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     ) : (
       childItems.value.map((frame, frameIndex) => {
         return (
-          <FrameTreeNode
-            text={frame.name}
-            frame={frame}
-            key={frameIndex}
-            service={service}
-          />
+          <FrameTreeNode frame={frame} key={frameIndex} service={service} />
         );
       })
     );
