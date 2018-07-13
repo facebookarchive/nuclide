@@ -1508,12 +1508,19 @@ export default class DebugService implements IDebugService {
       // so stop the current debug session.
 
       if (_gkService != null) {
-        const passes = await _gkService.passesGK(
+        const passesMultiGK = await _gkService.passesGK(
           'nuclide_multitarget_debugging',
         );
-        if (!passes) {
+        if (!passesMultiGK) {
           this.stopProcess();
         }
+        _gkService
+          .passesGK('nuclide_processtree_debugging')
+          .then(passesProcessTree => {
+            if (passesProcessTree) {
+              track(AnalyticsEvents.DEBUGGER_TREE_OPENED);
+            }
+          });
       } else {
         this.stopProcess();
       }
@@ -1525,6 +1532,16 @@ export default class DebugService implements IDebugService {
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
     this._consoleDisposables = this._registerConsoleExecutor();
     await this._doCreateProcess(config, uuid.v4());
+    if (this._model.getProcesses().length > 1) {
+      const debuggerTypes = [];
+      this._model.getProcesses().forEach(process => {
+        debuggerTypes.push(process.configuration.adapterType);
+      });
+      track(AnalyticsEvents.DEBUGGER_MULTITARGET, {
+        processesCount: this._model.getProcesses().length,
+        debuggerTypes,
+      });
+    }
   }
 
   consumeGatekeeperService(service: GatekeeperService): IDisposable {
