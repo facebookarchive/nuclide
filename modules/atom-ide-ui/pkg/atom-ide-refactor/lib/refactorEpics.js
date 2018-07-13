@@ -26,7 +26,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import {Range, TextBuffer} from 'atom';
+import {TextBuffer} from 'atom';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import parse from 'diffparser';
@@ -184,20 +184,40 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
     return Observable.fromPromise(
       provider.rename(editor, position, newName),
     ).map(edits => {
-      if (edits == null) {
+      if (edits == null || edits.size === 0) {
         return Actions.close();
       }
-      const response = {
-        type: 'edit',
-        edits,
-      };
-      return Actions.apply(response);
+      const currentFilePath = editor.getPath();
+      invariant(currentFilePath != null);
+
+      // If the map only has 1 key (a single unique NuclideURI) and it matches the
+      //  currently opened file, then all the TextEdits must be local.
+      let response;
+      if (edits.size === 1 && edits.keys().next().value === currentFilePath) {
+        response = {
+          type: 'edit',
+          edits,
+        };
+        return Actions.apply(response);
+      } else {
+        response = {
+          type: 'external-edit',
+          edits,
+        };
+        return Actions.confirm(response);
+      }
     });
   } else {
-    return Observable.of(Actions.close());
+    return Observable.of(
+      Actions.error('execute', Error('No appropriate provider found.')),
+    );
   }
 }
 
+// This offers two different options for applying edits:
+//  1. Apply changes to open files only without saving
+//  2. Apply changes to all files, open or unopened, directly to disk.
+// In both cases, the format of the edits are the same (TextEdits)
 const FILE_IO_CONCURRENCY = 4;
 
 export function applyRefactoring(
@@ -217,20 +237,26 @@ export function applyRefactoring(
           return Observable.of(
             Actions.error(
               'execute',
-              Error(`Expected file ${path} to be open.`),
+              Error(`Local Rename: Expected file ${path} to be open.`),
             ),
           );
         }
       }
     } else {
-      // External edits are applied directly to disk.
+      // External text edits are converted into absolute character offsets
+      //  and applied directly to disk.
       editStream = Observable.from(response.edits)
-        .mergeMap(async ([path, edits]) => {
+        .mergeMap(async ([path, textEdits]) => {
           const file = getFileForPath(path);
           if (file == null) {
             throw new Error(`Could not read file ${path}`);
           }
           let data = await file.read();
+          const buffer = new TextBuffer(data);
+          const edits = textEdits.map(textEdit =>
+            toAbsoluteCharacterOffsets(buffer, textEdit),
+          );
+
           edits.sort((a, b) => a.startOffset - b.startOffset);
           edits.reverse().forEach(edit => {
             if (edit.oldText != null) {
@@ -285,21 +311,24 @@ function getEdits(
 ): Array<TextEdit> {
   switch (response.type) {
     case 'edit':
-      return response.edits.get(uri) || [];
     case 'external-edit':
-      return (response.edits.get(uri) || []).map(e => toTextEdit(buffer, e));
+      return response.edits.get(uri) || [];
     default:
       return [];
   }
 }
 
-function toTextEdit(buffer: atom$TextBuffer, edit: ExternalTextEdit): TextEdit {
+function toAbsoluteCharacterOffsets(
+  buffer: atom$TextBuffer,
+  edit: TextEdit,
+): ExternalTextEdit {
+  const startingPoint = edit.oldRange.start;
+  const endingPoint = edit.oldRange.end;
+
   return {
-    oldRange: new Range(
-      buffer.positionForCharacterIndex(edit.startOffset),
-      buffer.positionForCharacterIndex(edit.endOffset),
-    ),
-    oldText: edit.oldText,
+    startOffset: buffer.characterIndexForPosition(startingPoint),
+    endOffset: buffer.characterIndexForPosition(endingPoint),
     newText: edit.newText,
+    oldText: edit.oldText,
   };
 }

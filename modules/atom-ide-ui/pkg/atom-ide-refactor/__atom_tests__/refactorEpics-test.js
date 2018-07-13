@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Range, Point} from 'atom';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import {applyRefactoring} from '../lib/refactorEpics';
 import path from 'path';
@@ -42,15 +43,11 @@ describe('applyRefactoring', () => {
               testFile1,
               [
                 {
-                  startOffset: 0,
-                  endOffset: 3,
-                  oldText: 'abc',
+                  oldRange: new Range(new Point(0, 0), new Point(0, 3)),
                   newText: 'aaa',
                 },
                 {
-                  startOffset: 3,
-                  endOffset: 6,
-                  oldText: 'def',
+                  oldRange: new Range(new Point(0, 3), new Point(0, 6)),
                   newText: 'ddd',
                 },
               ],
@@ -59,9 +56,7 @@ describe('applyRefactoring', () => {
               testFile2,
               [
                 {
-                  startOffset: 6,
-                  endOffset: 9,
-                  oldText: '789',
+                  oldRange: new Range(new Point(0, 6), new Point(0, 9)),
                   newText: '000',
                 },
               ],
@@ -84,6 +79,9 @@ describe('applyRefactoring', () => {
     expect(fs.readFileSync(testFile2, 'utf8')).toBe('123456000');
   });
 
+  // NOTE: `oldText` isn't used in LSP method `textDocument/rename`.
+  //        So the Refactorizer isn't actually able to raise errors for this
+  //        when it's being used.
   it('errors on mismatch', async () => {
     const actions = await applyRefactoring({
       type: 'apply',
@@ -95,8 +93,7 @@ describe('applyRefactoring', () => {
               testFile1,
               [
                 {
-                  startOffset: 0,
-                  endOffset: 3,
+                  oldRange: new Range(new Point(0, 0), new Point(0, 3)),
                   oldText: 'abb',
                   newText: 'aaa',
                 },

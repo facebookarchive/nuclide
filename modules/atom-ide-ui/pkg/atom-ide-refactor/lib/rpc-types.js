@@ -88,12 +88,14 @@ export type EditResponse = {
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
-// "externalEdits" are intended for changes that include unopened files.
-// External edits will be directly written to files on disk, bypassing Atom.
-// They also have a slightly different format for efficiency purposes.
+// "External Edits" are intended for changes that include unopened files.
+//  These edits will be written directly to disk, bypassing Atom.
+//  The format of the edits is the same as that of regular "edits".
+//  However, during the application of these edits, they will first be converted
+//    into absolute character offsets.
 export type ExternalEditResponse = {
   type: 'external-edit',
-  edits: Map<NuclideUri, Array<ExternalTextEdit>>,
+  edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
 // An intermediate response to display progress in the UI.
