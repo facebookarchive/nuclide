@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {MatcherOptions} from '../../nuclide-fuzzy-native';
+import type {MatcherOptions} from 'nuclide-fuzzy-native';
 import type TextDocument from '../../nuclide-lsp-implementation-common/TextDocument';
 import type {
   CompletionItem,
@@ -19,7 +19,7 @@ import type {
 import type {ComponentDefinition} from './types';
 
 import invariant from 'assert';
-import {Matcher} from '../../nuclide-fuzzy-native';
+import {Matcher} from 'nuclide-fuzzy-native';
 import {lspPositionToAtomPoint} from '../../nuclide-lsp-implementation-common/lsp-utils';
 import {
   CompletionItemKind,

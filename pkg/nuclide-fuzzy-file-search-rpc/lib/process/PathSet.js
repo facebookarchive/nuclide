@@ -16,7 +16,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {makeRe} from 'minimatch';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Matcher} from '../../../nuclide-fuzzy-native';
+import {Matcher} from 'nuclide-fuzzy-native';
 
 const EXACT_MATCH_SCORE = 1.0;
 

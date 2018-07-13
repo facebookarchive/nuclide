@@ -16,7 +16,7 @@ import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
 import {relativeDate} from 'nuclide-commons/string';
-import {Matcher} from '../../nuclide-fuzzy-native';
+import {Matcher} from 'nuclide-fuzzy-native';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.

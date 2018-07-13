@@ -12,7 +12,7 @@
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
-import {Matcher} from '../../nuclide-fuzzy-native';
+import {Matcher} from 'nuclide-fuzzy-native';
 
 // Returns paths of currently opened editor tabs.
 function getOpenTabsMatching(query: string): Array<FileResult> {
