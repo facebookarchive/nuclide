@@ -10,7 +10,9 @@
  * @format
  */
 
+import marked from 'marked';
 import {Point, Range} from 'atom';
+import {escapeMarkdown} from 'nuclide-commons/string';
 import getSignatureDatatip from '../lib/getSignatureDatatip';
 
 describe('getSignatureDatatip', () => {
@@ -48,6 +50,11 @@ describe('getSignatureDatatip', () => {
       ],
       range,
     });
+  });
+
+  it('escapes all markdown correctly', () => {
+    const s = 'atoz0TO9 !#()*+-.[\\]_`{}';
+    expect(marked(escapeMarkdown(s))).toEqual(`<p>${s}</p>\n`);
   });
 
   it('is able to bolden ambiguous parameters', () => {
