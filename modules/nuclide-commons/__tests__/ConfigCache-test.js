@@ -67,8 +67,8 @@ describe('ConfigCache', () => {
       'ocaml',
     );
 
-    expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
-    expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
+    expect(await cache.getConfigDir(rootFolder)).toBe('/');
+    expect(await cache.getConfigDir(nestedFolder2)).toBe('/');
   });
 
   it('matches first path segment when the search strategy is "thrift"', async () => {

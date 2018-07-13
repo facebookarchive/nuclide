@@ -47,17 +47,12 @@ export class ConfigCache {
   }
 
   async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
-    const configDirs = await Promise.all(
-      this._configPatterns.map(configFile => {
-        if (this._searchStrategy === 'eclipse') {
-          return fsPromise.findFurthestFile(configFile, path);
-        } else {
-          return fsPromise.findNearestFile(configFile, path);
-        }
-      }),
-    );
-
     if (this._searchStrategy === 'eclipse') {
+      const configDirs = await Promise.all(
+        this._configPatterns.map(configFile =>
+          fsPromise.findFurthestFile(configFile, path),
+        ),
+      );
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length < previous.length) {
           return configDir;
@@ -79,11 +74,49 @@ export class ConfigCache {
         })
         .find(Boolean);
     } else if (this._searchStrategy === 'ocaml') {
-      // Find the first match.
-      return configDirs.find(Boolean);
+      // ocaml-language-server (the LSP server) is the same single LSP server binary
+      // for all ocaml projects and for all versions of merlin.
+      //
+      // It uses initializationOptions.path.ocamlmerlin from the initialize request
+      // (or just the string "ocamlmerlin" if that was absent) to determine what
+      // command to use for spawning merlin. (merlin itself has no notion of project root).
+      //
+      // It also uses projectRoot, but solely to customize which merlin binary to launch:
+      // if it finds projectRoot/node_modules/.cache/_esy/build/bin/command-exec[.bat]
+      // then it will launch "command-exec <ocamlmerlin>"; otherwise it just launches <ocamlmerlin>
+      // using projectRoot as the current working directory.
+      //
+      // Therefore: to find project root for a given file, we'll either use the nearest
+      // containing parent such that directory parent/node_modules/.cache/_esy/build/bin exists,
+      // or "/" otherwise.
+
+      let dir = nuclideUri.dirname(path);
+      while (true) {
+        const wrapper = nuclideUri.join(
+          dir,
+          'node_modules',
+          '.cache',
+          '_esy',
+          'build',
+          'bin',
+        );
+        // eslint-disable-next-line no-await-in-loop
+        if (await fsPromise.exists(wrapper)) {
+          return dir;
+        } else if (nuclideUri.isRoot(dir)) {
+          return dir;
+        } else {
+          dir = nuclideUri.dirname(dir);
+        }
+      }
     } else {
       (this._searchStrategy: 'nearest');
       // Find the result with the greatest length (the closest match).
+      const configDirs = await Promise.all(
+        this._configPatterns.map(configFile =>
+          fsPromise.findNearestFile(configFile, path),
+        ),
+      );
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length > previous.length) {
           return configDir;
