@@ -9,6 +9,10 @@
  * @format
  */
 
+import type {PublishDiagnosticsParams} from './protocol';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {StatusData} from '../../nuclide-language-service/lib/LanguageService';
+
 import semver from 'semver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {asyncFind} from 'nuclide-commons/promise';
@@ -77,3 +81,10 @@ export async function getLanguageSpecificCommand(
     throw new Error(`Unrecognized command ${JSON.stringify(options)}`);
   }
 }
+
+export function middleware_handleDiagnostics(
+  params: PublishDiagnosticsParams,
+  languageServerName: string,
+  host: HostServices,
+  showStatus: StatusData => Promise<?string>,
+) {}

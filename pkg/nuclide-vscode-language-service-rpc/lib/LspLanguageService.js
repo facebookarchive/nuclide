@@ -107,7 +107,10 @@ import {
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
 import {mapAtomLanguageIdToVsCode} from './languageIdMap';
-import {getLanguageSpecificCommand} from './languageExtensions';
+import {
+  getLanguageSpecificCommand,
+  middleware_handleDiagnostics,
+} from './languageExtensions';
 import {LspConnection} from './LspConnection';
 import {
   ErrorCodes,
@@ -622,6 +625,12 @@ export class LspLanguageService {
       });
       this._lspConnection.onDiagnosticsNotification(params => {
         this._childOut.stdout = null;
+        middleware_handleDiagnostics(
+          params,
+          this._languageServerName,
+          this._host,
+          this._showStatus.bind(this),
+        );
         perConnectionUpdates.next(params);
       });
       this._lspConnection.onRegisterCapabilityRequest(params => {
