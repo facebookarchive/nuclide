@@ -169,6 +169,13 @@ async function activateLsp(): Promise<UniversalDisposable> {
       icon: 'nuclicon-flow',
       description: `__Flow__ provides provides autocomplete, hyperclick, hover, errors and outline. [more...](${aboutUrl})`,
     },
+    rename: (await shouldEnableRename())
+      ? {
+          version: '0.0.0',
+          priority: 1,
+          analyticsEventName: 'flow.rename',
+        }
+      : undefined,
   };
 
   const languageServiceFactory: (
@@ -563,6 +570,14 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
 async function shouldEnableFindRefs(): Promise<boolean> {
   return passesGK(
     'nuclide_flow_find_refs',
+    // Wait 15 seconds for the gk check
+    15 * 1000,
+  );
+}
+
+async function shouldEnableRename(): Promise<boolean> {
+  return passesGK(
+    'nuclide_flow_rename',
     // Wait 15 seconds for the gk check
     15 * 1000,
   );
