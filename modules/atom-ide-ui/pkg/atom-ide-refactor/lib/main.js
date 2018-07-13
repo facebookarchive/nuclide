@@ -23,23 +23,16 @@ import type {
 } from './rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Props as InlineRenameComponentPropsType} from './components/InlineRenameComponent';
 import type {Store} from './types';
 
 import invariant from 'assert';
 
-import ReactDOM from 'react-dom';
-import * as React from 'react';
-import {Range} from 'atom';
 import {Observable} from 'rxjs';
-import InlineRenameComponent from './components/InlineRenameComponent';
 import {getLogger} from 'log4js';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import observeGrammarForTextEditors from 'nuclide-commons-atom/observe-grammar-for-text-editors';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
-import {applyTextEditsForMultipleFiles} from 'nuclide-commons-atom/text-edit';
-import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 
@@ -57,8 +50,16 @@ export type {
 
 export type RenameRefactorKind = 'rename';
 export type FreeformRefactorKind = 'freeform';
+export type InlineRenameRefactorKind = 'inline-rename';
 
 export type RefactorKind = RenameRefactorKind | FreeformRefactorKind;
+
+export type InlineRenameRequest = {
+  kind: InlineRenameRefactorKind,
+  newName: string,
+  editor: TextEditor,
+  position: atom$Point,
+};
 
 export type RenameRequest = {
   kind: RenameRefactorKind,
@@ -83,7 +84,10 @@ export type FreeformRefactorRequest = {|
   arguments: Map<string, mixed>,
 |};
 
-export type RefactorRequest = RenameRequest | FreeformRefactorRequest;
+export type RefactorRequest =
+  | InlineRenameRequest
+  | RenameRequest
+  | FreeformRefactorRequest;
 
 export type RefactorProvider = {
   priority: number,
@@ -115,7 +119,6 @@ class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
   _providerRegistry: ProviderRegistry<RefactorProvider>;
-  lastMouseEvent: MouseEvent;
 
   constructor() {
     this._providerRegistry = new ProviderRegistry();
@@ -178,18 +181,41 @@ class Activation {
       atom.commands.add(
         'atom-text-editor',
         'nuclide-refactorizer:inline-rename',
-        async event => {
+        event => {
           const editor = atom.workspace.getActiveTextEditor();
           if (!editor) {
             return null;
           }
+          const mouseEvent = ContextMenu.isEventFromContextMenu(event)
+            ? lastMouseEvent
+            : null;
 
-          await this._doRename(
-            this._getProviderData(
+          const position =
+            mouseEvent != null
+              ? bufferPositionForMouseEvent(mouseEvent, editor)
+              : editor.getCursorBufferPosition();
+
+          editor.setCursorBufferPosition(position);
+          editor.selectWordsContainingCursors();
+          const selectedText = editor.getSelectedText();
+          const mountPosition = editor.getSelectedBufferRange().start;
+
+          const provider = Array.from(
+            this._providerRegistry.getAllProvidersForEditor(editor),
+          ).find(p => p.rename != null);
+
+          if (provider == null) {
+            getLogger('rename').error('Rename Provider Not Found');
+            return null;
+          }
+
+          this._store.dispatch(
+            Actions.displayInlineRename(
               editor,
-              ContextMenu.isEventFromContextMenu(event)
-                ? this.lastMouseEvent
-                : null,
+              provider,
+              selectedText,
+              mountPosition,
+              position,
             ),
           );
         },
@@ -200,7 +226,7 @@ class Activation {
             label: 'Rename',
             command: 'nuclide-refactorizer:inline-rename',
             created: event => {
-              this.lastMouseEvent = event;
+              lastMouseEvent = event;
             },
           },
         ],
@@ -237,138 +263,6 @@ class Activation {
       this._providerRegistry.removeProvider(provider);
       this._checkAllEditorContextMenus();
     });
-  }
-
-  renderRenameInput(
-    editor: atom$TextEditor,
-    selectedText: string,
-    resolveNewName: (string | void) => void,
-  ): React.Element<React.ComponentType<InlineRenameComponentPropsType>> {
-    return (
-      <InlineRenameComponent
-        selectedText={selectedText}
-        submitNewName={resolveNewName}
-        parentEditor={editor}
-      />
-    );
-  }
-
-  mountRenameInput(
-    editor: atom$TextEditor,
-    mountPosition: atom$Point,
-    container: ReactMountRootElement,
-    element: React.Element<React.ComponentType<InlineRenameComponentPropsType>>,
-  ): IDisposable {
-    const overlayMarker = editor.markBufferRange(
-      new Range(mountPosition, mountPosition),
-      {
-        invalidate: 'never',
-      },
-    );
-
-    editor.decorateMarker(overlayMarker, {
-      type: 'overlay',
-      position: 'tail',
-      item: container,
-    });
-
-    return new UniversalDisposable(
-      () => overlayMarker.destroy(),
-      () => ReactDOM.unmountComponentAtNode(container),
-
-      // The editor may not mount the marker until the next update.
-      // It's not safe to render anything until that point, as overlayed containers
-      // often need to measure their size in the DOM.
-      Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
-        () => {
-          container.style.display = 'block';
-          ReactDOM.render(element, container);
-        },
-      ),
-    );
-  }
-
-  async _getUserInput(
-    position: atom$Point,
-    editor: atom$TextEditor,
-  ): Promise<?string> {
-    // TODO: Should only be instantiated once.
-    //       However, the node has trouble rendering at the correct position
-    //       when it is instantiated once in the constructor and re-mounted
-    const container = new ReactMountRootElement();
-    container.className = 'nuclide-inline-rename-container';
-
-    let disposable = null;
-
-    const newName = await new Promise((resolve, reject) => {
-      editor.setCursorBufferPosition(position);
-      editor.selectWordsContainingCursors();
-      const selectedText = editor.getSelectedText();
-      const startOfWord = editor.getSelectedBufferRange().start;
-
-      const renameElement = this.renderRenameInput(
-        editor,
-        selectedText,
-        resolve,
-      );
-
-      disposable = this.mountRenameInput(
-        editor,
-        startOfWord,
-        container,
-        renameElement,
-      );
-
-      atom.commands.add(container, 'core:cancel', () => {
-        resolve();
-      });
-    });
-
-    if (disposable != null) {
-      disposable.dispose();
-    }
-    return newName;
-  }
-
-  async _getProviderData(
-    editor: atom$TextEditor,
-    event: ?MouseEvent,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-    // Currently, when the UI is rendered, it pushes the cursor to the very end of the word.
-    // However, the end position of the word does not count as a valid renaming position.
-    //  Thus, if the keyboard shortcut is being used, the position of the cursor
-    //    must be obtained BEFORE rendering the UI.
-    const position =
-      event != null
-        ? bufferPositionForMouseEvent(event, editor)
-        : editor.getCursorBufferPosition();
-
-    const newName = await this._getUserInput(position, editor);
-    if (newName == null) {
-      return null;
-    }
-
-    const provider = Array.from(
-      this._providerRegistry.getAllProvidersForEditor(editor),
-    ).find(p => p.rename != null);
-
-    if (provider == null || provider.rename == null) {
-      getLogger('rename').error('Error renaming');
-      return null;
-    }
-    const resultPromise = await provider.rename(editor, position, newName);
-
-    return resultPromise;
-  }
-
-  async _doRename(
-    changes: Promise<?Map<NuclideUri, Array<TextEdit>>>,
-  ): Promise<boolean> {
-    const renameChanges = await changes;
-    if (!renameChanges) {
-      return false;
-    }
-    return applyTextEditsForMultipleFiles(renameChanges);
   }
 }
 

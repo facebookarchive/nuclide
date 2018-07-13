@@ -28,6 +28,7 @@ import type {
   PickedRefactorAction,
   RefactorUI,
   LoadDiffPreviewAction,
+  DisplayInlineRenameAction,
 } from './types';
 
 import type {RefactorEditResponse} from './rpc-types';
@@ -128,6 +129,25 @@ export function displayDiffPreview(
   return {
     type: 'display-diff-preview',
     payload: {diffs},
+  };
+}
+
+export function displayInlineRename(
+  editor: TextEditor,
+  provider: RefactorProvider,
+  selectedText: string,
+  mountPosition: atom$Point,
+  symbolPosition: atom$Point,
+): DisplayInlineRenameAction {
+  return {
+    type: 'display-inline-rename',
+    payload: {
+      editor,
+      provider,
+      selectedText,
+      mountPosition,
+      symbolPosition,
+    },
   };
 }
 

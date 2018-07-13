@@ -10,13 +10,19 @@
  * @format
  */
 
+import type {RefactorProvider} from '..';
 import type {RefactorUIFactory, Store, RefactorState} from './types';
 
+import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
+import {Range} from 'atom';
 
+import {Observable} from 'rxjs';
+import InlineRenameComponent from './components/InlineRenameComponent';
+import type {Props as InlineRenameComponentPropsType} from './components/InlineRenameComponent';
 import {MainRefactorComponent} from './components/MainRefactorComponent';
 import * as Actions from './refactorActions';
 
@@ -33,17 +39,26 @@ export function initRefactorUIs(store: Store): IDisposable {
 }
 
 function genericRefactorUI(store: Store): IDisposable {
-  const renderer: GenericUIRenderer = new GenericUIRenderer(store);
+  const genericRenderer: GenericUIRenderer = new GenericUIRenderer(store);
+  const inlineRenameRenderer: InlineRenameRenderer = new InlineRenameRenderer(
+    store,
+  );
   const disposeFn: () => void = store.subscribe(() => {
     const state = store.getState();
     if (
       state.type === 'closed' ||
-      (state.type === 'open' && state.ui === 'generic')
+      (state.type === 'open' &&
+        (state.ui === 'generic' || state.ui === 'inline-rename'))
     ) {
-      renderer.renderState(state);
+      genericRenderer.renderState(state);
+      inlineRenameRenderer.renderState(state);
     }
   });
-  return new UniversalDisposable(disposeFn);
+  return new UniversalDisposable(
+    disposeFn,
+    genericRenderer,
+    inlineRenameRenderer,
+  );
 }
 
 function closeOnEscape(store: Store): IDisposable {
@@ -135,7 +150,11 @@ class GenericUIRenderer {
   }
 
   renderState(state: RefactorState) {
-    if (state.type === 'open') {
+    if (
+      state.type === 'open' &&
+      state.phase.type !== 'inline-rename' &&
+      !(state.ui === 'inline-rename' && state.phase.type === 'execute')
+    ) {
       if (this._panel == null) {
         const element = document.createElement('div');
         this._panel = atom.workspace.addModalPanel({item: element});
@@ -145,12 +164,115 @@ class GenericUIRenderer {
         this._panel.getItem(),
       );
     } else {
-      if (this._panel != null) {
-        const panel = this._panel;
-        ReactDOM.unmountComponentAtNode(panel.getItem());
-        panel.destroy();
-        this._panel = null;
-      }
+      this.dispose();
+    }
+  }
+
+  dispose() {
+    if (this._panel != null) {
+      const panel = this._panel;
+      ReactDOM.unmountComponentAtNode(panel.getItem());
+      panel.destroy();
+      this._panel = null;
+    }
+  }
+}
+
+class InlineRenameRenderer {
+  _store: Store;
+  _disposable: ?IDisposable;
+
+  constructor(store: Store) {
+    this._store = store;
+  }
+
+  renderRenameInput(
+    editor: atom$TextEditor,
+    selectedText: string,
+    provider: RefactorProvider,
+    symbolPosition: atom$Point,
+  ): React.Element<React.ComponentType<InlineRenameComponentPropsType>> {
+    return (
+      <InlineRenameComponent
+        selectedText={selectedText}
+        provider={provider}
+        parentEditor={editor}
+        store={this._store}
+        symbolPosition={symbolPosition}
+      />
+    );
+  }
+
+  mountRenameInput(
+    editor: atom$TextEditor,
+    mountPosition: atom$Point,
+    container: ReactMountRootElement,
+    element: React.Element<React.ComponentType<InlineRenameComponentPropsType>>,
+  ): IDisposable {
+    const overlayMarker = editor.markBufferRange(
+      new Range(mountPosition, mountPosition),
+      {
+        invalidate: 'never',
+      },
+    );
+
+    editor.decorateMarker(overlayMarker, {
+      type: 'overlay',
+      position: 'tail',
+      item: container,
+    });
+
+    return new UniversalDisposable(
+      () => overlayMarker.destroy(),
+      () => ReactDOM.unmountComponentAtNode(container),
+
+      // The editor may not mount the marker until the next update.
+      // It's not safe to render anything until that point, as overlayed containers
+      // often need to measure their size in the DOM.
+      Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
+        () => {
+          container.style.display = 'block';
+          ReactDOM.render(element, container);
+        },
+      ),
+    );
+  }
+
+  renderState(state: RefactorState) {
+    if (state.type === 'open' && state.phase.type === 'inline-rename') {
+      const container = new ReactMountRootElement();
+      container.className = 'nuclide-inline-rename-container';
+
+      const {
+        provider,
+        editor,
+        selectedText,
+        mountPosition,
+        symbolPosition,
+      } = state.phase;
+
+      const renameElement = this.renderRenameInput(
+        editor,
+        selectedText,
+        provider,
+        symbolPosition,
+      );
+
+      this._disposable = this.mountRenameInput(
+        editor,
+        mountPosition,
+        container,
+        renameElement,
+      );
+    } else {
+      this.dispose();
+    }
+  }
+
+  dispose(): void {
+    if (this._disposable != null) {
+      this._disposable.dispose();
+      this._disposable = null;
     }
   }
 }

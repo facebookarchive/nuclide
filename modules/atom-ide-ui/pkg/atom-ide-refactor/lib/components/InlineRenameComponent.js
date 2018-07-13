@@ -10,13 +10,18 @@
  * @format
  */
 
+import type {RefactorProvider} from '../main';
+
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import * as Actions from '../refactorActions';
 
 export type Props = {
   selectedText: string,
-  submitNewName: (string | void) => void,
+  provider: RefactorProvider,
   parentEditor: atom$TextEditor,
+  store: Store,
+  symbolPosition: atom$Point,
 };
 
 type State = {
@@ -70,11 +75,27 @@ export default class InlineRenameComponent extends React.Component<
     if (event == null) {
       return;
     }
-    event.preventDefault();
     const {newName} = this.state;
-    const {submitNewName} = this.props;
+    const {store} = this.props;
 
-    return newName === '' ? submitNewName() : submitNewName(newName);
+    const renameRequest = {
+      kind: 'inline-rename',
+      newName,
+      editor: this.props.parentEditor,
+      position: this.props.symbolPosition,
+    };
+
+    return newName === ''
+      ? store.dispatch(Actions.close())
+      : store.dispatch(Actions.execute(this.props.provider, renameRequest));
+  };
+
+  _handleCancel = (event: ?Event): void => {
+    if (event == null) {
+      return;
+    }
+
+    this.props.store.dispatch(Actions.close());
   };
 
   _handleChange = (text: string): void => {
@@ -82,7 +103,7 @@ export default class InlineRenameComponent extends React.Component<
   };
 
   _handleBlur = (event: Event): void => {
-    this.props.submitNewName();
+    this.props.store.dispatch(Actions.close());
   };
 
   render(): React.Node {
@@ -100,6 +121,7 @@ export default class InlineRenameComponent extends React.Component<
         onDidChange={this._handleChange}
         onBlur={this._handleBlur}
         onConfirm={this._handleSubmit}
+        onCancel={this._handleCancel}
       />
     );
   }

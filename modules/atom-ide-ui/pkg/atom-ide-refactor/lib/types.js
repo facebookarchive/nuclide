@@ -34,7 +34,11 @@ export type Store = {
 
 export type RefactorUIFactory = (store: Store) => IDisposable;
 
-export type RefactorUI = 'generic' | 'simple-rename' | 'rename';
+export type RefactorUI =
+  | 'generic'
+  | 'simple-rename'
+  | 'rename'
+  | 'inline-rename';
 
 // State
 
@@ -98,6 +102,15 @@ export type DiffPreviewPhase = {|
   previousPhase: Phase,
 |};
 
+export type InlineRenamePhase = {|
+  type: 'inline-rename',
+  provider: RefactorProvider,
+  editor: TextEditor,
+  selectedText: string,
+  mountPosition: atom$Point,
+  symbolPosition: atom$Point,
+|};
+
 export type ProgressPhase = {|
   type: 'progress',
   message: string,
@@ -113,6 +126,7 @@ export type Phase =
   | ExecutePhase
   | ConfirmPhase
   | DiffPreviewPhase
+  | InlineRenamePhase
   | ProgressPhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
@@ -193,6 +207,17 @@ export type DisplayDiffPreviewAction = {|
   },
 |};
 
+export type DisplayInlineRenameAction = {|
+  type: 'display-inline-rename',
+  payload: {
+    editor: TextEditor,
+    provider: RefactorProvider,
+    selectedText: string,
+    mountPosition: atom$Point,
+    symbolPosition: atom$Point,
+  },
+|};
+
 export type ApplyAction = {|
   type: 'apply',
   payload: {
@@ -220,5 +245,6 @@ export type RefactorAction =
   | ConfirmAction
   | LoadDiffPreviewAction
   | DisplayDiffPreviewAction
+  | DisplayInlineRenameAction
   | ApplyAction
   | ProgressAction;

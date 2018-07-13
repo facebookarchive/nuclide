@@ -152,35 +152,50 @@ async function getRefactorings(
 
 function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
   const {refactoring, provider} = action.payload;
+  if (
+    provider.refactor != null &&
+    (refactoring.kind === 'rename' || refactoring.kind === 'freeform')
+  ) {
+    return provider
+      .refactor(refactoring)
+      .map(response => {
+        switch (response.type) {
+          case 'progress':
+            return Actions.progress(
+              response.message,
+              response.value,
+              response.max,
+            );
+          case 'edit':
+          case 'external-edit':
+            if (response.edits.size <= 1) {
+              return Actions.apply(response);
+            }
+            return Actions.confirm(response);
+          default:
+            (response: empty);
+            throw new Error();
+        }
+      })
+      .catch(e => Observable.of(Actions.error('execute', e)));
+  } else if (provider.rename != null && refactoring.kind === 'inline-rename') {
+    const {editor, position, newName} = refactoring;
 
-  if (provider.refactor == null) {
-    return Observable.of(
-      Actions.error('execute', Error('No appropriate provider found.')),
-    );
-  }
-
-  return provider
-    .refactor(refactoring)
-    .map(response => {
-      switch (response.type) {
-        case 'progress':
-          return Actions.progress(
-            response.message,
-            response.value,
-            response.max,
-          );
-        case 'edit':
-        case 'external-edit':
-          if (response.edits.size <= 1) {
-            return Actions.apply(response);
-          }
-          return Actions.confirm(response);
-        default:
-          (response: empty);
-          throw new Error();
+    return Observable.fromPromise(
+      provider.rename(editor, position, newName),
+    ).map(edits => {
+      if (edits == null) {
+        return Actions.close();
       }
-    })
-    .catch(e => Observable.of(Actions.error('execute', e)));
+      const response = {
+        type: 'edit',
+        edits,
+      };
+      return Actions.apply(response);
+    });
+  } else {
+    return Observable.of(Actions.close());
+  }
 }
 
 const FILE_IO_CONCURRENCY = 4;

@@ -19,6 +19,7 @@ import type {
   ExecuteAction,
   GotRefactoringsAction,
   LoadDiffPreviewAction,
+  DisplayInlineRenameAction,
   OpenAction,
   PickedRefactorAction,
   ProgressAction,
@@ -64,6 +65,8 @@ export default function refactorReducers(
       return loadDiffPreview(state, action);
     case 'display-diff-preview':
       return displayDiffPreview(state, action);
+    case 'display-inline-rename':
+      return displayInlineRename(state, action);
     case 'progress':
       return progress(state, action);
     default:
@@ -228,6 +231,32 @@ function displayDiffPreview(
       ...state.phase,
       loading: false,
       diffs: action.payload.diffs,
+    },
+  };
+}
+
+function displayInlineRename(
+  state: RefactorState,
+  action: DisplayInlineRenameAction,
+): RefactorState {
+  const {
+    provider,
+    editor,
+    selectedText,
+    mountPosition,
+    symbolPosition,
+  } = action.payload;
+
+  return {
+    type: 'open',
+    ui: 'inline-rename', // Inline-rename doesn't use MainRefactorComponent
+    phase: {
+      type: 'inline-rename',
+      provider,
+      editor,
+      selectedText,
+      mountPosition,
+      symbolPosition,
     },
   };
 }
