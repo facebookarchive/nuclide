@@ -10,8 +10,7 @@
  * @format
  */
 
-import type {Store, ConfirmPhase} from '../types';
-import type {RefactorEditResponse} from '../rpc-types';
+import type {Store, ConfirmPhase, RefactorEditResponse} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import * as React from 'react';

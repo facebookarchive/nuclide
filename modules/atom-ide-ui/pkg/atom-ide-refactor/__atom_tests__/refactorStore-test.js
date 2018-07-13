@@ -13,14 +13,14 @@
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
-  AvailableRefactoring,
   FreeformRefactorRequest,
   RefactorProvider,
   RefactorRequest,
+  RenameRequest,
+  AvailableRefactoring,
   RefactorResponse,
   RenameRefactoring,
-  RenameRequest,
-} from '..';
+} from '../lib/types';
 import type {Store, RefactorState} from '../lib/types';
 
 import {Observable, BehaviorSubject, Subject} from 'rxjs';

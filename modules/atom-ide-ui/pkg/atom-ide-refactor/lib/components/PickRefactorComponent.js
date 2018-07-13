@@ -10,8 +10,7 @@
  * @format
  */
 
-import type {Store, PickPhase} from '../types';
-import type {AvailableRefactoring} from '../..';
+import type {Store, PickPhase, AvailableRefactoring} from '../types';
 
 import * as React from 'react';
 import * as Actions from '../refactorActions';

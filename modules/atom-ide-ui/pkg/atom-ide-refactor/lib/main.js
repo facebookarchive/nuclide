@@ -13,21 +13,10 @@
 /*
  * WARNING: This package is still experimental and in early development. Use it at your own risk.
  */
-
-import type {
-  AvailableRefactoring,
-  FreeformRefactoring,
-  FreeformRefactoringArgument,
-  RefactorResponse,
-  RenameRefactoring,
-} from './rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Store} from './types';
+import type {RefactorProvider} from './types';
 
 import invariant from 'assert';
-
-import {Observable} from 'rxjs';
 import {getLogger} from 'log4js';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -39,79 +28,6 @@ import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import * as Actions from './refactorActions';
 import {getStore} from './refactorStore';
 import {initRefactorUIs} from './refactorUIs';
-
-export type {
-  AvailableRefactoring,
-  FreeformRefactoring,
-  FreeformRefactoringArgument,
-  RefactorResponse,
-  RenameRefactoring,
-};
-
-export type RenameRefactorKind = 'rename';
-export type FreeformRefactorKind = 'freeform';
-export type InlineRenameRefactorKind = 'inline-rename';
-
-export type RefactorKind = RenameRefactorKind | FreeformRefactorKind;
-
-export type InlineRenameRequest = {
-  kind: InlineRenameRefactorKind,
-  newName: string,
-  editor: TextEditor,
-  position: atom$Point,
-};
-
-export type RenameRequest = {
-  kind: RenameRefactorKind,
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-  newName: string,
-};
-
-export type FreeformRefactorRequest = {|
-  kind: FreeformRefactorKind,
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-  // Echoes FreeformRefactoring.id.
-  id: string,
-  // Echoes FreeformRefactoring.range.
-  range: atom$Range,
-  // Arguments provided by the user.
-  arguments: Map<string, mixed>,
-|};
-
-export type RefactorRequest =
-  | InlineRenameRequest
-  | RenameRequest
-  | FreeformRefactorRequest;
-
-export type RefactorProvider = {
-  priority: number,
-  grammarScopes: Array<string>,
-
-  refactorings?: (
-    editor: atom$TextEditor,
-    range: atom$Range,
-  ) => Promise<Array<AvailableRefactoring>>,
-
-  // Providers may stream back progress responses.
-  // Note that the stream will terminate once an edit response is received.
-  // If no edit response is received, an error will be raised.
-  refactor?: (request: RefactorRequest) => Observable<RefactorResponse>,
-
-  // This method is linked to LSP in the LSP version of RefactorProvider
-  // Obtains a mapping of document paths to their text edits.
-  //  Each text edit is a rename of the same subject
-  rename?: (
-    editor: TextEditor,
-    position: atom$Point,
-    newName: string,
-  ) => Promise<?Map<NuclideUri, Array<TextEdit>>>,
-};
 
 const CONTEXT_MENU_CLASS = 'enable-nuclide-refactorizer';
 

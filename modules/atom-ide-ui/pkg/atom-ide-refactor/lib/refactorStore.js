@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {RefactorProvider} from '..';
+import type {RefactorProvider} from './types';
 import type {Observable} from 'rxjs';
 
 import type {Store} from './types';

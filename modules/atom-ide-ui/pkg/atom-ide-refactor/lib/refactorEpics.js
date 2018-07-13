@@ -20,8 +20,8 @@ import type {
   RefactorState,
   ExecuteAction,
 } from './types';
-import type {ExternalTextEdit, RefactorEditResponse} from './rpc-types';
-import type {RefactorProvider} from '..';
+import type {ExternalTextEdit, RefactorEditResponse} from './types';
+import type {RefactorProvider} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';

@@ -9,9 +9,7 @@
  * @flow strict-local
  * @format
  */
-
-import type {FreeformRefactoringArgument} from '../..';
-import type {Store, FreeformPhase} from '../types';
+import type {Store, FreeformPhase, FreeformRefactoringArgument} from '../types';
 
 import * as React from 'react';
 

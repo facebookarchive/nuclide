@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {RefactorProvider} from '../main';
+import type {RefactorProvider} from '../types';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';

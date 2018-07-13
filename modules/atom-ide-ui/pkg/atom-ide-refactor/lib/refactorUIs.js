@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {RefactorProvider} from '..';
+import type {RefactorProvider} from './types';
 import type {RefactorUIFactory, Store, RefactorState} from './types';
 
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';

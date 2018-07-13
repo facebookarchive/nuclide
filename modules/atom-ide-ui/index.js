@@ -79,10 +79,10 @@ export type {
 
 export type {
   AvailableRefactoring,
+  RefactorResponse,
   RefactorProvider,
   RefactorRequest,
-  RefactorResponse,
-} from './pkg/atom-ide-refactor/lib/main';
+} from './pkg/atom-ide-refactor/lib/types';
 
 export type {
   Outline,

@@ -10,8 +10,8 @@
  * @format
  */
 
-import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
-
+import type {RefactorRequest, RefactorProvider} from './types';
+import type {AvailableRefactoring, RefactorEditResponse} from './types';
 import type {
   ApplyAction,
   BackFromDiffPreviewAction,
@@ -30,8 +30,6 @@ import type {
   LoadDiffPreviewAction,
   DisplayInlineRenameAction,
 } from './types';
-
-import type {RefactorEditResponse} from './rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export function open(ui: RefactorUI): OpenAction {

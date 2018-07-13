@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {AvailableRefactoring, RefactorProvider} from '..';
+import type {RefactorProvider, AvailableRefactoring} from './types';
 
 import type {
   BackFromDiffPreviewAction,
