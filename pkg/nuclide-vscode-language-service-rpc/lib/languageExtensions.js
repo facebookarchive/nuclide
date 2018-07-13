@@ -87,4 +87,12 @@ export function middleware_handleDiagnostics(
   languageServerName: string,
   host: HostServices,
   showStatus: StatusData => Promise<?string>,
-) {}
+) {
+  if (languageServerName === 'ocaml') {
+    try {
+      // $FlowFB
+      const strings = require('./fb-strings');
+      strings.ocamlDiagnostics(params, host, showStatus);
+    } catch (_) {}
+  }
+}

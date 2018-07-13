@@ -51,11 +51,13 @@ async function createOCamlLanguageService(
       logLevel,
       fileNotifier,
       host,
-      projectFileNames: ['esy', 'esy.json', 'package.json', '.merlin'],
+      projectFileNames: [], // not needed for ocaml search strategy
       projectFileSearchStrategy: 'ocaml',
       useOriginalEnvironment: true,
       fileExtensions: ['.ml', '.mli', '.re', '.rei'],
-      additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+      additionalLogFilesRetentionPeriod: 15 * 60 * 1000, // 15 minutes
+      waitForDiagnostics: true,
+      waitForStatus: true,
 
       // ocaml-language-server will use defaults for any settings that aren't
       // given, so we only need to list non-defaults here.
@@ -82,6 +84,13 @@ async function createOCamlLanguageService(
 }
 
 export function createLanguageService(): AtomLanguageService<LanguageService> {
+  let aboutUrl = 'https://github.com/ocaml/merlin/wiki';
+  try {
+    // $FlowFB
+    const strings = require('./fb-ocaml-strings');
+    aboutUrl = strings.abourUrl;
+  } catch (_) {}
+
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'OCaml',
     grammars: ['source.ocaml', 'source.reason'],
@@ -133,6 +142,14 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
     diagnostics: {
       version: '0.2.0',
       analyticsEventName: 'ocaml.observeDiagnostics',
+    },
+    status: {
+      version: '0.1.0',
+      priority: 99,
+      observeEventName: 'ocaml.status.observe',
+      clickEventName: 'ocaml.status.click',
+      iconMarkdown: 'ml',
+      description: `__Merlin__ provides errors, autocomplete, hyperclick, and outline from OCaml/reason. [Read more...](${aboutUrl})`,
     },
   };
 
