@@ -3,9 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -15,11 +12,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-//A collection of messages used between Prepack and the debug adapter
-var DebugMessage = exports.DebugMessage = function DebugMessage() {
-  _classCallCheck(this, DebugMessage);
-};
+/*  strict */
 
+//A collection of messages used between Prepack and the debug adapter
+class DebugMessage {}
+exports.DebugMessage = DebugMessage;
 DebugMessage.DEBUGGER_ATTACHED = "DebuggerAttached";
 DebugMessage.PREPACK_RUN_COMMAND = "PrepackRun";
 DebugMessage.BREAKPOINT_ADD_COMMAND = "Breakpoint-add-command";
@@ -31,6 +28,7 @@ DebugMessage.SCOPES_COMMAND = "Scopes-command";
 DebugMessage.VARIABLES_COMMAND = "Variables-command";
 DebugMessage.STEPINTO_COMMAND = "StepInto-command";
 DebugMessage.STEPOVER_COMMAND = "StepOver-command";
+DebugMessage.STEPOUT_COMMAND = "StepOut-command";
 DebugMessage.EVALUATE_COMMAND = "Evaluate-command";
 DebugMessage.PREPACK_READY_RESPONSE = "PrepackReady";
 DebugMessage.PREPACK_FINISH_RESPONSE = "PrepackFinish";

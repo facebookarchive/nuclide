@@ -3,9 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -15,10 +12,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-var DebuggerConstants = exports.DebuggerConstants = function DebuggerConstants() {
-  _classCallCheck(this, DebuggerConstants);
-};
+/*  strict */
 
+class DebuggerConstants {}
+exports.DebuggerConstants = DebuggerConstants;
 DebuggerConstants.DEFAULT_REQUEST_ID = 0;
 DebuggerConstants.PREPACK_THREAD_ID = 1;
 DebuggerConstants.CLI_CLIENTID = "Prepack-Debugger-CLI";

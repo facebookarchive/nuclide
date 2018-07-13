@@ -13,10 +13,12 @@ exports.default = invariant;
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
+/*  strict */
+
 function invariant(condition, format) {
   if (condition) return;
 
-  var error = new Error(format);
+  let error = new Error(format);
   error.name = "Invariant Violation";
   throw error;
 }

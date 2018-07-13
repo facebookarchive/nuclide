@@ -17,6 +17,13 @@
       }
     }
   },
+  "consumedServices": {
+    "nuclide-deep-link.provider": {
+      "versions": {
+        "0.0.0": "consumeDeepLinkService"
+      }
+    }
+  },
   "activationHooks": [
     "nuclide_debugger_prepack:gk:nuclide"
   ]
