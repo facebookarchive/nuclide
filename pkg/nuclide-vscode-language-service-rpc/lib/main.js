@@ -115,17 +115,22 @@ export async function createMultiLspLanguageService(
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
 
-  const command = params.fork
-    ? (resolveFrom(getNuclideRealDir(), command_): string)
-    : command_;
-  const exists = params.fork
-    ? await fsPromise.exists(command)
-    : (await which(command)) != null;
-  if (!exists) {
-    const message = `Command "${command}" could not be found: ${languageServerName} language features will be disabled.`;
-    logger.warn(message);
-    params.host.consoleNotification(languageServerName, 'warning', message);
-    return null;
+  let command = command_;
+  // if command is a json payload, it's resolved in LspLanguageService.js
+  // after the projectRoot has been determined.
+  if (!command.startsWith('{')) {
+    command = params.fork
+      ? (resolveFrom(getNuclideRealDir(), command_): string)
+      : command_;
+    const exists = params.fork
+      ? await fsPromise.exists(command)
+      : (await which(command)) != null;
+    if (!exists) {
+      const message = `Command "${command}" could not be found: ${languageServerName} language features will be disabled.`;
+      logger.warn(message);
+      params.host.consoleNotification(languageServerName, 'warning', message);
+      return null;
+    }
   }
 
   const result = new MultiProjectLanguageService();

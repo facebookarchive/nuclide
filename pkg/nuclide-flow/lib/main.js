@@ -163,7 +163,7 @@ async function activateLsp(): Promise<UniversalDisposable> {
       : undefined,
     status: {
       version: '0.1.0',
-      priority: 1,
+      priority: 99,
       observeEventName: 'flow.status.observe',
       clickEventName: 'flow.status.click',
       icon: 'nuclicon-flow',
@@ -187,7 +187,10 @@ async function activateLsp(): Promise<UniversalDisposable> {
     ]);
     const service = getVSCodeLanguageServiceByConnection(connection);
     const pathToFlow = String(featureConfig.get('nuclide-flow.pathToFlow'));
-    // TODO(ljw): implement canUseFlowBin and win32 and version-check
+    const canUseFlowBin = Boolean(
+      featureConfig.get('nuclide-flow.canUseFlowBin'),
+    );
+    const command = JSON.stringify({kind: 'flow', pathToFlow, canUseFlowBin});
 
     const lazy = isGkEnabled('nuclide_flow_lazy_mode_ide')
       ? ['--lazy-mode', 'ide']
@@ -201,7 +204,7 @@ async function activateLsp(): Promise<UniversalDisposable> {
 
     const lspService = await service.createMultiLspLanguageService(
       'flow',
-      pathToFlow, // TODO(ljw): implement canUseFlowBin and win32 and version-check
+      command,
       ['lsp', '--from', 'nuclide', ...lazy, ...autostop],
       {
         fileNotifier,

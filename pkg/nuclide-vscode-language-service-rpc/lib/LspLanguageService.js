@@ -107,6 +107,7 @@ import {
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
 import {mapAtomLanguageIdToVsCode} from './languageIdMap';
+import {getLanguageSpecificCommand} from './languageExtensions';
 import {LspConnection} from './LspConnection';
 import {
   ErrorCodes,
@@ -400,6 +401,11 @@ export class LspLanguageService {
         throw new Error('No command provided for launching language server');
         // if we try to spawn an empty command, node itself throws a "bad
         // type" error, which is jolly confusing. So we catch it ourselves.
+      } else if (this._command.startsWith('{')) {
+        command = await getLanguageSpecificCommand(
+          this._projectRoot,
+          JSON.parse(this._command),
+        );
       } else {
         command = this._command;
       }
