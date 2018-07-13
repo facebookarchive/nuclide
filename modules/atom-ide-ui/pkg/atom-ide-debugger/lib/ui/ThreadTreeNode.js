@@ -14,7 +14,7 @@ import type {IThread, IStackFrame, IDebugService} from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import {NestedTreeItem, TreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
@@ -165,6 +165,10 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     }
   };
 
+  handleSelectNoChildren = () => {
+    this.props.service.focusStackFrame(null, this.props.thread, null, true);
+  };
+
   render(): React.Node {
     const {thread, service} = this.props;
     const {childItems} = this.state;
@@ -177,6 +181,18 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           (thread.stoppedDetails == null ? ' (Running)' : ' (Paused)')}
       </span>
     );
+
+    if (
+      !childItems.isPending &&
+      !childItems.isError &&
+      childItems.value.length === 0
+    ) {
+      return (
+        <TreeItem onSelect={this.handleSelectNoChildren}>
+          {formattedTitle}
+        </TreeItem>
+      );
+    }
 
     const callFramesElements = childItems.isPending ? (
       LOADING
