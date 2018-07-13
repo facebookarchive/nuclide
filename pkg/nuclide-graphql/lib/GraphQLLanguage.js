@@ -33,7 +33,7 @@ async function connectionToGraphQLService(
     connection,
   ).createMultiLspLanguageService(
     'graphql',
-    [graphqlCommand],
+    graphqlCommand,
     ['server', '--method', 'stream'],
     {
       fileNotifier,

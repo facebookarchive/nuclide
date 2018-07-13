@@ -19,7 +19,6 @@ import type {LspPreferences} from './LspLanguageService';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {asyncFind} from 'nuclide-commons/promise';
 import which from 'nuclide-commons/which';
 import resolveFrom from 'resolve-from';
 import {LspLanguageService} from './LspLanguageService';
@@ -103,58 +102,27 @@ export type LspLanguageServiceParams = {|
   lspPreferences?: LspPreferences,
 |};
 
-function pickCommand(
-  candidates: Array<string>,
-  useFork: ?boolean,
-  cwd: ?string, // ignored for useFork
-): Promise<?string> {
-  const options = cwd == null ? {} : {cwd};
-
-  return asyncFind(candidates, async candidate => {
-    const command = useFork
-      ? (resolveFrom(getNuclideRealDir(), candidate): string)
-      : candidate;
-    const exists = useFork
-      ? await fsPromise.exists(command)
-      : (await which(command, options)) != null;
-    return exists ? command : null;
-  });
-}
-
 /**
  * Creates a language service capable of connecting to an LSP server.
  * Note that spawnOptions and initializationOptions must both be RPC-able.
- *
- * The 'command_' parameter is a list of candidate filepaths for the LSP
- * server binary; the first one to be found will be used. They can be relative
- * to the project directory so long as params.fork isn't used. If none are
- * relative and none can be found then this function will return null immediately.
- * If some are relative, then we can only determine whether one can be found at
- * the moment we're asked to spin up each individual language service, and so
- * LspLanguageService will necessarily be spun up. Therefore it's recommended
- * only to use relative paths if your language configuration uses StatusConfig,
- * so as not to spam the user with red error boxes in case of missing binary.
  */
 export async function createMultiLspLanguageService(
   languageServerName: string,
-  command_: Array<string>,
+  command_: string,
   args: Array<string>,
   params: LspLanguageServiceParams,
 ): Promise<?LanguageService> {
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
 
-  if (command_.length === 0) {
-    throw new Error('Expected a command to launch LSP server');
-  }
-  const lastCandidate = command_.slice(-1)[0];
-  const isProjectRelative = command_.some(c => c.startsWith('./'));
-  let command = isProjectRelative
-    ? null
-    : await pickCommand(command_, params.fork, null);
-
-  if (!isProjectRelative && command == null) {
-    const message = `Command "${lastCandidate}" could not be found: ${languageServerName} language features will be disabled.`;
+  const command = params.fork
+    ? (resolveFrom(getNuclideRealDir(), command_): string)
+    : command_;
+  const exists = params.fork
+    ? await fsPromise.exists(command)
+    : (await which(command)) != null;
+  if (!exists) {
+    const message = `Command "${command}" could not be found: ${languageServerName} language features will be disabled.`;
     logger.warn(message);
     params.host.consoleNotification(languageServerName, 'warning', message);
     return null;
@@ -186,13 +154,6 @@ export async function createMultiLspLanguageService(
     }
     // We're awaiting until AtomLanguageService has observed diagnostics (to
     // prevent race condition: see below).
-
-    if (isProjectRelative) {
-      command = await pickCommand(command_, params.fork, projectDir);
-    }
-    if (command == null) {
-      command = lastCandidate;
-    }
 
     const lsp = new LspLanguageService(
       logger,
@@ -232,8 +193,4 @@ export async function createMultiLspLanguageService(
     languageServiceFactory,
   );
   return result;
-}
-
-export function processPlatform(): Promise<string> {
-  return Promise.resolve(process.platform);
 }
