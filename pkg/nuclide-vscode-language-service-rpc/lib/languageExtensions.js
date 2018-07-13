@@ -63,7 +63,12 @@ export async function getLanguageSpecificCommand(
     const versionJson = JSON.parse(versionRaw);
     const version = versionJson.semver;
     if (!semver.satisfies(version, '>=0.75.0')) {
-      const msg = `Flow version is ${version}, which is too old for Nuclide support - please upgrade to 0.75.0 or higher.`;
+      let msg = `Flow version is ${version}, which is too old for Nuclide support - please upgrade to 0.75.0 or higher.`;
+      try {
+        // $FlowFB
+        const strings = require('./fb-strings');
+        msg = await strings.flowVersionTooOld(version, rootPath, command);
+      } catch (_) {}
       throw new Error(msg);
     }
 
