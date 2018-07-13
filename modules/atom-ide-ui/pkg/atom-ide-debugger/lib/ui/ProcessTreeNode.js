@@ -59,6 +59,10 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     );
   }
 
+  componentWillUnmount() {
+    this._disposables.dispose();
+  }
+
   _handleThreadsChanged = (): void => {
     this.setState(prevState =>
       this._getState(!(this._computeIsFocused() || !prevState.isCollapsed)),
