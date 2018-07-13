@@ -462,6 +462,14 @@ class FileParser {
     for (const method of classBody.body) {
       if (method.kind !== 'constructor') {
         if (!isPrivateMemberName(method.key.name)) {
+          if (method.type !== 'ClassMethod') {
+            throw this._error(
+              method,
+              'Class fields that are not methods are not supported. If this ' +
+                'field is supposed to be private please prefix it with an ' +
+                'underscore.',
+            );
+          }
           const {name, type} = this._parseClassMethod(serviceParser, method);
           const isStatic = Boolean(method.static);
           this._validateMethod(method, name, type, isStatic);
@@ -579,7 +587,7 @@ class FileParser {
     this._assert(
       definition,
       definition.key && definition.key.type === 'Identifier',
-      'This method defintion has an key (a name).',
+      'This method definition has an key (a name).',
     );
     this._assert(
       definition,
