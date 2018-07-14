@@ -103,10 +103,11 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
   );
   // Patch into xterm Linkifier to catch errors on isWrapped property.
   // Track issue at https://github.com/xtermjs/xterm.js/issues/1509
-  const linkifyRow = terminal.linkifier._linkifyRow;
-  terminal.linkifier._linkifyRow = row => {
+  const linkifier = terminal._core.linkifier;
+  const linkifyRow = linkifier._linkifyRow;
+  linkifier._linkifyRow = row => {
     try {
-      linkifyRow.call(terminal.linkifier, row);
+      linkifyRow.call(linkifier, row);
     } catch (e) {
       // swallow errors to avoid red box because the linkifier runs on a timer.
     }

@@ -412,7 +412,8 @@ export class TerminalView implements PtyClient, TerminalInstance {
     this._syncAtomTheme();
     // documented workaround for https://github.com/xtermjs/xterm.js/issues/291
     // see https://github.com/Microsoft/vscode/commit/134cbec22f81d5558909040491286d72b547bee6
-    this._terminal.emit('scroll', this._terminal.buffer.ydisp);
+    // $FlowIgnore: using unofficial _core interface defined in https://github.com/Microsoft/vscode/blob/master/src/typings/vscode-xterm.d.ts#L682-L706
+    this._terminal.emit('scroll', this._terminal._core.buffer.ydisp);
   }
 
   _syncAtomTheme(): void {
@@ -712,7 +713,7 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
   ];
 
   for (const {regex, matchIndex, urlPattern} of bindings) {
-    terminal.linkifier.registerLinkMatcher(
+    terminal.registerLinkMatcher(
       regex,
       (event, match) => {
         const replacedUrl = urlPattern.replace('%s', match);
