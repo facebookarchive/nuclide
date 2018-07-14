@@ -88,7 +88,7 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
   try {
     // $FlowFB
     const strings = require('./fb-ocaml-strings');
-    aboutUrl = strings.abourUrl;
+    aboutUrl = strings.aboutUrl;
   } catch (_) {}
 
   const atomConfig: AtomLanguageServiceConfig = {
