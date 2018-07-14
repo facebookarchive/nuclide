@@ -44,6 +44,7 @@ export const ADD_ESCAPE_COMMAND = 'atom-ide-terminal:add-escape-prefix';
 export const OPTION_IS_META_CONFIG = 'atom-ide-terminal.optionIsMeta';
 export const TRANSPARENCY_CONFIG = 'atom-ide-terminal.allowTransparency';
 export const CHAR_ATLAS_CONFIG = 'atom-ide-terminal.charAtlas';
+export const RENDERER_TYPE_CONFIG = 'atom-ide-terminal.rendererType';
 export const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
 export const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
 

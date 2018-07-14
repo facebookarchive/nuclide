@@ -63,6 +63,16 @@
         {"value": "dynamic", "description": "Dynamic (Experimental; Use an LRU cache to improve the cache hit rate)"}
       ]
     },
+    "rendererType": {
+      "title": "Terminal renderer implementation",
+      "type": "string",
+      "default": "auto",
+      "enum": [
+        {"value": "auto", "description": "Automatically select best setting"},
+        {"value": "canvas", "description": "Canvas (normally faster)"},
+        {"value": "dom", "description": "DOM (Experimental fallback; may work better on some hardware)"}
+      ]
+    },
     "fontFamily": {
       "title": "Font Family",
       "type": "string",

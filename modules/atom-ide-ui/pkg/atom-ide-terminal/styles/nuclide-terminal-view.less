@@ -25,7 +25,10 @@ html .terminal {
 
   // Background
   .xterm-viewport {
-    background-color: transparent;
+    // Set to !important because the DOM renderer makes this background opaque,
+    // but because we moved it on top with the z-index rule that would block
+    // the terminal input from view.
+    background-color: transparent !important;
     // Elevates .xterm-viewport above .xterm-screen so that scrollbars are
     // clickable.
     z-index: 1;

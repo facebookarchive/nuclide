@@ -15,6 +15,7 @@ import type {TerminalOptions} from 'xterm';
 import {
   boolean,
   constant,
+  either,
   either3,
   object,
   number,
@@ -35,6 +36,7 @@ import {
   SCROLLBACK_CONFIG,
   TRANSPARENCY_CONFIG,
   getFontSize,
+  RENDERER_TYPE_CONFIG,
 } from './config';
 
 export type Terminal = TerminalClass;
@@ -69,6 +71,7 @@ const assertTerminalOptionsInFeatureConfig = guard(
       constant('static'),
       constant('dynamic'),
     ),
+    rendererType: either(constant('canvas'), constant('dom')),
   }),
 );
 
@@ -85,6 +88,7 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
     // The 'webLinks' add-on linkifies http URL strings.
     XTerminal.applyAddon(WebLinks);
   }
+  const rendererType = featureConfig.get(RENDERER_TYPE_CONFIG);
   // $FlowIgnore We know that TerminalClass is XTerminal + addons
   const terminal = new XTerminal(
     // $FlowIssue: xterms type needs to be updated to include experimentalCharAtlas
@@ -98,6 +102,7 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
       macOptionIsMeta: featureConfig.get(OPTION_IS_META_CONFIG),
       allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
       experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),
+      rendererType: rendererType === 'auto' ? 'canvas' : rendererType,
       ...options,
     }),
   );

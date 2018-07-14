@@ -29,6 +29,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
 import {createTerminal} from './createTerminal';
+import measurePerformance from './measure-performance';
 import {infoFromUri, uriFromInfo} from './nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -48,6 +49,7 @@ import {
   PRESERVED_COMMANDS_CONFIG,
   SCROLLBACK_CONFIG,
   getFontSize,
+  RENDERER_TYPE_CONFIG,
 } from './config';
 import {removePrefixSink, patternCounterSink} from './sink';
 
@@ -334,6 +336,16 @@ export class TerminalView implements PtyClient, TerminalInstance {
       ),
     );
     this._syncFontAndFit();
+    const performanceDisposable = measurePerformance(this._terminal);
+    // Stop observing performance if the renderer type is no longer auto.
+    this._subscriptions.add(
+      featureConfig
+        .observeAsStream(RENDERER_TYPE_CONFIG)
+        .filter(value => value !== 'auto')
+        .take(1)
+        .subscribe(() => performanceDisposable.dispose()),
+    );
+    this._subscriptions.add(performanceDisposable);
   }
 
   _focused(): void {
