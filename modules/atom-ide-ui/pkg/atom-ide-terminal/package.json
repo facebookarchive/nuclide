@@ -49,7 +49,7 @@
     },
     "allowTransparency": {
       "title": "Allow Transparency",
-      "description": "Enables transparent terminal foreground or background theme colors. Also disables subpixel anti-aliasing.",
+      "description": "Enables transparent terminal foreground or background theme colors. Also disables subpixel anti-aliasing. Warning: can reduce performance.",
       "type": "boolean",
       "default": false
     },
