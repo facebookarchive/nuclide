@@ -26,7 +26,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import {TextBuffer} from 'atom';
+import {Range, TextBuffer} from 'atom';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import parse from 'diffparser';
@@ -168,6 +168,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
             );
           case 'edit':
           case 'external-edit':
+          case 'inline-rename-external-edit':
             if (response.edits.size <= 1) {
               return Actions.apply(response);
             }
@@ -201,7 +202,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
         return Actions.apply(response);
       } else {
         response = {
-          type: 'external-edit',
+          type: 'inline-rename-external-edit',
           edits,
         };
         return Actions.confirm(response);
@@ -243,9 +244,44 @@ export function applyRefactoring(
         }
       }
     } else {
+      // NOTE: Flow is unable to associate the type of the response with the
+      //        type of the edit. In order to give it this information, we had
+      //        no choice but to be SUPER hacky and assign a type to each edit.
+      let typedEdits;
+      switch (response.type) {
+        case 'external-edit':
+          typedEdits = Array.from(response.edits.entries()).map(
+            ([path, edits]) => [
+              path,
+              edits.map(edit => {
+                return {
+                  type: 'external-edit',
+                  edit,
+                };
+              }),
+            ],
+          );
+          break;
+        case 'inline-rename-external-edit':
+          typedEdits = Array.from(response.edits.entries()).map(
+            ([path, edits]) => [
+              path,
+              edits.map(edit => {
+                return {
+                  type: 'inline-rename-external-edit',
+                  edit,
+                };
+              }),
+            ],
+          );
+          break;
+        default:
+          throw new Error(`Unhandled response type: ${response.type}`);
+      }
+
       // External text edits are converted into absolute character offsets
       //  and applied directly to disk.
-      editStream = Observable.from(response.edits)
+      editStream = Observable.from(typedEdits)
         .mergeMap(async ([path, textEdits]) => {
           const file = getFileForPath(path);
           if (file == null) {
@@ -253,9 +289,17 @@ export function applyRefactoring(
           }
           let data = await file.read();
           const buffer = new TextBuffer(data);
-          const edits = textEdits.map(textEdit =>
-            toAbsoluteCharacterOffsets(buffer, textEdit),
-          );
+
+          const edits = textEdits.map(textEdit => {
+            switch (textEdit.type) {
+              case 'inline-rename-external-edit':
+                return toAbsoluteCharacterOffsets(buffer, textEdit.edit);
+              case 'external-edit':
+                return textEdit.edit;
+              default:
+                throw new Error(`Unhandled response type: ${response.type}`);
+            }
+          });
 
           edits.sort((a, b) => a.startOffset - b.startOffset);
           edits.reverse().forEach(edit => {
@@ -311,11 +355,24 @@ function getEdits(
 ): Array<TextEdit> {
   switch (response.type) {
     case 'edit':
-    case 'external-edit':
+    case 'inline-rename-external-edit':
       return response.edits.get(uri) || [];
+    case 'external-edit':
+      return (response.edits.get(uri) || []).map(e => toTextEdit(buffer, e));
     default:
       return [];
   }
+}
+
+function toTextEdit(buffer: atom$TextBuffer, edit: ExternalTextEdit): TextEdit {
+  return {
+    oldRange: new Range(
+      buffer.positionForCharacterIndex(edit.startOffset),
+      buffer.positionForCharacterIndex(edit.endOffset),
+    ),
+    oldText: edit.oldText,
+    newText: edit.newText,
+  };
 }
 
 function toAbsoluteCharacterOffsets(

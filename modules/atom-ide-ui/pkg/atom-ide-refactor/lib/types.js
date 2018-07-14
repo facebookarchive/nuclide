@@ -110,16 +110,20 @@ export type EditResponse = {
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
-// "External Edits" are intended for changes that include unopened files.
+// ExternalEdits & InlineRenameExternalEdits are intended for changes that include unopened files.
 //  These edits will be written directly to disk, bypassing Atom.
 //  The format of the edits is the same as that of regular "edits".
-//  However, during the application of these edits, they will first be converted
+//  However, during the application of InlineRenameExternalEdits, they will first be converted
 //    into absolute character offsets.
-export type ExternalEditResponse = {
-  type: 'external-edit',
+export type InlineRenameExternalEditResponse = {
+  type: 'inline-rename-external-edit',
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
+export type ExternalEditResponse = {
+  type: 'external-edit',
+  edits: Map<NuclideUri, Array<ExternalTextEdit>>,
+};
 // An intermediate response to display progress in the UI.
 export type ProgressResponse = {
   type: 'progress',
@@ -128,7 +132,10 @@ export type ProgressResponse = {
   max: number,
 };
 
-export type RefactorEditResponse = EditResponse | ExternalEditResponse;
+export type RefactorEditResponse =
+  | EditResponse
+  | ExternalEditResponse
+  | InlineRenameExternalEditResponse;
 
 export type RefactorResponse = RefactorEditResponse | ProgressResponse;
 
