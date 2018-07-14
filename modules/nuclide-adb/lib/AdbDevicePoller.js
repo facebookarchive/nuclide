@@ -22,6 +22,7 @@ import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
 import {Expect, expectedEqual} from 'nuclide-commons/expected';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {track} from 'nuclide-commons/analytics';
 import {getAdbServiceByNuclideUri} from './utils';
 
 export function observeAndroidDevices(
@@ -31,31 +32,33 @@ export function observeAndroidDevices(
     ? nuclideUri.createRemoteUri(nuclideUri.getHostname(host), '/')
     : '';
   return pollersForUris.getOrCreate(serviceUri, () => {
-    let fetching = false;
     return Observable.interval(2000)
       .startWith(0)
-      .filter(() => !fetching)
-      .switchMap(() => {
-        fetching = true;
-        return Observable.fromPromise(
-          getAdbServiceByNuclideUri(serviceUri).getDeviceList(),
-        )
+      .exhaustMap(() => {
+        const service = getAdbServiceByNuclideUri(serviceUri);
+        if (service == null) {
+          // Gracefully handle a lost remote connection
+          return Observable.of(Expect.pending());
+        }
+        return Observable.fromPromise(service.getDeviceList())
           .map(devices => Expect.value(devices))
-          .catch(err => {
+          .catch(error => {
             const logger = getLogger('nuclide-adb');
-            if (err.stack.startsWith('TimeoutError')) {
-              logger.debug('Error polling for devices: ' + err.message);
+            const message =
+              error.code !== 'ENOENT'
+                ? error.message
+                : "'adb' not found in $PATH.";
+            if (error.stack.startsWith('TimeoutError')) {
+              logger.debug('Error polling for devices: ' + message);
             } else {
-              logger.warn('Error polling for devices: ' + err.message);
+              logger.warn('Error polling for devices: ' + message);
             }
+
             return Observable.of(
               Expect.error(
-                new Error("Can't fetch Android devices.\n\n" + err.message),
+                new Error("Can't fetch Android devices.\n\n" + message),
               ),
             );
-          })
-          .do(() => {
-            fetching = false;
           });
       })
       .distinctUntilChanged((a, b) =>
@@ -66,6 +69,14 @@ export function observeAndroidDevices(
           (e1, e2) => e1.message === e2.message,
         ),
       )
+      .do(value => {
+        if (value.isError) {
+          track('nuclide-adb:device-poller:error', {
+            error: value.error,
+            host: serviceUri,
+          });
+        }
+      })
       .publishReplay(1)
       .refCount();
   });
