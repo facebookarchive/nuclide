@@ -255,17 +255,23 @@ export class TerminalView implements PtyClient, TerminalInstance {
         .subscribe(scrollback =>
           this._setTerminalOption('scrollback', scrollback),
         ),
-      Observable.merge(
-        observableFromSubscribeFunction(cb =>
-          atom.config.onDidChange('editor.fontSize', cb),
+      Observable.combineLatest(
+        observePaneItemVisibility(this),
+        Observable.merge(
+          observableFromSubscribeFunction(cb =>
+            atom.config.onDidChange('editor.fontSize', cb),
+          ),
+          featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
+          featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
+          featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
+          Observable.fromEvent(this._terminal, 'focus'),
+          Observable.fromEvent(window, 'resize'),
+          new ResizeObservable(this._div),
         ),
-        featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
-        featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
-        featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
-        Observable.fromEvent(this._terminal, 'focus'),
-        Observable.fromEvent(window, 'resize'),
-        new ResizeObservable(this._div),
-      ).subscribe(this._syncFontAndFit),
+      )
+        // Don't emit syncs if the pane is not visible.
+        .filter(([visible]) => visible)
+        .subscribe(this._syncFontAndFit),
     );
   }
 
