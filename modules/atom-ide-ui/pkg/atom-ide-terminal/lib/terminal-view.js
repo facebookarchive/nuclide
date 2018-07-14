@@ -21,6 +21,7 @@ import {
   observeRemovedHostnames,
 } from 'nuclide-commons-atom/projects';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import url from 'url';
 
@@ -265,8 +266,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
           featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
           featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
           Observable.fromEvent(this._terminal, 'focus'),
-          Observable.fromEvent(window, 'resize'),
-          new ResizeObservable(this._div),
+          // Debounce resize observables to reduce lag.
+          Observable.merge(
+            Observable.fromEvent(window, 'resize'),
+            new ResizeObservable(this._div),
+          ).let(fastDebounce(100)),
         ),
       )
         // Don't emit syncs if the pane is not visible.
