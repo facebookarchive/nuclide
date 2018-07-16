@@ -194,7 +194,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
         return {...event.message};
       });
     const ready = metroEvents
-      .filter(message => message.type === 'ready')
+      .first(message => message.type === 'ready')
       .mapTo(undefined);
 
     return new LogTailer({

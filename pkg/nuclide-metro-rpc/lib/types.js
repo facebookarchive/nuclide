@@ -16,7 +16,8 @@ export const NO_METRO_PROJECT_ERROR = 'NoMetroProjectError';
 export const METRO_PORT_BUSY_ERROR = 'MetroPortBusyError';
 
 export type ReadyEvent = {type: 'ready'};
-export type MetroEvent = ReadyEvent | MessageEvent;
+export type RestartEvent = {type: 'restarting'};
+export type MetroEvent = ReadyEvent | RestartEvent | MessageEvent;
 
 export type MetroStartCommand = {
   command: string,

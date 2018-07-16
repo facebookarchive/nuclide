@@ -55,7 +55,7 @@ export function startMetro(
   port: number = 8081,
   extraArgs: Array<string> = [],
 ): ConnectableObservable<MetroEvent> {
-  const stdout = Observable.defer(() => getStartCommand(projectRoot))
+  const output = Observable.defer(() => getStartCommand(projectRoot))
     .switchMap(
       commandInfo =>
         commandInfo == null
@@ -85,13 +85,13 @@ export function startMetro(
         }
       });
     })
-    .filter(event => event.kind === 'stdout')
+    .filter(event => event.kind === 'stdout' || event.kind === 'stderr')
     .map(event => {
-      invariant(event.kind === 'stdout');
+      invariant(event.kind === 'stdout' || event.kind === 'stderr');
       return event.data;
     });
 
-  return parseMessages(stdout).publish();
+  return parseMessages(output).publish();
 }
 
 function noMetroProjectError(): Error {
