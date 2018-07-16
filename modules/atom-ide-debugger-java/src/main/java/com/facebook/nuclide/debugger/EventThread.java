@@ -257,6 +257,11 @@ public class EventThread extends Thread {
   private void handleVMDisconnectEvent(VMDisconnectEvent event) {
     _connected = false;
     if (!_vmDied) {
+      _contextManager.sendUserMessage(
+          "VM Disconnected. This may be a result of a native crash. Use a Native debugger to investigate.",
+          Utils.UserMessageLevel.INFO,
+          false);
+
       Utils.logInfo("-- The application has been disconnected --");
 
       Utils.logVerboseException(event != null ? event.toString() : "", new Throwable());
