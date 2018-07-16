@@ -152,10 +152,7 @@ async function getRefactorings(
 
 function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
   const {refactoring, provider} = action.payload;
-  if (
-    provider.refactor != null &&
-    (refactoring.kind === 'rename' || refactoring.kind === 'freeform')
-  ) {
+  if (provider.refactor != null && refactoring.kind === 'freeform') {
     return provider
       .refactor(refactoring)
       .map(response => {
@@ -168,7 +165,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
             );
           case 'edit':
           case 'external-edit':
-          case 'inline-rename-external-edit':
+          case 'rename-external-edit':
             if (response.edits.size <= 1) {
               return Actions.apply(response);
             }
@@ -179,7 +176,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
         }
       })
       .catch(e => Observable.of(Actions.error('execute', e)));
-  } else if (provider.rename != null && refactoring.kind === 'inline-rename') {
+  } else if (provider.rename != null && refactoring.kind === 'rename') {
     const {editor, position, newName} = refactoring;
 
     return Observable.fromPromise(
@@ -202,7 +199,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
         return Actions.apply(response);
       } else {
         response = {
-          type: 'inline-rename-external-edit',
+          type: 'rename-external-edit',
           edits,
         };
         return Actions.confirm(response);
@@ -262,13 +259,13 @@ export function applyRefactoring(
             ],
           );
           break;
-        case 'inline-rename-external-edit':
+        case 'rename-external-edit':
           typedEdits = Array.from(response.edits.entries()).map(
             ([path, edits]) => [
               path,
               edits.map(edit => {
                 return {
-                  type: 'inline-rename-external-edit',
+                  type: 'rename-external-edit',
                   edit,
                 };
               }),
@@ -292,7 +289,7 @@ export function applyRefactoring(
 
           const edits = textEdits.map(textEdit => {
             switch (textEdit.type) {
-              case 'inline-rename-external-edit':
+              case 'rename-external-edit':
                 return toAbsoluteCharacterOffsets(buffer, textEdit.edit);
               case 'external-edit':
                 return textEdit.edit;
@@ -355,7 +352,7 @@ function getEdits(
 ): Array<TextEdit> {
   switch (response.type) {
     case 'edit':
-    case 'inline-rename-external-edit':
+    case 'rename-external-edit':
       return response.edits.get(uri) || [];
     case 'external-edit':
       return (response.edits.get(uri) || []).map(e => toTextEdit(buffer, e));

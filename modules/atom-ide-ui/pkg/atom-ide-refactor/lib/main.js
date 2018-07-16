@@ -91,12 +91,9 @@ class Activation {
           },
         ],
       }),
-      atom.commands.add('atom-workspace', 'nuclide-refactorizer:rename', () => {
-        this._store.dispatch(Actions.open('rename'));
-      }),
       atom.commands.add(
         'atom-text-editor',
-        'nuclide-refactorizer:inline-rename',
+        'nuclide-refactorizer:rename',
         event => {
           const editor = atom.workspace.getActiveTextEditor();
           if (!editor) {
@@ -126,7 +123,7 @@ class Activation {
           }
 
           this._store.dispatch(
-            Actions.displayInlineRename(
+            Actions.displayRename(
               editor,
               provider,
               selectedText,
@@ -140,7 +137,7 @@ class Activation {
         'atom-text-editor': [
           {
             label: 'Rename',
-            command: 'nuclide-refactorizer:inline-rename',
+            command: 'nuclide-refactorizer:rename',
             created: event => {
               lastMouseEvent = event;
             },

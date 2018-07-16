@@ -19,7 +19,7 @@ import type {
   ExecuteAction,
   GotRefactoringsAction,
   LoadDiffPreviewAction,
-  DisplayInlineRenameAction,
+  DisplayRenameAction,
   OpenAction,
   PickedRefactorAction,
   ProgressAction,
@@ -65,8 +65,8 @@ export default function refactorReducers(
       return loadDiffPreview(state, action);
     case 'display-diff-preview':
       return displayDiffPreview(state, action);
-    case 'display-inline-rename':
-      return displayInlineRename(state, action);
+    case 'display-rename':
+      return displayRename(state, action);
     case 'progress':
       return progress(state, action);
     default:
@@ -151,14 +151,6 @@ function getRefactoringPhase(
   originalRange: atom$Range,
 ): RefactoringPhase {
   switch (refactoring.kind) {
-    case 'rename':
-      return {
-        type: 'rename',
-        provider,
-        editor,
-        originalPoint: originalRange.start,
-        symbolAtPoint: refactoring.symbolAtPoint,
-      };
     case 'freeform':
       return {
         type: 'freeform',
@@ -235,9 +227,9 @@ function displayDiffPreview(
   };
 }
 
-function displayInlineRename(
+function displayRename(
   state: RefactorState,
-  action: DisplayInlineRenameAction,
+  action: DisplayRenameAction,
 ): RefactorState {
   const {
     provider,
@@ -249,9 +241,9 @@ function displayInlineRename(
 
   return {
     type: 'open',
-    ui: 'inline-rename', // Inline-rename doesn't use MainRefactorComponent
+    ui: 'rename', // Rename doesn't use MainRefactorComponent so we forgo `state.ui`
     phase: {
-      type: 'inline-rename',
+      type: 'rename',
       provider,
       editor,
       selectedText,

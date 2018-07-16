@@ -23,7 +23,6 @@ import type {
   FileGraph,
 } from '../../nuclide-file-family/lib/types';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
-import type {RefactorProvider} from 'atom-ide-ui';
 import type {
   ClangConfigurationProvider,
   ClangDeclarationInfoProvider,
@@ -38,7 +37,6 @@ import CodeFormatHelpers from './CodeFormatHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
-import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {
@@ -146,19 +144,6 @@ export function provideOutlineView(): OutlineProvider {
     updateOnEdit: false,
     getOutline(editor) {
       return OutlineViewHelpers.getOutline(editor);
-    },
-  };
-}
-
-export function provideRefactoring(): RefactorProvider {
-  return {
-    grammarScopes: Array.from(GRAMMAR_SET),
-    priority: 1,
-    refactorings(editor, range) {
-      return Refactoring.refactorings(editor, range);
-    },
-    refactor(request) {
-      return Refactoring.refactor(request);
     },
   };
 }

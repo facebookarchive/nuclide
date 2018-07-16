@@ -37,7 +37,7 @@ describe('applyRefactoring', () => {
       type: 'apply',
       payload: {
         response: {
-          type: 'inline-rename-external-edit',
+          type: 'rename-external-edit',
           edits: new Map([
             [
               testFile1,
@@ -87,7 +87,7 @@ describe('applyRefactoring', () => {
       type: 'apply',
       payload: {
         response: {
-          type: 'inline-rename-external-edit',
+          type: 'rename-external-edit',
           edits: new Map([
             [
               testFile1,

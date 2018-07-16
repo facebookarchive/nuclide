@@ -14,7 +14,6 @@ import type {Store, PickPhase, AvailableRefactoring} from '../types';
 
 import * as React from 'react';
 import * as Actions from '../refactorActions';
-import {Button} from 'nuclide-commons-ui/Button';
 import classNames from 'classnames';
 
 type State = {
@@ -74,19 +73,6 @@ export class PickRefactorComponent extends React.Component<
 
   _renderRefactorOption(refactoring: AvailableRefactoring): React.Node {
     switch (refactoring.kind) {
-      case 'rename':
-        return (
-          <li>
-            <Button
-              // Used to identify this element in integration tests
-              className="nuclide-refactorizer-pick-rename"
-              onClick={() => {
-                this._pickRefactor(refactoring);
-              }}>
-              Rename
-            </Button>
-          </li>
-        );
       case 'freeform':
         const selectable = !refactoring.disabled;
         const selected =

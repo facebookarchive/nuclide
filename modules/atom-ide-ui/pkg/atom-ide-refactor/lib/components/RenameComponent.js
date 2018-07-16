@@ -10,65 +10,116 @@
  * @format
  */
 
-import type {Store, RenamePhase} from '../types';
+import type {RefactorProvider, RenameRequest} from '../types';
 
 import * as React from 'react';
-
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button} from 'nuclide-commons-ui/Button';
-
 import * as Actions from '../refactorActions';
 
-type Props = {
-  phase: RenamePhase,
+export type Props = {
+  selectedText: string,
+  provider: RefactorProvider,
+  parentEditor: atom$TextEditor,
   store: Store,
+  symbolPosition: atom$Point,
 };
 
 type State = {
   newName: string,
 };
 
-export class RenameComponent extends React.Component<Props, State> {
+export default class RenameComponent extends React.Component<Props, State> {
+  _atomInput: ?AtomInput;
+
   constructor(props: Props) {
     super(props);
+
     this.state = {
-      newName: this.props.phase.symbolAtPoint.text,
+      newName: this.props.selectedText,
     };
   }
 
-  render(): React.Node {
-    return (
-      <div>
-        <AtomInput
-          autofocus={true}
-          startSelected={true}
-          className="nuclide-refactorizer-rename-editor"
-          initialValue={this.props.phase.symbolAtPoint.text}
-          onDidChange={text => this.setState({newName: text})}
-          onConfirm={() => this._runRename()}
-        />
-        <Button
-          // Used to identify this element in integration tests
-          className="nuclide-refactorizer-execute-button"
-          onClick={() => this._runRename()}>
-          Execute
-        </Button>
-      </div>
-    );
+  componentDidMount() {
+    this._forceActivateInsertMode();
+    this._highlightTextWithin();
   }
 
-  _runRename(): void {
+  // When using the `vim-mode-plus` package, the user has to press 'i' in 'normal-mode'
+  //  to begin inserting text in an atom-text-editor - doing so sends
+  //  an 'activate-insert-mode' command.
+  // However, when the user wants to type in embedded text editors,
+  //  we must first activate `insert-mode` in the parent editor.
+  _forceActivateInsertMode = (): void => {
+    const {parentEditor} = this.props;
+
+    if (parentEditor != null) {
+      atom.commands.dispatch(
+        atom.views.getView(parentEditor),
+        'vim-mode-plus:activate-insert-mode',
+      );
+    }
+  };
+
+  _highlightTextWithin = (): void => {
+    if (this._atomInput == null) {
+      return;
+    }
+    const editor = this._atomInput.getTextEditor();
+    editor.selectAll();
+  };
+
+  _handleSubmit = (event: ?Event): void => {
+    if (event == null) {
+      return;
+    }
     const {newName} = this.state;
-    const {symbolAtPoint, editor, originalPoint} = this.props.phase;
-    const refactoring = {
+    const {store} = this.props;
+
+    const renameRequest: RenameRequest = {
       kind: 'rename',
       newName,
-      originalPoint,
-      symbolAtPoint,
-      editor,
+      editor: this.props.parentEditor,
+      position: this.props.symbolPosition,
     };
-    this.props.store.dispatch(
-      Actions.execute(this.props.phase.provider, refactoring),
+
+    return newName === ''
+      ? store.dispatch(Actions.close())
+      : store.dispatch(Actions.execute(this.props.provider, renameRequest));
+  };
+
+  _handleCancel = (event: ?Event): void => {
+    if (event == null) {
+      return;
+    }
+
+    this.props.store.dispatch(Actions.close());
+  };
+
+  _handleChange = (text: string): void => {
+    this.setState({newName: text});
+  };
+
+  _handleBlur = (event: Event): void => {
+    this.props.store.dispatch(Actions.close());
+  };
+
+  render(): React.Node {
+    // TODO: Have a min-width, but expand the actual width as necessary based on the length of the selected word
+    //      (What VSCode does)
+    const widthStyle = {
+      minWidth: '150px',
+    };
+    return (
+      <AtomInput
+        ref={atomInput => (this._atomInput = atomInput)}
+        style={widthStyle}
+        autofocus={true}
+        value={this.state.newName}
+        onDidChange={this._handleChange}
+        onBlur={this._handleBlur}
+        onConfirm={this._handleSubmit}
+        onCancel={this._handleCancel}
+      />
     );
   }
 }

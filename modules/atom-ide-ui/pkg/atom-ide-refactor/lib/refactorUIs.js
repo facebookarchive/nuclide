@@ -21,8 +21,8 @@ import invariant from 'assert';
 import {Range} from 'atom';
 
 import {Observable} from 'rxjs';
-import InlineRenameComponent from './components/InlineRenameComponent';
-import type {Props as InlineRenameComponentPropsType} from './components/InlineRenameComponent';
+import RenameComponent from './components/RenameComponent';
+import type {Props as RenameComponentPropsType} from './components/RenameComponent';
 import {MainRefactorComponent} from './components/MainRefactorComponent';
 import * as Actions from './refactorActions';
 
@@ -48,7 +48,7 @@ function genericRefactorUI(store: Store): IDisposable {
     if (
       state.type === 'closed' ||
       (state.type === 'open' &&
-        (state.ui === 'generic' || state.ui === 'inline-rename'))
+        (state.ui === 'generic' || state.ui === 'rename'))
     ) {
       genericRenderer.renderState(state);
       inlineRenameRenderer.renderState(state);
@@ -152,8 +152,8 @@ class GenericUIRenderer {
   renderState(state: RefactorState) {
     if (
       state.type === 'open' &&
-      state.phase.type !== 'inline-rename' &&
-      !(state.ui === 'inline-rename' && state.phase.type === 'execute')
+      state.phase.type !== 'rename' &&
+      !(state.ui === 'rename' && state.phase.type === 'execute')
     ) {
       if (this._panel == null) {
         const element = document.createElement('div');
@@ -191,9 +191,9 @@ class InlineRenameRenderer {
     selectedText: string,
     provider: RefactorProvider,
     symbolPosition: atom$Point,
-  ): React.Element<React.ComponentType<InlineRenameComponentPropsType>> {
+  ): React.Element<React.ComponentType<RenameComponentPropsType>> {
     return (
-      <InlineRenameComponent
+      <RenameComponent
         selectedText={selectedText}
         provider={provider}
         parentEditor={editor}
@@ -207,7 +207,7 @@ class InlineRenameRenderer {
     editor: atom$TextEditor,
     mountPosition: atom$Point,
     container: ReactMountRootElement,
-    element: React.Element<React.ComponentType<InlineRenameComponentPropsType>>,
+    element: React.Element<React.ComponentType<RenameComponentPropsType>>,
   ): IDisposable {
     const overlayMarker = editor.markBufferRange(
       new Range(mountPosition, mountPosition),
@@ -239,9 +239,9 @@ class InlineRenameRenderer {
   }
 
   renderState(state: RefactorState) {
-    if (state.type === 'open' && state.phase.type === 'inline-rename') {
+    if (state.type === 'open' && state.phase.type === 'rename') {
       const container = new ReactMountRootElement();
-      container.className = 'nuclide-inline-rename-container';
+      container.className = 'nuclide-refactorizer-rename-container';
 
       const {
         provider,

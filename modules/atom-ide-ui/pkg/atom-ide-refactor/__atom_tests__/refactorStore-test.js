@@ -19,7 +19,6 @@ import type {
   RenameRequest,
   AvailableRefactoring,
   RefactorResponse,
-  RenameRefactoring,
 } from '../lib/types';
 import type {Store, RefactorState} from '../lib/types';
 
@@ -95,7 +94,11 @@ describe('refactorStore', () => {
       refactor(request: RefactorRequest): Observable<RefactorResponse> {
         return refactorReturn;
       },
-      rename(editor: TextEditor, position: atom$Point, newName: string) {
+      rename(
+        editor: TextEditor,
+        position: atom$Point,
+        newName: string,
+      ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
         return renameReturn;
       },
     };
@@ -166,20 +169,22 @@ describe('refactorStore', () => {
       });
 
       it('runs the refactor', async () => {
-        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
         refactorReturn = Observable.of({
           type: 'edit',
           edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
         });
-
-        store.dispatch(Actions.open('generic'));
-        await waitForPhase('pick');
-        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        const displayRenameRequest = [
+          openEditor,
+          provider,
+          TEST_FILE_SELECTED_TEXT,
+          TEST_FILE_MOUNT_POINT,
+          TEST_FILE_SYMBOL_POINT,
+        ];
+        store.dispatch(Actions.displayRename(...displayRenameRequest));
         await waitForPhase('rename');
         const rename: RenameRequest = {
           kind: 'rename',
-          originalPoint: TEST_FILE_POINT,
-          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          position: TEST_FILE_SYMBOL_POINT,
           editor: openEditor,
           newName: 'bar',
         };
@@ -218,16 +223,19 @@ describe('refactorStore', () => {
 
       it('tolerates a provider returning refactor results after a close action', async () => {
         const deferred = new Subject();
-        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
         refactorReturn = deferred;
-        store.dispatch(Actions.open('generic'));
-        await waitForPhase('pick');
-        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        const displayRenameRequest = [
+          openEditor,
+          provider,
+          TEST_FILE_SELECTED_TEXT,
+          TEST_FILE_MOUNT_POINT,
+          TEST_FILE_SYMBOL_POINT,
+        ];
+        store.dispatch(Actions.displayRename(...displayRenameRequest));
         await waitForPhase('rename');
         const rename: RenameRequest = {
           kind: 'rename',
-          originalPoint: TEST_FILE_POINT,
-          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          position: TEST_FILE_SYMBOL_POINT,
           editor: openEditor,
           newName: 'bar',
         };
@@ -255,16 +263,19 @@ describe('refactorStore', () => {
 
       // TODO also test the method actually throwing, as well as returning a rejected promise.
       it('tolerates a provider throwing in refactor', async () => {
-        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
         refactorReturn = Observable.throw(new Error());
-        store.dispatch(Actions.open('generic'));
-        await waitForPhase('pick');
-        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        const displayRenameRequest = [
+          openEditor,
+          provider,
+          TEST_FILE_SELECTED_TEXT,
+          TEST_FILE_MOUNT_POINT,
+          TEST_FILE_SYMBOL_POINT,
+        ];
+        store.dispatch(Actions.displayRename(...displayRenameRequest));
         await waitForPhase('rename');
         const rename: RenameRequest = {
           kind: 'rename',
-          originalPoint: TEST_FILE_POINT,
-          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          position: TEST_FILE_SYMBOL_POINT,
           editor: openEditor,
           newName: 'bar',
         };
@@ -275,16 +286,19 @@ describe('refactorStore', () => {
       });
 
       it('tolerates a provider returning empty from refactor', async () => {
-        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
         refactorReturn = Observable.empty();
-        store.dispatch(Actions.open('generic'));
-        await waitForPhase('pick');
-        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        const displayRenameRequest = [
+          openEditor,
+          provider,
+          TEST_FILE_SELECTED_TEXT,
+          TEST_FILE_MOUNT_POINT,
+          TEST_FILE_SYMBOL_POINT,
+        ];
+        store.dispatch(Actions.displayRename(...displayRenameRequest));
         await waitForPhase('rename');
         const rename: RenameRequest = {
           kind: 'rename',
-          originalPoint: TEST_FILE_POINT,
-          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          position: TEST_FILE_SYMBOL_POINT,
           editor: openEditor,
           newName: 'bar',
         };
@@ -295,7 +309,6 @@ describe('refactorStore', () => {
       });
 
       it('fails gracefully when the edits do not apply', async () => {
-        refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
         const edits = [
           {
             oldRange: new Range([0, 0], [0, 3]),
@@ -310,14 +323,18 @@ describe('refactorStore', () => {
           edits: new Map([[TEST_FILE, edits]]),
         });
 
-        store.dispatch(Actions.open('generic'));
-        await waitForPhase('pick');
-        store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+        const displayRenameRequest = [
+          openEditor,
+          provider,
+          TEST_FILE_SELECTED_TEXT,
+          TEST_FILE_MOUNT_POINT,
+          TEST_FILE_SYMBOL_POINT,
+        ];
+        store.dispatch(Actions.displayRename(...displayRenameRequest));
         await waitForPhase('rename');
         const rename: RenameRequest = {
           kind: 'rename',
-          originalPoint: TEST_FILE_POINT,
-          symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+          position: TEST_FILE_SYMBOL_POINT,
           editor: openEditor,
           newName: 'bar',
         };
@@ -390,7 +407,10 @@ describe('refactorStore', () => {
 
         const asyncify: FreeformRefactorRequest = {
           kind: 'freeform',
-          originalRange: new Range(TEST_FILE_POINT, TEST_FILE_POINT),
+          originalRange: new Range(
+            TEST_FILE_SYMBOL_POINT,
+            TEST_FILE_SYMBOL_POINT,
+          ),
           editor: openEditor,
           id: 'asyncify',
           range: new Range([0, 0], [0, 0]),
@@ -411,24 +431,18 @@ const TEST_FILE = nuclideUri.join(
   '../__mocks__/fixtures',
   'refactor-fixture.txt',
 );
-const TEST_FILE_POINT = new Point(0, 1);
-const TEST_FILE_SYMBOL_AT_POINT = {
-  text: 'foo',
-  range: new Range([0, 0], [0, 3]),
-};
-const TEST_FILE_RENAME: RenameRefactoring = {
-  kind: 'rename',
-  symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
-};
+const TEST_FILE_SELECTED_TEXT = 'foo';
+const TEST_FILE_MOUNT_POINT = new Point(0, 0);
+const TEST_FILE_SYMBOL_POINT = new Point(0, 1);
 const TEST_FILE_EDITS = [
   {
     oldRange: new Range([0, 0], [0, 3]),
-    oldText: 'foo',
+    oldText: TEST_FILE_SELECTED_TEXT,
     newText: 'bar',
   },
   {
     oldRange: new Range([2, 0], [2, 3]),
-    oldText: 'foo',
+    oldText: TEST_FILE_SELECTED_TEXT,
     newText: 'bar',
   },
 ];

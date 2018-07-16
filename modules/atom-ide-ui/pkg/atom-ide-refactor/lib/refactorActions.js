@@ -28,7 +28,7 @@ import type {
   PickedRefactorAction,
   RefactorUI,
   LoadDiffPreviewAction,
-  DisplayInlineRenameAction,
+  DisplayRenameAction,
 } from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -130,15 +130,15 @@ export function displayDiffPreview(
   };
 }
 
-export function displayInlineRename(
+export function displayRename(
   editor: TextEditor,
   provider: RefactorProvider,
   selectedText: string,
   mountPosition: atom$Point,
   symbolPosition: atom$Point,
-): DisplayInlineRenameAction {
+): DisplayRenameAction {
   return {
-    type: 'display-inline-rename',
+    type: 'display-rename',
     payload: {
       editor,
       provider,

@@ -27,21 +27,9 @@ export type Store = {
 
 export type RefactorUIFactory = (store: Store) => IDisposable;
 
-export type RefactorUI =
-  | 'generic'
-  | 'simple-rename'
-  | 'rename'
-  | 'inline-rename';
+export type RefactorUI = 'generic' | 'rename';
 
 // Server Response & RPC Requests to Apply them
-
-export type RenameRefactoring = {
-  kind: 'rename',
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-};
 
 export type FreeformEnumValue = {
   value: string,
@@ -90,7 +78,7 @@ export type FreeformRefactoring = {
   disabled?: boolean,
 };
 
-export type AvailableRefactoring = RenameRefactoring | FreeformRefactoring;
+export type AvailableRefactoring = FreeformRefactoring;
 
 // For edits outside of Atom editors, it's easier and more efficient to use
 // absolute character offsets rather than line/column ranges.
@@ -110,16 +98,20 @@ export type EditResponse = {
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
-// ExternalEdits & InlineRenameExternalEdits are intended for changes that include unopened files.
+// ExternalEdits & RenameExternalEdits are intended for changes that include unopened files.
 //  These edits will be written directly to disk, bypassing Atom.
-//  The format of the edits is the same as that of regular "edits".
-//  However, during the application of InlineRenameExternalEdits, they will first be converted
+
+//  The format of RenameExternaledits is the same as that of regular "edits".
+//  However, during their application, they will first be converted
 //    into absolute character offsets.
-export type InlineRenameExternalEditResponse = {
-  type: 'inline-rename-external-edit',
+export type RenameExternalEditResponse = {
+  type: 'rename-external-edit',
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
 
+// The format of ExternalEdits are those of ExternalTextEdit, and are
+//  already formatted as absolute character offsets. These are responses
+//  to the requests sent by the FreeformRefactorComponent.
 export type ExternalEditResponse = {
   type: 'external-edit',
   edits: Map<NuclideUri, Array<ExternalTextEdit>>,
@@ -135,7 +127,7 @@ export type ProgressResponse = {
 export type RefactorEditResponse =
   | EditResponse
   | ExternalEditResponse
-  | InlineRenameExternalEditResponse;
+  | RenameExternalEditResponse;
 
 export type RefactorResponse = RefactorEditResponse | ProgressResponse;
 
@@ -165,17 +157,6 @@ export type PickPhase = {|
   availableRefactorings: Array<AvailableRefactoring>,
 |};
 
-export type RenamePhase = {|
-  type: 'rename',
-  provider: RefactorProvider,
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-|};
-
 export type FreeformPhase = {|
   type: 'freeform',
   provider: RefactorProvider,
@@ -201,8 +182,8 @@ export type DiffPreviewPhase = {|
   previousPhase: Phase,
 |};
 
-export type InlineRenamePhase = {|
-  type: 'inline-rename',
+export type RenamePhase = {|
+  type: 'rename',
   provider: RefactorProvider,
   editor: TextEditor,
   selectedText: string,
@@ -225,7 +206,7 @@ export type Phase =
   | ExecutePhase
   | ConfirmPhase
   | DiffPreviewPhase
-  | InlineRenamePhase
+  | RenamePhase
   | ProgressPhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
@@ -306,8 +287,8 @@ export type DisplayDiffPreviewAction = {|
   },
 |};
 
-export type DisplayInlineRenameAction = {|
-  type: 'display-inline-rename',
+export type DisplayRenameAction = {|
+  type: 'display-rename',
   payload: {
     editor: TextEditor,
     provider: RefactorProvider,
@@ -344,7 +325,7 @@ export type RefactorAction =
   | ConfirmAction
   | LoadDiffPreviewAction
   | DisplayDiffPreviewAction
-  | DisplayInlineRenameAction
+  | DisplayRenameAction
   | ApplyAction
   | ProgressAction;
 
@@ -352,26 +333,14 @@ export type RefactorAction =
 
 export type RenameRefactorKind = 'rename';
 export type FreeformRefactorKind = 'freeform';
-export type InlineRenameRefactorKind = 'inline-rename';
 
 export type RefactorKind = RenameRefactorKind | FreeformRefactorKind;
 
-export type InlineRenameRequest = {
-  kind: InlineRenameRefactorKind,
+export type RenameRequest = {
+  kind: RenameRefactorKind,
   newName: string,
   editor: TextEditor,
   position: atom$Point,
-};
-
-export type RenameRequest = {
-  kind: RenameRefactorKind,
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-  newName: string,
 };
 
 export type FreeformRefactorRequest = {|
@@ -386,10 +355,7 @@ export type FreeformRefactorRequest = {|
   arguments: Map<string, mixed>,
 |};
 
-export type RefactorRequest =
-  | InlineRenameRequest
-  | RenameRequest
-  | FreeformRefactorRequest;
+export type RefactorRequest = RenameRequest | FreeformRefactorRequest;
 
 export type RefactorProvider = {
   priority: number,

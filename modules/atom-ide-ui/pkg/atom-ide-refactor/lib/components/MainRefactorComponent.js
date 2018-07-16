@@ -23,7 +23,6 @@ import {DiffPreviewComponent} from './DiffPreviewComponent';
 import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';
 import {ProgressComponent} from './ProgressComponent';
-import {RenameComponent} from './RenameComponent';
 import * as Actions from '../refactorActions';
 
 type Props = {
@@ -92,8 +91,6 @@ export class MainRefactorComponent extends React.Component<Props> {
         return (
           <PickRefactorComponent pickPhase={phase} store={this.props.store} />
         );
-      case 'rename':
-        return <RenameComponent phase={phase} store={this.props.store} />;
       case 'freeform':
         return (
           <FreeformRefactorComponent phase={phase} store={this.props.store} />
