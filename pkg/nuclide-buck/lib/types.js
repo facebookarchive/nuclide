@@ -156,6 +156,13 @@ export type DeploymentTarget = {
   device: ?Device,
 };
 
+export type PreferredNames = {
+  platformGroupName: ?string,
+  platformName: ?string,
+  deviceGroupName: ?string,
+  deviceName: ?string,
+};
+
 export type PlatformProviderSettings = {
   onSave: () => mixed,
   ui: React.Element<any>,
@@ -169,6 +176,7 @@ export type PlatformProviderUi = {
 export type BuckTaskRunnerService = {
   getBuildTarget(): ?string,
   setBuildTarget(buildTarget: string): void,
+  setDeploymentTarget(preferredNames: PreferredNames): void,
   onDidCompleteTask((TaskInfo) => any): IDisposable,
 };
 

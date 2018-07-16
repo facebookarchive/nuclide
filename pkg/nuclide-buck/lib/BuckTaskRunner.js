@@ -14,14 +14,18 @@ import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Task} from '../../commons-node/tasks';
 import type {
   AppState,
+  BuckSubcommand,
+  CompilationDatabaseParams,
+  PreferredNames,
   SerializedState,
   Store,
-  TaskType,
-  CompilationDatabaseParams,
   TaskInfo,
-  BuckSubcommand,
+  TaskType,
 } from './types';
-import {formatDeploymentTarget} from './DeploymentTarget';
+import {
+  formatDeploymentTarget,
+  selectValidDeploymentTarget,
+} from './DeploymentTarget';
 import {PlatformService} from './PlatformService';
 
 import invariant from 'assert';
@@ -183,6 +187,17 @@ export class BuckTaskRunner {
 
   setBuildTarget(buildTarget: string) {
     this._getStore().dispatch(Actions.setBuildTarget(buildTarget));
+  }
+
+  setDeploymentTarget(preferredNames: PreferredNames) {
+    const store = this._getStore();
+    const target = selectValidDeploymentTarget(
+      preferredNames,
+      store.getState().platformGroups,
+    );
+    if (target != null) {
+      store.dispatch(Actions.setDeploymentTarget(target));
+    }
   }
 
   setProjectRoot(

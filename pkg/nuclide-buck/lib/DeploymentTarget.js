@@ -17,16 +17,10 @@ import type {
   Platform,
   PlatformGroup,
   PlatformProviderUi,
+  PreferredNames,
 } from './types';
 
 import invariant from 'assert';
-
-type PreferredNames = {
-  platformGroupName: ?string,
-  platformName: ?string,
-  deviceGroupName: ?string,
-  deviceName: ?string,
-};
 
 export function getDeploymentTargetPreference(state: AppState): PreferredNames {
   const target =
