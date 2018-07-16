@@ -375,6 +375,7 @@ module.exports = {
     'nuclide-internal/modules-dependencies': 1,
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
+    'nuclide-internal/no-unobserved-gk': 1,
     'nuclide-internal/no-unresolved': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/react-virtualized-import': 1,
