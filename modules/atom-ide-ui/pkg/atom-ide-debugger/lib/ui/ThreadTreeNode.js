@@ -36,10 +36,6 @@ const LOADING = (
   </div>
 );
 
-const NO_FRAMES = (
-  <span className="debugger-tree-no-frames">Call frames unavailable</span>
-);
-
 type Props = {
   thread: IThread,
   service: IDebugService,
@@ -258,7 +254,11 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       !childItems.isError &&
       childItems.value.length === 0
     ) {
-      return <TreeItem>{formattedTitle}</TreeItem>;
+      return (
+        <TreeItem className="debugger-tree-no-frames">
+          {formattedTitle}
+        </TreeItem>
+      );
     }
 
     const callFramesElements = childItems.isPending ? (
@@ -267,8 +267,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       <span className="debugger-tree-no-frames">
         Error fetching stack frames {childItems.error.toString()}
       </span>
-    ) : childItems.value.length === 0 ? (
-      NO_FRAMES
     ) : (
       this._generateTable(childItems.value)
     );
