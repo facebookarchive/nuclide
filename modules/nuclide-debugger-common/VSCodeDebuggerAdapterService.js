@@ -48,6 +48,9 @@ export async function getProcessTree(): Promise<Array<ProcessInfo>> {
 }
 
 export async function getBuckRootFromUri(uri: string): Promise<?string> {
+  if (!nuclideUri.isAbsolute(uri)) {
+    return null;
+  }
   let path = uri;
 
   while (true) {
