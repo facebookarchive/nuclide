@@ -9,61 +9,36 @@
  * @format
  */
 
-import type {
-  Device,
-  DeviceAction,
-  DeviceActionProvider,
-} from 'nuclide-debugger-common/types';
+import type {Device, Task} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
-import {getProviders} from '../providers';
 import {DeviceTaskButton} from './DeviceTaskButton';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {|
   setDevice: (?Device) => void,
   devices: Expected<Device[]>,
-  // TODO Remove disable
-  // eslint-disable-next-line react/no-unused-prop-types
-  device: ?Device,
+  deviceTasks: Map<string, Array<Task>>,
 |};
 
 export class DeviceTable extends React.Component<Props> {
-  _getActionsForDevice(
-    device: Device,
-    actionProviders: Set<DeviceActionProvider>,
-  ): Array<DeviceAction> {
-    const actions = [];
-    for (const provider of actionProviders) {
-      const deviceActions = provider.getActionsForDevice(device);
-      if (deviceActions.length > 0) {
-        actions.push(...deviceActions);
-      }
-    }
-    return actions;
-  }
-
   render(): React.Node {
     const devices = this.props.devices.getOrDefault([]);
+    const anyTasks = Array.from(this.props.deviceTasks.values()).some(
+      t => t.length > 0,
+    );
 
-    const actionProviders = getProviders().deviceAction;
-    const anyActions =
-      devices.length > 0 &&
-      devices.find(
-        device => this._getActionsForDevice(device, actionProviders).length > 0,
-      ) != null;
-    const rows = devices.map(_device => {
-      const actions = this._getActionsForDevice(_device, actionProviders);
+    const rows = devices.map(device => {
+      const tasks = this.props.deviceTasks.get(device.identifier) || [];
       return {
         data: {
-          name: _device.displayName,
+          name: device.displayName,
           actions:
-            actions.length === 0 ? null : (
+            tasks.length === 0 ? null : (
               <DeviceTaskButton
-                actions={actions}
-                device={_device}
+                tasks={tasks}
                 icon="device-mobile"
                 title="Device actions"
               />
@@ -71,7 +46,7 @@ export class DeviceTable extends React.Component<Props> {
         },
       };
     });
-    const columns = anyActions
+    const columns = anyTasks
       ? [
           {
             key: 'name',

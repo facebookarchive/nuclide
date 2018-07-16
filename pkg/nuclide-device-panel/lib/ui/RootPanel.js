@@ -17,7 +17,7 @@ import type {
   DeviceTypeComponent,
   Process,
   ProcessTask,
-  IDeviceTask,
+  Task,
 } from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
@@ -32,6 +32,7 @@ import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
 import {DevicePanel} from './DevicePanel';
 import * as Immutable from 'immutable';
+import nullthrows from 'nullthrows';
 
 export type Props = {|
   setHost: (host: NuclideUri) => void,
@@ -45,13 +46,13 @@ export type Props = {|
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
-  deviceTasks: IDeviceTask[],
+  deviceTasks: Map<string, Array<Task>>,
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
   appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   isDeviceConnected: boolean,
-  deviceTypeTasks: IDeviceTask[],
+  deviceTypeTasks: Array<Task>,
   deviceTypeComponents: Immutable.Map<
     ComponentPosition,
     Immutable.List<DeviceTypeComponent>,
@@ -80,16 +81,13 @@ export class RootPanel extends React.Component<Props> {
     return (
       <DeviceTable
         devices={this.props.devices}
-        device={this.props.device}
         setDevice={this.props.setDevice}
+        deviceTasks={this.props.deviceTasks}
       />
     );
   }
 
-  _taskEventsToProps(
-    task: IDeviceTask,
-    taskEvent: ?TaskEvent,
-  ): TaskButtonPropsType {
+  _taskEventsToProps(task: Task, taskEvent: ?TaskEvent): TaskButtonPropsType {
     return {
       name: task.getName(),
       start: () => task.start(),
@@ -148,7 +146,8 @@ export class RootPanel extends React.Component<Props> {
   };
 
   _getInnerPanel(): React.Element<any> {
-    if (this.props.device != null) {
+    const {device} = this.props;
+    if (device != null) {
       return (
         <div className="block">
           <DevicePanel
@@ -156,7 +155,9 @@ export class RootPanel extends React.Component<Props> {
             appInfoTables={this.props.appInfoTables}
             processes={this.props.processes}
             processTasks={this.props.processTasks}
-            deviceTasks={this.props.deviceTasks}
+            deviceTasks={nullthrows(
+              this.props.deviceTasks.get(device.identifier),
+            )}
             goToRootPanel={this._goToRootPanel}
             toggleProcessPolling={this.props.toggleProcessPolling}
             isDeviceConnected={this.props.isDeviceConnected}

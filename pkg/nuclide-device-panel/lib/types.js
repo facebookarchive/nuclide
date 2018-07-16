@@ -16,7 +16,7 @@ import type {
   Device,
   AppInfoRow,
   ProcessTask,
-  IDeviceTask,
+  Task,
   ComponentPosition,
   DeviceTypeComponent,
 } from 'nuclide-debugger-common/types';
@@ -27,7 +27,7 @@ import * as Immutable from 'immutable';
 // Store
 //
 
-export type AppState = {
+export type AppState = {|
   hosts: NuclideUri[],
   host: NuclideUri,
   devices: Expected<Device[]>,
@@ -38,15 +38,15 @@ export type AppState = {
   appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
-  deviceTasks: IDeviceTask[],
+  deviceTasks: Map<string, Array<Task>>,
   isDeviceConnected: boolean,
-  deviceTypeTasks: IDeviceTask[],
+  deviceTypeTasks: Array<Task>,
   isPollingDevices: boolean,
   deviceTypeComponents: Immutable.Map<
     ComponentPosition,
     Immutable.List<DeviceTypeComponent>,
   >,
-};
+|};
 
 export type Store = {
   getState(): AppState,
@@ -130,7 +130,7 @@ export type SetProcessTasksAction = {
 export type SetDeviceTasksAction = {
   type: 'SET_DEVICE_TASKS',
   payload: {
-    deviceTasks: IDeviceTask[],
+    deviceTasks: Map<string, Array<Task>>,
   },
 };
 
@@ -151,7 +151,7 @@ export type ToggleProcessPollingAction = {
 export type SetDeviceTypeTasksAction = {
   type: 'SET_DEVICE_TYPE_TASKS',
   payload: {
-    deviceTypeTasks: IDeviceTask[],
+    deviceTypeTasks: Array<Task>,
   },
 };
 

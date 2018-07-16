@@ -180,10 +180,10 @@ export interface DebuggerPathResolverProvider {
 //
 
 //
-// DeviceTask interface
+// Task interface
 //
 
-export interface IDeviceTask {
+export interface Task {
   getName(): string;
   getTaskEvents(): Observable<?TaskEvent>;
   start(): void;
@@ -198,14 +198,13 @@ export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
   registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
-  registerTaskProvider: (provider: DeviceTaskProvider) => IDisposable,
+  registerDeviceTaskProvider: (provider: DeviceTaskProvider) => IDisposable,
   registerProcessTaskProvider: (
     provider: DeviceProcessTaskProvider,
   ) => IDisposable,
   registerDeviceTypeTaskProvider: (
     provider: DeviceTypeTaskProvider,
   ) => IDisposable,
-  registerDeviceActionProvider: (provider: DeviceActionProvider) => IDisposable,
   registerAppInfoProvider: (provider: DeviceAppInfoProvider) => IDisposable,
   registerDeviceTypeComponentProvider: (
     provider: DeviceTypeComponentProvider,
@@ -230,15 +229,21 @@ export interface DeviceProcessesProvider {
   getType(): string;
 }
 
+export type DeviceTask = {
+  getEvents: () => Observable<TaskEvent>,
+  getName: () => string,
+};
+
 export interface DeviceTaskProvider {
-  getTask(host: NuclideUri, device: Device): Observable<TaskEvent>;
-  getName(): string;
+  getDeviceTasks(
+    host: NuclideUri,
+    device: Device,
+  ): Observable<Array<DeviceTask>>;
   getType(): string;
-  isSupported(host: NuclideUri): Observable<boolean>;
 }
 
 export interface DeviceTypeTaskProvider {
-  getTask(host: NuclideUri): Observable<TaskEvent>;
+  getDeviceTypeTask(host: NuclideUri): Observable<TaskEvent>;
   getName(): string;
   getType(): string;
 }
@@ -263,15 +268,6 @@ export interface DeviceAppInfoProvider {
   getAppName(): string;
   canUpdate(): boolean;
   update(value: string): Promise<void>;
-}
-
-export type DeviceAction = {
-  name: string,
-  callback: (device: Device) => void,
-};
-
-export interface DeviceActionProvider {
-  getActionsForDevice(device: Device): Array<DeviceAction>;
 }
 
 export type ComponentPosition = 'host_selector' | 'above_table' | 'below_table';

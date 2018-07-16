@@ -16,7 +16,6 @@ import type {
   DeviceTaskProvider,
   DeviceProcessTaskProvider,
   DeviceTypeTaskProvider,
-  DeviceActionProvider,
   DeviceAppInfoProvider,
   DeviceTypeComponentProvider,
 } from 'nuclide-debugger-common/types';
@@ -28,7 +27,6 @@ type DeviceProviders = {
   deviceProcesses: Set<DeviceProcessesProvider>,
   processTask: Set<DeviceProcessTaskProvider>,
   deviceTypeTask: Set<DeviceTypeTaskProvider>,
-  deviceAction: Set<DeviceActionProvider>,
   appInfo: Set<DeviceAppInfoProvider>,
   deviceTypeComponent: Set<DeviceTypeComponentProvider>,
 };

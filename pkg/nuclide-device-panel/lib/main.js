@@ -92,6 +92,10 @@ class Activation {
     );
   }
 
+  _refreshDevices(): void {
+    this._store.dispatch(Actions.setDevices(this._store.getState().devices));
+  }
+
   _createProviderRegistration<T>(
     providers: Set<T>,
     onDispose?: () => void,
@@ -130,8 +134,9 @@ class Activation {
       registerProcessesProvider: this._createProviderRegistration(
         providers.deviceProcesses,
       ),
-      registerTaskProvider: this._createProviderRegistration(
+      registerDeviceTaskProvider: this._createProviderRegistration(
         providers.deviceTask,
+        () => this._refreshDevices(),
       ),
       registerProcessTaskProvider: this._createProviderRegistration(
         providers.processTask,
@@ -139,9 +144,6 @@ class Activation {
       registerDeviceTypeTaskProvider: this._createProviderRegistration(
         providers.deviceTypeTask,
         () => this._refreshDeviceTypes(),
-      ),
-      registerDeviceActionProvider: this._createProviderRegistration(
-        providers.deviceAction,
       ),
       registerAppInfoProvider: this._createProviderRegistration(
         providers.appInfo,

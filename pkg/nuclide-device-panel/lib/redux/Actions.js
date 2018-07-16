@@ -34,7 +34,7 @@ import type {
   AppInfoRow,
   DeviceTypeComponent,
   ComponentPosition,
-  IDeviceTask,
+  Task,
 } from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
@@ -151,7 +151,7 @@ export function setDevice(device: ?Device): SetDeviceAction {
 }
 
 export function setDeviceTasks(
-  deviceTasks: IDeviceTask[],
+  deviceTasks: Map<string, Array<Task>>,
 ): SetDeviceTasksAction {
   return {
     type: SET_DEVICE_TASKS,
@@ -160,7 +160,7 @@ export function setDeviceTasks(
 }
 
 export function setDeviceTypeTasks(
-  deviceTypeTasks: IDeviceTask[],
+  deviceTypeTasks: Array<Task>,
 ): SetDeviceTypeTasksAction {
   return {
     type: SET_DEVICE_TYPE_TASKS,

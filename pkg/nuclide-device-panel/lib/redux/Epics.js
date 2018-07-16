@@ -16,21 +16,23 @@ import type {
   AppInfoRow,
   DeviceAppInfoProvider,
   DeviceTypeComponent,
-  IDeviceTask,
-  Device as DeviceIdType,
+  Device,
+  DeviceTaskProvider,
+  Task,
 } from 'nuclide-debugger-common/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Action, Store, AppState} from '../types';
 
-import log4js from 'log4js';
+import {getLogger} from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {Observable} from 'rxjs';
 import {track} from '../../../nuclide-analytics';
 import {AnalyticsActions} from '../constants';
+import {DevicePanelTask} from '../DevicePanelTask';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {getProviders} from '../providers';
-import {DeviceTask} from '../DeviceTask';
 import shallowEqual from 'shallowequal';
 import * as Immutable from 'immutable';
 
@@ -63,6 +65,22 @@ export function pollDevicesEpic(
       }
       return Observable.empty();
     });
+}
+
+export function setDevicesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.SET_DEVICES)
+    .switchMap(action => {
+      return getDeviceTasks(store.getState()).catch(error => {
+        getLogger().error(error);
+        track('nuclide-device-panel:device-tasks:error', {error});
+        return Observable.of(new Map());
+      });
+    })
+    .map(tasks => Actions.setDeviceTasks(tasks));
 }
 
 export function pollProcessesEpic(
@@ -113,9 +131,6 @@ export function setDeviceEpic(
       getProcessTasks(state).switchMap(processTasks =>
         Observable.of(Actions.setProcessTasks(processTasks)),
       ),
-      getDeviceTasks(state).switchMap(deviceTasks =>
-        Observable.of(Actions.setDeviceTasks(deviceTasks)),
-      ),
     );
   });
 }
@@ -154,8 +169,8 @@ export function setDeviceTypeEpic(
           deviceTypeTaskCache.getOrCreate(
             [state, provider.getName()],
             () =>
-              new DeviceTask(
-                () => provider.getTask(state.host),
+              new DevicePanelTask(
+                () => provider.getDeviceTypeTask(state.host),
                 provider.getName(),
               ),
           ),
@@ -229,7 +244,7 @@ export function setDeviceTypeComponentsEpic(
         })
           .startWith(null)
           .catch(e => {
-            log4js.getLogger().error(e);
+            getLogger().error(e);
             return Observable.of(null);
           }),
       ),
@@ -291,7 +306,7 @@ function observeAppInfoTables(
   processNames: Array<string>,
   providers: Array<DeviceAppInfoProvider>,
   host: string,
-  device: DeviceIdType,
+  device: Device,
 ): Observable<Map<string, Array<AppInfoRow>>> {
   const observables = processNames.map(processName => {
     const providersForProcess = providers.filter(
@@ -317,7 +332,7 @@ function observeAppInfoTables(
 function observeAppInfoTable(
   tableProviders: Array<DeviceAppInfoProvider>,
   host: string,
-  device: DeviceIdType,
+  device: Device,
 ): Observable<Array<AppInfoRow>> {
   return observeAppInfoProviderValues(tableProviders, host, device).map(
     values => {
@@ -339,7 +354,7 @@ const APP_INFO_UPDATE_INTERVAL = 3000;
 function observeAppInfoProviderValues(
   providers: Array<DeviceAppInfoProvider>,
   host: string,
-  device: DeviceIdType,
+  device: Device,
 ): Observable<Array<{value: string, isError?: boolean}>> {
   const observables = providers.map(provider =>
     Observable.timer(0, APP_INFO_UPDATE_INTERVAL)
@@ -424,43 +439,67 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
   ).toArray();
 }
 
-// The actual device tasks are cached so that if a task is running when the store switches back and
-// forth from the device associated with that task, the same running task is used
-const deviceTaskCache = new SimpleCache({
-  keyFactory: ([state: AppState, providerName: string]) =>
-    JSON.stringify([state.host, state.deviceType, providerName]),
-});
-function getDeviceTasks(state: AppState): Observable<IDeviceTask[]> {
-  const device = state.device;
-  if (device == null) {
-    return Observable.of([]);
+// Generates a map of device tasks for each device identifier.
+function getDeviceTasks(state: AppState): Observable<Map<string, Array<Task>>> {
+  const {devices, deviceType, host} = state;
+  if (deviceType == null) {
+    return Observable.empty();
   }
-  return Observable.merge(
-    ...Array.from(getProviders().deviceTask)
-      .filter(provider => provider.getType() === state.deviceType)
-      .map(provider => {
-        return provider
-          .isSupported(state.host)
-          .switchMap(isSupported => {
-            if (!isSupported) {
-              return Observable.empty();
-            }
-            return Observable.of(
-              deviceTaskCache.getOrCreate(
-                [state, provider.getName()],
-                () =>
-                  new DeviceTask(
-                    () => provider.getTask(state.host, device),
-                    provider.getName(),
-                  ),
-              ),
-            );
-          })
-          .catch(() => Observable.empty());
-      }),
-  )
-    .toArray()
-    .map(actions =>
-      actions.sort((a, b) => a.getName().localeCompare(b.getName())),
-    );
+  const providers = Array.from(getProviders().deviceTask).filter(
+    provider => provider.getType() === deviceType,
+  );
+
+  const observablePerDevice = devices
+    .getOrDefault([])
+    .map(device => getDeviceTasksForDevice(providers, device, host));
+  const combinedMapPairs: Observable<Array<[string, Array<Task>]>> =
+    // $FlowIgnore combineAll
+    Observable.from(observablePerDevice).combineAll();
+  return combinedMapPairs.map(pairs => new Map(pairs));
+}
+
+// Generates a pair of device identifier + tasks for it. The identifier is always for the device passed in.
+// It's convenient to make a Map out of these tuples.
+function getDeviceTasksForDevice(
+  providers: Array<DeviceTaskProvider>,
+  device: Device,
+  host: NuclideUri,
+): Observable<[string, Array<Task>]> {
+  // A single observable per each provider for this device.
+  const perProviderAndDevice = providers.map(provider =>
+    getDeviceTasksForProvider(device, provider, host),
+  );
+  // $FlowIgnore combineAll
+  const combinedForDevice: Observable<Array<Array<Task>>> = Observable.from(
+    perProviderAndDevice,
+  ).combineAll();
+  // Flatten the array (merge tasks from all providers into a single flat array)
+  // and put that array it into a tuple with identifier for this device.
+  return combinedForDevice
+    .map(array =>
+      array.reduce((acc, element) => {
+        return acc.concat(element);
+      }, []),
+    )
+    .map(tasks => [
+      device.identifier,
+      tasks.sort((a, b) => a.getName().localeCompare(b.getName())),
+    ]);
+}
+
+function getDeviceTasksForProvider(
+  device: Device,
+  provider: DeviceTaskProvider,
+  host: NuclideUri,
+): Observable<Array<DevicePanelTask>> {
+  return provider
+    .getDeviceTasks(host, device)
+    .catch(() => Observable.of([]))
+    .defaultIfEmpty([])
+    .map(tasks => {
+      return tasks.map(
+        // TODO: Keep track of tasks after starting them
+        t => new DevicePanelTask(() => t.getEvents(), t.getName()),
+      );
+    });
 }
