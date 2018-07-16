@@ -173,9 +173,12 @@ class SuggestionList extends React.Component<Props, State> {
     this._subscriptions.dispose();
   }
 
-  _confirm() {
+  _confirm(event) {
     this._items[this.state.selectedIndex].callback();
     this._close();
+    if (event) {
+      event.stopImmediatePropagation();
+    }
   }
 
   _close() {
