@@ -384,7 +384,7 @@ export default class DebugService implements IDebugService {
           const {stackFrame, explicit} = event;
 
           if (stackFrame == null || !stackFrame.source.available) {
-            if (explicit) {
+            if (explicit && this._debuggerMode === DebuggerMode.PAUSED) {
               atom.notifications.addWarning(
                 'No source available for the selected stack frame',
               );
