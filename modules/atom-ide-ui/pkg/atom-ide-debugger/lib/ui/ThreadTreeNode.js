@@ -236,12 +236,19 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {thread} = this.props;
+    const {thread, service} = this.props;
     const {childItems} = this.state;
     const isFocused = this._computeIsFocused();
+    const handleTitleClick = event => {
+      service.focusStackFrame(null, thread, null, true);
+      event.stopPropagation();
+    };
     const formattedTitle = (
       <span
-        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
+        onClick={handleTitleClick}
+        className={
+          isFocused ? classnames('debugger-tree-process-thread-selected') : ''
+        }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
         {thread.name +
           (thread.stoppedDetails == null ? ' (Running)' : ' (Paused)')}

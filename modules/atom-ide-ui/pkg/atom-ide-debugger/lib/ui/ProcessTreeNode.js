@@ -92,7 +92,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
   };
 
   render() {
-    const {service, title} = this.props;
+    const {service, title, process} = this.props;
     const {childItems, isFocused} = this.state;
 
     const tooltipTitle =
@@ -105,8 +105,14 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
             ' ',
           );
 
+    const handleTitleClick = event => {
+      service.focusStackFrame(null, null, process, true);
+      event.stopPropagation();
+    };
+
     const formattedTitle = (
       <span
+        onClick={handleTitleClick}
         className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
         title={tooltipTitle}>
         {title}
