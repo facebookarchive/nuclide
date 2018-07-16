@@ -4,14 +4,14 @@
   },
   "atom-text-editor:not(.mini).enable-nuclide-refactorizer": {
     "shift-f6": "nuclide-refactorizer:rename",
-    "cmd-r cmd-r": "nuclide-refactorizer:inline-rename"
+    "cmd-alt-r": "nuclide-refactorizer:inline-rename"
   },
   ".platform-darwin atom-text-editor:not(.mini).enable-nuclide-refactorizer": {
     "cmd-ctrl-r": "nuclide-refactorizer:refactorize",
-    "cmd-r cmd-r": "nuclide-refactorizer:inline-rename"
+    "cmd-alt-r": "nuclide-refactorizer:inline-rename"
   },
   ".platform-win32 atom-text-editor:not(.mini).enable-nuclide-refactorizer, .platform-linux atom-text-editor:not(.mini).enable-nuclide-refactorizer": {
     "ctrl-alt-r": "nuclide-refactorizer:refactorize",
-    "ctrl-r ctrl-r": "nuclide-refactorizer:inline-rename"
+    "cmd-alt-r": "nuclide-refactorizer:inline-rename"
   }
 }
