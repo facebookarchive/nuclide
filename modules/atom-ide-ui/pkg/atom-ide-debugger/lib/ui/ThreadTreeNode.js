@@ -166,10 +166,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     }
   };
 
-  handleSelectNoChildren = () => {
-    this.props.service.focusStackFrame(null, this.props.thread, null, true);
-  };
-
   _handleStackFrameClick = (
     clickedRow: {frame: IStackFrame},
     callFrameIndex: number,
@@ -240,7 +236,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     const {childItems} = this.state;
     const isFocused = this._computeIsFocused();
     const handleTitleClick = event => {
-      service.focusStackFrame(null, thread, null, true);
+      if (thread.stopped) {
+        service.focusStackFrame(null, thread, null, true);
+      }
       event.stopPropagation();
     };
     const formattedTitle = (
@@ -260,11 +258,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       !childItems.isError &&
       childItems.value.length === 0
     ) {
-      return (
-        <TreeItem onSelect={this.handleSelectNoChildren}>
-          {formattedTitle}
-        </TreeItem>
-      );
+      return <TreeItem>{formattedTitle}</TreeItem>;
     }
 
     const callFramesElements = childItems.isPending ? (
