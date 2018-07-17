@@ -26,4 +26,5 @@ export type TunnelMessage = {
   arg?: string,
   port?: number,
   remotePort?: number,
+  error?: Error,
 };
