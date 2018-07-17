@@ -43,20 +43,13 @@ export function observeAndroidDevices(
         return Observable.fromPromise(service.getDeviceList())
           .map(devices => Expect.value(devices))
           .catch(error => {
-            const logger = getLogger('nuclide-adb');
             const message =
               error.code !== 'ENOENT'
                 ? error.message
                 : "'adb' not found in $PATH.";
-            if (error.stack.startsWith('TimeoutError')) {
-              logger.debug('Error polling for devices: ' + message);
-            } else {
-              logger.warn('Error polling for devices: ' + message);
-            }
-
             return Observable.of(
               Expect.error(
-                new Error("Can't fetch Android devices.\n\n" + message),
+                new Error("Can't fetch Android devices. " + message),
               ),
             );
           });
@@ -71,6 +64,8 @@ export function observeAndroidDevices(
       )
       .do(value => {
         if (value.isError) {
+          const logger = getLogger('nuclide-adb');
+          logger.warn(value.error.message);
           track('nuclide-adb:device-poller:error', {
             error: value.error,
             host: serviceUri,
