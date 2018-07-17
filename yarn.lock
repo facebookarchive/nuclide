@@ -8281,9 +8281,9 @@ xmldom@0.1.x, xmldom@~0.1.22:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.1.tgz#a5c6d532be656e23db820efb943a1f04998d63af"
 
-xterm@3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/xterm/-/xterm-3.5.0.tgz#ba3f464bc5730c9d259ebe62131862224db9ddcc"
+xterm@3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/xterm/-/xterm-3.5.1.tgz#d2e62ab26108a771b7bd1b7be4f6578fb4aff922"
 
 y18n@^3.2.0, y18n@^3.2.1:
   version "3.2.1"

@@ -162,7 +162,7 @@
     "vscode-uri": "1.0.1",
     "ws": "3.2.0",
     "xml2js": "0.4.17",
-    "xterm": "3.5.0",
+    "xterm": "3.5.1",
     "yargs": "3.32.0"
   },
   "devDependencies": {
