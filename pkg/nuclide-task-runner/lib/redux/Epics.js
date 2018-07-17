@@ -77,7 +77,7 @@ export function setConsolesForTaskRunnersEpic(
       .getState()
       .taskRunners.map(runner => [
         runner,
-        consoleService({id: runner.name, name: runner.name}),
+        consoleService({id: runner.id, name: runner.name}),
       ]);
     return Observable.of(
       Actions.setConsolesForTaskRunners(Immutable.Map(consolesForTaskRunners)),

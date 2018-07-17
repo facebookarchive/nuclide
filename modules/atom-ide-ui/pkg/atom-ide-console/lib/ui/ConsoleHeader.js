@@ -124,8 +124,8 @@ export default class ConsoleHeader extends React.Component<Props> {
       .slice()
       .sort((a, b) => sortAlpha(a.name, b.name))
       .map(source => ({
-        label: source.id,
-        value: source.name,
+        label: source.name,
+        value: source.id,
       }));
 
     const sourceButton =

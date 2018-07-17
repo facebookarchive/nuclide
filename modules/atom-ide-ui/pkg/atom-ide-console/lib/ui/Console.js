@@ -422,7 +422,7 @@ function getSources(options: {
     Array.from(providers.entries()).map(([k, provider]) => {
       const source = {
         id: provider.id,
-        name: provider.id,
+        name: provider.name,
         status: providerStatuses.get(provider.id) || 'stopped',
         start:
           typeof provider.start === 'function' ? provider.start : undefined,
