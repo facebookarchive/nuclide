@@ -397,6 +397,8 @@ export class Adb {
   }
 
   static _parseDevicesCommandOutput(stdout: string): Array<AdbDevice> {
+    const nameFrequency = new Map();
+
     return stdout
       .split(/\n+/g)
       .slice(1)
@@ -443,6 +445,13 @@ export class Adb {
             ? serial
             : model;
 
+        const count = nameFrequency.get(displayName);
+        if (count == null) {
+          nameFrequency.set(displayName, 1);
+        } else {
+          nameFrequency.set(displayName, count + 1);
+        }
+
         return {
           serial,
           displayName,
@@ -452,6 +461,17 @@ export class Adb {
           usb,
           transportId,
         };
+      })
+      .map(device => {
+        const {displayName, serial} = device;
+        if (displayName === serial || nameFrequency.get(displayName === 1)) {
+          return device;
+        } else {
+          return {
+            ...device,
+            displayName: `${displayName} - ${serial}`,
+          };
+        }
       });
   }
 
