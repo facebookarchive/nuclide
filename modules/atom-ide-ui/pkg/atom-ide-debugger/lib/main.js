@@ -62,6 +62,7 @@ import DebuggerPaneContainerViewModel from './ui/DebuggerPaneContainerViewModel'
 import os from 'os';
 import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
+import {sortMenuGroups} from 'nuclide-commons/menuUtils';
 
 const DATATIP_PACKAGE_NAME = 'debugger-datatip';
 
@@ -215,6 +216,7 @@ class Activation {
         ),
       }),
       atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/atom-apis
         'debugger:edit-breakpoint': this._configureBreakpoint.bind(this),
       }),
       atom.commands.add('.debugger-thread-list-item', {
@@ -239,6 +241,7 @@ class Activation {
         'debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/atom-apis
         'debugger:add-to-watch': this._addToWatch.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -376,6 +379,8 @@ class Activation {
       }),
       this._registerCommandsContextMenuAndOpener(),
     );
+
+    sortMenuGroups(['Debugger']);
   }
 
   _supportsConditionalBreakpoints(): boolean {
