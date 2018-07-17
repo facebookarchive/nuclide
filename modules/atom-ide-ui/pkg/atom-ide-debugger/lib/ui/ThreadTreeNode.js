@@ -208,7 +208,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     ];
     return (
       <div
-        className={classnames('debugger-container-new', {
+        className={classnames({
           'debugger-container-new-disabled':
             service.getDebuggerMode() === DebuggerMode.RUNNING,
         })}>
