@@ -182,11 +182,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
           // commands are not working correctly with terminal selection.
           if (terminal.hasSelection()) {
             // $FlowFixMe: add types for clipboard
-            clipboard.writeText(terminal.selectionManager.selectionText);
+            clipboard.writeText(terminal.getSelection());
           } else {
             document.execCommand('paste');
           }
-          terminal.selectionManager.clearSelection();
+          terminal.clearSelection();
           terminal.focus();
           e.stopPropagation();
         }),
