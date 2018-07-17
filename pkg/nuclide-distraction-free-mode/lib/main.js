@@ -15,7 +15,6 @@ import analytics from 'nuclide-commons/analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DistractionFreeMode} from './DistractionFreeMode';
 import {getBuiltinProviders} from './BuiltinProviders';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 export type DistractionFreeModeProvider = {
   // Should be the unique to all providers. Recommended to be the package name. This string is not
@@ -77,14 +76,12 @@ class Activation {
     toolBar.addSpacer({
       priority: 900,
     });
-    toolBar.addButton(
-      makeToolbarButtonSpec({
-        icon: 'eye',
-        callback: 'nuclide-distraction-free-mode:toggle',
-        tooltip: 'Toggle Distraction-Free Mode',
-        priority: 901,
-      }),
-    );
+    toolBar.addButton({
+      icon: 'eye',
+      callback: 'nuclide-distraction-free-mode:toggle',
+      tooltip: 'Toggle Distraction-Free Mode',
+      priority: 901,
+    });
     const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });

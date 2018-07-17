@@ -62,7 +62,6 @@ import DebuggerPaneContainerViewModel from './ui/DebuggerPaneContainerViewModel'
 import os from 'os';
 import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const DATATIP_PACKAGE_NAME = 'debugger-datatip';
 
@@ -898,15 +897,13 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('debugger');
-    toolBar.addButton(
-      makeToolbarButtonSpec({
-        iconset: 'icon-nuclicon',
-        icon: 'debugger',
-        callback: 'debugger:show-attach-dialog',
-        tooltip: 'Attach Debugger',
-        priority: 500,
-      }),
-    ).element;
+    toolBar.addButton({
+      iconset: 'icon-nuclicon',
+      icon: 'debugger',
+      callback: 'debugger:show-attach-dialog',
+      tooltip: 'Attach Debugger',
+      priority: 500,
+    }).element;
     const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });

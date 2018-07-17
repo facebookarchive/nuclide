@@ -42,7 +42,6 @@ import Reducers from './redux/Reducers';
 import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
   'atom-ide-console.maximumSerializedMessages';
@@ -119,14 +118,12 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): void {
     const toolBar = getToolBar('nuclide-console');
-    toolBar.addButton(
-      makeToolbarButtonSpec({
-        icon: 'nuclicon-console',
-        callback: 'console:toggle',
-        tooltip: 'Toggle Console',
-        priority: 700,
-      }),
-    );
+    toolBar.addButton({
+      icon: 'nuclicon-console',
+      callback: 'console:toggle',
+      tooltip: 'Toggle Console',
+      priority: 700,
+    });
     this._disposables.add(() => {
       toolBar.removeItems();
     });

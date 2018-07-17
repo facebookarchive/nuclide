@@ -50,7 +50,6 @@ import {
   createStore,
 } from 'redux';
 import {Observable} from 'rxjs';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 import * as React from 'react';
 
 // TODO: use a more general versioning mechanism.
@@ -297,15 +296,13 @@ class Activation {
     toolBar.addSpacer({
       priority: 400,
     });
-    const {element} = toolBar.addButton(
-      makeToolbarButtonSpec({
-        callback: 'nuclide-task-runner:toggle-toolbar-visibility',
-        tooltip: 'Toggle Task Runner Toolbar',
-        iconset: 'ion',
-        icon: 'play',
-        priority: 401,
-      }),
-    );
+    const {element} = toolBar.addButton({
+      callback: 'nuclide-task-runner:toggle-toolbar-visibility',
+      tooltip: 'Toggle Task Runner Toolbar',
+      iconset: 'ion',
+      icon: 'play',
+      priority: 401,
+    });
     element.className += ' nuclide-task-runner-tool-bar-button';
 
     const buttonUpdatesDisposable = new UniversalDisposable(

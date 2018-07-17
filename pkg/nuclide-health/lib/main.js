@@ -38,7 +38,6 @@ import getDOMCounters from './getDOMCounters';
 import trackKeyLatency from './trackKeyLatency';
 import trackNewEditorLatency from './trackNewEditorLatency';
 import trackStalls from './trackStalls';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 class Activation {
   _paneItemStates: Observable<PaneItemState>;
@@ -135,14 +134,12 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-health');
-    this._healthButton = toolBar.addButton(
-      makeToolbarButtonSpec({
-        icon: 'dashboard',
-        callback: 'nuclide-health:toggle',
-        tooltip: 'Toggle Nuclide Health Stats',
-        priority: -400,
-      }),
-    ).element;
+    this._healthButton = toolBar.addButton({
+      icon: 'dashboard',
+      callback: 'nuclide-health:toggle',
+      tooltip: 'Toggle Nuclide Health Stats',
+      priority: -400,
+    }).element;
     this._healthButton.classList.add('nuclide-health-jewel');
     const disposable = new UniversalDisposable(() => {
       this._healthButton = null;

@@ -18,7 +18,6 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
 import {getLogger} from 'log4js';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const logger = getLogger('nuclide-test-runner');
 
@@ -175,14 +174,12 @@ class Activation {
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-test-runner');
 
-    toolBar.addButton(
-      makeToolbarButtonSpec({
-        icon: 'checklist',
-        callback: 'nuclide-test-runner:toggle-panel',
-        tooltip: 'Toggle Test Runner',
-        priority: 600,
-      }),
-    );
+    toolBar.addButton({
+      icon: 'checklist',
+      callback: 'nuclide-test-runner:toggle-panel',
+      tooltip: 'Toggle Test Runner',
+      priority: 600,
+    });
     const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });
