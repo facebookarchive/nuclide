@@ -110,7 +110,11 @@ class Activation {
 
           editor.setCursorBufferPosition(position);
           editor.selectWordsContainingCursors();
-          const selectedText = editor.getSelectedText();
+          const selectedText = editor.getSelectedText().trim();
+          if (selectedText === '') {
+            return null;
+          }
+
           const mountPosition = editor.getSelectedBufferRange().start;
 
           const provider = Array.from(
