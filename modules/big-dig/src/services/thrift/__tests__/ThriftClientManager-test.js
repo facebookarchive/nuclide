@@ -16,7 +16,7 @@ import {Observable, Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
 import {describe, expect, it, jest} from 'nuclide-jest/globals';
 import {TunnelManager} from '../../tunnel/TunnelManager';
-import {ThriftClientManager} from '../ThriftClientManager';
+import {ThriftClientManager, setTimeoutLimit} from '../ThriftClientManager';
 import thrift from 'thrift';
 import RemoteFileSystemService from '../../fs/gen-nodejs/RemoteFileSystemService';
 import {encodeMessage} from '../util';
@@ -152,6 +152,33 @@ describe('ThriftClientManager', () => {
     manager = new ThriftClientManager(mockedTransport, mockedTunnelManager);
     await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
       mockedFailureMessage,
+    );
+  });
+
+  it('invoke remote method request timeout', async () => {
+    // delay mocked server message, longer than timeout limit
+    const TIME_INTERVAL = 20000;
+    // make ThriftClientManager _invokeRemoteMethod timeout really short
+    setTimeoutLimit(10);
+    clientMessage
+      .do(message => {
+        setTimeout(() => {
+          serverMessage.next(
+            encodeMessage({
+              id: JSON.parse(message).id,
+              payload: {
+                type: 'response',
+                success: true,
+                port: '9000',
+              },
+            }),
+          );
+        }, TIME_INTERVAL);
+      })
+      .subscribe();
+
+    await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
+      /Service:[\s\S]+command:[\s\S]+timeout/,
     );
   });
 

@@ -39,6 +39,14 @@ import {convertToServerConfig, encodeMessage, decodeMessage} from './util';
 // consumer to manager the refCount.
 type TunnelCacheEntry = {tunnel: Tunnel, refCount: number};
 
+// waiting for server response timeout
+let remoteCallTimeLimit = 15000;
+
+// create and export for speeding up testing
+export function setTimeoutLimit(time: number): void {
+  remoteCallTimeLimit = time;
+}
+
 /**
  * This class manages the creation and disposal of thrift clients.
  * `ThriftClientManager` instances will be created and managed by BigDigClient
@@ -235,7 +243,19 @@ export class ThriftClientManager {
   ): Promise<any> {
     const id = (this._messageId++).toString(16);
     const response = new Promise((resolve, reject) => {
+      let timeoutHandler = setTimeout(() => {
+        this._emitter.removeListener(id, onResponse);
+        reject(
+          new Error(
+            `Service: ${serverConfig.name} command: ${command} timeout`,
+          ),
+        );
+        timeoutHandler = null;
+      }, remoteCallTimeLimit);
       function onResponse(message): void {
+        if (timeoutHandler != null) {
+          clearTimeout(timeoutHandler);
+        }
         if (message.payload.success) {
           resolve(message.payload.port);
         } else {
@@ -243,7 +263,6 @@ export class ThriftClientManager {
         }
       }
       this._emitter.once(id, onResponse);
-      // Still need to consider: this._emitter.removeListener(id, onResponse)
     });
     const message = {
       id,
