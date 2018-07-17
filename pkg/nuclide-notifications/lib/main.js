@@ -13,7 +13,7 @@ import invariant from 'assert';
 import electron from 'electron';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import sanitize from './sanitize';
+import sanitizeHtml from 'nuclide-commons/sanitizeHtml';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -38,12 +38,16 @@ function proxyToNativeNotification(notification: atom$Notification): void {
     return;
   }
 
-  const sanitizedMessage = sanitize(notification.getMessage());
+  const sanitizedMessage = sanitizeHtml(notification.getMessage(), {
+    condenseWhitespaces: true,
+  });
   // If the message is multiline, take the first line for the title. Titles can only be a single
   // line and anything after the first line break will be ignored, at least on OSX.
   const [title, ...body] = sanitizedMessage.split(/\n/g);
   const sanitizedDescription =
-    options.description == null ? '' : sanitize(options.description);
+    options.description == null
+      ? ''
+      : sanitizeHtml(options.description, {condenseWhitespaces: true});
   raiseNativeNotification(
     `${upperCaseFirst(notification.getType())}: ${title}`,
     [...body, ...sanitizedDescription.split(/\n/g)].filter(Boolean).join('\n'),

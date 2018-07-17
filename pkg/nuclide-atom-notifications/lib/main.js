@@ -12,17 +12,18 @@
 import type {ConsoleLevel, ConsoleService} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import marked from 'marked';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import createDOMPurify from 'dompurify';
 
-const domPurify = createDOMPurify();
+import sanitizeHtml from 'nuclide-commons/sanitizeHtml';
 
 class Activation {
   _disposables: UniversalDisposable;
 
   constructor() {
     this._disposables = new UniversalDisposable();
+    // This adds spaces after <p> elements, so if you do something like
+    // <p>Hello.</p><p>Bye</p>
+    // it will become "Hello. Bye." instead of "Hello.Bye."
   }
 
   consumeConsoleService(createConsole: ConsoleService): IDisposable {
@@ -33,7 +34,7 @@ class Activation {
     const notificationDisposable = atom.notifications.onDidAddNotification(
       notification => {
         consoleApi.append({
-          text: stripFormatting(notification.getMessage()),
+          text: sanitizeHtml(notification.getMessage()),
           level: getLevel(notification.getType()),
         });
       },
@@ -61,13 +62,6 @@ function getLevel(atomNotificationType: string): ConsoleLevel {
     default:
       return 'log';
   }
-}
-
-/**
- * Markdown and HTML can be used with Atom notifications, but not in the console.
- */
-function stripFormatting(raw: string): string {
-  return domPurify.sanitize(marked(raw), {ALLOWED_TAGS: []});
 }
 
 createPackage(module.exports, Activation);
