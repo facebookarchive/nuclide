@@ -100,15 +100,15 @@ export class Proxy extends EventEmitter {
         socket.once('close', this._closeSocket.bind(this, clientId));
       });
 
-      this._server.on('error', err => {
+      this._server.on('error', error => {
         this._sendMessage({
           event: 'proxyError',
           port: this._localPort,
           useIpv4: this._useIPv4,
           remotePort: this._remotePort,
-          error: JSON.stringify(err),
+          error,
         });
-        reject(err);
+        reject(error);
       });
 
       invariant(this._server);
@@ -138,10 +138,16 @@ export class Proxy extends EventEmitter {
     const socket = this._socketByClientId.get(clientId);
     invariant(socket);
     const arg = msg.arg;
-    invariant(arg != null);
 
     if (msg.event === 'data') {
+      invariant(arg != null);
       socket.write(arg);
+    } else if (msg.event === 'close') {
+      socket.end();
+    } else if (msg.event === 'error') {
+      invariant(clientId != null);
+      invariant(msg.error != null);
+      this._destroySocket(clientId, msg.error);
     }
   }
 
