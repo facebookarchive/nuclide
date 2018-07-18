@@ -18,7 +18,12 @@ import {findSubArrayIndex} from './collection';
 import fsPromise from './fsPromise';
 import nuclideUri from './nuclideUri';
 
-export type SearchStrategy = 'nearest' | 'eclipse' | 'ocaml' | 'thrift';
+export type SearchStrategy =
+  | 'nearest'
+  | 'aurora'
+  | 'eclipse'
+  | 'ocaml'
+  | 'thrift';
 
 export class ConfigCache {
   _configPatterns: Array<string>;
@@ -109,6 +114,15 @@ export class ConfigCache {
           dir = nuclideUri.dirname(dir);
         }
       }
+    } else if (this._searchStrategy === 'aurora') {
+      const candidateDir = await fsPromise.findNearestFile('.hhconfig', path);
+      if (
+        candidateDir != null &&
+        (await fsPromise.exists(nuclideUri.join(candidateDir, '.arcconfig')))
+      ) {
+        return candidateDir;
+      }
+      return null;
     } else {
       (this._searchStrategy: 'nearest');
       // Find the result with the greatest length (the closest match).
