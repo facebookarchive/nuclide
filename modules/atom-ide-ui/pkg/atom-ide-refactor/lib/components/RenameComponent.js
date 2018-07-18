@@ -104,11 +104,15 @@ export default class RenameComponent extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    // TODO: Have a min-width, but expand the actual width as necessary based on the length of the selected word
-    //      (What VSCode does)
+    // TODO: Adjust width automatically through property within AtomInput/AtomTextEditor
+    //       AtomTextEditor's autoWidth doesn't work here when enabled through AtomInput.
+    //       This is a hacky solution for now for the sake of decent UX.
     const widthStyle = {
-      minWidth: '150px',
+      minWidth: '110px',
+      width: `${this.state.newName.length * 0.675}em`,
+      maxWidth: '350px',
     };
+
     return (
       <AtomInput
         ref={atomInput => (this._atomInput = atomInput)}
