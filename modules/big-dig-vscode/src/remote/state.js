@@ -1,3 +1,101 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onEachFilesystem = onEachFilesystem;
+exports.getFilesystems = getFilesystems;
+exports.getConnectedFilesystems = getConnectedFilesystems;
+exports.getServers = getServers;
+exports.getFilesystemForUri = getFilesystemForUri;
+exports.startFilesystems = startFilesystems;
+
+function vscode() {
+  const data = _interopRequireWildcard(require("vscode"));
+
+  vscode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _onEachObservedClosable() {
+  const data = _interopRequireDefault(require("../util/onEachObservedClosable"));
+
+  _onEachObservedClosable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConnectionWrapper() {
+  const data = require("../ConnectionWrapper");
+
+  _ConnectionWrapper = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFileSystem() {
+  const data = require("../RemoteFileSystem");
+
+  _RemoteFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ThriftRemoteFileSystem() {
+  const data = require("../ThriftRemoteFileSystem");
+
+  _ThriftRemoteFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _configuration() {
+  const data = require("../configuration");
+
+  _configuration = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Server() {
+  const data = require("./Server");
+
+  _Server = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,28 +104,12 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {AnyTeardown} from 'nuclide-commons/UniversalDisposable';
-
-import * as vscode from 'vscode';
-import {Subject} from 'rxjs';
-import {getLogger} from 'log4js';
-
-import onEachObservedClosable from '../util/onEachObservedClosable';
-import {ConnectionWrapper} from '../ConnectionWrapper';
-import {RemoteFileSystem} from '../RemoteFileSystem';
-import {ThriftRemoteFileSystem} from '../ThriftRemoteFileSystem';
-
-import {connectionProfileUpdates} from '../configuration';
-import {Server} from './Server';
-
-const logger = getLogger('remote');
-const hostnameToFilesystem: Map<string, RemoteFileSystem> = new Map();
-const filesystemSubject: Subject<RemoteFileSystem> = new Subject();
-
+const logger = (0, _log4js().getLogger)('remote');
+const hostnameToFilesystem = new Map();
+const filesystemSubject = new _RxMin.Subject();
 /**
  * Listen for new filesystems, returning a disposable that will cause listening
  * to stop (and dispose of any active handlers, by default).
@@ -42,61 +124,54 @@ const filesystemSubject: Subject<RemoteFileSystem> = new Subject();
  * @return a disposable that will stop listening for new filesystems. If
  * `stayAliveOnUnsubscribe: false`, then it will also dispose of all handlers.
  */
-export function onEachFilesystem(
-  handler: RemoteFileSystem => ?AnyTeardown | Promise<?AnyTeardown>,
-  options: {
-    ignoreCurrent?: boolean,
-    stayAliveOnUnsubscribe?: boolean,
-  } = {},
-): IDisposable {
+
+function onEachFilesystem(handler, options = {}) {
   const emitCurrent = !options.ignoreCurrent;
   const disposeHandlersOnUnsubscribe = !options.stayAliveOnUnsubscribe;
-
-  return onEachObservedClosable(
-    filesystemSubject.startWith(
-      ...(emitCurrent ? hostnameToFilesystem.values() : []),
-    ),
-    handler,
-    (fs, listener) => fs.onDisposed(listener),
-    {
-      disposeHandlersOnUnsubscribe,
-      disposeHandlerOnNext: false,
-    },
-  );
+  return (0, _onEachObservedClosable().default)(filesystemSubject.startWith(...(emitCurrent ? hostnameToFilesystem.values() : [])), handler, (fs, listener) => fs.onDisposed(listener), {
+    disposeHandlersOnUnsubscribe,
+    disposeHandlerOnNext: false
+  });
 }
-
 /**
  * @return a list of all existing filesystems.
  */
-export function getFilesystems(): Array<RemoteFileSystem> {
+
+
+function getFilesystems() {
   return [...hostnameToFilesystem.values()];
 }
-
 /**
  * @return a list of all filesystems that have current connections.
  */
-export function getConnectedFilesystems(): Array<{
-  fs: RemoteFileSystem,
-  conn: ConnectionWrapper,
-}> {
-  return getFilesystems()
-    .map(fs => ({fs, conn: fs.getServer().getCurrentConnection()}))
-    .map(({fs, conn}) => (conn == null ? null : {fs, conn}))
-    .filter(Boolean);
-}
 
+
+function getConnectedFilesystems() {
+  return getFilesystems().map(fs => ({
+    fs,
+    conn: fs.getServer().getCurrentConnection()
+  })).map(({
+    fs,
+    conn
+  }) => conn == null ? null : {
+    fs,
+    conn
+  }).filter(Boolean);
+}
 /**
  * @return a list of existing servers.
  */
-export function getServers(): Array<Server> {
+
+
+function getServers() {
   return getFilesystems().map(fs => fs.getServer());
 }
-
 /** @return the filesystem that handles the uri, else null. */
-export function getFilesystemForUri(uri: vscode.Uri): ?RemoteFileSystem {
+
+
+function getFilesystemForUri(uri) {
   return getFilesystems().find(fs => fs.handlesResource(uri));
 }
-
 /**
  * Start loading filesystems from configured profiles. Call this *just once*
  * when the extension is activated.
@@ -106,71 +181,73 @@ export function getFilesystemForUri(uri: vscode.Uri): ?RemoteFileSystem {
  * TODO(T27503907): listen for configuration changes and load/unload
  * filesystems.
  */
-export function startFilesystems(): IDisposable {
+
+
+function startFilesystems() {
   // Maintain a list of existing filesystems.
   // Note that we turn `emitCurrent` off because it relies on `filesystems`
-  const maintainExistingFsList = onEachFilesystem(
-    fs => {
-      if (fs.isDisposed()) {
-        return;
-      } else {
-        const hostname = fs.getHostname();
-        hostnameToFilesystem.set(hostname, fs);
-        return () => {
-          fs.dispose();
-          hostnameToFilesystem.delete(hostname);
-        };
-      }
-    },
-    {emitCurrent: false, disposeOnUnsubscribe: true},
-  );
+  const maintainExistingFsList = onEachFilesystem(fs => {
+    if (fs.isDisposed()) {
+      return;
+    } else {
+      const hostname = fs.getHostname();
+      hostnameToFilesystem.set(hostname, fs);
+      return () => {
+        fs.dispose();
+        hostnameToFilesystem.delete(hostname);
+      };
+    }
+  }, {
+    emitCurrent: false,
+    disposeOnUnsubscribe: true
+  });
+  const sub = (0, _configuration().connectionProfileUpdates)({
+    withCurrent: true
+  }).subscribe(change => {
+    if (change.kind === 'added') {
+      const {
+        profile
+      } = change;
 
-  const sub = connectionProfileUpdates({withCurrent: true}).subscribe(
-    change => {
-      if (change.kind === 'added') {
-        const {profile} = change;
-        try {
-          const server = new Server(profile);
-          const rfs = createRemoteFileSystem(profile.hostname, server);
-          logger.info(`Loaded filesystem ${profile.hostname}`);
-          filesystemSubject.next(rfs);
-        } catch (error) {
-          logger.error(error);
-          vscode.window.showErrorMessage(
-            `Could not load filesystem for ${profile.hostname}.`,
-          );
-        }
-      } else if (change.kind === 'removed') {
-        const {hostname} = change;
-        const fs = hostnameToFilesystem.get(hostname);
-        if (fs != null) {
-          fs.dispose();
-          logger.info(`Unloaded filesystem ${hostname}`);
-        }
-      } else {
-        (change: empty);
+      try {
+        const server = new (_Server().Server)(profile);
+        const rfs = createRemoteFileSystem(profile.hostname, server);
+        logger.info(`Loaded filesystem ${profile.hostname}`);
+        filesystemSubject.next(rfs);
+      } catch (error) {
+        logger.error(error);
+        vscode().window.showErrorMessage(`Could not load filesystem for ${profile.hostname}.`);
       }
-    },
-  );
+    } else if (change.kind === 'removed') {
+      const {
+        hostname
+      } = change;
+      const fs = hostnameToFilesystem.get(hostname);
 
+      if (fs != null) {
+        fs.dispose();
+        logger.info(`Unloaded filesystem ${hostname}`);
+      }
+    } else {
+      change;
+    }
+  });
   return {
     dispose() {
       maintainExistingFsList.dispose();
       sub.unsubscribe();
-    },
+    }
+
   };
 }
 
-function createRemoteFileSystem(
-  hostname: string,
-  server: Server,
-): RemoteFileSystem {
-  const useThriftFs = vscode.workspace
-    .getConfiguration('big-dig')
-    .get('rfs.option', false);
+function createRemoteFileSystem(hostname, server) {
+  const useThriftFs = vscode().workspace.getConfiguration('big-dig').get('rfs.option', false);
   logger.info(`Using Thrift remote file system: ${String(useThriftFs)}`);
+
   if (useThriftFs) {
-    return new ThriftRemoteFileSystem(hostname, server);
+    return new (_ThriftRemoteFileSystem().ThriftRemoteFileSystem)(hostname, server);
   }
-  return new RemoteFileSystem(hostname, server);
+
+  return new (_RemoteFileSystem().RemoteFileSystem)(hostname, server);
 }

@@ -1,3 +1,23 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getTransport = getTransport;
+exports.getProtocol = getProtocol;
+
+function _thrift() {
+  const data = _interopRequireDefault(require("thrift"));
+
+  _thrift = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,36 +26,36 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ThriftServiceConfig} from './types';
-
-import thrift from 'thrift';
-
-export function getTransport(config: ThriftServiceConfig) {
+function getTransport(config) {
   switch (config.thriftTransport) {
     case 'framed':
-      return thrift.TFramedTransport;
+      return _thrift().default.TFramedTransport;
+
     case 'buffered':
-      return thrift.TBufferedTransport;
+      return _thrift().default.TBufferedTransport;
+
     default:
-      (config.thriftTransport: empty);
+      config.thriftTransport;
       throw new Error(`Invalid Thrift Transport ${config.thriftTransport}`);
   }
 }
 
-export function getProtocol(config: ThriftServiceConfig) {
+function getProtocol(config) {
   switch (config.thriftProtocol) {
     case 'binary':
-      return thrift.TBinaryProtocol;
+      return _thrift().default.TBinaryProtocol;
+
     case 'compact':
-      return thrift.TCompactProtocol;
+      return _thrift().default.TCompactProtocol;
+
     case 'json':
-      return thrift.TJSONProtocol;
+      return _thrift().default.TJSONProtocol;
+
     default:
-      (config.thriftProtocol: empty);
+      config.thriftProtocol;
       throw new Error(`Invalid Thrift Protocol ${config.thriftProtocol}`);
   }
 }

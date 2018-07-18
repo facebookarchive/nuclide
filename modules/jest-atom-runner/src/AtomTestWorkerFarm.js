@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _AtomTestWorker() {
+  const data = _interopRequireDefault(require("./AtomTestWorker"));
+
+  _AtomTestWorker = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,57 +25,40 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 /* An abstroction that acts as a sempaphore for Atom workers. */
 
 /* eslint-disable nuclide-internal/no-commonjs */
-
-import type {ServerID} from './utils';
-import type {IPCServer} from './ipc-server';
-import type {Test, GlobalConfig, TestResult} from './types';
-
-import AtomTestWorker from './AtomTestWorker';
-
 class AtomTestWorkerFarm {
-  _workers: Array<AtomTestWorker>;
-  _queue: Array<{
-    test: Test,
-    onStart: Test => void,
-    resolve: TestResult => void,
-    reject: Error => void,
-  }>;
-
   constructor({
     ipcServer,
     serverID,
     globalConfig,
-    concurrency,
-  }: {
-    ipcServer: IPCServer,
-    serverID: ServerID,
-    globalConfig: GlobalConfig,
-    concurrency: number,
+    concurrency
   }) {
     if (concurrency < 1) {
-      throw new Error(
-        `concurrency has to be greater than 1, given: ${concurrency}`,
-      );
+      throw new Error(`concurrency has to be greater than 1, given: ${concurrency}`);
     }
+
     this._workers = [];
     this._queue = [];
+
     for (let i = 0; i < concurrency; i++) {
-      const worker = new AtomTestWorker({ipcServer, serverID, globalConfig});
+      const worker = new (_AtomTestWorker().default)({
+        ipcServer,
+        serverID,
+        globalConfig
+      });
+
       this._workers.push(worker);
     }
   }
 
   async start() {
-    await Promise.all(this._workers.map(w => w.start())).then(results =>
-      results.forEach(() => this._processNext()),
-    );
+    await Promise.all(this._workers.map(w => w.start())).then(results => results.forEach(() => this._processNext()));
   }
 
   async stop() {
@@ -65,30 +67,39 @@ class AtomTestWorkerFarm {
 
   _processNext() {
     const availableWorker = this._workers.find(w => !w.isBusy());
+
     if (availableWorker) {
       const nextInQueue = this._queue.shift();
+
       if (nextInQueue) {
         nextInQueue.onStart(nextInQueue.test);
-        availableWorker
-          .runTest(nextInQueue.test)
-          .then(testResult => {
-            nextInQueue.resolve(testResult);
-            this._processNext();
-          })
-          .catch(error => {
-            nextInQueue.reject(error);
-            this._processNext();
-          });
+        availableWorker.runTest(nextInQueue.test).then(testResult => {
+          nextInQueue.resolve(testResult);
+
+          this._processNext();
+        }).catch(error => {
+          nextInQueue.reject(error);
+
+          this._processNext();
+        });
       }
     }
   }
 
-  runTest(test: Test, onStart: Test => void): Promise<TestResult> {
+  runTest(test, onStart) {
     return new Promise((resolve, reject) => {
-      this._queue.push({test, resolve, reject, onStart});
+      this._queue.push({
+        test,
+        resolve,
+        reject,
+        onStart
+      });
+
       this._processNext();
     });
   }
+
 }
 
-export default AtomTestWorkerFarm;
+var _default = AtomTestWorkerFarm;
+exports.default = _default;

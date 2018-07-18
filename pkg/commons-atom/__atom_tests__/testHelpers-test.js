@@ -1,3 +1,29 @@
+"use strict";
+
+var _atom = require("atom");
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _testHelpers() {
+  const data = require("../testHelpers");
+
+  _testHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,74 +31,66 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import {Range} from 'atom';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {dispatchKeyboardEvent} from '../testHelpers';
-import invariant from 'assert';
-
 const attachToDom = el => {
   // Attach the workspace to the DOM so focus can be determined in tests below.
   const testContainer = document.createElement('div');
-  invariant(document.body);
+
+  if (!document.body) {
+    throw new Error("Invariant violation: \"document.body\"");
+  }
+
   document.body.appendChild(testContainer);
   testContainer.appendChild(el);
 };
 
 describe('dispatchKeyboardEvent', () => {
   it('sends copy and paste', async () => {
-    const file = await fsPromise.tempfile();
+    const file = await _fsPromise().default.tempfile();
     const editor = await atom.workspace.open(file);
-    attachToDom(atom.views.getView(atom.workspace));
-    // jasmine.attachToDOM();
+    attachToDom(atom.views.getView(atom.workspace)); // jasmine.attachToDOM();
+
     editor.insertText('text');
     const events = [];
-    atom.keymaps.onDidMatchBinding(event => events.push(event));
+    atom.keymaps.onDidMatchBinding(event => events.push(event)); // Copy line.
 
-    // Copy line.
-    dispatchKeyboardEvent('c', document.activeElement, {cmd: true});
-    // Paste copied line.
-    dispatchKeyboardEvent('v', document.activeElement, {cmd: true});
+    (0, _testHelpers().dispatchKeyboardEvent)('c', document.activeElement, {
+      cmd: true
+    }); // Paste copied line.
 
+    (0, _testHelpers().dispatchKeyboardEvent)('v', document.activeElement, {
+      cmd: true
+    });
     expect(events.length).toBe(2);
     expect(events[0].keystrokes).toBe('cmd-c');
     expect(events[1].keystrokes).toBe('cmd-v');
     expect(editor.getText()).toBe('texttext');
   });
-
   it('sends escape', async () => {
-    await atom.workspace.open(await fsPromise.tempfile());
+    await atom.workspace.open((await _fsPromise().default.tempfile()));
     attachToDom(atom.views.getView(atom.workspace));
     const events = [];
-    atom.keymaps.onDidMatchBinding(event => events.push(event));
+    atom.keymaps.onDidMatchBinding(event => events.push(event)); // Hit escape key.
 
-    // Hit escape key.
-    dispatchKeyboardEvent('escape', document.activeElement);
-
+    (0, _testHelpers().dispatchKeyboardEvent)('escape', document.activeElement);
     expect(events.length).toBe(1);
     expect(events[0].keystrokes).toBe('escape');
   });
 });
-
 describe('rangeMatchers', () => {
   describe('toEqualAtomRange', () => {
     it('determines when two Ranges are equal.', () => {
-      expect(new Range([0, 0], [0, 0])).toEqual(new Range([0, 0], [0, 0]));
-      expect(new Range([0, 0], [0, 0])).not.toEqual(new Range([1, 0], [0, 0]));
+      expect(new _atom.Range([0, 0], [0, 0])).toEqual(new _atom.Range([0, 0], [0, 0]));
+      expect(new _atom.Range([0, 0], [0, 0])).not.toEqual(new _atom.Range([1, 0], [0, 0]));
     });
   });
-
   describe('toEqualAtomRanges', () => {
     it('determines when two arrays of Ranges are equal.', () => {
-      const ranges = [new Range([0, 0], [0, 0]), new Range([1, 1], [1, 1])];
-      const sameRanges = [new Range([0, 0], [0, 0]), new Range([1, 1], [1, 1])];
-      const differentRanges = [
-        new Range([0, 0], [0, 0]),
-        new Range([2, 2], [2, 2]),
-      ];
+      const ranges = [new _atom.Range([0, 0], [0, 0]), new _atom.Range([1, 1], [1, 1])];
+      const sameRanges = [new _atom.Range([0, 0], [0, 0]), new _atom.Range([1, 1], [1, 1])];
+      const differentRanges = [new _atom.Range([0, 0], [0, 0]), new _atom.Range([2, 2], [2, 2])];
       expect(ranges).toEqual(sameRanges);
       expect(ranges).not.toEqual(differentRanges);
     });

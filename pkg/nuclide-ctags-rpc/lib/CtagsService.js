@@ -1,3 +1,53 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCtagsService = getCtagsService;
+exports.CtagsService = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,117 +55,88 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {arrayCompact} from 'nuclide-commons/collection';
-import {getLogger} from 'log4js';
-
 const TAGS_FILENAME = 'tags';
 
-export type CtagsResult = {
-  name: string,
-  file: NuclideUri,
-  // As specified in the tags file; defaults to 0 if not specified.
-  lineNumber: number,
-  // As specified in the tags file; defaults to empty if not specified.
-  kind: string,
-  pattern?: string,
-  fields?: Map<string, string>,
-};
-
-export class CtagsService {
-  _tagsPath: NuclideUri;
-
-  constructor(tagsPath: NuclideUri) {
+class CtagsService {
+  constructor(tagsPath) {
     this._tagsPath = tagsPath;
   }
 
-  getTagsPath(): Promise<NuclideUri> {
+  getTagsPath() {
     return Promise.resolve(this._tagsPath);
   }
 
-  findTags(
-    query: string,
-    options?: {
-      caseInsensitive?: boolean,
-      partialMatch?: boolean,
-      limit?: number,
-    },
-  ): Promise<Array<CtagsResult>> {
+  findTags(query, options) {
     let ctags;
+
     try {
       ctags = require('nuclide-prebuilt-libs/ctags');
     } catch (e) {
-      getLogger('nuclide-ctags-rpc').error(
-        'Could not load the ctags package:',
-        e,
-      );
+      (0, _log4js().getLogger)('nuclide-ctags-rpc').error('Could not load the ctags package:', e);
       return Promise.resolve([]);
     }
 
-    const dir = nuclideUri.dirname(this._tagsPath);
+    const dir = _nuclideUri().default.dirname(this._tagsPath);
+
     return new Promise((resolve, reject) => {
-      ctags.findTags(
-        this._tagsPath,
-        query,
-        options,
-        async (error, tags: Array<Object>) => {
-          if (error != null) {
-            reject(error);
-          } else {
-            const processed = await Promise.all(
-              tags.map(async tag => {
-                // Convert relative paths to absolute ones.
-                tag.file = nuclideUri.join(dir, tag.file);
-                // Tag files are often not perfectly in sync - filter out missing files.
-                if (await fsPromise.exists(tag.file)) {
-                  if (tag.fields != null) {
-                    const map = new Map();
-                    for (const key in tag.fields) {
-                      map.set(key, tag.fields[key]);
-                    }
-                    tag.fields = map;
-                  }
-                  return tag;
+      ctags.findTags(this._tagsPath, query, options, async (error, tags) => {
+        if (error != null) {
+          reject(error);
+        } else {
+          const processed = await Promise.all(tags.map(async tag => {
+            // Convert relative paths to absolute ones.
+            tag.file = _nuclideUri().default.join(dir, tag.file); // Tag files are often not perfectly in sync - filter out missing files.
+
+            if (await _fsPromise().default.exists(tag.file)) {
+              if (tag.fields != null) {
+                const map = new Map();
+
+                for (const key in tag.fields) {
+                  map.set(key, tag.fields[key]);
                 }
-                return null;
-              }),
-            );
-            // $FlowFixMe(>=0.55.0) Flow suppress
-            resolve(arrayCompact(processed));
-          }
-        },
-      );
+
+                tag.fields = map;
+              }
+
+              return tag;
+            }
+
+            return null;
+          })); // $FlowFixMe(>=0.55.0) Flow suppress
+
+          resolve((0, _collection().arrayCompact)(processed));
+        }
+      });
     });
   }
 
-  dispose(): void {
-    // nothing here
+  dispose() {// nothing here
   }
+
 }
 
-export async function getCtagsService(uri: NuclideUri): Promise<?CtagsService> {
-  const dir = await fsPromise.findNearestFile(
-    TAGS_FILENAME,
-    nuclideUri.dirname(uri),
-  );
+exports.CtagsService = CtagsService;
+
+async function getCtagsService(uri) {
+  const dir = await _fsPromise().default.findNearestFile(TAGS_FILENAME, _nuclideUri().default.dirname(uri));
+
   if (dir == null) {
     return null;
-  }
-  // TAGS and tags are very much incompatible (emacs vs ctags style).
+  } // TAGS and tags are very much incompatible (emacs vs ctags style).
   // Currently the TAGS format also makes node-ctags crash (!!)
   // As such, on case-insensitive filesystems we need to double check.
+
+
   if (process.platform !== 'linux') {
-    const files = await fsPromise.readdir(dir);
+    const files = await _fsPromise().default.readdir(dir);
+
     if (!files.includes(TAGS_FILENAME)) {
       return null;
     }
   }
-  return new CtagsService(nuclideUri.join(dir, TAGS_FILENAME));
+
+  return new CtagsService(_nuclideUri().default.join(dir, TAGS_FILENAME));
 }

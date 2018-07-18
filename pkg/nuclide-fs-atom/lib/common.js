@@ -1,3 +1,25 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.rejectWrite = rejectWrite;
+exports.rejectWriteSync = rejectWriteSync;
+exports.fromEntry = fromEntry;
+exports.getParentDir = getParentDir;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,61 +27,38 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ArchiveFileSystem} from './ArchiveFileSystem';
-import type {DirectoryEntry} from '../../nuclide-fs';
-import type {ArchiveDirectory} from './ArchiveDirectory';
-import type {ArchiveFile} from './ArchiveFile';
-import type {ArchiveFileAsDirectory} from './ArchiveFileAsDirectory';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export type ParentDirectory =
-  | ArchiveDirectory
-  | ArchiveFileAsDirectory
-  | atom$Directory;
-
-export function rejectWrite<T>(): Promise<T> {
+function rejectWrite() {
   return Promise.reject(newWriteError());
 }
 
-export function rejectWriteSync<T>(): T {
+function rejectWriteSync() {
   throw newWriteError();
 }
 
-function newWriteError(): Error {
+function newWriteError() {
   return new Error('Archives do not support write operations');
 }
 
-export function fromEntry(
-  afs: ArchiveFileSystem,
-  dirOrArchive: NuclideUri,
-  isDir: boolean,
-  entry: DirectoryEntry,
-): ArchiveDirectory | ArchiveFile | ArchiveFileAsDirectory {
+function fromEntry(afs, dirOrArchive, isDir, entry) {
   const [name, isFile] = entry;
-  const path = isDir
-    ? nuclideUri.join(dirOrArchive, name)
-    : nuclideUri.archiveJoin(dirOrArchive, name);
+  const path = isDir ? _nuclideUri().default.join(dirOrArchive, name) : _nuclideUri().default.archiveJoin(dirOrArchive, name);
+
   if (!isFile) {
     return afs.newArchiveDirectory(path);
-  } else if (nuclideUri.hasKnownArchiveExtension(name)) {
+  } else if (_nuclideUri().default.hasKnownArchiveExtension(name)) {
     return afs.newArchiveFileAsDirectory(path);
   } else {
     return afs.newArchiveFile(path);
   }
 }
 
-export function getParentDir(
-  afs: ArchiveFileSystem,
-  path: NuclideUri,
-): ParentDirectory {
-  const parentPath = nuclideUri.dirname(path);
-  if (nuclideUri.isInArchive(parentPath)) {
+function getParentDir(afs, path) {
+  const parentPath = _nuclideUri().default.dirname(path);
+
+  if (_nuclideUri().default.isInArchive(parentPath)) {
     return afs.newArchiveDirectory(parentPath);
   } else {
     return afs.newArchiveFileAsDirectory(parentPath);

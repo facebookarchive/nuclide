@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PickRefactorComponent = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function Actions() {
+  const data = _interopRequireWildcard(require("../refactorActions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Button() {
+  const data = require("../../../../../nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,127 +49,107 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+class PickRefactorComponent extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-import type {Store, PickPhase, AvailableRefactoring} from '../types';
-
-import * as React from 'react';
-import * as Actions from '../refactorActions';
-import {Button} from 'nuclide-commons-ui/Button';
-import classNames from 'classnames';
-
-type State = {
-  selectedRefactoring: ?AvailableRefactoring,
-};
-
-export class PickRefactorComponent extends React.Component<
-  {
-    pickPhase: PickPhase,
-    store: Store,
-  },
-  State,
-> {
-  state: State = {
-    selectedRefactoring: null,
-  };
-
-  render(): React.Node {
-    const {availableRefactorings} = this.props.pickPhase;
-    if (availableRefactorings.length === 0) {
-      return <div>No refactorings available at this location</div>;
-    }
-
-    const elements = availableRefactorings.map(r =>
-      this._renderRefactorOption(r),
-    );
-
-    return (
-      <div className="select-list nuclide-refactorizer-pick-refactor">
-        <ol className="list-group">{elements}</ol>
-      </div>
-    );
+    return _temp = super(...args), this.state = {
+      selectedRefactoring: null
+    }, _temp;
   }
 
-  _pickRefactor(refactoring: AvailableRefactoring): void {
+  render() {
+    const {
+      availableRefactorings
+    } = this.props.pickPhase;
+
+    if (availableRefactorings.length === 0) {
+      return React.createElement("div", null, "No refactorings available at this location");
+    }
+
+    const elements = availableRefactorings.map(r => this._renderRefactorOption(r));
+    return React.createElement("div", {
+      className: "select-list nuclide-refactorizer-pick-refactor"
+    }, React.createElement("ol", {
+      className: "list-group"
+    }, elements));
+  }
+
+  _pickRefactor(refactoring) {
     if (refactoring.kind === 'freeform' && refactoring.arguments.length === 0) {
-      this.props.store.dispatch(
-        Actions.execute(this.props.pickPhase.provider, {
-          kind: 'freeform',
-          editor: this.props.pickPhase.editor,
-          originalRange: this.props.pickPhase.originalRange,
-          id: refactoring.id,
-          range: refactoring.range,
-          arguments: new Map(),
-        }),
-      );
+      this.props.store.dispatch(Actions().execute(this.props.pickPhase.provider, {
+        kind: 'freeform',
+        editor: this.props.pickPhase.editor,
+        originalRange: this.props.pickPhase.originalRange,
+        id: refactoring.id,
+        range: refactoring.range,
+        arguments: new Map()
+      }));
       return;
     }
-    this.props.store.dispatch(Actions.pickedRefactor(refactoring));
+
+    this.props.store.dispatch(Actions().pickedRefactor(refactoring));
   }
 
-  _select(selectedRefactoring: AvailableRefactoring): void {
+  _select(selectedRefactoring) {
     this.setState({
-      selectedRefactoring,
+      selectedRefactoring
     });
   }
 
-  _renderRefactorOption(refactoring: AvailableRefactoring): React.Node {
+  _renderRefactorOption(refactoring) {
     switch (refactoring.kind) {
       case 'rename':
-        return (
-          <li>
-            <Button
-              // Used to identify this element in integration tests
-              className="nuclide-refactorizer-pick-rename"
-              onClick={() => {
-                this._pickRefactor(refactoring);
-              }}>
-              Rename
-            </Button>
-          </li>
-        );
+        return React.createElement("li", null, React.createElement(_Button().Button // Used to identify this element in integration tests
+        , {
+          className: "nuclide-refactorizer-pick-rename",
+          onClick: () => {
+            this._pickRefactor(refactoring);
+          }
+        }, "Rename"));
+
       case 'freeform':
         const selectable = !refactoring.disabled;
-        const selected =
-          selectable && refactoring === this.state.selectedRefactoring;
+        const selected = selectable && refactoring === this.state.selectedRefactoring;
         const props = {};
-        props.className = classNames('two-lines', {
+        props.className = (0, _classnames().default)('two-lines', {
           'nuclide-refactorizer-selectable': selectable,
           'nuclide-refactorizer-selected': selected,
-          'nuclide-refactorizer-unselectable': !selectable,
+          'nuclide-refactorizer-unselectable': !selectable
         });
+
         props.onMouseEnter = () => this._select(refactoring);
+
         if (refactoring.disabled == null || refactoring.disabled === false) {
           props.onClick = () => {
             this._pickRefactor(refactoring);
           };
         }
-        const refactoringOption = (
-          <li {...props}>
-            <div
-              className={classNames({
-                'nuclide-refactorizer-selectable-text': selectable,
-                'nuclide-refactorizer-selected-text': selected,
-                'nuclide-refactorizer-unselectable-text': !selectable,
-              })}>
-              {refactoring.name}
-            </div>
-            <div
-              className={classNames('text-smaller', {
-                'nuclide-refactorizer-selectable-text': selectable,
-                'nuclide-refactorizer-selected-text': selected,
-                'nuclide-refactorizer-unselectable-text': !selectable,
-              })}>
-              {refactoring.description}
-            </div>
-          </li>
-        );
+
+        const refactoringOption = React.createElement("li", props, React.createElement("div", {
+          className: (0, _classnames().default)({
+            'nuclide-refactorizer-selectable-text': selectable,
+            'nuclide-refactorizer-selected-text': selected,
+            'nuclide-refactorizer-unselectable-text': !selectable
+          })
+        }, refactoring.name), React.createElement("div", {
+          className: (0, _classnames().default)('text-smaller', {
+            'nuclide-refactorizer-selectable-text': selectable,
+            'nuclide-refactorizer-selected-text': selected,
+            'nuclide-refactorizer-unselectable-text': !selectable
+          })
+        }, refactoring.description));
         return refactoringOption;
+
       default:
-        (refactoring.kind: empty);
+        refactoring.kind;
         throw new Error(`Unknown refactoring kind ${refactoring.kind}`);
     }
   }
+
 }
+
+exports.PickRefactorComponent = PickRefactorComponent;

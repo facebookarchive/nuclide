@@ -1,3 +1,76 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.launchAndroidServiceOrActivity = launchAndroidServiceOrActivity;
+exports.getPidFromPackageName = getPidFromPackageName;
+exports.getAdbAttachPortTargetInfo = getAdbAttachPortTargetInfo;
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("../atom-ide-debugger-java/utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _consumeFirstProvider() {
+  const data = _interopRequireDefault(require("../nuclide-commons-atom/consumeFirstProvider"));
+
+  _consumeFirstProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAdb() {
+  const data = require("../nuclide-adb");
+
+  _nuclideAdb = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,142 +79,63 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {SshTunnelService, AdbDevice} from 'nuclide-adb/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {JavaAttachPortTargetConfig} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
-
-import nullthrows from 'nullthrows';
-import invariant from 'assert';
-import {getJavaDebuggerHelpersServiceByNuclideUri} from 'atom-ide-debugger-java/utils';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject} from 'rxjs';
-import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before
-// they can begin debugging.
-let cleanupSubject: ?Subject<void> = null;
+let cleanupSubject = null;
 
-export type AndroidDebugTargetInfo = {
-  pid: number,
-  attach: boolean,
-};
+async function launchAndroidServiceOrActivity(adbServiceUri, service, activity, action, device, packageName) {
+  const adbService = (0, _nuclideAdb().getAdbServiceByNuclideUri)(adbServiceUri);
 
-export async function launchAndroidServiceOrActivity(
-  adbServiceUri: NuclideUri,
-  service: ?string,
-  activity: ?string,
-  action: ?string,
-  device: AdbDevice,
-  packageName: string,
-): Promise<void> {
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
   if (service != null) {
-    await adbService.launchService(
-      device.serial,
-      packageName,
-      service || '',
-      true,
-    );
+    await adbService.launchService(device.serial, packageName, service || '', true);
   } else if (activity != null && action != null) {
     // First query the device to be sure the activity exists in the specified package.
     // This will allow us to bubble up a useful error message instead of a cryptic
     // adb failure if the user simply mistyped the activity or package name.
-    const activityExists = await adbService.activityExists(
-      device.serial,
-      packageName,
-      activity || '',
-    );
+    const activityExists = await adbService.activityExists(device.serial, packageName, activity || '');
 
     if (!activityExists) {
       const packages = await adbService.getAllAvailablePackages(device.serial);
-      const availableActivities = new Set(
-        packages.filter(line => line.includes(packageName + '/')),
-      );
-      atom.notifications.addError(
-        `Activity ${activity || ''} does not exist in package ` +
-          packageName +
-          '\n' +
-          'Did you mean one of these activities: ' +
-          '\n' +
-          Array.from(availableActivities)
-            .map(activityLine => activityLine.split('/')[1])
-            .join('\n'),
-      );
+      const availableActivities = new Set(packages.filter(line => line.includes(packageName + '/')));
+      atom.notifications.addError(`Activity ${activity || ''} does not exist in package ` + packageName + '\n' + 'Did you mean one of these activities: ' + '\n' + Array.from(availableActivities).map(activityLine => activityLine.split('/')[1]).join('\n'));
     }
 
-    await adbService.launchActivity(
-      device.serial,
-      packageName,
-      activity || '',
-      true,
-      action,
-    );
+    await adbService.launchActivity(device.serial, packageName, activity || '', true, action);
   }
 }
 
-export async function getPidFromPackageName(
-  adbServiceUri: NuclideUri,
-  device: AdbDevice,
-  packageName: string,
-): Promise<number> {
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  const pid = await adbService.getPidFromPackageName(
-    device.serial,
-    packageName,
-  );
+async function getPidFromPackageName(adbServiceUri, device, packageName) {
+  const adbService = (0, _nuclideAdb().getAdbServiceByNuclideUri)(adbServiceUri);
+  const pid = await adbService.getPidFromPackageName(device.serial, packageName);
+
   if (!Number.isInteger(pid)) {
-    throw new Error(
-      `Fail to get pid for package: ${packageName}. Instead got: ${pid}`,
-    );
+    throw new Error(`Fail to get pid for package: ${packageName}. Instead got: ${pid}`);
   }
+
   return pid;
 }
 
-export async function getAdbAttachPortTargetInfo(
-  device: AdbDevice,
-  adbServiceUri: NuclideUri,
-  targetUri: NuclideUri,
-  pid: ?number,
-  subscriptions: UniversalDisposable,
-  packageName: string,
-): Promise<JavaAttachPortTargetConfig> {
-  const tunnelRequired =
-    nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
-  const tunnelService = tunnelRequired
-    ? (await consumeFirstProvider('nuclide.ssh-tunnel'): ?SshTunnelService)
-    : null;
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  // tunnel Service's getAvailableServerPort does something weird where it
+async function getAdbAttachPortTargetInfo(device, adbServiceUri, targetUri, pid, subscriptions, packageName) {
+  const tunnelRequired = _nuclideUri().default.isLocal(adbServiceUri) && _nuclideUri().default.isRemote(targetUri);
+
+  const tunnelService = tunnelRequired ? await (0, _consumeFirstProvider().default)('nuclide.ssh-tunnel') : null;
+  const adbService = (0, _nuclideAdb().getAdbServiceByNuclideUri)(adbServiceUri); // tunnel Service's getAvailableServerPort does something weird where it
   //   wants adbServiceUri to be either '' or 'localhost'
-  const adbPort = tunnelRequired
-    ? await nullthrows(tunnelService).getAvailableServerPort(
-        nuclideUri.isLocal(adbServiceUri) ? 'localhost' : adbServiceUri,
-      )
-    : await getJavaDebuggerHelpersServiceByNuclideUri(
-        adbServiceUri,
-      ).getPortForJavaDebugger();
-  const forwardSpec = await adbService.forwardJdwpPortToPid(
-    device.serial,
-    adbPort,
-    pid || 0,
-  );
+
+  const adbPort = tunnelRequired ? await (0, _nullthrows().default)(tunnelService).getAvailableServerPort(_nuclideUri().default.isLocal(adbServiceUri) ? 'localhost' : adbServiceUri) : await (0, _utils().getJavaDebuggerHelpersServiceByNuclideUri)(adbServiceUri).getPortForJavaDebugger();
+  const forwardSpec = await adbService.forwardJdwpPortToPid(device.serial, adbPort, pid || 0);
 
   if (cleanupSubject != null) {
     await cleanupSubject.toPromise();
   }
-  cleanupSubject = new Subject();
+
+  cleanupSubject = new _RxMin.Subject();
   subscriptions.add(async () => {
-    const result = await adbService.removeJdwpForwardSpec(
-      device.serial,
-      forwardSpec,
-    );
+    const result = await adbService.removeJdwpForwardSpec(device.serial, forwardSpec);
+
     if (result.trim().startsWith('error')) {
       // TODO(Ericblue): The OneWorld proxy swaps TCP forward for a local filesystem
       // redirection, which confuses adb and prevents proper removal of
@@ -154,25 +148,30 @@ export async function getAdbAttachPortTargetInfo(
       cleanupSubject.complete();
     }
   });
-
   const attachPort = await new Promise(async (resolve, reject) => {
     try {
       if (!tunnelRequired) {
         resolve(adbPort);
         return;
       }
-      invariant(tunnelService);
-      const debuggerPort = await tunnelService.getAvailableServerPort(
-        targetUri,
-      );
+
+      if (!tunnelService) {
+        throw new Error("Invariant violation: \"tunnelService\"");
+      }
+
+      const debuggerPort = await tunnelService.getAvailableServerPort(targetUri);
       const tunnel = {
         description: 'Java debugger',
         from: {
-          host: nuclideUri.getHostname(targetUri),
+          host: _nuclideUri().default.getHostname(targetUri),
           port: debuggerPort,
-          family: 4,
+          family: 4
         },
-        to: {host: 'localhost', port: adbPort, family: 4},
+        to: {
+          host: 'localhost',
+          port: adbPort,
+          family: 4
+        }
       };
       const openTunnel = tunnelService.openTunnels([tunnel]).share();
       subscriptions.add(openTunnel.subscribe());
@@ -186,6 +185,6 @@ export async function getAdbAttachPortTargetInfo(
     debugMode: 'attach',
     machineName: 'localhost',
     port: attachPort,
-    packageName,
+    packageName
   };
 }

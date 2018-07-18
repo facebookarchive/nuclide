@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _collection() {
+  const data = require("./collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,39 +23,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import invariant from 'assert';
-import {arrayEqual} from './collection';
-
-type memoizeUntilChanged = (<A, B, C, D, R, U>(
-  func: (A, B, C, D) => R,
-  keySelector_?: (A, B, C, D) => U,
-  compareKeys_?: (U, U) => boolean,
-) => (A, B, C, D) => R) &
-  (<A, B, C, R, U>(
-    func: (A, B, C) => R,
-    keySelector_?: (A, B, C) => U,
-    compareKeys_?: (U, U) => boolean,
-  ) => (A, B, C) => R) &
-  (<A, B, R, U>(
-    func: (A, B) => R,
-    keySelector_?: (A, B) => U,
-    compareKeys_?: (U, U) => boolean,
-  ) => (A, B) => R) &
-  (<A, R, U>(
-    func: (A) => R,
-    keySelector_?: (A) => U,
-    compareKeys_?: (U, U) => boolean,
-  ) => A => R) &
-  (<R>(func: () => R) => () => R) &
-  (<T, R, U>(
-    func: (...any: $ReadOnlyArray<T>) => R,
-    (...any: $ReadOnlyArray<T>) => U,
-    compareKeys_?: (U, U) => boolean,
-  ) => (...any: $ReadOnlyArray<T>) => R);
 
 /**
  * Create a memoized version of the provided function that caches only the latest result. This is
@@ -77,25 +64,33 @@ type memoizeUntilChanged = (<A, B, C, D, R, U>(
  *       }
  *     }
  */
-export default ((func, keySelector_?, compareKeys_?) => {
-  invariant(
-    !(keySelector_ == null && compareKeys_ != null),
-    "You can't provide a compare function without also providing a key selector.",
-  );
+var _default = (func, keySelector_, compareKeys_) => {
+  if (!!(keySelector_ == null && compareKeys_ != null)) {
+    throw new Error("You can't provide a compare function without also providing a key selector.");
+  }
 
   let prevKey = null;
   let prevResult;
   const keySelector = keySelector_ || DEFAULT_KEY_SELECTOR;
-  const compareKeys = compareKeys_ || arrayEqual;
-  return function(...args) {
-    const key = (keySelector: Function)(...args);
-    invariant(key != null, 'Key cannot be null');
+
+  const compareKeys = compareKeys_ || _collection().arrayEqual;
+
+  return function (...args) {
+    const key = keySelector(...args);
+
+    if (!(key != null)) {
+      throw new Error('Key cannot be null');
+    }
+
     if (prevKey == null || !compareKeys(key, prevKey)) {
       prevKey = key;
-      prevResult = (func: Function).apply(this, args);
+      prevResult = func.apply(this, args);
     }
+
     return prevResult;
   };
-}: memoizeUntilChanged);
+};
+
+exports.default = _default;
 
 const DEFAULT_KEY_SELECTOR = (...args) => args;
