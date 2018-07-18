@@ -204,18 +204,51 @@ FileChangeEvent.prototype.write = function(output) {
 };
 
 var FileStat = module.exports.FileStat = function(args) {
-  this.fsize = null;
+  this.dev = null;
+  this.mode = null;
+  this.nlink = null;
+  this.uid = null;
+  this.gid = null;
+  this.rdev = null;
+  this.blksize = null;
+  this.ino = null;
+  this.size = null;
+  this.blocks = null;
   this.atime = null;
   this.mtime = null;
   this.ctime = null;
+  this.birthtime = null;
   this.ftype = null;
-  this.nlink = null;
-  this.mode = null;
-  this.uid = null;
-  this.gid = null;
   if (args) {
-    if (args.fsize !== undefined && args.fsize !== null) {
-      this.fsize = args.fsize;
+    if (args.dev !== undefined && args.dev !== null) {
+      this.dev = args.dev;
+    }
+    if (args.mode !== undefined && args.mode !== null) {
+      this.mode = args.mode;
+    }
+    if (args.nlink !== undefined && args.nlink !== null) {
+      this.nlink = args.nlink;
+    }
+    if (args.uid !== undefined && args.uid !== null) {
+      this.uid = args.uid;
+    }
+    if (args.gid !== undefined && args.gid !== null) {
+      this.gid = args.gid;
+    }
+    if (args.rdev !== undefined && args.rdev !== null) {
+      this.rdev = args.rdev;
+    }
+    if (args.blksize !== undefined && args.blksize !== null) {
+      this.blksize = args.blksize;
+    }
+    if (args.ino !== undefined && args.ino !== null) {
+      this.ino = args.ino;
+    }
+    if (args.size !== undefined && args.size !== null) {
+      this.size = args.size;
+    }
+    if (args.blocks !== undefined && args.blocks !== null) {
+      this.blocks = args.blocks;
     }
     if (args.atime !== undefined && args.atime !== null) {
       this.atime = args.atime;
@@ -226,20 +259,11 @@ var FileStat = module.exports.FileStat = function(args) {
     if (args.ctime !== undefined && args.ctime !== null) {
       this.ctime = args.ctime;
     }
+    if (args.birthtime !== undefined && args.birthtime !== null) {
+      this.birthtime = args.birthtime;
+    }
     if (args.ftype !== undefined && args.ftype !== null) {
       this.ftype = args.ftype;
-    }
-    if (args.nlink !== undefined && args.nlink !== null) {
-      this.nlink = args.nlink;
-    }
-    if (args.mode !== undefined && args.mode !== null) {
-      this.mode = args.mode;
-    }
-    if (args.uid !== undefined && args.uid !== null) {
-      this.uid = args.uid;
-    }
-    if (args.gid !== undefined && args.gid !== null) {
-      this.gid = args.gid;
     }
   }
 };
@@ -259,63 +283,105 @@ FileStat.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.I32) {
-        this.fsize = input.readI32();
+        this.dev = input.readI32();
       } else {
         input.skip(ftype);
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.STRING) {
-        this.atime = input.readString();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 3:
-      if (ftype == Thrift.Type.STRING) {
-        this.mtime = input.readString();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 4:
-      if (ftype == Thrift.Type.STRING) {
-        this.ctime = input.readString();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 5:
-      if (ftype == Thrift.Type.I32) {
-        this.ftype = input.readI32();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 6:
-      if (ftype == Thrift.Type.I32) {
-        this.nlink = input.readI32();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 7:
       if (ftype == Thrift.Type.I32) {
         this.mode = input.readI32();
       } else {
         input.skip(ftype);
       }
       break;
-      case 8:
+      case 3:
+      if (ftype == Thrift.Type.I32) {
+        this.nlink = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
       if (ftype == Thrift.Type.I32) {
         this.uid = input.readI32();
       } else {
         input.skip(ftype);
       }
       break;
-      case 9:
+      case 5:
       if (ftype == Thrift.Type.I32) {
         this.gid = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.I32) {
+        this.rdev = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 7:
+      if (ftype == Thrift.Type.I32) {
+        this.blksize = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 8:
+      if (ftype == Thrift.Type.I32) {
+        this.ino = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 9:
+      if (ftype == Thrift.Type.I32) {
+        this.size = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 10:
+      if (ftype == Thrift.Type.I32) {
+        this.blocks = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 11:
+      if (ftype == Thrift.Type.STRING) {
+        this.atime = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 12:
+      if (ftype == Thrift.Type.STRING) {
+        this.mtime = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 13:
+      if (ftype == Thrift.Type.STRING) {
+        this.ctime = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 14:
+      if (ftype == Thrift.Type.STRING) {
+        this.birthtime = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 15:
+      if (ftype == Thrift.Type.I32) {
+        this.ftype = input.readI32();
       } else {
         input.skip(ftype);
       }
@@ -331,49 +397,79 @@ FileStat.prototype.read = function(input) {
 
 FileStat.prototype.write = function(output) {
   output.writeStructBegin('FileStat');
-  if (this.fsize !== null && this.fsize !== undefined) {
-    output.writeFieldBegin('fsize', Thrift.Type.I32, 1);
-    output.writeI32(this.fsize);
-    output.writeFieldEnd();
-  }
-  if (this.atime !== null && this.atime !== undefined) {
-    output.writeFieldBegin('atime', Thrift.Type.STRING, 2);
-    output.writeString(this.atime);
-    output.writeFieldEnd();
-  }
-  if (this.mtime !== null && this.mtime !== undefined) {
-    output.writeFieldBegin('mtime', Thrift.Type.STRING, 3);
-    output.writeString(this.mtime);
-    output.writeFieldEnd();
-  }
-  if (this.ctime !== null && this.ctime !== undefined) {
-    output.writeFieldBegin('ctime', Thrift.Type.STRING, 4);
-    output.writeString(this.ctime);
-    output.writeFieldEnd();
-  }
-  if (this.ftype !== null && this.ftype !== undefined) {
-    output.writeFieldBegin('ftype', Thrift.Type.I32, 5);
-    output.writeI32(this.ftype);
-    output.writeFieldEnd();
-  }
-  if (this.nlink !== null && this.nlink !== undefined) {
-    output.writeFieldBegin('nlink', Thrift.Type.I32, 6);
-    output.writeI32(this.nlink);
+  if (this.dev !== null && this.dev !== undefined) {
+    output.writeFieldBegin('dev', Thrift.Type.I32, 1);
+    output.writeI32(this.dev);
     output.writeFieldEnd();
   }
   if (this.mode !== null && this.mode !== undefined) {
-    output.writeFieldBegin('mode', Thrift.Type.I32, 7);
+    output.writeFieldBegin('mode', Thrift.Type.I32, 2);
     output.writeI32(this.mode);
     output.writeFieldEnd();
   }
+  if (this.nlink !== null && this.nlink !== undefined) {
+    output.writeFieldBegin('nlink', Thrift.Type.I32, 3);
+    output.writeI32(this.nlink);
+    output.writeFieldEnd();
+  }
   if (this.uid !== null && this.uid !== undefined) {
-    output.writeFieldBegin('uid', Thrift.Type.I32, 8);
+    output.writeFieldBegin('uid', Thrift.Type.I32, 4);
     output.writeI32(this.uid);
     output.writeFieldEnd();
   }
   if (this.gid !== null && this.gid !== undefined) {
-    output.writeFieldBegin('gid', Thrift.Type.I32, 9);
+    output.writeFieldBegin('gid', Thrift.Type.I32, 5);
     output.writeI32(this.gid);
+    output.writeFieldEnd();
+  }
+  if (this.rdev !== null && this.rdev !== undefined) {
+    output.writeFieldBegin('rdev', Thrift.Type.I32, 6);
+    output.writeI32(this.rdev);
+    output.writeFieldEnd();
+  }
+  if (this.blksize !== null && this.blksize !== undefined) {
+    output.writeFieldBegin('blksize', Thrift.Type.I32, 7);
+    output.writeI32(this.blksize);
+    output.writeFieldEnd();
+  }
+  if (this.ino !== null && this.ino !== undefined) {
+    output.writeFieldBegin('ino', Thrift.Type.I32, 8);
+    output.writeI32(this.ino);
+    output.writeFieldEnd();
+  }
+  if (this.size !== null && this.size !== undefined) {
+    output.writeFieldBegin('size', Thrift.Type.I32, 9);
+    output.writeI32(this.size);
+    output.writeFieldEnd();
+  }
+  if (this.blocks !== null && this.blocks !== undefined) {
+    output.writeFieldBegin('blocks', Thrift.Type.I32, 10);
+    output.writeI32(this.blocks);
+    output.writeFieldEnd();
+  }
+  if (this.atime !== null && this.atime !== undefined) {
+    output.writeFieldBegin('atime', Thrift.Type.STRING, 11);
+    output.writeString(this.atime);
+    output.writeFieldEnd();
+  }
+  if (this.mtime !== null && this.mtime !== undefined) {
+    output.writeFieldBegin('mtime', Thrift.Type.STRING, 12);
+    output.writeString(this.mtime);
+    output.writeFieldEnd();
+  }
+  if (this.ctime !== null && this.ctime !== undefined) {
+    output.writeFieldBegin('ctime', Thrift.Type.STRING, 13);
+    output.writeString(this.ctime);
+    output.writeFieldEnd();
+  }
+  if (this.birthtime !== null && this.birthtime !== undefined) {
+    output.writeFieldBegin('birthtime', Thrift.Type.STRING, 14);
+    output.writeString(this.birthtime);
+    output.writeFieldEnd();
+  }
+  if (this.ftype !== null && this.ftype !== undefined) {
+    output.writeFieldBegin('ftype', Thrift.Type.I32, 15);
+    output.writeI32(this.ftype);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

@@ -58,11 +58,11 @@ export function createVSCodeFsError(
 export function convertToVSCodeFileStat(
   statData: filesystem_types.FileStat,
 ): vscode.FileStat {
-  const {mtime, ctime, fsize} = statData;
+  const {mtime, ctime, size} = statData;
   return {
     mtime: new Date(mtime).getTime(),
     ctime: new Date(ctime).getTime(),
-    size: fsize,
+    size,
     type: convertToVSCodeFileType(statData),
   };
 }

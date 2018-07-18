@@ -90,20 +90,26 @@ struct FileChangeEvent {
 }
 
 /**
-* Here we only keep several important fields, add more later if needed
 * Refer to: https://nodejs.org/api/fs.html#fs_class_fs_stats
 */
 struct FileStat {
-  1: i32 fsize,
-  2: string atime,
-  3: string mtime,
-  4: string ctime,
-  5: FileType ftype,
-  6: i32 nlink,
-  7: i32 mode,
-  8: i32 uid,
-  9: i32 gid,
+  1: i32 dev,
+  2: i32 mode,
+  3: i32 nlink,
+  4: i32 uid,
+  5: i32 gid,
+  6: i32 rdev,
+  7: i32 blksize,
+  8: i32 ino,
+  9: i32 size,
+  10: i32 blocks,
+  11: string atime,
+  12: string mtime,
+  13: string ctime,
+  14: string birthtime,
+  15: FileType ftype,
 }
+
 
 struct FileEntry {
   1: string fname,
