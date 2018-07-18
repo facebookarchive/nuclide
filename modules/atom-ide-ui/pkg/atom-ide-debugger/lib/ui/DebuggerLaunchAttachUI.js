@@ -74,6 +74,15 @@ function getLastUsedDebugger(
   return localStorage.getItem(key);
 }
 
+// Older published debugger packages did not provide `getTabName()`.
+// TODO(most): Remove this once newer debugger versions get adoption.
+function getTabName(provider: DebuggerLaunchAttachProvider): string {
+  if (typeof provider.getTabName === 'function') {
+    return provider.getTabName();
+  }
+  return provider._debuggingTypeName ?? '';
+}
+
 export default class DebuggerLaunchAttachUI extends React.Component<
   Props,
   State,
@@ -134,13 +143,13 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       : 'local';
 
     const selectedProvider = (this.props.providers.get(host) || []).find(
-      p => p.getTabName() === this.props.initialSelectedTabName,
+      p => getTabName(p) === this.props.initialSelectedTabName,
     );
     if (selectedProvider != null) {
       setLastUsedDebugger(
         host,
         this.props.dialogMode,
-        selectedProvider.getTabName(),
+        getTabName(selectedProvider),
       );
     }
     this._filterProviders(host);
@@ -186,7 +195,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       .filter(provider => provider != null)
       .map(provider => {
         invariant(provider != null);
-        const tabName = provider.getTabName();
+        const tabName = getTabName(provider);
         return {
           provider,
           tabName,
