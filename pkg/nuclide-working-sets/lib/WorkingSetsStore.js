@@ -36,7 +36,7 @@ export class WorkingSetsStore {
   _emitter: Emitter;
   _activeProjectDefinition: ?WorkingSetDefinition;
   _current: WorkingSet;
-  _savedDefinitions: Array<WorkingSetDefinition>;
+  _userDefinitions: Array<WorkingSetDefinition>;
   _prevApplicability: {|
     applicable: Array<WorkingSetDefinition>,
     notApplicable: Array<WorkingSetDefinition>,
@@ -58,7 +58,7 @@ export class WorkingSetsStore {
   constructor() {
     this._emitter = new Emitter();
     this._current = new WorkingSet();
-    this._savedDefinitions = [];
+    this._userDefinitions = [];
     this._prevApplicability = {
       applicable: [],
       notApplicable: [],
@@ -68,7 +68,7 @@ export class WorkingSetsStore {
     // Don't recompute definitions unless one of the properties it's derived from changes.
     (this: any).getDefinitions = memoizeUntilChanged(
       this.getDefinitions,
-      () => [this._savedDefinitions, this._activeProjectDefinition],
+      () => [this._userDefinitions, this._activeProjectDefinition],
     );
   }
 
@@ -77,7 +77,7 @@ export class WorkingSetsStore {
   }
 
   getDefinitions(): Array<WorkingSetDefinition> {
-    const definitions = this._savedDefinitions.slice();
+    const definitions = this._userDefinitions.slice();
     if (this._activeProjectDefinition != null) {
       definitions.push(this._activeProjectDefinition);
     }
@@ -108,8 +108,8 @@ export class WorkingSetsStore {
     return this._emitter.on(SAVE_DEFINITIONS_EVENT, callback);
   }
 
-  updateSavedDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    if (arrayEqual(this._savedDefinitions, definitions)) {
+  updateUserDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    if (arrayEqual(this._userDefinitions, definitions)) {
       return;
     }
     const nextDefinitions = this.getDefinitions()
@@ -287,15 +287,15 @@ export class WorkingSetsStore {
   }
 
   // Update the working set definitions. All updates should go through this method! In other words,
-  // this should be the only place where `_savedDefinitions` and `_activeProjectDefinition` are
+  // this should be the only place where `_userDefinitions` and `_activeProjectDefinition` are
   // changed.
   _updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    const {saved, activeProject} = groupBy(
+    const {userDefinitions, activeProject} = groupBy(
       definitions,
-      d => (d.isActiveProject ? 'activeProject' : 'saved'),
+      d => (d.isActiveProject ? 'activeProject' : 'userDefinitions'),
     );
     this._activeProjectDefinition = idx(activeProject, _ => _[0]);
-    this._savedDefinitions = saved || [];
+    this._userDefinitions = userDefinitions || [];
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, this.getDefinitions());
     this.updateApplicability();
   }
