@@ -212,7 +212,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           'debugger-container-new-disabled':
             service.getDebuggerMode() === DebuggerMode.RUNNING,
         })}>
-        <div className="debugger-pane-content">
+        <div className="debugger-callstack-table-div">
           <Table
             className="debugger-callstack-table"
             columns={columns}
