@@ -235,6 +235,17 @@ class InlineRenameRenderer {
           ReactDOM.render(element, container);
         },
       ),
+
+      // After enabling `insert-mode` in RenameComponent.js for those who use
+      //  the `vim-mode-plus` package, the user has to press `esc` to return to `normal-mode`.
+      //  We execute this command manually for them here.
+      //  Since most users of this package operate by default in normal mode,
+      //  we assume that they'd like to return to this mode after executing the rename.
+      () =>
+        atom.commands.dispatch(
+          atom.views.getView(editor),
+          'vim-mode-plus:activate-normal-mode',
+        ),
     );
   }
 
