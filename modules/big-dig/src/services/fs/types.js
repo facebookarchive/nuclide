@@ -13,11 +13,15 @@
 // need thrift flow type
 import filesystem_types from './gen-nodejs/filesystem_types';
 
+/**
+ * This interface should always match filesystem.thrift
+ */
 export interface RemoteFileSystemClient {
   watch(path: string, options: filesystem_types.WatchOpt): Promise<void>;
   pollFileChanges(): Promise<any>;
   createDirectory(path: string): Promise<void>;
   stat(path: string): Promise<filesystem_types.FileStat>;
+  lstat(path: string): Promise<filesystem_types.FileStat>;
   readFile(path: string): Promise<Buffer>;
   writeFile(
     path: string,

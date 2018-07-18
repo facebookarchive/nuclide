@@ -129,6 +129,15 @@ export class RemoteFileSystemServiceHandler {
 
   async stat(uri: string): Promise<filesystem_types.FileStat> {
     try {
+      const statData = await fsPromise.stat(uri);
+      return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async lstat(uri: string): Promise<filesystem_types.FileStat> {
+    try {
       const statData = await fsPromise.lstat(uri);
       return convertToThriftFileStat(statData);
     } catch (err) {

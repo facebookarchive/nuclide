@@ -86,6 +86,7 @@ export class ThriftRemoteFileSystem extends RemoteFileSystem {
   // error type which enables us to know the real cause of the problem
   async _statPath(path: string): Promise<vscode.FileStat> {
     const client = await this.getThriftClient();
+    // VSCode FileSystemProvider `stat` default: follow symlink
     const thriftStat = await client.stat(path);
     return convertToVSCodeFileStat(thriftStat);
   }

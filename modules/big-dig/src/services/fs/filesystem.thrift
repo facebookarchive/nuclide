@@ -110,7 +110,6 @@ struct FileStat {
   15: FileType ftype,
 }
 
-
 struct FileEntry {
   1: string fname,
   2: FileType ftype,
@@ -171,13 +170,21 @@ service RemoteFileSystemService {
   /**
    * Retrieve metadata about a file.
    *
-   * Note that the metadata for symbolic links should be the metadata of the
-   * file they refer to.
+   * Follow symlinks to fetch metadata of the files the symlinks refer to.
    *
    * @param uri The uri of the file to retrieve metadata about.
    * @return The file metadata about the file.
    */
   FileStat stat(1: string uri) throws(1: Error error);
+
+  /**
+   * Do not follow symlinks, the link itself is stat-ed, not the file
+   * that it refers to.
+   *
+   * @param uri The uri of the file to retrieve metadata about.
+   * @return The file metadata about the file.
+   */
+  FileStat lstat(1: string uri) throws(1: Error error);
 
   /**
    * Retrieve all entries of a directory.
