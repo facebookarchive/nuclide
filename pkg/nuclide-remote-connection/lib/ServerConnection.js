@@ -49,12 +49,20 @@ import {getLogger} from 'log4js';
 import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigRpcClient from './createBigDigRpcClient';
+import {isGkEnabled} from '../../commons-node/passesGK';
+import passesGK from '../../commons-node/passesGK';
+import {
+  getOrCreateRfsClientAdapter,
+  SUPPORTED_THRIFT_RFS_FUNCTIONS,
+} from './thrift-service-adapters/createRfsClientAdapter';
+import {FallbackToRpcError} from './thrift-service-adapters/util';
 
 import electron from 'electron';
 
 const logger = getLogger('nuclide-remote-connection');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
+const THRIFT_RFS_GK = 'nuclide_thrift_rfs';
 
 invariant(remote);
 invariant(ipc);
@@ -105,6 +113,7 @@ export class ServerConnection {
 
     const newConnection = new ServerConnection(config);
     try {
+      await passesGK(THRIFT_RFS_GK);
       await newConnection.initialize();
       return newConnection;
     } catch (e) {
@@ -521,7 +530,51 @@ export class ServerConnection {
   }
 
   getService(serviceName: string): any {
+    if (serviceName === 'FileSystemService' && isGkEnabled(THRIFT_RFS_GK)) {
+      return this._getFileSystemProxy(serviceName);
+    }
     return this.getClient().getService(serviceName);
+  }
+
+  _getFileSystemProxy(serviceName: string): any {
+    const rpcService = this.getClient().getService(serviceName);
+    const handler = {
+      get: (target, propKey, receiver) => {
+        if (SUPPORTED_THRIFT_RFS_FUNCTIONS.has(propKey)) {
+          return (...args) => {
+            return this._makeThriftServiceCall(rpcService, propKey, args);
+          };
+        }
+        return target[propKey];
+      },
+    };
+    return new Proxy(rpcService, handler);
+  }
+
+  async _makeThriftServiceCall(
+    rpcService: Object,
+    fname: string,
+    args: Array<any>,
+  ): Promise<any> {
+    try {
+      const serviceAdapter = await getOrCreateRfsClientAdapter(
+        this.getBigDigClient(),
+      );
+      // $FlowFixMe: suppress 'indexer property is missing warning'
+      const method = serviceAdapter[fname];
+      return await method.apply(serviceAdapter, args);
+    } catch (err) {
+      if (err instanceof FallbackToRpcError) {
+        logger.error(
+          `Thrift RFS method ${fname} exception, use RPC fallback`,
+          err,
+        );
+        const func = rpcService[fname];
+        return func.apply(rpcService, args);
+      }
+      // Otherwise throw legit file system errors
+      throw err;
+    }
   }
 
   _getInfoService(): InfoService {
