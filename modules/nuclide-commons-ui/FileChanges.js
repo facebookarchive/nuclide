@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {AtomTextEditor} from './AtomTextEditor';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {LoadingSpinner, LoadingSpinnerSizes} from './LoadingSpinner';
 import nullthrows from 'nullthrows';
 import {pluralize, ZERO_WIDTH_SPACE} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';
@@ -32,6 +33,7 @@ type Props = {
   // eslint-disable-next-line react/no-unused-prop-types
   hunkComponentClass?: React.ComponentType<HunkProps>,
   fullPath?: NuclideUri,
+  displayPath?: string,
   collapsable?: boolean,
   collapsedByDefault?: boolean,
   hideHeadline?: boolean,
@@ -278,43 +280,138 @@ export class HunkDiff extends React.Component<HunkProps> {
   }
 }
 
+function handleFilenameClick(
+  fullPath: ?string,
+  event: SyntheticMouseEvent<>,
+): void {
+  if (fullPath == null) {
+    return;
+  }
+  goToLocation(fullPath);
+  event.stopPropagation();
+}
+
+function renderFileChangeContainer(
+  content: React.Node,
+  isPreview: boolean,
+  collapsable: ?boolean,
+  fullPath: ?NuclideUri,
+  displayPath: ?string,
+  collapsedByDefault: ?boolean,
+  hideHeadline: ?boolean,
+  diff: ?diffparser$FileDiff,
+): React.Node {
+  const {additions, annotation, deletions, from: fromFileName, to: toFileName} =
+    diff != null
+      ? diff
+      : {
+          additions: null,
+          annotation: null,
+          deletions: null,
+          from: fullPath,
+          to: fullPath,
+        };
+
+  if (toFileName == null || fromFileName == null) {
+    // sanity check: toFileName & fromFileName should always be given
+    return null;
+  }
+  const fileName =
+    displayPath != null
+      ? displayPath
+      : toFileName !== '/dev/null'
+        ? toFileName
+        : fromFileName;
+  let annotationComponent;
+  if (!isPreview && annotation != null) {
+    annotationComponent = (
+      <span>
+        {annotation.split('\n').map((line, index) => (
+          <span key={index}>
+            {line}
+            <br />
+          </span>
+        ))}
+      </span>
+    );
+  }
+
+  let addedOrDeletedString = '';
+  if (toFileName === '/dev/null') {
+    addedOrDeletedString = 'file deleted - ';
+  } else if (fromFileName === '/dev/null') {
+    addedOrDeletedString = 'file added - ';
+  }
+  const diffDetails = isPreview ? null : (
+    <span className="nuclide-ui-file-changes-details">
+      {annotationComponent} (
+      {addedOrDeletedString}
+      {additions + deletions} {pluralize('line', additions + deletions)}
+      )
+    </span>
+  );
+
+  // insert zero-width spaces so filenames are wrapped at '/'
+  const breakableFilename = fileName.replace(/\//g, '/' + ZERO_WIDTH_SPACE);
+  const renderedFilename =
+    fullPath != null ? (
+      <a
+        className="nuclide-ui-file-changes-name"
+        onClick={handleFilenameClick.bind(null, fullPath)}>
+        {breakableFilename}
+      </a>
+    ) : (
+      breakableFilename
+    );
+
+  if (hideHeadline) {
+    return content;
+  }
+
+  const headline = (
+    <span
+      className={classnames(
+        'nuclide-ui-file-changes-item',
+        'native-key-bindings',
+      )}
+      tabIndex={-1}>
+      {renderedFilename} {diffDetails}
+    </span>
+  );
+  return (
+    <Section
+      collapsable={collapsable === true}
+      collapsedByDefault={collapsedByDefault === true}
+      headline={headline}
+      title="Click to open">
+      {content}
+    </Section>
+  );
+}
+
 /* Renders changes to a single file. */
 export default class FileChanges extends React.Component<Props> {
   static defaultProps: DefaultProps = {
     hunkComponentClass: HunkDiff,
   };
 
-  _handleFilenameClick = (event: SyntheticMouseEvent<>): void => {
-    const {fullPath} = this.props;
-    if (fullPath == null) {
-      return;
-    }
-    goToLocation(fullPath);
-    event.stopPropagation();
-  };
-
   render(): React.Node {
     const {
+      collapsable,
+      fullPath,
+      displayPath,
+      collapsedByDefault,
       hideHeadline,
       diff,
-      fullPath,
-      collapsable,
-      collapsedByDefault,
       grammar,
     } = this.props;
-    const {
-      additions,
-      annotation,
-      chunks,
-      deletions,
-      from: fromFileName,
-      to: toFileName,
-    } = diff;
+    const {chunks, from: fromFileName, to: toFileName} = diff;
     if (toFileName == null || fromFileName == null) {
       // sanity check: toFileName & fromFileName should always be given
       return null;
     }
     const fileName = toFileName !== '/dev/null' ? toFileName : fromFileName;
+
     const hunks = [];
     let i = 0;
     for (const chunk of chunks) {
@@ -338,70 +435,62 @@ export default class FileChanges extends React.Component<Props> {
       );
       i++;
     }
-    let annotationComponent;
-    if (annotation != null) {
-      annotationComponent = (
-        <span>
-          {annotation.split('\n').map((line, index) => (
-            <span key={index}>
-              {line}
-              <br />
-            </span>
-          ))}
-        </span>
-      );
-    }
 
-    let addedOrDeletedString = '';
-    if (toFileName === '/dev/null') {
-      addedOrDeletedString = 'file deleted - ';
-    } else if (fromFileName === '/dev/null') {
-      addedOrDeletedString = 'file added - ';
+    return renderFileChangeContainer(
+      hunks,
+      /* isPreview */ false,
+      collapsable,
+      fullPath,
+      displayPath,
+      collapsedByDefault,
+      hideHeadline,
+      diff,
+    );
+  }
+}
+
+type LoadingProps = {
+  collapsable?: boolean,
+  fullPath?: NuclideUri,
+  displayPath?: string,
+  collapsedByDefault?: boolean,
+  hideHeadline?: boolean,
+};
+
+export class LoadingFileChanges extends React.Component<LoadingProps> {
+  _handleFilenameClick = (event: SyntheticMouseEvent<>): void => {
+    const {fullPath} = this.props;
+    if (fullPath == null) {
+      return;
     }
-    const diffDetails = (
-      <span className="nuclide-ui-file-changes-details">
-        {annotationComponent} (
-        {addedOrDeletedString}
-        {additions + deletions} {pluralize('line', additions + deletions)}
-        )
-      </span>
+    goToLocation(fullPath);
+    event.stopPropagation();
+  };
+
+  render(): React.Node {
+    const spinner = (
+      <LoadingSpinner
+        size={LoadingSpinnerSizes.EXTRA_SMALL}
+        className="nuclide-ui-file-changes-file-spinner"
+      />
     );
 
-    // insert zero-width spaces so filenames are wrapped at '/'
-    const breakableFilename = fileName.replace(/\//g, '/' + ZERO_WIDTH_SPACE);
-    const renderedFilename =
-      fullPath != null ? (
-        <a
-          className="nuclide-ui-file-changes-name"
-          onClick={this._handleFilenameClick}>
-          {breakableFilename}
-        </a>
-      ) : (
-        breakableFilename
-      );
-
-    if (hideHeadline) {
-      return hunks;
-    }
-
-    const headline = (
-      <span
-        className={classnames(
-          'nuclide-ui-file-changes-item',
-          'native-key-bindings',
-        )}
-        tabIndex={-1}>
-        {renderedFilename} {diffDetails}
-      </span>
-    );
-    return (
-      <Section
-        collapsable={collapsable}
-        collapsedByDefault={collapsedByDefault}
-        headline={headline}
-        title="Click to open">
-        {hunks}
-      </Section>
+    const {
+      collapsable,
+      fullPath,
+      displayPath,
+      collapsedByDefault,
+      hideHeadline,
+    } = this.props;
+    return renderFileChangeContainer(
+      spinner,
+      /* isPreview */ true,
+      collapsable,
+      fullPath,
+      displayPath,
+      collapsedByDefault,
+      hideHeadline,
+      /* diff */ null,
     );
   }
 }
