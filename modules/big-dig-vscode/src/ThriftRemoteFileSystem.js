@@ -76,7 +76,7 @@ export class ThriftRemoteFileSystem extends RemoteFileSystem {
   async createDirectory(uri: vscode.Uri): Promise<void> {
     try {
       const client = await this.getThriftClient();
-      await client.mkdir(this.uriToPath(uri));
+      await client.createDirectory(this.uriToPath(uri));
     } catch (error) {
       throw createVSCodeFsError(error, uri);
     }
@@ -162,7 +162,7 @@ export class ThriftRemoteFileSystem extends RemoteFileSystem {
     try {
       const client = await this.getThriftClient();
       const path = this.uriToPath(uri);
-      await client.delete(path, options);
+      await client.deletePath(path, options);
     } catch (error) {
       throw createVSCodeFsError(error, uri);
     }

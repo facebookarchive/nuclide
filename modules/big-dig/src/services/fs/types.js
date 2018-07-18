@@ -16,7 +16,7 @@ import filesystem_types from './gen-nodejs/filesystem_types';
 export interface RemoteFileSystemClient {
   watch(path: string, options: filesystem_types.WatchOpt): Promise<void>;
   pollFileChanges(): Promise<any>;
-  mkdir(path: string): Promise<void>;
+  createDirectory(path: string): Promise<void>;
   stat(path: string): Promise<filesystem_types.FileStat>;
   readFile(path: string): Promise<Buffer>;
   writeFile(
@@ -34,6 +34,6 @@ export interface RemoteFileSystemClient {
     destination: string,
     options: filesystem_types.CopyOpt,
   ): Promise<void>;
-  delete(uri: string, options: filesystem_types.DeleteOpt): Promise<void>;
+  deletePath(uri: string, options: filesystem_types.DeleteOpt): Promise<void>;
   readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>>;
 }
