@@ -48,7 +48,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     const {viewModel} = service;
     this._disposables.add(
       Observable.merge(
-        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
         observableFromSubscribeFunction(
           viewModel.onDidFocusStackFrame.bind(viewModel),
         ),
@@ -56,6 +55,9 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       )
         .let(fastDebounce(15))
         .subscribe(this._handleThreadsChanged),
+      observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
+        .let(fastDebounce(15))
+        .subscribe(this._handleCallStackChanged),
     );
   }
 
@@ -67,6 +69,13 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     this.setState(prevState =>
       this._getState(!(this._computeIsFocused() || !prevState.isCollapsed)),
     );
+  };
+
+  _handleCallStackChanged = (): void => {
+    const {process} = this.props;
+    this.setState({
+      childItems: process.getAllThreads(),
+    });
   };
 
   _computeIsFocused(): boolean {
