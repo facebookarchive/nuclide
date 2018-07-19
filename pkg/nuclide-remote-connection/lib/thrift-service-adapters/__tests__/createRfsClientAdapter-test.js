@@ -87,6 +87,7 @@ describe('createRfsClientAdapter', () => {
 // Test cases for adapter methods
 describe('ThriftRfsClientAdapter', () => {
   let bigDigClient;
+  let testFolderUri;
   let testUri1;
   let testUri2;
   let fallbackErrorMsgPattern;
@@ -97,6 +98,8 @@ describe('ThriftRfsClientAdapter', () => {
       new ReliableSocket('serverUri', 'heartbeatChannel'),
     );
 
+    testFolderUri =
+      'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip';
     testUri1 =
       'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip!/testfile1';
     testUri2 =
@@ -241,6 +244,20 @@ describe('ThriftRfsClientAdapter', () => {
     );
     await expect(adapter.move([testUri1], testUri2)).rejects.toThrow(
       rejectErrorMsgPattern,
+    );
+  });
+
+  it('readdir - handle read archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.readdir(testFolderUri)).rejects.toThrowError(
+      FallbackToRpcError,
+    );
+  });
+
+  it('readdirSorted - handle read archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.readdirSorted(testFolderUri)).rejects.toThrowError(
+      FallbackToRpcError,
     );
   });
 });

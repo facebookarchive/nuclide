@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BigDigClient} from 'big-dig/src/client';
 import type {ThriftClient} from 'big-dig/src/services/thrift/types';
-import type {WriteOptions} from '../../../nuclide-fs';
+import type {DirectoryEntry, WriteOptions} from '../../../nuclide-fs';
 
 import fs from 'fs';
 import {getLogger} from 'log4js';
@@ -23,6 +23,7 @@ import {
   FallbackToRpcError,
   rejectArchivePaths,
   convertToFsFileStat,
+  convertToFsDirectoryEntries,
   checkArchivePathsToFallbackToRpc,
 } from './util';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
@@ -46,6 +47,8 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'rmdirAll',
   'rename',
   'move',
+  // 'readdir',
+  // 'readdirSorted',
 ]);
 
 export class ThriftRfsClientAdapter {
@@ -238,6 +241,33 @@ export class ThriftRfsClientAdapter {
         return this.rename(uri, destUri);
       }),
     );
+  }
+
+  /**
+   * Lists all children of the given directory.
+   */
+  async readdir(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
+    try {
+      // try to read archive dir, should fallback to use RPC method
+      if (nuclideUri.hasKnownArchiveExtension(uri)) {
+        throw new FallbackToRpcError(
+          `Unable to perform: readdir on archive file: ${uri}, fallback to use RPC method`,
+        );
+      }
+      const entries = await this._client.readDirectory(nuclideUri.getPath(uri));
+      return convertToFsDirectoryEntries(entries);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Sorts the result of readdir() by alphabetical order (case-insensitive).
+   */
+  async readdirSorted(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
+    return (await this.readdir(uri)).sort((a, b) => {
+      return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
+    });
   }
 }
 

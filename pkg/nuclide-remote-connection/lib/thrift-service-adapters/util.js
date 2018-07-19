@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {DirectoryEntry} from '../../../nuclide-fs';
 
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -55,4 +56,15 @@ export function convertToFsFileStat(stat: filesystem_types.FileStat): fs.Stats {
   fileStat.birthtime = new Date(stat.birthtime);
 
   return fileStat;
+}
+
+export function convertToFsDirectoryEntries(
+  entries: Array<filesystem_types.FileEntry>,
+): Array<DirectoryEntry> {
+  return entries.map(entry => {
+    const localName = entry.fname;
+    const isFile = entry.ftype === filesystem_types.FileType.FILE;
+    const isSymbolicLink = entry.ftype === filesystem_types.FileType.SYMLINK;
+    return [localName, isFile, isSymbolicLink];
+  });
 }
