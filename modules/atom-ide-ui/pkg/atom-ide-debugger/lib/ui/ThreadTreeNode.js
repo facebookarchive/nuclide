@@ -17,6 +17,7 @@ import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {Table} from 'nuclide-commons-ui/Table';
 import {NestedTreeItem, TreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
 import {DebuggerMode} from '../constants';
@@ -115,6 +116,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       }),
       this._selectTrigger
         .asObservable()
+        .let(fastDebounce(100))
         .switchMap(() => this._getFrames(true))
         .subscribe(frames => {
           this.setState({
@@ -122,7 +124,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           });
         }),
       observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
-        .debounceTime(100)
+        .let(fastDebounce(100))
         .startWith(null)
         .switchMap(() =>
           this._getFrames().switchMap(frames => {
