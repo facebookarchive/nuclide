@@ -19,7 +19,7 @@ import {TunnelManager} from '../../tunnel/TunnelManager';
 import {ThriftClientManager, setTimeoutLimit} from '../ThriftClientManager';
 import thrift from 'thrift';
 import RemoteFileSystemService from '../../fs/gen-nodejs/RemoteFileSystemService';
-import {encodeMessage} from '../util';
+import {encodeMessage, decodeMessage} from '../util';
 import EventEmitter from 'events';
 
 jest.mock(require.resolve('../createThriftClient'));
@@ -109,7 +109,7 @@ describe('ThriftClientManager', () => {
       .do(message => {
         serverMessage.next(
           JSON.stringify({
-            id: JSON.parse(message).id,
+            id: decodeMessage(message).id,
             payload: {
               type: 'response',
               success: false, // failed to create server
@@ -333,7 +333,7 @@ function mockClientServerCommunication(
     .do(message => {
       serverMessage.next(
         encodeMessage({
-          id: JSON.parse(message).id,
+          id: decodeMessage(message).id,
           payload: {
             type: 'response',
             success: true,

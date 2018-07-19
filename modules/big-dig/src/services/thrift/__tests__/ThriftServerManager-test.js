@@ -22,7 +22,7 @@ import {Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
 import {ThriftServerManager} from '../ThriftServerManager';
 import {createThriftServer} from '../createThriftServer';
-import {encodeMessage} from '../util';
+import {encodeMessage, decodeMessage} from '../util';
 
 describe('ThriftServerManager', () => {
   let mockedTransport;
@@ -91,7 +91,7 @@ describe('ThriftServerManager', () => {
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(startServerMessage));
-    const response = JSON.parse(await responsePromise);
+    const response = decodeMessage(await responsePromise);
     expect(response).toEqual(responseMessage);
   });
 
@@ -109,7 +109,7 @@ describe('ThriftServerManager', () => {
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
-    const response = JSON.parse(await responsePromise);
+    const response = decodeMessage(await responsePromise);
     expect(response).toEqual(responseMessage);
   });
 
@@ -128,7 +128,7 @@ describe('ThriftServerManager', () => {
     };
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
-    const response = JSON.parse(await responsePromise);
+    const response = decodeMessage(await responsePromise);
     expect(response).toEqual(responseMessage);
   });
 
@@ -146,7 +146,7 @@ describe('ThriftServerManager', () => {
     });
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(startServerMessage));
-    const response = JSON.parse(await responsePromise);
+    const response = decodeMessage(await responsePromise);
     expect(response).toEqual(responseMessage);
   });
 
@@ -172,7 +172,7 @@ describe('ThriftServerManager', () => {
     await firstResponsePromise;
     const secondResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(closeServerMessage));
-    const response = JSON.parse(await secondResponsePromise);
+    const response = decodeMessage(await secondResponsePromise);
     expect(response).toEqual(responseMessage);
     expect(mockCloseServerFn).toHaveBeenCalled();
   });
@@ -208,7 +208,7 @@ describe('ThriftServerManager', () => {
     };
     const secondResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(secondStartServerMessage));
-    const secondResponse = JSON.parse(await secondResponsePromise);
+    const secondResponse = decodeMessage(await secondResponsePromise);
     expect(secondResponse).toEqual(expectedSecondResponse);
     expect(createThriftServer).toHaveBeenCalledTimes(1);
 
@@ -229,7 +229,7 @@ describe('ThriftServerManager', () => {
     };
     const thirdResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(firstStopServerMessage));
-    const thirdResponse = JSON.parse(await thirdResponsePromise);
+    const thirdResponse = decodeMessage(await thirdResponsePromise);
     expect(thirdResponse).toEqual(expectedThirdResponse);
     expect(mockCloseServerFn).not.toHaveBeenCalled();
 
@@ -250,7 +250,7 @@ describe('ThriftServerManager', () => {
     };
     const fourthResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(secondStopServerMessage));
-    const fourthResponse = JSON.parse(await fourthResponsePromise);
+    const fourthResponse = decodeMessage(await fourthResponsePromise);
     expect(fourthResponse).toEqual(expectedFourthResponse);
     expect(mockCloseServerFn).toHaveBeenCalled();
   });
