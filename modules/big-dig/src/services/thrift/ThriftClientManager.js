@@ -188,31 +188,13 @@ export class ThriftClientManager {
     );
 
     const serviceConfig = this._getServiceConfig(serviceName);
-    const serverConfig = convertToServerConfig(serviceConfig);
-
-    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
-    let tunnel = null;
-    if (tunnelCacheEntry != null) {
-      this._logger.info(
-        `Tunnel and remote server already exist for ${serviceName}!`,
-      );
-      const {refCount} = tunnelCacheEntry;
-      tunnel = tunnelCacheEntry.tunnel;
-      this._nameToTunnel.set(serviceName, {
-        tunnel,
-        refCount: refCount + 1,
-      });
-    } else {
-      // Step 1: launch remote thrift server, get remote port number
-      const remotePort = await this._createRemoteServer(serverConfig);
-      // Step 2: Then create/get a new big-dig tunnel
-      tunnel = await this._createTunnel(serviceName, remotePort);
-    }
+    const tunnel = await this._getOrCreateTunnel(serviceConfig);
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
     const client = await createThriftClient(
       serviceConfig,
       tunnel.getLocalPort(),
     );
+
     // need to do clean up work for both cases: closing a client and client lost connection
     client.onConnectionEnd(
       (() => {
@@ -276,30 +258,29 @@ export class ThriftClientManager {
     return this._invokeRemoteMethod('stop-server', serverConfig);
   }
 
-  async _createTunnel(
-    serviceName: string,
-    remotePort: number,
-    useIPv4: ?boolean = false,
+  async _getOrCreateTunnel(
+    serviceConfig: ThriftServiceConfig,
   ): Promise<Tunnel> {
-    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+    const tunnelCacheEntry = this._nameToTunnel.get(serviceConfig.name);
+    let tunnel = null;
+
     if (tunnelCacheEntry != null) {
-      this._logger.info(`Tunnel already exists for ${serviceName}!`);
-      const {tunnel, refCount} = tunnelCacheEntry;
-      this._nameToTunnel.set(serviceName, {tunnel, refCount: refCount + 1});
-      return tunnel;
+      this._logger.info(`Using an existent tunnel for ${serviceConfig.name}`);
+      tunnel = tunnelCacheEntry.tunnel;
+      tunnelCacheEntry.refCount++;
+    } else {
+      this._logger.info(`Creating a new tunnel for ${serviceConfig.name}`);
+      const serverConfig = convertToServerConfig(serviceConfig);
+      const remotePort = await this._createRemoteServer(serverConfig);
+      const localPort = await getAvailableServerPort();
+      const useIPv4 = false;
+      tunnel = await this._tunnelManager.createTunnel(
+        localPort,
+        remotePort,
+        useIPv4,
+      );
+      this._nameToTunnel.set(serviceConfig.name, {tunnel, refCount: 1});
     }
-    // Otherise, if there is no available tunnel for the service, we need to
-    // find an available localPort and let big-dig tunnel manager to create a
-    // new tunnel for the service
-    const localPort = await getAvailableServerPort();
-    // may need to try multiple times incease the following method throw error
-    // if there is already
-    const tunnel = await this._tunnelManager.createTunnel(
-      localPort,
-      remotePort,
-      useIPv4,
-    );
-    this._nameToTunnel.set(serviceName, {tunnel, refCount: 1});
     return tunnel;
   }
 
