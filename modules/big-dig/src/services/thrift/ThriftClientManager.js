@@ -18,7 +18,6 @@ import type {
   ThriftServiceConfig,
   ThriftClient,
   ClientCloseCallBack,
-  ThriftMessage,
 } from './types';
 
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
@@ -229,10 +228,6 @@ export class ThriftClientManager {
     return client;
   }
 
-  _sendMessage(message: ThriftMessage) {
-    this._transport.send(encodeMessage(message));
-  }
-
   /**
    * Expect result from remote methods. Here return type `any` can be downcasted
    * to other expected data types in callers
@@ -268,7 +263,7 @@ export class ThriftClientManager {
       id,
       payload: {type: 'request', command, serverConfig},
     };
-    this._sendMessage((message: any));
+    this._transport.send(encodeMessage(message));
     return response;
   }
 

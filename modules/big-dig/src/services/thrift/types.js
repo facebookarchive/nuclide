@@ -13,7 +13,6 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export const THRIFT_SERVICE_TAG = 'thrift-services';
-export type ThriftServiceCommand = 'start-server' | 'stop-server';
 
 export type ThriftServiceConfig = {
   // service name
@@ -50,23 +49,14 @@ export type ThriftServerConfig = {
   killOldThriftServerProcess: boolean,
 };
 
-export type ThriftMessagePayload =
-  | StartServerRequest
-  | StopServerRequest
-  | SuccessResponse
-  | FailureResponse;
+export type ThriftMessagePayload = Request | SuccessResponse | FailureResponse;
 
-export type StartServerRequest = {
+export type Request = {
   type: 'request',
-  command: 'start-server',
+  command: 'start-server' | 'stop-server',
   serverConfig: ThriftServerConfig,
 };
-
-export type StopServerRequest = {
-  type: 'request',
-  command: 'stop-server',
-  serverConfig: ThriftServerConfig,
-};
+export type ThriftServiceCommand = $PropertyType<Request, 'command'>;
 
 export type SuccessResponse = {
   type: 'response',
