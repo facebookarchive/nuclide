@@ -196,6 +196,16 @@ describe('ThriftRfsClientAdapter', () => {
     );
   });
 
+  it('unlink - handle unlink entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.unlink(testUri1)).rejects.toThrowError(
+      FallbackToRpcError,
+    );
+    await expect(adapter.unlink(testUri2)).rejects.toThrow(
+      fallbackErrorMsgPattern,
+    );
+  });
+
   it('rmdir - handle remove entries in archive folder exception', async () => {
     const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
     await expect(adapter.rmdir(testUri1)).rejects.toThrowError(
@@ -211,6 +221,26 @@ describe('ThriftRfsClientAdapter', () => {
     const entries = [testUri1, testUri2];
     await expect(adapter.rmdirAll(entries)).rejects.toThrowError(
       AccessArchiveError,
+    );
+  });
+
+  it('rename - handle rename entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.rename(testUri1, testUri2)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.rename(testUri1, testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
+    );
+  });
+
+  it('move - handle move entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.move([testUri1], testUri2)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.move([testUri1], testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
     );
   });
 });

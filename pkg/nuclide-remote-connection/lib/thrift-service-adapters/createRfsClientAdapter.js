@@ -20,6 +20,7 @@ import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import {
+  FallbackToRpcError,
   rejectArchivePaths,
   convertToFsFileStat,
   checkArchivePathsToFallbackToRpc,
@@ -40,8 +41,11 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'mkdir',
   'mkdirp',
   'newFile',
+  'unlink',
   'rmdir',
   'rmdirAll',
+  'rename',
+  'move',
 ]);
 
 export class ThriftRfsClientAdapter {
@@ -164,6 +168,23 @@ export class ThriftRfsClientAdapter {
   }
 
   /**
+   * Removes files. Does not fail if the file doesn't exist.
+   */
+  async unlink(uri: NuclideUri): Promise<void> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'unlink');
+      await this._client.deletePath(nuclideUri.getPath(uri));
+    } catch (error) {
+      if (error instanceof FallbackToRpcError) {
+        throw error;
+      }
+      if (error.code !== filesystem_types.ErrorCode.ENOENT) {
+        throw error;
+      }
+    }
+  }
+
+  /**
    * Removes directories even if they are non-empty. Does not fail if the
    * directory doesn't exist.
    */
@@ -180,6 +201,43 @@ export class ThriftRfsClientAdapter {
 
   async rmdirAll(uris: Array<NuclideUri>): Promise<void> {
     await Promise.all(uris.map(uri => this.rmdir(uri)));
+  }
+
+  /**
+   * Runs the equivalent of `mv sourceUri destinationUri`.
+   */
+  async rename(
+    sourceUri: NuclideUri,
+    destinationUri: NuclideUri,
+  ): Promise<void> {
+    try {
+      rejectArchivePaths(sourceUri, 'rename');
+      rejectArchivePaths(destinationUri, 'rename');
+      return this._client.rename(
+        nuclideUri.getPath(sourceUri),
+        nuclideUri.getPath(destinationUri),
+        {
+          overwrite: false,
+        },
+      );
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
+   */
+  async move(
+    sourceUris: Array<NuclideUri>,
+    destDir: NuclideUri,
+  ): Promise<void> {
+    await Promise.all(
+      sourceUris.map(uri => {
+        const destUri = nuclideUri.join(destDir, nuclideUri.basename(uri));
+        return this.rename(uri, destUri);
+      }),
+    );
   }
 }
 
