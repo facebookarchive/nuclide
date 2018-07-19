@@ -1,6 +1,6 @@
 {
   "name": "nuclide-jasmine",
-  "version": "0.7.1-dev",
+  "version": "0.7.2-dev",
   "description": "Atom-compatible Jasmine runner that runs outside of Atom",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
@@ -11,8 +11,8 @@
   },
   "devDependencies": {
     "jasmine-node": "1.14.5",
-    "nuclide-commons": "0.7.1-dev",
-    "nuclide-node-transpiler": "0.7.1-dev",
+    "nuclide-commons": "0.7.2-dev",
+    "nuclide-node-transpiler": "0.7.2-dev",
     "temp": "0.8.3"
   },
   "private": true

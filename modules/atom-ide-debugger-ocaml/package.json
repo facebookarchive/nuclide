@@ -1,6 +1,6 @@
 {
   "name": "atom-ide-debugger-ocaml",
-  "version": "0.7.1-dev",
+  "version": "0.7.2-dev",
   "main": "./lib/main.js",
   "description": "OCaml Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
@@ -26,14 +26,14 @@
   },
   "dependencies": {
     "log4js": "1.1.1",
-    "nuclide-commons": "0.7.1-dev",
-    "nuclide-commons-atom": "0.7.1-dev",
-    "nuclide-debugger-common": "0.7.1-dev",
+    "nuclide-commons": "0.7.2-dev",
+    "nuclide-commons-atom": "0.7.2-dev",
+    "nuclide-debugger-common": "0.7.2-dev",
     "vscode-debugadapter": "1.24.0",
     "vscode-debugprotocol": "1.24.0"
   },
   "devDependencies": {
-    "nuclide-node-transpiler": "0.7.1-dev"
+    "nuclide-node-transpiler": "0.7.2-dev"
   },
   "package-deps": [
     "atom-ide-ui"

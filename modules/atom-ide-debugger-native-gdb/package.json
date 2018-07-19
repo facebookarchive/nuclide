@@ -1,6 +1,6 @@
 {
   "name": "atom-ide-debugger-native-gdb",
-  "version": "0.7.1-dev",
+  "version": "0.7.2-dev",
   "main": "./main.js",
   "description": "GDB Native Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "big-integer": "1.6.17",
-    "nuclide-commons": "0.7.1-dev",
-    "nuclide-commons-atom": "0.7.1-dev",
-    "nuclide-debugger-common": "0.7.1-dev",
+    "nuclide-commons": "0.7.2-dev",
+    "nuclide-commons-atom": "0.7.2-dev",
+    "nuclide-debugger-common": "0.7.2-dev",
     "nuclide-prebuilt-libs": "0.5.2",
     "nullthrows": "1.0.0",
     "react": "16.4.1",
@@ -35,7 +35,7 @@
     "yargs": "3.32.0"
   },
   "devDependencies": {
-    "nuclide-node-transpiler": "0.7.1-dev"
+    "nuclide-node-transpiler": "0.7.2-dev"
   },
   "package-deps": [
     "atom-ide-ui"
