@@ -48,11 +48,8 @@ import which from 'nuclide-commons/which';
 import {getLogger} from 'log4js';
 import {forkHostServices} from '../../nuclide-language-service-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
-import {
-  findNearestCompilationDbDir as _findNearestCompilationDbDir,
-  COMPILATION_DATABASE_FILE,
-} from './CompilationDatabaseFinder';
 import {createCacheDir} from './child/CqueryInitialization';
+import {COMPILATION_DATABASE_FILE} from './child/FlagUtils';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import CqueryLanguageServer from './CqueryLanguageServer';
 
@@ -175,12 +172,6 @@ export interface CqueryLanguageService extends LanguageService {
   ): Promise<?atom$Range>;
 
   dispose(): void;
-}
-
-export function findNearestCompilationDbDir(
-  source: NuclideUri,
-): Promise<?NuclideUri> {
-  return _findNearestCompilationDbDir(source);
 }
 
 async function ensureCommandExists(

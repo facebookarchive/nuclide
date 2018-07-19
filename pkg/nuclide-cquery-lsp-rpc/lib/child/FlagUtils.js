@@ -9,9 +9,11 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import fs from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getCompilationDatabaseHandler} from '../../../nuclide-buck-rpc/lib/BuckClangCompilationDatabase';
-import {findNearestCompilationDbDir} from '../CompilationDatabaseFinder';
 
 export type FlagsInfo = {flagsFile: string, databaseDirectory: string};
 const compilationDbHandler = getCompilationDatabaseHandler({
@@ -19,6 +21,17 @@ const compilationDbHandler = getCompilationDatabaseHandler({
   args: [],
   useDefaultPlatform: true,
 });
+
+export const COMPILATION_DATABASE_FILE = 'compile_commands.json';
+
+async function findNearestCompilationDbDir(
+  source: NuclideUri,
+): Promise<?NuclideUri> {
+  return fs.findNearestFile(
+    COMPILATION_DATABASE_FILE,
+    nuclideUri.dirname(source),
+  );
+}
 
 // First find a compile commands.json nearby, otherwise get it from buck.
 export async function flagsInfoForPath(path: string): Promise<?FlagsInfo> {
