@@ -84,29 +84,55 @@ describe('createRfsClientAdapter', () => {
 // Test cases for adapter methods
 describe('ThriftRfsClientAdapter', () => {
   let bigDigClient;
+  let testUri1;
+  let testUri2;
+  let errorMsgPattern;
 
   beforeEach(() => {
     bigDigClient = new BigDigClient(
       new ReliableSocket('serverUri', 'heartbeatChannel'),
     );
+
+    testUri1 =
+      'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip!/testfile1';
+    testUri2 =
+      'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip!dir1/subdir1/file1';
+    errorMsgPattern = /Unable to perform: [\s\S]+ on archive file: [\s\S]+, fallback to use RPC method/;
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  it('readFile - handle read archive files exception', async () => {
-    const testUri1 =
-      'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip!/testfile1';
-    const testUri2 =
-      'nuclide://our.username.sb.facebook.com/data/users/username/fbsource/xplat/nuclide/testfolder/test.zip!dir1/subdir1/file1';
-
+  it('readFile - handle read archive files content exception', async () => {
     const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
     await expect(adapter.readFile(testUri1)).rejects.toThrowError(
       FallbackToRpcError,
     );
-    await expect(adapter.readFile(testUri2)).rejects.toThrow(
-      /Unable to read archive file: [\s\S]+, fallback to use RPC read method/,
+    await expect(adapter.readFile(testUri2)).rejects.toThrow(errorMsgPattern);
+  });
+
+  it('stat - handle read archive files stat exception: Case 1', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.stat(testUri1)).rejects.toThrowError(
+      FallbackToRpcError,
     );
+    await expect(adapter.stat(testUri2)).rejects.toThrow(errorMsgPattern);
+  });
+
+  it('lstat - handle read archive files stat exception: Case 2', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.lstat(testUri1)).rejects.toThrowError(
+      FallbackToRpcError,
+    );
+    await expect(adapter.lstat(testUri2)).rejects.toThrow(errorMsgPattern);
+  });
+
+  it('exists - handle check existence of archive files exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.exists(testUri1)).rejects.toThrowError(
+      FallbackToRpcError,
+    );
+    await expect(adapter.exists(testUri2)).rejects.toThrow(errorMsgPattern);
   });
 });

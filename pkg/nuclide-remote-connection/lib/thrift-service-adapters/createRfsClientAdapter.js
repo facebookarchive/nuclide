@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
@@ -13,13 +13,19 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BigDigClient} from 'big-dig/src/client';
 import type {ThriftClient} from 'big-dig/src/services/thrift/types';
 
+import fs from 'fs';
+import invariant from 'assert';
 import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
-import {FallbackToRpcError} from './util';
+import {convertToFsFileStat, checkArchivePathsToFallbackToRpc} from './util';
+import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
 
 // including all supported remote file system function names
 export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
+  'stat',
+  'lstat',
+  'exists',
   'readFile',
 ]);
 
@@ -30,16 +36,59 @@ export class ThriftRfsClientAdapter {
     this._client = client;
   }
 
-  readFile(uri: NuclideUri, options?: {flag?: string}): Promise<Buffer> {
-    if (nuclideUri.isInArchive(uri)) {
-      return Promise.reject(
-        new FallbackToRpcError(
-          `Unable to read archive file: ${uri}, fallback to use RPC read method`,
-        ),
-      );
+  _getClient(): RemoteFileSystemClient {
+    invariant(this._client != null);
+    return this._client;
+  }
+
+  async _statPath(path: string): Promise<fs.Stats> {
+    const thriftFileStat = await this._getClient().stat(path);
+    return convertToFsFileStat(thriftFileStat);
+  }
+
+  async stat(uri: NuclideUri): Promise<fs.Stats> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'stat');
+      return await this._statPath(nuclideUri.getPath(uri));
+    } catch (err) {
+      throw err;
     }
-    const path = nuclideUri.getPath(uri);
-    return this._client.readFile(path);
+  }
+
+  async lstat(uri: NuclideUri): Promise<fs.Stats> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'lstat');
+      const thriftFileStat = await this._getClient().lstat(
+        nuclideUri.getPath(uri),
+      );
+      return convertToFsFileStat(thriftFileStat);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async exists(uri: NuclideUri): Promise<boolean> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'exists');
+      await this._statPath(nuclideUri.getPath(uri));
+      return true;
+    } catch (error) {
+      if (error.code === filesystem_types.ErrorCode.ENOENT) {
+        return false;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async readFile(uri: NuclideUri, options?: {flag?: string}): Promise<Buffer> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'readFile');
+      const path = nuclideUri.getPath(uri);
+      return await this._client.readFile(path);
+    } catch (err) {
+      throw err;
+    }
   }
 }
 
