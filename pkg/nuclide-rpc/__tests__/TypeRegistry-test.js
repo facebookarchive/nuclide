@@ -286,6 +286,33 @@ describe('TypeRegistry', () => {
     expect(result3.b.equals(expected3.b)).toBeTruthy();
   });
 
+  it('Can serialize a non-optional nullable on type Object when key is missing', async () => {
+    invariant(typeRegistry);
+
+    const customObjectType: ObjectType = {
+      location: builtinLocation,
+      kind: 'object',
+      fields: [
+        // A nullable string property.
+        {
+          location: builtinLocation,
+          type: {
+            location: builtinLocation,
+            kind: 'nullable',
+            type: stringType,
+          },
+          name: 'a',
+          optional: false,
+        },
+      ],
+    };
+
+    const originalObject = {};
+    await expect(() =>
+      typeRegistry.marshal(context, originalObject, customObjectType),
+    ).not.toThrow();
+  });
+
   it('Can serialize / deserialize type aliases.', async () => {
     invariant(typeRegistry);
     typeRegistry.registerAlias('ValueTypeA', builtinLocation, ValueTypeA);

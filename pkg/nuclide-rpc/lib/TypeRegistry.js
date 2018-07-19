@@ -641,7 +641,7 @@ export class TypeRegistry {
             } catch (e) {
               annotateErrorAndThrow(e);
             }
-          } else if (!prop.optional) {
+          } else if (!prop.optional && !canBeUndefined(prop.type)) {
             // If the property is optional, it's okay for it to be missing.
             throw new Error(
               `Source object: ${JSON.stringify(obj)} is missing property ${
