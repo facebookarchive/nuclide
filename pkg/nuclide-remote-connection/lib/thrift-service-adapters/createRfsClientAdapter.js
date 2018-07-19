@@ -15,6 +15,7 @@ import type {ThriftClient} from 'big-dig/src/services/thrift/types';
 import type {WriteOptions} from '../../../nuclide-fs';
 
 import fs from 'fs';
+import {getLogger} from 'log4js';
 import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
@@ -26,6 +27,7 @@ import {
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
 
 export const BUFFER_ENCODING = 'utf-8';
+const logger = getLogger('thrift-rfs-adapters');
 
 // including all supported remote file system function names
 export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
@@ -35,6 +37,11 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'readFile',
   'writeFile',
   'writeFileBuffer',
+  'mkdir',
+  'mkdirp',
+  'newFile',
+  'rmdir',
+  'rmdirAll',
 ]);
 
 export class ThriftRfsClientAdapter {
@@ -119,6 +126,60 @@ export class ThriftRfsClientAdapter {
     } catch (err) {
       throw err;
     }
+  }
+
+  async mkdir(uri: NuclideUri): Promise<void> {
+    try {
+      rejectArchivePaths(uri, 'mkdir');
+      await this._client.createDirectory(nuclideUri.getPath(uri));
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async mkdirp(uri: NuclideUri): Promise<boolean> {
+    try {
+      rejectArchivePaths(uri, 'mkdirp');
+      await this._client.createDirectory(nuclideUri.getPath(uri));
+      return true;
+    } catch (err) {
+      logger.error(err);
+      return false;
+    }
+  }
+
+  async newFile(uri: NuclideUri): Promise<boolean> {
+    try {
+      checkArchivePathsToFallbackToRpc(uri, 'newFile');
+      const isExistingFile = await this.exists(uri);
+      if (isExistingFile) {
+        return false;
+      }
+      await this.mkdirp(nuclideUri.dirname(uri));
+      await this.writeFile(uri, '');
+      return true;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Removes directories even if they are non-empty. Does not fail if the
+   * directory doesn't exist.
+   */
+  async rmdir(uri: NuclideUri): Promise<void> {
+    try {
+      rejectArchivePaths(uri, 'rmdir');
+      await this._client.deletePath(nuclideUri.getPath(uri), {
+        recursive: true,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async rmdirAll(uris: Array<NuclideUri>): Promise<void> {
+    await Promise.all(uris.map(uri => this.rmdir(uri)));
   }
 }
 

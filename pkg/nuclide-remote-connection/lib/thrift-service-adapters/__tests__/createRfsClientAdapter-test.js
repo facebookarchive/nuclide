@@ -169,4 +169,48 @@ describe('ThriftRfsClientAdapter', () => {
       rejectErrorMsgPattern,
     );
   });
+
+  it('mkdir - handle mkdir in archive folder exception: Case 1', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.mkdir(testUri1)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.mkdir(testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
+    );
+  });
+
+  it('mkdirp - handle mkdirp in archive folder exception: Case 2', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.mkdirp(testUri1)).resolves.toBe(false);
+    await expect(adapter.mkdirp(testUri2)).resolves.toBe(false);
+  });
+
+  it('newFile - handle create new file in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.newFile(testUri1)).rejects.toThrowError(
+      FallbackToRpcError,
+    );
+    await expect(adapter.newFile(testUri2)).rejects.toThrow(
+      fallbackErrorMsgPattern,
+    );
+  });
+
+  it('rmdir - handle remove entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.rmdir(testUri1)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.rmdir(testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
+    );
+  });
+
+  it('rmdirAll - handle remove multiple entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    const entries = [testUri1, testUri2];
+    await expect(adapter.rmdirAll(entries)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+  });
 });
