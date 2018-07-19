@@ -49,6 +49,8 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'move',
   // 'readdir',
   // 'readdirSorted',
+  'copy',
+  'copyDir',
 ]);
 
 export class ThriftRfsClientAdapter {
@@ -229,7 +231,7 @@ export class ThriftRfsClientAdapter {
   }
 
   /**
-   * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
+   * Moves all sourceUris into the specified destDir, assumed to be a directory name.
    */
   async move(
     sourceUris: Array<NuclideUri>,
@@ -268,6 +270,66 @@ export class ThriftRfsClientAdapter {
     return (await this.readdir(uri)).sort((a, b) => {
       return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
     });
+  }
+
+  /**
+   * Runs the equivalent of `cp sourceUri destinationUri`.
+   * @return true if the operation was successful; false if it wasn't.
+   */
+  async copy(
+    sourceUri: NuclideUri,
+    destinationUri: NuclideUri,
+  ): Promise<boolean> {
+    try {
+      rejectArchivePaths(sourceUri, 'copy');
+      rejectArchivePaths(destinationUri, 'copy');
+      await this._client.copy(
+        nuclideUri.getPath(sourceUri),
+        nuclideUri.getPath(destinationUri),
+        {
+          overwrite: false,
+        },
+      );
+    } catch (err) {
+      if (err.code === filesystem_types.ErrorCode.EEXIST) {
+        // expected if the targetPath already exists
+        return false;
+      }
+      throw err;
+    }
+    return true;
+  }
+
+  /**
+   * Runs the equivalent of `cp -R sourceUri destinationUri`.
+   * @return true if the operation was successful; false if it wasn't.
+   */
+  async copyDir(
+    sourceUri: NuclideUri,
+    destinationUri: NuclideUri,
+  ): Promise<boolean> {
+    try {
+      rejectArchivePaths(sourceUri, 'copyDir');
+      rejectArchivePaths(destinationUri, 'copyDir');
+      const oldContents = (await Promise.all([
+        this.mkdir(destinationUri),
+        this.readdir(sourceUri),
+      ]))[1];
+
+      const didCopyAll = await Promise.all(
+        oldContents.map(([file, isFile]) => {
+          const oldItem = nuclideUri.join(sourceUri, file);
+          const newItem = nuclideUri.join(destinationUri, file);
+          if (isFile) {
+            return this.copy(oldItem, newItem);
+          }
+          return this.copyDir(oldItem, newItem);
+        }),
+      );
+      return didCopyAll.every(b => b);
+    } catch (err) {
+      throw err;
+    }
   }
 }
 

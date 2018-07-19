@@ -260,4 +260,24 @@ describe('ThriftRfsClientAdapter', () => {
       FallbackToRpcError,
     );
   });
+
+  it('copy - handle copy entries in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.copy(testUri1, testUri2)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.copy(testUri1, testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
+    );
+  });
+
+  it('copyDir - handle copy directories in archive folder exception', async () => {
+    const adapter = await getOrCreateRfsClientAdapter(bigDigClient);
+    await expect(adapter.copyDir(testUri1, testUri2)).rejects.toThrowError(
+      AccessArchiveError,
+    );
+    await expect(adapter.copyDir(testUri1, testUri2)).rejects.toThrow(
+      rejectErrorMsgPattern,
+    );
+  });
 });
