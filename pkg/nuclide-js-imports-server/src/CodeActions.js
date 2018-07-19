@@ -22,7 +22,7 @@ import {lspRangeToAtomRange} from '../../nuclide-lsp-implementation-common/lsp-u
 import {compareForSuggestion} from './utils/util';
 
 const CODE_ACTIONS_LIMIT = 10;
-const FLOW_DIAGNOSTIC_SOURCE = 'Flow';
+const FLOW_DIAGNOSTIC_SOURCES = ['Flow', 'Flow: InferError'];
 
 export class CodeActions {
   autoImportsManager: AutoImportsManager;
@@ -61,14 +61,14 @@ function diagnosticToCommands(
 ): Array<Command> {
   if (
     diagnostic.source === DIAGNOSTIC_SOURCE ||
-    diagnostic.source === FLOW_DIAGNOSTIC_SOURCE
+    FLOW_DIAGNOSTIC_SOURCES.includes(diagnostic.source)
   ) {
     return arrayFlatten(
       autoImportsManager
         .getSuggestedImportsForRange(fileWithDiagnostic, diagnostic.range)
         .filter(suggestedImport => {
           // For Flow's diagnostics, only fire for missing types (exact match)
-          if (diagnostic.source === FLOW_DIAGNOSTIC_SOURCE) {
+          if (FLOW_DIAGNOSTIC_SOURCES.includes(diagnostic.source)) {
             if (suggestedImport.symbol.type !== 'type') {
               return false;
             }
