@@ -372,6 +372,10 @@ export function lspCompletionItem_atomCompletion(
     // completion item, and since completion items are sent over the wire we
     // already know they're serializable to JSON.
     extraData: supportsResolve ? JSON.stringify(item) : undefined,
+    // LSP and Nuclide extension: string used to filter a set of completion items
+    filterText: item.filterText,
+    // LSP and Nuclide extension: string used to compare a completion item to another
+    sortText: item.sortText,
   };
 }
 
