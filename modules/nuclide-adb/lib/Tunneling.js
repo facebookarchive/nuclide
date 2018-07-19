@@ -15,6 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
 
 import invariant from 'assert';
+import {shell} from 'electron';
 import {getLogger} from 'log4js';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -24,9 +25,16 @@ import {getAdbServiceByNuclideUri} from './utils';
 import {track} from 'nuclide-commons/analytics';
 
 export type AdbTunnelingOptions = {
-  adbMismatchErrorMessage?: string,
+  adbUpgradeLink?: string,
 };
 
+export const MISSING_ADB_ERROR = 'MissingAdbError';
+export const VERSION_MISMATCH_ERROR = 'VersionMismatchError';
+
+// 1. Starts adb tunneling immediately (does not care if you subscribe)
+// 2. Tunneling stays turned on even after you unsubscribe (to prevent too much on/off toggling)
+// 3. Sends a value when everything is ready (if already active, it sends 'ready' immediately)
+// 4. Guarantees that tunneling is active as long as the observable is not complete (or errored)
 export function startTunnelingAdb(
   uri: NuclideUri,
   options?: AdbTunnelingOptions = {},
@@ -40,16 +48,37 @@ export function startTunnelingAdb(
     const localAdbService = getAdbServiceByNuclideUri('');
 
     const observable = Observable.defer(async () => {
-      const [adbVersion, localAdbVersion] = await Promise.all([
-        adbService.getVersion(),
-        localAdbService.getVersion(),
-      ]);
-      if (adbVersion !== localAdbVersion) {
-        throw new Error(
-          `Your remote adb version differs from the local one: ${adbVersion} (remote) != ${localAdbVersion} (local).\n\n${options.adbMismatchErrorMessage ||
-            ''}`,
-        );
+      try {
+        const [adbVersion, localAdbVersion] = await Promise.all([
+          adbService.getVersion().catch(e => {
+            e.host = serviceUri;
+            throw e;
+          }),
+          localAdbService.getVersion().catch(e => {
+            e.host = '';
+            throw e;
+          }),
+        ]);
+
+        if (adbVersion !== localAdbVersion) {
+          const versionMismatchError = new Error(
+            `Your remote adb version differs from the local one: ${adbVersion} (remote) != ${localAdbVersion} (local)`,
+          );
+          versionMismatchError.name = VERSION_MISMATCH_ERROR;
+          throw versionMismatchError;
+        }
+      } catch (e) {
+        if (e.code === 'ENOENT' && e.host != null) {
+          const missingAdbError = new Error(
+            `'adb' not found in ${e.host === '' ? 'local' : 'remote'} $PATH.`,
+          );
+          missingAdbError.name = MISSING_ADB_ERROR;
+          throw missingAdbError;
+        } else {
+          throw e;
+        }
       }
+
       return adbService.checkMuxStatus();
     })
       .switchMap(
@@ -58,16 +87,41 @@ export function startTunnelingAdb(
             ? checkInToAdbmux(serviceUri)
             : openTunnelsManually(serviceUri),
       )
-      .catch(e => {
-        getLogger('nuclide-adb').error(e);
-        track('nuclide-adb:tunneling:error', {host: uri, error: e});
-        throw e;
-      })
       .publishReplay(1);
 
     let adbmuxPort;
     const subscription = observable
-      .subscribe(port => (adbmuxPort = port))
+      .subscribe({
+        next: port => (adbmuxPort = port),
+        error: e => {
+          getLogger('nuclide-adb:tunneling').error(e);
+          track('nuclide-adb:tunneling:error', {host: uri, error: e});
+          let detail;
+          const buttons = [];
+          if (
+            e.name === VERSION_MISMATCH_ERROR ||
+            e.name === MISSING_ADB_ERROR
+          ) {
+            detail = e.message;
+            const {adbUpgradeLink} = options;
+            if (e.name === VERSION_MISMATCH_ERROR && adbUpgradeLink != null) {
+              buttons.push({
+                text: 'View upgrade instructions',
+                onDidClick: () => shell.openExternal(adbUpgradeLink),
+              });
+            }
+          } else {
+            detail =
+              "Your local devices won't be available on this host." +
+              (e.name !== 'Error' ? `\n \n${e.name}` : '');
+          }
+          atom.notifications.addError('Failed to tunnel Android devices', {
+            dismissable: true,
+            detail,
+            buttons,
+          });
+        },
+      })
       .add(() => {
         if (adbmuxPort != null) {
           adbService.checkOutMuxPort(adbmuxPort);

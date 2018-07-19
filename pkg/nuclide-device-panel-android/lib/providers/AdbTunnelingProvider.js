@@ -23,6 +23,7 @@ import {
   startTunnelingAdb as plainStartTunnelingAdb,
   stopTunnelingAdb,
 } from 'nuclide-adb/lib/Tunneling';
+import {Observable} from 'rxjs';
 import {AdbTunnelButton} from '../ui/AdbTunnelButton';
 import * as React from 'react';
 
@@ -56,19 +57,8 @@ export class AdbTunnelingProvider implements DeviceTypeComponentProvider {
           isAdbTunneled(host).map(value => ({
             host,
             status: value ? 'active' : 'inactive',
-            enable: () => {
-              let noMoreNotifications = false;
-              startTunnelingAdb(host)
-                .do(() => (noMoreNotifications = true))
-                .subscribe({
-                  error: e => {
-                    if (!noMoreNotifications) {
-                      atom.notifications.addError(e);
-                    }
-                    stopTunnelingAdb(host);
-                  },
-                });
-            },
+            enable: () =>
+              startTunnelingAdb(host).catch(() => Observable.empty()),
             disable: () => stopTunnelingAdb(host),
           })),
           AdbTunnelButton,
