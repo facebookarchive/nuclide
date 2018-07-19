@@ -161,15 +161,29 @@ export class RemoteFileSystemServiceHandler {
     options: filesystem_types.WriteFileOpt,
   ): Promise<void> {
     try {
-      const flags = [
-        fs.constants.O_WRONLY,
-        fs.constants.O_TRUNC,
-        options.create ? fs.constants.O_CREAT : 0,
-        options.overwrite || !options.create ? 0 : fs.constants.O_EXCL,
-      ] // eslint-disable-next-line no-bitwise
-        .reduce((acc, f) => acc | f, 0);
+      let writeOptions = {};
+      if (
+        options.encoding != null ||
+        options.mode != null ||
+        options.flag != null
+      ) {
+        // used in Nuclide
+        writeOptions.encoding = options.encoding;
+        writeOptions.mode = options.mode;
+        writeOptions.flag = options.flag;
+      } else {
+        // used in VSCode
+        const flags = [
+          fs.constants.O_WRONLY,
+          fs.constants.O_TRUNC,
+          options.create ? fs.constants.O_CREAT : 0,
+          options.overwrite || !options.create ? 0 : fs.constants.O_EXCL,
+        ] // eslint-disable-next-line no-bitwise
+          .reduce((acc, f) => acc | f, 0);
+        writeOptions = {flags};
+      }
 
-      await fsPromise.writeFile(uri, content, {flags});
+      await fsPromise.writeFile(uri, content, writeOptions);
     } catch (err) {
       throw createThriftError(err);
     }

@@ -124,6 +124,9 @@ struct WatchOpt {
 struct WriteFileOpt {
   1: bool create,
   2: bool overwrite,
+  3: string encoding,
+  4: i32 mode,
+  5: string flag,
  }
 
 struct DeleteOpt {

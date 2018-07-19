@@ -16,10 +16,11 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
 
 export class FallbackToRpcError extends Error {}
+export class AccessArchiveError extends Error {}
 
 export function rejectArchivePaths(uri: NuclideUri, operation: string) {
   if (nuclideUri.isInArchive(uri)) {
-    throw new Error(
+    throw new AccessArchiveError(
       `The '${operation}' operation does not support archive paths like '${uri}'`,
     );
   }

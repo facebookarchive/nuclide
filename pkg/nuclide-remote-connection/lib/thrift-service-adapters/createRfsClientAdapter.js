@@ -12,14 +12,20 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BigDigClient} from 'big-dig/src/client';
 import type {ThriftClient} from 'big-dig/src/services/thrift/types';
+import type {WriteOptions} from '../../../nuclide-fs';
 
 import fs from 'fs';
-import invariant from 'assert';
 import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
-import {convertToFsFileStat, checkArchivePathsToFallbackToRpc} from './util';
+import {
+  rejectArchivePaths,
+  convertToFsFileStat,
+  checkArchivePathsToFallbackToRpc,
+} from './util';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
+
+export const BUFFER_ENCODING = 'utf-8';
 
 // including all supported remote file system function names
 export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
@@ -27,6 +33,8 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'lstat',
   'exists',
   'readFile',
+  'writeFile',
+  'writeFileBuffer',
 ]);
 
 export class ThriftRfsClientAdapter {
@@ -36,13 +44,8 @@ export class ThriftRfsClientAdapter {
     this._client = client;
   }
 
-  _getClient(): RemoteFileSystemClient {
-    invariant(this._client != null);
-    return this._client;
-  }
-
   async _statPath(path: string): Promise<fs.Stats> {
-    const thriftFileStat = await this._getClient().stat(path);
+    const thriftFileStat = await this._client.stat(path);
     return convertToFsFileStat(thriftFileStat);
   }
 
@@ -58,9 +61,7 @@ export class ThriftRfsClientAdapter {
   async lstat(uri: NuclideUri): Promise<fs.Stats> {
     try {
       checkArchivePathsToFallbackToRpc(uri, 'lstat');
-      const thriftFileStat = await this._getClient().lstat(
-        nuclideUri.getPath(uri),
-      );
+      const thriftFileStat = await this._client.lstat(nuclideUri.getPath(uri));
       return convertToFsFileStat(thriftFileStat);
     } catch (err) {
       throw err;
@@ -86,6 +87,35 @@ export class ThriftRfsClientAdapter {
       checkArchivePathsToFallbackToRpc(uri, 'readFile');
       const path = nuclideUri.getPath(uri);
       return await this._client.readFile(path);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async writeFile(
+    uri: NuclideUri,
+    content: string,
+    options?: WriteOptions,
+  ): Promise<void> {
+    try {
+      rejectArchivePaths(uri, 'writeFile');
+      const data = new Buffer(content, BUFFER_ENCODING);
+      await this.writeFileBuffer(uri, data, options);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async writeFileBuffer(
+    uri: NuclideUri,
+    data: Buffer,
+    options?: WriteOptions,
+  ): Promise<void> {
+    try {
+      rejectArchivePaths(uri, 'writeFileBuffer');
+      const path = nuclideUri.getPath(uri);
+      const writeOptions = options || {};
+      await this._client.writeFile(path, data, writeOptions);
     } catch (err) {
       throw err;
     }

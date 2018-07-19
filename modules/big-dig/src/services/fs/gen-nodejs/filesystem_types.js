@@ -651,12 +651,24 @@ WatchOpt.prototype.write = function(output) {
 var WriteFileOpt = module.exports.WriteFileOpt = function(args) {
   this.create = null;
   this.overwrite = null;
+  this.encoding = null;
+  this.mode = null;
+  this.flag = null;
   if (args) {
     if (args.create !== undefined && args.create !== null) {
       this.create = args.create;
     }
     if (args.overwrite !== undefined && args.overwrite !== null) {
       this.overwrite = args.overwrite;
+    }
+    if (args.encoding !== undefined && args.encoding !== null) {
+      this.encoding = args.encoding;
+    }
+    if (args.mode !== undefined && args.mode !== null) {
+      this.mode = args.mode;
+    }
+    if (args.flag !== undefined && args.flag !== null) {
+      this.flag = args.flag;
     }
   }
 };
@@ -688,6 +700,27 @@ WriteFileOpt.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.encoding = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.I32) {
+        this.mode = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 5:
+      if (ftype == Thrift.Type.STRING) {
+        this.flag = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -707,6 +740,21 @@ WriteFileOpt.prototype.write = function(output) {
   if (this.overwrite !== null && this.overwrite !== undefined) {
     output.writeFieldBegin('overwrite', Thrift.Type.BOOL, 2);
     output.writeBool(this.overwrite);
+    output.writeFieldEnd();
+  }
+  if (this.encoding !== null && this.encoding !== undefined) {
+    output.writeFieldBegin('encoding', Thrift.Type.STRING, 3);
+    output.writeString(this.encoding);
+    output.writeFieldEnd();
+  }
+  if (this.mode !== null && this.mode !== undefined) {
+    output.writeFieldBegin('mode', Thrift.Type.I32, 4);
+    output.writeI32(this.mode);
+    output.writeFieldEnd();
+  }
+  if (this.flag !== null && this.flag !== undefined) {
+    output.writeFieldBegin('flag', Thrift.Type.STRING, 5);
+    output.writeString(this.flag);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
