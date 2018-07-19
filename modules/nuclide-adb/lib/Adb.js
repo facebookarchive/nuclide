@@ -397,7 +397,7 @@ export class Adb {
   }
 
   static _parseDevicesCommandOutput(stdout: string): Array<AdbDevice> {
-    const nameFrequency = new Map();
+    const nameFrequency: Map<string, number> = new Map();
 
     return stdout
       .split(/\n+/g)
@@ -464,7 +464,7 @@ export class Adb {
       })
       .map(device => {
         const {displayName, serial} = device;
-        if (displayName === serial || nameFrequency.get(displayName === 1)) {
+        if (displayName === serial || nameFrequency.get(displayName) === 1) {
           return device;
         } else {
           return {
