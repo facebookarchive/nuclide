@@ -37,6 +37,7 @@ type State = {
   breakpoints: IBreakpoint[],
   exceptionBreakpoints: IExceptionBreakpoint[],
   exceptionBreakpointsCollapsed: boolean,
+  unavailableBreakpointsCollapsed: boolean,
   activeProjects: NuclideUri[],
 };
 
@@ -78,6 +79,7 @@ export default class BreakpointListComponent extends React.Component<
       breakpoints: model.getBreakpoints(),
       exceptionBreakpoints: model.getExceptionBreakpoints(),
       exceptionBreakpointsCollapsed,
+      unavailableBreakpointsCollapsed: true,
       activeProjects: newActiveProjects,
     };
   }
@@ -122,189 +124,246 @@ export default class BreakpointListComponent extends React.Component<
     this.setState({exceptionBreakpointsCollapsed: collapsed});
   };
 
+  _setUnavailableCollapsed = (collapsed: boolean): void => {
+    this.setState({unavailableBreakpointsCollapsed: collapsed});
+  };
+
+  _getHostnameTranslated(uri: NuclideUri): string {
+    try {
+      // $FlowFB
+      const {getBreakpointHostnameTranslated} = require('./fb-utils');
+      return getBreakpointHostnameTranslated(uri);
+    } catch (_) {}
+
+    if (nuclideUri.isLocal(uri)) {
+      return 'local';
+    } else {
+      return nuclideUri.getHostname(uri);
+    }
+  }
+
   render(): React.Node {
     const {
       exceptionBreakpoints,
       supportsConditionalBreakpoints,
       activeProjects,
+      breakpoints,
     } = this.state;
-    const breakpoints = this.state.breakpoints.filter(breakpoint =>
-      activeProjects.some(projectPath =>
-        breakpoint.uri.startsWith(projectPath),
-      ),
-    );
     const {service} = this.props;
-    const items = breakpoints
-      .sort((breakpointA, breakpointB) => {
-        const fileA = nuclideUri.basename(breakpointA.uri);
-        const fileB = nuclideUri.basename(breakpointB.uri);
-        if (fileA !== fileB) {
-          return fileA.localeCompare(fileB);
-        }
+    const availableHosts = activeProjects
+      .filter(uri => nuclideUri.isRemote(uri))
+      .map(uri => this._getHostnameTranslated(uri));
+    const breakpointGroup = available =>
+      breakpoints
+        .filter(bp => {
+          const match =
+            nuclideUri.isLocal(bp.uri) ||
+            availableHosts.some(
+              host => this._getHostnameTranslated(bp.uri) === host,
+            );
+          return available ? match : !match;
+        })
+        .sort((breakpointA, breakpointB) => {
+          const fileA = nuclideUri.basename(breakpointA.uri);
+          const fileB = nuclideUri.basename(breakpointB.uri);
+          if (fileA !== fileB) {
+            return fileA.localeCompare(fileB);
+          }
 
-        const lineA =
-          breakpointA.endLine != null ? breakpointA.endLine : breakpointA.line;
-        const lineB =
-          breakpointB.endLine != null ? breakpointB.endLine : breakpointB.line;
-        return lineA - lineB;
-      })
-      .map((breakpoint, i) => {
-        const basename = nuclideUri.basename(breakpoint.uri);
-        const {line, endLine, enabled, verified, uri: path} = breakpoint;
-        const dataLine =
-          endLine != null && !Number.isNaN(endLine) ? endLine : line;
-        const bpId = breakpoint.getId();
-        const label = `${basename}:${dataLine}`;
-        const title = !enabled
-          ? 'Disabled breakpoint'
-          : !verified
-            ? 'Unresolved Breakpoint'
-            : `Breakpoint at ${label} (resolved)`;
+          const lineA =
+            breakpointA.endLine != null
+              ? breakpointA.endLine
+              : breakpointA.line;
+          const lineB =
+            breakpointB.endLine != null
+              ? breakpointB.endLine
+              : breakpointB.line;
+          return lineA - lineB;
+        })
+        .map((breakpoint, i) => {
+          const host = this._getHostnameTranslated(breakpoint.uri) || 'local';
+          const basename = nuclideUri.basename(breakpoint.uri);
+          const {line, endLine, verified, uri: path} = breakpoint;
+          const enabled = breakpoint.enabled && available;
+          const dataLine =
+            endLine != null && !Number.isNaN(endLine) ? endLine : line;
+          const bpId = breakpoint.getId();
+          const label = `${basename}:${dataLine}`;
+          const title =
+            (!enabled
+              ? 'Disabled breakpoint'
+              : !verified
+                ? 'Unresolved Breakpoint'
+                : `Breakpoint at ${label} (resolved)`) +
+            (available
+              ? ''
+              : ` - ${host}:${nuclideUri.getPath(breakpoint.uri)}`);
 
-        const conditionElement =
-          supportsConditionalBreakpoints && breakpoint.condition != null ? (
-            <div
-              className="debugger-breakpoint-condition"
-              title={`Breakpoint condition: ${breakpoint.condition}`}
-              data-path={path}
-              data-line={line}
-              data-bpid={bpId}
-              onClick={event => {
-                atom.commands.dispatch(
-                  event.target,
-                  'debugger:edit-breakpoint',
-                );
-              }}>
-              Condition: {breakpoint.condition}
-            </div>
-          ) : null;
-
-        const content = (
-          <div className="inline-block">
-            <div
-              className={classnames({
-                'debugger-breakpoint-disabled': !enabled,
-                'debugger-breakpoint-with-condition': Boolean(
-                  breakpoint.condition,
-                ),
-              })}
-              key={i}>
-              <Checkbox
-                checked={enabled}
-                onChange={this._handleBreakpointEnabledChange.bind(
-                  this,
-                  breakpoint,
-                )}
-                onClick={(event: SyntheticEvent<>) => event.stopPropagation()}
-                title={title}
-                className={classnames(
-                  verified ? '' : 'debugger-breakpoint-unresolved',
-                  'debugger-breakpoint-checkbox',
-                )}
-              />
-              <span
-                title={title}
+          const conditionElement =
+            supportsConditionalBreakpoints && breakpoint.condition != null ? (
+              <div
+                className="debugger-breakpoint-condition"
+                title={`Breakpoint condition: ${breakpoint.condition}`}
                 data-path={path}
+                data-line={line}
                 data-bpid={bpId}
-                data-line={line}>
-                <div className="debugger-breakpoint-condition-controls">
-                  <Icon
-                    icon="pencil"
-                    className="debugger-breakpoint-condition-control"
-                    data-path={path}
-                    data-bpid={bpId}
-                    data-line={line}
-                    onClick={event => {
-                      track(AnalyticsEvents.DEBUGGER_EDIT_BREAKPOINT_FROM_ICON);
-                      atom.commands.dispatch(
-                        event.target,
-                        'debugger:edit-breakpoint',
-                      );
-                    }}
-                  />
-                  <Icon
-                    icon="x"
-                    className="debugger-breakpoint-condition-control"
-                    data-path={path}
-                    data-bpid={bpId}
-                    data-line={line}
-                    onClick={event => {
-                      track(
-                        AnalyticsEvents.DEBUGGER_DELETE_BREAKPOINT_FROM_ICON,
-                      );
-                      atom.commands.dispatch(
-                        event.target,
-                        'debugger:remove-breakpoint',
-                      );
-                      event.stopPropagation();
-                    }}
-                  />
-                </div>
-                {label}
-              </span>
-              {conditionElement}
+                onClick={event => {
+                  atom.commands.dispatch(
+                    event.target,
+                    'debugger:edit-breakpoint',
+                  );
+                }}>
+                Condition: {breakpoint.condition}
+              </div>
+            ) : null;
+
+          const content = (
+            <div className="inline-block">
+              <div
+                className={classnames({
+                  'debugger-breakpoint-disabled': !enabled,
+                  'debugger-breakpoint-with-condition': Boolean(
+                    breakpoint.condition,
+                  ),
+                })}
+                key={i}>
+                <Checkbox
+                  checked={enabled}
+                  onChange={this._handleBreakpointEnabledChange.bind(
+                    this,
+                    breakpoint,
+                  )}
+                  onClick={(event: SyntheticEvent<>) => event.stopPropagation()}
+                  title={title}
+                  disabled={!available}
+                  className={classnames(
+                    verified ? '' : 'debugger-breakpoint-unresolved',
+                    'debugger-breakpoint-checkbox',
+                  )}
+                />
+                <span
+                  title={title}
+                  data-path={path}
+                  data-bpid={bpId}
+                  data-line={line}>
+                  <div className="debugger-breakpoint-condition-controls">
+                    <Icon
+                      icon="pencil"
+                      className="debugger-breakpoint-condition-control"
+                      data-path={path}
+                      data-bpid={bpId}
+                      data-line={line}
+                      onClick={event => {
+                        track(
+                          AnalyticsEvents.DEBUGGER_EDIT_BREAKPOINT_FROM_ICON,
+                        );
+                        atom.commands.dispatch(
+                          event.target,
+                          'debugger:edit-breakpoint',
+                        );
+                      }}
+                    />
+                    <Icon
+                      icon="x"
+                      className="debugger-breakpoint-condition-control"
+                      data-path={path}
+                      data-bpid={bpId}
+                      data-line={line}
+                      onClick={event => {
+                        track(
+                          AnalyticsEvents.DEBUGGER_DELETE_BREAKPOINT_FROM_ICON,
+                        );
+                        atom.commands.dispatch(
+                          event.target,
+                          'debugger:remove-breakpoint',
+                        );
+                        event.stopPropagation();
+                      }}
+                    />
+                  </div>
+                  {label}
+                </span>
+                {conditionElement}
+              </div>
             </div>
-          </div>
-        );
-        return (
-          <ListViewItem
-            key={label}
-            index={i}
-            value={breakpoint}
-            data-path={path}
-            data-bpid={bpId}
-            data-line={line}
-            title={title}
-            className="debugger-breakpoint">
-            {content}
-          </ListViewItem>
-        );
-      });
-    const separator =
-      breakpoints.length !== 0 &&
-      !this.state.exceptionBreakpointsCollapsed &&
-      exceptionBreakpoints.length !== 0 ? (
-        <hr className="nuclide-ui-hr debugger-breakpoint-separator" />
-      ) : null;
+          );
+          return (
+            <ListViewItem
+              key={label}
+              index={i}
+              value={breakpoint}
+              data-path={path}
+              data-bpid={bpId}
+              data-line={line}
+              title={title}
+              className="debugger-breakpoint">
+              {content}
+            </ListViewItem>
+          );
+        });
+    const availableBreakpoints = breakpointGroup(true);
+    const unavailableBreakpoints = breakpointGroup(false);
     return (
       <div>
-        <Section
-          className="debugger-breakpoint-section"
-          headline="Exception breakpoints"
-          collapsable={true}
-          onChange={this._setExceptionCollapsed}
-          collapsed={this.state.exceptionBreakpointsCollapsed}>
-          {exceptionBreakpoints.map(exceptionBreakpoint => {
-            return (
-              <div
-                className="debugger-breakpoint"
-                key={exceptionBreakpoint.getId()}>
-                <Checkbox
-                  className={classnames(
-                    'debugger-breakpoint-checkbox',
-                    'debugger-exception-checkbox',
-                  )}
-                  onChange={enabled =>
-                    service.enableOrDisableBreakpoints(
-                      enabled,
-                      exceptionBreakpoint,
-                    )
-                  }
-                  checked={exceptionBreakpoint.enabled}
-                />
-                {exceptionBreakpoint.label ||
-                  `${exceptionBreakpoint.filter} exceptions`}
-              </div>
-            );
-          })}
-        </Section>
-        {separator}
         <ListView
           alternateBackground={true}
           onSelect={this._handleBreakpointClick}
           selectable={true}>
-          {items}
+          {availableBreakpoints}
         </ListView>
+        {exceptionBreakpoints.length > 0 ? (
+          <Section
+            className="debugger-breakpoint-section"
+            headline="Exception breakpoints"
+            collapsable={true}
+            onChange={this._setExceptionCollapsed}
+            collapsed={this.state.exceptionBreakpointsCollapsed}>
+            {exceptionBreakpoints.map(exceptionBreakpoint => {
+              return (
+                <div
+                  className="debugger-breakpoint"
+                  key={exceptionBreakpoint.getId()}>
+                  <Checkbox
+                    className={classnames(
+                      'debugger-breakpoint-checkbox',
+                      'debugger-exception-checkbox',
+                    )}
+                    onChange={enabled =>
+                      service.enableOrDisableBreakpoints(
+                        enabled,
+                        exceptionBreakpoint,
+                      )
+                    }
+                    checked={exceptionBreakpoint.enabled}
+                  />
+                  {exceptionBreakpoint.label ||
+                    `${exceptionBreakpoint.filter} exceptions`}
+                </div>
+              );
+            })}
+          </Section>
+        ) : null}
+        {unavailableBreakpoints.length > 0 ? (
+          <Section
+            className="debugger-breakpoint-section"
+            headline={
+              <div className="inline-block">
+                <Icon icon="nuclicon-warning" /> Unavailable breakpoints
+              </div>
+            }
+            collapsable={true}
+            onChange={this._setUnavailableCollapsed}
+            collapsed={this.state.unavailableBreakpointsCollapsed}>
+            <div className="debugger-unavailable-breakpoint-help">
+              These breakpoints are in files that are not currently available in
+              any project root. Add the corresponding local or remote project to
+              your file tree to enable these breakpoints.
+            </div>
+            <ListView alternateBackground={true} selectable={false}>
+              {unavailableBreakpoints}
+            </ListView>
+          </Section>
+        ) : null}
       </div>
     );
   }
