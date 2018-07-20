@@ -124,6 +124,7 @@ export default class CommandLine implements ConsoleIO {
 
   stopInput(): void {
     this._inputStopped = true;
+    this._shouldPrompt = true;
     this._updatePrompt();
   }
 
