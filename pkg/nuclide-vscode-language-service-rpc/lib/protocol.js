@@ -1075,7 +1075,9 @@ export type Unregistration = {
 };
 
 export type UnregistrationParams = {
-  unregistrations: Array<Unregistration>,
+  // NOTE: This mispelling is intentional and is present in the official LSP
+  // spec. See https://github.com/Microsoft/language-server-protocol/issues/522
+  unregisterations: Array<Unregistration>,
 };
 
 export type DocumentFilter = {

@@ -1523,7 +1523,7 @@ export class LspLanguageService {
   }
 
   _handleUnregisterCapability(params: UnregistrationParams): void {
-    params.unregistrations.forEach(unregistration => {
+    params.unregisterations.forEach(unregistration => {
       if (!this._registeredCapabilities.has(unregistration.id)) {
         this._logger.warn(
           'LSP.unregisterCapability - attempting to unregister non-registered capability ' +
