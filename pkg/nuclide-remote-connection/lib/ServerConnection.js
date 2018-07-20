@@ -36,6 +36,7 @@ import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
+import {trackTimingSampled} from '../../nuclide-analytics';
 
 import {Emitter} from 'event-kit';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -63,6 +64,7 @@ const logger = getLogger('nuclide-remote-connection');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 const THRIFT_RFS_GK = 'nuclide_thrift_rfs';
+const FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE = 10;
 
 invariant(remote);
 invariant(ipc);
@@ -530,19 +532,28 @@ export class ServerConnection {
   }
 
   getService(serviceName: string): any {
-    if (serviceName === 'FileSystemService' && isGkEnabled(THRIFT_RFS_GK)) {
-      return this._getFileSystemProxy(serviceName);
+    if (serviceName === 'FileSystemService') {
+      if (isGkEnabled(THRIFT_RFS_GK)) {
+        return this._getFileSystemProxy(serviceName);
+      }
+      return this._genRpcRfsProxy(serviceName);
     }
     return this.getClient().getService(serviceName);
   }
 
-  _getFileSystemProxy(serviceName: string): any {
+  _genRpcRfsProxy(serviceName: string): any {
     const rpcService = this.getClient().getService(serviceName);
     const handler = {
       get: (target, propKey, receiver) => {
         if (SUPPORTED_THRIFT_RFS_FUNCTIONS.has(propKey)) {
           return (...args) => {
-            return this._makeThriftServiceCall(rpcService, propKey, args);
+            return trackTimingSampled(
+              `file-system-service:${propKey}`,
+              // eslint-disable-next-line prefer-spread
+              () => target[propKey].apply(target, args),
+              FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
+              {serviceProvider: 'rpc'},
+            );
           };
         }
         return target[propKey];
@@ -551,18 +562,40 @@ export class ServerConnection {
     return new Proxy(rpcService, handler);
   }
 
-  async _makeThriftServiceCall(
+  _getFileSystemProxy(serviceName: string): any {
+    const rpcService = this.getClient().getService(serviceName);
+    const handler = {
+      get: (target, propKey, receiver) => {
+        if (SUPPORTED_THRIFT_RFS_FUNCTIONS.has(propKey)) {
+          return (...args) => {
+            return this._makeThriftRfsCall(rpcService, propKey, args);
+          };
+        }
+        return target[propKey];
+      },
+    };
+    return new Proxy(rpcService, handler);
+  }
+
+  async _makeThriftRfsCall(
     rpcService: Object,
     fname: string,
     args: Array<any>,
   ): Promise<any> {
     try {
-      const serviceAdapter = await getOrCreateRfsClientAdapter(
-        this.getBigDigClient(),
+      return await trackTimingSampled(
+        `file-system-service:${fname}`,
+        async () => {
+          const serviceAdapter = await getOrCreateRfsClientAdapter(
+            this.getBigDigClient(),
+          );
+          // $FlowFixMe: suppress 'indexer property is missing warning'
+          const method = serviceAdapter[fname];
+          return method.apply(serviceAdapter, args);
+        },
+        FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
+        {serviceProvider: 'thrift'},
       );
-      // $FlowFixMe: suppress 'indexer property is missing warning'
-      const method = serviceAdapter[fname];
-      return await method.apply(serviceAdapter, args);
     } catch (err) {
       if (err instanceof FallbackToRpcError) {
         logger.error(
