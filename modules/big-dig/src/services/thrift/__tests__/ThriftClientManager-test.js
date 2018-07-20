@@ -18,7 +18,6 @@ import {describe, expect, it, jest} from 'nuclide-jest/globals';
 import {TunnelManager} from '../../tunnel/TunnelManager';
 import {ThriftClientManager, setTimeoutLimit} from '../ThriftClientManager';
 import thrift from 'thrift';
-import RemoteFileSystemService from '../../fs/gen-nodejs/RemoteFileSystemService';
 import {encodeMessage, decodeMessage} from '../util';
 import EventEmitter from 'events';
 import waitsFor from '../../../../../../jest/waits_for';
@@ -88,7 +87,7 @@ describe('ThriftClientManager', () => {
     remotePort: 0,
     thriftTransport: 'buffered',
     thriftProtocol: 'binary',
-    thriftService: RemoteFileSystemService,
+    thriftService: {},
     killOldThriftServerProcess: true,
   };
 
@@ -312,7 +311,7 @@ describe('ThriftClientManager', () => {
       remotePort: 0,
       thriftTransport: 'buffered',
       thriftProtocol: 'binary',
-      thriftService: RemoteFileSystemService,
+      thriftService: {},
       killOldThriftServerProcess: true,
     };
     // monitor calls to server
