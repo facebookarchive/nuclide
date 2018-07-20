@@ -11,7 +11,6 @@
 
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileCache} from '../../nuclide-open-files-rpc';
 import type {
@@ -19,14 +18,10 @@ import type {
   Command,
   SymbolInformation,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import type {RequestLocationsResult} from './types';
 
 import {
   lspUri_localPath,
-  localPath_lspUri,
   lspTextEdits_atomTextEdits,
-  lspRange_atomRange,
-  atomPoint_lspPosition,
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
 import {parseOutlineTree} from './outline/CqueryOutlineParser';
@@ -168,36 +163,5 @@ export class CqueryLanguageClient extends LspLanguageService {
         ],
       ]),
     );
-  }
-
-  async freshenIndex(): Promise<void> {
-    // identical to vscode extension, https://git.io/vbUbQ
-    this._lspConnection._jsonRpcConnection.sendNotification(
-      '$cquery/freshenIndex',
-      {},
-    );
-  }
-
-  async requestLocationsCommand(
-    methodName: string,
-    path: NuclideUri,
-    point: atom$Point,
-  ): Promise<RequestLocationsResult> {
-    const position = atomPoint_lspPosition(point);
-    const response = await this._lspConnection._jsonRpcConnection.sendRequest(
-      methodName,
-      {
-        textDocument: {
-          uri: localPath_lspUri(path),
-        },
-        position,
-      },
-    );
-    return response == null
-      ? []
-      : response.map(({uri, range}) => ({
-          uri: lspUri_localPath(uri),
-          range: lspRange_atomRange(range),
-        }));
   }
 }

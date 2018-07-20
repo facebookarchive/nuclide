@@ -14,13 +14,13 @@ import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-refe
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
-import type {RequestLocationsResult} from '../../nuclide-cquery-lsp-rpc/lib/types';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 
 import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 // TODO pelmers: maybe don't import from libclang
@@ -41,6 +41,12 @@ import {
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
+import {
+  localPath_lspUri,
+  atomPoint_lspPosition,
+  lspUri_localPath,
+  lspRange_atomRange,
+} from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {wordUnderPoint} from './utils';
 
 const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
@@ -54,17 +60,42 @@ type SaveState = {
   savedGkResult: boolean,
 };
 
+type RequestLocationsResult = Array<{
+  uri: NuclideUri,
+  range: atom$Range,
+}>;
+
 class CqueryNullLanguageService extends NullLanguageService
   implements CqueryLanguageService {
-  async freshenIndexForFile(file: NuclideUri): Promise<void> {}
   async restartProcessForFile(file: NuclideUri): Promise<void> {}
-  async requestLocationsCommand(
-    methodName: string,
-    path: NuclideUri,
-    point: atom$Point,
-  ): Promise<RequestLocationsResult> {
-    return [];
-  }
+}
+
+async function requestLocations(
+  service: CqueryLanguageService,
+  method: string,
+  path: NuclideUri,
+  point: atom$Point,
+): Promise<RequestLocationsResult> {
+  const hostname = nuclideUri.getHostnameOpt(path);
+  const response = await service.sendLspRequest(path, method, {
+    textDocument: {
+      uri: localPath_lspUri(nuclideUri.getPath(path)),
+    },
+    position: atomPoint_lspPosition(point),
+  });
+  return response == null
+    ? []
+    : // $FlowIgnore: type matches Out_LocationList: https://git.io/fNcSI
+      (response: any).map(({uri, range}) => {
+        const lspPath = lspUri_localPath(uri);
+        return {
+          uri:
+            hostname == null
+              ? lspPath
+              : nuclideUri.createRemoteUri(hostname, lspPath),
+          range: lspRange_atomRange(range),
+        };
+      });
 }
 
 function addCommands(
@@ -78,7 +109,8 @@ function addCommands(
         const path: ?NuclideUri = editor.getPath();
         const service = await atomService.getLanguageServiceForUri(path);
         if (path != null && service != null) {
-          service.freshenIndexForFile(path);
+          // identical to vscode extension, https://git.io/vbUbQ
+          await service.sendLspNotification(path, '$cquery/freshenIndex', {});
         }
       }
     }),
@@ -131,19 +163,21 @@ function addCommands(
         const name = wordUnderPoint(editor, point);
         const service = await atomService.getLanguageServiceForUri(path);
         if (service != null && path != null && name != null) {
-          service
-            .requestLocationsCommand(methodName, path, point)
-            .then(locations => {
-              if (_referencesViewService != null) {
-                _referencesViewService.viewResults({
-                  type: 'data',
-                  baseUri: path,
-                  referencedSymbolName: name,
-                  title,
-                  references: locations.map(loc => ({...loc, name: ''})),
-                });
-              }
+          const locations = await requestLocations(
+            service,
+            methodName,
+            path,
+            point,
+          );
+          if (_referencesViewService != null) {
+            _referencesViewService.viewResults({
+              type: 'data',
+              baseUri: path,
+              referencedSymbolName: name,
+              title,
+              references: locations.map(loc => ({...loc, name: ''})),
             });
+          }
         }
       }
     }),

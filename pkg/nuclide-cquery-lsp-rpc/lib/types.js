@@ -9,13 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text';
-
-export type RequestLocationsResult = Array<{
-  uri: NuclideUri,
-  range: atom$Range,
-}>;
 
 export type SimpleToken = {
   text: string,

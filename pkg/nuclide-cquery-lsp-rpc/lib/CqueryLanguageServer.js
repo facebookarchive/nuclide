@@ -13,7 +13,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {StatusData} from '../../nuclide-language-service/lib/LanguageService';
-import type {RequestLocationsResult} from './types';
 import type {CqueryLanguageService} from '..';
 
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -31,37 +30,6 @@ export default class CqueryLanguageServer
     super();
     this._host = host;
     this._languageId = 'cquery';
-  }
-
-  async requestLocationsCommand(
-    methodName: string,
-    path: NuclideUri,
-    point: atom$Point,
-  ): Promise<RequestLocationsResult> {
-    const cqueryProcess = await this.getLanguageServiceForFile(path);
-    if (cqueryProcess) {
-      return cqueryProcess.requestLocationsCommand(methodName, path, point);
-    } else {
-      this._host.consoleNotification(
-        this._languageId,
-        'warning',
-        'Could not freshen: no cquery index found for ' + path,
-      );
-      return [];
-    }
-  }
-
-  async freshenIndexForFile(file: NuclideUri): Promise<void> {
-    const cqueryProcess = await this.getLanguageServiceForFile(file);
-    if (cqueryProcess) {
-      cqueryProcess.freshenIndex();
-    } else {
-      this._host.consoleNotification(
-        this._languageId,
-        'warning',
-        'Could not freshen: no cquery index found for ' + file,
-      );
-    }
   }
 
   async restartProcessForFile(file: NuclideUri): Promise<void> {
