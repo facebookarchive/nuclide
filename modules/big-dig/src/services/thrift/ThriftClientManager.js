@@ -62,7 +62,7 @@ export class ThriftClientManager {
   _clientIndex: number;
 
   // The following attributes are used to managing multiple Thrift service client
-  _clientMap: Map<string, ThriftClient>;
+  _clientByClientId: Map<string, ThriftClient>;
   _availableServices: Set<string>;
   _tunnelByServiceConfigId: Map<string, TunnelCacheEntry>;
   _nameToServiceConfig: Map<string, ThriftServiceConfig>;
@@ -77,7 +77,7 @@ export class ThriftClientManager {
     this._emitter = new EventEmitter();
 
     this._availableServices = new Set();
-    this._clientMap = new Map();
+    this._clientByClientId = new Map();
     this._tunnelByServiceConfigId = new Map();
     this._nameToServiceConfig = new Map();
 
@@ -171,12 +171,12 @@ export class ThriftClientManager {
       tunnel.getLocalPort(),
     );
     const clientDispose = () => {
-      this._clientMap.delete(clientId);
+      this._clientByClientId.delete(clientId);
       this._closeTunnel(serviceConfig);
     };
     client.onConnectionEnd(clientDispose);
     client.onUnexpectedConnectionEnd(clientDispose);
-    this._clientMap.set(clientId, client);
+    this._clientByClientId.set(clientId, client);
     return client;
   }
 
@@ -276,7 +276,7 @@ export class ThriftClientManager {
     }
     this._isClosed = true;
     this._logger.info('Close Big-Dig thrift client manager!');
-    for (const client of this._clientMap.values()) {
+    for (const client of this._clientByClientId.values()) {
       client.close();
     }
     this._availableServices.clear();
