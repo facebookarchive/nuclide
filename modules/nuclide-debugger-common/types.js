@@ -76,7 +76,7 @@ export type IProcessConfig = {|
   +config: Object,
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
-  +customDisposable?: UniversalDisposable,
+  customDisposable?: UniversalDisposable,
   +onInitializeCallback?: (session: ISession) => Promise<void>,
   +processName?: string,
   +customControlButtons?: Array<ControlButtonSpecification>,

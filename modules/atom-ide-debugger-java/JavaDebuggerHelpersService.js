@@ -33,6 +33,7 @@ export type JavaAttachPortTargetConfig = {|
   +machineName: string,
   +port: number,
   +packageName: string,
+  +deviceSerial: string,
 |};
 
 export type JavaTargetConfig =

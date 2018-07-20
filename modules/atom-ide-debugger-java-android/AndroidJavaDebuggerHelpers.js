@@ -187,5 +187,6 @@ export async function getAdbAttachPortTargetInfo(
     machineName: 'localhost',
     port: attachPort,
     packageName,
+    deviceSerial: device.serial,
   };
 }
