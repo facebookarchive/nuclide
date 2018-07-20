@@ -20,7 +20,6 @@ import type {
 } from './types';
 
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
-import RemoteFileSystemService from '../fs/gen-nodejs/RemoteFileSystemService';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Tunnel} from '../tunnel/Tunnel';
@@ -63,9 +62,7 @@ export class ThriftClientManager {
 
   // The following attributes are used to managing multiple Thrift service client
   _clientByClientId: Map<string, ThriftClient>;
-  _availableServices: Set<string>;
   _tunnelByServiceConfigId: Map<string, TunnelCacheEntry>;
-  _nameToServiceConfig: Map<string, ThriftServiceConfig>;
 
   constructor(transport: Transport, tunnelManager: TunnelManager) {
     this._transport = transport;
@@ -76,13 +73,8 @@ export class ThriftClientManager {
     this._isClosed = false;
     this._emitter = new EventEmitter();
 
-    this._availableServices = new Set();
     this._clientByClientId = new Map();
     this._tunnelByServiceConfigId = new Map();
-    this._nameToServiceConfig = new Map();
-
-    // Register all available thrift services
-    this._registerThriftServices();
 
     const observable = this._transport.onMessage();
     observable.subscribe({
@@ -109,46 +101,6 @@ export class ThriftClientManager {
   }
 
   /**
-   * Register all available Thrift services and do initializaiton
-   *
-   * TODO(terryltang): (T30983466) later we should create a Thrift service
-   * config file list available thrift service name and install path. And we
-   * will have a thrift service loader to fetch all thrift client factory
-   * functions and pass the factory functions to here. Probably also need to
-   * pass more information from each thrift service to here, which will be used
-   * by in `_startRemoteThrfitServer` will resovle these in later diffs
-   */
-  _registerThriftServices(): void {
-    const serviceName = 'thrift-rfs';
-    // Register available service name, set factory function and initializaiton
-    this._availableServices.add(serviceName);
-
-    const serviceConfig = {
-      name: serviceName,
-      remoteUri: '',
-      remoteCommand: '',
-      remoteCommandArgs: [],
-      remotePort: 0,
-      thriftTransport: 'buffered',
-      thriftProtocol: 'binary',
-      thriftService: RemoteFileSystemService,
-      killOldThriftServerProcess: true,
-    };
-    this._nameToServiceConfig.set(serviceName, serviceConfig);
-  }
-
-  addThriftService(serviceConfig: ThriftServiceConfig): void {
-    this._availableServices.add(serviceConfig.name);
-    this._nameToServiceConfig.set(serviceConfig.name, serviceConfig);
-  }
-
-  _getServiceConfig(serviceName: string): ThriftServiceConfig {
-    const config = this._nameToServiceConfig.get(serviceName);
-    invariant(config != null);
-    return config;
-  }
-
-  /**
    * Before, the method name was `getOrCreateThriftClient`, we then decided to
    * return a new Thrift client every single time, but they will reuse tunnel
    * and Thrift server if possible. Each module will maintain its own singleton
@@ -156,14 +108,11 @@ export class ThriftClientManager {
    * (potentially reliability) yet reduce resource consumption through reusing
    *  tunnel and Thrift server.
    */
-  async createThriftClient(serviceName: string): Promise<ThriftClient> {
+  async createThriftClient(
+    serviceConfig: ThriftServiceConfig,
+  ): Promise<ThriftClient> {
     invariant(!this._isClosed, 'big-dig thrift client manager close!');
-    invariant(
-      this._availableServices.has(serviceName),
-      `No available thrift service for ${serviceName}`,
-    );
 
-    const serviceConfig = this._getServiceConfig(serviceName);
     const tunnel = await this._getOrCreateTunnel(serviceConfig);
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
     const client = await createThriftClient(
@@ -223,8 +172,7 @@ export class ThriftClientManager {
     return this._invokeRemoteMethod('start-server', serverConfig);
   }
 
-  _closeRemoteServer(serviceName: string): Promise<any> {
-    const serverConfig = this._getServiceConfig(serviceName);
+  _closeRemoteServer(serverConfig: ThriftServerConfig): Promise<any> {
     return this._invokeRemoteMethod('stop-server', serverConfig);
   }
 
@@ -264,7 +212,7 @@ export class ThriftClientManager {
     if (tunnelCacheEntry.refCount === 1) {
       this._tunnelByServiceConfigId.delete(serviceConfigId);
       tunnelCacheEntry.tunnel.close();
-      await this._closeRemoteServer(serviceConfig.name);
+      await this._closeRemoteServer(convertToServerConfig(serviceConfig));
     } else {
       tunnelCacheEntry.refCount -= 1;
     }
@@ -279,7 +227,6 @@ export class ThriftClientManager {
     for (const client of this._clientByClientId.values()) {
       client.close();
     }
-    this._availableServices.clear();
     this._emitter.removeAllListeners();
   }
 }

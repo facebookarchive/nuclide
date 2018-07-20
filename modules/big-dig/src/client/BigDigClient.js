@@ -22,6 +22,7 @@ import {THRIFT_SERVICE_TAG, ThriftClient} from '../services/thrift/types';
 
 import {TunnelManager} from '../services/tunnel/TunnelManager';
 import {ThriftClientManager} from '../services/thrift/ThriftClientManager';
+import RemoteFileSystemService from '../services/fs/gen-nodejs/RemoteFileSystemService';
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
@@ -109,7 +110,18 @@ export class BigDigClient {
   }
 
   getOrCreateThriftClient(serviceName: string): Promise<ThriftClient> {
-    return this._thriftClientManager.createThriftClient(serviceName);
+    // TODO Move config to the callers
+    return this._thriftClientManager.createThriftClient({
+      name: serviceName,
+      remoteUri: '',
+      remoteCommand: '',
+      remoteCommandArgs: [],
+      remotePort: 0,
+      thriftTransport: 'buffered',
+      thriftProtocol: 'binary',
+      thriftService: RemoteFileSystemService,
+      killOldThriftServerProcess: true,
+    });
   }
 
   close(): void {

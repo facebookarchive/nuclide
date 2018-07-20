@@ -80,7 +80,17 @@ describe('ThriftClientManager', () => {
   let serverMessage;
   let clientMessage;
 
-  const mockedServiceName = 'thrift-rfs';
+  const mockedServiceConfig = {
+    name: 'thrift-rfs',
+    remoteUri: '',
+    remoteCommand: '',
+    remoteCommandArgs: [],
+    remotePort: 0,
+    thriftTransport: 'buffered',
+    thriftProtocol: 'binary',
+    thriftService: RemoteFileSystemService,
+    killOldThriftServerProcess: true,
+  };
 
   beforeEach(() => {
     class MockedTransport {
@@ -120,9 +130,9 @@ describe('ThriftClientManager', () => {
         );
       })
       .subscribe();
-    await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
-      'failed to start server',
-    );
+    await expect(
+      manager.createThriftClient(mockedServiceConfig),
+    ).rejects.toThrow('failed to start server');
   });
 
   it('create thrift client Case 2: failed to create tunnel', async () => {
@@ -137,9 +147,9 @@ describe('ThriftClientManager', () => {
         return Promise.reject(new Error(mockedFailureMessage));
       });
     manager = new ThriftClientManager(mockedTransport, mockedTunnelManager);
-    await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
-      mockedFailureMessage,
-    );
+    await expect(
+      manager.createThriftClient(mockedServiceConfig),
+    ).rejects.toThrow(mockedFailureMessage);
   });
 
   it('create thrift client Case 3: failed to create client', async () => {
@@ -151,9 +161,9 @@ describe('ThriftClientManager', () => {
       return Promise.reject(new Error(mockedFailureMessage));
     });
     manager = new ThriftClientManager(mockedTransport, mockedTunnelManager);
-    await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
-      mockedFailureMessage,
-    );
+    await expect(
+      manager.createThriftClient(mockedServiceConfig),
+    ).rejects.toThrow(mockedFailureMessage);
   });
 
   it('invoke remote method request timeout', async () => {
@@ -178,9 +188,9 @@ describe('ThriftClientManager', () => {
       })
       .subscribe();
 
-    await expect(manager.createThriftClient(mockedServiceName)).rejects.toThrow(
-      /Service:[\s\S]+command:[\s\S]+timeout/,
-    );
+    await expect(
+      manager.createThriftClient(mockedServiceConfig),
+    ).rejects.toThrow(/Service:[\s\S]+command:[\s\S]+timeout/);
   });
 
   it('successfully start a client', async () => {
@@ -190,7 +200,7 @@ describe('ThriftClientManager', () => {
     };
     getMock(createThriftClient).mockReturnValue(mockedClient);
     mockClientServerCommunication(clientMessage, serverMessage);
-    const client = await manager.createThriftClient(mockedServiceName);
+    const client = await manager.createThriftClient(mockedServiceConfig);
     expect(client).toBe(mockedClient);
   });
 
@@ -201,12 +211,12 @@ describe('ThriftClientManager', () => {
       onUnexpectedConnectionEnd: () => {},
     });
     mockClientServerCommunication(clientMessage, serverMessage);
-    await manager.createThriftClient(mockedServiceName);
+    await manager.createThriftClient(mockedServiceConfig);
 
     // create second client
     const callServer = jest.fn();
     clientMessage.subscribe(callServer);
-    await manager.createThriftClient(mockedServiceName);
+    await manager.createThriftClient(mockedServiceConfig);
     expect(callServer).not.toHaveBeenCalled();
   });
 
@@ -244,11 +254,11 @@ describe('ThriftClientManager', () => {
     clientMessage.subscribe(callServer);
 
     // 1. create the first client
-    const client1 = await manager.createThriftClient(mockedServiceName);
+    const client1 = await manager.createThriftClient(mockedServiceConfig);
     expect(callServer).toHaveBeenCalledTimes(1);
 
     // 2. create the second client, since we reuse tunnel and server, so still called once
-    const client2 = await manager.createThriftClient(mockedServiceName);
+    const client2 = await manager.createThriftClient(mockedServiceConfig);
     expect(callServer).toHaveBeenCalledTimes(1);
 
     // 3.stop client2, only reduce tunnel refCount, not yet need to stop server
@@ -294,10 +304,8 @@ describe('ThriftClientManager', () => {
         );
       },
     );
-    // add a new service
-    const anotherServiceName = 'mock-service';
-    manager.addThriftService({
-      name: anotherServiceName,
+    const anotherServiceConfig = {
+      name: 'mock-service',
       remoteUri: '',
       remoteCommand: '',
       remoteCommandArgs: [],
@@ -306,16 +314,16 @@ describe('ThriftClientManager', () => {
       thriftProtocol: 'binary',
       thriftService: RemoteFileSystemService,
       killOldThriftServerProcess: true,
-    });
+    };
     // monitor calls to server
     const callServer = jest.fn();
     clientMessage.subscribe(callServer);
 
     // create three clients
-    await manager.createThriftClient(mockedServiceName);
-    await manager.createThriftClient(mockedServiceName);
+    await manager.createThriftClient(mockedServiceConfig);
+    await manager.createThriftClient(mockedServiceConfig);
     expect(callServer).toHaveBeenCalledTimes(1);
-    await manager.createThriftClient(anotherServiceName);
+    await manager.createThriftClient(anotherServiceConfig);
     expect(callServer).toHaveBeenCalledTimes(2);
 
     // close ThriftClientManager, close all tunnels and clients
