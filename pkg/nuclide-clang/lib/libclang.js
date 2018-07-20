@@ -68,9 +68,7 @@ async function getClangProvidersForSource(
 ): Promise<ClangConfigurationProvider[]> {
   const src = await findSourcePath(_src);
 
-  // $FlowFixMe(>=0.55.0) Flow suppress
   return arrayCompact(
-    // $FlowFixMe(>=0.55.0) Flow suppress
     await Promise.all(
       [...clangProviders].map(async provider => {
         if (await provider.supportsSource(src)) {

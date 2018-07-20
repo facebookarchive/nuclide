@@ -134,7 +134,6 @@ async function getServerInfos(
 ): Promise<Array<ServerInfo>> {
   const entries = await fs.readdir(configDirectory);
   return arrayCompact(
-    // $FlowFixMe
     await Promise.all(
       entries.map(async entry => {
         const subdir = nuclideUri.join(configDirectory, entry);

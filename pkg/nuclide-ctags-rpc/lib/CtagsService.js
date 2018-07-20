@@ -87,7 +87,6 @@ export class CtagsService {
                 return null;
               }),
             );
-            // $FlowFixMe(>=0.55.0) Flow suppress
             resolve(arrayCompact(processed));
           }
         },

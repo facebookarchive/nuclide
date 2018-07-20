@@ -22,8 +22,8 @@ export function arrayRemove<T>(array: Array<T>, element: T): void {
 }
 
 export function arrayEqual<T>(
-  array1: Array<T>,
-  array2: Array<T>,
+  array1: $ReadOnlyArray<T>,
+  array2: $ReadOnlyArray<T>,
   equalComparator?: (a: T, b: T) => boolean,
 ): boolean {
   if (array1 === array2) {
@@ -40,7 +40,7 @@ export function arrayEqual<T>(
  * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
  * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
  */
-export function arrayCompact<T>(array: Array<?T>): Array<T> {
+export function arrayCompact<T>(array: $ReadOnlyArray<?T>): Array<T> {
   const result = [];
   for (const elem of array) {
     if (elem != null) {
@@ -53,7 +53,9 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
 /**
  * Flattens an Array<Array<T>> into just an Array<T>
  */
-export function arrayFlatten<T>(array: Array<Array<T>>): Array<T> {
+export function arrayFlatten<T>(
+  array: $ReadOnlyArray<$ReadOnlyArray<T>>,
+): Array<T> {
   const result = [];
   for (const subArray of array) {
     result.push(...subArray);
@@ -66,7 +68,7 @@ export function arrayFlatten<T>(array: Array<Array<T>>): Array<T> {
  * Uses SameValueZero for equality purposes, which is like '===' except it deems
  * two NaNs equal. http://www.ecma-international.org/ecma-262/6.0/#sec-samevaluezero
  */
-export function arrayUnique<T>(array: Array<T>): Array<T> {
+export function arrayUnique<T>(array: $ReadOnlyArray<T>): Array<T> {
   return Array.from(new Set(array));
 }
 
@@ -75,8 +77,8 @@ export function arrayUnique<T>(array: Array<T>): Array<T> {
  * Returns -1 if no match is found.
  */
 export function arrayFindLastIndex<T>(
-  array: Array<T>,
-  predicate: (elem: T, index: number, array: Array<T>) => boolean,
+  array: $ReadOnlyArray<T>,
+  predicate: (elem: T, index: number, array: $ReadOnlyArray<T>) => boolean,
   thisArg?: any,
 ): number {
   for (let i = array.length - 1; i >= 0; i--) {
@@ -92,8 +94,8 @@ export function arrayFindLastIndex<T>(
  * subarray-sized slice of array. Return -1 if no match is found.
  */
 export function findSubArrayIndex<T>(
-  array: Array<T>,
-  subarr: Array<T>,
+  array: $ReadOnlyArray<T>,
+  subarr: $ReadOnlyArray<T>,
 ): number {
   return array.findIndex((_, offset) =>
     arrayEqual(array.slice(offset, offset + subarr.length), subarr),
@@ -104,7 +106,7 @@ export function findSubArrayIndex<T>(
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */
-export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
+export function mapUnion<T, X>(...maps: $ReadOnlyArray<Map<T, X>>): Map<T, X> {
   const unionMap = new Map();
   for (const map of maps) {
     for (const [key, value] of map) {
@@ -211,7 +213,7 @@ function setUnionTwo<T>(a: Set<T>, b: Set<T>): Set<T> {
   return result;
 }
 
-export function setUnion<T>(...sets: Array<Set<T>>): Set<T> {
+export function setUnion<T>(...sets: $ReadOnlyArray<Set<T>>): Set<T> {
   if (sets.length < 1) {
     return new Set();
   }
@@ -286,7 +288,7 @@ export function keyMirror<T: Object>(obj: T): $ObjMapi<T, <K>(k: K) => K> {
  * Given an array of [key, value] pairs, construct a map where the values for
  * each key are collected into an array of values, in order.
  */
-export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
+export function collect<K, V>(pairs: $ReadOnlyArray<[K, V]>): Map<K, Array<V>> {
   const result = new Map();
   for (const pair of pairs) {
     const [k, v] = pair;
@@ -457,7 +459,7 @@ export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
 }
 
 export function* concatIterators<T>(
-  ...iterators: Array<Iterable<T>>
+  ...iterators: $ReadOnlyArray<Iterable<T>>
 ): Iterator<T> {
   for (const iterator of iterators) {
     for (const element of iterator) {
@@ -567,7 +569,7 @@ export function isIterable(obj: any): boolean {
 
 // Traverse an array from the inside out, starting at the specified index.
 export function* insideOut<T>(
-  arr: Array<T>,
+  arr: $ReadOnlyArray<T>,
   startingIndex?: number,
 ): Iterable<[T, number]> {
   if (arr.length === 0) {
@@ -596,7 +598,7 @@ export function mapFromObject<T>(obj: {[key: string]: T}): Map<string, T> {
   return new Map(objectEntries(obj));
 }
 
-export function lastFromArray<T>(arr: Array<T>): T {
+export function lastFromArray<T>(arr: $ReadOnlyArray<T>): T {
   return arr[arr.length - 1];
 }
 

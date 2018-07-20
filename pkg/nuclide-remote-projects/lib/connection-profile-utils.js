@@ -178,7 +178,6 @@ export async function getIPsForHosts(
     lookupPreferIpv6(host).catch(() => {}),
   );
   const values = await Promise.all(promise_array);
-  // $FlowFixMe(>=0.55.0) Flow suppress
   return arrayCompact(values);
 }
 
