@@ -17,7 +17,6 @@ import type {
   ThriftServerConfig,
   ThriftServiceConfig,
   ThriftClient,
-  ClientCloseCallBack,
 } from './types';
 
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
@@ -196,15 +195,9 @@ export class ThriftClientManager {
     );
 
     // need to do clean up work for both cases: closing a client and client lost connection
-    client.onConnectionEnd(
-      (() => {
-        this._handleClientCloseEvent(clientId);
-      }: ClientCloseCallBack),
-    );
-    client.onUnexpectedConnectionEnd(
-      (() => {
-        this._handleClientCloseEvent(clientId);
-      }: ClientCloseCallBack),
+    client.onConnectionEnd(() => this._handleClientCloseEvent(clientId));
+    client.onUnexpectedConnectionEnd(() =>
+      this._handleClientCloseEvent(clientId),
     );
     this._clientMap.set(clientId, client);
     return client;

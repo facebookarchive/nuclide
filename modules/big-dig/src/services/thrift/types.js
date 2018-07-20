@@ -77,7 +77,7 @@ export type ThriftMessage = {
 
 export type ThrifClientSubscription = {unsubscribe: () => void};
 
-export type ClientCloseCallBack = () => void;
+export type ClientCloseCallBack = () => mixed;
 
 export interface ThriftClient {
   getClient<T>(): T;
