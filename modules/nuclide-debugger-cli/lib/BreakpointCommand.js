@@ -84,7 +84,10 @@ The breakpoint command has several subcommands:
       return;
     }
 
-    await this._dispatcher.executeTokenizedLine(args);
+    const error = await this._dispatcher.executeTokenizedLine(args);
+    if (error != null) {
+      throw error;
+    }
   }
 
   async _trySettingBreakpoint(
