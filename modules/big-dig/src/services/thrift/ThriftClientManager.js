@@ -148,30 +148,6 @@ export class ThriftClientManager {
   }
 
   /**
-   * each client will increase tunnel and server's refCount by 1, so here
-   * reduce refCount by 1 while closing client
-   */
-  async _handleClientCloseEvent(clientId: string): Promise<void> {
-    const serviceName = clientId.split('\0')[0];
-    // 1. Reduce tunnel refCount by 1 [and close tunnel]
-    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
-    invariant(tunnelCacheEntry != null);
-    const {tunnel, refCount} = tunnelCacheEntry;
-    this._clientMap.delete(clientId);
-    // When handling the last ref, also close the tunnel (actually it will just
-    // reduce refCount by 1 on the Tunnel side) and also delete the map entry
-    // for the serviceName:  <serviceName, TunnelCacheEntry>
-    if (refCount === 1) {
-      this._nameToTunnel.delete(serviceName);
-      tunnel.close();
-      // to close tunnel also means to reduce remote server refCount by 1
-      await this._closeRemoteServer(serviceName);
-    } else {
-      this._nameToTunnel.set(serviceName, {tunnel, refCount: refCount - 1});
-    }
-  }
-
-  /**
    * Before, the method name was `getOrCreateThriftClient`, we then decided to
    * return a new Thrift client every single time, but they will reuse tunnel
    * and Thrift server if possible. Each module will maintain its own singleton
@@ -193,12 +169,12 @@ export class ThriftClientManager {
       serviceConfig,
       tunnel.getLocalPort(),
     );
-
-    // need to do clean up work for both cases: closing a client and client lost connection
-    client.onConnectionEnd(() => this._handleClientCloseEvent(clientId));
-    client.onUnexpectedConnectionEnd(() =>
-      this._handleClientCloseEvent(clientId),
-    );
+    const clientDispose = () => {
+      this._clientMap.delete(clientId);
+      this._closeTunnel(serviceConfig.name);
+    };
+    client.onConnectionEnd(clientDispose);
+    client.onUnexpectedConnectionEnd(clientDispose);
     this._clientMap.set(clientId, client);
     return client;
   }
@@ -275,6 +251,20 @@ export class ThriftClientManager {
       this._nameToTunnel.set(serviceConfig.name, {tunnel, refCount: 1});
     }
     return tunnel;
+  }
+
+  async _closeTunnel(serviceName: string): Promise<void> {
+    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+    if (tunnelCacheEntry == null) {
+      throw new Error(`Expected tunnel to be open: ${serviceName}`);
+    }
+    if (tunnelCacheEntry.refCount === 1) {
+      this._nameToTunnel.delete(serviceName);
+      tunnelCacheEntry.tunnel.close();
+      await this._closeRemoteServer(serviceName);
+    } else {
+      tunnelCacheEntry.refCount -= 1;
+    }
   }
 
   close(): void {
