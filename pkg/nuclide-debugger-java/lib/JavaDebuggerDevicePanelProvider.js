@@ -26,15 +26,17 @@ import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 async function _createAndroidDebugAttachConfig(
   targetUri: NuclideUri,
   device: Device,
-  pid: number,
+  proc: Process,
 ): Promise<IProcessConfig> {
   const config = {
     deviceAndProcess: {
-      device,
-      selectedProcess: {
-        pid,
-        name: '',
+      device: {
+        ...device,
+        // See pkg/nuclide-device-panel-android/lib/Registration.js to see why
+        // serial and identifier are interchangeable
+        serial: device.identifier,
       },
+      selectedProcess: proc,
     },
     adbServiceUri: targetUri,
   };
@@ -45,7 +47,7 @@ async function _createAndroidDebugAttachConfig(
     config,
     customDisposable: new UniversalDisposable(),
     processName:
-      'Process ' + pid + ' (Android Java ' + device.displayName + ')',
+      'Process ' + proc.pid + ' (Android Java ' + device.displayName + ')',
   };
 }
 
@@ -77,11 +79,7 @@ export class JavaDebuggerDevicePanelProvider
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
     const debuggerService = await getDebuggerService();
-    const config = await _createAndroidDebugAttachConfig(
-      host,
-      device,
-      proc.pid,
-    );
+    const config = await _createAndroidDebugAttachConfig(host, device, proc);
     debuggerService.startVspDebugging(config);
   }
 }
