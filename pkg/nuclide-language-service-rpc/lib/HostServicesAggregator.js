@@ -142,6 +142,10 @@ class HostServicesAggregator {
     return this._selfRelay().showActionRequired(title, options);
   }
 
+  dispatchCommand(command: string, args: any): Promise<boolean> {
+    return this._selfRelay().dispatchCommand(command, args);
+  }
+
   isDisposed(): boolean {
     return this._isDisposed;
   }
@@ -345,6 +349,13 @@ class HostServicesRelay {
       .refCount()
       .takeUntil(this._childIsDisposed)
       .publish();
+  }
+
+  async dispatchCommand(command: string, args: any): Promise<boolean> {
+    if (this._aggregator.isDisposed()) {
+      return false;
+    }
+    return this._aggregator._parent.dispatchCommand(command, args);
   }
 
   dispose(): void {

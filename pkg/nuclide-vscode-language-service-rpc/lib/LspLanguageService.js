@@ -2313,10 +2313,13 @@ export class LspLanguageService {
       throw new Error(`${this._languageServerName} cannot handle the request`);
     }
     try {
-      await this._lspConnection.executeCommand({
-        command,
-        arguments: args,
-      });
+      const isHostCommand = await this._host.dispatchCommand(command, args);
+      if (!isHostCommand) {
+        await this._lspConnection.executeCommand({
+          command,
+          arguments: args,
+        });
+      }
     } catch (e) {
       this._logLspException(e);
       // Rethrow the exception so the upsteam caller has access to the error message.

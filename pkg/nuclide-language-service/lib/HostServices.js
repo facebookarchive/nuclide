@@ -230,4 +230,20 @@ class RootHostServices {
         invariant(false, 'Unrecognized ShowMessageLevel');
     }
   }
+
+  // Returns false if there is no such registered command on the active text
+  // editor. Otherwise returns true and dispatches the command.
+  async dispatchCommand(command: string, params: any): Promise<boolean> {
+    const textEditor = atom.workspace.getActiveTextEditor();
+    const target = textEditor != null ? textEditor.getElement() : null;
+    if (target == null) {
+      return false;
+    }
+    const commands = atom.commands.findCommands({target});
+    if (commands.find(c => c.name === command) == null) {
+      return false;
+    }
+    atom.commands.dispatch(target, command, params);
+    return true;
+  }
 }
