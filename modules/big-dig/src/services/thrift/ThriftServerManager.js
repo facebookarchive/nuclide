@@ -23,7 +23,8 @@ import type {ThriftMessage} from './types';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {createThriftServer} from './createThriftServer';
-import {genConfigId, encodeMessage, decodeMessage} from './util';
+import {encodeMessage, decodeMessage} from './util';
+import {genConfigId} from './config-utils';
 import {RemoteFileSystemServer} from '../fs/fsServer';
 
 type ServerCacheEntry = {server: RemoteFileSystemServer, refCount: number};

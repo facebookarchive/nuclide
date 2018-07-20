@@ -10,32 +10,7 @@
  * @format
  */
 
-import type {
-  ThriftServiceConfig,
-  ThriftServerConfig,
-  ThriftMessage,
-} from './types';
-
-export function convertToServerConfig(
-  serviceConfig: ThriftServiceConfig,
-): ThriftServerConfig {
-  return {
-    name: serviceConfig.name,
-    remoteCommand: serviceConfig.remoteCommand,
-    remoteCommandArgs: serviceConfig.remoteCommandArgs,
-    remotePort: serviceConfig.remotePort,
-    killOldThriftServerProcess: serviceConfig.killOldThriftServerProcess,
-  };
-}
-
-export function genConfigId(config: ThriftServerConfig): string {
-  return [
-    config.name,
-    config.remoteCommand,
-    ...config.remoteCommandArgs,
-    config.remotePort,
-  ].join('#');
-}
+import type {ThriftMessage} from './types';
 
 export function encodeMessage(message: ThriftMessage): string {
   return JSON.stringify(message);

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {ThriftServiceConfig} from './types';
+import type {ThriftServiceConfig, ThriftServerConfig} from './types';
 
 import thrift from 'thrift';
 
@@ -38,4 +38,25 @@ export function getProtocol(config: ThriftServiceConfig) {
       (config.thriftProtocol: empty);
       throw new Error(`Invalid Thrift Protocol ${config.thriftProtocol}`);
   }
+}
+
+export function convertToServerConfig(
+  serviceConfig: ThriftServiceConfig,
+): ThriftServerConfig {
+  return {
+    name: serviceConfig.name,
+    remoteCommand: serviceConfig.remoteCommand,
+    remoteCommandArgs: serviceConfig.remoteCommandArgs,
+    remotePort: serviceConfig.remotePort,
+    killOldThriftServerProcess: serviceConfig.killOldThriftServerProcess,
+  };
+}
+
+export function genConfigId(config: ThriftServerConfig): string {
+  return [
+    config.name,
+    config.remoteCommand,
+    ...config.remoteCommandArgs,
+    config.remotePort,
+  ].join('#');
 }

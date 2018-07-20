@@ -28,7 +28,8 @@ import {TunnelManager} from '../tunnel/TunnelManager';
 import EventEmitter from 'events';
 
 import {createThriftClient} from './createThriftClient';
-import {convertToServerConfig, encodeMessage, decodeMessage} from './util';
+import {encodeMessage, decodeMessage} from './util';
+import {convertToServerConfig} from './config-utils';
 
 // Every client increase tunnel's refCount by 1, while closing it, we need to
 // reduce tunnel refCount by 1. The reason we want to let ThriftClientManager
