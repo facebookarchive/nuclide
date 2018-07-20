@@ -65,9 +65,10 @@ export default class ThreadCollection {
   }
 
   markThreadStopped(id: number): void {
-    const thread = this.getThreadById(id);
+    let thread = this.getThreadById(id);
     if (thread == null) {
-      throw new Error(`Attempt to mark unknown thread ${id} as stopped.`);
+      thread = new Thread(id, `Thread ${id}`);
+      this.addThread(thread);
     }
     thread.setStopped();
   }
