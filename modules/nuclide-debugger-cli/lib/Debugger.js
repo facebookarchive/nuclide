@@ -759,11 +759,10 @@ export default class Debugger implements DebuggerInterface {
       body: {description, threadId, allThreadsStopped},
     } = event;
 
-    if (description != null) {
-      this._console.outputLine(description);
-    }
-
     const firstStop = this._threads.allThreadsRunning();
+    if (firstStop && description != null) {
+      this._console.outputLine(`Stopped: ${description}`);
+    }
 
     if (allThreadsStopped === true) {
       this._threads.markAllThreadsStopped();
