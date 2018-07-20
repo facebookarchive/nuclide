@@ -104,6 +104,7 @@ export type DiagnosticMessage = {|
   // Indicates that the message should still be displayed, but there should be some UI indicating
   // that it is out of date. TODO(matthewwithanm) implement this UI.
   stale?: boolean,
+  code?: number,
 |};
 
 export type DiagnosticMessages = {

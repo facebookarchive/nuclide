@@ -593,13 +593,8 @@ function lspDiagnostic_atomDiagnostic(
   filePath: NuclideUri, // has already been converted for us
   defaultSource: string,
 ): FileDiagnosticMessage {
-  let providerName =
-    diagnostic.source != null ? diagnostic.source : defaultSource;
-  if (diagnostic.code != null) {
-    providerName = providerName + ': ' + String(diagnostic.code);
-  }
-  return {
-    providerName,
+  const atomDiagnostic: FileDiagnosticMessage = {
+    providerName: diagnostic.source != null ? diagnostic.source : defaultSource,
     type: lspSeverity_atomDiagnosticMessageType(diagnostic.severity),
     filePath,
     text: diagnostic.message,
@@ -608,6 +603,11 @@ function lspDiagnostic_atomDiagnostic(
       lspRelatedLocation_atomTrace,
     ),
   };
+  if (diagnostic.code != null) {
+    atomDiagnostic.providerName += ': ' + String(diagnostic.code);
+    atomDiagnostic.code = parseInt(String(diagnostic.code), 10);
+  }
+  return atomDiagnostic;
 }
 
 export function lspCommand_atomCodeAction(
@@ -632,7 +632,7 @@ export function atomDiagnostic_lspDiagnostic(
   diagnostic: FileDiagnosticMessage,
 ): ?Diagnostic {
   if (diagnostic.range != null) {
-    return {
+    const lspDiagnostic: Diagnostic = {
       range: atomRange_lspRange(diagnostic.range),
       severity: atomDiagnosticMessageType_lspSeverity(diagnostic.type),
       source: diagnostic.providerName,
@@ -641,6 +641,10 @@ export function atomDiagnostic_lspDiagnostic(
         (diagnostic.trace || []).map(atomTrace_lspRelatedLocation),
       ),
     };
+    if (diagnostic.code != null) {
+      lspDiagnostic.code = diagnostic.code;
+    }
+    return lspDiagnostic;
   }
   return null;
 }

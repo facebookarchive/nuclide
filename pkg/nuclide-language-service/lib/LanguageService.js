@@ -109,6 +109,7 @@ export type FileDiagnosticMessage = {|
   fix?: DiagnosticFix,
   actions?: void, // Help Flow believe this is a subtype.
   stale?: boolean,
+  code?: number,
 |};
 
 // Ensure that this is actually a subset.
