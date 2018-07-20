@@ -101,13 +101,17 @@ module.exports = function(context) {
   return {
     Program(node) {
       const sourceCode = context.getSourceCode();
-      const source = sourceCode.text;
+      const source = sourceCode.text.replace(/^.*@emails.*\n/gm, '');
       const useBSDLicense = idx(context, _ => _.options[0].useBSDLicense);
 
       const flowHeader = useBSDLicense
         ? BSD_FLOW_FORMAT_AND_TRANSPILE
         : FLOW_FORMAT_AND_TRANSPILE;
-      if (source.replace(/@flow( strict(-local)?)?/, '@flow').startsWith(flowHeader)) {
+      if (
+        source
+          .replace(/@flow( strict(-local)?)?/, '@flow')
+          .startsWith(flowHeader)
+      ) {
         return;
       }
 
