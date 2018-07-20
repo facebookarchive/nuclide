@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ThriftServiceConfig, ThrifClientSubscription} from '../types';
 
 import {Observable, Subject} from 'rxjs';

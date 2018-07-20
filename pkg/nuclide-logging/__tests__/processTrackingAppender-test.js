@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.unmock('log4js');
 
 global.NUCLIDE_DO_NOT_LOG = false;

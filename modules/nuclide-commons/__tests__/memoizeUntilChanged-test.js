@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import memoizeUntilChanged from '../memoizeUntilChanged';
 
 const sum = (a, b) => a + b;

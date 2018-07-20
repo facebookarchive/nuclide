@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import {getComponentDefinitionFromAst} from '..';
 import {parseCode, getComponentNameFromUri} from '../lib/uiComponentAst';

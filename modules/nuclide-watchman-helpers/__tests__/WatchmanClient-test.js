@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(15000);
 
 import fs from 'fs';

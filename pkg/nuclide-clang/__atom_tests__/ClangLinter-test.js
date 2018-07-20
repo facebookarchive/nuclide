@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point, Range} from 'atom';
 import ClangLinter from '../lib/ClangLinter';
 import * as range from 'nuclide-commons-atom/range';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import QueryItem from '../lib/QueryItem';
 

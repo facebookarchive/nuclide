@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type WS from 'ws';
 
 import EventEmitter from 'events';

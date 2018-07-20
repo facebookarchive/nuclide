@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ConsoleApi} from 'atom-ide-ui';
 
 import * as Actions from '../lib/redux/Actions';

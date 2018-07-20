@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import RelatedFileFinder from '../lib/RelatedFileFinder';
 jest.mock('../../nuclide-remote-connection', () => ({
   getFileSystemServiceByNuclideUri: jest.fn(),

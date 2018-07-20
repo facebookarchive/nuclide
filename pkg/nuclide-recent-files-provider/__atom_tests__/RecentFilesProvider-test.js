@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import invariant from 'assert';

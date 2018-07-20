@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import openSettingsView from '../lib/openSettingsView';

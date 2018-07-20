@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {AppState} from '../lib/types';
 
 import {ActionsObservable} from 'nuclide-commons/redux-observable';

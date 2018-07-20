@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {QueryResult} from '../TextSearch';
 import type {Directory, FileOrDirectory} from '../__mocks__/common';
 

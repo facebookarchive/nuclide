@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point, Range} from 'atom';
 import {ClangCursorTypes} from '../../nuclide-clang-rpc';
 import {

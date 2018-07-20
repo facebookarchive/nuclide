@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {setup} from '../__mocks__/file_tree_setup';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeStore from '../lib/FileTreeStore';

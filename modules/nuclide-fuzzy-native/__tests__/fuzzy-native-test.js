@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 describe('fuzzy-native', () => {
   it('can be required', () => {
     const fuzzyNative = require('..');

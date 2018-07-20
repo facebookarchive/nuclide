@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Point, Range} from 'atom';

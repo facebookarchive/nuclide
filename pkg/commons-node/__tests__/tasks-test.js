@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {Message} from 'nuclide-commons/process';
 
 import {taskFromObservable, observableFromTask} from '../tasks';

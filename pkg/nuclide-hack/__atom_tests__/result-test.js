@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import TestUtils from 'react-dom/test-utils';

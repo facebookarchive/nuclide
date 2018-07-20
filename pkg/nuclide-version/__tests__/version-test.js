@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import {getVersion} from '..';
 import fs from 'fs';
 import semver from 'semver';

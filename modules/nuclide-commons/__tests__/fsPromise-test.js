@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import fs from 'fs';
 import temp from 'temp';

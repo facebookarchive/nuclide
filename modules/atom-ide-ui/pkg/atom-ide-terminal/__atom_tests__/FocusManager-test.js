@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Emitter} from 'atom';
 import {LastItemManager} from '../lib/FocusManager';
 

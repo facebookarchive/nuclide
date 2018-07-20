@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import Hasher from '../Hasher';
 
 describe('Hasher', () => {

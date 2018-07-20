@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import {default as TextBuffer, Range} from 'simple-text-buffer';
 import {wordAtPositionFromBuffer} from '../range';

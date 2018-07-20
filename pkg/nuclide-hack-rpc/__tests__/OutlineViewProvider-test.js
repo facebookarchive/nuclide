@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {outlineFromHackIdeOutline} from '../lib/OutlineView';
 
 describe('outlineFromHackIdeOutline', () => {

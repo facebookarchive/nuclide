@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {
   SearchRpcMethods,
   RESULT_AGGREGATION_DELAY_MS,

@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Range} from 'atom';
 
 import {getPackageUrlForRange} from '../lib/NPMHyperclickProvider';

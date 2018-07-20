@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import AbortController from '../AbortController';
 
 describe('AbortController', () => {

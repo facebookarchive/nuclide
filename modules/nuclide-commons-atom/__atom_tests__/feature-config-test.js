@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import featureConfig from '../feature-config';
 
 describe('main', () => {

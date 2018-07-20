@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {createProxyFactory, __test__} from '../lib/main';
 
 describe('Module public API.', () => {

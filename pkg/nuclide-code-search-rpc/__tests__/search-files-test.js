@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {CodeSearchResult} from '../lib/types';
 
 import {POSIX_TOOLS, searchWithTool} from '../lib/searchTools';

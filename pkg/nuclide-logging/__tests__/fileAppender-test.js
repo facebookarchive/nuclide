@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 import log4js from 'log4js';
 import temp from 'temp';

@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import * as globals from 'globals';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConfigFromFlow, getEslintGlobals} from '../src/Config';

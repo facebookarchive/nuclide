@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 /**
  * Originally from https://github.com/facebook/flux/blob/55480fb/src/Dispatcher.js
  */

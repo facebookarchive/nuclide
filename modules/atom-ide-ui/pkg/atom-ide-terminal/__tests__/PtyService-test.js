@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {PtyClient} from '../lib/pty-service/rpc-types';
 import invariant from 'assert';
 

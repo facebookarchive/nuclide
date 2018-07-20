@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import highlightText from '../highlightText';
 
 describe('highlightText', () => {

@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(20000);
 
 import typeof * as InfoService from '../../lib/services/InfoService';

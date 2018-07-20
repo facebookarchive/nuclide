@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.unmock('nuclide-commons/analytics');
 
 import createAutocompleteProvider from '../lib/createAutocompleteProvider';

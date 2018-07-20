@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 declare var jest;
 
 import Encoder from '../Encoder';

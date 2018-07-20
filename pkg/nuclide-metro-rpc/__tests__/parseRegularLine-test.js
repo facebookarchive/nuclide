@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parseRegularLine} from '../lib/parseRegularLine';
 
 describe('parseRegularLine', () => {

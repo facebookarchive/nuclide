@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {Action, Store, ToolbarStatePreference} from '../lib/types';
 import type {ConsoleApi, ConsoleSourceInfo} from 'atom-ide-ui';

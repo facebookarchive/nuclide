@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 import * as t from '@babel/types';
 import generate from '@babel/generator';

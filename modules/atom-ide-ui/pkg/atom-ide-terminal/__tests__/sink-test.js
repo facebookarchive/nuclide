@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import {removePrefixSink, patternCounterSink} from '../lib/sink';
 
 import type {Sink} from '../lib/sink';

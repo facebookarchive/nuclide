@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {TypeRegistry} from '../lib/TypeRegistry';
 import invariant from 'assert';
 

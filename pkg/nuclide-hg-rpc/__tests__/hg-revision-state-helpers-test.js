@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parseRevisionFileChangeOutput} from '../lib/hg-revision-state-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 

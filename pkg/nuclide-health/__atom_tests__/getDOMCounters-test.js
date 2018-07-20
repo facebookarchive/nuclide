@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import {remote} from 'electron';
 import {getLogger} from 'log4js';

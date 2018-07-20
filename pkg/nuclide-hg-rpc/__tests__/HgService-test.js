@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as HgService from '../lib/HgService';
 import * as hgUtils from '../lib/hg-utils';

@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Directory, File} from 'atom';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 

@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Directory} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import HgRepositoryProvider from '../lib/HgRepositoryProvider';

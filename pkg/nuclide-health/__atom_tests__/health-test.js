@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {WORKSPACE_VIEW_URI} from '../lib/HealthPaneItem';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point} from 'atom';
 import {Observable} from 'rxjs';
 import {

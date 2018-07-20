@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parseMessageText} from '../lib/parseMessageText';
 
 describe('parseMessageText', () => {

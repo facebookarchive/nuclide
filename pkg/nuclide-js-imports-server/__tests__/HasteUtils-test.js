@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import nullthrows from 'nullthrows';
 import {getHasteName} from '../src/lib/HasteUtils';
 import {parseFile} from '../src/lib/AutoImportsManager';

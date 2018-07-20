@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {DistractionFreeMode} from '../lib/DistractionFreeMode';
 
 describe('DistractionFreeMode', () => {

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Range} from 'atom';
 import createStore from '../lib/redux/createStore';
 import * as Actions from '../lib/redux/Actions';

@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import humanizeKeystroke from '../humanizeKeystroke';
 
 describe('nuclide-keystroke-label', () => {

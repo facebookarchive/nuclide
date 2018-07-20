@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {PromisePool, PromiseQueue} from '../promise-executors';
 import waitsFor from '../../../jest/waits_for';
 

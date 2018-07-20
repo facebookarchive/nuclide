@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point, Range} from 'atom';
 
 import libclang from '../lib/libclang';

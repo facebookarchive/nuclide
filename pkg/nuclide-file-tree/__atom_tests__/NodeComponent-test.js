@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 /* global Element */
 
 import FileTreeActions from '../lib/FileTreeActions';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import typeof {niceSafeSpawn as niceSafeSpawnType} from '../nice';
 
 import {uncachedRequire} from '../test-helpers';

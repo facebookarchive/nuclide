@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Range} from 'atom';
 import findWholeRangeOfSymbol from '../lib/findWholeRangeOfSymbol';
 

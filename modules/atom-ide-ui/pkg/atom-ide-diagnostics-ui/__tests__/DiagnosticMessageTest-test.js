@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {separateUrls} from '../lib/ui/DiagnosticsMessageText';
 
 describe('DiagnosticsMessageText', () => {

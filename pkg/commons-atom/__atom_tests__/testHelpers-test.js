@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Range} from 'atom';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {dispatchKeyboardEvent} from '../testHelpers';

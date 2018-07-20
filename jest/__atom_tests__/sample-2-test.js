@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 test('atom', () => {
   expect(2).toBe(2);
 });

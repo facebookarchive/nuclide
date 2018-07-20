@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {HistogramTracker} from '../../nuclide-analytics';
 import trackNewEditorLatency from '../lib/trackNewEditorLatency';
 import waitsFor from '../../../jest/waits_for';

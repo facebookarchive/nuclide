@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {GlobalProviderType, FileResult, Provider} from '../lib/types';
 import type {ProviderSpec} from '../lib/SearchResultManager';
 import type {

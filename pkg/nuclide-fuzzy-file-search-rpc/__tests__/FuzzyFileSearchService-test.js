@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import * as pathSearch from '../lib/FileSearchProcess';
 import {queryFuzzyFile, isFuzzySearchAvailableFor} from '..';
 

@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Subject} from 'rxjs';
 import {combineEventStreams} from '../lib/BuckEventStream';
 

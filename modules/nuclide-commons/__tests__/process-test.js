@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ProcessExitMessage} from '../process';
 
 import EventEmitter from 'events';

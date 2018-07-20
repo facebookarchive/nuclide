@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 'use strict';
 
 jest.disableAutomock();

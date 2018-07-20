@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import fsPromise from 'nuclide-commons/fsPromise';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import TopScores from '../lib/TopScores';
 
 describe('TopScores', () => {

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parse, quote} from '../_shell-quote';
 
 /**

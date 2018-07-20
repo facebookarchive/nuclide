@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {NavigationStackController} from '../lib/NavigationStackController';
 
 describe('NavigationStackController test suite', () => {

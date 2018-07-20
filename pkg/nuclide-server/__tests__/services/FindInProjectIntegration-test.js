@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(15000);
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

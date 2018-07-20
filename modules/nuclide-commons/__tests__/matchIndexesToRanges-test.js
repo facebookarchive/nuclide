@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import matchIndexesToRanges from '../matchIndexesToRanges';
 
 describe('matchIndexesToRanges', () => {

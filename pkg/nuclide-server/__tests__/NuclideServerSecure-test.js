@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Observable} from 'rxjs';
 
 import * as vscode from '../../__mocks__/vscode-harness';

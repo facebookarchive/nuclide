@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import UniversalDisposable from '../UniversalDisposable';
 
 describe('UniversalDisposable', () => {

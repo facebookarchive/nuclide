@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {getMock, mockFunction} from '../jest_mock_utils';
 
 test('mocks function', () => {

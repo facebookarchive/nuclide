@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ComponentDefinition} from '../lib/types';
 import {
   getSnippetFromDefinition,

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import * as vscode from '../__mocks__/vscode-harness';
 
 jest.mock('vscode', () => vscode, {virtual: true});

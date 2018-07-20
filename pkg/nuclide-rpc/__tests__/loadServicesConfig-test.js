@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import loadServicesConfig from '../lib/loadServicesConfig';
 import nuclideUri from 'nuclide-commons/nuclideUri';

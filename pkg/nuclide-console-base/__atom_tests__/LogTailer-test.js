@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {LogTailer} from '../lib/LogTailer';
 import {Observable, Subject} from 'rxjs';
 

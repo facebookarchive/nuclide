@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 /* global localStorage */
 
 import {LocalStorageJsonTable} from '../LocalStorageJsonTable';

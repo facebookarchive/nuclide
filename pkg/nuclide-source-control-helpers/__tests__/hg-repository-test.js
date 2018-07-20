@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 

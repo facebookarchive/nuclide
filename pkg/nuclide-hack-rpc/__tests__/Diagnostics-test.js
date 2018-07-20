@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {hackMessageToDiagnosticMessage} from '../lib/Diagnostics';
 import {Range} from 'simple-text-buffer';
 

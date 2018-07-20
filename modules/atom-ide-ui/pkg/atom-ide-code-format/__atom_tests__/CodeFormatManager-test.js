@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Range} from 'atom';
 import temp from 'temp';
 import * as config from '../lib/config';

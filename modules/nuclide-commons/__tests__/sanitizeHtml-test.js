@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import sanitize from '../sanitizeHtml';
 
 it('removes html', () => {

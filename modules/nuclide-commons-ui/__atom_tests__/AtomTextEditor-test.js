@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {sleep} from 'nuclide-commons/promise';
 import {AtomTextEditor} from '../AtomTextEditor';
 import * as React from 'react';

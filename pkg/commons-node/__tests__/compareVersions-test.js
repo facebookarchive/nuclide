@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import compareVersions from '../compareVersions';
 
 describe('compareVersions', () => {

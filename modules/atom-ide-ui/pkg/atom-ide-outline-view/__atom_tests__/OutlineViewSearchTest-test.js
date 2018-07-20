@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {updateSearchSet} from '../lib/OutlineViewSearch';
 import type {OutlineTreeForUi} from '../lib/createOutlines';
 import {Point} from 'atom';

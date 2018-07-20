@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import {scoreComparator, valueComparator} from '../lib/utils';
 
 describe('utils', () => {

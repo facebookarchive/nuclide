@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {FlowVersion} from '../lib/FlowVersion';
 
 describe('FlowVersion', () => {

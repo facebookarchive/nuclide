@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import Tabs from '../Tabs';
 import * as React from 'react';
 import ReactDOM from 'react-dom';

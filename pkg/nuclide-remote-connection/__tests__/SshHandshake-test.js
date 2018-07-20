@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {SshConnectionConfiguration} from '../lib/SshHandshake';
 
 import EventEmitter from 'events';

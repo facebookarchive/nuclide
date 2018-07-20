@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {HistogramTracker} from '../lib/HistogramTracker';
 
 describe('HistogramTracker', () => {

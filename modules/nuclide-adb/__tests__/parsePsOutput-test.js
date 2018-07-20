@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parsePsTableOutput} from '../lib/common/ps';
 
 describe('parsePsOutput', () => {

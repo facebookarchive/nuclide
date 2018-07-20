@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(25000);
 
 import {Emitter} from 'event-kit';

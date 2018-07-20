@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import openPreview from '../openPreview';
 import fsPromise from 'nuclide-commons/fsPromise';
 import invariant from 'assert';

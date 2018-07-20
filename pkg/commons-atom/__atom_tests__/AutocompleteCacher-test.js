@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point} from 'atom';
 
 import {Deferred} from 'nuclide-commons/promise';

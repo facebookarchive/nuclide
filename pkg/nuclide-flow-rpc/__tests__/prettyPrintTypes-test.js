@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 /* eslint-disable max-len, indent */
 
 import prettyPrintTypes from '../lib/prettyPrintTypes';

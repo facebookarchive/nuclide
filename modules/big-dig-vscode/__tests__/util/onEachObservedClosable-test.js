@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Subject} from 'rxjs';
 import {describe, expect, it, jest} from 'nuclide-jest/globals';
 import onEachObservedClosable from '../../src/util/onEachObservedClosable';

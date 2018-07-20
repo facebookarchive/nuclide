@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(30000);
 import nullthrows from 'nullthrows';
 

@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import {sourceKittenSourcetextToAtomSnippet} from '../../lib/sourcekitten/Complete';
 
 describe('sourceKittenSourcetextToAtomSnippet', () => {

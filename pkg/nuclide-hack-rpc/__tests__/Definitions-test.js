@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {HackDefinition} from '../lib/Definitions';
 
 import {convertDefinitions} from '../lib/Definitions';

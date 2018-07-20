@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 test('pass', () => {
   const atom = require('atom');
   const electron = require('electron');

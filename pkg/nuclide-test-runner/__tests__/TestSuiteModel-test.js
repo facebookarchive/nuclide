@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import TestSuiteModel from '../lib/TestSuiteModel';
 
 describe('TestSuiteModel', () => {

@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {search$FileResult} from '../lib/types';
 
 import {remoteAtomSearch} from '../lib/CodeSearchService';

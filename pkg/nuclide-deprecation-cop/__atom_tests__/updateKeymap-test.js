@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 import temp from 'temp';
 import waitsFor from '../../../jest/waits_for';

@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {createThriftClient} from '../createThriftClient';
 import thrift from 'thrift';
 import EventEmitter from 'events';

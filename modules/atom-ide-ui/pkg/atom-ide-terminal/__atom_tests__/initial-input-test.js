@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {getSafeInitialInput} from '../lib/terminal-view';
 
 describe('initial input sanitizer', () => {

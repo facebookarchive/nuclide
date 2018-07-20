@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {convertSearchResults, parseQueryString} from '../lib/SymbolSearch';
 
 describe('Hack Symbol Search', () => {

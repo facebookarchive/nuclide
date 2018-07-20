@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {getVersion} from '../../nuclide-version';
 import {getInfoServiceByNuclideUri} from '..';
 

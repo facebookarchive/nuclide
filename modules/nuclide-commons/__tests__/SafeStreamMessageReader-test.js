@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import Stream from 'stream';
 import SafeStreamMessageReader from '../SafeStreamMessageReader';
 import waitsFor from '../../../jest/waits_for';

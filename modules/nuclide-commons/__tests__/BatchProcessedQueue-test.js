@@ -8,8 +8,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import BatchProcessedQueue from '../BatchProcessedQueue';
 
 jest.useFakeTimers();

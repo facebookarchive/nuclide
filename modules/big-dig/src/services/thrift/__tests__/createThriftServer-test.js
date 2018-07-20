@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ThriftServerConfig} from '../types';
 
 import {expect, jest} from 'nuclide-jest/globals';

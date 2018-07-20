@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {ServerConnection} from '..';
 
 import invariant from 'assert';

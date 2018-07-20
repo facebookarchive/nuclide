@@ -7,8 +7,8 @@
  *
  * @flow strict
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parseFileNameQuery} from '../lib/utils';
 
 describe('utils', () => {

@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 describe('main', () => {
   // TODO: Loading packages is rightfully slow; it `require`s a lot of files. Possible to inject
   // the `activation` class or move it to its own package to mock `require` it?

@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import typeof * as HgServiceType from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';

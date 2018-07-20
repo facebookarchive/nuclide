@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import IndieLinterRegistry from '../lib/services/IndieLinterRegistry';
 
 describe('IndieLinterRegistry', () => {

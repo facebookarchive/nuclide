@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 test('test', () => {
   expect(1).toMatchSnapshot();
 });

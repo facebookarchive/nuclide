@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import createPackage from '../createPackage';
 
 describe('createPackage', () => {

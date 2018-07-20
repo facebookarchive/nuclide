@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {parseConfig} from '../lib/pty-service/shellConfig';
 
 describe('shellConfig', () => {

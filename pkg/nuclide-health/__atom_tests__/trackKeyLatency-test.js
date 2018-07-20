@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 /* global requestAnimationFrame */
 
 import {attachWorkspace} from 'nuclide-commons-atom/test-helpers';

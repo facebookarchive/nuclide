@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 import {parseServiceDefinition, _clearFileParsers} from '../lib/service-parser';
 import {stripLocationsFileName} from '../lib/location';

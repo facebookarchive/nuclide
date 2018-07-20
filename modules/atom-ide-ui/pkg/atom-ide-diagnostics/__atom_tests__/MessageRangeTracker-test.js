@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {DiagnosticMessage} from '../lib/types';
 
 import invariant from 'assert';

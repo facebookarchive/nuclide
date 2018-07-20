@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import fs from 'fs';
 import {copyFixture, copyBuildFixture} from '../lib/fixtures';
 import fsPromise from 'nuclide-commons/fsPromise';

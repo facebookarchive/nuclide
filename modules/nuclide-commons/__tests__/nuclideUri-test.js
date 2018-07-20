@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import nuclideUri, {__TEST__} from '../nuclideUri';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';

@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import humanizePath from '../humanizePath';
 
 describe('humanizePath', () => {

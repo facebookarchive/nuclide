@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import marked from 'marked';
 import {Point, Range} from 'atom';
 import {escapeMarkdown} from 'nuclide-commons/string';

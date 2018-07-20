@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {ExportIndex} from '../src/lib/ExportIndex';
 
 describe('ExportIndex', () => {

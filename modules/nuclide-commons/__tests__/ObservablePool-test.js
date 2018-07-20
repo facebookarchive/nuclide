@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import ObservablePool from '../ObservablePool';

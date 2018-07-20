@@ -8,8 +8,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {Point} from 'atom';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

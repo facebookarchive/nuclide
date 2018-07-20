@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import {astToOutline} from '../lib/astToOutline';
 
 import classASTOld from '../__mocks__/fixtures/class-ast-old.json';

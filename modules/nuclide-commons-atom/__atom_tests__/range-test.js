@@ -8,8 +8,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {getWordFromCursorOrSelection} from '../range';
 
 describe('getWordFromCursorOrSelection', () => {

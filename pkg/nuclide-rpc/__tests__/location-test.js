@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import {builtinLocation} from '../lib/builtin-types';
 import {locationsEqual, locationToString} from '../lib/location';
 

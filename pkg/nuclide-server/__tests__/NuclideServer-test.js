@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 jest.setTimeout(20000);
 
 import WS from 'ws';

@@ -7,8 +7,8 @@
  *
  * @flow strict-local
  * @format
+ * @emails oncall+nuclide
  */
-
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import electron from 'electron';
 import nullthrows from 'nullthrows';

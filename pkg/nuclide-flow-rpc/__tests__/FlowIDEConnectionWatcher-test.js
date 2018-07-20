@@ -7,8 +7,8 @@
  *
  * @flow
  * @format
+ * @emails oncall+nuclide
  */
-
 import type {FlowIDEConnection} from '../lib/FlowIDEConnection';
 
 import invariant from 'assert';
