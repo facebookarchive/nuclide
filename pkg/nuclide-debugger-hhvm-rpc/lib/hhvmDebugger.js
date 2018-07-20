@@ -593,6 +593,10 @@ class HHVMDebuggerWrapper {
 
           break;
         }
+        case 'hhvmConnectionRefused': {
+          this._connectionRefused = true;
+          break;
+        }
         default:
           // No fixes needed.
           break;
