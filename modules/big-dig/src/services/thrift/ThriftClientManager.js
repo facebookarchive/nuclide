@@ -101,12 +101,10 @@ export class ThriftClientManager {
   }
 
   /**
-   * Before, the method name was `getOrCreateThriftClient`, we then decided to
-   * return a new Thrift client every single time, but they will reuse tunnel
-   * and Thrift server if possible. Each module will maintain its own singleton
-   * of Thrift client to increase the separation of the Thrift clients
-   * (potentially reliability) yet reduce resource consumption through reusing
-   *  tunnel and Thrift server.
+   * Returns a new thrift client.
+   *
+   * NOTE: Two clients with the same service config can share the same tunnel
+   * to the remote server.
    */
   async createThriftClient(
     serviceConfig: ThriftServiceConfig,
