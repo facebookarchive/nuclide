@@ -46,6 +46,9 @@ class Activation {
       initRefactorUIs(this._store),
       atom.commands.add(
         'atom-workspace',
+        // Since we are trying to move away from menu bar options,
+        // we decide not to provide one here. Thus, we suppress the eslint warning.
+        // eslint-disable-next-line
         'nuclide-refactorizer:refactorize',
         () => {
           this._store.dispatch(Actions.open('generic'));
