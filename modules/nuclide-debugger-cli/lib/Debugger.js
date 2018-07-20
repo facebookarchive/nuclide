@@ -251,30 +251,42 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async continue(): Promise<void> {
-    const session = this._ensureDebugSession(true);
+    try {
+      // we stop console input once execution has restarted, but some adapters
+      // send output before that happens. since the continued notification is
+      // async, the debugger will treat that output as if it happened while
+      // the command prompt is up, and reprint the prompt after it. really,
+      // any output that happens while we're trying to continue should see that
+      // input is stopped.
+      this._console.stopInput();
+      const session = this._ensureDebugSession(true);
 
-    // if we are attaching and still in configuration, this is where we'll
-    // send configuration done.
-    if (this._state === 'CONFIGURING') {
-      if (this._attachMode) {
-        return this._configurationDone();
+      // if we are attaching and still in configuration, this is where we'll
+      // send configuration done.
+      if (this._state === 'CONFIGURING') {
+        if (this._attachMode) {
+          return this._configurationDone();
+        }
+        throw new Error('There is not yet a running process to continue.');
       }
-      throw new Error('There is not yet a running process to continue.');
+
+      if (this._state === 'STOPPED') {
+        await session.continue({
+          threadId: this.getActiveThread().id(),
+        });
+
+        return;
+      }
+
+      if (this._state === 'TERMINATED') {
+        throw new Error('Cannot continue; process is terminated.');
+      }
+
+      throw new Error(`Continue called from unexpected state ${this._state}`);
+    } catch (error) {
+      this._console.startInput();
+      throw error;
     }
-
-    if (this._state === 'STOPPED') {
-      await session.continue({
-        threadId: this.getActiveThread().id(),
-      });
-
-      return;
-    }
-
-    if (this._state === 'TERMINATED') {
-      throw new Error('Cannot continue; process is terminated.');
-    }
-
-    throw new Error(`Continue called from unexpected state ${this._state}`);
   }
 
   async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
