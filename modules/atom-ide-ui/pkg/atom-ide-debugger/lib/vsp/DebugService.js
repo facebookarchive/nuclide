@@ -1604,6 +1604,11 @@ export default class DebugService implements IDebugService {
           threadToFocus != null ? threadToFocus.getCallStackTopFrame() : null;
 
         this.focusStackFrame(frameToFocus, threadToFocus, processToFocus);
+      } else {
+        // The UI needs to refresh the debugger mode for the current
+        // focused process. If an adapter exited before the mode transitioned
+        // to STARTED, the UI can get stuck in the STARTING state otherwise.
+        this._updateModeAndEmit(this._computeDebugMode());
       }
     }
 

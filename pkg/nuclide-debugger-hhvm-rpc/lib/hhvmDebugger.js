@@ -43,6 +43,7 @@ class HHVMDebuggerWrapper {
   _initializeArgs: DebugProtocol.InitializeRequestArguments;
   _runInTerminalRequest: ?Deferred<void>;
   _asyncBreakPending: boolean;
+  _connectionRefused: boolean;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -55,6 +56,7 @@ class HHVMDebuggerWrapper {
     this._nonLoaderBreakSeen = false;
     this._initializeArgs = {adapterID: 'hhvm'};
     this._asyncBreakPending = false;
+    this._connectionRefused = false;
   }
 
   debug() {
@@ -109,11 +111,13 @@ class HHVMDebuggerWrapper {
         });
 
         socket.on('close', () => {
-          this._writeOutputWithHeader({
-            seq: ++this._sequenceNumber,
-            type: 'event',
-            event: 'hhvmConnectionDied',
-          });
+          if (!this._connectionRefused) {
+            this._writeOutputWithHeader({
+              seq: ++this._sequenceNumber,
+              type: 'event',
+              event: 'hhvmConnectionDied',
+            });
+          }
           process.exit(0);
         });
 
@@ -553,6 +557,21 @@ class HHVMDebuggerWrapper {
               message.body.category = 'log';
               break;
           }
+
+          // Detect HHVM refusing a connection due to another connection
+          // existing and raise an explicit event for that.
+          // TODO: (Ericblue) adding an explicit event in HHVM rather than
+          //   relying on the specific wording of this output event.
+          const attachMsg = 'Could not attach to HHVM';
+          if (message.body.output.includes(attachMsg)) {
+            this._connectionRefused = true;
+            this._writeOutputWithHeader({
+              seq: ++this._sequenceNumber,
+              type: 'event',
+              event: 'hhvmConnectionRefused',
+            });
+          }
+
           break;
         }
         case 'stopped': {
