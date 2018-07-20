@@ -486,6 +486,24 @@ export default class FileTreeContextMenu {
     );
   }
 
+  /**
+   * @param priority must be an integer in the range [0, 1000).
+   */
+  addItemToModifyFileMenu(
+    originalItem: FileTreeContextMenuItem,
+    priority: number,
+  ): IDisposable {
+    if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
+      throw new Error(`Illegal priority value: ${priority}`);
+    }
+
+    return this._addItemToMenu(
+      originalItem,
+      this._contextMenu,
+      MODIFY_FILE_MENU_PRIORITY + priority,
+    );
+  }
+
   addItemToNewMenu(
     originalItem: FileTreeContextMenuItem,
     priority: number,
