@@ -14,6 +14,7 @@ import type {BigDigClient} from 'big-dig/src/client';
 import type {ThriftClient} from 'big-dig/src/services/thrift/types';
 import type {DirectoryEntry, WriteOptions} from '../../../nuclide-fs';
 
+import {FS_SERVICE_CONIFG} from 'big-dig/src/services/fs/service-config';
 import fs from 'fs';
 import {getLogger} from 'log4js';
 import {memoize} from 'lodash';
@@ -342,7 +343,7 @@ export async function getOrCreateRfsClientAdapter(
 
 const getOrCreateThriftClient = memoize(
   (bigDigClient: BigDigClient): Promise<ThriftClient> => {
-    return bigDigClient.getOrCreateThriftClient('thrift-rfs').then(
+    return bigDigClient.getOrCreateThriftClient(FS_SERVICE_CONIFG).then(
       clientWrapper => {
         clientWrapper.onConnectionEnd(() => {
           getOrCreateThriftClient.cache.delete(bigDigClient);

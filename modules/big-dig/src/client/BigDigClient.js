@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 import type {ReliableSocket} from '../socket/ReliableSocket';
 import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import type {Tunnel} from '../services/tunnel/Tunnel';
+import type {ThriftServiceConfig} from '../services/thrift/types';
 
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
@@ -22,7 +23,6 @@ import {THRIFT_SERVICE_TAG, ThriftClient} from '../services/thrift/types';
 
 import {TunnelManager} from '../services/tunnel/TunnelManager';
 import {ThriftClientManager} from '../services/thrift/ThriftClientManager';
-import RemoteFileSystemService from '../services/fs/gen-nodejs/RemoteFileSystemService';
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
@@ -109,19 +109,10 @@ export class BigDigClient {
     }
   }
 
-  getOrCreateThriftClient(serviceName: string): Promise<ThriftClient> {
-    // TODO Move config to the callers
-    return this._thriftClientManager.createThriftClient({
-      name: serviceName,
-      remoteUri: '',
-      remoteCommand: '',
-      remoteCommandArgs: [],
-      remotePort: 0,
-      thriftTransport: 'buffered',
-      thriftProtocol: 'binary',
-      thriftService: RemoteFileSystemService,
-      killOldThriftServerProcess: true,
-    });
+  getOrCreateThriftClient(
+    serviceConfig: ThriftServiceConfig,
+  ): Promise<ThriftClient> {
+    return this._thriftClientManager.createThriftClient(serviceConfig);
   }
 
   close(): void {

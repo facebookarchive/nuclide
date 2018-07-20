@@ -62,6 +62,7 @@ import type {
   Range,
 } from 'big-dig-vscode-server/Protocol';
 
+import {FS_SERVICE_CONIFG} from 'big-dig/src/services/fs/service-config';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import * as vscode from 'vscode';
 import EventEmitter from 'events';
@@ -168,7 +169,7 @@ export class ConnectionWrapper implements IDisposable {
     }
 
     this._fsThriftClientPromise = this._bigDigClient
-      .getOrCreateThriftClient('thrift-rfs')
+      .getOrCreateThriftClient(FS_SERVICE_CONIFG)
       .then(
         client => {
           this._fsThriftClientPromise = null;
