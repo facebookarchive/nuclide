@@ -147,7 +147,7 @@ export default class DebuggerThreadsComponent extends React.Component<
 
     invariant(matchedThread.length === 1);
     const thread: IThread = matchedThread[0];
-    await service.getModel().fetchCallStack((thread: any));
+    await service.getModel().refreshCallStack((thread: any), true);
     this.props.service.focusStackFrame(null, thread, null, true);
   };
 
@@ -261,7 +261,7 @@ export default class DebuggerThreadsComponent extends React.Component<
         ? []
         : threadList.map(thread => {
             const stoppedDetails = thread.stoppedDetails;
-            const callstack = thread.getCallStack();
+            const callstack = thread.getCachedCallStack();
             const cellData: Row<CellData> = {
               data: {
                 id: thread.threadId,

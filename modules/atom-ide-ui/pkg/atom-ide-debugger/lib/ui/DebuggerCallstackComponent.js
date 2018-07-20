@@ -60,7 +60,8 @@ export default class DebuggerCallstackComponent extends React.Component<
     return {
       callStackLevels: this.state == null ? 20 : this.state.callStackLevels,
       mode: service.getDebuggerMode(),
-      callstack: focusedThread == null ? [] : focusedThread.getCallStack(),
+      callstack:
+        focusedThread == null ? [] : focusedThread.getCachedCallStack(),
       selectedCallFrameId:
         focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
       isFechingStackFrames: false,
@@ -175,7 +176,7 @@ export default class DebuggerCallstackComponent extends React.Component<
           onClick={() => {
             this.setState({isFechingStackFrames: true});
             nullthrows(viewModel.focusedThread)
-              .fetchCallStack(this.state.callStackLevels)
+              .refreshCallStack()
               .then(() => this.setState(this._getState()));
           }}>
           More Stack Frames

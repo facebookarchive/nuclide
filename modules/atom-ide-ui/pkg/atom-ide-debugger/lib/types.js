@@ -40,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import type {Expected} from 'nuclide-commons/expected';
 import type {Observable} from 'rxjs';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
@@ -179,9 +180,23 @@ export interface IThread extends ITreeElement {
   exceptionInfo(): Promise<?IExceptionInfo>;
 
   /**
-   * Gets the already-fetched callstack from the debug adapter.
+   * Gets the top frame of the current call stack, or null if no frame is loaded.
    */
-  getCallStack(): IStackFrame[];
+  getCallStackTopFrame(): ?IStackFrame;
+
+  /**
+   * Returns an observable that emits the full call stack for this thread if the
+   * call stack is already fetched. If the call stack is not already fetched,
+   * this routine fetches it asynchronously and returns an observable that
+   * emits an Expect.Pending value followed by the call stack.
+   */
+  getFullCallStack(levels?: number): Observable<Expected<IStackFrame[]>>;
+
+  /**
+   * Returns the call stack for the current thread without attempting to
+   * load it from the debug adapter.
+   */
+  getCachedCallStack(): IStackFrame[];
 
   /**
    * Invalidates the callstack cache.
@@ -189,9 +204,10 @@ export interface IThread extends ITreeElement {
   clearCallStack(): void;
 
   /**
-   * Fetches more callstack items on user demand
+   * TODO: Ericblue this is here for the legacy call stack component
+   * which is going away soon
    */
-  fetchCallStack(levels?: number): Promise<void>;
+  refreshCallStack(levels: ?number): Promise<void>;
 
   /**
    * Indicates whether this thread is stopped. The callstack for stopped
@@ -289,7 +305,6 @@ export interface IModel extends ITreeElement {
   getFunctionBreakpoints(): IFunctionBreakpoint[];
   getExceptionBreakpoints(): IExceptionBreakpoint[];
   getWatchExpressions(): IEvaluatableExpression[];
-  fetchCallStack(thread: IThread): Promise<void>;
 
   onDidChangeBreakpoints(
     callback: (event: ?IBreakpointsChangeEvent) => mixed,
@@ -298,6 +313,10 @@ export interface IModel extends ITreeElement {
   onDidChangeWatchExpressions(
     callback: (expression: ?IExpression) => mixed,
   ): IDisposable;
+
+  // TODO: Ericblue this is here for the legacy DebuggerThreadsComponent,
+  // which is going away soon.
+  refreshCallStack(threadI: IThread, fetchAllFrames: boolean): Promise<void>;
 }
 
 export interface IBreakpointsChangeEvent {

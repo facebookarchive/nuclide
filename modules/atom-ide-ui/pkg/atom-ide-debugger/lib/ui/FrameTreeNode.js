@@ -47,7 +47,7 @@ export default class FrameTreeNode extends React.Component<Props> {
         title={
           `Frame ID: ${frame.frameId}, Name: ${frame.name}` +
           (frame.thread.stopped &&
-          frame.thread.getCallStack()[0] === frame &&
+          frame.thread.getCallStackTopFrame() === frame &&
           frame.source != null &&
           frame.source.name != null
             ? `, Stopped at: ${frame.source.name}: ${frame.range.end.row}`

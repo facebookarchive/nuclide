@@ -25,18 +25,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
 import classnames from 'classnames';
 
-const LOADING = (
-  <div
-    className={classnames(
-      'debugger-expression-value-row',
-      'debugger-tree-no-frames',
-    )}>
-    <span className="debugger-expression-value-content">
-      <LoadingSpinner size="SMALL" />
-    </span>
-  </div>
-);
-
 type Props = {
   thread: IThread,
   service: IDebugService,
@@ -44,16 +32,18 @@ type Props = {
 
 type State = {
   isCollapsed: boolean,
-  childItems: Expected<Array<IStackFrame>>,
+  stackFrames: Expected<Array<IStackFrame>>,
 };
 
 export default class ThreadTreeNode extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
-  _selectTrigger: Subject<void>;
+  // Subject that emits every time this node transitions from collapsed
+  // to expanded.
+  _expandedSubject: Subject<void>;
 
   constructor(props: Props) {
     super(props);
-    this._selectTrigger = new Subject();
+    this._expandedSubject = new Subject();
     this.state = this._getInitialState();
     this._disposables = new UniversalDisposable();
   }
@@ -67,29 +57,14 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   _getInitialState() {
     return {
       isCollapsed: true,
-      childItems: Expect.pending(),
+      stackFrames: Expect.pending(),
     };
   }
 
-  _getFrames(fetch: boolean = false): Observable<Expected<Array<IStackFrame>>> {
-    const {thread} = this.props;
-    const getValue = () => Observable.of(Expect.value(thread.getCallStack()));
-    if (
-      fetch ||
-      (!this.state.childItems.isPending &&
-        !this.state.childItems.isError &&
-        this.state.childItems.value.length === 0)
-    ) {
-      return Observable.of(Expect.pending()).concat(
-        Observable.fromPromise(
-          (async () => {
-            await thread.fetchCallStack();
-            return Expect.value(thread.getCallStack());
-          })(),
-        ),
-      );
-    }
-    return getValue();
+  _getFrames(): Observable<Expected<Array<IStackFrame>>> {
+    // TODO: support frame paging - fetch ~20 frames here and offer
+    // a way in the UI for the user to ask for more
+    return this.props.thread.getFullCallStack();
   }
 
   componentWillUnmount(): void {
@@ -108,60 +83,49 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       ).subscribe(() => {
         const {isCollapsed} = this.state;
-
         const newIsCollapsed = isCollapsed && !this._computeIsFocused();
-        this.setState({
-          isCollapsed: newIsCollapsed,
-        });
+        this._setCollapsed(newIsCollapsed);
       }),
-      this._selectTrigger
+      this._expandedSubject
         .asObservable()
         .let(fastDebounce(100))
-        .switchMap(() => this._getFrames(true))
+        .switchMap(() => this._getFrames())
         .subscribe(frames => {
           this.setState({
-            childItems: frames,
+            stackFrames: frames,
           });
         }),
       observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
         .let(fastDebounce(100))
-        .startWith(null)
-        .switchMap(() =>
-          this._getFrames().switchMap(frames => {
-            if (
-              !this.state.isCollapsed &&
-              !frames.isPending &&
-              !frames.isError &&
-              frames.value.length === 0
-            ) {
-              return this._getFrames(true);
-            }
-            return Observable.of(frames);
-          }),
-        )
+        .switchMap(() => this._getFrames())
         .subscribe(frames => {
           const {isCollapsed} = this.state;
-
           this.setState({
-            childItems: frames,
+            stackFrames: frames,
+
+            // If this node was already collapsed, it stays collapsed
+            // unless this thread just became the focused thread, in
+            // which case it auto-expands. If this node was already
+            // expanded by the user, it stays expanded.
             isCollapsed: isCollapsed && !this._computeIsFocused(),
           });
         }),
     );
   }
 
-  handleSelect = () => {
-    if (!this.state.isCollapsed) {
-      this.setState({
-        isCollapsed: true,
-      });
-    } else {
-      this.setState({
-        isCollapsed: false,
-        childItems: Expect.pending(),
-      });
-      this._selectTrigger.next();
+  _setCollapsed(isCollapsed: boolean): void {
+    this.setState({
+      isCollapsed,
+    });
+
+    if (!isCollapsed) {
+      this._expandedSubject.next();
     }
+  }
+
+  handleSelectThread = () => {
+    const newCollapsed = !this.state.isCollapsed;
+    this._setCollapsed(newCollapsed);
   };
 
   _handleStackFrameClick = (
@@ -231,7 +195,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
 
   render(): React.Node {
     const {thread, service} = this.props;
-    const {childItems} = this.state;
+    const {stackFrames} = this.state;
     const isFocused = this._computeIsFocused();
     const handleTitleClick = event => {
       if (thread.stopped) {
@@ -252,9 +216,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     );
 
     if (
-      !childItems.isPending &&
-      !childItems.isError &&
-      childItems.value.length === 0
+      !stackFrames.isPending &&
+      !stackFrames.isError &&
+      stackFrames.value.length === 0
     ) {
       return (
         <TreeItem className="debugger-tree-no-frames">
@@ -263,21 +227,36 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       );
     }
 
-    const callFramesElements = childItems.isPending ? (
-      LOADING
-    ) : childItems.isError ? (
-      <span className="debugger-tree-no-frames">
-        Error fetching stack frames {childItems.error.toString()}
-      </span>
-    ) : (
-      this._generateTable(childItems.value)
+    const LOADING = (
+      <div
+        className={classnames(
+          'debugger-expression-value-row',
+          'debugger-tree-no-frames',
+        )}>
+        <span className="debugger-expression-value-content">
+          <LoadingSpinner size="SMALL" />
+        </span>
+      </div>
     );
+
+    const ERROR = (
+      <span className="debugger-tree-no-frames">
+        Error fetching stack frames{' '}
+        {stackFrames.isError ? stackFrames.error.toString() : null}
+      </span>
+    );
+
+    const callFramesElements = stackFrames.isPending
+      ? LOADING
+      : stackFrames.isError
+        ? ERROR
+        : this._generateTable(stackFrames.value);
 
     return (
       <NestedTreeItem
         title={formattedTitle}
         collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelect}>
+        onSelect={this.handleSelectThread}>
         {callFramesElements}
       </NestedTreeItem>
     );

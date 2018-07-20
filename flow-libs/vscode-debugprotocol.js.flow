@@ -1085,6 +1085,8 @@ declare module 'vscode-debugprotocol' {
      *  Tracked by VS Code issue: https://github.com/Microsoft/vscode-debugadapter-node/issues/150
      */
     supportsTerminateThreadsRequest?: boolean,
+    /** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. */
+    supportsDelayedStackTraceLoading?: boolean,
   };
 
   /** An ExceptionBreakpointsFilter is shown in the UI as an option for configuring how exceptions are dealt with. */

@@ -67,6 +67,7 @@ import type {
 } from '../types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
+import type {Expected} from 'nuclide-commons/expected';
 
 import {Observable} from 'rxjs';
 import uuid from 'uuid';
@@ -76,8 +77,9 @@ import {Emitter, Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
 import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
-import {openSourceLocation, onUnexpectedError} from '../utils';
+import {openSourceLocation} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
+import {Expect} from 'nuclide-commons/expected';
 
 export class Source implements ISource {
   +uri: string;
@@ -613,9 +615,13 @@ export class StackFrame implements IStackFrame {
   }
 }
 
+type CallStack = {|
+  valid: boolean,
+  callFrames: IStackFrame[],
+|};
+
 export class Thread implements IThread {
-  _callStack: IStackFrame[];
-  _staleCallStack: IStackFrame[];
+  _callStack: CallStack;
   stoppedDetails: ?IRawStoppedDetails;
   stopped: boolean;
   +process: IProcess;
@@ -627,9 +633,30 @@ export class Thread implements IThread {
     this.name = name;
     this.threadId = threadId;
     this.stoppedDetails = null;
-    this._callStack = [];
-    this._staleCallStack = [];
+    this._callStack = this._getEmptyCallstackState();
     this.stopped = false;
+  }
+
+  _getEmptyCallstackState(): CallStack {
+    return {
+      valid: false,
+      callFrames: [],
+    };
+  }
+
+  _isCallstackLoaded(): boolean {
+    return this._callStack.valid;
+  }
+
+  _isCallstackFullyLoaded(): boolean {
+    return (
+      this._isCallstackLoaded() &&
+      this.stoppedDetails != null &&
+      this.stoppedDetails.totalFrames != null &&
+      !Number.isNaN(this.stoppedDetails.totalFrames) &&
+      this.stoppedDetails.totalFrames >= 0 &&
+      this._callStack.callFrames.length >= this.stoppedDetails.totalFrames
+    );
   }
 
   getId(): string {
@@ -637,52 +664,95 @@ export class Thread implements IThread {
   }
 
   clearCallStack(): void {
-    if (this._callStack.length > 0) {
-      this._staleCallStack = this._callStack;
+    this._callStack = this._getEmptyCallstackState();
+  }
+
+  getCallStackTopFrame(): ?IStackFrame {
+    return this._isCallstackLoaded() ? this._callStack.callFrames[0] : null;
+  }
+
+  getFullCallStack(levels?: number): Observable<Expected<IStackFrame[]>> {
+    if (
+      this._isCallstackFullyLoaded() ||
+      (levels != null &&
+        this._isCallstackLoaded() &&
+        this._callStack.callFrames.length >= levels)
+    ) {
+      // We have a sufficent call stack already loaded, just return it.
+      return Observable.of(Expect.value(this._callStack.callFrames));
     }
-    this._callStack = [];
+
+    // Return a pending value and kick off the fetch. When the fetch
+    // is done, emit the new call frames.
+    return Observable.concat(
+      Observable.of(Expect.pending()),
+      Observable.fromPromise(this.refreshCallStack(levels)).switchMap(() =>
+        Observable.of(Expect.value(this._callStack.callFrames)),
+      ),
+    );
   }
 
-  getCallStack(): IStackFrame[] {
-    return this._callStack;
-  }
-
-  getStaleCallStack(): IStackFrame[] {
-    return this._staleCallStack;
+  getCachedCallStack(): IStackFrame[] {
+    return this._callStack.callFrames;
   }
 
   /**
    * Queries the debug adapter for the callstack and returns a promise
    * which completes once the call stack has been retrieved.
    * If the thread is not stopped, it returns a promise to an empty array.
-   * Only fetches the first stack frame for performance reasons. Calling this method consecutive times
-   * gets the remainder of the call stack.
+   *
+   * If specified, levels indicates the maximum depth of call frames to fetch.
    */
-  async fetchCallStack(levels?: number = 20): Promise<void> {
+  async refreshCallStack(levels: ?number): Promise<void> {
     if (!this.stopped) {
       return;
     }
 
-    const start = this._callStack.length;
-    const callStack = await this._getCallStackImpl(start, levels);
-    if (start < this._callStack.length) {
-      // Set the stack frames for exact position we requested. To make sure no concurrent requests create duplicate stack frames #30660
-      this._callStack.splice(start, this._callStack.length - start);
+    const supportsDelayLoading =
+      nullthrows(this.process).session.capabilities
+        .supportsDelayedStackTraceLoading === true;
+    if (supportsDelayLoading) {
+      const start = this._callStack.callFrames.length;
+      const callStack = await this._getCallStackImpl(start, levels);
+      if (start < this._callStack.callFrames.length) {
+        // Set the stack frames for exact position we requested.
+        // To make sure no concurrent requests create duplicate stack frames #30660
+        this._callStack.callFrames.splice(
+          start,
+          this._callStack.callFrames.length - start,
+        );
+      }
+      this._callStack.callFrames = this._callStack.callFrames.concat(
+        callStack || [],
+      );
+    } else {
+      // Must load the entire call stack, the debugger backend doesn't support
+      // delayed call stack loading.
+      this._callStack.callFrames =
+        (await this._getCallStackImpl(0, null)) || [];
     }
-    this._callStack = this._callStack.concat(callStack || []);
+
+    this._callStack.valid = true;
   }
 
   async _getCallStackImpl(
     startFrame: number,
-    levels: number,
+    levels: ?number,
   ): Promise<IStackFrame[]> {
     try {
+      const stackTraceArgs: DebugProtocol.StackTraceArguments = {
+        threadId: this.threadId,
+        startFrame,
+      };
+
+      // Only include levels if specified and supported. If levels is omitted,
+      // the debug adapter is to return all stack frames, per the protocol.
+      if (levels != null) {
+        stackTraceArgs.levels = levels;
+      }
+
       const response: DebugProtocol.StackTraceResponse = await this.process.session.stackTrace(
-        {
-          threadId: this.threadId,
-          startFrame,
-          levels,
-        },
+        stackTraceArgs,
       );
       if (response == null || response.body == null) {
         return [];
@@ -1019,7 +1089,6 @@ const WATCH_EXPRESSIONS_CHANGED = 'WATCH_EXPRESSIONS_CHANGED';
 
 export class Model implements IModel {
   _processes: Process[];
-  _schedulers: Map<string, rxjs$Subscription>;
   _breakpoints: Breakpoint[];
   _breakpointsActivated: boolean;
   _functionBreakpoints: FunctionBreakpoint[];
@@ -1036,7 +1105,6 @@ export class Model implements IModel {
     watchExpressions: Expression[],
   ) {
     this._processes = [];
-    this._schedulers = new Map();
     this._breakpoints = breakpoints;
     this._breakpointsActivated = breakpointsActivated;
     this._functionBreakpoints = functionBreakpoints;
@@ -1111,8 +1179,6 @@ export class Model implements IModel {
 
   clearThreads(id: string, removeThreads: boolean, reference?: number): void {
     const process = this._processes.filter(p => p.getId() === id).pop();
-    this._schedulers.forEach(scheduler => scheduler.unsubscribe());
-    this._schedulers.clear();
 
     if (process != null) {
       process.clearThreads(removeThreads, reference);
@@ -1120,32 +1186,25 @@ export class Model implements IModel {
     }
   }
 
-  async fetchCallStack(threadI: IThread): Promise<void> {
+  async refreshCallStack(
+    threadI: IThread,
+    fetchAllFrames: boolean,
+  ): Promise<void> {
     const thread: Thread = (threadI: any);
-    if (
-      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+
+    // If the debugger supports delayed stack trace loading, load only
+    // the first call stack frame, which is needed to display in the threads
+    // view. We will lazily load the remaining frames only for threads that
+    // are visible in the UI, allowing us to skip loading frames we don't
+    // need right now.
+    const framesToLoad =
       nullthrows(thread.process).session.capabilities
-        .supportsDelayedStackTraceLoading
-    ) {
-      // For improved performance load the first stack frame and then load the rest async.
-      await thread.fetchCallStack(1);
-      if (!this._schedulers.has(thread.getId())) {
-        this._schedulers.set(
-          thread.getId(),
-          Observable.timer(500).subscribe(() => {
-            thread
-              .fetchCallStack(19)
-              .then(
-                () => this._emitter.emit(CALLSTACK_CHANGED),
-                onUnexpectedError,
-              );
-          }),
-        );
-      }
-    } else {
-      thread.clearCallStack();
-      await thread.fetchCallStack();
-    }
+        .supportsDelayedStackTraceLoading && !fetchAllFrames
+        ? 1
+        : null;
+
+    thread.clearCallStack();
+    await thread.refreshCallStack(framesToLoad);
     this._emitter.emit(CALLSTACK_CHANGED);
   }
 
