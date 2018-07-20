@@ -272,25 +272,12 @@ export class ThriftClientManager {
     if (this._isClosed) {
       return;
     }
+    this._isClosed = true;
     this._logger.info('Close Big-Dig thrift client manager!');
-    // close all clients
     for (const client of this._clientMap.values()) {
       client.close();
     }
-    // Close all tunnels, closing each tunnel means to reduce its corresponding
-    // remote server refCount by 1
-    for (const [
-      serviceName,
-      tunnelCacheEntry,
-    ] of this._nameToTunnel.entries()) {
-      const {tunnel} = tunnelCacheEntry;
-      this._closeRemoteServer(serviceName);
-      tunnel.close();
-    }
-    this._clientMap.clear();
-    this._nameToTunnel.clear();
     this._availableServices.clear();
     this._emitter.removeAllListeners();
-    this._isClosed = true;
   }
 }

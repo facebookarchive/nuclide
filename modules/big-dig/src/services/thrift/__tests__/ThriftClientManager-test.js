@@ -21,6 +21,7 @@ import thrift from 'thrift';
 import RemoteFileSystemService from '../../fs/gen-nodejs/RemoteFileSystemService';
 import {encodeMessage, decodeMessage} from '../util';
 import EventEmitter from 'events';
+import waitsFor from '../../../../../../jest/waits_for';
 
 jest.mock(require.resolve('../createThriftClient'));
 jest.mock(require.resolve('../../tunnel/TunnelManager'), () => {
@@ -319,9 +320,8 @@ describe('ThriftClientManager', () => {
 
     // close ThriftClientManager, close all tunnels and clients
     await manager.close();
-    // due to async
-    expect(callServer.mock.calls.length).toBeGreaterThanOrEqual(4);
-    expect(callServer.mock.calls.length).toBeLessThanOrEqual(6);
+    await waitsFor(() => callServer.mock.calls.length >= 4);
+    expect(callServer).toHaveBeenCalledTimes(4);
   });
 });
 
