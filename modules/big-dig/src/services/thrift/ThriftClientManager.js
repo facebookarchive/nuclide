@@ -29,7 +29,7 @@ import EventEmitter from 'events';
 
 import {createThriftClient} from './createThriftClient';
 import {encodeMessage, decodeMessage} from './util';
-import {convertToServerConfig} from './config-utils';
+import {convertToServerConfig, genConfigId} from './config-utils';
 
 // Every client increase tunnel's refCount by 1, while closing it, we need to
 // reduce tunnel refCount by 1. The reason we want to let ThriftClientManager
@@ -64,7 +64,7 @@ export class ThriftClientManager {
   // The following attributes are used to managing multiple Thrift service client
   _clientMap: Map<string, ThriftClient>;
   _availableServices: Set<string>;
-  _nameToTunnel: Map<string, TunnelCacheEntry>;
+  _tunnelByServiceConfigId: Map<string, TunnelCacheEntry>;
   _nameToServiceConfig: Map<string, ThriftServiceConfig>;
 
   constructor(transport: Transport, tunnelManager: TunnelManager) {
@@ -78,7 +78,7 @@ export class ThriftClientManager {
 
     this._availableServices = new Set();
     this._clientMap = new Map();
-    this._nameToTunnel = new Map();
+    this._tunnelByServiceConfigId = new Map();
     this._nameToServiceConfig = new Map();
 
     // Register all available thrift services
@@ -172,7 +172,7 @@ export class ThriftClientManager {
     );
     const clientDispose = () => {
       this._clientMap.delete(clientId);
-      this._closeTunnel(serviceConfig.name);
+      this._closeTunnel(serviceConfig);
     };
     client.onConnectionEnd(clientDispose);
     client.onUnexpectedConnectionEnd(clientDispose);
@@ -231,7 +231,8 @@ export class ThriftClientManager {
   async _getOrCreateTunnel(
     serviceConfig: ThriftServiceConfig,
   ): Promise<Tunnel> {
-    const tunnelCacheEntry = this._nameToTunnel.get(serviceConfig.name);
+    const serviceConfigId = genConfigId(serviceConfig);
+    const tunnelCacheEntry = this._tunnelByServiceConfigId.get(serviceConfigId);
     let tunnel = null;
 
     if (tunnelCacheEntry != null) {
@@ -249,20 +250,21 @@ export class ThriftClientManager {
         remotePort,
         useIPv4,
       );
-      this._nameToTunnel.set(serviceConfig.name, {tunnel, refCount: 1});
+      this._tunnelByServiceConfigId.set(serviceConfigId, {tunnel, refCount: 1});
     }
     return tunnel;
   }
 
-  async _closeTunnel(serviceName: string): Promise<void> {
-    const tunnelCacheEntry = this._nameToTunnel.get(serviceName);
+  async _closeTunnel(serviceConfig: ThriftServiceConfig): Promise<void> {
+    const serviceConfigId = genConfigId(serviceConfig);
+    const tunnelCacheEntry = this._tunnelByServiceConfigId.get(serviceConfigId);
     if (tunnelCacheEntry == null) {
-      throw new Error(`Expected tunnel to be open: ${serviceName}`);
+      throw new Error(`Expected tunnel to be open: ${serviceConfig.name}`);
     }
     if (tunnelCacheEntry.refCount === 1) {
-      this._nameToTunnel.delete(serviceName);
+      this._tunnelByServiceConfigId.delete(serviceConfigId);
       tunnelCacheEntry.tunnel.close();
-      await this._closeRemoteServer(serviceName);
+      await this._closeRemoteServer(serviceConfig.name);
     } else {
       tunnelCacheEntry.refCount -= 1;
     }
