@@ -48,7 +48,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     this._disposables = new UniversalDisposable();
   }
 
-  _computeIsFocused(): boolean {
+  _threadIsFocused(): boolean {
     const {service, thread} = this.props;
     const focusedThread = service.viewModel.focusedThread;
     return focusedThread != null && thread.threadId === focusedThread.threadId;
@@ -61,10 +61,12 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     };
   }
 
-  _getFrames(): Observable<Expected<Array<IStackFrame>>> {
+  _getFrames(levels: ?number): Observable<Expected<Array<IStackFrame>>> {
     // TODO: support frame paging - fetch ~20 frames here and offer
     // a way in the UI for the user to ask for more
-    return this.props.thread.getFullCallStack();
+    return levels != null
+      ? this.props.thread.getFullCallStack(levels)
+      : this.props.thread.getFullCallStack();
   }
 
   componentWillUnmount(): void {
@@ -83,13 +85,18 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       ).subscribe(() => {
         const {isCollapsed} = this.state;
-        const newIsCollapsed = isCollapsed && !this._computeIsFocused();
+        const newIsCollapsed = isCollapsed && !this._threadIsFocused();
         this._setCollapsed(newIsCollapsed);
       }),
       this._expandedSubject
         .asObservable()
         .let(fastDebounce(100))
-        .switchMap(() => this._getFrames())
+        .switchMap(() => {
+          // Pass null for levels to _getFrames to force fetching of the
+          // entire callstack if it's not loaded, since this thread node
+          // is now expanded and the whole callstack is visible.
+          return this._getFrames(null);
+        })
         .subscribe(frames => {
           this.setState({
             stackFrames: frames,
@@ -97,17 +104,29 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         }),
       observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
         .let(fastDebounce(100))
-        .switchMap(() => this._getFrames())
-        .subscribe(frames => {
-          const {isCollapsed} = this.state;
+        .switchMap(() => {
+          // If this node was already collapsed, it stays collapsed
+          // unless this thread just became the focused thread, in
+          // which case it auto-expands. If this node was already
+          // expanded by the user, it stays expanded.
+          const newIsCollapsed =
+            this.state.isCollapsed && !this._threadIsFocused();
+
+          // If the node is collapsed, we only need to fetch the first call
+          // frame to display the stop location (if any). Otherwise, we need
+          // to fetch the call stack.
+          return this._getFrames(newIsCollapsed ? 1 : null).switchMap(frames =>
+            Observable.of({
+              frames,
+              newIsCollapsed,
+            }),
+          );
+        })
+        .subscribe(result => {
+          const {frames, newIsCollapsed} = result;
           this.setState({
             stackFrames: frames,
-
-            // If this node was already collapsed, it stays collapsed
-            // unless this thread just became the focused thread, in
-            // which case it auto-expands. If this node was already
-            // expanded by the user, it stays expanded.
-            isCollapsed: isCollapsed && !this._computeIsFocused(),
+            isCollapsed: newIsCollapsed,
           });
         }),
     );
@@ -196,7 +215,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   render(): React.Node {
     const {thread, service} = this.props;
     const {stackFrames} = this.state;
-    const isFocused = this._computeIsFocused();
+    const isFocused = this._threadIsFocused();
     const handleTitleClick = event => {
       if (thread.stopped) {
         service.focusStackFrame(null, thread, null, true);
