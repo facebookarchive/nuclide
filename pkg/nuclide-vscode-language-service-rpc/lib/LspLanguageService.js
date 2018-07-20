@@ -224,6 +224,8 @@ export class LspLanguageService {
   _autocompleteCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
   _outlineCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
 
+  _disposables: UniversalDisposable = new UniversalDisposable();
+
   constructor(
     logger: log4js$Logger,
     fileCache: FileCache,
@@ -267,6 +269,7 @@ export class LspLanguageService {
         this._masterHost.dispose();
         this._snapshotter.dispose();
         this._logger.dispose();
+        this._disposables.dispose();
       });
   }
 
@@ -2843,6 +2846,40 @@ export class LspLanguageService {
   ): Promise<?atom$Range> {
     this._logger.error('NYI: getCollapsedSelectionRange');
     return Promise.resolve(null);
+  }
+
+  async sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed> {
+    return this._lspConnection._jsonRpcConnection.sendRequest(method, params);
+  }
+
+  async sendLspNotification(
+    filePath: NuclideUri,
+    notificationMethod: string,
+    params: mixed,
+  ): Promise<void> {
+    this._lspConnection._jsonRpcConnection.sendNotification(
+      notificationMethod,
+      params,
+    );
+  }
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed> {
+    const observable = Observable.create(observer => {
+      this._lspConnection._jsonRpcConnection.onNotification(
+        {method: notificationMethod},
+        (params: mixed) => {
+          observer.next(params);
+        },
+      );
+      this._disposables.add(() => observer.complete());
+    });
+    return observable.publish();
   }
 }
 

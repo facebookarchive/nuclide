@@ -539,6 +539,44 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       .publish();
   }
 
+  async sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed> {
+    return (await this._getLanguageServiceForFile(filePath)).sendLspRequest(
+      filePath,
+      method,
+      params,
+    );
+  }
+
+  async sendLspNotification(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<void> {
+    return (await this._getLanguageServiceForFile(
+      filePath,
+    )).sendLspNotification(filePath, method, params);
+  }
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed> {
+    return this.observeLanguageServices()
+      .mergeMap((process: LanguageService) =>
+        process
+          .observeLspNotifications(notificationMethod)
+          .refCount()
+          .catch(error => {
+            this._logger.error('Error: observeLspNotifications', error);
+            return Observable.empty();
+          }),
+      )
+      .publish();
+  }
+
   dispose(): void {
     this._resources.dispose();
   }

@@ -455,6 +455,24 @@ export class ServerLanguageService<
     button: string,
   ): Promise<void> {}
 
+  async sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed> {}
+
+  async sendLspNotification(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<void> {}
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed> {
+    return Observable.empty().publish();
+  }
+
   dispose(): void {
     this._service.dispose();
   }

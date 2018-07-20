@@ -215,6 +215,24 @@ export class NullLanguageService {
     return Observable.empty().publish();
   }
 
+  async sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed> {}
+
+  async sendLspNotification(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<void> {}
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed> {
+    return Observable.empty().publish();
+  }
+
   dispose(): void {}
 }
 

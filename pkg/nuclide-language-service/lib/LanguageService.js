@@ -275,5 +275,21 @@ export interface LanguageService {
 
   onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit>;
 
+  sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed>;
+
+  sendLspNotification(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<void>;
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed>;
+
   dispose(): void;
 }
