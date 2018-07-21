@@ -125,7 +125,7 @@ public class JVMConnector {
                             }
 
                             if (!connectMessage) {
-                              contextManager.sendUserMessage(line, level, false);
+                              contextManager.sendUserMessage(line, level);
                             }
                           });
                 } catch (IOException e) {

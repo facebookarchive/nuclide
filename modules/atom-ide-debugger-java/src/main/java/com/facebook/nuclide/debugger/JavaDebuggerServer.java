@@ -132,6 +132,7 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
             .put("exceptionBreakpointFilters", exceptionBreakpointFilters)
             .put("supportsConditionalBreakpoints", true)
             .put("supportsConfigurationDoneRequest", true)
+            .put("supportsDelayedStackTraceLoading", true)
             .put("supportsEvaluateForHovers", true)
             .put("supportsSetVariable", true)
             .put("supportTerminateDebuggee", false);
@@ -254,7 +255,7 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
                 .map(this::breakpointSpecToBreakpoint)
                 .map(Breakpoint::toJSON)
                 .collect(Collectors.toList())
-            : new ArrayList();
+            : new ArrayList<JSONObject>();
 
     breakpointSpecsToRemove
         .stream()
@@ -282,61 +283,66 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
               .filter(t -> t.uniqueID() == arguments.threadId)
               .findFirst()
               .orElse(null);
-      JSONArray stackFrames = new JSONArray();
+      List<JSONObject> stackFrames = new ArrayList<JSONObject>();
       try {
         List<com.sun.jdi.StackFrame> jdiStackFrames = thread.frames();
+        int endExclusive =
+            arguments.levels != 0
+                ? Math.min(arguments.startFrame + arguments.levels, jdiStackFrames.size())
+                : jdiStackFrames.size();
         stackFrames =
-            new JSONArray(
-                IntStream.range(0, jdiStackFrames.size())
-                    .mapToObj(
-                        stackFrameIndex -> {
-                          com.sun.jdi.StackFrame frame = jdiStackFrames.get(stackFrameIndex);
-                          String name;
-                          try {
-                            name = frame.location().sourceName();
-                          } catch (AbsentInformationException ex) {
-                            // This seems to happen for one particular stack frame in the Android
-                            //   internals but since VsDebugSessionTranslator doesn't actually use
-                            //   the stack frame's source's name, this value is ultimately ignored
-                            name = UNKNOWN;
-                          }
-                          String relativePath;
-                          try {
-                            relativePath = frame.location().sourcePath();
-                          } catch (AbsentInformationException ex) {
-                            relativePath = null;
-                          }
-                          try {
-                            String path =
-                                relativePath != null
-                                    ? getContextManager()
-                                        .getSourceLocator()
-                                        .findSourceFile(relativePath)
-                                        .map(file -> file.getAbsolutePath())
-                                        .orElse(null)
-                                    : null;
-                            Source frameSource = new Source(name, path);
-                            int stackFrameId = getNextStackFrameId();
-                            populateMapsForNewStackFrame(stackFrameId, stackFrameIndex, thread);
-                            return new StackFrame(
-                                stackFrameId,
-                                frame.location().method().name(),
-                                frameSource,
-                                frame.location().lineNumber() - (linesStartAt1 ? 0 : 1),
-                                1 /* column */);
-                          } catch (InvalidStackFrameException ex) {
-                            Utils.logVerboseException(frame.toString(), ex);
-                            return null;
-                          }
-                        })
-                    .filter(Objects::nonNull)
-                    .map(StackFrame::toJSON)
-                    .collect(Collectors.toList()));
-      } catch (IncompatibleThreadStateException | NullPointerException ex) {
+            IntStream.range(arguments.startFrame, endExclusive)
+                .mapToObj(
+                    stackFrameIndex -> {
+                      com.sun.jdi.StackFrame frame = jdiStackFrames.get(stackFrameIndex);
+                      String name;
+                      try {
+                        name = frame.location().sourceName();
+                      } catch (AbsentInformationException ex) {
+                        // This seems to happen for one particular stack frame in the Android
+                        //   internals but since VsDebugSessionTranslator doesn't actually use
+                        //   the stack frame's source's name, this value is ultimately ignored
+                        name = UNKNOWN;
+                      }
+                      String relativePath;
+                      try {
+                        relativePath = frame.location().sourcePath();
+                      } catch (AbsentInformationException ex) {
+                        relativePath = null;
+                      }
+                      try {
+                        String path =
+                            relativePath != null
+                                ? getContextManager()
+                                    .getSourceLocator()
+                                    .findSourceFile(relativePath)
+                                    .map(file -> file.getAbsolutePath())
+                                    .orElse(null)
+                                : null;
+                        Source frameSource = new Source(name, path);
+                        int stackFrameId = getNextStackFrameId();
+                        populateMapsForNewStackFrame(stackFrameId, stackFrameIndex, thread);
+                        return new StackFrame(
+                            stackFrameId,
+                            frame.location().method().name(),
+                            frameSource,
+                            frame.location().lineNumber() - (linesStartAt1 ? 0 : 1),
+                            1 /* column */);
+                      } catch (InvalidStackFrameException ex) {
+                        Utils.logVerboseException(frame.toString(), ex);
+                        return null;
+                      }
+                    })
+                .filter(Objects::nonNull)
+                .map(StackFrame::toJSON)
+                .collect(Collectors.toList());
+      } catch (Exception ex) {
         Utils.logException("Error in trying to get stackframes:", ex);
       }
       JSONObject body =
-          new JSONObject().put("stackFrames", stackFrames).put("totalFrames", stackFrames.length());
+          new JSONObject()
+              .put("stackFrames", new JSONArray(stackFrames))
+              .put("totalFrames", stackFrames.size());
       send(response.setBody(body));
     } catch (VMDisconnectedException ex) {
       // sometimes we get stackTraceRequests after program execution is done

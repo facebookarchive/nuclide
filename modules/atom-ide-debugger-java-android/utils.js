@@ -197,6 +197,9 @@ async function _getAndroidSdkSourcePaths(
     );
   }
   track(AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
+    deviceSerial: device.serial,
+    sdkVersion,
+    sdkSourcePathExists: sdkSourcePath != null,
     sdkSourcePath,
   });
   const sdkSourcePathResolved =

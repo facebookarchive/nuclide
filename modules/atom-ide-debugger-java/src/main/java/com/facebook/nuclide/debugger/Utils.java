@@ -305,10 +305,12 @@ public final class Utils {
   }
 
   public static void logTrace(ContextManager cm, String message) {
+    Utils.logTrace(cm, message, new Throwable());
+  }
+
+  public static void logTrace(ContextManager cm, String message, Throwable thr) {
     cm.sendUserMessage(
-        message + System.lineSeparator() + verboseErrorDataFor(new Throwable()),
-        UserMessageLevel.INFO,
-        false);
+        message + System.lineSeparator() + verboseErrorDataFor(thr), UserMessageLevel.INFO);
   }
 
   public static String shellExec(String command) {

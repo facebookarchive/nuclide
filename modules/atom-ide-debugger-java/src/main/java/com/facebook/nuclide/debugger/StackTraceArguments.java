@@ -12,8 +12,12 @@ import org.json.JSONObject;
 
 public class StackTraceArguments {
   public int threadId;
+  public int startFrame;
+  public int levels;
 
   public StackTraceArguments(JSONObject arguments) {
     threadId = arguments.getInt("threadId");
+    startFrame = arguments.optInt("startFrame", 0);
+    levels = arguments.optInt("levels", Integer.MAX_VALUE);
   }
 }

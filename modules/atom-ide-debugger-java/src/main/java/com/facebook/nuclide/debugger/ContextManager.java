@@ -343,14 +343,11 @@ public class ContextManager {
     }
   }
 
-  public void sendUserMessage(
-      String message, Utils.UserMessageLevel level, boolean raiseNotification) {
+  public void sendUserMessage(String message, Utils.UserMessageLevel level) {
     NotificationChannel channel = getNotificationChannel();
     if (channel instanceof VsDebugAdapterChannelManager) {
       JavaDebuggerServer javaDebuggerServer = (JavaDebuggerServer) getInterpreter();
       javaDebuggerServer.sendUserMessage(message, level);
-    } else {
-      Utils.sendUserMessage(this, message, level, raiseNotification);
     }
   }
 
