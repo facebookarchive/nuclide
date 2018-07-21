@@ -186,21 +186,22 @@ async function activateLsp(): Promise<UniversalDisposable> {
       getHostServices(),
     ]);
     const service = getVSCodeLanguageServiceByConnection(connection);
-    const pathToFlow = String(featureConfig.get('nuclide-flow.pathToFlow'));
-    const canUseFlowBin = Boolean(
-      featureConfig.get('nuclide-flow.canUseFlowBin'),
-    );
-    const command = JSON.stringify({kind: 'flow', pathToFlow, canUseFlowBin});
-
+    const config = featureConfig.getWithDefaults('nuclide-flow', {
+      pathToFlow: 'flow',
+      canUseFlowBin: false,
+      stopFlowOnExit: true,
+      liveSyntaxErrors: true,
+      logLevel: 'INFO',
+    });
+    const command = JSON.stringify({
+      kind: 'flow',
+      pathToFlow: config.pathToFlow,
+      canUseFlowBin: config.canUseFlowBin,
+    });
     const lazy = isGkEnabled('nuclide_flow_lazy_mode_ide')
       ? ['--lazy-mode', 'ide']
       : [];
-    const autostop = Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit'))
-      ? ['--autostop']
-      : [];
-    const liveSyntaxErrors = Boolean(
-      featureConfig.get('nuclide-flow.liveSyntaxErrors'),
-    );
+    const autostop = config.stopFlowOnExit ? ['--autostop'] : [];
 
     const lspService = await service.createMultiLspLanguageService(
       'flow',
@@ -212,12 +213,12 @@ async function activateLsp(): Promise<UniversalDisposable> {
         projectFileNames: ['.flowconfig'],
         fileExtensions: ['.js', '.jsx'],
         logCategory: 'flow-language-server',
-        logLevel: 'ALL',
+        logLevel: config.logLevel,
         additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
         waitForDiagnostics: true,
         waitForStatus: true,
         initializationOptions: {
-          liveSyntaxErrors,
+          liveSyntaxErrors: config.liveSyntaxErrors,
         },
       },
     );

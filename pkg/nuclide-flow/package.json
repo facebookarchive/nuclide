@@ -60,6 +60,22 @@
         "type": "boolean",
         "default": true,
         "description": "If checked, Flow will report syntax errors as you type; otherwise, and to see other errors, you have to trigger a flow check by saving any file. (requires restart)"
+      },
+      "logLevel": {
+        "title": "Log Level",
+        "type": "string",
+        "default": "DEBUG",
+        "description": "Specify that level of logging, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
+        "enum": [
+          "ALL",
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR",
+          "FATAL",
+          "OFF"
+        ]
       }
     },
     "packageType": "Atom",
