@@ -44,9 +44,9 @@
     "modules/*"
   ],
   "dependencies": {
+    "@babel/parser": "7.0.0-beta.48",
     "@babel/traverse": "7.0.0-beta.48",
     "@babel/types": "7.0.0-beta.48",
-    "@babel/parser": "7.0.0-beta.48",
     "adm-zip": "0.4.7",
     "anser": "1.4.6",
     "ansi-to-react": "2.0.6",
@@ -75,6 +75,7 @@
     "event-kit": "2.2.0",
     "event-target-shim": "3.0.1",
     "fb-watchman": "2.0.0",
+    "fix-path": "2.1.0",
     "flatten-source-map": "0.0.2",
     "fs-extra": "4.0.3",
     "fs-plus": "2.9.3",
