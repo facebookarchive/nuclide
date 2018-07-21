@@ -131,9 +131,6 @@ try:
         run_compile_steps(destructive_compile=options.destructive_compile)
         test_runner.run_integration_tests()
     else:
-        run('lint_packages', ['scripts/lint-packages'])
-        run('flow', ['flow', 'check', '--show-all-errors', '--max-warnings', '0'])
-        run('eslint', ['scripts/lint-eslint.js'])
         lint_py_headers()
         # Some tests have fixtures that are services. These should be declared
         # in a services-3.json file first.
