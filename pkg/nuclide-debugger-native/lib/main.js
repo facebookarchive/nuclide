@@ -286,6 +286,7 @@ class Activation {
       {
         pid,
         sourcePath: nuclideUri.getPath(buckRoot),
+        debuggerRoot: nuclideUri.getPath(buckRoot),
       },
     );
     const debuggerService = await getDebuggerService();
