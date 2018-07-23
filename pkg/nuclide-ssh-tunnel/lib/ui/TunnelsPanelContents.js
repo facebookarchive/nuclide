@@ -12,12 +12,12 @@
 import type {ResolvedTunnel, Tunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ActiveTunnel} from '../types';
+import passesGK from '../../../commons-node/passesGK';
 
 import * as React from 'react';
 import ManualTunnelSection from './ManualTunnelSection';
 import {TunnelsPanelTable} from './TunnelsPanelTable';
 import {List} from 'immutable';
-import {__DEV__} from '../../../commons-node/runtime-info';
 
 export type Props = {
   tunnels: List<ActiveTunnel>,
@@ -26,11 +26,21 @@ export type Props = {
   openTunnel(tunnel: Tunnel): void,
 };
 
-export class TunnelsPanelContents extends React.Component<Props> {
-  props: Props;
+type State = {
+  allowManualTunnels: boolean,
+};
+
+export class TunnelsPanelContents extends React.Component<Props, State> {
+  constructor() {
+    super();
+    this.state = {allowManualTunnels: false};
+    passesGK('nuclide_allow_manual_tunnels').then(result => {
+      this.setState({allowManualTunnels: result});
+    });
+  }
 
   render(): React.Element<any> {
-    if (__DEV__) {
+    if (this.state.allowManualTunnels) {
       return (
         <div className="nuclide-ssh-tunnels-panel-contents">
           <TunnelsPanelTable
