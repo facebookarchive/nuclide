@@ -51,6 +51,7 @@ import {
   wordUnderPoint,
   enableLibclangLogsConfig,
   indexerThreadsConfig,
+  memoryLimitConfig,
 } from './utils';
 
 const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
@@ -204,6 +205,7 @@ async function getConnection(connection): Promise<CqueryLanguageService> {
     logLevel: 'WARN',
     enableLibclangLogs: enableLibclangLogsConfig(),
     indexerThreads: indexerThreadsConfig(),
+    memoryLimitPercent: memoryLimitConfig(),
     defaultFlags: defaultFlags != null ? defaultFlags : [],
   });
   if (cqueryService == null && featureConfig.get(USE_CQUERY_CONFIG)) {

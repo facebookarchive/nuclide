@@ -215,6 +215,7 @@ export async function createCqueryService(params: {|
   logLevel: LogLevel,
   enableLibclangLogs: boolean,
   indexerThreads: number,
+  memoryLimitPercent: number,
   defaultFlags: Array<string>,
 |}): Promise<?CqueryLanguageService> {
   const command = 'cquery';
@@ -258,6 +259,7 @@ export async function createCqueryService(params: {|
         logFile,
         recordFile,
         String(params.enableLibclangLogs),
+        String(params.memoryLimitPercent),
       ],
       spawnOptions,
       projectRoot,

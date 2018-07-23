@@ -19,11 +19,12 @@ import {Observable} from 'rxjs';
 import {StreamMessageWriter} from 'vscode-jsonrpc';
 import {createConnection} from 'vscode-languageserver';
 import {track} from '../../../nuclide-analytics';
+import {MessageType} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
 import {MessageHandler} from './MessageHandler';
-import {initializeLogging} from './messages';
+import {initializeLogging, windowMessage} from './messages';
 
 // Percentage of total memory cquery may not exceed.
-const DEFAULT_MEMORY_LIMIT = 30;
+const DEFAULT_MEMORY_PCT_LIMIT = 30;
 // Time between checking cquery memory usage, in millseconds.
 const MEMORY_CHECK_INTERVAL = 15000;
 
@@ -31,6 +32,12 @@ const MEMORY_CHECK_INTERVAL = 15000;
 const loggingFile = process.argv[2];
 const recordingFile = process.argv[3];
 const libclangLogging = process.argv[4] === 'true';
+const memoryPercentage =
+  process.argv[5] != null
+    ? Math.min(Math.max(Number.parseFloat(process.argv[5]), 1), 100)
+    : DEFAULT_MEMORY_PCT_LIMIT;
+// Child process memory limit in kilobytes.
+const memoryLimit = ((os.totalmem() / 1024) * memoryPercentage) / 100;
 
 // client reader/writer reads/writes to Nuclide.
 const clientReader = new SafeStreamMessageReader(process.stdin);
@@ -78,7 +85,6 @@ function onChildSpawn(childProcess): void {
 
   // Every 15 seconds, check the server memory usage.
   // Note: totalmem() reports bytes, ps reports kilobytes.
-  const memoryLimit = ((os.totalmem() / 1024) * DEFAULT_MEMORY_LIMIT) / 100;
   const serializedMemoryCheck = serializeAsyncCall(async () =>
     (await memoryUsagePerPid([childProcess.pid])).get(childProcess.pid),
   );
@@ -91,7 +97,13 @@ function onChildSpawn(childProcess): void {
         memoryLimit,
       });
       logger.error(
-        `Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery`,
+        `Memory usage ${memoryUsed} exceeds limit ${memoryLimit}, killing cquery.`,
+      );
+      clientWriter.write(
+        windowMessage(
+          MessageType.Info,
+          'Consider changing cquery indexer threads and/or memory limit in Nuclide settings.',
+        ),
       );
       childProcess.kill();
     }
