@@ -63,7 +63,7 @@ when the program stops the most recent frame will be selected.
         this._console.outputLine(
           `to evaluate. Use 'variables ${scope.scopeName}' to see them.`,
         );
-        return;
+        continue;
       }
 
       if (vars != null) {
