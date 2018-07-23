@@ -47,7 +47,11 @@ import {
   lspUri_localPath,
   lspRange_atomRange,
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
-import {wordUnderPoint} from './utils';
+import {
+  wordUnderPoint,
+  enableLibclangLogsConfig,
+  indexerThreadsConfig,
+} from './utils';
 
 const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
 // Must match string in nuclide-clang/lib/constants.js
@@ -198,8 +202,8 @@ async function getConnection(connection): Promise<CqueryLanguageService> {
     host,
     logCategory: 'cquery-language-server',
     logLevel: 'WARN',
-    enableLibclangLogs:
-      featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true,
+    enableLibclangLogs: enableLibclangLogsConfig(),
+    indexerThreads: indexerThreadsConfig(),
     defaultFlags: defaultFlags != null ? defaultFlags : [],
   });
   if (cqueryService == null && featureConfig.get(USE_CQUERY_CONFIG)) {

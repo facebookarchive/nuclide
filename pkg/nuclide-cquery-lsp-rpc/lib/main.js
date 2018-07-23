@@ -214,6 +214,7 @@ export async function createCqueryService(params: {|
   logCategory: string,
   logLevel: LogLevel,
   enableLibclangLogs: boolean,
+  indexerThreads: number,
   defaultFlags: Array<string>,
 |}): Promise<?CqueryLanguageService> {
   const command = 'cquery';
@@ -262,7 +263,10 @@ export async function createCqueryService(params: {|
       spawnOptions,
       projectRoot,
       EXTENSIONS,
-      {extraClangArguments: params.defaultFlags},
+      {
+        extraClangArguments: params.defaultFlags,
+        index: {threads: params.indexerThreads},
+      },
       5 * 60 * 1000, // 5 minutes
       logFile,
       cacheDirectory,

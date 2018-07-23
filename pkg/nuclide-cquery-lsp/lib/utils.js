@@ -9,6 +9,7 @@
  * @format
  */
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 
 export async function secondIfFirstIsNull<T>(
@@ -27,4 +28,15 @@ export function wordUnderPoint(
     return match.wordMatch[0];
   }
   return null;
+}
+
+export function enableLibclangLogsConfig(): boolean {
+  return featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true;
+}
+
+export function indexerThreadsConfig(): number {
+  return ((featureConfig.get(
+    'nuclide-cquery-lsp.indexer-threads',
+    // $FlowIgnore: defined as integer in package.json
+  ): any): number);
 }
