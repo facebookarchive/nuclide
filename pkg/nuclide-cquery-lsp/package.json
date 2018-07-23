@@ -29,6 +29,14 @@
         "minimum": 0,
         "description": "Default of 0 uses 80% of CPU cores, try lowering if cquery runs out of memory (requires restart)"
       },
+      "memory-limit": {
+        "title": "Memory limit percentage",
+        "type": "number",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Cquery process memory limit, as percentage of total host memory (requires restart)"
+      },
       "enable-libclang-logs": {
         "title": "Enable libclang logs (for developers)",
         "type": "boolean",

@@ -40,3 +40,10 @@ export function indexerThreadsConfig(): number {
     // $FlowIgnore: defined as integer in package.json
   ): any): number);
 }
+
+export function memoryLimitConfig(): number {
+  return ((featureConfig.get(
+    'nuclide-cquery-lsp.memory-limit',
+    // $FlowIgnore: defined as number in package.json
+  ): any): number);
+}
