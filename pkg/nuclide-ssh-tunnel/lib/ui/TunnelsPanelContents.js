@@ -40,28 +40,19 @@ export class TunnelsPanelContents extends React.Component<Props, State> {
   }
 
   render(): React.Element<any> {
-    if (this.state.allowManualTunnels) {
-      return (
-        <div className="nuclide-ssh-tunnels-panel-contents">
-          <TunnelsPanelTable
-            tunnels={this.props.tunnels}
-            closeTunnel={this.props.closeTunnel}
-          />
+    return (
+      <div className="nuclide-ssh-tunnels-panel-contents">
+        <TunnelsPanelTable
+          tunnels={this.props.tunnels}
+          closeTunnel={this.props.closeTunnel}
+        />
+        {this.state.allowManualTunnels && (
           <ManualTunnelSection
             workingDirectoryHost={this.props.workingDirectoryHost}
             openTunnel={this.props.openTunnel}
           />
-        </div>
-      );
-    } else {
-      return (
-        <div className="nuclide-ssh-tunnels-panel-contents">
-          <TunnelsPanelTable
-            tunnels={this.props.tunnels}
-            closeTunnel={this.props.closeTunnel}
-          />
-        </div>
-      );
-    }
+        )}
+      </div>
+    );
   }
 }
