@@ -142,8 +142,11 @@ class HostServicesAggregator {
     return this._selfRelay().showActionRequired(title, options);
   }
 
-  dispatchCommand(command: string, args: any): Promise<boolean> {
-    return this._selfRelay().dispatchCommand(command, args);
+  dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean> {
+    return this._selfRelay().dispatchCommand(command, params);
   }
 
   isDisposed(): boolean {
@@ -351,11 +354,14 @@ class HostServicesRelay {
       .publish();
   }
 
-  async dispatchCommand(command: string, args: any): Promise<boolean> {
+  async dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean> {
     if (this._aggregator.isDisposed()) {
       return false;
     }
-    return this._aggregator._parent.dispatchCommand(command, args);
+    return this._aggregator._parent.dispatchCommand(command, params);
   }
 
   dispose(): void {

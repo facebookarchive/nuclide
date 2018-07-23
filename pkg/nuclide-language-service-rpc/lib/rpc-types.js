@@ -62,7 +62,10 @@ export interface HostServices {
     changes: Map<NuclideUri, Array<TextEdit>>,
   ): Promise<boolean>;
 
-  dispatchCommand(command: string, params: any): Promise<boolean>;
+  dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean>;
 }
 
 export interface Progress {

@@ -2316,7 +2316,10 @@ export class LspLanguageService {
       throw new Error(`${this._languageServerName} cannot handle the request`);
     }
     try {
-      const isHostCommand = await this._host.dispatchCommand(command, args);
+      const isHostCommand = await this._host.dispatchCommand(command, {
+        projectRoot: this._projectRoot,
+        args,
+      });
       if (!isHostCommand) {
         await this._lspConnection.executeCommand({
           command,

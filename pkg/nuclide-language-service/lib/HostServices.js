@@ -23,6 +23,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import invariant from 'assert';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getLogger} from 'log4js';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {memoize} from 'lodash';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -233,7 +234,10 @@ class RootHostServices {
 
   // Returns false if there is no such registered command on the active text
   // editor. Otherwise returns true and dispatches the command.
-  async dispatchCommand(command: string, params: any): Promise<boolean> {
+  async dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean> {
     const textEditor = atom.workspace.getActiveTextEditor();
     const target = textEditor != null ? textEditor.getElement() : null;
     if (target == null) {
@@ -243,7 +247,15 @@ class RootHostServices {
     if (commands.find(c => c.name === command) == null) {
       return false;
     }
-    atom.commands.dispatch(target, command, params);
+    // The LSPLanguageService forwards the args directly from the language server
+    // and so all the URIs in the args are local to the remote server. Pass in
+    // the hostname here so that we can easily resolve the URIs on the client side.
+    atom.commands.dispatch(target, command, {
+      hostname: nuclideUri.isRemote(params.projectRoot)
+        ? nuclideUri.getHostname(params.projectRoot)
+        : null,
+      args: params.args,
+    });
     return true;
   }
 }
