@@ -70,16 +70,22 @@ export class BigDigServer {
    * Note: This BigDigServer is responsible for closing httpServer and wss.
    */
   constructor(httpsServer: https.Server, webSocketServer: WS.Server) {
-    this._logger = getLogger();
+    this._logger = getLogger('BigDigServer');
     this._tagToSubscriber = new Map();
     this._httpsServer = httpsServer;
     this._httpsServer.on('request', this._onHttpsRequest.bind(this));
+    this._httpsServer.on('error', err => {
+      this._logger.error('Received error from httpsServer', err);
+    });
     this._clientIdToTransport = new Map();
     this._webSocketServer = webSocketServer;
     this._webSocketServer.on(
       'connection',
       this._onWebSocketConnection.bind(this),
     );
+    this._webSocketServer.on('error', err => {
+      this._logger.error('Received error from webSocketServer', err);
+    });
   }
 
   static async createServer(
@@ -97,8 +103,6 @@ export class BigDigServer {
       server: webServer,
       perMessageDeflate: true,
     });
-
-    // Let unhandled WS server errors go through to the global exception handler.
 
     // $FlowIgnore
     const launcher: LauncherType = require(options.absolutePathToServerMain);
