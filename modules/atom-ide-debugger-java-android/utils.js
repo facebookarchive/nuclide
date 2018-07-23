@@ -190,10 +190,10 @@ async function _getAndroidSdkSourcePaths(
         ).getSdkVersionSourcePath(sdkVersion)
       : null;
   if (sdkSourcePath == null) {
-    atom.notifications.addWarning(
+    atom.notifications.addInfo(
       'Unable to find Android Sdk Sources for version: ' +
         sdkVersion +
-        '. Install the Android Sdk Sources so that the debugger has access to them.',
+        '. Check if they are installed. Nuclide can still debug your application, but source code for frames inside Android library routines will not be available.',
     );
   }
   track(AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
