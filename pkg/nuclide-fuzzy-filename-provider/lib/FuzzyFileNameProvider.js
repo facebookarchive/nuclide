@@ -21,6 +21,7 @@ import {
   RemoteDirectory,
   getFuzzyFileSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
+import {getNuclideContext} from '../../commons-atom/ClientQueryContext';
 
 import {getIgnoredNames, parseFileNameQuery} from './utils';
 
@@ -51,6 +52,12 @@ export default ({
 
     const directoryPath = directory.getPath();
     const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
+    const preferCustomSearch = Boolean(
+      isGkEnabled('nuclide_prefer_myles_search'),
+    );
+    const context = preferCustomSearch
+      ? await getNuclideContext(directoryPath)
+      : null;
     const results = await service.queryFuzzyFile({
       rootDirectory: directoryPath,
       queryRoot: getQueryRoot(directoryPath),
@@ -59,7 +66,8 @@ export default ({
       smartCase: Boolean(
         featureConfig.get('nuclide-fuzzy-filename-provider.smartCase'),
       ),
-      preferCustomSearch: Boolean(isGkEnabled('nuclide_prefer_myles_search')),
+      preferCustomSearch,
+      context,
     });
 
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.

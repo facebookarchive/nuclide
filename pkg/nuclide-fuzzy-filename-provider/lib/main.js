@@ -119,6 +119,7 @@ class Activation {
         queryString: '^^^',
         ignoredNames: getIgnoredNames(),
         preferCustomSearch: Boolean(isGkEnabled('nuclide_prefer_myles_search')),
+        context: null,
       });
     } catch (err) {
       throw err;

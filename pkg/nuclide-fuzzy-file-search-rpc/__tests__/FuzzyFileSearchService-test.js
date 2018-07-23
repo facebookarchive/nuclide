@@ -47,6 +47,7 @@ describe('FuzzyFileSearchService.queryFuzzyFile', () => {
       queryString: 'anything',
       ignoredNames: [],
       preferCustomSearch: false,
+      context: null,
     });
     expect(fileSearchResults).toEqual([]);
   });

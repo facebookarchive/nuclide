@@ -12,6 +12,7 @@
 import type {LRUCache} from 'lru-cache';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DirectorySearchConfig, FileSearchResult} from './rpc-types';
+import type {ClientQueryContext} from '../../commons-atom/ClientQueryContext';
 
 import LRU from 'lru-cache';
 import {trackTiming} from '../../nuclide-analytics';
@@ -76,6 +77,7 @@ export async function queryFuzzyFile(config: {|
   ignoredNames: Array<string>,
   smartCase?: boolean,
   preferCustomSearch: boolean,
+  context: ?ClientQueryContext,
 |}): Promise<Array<FileSearchResult>> {
   const {rootDirectory, preferCustomSearch} = config;
   const cacheKey = createCacheKey(rootDirectory, preferCustomSearch);
@@ -90,7 +92,11 @@ export async function queryFuzzyFile(config: {|
     'fuzzy-file-search',
     async () => {
       if (searchConfig.useCustomSearch) {
-        return searchConfig.search(config.queryString, rootDirectory);
+        return searchConfig.search(
+          config.queryString,
+          rootDirectory,
+          config.context,
+        );
       } else {
         const search = await fileSearchForDirectory(
           rootDirectory,
@@ -113,6 +119,7 @@ export async function queryAllExistingFuzzyFile(
   queryString: string,
   ignoredNames: Array<string>,
   preferCustomSearch: boolean,
+  context: ?ClientQueryContext,
 ): Promise<Array<FileSearchResult>> {
   const directories = getExistingSearchDirectories();
   const aggregateResults = await Promise.all(
@@ -122,6 +129,7 @@ export async function queryAllExistingFuzzyFile(
         queryString,
         rootDirectory,
         preferCustomSearch,
+        context,
       }),
     ),
   );
