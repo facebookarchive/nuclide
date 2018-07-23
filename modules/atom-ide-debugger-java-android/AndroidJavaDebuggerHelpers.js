@@ -16,6 +16,7 @@ import type {JavaAttachPortTargetConfig} from 'atom-ide-debugger-java/JavaDebugg
 
 import nullthrows from 'nullthrows';
 import invariant from 'assert';
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 import {getJavaDebuggerHelpersServiceByNuclideUri} from 'atom-ide-debugger-java/utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject} from 'rxjs';

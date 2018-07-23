@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
-    "atom-ide-debugger-java": "0.7.2-dev",
     "atom-ide-ui": "0.7.2-dev",
     "idx": "1.2.0",
     "nuclide-adb": "0.7.2-dev",

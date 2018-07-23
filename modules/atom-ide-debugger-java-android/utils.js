@@ -26,6 +26,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 import {
   getJavaDebuggerHelpersServiceByNuclideUri,
   getSourcePathClickSubscriptions,
