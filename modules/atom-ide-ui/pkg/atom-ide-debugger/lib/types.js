@@ -337,6 +337,7 @@ export interface IDebugService {
   +viewModel: IViewModel;
   getDebuggerMode(): DebuggerModeType;
 
+  onDidChangeActiveThread(callback: () => mixed): IDisposable;
   onDidChangeMode(callback: (mode: DebuggerModeType) => mixed): IDisposable;
   onDidStartDebugSession(
     callback: (config: IProcessConfig) => mixed,
