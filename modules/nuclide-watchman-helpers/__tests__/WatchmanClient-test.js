@@ -15,9 +15,11 @@ jest.setTimeout(15000);
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import watchman from 'fb-watchman';
+import {nextTick} from 'nuclide-commons/promise';
 import WatchmanClient from '../lib/WatchmanClient';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import waitsFor from '../../../jest/waits_for';
+import {DEFAULT_WATCHMAN_RECONNECT_DELAY_MS} from '../lib/WatchmanClient';
 
 const FILE_MODE = 33188;
 
@@ -166,5 +168,73 @@ describe.skip('WatchmanClient test suite', () => {
       expect(watchRoot).toBe(dirRealPath);
       expect(relativePath).toBe('nested');
     });
+  });
+});
+
+describe('WatchmanClient', () => {
+  it('delays reconnecting with exponential backoff', async () => {
+    jest.useFakeTimers();
+
+    const functionsMap = {};
+    const mockWatchmanClient = {
+      on: (name, func) => {
+        functionsMap[name] = func;
+      },
+      emit: (name, ...values) => {
+        functionsMap[name](...values);
+      },
+      removeAllListeners: jest.fn(),
+      end: jest.fn(),
+      command: (args, callback) => callback(false, 'my response'),
+    };
+    jest.spyOn(watchman, 'Client').mockImplementation(() => {
+      return Promise.resolve(mockWatchmanClient);
+    });
+    const client = new WatchmanClient();
+    const reconnectSpy = jest.spyOn(client, '_reconnectClient');
+    jest.advanceTimersByTime(500); // wait for debouncing
+    expect(reconnectSpy.mock.calls.length).toBe(0);
+
+    await client.watchDirectoryRecursive('someDir', 'mySubscriptionName');
+
+    jest
+      .spyOn(client, '_reconnectClient')
+      .mockImplementationOnce(async () => {
+        return Promise.reject(new Error('test failure'));
+      })
+      .mockImplementationOnce(async () => {
+        return Promise.reject(new Error('test failure 2'));
+      });
+
+    const reconnectDelay = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
+    expect(client._reconnectDelayMs).toBe(reconnectDelay);
+
+    // mock disconnecting twice, expect exponential backoff
+    mockWatchmanClient.emit('end');
+    jest.advanceTimersByTime(500);
+    await nextTick();
+    expect(reconnectSpy.mock.calls.length).toBe(1);
+    jest.advanceTimersByTime(100);
+    await nextTick();
+    expect(client._reconnectDelayMs).toBe(2 * reconnectDelay);
+
+    mockWatchmanClient.emit('end');
+    jest.advanceTimersByTime(500);
+    await nextTick();
+    expect(reconnectSpy.mock.calls.length).toBe(2);
+    jest.advanceTimersByTime(100);
+    await nextTick();
+    expect(client._reconnectDelayMs).toBe(4 * reconnectDelay);
+
+    // now succeed, expect reconnect delay to be reset
+    mockWatchmanClient.emit('end');
+    jest.advanceTimersByTime(1000);
+    await nextTick();
+    expect(reconnectSpy.mock.calls.length).toBe(3);
+    jest.useRealTimers(); // for some reason, jest mock clocks stop working here
+    await sleep(3000);
+
+    await nextTick();
+    expect(client._reconnectDelayMs).toBe(reconnectDelay);
   });
 });

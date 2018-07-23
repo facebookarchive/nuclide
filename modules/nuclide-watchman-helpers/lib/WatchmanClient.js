@@ -20,6 +20,8 @@ import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-watchman-helpers');
 const WATCHMAN_SETTLE_TIME_MS = 2500;
+export const DEFAULT_WATCHMAN_RECONNECT_DELAY_MS = 100;
+const MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS = 30 * 1000;
 
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
@@ -44,14 +46,24 @@ export default class WatchmanClient {
   _subscriptions: Map<string, WatchmanSubscription>;
   _clientPromise: Promise<watchman.Client>;
   _serializedReconnect: () => Promise<void>;
+  _reconnectDelayMs: number = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
 
   constructor() {
     this._initWatchmanClient();
-    this._serializedReconnect = serializeAsyncCall(() => {
-      logger.info('Calling _reconnectClient from _serializedReconnect.');
-      return this._reconnectClient().catch(error =>
-        logger.error('_reconnectClient failed', error),
+    this._serializedReconnect = serializeAsyncCall(async () => {
+      logger.info(
+        'Calling _reconnectClient from _serializedReconnect in %dms',
+        this._reconnectDelayMs,
       );
+
+      await sleep(this._reconnectDelayMs);
+      this._reconnectDelayMs *= 2; // exponential backoff
+      if (this._reconnectDelayMs > MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS) {
+        this._reconnectDelayMs = MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS;
+      }
+      return this._reconnectClient().catch(error => {
+        logger.error('_reconnectClient failed', error);
+      });
     });
     this._subscriptions = new Map();
   }
@@ -131,6 +143,7 @@ export default class WatchmanClient {
           logger.info(
             `Subscribed to ${name}: (${numRestored}/${numSubscriptions}) complete.`,
           );
+          this._reconnectDelayMs = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
         },
       ),
     );
