@@ -13,6 +13,8 @@
 import type {Command} from './Command';
 import type {DispatcherInterface} from './DispatcherInterface';
 
+import invariant from 'assert';
+
 export default class CommandDispatcher implements DispatcherInterface {
   _commands: Command[] = [];
   _aliases: Map<string, string>;
@@ -101,13 +103,29 @@ export default class CommandDispatcher implements DispatcherInterface {
       return `${alias} ${tokens.splice(1).join(' ')}`;
     }
 
-    const match = tokens[0].match(/^([^a-zA-Z0-9]+)(.*)$/);
-    if (match != null) {
-      const [, prefix, tail] = match;
-      const puncAlias = this._aliases.get(prefix);
-      if (puncAlias != null) {
-        return `${puncAlias} ${tail} ${tokens.splice(1).join(' ')}`;
+    // punctuation aliases are things like '=' for print ala hphpd
+    // we have to be careful here since we want '=$x' to work to
+    // print the value of x
+    //
+    // Find the longest punctuation alias match
+    let puncMatch: ?string = null;
+
+    for (const key of this._aliases.keys()) {
+      if (key.match(/^[^a-zA-Z0-9]+$/)) {
+        if (puncMatch != null && key.length < puncMatch.length) {
+          continue;
+        }
+        if (tokens[0].startsWith(key)) {
+          puncMatch = key;
+        }
       }
+    }
+
+    if (puncMatch != null) {
+      const puncAlias = this._aliases.get(puncMatch);
+      invariant(puncAlias != null);
+      const tok0 = tokens[0].substr(puncMatch.length);
+      return `${puncAlias} ${tok0} ${tokens.splice(1).join(' ')}`;
     }
 
     return null;
