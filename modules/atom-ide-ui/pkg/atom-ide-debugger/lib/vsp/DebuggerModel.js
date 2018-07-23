@@ -622,6 +622,7 @@ type CallStack = {|
 
 export class Thread implements IThread {
   _callStack: CallStack;
+  _refreshInProgress: boolean;
   stoppedDetails: ?IRawStoppedDetails;
   stopped: boolean;
   +process: IProcess;
@@ -635,6 +636,7 @@ export class Thread implements IThread {
     this.stoppedDetails = null;
     this._callStack = this._getEmptyCallstackState();
     this.stopped = false;
+    this._refreshInProgress = false;
   }
 
   _getEmptyCallstackState(): CallStack {
@@ -673,6 +675,7 @@ export class Thread implements IThread {
 
   getFullCallStack(levels?: number): Observable<Expected<IStackFrame[]>> {
     if (
+      this._refreshInProgress ||
       this._isCallstackFullyLoaded() ||
       (levels != null &&
         this._isCallstackLoaded() &&
@@ -711,28 +714,34 @@ export class Thread implements IThread {
     const supportsDelayLoading =
       nullthrows(this.process).session.capabilities
         .supportsDelayedStackTraceLoading === true;
-    if (supportsDelayLoading) {
-      const start = this._callStack.callFrames.length;
-      const callStack = await this._getCallStackImpl(start, levels);
-      if (start < this._callStack.callFrames.length) {
-        // Set the stack frames for exact position we requested.
-        // To make sure no concurrent requests create duplicate stack frames #30660
-        this._callStack.callFrames.splice(
-          start,
-          this._callStack.callFrames.length - start,
-        );
-      }
-      this._callStack.callFrames = this._callStack.callFrames.concat(
-        callStack || [],
-      );
-    } else {
-      // Must load the entire call stack, the debugger backend doesn't support
-      // delayed call stack loading.
-      this._callStack.callFrames =
-        (await this._getCallStackImpl(0, null)) || [];
-    }
 
-    this._callStack.valid = true;
+    this._refreshInProgress = true;
+    try {
+      if (supportsDelayLoading) {
+        const start = this._callStack.callFrames.length;
+        const callStack = await this._getCallStackImpl(start, levels);
+        if (start < this._callStack.callFrames.length) {
+          // Set the stack frames for exact position we requested.
+          // To make sure no concurrent requests create duplicate stack frames #30660
+          this._callStack.callFrames.splice(
+            start,
+            this._callStack.callFrames.length - start,
+          );
+        }
+        this._callStack.callFrames = this._callStack.callFrames.concat(
+          callStack || [],
+        );
+      } else {
+        // Must load the entire call stack, the debugger backend doesn't support
+        // delayed call stack loading.
+        this._callStack.callFrames =
+          (await this._getCallStackImpl(0, null)) || [];
+      }
+
+      this._callStack.valid = true;
+    } finally {
+      this._refreshInProgress = false;
+    }
   }
 
   async _getCallStackImpl(
