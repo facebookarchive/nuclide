@@ -68,10 +68,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
 
   _getState(): $Shape<State> {
     return {
-      processList: this.props.service
-        .getModel()
-        .getProcesses()
-        .slice(),
+      processList: this.props.service.getModel().getProcesses(),
     };
   }
 

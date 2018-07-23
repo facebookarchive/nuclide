@@ -10,10 +10,13 @@
  * @format
  */
 
+/* globals Element */
+
 import type {IThread, IStackFrame, IDebugService} from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 import {Table} from 'nuclide-commons-ui/Table';
 import {NestedTreeItem, TreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -24,6 +27,7 @@ import {DebuggerMode} from '../constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
 import classnames from 'classnames';
+import ReactDOM from 'react-dom';
 
 type Props = {
   thread: IThread,
@@ -40,6 +44,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   // Subject that emits every time this node transitions from collapsed
   // to expanded.
   _expandedSubject: Subject<void>;
+  _nestedTreeItem: ?NestedTreeItem;
 
   constructor(props: Props) {
     super(props);
@@ -129,6 +134,16 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
             isCollapsed: newIsCollapsed,
           });
         }),
+      observableFromSubscribeFunction(
+        service.onDidChangeActiveThread.bind(service),
+      ).subscribe(() => {
+        if (this._threadIsFocused() && this._nestedTreeItem != null) {
+          const el = ReactDOM.findDOMNode(this._nestedTreeItem);
+          if (el instanceof Element) {
+            scrollIntoViewIfNeeded(el, false);
+          }
+        }
+      }),
     );
   }
 
@@ -276,7 +291,8 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       <NestedTreeItem
         title={formattedTitle}
         collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelectThread}>
+        onSelect={this.handleSelectThread}
+        ref={elem => (this._nestedTreeItem = elem)}>
         {callFramesElements}
       </NestedTreeItem>
     );

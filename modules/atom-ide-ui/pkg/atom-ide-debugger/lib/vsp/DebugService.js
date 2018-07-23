@@ -125,6 +125,7 @@ const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 const CUSTOM_DEBUG_EVENT = 'CUSTOM_DEBUG_EVENT';
 const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
 const START_DEBUG_SESSION = 'START_DEBUG_SESSION';
+const ACTIVE_THREAD_CHANGED = 'ACTIVE_THREAD_CHANGED';
 
 const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
 const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
@@ -466,6 +467,7 @@ export default class DebugService implements IDebugService {
               },
               editor,
             );
+            this._emitter.emit(ACTIVE_THREAD_CHANGED);
           }
           lastFocusedThreadId = stackFrame.thread.threadId;
           lastFocusedProcess = stackFrame.thread.process;
@@ -895,6 +897,10 @@ export default class DebugService implements IDebugService {
         this._sessionEndDisposables.add(pendingNotification);
       }
     }
+  }
+
+  onDidChangeActiveThread(callback: () => mixed): IDisposable {
+    return this._emitter.on(ACTIVE_THREAD_CHANGED, callback);
   }
 
   onDidStartDebugSession(

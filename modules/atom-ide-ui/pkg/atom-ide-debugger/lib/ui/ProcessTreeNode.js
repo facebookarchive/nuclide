@@ -102,7 +102,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
 
   render() {
     const {service, title, process} = this.props;
-    const {threads, isFocused} = this.state;
+    const {threads, isFocused, isCollapsed} = this.state;
 
     const tooltipTitle =
       service.viewModel.focusedProcess == null ||
@@ -133,7 +133,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     ) : (
       <NestedTreeItem
         title={formattedTitle}
-        collapsed={this.state.isCollapsed}
+        collapsed={isCollapsed}
         onSelect={this.handleSelect}>
         {threads.map((thread, threadIndex) => {
           return (
