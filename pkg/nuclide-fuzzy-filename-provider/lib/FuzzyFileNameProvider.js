@@ -22,8 +22,18 @@ import {
   getFuzzyFileSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {getNuclideContext} from '../../commons-atom/ClientQueryContext';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 import {getIgnoredNames, parseFileNameQuery} from './utils';
+
+const {logCustomFileSearchFeedback} = (function() {
+  try {
+    // $FlowFB
+    return require('../../commons-atom/fb-custom-file-search-graphql');
+  } catch (err) {
+    return {};
+  }
+})();
 
 export default ({
   providerType: 'DIRECTORY',
@@ -89,6 +99,26 @@ export default ({
       matchIndexes: result.matchIndexes,
       line,
       column,
+      callback() {
+        if (
+          preferCustomSearch &&
+          logCustomFileSearchFeedback &&
+          context != null
+        ) {
+          logCustomFileSearchFeedback(
+            result,
+            results,
+            query,
+            directoryPath,
+            context.session_id,
+          );
+        }
+        // Custom callbacks need to run goToLocation
+        goToLocation(result.path, {
+          line,
+          column,
+        });
+      },
     }));
   },
 }: DirectoryProviderType<FileResult>);
