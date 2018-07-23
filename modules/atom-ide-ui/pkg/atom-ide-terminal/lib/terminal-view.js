@@ -271,7 +271,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
             Observable.fromEvent(window, 'resize'),
             new ResizeObservable(this._div),
           ).let(fastDebounce(100)),
-        ),
+        ).startWith(null),
       )
         // Don't emit syncs if the pane is not visible.
         .filter(([visible]) => visible)
