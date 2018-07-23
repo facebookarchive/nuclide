@@ -41,6 +41,7 @@ initializeLogging(clientConnection);
 const logger = log4js.getLogger('nuclide-cquery-wrapper');
 
 function onChildSpawn(childProcess): void {
+  track('nuclide-cquery-lsp:child-started');
   // server reader/writer reads/writes to cquery.
   const serverReader = new SafeStreamMessageReader(childProcess.stdout);
   const serverWriter = new StreamMessageWriter(childProcess.stdin);
