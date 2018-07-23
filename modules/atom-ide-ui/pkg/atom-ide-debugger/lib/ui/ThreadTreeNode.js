@@ -166,7 +166,8 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
             frame.source != null && frame.source.name != null
               ? `${frame.source.name}`
               : '',
-          line: `${frame.range.end.row}`,
+          // VSP line numbers start at 0.
+          line: `${frame.range.end.row + 1}`,
           frame,
           isSelected,
         },
