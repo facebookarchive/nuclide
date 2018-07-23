@@ -68,7 +68,6 @@ export class SocketManager extends EventEmitter {
     const socket = net.createConnection(connectOptions);
 
     socket.on('error', error => {
-      this.emit('error', error);
       logger.error(error);
       this._sendMessage({
         event: 'error',
