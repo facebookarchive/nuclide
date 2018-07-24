@@ -81,8 +81,8 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     const changedCallStack = observableFromSubscribeFunction(
       model.onDidChangeCallStack.bind(model),
     );
-    // If the thread is focused, the React element may have subscribed to the
-    // event (call stack changed) after the event occurred.
+    // The React element may have subscribed to the event (call stack
+    // changed) after the event occurred.
     const additionalFocusedCheck = this._threadIsFocused()
       ? changedCallStack.startWith(null)
       : changedCallStack;
@@ -256,9 +256,10 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     );
 
     if (
-      !stackFrames.isPending &&
-      !stackFrames.isError &&
-      stackFrames.value.length === 0
+      thread.stoppedDetails == null ||
+      (!stackFrames.isPending &&
+        !stackFrames.isError &&
+        stackFrames.value.length === 0)
     ) {
       return (
         <TreeItem className="debugger-tree-no-frames">
