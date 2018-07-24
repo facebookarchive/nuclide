@@ -11,7 +11,7 @@
  */
 
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
-import type {Action, Store} from '../types';
+import type {Action, Store, DescriptionsState} from '../types';
 import type MessageRangeTracker from '../MessageRangeTracker';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
@@ -182,5 +182,73 @@ export function fetchCodeActions(
           );
           return Observable.empty();
         });
+    });
+}
+
+export function fetchDescriptions(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.FETCH_DESCRIPTIONS).switchMap(action => {
+    invariant(action.type === Actions.FETCH_DESCRIPTIONS);
+    const {messages} = action.payload;
+    const existingDescriptions = store.getState().descriptions;
+    return forkJoinArray(
+      messages.map(message =>
+        Observable.defer(() => {
+          if (existingDescriptions.has(message)) {
+            return Promise.resolve(existingDescriptions.get(message));
+          } else if (typeof message.description === 'function') {
+            return Promise.resolve(message.description());
+          } else {
+            return Promise.resolve(message.description);
+          }
+        })
+          .map(description => [message, description || ''])
+          .catch(err => {
+            getLogger('atom-ide-diagnostics').error(
+              `Error fetching description for ${message.filePath}`,
+              err,
+            );
+            return Observable.empty();
+          }),
+      ),
+    ).map(descriptions =>
+      // keep updates to the store minimal to reduce re-renders of the diagnostics table.
+      Actions.setDescriptions(new Map(descriptions), true),
+    );
+  });
+}
+
+export function descriptionsEvicter(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(
+      Actions.UPDATE_MESSAGES,
+      Actions.INVALIDATE_MESSAGES,
+      Actions.REMOVE_PROVIDER,
+    )
+    .map(action => {
+      const {descriptions} = store.getState();
+
+      // the messages have changed, check if all descriptions are still valid
+      const newDescriptions: DescriptionsState = new Map();
+      store.getState().messages.forEach(provider => {
+        provider.forEach(messages => {
+          messages.forEach(msg => {
+            const description = descriptions.get(msg);
+            if (description != null) {
+              newDescriptions.set(msg, description);
+            }
+          });
+        });
+      });
+      if (descriptions.size === newDescriptions.size) {
+        // nothing has changed, keep the existing descriptions
+        return Actions.setDescriptions(descriptions, false);
+      }
+      return Actions.setDescriptions(newDescriptions, false);
     });
 }

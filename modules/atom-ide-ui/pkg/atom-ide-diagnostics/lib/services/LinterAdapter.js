@@ -163,17 +163,13 @@ export function linterMessageV2ToDiagnosticMessage(
       }
     });
   }
-  let text = msg.excerpt;
-  // TODO: use markdown + handle callback-based version.
-  if (typeof msg.description === 'string') {
-    text = text + '\n' + msg.description;
-  }
   return {
     // flowlint-next-line sketchy-null-string:off
     providerName: msg.linterName || providerName,
     type: convertLinterType(msg.severity),
     filePath: msg.location.file,
-    text,
+    text: msg.excerpt,
+    description: msg.description,
     kind: msg.kind,
     range: Range.fromObject(msg.location.position),
     trace,

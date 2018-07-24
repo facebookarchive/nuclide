@@ -43,6 +43,7 @@ type DescriptionField = {
   showTraces: boolean,
   text: string,
   isPlainText: boolean,
+  description: string,
 };
 
 type Location = {|
@@ -107,7 +108,10 @@ export default class DiagnosticsTable extends React.PureComponent<
     // Memoize `_getRows()`
     (this: any)._getRows = memoizeUntilChanged(
       this._getRows,
-      (diagnostics, showTraces) => ({diagnostics, showTraces}),
+      (diagnostics, showTraces) => ({
+        diagnostics,
+        showTraces,
+      }),
       (a, b) =>
         a.showTraces === b.showTraces &&
         arrayEqual(a.diagnostics, b.diagnostics),

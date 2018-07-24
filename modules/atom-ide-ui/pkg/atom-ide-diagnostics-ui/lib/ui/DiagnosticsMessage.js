@@ -16,12 +16,14 @@ import * as React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
+import {DiagnosticsMessageDescription} from './DiagnosticsMessageDescription';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
 
 type DiagnosticsMessageProps = {
   // these are processed in traceElements below
   /* eslint-disable react/no-unused-prop-types */
   message: DiagnosticMessage,
+  description?: string,
   goToLocation: (path: string, line: number) => mixed,
   fixer: (message: DiagnosticMessage) => void,
   children?: React.Node,
@@ -81,6 +83,7 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
       {diagnosticHeader(props)}
       <div className="diagnostics-popup-message">
         <DiagnosticsMessageText message={props.message} />
+        <DiagnosticsMessageDescription description={props.description} />
       </div>
       {traceElements(props)}
       {props.children}
@@ -92,6 +95,7 @@ export const DiagnosticsMessageNoHeader = (props: DiagnosticsMessageProps) => {
   return (
     <div className="diagnostics-full-description-message">
       <DiagnosticsMessageText message={props.message} />
+      <DiagnosticsMessageDescription description={props.description} />
       {traceElements(props)}
     </div>
   );

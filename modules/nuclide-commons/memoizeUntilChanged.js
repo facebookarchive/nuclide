@@ -13,11 +13,16 @@
 import invariant from 'assert';
 import {arrayEqual} from './collection';
 
-type memoizeUntilChanged = (<A, B, C, D, R, U>(
-  func: (A, B, C, D) => R,
-  keySelector_?: (A, B, C, D) => U,
+type memoizeUntilChanged = (<A, B, C, D, E, R, U>(
+  func: (A, B, C, D, E) => R,
+  keySelector_?: (A, B, C, D, E) => U,
   compareKeys_?: (U, U) => boolean,
-) => (A, B, C, D) => R) &
+) => (A, B, C, D, E) => R) &
+  (<A, B, C, D, R, U>(
+    func: (A, B, C, D) => R,
+    keySelector_?: (A, B, C, D) => U,
+    compareKeys_?: (U, U) => boolean,
+  ) => (A, B, C, D) => R) &
   (<A, B, C, R, U>(
     func: (A, B, C) => R,
     keySelector_?: (A, B, C) => U,

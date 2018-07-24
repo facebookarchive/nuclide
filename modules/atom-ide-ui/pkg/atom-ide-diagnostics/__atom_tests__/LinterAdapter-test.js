@@ -358,7 +358,8 @@ describe('message transformation functions', () => {
         kind: undefined,
         filePath: 'file.txt',
         range: new Range([0, 0], [0, 1]),
-        text: 'Error\nDescription',
+        text: 'Error',
+        description: 'Description',
         trace: [
           {
             type: 'Trace',

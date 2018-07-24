@@ -13,6 +13,7 @@
 import type {
   AppState,
   CodeActionsState,
+  DescriptionsState,
   DiagnosticMessage,
   DiagnosticMessages,
   Store,
@@ -82,6 +83,17 @@ export default class DiagnosticUpdater {
     );
   };
 
+  observeDescriptions = (
+    callback: (update: DescriptionsState) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      this._states
+        .map(state => state.descriptions)
+        .distinctUntilChanged()
+        .subscribe(callback),
+    );
+  };
+
   observeSupportedMessageKinds = (
     callback: (kinds: Set<DiagnosticMessageKind>) => mixed,
   ): IDisposable => {
@@ -109,5 +121,9 @@ export default class DiagnosticUpdater {
     messages: Array<DiagnosticMessage>,
   ): void => {
     this._store.dispatch(Actions.fetchCodeActions(editor, messages));
+  };
+
+  fetchDescriptions = (messages: Array<DiagnosticMessage>): void => {
+    this._store.dispatch(Actions.fetchDescriptions(messages));
   };
 }

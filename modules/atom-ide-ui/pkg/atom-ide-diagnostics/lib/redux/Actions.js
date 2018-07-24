@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Action,
   CodeActionsState,
+  DescriptionsState,
   DiagnosticInvalidationMessage,
   DiagnosticProviderUpdate,
   DiagnosticMessage,
@@ -26,6 +27,8 @@ export const REMOVE_PROVIDER = 'REMOVE_PROVIDER';
 export const SET_CODE_ACTION_FETCHER = 'SET_CODE_ACTION_FETCHER';
 export const FETCH_CODE_ACTIONS = 'FETCH_CODE_ACTIONS';
 export const SET_CODE_ACTIONS = 'SET_CODE_ACTIONS';
+export const FETCH_DESCRIPTIONS = 'FETCH_DESCRIPTIONS';
+export const SET_DESCRIPTIONS = 'SET_DESCRIPTIONS';
 export const UPDATE_MESSAGES = 'UPDATE_MESSAGES';
 export const INVALIDATE_MESSAGES = 'INVALIDATE_MESSAGES';
 export const APPLY_FIX = 'APPLY_FIX';
@@ -72,6 +75,23 @@ export function setCodeActions(
   return {
     type: SET_CODE_ACTIONS,
     payload: {codeActionsForMessage},
+  };
+}
+
+export function fetchDescriptions(messages: Array<DiagnosticMessage>): Action {
+  return {
+    type: FETCH_DESCRIPTIONS,
+    payload: {messages},
+  };
+}
+
+export function setDescriptions(
+  descriptions: DescriptionsState,
+  keepDescriptions: boolean,
+): Action {
+  return {
+    type: SET_DESCRIPTIONS,
+    payload: {descriptions, keepDescriptions},
   };
 }
 

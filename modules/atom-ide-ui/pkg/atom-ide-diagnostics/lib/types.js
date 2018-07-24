@@ -96,6 +96,7 @@ export type DiagnosticMessage = {|
   filePath: NuclideUri,
   text?: string,
   html?: string,
+  +description?: string | (() => Promise<string> | string),
   range?: atom$Range,
   trace?: Array<DiagnosticTrace>,
   fix?: DiagnosticFix,
@@ -230,6 +231,7 @@ export type AppState = {
   messages: MessagesState,
   codeActionFetcher: ?CodeActionFetcher,
   codeActionsForMessage: CodeActionsState,
+  descriptions: DescriptionsState,
   providers: Set<ObservableDiagnosticProvider>,
 };
 
@@ -239,6 +241,7 @@ export type MessagesState = Map<
 >;
 
 export type CodeActionsState = Map<DiagnosticMessage, Map<string, CodeAction>>;
+export type DescriptionsState = Map<DiagnosticMessage, string>;
 
 export type Store = {
   getState(): AppState,
@@ -268,6 +271,16 @@ export type Action =
   | {
       type: 'SET_CODE_ACTIONS',
       payload: {codeActionsForMessage: CodeActionsState},
+    }
+
+  // Description
+  | {
+      type: 'FETCH_DESCRIPTIONS',
+      payload: {messages: Array<DiagnosticMessage>},
+    }
+  | {
+      type: 'SET_DESCRIPTIONS',
+      payload: {descriptions: DescriptionsState, keepDescriptions: boolean},
     }
 
   // Fixes

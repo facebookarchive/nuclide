@@ -28,11 +28,10 @@ import {completingSwitchMap} from 'nuclide-commons/observable';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons/analytics';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable, Subject} from 'rxjs';
-import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
+import {makeDatatipComponent} from './getDiagnosticDatatip.js';
 
 const GUTTER_ID = 'diagnostics-gutter';
 
@@ -332,20 +331,14 @@ function showPopupFor(
   const editor = itemToEditor.get(item);
   invariant(editor != null);
   diagnosticUpdater.fetchCodeActions(editor, messages);
+  diagnosticUpdater.fetchDescriptions(messages);
 
   const popupTop = itemBottom;
-  const BoundPopup = bindObservableAsProps(
-    observableFromSubscribeFunction(cb =>
-      diagnosticUpdater.observeCodeActionsForMessage(cb),
-    ).map(codeActionsForMessage => ({
-      style: {left: gutterRight, top: popupTop, position: 'absolute'},
-      messages,
-      fixer: trackedFixer,
-      goToLocation: trackedGoToLocation,
-      codeActionsForMessage,
-    })),
-    DiagnosticsPopup,
-  );
+  const BoundPopup = makeDatatipComponent(messages, diagnosticUpdater, {
+    fixer: trackedFixer,
+    goToLocation: trackedGoToLocation,
+    style: {left: gutterRight, top: popupTop, position: 'absolute'},
+  });
   ReactDOM.render(<BoundPopup />, hostElement);
 
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above

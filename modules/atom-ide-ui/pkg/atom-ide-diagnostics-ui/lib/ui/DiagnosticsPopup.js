@@ -11,7 +11,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+import type {
+  DiagnosticMessage,
+  CodeActionsState,
+  DescriptionsState,
+} from '../../../atom-ide-diagnostics/lib/types';
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import * as React from 'react';
@@ -25,13 +29,16 @@ type DiagnosticsPopupProps = {
   messages: Array<DiagnosticMessage>,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
   fixer: (message: DiagnosticMessage) => void,
-  codeActionsForMessage?: Map<DiagnosticMessage, Map<string, CodeAction>>,
+  codeActionsForMessage?: CodeActionsState,
+  descriptions?: DescriptionsState,
+  style: ?Object,
 };
 
 function renderMessage(
   fixer: (message: DiagnosticMessage) => void,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  codeActionsForMessage: ?Map<DiagnosticMessage, Map<string, CodeAction>>,
+  codeActionsForMessage: ?CodeActionsState,
+  descriptions: ?DescriptionsState,
   message: DiagnosticMessage,
   index: number,
 ): React.Element<any> {
@@ -46,12 +53,14 @@ function renderMessage(
     },
   );
   const codeActions = getCodeActions(message, codeActionsForMessage);
+  const description = getDescription(message, descriptions);
   return (
     <div className={className} key={index} tabIndex={-1}>
       <DiagnosticsMessage
         fixer={fixer}
         goToLocation={goToLocation}
-        message={message}>
+        message={message}
+        description={description}>
         {codeActions && codeActions.size ? (
           <DiagnosticsCodeActions codeActions={codeActions} />
         ) : null}
@@ -62,7 +71,7 @@ function renderMessage(
 
 function getCodeActions(
   message: DiagnosticMessage,
-  codeActionsForMessage: ?Map<DiagnosticMessage, Map<string, CodeAction>>,
+  codeActionsForMessage: ?CodeActionsState,
 ): ?Map<string, CodeAction> {
   const codeActionMaps = [];
   if (message.actions != null && message.actions.length > 0) {
@@ -94,6 +103,16 @@ function getCodeActions(
   return codeActionMaps.length > 0 ? mapUnion(...codeActionMaps) : null;
 }
 
+function getDescription(
+  message: DiagnosticMessage,
+  descriptions: ?DescriptionsState,
+): string {
+  if (descriptions) {
+    return descriptions.get(message) || '';
+  }
+  return '';
+}
+
 // TODO move LESS styles to nuclide-ui
 export class DiagnosticsPopup extends React.Component<DiagnosticsPopupProps> {
   componentDidMount() {
@@ -108,13 +127,21 @@ export class DiagnosticsPopup extends React.Component<DiagnosticsPopupProps> {
       fixer,
       goToLocation,
       codeActionsForMessage,
+      descriptions,
       messages,
       ...rest
     } = this.props;
     return (
       <div className="diagnostics-popup" {...rest}>
-        {messages.map(
-          renderMessage.bind(null, fixer, goToLocation, codeActionsForMessage),
+        {messages.map((msg, index) =>
+          renderMessage(
+            fixer,
+            goToLocation,
+            codeActionsForMessage,
+            descriptions,
+            msg,
+            index,
+          ),
         )}
       </div>
     );
