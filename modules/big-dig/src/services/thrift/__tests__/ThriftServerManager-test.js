@@ -81,7 +81,7 @@ describe('ThriftServerManager', () => {
   });
 
   it('successfully start server', async () => {
-    const responseMessage = {
+    const expectedResponse = {
       id: '1',
       payload: {
         type: 'response',
@@ -92,14 +92,14 @@ describe('ThriftServerManager', () => {
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(startServerMessage));
     const response = decodeMessage(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    expect(response).toEqual(expectedResponse);
   });
 
   it('responses fail for malformatted message', async () => {
     const malformattedMessage = {
       id: '1',
     };
-    const responseMessage = {
+    const expectedResponse = {
       id: '1',
       payload: {
         type: 'response',
@@ -110,7 +110,7 @@ describe('ThriftServerManager', () => {
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
     const response = decodeMessage(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    expect(response).toEqual(expectedResponse);
   });
 
   it('responses fail for malformatted message payload', async () => {
@@ -118,7 +118,7 @@ describe('ThriftServerManager', () => {
       id: '1',
       payload: {type: 'request'},
     };
-    const responseMessage = {
+    const expectedResponse = {
       id: '1',
       payload: {
         type: 'response',
@@ -129,11 +129,11 @@ describe('ThriftServerManager', () => {
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(JSON.stringify(malformattedMessage));
     const response = decodeMessage(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    expect(response).toEqual(expectedResponse);
   });
 
   it('responses fail when server failed to start', async () => {
-    const responseMessage = {
+    const expectedResponse = {
       id: '1',
       payload: {
         type: 'response',
@@ -147,7 +147,7 @@ describe('ThriftServerManager', () => {
     const responsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(startServerMessage));
     const response = decodeMessage(await responsePromise);
-    expect(response).toEqual(responseMessage);
+    expect(response).toEqual(expectedResponse);
   });
 
   it('successfully close server', async () => {
@@ -159,7 +159,7 @@ describe('ThriftServerManager', () => {
         serverConfig,
       },
     };
-    const responseMessage = {
+    const expectedResponse = {
       id: '2',
       payload: {
         type: 'response',
@@ -173,7 +173,7 @@ describe('ThriftServerManager', () => {
     const secondResponsePromise = serverMessage.take(1).toPromise();
     clientMessage.next(encodeMessage(closeServerMessage));
     const response = decodeMessage(await secondResponsePromise);
-    expect(response).toEqual(responseMessage);
+    expect(response).toEqual(expectedResponse);
     expect(mockCloseServerFn).toHaveBeenCalled();
   });
 
