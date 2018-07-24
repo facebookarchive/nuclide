@@ -40,6 +40,7 @@ type ResultRenderer<T> = (
 ) => React.Element<any>;
 
 import invariant from 'assert';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {trackSampled} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
@@ -298,7 +299,10 @@ export default class SearchResultManager {
       // no sorting takes place. It would be nice to the project root that contains the current
       // working root on top. But Directory::contains includes code that synchronously queries the
       // filesystem so I want to avoid it for now.
-      if (dir.getPath() === currentWorkingRoot) {
+      if (
+        nuclideUri.normalizeDir(dir.getPath()) ===
+        nuclideUri.normalizeDir(currentWorkingRoot)
+      ) {
         // This *not* currentWorkingRoot. It's the directory from this._directories. That's because
         // currentWorkingRoot uses the Directory type (which explicitly includes remote directory
         // objects), whereas this module uses atom$Directory. That should probably be addressed.
