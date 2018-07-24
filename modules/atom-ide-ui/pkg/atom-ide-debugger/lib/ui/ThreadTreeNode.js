@@ -49,7 +49,10 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this._expandedSubject = new Subject();
-    this.state = this._getInitialState();
+    this.state = {
+      isCollapsed: true,
+      stackFrames: Expect.pending(),
+    };
     this._disposables = new UniversalDisposable();
   }
 
@@ -57,13 +60,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     const {service, thread} = this.props;
     const focusedThread = service.viewModel.focusedThread;
     return focusedThread != null && thread.threadId === focusedThread.threadId;
-  }
-
-  _getInitialState() {
-    return {
-      isCollapsed: true,
-      stackFrames: Expect.pending(),
-    };
   }
 
   _getFrames(levels: ?number): Observable<Expected<Array<IStackFrame>>> {
@@ -82,6 +78,15 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     const {service} = this.props;
     const model = service.getModel();
     const {viewModel} = service;
+    const changedCallStack = observableFromSubscribeFunction(
+      model.onDidChangeCallStack.bind(model),
+    );
+    // If the thread is focused, the React element may have subscribed to the
+    // event (call stack changed) after the event occurred.
+    const additionalFocusedCheck = this._threadIsFocused()
+      ? changedCallStack.startWith(null)
+      : changedCallStack;
+
     this._disposables.add(
       Observable.merge(
         observableFromSubscribeFunction(
@@ -107,7 +112,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
             stackFrames: frames,
           });
         }),
-      observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
+      additionalFocusedCheck
         .let(fastDebounce(100))
         .switchMap(() => {
           // If this node was already collapsed, it stays collapsed
