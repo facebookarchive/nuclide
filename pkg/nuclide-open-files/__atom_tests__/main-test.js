@@ -346,6 +346,61 @@ describe('nuclide-open-files', () => {
         },
       ]);
     });
+
+    it('open new file and paste immediately', async () => {
+      const buffer = new TextBuffer({filePath: 'f1', text: ''});
+      atom.project.addBuffer(buffer);
+      buffer.append('\n');
+      buffer.append('contents1');
+      buffer.destroy();
+
+      const actualEvents = await events
+        .take(3)
+        .toArray()
+        .toPromise();
+
+      expect([...actualEvents]).toEqual([
+        {
+          kind: 'open',
+          filePath: 'f1',
+          changeCount: 2,
+          contents: '\n',
+          languageId: 'text.plain.null-grammar',
+        },
+        {
+          kind: 'edit',
+          filePath: 'f1',
+          changeCount: 3,
+          newRange: {
+            start: {
+              column: 0,
+              row: 1,
+            },
+            end: {
+              column: 9,
+              row: 1,
+            },
+          },
+          newText: 'contents1',
+          oldRange: {
+            start: {
+              column: 0,
+              row: 1,
+            },
+            end: {
+              column: 0,
+              row: 1,
+            },
+          },
+          oldText: '',
+        },
+        {
+          kind: 'close',
+          filePath: 'f1',
+          changeCount: 3,
+        },
+      ]);
+    });
   });
 
   describe('observeDirectoryEvents', () => {

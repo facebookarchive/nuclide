@@ -77,8 +77,8 @@ export class BufferSubscription {
         const version = this._changeCount;
 
         invariant(this._notifier != null);
-        const notifier = await this._notifier;
         if (this._sentOpen) {
+          const notifier = await this._notifier;
           // Changes must be sent in reverse order to ensure that they are applied cleanly.
           // (Atom ensures that they are sent over in increasing lexicographic order).
           for (let i = event.changes.length - 1; i >= 0; i--) {
@@ -97,7 +97,7 @@ export class BufferSubscription {
             });
           }
         } else {
-          this._sendOpenByNotifier(notifier, version);
+          this._sendOpenByNotifier(this._notifier, version);
         }
       }),
     );
@@ -112,19 +112,18 @@ export class BufferSubscription {
         invariant(filePath != null);
 
         invariant(this._notifier != null);
-        const notifier = await this._notifier;
         const version = this._changeCount;
         if (this._sentOpen) {
           this.sendEvent({
             kind: FileEventKind.SAVE,
             fileVersion: {
-              notifier,
+              notifier: await this._notifier,
               filePath,
               version,
             },
           });
         } else {
-          this._sendOpenByNotifier(notifier, version);
+          this._sendOpenByNotifier(this._notifier, version);
         }
       }),
     );
@@ -139,27 +138,24 @@ export class BufferSubscription {
     // TODO: Could watch onDidReload() which will catch the case where an empty file is opened
     // after startup, leaving the only failure the reopening of empty files at startup.
     if (this._buffer.getText() !== '' && this._notifier != null) {
-      this._sendOpen(this._changeCount);
+      this._sendOpenByNotifier(this._notifier, this._changeCount);
     }
   }
 
-  async _sendOpen(version: number): Promise<void> {
-    invariant(this._notifier != null);
-    const notifier = await this._notifier;
-    this._sendOpenByNotifier(notifier, version);
-  }
-
-  _sendOpenByNotifier(notifier: FileNotifier, version: number): void {
+  async _sendOpenByNotifier(
+    notifier: Promise<FileNotifier>,
+    version: number,
+  ): Promise<void> {
+    const contents = this._buffer.getText();
     const filePath = this._buffer.getPath();
     invariant(filePath != null);
 
-    const contents = this._buffer.getText();
     const languageId = this._getLanguageId(filePath, contents);
     this._sentOpen = true;
     this.sendEvent({
       kind: FileEventKind.OPEN,
       fileVersion: {
-        notifier,
+        notifier: await notifier,
         filePath,
         version,
       },
