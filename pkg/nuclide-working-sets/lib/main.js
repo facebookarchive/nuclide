@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import ProjectManager from 'nuclide-commons-atom/ProjectManager';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
@@ -72,37 +73,13 @@ class Activation {
     this._disposables.add(new PathsObserver(this.workingSetsStore));
   }
 
-  deactivate(): void {
+  dispose(): void {
     this._disposables.dispose();
   }
-}
 
-let activation: ?Activation = null;
-
-export function activate() {
-  if (activation != null) {
-    return;
+  provideWorkingSetsStore(): WorkingSetsStore {
+    return this.workingSetsStore;
   }
-
-  activation = new Activation();
-}
-
-export function deactivate() {
-  if (activation == null) {
-    return;
-  }
-
-  activation.deactivate();
-  activation = null;
-}
-
-export function provideWorkingSetsStore(): WorkingSetsStore {
-  invariant(
-    activation,
-    'Was requested to provide service from a non-activated package',
-  );
-
-  return activation.workingSetsStore;
 }
 
 async function findInActive(): Promise<void> {
@@ -134,3 +111,5 @@ async function findInActive(): Promise<void> {
   );
   view.pathsEditor.setText(WORKING_SET_PATH_MARKER);
 }
+
+createPackage(module.exports, Activation);
