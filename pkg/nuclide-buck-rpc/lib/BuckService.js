@@ -46,7 +46,6 @@ export type BuckWebSocketMessage =
     }
   | {
       type: 'BuildStarted',
-      buildId: string,
     }
   | {
       type: 'ConsoleEvent',

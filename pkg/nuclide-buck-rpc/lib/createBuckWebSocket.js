@@ -21,6 +21,7 @@ export default function createBuckWebSocket(
   return Observable.create(observer => {
     const uri = `ws://localhost:${httpPort}/ws/build`;
     const socket = new WS(uri);
+    let buildId: ?string = null;
 
     socket.on('open', () => {
       // Emit a message so the client knows the socket is ready for Buck events.
@@ -36,6 +37,20 @@ export default function createBuckWebSocket(
           'Error parsing Buck websocket message',
           err,
         );
+        return;
+      }
+
+      const type = message.type;
+      // eslint-disable-next-line eqeqeq
+      if (buildId === null) {
+        if (type === 'BuildStarted') {
+          buildId = message.buildId;
+        } else {
+          return;
+        }
+      }
+
+      if (buildId !== message.buildId) {
         return;
       }
 
