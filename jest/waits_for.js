@@ -20,7 +20,7 @@ export default (async function waitsFor(
   const error = new Error(
     message != null
       ? message
-      : 'Expected the function to start returning "true" but it never did',
+      : 'Expected the function to start returning "true" but it never did.',
   );
   const startTime = Date.now();
   while (!Boolean(fn())) {
