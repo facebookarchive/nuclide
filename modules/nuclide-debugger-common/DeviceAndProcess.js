@@ -18,6 +18,7 @@ import type {Subscription} from 'rxjs';
 
 import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {Table} from 'nuclide-commons-ui/Table';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -42,6 +43,7 @@ type State = {
   selectedProcessName: ?string,
   sortedColumn: ?ColumnName,
   sortDescending: boolean,
+  filterText: string,
 };
 
 export class DeviceAndProcess extends React.Component<Props, State> {
@@ -59,6 +61,12 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       }
     });
 
+    let filterText = '';
+    try {
+      // $FlowFB
+      filterText = require('./fb-isFBProcessName').FB_PROCESS_NAME_REGEX_STRING;
+    } catch (e) {}
+
     this.state = {
       selectedDevice: null,
       javaProcesses: Expect.value([]),
@@ -66,6 +74,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       selectedProcessName: null,
       sortedColumn: 'name',
       sortDescending: false,
+      filterText,
     };
   }
 
@@ -100,52 +109,99 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       this._javaProcessSubscription = null;
     }
 
-    this.setState({
-      selectedDevice: device,
-      javaProcesses: device == null ? Expect.value([]) : Expect.pending(),
-      selectedProcess: null,
-      selectedProcessName: this.props.deserialize(),
-    });
-
-    if (device != null) {
-      // If a device is selected, observe the Java processes on the device.
-      const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
-      this._javaProcessSubscription = Observable.interval(2000)
-        .startWith(0)
-        .switchMap(() => adbService.getJavaProcesses(device.serial).refCount())
-        .distinctUntilChanged((a, b) =>
-          arrayEqual(a, b, (x, y) => {
-            return x.user === y.user && x.pid === y.pid && x.name === y.name;
-          }),
-        )
-        .subscribe(javaProcesses => {
-          this._javaProcessListChanged(Expect.value(javaProcesses));
-        });
-    }
+    this.setState(
+      {
+        selectedDevice: device,
+        javaProcesses: device == null ? Expect.value([]) : Expect.pending(),
+        selectedProcess: null,
+        selectedProcessName: this.props.deserialize(),
+      },
+      () => {
+        if (device != null) {
+          // If a device is selected, observe the Java processes on the device.
+          const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
+          this._javaProcessSubscription = Observable.interval(2000)
+            .startWith(0)
+            .switchMap(() =>
+              adbService.getJavaProcesses(device.serial).refCount(),
+            )
+            .distinctUntilChanged((a, b) =>
+              arrayEqual(a, b, (x, y) => {
+                return (
+                  x.user === y.user && x.pid === y.pid && x.name === y.name
+                );
+              }),
+            )
+            .subscribe(javaProcesses => {
+              this._javaProcessListChanged(Expect.value(javaProcesses));
+            });
+        }
+      },
+    );
   };
 
   _javaProcessListChanged(javaProcesses: Expected<Array<AndroidJavaProcess>>) {
-    const selectedPid =
-      this.state.selectedProcess == null
-        ? null
-        : this.state.selectedProcess.pid;
-    let selectedProcess = javaProcesses
+    const selectedPid = this.state.selectedProcess?.pid;
+    const selectedProcess = javaProcesses
       .getOrDefault([])
-      .find(process => process.pid === selectedPid);
-
-    if (this.state.selectedProcessName != null) {
-      selectedProcess = javaProcesses
-        .getOrDefault([])
-        .find(process => process.name === this.state.selectedProcessName);
-    }
+      .find(
+        process =>
+          this.state.selectedProcessName != null
+            ? process.name === this.state.selectedProcessName
+            : process.pid === selectedPid,
+      );
 
     this.setState({
       javaProcesses,
       selectedProcess,
-      selectedProcessName:
-        selectedProcess == null ? null : selectedProcess.name,
+      selectedProcessName: selectedProcess?.name,
     });
   }
+
+  _filterJavaProcesses(filterText: string) {
+    // Show all results if invalid regex
+    let filterRegex;
+    try {
+      filterRegex = new RegExp(filterText, 'i');
+    } catch (e) {
+      return this.state.javaProcesses.getOrDefault([]);
+    }
+    return this.state.javaProcesses
+      .getOrDefault([])
+      .filter(
+        item =>
+          filterRegex.test(item.user) ||
+          filterRegex.test(item.pid) ||
+          filterRegex.test(item.name),
+      );
+  }
+
+  _handleFilterTextChange = (filterText: string): void => {
+    // Check if we've filtered down to one option and select if so
+
+    const filteredProcesses = this._filterJavaProcesses(filterText);
+    // TODO: (goom) this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    let selectedProcess = this.state.selectedProcess;
+    if (filteredProcesses.length === 1) {
+      // Check if we've filtered down to one option and select if so
+      selectedProcess = filteredProcesses[0];
+    } else if (
+      filteredProcesses.findIndex(
+        processRow => selectedProcess?.pid === processRow.pid,
+      ) === -1
+    ) {
+      // If we filter out our current selection,
+      //   set our current selection to null
+      selectedProcess = null;
+    }
+
+    this.setState({
+      filterText,
+      selectedProcess,
+    });
+  };
 
   _getColumns(): Array<Column<*>> {
     return [
@@ -225,42 +281,26 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       </div>
     );
 
-    let shouldHighlightRow = _ => false;
-    try {
-      // $FlowFB
-      shouldHighlightRow = require('./fb-isFBProcessName').isFBProcessName;
-    } catch (e) {}
-
     const processListRows = this._sortRows(
-      this.state.javaProcesses.getOrDefault([]).map(processRow => {
+      this._filterJavaProcesses(this.state.filterText).map(processRow => {
         const data = {
           pid: processRow.pid,
           user: processRow.user,
           name: processRow.name,
         };
-        const highlightRow = shouldHighlightRow(processRow.name);
         return {
           data,
-          className: highlightRow
-            ? 'device-and-process-table-highlight-row'
-            : undefined,
         };
       }),
       this.state.sortedColumn,
       this.state.sortDescending,
     );
 
-    const selectedRows =
-      this.state.selectedProcess == null
-        ? []
-        : processListRows.filter(
-            row =>
-              this.state.selectedProcess == null ||
-              (row.data.pid === this.state.selectedProcess.pid &&
-                row.data.name === this.state.selectedProcess.name),
-          );
-    const selectedRowIndex =
-      selectedRows.length === 1 ? processListRows.indexOf(selectedRows[0]) : -1;
+    const selectedRowIndex = processListRows.findIndex(
+      row =>
+        row.data.pid === this.state.selectedProcess?.pid &&
+        row.data.name === this.state.selectedProcess?.name,
+    );
 
     return (
       <div className="block">
@@ -270,6 +310,13 @@ export class DeviceAndProcess extends React.Component<Props, State> {
           targetUri={this.props.targetUri}
         />
         <label>Debuggable Java processes: </label>
+        <AtomInput
+          placeholderText="Search with regular expression..."
+          value={this.state.filterText}
+          onDidChange={this._handleFilterTextChange}
+          size="sm"
+          autofocus={true}
+        />
         <Table
           collapsable={false}
           columns={this._getColumns()}
