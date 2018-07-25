@@ -605,8 +605,8 @@ class Activation {
     const target: HTMLElement = event.target;
     let bp = null;
     if (target != null && target.dataset != null) {
-      if (target.dataset.bpid != null) {
-        const bpId = target.dataset.bpid;
+      if (target.dataset.bpId != null) {
+        const bpId = target.dataset.bpId;
         bp = this._service.getModel().getBreakpointById(bpId);
       }
 
