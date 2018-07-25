@@ -26,15 +26,12 @@ import {ProcessExitError} from 'nuclide-commons/process';
 import {observableFromTask} from '../../../commons-node/tasks';
 import {trackEvent} from '../../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {getLogger} from 'log4js';
 import * as Actions from './Actions';
 import * as Immutable from 'immutable';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
-
-const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 export function setProjectRootForNewTaskRunnerEpic(
   actions: ActionsObservable<Action>,
@@ -711,32 +708,17 @@ function createTaskObservable(
       } else {
         description = error.message;
       }
-
-      // show error notification only if console is not visible
-      const consolePane = atom.workspace.paneForURI(CONSOLE_VIEW_URI);
-      const consoleItem = consolePane && consolePane.getActiveItem();
-      if (consoleItem != null) {
-        // Using `observePaneItemVisibility` because we currently don't have a
-        // way of pulling visibility information synchronously.
-        // TODO: (samarthwahal) T31311900 add a function for synchronously querying item visibility
-        observePaneItemVisibility(consoleItem)
-          .first()
-          .filter(visible => !visible)
-          .subscribe(() => {
-            taskFailedNotification = atom.notifications.addError(
-              `The task "${taskMeta.label}" failed`,
-              {
-                buttons,
-                description,
-                dismissable: true,
-              },
-            );
-            taskFailedNotification.onDidDismiss(() => {
-              taskFailedNotification = null;
-            });
-          });
-      }
-
+      taskFailedNotification = atom.notifications.addError(
+        `The task "${taskMeta.label}" failed`,
+        {
+          buttons,
+          description,
+          dismissable: true,
+        },
+      );
+      taskFailedNotification.onDidDismiss(() => {
+        taskFailedNotification = null;
+      });
       const taskMetaForLogging = {...taskMeta, taskRunner: undefined};
       getLogger('nuclide-task-runner').debug(
         'Error running task:',
