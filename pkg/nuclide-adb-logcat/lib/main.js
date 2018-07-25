@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeOutputService = consumeOutputService;
+
+function _Activation() {
+  const data = _interopRequireDefault(require("./Activation"));
+
+  _Activation = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,28 +26,28 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+let activation = null;
 
-import type {OutputService} from 'atom-ide-ui';
-
-import invariant from 'assert';
-import Activation from './Activation';
-
-let activation: ?Activation = null;
-
-export function activate(state: ?Object) {
-  activation = new Activation(state);
+function activate(state) {
+  activation = new (_Activation().default)(state);
 }
 
-export function deactivate() {
-  invariant(activation != null);
+function deactivate() {
+  if (!(activation != null)) {
+    throw new Error("Invariant violation: \"activation != null\"");
+  }
+
   activation.dispose();
   activation = null;
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation);
+function consumeOutputService(api) {
+  if (!activation) {
+    throw new Error("Invariant violation: \"activation\"");
+  }
+
   activation.consumeOutputService(api);
 }

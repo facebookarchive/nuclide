@@ -1,3 +1,17 @@
+"use strict";
+
+function _jestMock() {
+  const data = _interopRequireDefault(require("jest-mock"));
+
+  _jestMock = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,31 +20,23 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* eslint-disable nuclide-internal/no-commonjs */
-
-import type {ProjectConfig} from './types';
-
-import mock from 'jest-mock';
-
 class Atom {
-  global: Object;
-  moduleMocker: Object;
-  fakeTimers: Object;
-
-  constructor(config: ProjectConfig) {
-    this.global = global;
-    // __buildAtomGlobal should be set at the atom entry point. It depends
+  constructor(config) {
+    this.global = global; // __buildAtomGlobal should be set at the atom entry point. It depends
     // on the data Atom test runner provides.
+
     global.atom = global.__buildAtomGlobal();
-    this.moduleMocker = new mock.ModuleMocker(global);
+    this.moduleMocker = new (_jestMock().default.ModuleMocker)(global);
     this.fakeTimers = {
       useFakeTimers() {
         throw new Error('fakeTimers are not supproted in atom environment');
-      },
+      }
+
     };
   }
 
@@ -41,13 +47,14 @@ class Atom {
 
   async teardown() {}
 
-  runScript(script: any): ?any {
+  runScript(script) {
     // unfortunately electron crashes if we try to access anything
     // on global from within a vm content. The only workaround i found
     // is to lose sandboxing and run everything in a single context.
     // We should look into using iframes/webviews in the future.
     return script.runInThisContext();
   }
+
 }
 
 module.exports = Atom;

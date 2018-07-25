@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getCurrentExecutorId;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,17 +13,18 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+function getCurrentExecutorId(state) {
+  let {
+    currentExecutorId
+  } = state;
 
-import type {AppState} from './types';
-
-export default function getCurrentExecutorId(state: AppState): ?string {
-  let {currentExecutorId} = state;
   if (currentExecutorId == null) {
     const firstExecutor = Array.from(state.executors.values())[0];
     currentExecutorId = firstExecutor && firstExecutor.id;
   }
+
   return currentExecutorId;
 }

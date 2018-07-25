@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,56 +13,50 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DispatcherInterface} from './DispatcherInterface';
-
-export default class HelpCommand implements Command {
-  name = 'help';
-  helpText = 'Give help about the debugger command set.';
-  _console: ConsoleIO;
-  _dispatcher: DispatcherInterface;
-
-  constructor(con: ConsoleIO, dispatcher: DispatcherInterface) {
+class HelpCommand {
+  constructor(con, dispatcher) {
+    this.name = 'help';
+    this.helpText = 'Give help about the debugger command set.';
     this._console = con;
     this._dispatcher = dispatcher;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     const [command] = args;
 
     if (command != null) {
       this._displayDetailedHelp(command);
+
       return;
     }
 
     this._displayHelp();
   }
 
-  _displayHelp(): void {
+  _displayHelp() {
     const commands = this._dispatcher.getCommands();
+
     const commandDict = {};
-    commands.forEach(x => (commandDict[x.name] = x));
-
+    commands.forEach(x => commandDict[x.name] = x);
     const commandNames = commands.map(x => x.name).sort();
-
     commandNames.forEach(name => {
       this._console.outputLine(`${name}: ${commandDict[name].helpText}`);
     });
   }
 
-  _displayDetailedHelp(cmd: string): void {
+  _displayDetailedHelp(cmd) {
     const commands = this._dispatcher.getCommandsMatching(cmd);
+
     if (commands.length === 0) {
       throw new Error(`There is no command "${cmd}"`);
     }
 
     if (commands.length > 1) {
       const list = this._dispatcher.commandListToString(commands);
+
       throw new Error(`Multiple commands match "${cmd}": ${list}`);
     }
 
@@ -63,9 +64,13 @@ export default class HelpCommand implements Command {
 
     if (command.detailedHelpText != null) {
       this._console.outputLine(command.detailedHelpText);
+
       return;
     }
 
     this._console.outputLine(command.helpText);
   }
+
 }
+
+exports.default = HelpCommand;

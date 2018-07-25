@@ -1,3 +1,231 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getBigDigClientByNuclideUri = getBigDigClientByNuclideUri;
+exports.getBuckServiceByNuclideUri = getBuckServiceByNuclideUri;
+exports.getClangServiceByNuclideUri = getClangServiceByNuclideUri;
+exports.getCodeSearchServiceByNuclideUri = getCodeSearchServiceByNuclideUri;
+exports.getCtagsServiceByNuclideUri = getCtagsServiceByNuclideUri;
+exports.getDefinitionPreviewServiceByNuclideUri = getDefinitionPreviewServiceByNuclideUri;
+exports.getFbsimctlServiceByNuclideUri = getFbsimctlServiceByNuclideUri;
+exports.getFileSystemServiceByNuclideUri = getFileSystemServiceByNuclideUri;
+exports.getFileSystemServiceByConnection = getFileSystemServiceByConnection;
+exports.getFileWatcherServiceByNuclideUri = getFileWatcherServiceByNuclideUri;
+exports.getFlowServiceByNuclideUri = getFlowServiceByNuclideUri;
+exports.getFuzzyFileSearchServiceByNuclideUri = getFuzzyFileSearchServiceByNuclideUri;
+exports.awaitGeneratedFileServiceByNuclideUri = awaitGeneratedFileServiceByNuclideUri;
+exports.getGrepServiceByNuclideUri = getGrepServiceByNuclideUri;
+exports.getHackLanguageForUri = getHackLanguageForUri;
+exports.getHgServiceByNuclideUri = getHgServiceByNuclideUri;
+exports.getHhvmDebuggerServiceByNuclideUri = getHhvmDebuggerServiceByNuclideUri;
+exports.getInfoServiceByNuclideUri = getInfoServiceByNuclideUri;
+exports.getInfoServiceByConnection = getInfoServiceByConnection;
+exports.getMetroServiceByNuclideUri = getMetroServiceByNuclideUri;
+exports.getOpenFilesServiceByNuclideUri = getOpenFilesServiceByNuclideUri;
+exports.getPythonServiceByNuclideUri = getPythonServiceByNuclideUri;
+exports.getPythonServiceByConnection = getPythonServiceByConnection;
+exports.getRemoteCommandServiceByNuclideUri = getRemoteCommandServiceByNuclideUri;
+exports.getSocketServiceByNuclideUri = getSocketServiceByNuclideUri;
+exports.getSourceControlServiceByNuclideUri = getSourceControlServiceByNuclideUri;
+exports.getVSCodeLanguageServiceByConnection = getVSCodeLanguageServiceByConnection;
+exports.getVSCodeLanguageServiceByNuclideUri = getVSCodeLanguageServiceByNuclideUri;
+exports.getCqueryLSPServiceByConnection = getCqueryLSPServiceByConnection;
+exports.getCqueryLSPServiceByNuclideUri = getCqueryLSPServiceByNuclideUri;
+Object.defineProperty(exports, "RemoteConnection", {
+  enumerable: true,
+  get: function () {
+    return _RemoteConnection().RemoteConnection;
+  }
+});
+Object.defineProperty(exports, "RemoteDirectory", {
+  enumerable: true,
+  get: function () {
+    return _RemoteDirectory().RemoteDirectory;
+  }
+});
+Object.defineProperty(exports, "RemoteFile", {
+  enumerable: true,
+  get: function () {
+    return _RemoteFile().RemoteFile;
+  }
+});
+Object.defineProperty(exports, "ServerConnection", {
+  enumerable: true,
+  get: function () {
+    return _ServerConnection().ServerConnection;
+  }
+});
+Object.defineProperty(exports, "ConnectionCache", {
+  enumerable: true,
+  get: function () {
+    return _ConnectionCache().ConnectionCache;
+  }
+});
+Object.defineProperty(exports, "SshHandshake", {
+  enumerable: true,
+  get: function () {
+    return _SshHandshake().SshHandshake;
+  }
+});
+Object.defineProperty(exports, "decorateSshConnectionDelegateWithTracking", {
+  enumerable: true,
+  get: function () {
+    return _SshHandshake().decorateSshConnectionDelegateWithTracking;
+  }
+});
+Object.defineProperty(exports, "getService", {
+  enumerable: true,
+  get: function () {
+    return _serviceManager().getService;
+  }
+});
+Object.defineProperty(exports, "getServiceByConnection", {
+  enumerable: true,
+  get: function () {
+    return _serviceManager().getServiceByConnection;
+  }
+});
+Object.defineProperty(exports, "getServiceByNuclideUri", {
+  enumerable: true,
+  get: function () {
+    return _serviceManager().getServiceByNuclideUri;
+  }
+});
+Object.defineProperty(exports, "getlocalService", {
+  enumerable: true,
+  get: function () {
+    return _serviceManager().getlocalService;
+  }
+});
+Object.defineProperty(exports, "bufferForUri", {
+  enumerable: true,
+  get: function () {
+    return _remoteTextBuffer().bufferForUri;
+  }
+});
+Object.defineProperty(exports, "existingBufferForUri", {
+  enumerable: true,
+  get: function () {
+    return _remoteTextBuffer().existingBufferForUri;
+  }
+});
+Object.defineProperty(exports, "loadBufferForUri", {
+  enumerable: true,
+  get: function () {
+    return _remoteTextBuffer().loadBufferForUri;
+  }
+});
+Object.defineProperty(exports, "RemoteDirectoryPlaceholder", {
+  enumerable: true,
+  get: function () {
+    return _RemoteDirectoryPlaceholder().default;
+  }
+});
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteConnection() {
+  const data = require("./RemoteConnection");
+
+  _RemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteDirectory() {
+  const data = require("./RemoteDirectory");
+
+  _RemoteDirectory = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFile() {
+  const data = require("./RemoteFile");
+
+  _RemoteFile = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ServerConnection() {
+  const data = require("./ServerConnection");
+
+  _ServerConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConnectionCache() {
+  const data = require("./ConnectionCache");
+
+  _ConnectionCache = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _SshHandshake() {
+  const data = require("./SshHandshake");
+
+  _SshHandshake = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _serviceManager() {
+  const data = require("./service-manager");
+
+  _serviceManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _remoteTextBuffer() {
+  const data = require("./remote-text-buffer");
+
+  _remoteTextBuffer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteDirectoryPlaceholder() {
+  const data = _interopRequireDefault(require("./RemoteDirectoryPlaceholder"));
+
+  _RemoteDirectoryPlaceholder = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,243 +233,131 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+function getBigDigClientByNuclideUri(uri) {
+  const connection = _ServerConnection().ServerConnection.getForUri(uri);
 
-import type {Directory as LocalDirectoryType} from 'atom';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {BigDigClient} from 'big-dig/src/client';
+  if (!connection) {
+    throw new Error(`no server connection for ${uri}`);
+  }
 
-import nullthrows from 'nullthrows';
-import invariant from 'assert';
-
-import {RemoteConnection} from './RemoteConnection';
-import {RemoteDirectory} from './RemoteDirectory';
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
-import {ConnectionCache} from './ConnectionCache';
-
-import {
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-} from './SshHandshake';
-
-import {
-  getService,
-  getServiceByConnection,
-  getServiceByNuclideUri,
-  awaitServiceByNuclideUri,
-  getlocalService,
-} from './service-manager';
-
-export type Directory = LocalDirectoryType | RemoteDirectory;
-
-export {
-  RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
-  ServerConnection,
-  ConnectionCache,
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-  getService,
-  getServiceByConnection,
-  getServiceByNuclideUri,
-  getlocalService,
-};
-
-export {
-  bufferForUri,
-  existingBufferForUri,
-  loadBufferForUri,
-} from './remote-text-buffer';
-
-export {
-  default as RemoteDirectoryPlaceholder,
-} from './RemoteDirectoryPlaceholder';
-
-import typeof * as BuckService from '../../nuclide-buck-rpc';
-import typeof * as ClangService from '../../nuclide-clang-rpc';
-import typeof * as CodeSearchService from '../../nuclide-code-search-rpc/lib/CodeSearchService';
-import typeof * as CtagsService from '../../nuclide-ctags-rpc';
-import typeof * as DefinitionPreviewService from '../../nuclide-definition-preview-rpc';
-import typeof * as FbsimctlService from '../../nuclide-fbsimctl-rpc';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
-import typeof * as FlowService from '../../nuclide-flow-rpc';
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
-import typeof * as GeneratedFileService from '../../nuclide-generated-files-rpc';
-import typeof * as GrepService from '../../nuclide-grep-rpc';
-import typeof * as HackService from '../../nuclide-hack-rpc';
-import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
-import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
-import typeof * as PythonService from '../../nuclide-python-rpc';
-import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
-import typeof * as SocketService from '../../nuclide-socket-rpc';
-import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
-import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
-import typeof * as CqueryLSPService from '../../nuclide-cquery-lsp-rpc';
-
-export function getBigDigClientByNuclideUri(uri: NuclideUri): BigDigClient {
-  const connection = ServerConnection.getForUri(uri);
-  invariant(connection, `no server connection for ${uri}`);
   return connection.getBigDigClient();
 }
 
-export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {
-  return nullthrows(getServiceByNuclideUri('BuckService', uri));
+function getBuckServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('BuckService', uri));
 }
 
-export function getClangServiceByNuclideUri(uri: NuclideUri): ClangService {
-  return nullthrows(getServiceByNuclideUri('ClangService', uri));
+function getClangServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('ClangService', uri));
 }
 
-export function getCodeSearchServiceByNuclideUri(
-  uri: NuclideUri,
-): CodeSearchService {
-  return nullthrows(getServiceByNuclideUri('CodeSearchService', uri));
+function getCodeSearchServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('CodeSearchService', uri));
 }
 
-export function getCtagsServiceByNuclideUri(uri: NuclideUri): CtagsService {
-  return nullthrows(getServiceByNuclideUri('CtagsService', uri));
+function getCtagsServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('CtagsService', uri));
 }
 
-export function getDefinitionPreviewServiceByNuclideUri(
-  uri: NuclideUri,
-): DefinitionPreviewService {
-  return nullthrows(getServiceByNuclideUri('DefinitionPreviewService', uri));
+function getDefinitionPreviewServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('DefinitionPreviewService', uri));
 }
 
-export function getFbsimctlServiceByNuclideUri(
-  uri: NuclideUri,
-): FbsimctlService {
-  return nullthrows(getServiceByNuclideUri('FbsimctlService', uri));
+function getFbsimctlServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('FbsimctlService', uri));
 }
 
-export function getFileSystemServiceByNuclideUri(
-  uri: NuclideUri,
-): FileSystemService {
-  return nullthrows(getServiceByNuclideUri('FileSystemService', uri));
+function getFileSystemServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('FileSystemService', uri));
 }
 
-export function getFileSystemServiceByConnection(
-  connection: ?ServerConnection,
-): FileSystemService {
-  return nullthrows(getServiceByConnection('FileSystemService', connection));
+function getFileSystemServiceByConnection(connection) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByConnection)('FileSystemService', connection));
 }
 
-export function getFileWatcherServiceByNuclideUri(
-  uri: NuclideUri,
-): FileWatcherService {
-  return nullthrows(getServiceByNuclideUri('FileWatcherService', uri));
+function getFileWatcherServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('FileWatcherService', uri));
 }
 
-export function getFlowServiceByNuclideUri(uri: NuclideUri): FlowService {
-  return nullthrows(getServiceByNuclideUri('FlowService', uri));
+function getFlowServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('FlowService', uri));
 }
 
-export function getFuzzyFileSearchServiceByNuclideUri(
-  uri: NuclideUri,
-): FuzzyFileSearchService {
-  return nullthrows(getServiceByNuclideUri('FuzzyFileSearchService', uri));
+function getFuzzyFileSearchServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('FuzzyFileSearchService', uri));
 }
 
-export function awaitGeneratedFileServiceByNuclideUri(
-  uri: NuclideUri,
-): Promise<GeneratedFileService> {
-  return awaitServiceByNuclideUri('GeneratedFileService', uri).then(nullthrows);
+function awaitGeneratedFileServiceByNuclideUri(uri) {
+  return (0, _serviceManager().awaitServiceByNuclideUri)('GeneratedFileService', uri).then(_nullthrows().default);
 }
 
-export function getGrepServiceByNuclideUri(uri: NuclideUri): GrepService {
-  return nullthrows(getServiceByNuclideUri('GrepService', uri));
+function getGrepServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('GrepService', uri));
 }
 
-export function getHackLanguageForUri(uri: NuclideUri): HackService {
-  return nullthrows(getServiceByNuclideUri('HackService', uri));
+function getHackLanguageForUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('HackService', uri));
 }
 
-export function getHgServiceByNuclideUri(uri: NuclideUri): HgService {
-  return nullthrows(getServiceByNuclideUri('HgService', uri));
+function getHgServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('HgService', uri));
 }
 
-export function getHhvmDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): HhvmDebuggerService {
-  return nullthrows(getServiceByNuclideUri('HhvmDebuggerService', uri));
+function getHhvmDebuggerServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('HhvmDebuggerService', uri));
 }
 
-export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
-  return nullthrows(getServiceByNuclideUri('InfoService', uri));
+function getInfoServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('InfoService', uri));
 }
 
-export function getInfoServiceByConnection(
-  connection: ?ServerConnection,
-): InfoService {
-  return getServiceByConnection('InfoService', connection);
+function getInfoServiceByConnection(connection) {
+  return (0, _serviceManager().getServiceByConnection)('InfoService', connection);
 }
 
-export function getMetroServiceByNuclideUri(uri: NuclideUri): MetroService {
-  return nullthrows(getServiceByNuclideUri('MetroService', uri));
+function getMetroServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('MetroService', uri));
 }
 
-export function getOpenFilesServiceByNuclideUri(
-  uri: NuclideUri,
-): OpenFilesService {
-  return nullthrows(getServiceByNuclideUri('OpenFilesService', uri));
+function getOpenFilesServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('OpenFilesService', uri));
 }
 
-export function getPythonServiceByNuclideUri(uri: NuclideUri): PythonService {
-  return nullthrows(getServiceByNuclideUri('PythonService', uri));
+function getPythonServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('PythonService', uri));
 }
 
-export function getPythonServiceByConnection(
-  connection: ?ServerConnection,
-): PythonService {
-  return getServiceByConnection('PythonService', connection);
+function getPythonServiceByConnection(connection) {
+  return (0, _serviceManager().getServiceByConnection)('PythonService', connection);
 }
 
-export function getRemoteCommandServiceByNuclideUri(
-  uri: NuclideUri,
-): RemoteCommandService {
-  return nullthrows(getServiceByNuclideUri('RemoteCommandService', uri));
+function getRemoteCommandServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('RemoteCommandService', uri));
 }
 
-export function getSocketServiceByNuclideUri(uri: NuclideUri): SocketService {
-  return nullthrows(getServiceByNuclideUri('SocketService', uri));
+function getSocketServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('SocketService', uri));
 }
 
-export function getSourceControlServiceByNuclideUri(
-  uri: NuclideUri,
-): SourceControlService {
-  return nullthrows(getServiceByNuclideUri('SourceControlService', uri));
+function getSourceControlServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('SourceControlService', uri));
 }
 
-export function getVSCodeLanguageServiceByConnection(
-  connection: ?ServerConnection,
-): VSCodeLanguageService {
-  return nullthrows(
-    getServiceByConnection('VSCodeLanguageService', connection),
-  );
+function getVSCodeLanguageServiceByConnection(connection) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByConnection)('VSCodeLanguageService', connection));
 }
 
-export function getVSCodeLanguageServiceByNuclideUri(
-  uri: NuclideUri,
-): VSCodeLanguageService {
-  return nullthrows(getServiceByNuclideUri('VSCodeLanguageService', uri));
+function getVSCodeLanguageServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('VSCodeLanguageService', uri));
 }
 
-export function getCqueryLSPServiceByConnection(
-  connection: ?ServerConnection,
-): CqueryLSPService {
-  return nullthrows(getServiceByConnection('CqueryLSPService', connection));
+function getCqueryLSPServiceByConnection(connection) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByConnection)('CqueryLSPService', connection));
 }
 
-export function getCqueryLSPServiceByNuclideUri(
-  uri: NuclideUri,
-): CqueryLSPService {
-  return nullthrows(getServiceByNuclideUri('CqueryLSPService', uri));
+function getCqueryLSPServiceByNuclideUri(uri) {
+  return (0, _nullthrows().default)((0, _serviceManager().getServiceByNuclideUri)('CqueryLSPService', uri));
 }

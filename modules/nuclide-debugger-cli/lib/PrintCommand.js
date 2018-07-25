@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _DebuggerInterface() {
+  const data = require("./DebuggerInterface");
+
+  _DebuggerInterface = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,20 +23,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-
-import {DebuggerInterface} from './DebuggerInterface';
-
-export default class PrintCommand implements Command {
-  name = 'print';
-  helpText =
-    'expr: Prints the result of an expression in the context of the current stack frame.';
-  detailedHelpText = `
+class PrintCommand {
+  constructor(con, debug) {
+    this.name = 'print';
+    this.helpText = 'expr: Prints the result of an expression in the context of the current stack frame.';
+    this.detailedHelpText = `
 print expression
 
 Displays the value of an expression. The expression will be evaluated in the syntax
@@ -37,24 +48,26 @@ is a convenient way to set the value of 'x' to 5. Also, since a function call is
 an expression, any in-scope function may be called, which may modify program state
 in complex ways.
   `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const expr: string = args.join(' ');
+  async execute(args) {
+    const expr = args.join(' ');
+
     try {
       const {
-        body: {result},
+        body: {
+          result
+        }
       } = await this._debugger.evaluateExpression(expr);
+
       this._console.outputLine(result);
     } catch (err) {
       this._console.outputLine(err.message);
     }
   }
+
 }
+
+exports.default = PrintCommand;

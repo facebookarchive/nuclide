@@ -1,3 +1,118 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Table() {
+  const data = require("../../../../../nuclide-commons-ui/Table");
+
+  _Table = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _observable() {
+  const data = require("../../../../../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AtomInput() {
+  const data = require("../../../../../nuclide-commons-ui/AtomInput");
+
+  _AtomInput = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Button() {
+  const data = require("../../../../../nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../../../../../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,227 +121,175 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {DebuggerModeType, IDebugService, IStackFrame} from '../types';
-import * as React from 'react';
-
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {DebuggerMode} from '../constants';
-import {Table} from 'nuclide-commons-ui/Table';
-import {Observable} from 'rxjs';
-import {fastDebounce} from 'nuclide-commons/observable';
-import nullthrows from 'nullthrows';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
-import classnames from 'classnames';
-import idx from 'idx';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {
-  LoadingSpinner,
-  LoadingSpinnerSizes,
-} from 'nuclide-commons-ui/LoadingSpinner';
-
-type Props = {
-  service: IDebugService,
-};
-
-type State = {
-  mode: DebuggerModeType,
-  callstack: Array<IStackFrame>,
-  selectedCallFrameId: number,
-  callStackLevels: number,
-  isFechingStackFrames: boolean,
-};
-
-export default class DebuggerCallstackComponent extends React.Component<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+class DebuggerCallstackComponent extends React.Component {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+
+    this._handleStackFrameClick = (clickedRow, callFrameIndex) => {
+      this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
+    };
+
+    this._disposables = new (_UniversalDisposable().default)();
     this.state = this._getState();
   }
 
-  _getState(): State {
-    const {service} = this.props;
-    const {focusedStackFrame, focusedThread} = service.viewModel;
-
-    const callstack =
-      service.getDebuggerMode() !== DebuggerMode.RUNNING
-        ? focusedThread == null
-          ? []
-          : focusedThread.getCachedCallStack()
-        : [];
-
+  _getState() {
+    const {
+      service
+    } = this.props;
+    const {
+      focusedStackFrame,
+      focusedThread
+    } = service.viewModel;
+    const callstack = service.getDebuggerMode() !== _constants().DebuggerMode.RUNNING ? focusedThread == null ? [] : focusedThread.getCachedCallStack() : [];
     return {
       callStackLevels: this.state == null ? 20 : this.state.callStackLevels,
       mode: service.getDebuggerMode(),
       callstack,
-      selectedCallFrameId:
-        focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
-      isFechingStackFrames: false,
+      selectedCallFrameId: focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
+      isFechingStackFrames: false
     };
   }
 
-  componentDidMount(): void {
-    const {service} = this.props;
+  componentDidMount() {
+    const {
+      service
+    } = this.props;
     const model = service.getModel();
-    const {viewModel} = service;
-    this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
-      )
-        .let(fastDebounce(15))
-        .subscribe(() => {
-          if (viewModel.focusedThread != null) {
-            nullthrows(viewModel.focusedThread)
-              .refreshCallStack()
-              .then(() => this.setState(this._getState()));
-          } else {
-            this.setState(this._getState());
-          }
-        }),
-    );
+    const {
+      viewModel
+    } = service;
+
+    this._disposables.add(_RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(model.onDidChangeCallStack.bind(model)), (0, _event().observableFromSubscribeFunction)(viewModel.onDidFocusStackFrame.bind(viewModel)), (0, _event().observableFromSubscribeFunction)(service.onDidChangeMode.bind(service))).let((0, _observable().fastDebounce)(15)).subscribe(() => {
+      if (viewModel.focusedThread != null) {
+        (0, _nullthrows().default)(viewModel.focusedThread).refreshCallStack().then(() => this.setState(this._getState()));
+      } else {
+        this.setState(this._getState());
+      }
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _handleStackFrameClick = (
-    clickedRow: {frame: IStackFrame},
-    callFrameIndex: number,
-  ): void => {
-    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
-  };
+  render() {
+    const {
+      callstack,
+      mode
+    } = this.state;
+    const rows = callstack == null ? [] : callstack.map((stackFrame, index) => {
+      const isSelected = this.state.selectedCallFrameId === stackFrame.frameId;
+      const cellData = {
+        data: {
+          frameId: index + 1,
+          address: stackFrame.name,
+          frame: stackFrame,
+          source: stackFrame.source != null && stackFrame.source.name != null ? `${stackFrame.source.name}` : '',
+          line: `${stackFrame.range.end.row + 1}`,
+          isSelected
+        }
+      };
 
-  render(): React.Node {
-    const {callstack, mode} = this.state;
-    const rows =
-      callstack == null
-        ? []
-        : callstack.map((stackFrame, index) => {
-            const isSelected =
-              this.state.selectedCallFrameId === stackFrame.frameId;
-            const cellData = {
-              data: {
-                frameId: index + 1,
-                address: stackFrame.name,
-                frame: stackFrame,
-                source:
-                  stackFrame.source != null && stackFrame.source.name != null
-                    ? `${stackFrame.source.name}`
-                    : '',
-                line: `${stackFrame.range.end.row + 1}`,
-                isSelected,
-              },
-            };
+      if (isSelected) {
+        // $FlowIssue className is an optional property of a table row
+        cellData.className = 'debugger-callstack-item-selected';
+      }
 
-            if (isSelected) {
-              // $FlowIssue className is an optional property of a table row
-              cellData.className = 'debugger-callstack-item-selected';
-            }
+      return cellData;
+    });
+    const columns = [{
+      title: '',
+      key: 'frameId',
+      width: 0.05
+    }, {
+      title: 'Address',
+      key: 'address',
+      width: 0.5
+    }, {
+      title: 'Source',
+      key: 'source',
+      width: 0.35
+    }, {
+      title: 'Line',
+      key: 'line',
+      width: 0.1
+    }];
 
-            return cellData;
-          });
+    const emptyComponent = () => React.createElement("div", {
+      className: "debugger-callstack-list-empty"
+    }, "callstack unavailable");
 
-    const columns = [
-      {
-        title: '',
-        key: 'frameId',
-        width: 0.05,
-      },
-      {
-        title: 'Address',
-        key: 'address',
-        width: 0.5,
-      },
-      {
-        title: 'Source',
-        key: 'source',
-        width: 0.35,
-      },
-      {
-        title: 'Line',
-        key: 'line',
-        width: 0.1,
-      },
-    ];
-
-    const emptyComponent = () => (
-      <div className="debugger-callstack-list-empty">callstack unavailable</div>
-    );
-
-    return (
-      <div
-        className={classnames('debugger-container-new', {
-          'debugger-container-new-disabled': mode === DebuggerMode.RUNNING,
-        })}>
-        <div className="debugger-pane-content">
-          <Table
-            className="debugger-callstack-table"
-            columns={columns}
-            emptyComponent={emptyComponent}
-            rows={rows}
-            selectable={cellData => cellData.frame.source.available}
-            resizable={true}
-            onSelect={this._handleStackFrameClick}
-            sortable={false}
-          />
-          {this._renderLoadMoreStackFrames()}
-        </div>
-      </div>
-    );
+    return React.createElement("div", {
+      className: (0, _classnames().default)('debugger-container-new', {
+        'debugger-container-new-disabled': mode === _constants().DebuggerMode.RUNNING
+      })
+    }, React.createElement("div", {
+      className: "debugger-pane-content"
+    }, React.createElement(_Table().Table, {
+      className: "debugger-callstack-table",
+      columns: columns,
+      emptyComponent: emptyComponent,
+      rows: rows,
+      selectable: cellData => cellData.frame.source.available,
+      resizable: true,
+      onSelect: this._handleStackFrameClick,
+      sortable: false
+    }), this._renderLoadMoreStackFrames()));
   }
 
-  _renderLoadMoreStackFrames(): ?React.Element<any> {
-    const {viewModel} = this.props.service;
-    const {callstack, isFechingStackFrames} = this.state;
-    const totalFrames =
-      idx(viewModel, _ => _.focusedThread.stoppedDetails.totalFrames) || 0;
+  _renderLoadMoreStackFrames() {
+    var _ref;
+
+    const {
+      viewModel
+    } = this.props.service;
+    const {
+      callstack,
+      isFechingStackFrames
+    } = this.state;
+    const totalFrames = ((_ref = viewModel) != null ? (_ref = _ref.focusedThread) != null ? (_ref = _ref.stoppedDetails) != null ? _ref.totalFrames : _ref : _ref : _ref) || 0;
+
     if (totalFrames <= callstack.length || callstack.length <= 1) {
       return null;
     }
-    return (
-      <div style={{display: 'flex'}}>
-        <Button
-          size={ButtonSizes.EXTRA_SMALL}
-          disabled={isFechingStackFrames}
-          onClick={() => {
-            this.setState({isFechingStackFrames: true});
-            nullthrows(viewModel.focusedThread)
-              .refreshCallStack()
-              .then(() => this.setState(this._getState()));
-          }}>
-          More Stack Frames
-        </Button>
-        <AtomInput
-          style={{'flex-grow': '1'}}
-          placeholderText="Number of stack frames"
-          initialValue={String(this.state.callStackLevels)}
-          size="xs"
-          onDidChange={value => {
-            if (!isNaN(value)) {
-              this.setState({callStackLevels: parseInt(value, 10)});
-            }
-          }}
-        />
-        <AtomInput />
-        {isFechingStackFrames ? (
-          <LoadingSpinner size={LoadingSpinnerSizes.EXTRA_SMALL} />
-        ) : null}
-      </div>
-    );
+
+    return React.createElement("div", {
+      style: {
+        display: 'flex'
+      }
+    }, React.createElement(_Button().Button, {
+      size: _Button().ButtonSizes.EXTRA_SMALL,
+      disabled: isFechingStackFrames,
+      onClick: () => {
+        this.setState({
+          isFechingStackFrames: true
+        });
+        (0, _nullthrows().default)(viewModel.focusedThread).refreshCallStack().then(() => this.setState(this._getState()));
+      }
+    }, "More Stack Frames"), React.createElement(_AtomInput().AtomInput, {
+      style: {
+        'flex-grow': '1'
+      },
+      placeholderText: "Number of stack frames",
+      initialValue: String(this.state.callStackLevels),
+      size: "xs",
+      onDidChange: value => {
+        if (!isNaN(value)) {
+          this.setState({
+            callStackLevels: parseInt(value, 10)
+          });
+        }
+      }
+    }), React.createElement(_AtomInput().AtomInput, null), isFechingStackFrames ? React.createElement(_LoadingSpinner().LoadingSpinner, {
+      size: _LoadingSpinner().LoadingSpinnerSizes.EXTRA_SMALL
+    }) : null);
   }
+
 }
+
+exports.default = DebuggerCallstackComponent;

@@ -1,3 +1,35 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.debugSymSizeByProcess = debugSymSizeByProcess;
+exports.debugSymSizeByBinary = debugSymSizeByBinary;
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _process() {
+  const data = require("../../nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +38,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import fsPromise from 'nuclide-commons/fsPromise';
-import {runCommand} from 'nuclide-commons/process';
-import {Observable} from 'rxjs';
-
-export async function debugSymSizeByProcess(pid: number): Promise<?number> {
+async function debugSymSizeByProcess(pid) {
   // Only support Linux for now. readelf is part of binutils and should be
   // on every Linux distro that has any dev tools installed.
   if (process.platform !== 'linux') {
     return null;
-  }
+  } // If we have the /proc file system, we can get the executable trivially
 
-  // If we have the /proc file system, we can get the executable trivially
+
   const procExe = `/proc/${pid}/exe`;
-  if (await fsPromise.exists(procExe)) {
-    return debugSymSizeByBinary(procExe);
-  }
 
-  // If /proc isn't available, we could do some ugly parsing of ps here.
+  if (await _fsPromise().default.exists(procExe)) {
+    return debugSymSizeByBinary(procExe);
+  } // If /proc isn't available, we could do some ugly parsing of ps here.
+
+
   return null;
 }
 
-export async function debugSymSizeByBinary(binary: string): Promise<?number> {
+async function debugSymSizeByBinary(binary) {
   // this pipeline parses the output of readelf to find debug sections.
   // readelf -WS lists the various sections in the format
   //   [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
@@ -44,25 +72,10 @@ export async function debugSymSizeByBinary(binary: string): Promise<?number> {
   const SIZE_COLUMN = 5;
   return new Promise((resolve, reject) => {
     try {
-      runCommand('readelf', ['-WS', binary])
-        .catch(_ => Observable.of(''))
-        .map(stdout =>
-          stdout
-            .split(/\n/)
-            // filter out just the section lines on [##]
-            .filter(line => /\[\s*\d+\]/.test(line))
-            // Remove spaces from the single-digit section indices, so we can
-            // safely split on spaces (i.e. '[ 1]' becomes '[1]')
-            .map(line =>
-              line
-                .replace(/\[\s*(\d+)\]/, '[$1]')
-                .trim()
-                .split(/\s+/),
-            )
-            .filter(tuple => /(debug|stab)/.test(tuple[NAME_COLUMN]))
-            .reduce((sum, tuple) => sum + parseInt(tuple[SIZE_COLUMN], 16), 0),
-        )
-        .subscribe(value => resolve(value));
+      (0, _process().runCommand)('readelf', ['-WS', binary]).catch(_ => _RxMin.Observable.of('')).map(stdout => stdout.split(/\n/) // filter out just the section lines on [##]
+      .filter(line => /\[\s*\d+\]/.test(line)) // Remove spaces from the single-digit section indices, so we can
+      // safely split on spaces (i.e. '[ 1]' becomes '[1]')
+      .map(line => line.replace(/\[\s*(\d+)\]/, '[$1]').trim().split(/\s+/)).filter(tuple => /(debug|stab)/.test(tuple[NAME_COLUMN])).reduce((sum, tuple) => sum + parseInt(tuple[SIZE_COLUMN], 16), 0)).subscribe(value => resolve(value));
     } catch (ex) {
       reject(ex);
     }

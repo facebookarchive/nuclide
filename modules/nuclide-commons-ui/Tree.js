@@ -1,58 +1,65 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-/* eslint-env browser */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Tree = Tree;
+exports.TreeList = exports.NestedTreeItem = exports.TreeItem = void 0;
 
-import * as React from 'react';
-import classnames from 'classnames';
-import invariant from 'assert';
-import {scrollIntoView} from './scrollIntoView';
+var React = _interopRequireWildcard(require("react"));
 
-export function Tree({className, style, ...props}: Object) {
-  return (
-    <ol
-      className={classnames('list-tree', className)}
-      role="tree"
-      style={{position: 'relative', ...style}}
-      {...props}
-    />
-  );
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
 }
 
-type TreeItemProps = {|
-  children?: React.Node,
-  className?: string,
-  // handled below in `handleClick`
-  /* eslint-disable react/no-unused-prop-types */
-  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
-  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
-  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
-  /* eslint-enable react/no-unused-prop-types */
-  selected?: boolean,
-  onMouseDown?: (e: SyntheticMouseEvent<>) => mixed,
-  onMouseEnter?: (e: SyntheticMouseEvent<>) => mixed,
-  onMouseLeave?: (e: SyntheticMouseEvent<>) => mixed,
-  path?: string,
-  name?: string,
-  title?: string,
-|};
+function _scrollIntoView() {
+  const data = require("./scrollIntoView");
 
-export class TreeItem extends React.Component<TreeItemProps> {
-  _liNode: ?HTMLLIElement;
-  _handleClick = handleClick.bind(this);
+  _scrollIntoView = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function Tree(_ref) {
+  let {
+    className,
+    style
+  } = _ref,
+      props = _objectWithoutProperties(_ref, ["className", "style"]);
+
+  return React.createElement("ol", Object.assign({
+    className: (0, _classnames().default)('list-tree', className),
+    role: "tree",
+    style: Object.assign({
+      position: 'relative'
+    }, style)
+  }, props));
+}
+
+class TreeItem extends React.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._handleClick = handleClick.bind(this), _temp;
+  }
 
   scrollIntoView() {
     if (this._liNode != null) {
-      scrollIntoView(this._liNode);
+      (0, _scrollIntoView().scrollIntoView)(this._liNode);
     }
   }
 
@@ -66,69 +73,52 @@ export class TreeItem extends React.Component<TreeItemProps> {
       onMouseLeave,
       path,
       name,
-      title,
+      title
     } = this.props;
-
-    return (
-      <div title={title}>
-        <li
-          aria-selected={selected}
-          className={classnames(
-            className,
-            {
-              selected,
-            },
-            'list-item',
-          )}
-          onMouseDown={onMouseDown}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          data-path={path}
-          data-name={name}
-          onClick={this._handleClick}
-          ref={liNode => (this._liNode = liNode)}
-          role="treeitem"
-          tabIndex={selected ? '0' : '-1'}>
-          {selected && typeof children === 'string' ? (
-            // String children must be wrapped to receive correct styles when selected.
-            <span>{children}</span>
-          ) : (
-            children
-          )}
-        </li>
-      </div>
-    );
+    return React.createElement("div", {
+      title: title
+    }, React.createElement("li", {
+      "aria-selected": selected,
+      className: (0, _classnames().default)(className, {
+        selected
+      }, 'list-item'),
+      onMouseDown: onMouseDown,
+      onMouseEnter: onMouseEnter,
+      onMouseLeave: onMouseLeave,
+      "data-path": path,
+      "data-name": name,
+      onClick: this._handleClick,
+      ref: liNode => this._liNode = liNode,
+      role: "treeitem",
+      tabIndex: selected ? '0' : '-1'
+    }, selected && typeof children === 'string' ? // String children must be wrapped to receive correct styles when selected.
+    React.createElement("span", null, children) : children));
   }
+
 }
 
-type NestedTreeItemProps = {|
-  title?: React.Node,
-  children?: mixed,
-  className?: string,
-  hasFlatChildren?: boolean, // passthrough to inner TreeList
-  selected?: boolean,
-  collapsed?: boolean,
-  // handled below in `handleClick`
-  /* eslint-disable react/no-unused-prop-types */
-  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
-  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
-  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
-  /* eslint-disable react/no-unused-prop-types */
-|};
+exports.TreeItem = TreeItem;
 
-export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
-  _itemNode: ?HTMLDivElement;
-  _handleClick = (e: SyntheticMouseEvent<>) => {
-    const itemNode = this._itemNode;
-    if (itemNode == null) {
-      return;
-    }
+class NestedTreeItem extends React.Component {
+  constructor(...args) {
+    var _temp2;
 
-    invariant(e.target instanceof Element);
-    if (e.target.closest('.list-item') === itemNode) {
-      handleClick.call(this, e);
-    }
-  };
+    return _temp2 = super(...args), this._handleClick = e => {
+      const itemNode = this._itemNode;
+
+      if (itemNode == null) {
+        return;
+      }
+
+      if (!(e.target instanceof Element)) {
+        throw new Error("Invariant violation: \"e.target instanceof Element\"");
+      }
+
+      if (e.target.closest('.list-item') === itemNode) {
+        handleClick.call(this, e);
+      }
+    }, _temp2;
+  }
 
   render() {
     const {
@@ -137,75 +127,63 @@ export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
       selected,
       collapsed,
       title,
-      children,
+      children
     } = this.props;
-
-    return (
-      <li
-        aria-selected={selected}
-        aria-expanded={!collapsed}
-        className={classnames(
-          className,
-          {
-            selected,
-            collapsed,
-          },
-          'list-nested-item',
-        )}
-        onClick={this._handleClick}
-        role="treeitem"
-        tabIndex={selected ? '0' : '-1'}>
-        {title == null ? null : (
-          <div
-            tabIndex={-1}
-            className="native-key-bindings list-item"
-            ref={node => (this._itemNode = node)}>
-            {title}
-          </div>
-        )}
-        <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
-      </li>
-    );
+    return React.createElement("li", {
+      "aria-selected": selected,
+      "aria-expanded": !collapsed,
+      className: (0, _classnames().default)(className, {
+        selected,
+        collapsed
+      }, 'list-nested-item'),
+      onClick: this._handleClick,
+      role: "treeitem",
+      tabIndex: selected ? '0' : '-1'
+    }, title == null ? null : React.createElement("div", {
+      tabIndex: -1,
+      className: "native-key-bindings list-item",
+      ref: node => this._itemNode = node
+    }, title), React.createElement(TreeList, {
+      hasFlatChildren: hasFlatChildren
+    }, children));
   }
+
 }
 
-type TreeListProps = {
-  className?: string,
-  /* typically, instances of TreeItem or NestedTreeItem. */
-  children?: mixed,
-  showArrows?: boolean,
-  hasFlatChildren?: boolean,
-};
-export const TreeList = (props: TreeListProps) => (
-  // $FlowFixMe(>=0.53.0) Flow suppress
-  <ul
-    className={classnames(
-      props.className,
-      {
-        'has-collapsable-children': props.showArrows,
-        'has-flat-children': props.hasFlatChildren,
-      },
-      'list-tree',
-    )}
-    role="group">
-    {props.children}
-  </ul>
-);
+exports.NestedTreeItem = NestedTreeItem;
 
-function handleClick(e: SyntheticMouseEvent<>): void {
-  const {onSelect, onConfirm, onTripleClick} = this.props;
+const TreeList = props => // $FlowFixMe(>=0.53.0) Flow suppress
+React.createElement("ul", {
+  className: (0, _classnames().default)(props.className, {
+    'has-collapsable-children': props.showArrows,
+    'has-flat-children': props.hasFlatChildren
+  }, 'list-tree'),
+  role: "group"
+}, props.children);
 
+exports.TreeList = TreeList;
+
+function handleClick(e) {
+  const {
+    onSelect,
+    onConfirm,
+    onTripleClick
+  } = this.props;
   const numberOfClicks = e.detail;
+
   switch (numberOfClicks) {
     case 1:
       onSelect && onSelect(e);
       break;
+
     case 2:
       onConfirm && onConfirm(e);
       break;
+
     case 3:
       onTripleClick && onTripleClick(e);
       break;
+
     default:
       break;
   }
