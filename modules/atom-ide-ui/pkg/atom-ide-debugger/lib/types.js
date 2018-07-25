@@ -210,6 +210,11 @@ export interface IThread extends ITreeElement {
   refreshCallStack(levels: ?number): Promise<void>;
 
   /**
+   * Returns true if the number of frames available > currentFrameCount.
+   */
+  additionalFramesAvailable(currentFrameCount: number): boolean;
+
+  /**
    * Indicates whether this thread is stopped. The callstack for stopped
    * threads can be retrieved from the debug adapter.
    */

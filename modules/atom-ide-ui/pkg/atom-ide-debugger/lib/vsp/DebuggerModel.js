@@ -665,6 +665,25 @@ export class Thread implements IThread {
     return `thread:${this.process.getId()}:${this.threadId}`;
   }
 
+  additionalFramesAvailable(currentFrameCount: number): boolean {
+    if (this._callStack.callFrames.length > currentFrameCount) {
+      return true;
+    }
+    const supportsDelayLoading =
+      nullthrows(this.process).session.capabilities
+        .supportsDelayedStackTraceLoading === true;
+    if (
+      supportsDelayLoading &&
+      this.stoppedDetails != null &&
+      this.stoppedDetails.totalFrames != null &&
+      this.stoppedDetails.totalFrames > currentFrameCount
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   clearCallStack(): void {
     this._callStack = this._getEmptyCallstackState();
   }

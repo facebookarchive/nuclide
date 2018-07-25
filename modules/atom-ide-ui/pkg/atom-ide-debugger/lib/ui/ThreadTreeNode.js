@@ -15,6 +15,8 @@
 import type {IThread, IStackFrame, IDebugService} from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 import {Table} from 'nuclide-commons-ui/Table';
@@ -37,6 +39,8 @@ type Props = {
 type State = {
   isCollapsed: boolean,
   stackFrames: Expected<Array<IStackFrame>>,
+  callStackLevels: number,
+  additionalCallStackLevels: number,
 };
 
 export default class ThreadTreeNode extends React.Component<Props, State> {
@@ -52,6 +56,8 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     this.state = {
       isCollapsed: true,
       stackFrames: Expect.pending(),
+      callStackLevels: 20,
+      additionalCallStackLevels: 20,
     };
     this._disposables = new UniversalDisposable();
   }
@@ -102,10 +108,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         .asObservable()
         .let(fastDebounce(100))
         .switchMap(() => {
-          // Pass null for levels to _getFrames to force fetching of the
-          // entire callstack if it's not loaded, since this thread node
-          // is now expanded and the whole callstack is visible.
-          return this._getFrames(null);
+          return this._getFrames(this.state.callStackLevels);
         })
         .subscribe(frames => {
           this.setState({
@@ -125,7 +128,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           // If the node is collapsed, we only need to fetch the first call
           // frame to display the stop location (if any). Otherwise, we need
           // to fetch the call stack.
-          return this._getFrames(newIsCollapsed ? 1 : null).switchMap(frames =>
+          return this._getFrames(
+            newIsCollapsed ? 1 : this.state.callStackLevels,
+          ).switchMap(frames =>
             Observable.of({
               frames,
               newIsCollapsed,
@@ -235,7 +240,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
 
   render(): React.Node {
     const {thread, service} = this.props;
-    const {stackFrames} = this.state;
+    const {stackFrames, isCollapsed} = this.state;
     const isFocused = this._threadIsFocused();
     const handleTitleClick = event => {
       if (thread.stopped) {
@@ -294,13 +299,58 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         : this._generateTable(stackFrames.value);
 
     return (
-      <NestedTreeItem
-        title={formattedTitle}
-        collapsed={this.state.isCollapsed}
-        onSelect={this.handleSelectThread}
-        ref={elem => (this._nestedTreeItem = elem)}>
-        {callFramesElements}
-      </NestedTreeItem>
+      <div className="debugger-tree-frame">
+        <NestedTreeItem
+          title={formattedTitle}
+          collapsed={this.state.isCollapsed}
+          onSelect={this.handleSelectThread}
+          ref={elem => (this._nestedTreeItem = elem)}>
+          {callFramesElements}
+        </NestedTreeItem>
+        {isCollapsed ? null : this._renderLoadMoreStackFrames()}
+      </div>
+    );
+  }
+
+  _renderLoadMoreStackFrames(): ?React.Element<any> {
+    const {thread} = this.props;
+    const {
+      stackFrames,
+      callStackLevels,
+      additionalCallStackLevels,
+    } = this.state;
+
+    if (!thread.additionalFramesAvailable(callStackLevels + 1)) {
+      return null;
+    }
+
+    return (
+      <div style={{display: 'flex'}}>
+        <Button
+          size={ButtonSizes.EXTRA_SMALL}
+          disabled={stackFrames.isPending || stackFrames.isError}
+          onClick={() => {
+            this.setState({
+              stackFrames: Expect.pending(),
+              callStackLevels: callStackLevels + additionalCallStackLevels,
+            });
+            this._expandedSubject.next();
+          }}>
+          More Stack Frames
+        </Button>
+        <AtomInput
+          style={{'flex-grow': '1'}}
+          placeholderText="Number of stack frames"
+          initialValue={String(this.state.additionalCallStackLevels)}
+          size="xs"
+          onDidChange={value => {
+            if (!isNaN(parseInt(value, 10))) {
+              this.setState({additionalCallStackLevels: parseInt(value, 10)});
+            }
+          }}
+        />
+        <AtomInput />
+      </div>
     );
   }
 }
