@@ -37,6 +37,7 @@ import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexCont
 import {MessageExamples} from 'nuclide-commons-ui/Message.example';
 import {PathWithFileIconExamples} from 'nuclide-commons-ui/PathWithFileIcon.example';
 import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
+import {ComboboxExamples} from '../../nuclide-ui/Combobox.example';
 import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from 'nuclide-commons-ui/FileChanges.example';
 import {HighlightedCodeExamples} from 'nuclide-commons-ui/HighlightedCode.example';
@@ -69,6 +70,7 @@ const playgroundComponents = [
   PulseButtonExample,
   PathWithFileIconExamples,
   AnimatedEllipsisExamples,
+  ComboboxExamples,
   FileChangesExamples,
   HighlightedCodeExamples,
 ];
