@@ -819,9 +819,10 @@ class Activation {
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       let callstackText = '';
-      const subscription = focusedThread
+      focusedThread
         .getFullCallStack()
         .filter(expectedStack => !expectedStack.isPending)
+        .take(1)
         .subscribe(expectedStack => {
           expectedStack.getOrDefault([]).forEach((item, i) => {
             const path = nuclideUri.basename(item.source.uri);
@@ -830,11 +831,7 @@ class Activation {
             }${os.EOL}`;
           });
           atom.clipboard.write(callstackText.trim());
-
-          this._disposables.remove(subscription);
-          subscription.unsubscribe();
         });
-      this._disposables.add(subscription);
     }
   }
 
