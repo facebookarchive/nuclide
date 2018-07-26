@@ -150,11 +150,7 @@ class GenericUIRenderer {
   }
 
   renderState(state: RefactorState) {
-    if (
-      state.type === 'open' &&
-      state.phase.type !== 'rename' &&
-      !(state.ui === 'rename' && state.phase.type === 'execute')
-    ) {
+    if (state.type === 'open' && state.phase.type !== 'rename') {
       if (this._panel == null) {
         const element = document.createElement('div');
         this._panel = atom.workspace.addModalPanel({item: element});

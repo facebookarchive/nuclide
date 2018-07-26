@@ -189,6 +189,8 @@ describe('refactorStore', () => {
           newName: 'bar',
         };
         store.dispatch(Actions.execute(provider, rename));
+        await waitForPhase('execute');
+        store.dispatch(Actions.close());
         await waitForClose();
         expect(openEditor.getText()).toEqual('bar\nbar\nbar\n');
       });
@@ -280,6 +282,8 @@ describe('refactorStore', () => {
           newName: 'bar',
         };
         store.dispatch(Actions.execute(provider, rename));
+        await waitForPhase('execute');
+        store.dispatch(Actions.close());
         await waitForClose();
         await nextTick();
         expectNoUncaughtErrors();
@@ -303,6 +307,8 @@ describe('refactorStore', () => {
           newName: 'bar',
         };
         store.dispatch(Actions.execute(provider, rename));
+        await waitForPhase('execute');
+        store.dispatch(Actions.close());
         await waitForClose();
         await nextTick();
         expectNoUncaughtErrors();
@@ -339,6 +345,9 @@ describe('refactorStore', () => {
           newName: 'bar',
         };
         store.dispatch(Actions.execute(provider, rename));
+        await waitForPhase('execute');
+        store.dispatch(Actions.close());
+        await waitForClose();
         // TODO should display an error somewhere
         await waitForClose();
         expect(openEditor.getText()).toEqual('foo\nbar\nfoo\n');
