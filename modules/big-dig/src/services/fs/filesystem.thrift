@@ -155,8 +155,16 @@ service RemoteFileSystemService {
 
    * @param uri The uri of the file/directory to be watched.
    * @param options Configures the watch function.
+   * @return unique watch id
    */
-  void watch(1: string uri, 2: WatchOpt options) throws(1: Error error);
+  string watch(1: string uri, 2: WatchOpt options) throws(1: Error error);
+
+  /**
+   * Stop watching target file or directory.
+   *
+   * @param watchId unique watch id
+   */
+  void unwatch(1: string watchId) throws(1: Error error);
 
   /**
    * Collect and send file change events to client.
@@ -165,10 +173,8 @@ service RemoteFileSystemService {
    * in the watched file/directory. The server will keep a list of file change
    * events and send them all to the client and then clear the list for future
    * changes.
-   *
-   * BE CAREFUL about data racing senarios!
    */
-  list<FileChangeEvent> pollFileChanges() throws(1: Error error);
+  list<FileChangeEvent> pollFileChanges(1: string watchId) throws(1: Error error);
 
   /**
    * Retrieve metadata about a file.

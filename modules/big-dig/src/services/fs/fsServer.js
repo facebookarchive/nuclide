@@ -43,8 +43,11 @@ export class RemoteFileSystemServer {
       watch: (uri, options) => {
         return this._serviceHandler.watch(uri, options);
       },
-      pollFileChanges: () => {
-        return this._serviceHandler.pollFileChanges();
+      unwatch: watchId => {
+        return this._serviceHandler.unwatch(watchId);
+      },
+      pollFileChanges: watchId => {
+        return this._serviceHandler.pollFileChanges(watchId);
       },
       createDirectory: uri => {
         return this._serviceHandler.createDirectory(uri);
@@ -91,5 +94,6 @@ export class RemoteFileSystemServer {
     this._logger.info('Close remote file system thrift service server...');
     this._server = null;
     this._watcher.dispose();
+    this._serviceHandler.dispose();
   }
 }

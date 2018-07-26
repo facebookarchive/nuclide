@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import uuid from 'uuid';
 import rimraf from 'rimraf';
 import filesystem_types from './gen-nodejs/filesystem_types';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -46,14 +47,19 @@ export class RemoteFileSystemServiceHandler {
   _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;
+  _watchIdToChangeList: Map<string, Array<filesystem_types.FileChangeEvent>>;
 
   constructor(watcher: WatchmanClient) {
     this._fileChangeEvents = [];
     this._watcher = watcher;
     this._logger = getLogger('fs-thrift-server-handler');
+    this._watchIdToChangeList = new Map();
   }
 
-  async watch(uri: string, options: filesystem_types.WatchOpt): Promise<void> {
+  async watch(
+    uri: string,
+    options: filesystem_types.WatchOpt,
+  ): Promise<string> {
     const {recursive, excludes} = options;
 
     const excludeExpr = genWatchExcludedExpressions(excludes);
@@ -66,11 +72,11 @@ export class RemoteFileSystemServiceHandler {
     };
 
     this._logger.info(`Watching ${uri} ${JSON.stringify(opts)}`);
-    const subName = `big-dig-thrift-filewatcher-${uri}`;
+    const watchId = `big-dig-thrift-filewatcher-${uuid.v4()}`;
     try {
       const sub = await this._watcher.watchDirectoryRecursive(
         uri,
-        subName,
+        watchId,
         opts,
       );
 
@@ -102,7 +108,9 @@ export class RemoteFileSystemServiceHandler {
           },
         );
         // Add new changes into the list of file changes
-        this._fileChangeEvents.push(...changes);
+        const fileChangeList = this._watchIdToChangeList.get(watchId) || [];
+        fileChangeList.push(...changes);
+        this._watchIdToChangeList.set(watchId, fileChangeList);
       });
     } catch (err) {
       this._logger.error(
@@ -110,13 +118,21 @@ export class RemoteFileSystemServiceHandler {
       );
       this._logger.error(err);
     }
-    return;
+    return watchId;
   }
 
-  pollFileChanges(): Array<filesystem_types.FileChangeEvent> {
-    const retEventChangeList = this._fileChangeEvents;
-    this._fileChangeEvents = [];
-    return retEventChangeList;
+  async unwatch(watchId: string): Promise<void> {
+    try {
+      await this._watcher.unwatch(watchId);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  pollFileChanges(watchId: string): Array<filesystem_types.FileChangeEvent> {
+    const fileChangeList = this._watchIdToChangeList.get(watchId) || [];
+    this._watchIdToChangeList.set(watchId, []);
+    return fileChangeList;
   }
 
   async createDirectory(uri: string): Promise<void> {
@@ -264,5 +280,10 @@ export class RemoteFileSystemServiceHandler {
     }
   }
 
-  dispose() {}
+  dispose(): void {
+    for (const watchId of this._watchIdToChangeList.keys()) {
+      this._watcher.unwatch(watchId);
+    }
+    this._watchIdToChangeList.clear();
+  }
 }

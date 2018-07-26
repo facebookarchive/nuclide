@@ -43,10 +43,10 @@ export class ThriftRemoteFileSystem extends RemoteFileSystem {
   ): Promise<void> {
     const path = this.uriToPath(uri);
     const client = await this.getThriftClient();
-    await client.watch(path, options);
+    const watchId = await client.watch(path, options);
     // Start polling file change events
     this._pollingInterval = setInterval(async () => {
-      const changes = await client.pollFileChanges();
+      const changes = await client.pollFileChanges(watchId);
       this._onFilesChanged(path, convertToVSCodeFileChangeEvents(changes));
     }, POLLING_INTERVAL_MS);
   }
