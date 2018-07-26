@@ -4387,6 +4387,23 @@ jest-changed-files@^23.4.0:
   dependencies:
     throat "^4.0.0"
 
+jest-circus@23.4.1:
+  version "23.4.1"
+  resolved "https://registry.yarnpkg.com/jest-circus/-/jest-circus-23.4.1.tgz#a6ff18ba11b2cd947762a450ac76320d5e1f8493"
+  dependencies:
+    chalk "^2.0.1"
+    co "^4.6.0"
+    expect "^23.4.0"
+    is-generator-fn "^1.0.0"
+    jest-diff "^23.2.0"
+    jest-each "^23.4.0"
+    jest-matcher-utils "^23.2.0"
+    jest-message-util "^23.4.0"
+    jest-snapshot "^23.4.1"
+    jest-util "^23.4.0"
+    pretty-format "^23.2.0"
+    stack-utils "^1.0.1"
+
 jest-cli@23.4.1:
   version "23.4.1"
   resolved "https://registry.yarnpkg.com/jest-cli/-/jest-cli-23.4.1.tgz#c1ffd33254caee376990aa2abe2963e0de4ca76b"

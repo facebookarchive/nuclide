@@ -28,6 +28,8 @@ module.exports = {
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.node.js'),
   setupFiles: [p('jest/setup.js')],
+  // uncomment to use jest-circus runner as a default runner
+  // testRunner: require.resolve('jest-circus/runner'),
   moduleNameMapper: {
     electron: p('jest/__mocks__/emptyObject.js'),
   },
