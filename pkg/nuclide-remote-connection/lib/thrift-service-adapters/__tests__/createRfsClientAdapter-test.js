@@ -28,8 +28,8 @@ jest.mock(require.resolve('big-dig/src/client/BigDigClient'), () => {
   class MockBigDigClient {
     getOrCreateThriftClient = jest.fn().mockReturnValue(
       Promise.resolve({
-        onConnectionEnd: jest.fn().mockImplementation(cb => {
-          mockEventEmitter.on('end', cb);
+        onUnexpectedClientFailure: jest.fn().mockImplementation(cb => {
+          mockEventEmitter.on('close', cb);
         }),
         getClient: () => {},
       }),
@@ -77,7 +77,7 @@ describe('createRfsClientAdapter', () => {
     const adapter1 = await getOrCreateRfsClientAdapter(bigDigClient);
     const adapter2 = await getOrCreateRfsClientAdapter(bigDigClient);
     expect(adapter1).toBe(adapter2);
-    mockEventEmitter.emit('end');
+    mockEventEmitter.emit('close');
     const adapter3 = await getOrCreateRfsClientAdapter(bigDigClient);
     expect(adapter1).not.toBe(adapter3);
     expect(adapter2).not.toBe(adapter3);

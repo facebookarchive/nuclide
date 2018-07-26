@@ -62,7 +62,7 @@ export class ThriftClientClass {
     this._emitter.removeAllListeners();
   }
 
-  onConnectionEnd(handler: () => mixed): ThrifClientSubscription {
+  onClientClose(handler: () => mixed): ThrifClientSubscription {
     const cb = () => {
       if (this._status === 'CLOSED_MANUALLY') {
         handler();
@@ -76,7 +76,7 @@ export class ThriftClientClass {
     };
   }
 
-  onUnexpectedConnectionEnd(handler: () => mixed): ThrifClientSubscription {
+  onUnexpectedClientFailure(handler: () => mixed): ThrifClientSubscription {
     this._emitter.on('lost_connection', handler);
     return {
       unsubscribe: () => {

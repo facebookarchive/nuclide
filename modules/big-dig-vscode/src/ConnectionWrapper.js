@@ -169,7 +169,7 @@ export class ConnectionWrapper implements IDisposable {
       .getOrCreateThriftClient(FS_SERVICE_CONIFG)
       .then(
         client => {
-          this._fsClientSubscription = client.onUnexpectedConnectionEnd(() => {
+          this._fsClientSubscription = client.onUnexpectedClientFailure(() => {
             this._fsThriftClientPromise = null;
           });
           return client;

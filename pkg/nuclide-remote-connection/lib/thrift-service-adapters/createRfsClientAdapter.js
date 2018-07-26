@@ -345,7 +345,7 @@ const getOrCreateThriftClient = memoize(
   (bigDigClient: BigDigClient): Promise<ThriftClient> => {
     return bigDigClient.getOrCreateThriftClient(FS_SERVICE_CONIFG).then(
       clientWrapper => {
-        clientWrapper.onConnectionEnd(() => {
+        clientWrapper.onUnexpectedClientFailure(() => {
           getOrCreateThriftClient.cache.delete(bigDigClient);
         });
         return clientWrapper;
@@ -360,7 +360,7 @@ const getOrCreateThriftClient = memoize(
 
 const getOrCreateAdapter = memoize(
   (clientWrapper: ThriftClient): ThriftRfsClientAdapter => {
-    clientWrapper.onConnectionEnd(() => {
+    clientWrapper.onUnexpectedClientFailure(() => {
       getOrCreateAdapter.cache.delete(clientWrapper);
     });
     return new ThriftRfsClientAdapter(clientWrapper.getClient());

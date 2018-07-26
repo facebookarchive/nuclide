@@ -121,8 +121,8 @@ export class ThriftClientManager {
       this._clientByClientId.delete(clientId);
       this._closeTunnel(serviceConfig);
     };
-    client.onConnectionEnd(clientDispose);
-    client.onUnexpectedConnectionEnd(clientDispose);
+    client.onClientClose(clientDispose);
+    client.onUnexpectedClientFailure(clientDispose);
     this._clientByClientId.set(clientId, client);
     return client;
   }

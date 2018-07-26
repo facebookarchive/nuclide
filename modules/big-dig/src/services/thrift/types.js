@@ -82,8 +82,8 @@ export type ClientCloseCallBack = () => mixed;
 export interface ThriftClient {
   getClient<T>(): T;
   close(): void;
-  onConnectionEnd(handler: ClientCloseCallBack): ThrifClientSubscription;
-  onUnexpectedConnectionEnd(
+  onClientClose(handler: ClientCloseCallBack): ThrifClientSubscription;
+  onUnexpectedClientFailure(
     handler: ClientCloseCallBack,
   ): ThrifClientSubscription;
 }
