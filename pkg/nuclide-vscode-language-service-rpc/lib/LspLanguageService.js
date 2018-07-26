@@ -2873,6 +2873,10 @@ export class LspLanguageService {
   observeLspNotifications(
     notificationMethod: string,
   ): ConnectableObservable<mixed> {
+    // Observable that emits no items but completes once the LSP state is 'running'.
+    const waitUntilRunning = this._state
+      .takeWhile(s => s !== 'Running')
+      .ignoreElements();
     const observable = Observable.create(observer => {
       this._lspConnection._jsonRpcConnection.onNotification(
         {method: notificationMethod},
@@ -2882,7 +2886,7 @@ export class LspLanguageService {
       );
       this._disposables.add(() => observer.complete());
     });
-    return observable.publish();
+    return waitUntilRunning.concat(observable).publish();
   }
 }
 

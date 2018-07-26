@@ -96,6 +96,12 @@ export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {
   return nullthrows(getServiceByNuclideUri('BuckService', uri));
 }
 
+export function getBuckServiceByConnection(
+  connection: ?ServerConnection,
+): BuckService {
+  return nullthrows(getServiceByConnection('BuckService', connection));
+}
+
 export function getClangServiceByNuclideUri(uri: NuclideUri): ClangService {
   return nullthrows(getServiceByNuclideUri('ClangService', uri));
 }
