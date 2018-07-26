@@ -13,6 +13,11 @@
 import type {BigDigClient} from 'big-dig/src/client';
 import type {IDisposable} from 'vscode';
 import type {
+  ThriftClient,
+  ThrifClientSubscription,
+} from 'big-dig/src/services/thrift/types';
+
+import type {
   BufferEncoding,
   CliListenData,
   CliListenParams,
@@ -63,7 +68,6 @@ import type {
 } from 'big-dig-vscode-server/Protocol';
 
 import {FS_SERVICE_CONIFG} from 'big-dig/src/services/fs/service-config';
-import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import * as vscode from 'vscode';
 import EventEmitter from 'events';
 import {Observable} from 'rxjs';
@@ -103,8 +107,8 @@ export class ConnectionWrapper implements IDisposable {
   _nextId: number;
   _emitter: EventEmitter;
   _closed: Deferred<empty> = new Deferred();
-  _fsThriftClient: ?RemoteFileSystemClient = null;
-  _fsThriftClientPromise: ?Promise<RemoteFileSystemClient> = null;
+  _fsThriftClientPromise: ?Promise<ThriftClient> = null;
+  _fsClientSubscription: ?ThrifClientSubscription = null;
 
   constructor(bigDigClient: BigDigClient) {
     this._bigDigClient = bigDigClient;
@@ -156,15 +160,8 @@ export class ConnectionWrapper implements IDisposable {
     return this._makeRpc('get-status', {});
   }
 
-  getOrCreateThriftClient(): Promise<RemoteFileSystemClient> {
-    if (this._fsThriftClient != null) {
-      return Promise.resolve(this._fsThriftClient);
-    }
-    return this._getThriftClientPromise();
-  }
-
-  _getThriftClientPromise(): Promise<RemoteFileSystemClient> {
-    if (this._fsThriftClientPromise != null) {
+  getOrCreateThriftClient(): Promise<ThriftClient> {
+    if (this._fsThriftClientPromise) {
       return this._fsThriftClientPromise;
     }
 
@@ -172,9 +169,10 @@ export class ConnectionWrapper implements IDisposable {
       .getOrCreateThriftClient(FS_SERVICE_CONIFG)
       .then(
         client => {
-          this._fsThriftClientPromise = null;
-          this._fsThriftClient = client.getClient();
-          return client.getClient();
+          this._fsClientSubscription = client.onUnexpectedConnectionEnd(() => {
+            this._fsThriftClientPromise = null;
+          });
+          return client;
         },
         error => {
           this._fsThriftClientPromise = null;
@@ -420,6 +418,9 @@ export class ConnectionWrapper implements IDisposable {
 
   dispose() {
     this._bigDigClient.close();
+    if (this._fsClientSubscription != null) {
+      this._fsClientSubscription.unsubscribe();
+    }
     this._emitter.removeAllListeners();
   }
 }

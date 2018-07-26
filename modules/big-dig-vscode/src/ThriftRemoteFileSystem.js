@@ -10,67 +10,101 @@
  * @format
  */
 
-import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
+import type {ThriftClient} from 'big-dig/src/services/thrift/types';
+
 import * as vscode from 'vscode';
+import * as pathModule from 'path';
 import {Server} from './remote/Server';
 import {RemoteFileSystem} from './RemoteFileSystem';
 import {
+  toChangeType,
   createVSCodeFsError,
   convertToVSCodeFileStat,
-  convertToVSCodeFileChangeEvents,
   convertToVSCodeFileType,
+  convertToVSCodeFileChangeEvents,
 } from './util/converter';
-import {getLogger} from 'log4js';
 import {logToScribe} from './analytics/analytics';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
+import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
+import {FileWatch} from 'big-dig/src/services/fs/FileWatch';
+
+type WatchOptions = {recursive: boolean, excludes: Array<string>};
 
 const BUFFER_ENCODING = 'utf-8';
-const POLLING_INTERVAL_MS = 3000;
-
-const logger = getLogger('remote-fs');
 
 export class ThriftRemoteFileSystem extends RemoteFileSystem {
-  _pollingInterval: any;
+  _idxToFileWatches: Map<number, FileWatch>;
+  _fileWatchIndex: number;
+  _clientWrapper: ?ThriftClient;
+  _watchRequests: Set<{
+    watch: FileWatch,
+    watchPath: string,
+    watchOptions: WatchOptions,
+  }>;
 
   constructor(hostname: string, server: Server) {
     super(hostname, server);
-    this._pollingInterval = null;
+    this._idxToFileWatches = new Map();
+    this._clientWrapper = null;
+    this._watchRequests = new Set();
   }
 
-  async _startWatching(
-    uri: vscode.Uri,
-    options: {recursive: boolean, excludes: Array<string>},
-  ): Promise<void> {
-    const path = this.uriToPath(uri);
-    const client = await this.getThriftClient();
-    const watchId = await client.watch(path, options);
-    // Start polling file change events
-    this._pollingInterval = setInterval(async () => {
-      const changes = await client.pollFileChanges(watchId);
-      this._onFilesChanged(path, convertToVSCodeFileChangeEvents(changes));
-    }, POLLING_INTERVAL_MS);
+  watch(uri: vscode.Uri, options: WatchOptions): vscode.Disposable {
+    const watchRequest = {
+      watch: new FileWatch(
+        () => this.getThriftClientWrapper(),
+        this.uriToPath(uri),
+        options,
+        this._handleFileChanges.bind(this),
+      ),
+      watchPath: this.uriToPath(uri),
+      watchOptions: options,
+    };
+    this._watchRequests.add(watchRequest);
+    return new vscode.Disposable(() => watchRequest.watch.dispose());
   }
 
-  watch(
-    uri: vscode.Uri,
-    options: {recursive: boolean, excludes: Array<string>},
-  ): vscode.Disposable {
-    try {
-      this._startWatching(uri, options);
-    } catch (error) {
-      throw createVSCodeFsError(error, uri);
+  _handleFileChanges(
+    basePath: string,
+    thriftFileChanges: Array<filesystem_types.FileChangeEvent>,
+  ) {
+    const changes = convertToVSCodeFileChangeEvents(thriftFileChanges);
+    const fileChanges: Array<vscode.FileChangeEvent> = changes.map(change => ({
+      type: toChangeType(change.type),
+      uri: this.pathToUri(pathModule.join(basePath, change.path)),
+    }));
+    if (fileChanges.length > 0) {
+      this._onDidChangeEmitter.fire(fileChanges);
     }
-    // Need to return a vscode.Disposable
-    return new vscode.Disposable(() => {
-      logger.info(`Stopped watching: ${uri.toString()}`);
-      this._disposePollingInterval();
+  }
+
+  _updateFileWatches(): void {
+    this._watchRequests.forEach(watchRequest => {
+      watchRequest.watch.dispose();
+      watchRequest.watch = new FileWatch(
+        () => this.getThriftClientWrapper(),
+        watchRequest.watchPath,
+        watchRequest.watchOptions,
+        this._handleFileChanges.bind(this),
+      );
     });
   }
 
-  async getThriftClient(): Promise<RemoteFileSystemClient> {
+  async getThriftClientWrapper(): Promise<ThriftClient> {
     const conn = await this.getConnection();
-    const client = conn.getOrCreateThriftClient();
-    return client;
+    const clientWrapper = await conn.getOrCreateThriftClient();
+    if (this._clientWrapper == null) {
+      this._clientWrapper = clientWrapper;
+    } else if (clientWrapper !== this._clientWrapper) {
+      this._clientWrapper = clientWrapper;
+      this._updateFileWatches();
+    }
+    return clientWrapper;
+  }
+
+  async getThriftClient(): Promise<RemoteFileSystemClient> {
+    const clientWrapper = await this.getThriftClientWrapper();
+    return clientWrapper.getClient();
   }
 
   async createDirectory(uri: vscode.Uri): Promise<void> {
@@ -197,15 +231,8 @@ export class ThriftRemoteFileSystem extends RemoteFileSystem {
     }
   }
 
-  _disposePollingInterval(): void {
-    if (this._pollingInterval) {
-      clearInterval(this._pollingInterval);
-      this._pollingInterval = null;
-    }
-  }
-
   dispose() {
     super.dispose();
-    this._disposePollingInterval();
+    this._idxToFileWatches.clear();
   }
 }
