@@ -38,7 +38,7 @@ describe('createThriftClient', () => {
 
     mockedClient = {};
     class MockedConnection extends EventEmitter {
-      end = jest.fn(() => this.emit('end'));
+      end = jest.fn(() => this.emit('close'));
     }
     mockedConnection = new MockedConnection();
     jest
@@ -63,9 +63,9 @@ describe('createThriftClient', () => {
 
   it('cannot get a client after connection end', async () => {
     const client = await createThriftClient(mockServiceConfig, mockPort);
-    mockedConnection.emit('end');
+    mockedConnection.emit('close');
     expect(() => client.getClient()).toThrow(
-      'Cannot get a client because connection ended',
+      'Cannot get a client because connection is closed',
     );
   });
 
@@ -88,13 +88,13 @@ describe('createThriftClient', () => {
     expect(clientBrokenHandler).not.toHaveBeenCalled();
   });
 
-  it('fire connection end handler while connection is broken', async () => {
+  it('fire connection close handler while connection is broken', async () => {
     const client = await createThriftClient(mockServiceConfig, mockPort);
     const clientClosedHandler = jest.fn();
     const clientBrokenHandler = jest.fn();
     client.onConnectionEnd(clientClosedHandler);
     client.onUnexpectedConnectionEnd(clientBrokenHandler);
-    mockedConnection.emit('end');
+    mockedConnection.emit('close');
     expect(clientClosedHandler).not.toHaveBeenCalled();
     expect(clientBrokenHandler).toHaveBeenCalledTimes(1);
   });
