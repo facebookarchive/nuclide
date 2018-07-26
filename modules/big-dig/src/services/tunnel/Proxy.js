@@ -94,7 +94,6 @@ export class Proxy extends EventEmitter {
         });
 
         socket.once('error', error => {
-          this.emit('error', error);
           this._destroySocket(clientId, error);
         });
         socket.once('close', this._closeSocket.bind(this, clientId));
