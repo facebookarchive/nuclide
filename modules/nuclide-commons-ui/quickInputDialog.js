@@ -24,27 +24,40 @@ import nullthrows from 'nullthrows';
 export default function quickInputDialog(
   title: string,
   inputLabel: string,
-  onConfirm: string => mixed,
+  onConfirm: ?(string) => mixed,
   validateInput: string => ?string,
   initialValue: string = '',
-): void {
+): Promise<string> {
   const item = document.createElement('div');
   const panel = atom.workspace.addModalPanel({item});
-  ReactDOM.render(
-    <QuickInputDialog
-      validateInput={validateInput}
-      initialValue={initialValue}
-      inputLabel={inputLabel}
-      onCancel={() => panel.destroy()}
-      onConfirm={content => {
-        onConfirm(content);
-        panel.destroy();
-      }}
-      title={title}
-    />,
-    item,
-  );
-  panel.onDidDestroy(() => ReactDOM.unmountComponentAtNode(item));
+
+  return new Promise((resolve, reject) => {
+    const cancel = () => {
+      panel.destroy();
+      reject(new Error('User cancelled'));
+    };
+
+    ReactDOM.render(
+      <QuickInputDialog
+        validateInput={validateInput}
+        initialValue={initialValue}
+        inputLabel={inputLabel}
+        onCancel={cancel}
+        onConfirm={content => {
+          if (onConfirm) {
+            onConfirm(content);
+          }
+
+          resolve(content);
+          panel.destroy();
+        }}
+        title={title}
+      />,
+      item,
+    );
+
+    panel.onDidDestroy(() => ReactDOM.unmountComponentAtNode(item));
+  });
 }
 
 type Props = {
@@ -119,7 +132,7 @@ class QuickInputDialog extends React.Component<Props, State> {
           onDidChange={this._handleInputChange}
           startSelected={true}
         />
-        <div className="fb-interactive-smartlog-quick-input-dialog-toolbar">
+        <div style={{display: 'flex', justifyContent: 'space-between'}}>
           <span>{errorMessage}</span>
           <ButtonGroup size={ButtonGroupSizes.SMALL}>
             <Button onClick={this.props.onCancel}>Cancel</Button>
