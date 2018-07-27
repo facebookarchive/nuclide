@@ -71,6 +71,12 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     };
   }
 
+  _getHostName(): string {
+    return nuclideUri.isRemote(this.props.targetUri)
+      ? nuclideUri.getHostname(this.props.targetUri)
+      : '';
+  }
+
   _getSerializationArgs() {
     return [
       nuclideUri.isRemote(this.props.targetUri)
@@ -177,12 +183,12 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   }
 
   _getRecentlyLaunchedKey() {
-    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    const hostname = this._getHostName();
     return 'debugger-php.recentlyLaunchedScripts:' + hostname;
   }
 
   _getCwdKey() {
-    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    const hostname = this._getHostName();
     return 'debugger-php.Cwd:' + hostname;
   }
 
@@ -234,7 +240,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   }
 
   _getPathMenuItems(): Array<{label: string, value: number}> {
-    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    const hostname = this._getHostName();
     const connections = RemoteConnection.getByHostname(hostname);
     return connections.map((connection, index) => {
       const pathToProject = connection.getPath();

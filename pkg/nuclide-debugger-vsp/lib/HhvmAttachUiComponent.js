@@ -316,28 +316,55 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
     Expected<Array<{label: string, value: number}>>,
   > {
     const connections = RemoteConnection.getByHostname(
-      nuclideUri.getHostname(this.props.targetUri),
+      nuclideUri.isRemote(this.props.targetUri)
+        ? nuclideUri.getHostname(this.props.targetUri)
+        : 'local',
     );
 
-    const pathMenuItems = (await Promise.all(
-      connections.map(async (connection, index) => {
-        const pathToProject = connection.getPath();
-        const fsSvc = getFileSystemServiceByNuclideUri(connection.getUri());
-        if (
-          (await fsSvc.findNearestAncestorNamed('.hhconfig', pathToProject)) !=
-          null
-        ) {
-          return {
-            label: pathToProject,
-            value: index,
-          };
-        }
-        return null;
-      }),
-    )).filter(p => p != null);
+    const pathMenuItems: Array<{|label: string, value: number|}> = [];
+
+    if (nuclideUri.isRemote(this.props.targetUri)) {
+      // $FlowIgnore filter ensures not null
+      pathMenuItems.push(
+        ...(await Promise.all(
+          connections.map(async (connection, index) => {
+            const pathToProject = connection.getPath();
+            const fsSvc = getFileSystemServiceByNuclideUri(connection.getUri());
+            if (
+              (await fsSvc.findNearestAncestorNamed(
+                '.hhconfig',
+                pathToProject,
+              )) != null
+            ) {
+              return {
+                label: pathToProject,
+                value: index,
+              };
+            }
+            return null;
+          }),
+        )).filter(p => p != null),
+      );
+    } else {
+      const fsSvc = getFileSystemServiceByNuclideUri(this.props.targetUri);
+      await Promise.all(
+        atom.project
+          .getPaths()
+          .filter(p => nuclideUri.isLocal(p))
+          .map(async path => {
+            if (
+              (await fsSvc.findNearestAncestorNamed('.hhconfig', path)) != null
+            ) {
+              pathMenuItems.push({
+                label: path,
+                value: pathMenuItems.length,
+              });
+            }
+          }),
+      );
+    }
 
     // Flow missing that pathMenuItems[i] is never null due to the filter above.
-    // $FlowIgnore
     const val = Expect.value([...pathMenuItems]);
     this.setState({
       pathMenuItems: val,
@@ -353,7 +380,9 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
 
   async _handleAttachButtonClick(): Promise<void> {
     // Start a debug session with the user-supplied information.
-    const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
+    const {hostname} = nuclideUri.isRemote(this.props.targetUri)
+      ? nuclideUri.parseRemoteUri(this.props.targetUri)
+      : {hostname: ''};
     const selectedPath =
       this.state.attachType === 'webserver' &&
       !this.state.pathMenuItems.isPending &&
@@ -362,7 +391,9 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         : '/';
 
     await this.props.startAttachProcessConfig(
-      nuclideUri.createRemoteUri(hostname, selectedPath),
+      nuclideUri.isRemote(this.props.targetUri)
+        ? nuclideUri.createRemoteUri(hostname, selectedPath)
+        : 'local',
       this.state.attachPort,
       this.state.attachType === 'webserver',
     );

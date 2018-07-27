@@ -80,7 +80,7 @@ export default class ProjectStore {
     return trackTiming('toolbar.isFileHHVMProject', async () => {
       return (
         fileUri != null &&
-        nuclideUri.isRemote(fileUri) &&
+        (nuclideUri.isRemote(fileUri) || process.platform !== 'win32') &&
         isFileInHackProject(fileUri)
       );
     });
@@ -168,14 +168,12 @@ export default class ProjectStore {
       const lastScriptCommand = this.getLastScriptCommand(localPath);
       return lastScriptCommand === '' ? localPath : lastScriptCommand;
     }
-    // getHostname throws for non-remote paths.
-    // Technically this shouldn't be visible for non-remote paths, but the UI
-    // can sometimes display the toolbar anyway.
+
     const rootPath = this._projectRoot.getValue();
     if (rootPath != null && nuclideUri.isRemote(rootPath)) {
       return nuclideUri.getHostname(rootPath);
     }
-    return '';
+    return 'localhost';
   }
 
   dispose() {

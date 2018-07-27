@@ -74,7 +74,10 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
        * Whether this provider is enabled or not.
        */
       isEnabled: (): Promise<boolean> => {
-        return Promise.resolve(nuclideUri.isRemote(this.getTargetUri()));
+        return Promise.resolve(
+          nuclideUri.isRemote(this.getTargetUri()) ||
+            process.platform !== 'win32',
+        );
       },
 
       /**
