@@ -11,10 +11,10 @@
 
 export type {WorkingSetsStore} from './WorkingSetsStore';
 
-export type WorkingSetDefinition = {
+export type WorkingSetDefinition = {|
   name: string,
   active: boolean,
   uris: Array<string>,
   originURLs?: Array<string>,
-  isActiveProject?: boolean, // Does this working set represent the currently active atom project?
-};
+  sourceType: 'user' | 'project',
+|};

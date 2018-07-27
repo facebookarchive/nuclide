@@ -23,6 +23,7 @@ import {WorkingSetsStore} from './WorkingSetsStore';
 import {WorkingSetsConfig} from './WorkingSetsConfig';
 import {PathsObserver} from './PathsObserver';
 import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
+import extractDefinitionsFromProject from './extractDefinitionsFromProject';
 
 class Activation {
   workingSetsStore: WorkingSetsStore;
@@ -58,7 +59,9 @@ class Activation {
                 ),
         )
         .subscribe(spec => {
-          this.workingSetsStore.updateActiveProject(spec);
+          this.workingSetsStore.updateProjectDefinitions(
+            extractDefinitionsFromProject(spec),
+          );
         }),
     );
 

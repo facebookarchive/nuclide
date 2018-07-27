@@ -10,16 +10,13 @@
  */
 
 import {Emitter} from 'atom';
-import idx from 'idx';
 import {groupBy} from 'lodash';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
-import shallowEqual from 'shallowequal';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual, arrayUnique} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as ProjectUtils from 'nuclide-commons-atom/ProjectUtils';
 
 import type {WorkingSetDefinition} from './types';
 
@@ -34,9 +31,9 @@ const SAVE_DEFINITIONS_EVENT = 'save-definitions';
 
 export class WorkingSetsStore {
   _emitter: Emitter;
-  _activeProjectDefinition: ?WorkingSetDefinition;
   _current: WorkingSet;
-  _userDefinitions: Array<WorkingSetDefinition>;
+  _userDefinitions: Array<WorkingSetDefinition> = [];
+  _projectDefinitions: Array<WorkingSetDefinition> = [];
   _prevApplicability: {|
     applicable: Array<WorkingSetDefinition>,
     notApplicable: Array<WorkingSetDefinition>,
@@ -58,7 +55,6 @@ export class WorkingSetsStore {
   constructor() {
     this._emitter = new Emitter();
     this._current = new WorkingSet();
-    this._userDefinitions = [];
     this._prevApplicability = {
       applicable: [],
       notApplicable: [],
@@ -68,7 +64,7 @@ export class WorkingSetsStore {
     // Don't recompute definitions unless one of the properties it's derived from changes.
     (this: any).getDefinitions = memoizeUntilChanged(
       this.getDefinitions,
-      () => [this._userDefinitions, this._activeProjectDefinition],
+      () => [this._userDefinitions, this._projectDefinitions],
     );
   }
 
@@ -77,11 +73,7 @@ export class WorkingSetsStore {
   }
 
   getDefinitions(): Array<WorkingSetDefinition> {
-    const definitions = this._userDefinitions.slice();
-    if (this._activeProjectDefinition != null) {
-      definitions.push(this._activeProjectDefinition);
-    }
-    return definitions;
+    return [...this._userDefinitions, ...this._projectDefinitions];
   }
 
   getApplicableDefinitions(): Array<WorkingSetDefinition> {
@@ -112,24 +104,14 @@ export class WorkingSetsStore {
     if (arrayEqual(this._userDefinitions, definitions)) {
       return;
     }
-    const nextDefinitions = this.getDefinitions()
-      .filter(d => d.isActiveProject)
-      .concat(...definitions);
-    this._updateDefinitions(nextDefinitions);
+    this._updateDefinitions([...this._projectDefinitions, ...definitions]);
   }
 
-  updateActiveProject(spec: ?atom$ProjectSpecification): void {
-    const definition = getProjectWorkingSetDefinition(spec);
-    if (shallowEqual(definition, this._activeProjectDefinition)) {
+  updateProjectDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    if (arrayEqual(this._projectDefinitions, definitions)) {
       return;
     }
-    const nextDefinitions = this.getDefinitions().filter(
-      d => !d.isActiveProject,
-    );
-    if (definition != null) {
-      nextDefinitions.push(definition);
-    }
-    this._updateDefinitions(nextDefinitions);
+    this._updateDefinitions([...this._userDefinitions, ...definitions]);
   }
 
   updateApplicability(): void {
@@ -184,7 +166,7 @@ export class WorkingSetsStore {
     track('working-sets-delete', {name});
 
     const definitions = this.getDefinitions().filter(
-      d => d.name !== name || d.isActiveProject,
+      d => d.name !== name || d.sourceType === 'project',
     );
     this._updateDefinitions(definitions);
   }
@@ -228,6 +210,7 @@ export class WorkingSetsStore {
         uris: workingSet.getUris(),
         active: false,
         originURLs,
+        sourceType: 'user',
       });
     } else {
       track('working-sets-update', {
@@ -237,10 +220,15 @@ export class WorkingSetsStore {
         originURLs: originURLs.join(','),
       });
 
-      const active = definitions[nameIndex].active;
+      const definition = definitions[nameIndex];
       newDefinitions = [].concat(
         definitions.slice(0, nameIndex),
-        {name: newName, uris: workingSet.getUris(), active, originURLs},
+        {
+          ...definition,
+          name: newName,
+          uris: workingSet.getUris(),
+          originURLs,
+        },
         definitions.slice(nameIndex + 1),
       );
     }
@@ -287,14 +275,14 @@ export class WorkingSetsStore {
   }
 
   // Update the working set definitions. All updates should go through this method! In other words,
-  // this should be the only place where `_userDefinitions` and `_activeProjectDefinition` are
-  // changed.
+  // this should be the only place where `_userDefinitions` and `_projectDefinitions` are changed.
   _updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    const {userDefinitions, activeProject} = groupBy(
+    const {userDefinitions, projectDefinitions} = groupBy(
       definitions,
-      d => (d.isActiveProject ? 'activeProject' : 'userDefinitions'),
+      d =>
+        d.sourceType === 'project' ? 'projectDefinitions' : 'userDefinitions',
     );
-    this._activeProjectDefinition = idx(activeProject, _ => _[0]);
+    this._projectDefinitions = projectDefinitions || [];
     this._userDefinitions = userDefinitions || [];
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, this.getDefinitions());
     this.updateApplicability();
@@ -354,32 +342,6 @@ function isApplicable(definition: WorkingSetDefinition): boolean {
   });
 
   return dirs.some(dir => workingSet.containsDir(dir.getPath()));
-}
-
-// Given a project specification, create a corresponding working set definition.
-function getProjectWorkingSetDefinition(
-  spec: ?atom$ProjectSpecification,
-): ?WorkingSetDefinition {
-  if (spec == null) {
-    return null;
-  }
-
-  // `_paths` is a special key. Normally, `paths` contains an Array of paths but, because we
-  // want to mount the repository root instead and just filter to the paths using working sets,
-  // we preprocess the spec, set `paths` to the vcs root and put the previous values in
-  // `_paths`.
-  const paths = (spec: any)._paths;
-
-  if (!Array.isArray(paths)) {
-    return null;
-  }
-
-  return {
-    name: ProjectUtils.getLabelFromPath(spec.originPath),
-    active: true,
-    isActiveProject: true,
-    uris: paths,
-  };
 }
 
 function repositoryForDirectorySync(dir: atom$Directory): ?atom$Repository {

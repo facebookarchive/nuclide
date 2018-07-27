@@ -19,9 +19,9 @@ describe('WorkingSetStore', () => {
 
     const store = new WorkingSetsStore();
     store.updateUserDefinitions([
-      {name: '1', active: true, uris: ['/aaa/bbb1']},
-      {name: '2', active: true, uris: ['/aaa/bbb2']},
-      {name: '3', active: false, uris: ['/aaa/bbb3']},
+      {name: '1', active: true, uris: ['/aaa/bbb1'], sourceType: 'user'},
+      {name: '2', active: true, uris: ['/aaa/bbb2'], sourceType: 'user'},
+      {name: '3', active: false, uris: ['/aaa/bbb3'], sourceType: 'user'},
     ]);
 
     expect(store.getCurrent().getUris()).toEqual(['/aaa/bbb1', '/aaa/bbb2']);
@@ -36,9 +36,24 @@ describe('WorkingSetStore', () => {
       });
     });
 
-    const d1 = {name: '1', active: true, uris: ['/aaa/bbb1/ccc']};
-    const d2 = {name: '2', active: true, uris: ['/aaa/bbb2/ccc']};
-    const d3 = {name: '3', active: false, uris: ['/aaa/bbb3/ccc']};
+    const d1 = {
+      name: '1',
+      active: true,
+      uris: ['/aaa/bbb1/ccc'],
+      sourceType: 'user',
+    };
+    const d2 = {
+      name: '2',
+      active: true,
+      uris: ['/aaa/bbb2/ccc'],
+      sourceType: 'user',
+    };
+    const d3 = {
+      name: '3',
+      active: false,
+      uris: ['/aaa/bbb3/ccc'],
+      sourceType: 'user',
+    };
 
     const store = new WorkingSetsStore();
     store.updateUserDefinitions([d1, d2, d3]);

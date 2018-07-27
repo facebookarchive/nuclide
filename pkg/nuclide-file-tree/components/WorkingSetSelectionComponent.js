@@ -117,25 +117,18 @@ export class WorkingSetSelectionComponent extends React.Component<
   }
 
   render(): React.Node {
-    // It's only possible to have one active project (currently, at least), so this will only ever
-    // be an empty or single-item array.
-    const activeProjectDefinitionRows = this.state.applicableDefinitions
-      .filter(def => def.isActiveProject)
+    const projectDefinitionRows = this.state.applicableDefinitions
+      .filter(def => def.sourceType === 'project')
       .map((def, index) => this._renderDefinitionRow(def, index));
     const applicableDefinitionRows = this.state.applicableDefinitions
-      .filter(def => !def.isActiveProject)
+      .filter(def => def.sourceType !== 'project')
       .map((def, index) =>
-        this._renderDefinitionRow(
-          def,
-          activeProjectDefinitionRows.length + index,
-        ),
+        this._renderDefinitionRow(def, projectDefinitionRows.length + index),
       );
 
-    const activeProjectSection =
-      applicableDefinitionRows.length === 0 ? null : (
-        <ol className="list-group mark-active">
-          {activeProjectDefinitionRows}
-        </ol>
+    const projectSection =
+      projectDefinitionRows.length === 0 ? null : (
+        <ol className="list-group mark-active">{projectDefinitionRows}</ol>
       );
 
     const applicableDefinitionsSection = (
@@ -172,7 +165,7 @@ export class WorkingSetSelectionComponent extends React.Component<
 
     return (
       <div className="select-list" tabIndex="0" onBlur={this._checkFocus}>
-        {activeProjectSection}
+        {projectSection}
         {applicableDefinitionsSection}
         {notApplicableSection}
       </div>
@@ -258,24 +251,20 @@ class ApplicableDefinitionLine extends React.Component<
       clearfix: true,
     };
 
-    const label = this.props.def.isActiveProject
-      ? `Active Project: ${this.props.def.name}`
-      : this.props.def.name;
-
     return (
       <li
         className={classnames(classes)}
         onMouseOver={() => this.props.onSelect(this.props.index)}
         onClick={this._lineOnClick}>
         {this._renderButtons()}
-        <span>{label}</span>
+        <span>{this.props.def.name}</span>
       </li>
     );
   }
 
   _renderButtons(): ?React.Element<*> {
-    if (this.props.def.isActiveProject) {
-      // The active project working set definition can't be edited or deleted.
+    if (this.props.def.sourceType === 'project') {
+      // Project working set definitions can't be edited or deleted.
       return null;
     }
     return (
@@ -347,17 +336,14 @@ class NonApplicableDefinitionLine extends React.Component<
 }
 
 // Since the selection is based on index, we need to make sure these are ordered correctly (i.e.
-// with the active project first).
+// with the project definitions first).
 function sortApplicableDefinitions(
   definitions: Array<WorkingSetDefinition>,
 ): Array<WorkingSetDefinition> {
   return definitions.slice().sort((a, b) => {
-    if (a.isActiveProject && !b.isActiveProject) {
-      return -1;
+    if (a.sourceType === b.sourceType) {
+      return a.name.localeCompare(b.name);
     }
-    if (!a.isActiveProject && b.isActiveProject) {
-      return 1;
-    }
-    return a.name.localeCompare(b.name);
+    return a.sourceType === 'project' ? -1 : 1;
   });
 }
