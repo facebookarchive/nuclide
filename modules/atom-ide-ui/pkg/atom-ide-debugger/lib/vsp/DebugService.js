@@ -507,6 +507,11 @@ export default class DebugService implements IDebugService {
             return;
           }
 
+          this._model.setExceptionBreakpoints(
+            stackFrame.thread.process.session.capabilities
+              .exceptionBreakpointFilters || [],
+          );
+
           if (
             lastFocusedThreadId != null &&
             !explicit &&
