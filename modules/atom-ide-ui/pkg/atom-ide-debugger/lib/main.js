@@ -121,17 +121,18 @@ class Activation {
       this._uiModel,
       this._breakpointManager,
       removedHostnames.subscribe(hostname => {
-        const debuggerProcess = this._service.viewModel.focusedProcess;
-        if (debuggerProcess == null) {
-          return; // Nothing to do if we're not debugging.
-        }
-        const debuggeeTargetUri = debuggerProcess.configuration.targetUri;
-        if (nuclideUri.isLocal(debuggeeTargetUri)) {
-          return; // Nothing to do if our debug session is local.
-        }
-        if (nuclideUri.getHostname(debuggeeTargetUri) === hostname) {
-          this._service.stopProcess();
-        }
+        this._service
+          .getModel()
+          .getProcesses()
+          .forEach(debuggerProcess => {
+            const debuggeeTargetUri = debuggerProcess.configuration.targetUri;
+            if (nuclideUri.isLocal(debuggeeTargetUri)) {
+              return; // Nothing to do if our debug session is local.
+            }
+            if (nuclideUri.getHostname(debuggeeTargetUri) === hostname) {
+              this._service.stopProcess(debuggerProcess);
+            }
+          });
       }),
       this._uiModel.onConnectionsUpdated(() => {
         const newConnections = this._uiModel.getConnections();
@@ -497,7 +498,9 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'debugger:hide': () => {
           this._layoutManager.hideDebuggerViews(false);
-          this._service.stopProcess();
+          for (const process of this._service.getModel().getProcesses()) {
+            this._service.stopProcess(process);
+          }
         },
       }),
       atom.commands.add('atom-workspace', 'debugger:toggle', () => {
@@ -513,7 +516,10 @@ class Activation {
           );
         }
       }),
-      this._service.onDidChangeMode(() =>
+      this._service.onDidChangeProcessMode(() =>
+        this._layoutManager.debuggerModeChanged(),
+      ),
+      this._service.viewModel.onDidChangeDebuggerFocus(() =>
         this._layoutManager.debuggerModeChanged(),
       ),
       atom.commands.add('atom-workspace', {
@@ -548,11 +554,17 @@ class Activation {
   }
 
   _stop() {
-    this._service.stopProcess();
+    const {focusedProcess} = this._service.viewModel;
+    if (focusedProcess) {
+      this._service.stopProcess(focusedProcess);
+    }
   }
 
   _restart() {
-    this._service.restartProcess();
+    const {focusedProcess} = this._service.viewModel;
+    if (focusedProcess) {
+      this._service.restartProcess(focusedProcess);
+    }
   }
 
   _stepOver() {

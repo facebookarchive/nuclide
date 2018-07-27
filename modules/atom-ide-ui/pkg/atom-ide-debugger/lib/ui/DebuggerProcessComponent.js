@@ -71,7 +71,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
       ) : (
         <ProcessTreeNode
           title={processName != null ? processName : adapterType}
-          key={processIndex}
+          key={process.getId()}
           childItems={process.getAllThreads()}
           process={process}
           service={service}

@@ -34,8 +34,14 @@ export default class ThreadsView extends React.PureComponent<
   constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
+
+    const {viewModel} = props.service;
+    const {focusedProcess} = viewModel;
     this.state = {
-      mode: props.service.getDebuggerMode(),
+      mode:
+        focusedProcess == null
+          ? DebuggerMode.STOPPED
+          : focusedProcess.debuggerMode,
     };
   }
 
@@ -43,8 +49,8 @@ export default class ThreadsView extends React.PureComponent<
     const {service} = this.props;
     this._disposables.add(
       observableFromSubscribeFunction(
-        service.onDidChangeMode.bind(service),
-      ).subscribe(mode => this.setState({mode})),
+        service.onDidChangeProcessMode.bind(service),
+      ).subscribe(data => this.setState({mode: data.mode})),
     );
   }
 

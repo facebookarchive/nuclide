@@ -24,7 +24,10 @@ export async function debuggerDatatip(
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (service.getDebuggerMode() !== DebuggerMode.PAUSED) {
+  if (
+    service.viewModel.focusedProcess == null ||
+    service.viewModel.focusedProcess.debuggerMode !== DebuggerMode.PAUSED
+  ) {
     return null;
   }
   const activeEditor = atom.workspace.getActiveTextEditor();

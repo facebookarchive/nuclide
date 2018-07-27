@@ -16,6 +16,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
+import {Observable} from 'rxjs';
 import DebuggerSteppingComponent from './DebuggerSteppingComponent';
 import {DebuggerMode} from '../constants';
 import DebuggerControllerView from './DebuggerControllerView';
@@ -44,7 +45,7 @@ export default class DebuggerControlsView extends React.PureComponent<
 
     this._disposables = new UniversalDisposable();
     this.state = {
-      mode: props.service.getDebuggerMode(),
+      mode: DebuggerMode.STOPPED,
       hasDevicePanelService: false,
     };
   }
@@ -52,9 +53,25 @@ export default class DebuggerControlsView extends React.PureComponent<
   componentDidMount(): void {
     const {service} = this.props;
     this._disposables.add(
-      observableFromSubscribeFunction(
-        service.onDidChangeMode.bind(service),
-      ).subscribe(mode => this.setState({mode})),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          service.onDidChangeProcessMode.bind(service),
+        ),
+        observableFromSubscribeFunction(
+          service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
+        ),
+      )
+        .startWith(null)
+        .subscribe(() => {
+          const {viewModel} = this.props.service;
+          const {focusedProcess} = viewModel;
+          this.setState({
+            mode:
+              focusedProcess == null
+                ? DebuggerMode.STOPPED
+                : focusedProcess.debuggerMode,
+          });
+        }),
       atom.packages.serviceHub.consume('nuclide.devices', '0.0.0', provider =>
         this.setState({
           hasDevicePanelService: true,

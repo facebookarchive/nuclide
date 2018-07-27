@@ -65,7 +65,7 @@ export default class RemoteControlService implements RemoteDebuggerService {
 
     const isFocusedProcess = (): boolean => {
       return (
-        this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
+        focusedProcess.debuggerMode !== DebuggerMode.STOPPED &&
         viewModel.focusedProcess === focusedProcess
       );
     };

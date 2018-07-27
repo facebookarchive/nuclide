@@ -98,7 +98,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(
           viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       ).subscribe(() => {
         const {isCollapsed} = this.state;
         const newIsCollapsed = isCollapsed && !this._threadIsFocused();
@@ -221,7 +220,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       <div
         className={classnames({
           'debugger-container-new-disabled':
-            service.getDebuggerMode() === DebuggerMode.RUNNING,
+            this.props.thread.process.debuggerMode === DebuggerMode.RUNNING,
         })}>
         <div className="debugger-callstack-table-div">
           <Table

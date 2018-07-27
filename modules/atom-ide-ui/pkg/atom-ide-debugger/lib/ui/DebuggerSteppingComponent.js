@@ -27,6 +27,7 @@ import {DebuggerMode} from '../constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import logger from '../logger';
 import nullthrows from 'nullthrows';
+import invariant from 'assert';
 
 type DebuggerSteppingComponentProps = {
   service: IDebugService,
@@ -99,9 +100,8 @@ export default class DebuggerSteppingComponent extends React.Component<
     super(props);
 
     this._disposables = new UniversalDisposable();
-    const {service} = props;
     this.state = {
-      debuggerMode: service.getDebuggerMode(),
+      debuggerMode: DebuggerMode.STOPPED,
       waitingForPause: false,
       customControlButtons: [],
     };
@@ -112,7 +112,9 @@ export default class DebuggerSteppingComponent extends React.Component<
     const model = service.getModel();
     this._disposables.add(
       Observable.merge(
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+        observableFromSubscribeFunction(
+          service.onDidChangeProcessMode.bind(service),
+        ),
         observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
         observableFromSubscribeFunction(
           service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
@@ -121,8 +123,12 @@ export default class DebuggerSteppingComponent extends React.Component<
         .startWith(null)
         .let(fastDebounce(10))
         .subscribe(() => {
-          const debuggerMode = service.getDebuggerMode();
-          const {focusedProcess} = service.viewModel;
+          const {viewModel} = this.props.service;
+          const {focusedProcess} = viewModel;
+          const debuggerMode =
+            focusedProcess == null
+              ? DebuggerMode.STOPPED
+              : focusedProcess.debuggerMode;
 
           this.setState({
             debuggerMode,
@@ -180,7 +186,7 @@ export default class DebuggerSteppingComponent extends React.Component<
   render(): React.Node {
     const {debuggerMode, waitingForPause, customControlButtons} = this.state;
     const {service} = this.props;
-    const {focusedThread} = service.viewModel;
+    const {focusedProcess, focusedThread} = service.viewModel;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
@@ -209,7 +215,10 @@ export default class DebuggerSteppingComponent extends React.Component<
               'Restart the debugger using the same settings as the current debug session',
             keyBindingCommand: 'debugger:restart-debugging',
           }}
-          onClick={() => service.restartProcess()}
+          onClick={() => {
+            invariant(focusedProcess != null);
+            service.restartProcess(focusedProcess);
+          }}
         />
       ) : null;
 
@@ -292,13 +301,17 @@ export default class DebuggerSteppingComponent extends React.Component<
           />
           <Button
             icon="primitive-square"
-            disabled={isStopped}
+            disabled={isStopped || focusedProcess == null}
             tooltip={{
               ...defaultTooltipOptions,
               title: attached ? 'Detach' : 'Terminate',
               keyBindingCommand: 'debugger:stop-debugging',
             }}
-            onClick={() => service.stopProcess()}
+            onClick={() => {
+              if (focusedProcess != null) {
+                service.stopProcess(focusedProcess);
+              }
+            }}
           />
         </ButtonGroup>
         <ButtonGroup className="debugger-stepping-buttongroup">

@@ -16,6 +16,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 import {DebuggerMode} from '../constants';
 
 type Props = {
@@ -33,8 +34,13 @@ export default class DebuggerControllerView extends React.Component<Props> {
   componentDidMount() {
     const {service} = this.props;
     this._disposables.add(
-      observableFromSubscribeFunction(
-        service.onDidChangeMode.bind(service),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
+        ),
+        observableFromSubscribeFunction(
+          service.onDidChangeProcessMode.bind(service),
+        ),
       ).subscribe(mode => this.forceUpdate()),
     );
   }
@@ -44,7 +50,10 @@ export default class DebuggerControllerView extends React.Component<Props> {
   }
 
   render(): React.Node {
-    if (this.props.service.getDebuggerMode() === DebuggerMode.STARTING) {
+    if (
+      this.props.service.viewModel.focusedProcess?.debuggerMode ===
+      DebuggerMode.STARTING
+    ) {
       return (
         <div className="debugger-starting-message">
           <div>

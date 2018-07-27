@@ -64,6 +64,7 @@ import type {
   ITreeElement,
   IVariable,
   SourcePresentationHint,
+  DebuggerModeType,
 } from '../types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
@@ -76,7 +77,12 @@ import invariant from 'assert';
 import {Emitter, Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
-import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
+import {
+  AnalyticsEvents,
+  UNKNOWN_SOURCE,
+  DEBUG_SOURCES_URI,
+  DebuggerMode,
+} from '../constants';
 import {openSourceLocation} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
 import {Expect} from 'nuclide-commons/expected';
@@ -894,12 +900,16 @@ export class Process implements IProcess {
   _threads: Map<number, Thread>;
   _session: ISession & ITreeElement;
   _configuration: IProcessConfig;
+  _pendingStart: boolean;
+  _pendingStop: boolean;
 
   constructor(configuration: IProcessConfig, session: ISession & ITreeElement) {
     this._configuration = configuration;
     this._session = session;
     this._threads = new Map();
     this._sources = new Map();
+    this._pendingStart = true;
+    this._pendingStop = false;
   }
 
   get sources(): Map<string, ISource> {
@@ -912,6 +922,33 @@ export class Process implements IProcess {
 
   get configuration(): IProcessConfig {
     return this._configuration;
+  }
+
+  get debuggerMode(): DebuggerModeType {
+    if (this._pendingStart) {
+      return DebuggerMode.STARTING;
+    }
+
+    if (this._pendingStop) {
+      return DebuggerMode.STOPPING;
+    }
+
+    if (this.getAllThreads().some(t => t.stopped)) {
+      // TOOD: Currently our UX controls support resume and async-break
+      // on a per-process basis only. This needs to be modified here if
+      // we add support for freezing and resuming individual threads.
+      return DebuggerMode.PAUSED;
+    }
+
+    return DebuggerMode.RUNNING;
+  }
+
+  clearProcessStartingFlag(): void {
+    this._pendingStart = false;
+  }
+
+  setStopPending(): void {
+    this._pendingStop = true;
   }
 
   getSource(raw: ?DebugProtocol.Source): ISource {
@@ -939,6 +976,9 @@ export class Process implements IProcess {
 
   rawStoppedUpdate(data: IRawStopppedUpdate): void {
     const {threadId, stoppedDetails} = data;
+
+    this.clearProcessStartingFlag();
+
     if (threadId != null && !this._threads.has(threadId)) {
       // We're being asked to update a thread we haven't seen yet, so
       // create it
@@ -966,6 +1006,9 @@ export class Process implements IProcess {
 
   rawThreadUpdate(data: IRawThreadUpdate): void {
     const {thread} = data;
+
+    this.clearProcessStartingFlag();
+
     if (!this._threads.has(thread.id)) {
       // A new thread came in, initialize it.
       this._threads.set(thread.id, new Thread(this, thread.name, thread.id));

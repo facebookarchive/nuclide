@@ -50,7 +50,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         observableFromSubscribeFunction(
           viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
         .let(fastDebounce(15))
         .subscribe(this._handleFocusChanged),

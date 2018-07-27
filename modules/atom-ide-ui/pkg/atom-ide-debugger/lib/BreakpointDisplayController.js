@@ -100,7 +100,10 @@ export default class BreakpointDisplayController {
   }
 
   _isDebugging(): boolean {
-    return this._service.getDebuggerMode() !== DebuggerMode.STOPPED;
+    return this._service
+      .getModel()
+      .getProcesses()
+      .some(process => process.debuggerMode !== DebuggerMode.STOPPED);
   }
 
   _registerEditorContextMenuHandler(): IDisposable {

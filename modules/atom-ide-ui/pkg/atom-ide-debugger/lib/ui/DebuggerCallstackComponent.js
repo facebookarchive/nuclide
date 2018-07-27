@@ -58,8 +58,14 @@ export default class DebuggerCallstackComponent extends React.Component<
     const {service} = this.props;
     const {focusedStackFrame, focusedThread} = service.viewModel;
 
+    const {focusedProcess} = service.viewModel;
+    const mode =
+      focusedProcess == null
+        ? DebuggerMode.STOPPED
+        : focusedProcess.debuggerMode;
+
     const callstack =
-      service.getDebuggerMode() !== DebuggerMode.RUNNING
+      mode !== DebuggerMode.RUNNING
         ? focusedThread == null
           ? []
           : focusedThread.getCachedCallStack()
@@ -67,7 +73,7 @@ export default class DebuggerCallstackComponent extends React.Component<
 
     return {
       callStackLevels: this.state == null ? 20 : this.state.callStackLevels,
-      mode: service.getDebuggerMode(),
+      mode,
       callstack,
       selectedCallFrameId:
         focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
@@ -85,7 +91,9 @@ export default class DebuggerCallstackComponent extends React.Component<
         observableFromSubscribeFunction(
           viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+        observableFromSubscribeFunction(
+          service.onDidChangeProcessMode.bind(service),
+        ),
       )
         .let(fastDebounce(15))
         .subscribe(() => {

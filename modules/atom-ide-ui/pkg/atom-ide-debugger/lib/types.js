@@ -239,6 +239,7 @@ export interface IProcess extends ITreeElement {
   +configuration: IProcessConfig;
   +session: ISession & ITreeElement;
   +sources: Map<string, ISource>;
+  +debuggerMode: DebuggerModeType;
   getThread(threadId: number): ?IThread;
   getAllThreads(): IThread[];
   getSource(raw: ?DebugProtocol.Source): ISource;
@@ -344,10 +345,16 @@ export type DebuggerModeType =
 
 export interface IDebugService {
   +viewModel: IViewModel;
-  getDebuggerMode(): DebuggerModeType;
 
+  /**
+   * onDidChangeActiveThread callback is fired when the debugger service changes
+   * which process and/or thread is active without explicit user intervention.
+   * This can happen if a thread hits a breakpoint, throws an exception, etc.
+   */
   onDidChangeActiveThread(callback: () => mixed): IDisposable;
-  onDidChangeMode(callback: (mode: DebuggerModeType) => mixed): IDisposable;
+  onDidChangeProcessMode(
+    callback: (data: {process: IProcess, mode: DebuggerModeType}) => mixed,
+  ): IDisposable;
   onDidStartDebugSession(
     callback: (config: IProcessConfig) => mixed,
   ): IDisposable;
@@ -438,12 +445,12 @@ export interface IDebugService {
   /**
    * Restarts a process or creates a new one if there is no active session.
    */
-  restartProcess(): Promise<any>;
+  restartProcess(process: IProcess): Promise<any>;
 
   /**
    * Stops the process. If the process does not exist then stops all processes.
    */
-  stopProcess(): Promise<void>;
+  stopProcess(process: IProcess): Promise<void>;
 
   /**
    * Gets the current debug model.
