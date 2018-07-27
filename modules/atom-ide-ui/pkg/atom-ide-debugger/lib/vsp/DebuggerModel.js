@@ -942,7 +942,7 @@ export class Process implements IProcess {
     if (threadId != null && !this._threads.has(threadId)) {
       // We're being asked to update a thread we haven't seen yet, so
       // create it
-      const thread = new Thread(this, 'PENDING_UPDATE', threadId);
+      const thread = new Thread(this, `Thread ${threadId}`, threadId);
       this._threads.set(threadId, thread);
     }
 
@@ -1112,8 +1112,10 @@ export class ExceptionBreakpoint implements IExceptionBreakpoint {
 }
 
 const BREAKPOINTS_CHANGED = 'BREAKPOINTS_CHANGED';
-const CALLSTACK_CHANGED = 'CALLSTACK_CHANGED';
 const WATCH_EXPRESSIONS_CHANGED = 'WATCH_EXPRESSIONS_CHANGED';
+
+const CALLSTACK_CHANGED = 'CALLSTACK_CHANGED';
+const PROCESSES_CHANGED = 'PROCESSES_CHANGED';
 
 export class Model implements IModel {
   _processes: Process[];
@@ -1156,6 +1158,7 @@ export class Model implements IModel {
   ): Process {
     const process = new Process(configuration, session);
     this._processes.push(process);
+    this._emitter.emit(PROCESSES_CHANGED);
     return process;
   }
 
@@ -1169,7 +1172,7 @@ export class Model implements IModel {
         return true;
       }
     });
-    this._emitter.emit(CALLSTACK_CHANGED);
+    this._emitter.emit(PROCESSES_CHANGED);
     return removedProcesses;
   }
 
@@ -1179,8 +1182,14 @@ export class Model implements IModel {
     return this._emitter.on(BREAKPOINTS_CHANGED, callback);
   }
 
+  // TODO: Scope this so that only the tree nodes for the process that
+  // had a call stack change need to re-render
   onDidChangeCallStack(callback: () => mixed): IDisposable {
     return this._emitter.on(CALLSTACK_CHANGED, callback);
+  }
+
+  onDidChangeProcesses(callback: () => mixed): IDisposable {
+    return this._emitter.on(PROCESSES_CHANGED, callback);
   }
 
   onDidChangeWatchExpressions(

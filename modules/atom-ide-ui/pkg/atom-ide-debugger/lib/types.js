@@ -289,7 +289,6 @@ export interface IViewModel {
    * Returns the focused stack frame or null if there are no stack frames.
    */
   +focusedStackFrame: ?IStackFrame;
-  isMultiProcessView(): boolean;
 
   onDidFocusProcess(callback: (process: ?IProcess) => mixed): IDisposable;
   onDidFocusStackFrame(
@@ -318,6 +317,7 @@ export interface IModel extends ITreeElement {
   onDidChangeWatchExpressions(
     callback: (expression: ?IExpression) => mixed,
   ): IDisposable;
+  onDidChangeProcesses(callback: () => mixed): IDisposable;
 
   // TODO: Ericblue this is here for the legacy DebuggerThreadsComponent,
   // which is going away soon.

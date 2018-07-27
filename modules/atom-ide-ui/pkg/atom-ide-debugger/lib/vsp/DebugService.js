@@ -179,10 +179,6 @@ class ViewModel implements IViewModel {
     return this._emitter.on(CHANGE_EXPRESSION_CONTEXT, callback);
   }
 
-  isMultiProcessView(): boolean {
-    return false;
-  }
-
   setFocus(
     stackFrame: ?IStackFrame,
     thread: ?IThread,

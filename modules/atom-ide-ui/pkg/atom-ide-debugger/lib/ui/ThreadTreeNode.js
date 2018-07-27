@@ -94,11 +94,8 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       : changedCallStack;
 
     this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+      observableFromSubscribeFunction(
+        viewModel.onDidFocusStackFrame.bind(viewModel),
       ).subscribe(() => {
         const {isCollapsed} = this.state;
         const newIsCollapsed = isCollapsed && !this._threadIsFocused();

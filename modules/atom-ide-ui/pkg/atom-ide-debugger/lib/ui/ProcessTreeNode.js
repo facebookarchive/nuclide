@@ -17,7 +17,6 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
-import {Observable} from 'rxjs';
 import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
@@ -39,7 +38,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     super(props);
     this.state = this._getState();
     this._disposables = new UniversalDisposable();
-    this.handleSelect = this.handleSelect.bind(this);
   }
 
   componentDidMount(): void {
@@ -47,14 +45,11 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     const model = service.getModel();
     const {viewModel} = service;
     this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+      observableFromSubscribeFunction(
+        viewModel.onDidFocusStackFrame.bind(viewModel),
       )
         .let(fastDebounce(15))
-        .subscribe(this._handleThreadsChanged),
+        .subscribe(this._handleFocusChanged),
       observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
         .let(fastDebounce(15))
         .subscribe(this._handleCallStackChanged),
@@ -65,7 +60,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  _handleThreadsChanged = (): void => {
+  _handleFocusChanged = (): void => {
     this.setState(prevState =>
       this._getState(!(this._computeIsFocused() || !prevState.isCollapsed)),
     );
@@ -115,8 +110,10 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
           );
 
     const handleTitleClick = event => {
-      service.focusStackFrame(null, null, process, true);
-      event.stopPropagation();
+      if (!this._computeIsFocused()) {
+        service.focusStackFrame(null, null, process, true);
+        event.stopPropagation();
+      }
     };
 
     const formattedTitle = (

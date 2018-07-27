@@ -17,7 +17,6 @@ import * as React from 'react';
 import {TreeList} from 'nuclide-commons-ui/Tree';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {Observable} from 'rxjs';
 import ProcessTreeNode from './ProcessTreeNode';
 
 type Props = {
@@ -37,39 +36,29 @@ export default class DebuggerProcessComponent extends React.PureComponent<
 
   constructor(props: Props) {
     super(props);
-    this.state = this._getState();
+
     this._disposables = new UniversalDisposable();
+    this.state = {
+      processList: this.props.service.getModel().getProcesses(),
+    };
   }
 
   componentDidMount(): void {
     const {service} = this.props;
-    const {viewModel} = service;
     const model = service.getModel();
     this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
-        ),
-        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
-        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
-      )
+      observableFromSubscribeFunction(model.onDidChangeProcesses.bind(model))
         .let(fastDebounce(150))
-        .subscribe(this._handleThreadsChanged),
+        .subscribe(() => {
+          this.setState({
+            processList: model.getProcesses(),
+          });
+        }),
     );
   }
 
   componentWillUnmount(): void {
     this._disposables.dispose();
-  }
-
-  _handleThreadsChanged = (): void => {
-    this.setState(this._getState());
-  };
-
-  _getState(): $Shape<State> {
-    return {
-      processList: this.props.service.getModel().getProcesses(),
-    };
   }
 
   render(): React.Node {

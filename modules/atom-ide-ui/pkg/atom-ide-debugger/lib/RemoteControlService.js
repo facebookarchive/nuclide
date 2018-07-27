@@ -43,7 +43,7 @@ export default class RemoteControlService implements RemoteDebuggerService {
     disposables: UniversalDisposable,
   ): void {
     disposables.add(
-      this._service.viewModel.onDidFocusProcess(() => {
+      this._service.getModel().onDidChangeProcesses(() => {
         if (
           !this._service
             .getModel()
