@@ -9,10 +9,14 @@
  * @format
  */
 
+// $FlowFB
+import type ProjectManager from '../../fb-atomprojects/lib/ProjectManager';
+
 import invariant from 'assert';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import ProjectManager from 'nuclide-commons-atom/ProjectManager';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WorkingSetsStore} from './WorkingSetsStore';
@@ -23,6 +27,7 @@ import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/con
 class Activation {
   workingSetsStore: WorkingSetsStore;
   _workingSetsConfig: WorkingSetsConfig;
+  _projectManagers: BehaviorSubject<?ProjectManager> = new BehaviorSubject();
   _disposables: UniversalDisposable;
 
   constructor() {
@@ -43,9 +48,18 @@ class Activation {
     );
 
     this._disposables.add(
-      ProjectManager.observeActiveProjectSpec(spec => {
-        this.workingSetsStore.updateActiveProject(spec);
-      }),
+      this._projectManagers
+        .switchMap(
+          projectManager =>
+            projectManager == null
+              ? Observable.of(null)
+              : observableFromSubscribeFunction(cb =>
+                  projectManager.observeActiveProjectSpec(cb),
+                ),
+        )
+        .subscribe(spec => {
+          this.workingSetsStore.updateActiveProject(spec);
+        }),
     );
 
     this._disposables.add(
@@ -79,6 +93,15 @@ class Activation {
 
   provideWorkingSetsStore(): WorkingSetsStore {
     return this.workingSetsStore;
+  }
+
+  consumeProjectManager(projectManager: ProjectManager): IDisposable {
+    this._projectManagers.next(projectManager);
+    return new UniversalDisposable(() => {
+      if (this._projectManagers.getValue() === projectManager) {
+        this._projectManagers.next(null);
+      }
+    });
   }
 }
 

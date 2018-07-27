@@ -11,8 +11,10 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
-
-import ProjectManager from 'nuclide-commons-atom/ProjectManager';
+// $FlowFB
+import type ProjectManager from '../../fb-atomprojects/lib/ProjectManager';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {Observable} from 'rxjs';
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
 import typeof * as FileSystemServiceType from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
@@ -79,7 +81,13 @@ export class RemoteConnection {
       const realPath = await fsService.resolveRealPath(path);
 
       if (hasAtomProjectFormat(path)) {
-        await ProjectManager.open(
+        const projectManager = await getProjectManager();
+        if (projectManager == null) {
+          throw new Error(
+            "You tried to load a project but the nuclide.project-manager service wasn't available.",
+          );
+        }
+        await projectManager.open(
           serverConnection.getUriOfRemotePath(realPath),
         );
         // $FlowFixMe: Upstream this and add to our type defs
@@ -437,4 +445,13 @@ export class RemoteConnection {
 function hasAtomProjectFormat(filepath) {
   const ext = nuclideUri.extname(filepath);
   return ext === '.json' || ext === '.cson' || ext === '.toml';
+}
+
+function getProjectManager(): Promise<?ProjectManager> {
+  return observableFromSubscribeFunction(cb =>
+    atom.packages.serviceHub.consume('nuclide.project-manager', '0.0.0', cb),
+  )
+    .take(1)
+    .timeoutWith(100, Observable.of(null))
+    .toPromise();
 }

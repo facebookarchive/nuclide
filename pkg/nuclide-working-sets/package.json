@@ -45,5 +45,12 @@
         "0.0.0": "provideWorkingSetsStore"
       }
     }
+  },
+  "consumedServices": {
+    "nuclide.project-manager": {
+      "versions": {
+        "0.0.0": "consumeProjectManager"
+      }
+    }
   }
 }
