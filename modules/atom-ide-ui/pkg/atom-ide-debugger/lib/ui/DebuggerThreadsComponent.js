@@ -96,7 +96,7 @@ export default class DebuggerThreadsComponent extends React.Component<
     this._disposables.add(
       Observable.merge(
         observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
+          viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
         observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
       )
@@ -148,7 +148,7 @@ export default class DebuggerThreadsComponent extends React.Component<
     invariant(matchedThread.length === 1);
     const thread: IThread = matchedThread[0];
     await service.getModel().refreshCallStack((thread: any), true);
-    this.props.service.focusStackFrame(null, thread, null, true);
+    this.props.service.viewModel.setFocusedThread(thread, true);
   };
 
   _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {

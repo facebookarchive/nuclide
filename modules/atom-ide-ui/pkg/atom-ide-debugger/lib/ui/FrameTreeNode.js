@@ -27,7 +27,7 @@ export default class FrameTreeNode extends React.Component<Props> {
   }
 
   handleSelect = () => {
-    this.props.service.focusStackFrame(this.props.frame, null, null, true);
+    this.props.service.viewModel.setFocusedStackFrame(this.props.frame, true);
   };
 
   render(): React.Node {

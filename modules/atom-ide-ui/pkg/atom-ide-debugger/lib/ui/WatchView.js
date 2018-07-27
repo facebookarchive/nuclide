@@ -36,11 +36,8 @@ export default class WatchView extends React.PureComponent<Props> {
     const watchExpressionChanges = observableFromSubscribeFunction(
       model.onDidChangeWatchExpressions.bind(model),
     );
-    const focusedProcessChanges = observableFromSubscribeFunction(
-      viewModel.onDidFocusProcess.bind(viewModel),
-    );
-    const focusedStackFrameChanges = observableFromSubscribeFunction(
-      viewModel.onDidFocusStackFrame.bind(viewModel),
+    const focusChanges = observableFromSubscribeFunction(
+      viewModel.onDidChangeDebuggerFocus.bind(viewModel),
     );
     const expressionContextChanges = observableFromSubscribeFunction(
       viewModel.onDidChangeExpressionContext.bind(viewModel),
@@ -48,8 +45,7 @@ export default class WatchView extends React.PureComponent<Props> {
     this._watchExpressionComponentWrapped = bindObservableAsProps(
       Observable.merge(
         watchExpressionChanges,
-        focusedProcessChanges,
-        focusedStackFrameChanges,
+        focusChanges,
         expressionContextChanges,
       )
         .startWith(null)

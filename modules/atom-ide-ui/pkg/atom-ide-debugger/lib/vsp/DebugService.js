@@ -127,8 +127,7 @@ const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
 const START_DEBUG_SESSION = 'START_DEBUG_SESSION';
 const ACTIVE_THREAD_CHANGED = 'ACTIVE_THREAD_CHANGED';
 
-const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
-const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
+const DEBUGGER_FOCUS_CHANGED = 'DEBUGGER_FOCUS_CHANGED';
 const CHANGE_EXPRESSION_CONTEXT = 'CHANGE_EXPRESSION_CONTEXT';
 
 // Berakpoint events may arrive sooner than breakpoint responses.
@@ -154,55 +153,136 @@ class ViewModel implements IViewModel {
   }
 
   get focusedThread(): ?IThread {
-    return this._focusedStackFrame != null
-      ? this._focusedStackFrame.thread
-      : this._focusedThread;
+    return this._focusedThread;
   }
 
   get focusedStackFrame(): ?IStackFrame {
     return this._focusedStackFrame;
   }
 
-  onDidFocusProcess(callback: (process: ?IProcess) => mixed): IDisposable {
-    return this._emitter.on(CHANGE_FOCUSED_PROCESS, callback);
-  }
-
-  onDidFocusStackFrame(
-    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+  onDidChangeDebuggerFocus(
+    callback: (data: {explicit: boolean}) => mixed,
   ): IDisposable {
-    return this._emitter.on(CHANGE_FOCUSED_STACKFRAME, callback);
+    return this._emitter.on(DEBUGGER_FOCUS_CHANGED, callback);
   }
 
   onDidChangeExpressionContext(
-    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+    callback: (data: {explicit: boolean}) => mixed,
   ): IDisposable {
     return this._emitter.on(CHANGE_EXPRESSION_CONTEXT, callback);
   }
 
-  setFocus(
-    stackFrame: ?IStackFrame,
-    thread: ?IThread,
+  _chooseFocusThread(process: IProcess): ?IThread {
+    const threads = process.getAllThreads();
+
+    // If the current focused thread is in the focused process and is stopped,
+    // leave that thread focused. Otherwise, choose the first
+    // stopped thread in the focused process if there is one,
+    // and the first running thread otherwise.
+    if (this._focusedThread != null) {
+      const id = this._focusedThread.getId();
+      const currentFocusedThread = threads.filter(
+        t => t.getId() === id && t.stopped,
+      );
+      if (currentFocusedThread.length > 0) {
+        return currentFocusedThread[0];
+      }
+    }
+
+    const stoppedThreads = threads.filter(t => t.stopped);
+    return stoppedThreads[0] || threads[0];
+  }
+
+  _chooseFocusStackFrame(thread: ?IThread): ?IStackFrame {
+    if (thread == null) {
+      return null;
+    }
+
+    // If the current focused stack frame is in the current focused thread's
+    // frames, leave it alone. Otherwise return the top stack frame if the
+    // thread is stopped, and null if it is running.
+    const currentFocusedFrame = thread
+      .getCachedCallStack()
+      .find(f => f === this._focusedStackFrame);
+    return thread.stopped
+      ? currentFocusedFrame || thread.getCallStackTopFrame()
+      : null;
+  }
+
+  _setFocus(
     process: ?IProcess,
+    thread: ?IThread,
+    stackFrame: ?IStackFrame,
     explicit: boolean,
-  ): void {
+  ) {
     const shouldEmit =
       this._focusedProcess !== process ||
       this._focusedThread !== thread ||
       this._focusedStackFrame !== stackFrame ||
       explicit;
-    if (this._focusedProcess !== process) {
-      this._focusedProcess = process;
-      this._emitter.emit(CHANGE_FOCUSED_PROCESS, process);
-    }
+
+    this._focusedProcess = process;
     this._focusedThread = thread;
     this._focusedStackFrame = stackFrame;
 
+    // If we have a focused frame, we must have a focused thread.
+    invariant(
+      this._focusedStackFrame == null ||
+        this._focusedThread === this._focusedStackFrame.thread,
+    );
+
+    // If we have a focused thread, we must have a focused process.
+    invariant(
+      this._focusedThread == null ||
+        this._focusedProcess === this._focusedThread.process,
+    );
+
     if (shouldEmit) {
-      this._emitter.emit(CHANGE_FOCUSED_STACKFRAME, {stackFrame, explicit});
+      this._emitter.emit(DEBUGGER_FOCUS_CHANGED, {explicit});
     } else {
       // The focused stack frame didn't change, but something about the
       // context did, so interested listeners should re-evaluate expressions.
-      this._emitter.emit(CHANGE_EXPRESSION_CONTEXT, {stackFrame, explicit});
+      this._emitter.emit(CHANGE_EXPRESSION_CONTEXT, {explicit});
+    }
+  }
+
+  setFocusedProcess(process: ?IProcess, explicit: boolean) {
+    if (process == null) {
+      this._setFocus(null, null, null, explicit);
+    } else {
+      const thread = this._chooseFocusThread(process);
+      this._setFocus(
+        process,
+        thread,
+        this._chooseFocusStackFrame(thread),
+        explicit,
+      );
+    }
+  }
+
+  setFocusedThread(thread: ?IThread, explicit: boolean) {
+    if (thread == null) {
+      this._setFocus(null, null, null, explicit);
+    } else {
+      this._setFocus(
+        thread.process,
+        thread,
+        this._chooseFocusStackFrame(thread),
+        explicit,
+      );
+    }
+  }
+
+  setFocusedStackFrame(stackFrame: ?IStackFrame, explicit: boolean) {
+    if (stackFrame == null) {
+      this._setFocus(null, null, null, explicit);
+    } else {
+      this._setFocus(
+        stackFrame.thread.process,
+        stackFrame.thread,
+        stackFrame,
+        explicit,
+      );
     }
   }
 }
@@ -352,7 +432,7 @@ export default class DebugService implements IDebugService {
       return;
     }
 
-    this.focusStackFrame(stackFrameToFocus, null, null);
+    this._viewModel.setFocusedStackFrame(stackFrameToFocus, false);
   }
 
   _registerMarkers(process: IProcess): IDisposable {
@@ -375,12 +455,13 @@ export default class DebugService implements IDebugService {
 
     return new UniversalDisposable(
       observableFromSubscribeFunction(
-        this._viewModel.onDidFocusStackFrame.bind(this._viewModel),
+        this._viewModel.onDidChangeDebuggerFocus.bind(this._viewModel),
       )
         .concatMap(event => {
           cleaupMarkers();
 
-          const {stackFrame, explicit} = event;
+          const {explicit} = event;
+          const stackFrame = this._viewModel.focusedStackFrame;
 
           if (stackFrame == null || !stackFrame.source.available) {
             if (explicit && this._debuggerMode === DebuggerMode.PAUSED) {
@@ -681,7 +762,7 @@ export default class DebugService implements IDebugService {
             ? undefined
             : event.body.threadId;
         this._model.clearThreads(session.getId(), false, threadId);
-        this.focusStackFrame(null, this._viewModel.focusedThread, null);
+        this._viewModel.setFocusedThread(this._viewModel.focusedThread, false);
         this._updateModeAndEmit(this._computeDebugMode());
       }),
     );
@@ -986,55 +1067,6 @@ export default class DebugService implements IDebugService {
     this._emitter.emit(CHANGE_DEBUG_MODE, debugMode);
   }
 
-  focusStackFrame(
-    stackFrame: ?IStackFrame,
-    thread: ?IThread,
-    process: ?IProcess,
-    explicit?: boolean = false,
-  ): void {
-    let focusProcess = process;
-    if (focusProcess == null) {
-      if (stackFrame != null) {
-        focusProcess = stackFrame.thread.process;
-      } else if (thread != null) {
-        focusProcess = thread.process;
-      } else {
-        focusProcess = this._model.getProcesses()[0];
-      }
-    }
-    let focusThread: ?IThread = thread;
-    let focusStackFrame = stackFrame;
-
-    if (focusThread == null && stackFrame != null) {
-      focusThread = stackFrame.thread;
-    } else if (focusThread == null && focusProcess != null) {
-      // A focused process has been specified, but not a thread.
-      // If the current focused thread is in this process, leave it alone.
-      // Otherwise, use the first stopped thread in the process if there is one.
-      const currentFocusedThread = this._viewModel.focusedThread;
-      focusThread = focusProcess
-        .getAllThreads()
-        .filter(t => t === currentFocusedThread)[0];
-      if (focusThread == null) {
-        focusThread = focusProcess.getAllThreads().filter(t => t.stopped)[0];
-      }
-    } else if (focusThread != null && focusProcess != null) {
-      focusThread = focusProcess.getThread(focusThread.threadId);
-    }
-
-    if (stackFrame == null && thread != null) {
-      focusStackFrame = thread.getCallStackTopFrame();
-    }
-
-    this._viewModel.setFocus(
-      focusStackFrame,
-      focusThread,
-      focusProcess,
-      explicit,
-    );
-    this._updateModeAndEmit(this._computeDebugMode());
-  }
-
   _computeDebugMode(): DebuggerModeType {
     const {focusedThread, focusedStackFrame} = this._viewModel;
     if (
@@ -1293,7 +1325,7 @@ export default class DebugService implements IDebugService {
 
         process = this._model.addProcess(config, newSession);
         this._emitter.emit(START_DEBUG_SESSION, config);
-        this.focusStackFrame(null, null, process);
+        this._viewModel.setFocusedProcess(process, false);
         this._registerSessionListeners(process, newSession);
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),
@@ -1360,7 +1392,7 @@ export default class DebugService implements IDebugService {
       //   session end
       if (customDisposable != null) {
         customDisposable.add(
-          this.viewModel.onDidFocusProcess(() => {
+          this.viewModel.onDidChangeDebuggerFocus(() => {
             if (
               !this.getModel()
                 .getProcesses()
@@ -1588,24 +1620,23 @@ export default class DebugService implements IDebugService {
     ) {
       this._sessionEndDisposables.dispose();
       this._consoleDisposables.dispose();
-      this.focusStackFrame(null, null, null);
+
+      // No processes remaining, clear process focus.
+      this._viewModel.setFocusedProcess(null, false);
       this._updateModeAndEmit(DebuggerMode.STOPPED);
     } else {
       if (
         this._viewModel.focusedProcess != null &&
         this._viewModel.focusedProcess.getId() === session.getId()
       ) {
-        const processToFocus = this._model.getProcesses()[
-          this._model.getProcesses().length - 1
-        ];
-        const threadToFocus =
-          processToFocus.getAllThreads().length > 0
-            ? processToFocus.getAllThreads()[0]
-            : null;
-        const frameToFocus =
-          threadToFocus != null ? threadToFocus.getCallStackTopFrame() : null;
-
-        this.focusStackFrame(frameToFocus, threadToFocus, processToFocus);
+        // The process that just exited was the focused process, so we need
+        // to move focus to another process. If there's a process with a
+        // stopped thread, choose that. Otherwise choose the last process.
+        const allProcesses = this._model.getProcesses();
+        const processToFocus =
+          allProcesses.filter(p => p.getAllThreads().some(t => t.stopped))[0] ||
+          allProcesses[allProcesses.length - 1];
+        this._viewModel.setFocusedProcess(processToFocus, false);
       } else {
         // The UI needs to refresh the debugger mode for the current
         // focused process. If an adapter exited before the mode transitioned
@@ -1814,10 +1845,8 @@ export default class DebugService implements IDebugService {
           .skip(1) // Skip the first pending null value.
           .subscribe(result => {
             // Evaluate all watch expressions and fetch variables again since repl evaluation might have changed some.
-            this.focusStackFrame(
+            this._viewModel.setFocusedStackFrame(
               this._viewModel.focusedStackFrame,
-              this._viewModel.focusedThread,
-              null,
               false,
             );
 

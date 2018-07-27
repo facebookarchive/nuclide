@@ -115,7 +115,7 @@ export default class DebuggerSteppingComponent extends React.Component<
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
         observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
         observableFromSubscribeFunction(
-          service.viewModel.onDidFocusStackFrame.bind(service.viewModel),
+          service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
         ),
       )
         .startWith(null)

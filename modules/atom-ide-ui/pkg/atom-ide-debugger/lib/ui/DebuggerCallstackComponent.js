@@ -83,7 +83,7 @@ export default class DebuggerCallstackComponent extends React.Component<
       Observable.merge(
         observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
         observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
+          viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
@@ -108,7 +108,7 @@ export default class DebuggerCallstackComponent extends React.Component<
     clickedRow: {frame: IStackFrame},
     callFrameIndex: number,
   ): void => {
-    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
+    this.props.service.viewModel.setFocusedStackFrame(clickedRow.frame, true);
   };
 
   render(): React.Node {

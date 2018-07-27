@@ -75,7 +75,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
     this._disposables.add(
       Observable.merge(
         observableFromSubscribeFunction(
-          viewModel.onDidFocusStackFrame.bind(viewModel),
+          viewModel.onDidChangeDebuggerFocus.bind(viewModel),
         ),
         observableFromSubscribeFunction(
           viewModel.onDidChangeExpressionContext.bind(viewModel),

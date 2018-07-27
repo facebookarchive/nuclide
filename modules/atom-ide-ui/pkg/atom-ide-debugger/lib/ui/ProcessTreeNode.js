@@ -17,6 +17,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
+import {Observable} from 'rxjs';
 import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
@@ -45,8 +46,11 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     const model = service.getModel();
     const {viewModel} = service;
     this._disposables.add(
-      observableFromSubscribeFunction(
-        viewModel.onDidFocusStackFrame.bind(viewModel),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          viewModel.onDidChangeDebuggerFocus.bind(viewModel),
+        ),
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
         .let(fastDebounce(15))
         .subscribe(this._handleFocusChanged),
@@ -111,7 +115,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
 
     const handleTitleClick = event => {
       if (!this._computeIsFocused()) {
-        service.focusStackFrame(null, null, process, true);
+        service.viewModel.setFocusedProcess(process, true);
         event.stopPropagation();
       }
     };

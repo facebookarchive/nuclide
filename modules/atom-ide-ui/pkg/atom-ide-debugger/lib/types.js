@@ -290,12 +290,16 @@ export interface IViewModel {
    */
   +focusedStackFrame: ?IStackFrame;
 
-  onDidFocusProcess(callback: (process: ?IProcess) => mixed): IDisposable;
-  onDidFocusStackFrame(
-    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+  setFocusedProcess(process: ?IProcess, explicit: boolean): void;
+  setFocusedThread(thread: ?IThread, explicit: boolean): void;
+  setFocusedStackFrame(stackFrame: ?IStackFrame, explicit: boolean): void;
+
+  onDidChangeDebuggerFocus(
+    callback: (data: {explicit: boolean}) => mixed,
   ): IDisposable;
+
   onDidChangeExpressionContext(
-    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+    callback: (data: {explicit: boolean}) => mixed,
   ): IDisposable;
 }
 
@@ -350,16 +354,6 @@ export interface IDebugService {
   onDidCustomEvent(
     callback: (event: DebugProtocol.DebugEvent) => mixed,
   ): IDisposable;
-
-  /**
-   * Sets the focused stack frame and evaluates all expressions against the newly focused stack frame,
-   */
-  focusStackFrame(
-    stackFrame: ?IStackFrame,
-    thread: ?IThread,
-    process: ?IProcess,
-    explicit?: boolean,
-  ): void;
 
   /**
    * Adds new breakpoints to the model for the file specified with the uri. Notifies debug adapter of breakpoint changes.

@@ -94,8 +94,11 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       : changedCallStack;
 
     this._disposables.add(
-      observableFromSubscribeFunction(
-        viewModel.onDidFocusStackFrame.bind(viewModel),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          viewModel.onDidChangeDebuggerFocus.bind(viewModel),
+        ),
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       ).subscribe(() => {
         const {isCollapsed} = this.state;
         const newIsCollapsed = isCollapsed && !this._threadIsFocused();
@@ -173,7 +176,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     clickedRow: {frame: IStackFrame},
     callFrameIndex: number,
   ): void => {
-    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
+    this.props.service.viewModel.setFocusedStackFrame(clickedRow.frame, true);
   };
 
   _generateTable(childItems: Array<IStackFrame>) {
@@ -241,7 +244,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
     const isFocused = this._threadIsFocused();
     const handleTitleClick = event => {
       if (thread.stopped) {
-        service.focusStackFrame(null, thread, null, true);
+        service.viewModel.setFocusedThread(thread, true);
       }
       event.stopPropagation();
     };
