@@ -40,10 +40,7 @@ export class MountedFileSystem {
       max: 2000,
     });
 
-    console.log('calling mount');
-
     fuse.mount(mountPath, this._fuseMethods(), this._fuse_error.bind(this));
-    console.log('mount called');
     process.on('SIGINT', this._handleSIGINT.bind(this));
   }
 
@@ -61,8 +58,7 @@ export class MountedFileSystem {
   }
 
   _fuse_error(err: Error): void {
-    console.log('got an error!');
-    console.log(err);
+    console.error('Error: ', err);
     if (err != null) {
       throw err;
     }
@@ -89,17 +85,6 @@ export class MountedFileSystem {
           ctime: new Date(file.fstat.ctime),
         };
         this._cache.set(key, value);
-        console.log('size: ' + file.size);
-        console.log(Object.keys(file));
-        console.log(value.mtime instanceof Date);
-
-        /* this._cache.set(key, {
-         *   size: file.fsize,
-         *   mtime: new Date(file.fstat.mtime),
-         *   atime: new Date(file.fstat.atime),
-         *   ctime: new Date(file.fstat.ctime),
-         *   ...file.fstat,
-         * });*/
         console.log(key + ':' + JSON.stringify(this._cache.get(key)));
       });
       return cb(0, dir.map(file => file.fname));
@@ -109,38 +94,31 @@ export class MountedFileSystem {
   _fuse_getattr(path: string, cb: (number, ?Object) => void) {
     console.log('getattr(%s)', path);
     const fullPath = this._root + path;
-    console.log(` fullPath = ${fullPath}`);
     const cached = this._cache.get(fullPath);
 
     if (cached != null) {
-      console.log('cache hit!');
+      console.log(`${fullPath}: cache hit`);
       setTimeout(() => {
         cb(0, cached);
       });
       return;
     }
 
-    console.log('cache miss');
+    console.log(`${fullPath}: cache miss`);
 
     this._client
       .stat(fullPath)
       .then(stat => {
-        console.log(stat);
-        if (stat.size != null) {
-          cb(0, {
-            mtime: new Date(stat.mtime),
-            atime: new Date(stat.atime),
-            ctime: new Date(stat.ctime),
-            nlink: 1,
-            size: stat.fsize,
-            mode: stat.ftype === 1 ? 33188 : 16877,
-            uid: process.getuid ? process.getuid() : 0,
-            gid: process.getgid ? process.getgid() : 0,
-          });
-        } else {
-          console.error('not found: %s', path);
-          cb(fuse.ENOENT);
-        }
+        cb(0, {
+          mtime: new Date(stat.mtime),
+          atime: new Date(stat.atime),
+          ctime: new Date(stat.ctime),
+          nlink: 1,
+          size: stat.fsize,
+          mode: stat.ftype === 1 ? 33188 : 16877,
+          uid: process.getuid ? process.getuid() : 0,
+          gid: process.getgid ? process.getgid() : 0,
+        });
       })
       .catch(e => {
         console.error(path + ': ' + JSON.stringify(e));
@@ -192,7 +170,9 @@ export class MountedFileSystem {
   _fuse_unimpl(...args: Array<any>) {
     const name = args[0];
     const cb = args[args.length - 1];
-    console.log(`${name}: unimplemented`);
+    const argString = args.slice(1, args.length - 2).join(',');
+
+    console.log(`${name}(${argString}): unimplemented`);
     cb(0);
   }
 
