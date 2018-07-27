@@ -2658,39 +2658,12 @@ export class LspLanguageService {
     newCursor?: number,
     formatted: string,
   }> {
-    if (!this._serverCapabilities.documentFormattingProvider) {
-      return null;
-    }
-    if (this._getState() !== 'Running') {
-      return null;
-    }
-    const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
-      fileVersion,
+    // A language service implements either formatSource or formatEntireFile,
+    // and we should pick formatSource in our AtomLanguageServiceConfig.
+    this._logger.error(
+      'LSP CodeFormat providers should use formatEntireFile: false',
     );
-    if (buffer == null) {
-      this._logger.error(
-        'LSP.formatSource - buffer changed before we could format',
-      );
-      return null;
-    }
-    const params = this._constructDocumentFormattingParams(
-      fileVersion,
-      options,
-    );
-    let response;
-    try {
-      response = await this._lspConnection.documentFormatting(params);
-      invariant(response != null, 'null textDocument/documentFormatting');
-    } catch (e) {
-      this._logLspException(e);
-      return null;
-    }
-    response = convert.lspTextEdits_atomTextEdits(response);
-    if (response.length !== 2 || response[1] == null) {
-      return null;
-    } else {
-      return {formatted: response[1].newText};
-    }
+    return Promise.resolve(null);
   }
 
   async formatAtPosition(

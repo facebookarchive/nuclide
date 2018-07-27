@@ -29,18 +29,12 @@ export type CodeFormatConfig = {|
 
   // If true, support formatting at ranges. Also, use the range formatter to
   // format the whole document. If false, only support formatting the whole
-  // document, using the document formatter through RangeFormatProvider.
+  // document, using the document formatter.
   canFormatRanges: boolean,
 
   // If true, support formatting at a position (such as for as-you-type
   // formatting). If false, don't support that.
   canFormatAtPosition: boolean,
-
-  // If true, supporting formatting the whole document, using the document
-  // formatter through FileFormatProvider. You only set it to true When
-  // your language server return two textEdits and the newText in the second one
-  // is the formatted code as response to textDocument/formatting request.
-  canFormatEntireFile?: boolean,
 
   // If true, cursor will be moved back to original position after TextEdit(s)
   // are applied. If false, TextEdit(s) may move the cursor.
