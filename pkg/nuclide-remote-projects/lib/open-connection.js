@@ -30,7 +30,6 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger as getLogger_} from 'log4js';
 import * as React from 'react';
-import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 
 export type OpenConnectionDialogOptions = {
@@ -95,25 +94,6 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     },
     onConnect: async (connection, config) => {
       onConnected(connection);
-      const project = dialogOptions && dialogOptions.project;
-      if (project) {
-        observableFromSubscribeFunction(cb =>
-          atom.packages.serviceHub.consume(
-            'nuclide.project-manager',
-            '0.0.0',
-            cb,
-          ),
-        )
-          .take(1)
-          .timeoutWith(100, Observable.of(null))
-          .filter(Boolean)
-          .subscribe(projectManager => {
-            nullthrows(projectManager).addRecentProject(
-              project,
-              connection.getConfig().host,
-            );
-          });
-      }
       saveConnectionConfig(config, getOfficialRemoteServerCommand());
     },
     onCancel: () => {
