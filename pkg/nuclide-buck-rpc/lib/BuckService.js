@@ -31,6 +31,10 @@ import * as BuckServiceImpl from './BuckServiceImpl';
 
 export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
 
+// All Buck events should contain the fields the members in
+// https://phabricator.internmc.facebook.com/diffusion/BUCK/browse/master/src/com/facebook/buck/event/AbstractBuckEvent.java
+// Certain events maybe contain additional fields, defined in the interfaces in
+// https://phabricator.internmc.facebook.com/diffusion/BUCK/browse/master/src/com/facebook/buck/event/external/events/
 export type BuckWebSocketMessage =
   | {
       // Not actually from Buck - this is to let the receiver know that the socket is connected.
@@ -46,6 +50,7 @@ export type BuckWebSocketMessage =
     }
   | {
       type: 'BuildStarted',
+      buildId: string,
     }
   | {
       type: 'ConsoleEvent',

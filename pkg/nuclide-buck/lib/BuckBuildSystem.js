@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
 import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage, TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
@@ -111,10 +112,26 @@ export class BuckBuildSystem {
       })
       .switchMap(httpPort => {
         let socketEvents = null;
+        let buildId: ?string = null;
+        const socketStream = buckService
+          .getWebSocketStream(buckRoot, httpPort)
+          .refCount()
+          .map(message => ((message: any): BuckWebSocketMessage))
+          // The do() and filter() ensures that we only listen to messages
+          // for a single build.
+          .do(message => {
+            // eslint-disable-next-line eqeqeq
+            if (buildId === null) {
+              if (message.type === 'BuildStarted') {
+                buildId = message.buildId;
+              }
+            }
+          })
+          .filter(
+            message => message.buildId == null || buildId === message.buildId,
+          );
         if (httpPort > 0) {
-          socketEvents = getEventsFromSocket(
-            buckService.getWebSocketStream(buckRoot, httpPort).refCount(),
-          ).share();
+          socketEvents = getEventsFromSocket(socketStream).share();
         }
 
         const args =
