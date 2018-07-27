@@ -170,6 +170,7 @@ export type TaskErroredAction = {
   type: 'TASK_ERRORED',
   payload: {
     error: Error,
+    taskRunner: TaskRunner,
     taskStatus: TaskStatus,
   },
 };

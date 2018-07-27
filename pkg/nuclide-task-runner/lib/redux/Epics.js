@@ -33,6 +33,8 @@ import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
 export function setProjectRootForNewTaskRunnerEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -609,6 +611,93 @@ export function printTaskSucceededEpic(
   });
 }
 
+export function printTaskErroredEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.TASK_ERRORED).switchMap(action => {
+    invariant(action.type === Actions.TASK_ERRORED);
+    const {
+      error,
+      taskRunner,
+      taskStatus: {
+        metadata: {label},
+      },
+    } = action.payload;
+
+    let description;
+    let buttons;
+    if (error instanceof ProcessExitError) {
+      description = formatProcessExitError(error);
+      buttons = [
+        {
+          text: 'Copy command',
+          className: 'icon icon-clippy',
+          onDidClick: () =>
+            atom.clipboard.write(error.command + ' ' + error.args.join(' ')),
+        },
+      ];
+    } else {
+      description = error.message;
+    }
+
+    // Show error notification only if console is not visible. The error message
+    // is automatically forwarded to the nuclide console in this case through
+    // the globally registered `atom.notifications.onDidAddNotification` callback.
+    if (!isConsoleVisible()) {
+      addAtomErrorNotification(label, buttons, description);
+      return Observable.empty();
+    }
+
+    // Otherwise if the console is visible, we manually register the error
+    // message.
+    return Observable.of({
+      type: Actions.TASK_MESSAGE,
+      payload: {
+        message: {
+          text: `The task "${label}" failed: ${description}`,
+          level: 'error',
+        },
+        taskRunner,
+      },
+    });
+  });
+}
+
+function isConsoleVisible(): boolean {
+  const consolePane = atom.workspace.paneForURI(CONSOLE_VIEW_URI);
+  const consoleItem = consolePane && consolePane.getActiveItem();
+  const paneContainer = atom.workspace.paneContainerForItem(consoleItem);
+  // This visibility check has been taken from
+  // https://github.com/atom/atom/blob/v1.28.2/src/workspace.js#L1084
+  return (
+    (paneContainer === atom.workspace.getCenter() ||
+      (paneContainer != null && paneContainer.isVisible())) &&
+    consoleItem === consolePane.getActiveItem()
+  );
+}
+
+let taskFailedNotification;
+
+function addAtomErrorNotification(
+  label: string,
+  buttons: $PropertyType<atom$NotificationOptions, 'buttons'>,
+  description: string,
+): void {
+  taskFailedNotification = atom.notifications.addError(
+    `The task "${label}" failed`,
+    {
+      buttons,
+      description,
+      dismissable: true,
+    },
+  );
+
+  taskFailedNotification.onDidDismiss(() => {
+    taskFailedNotification = null;
+  });
+}
+
 export function appendMessageToConsoleEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -628,8 +717,6 @@ export function appendMessageToConsoleEpic(
     .ignoreElements();
 }
 
-let taskFailedNotification;
-
 /**
  * Run a task and transform its output into domain-specific actions.
  */
@@ -638,6 +725,7 @@ function createTaskObservable(
   getState: () => AppState,
 ): Observable<Action> {
   return Observable.defer(() => {
+    // dismiss any non-dismissed notification
     if (taskFailedNotification != null) {
       taskFailedNotification.dismiss();
     }
@@ -693,32 +781,6 @@ function createTaskObservable(
       );
   })
     .catch(error => {
-      let description;
-      let buttons;
-      if (error instanceof ProcessExitError) {
-        description = formatProcessExitError(error);
-        buttons = [
-          {
-            text: 'Copy command',
-            className: 'icon icon-clippy',
-            onDidClick: () =>
-              atom.clipboard.write(error.command + ' ' + error.args.join(' ')),
-          },
-        ];
-      } else {
-        description = error.message;
-      }
-      taskFailedNotification = atom.notifications.addError(
-        `The task "${taskMeta.label}" failed`,
-        {
-          buttons,
-          description,
-          dismissable: true,
-        },
-      );
-      taskFailedNotification.onDidDismiss(() => {
-        taskFailedNotification = null;
-      });
       const taskMetaForLogging = {...taskMeta, taskRunner: undefined};
       getLogger('nuclide-task-runner').debug(
         'Error running task:',
@@ -729,6 +791,7 @@ function createTaskObservable(
         type: Actions.TASK_ERRORED,
         payload: {
           error,
+          taskRunner: taskMeta.taskRunner,
           taskStatus: nullthrows(getState().runningTask),
         },
       });
