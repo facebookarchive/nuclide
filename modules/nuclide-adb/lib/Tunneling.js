@@ -32,6 +32,14 @@ export type AdbTunnelingOptions = {
   adbUpgradeLink?: string,
 };
 
+let passesGK = async _ => false;
+try {
+  const fbPassesGK =
+    // eslint-disable-next-line nuclide-internal/modules-dependencies
+    require('../../../pkg/commons-node/passesGK');
+  passesGK = fbPassesGK.default;
+} catch (e) {}
+
 export const MISSING_ADB_ERROR = 'MissingAdbError';
 export const VERSION_MISMATCH_ERROR = 'VersionMismatchError';
 
@@ -174,29 +182,31 @@ const changes: Subject<void> = new Subject();
 
 function checkInToAdbmux(host: NuclideUri): Observable<?number> {
   return Observable.defer(async () => {
-    const service: SshTunnelService = await consumeFirstProvider(
-      'nuclide.ssh-tunnel',
-    );
+    const [service, avoidPrecreatingExopackageTunnel] = await Promise.all([
+      consumeFirstProvider('nuclide.ssh-tunnel'),
+      passesGK('nuclide_adb_exopackage_tunnel'),
+    ]);
     invariant(service);
     const port = await service.getAvailableServerPort(host);
-    return {service, port};
+    return {service, port, avoidPrecreatingExopackageTunnel};
   })
-    .switchMap(({service, port}) =>
-      service
-        .openTunnels([
-          {
-            description: 'adbmux',
-            from: {host, port, family: 4},
-            to: {host: 'localhost', port: 5037, family: 4},
-          },
-          {
-            description: 'exopackage',
-            from: {host, port: 2829, family: 4},
-            to: {host: 'localhost', port: 2829, family: 4},
-          },
-        ])
-        .mapTo(port),
-    )
+    .switchMap(({service, port, avoidPrecreatingExopackageTunnel}) => {
+      const tunnels = [
+        {
+          description: 'adbmux',
+          from: {host, port, family: 4},
+          to: {host: 'localhost', port: 5037, family: 4},
+        },
+      ];
+      if (!avoidPrecreatingExopackageTunnel) {
+        tunnels.push({
+          description: 'exopackage',
+          from: {host, port: 2829, family: 4},
+          to: {host: 'localhost', port: 2829, family: 4},
+        });
+      }
+      return service.openTunnels(tunnels).mapTo(port);
+    })
     .switchMap(async port => {
       const service = getAdbServiceByNuclideUri(host);
       await service.checkInMuxPort(port);

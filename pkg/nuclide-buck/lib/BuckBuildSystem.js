@@ -14,6 +14,8 @@ import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage, TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
+import passesGK from '../../commons-node/passesGK';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {
   BuckBuildTask,
@@ -306,16 +308,27 @@ function runBuckCommand(
 
   const targets = splitTargets(buildTarget);
   if (subcommand === 'install') {
-    return buckService
-      .installWithOutput(
-        buckRoot,
-        targets,
-        args,
-        simulator,
-        !skipLaunchAfterInstall,
-        debug,
-      )
-      .refCount();
+    const SENTINEL = {kind: 'exit', exitCode: null, signal: null};
+    return (
+      openExopackageTunnelIfNeeded(buckRoot, simulator)
+        .switchMap(() => {
+          return buckService
+            .installWithOutput(
+              buckRoot,
+              targets,
+              args,
+              simulator,
+              !skipLaunchAfterInstall,
+              debug,
+            )
+            .refCount()
+            .concat(Observable.of(SENTINEL));
+        })
+        // We need to do this to make sure that we close the
+        // openExopackageTunnelIfNeeded observable once
+        // buckService.installWithOutput finishes so we can close the tunnel.
+        .takeWhile(value => value !== SENTINEL)
+    );
   } else if (subcommand === 'build') {
     return buckService.buildWithOutput(buckRoot, targets, args).refCount();
   } else if (subcommand === 'test') {
@@ -339,4 +352,40 @@ function getCommandStringForResolvedBuildTarget(
 
 function splitTargets(buildTarget: string): Array<string> {
   return buildTarget.trim().split(/\s+/);
+}
+
+function isOneWorldDevice(simulator: ?string): boolean {
+  return simulator != null && /^localhost:\d+$/.test(simulator);
+}
+
+function openExopackageTunnelIfNeeded(
+  host: NuclideUri,
+  simulator: ?string,
+): Observable<'ready'> {
+  // We need to create this tunnel for exopackage installations to work as
+  // buck expects this port to be open. We don't need it in the case of
+  // installing to One World though because it's handled by adbmux.
+  if (!nuclideUri.isRemote(host) || isOneWorldDevice(simulator)) {
+    return Observable.of('ready');
+  }
+
+  return Observable.defer(async () =>
+    passesGK('nuclide_adb_exopackage_tunnel'),
+  ).mergeMap(shouldTunnel => {
+    if (!shouldTunnel) {
+      return Observable.of('ready');
+    } else {
+      return Observable.defer(async () =>
+        consumeFirstProvider('nuclide.ssh-tunnel'),
+      ).switchMap(service =>
+        service.openTunnels([
+          {
+            description: 'exopackage',
+            from: {host, port: 2829, family: 4},
+            to: {host: 'localhost', port: 2829, family: 4},
+          },
+        ]),
+      );
+    }
+  });
 }
