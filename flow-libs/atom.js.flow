@@ -500,6 +500,7 @@ declare class atom$Pane {
   setPendingItem(item: atom$PaneItem): void,
   clearPendingItem(): void,
   getFlexScale(): number,
+  getElement(): HTMLElement,
   getParent(): Object,
   removeItem(item: Object, moved: ?boolean): void,
   setActiveItem(item: Object): Object,
