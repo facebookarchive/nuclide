@@ -10,43 +10,45 @@
  * @format
  */
 
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import type {GlobalViewState} from './types';
 import type {
   DatatipProvider,
   DatatipService,
 } from '../../atom-ide-datatip/lib/types';
-
 import type {
   DiagnosticMessage,
   DiagnosticMessages,
   DiagnosticUpdater,
 } from '../../atom-ide-diagnostics/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {GlobalViewState} from './types';
 
-import invariant from 'assert';
-
-import analytics from 'nuclide-commons/analytics';
-
-import idx from 'idx';
 import {areSetsEqual} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import addNuxTooltip from './addNuxTooltip';
+import analytics from 'nuclide-commons/analytics';
+import AsyncStorage from 'idb-keyval';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import idx from 'idx';
+import invariant from 'assert';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
-import createPackage from 'nuclide-commons-atom/createPackage';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
-import StatusBarTile from './ui/StatusBarTile';
+
 import {applyUpdateToEditor} from './gutter';
-import getDiagnosticDatatip from './getDiagnosticDatatip';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
-import {Observable} from 'rxjs';
+import {Observable, BehaviorSubject} from 'rxjs';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import getDiagnosticDatatip from './getDiagnosticDatatip';
 import showActionsMenu from './showActionsMenu';
 import showAtomLinterWarning from './showAtomLinterWarning';
+import StatusBarTile from './ui/StatusBarTile';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -60,24 +62,28 @@ type DiagnosticsState = {|
   diagnosticUpdater: ?DiagnosticUpdater,
 |};
 
+const NUX_ASYNC_STORAGE_KEY = 'nuclide_diagnostics_nux_shown';
+
 class Activation {
   _subscriptions: UniversalDisposable;
   _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
   _fileDiagnostics: WeakMap<atom$TextEditor, Array<DiagnosticMessage>>;
   _globalViewStates: ?Observable<GlobalViewState>;
+  _gatekeeperServices: BehaviorSubject<?GatekeeperService> = new BehaviorSubject();
 
   constructor(state: ?Object): void {
-    this._subscriptions = new UniversalDisposable(
-      this.registerOpenerAndCommand(),
-      this._registerActionsMenu(),
-      showAtomLinterWarning(),
-    );
     this._model = new Model({
       filterByActiveTextEditor:
         idx(state, _ => _.filterByActiveTextEditor) === true,
       diagnosticUpdater: null,
     });
+    this._subscriptions = new UniversalDisposable(
+      this.registerOpenerAndCommand(),
+      this._registerActionsMenu(),
+      this._observeDiagnosticsAndOfferTable(),
+      showAtomLinterWarning(),
+    );
     this._fileDiagnostics = new WeakMap();
   }
 
@@ -147,6 +153,15 @@ class Activation {
     });
   }
 
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    this._gatekeeperServices.next(service);
+    return new UniversalDisposable(() => {
+      if (this._gatekeeperServices.getValue() === service) {
+        this._gatekeeperServices.next(null);
+      }
+    });
+  }
+
   consumeStatusBar(statusBar: atom$StatusBar): void {
     this._getStatusBarTile().consumeStatusBar(statusBar);
   }
@@ -168,6 +183,70 @@ class Activation {
     return {
       filterByActiveTextEditor,
     };
+  }
+
+  _observeDiagnosticsAndOfferTable(): IDisposable {
+    return new UniversalDisposable(
+      this._gatekeeperServices
+        .switchMap(gatekeeperService => {
+          if (gatekeeperService == null) {
+            return Observable.of(null);
+          }
+
+          return gatekeeperService.passesGK('nuclide_diagnostics_nux');
+        })
+        .filter(Boolean)
+        .take(1)
+        // Don't show it to the user if they've seen it before
+        .switchMap(() => AsyncStorage.get(NUX_ASYNC_STORAGE_KEY))
+        .filter(seen => !seen)
+        .switchMap(() =>
+          // Only display once there are errors originating from multiple files
+          this._getGlobalViewStates()
+            .debounceTime(500)
+            .map(state => state.diagnostics)
+            .filter(diags => {
+              // make sure there are diagnostics from at least two different uris
+              // and that those diagnostics are errors
+              const firstErrorDiagIndex = diags.findIndex(
+                diag => diag.type === 'Error',
+              );
+              if (firstErrorDiagIndex === -1) {
+                return false;
+              }
+
+              const firstUri = diags[firstErrorDiagIndex].filePath;
+              for (let i = firstErrorDiagIndex + 1; i < diags.length; i++) {
+                if (
+                  diags[i].type === 'Error' &&
+                  diags[i].filePath !== firstUri
+                ) {
+                  return true;
+                }
+              }
+              return false;
+            })
+            .take(1),
+        )
+        .subscribe(async () => {
+          // capture the current focus since opening diagnostics will change it
+          const previouslyFocusedElement = document.activeElement;
+          await goToLocation(WORKSPACE_VIEW_URI);
+          // and then restore the focus if it existed before
+          if (previouslyFocusedElement != null) {
+            previouslyFocusedElement.focus();
+          }
+
+          const statusBarNode = document.querySelector(
+            '.diagnostics-status-bar-item',
+          );
+          if (statusBarNode) {
+            addNuxTooltip(statusBarNode);
+            AsyncStorage.set(NUX_ASYNC_STORAGE_KEY, true);
+            analytics.track('diagnostics-table-nux-shown');
+          }
+        }),
+    );
   }
 
   _createDiagnosticsViewModel(): DiagnosticsViewModel {

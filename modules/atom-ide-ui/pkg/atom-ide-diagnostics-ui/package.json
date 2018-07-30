@@ -60,6 +60,11 @@
         "0.3.0": "consumeDiagnosticUpdates"
       }
     },
+    "fb-gatekeeper": {
+      "versions": {
+        "0.0.0": "consumeGatekeeperService"
+      }
+    },
     "status-bar": {
       "versions": {
         "^1.0.0": "consumeStatusBar"
