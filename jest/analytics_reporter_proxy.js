@@ -15,13 +15,9 @@
   nuclide-internal/no-commonjs: 0,
   */
 
-module.exports = {
-  rootDir: '../..',
-  filter: '<rootDir>/xplat/js/jest/filter.js',
-  projects: [
-    '<rootDir>/xplat/nuclide/jest/jest.config.atom.js',
-    '<rootDir>/xplat/nuclide/jest/jest.config.node.js',
-  ],
-  testFailureExitCode: 0,
-  reporters: require('./jest/reporters.config'),
-};
+try {
+  // $FlowFB
+  module.exports = require('./fb-analytics/jest_analytics_reporter');
+} catch (e) {
+  module.exports = class EmptyReporter {};
+}

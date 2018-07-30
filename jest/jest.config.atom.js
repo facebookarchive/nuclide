@@ -33,4 +33,5 @@ module.exports = {
   },
   testEnvironment: p('modules/jest-atom-runner/build/environment.js'),
   testPathIgnorePatterns: ['/node_modules/'],
+  reporters: require('./reporters.config'),
 };

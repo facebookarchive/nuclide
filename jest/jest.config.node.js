@@ -34,4 +34,5 @@ module.exports = {
     electron: p('jest/__mocks__/emptyObject.js'),
   },
   testPathIgnorePatterns: ['/node_modules/'],
+  reporters: require('./reporters.config'),
 };

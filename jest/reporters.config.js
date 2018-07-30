@@ -15,13 +15,10 @@
   nuclide-internal/no-commonjs: 0,
   */
 
-module.exports = {
-  rootDir: '../..',
-  filter: '<rootDir>/xplat/js/jest/filter.js',
-  projects: [
-    '<rootDir>/xplat/nuclide/jest/jest.config.atom.js',
-    '<rootDir>/xplat/nuclide/jest/jest.config.node.js',
-  ],
-  testFailureExitCode: 0,
-  reporters: require('./jest/reporters.config'),
-};
+/*
+ * Shared config that contains reporter configuration.
+ * We need to include it in global config and project configs
+ * (because project configs can run separately)
+ */
+
+module.exports = ['default', require.resolve('./analytics_reporter_proxy')];
