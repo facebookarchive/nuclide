@@ -78,21 +78,25 @@ export class RemoteConnection {
       const fsService: FileSystemServiceType = serverConnection.getService(
         FILE_SYSTEM_SERVICE,
       );
-      const realPath = await fsService.resolveRealPath(path);
 
       if (hasAtomProjectFormat(path)) {
+        // IMPORTANT: We have to be careful not to assume the existence of the project file in this
+        // code path (e.g. by using `realpath()`) so that the project manager can provide a fallback
+        // for nonexistent files.
         const projectManager = await getProjectManager();
         if (projectManager == null) {
           throw new Error(
             "You tried to load a project but the nuclide.project-manager service wasn't available.",
           );
         }
+        const expandedPath = await fsService.expandHomeDir(path);
         await projectManager.open(
-          serverConnection.getUriOfRemotePath(realPath),
+          serverConnection.getUriOfRemotePath(expandedPath),
         );
         // $FlowFixMe: Upstream this and add to our type defs
         roots = atom.project.getSpecification().paths;
       } else {
+        const realPath = await fsService.resolveRealPath(path);
         // Now that we know the real path, it's possible this collides with an existing connection.
         if (realPath !== path && nuclideUri.isRemote(path)) {
           const existingConnection = this.getByHostnameAndPath(
