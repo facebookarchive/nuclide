@@ -37,6 +37,11 @@ export const OS_TYPE = {
 // [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
 export const isRunningInTest = once(
   (): boolean => {
+    try {
+      if (typeof jest === 'object') {
+        return true;
+      }
+    } catch (e) {}
     if (typeof atom === 'object') {
       return atom.inSpecMode();
     } else {
