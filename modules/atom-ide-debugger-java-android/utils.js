@@ -215,8 +215,8 @@ export async function resolveConfiguration(
   const {config, debugMode, targetUri} = configuration;
   const adbServiceUri = _getAdbServiceUri(targetUri, config);
   const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
-  const packageName = _getPackageName(debugMode, config);
-  const device = _getDevice(debugMode, config);
+  const packageName = config.packageName || _getPackageName(debugMode, config);
+  const device = config.device || _getDevice(debugMode, config);
   if (debugMode === 'launch') {
     const {service, intent, activity} = config;
     await launchAndroidServiceOrActivity(
@@ -247,10 +247,6 @@ export async function resolveConfiguration(
     packageName,
   );
 
-  const customDisposable =
-    configuration.customDisposable || new UniversalDisposable();
-  customDisposable.add(subscriptions);
-
   const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(
     resolvedTargetUri,
     adbServiceUri,
@@ -258,22 +254,11 @@ export async function resolveConfiguration(
   );
 
   const clickEvents = new Subject();
-  const onInitializeCallback = async session => {
-    customDisposable.add(
-      ...getSourcePathClickSubscriptions(
-        resolvedTargetUri,
-        session,
-        clickEvents,
-        androidSdkSourcePaths,
-      ),
-    );
-  };
-
   const adapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
     resolvedTargetUri,
   ).getJavaVSAdapterExecutableInfo(false);
 
-  let processName = _getPackageName(debugMode, config);
+  let processName = packageName;
 
   // Gets rid of path to package.
   const lastPeriod = processName.lastIndexOf('.');
@@ -290,9 +275,22 @@ export async function resolveConfiguration(
     customControlButtons: getCustomControlButtonsForJavaSourcePaths(
       clickEvents,
     ),
-    config: attachPortTargetConfig,
-    customDisposable,
-    onInitializeCallback,
+    config: {
+      ...attachPortTargetConfig,
+      device,
+      packageName,
+    },
+    onDebugStartingCallback: instance => {
+      subscriptions.add(
+        ...getSourcePathClickSubscriptions(
+          resolvedTargetUri,
+          instance,
+          clickEvents,
+          androidSdkSourcePaths,
+        ),
+      );
+      return subscriptions;
+    },
     processName,
   };
 }

@@ -1309,14 +1309,28 @@ export default class DebugService implements IDebugService {
       });
       const {
         adapterType,
-        onInitializeCallback,
-        customDisposable,
+        onDebugStartingCallback,
+        onDebugStartedCallback,
       } = configuration;
 
       track(AnalyticsEvents.DEBUGGER_START, {
         serviceName: configuration.adapterType,
         clientType: 'VSP',
       });
+
+      const sessionTeardownDisposables = new UniversalDisposable();
+
+      const instanceInterface = newSession => {
+        return Object.freeze({
+          customRequest: async (
+            request: string,
+            args: any,
+          ): Promise<DebugProtocol.CustomResponse> => {
+            return newSession.custom(request, args);
+          },
+          observeCustomEvents: newSession.observeCustomEvents.bind(newSession),
+        });
+      };
 
       const createInitializeSession = async (config: IProcessConfig) => {
         const newSession = await this._createVsDebugSession(
@@ -1346,8 +1360,15 @@ export default class DebugService implements IDebugService {
           locale: 'en-us',
         });
 
-        if (onInitializeCallback != null) {
-          await onInitializeCallback(newSession);
+        if (onDebugStartingCallback != null) {
+          // Callbacks are passed IVspInstance which exposes only certain
+          // methods to them, rather than getting the full session.
+          const teardown = onDebugStartingCallback(
+            instanceInterface(newSession),
+          );
+          if (teardown != null) {
+            sessionTeardownDisposables.add(teardown);
+          }
         }
 
         this._model.setExceptionBreakpoints(
@@ -1401,21 +1422,25 @@ export default class DebugService implements IDebugService {
           }
         });
 
-      // make sure to add the configuration.customDisposable to dispose on
-      //   session end
-      if (customDisposable != null) {
-        customDisposable.add(
-          this.viewModel.onDidChangeDebuggerFocus(() => {
-            if (
-              !this.getModel()
-                .getProcesses()
-                .includes(process)
-            ) {
-              customDisposable.dispose();
-            }
-          }),
-        );
+      if (onDebugStartedCallback != null && session != null) {
+        const teardown = onDebugStartedCallback(instanceInterface(session));
+        if (teardown != null) {
+          sessionTeardownDisposables.add(teardown);
+        }
       }
+
+      this._sessionEndDisposables.add(() => {
+        this._model.onDidChangeProcesses(() => {
+          if (
+            !this.getModel()
+              .getProcesses()
+              .includes(process)
+          ) {
+            sessionTeardownDisposables.dispose();
+          }
+        });
+      });
+      this._sessionEndDisposables.add(sessionTeardownDisposables);
 
       return process;
     } catch (error) {
@@ -1551,6 +1576,11 @@ export default class DebugService implements IDebugService {
       terminal.terminateProcess();
     });
   };
+
+  canRestartProcess(): boolean {
+    const process = this._getCurrentProcess();
+    return process != null && process.configuration.isRestartable === true;
+  }
 
   async restartProcess(process: IProcess): Promise<void> {
     if (process.session.capabilities.supportsRestartRequest) {

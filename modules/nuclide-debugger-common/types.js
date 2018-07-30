@@ -11,8 +11,6 @@
  */
 
 import type {SuggestedProjectPath} from 'atom-ide-debugger-java/types';
-import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
-import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {TaskEvent, ProcessMessage} from 'nuclide-commons/process';
 import type {Expected} from 'nuclide-commons/expected';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
@@ -28,7 +26,6 @@ export interface IVspInstance {
     args: any,
   ): Promise<DebugProtocol.CustomResponse>;
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
-  addCustomDisposable(disposable: IDisposable): void;
 }
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
@@ -76,12 +73,29 @@ export type IProcessConfig = {|
   +config: Object,
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
-  customDisposable?: UniversalDisposable,
-  +onInitializeCallback?: (session: ISession) => Promise<void>,
   +processName?: string,
   +customControlButtons?: Array<ControlButtonSpecification>,
   +threadsComponentTitle?: string,
   +showThreads?: boolean,
+
+  // If true, this debug session can be restarted by the service using
+  // this configuration. Debuggers should pass false here if starting
+  // this session requires any external setup that cannot be replayed
+  // automatically by the debugger service.
+  +isRestartable?: boolean,
+
+  // If specified, this callback is invoked when a new debugging session
+  // is started for this configuration. It is called after the session is
+  // initialized, but BEFORE the launch/attach command is sent to the
+  // adapter. If the callback returns an IDisposable, the disposable will
+  // be disposed by the service when the corresponding debugging session stops.
+  +onDebugStartingCallback?: (instance: IVspInstance) => IDisposable | void,
+
+  // If specified, this callback is invoked after the debug session has
+  // been started, and the launch/attach command has been sent to the
+  // adapter. If the callback returns an IDisposable, the disposable will
+  // be disposed by the service when the corresponding debugging session stops.
+  +onDebugStartedCallback?: (instance: IVspInstance) => IDisposable | void,
 |};
 
 export interface IVsAdapterSpawner {

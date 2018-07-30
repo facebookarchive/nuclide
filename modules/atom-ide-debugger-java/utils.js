@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
+import type {AnyTeardown} from 'nuclide-commons/UniversalDisposable';
 import type {
   AutoGenConfig,
   IProcessConfig,
@@ -22,6 +22,7 @@ import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
 
 import typeof * as JavaDebuggerHelpersService from './JavaDebuggerHelpersService';
 
+import assert from 'assert';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import showModal from 'nuclide-commons-ui/showModal';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -185,7 +186,7 @@ export function getSourcePathClickSubscriptionsOnVspInstance(
   targetUri: NuclideUri,
   vspInstance: IVspInstance,
   clickEvents: rxjs$Subject<void>,
-): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
+): Array<AnyTeardown> {
   const defaultValues = getDefaultSourceSearchPaths(targetUri);
   return [
     getDialogValues(clickEvents)
@@ -201,10 +202,10 @@ export function getSourcePathClickSubscriptionsOnVspInstance(
 
 export function getSourcePathClickSubscriptions(
   targetUri: NuclideUri,
-  debugSession: ISession,
+  instance: IVspInstance,
   clickEvents: rxjs$Subject<void>,
   additionalSourcePaths?: Array<NuclideUri> = [],
-): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
+): Array<AnyTeardown> {
   const defaultValues = getDefaultSourceSearchPaths(targetUri).concat(
     additionalSourcePaths,
   );
@@ -212,7 +213,7 @@ export function getSourcePathClickSubscriptions(
     getDialogValues(clickEvents)
       .startWith(getSavedPathsFromConfig())
       .subscribe(userValues => {
-        debugSession.custom('setSourcePath', {
+        instance.customRequest('setSourcePath', {
           sourcePath: getSourcePathString(defaultValues.concat(userValues)),
         });
       }),
@@ -228,12 +229,12 @@ export async function resolveConfiguration(
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
 
-  const subscriptions = new UniversalDisposable();
-  const clickEvents = new Subject();
-  const customDisposable =
-    configuration.customDisposable || new UniversalDisposable();
-  customDisposable.add(subscriptions);
+  // If the incomming configuration already has a starting callback,
+  // we'd need to combine them. Guard against this bug being introduced
+  // in the future.
+  assert(configuration.onDebugStartingCallback == null);
 
+  const clickEvents = new Subject();
   const javaAdapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
     targetUri,
   ).getJavaVSAdapterExecutableInfo(false);
@@ -243,10 +244,9 @@ export async function resolveConfiguration(
       clickEvents,
     ),
     adapterExecutable: javaAdapterExecutable,
-    customDisposable,
-    onInitializeCallback: async session => {
-      customDisposable.add(
-        ...getSourcePathClickSubscriptions(targetUri, session, clickEvents),
+    onDebugStartingCallback: (instance: IVspInstance) => {
+      return new UniversalDisposable(
+        ...getSourcePathClickSubscriptions(targetUri, instance, clickEvents),
       );
     },
   };

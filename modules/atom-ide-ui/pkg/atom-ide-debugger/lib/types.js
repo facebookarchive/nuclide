@@ -43,12 +43,15 @@ SOFTWARE.
 import type {Expected} from 'nuclide-commons/expected';
 import type {Observable} from 'rxjs';
 import * as DebugProtocol from 'vscode-debugprotocol';
-import type {IProcessConfig, IVspInstance} from 'nuclide-debugger-common';
+import type {IProcessConfig} from 'nuclide-debugger-common';
 
 export interface RemoteDebuggerService {
-  startVspDebugging(config: IProcessConfig): Promise<IVspInstance>;
   onDidStartDebugSession(
     callback: (config: IProcessConfig) => mixed,
+  ): IDisposable;
+  startVspDebugging(config: IProcessConfig): Promise<void>;
+  onDidChangeProcesses(
+    callback: (processes: Array<IProcess>) => void,
   ): IDisposable;
 }
 
@@ -441,6 +444,11 @@ export interface IDebugService {
    * and resolveds configurations via DebugConfigurationProviders.
    */
   startDebugging(config: IProcessConfig): Promise<void>;
+
+  /**
+   * Determines if the current focused process is restartable.
+   */
+  canRestartProcess(): boolean;
 
   /**
    * Restarts a process or creates a new one if there is no active session.

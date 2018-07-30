@@ -18,7 +18,6 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
@@ -45,7 +44,6 @@ async function _createAndroidDebugAttachConfig(
     debugMode: 'attach',
     adapterType: VsAdapterTypes.JAVA_ANDROID,
     config,
-    customDisposable: new UniversalDisposable(),
     processName:
       'Process ' + proc.pid + ' (Android Java ' + device.displayName + ')',
   };

@@ -204,7 +204,7 @@ export default class DebuggerSteppingComponent extends React.Component<
     );
 
     const restartDebuggerButton =
-      debuggerMode !== DebuggerMode.STOPPED ? (
+      debuggerMode !== DebuggerMode.STOPPED && service.canRestartProcess() ? (
         <Button
           icon="sync"
           className="debugger-stepping-button-separated"

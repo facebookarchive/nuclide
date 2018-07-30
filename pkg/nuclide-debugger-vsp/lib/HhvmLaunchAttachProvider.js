@@ -14,12 +14,12 @@ import type {
   DebuggerConfigAction,
   ControlButtonSpecification,
   IProcessConfig,
+  IVspInstance,
 } from 'nuclide-debugger-common';
 import type {
   HHVMLaunchConfig,
   HHVMAttachConfig,
 } from '../../nuclide-debugger-hhvm-rpc';
-
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -228,31 +228,37 @@ export async function startAttachProcessConfig(
     config,
     customControlButtons: getCustomControlButtons(),
     threadsComponentTitle: 'Requests',
-    customDisposable: new UniversalDisposable(),
+    isRestartable: true,
+    onDebugStartingCallback: (instance: IVspInstance) => {
+      // This IDisposable will be disposed when the debugging session ends.
+      // The debug service will ensure it is called on our behalf.
+      const disposables = new UniversalDisposable();
+      try {
+        // $FlowFB
+        const services = require('./fb-HhvmServices');
+
+        services.startSlog();
+        disposables.add(() => {
+          services.stopSlog();
+        });
+
+        if (serverAttach) {
+          services.startCrashHandler(
+            targetUri,
+            processConfig,
+            startAttachProcessConfig,
+            instance,
+          );
+          disposables.add(() => {
+            services.stopCrashHandler(processConfig);
+          });
+        }
+      } catch (_) {}
+
+      return disposables;
+    },
   };
 
   const debugService = await getDebuggerService();
-  const startDebuggingPromise = debugService.startVspDebugging(processConfig);
-  try {
-    // $FlowFB
-    const services = require('./fb-HhvmServices');
-    services.startSlog();
-
-    processConfig.customDisposable.add(() => {
-      services.stopSlog();
-      if (serverAttach) {
-        services.stopCrashHandler(processConfig);
-      }
-    });
-
-    if (serverAttach) {
-      const instance = await startDebuggingPromise;
-      services.startCrashHandler(
-        targetUri,
-        processConfig,
-        startAttachProcessConfig,
-        instance,
-      );
-    }
-  } catch (_) {}
+  debugService.startVspDebugging(processConfig);
 }
