@@ -658,6 +658,39 @@ function rmdir(path: string): Promise<void> {
   });
 }
 
+/**
+ * Attempts to resolve the physical path of the filename.
+ * Sometimes filePath may not exist yet, in which case we need to look upwards
+ * for the first prefix that actually does exist.
+ */
+async function guessRealPath(filePath: string): Promise<string> {
+  if (nuclideUri.isRemote(filePath)) {
+    throw new Error('Only local paths can be used with guessRealPath');
+  }
+  const resolved = nuclideUri.resolve(filePath);
+  let prefix = resolved;
+  let suffix = null;
+  while (true) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const realPath = await realpath(prefix);
+      return suffix == null ? realPath : nuclideUri.join(realPath, suffix);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+      const basename = nuclideUri.basename(prefix);
+      if (basename === '') {
+        // We've reached the filesystem root.
+        break;
+      }
+      suffix = suffix == null ? basename : nuclideUri.join(basename, suffix);
+      prefix = nuclideUri.dirname(prefix);
+    }
+  }
+  return resolved;
+}
+
 export default {
   tempdir,
   tempfile,
@@ -699,4 +732,5 @@ export default {
 
   findNearestAncestorNamed,
   resolveRealPath,
+  guessRealPath,
 };

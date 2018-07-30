@@ -417,3 +417,7 @@ export async function getNuclideDir(): Promise<NuclideUri> {
 export async function getNuclideLogDir(): Promise<NuclideUri> {
   return getPathToLogDir();
 }
+
+export async function guessRealPath(path: NuclideUri): Promise<NuclideUri> {
+  return fsPromise.guessRealPath(path);
+}
