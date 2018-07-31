@@ -1,3 +1,42 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCwdApi = exports.getNodeByIndex = exports.getRoots = exports.getOpenFilesExpanded = exports.getUncommittedChangesExpanded = exports.getFoldersExpanded = exports.collectDebugState = exports.getFilterFound = exports.getExtraProjectSelectionContent = exports.getFilter = exports.hasCwd = exports.getOpenFilesWorkingSet = exports.isEditedWorkingSetEmpty = exports.getEditedWorkingSet = exports.isEditingWorkingSet = exports.getRootForPath = exports.getNode = exports.getSingleTargetNode = exports.getSingleSelectedNode = exports.getTargetNodes = exports.getFocusedNodes = exports.getSelectedNodes = exports.usePrefixNav = exports.getIsCalculatingChanges = exports.getGeneratedOpenChangedFiles = exports.getFileChanges = exports.isEmpty = exports.getCwdKey = exports.getRootKeys = exports.getWorkingSetsStore = exports.getWorkingSet = exports.getRepositories = exports.getTrackedNode = exports.serialize = void 0;
+
+function _FileTreeNode() {
+  const data = require("./FileTreeNode");
+
+  _FileTreeNode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Immutable() {
+  const data = _interopRequireWildcard(require("immutable"));
+
+  Immutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideWorkingSetsCommon() {
+  const data = require("../../nuclide-working-sets-common");
+
+  _nuclideWorkingSetsCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,29 +44,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
-import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
-import type React from 'react';
-
-import {FileTreeNode} from './FileTreeNode';
-import * as Immutable from 'immutable';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {ExportStoreData} from './FileTreeStore';
-import type FileTreeStore from './FileTreeStore';
-
-export const serialize = (state: FileTreeStore): ExportStoreData => {
-  const rootKeys = state._roots
-    .valueSeq()
-    .toArray()
-    .map(root => root.uri);
+const serialize = state => {
+  const rootKeys = state._roots.valueSeq().toArray().map(root => root.uri);
 
   return {
     version: state.VERSION,
@@ -37,11 +59,13 @@ export const serialize = (state: FileTreeStore): ExportStoreData => {
     selectedKeysByRoot: {},
     openFilesExpanded: state._openFilesExpanded,
     uncommittedChangesExpanded: state._uncommittedChangesExpanded,
-    foldersExpanded: state._foldersExpanded,
+    foldersExpanded: state._foldersExpanded
   };
 };
 
-export const getTrackedNode = (state: FileTreeStore): ?FileTreeNode => {
+exports.serialize = serialize;
+
+const getTrackedNode = state => {
   if (state._trackedRootKey == null || state._trackedNodeKey == null) {
     return null;
   }
@@ -49,97 +73,105 @@ export const getTrackedNode = (state: FileTreeStore): ?FileTreeNode => {
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
 };
 
-export const getRepositories = (
-  state: FileTreeStore,
-): Immutable.Set<atom$Repository> => {
+exports.getTrackedNode = getTrackedNode;
+
+const getRepositories = state => {
   return state._repositories;
 };
 
-export const getWorkingSet = (state: FileTreeStore): WorkingSet => {
+exports.getRepositories = getRepositories;
+
+const getWorkingSet = state => {
   return state._conf.workingSet;
 };
 
-export const getWorkingSetsStore = (
-  state: FileTreeStore,
-): ?WorkingSetsStore => {
+exports.getWorkingSet = getWorkingSet;
+
+const getWorkingSetsStore = state => {
   return state._workingSetsStore;
 };
 
-export const getRootKeys = (state: FileTreeStore): Array<NuclideUri> => {
-  return state._roots
-    .valueSeq()
-    .toArray()
-    .map(root => root.uri);
+exports.getWorkingSetsStore = getWorkingSetsStore;
+
+const getRootKeys = state => {
+  return state._roots.valueSeq().toArray().map(root => root.uri);
 };
 
-export const getCwdKey = (state: FileTreeStore): ?NuclideUri => {
+exports.getRootKeys = getRootKeys;
+
+const getCwdKey = state => {
   return state._cwdKey;
 };
-
 /**
  * Returns true if the store has no data, i.e. no roots, no children.
  */
-export const isEmpty = (state: FileTreeStore): boolean => {
+
+
+exports.getCwdKey = getCwdKey;
+
+const isEmpty = state => {
   return state._roots.isEmpty();
 };
 
-export const getFileChanges = (
-  state: FileTreeStore,
-): Immutable.Map<
-  NuclideUri,
-  Immutable.Map<NuclideUri, FileChangeStatusValue>,
-> => {
+exports.isEmpty = isEmpty;
+
+const getFileChanges = state => {
   return state._fileChanges;
 };
 
-export const getGeneratedOpenChangedFiles = (
-  state: FileTreeStore,
-): Immutable.Map<NuclideUri, GeneratedFileType> => {
+exports.getFileChanges = getFileChanges;
+
+const getGeneratedOpenChangedFiles = state => {
   return state._generatedOpenChangedFiles;
 };
 
-export const getIsCalculatingChanges = (state: FileTreeStore): boolean => {
+exports.getGeneratedOpenChangedFiles = getGeneratedOpenChangedFiles;
+
+const getIsCalculatingChanges = state => {
   return state._isCalculatingChanges;
 };
 
-export const usePrefixNav = (state: FileTreeStore): boolean => {
+exports.getIsCalculatingChanges = getIsCalculatingChanges;
+
+const usePrefixNav = state => {
   return state._usePrefixNav;
 };
 
-export const getSelectedNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._selectionManager.selectedNodes().values());
+exports.usePrefixNav = usePrefixNav;
+
+const getSelectedNodes = state => {
+  return Immutable().List(state._selectionManager.selectedNodes().values());
 };
 
-export const getFocusedNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._selectionManager.focusedNodes().values());
-};
+exports.getSelectedNodes = getSelectedNodes;
 
-// Retrieves target node in an immutable list if it's set, or all selected
+const getFocusedNodes = state => {
+  return Immutable().List(state._selectionManager.focusedNodes().values());
+}; // Retrieves target node in an immutable list if it's set, or all selected
 // nodes otherwise
-export const getTargetNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
+
+
+exports.getFocusedNodes = getFocusedNodes;
+
+const getTargetNodes = state => {
   if (state._targetNodeKeys) {
-    const targetNode = getNode(
-      state,
-      state._targetNodeKeys.rootKey,
-      state._targetNodeKeys.nodeKey,
-    );
+    const targetNode = getNode(state, state._targetNodeKeys.rootKey, state._targetNodeKeys.nodeKey);
+
     if (targetNode) {
-      return Immutable.List([targetNode]);
+      return Immutable().List([targetNode]);
     }
   }
+
   return getSelectedNodes(state);
 };
-
 /**
  * Returns a node if it is the only one selected, or null otherwise
  */
-export const getSingleSelectedNode = (state: FileTreeStore): ?FileTreeNode => {
+
+
+exports.getTargetNodes = getTargetNodes;
+
+const getSingleSelectedNode = state => {
   const selectedNodes = getSelectedNodes(state);
 
   if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
@@ -147,28 +179,26 @@ export const getSingleSelectedNode = (state: FileTreeStore): ?FileTreeNode => {
   }
 
   return selectedNodes.first();
-};
+}; // Retrieves the target node, if it's set, or the first selected node otherwise
 
-// Retrieves the target node, if it's set, or the first selected node otherwise
-export const getSingleTargetNode = (state: FileTreeStore): ?FileTreeNode => {
+
+exports.getSingleSelectedNode = getSingleSelectedNode;
+
+const getSingleTargetNode = state => {
   if (state._targetNodeKeys) {
-    const targetNode = getNode(
-      state,
-      state._targetNodeKeys.rootKey,
-      state._targetNodeKeys.nodeKey,
-    );
+    const targetNode = getNode(state, state._targetNodeKeys.rootKey, state._targetNodeKeys.nodeKey);
+
     if (targetNode) {
       return targetNode;
     }
   }
+
   return getSingleSelectedNode(state);
 };
 
-export const getNode = (
-  state: FileTreeStore,
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
+exports.getSingleTargetNode = getSingleTargetNode;
+
+const getNode = (state, rootKey, nodeKey) => {
   const rootNode = state._roots.get(rootKey);
 
   if (rootNode == null) {
@@ -178,51 +208,69 @@ export const getNode = (
   return rootNode.find(nodeKey);
 };
 
-export const getRootForPath = (
-  state: FileTreeStore,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
+exports.getNode = getNode;
+
+const getRootForPath = (state, nodeKey) => {
   const rootNode = state._roots.find(root => nodeKey.startsWith(root.uri));
+
   return rootNode || null;
 };
-export const isEditingWorkingSet = (state: FileTreeStore): boolean => {
+
+exports.getRootForPath = getRootForPath;
+
+const isEditingWorkingSet = state => {
   return state._conf.isEditingWorkingSet;
 };
-
 /**
  * Builds the edited working set from the partially-child-derived .checkedStatus property
  */
-export const getEditedWorkingSet = (state: FileTreeStore): WorkingSet => {
+
+
+exports.isEditingWorkingSet = isEditingWorkingSet;
+
+const getEditedWorkingSet = state => {
   return state._conf.editedWorkingSet;
 };
 
-export const isEditedWorkingSetEmpty = (state: FileTreeStore): boolean => {
+exports.getEditedWorkingSet = getEditedWorkingSet;
+
+const isEditedWorkingSetEmpty = state => {
   return state._roots.every(root => root.checkedStatus === 'clear');
 };
 
-export const getOpenFilesWorkingSet = (state: FileTreeStore): WorkingSet => {
+exports.isEditedWorkingSetEmpty = isEditedWorkingSetEmpty;
+
+const getOpenFilesWorkingSet = state => {
   return state._conf.openFilesWorkingSet;
 };
 
-export const hasCwd = (state: FileTreeStore): boolean => {
+exports.getOpenFilesWorkingSet = getOpenFilesWorkingSet;
+
+const hasCwd = state => {
   return state._cwdKey != null;
 };
 
-export const getFilter = (state: FileTreeStore): string => {
+exports.hasCwd = hasCwd;
+
+const getFilter = state => {
   return state._filter;
 };
 
-export const getExtraProjectSelectionContent = (
-  state: FileTreeStore,
-): Immutable.List<React.Element<any>> => {
+exports.getFilter = getFilter;
+
+const getExtraProjectSelectionContent = state => {
   return state._extraProjectSelectionContent;
 };
 
-export const getFilterFound = (state: FileTreeStore): boolean => {
+exports.getExtraProjectSelectionContent = getExtraProjectSelectionContent;
+
+const getFilterFound = state => {
   return state._roots.some(root => root.containsFilterMatches);
 };
 
-export const collectDebugState = (state: FileTreeStore): Object => {
+exports.getFilterFound = getFilterFound;
+
+const collectDebugState = state => {
   return {
     currentWorkingRoot: getCwdKey(state),
     openFilesExpanded: state._openFilesExpanded,
@@ -235,34 +283,42 @@ export const collectDebugState = (state: FileTreeStore): Object => {
     _trackedRootKey: state._trackedRootKey,
     _trackedNodeKey: state._trackedNodeKey,
     _isCalculatingChanges: state._isCalculatingChanges,
-
-    roots: Array.from(state._roots.values()).map(root =>
-      root.collectDebugState(),
-    ),
+    roots: Array.from(state._roots.values()).map(root => root.collectDebugState()),
     _conf: state._confCollectDebugState(),
-    selectionManager: state._selectionManager.collectDebugState(),
+    selectionManager: state._selectionManager.collectDebugState()
   };
 };
 
-export const getFoldersExpanded = (state: FileTreeStore) => {
+exports.collectDebugState = collectDebugState;
+
+const getFoldersExpanded = state => {
   return state._foldersExpanded;
 };
 
-export const getUncommittedChangesExpanded = (state: FileTreeStore) => {
+exports.getFoldersExpanded = getFoldersExpanded;
+
+const getUncommittedChangesExpanded = state => {
   return state._uncommittedChangesExpanded;
 };
 
-export const getOpenFilesExpanded = (state: FileTreeStore) => {
+exports.getUncommittedChangesExpanded = getUncommittedChangesExpanded;
+
+const getOpenFilesExpanded = state => {
   return state._openFilesExpanded;
 };
 
-export const getRoots = (state: FileTreeStore) => {
+exports.getOpenFilesExpanded = getOpenFilesExpanded;
+
+const getRoots = state => {
   return state._roots;
 };
 
-export const getNodeByIndex = (state: FileTreeStore) => {
-  return function(index: number) {
+exports.getRoots = getRoots;
+
+const getNodeByIndex = state => {
+  return function (index) {
     const firstRoot = getRoots(state).find(r => r.shouldBeShown);
+
     if (firstRoot == null) {
       return null;
     }
@@ -271,6 +327,10 @@ export const getNodeByIndex = (state: FileTreeStore) => {
   };
 };
 
-export const getCwdApi = (state: FileTreeStore) => {
+exports.getNodeByIndex = getNodeByIndex;
+
+const getCwdApi = state => {
   return state._cwdApi;
 };
+
+exports.getCwdApi = getCwdApi;

@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RpcMethodError = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -18,20 +25,18 @@
  * All errors thrown from an RPC method will be automatically wrapped via
  * `RpcMethodError.wrap` and sent to the client.
  */
-export class RpcMethodError extends Error {
+class RpcMethodError extends Error {
   /** Extra information that will be sent back to the client. */
-  +parameters: any;
 
   /**
    * @param message - the error message.
    * @param parameters - any extra parameters that should be sent back to the
    * client.
    */
-  constructor(message: string, parameters: Object = {}) {
+  constructor(message, parameters = {}) {
     super(message);
     this.parameters = parameters;
   }
-
   /**
    * Create an `RpcMethodError` from an arbitrary error. If the error is already
    * an `RpcMethodError`, it will be returned as-is. Otherwise, this will
@@ -40,21 +45,27 @@ export class RpcMethodError extends Error {
    * For example, if `error` is a System Error, fields `code` and `errno` will
    * be extracted as parameters.
    */
-  static wrap(error: any): RpcMethodError {
+
+
+  static wrap(error) {
     if (error instanceof RpcMethodError) {
       return error;
     }
 
     const message = (error.message || error).toString();
-
     const parameters = {};
+
     if (error.code != null) {
       parameters.code = error.code;
     }
+
     if (error.errno != null) {
       parameters.errno = error.errno;
     }
 
     return new RpcMethodError(message, parameters);
   }
+
 }
+
+exports.RpcMethodError = RpcMethodError;

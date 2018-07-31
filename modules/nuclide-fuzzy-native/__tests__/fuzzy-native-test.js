@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,16 +8,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  * @emails oncall+nuclide
  */
 describe('fuzzy-native', () => {
   it('can be required', () => {
     const fuzzyNative = require('..');
-    const matcher = new fuzzyNative.Matcher(['test']);
-    // The fallback uses a different scoring mechanism, so this will fail
+
+    const matcher = new fuzzyNative.Matcher(['test']); // The fallback uses a different scoring mechanism, so this will fail
     // if the native module failed to load.
-    expect(matcher.match('test')).toEqual([{value: 'test', score: 1}]);
+
+    expect(matcher.match('test')).toEqual([{
+      value: 'test',
+      score: 1
+    }]);
   });
 });

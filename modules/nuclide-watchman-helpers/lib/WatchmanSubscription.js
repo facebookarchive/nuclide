@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _eventKit() {
+  const data = require("event-kit");
+
+  _eventKit = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +23,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import {Emitter} from 'event-kit';
-
-export type WatchmanSubscriptionOptions = {
-  expression: ?Array<string>, // e.g. ['match', '*.js'],
-  fields?: Array<string>, // e.g. ['name', 'size', 'exists', 'mode']
-  expression?: Array<mixed>, // e.g. ['dirname', relativePath]
-  since?: string, // e.g. "c:1439492655:58601:1:14195"
-  defer_vcs?: boolean,
-
-  /**
-   * For performance reasons, prefer:
-   *
-   *     "relative_root": "relative/path"
-   *
-   * over:
-   *
-   *     "expression": ["dirname", "relative/path"]
-   */
-  relative_root?: string,
-
-  /** If true, no files will be returned for fresh instances. */
-  empty_on_fresh_instance?: boolean,
-};
 
 /**
  * @param pathFromSubscriptionRootToSubscriptionPath The relative path from
@@ -41,21 +34,8 @@ export type WatchmanSubscriptionOptions = {
  *   Notably, this value should be undefined if subscriptionRoot is the same as
  *   subscriptionPath.
  */
-export default class WatchmanSubscription extends Emitter {
-  subscriptionCount: number;
-  root: string;
-  path: string;
-  pathFromSubscriptionRootToSubscriptionPath: ?string;
-  name: string;
-  options: WatchmanSubscriptionOptions;
-  constructor(
-    subscriptionRoot: string,
-    pathFromSubscriptionRootToSubscriptionPath: ?string,
-    subscriptionPath: string,
-    subscriptionName: string,
-    subscriptionCount: number,
-    subscriptionOptions: WatchmanSubscriptionOptions,
-  ) {
+class WatchmanSubscription extends _eventKit().Emitter {
+  constructor(subscriptionRoot, pathFromSubscriptionRootToSubscriptionPath, subscriptionPath, subscriptionName, subscriptionCount, subscriptionOptions) {
     super();
     this.root = subscriptionRoot;
     this.pathFromSubscriptionRootToSubscriptionPath = pathFromSubscriptionRootToSubscriptionPath;
@@ -64,4 +44,7 @@ export default class WatchmanSubscription extends Emitter {
     this.subscriptionCount = subscriptionCount;
     this.options = subscriptionOptions;
   }
+
 }
+
+exports.default = WatchmanSubscription;

@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = activateExperimentalPackages;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _path = _interopRequireDefault(require("path"));
+
+function _PackageRunners() {
+  const data = require("./PackageRunners");
+
+  _PackageRunners = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _MessageRouter() {
+  const data = _interopRequireDefault(require("./MessageRouter"));
+
+  _MessageRouter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,89 +47,72 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Feature} from '../FeatureLoader';
-import type {
-  ExperimentalPackageDefinition,
-  PackageParams,
-  Socket,
-} from './types';
-
-import idx from 'idx';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
-import {AtomPackageRunner, ProcessPackageRunner} from './PackageRunners';
-import MessageRouter from './MessageRouter';
-
-type ExperimentalServiceTable = {
-  [serviceName: string]: {
-    [version: string]: {|
-      client: string,
-      rawConsumerConnections: Array<{|socket: Socket, config: Object|}>,
-    |},
-  },
-};
-
-export default function activateExperimentalPackages(
-  features: Array<Feature>,
-): IDisposable {
-  const messageRouter = new MessageRouter();
+// eslint-disable-line nuclide-internal/prefer-nuclide-uri
+function activateExperimentalPackages(features) {
+  const messageRouter = new (_MessageRouter().default)();
   const experimentalFeatures = getExperimentalFeatures(features);
   const availableServices = aggregateExperimentalServices(experimentalFeatures);
-
   const packages = [];
-  const disposables = new UniversalDisposable();
+  const disposables = new (_UniversalDisposable().default)();
+  const atomPackages = []; // TODO: split into multiple processes?
 
-  const atomPackages = [];
-  // TODO: split into multiple processes?
   const processPackages = [];
-
   experimentalFeatures.forEach(feature => {
-    const experimentalSection: ExperimentalPackageDefinition = (feature.pkg: any)
-      .experimental;
-    const main = path.join(feature.path, experimentalSection.main);
-    const pkgParams: PackageParams = {
+    const experimentalSection = feature.pkg.experimental;
+
+    const main = _path.default.join(feature.path, experimentalSection.main);
+
+    const pkgParams = {
       main,
       consumedServices: createObject(),
-      providedServices: createObject(),
+      providedServices: createObject()
     };
-
     const consumedServicesRaw = experimentalSection.consumedServices;
-    const providedServicesRaw = experimentalSection.providedServices;
+    const providedServicesRaw = experimentalSection.providedServices; // Build a map of services consumed by this package.
 
-    // Build a map of services consumed by this package.
     if (consumedServicesRaw != null) {
       Object.keys(consumedServicesRaw).forEach(key => {
-        const {name, version, config} = consumedServicesRaw[key];
-        const availableVersion = idx(availableServices, _ => _[name][version]);
-        // TODO: Handle missing required services.
+        var _ref;
+
+        const {
+          name,
+          version,
+          config
+        } = consumedServicesRaw[key];
+        const availableVersion = (_ref = availableServices) != null ? (_ref = _ref[name]) != null ? _ref[version] : _ref : _ref; // TODO: Handle missing required services.
+
         if (availableVersion != null) {
           const [inSocket, outSocket] = messageRouter.getSocket();
           pkgParams.consumedServices[key] = {
             socket: inSocket,
-            client: availableVersion.client,
+            client: availableVersion.client
           };
           availableVersion.rawConsumerConnections.push({
             socket: outSocket,
-            config: config || {},
+            config: config || {}
           });
         }
       });
-    }
+    } // Build a map of services provided by this package.
 
-    // Build a map of services provided by this package.
+
     if (providedServicesRaw != null) {
       Object.keys(providedServicesRaw).forEach(key => {
-        const {name, version} = providedServicesRaw[key];
-        const availableVersion = idx(availableServices, _ => _[name][version]);
-        // TODO: Handle missing required services.
+        var _ref2;
+
+        const {
+          name,
+          version
+        } = providedServicesRaw[key];
+        const availableVersion = (_ref2 = availableServices) != null ? (_ref2 = _ref2[name]) != null ? _ref2[version] : _ref2 : _ref2; // TODO: Handle missing required services.
+
         if (availableVersion != null) {
           pkgParams.providedServices[key] = {
             // NOTE: This only becomes complete after checking all packages.
-            rawConnections: availableVersion.rawConsumerConnections,
+            rawConnections: availableVersion.rawConsumerConnections
           };
         }
       });
@@ -102,68 +126,75 @@ export default function activateExperimentalPackages(
   });
 
   if (atomPackages.length > 0) {
-    packages.push(new AtomPackageRunner(atomPackages, messageRouter));
+    packages.push(new (_PackageRunners().AtomPackageRunner)(atomPackages, messageRouter));
   }
 
   if (processPackages.length > 0) {
-    packages.push(new ProcessPackageRunner(processPackages, messageRouter));
-  }
+    packages.push(new (_PackageRunners().ProcessPackageRunner)(processPackages, messageRouter));
+  } // Activate all the packages.
 
-  // Activate all the packages.
+
   packages.forEach(pkg => {
-    disposables.add(
-      pkg,
-      pkg.onDidError(err => {
-        atom.notifications.addError('Feature Process Crashed', {
-          description: 'Please restart Atom to continue.',
-          detail: String(err),
-          buttons: [
-            {
-              className: 'icon icon-zap',
-              text: 'Reload Atom',
-              onDidClick() {
-                atom.reload();
-              },
-            },
-          ],
-        });
-      }),
-    );
+    disposables.add(pkg, pkg.onDidError(err => {
+      atom.notifications.addError('Feature Process Crashed', {
+        description: 'Please restart Atom to continue.',
+        detail: String(err),
+        buttons: [{
+          className: 'icon icon-zap',
+          text: 'Reload Atom',
+
+          onDidClick() {
+            atom.reload();
+          }
+
+        }]
+      });
+    }));
     pkg.activate();
   });
-
   return disposables;
 }
 
-function getExperimentalFeatures(features: Array<Feature>): Array<Feature> {
-  return features.filter(
-    // $FlowIgnore
-    feature => idx(feature.pkg, _ => _.experimental.main) != null,
-  );
+function getExperimentalFeatures(features) {
+  return features.filter( // $FlowIgnore
+  feature => {
+    var _ref3;
+
+    return ((_ref3 = feature.pkg) != null ? (_ref3 = _ref3.experimental) != null ? _ref3.main : _ref3 : _ref3) != null;
+  });
 }
 
-function aggregateExperimentalServices(
-  features: Array<Feature>,
-): ExperimentalServiceTable {
+function aggregateExperimentalServices(features) {
   // Build a table of provided services.
-  const table: ExperimentalServiceTable = createObject();
+  const table = createObject();
   features.forEach(feature => {
-    const experimentalSection: ExperimentalPackageDefinition = (feature.pkg: any)
-      .experimental;
-    const {providedServices} = experimentalSection;
+    const experimentalSection = feature.pkg.experimental;
+    const {
+      providedServices
+    } = experimentalSection;
+
     if (providedServices != null) {
       Object.keys(providedServices).forEach(alias => {
-        const {client, name, version} = providedServices[alias];
+        const {
+          client,
+          name,
+          version
+        } = providedServices[alias];
         const row = table[name] || (table[name] = {});
-        const clientPath = path.join(feature.path, client);
-        row[version] = {client: clientPath, rawConsumerConnections: []};
+
+        const clientPath = _path.default.join(feature.path, client);
+
+        row[version] = {
+          client: clientPath,
+          rawConsumerConnections: []
+        };
       });
     }
   });
   return table;
-}
+} // An object that may safely be used as a map.
 
-// An object that may safely be used as a map.
-function createObject(): Object {
+
+function createObject() {
   return Object.create(null);
 }

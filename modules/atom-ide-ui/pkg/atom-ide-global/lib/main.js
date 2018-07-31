@@ -1,3 +1,37 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _installTextEditorStyles() {
+  const data = _interopRequireDefault(require("./backports/installTextEditorStyles"));
+
+  _installTextEditorStyles = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +40,18 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import installTextEditorStyles from './backports/installTextEditorStyles';
-
 class Activation {
-  _disposables: UniversalDisposable;
-
   activate() {
-    this._disposables = new UniversalDisposable(installTextEditorStyles());
+    this._disposables = new (_UniversalDisposable().default)((0, _installTextEditorStyles().default)());
   }
 
   dispose() {
     this._disposables.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

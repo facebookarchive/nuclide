@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _dns = _interopRequireDefault(require("dns"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,48 +17,40 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import invariant from 'assert';
-import dns from 'dns';
-
-export type DnsFamily = 4 | 6;
-
-export type DnsLookup = {
-  address: string,
-  family: DnsFamily,
-};
-
-export default (async function lookupPreferIpv6(
-  host: string,
-): Promise<DnsLookup> {
+var lookupPreferIpv6 = async function lookupPreferIpv6(host) {
   try {
     return await lookup(host, 6);
   } catch (e) {
     if (e.code === 'ENOTFOUND') {
       return lookup(host, 4);
     }
+
     throw e;
   }
-});
+};
 
-function lookup(host: string, family: DnsFamily): Promise<DnsLookup> {
+exports.default = lookupPreferIpv6;
+
+function lookup(host, family) {
   return new Promise((resolve, reject) => {
-    dns.lookup(
-      host,
-      family,
-      (error: ?Error, address: ?string, resultFamily: ?number) => {
-        if (error) {
-          reject(error);
-        } else if (address != null) {
-          invariant(resultFamily === 4 || resultFamily === 6);
-          resolve({address, family: resultFamily});
-        } else {
-          reject(new Error('One of error or address must be set.'));
+    _dns.default.lookup(host, family, (error, address, resultFamily) => {
+      if (error) {
+        reject(error);
+      } else if (address != null) {
+        if (!(resultFamily === 4 || resultFamily === 6)) {
+          throw new Error("Invariant violation: \"resultFamily === 4 || resultFamily === 6\"");
         }
-      },
-    );
+
+        resolve({
+          address,
+          family: resultFamily
+        });
+      } else {
+        reject(new Error('One of error or address must be set.'));
+      }
+    });
   });
 }

@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,42 +17,40 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
+class FilteredMessagesReminder extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-import * as React from 'react';
+    return _temp = super(...args), this.handleClick = e => {
+      e.preventDefault();
+      this.props.onReset();
+    }, _temp;
+  }
 
-type Props = {
-  filteredRecordCount: number,
-  onReset: () => void,
-};
+  render() {
+    const {
+      filteredRecordCount
+    } = this.props;
 
-export default class FilteredMessagesReminder extends React.Component<Props> {
-  handleClick = (e: SyntheticEvent<>) => {
-    e.preventDefault();
-    this.props.onReset();
-  };
-
-  render(): React.Node {
-    const {filteredRecordCount} = this.props;
     if (filteredRecordCount === 0) {
       return null;
     }
 
-    return (
-      <div className="console-filtered-reminder">
-        <div style={{flex: 1}}>
-          <pre>
-            {filteredRecordCount}{' '}
-            {filteredRecordCount === 1 ? 'message is' : 'messages are'} hidden
-            by filters.
-          </pre>
-        </div>
-        <a href="#" onClick={this.handleClick}>
-          <pre>Show all messages.</pre>
-        </a>
-      </div>
-    );
+    return React.createElement("div", {
+      className: "console-filtered-reminder"
+    }, React.createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, React.createElement("pre", null, filteredRecordCount, ' ', filteredRecordCount === 1 ? 'message is' : 'messages are', " hidden by filters.")), React.createElement("a", {
+      href: "#",
+      onClick: this.handleClick
+    }, React.createElement("pre", null, "Show all messages.")));
   }
+
 }
+
+exports.default = FilteredMessagesReminder;

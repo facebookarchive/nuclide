@@ -1,3 +1,40 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.exec = exec;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _events = _interopRequireDefault(require("events"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var child_process = _interopRequireWildcard(require("child_process"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +43,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ITerminal} from 'nuclide-prebuilt-libs/pty';
-import type {ExecResponse} from './Protocol';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import EventEmitter from 'events';
-import {Observable, Subject} from 'rxjs';
-import {getLogger} from 'log4js';
-import * as child_process from 'child_process';
-
-export type {ExecResponse} from './Protocol';
-
-const logger = getLogger('exec');
-
+const logger = (0, _log4js().getLogger)('exec');
 /** Wraps a running process. */
-export interface ExecProcess {
-  kill(signal: string): void;
-  resize(columns: number, rows: number): void;
-  write(message: string): void;
-  /** Streams process events, like stdout, close, exit, etc. */
-  +stream: Observable<ExecResponse>;
-  +pid: number;
-  /** True if the process connection supports tty commands. */
-  +isTty: boolean;
-  /** Called (just once) when the process is terminated and channels closed. */
-  onComplete(listener: () => void): IDisposable;
-}
 
-export type SpawnParams = {
-  cmd: string,
-  args: Array<string>,
-  cwd?: string,
-  // $FlowIssue
-  env: {+[name: string]: string},
-  shell: string | boolean,
-  usePty: boolean,
-};
+function exec(params) {
+  const {
+    cmd,
+    args,
+    cwd,
+    env,
+    shell,
+    usePty
+  } = params;
 
-export function exec(params: SpawnParams): ExecProcess {
-  const {cmd, args, cwd, env, shell, usePty} = params;
   if (usePty) {
     try {
       // We optimistically attempt to spawn the process on a pty shell,
@@ -60,144 +70,156 @@ export function exec(params: SpawnParams): ExecProcess {
       // for the current platform.)
       logger.warn('pty terminal failed to load:', err);
     }
-  }
-  // Fall back to a plain old pipe for communication.
+  } // Fall back to a plain old pipe for communication.
+
+
   return new ExecProcessNodeJs(cmd, args, cwd, env, shell);
 }
 
-class ExecProcessNodeJs implements ExecProcess {
-  _process: child_process$ChildProcess;
-  _stream: Subject<ExecResponse> = new Subject();
-  _isClosed = false;
-  _isExited = false;
-  _emitter = new EventEmitter();
-  +isTty = false;
-
-  +stream: Observable<ExecResponse> = Observable.defer(() =>
-    Observable.of({
+class ExecProcessNodeJs {
+  constructor(cmd, args, cwd, env, shell) {
+    this._stream = new _RxMin.Subject();
+    this._isClosed = false;
+    this._isExited = false;
+    this._emitter = new _events.default();
+    this.isTty = false;
+    this.stream = _RxMin.Observable.defer(() => _RxMin.Observable.of({
       kind: 'spawn',
       pid: this._process.pid,
-      isTty: this.isTty,
-    }).concat(this._stream),
-  );
-
-  constructor(
-    cmd: string,
-    args: Array<string>,
-    cwd?: string,
-    env: {+[name: string]: string},
-    shell: boolean | string,
-  ) {
+      isTty: this.isTty
+    }).concat(this._stream));
     logger.info(`spawn: ${cmd} ${args.join(' ')}`);
     const process = child_process.spawn(cmd, args, {
       cwd,
       shell,
       env,
       detached: false,
-      stdio: 'pipe',
+      stdio: 'pipe'
     });
     logger.info(`spawned ${process.pid}`);
     this._process = process;
-
-    process.stdout.on('data', (data: string | Buffer) => {
-      this._stream.next({kind: 'stdout', data: data.toString()});
+    process.stdout.on('data', data => {
+      this._stream.next({
+        kind: 'stdout',
+        data: data.toString()
+      });
     });
     process.stdout.on('end', () => {
-      this._stream.next({kind: 'stdout-end'});
+      this._stream.next({
+        kind: 'stdout-end'
+      });
     });
-    process.stderr.on('data', (data: string | Buffer) => {
-      this._stream.next({kind: 'stderr', data: data.toString()});
+    process.stderr.on('data', data => {
+      this._stream.next({
+        kind: 'stderr',
+        data: data.toString()
+      });
     });
     process.stderr.on('end', () => {
-      this._stream.next({kind: 'stderr-end'});
+      this._stream.next({
+        kind: 'stderr-end'
+      });
     });
     process.stdin.on('error', err => {
-      this._stream.next({kind: 'stdin-error', message: err.toString()});
+      this._stream.next({
+        kind: 'stdin-error',
+        message: err.toString()
+      });
     });
     process.once('error', err => {
-      this._stream.next({kind: 'error', message: err.toString()});
+      this._stream.next({
+        kind: 'error',
+        message: err.toString()
+      });
     });
     process.once('close', (code, signal) => {
       logger.info(`closed ${process.pid} with code=${code} signal=${signal}`);
-      this._stream.next({kind: 'close'});
+
+      this._stream.next({
+        kind: 'close'
+      });
+
       this._isClosed = true;
+
       this._checkComplete();
     });
     process.once('exit', (code, signal) => {
-      this._stream.next({kind: 'exit', code, signal});
+      this._stream.next({
+        kind: 'exit',
+        code,
+        signal
+      });
+
       this._isExited = true;
+
       this._checkComplete();
     });
     process.stdout.resume();
   }
 
-  kill(signal: string): void {
+  kill(signal) {
     logger.info(`killed ${process.pid} with signal=${signal}`);
+
     this._process.kill(signal);
   }
 
-  resize(columns: number, rows: number) {}
+  resize(columns, rows) {}
 
-  write(message: string): void {
+  write(message) {
     this._process.stdin.write(message);
   }
 
-  get pid(): number {
+  get pid() {
     return this._process.pid;
   }
 
-  onComplete(listener: () => void): IDisposable {
-    return new UniversalDisposable(
-      this._stream.subscribe({complete: listener}),
-    );
+  onComplete(listener) {
+    return new (_UniversalDisposable().default)(this._stream.subscribe({
+      complete: listener
+    }));
   }
 
-  _checkComplete(): void {
+  _checkComplete() {
     if (this._isClosed && this._isExited) {
       this._stream.complete();
     }
   }
+
 }
 
-class ExecProcessPty implements ExecProcess {
-  _process: ITerminal;
-  _stream: Subject<ExecResponse> = new Subject();
-  _isClosed = false;
-  _isExited = false;
-  _emitter = new EventEmitter();
-  +isTty = true;
-
-  +stream: Observable<ExecResponse> = Observable.defer(() =>
-    Observable.of({
+class ExecProcessPty {
+  constructor(cmd, args, cwd, env, shell) {
+    this._stream = new _RxMin.Subject();
+    this._isClosed = false;
+    this._isExited = false;
+    this._emitter = new _events.default();
+    this.isTty = true;
+    this.stream = _RxMin.Observable.defer(() => _RxMin.Observable.of({
       kind: 'spawn',
       pid: this._process.pid,
-      isTty: this.isTty,
-    }).concat(this._stream),
-  );
+      isTty: this.isTty
+    }).concat(this._stream));
 
-  constructor(
-    cmd: string,
-    args: Array<string>,
-    cwd?: string,
-    env: {+[name: string]: string},
-    shell: boolean | string,
-  ) {
     // Lazy load pty.js because it may fail if native bindings cannot be found.
     // If this fails, then the caller should create a ExecProcessNodeJs
     // instead.
     const spawn = require('nuclide-prebuilt-libs/pty').spawn;
 
-    logger.info(`spawn: ${cmd} ${args.join(' ')}`);
-    // $FlowIssue
-    const process = spawn(cmd, args, {cwd, env});
-    logger.info(`spawned ${process.pid}`);
-    this._process = process;
+    logger.info(`spawn: ${cmd} ${args.join(' ')}`); // $FlowIssue
 
-    // pty.spawn forwards events from a Node net.Socket.
-    process.on('data', data => {
-      this._stream.next({kind: 'stdout', data: data.toString()});
+    const process = spawn(cmd, args, {
+      cwd,
+      env
     });
-    // The 'close' event is actually for the pty socket connecting to the
+    logger.info(`spawned ${process.pid}`);
+    this._process = process; // pty.spawn forwards events from a Node net.Socket.
+
+    process.on('data', data => {
+      this._stream.next({
+        kind: 'stdout',
+        data: data.toString()
+      });
+    }); // The 'close' event is actually for the pty socket connecting to the
     // process. The event will generally occur before exit :/
     // We'll issue 'close' when 'exit' occurs.
     // process.once('close', () => { ... });
@@ -207,52 +229,68 @@ class ExecProcessPty implements ExecProcess {
       // This is safe to interpret as a 'stdout-end'.
       // flowlint-next-line sketchy-null-string:off
       if (err.code && err.code.includes('EIO')) {
-        this._stream.next({kind: 'stdout-end'});
+        this._stream.next({
+          kind: 'stdout-end'
+        });
       } else {
-        this._stream.error({kind: 'error', message: err.toString()});
+        this._stream.error({
+          kind: 'error',
+          message: err.toString()
+        });
       }
     });
-
     process.once('close', () => {
       this._isClosed = true;
-      this._stream.next({kind: 'close'});
+
+      this._stream.next({
+        kind: 'close'
+      });
+
       this._checkComplete();
     });
-
     process.once('exit', (code, signal) => {
       logger.info(`exited ${process.pid} with code=${code} signal=${signal}`);
-      this._stream.next({kind: 'exit', code, signal});
+
+      this._stream.next({
+        kind: 'exit',
+        code,
+        signal
+      });
+
       this._isExited = true;
+
       this._checkComplete();
     });
   }
 
-  kill(signal: string): void {
+  kill(signal) {
     logger.info(`killed ${this._process.pid} with signal=${signal}`);
+
     this._process.destroy();
   }
 
-  resize(columns: number, rows: number) {
+  resize(columns, rows) {
     this._process.resize(columns, rows);
   }
 
-  write(message: string): void {
+  write(message) {
     this._process.write(message);
   }
 
-  get pid(): number {
+  get pid() {
     return this._process.pid;
   }
 
-  onComplete(listener: () => void): IDisposable {
-    return new UniversalDisposable(
-      this._stream.subscribe({complete: listener}),
-    );
+  onComplete(listener) {
+    return new (_UniversalDisposable().default)(this._stream.subscribe({
+      complete: listener
+    }));
   }
 
-  _checkComplete(): void {
+  _checkComplete() {
     if (this._isClosed && this._isExited) {
       this._stream.complete();
     }
   }
+
 }

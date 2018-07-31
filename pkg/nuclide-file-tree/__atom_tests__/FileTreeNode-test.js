@@ -1,3 +1,47 @@
+"use strict";
+
+function _FileTreeNode() {
+  const data = require("../lib/FileTreeNode");
+
+  _FileTreeNode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Immutable() {
+  const data = _interopRequireWildcard(require("immutable"));
+
+  Immutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideWorkingSetsCommon() {
+  const data = require("../../nuclide-working-sets-common");
+
+  _nuclideWorkingSetsCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FileTreeSelectionManager() {
+  const data = require("../lib/FileTreeSelectionManager");
+
+  _FileTreeSelectionManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,43 +49,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  * @emails oncall+nuclide
  */
-import {FileTreeNode} from '../lib/FileTreeNode';
-import * as Immutable from 'immutable';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
-
 const CONF = {
-  vcsStatuses: Immutable.Map(),
-  fileChanges: Immutable.Map(),
-  workingSet: new WorkingSet(),
-  editedWorkingSet: new WorkingSet(),
+  vcsStatuses: Immutable().Map(),
+  fileChanges: Immutable().Map(),
+  workingSet: new (_nuclideWorkingSetsCommon().WorkingSet)(),
+  editedWorkingSet: new (_nuclideWorkingSetsCommon().WorkingSet)(),
   hideIgnoredNames: true,
   hideVcsIgnoredPaths: true,
   excludeVcsIgnoredPaths: true,
-  ignoredPatterns: Immutable.Set(),
-  repositories: Immutable.Set(),
+  ignoredPatterns: Immutable().Set(),
+  repositories: Immutable().Set(),
   usePreviewTabs: true,
   focusEditorOnFileSelection: false,
   isEditingWorkingSet: false,
-  openFilesWorkingSet: new WorkingSet(),
+  openFilesWorkingSet: new (_nuclideWorkingSetsCommon().WorkingSet)(),
   reposByRoot: {},
-  selectionManager: new FileTreeSelectionManager(() => {}),
+  selectionManager: new (_FileTreeSelectionManager().FileTreeSelectionManager)(() => {})
 };
-
 describe('FileTreeNode', () => {
   it('properly sets the default properties', () => {
-    const node = new FileTreeNode(
-      {
-        uri: '/abc/def',
-        rootUri: '/abc/',
-      },
-      CONF,
-    );
-
+    const node = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def',
+      rootUri: '/abc/'
+    }, CONF);
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
     expect(node.isExpanded).toBe(false);
@@ -52,22 +86,17 @@ describe('FileTreeNode', () => {
     expect(node.highlightedText).toEqual('');
     expect(node.matchesFilter).toBeTruthy();
   });
-
   it('properly sets the supplied properties', () => {
-    const children = Immutable.OrderedMap();
-    const node = new FileTreeNode(
-      {
-        uri: '/abc/def',
-        rootUri: '/abc/',
-        isExpanded: true,
-        isSelected: true,
-        isLoading: true,
-        isCwd: true,
-        children,
-      },
-      CONF,
-    );
-
+    const children = Immutable().OrderedMap();
+    const node = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def',
+      rootUri: '/abc/',
+      isExpanded: true,
+      isSelected: true,
+      isLoading: true,
+      isCwd: true,
+      children
+    }, CONF);
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
     expect(node.isExpanded).toBe(true);
@@ -78,17 +107,12 @@ describe('FileTreeNode', () => {
     expect(node.highlightedText).toEqual('');
     expect(node.matchesFilter).toBeTruthy();
   });
-
   it('derives properties', () => {
-    const node = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi',
-        rootUri: '/abc/',
-      },
-      CONF,
-    );
+    const node = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def/ghi',
+      rootUri: '/abc/'
+    }, CONF); // Derived
 
-    // Derived
     expect(node.name).toBe('ghi');
     expect(node.relativePath).toBe('def/ghi');
     expect(node.localPath).toBe('/abc/def/ghi');
@@ -99,41 +123,25 @@ describe('FileTreeNode', () => {
     expect(node.highlightedText).toEqual('');
     expect(node.matchesFilter).toBeTruthy();
   });
-
   it('preserves instance on non-modifying updates', () => {
-    const child1 = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi1',
-        rootUri: '/abc/',
-      },
-      CONF,
-    );
-
-    const child2 = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi2',
-        rootUri: '/abc/',
-      },
-      CONF,
-    );
-
-    const children = Immutable.OrderedMap([
-      [child1.name, child1],
-      [child2.name, child2],
-    ]);
-    const node = new FileTreeNode(
-      {
-        uri: '/abc/def',
-        rootUri: '/abc/',
-        isExpanded: true,
-        isSelected: false,
-        isLoading: false,
-        isCwd: true,
-        children,
-      },
-      CONF,
-    );
-
+    const child1 = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def/ghi1',
+      rootUri: '/abc/'
+    }, CONF);
+    const child2 = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def/ghi2',
+      rootUri: '/abc/'
+    }, CONF);
+    const children = Immutable().OrderedMap([[child1.name, child1], [child2.name, child2]]);
+    const node = new (_FileTreeNode().FileTreeNode)({
+      uri: '/abc/def',
+      rootUri: '/abc/',
+      isExpanded: true,
+      isSelected: false,
+      isLoading: false,
+      isCwd: true,
+      children
+    }, CONF);
     expect(node.isExpanded).toBe(true);
     let updatedNode = node.setIsExpanded(true);
     expect(updatedNode).toBe(node);
@@ -143,7 +151,7 @@ describe('FileTreeNode', () => {
     expect(updatedNode).toBe(node);
     updatedNode = node.setIsCwd(true);
     expect(updatedNode).toBe(node);
-    updatedNode = node.setChildren(Immutable.OrderedMap(children));
+    updatedNode = node.setChildren(Immutable().OrderedMap(children));
     expect(updatedNode).toBe(node);
     updatedNode = node.setRecursive(null, child => child.setIsSelected(false));
     expect(updatedNode).toBe(node);
@@ -153,38 +161,56 @@ describe('FileTreeNode', () => {
       isExpanded: true,
       isLoading: false,
       isCwd: true,
-      children,
+      children
     });
     expect(updatedNode).toBe(node);
-
     updatedNode = node.updateChild(child2.setIsSelected(true));
     expect(updatedNode).toBe(node);
   });
-
   it('finds nodes', () => {
     const rootUri = '/r/';
-    const nodeABC = new FileTreeNode({uri: '/r/A/B/C/', rootUri}, CONF);
-    const nodeABD = new FileTreeNode({uri: '/r/A/B/D/', rootUri}, CONF);
-    let children = FileTreeNode.childrenFromArray([nodeABC, nodeABD]);
-    const nodeAB = new FileTreeNode({uri: '/r/A/B/', rootUri, children}, CONF);
-    children = FileTreeNode.childrenFromArray([nodeAB]);
-    const nodeA = new FileTreeNode({uri: '/r/A/', rootUri, children}, CONF);
-    const nodeB = new FileTreeNode({uri: '/r/B/', rootUri}, CONF);
-    children = FileTreeNode.childrenFromArray([nodeA, nodeB]);
-    const root = new FileTreeNode({uri: '/r/', rootUri, children}, CONF);
+    const nodeABC = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/A/B/C/',
+      rootUri
+    }, CONF);
+    const nodeABD = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/A/B/D/',
+      rootUri
+    }, CONF);
 
+    let children = _FileTreeNode().FileTreeNode.childrenFromArray([nodeABC, nodeABD]);
+
+    const nodeAB = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/A/B/',
+      rootUri,
+      children
+    }, CONF);
+    children = _FileTreeNode().FileTreeNode.childrenFromArray([nodeAB]);
+    const nodeA = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/A/',
+      rootUri,
+      children
+    }, CONF);
+    const nodeB = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/B/',
+      rootUri
+    }, CONF);
+    children = _FileTreeNode().FileTreeNode.childrenFromArray([nodeA, nodeB]);
+    const root = new (_FileTreeNode().FileTreeNode)({
+      uri: '/r/',
+      rootUri,
+      children
+    }, CONF);
     expect(root.find('/r/')).toBe(root);
     expect(root.find('/r/A/')).toBe(nodeA);
     expect(root.find('/r/B/')).toBe(nodeB);
     expect(root.find('/r/A/B/')).toBe(nodeAB);
     expect(root.find('/r/A/B/C/')).toBe(nodeABC);
     expect(root.find('/r/A/B/D/')).toBe(nodeABD);
-
     expect(root.findDeepest('/r/A/B/E/')).toBe(nodeAB);
     expect(root.findDeepest('/r/A/B/C/E/')).toBe(nodeABC);
     expect(root.findDeepest('/r/B/B/C/E/')).toBe(nodeB);
     expect(root.findDeepest('/r/C/B/C/E/')).toBe(root);
-
     expect(root.find('/r/A/B/E/')).toBe(null);
     expect(root.findDeepest('/nonRoot/C/B/C/E/')).toBe(null);
   });
