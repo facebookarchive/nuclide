@@ -180,6 +180,10 @@ export default class FileTreeContextMenu {
         {
           label: 'Set to Current Working Root',
           command: 'tree-view:set-current-working-root',
+          after: [
+            'project-find:show-in-current-directory',
+            'tree-view:search-in-directory',
+          ],
           shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
         },
       ],
@@ -408,6 +412,11 @@ export default class FileTreeContextMenu {
       {
         label: `Show in ${getFileManagerName()}`,
         command: 'file:show-in-file-manager',
+        after: ['file:copy-full-path'],
+        before: [
+          'project-find:show-in-current-directory',
+          'tree-view:search-in-directory',
+        ],
         shouldDisplay: event => {
           const path = getElementFilePath(((event.target: any): HTMLElement));
           return path != null && !nuclideUri.isRemote(path);
@@ -415,6 +424,9 @@ export default class FileTreeContextMenu {
       },
       // $FlowFixMe (v0.54.1 <)
       {
+        // Note: This can be superceeded by
+        // `project-find:show-in-current-directory` from
+        // https://github.com/atom/find-and-replace
         label: 'Search in Directory',
         command: 'tree-view:search-in-directory',
         shouldDisplay: () => {
