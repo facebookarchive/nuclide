@@ -71,21 +71,20 @@ export default class LineEditor extends EventEmitter {
       ['CTRL-A', () => this._home()],
       ['CTRL-B', () => this._left()],
       ['CTRL-C', () => this._sigint()],
-      [
-        'CTRL-D',
-        () => {
-          this.emit('quit');
-          return;
-        },
-      ],
+      ['CTRL-D', () => this._deleteRight(true)],
       ['CTRL-E', () => this._end()],
       ['CTRL-F', () => this._right()],
+      ['CTRL-K', () => this._deleteToEnd()],
+      ['CTRL-T', () => this._swapChars()],
+      ['CTRL-U', () => this._deleteLine()],
+      ['CTRL-W', () => this._deleteToStart()],
       ['HOME', () => this._home()],
       ['END', () => this._end()],
       ['LEFT', () => this._left()],
       ['RIGHT', () => this._right()],
       ['BACKSPACE', () => this._backspace()],
       ['ENTER', () => this._enter()],
+      ['DEL', () => this._deleteRight(false)],
     ]);
   }
 
@@ -152,6 +151,29 @@ export default class LineEditor extends EventEmitter {
     }
   }
 
+  _deleteToEnd(): void {
+    if (this._cursor < this._buffer.length) {
+      this._buffer = this._buffer.substr(0, this._cursor);
+      this._repaint();
+    }
+  }
+
+  _deleteToStart(): void {
+    if (this._cursor > 0) {
+      this._buffer = this._buffer.substr(this._cursor);
+      this._cursor = 0;
+      this._repaint();
+    }
+  }
+
+  _deleteLine(): void {
+    if (this._buffer !== '') {
+      this._buffer = '';
+      this._cursor = 0;
+      this._repaint();
+    }
+  }
+
   _backspace(): void {
     if (this._cursor > 0) {
       this._buffer =
@@ -160,6 +182,39 @@ export default class LineEditor extends EventEmitter {
       this._cursor--;
       this._repaint();
     }
+  }
+
+  _deleteRight(eofOnEmpty: boolean): void {
+    if (this._buffer === '' && eofOnEmpty) {
+      this.emit('quit');
+      return;
+    }
+
+    if (this._cursor < this._buffer.length) {
+      this._buffer =
+        this._buffer.substr(0, this._cursor) +
+        this._buffer.substr(this._cursor + 1);
+      this._repaint();
+    }
+  }
+
+  _swapChars(): void {
+    if (this._cursor === 0 || this._buffer.length < 2) {
+      return;
+    }
+
+    if (this._cursor === this._buffer.length) {
+      this._cursor--;
+    }
+
+    this._buffer =
+      this._buffer.substr(0, this._cursor - 1) +
+      this._buffer.substr(this._cursor, 1) +
+      this._buffer.substr(this._cursor - 1, 1) +
+      this._buffer.substr(this._cursor + 1);
+
+    this._cursor++;
+    this._repaint();
   }
 
   _enter(): void {
