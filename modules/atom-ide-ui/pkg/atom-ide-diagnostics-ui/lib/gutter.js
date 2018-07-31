@@ -84,7 +84,7 @@ const handleMouseEnterSpawnPopupEventsObservable = handleMouseEnterSpawnPopupEve
           );
         }),
       )
-
+      .takeUntil(observableFromSubscribeFunction(cb => gutter.onDidDestroy(cb)))
       .takeWhile(Boolean);
   })
   .share();
