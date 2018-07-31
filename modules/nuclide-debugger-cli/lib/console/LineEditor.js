@@ -17,6 +17,7 @@ import type {
 import {ANSIStreamParser} from './ANSIStreamParser';
 import {ANSIStreamOutput} from './ANSIStreamOutput';
 import EventEmitter from 'events';
+import History from './History';
 import invariant from 'assert';
 
 type CursorCompletion = {
@@ -28,6 +29,8 @@ type LineEditorOptions = {
   input?: ?stream$Readable,
   output?: ?stream$Writable,
   tty?: ?boolean,
+  maxHistoryItems?: number,
+  removeHistoryDuplicates?: boolean,
 };
 
 export default class LineEditor extends EventEmitter {
@@ -44,6 +47,9 @@ export default class LineEditor extends EventEmitter {
   _fieldRow: number = 0;
   _fieldStartCol: number = 0;
   _keyHandlers: Map<string, () => void>;
+  _history: History;
+  _historyTextSave: string;
+  _editedSinceHistory: boolean;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -60,6 +66,17 @@ export default class LineEditor extends EventEmitter {
     this._tty = options.tty != null ? options.tty : this._input.isTTY;
     this._cursorPromises = new Set();
 
+    const maxHistoryItems =
+      options.maxHistoryItems != null ? options.maxHistoryItems : 50;
+    const removeDups =
+      options.removeHistoryDuplicates != null
+        ? options.removeHistoryDuplicates
+        : true;
+
+    this._history = new History(maxHistoryItems, removeDups);
+    this._historyTextSave = '';
+    this._editedSinceHistory = false;
+
     if (this._tty) {
       this._outputANSI = new ANSIStreamOutput(this._output);
     }
@@ -75,6 +92,8 @@ export default class LineEditor extends EventEmitter {
       ['CTRL-E', () => this._end()],
       ['CTRL-F', () => this._right()],
       ['CTRL-K', () => this._deleteToEnd()],
+      ['CTRL-N', () => this._historyNext()],
+      ['CTRL-P', () => this._historyPrevious()],
       ['CTRL-T', () => this._swapChars()],
       ['CTRL-U', () => this._deleteLine()],
       ['CTRL-W', () => this._deleteToStart()],
@@ -82,9 +101,12 @@ export default class LineEditor extends EventEmitter {
       ['END', () => this._end()],
       ['LEFT', () => this._left()],
       ['RIGHT', () => this._right()],
+      ['DOWN', () => this._historyNext()],
+      ['UP', () => this._historyPrevious()],
       ['BACKSPACE', () => this._backspace()],
       ['ENTER', () => this._enter()],
       ['DEL', () => this._deleteRight(false)],
+      ['ESCAPE', () => this._deleteLine()],
     ]);
   }
 
@@ -112,6 +134,7 @@ export default class LineEditor extends EventEmitter {
       s +
       this._buffer.substr(this._cursor);
     this._cursor += s.length;
+    this._textChanged();
     this._repaint();
   }
 
@@ -125,6 +148,11 @@ export default class LineEditor extends EventEmitter {
 
   _sigint(): void {
     process.kill(process.pid, 'SIGINT');
+  }
+
+  _textChanged(): void {
+    this._historyTextSave = this._buffer;
+    this._history.resetSearch();
   }
 
   _home(): void {
@@ -154,6 +182,7 @@ export default class LineEditor extends EventEmitter {
   _deleteToEnd(): void {
     if (this._cursor < this._buffer.length) {
       this._buffer = this._buffer.substr(0, this._cursor);
+      this._textChanged();
       this._repaint();
     }
   }
@@ -162,6 +191,7 @@ export default class LineEditor extends EventEmitter {
     if (this._cursor > 0) {
       this._buffer = this._buffer.substr(this._cursor);
       this._cursor = 0;
+      this._textChanged();
       this._repaint();
     }
   }
@@ -170,6 +200,7 @@ export default class LineEditor extends EventEmitter {
     if (this._buffer !== '') {
       this._buffer = '';
       this._cursor = 0;
+      this._textChanged();
       this._repaint();
     }
   }
@@ -180,6 +211,7 @@ export default class LineEditor extends EventEmitter {
         this._buffer.substr(0, this._cursor - 1) +
         this._buffer.substr(this._cursor);
       this._cursor--;
+      this._textChanged();
       this._repaint();
     }
   }
@@ -194,6 +226,7 @@ export default class LineEditor extends EventEmitter {
       this._buffer =
         this._buffer.substr(0, this._cursor) +
         this._buffer.substr(this._cursor + 1);
+      this._textChanged();
       this._repaint();
     }
   }
@@ -214,13 +247,37 @@ export default class LineEditor extends EventEmitter {
       this._buffer.substr(this._cursor + 1);
 
     this._cursor++;
+    this._textChanged();
     this._repaint();
   }
 
   _enter(): void {
+    this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
+    this._textChanged();
     this.prompt();
+  }
+
+  _historyPrevious(): void {
+    const item = this._history.previousItem();
+    if (item != null) {
+      this._buffer = item;
+      this._cursor = item.length;
+      this._repaint();
+    }
+  }
+
+  _historyNext(): void {
+    const item = this._history.nextItem();
+    if (item != null) {
+      this._buffer = item;
+      this._cursor = item.length;
+    } else {
+      this._buffer = this._historyTextSave;
+      this._cursor = this._buffer.length;
+    }
+    this._repaint();
   }
 
   _repaint(): void {
