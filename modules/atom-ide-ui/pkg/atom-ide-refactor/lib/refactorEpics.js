@@ -179,32 +179,32 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
   } else if (provider.rename != null && refactoring.kind === 'rename') {
     const {editor, position, newName} = refactoring;
 
-    return Observable.fromPromise(
-      provider.rename(editor, position, newName),
-    ).map(edits => {
-      if (edits == null || edits.size === 0) {
-        return Actions.close();
-      }
-      const currentFilePath = editor.getPath();
-      invariant(currentFilePath != null);
+    return Observable.fromPromise(provider.rename(editor, position, newName))
+      .map(edits => {
+        if (edits == null || edits.size === 0) {
+          return Actions.close();
+        }
+        const currentFilePath = editor.getPath();
+        invariant(currentFilePath != null);
 
-      // If the map only has 1 key (a single unique NuclideURI) and it matches the
-      //  currently opened file, then all the TextEdits must be local.
-      let response;
-      if (edits.size === 1 && edits.keys().next().value === currentFilePath) {
-        response = {
-          type: 'edit',
-          edits,
-        };
-        return Actions.apply(response);
-      } else {
-        response = {
-          type: 'rename-external-edit',
-          edits,
-        };
-        return Actions.confirm(response);
-      }
-    });
+        // If the map only has 1 key (a single unique NuclideURI) and it matches the
+        //  currently opened file, then all the TextEdits must be local.
+        let response;
+        if (edits.size === 1 && edits.keys().next().value === currentFilePath) {
+          response = {
+            type: 'edit',
+            edits,
+          };
+          return Actions.apply(response);
+        } else {
+          response = {
+            type: 'rename-external-edit',
+            edits,
+          };
+          return Actions.confirm(response);
+        }
+      })
+      .catch(e => Observable.of(Actions.error('execute', e)));
   } else {
     return Observable.of(
       Actions.error('execute', Error('No appropriate provider found.')),
