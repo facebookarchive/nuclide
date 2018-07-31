@@ -1612,16 +1612,19 @@ export default class DebugService implements IDebugService {
         if (!passesMultiGK && currentProcess != null) {
           this.stopProcess(currentProcess);
         }
-        _gkService
-          .passesGK('nuclide_processtree_debugging')
-          .then(passesProcessTree => {
-            if (passesProcessTree) {
-              track(AnalyticsEvents.DEBUGGER_TREE_OPENED);
-            }
-          });
       } else {
         this.stopProcess(currentProcess);
       }
+    }
+
+    if (_gkService != null) {
+      _gkService
+        .passesGK('nuclide_processtree_debugging')
+        .then(passesProcessTree => {
+          if (passesProcessTree) {
+            track(AnalyticsEvents.DEBUGGER_TREE_OPENED);
+          }
+        });
     }
 
     // Open the console window if it's not already opened.
