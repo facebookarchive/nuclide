@@ -12,7 +12,7 @@
 
 import type {ConsoleIO} from './ConsoleIO';
 
-import readline from 'readline';
+import LineEditor from './console/LineEditor';
 import CommandDispatcher from './CommandDispatcher';
 import {Observable, Subject} from 'rxjs';
 
@@ -20,7 +20,7 @@ const PROMPT = 'fbdbg> ';
 
 export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
-  _cli: readline$Interface;
+  _cli: LineEditor;
   _inputStopped = false;
   _shouldPrompt = false;
   _lastLine = '';
@@ -33,7 +33,7 @@ export default class CommandLine implements ConsoleIO {
 
   constructor(dispatcher: CommandDispatcher) {
     this._dispatcher = dispatcher;
-    this._cli = readline.createInterface({
+    this._cli = new LineEditor({
       input: process.stdin,
       output: process.stdout,
     });
@@ -108,7 +108,7 @@ export default class CommandLine implements ConsoleIO {
         process.stdout.write('\n');
       }
       process.stdout.write(text);
-      this._cli.prompt(true);
+      this._cli.prompt();
       return;
     }
     process.stdout.write(text);

@@ -50,6 +50,7 @@ export default class LineEditor extends EventEmitter {
   _history: History;
   _historyTextSave: string;
   _editedSinceHistory: boolean;
+  _onData: ?(string) => void;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -110,7 +111,14 @@ export default class LineEditor extends EventEmitter {
     ]);
   }
 
-  dispose() {}
+  close() {
+    if (this._onData != null) {
+      this._input.removeListener('data', this._onData);
+      this._onData = null;
+
+      this.emit('close');
+    }
+  }
 
   setPrompt(prompt: string): void {
     this._prompt = prompt;
@@ -147,7 +155,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   _sigint(): void {
-    process.kill(process.pid, 'SIGINT');
+    this.emit('SIGINT');
   }
 
   _textChanged(): void {
@@ -218,7 +226,7 @@ export default class LineEditor extends EventEmitter {
 
   _deleteRight(eofOnEmpty: boolean): void {
     if (this._buffer === '' && eofOnEmpty) {
-      this.emit('quit');
+      this.close();
       return;
     }
 
@@ -256,7 +264,6 @@ export default class LineEditor extends EventEmitter {
     this.emit('line', this._buffer);
     this._buffer = '';
     this._textChanged();
-    this.prompt();
   }
 
   _historyPrevious(): void {
@@ -350,9 +357,8 @@ export default class LineEditor extends EventEmitter {
       this._input.setRawMode(true);
       this._input.setEncoding('utf8');
       this._parser = new ANSIStreamParser();
-      this._input.on('data', t => {
-        this._parser.next(t);
-      });
+      this._onData = t => this._parser.next(t);
+      this._input.on('data', this._onData);
       this._parser.on('text', s => this._onText(s));
       this._parser.on('key', k => this._onKey(k));
       this._parser.on('cursor', c => this._onCursorPosition(c));
