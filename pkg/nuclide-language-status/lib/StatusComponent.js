@@ -121,7 +121,8 @@ export default class StatusComponent extends React.Component<Props, State> {
           {statuses.map(([status, visible]) =>
             this._renderProvider(
               status,
-              this.state.hoveredProviderName != null || visible,
+              visible,
+              this.state.hoveredProviderName != null,
             ),
           )}
         </div>
@@ -186,7 +187,11 @@ export default class StatusComponent extends React.Component<Props, State> {
     );
   };
 
-  _renderProvider = (status: ServerStatus, visible: boolean): React.Node => {
+  _renderProvider = (
+    status: ServerStatus,
+    visible: boolean,
+    hovered: boolean,
+  ): React.Node => {
     const {provider, data} = status;
 
     const icon = this._renderIcon(provider);
@@ -197,12 +202,18 @@ export default class StatusComponent extends React.Component<Props, State> {
         className={classnames(
           'nuclide-language-status-provider',
           'nuclide-language-status-provider-' + data.kind,
+          {
+            // CSS class with transitions to apply visual debounce on the
+            // provider tab to help reduce flicker, but still feel responsive
+            // on hover.
+            'nuclide-language-status-provider-debounce': !hovered,
+          },
         )}
         onMouseOver={this._onMouseOver}
         onMouseOut={this._onMouseOut}
         data-name={status.provider.name}
         key={status.provider.name}
-        style={{opacity: visible ? 1 : 0}}
+        style={{opacity: visible || hovered ? 1 : 0}}
         ref={this._setTooltipRef}>
         {icon}
         {progress}
