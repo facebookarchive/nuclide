@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import {getComponentDefinitionFromAst} from '..';
 import {parseCode, getComponentNameFromUri} from '../lib/uiComponentAst';
-import {BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE} from '../__mocks__/common';
+import {BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE} from '../__fixtures__/common';
 
 describe('getComponentNameFromUri', () => {
   it('returns null', () => {

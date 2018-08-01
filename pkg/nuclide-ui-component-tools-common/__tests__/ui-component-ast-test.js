@@ -15,7 +15,7 @@ import {
   getDefaultPropNames,
   formatLeadingComment,
 } from '../lib/uiComponentAst';
-import {BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE} from '../__mocks__/common';
+import {BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE} from '../__fixtures__/common';
 
 describe('ui-component-ast', () => {
   it('parses a React component module', () => {
