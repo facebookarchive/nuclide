@@ -204,14 +204,14 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     Set<Integer> linesToAdd =
         arguments
             .breakpoints
-            .parallelStream()
+            .stream()
             .map(newSourceBreakpoint -> newSourceBreakpoint.line)
             .collect(Collectors.toSet());
     ArrayList<BreakpointSpec> registeredBreakpointsForCurrentPath =
         registeredBreakpointsByFileName.get(path);
     Set<BreakpointSpec> breakpointSpecsToRemove =
         registeredBreakpointsForCurrentPath
-            .parallelStream()
+            .stream()
             .filter(breakpointSpec -> !linesToAdd.contains(breakpointSpec.getLine()))
             .collect(Collectors.toSet());
 
