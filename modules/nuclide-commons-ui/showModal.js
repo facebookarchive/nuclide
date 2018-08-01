@@ -106,10 +106,7 @@ export default function showModal(
       }
       ReactDOM.unmountComponentAtNode(hostElement);
       atomPanel.destroy();
-      if (
-        document.activeElement === document.body &&
-        previouslyFocusedElement != null
-      ) {
+      if (previouslyFocusedElement != null) {
         previouslyFocusedElement.focus();
       }
     },
