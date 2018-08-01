@@ -199,12 +199,11 @@ export function createStatus(status: string): Observable<TaskEvent> {
 
 export function createStep(
   stepName: ?string,
-  action: () => Observable<TaskEvent>,
+  action: () => Observable<TaskEvent> | Promise<TaskEvent>,
 ): Observable<TaskEvent> {
   return Observable.concat(
     Observable.of({type: 'progress', progress: null}),
-    // flowlint-next-line sketchy-null-string:off
-    stepName
+    Boolean(stepName)
       ? Observable.of({type: 'status', status: stepName})
       : Observable.empty(),
     Observable.defer(action),
