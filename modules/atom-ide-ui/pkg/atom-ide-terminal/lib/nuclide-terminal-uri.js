@@ -17,6 +17,7 @@ import crypto from 'crypto';
 import invariant from 'assert';
 import url from 'url';
 import uuid from 'uuid';
+import isEmpty from 'lodash/isEmpty';
 
 // Generate a unique random token that is included in every URI we generate.
 // We use this to check that URIs containing shell commands and similarly
@@ -89,9 +90,11 @@ export function infoFromUri(
 ): InstantiatedTerminalInfo {
   const {query} = url.parse(paneUri, true);
 
-  if (query == null) {
+  if (isEmpty(query)) {
+    // query can be null, '', or {}
     return {...TERMINAL_DEFAULT_INFO, key: uuid.v4()};
   } else {
+    invariant(query != null);
     const cwd = query.cwd === '' ? {} : {cwd: query.cwd};
     const command =
       query.command !== '' ? {command: JSON.parse(query.command)} : {};

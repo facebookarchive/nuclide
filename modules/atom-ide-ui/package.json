@@ -24,6 +24,7 @@
     "idb-keyval": "2.3.0",
     "idx": "1.2.0",
     "immutable": "4.0.0-rc.9",
+    "lodash": "4.17.10",
     "log4js": "1.1.1",
     "marked": "0.3.9",
     "nuclide-commons": "0.7.2-dev",

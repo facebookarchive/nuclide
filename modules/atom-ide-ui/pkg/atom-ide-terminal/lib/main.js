@@ -39,7 +39,10 @@ class Activation {
       focusManager,
       atom.workspace.addOpener(uri => {
         if (uri.startsWith(URI_PREFIX)) {
-          return new TerminalView(uri);
+          return new TerminalView(
+            uri,
+            this._cwd != null ? this._cwd.getCwd() : null,
+          );
         }
       }),
       atom.commands.add(

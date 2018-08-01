@@ -68,6 +68,7 @@ export const URI_PREFIX = 'atom://nuclide-terminal-view';
 export interface TerminalViewState {
   deserializer: 'TerminalView';
   paneUri: string;
+  cwd: ?string;
 }
 
 type ProcessExitCallback = () => mixed;
@@ -96,11 +97,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _isFirstOutput: boolean;
   _initialInput: string;
 
-  constructor(paneUri: string) {
+  constructor(paneUri: string, fallbackCwd: ?string = '') {
     this._paneUri = paneUri;
     const info = infoFromUri(paneUri);
     this._terminalInfo = info;
-    const cwd = (this._cwd = info.cwd == null ? null : info.cwd);
+    const cwd = (this._cwd = info.cwd || fallbackCwd);
     this._command = info.command == null ? null : info.command;
     this._title = info.title == null ? 'terminal' : info.title;
     this._path = cwd;
@@ -668,6 +669,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
     return {
       deserializer: 'TerminalView',
       paneUri: this._paneUri,
+      cwd: this._cwd,
     };
   }
 }
@@ -678,7 +680,7 @@ export function deserializeTerminalView(
   // Convert from/to uri to generate a new unique id.
   const info = infoFromUri(state.paneUri, true);
   const paneUri = uriFromInfo(info);
-  return new TerminalView(paneUri);
+  return new TerminalView(paneUri, state.cwd);
 }
 
 function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
