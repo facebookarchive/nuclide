@@ -94,7 +94,7 @@ export class LanguageStatusManager {
   // Atom doesn't provide a way to observe all text editors that are
   // visible. We manage this manually by looking at all the panes and
   // keeping track of the active text editors.
-  _onActiveTextEditor = (_: atom$TextEditor): void => {
+  _onActiveTextEditor = (_: ?atom$TextEditor): void => {
     const activePaneItems = atom.workspace
       .getPanes()
       .map(pane => pane.getActiveItem());

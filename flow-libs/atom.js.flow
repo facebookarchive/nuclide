@@ -1240,7 +1240,7 @@ declare class atom$Workspace {
   // Event Subscription
   observePanes(cb: (pane: atom$Pane) => void): IDisposable,
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable,
-  observeActiveTextEditor(callback: (editor: atom$TextEditor) => mixed): IDisposable,
+  observeActiveTextEditor(callback: (editor: ?atom$TextEditor) => mixed): IDisposable,
   onDidAddTextEditor(callback: (event: AddTextEditorEvent) => mixed): IDisposable,
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable,
   onDidDestroyPaneItem(callback: (event: DestroyPaneItemEvent) => mixed): IDisposable,
