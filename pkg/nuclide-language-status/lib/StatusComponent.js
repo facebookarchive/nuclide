@@ -233,12 +233,17 @@ export default class StatusComponent extends React.Component<Props, State> {
     if (icon != null) {
       return <Icon className="nuclide-language-status-icon" icon={icon} />;
     }
+    const renderer = new marked.Renderer();
+    // Plain text in the icon markdown should render inline not in a paragraph,
+    // so use a custom renderer for this.
+    renderer.paragraph = (s: string) =>
+      `<div style="display:inline">${s} </div>`;
     if (iconMarkdown != null) {
       return (
         <div
           className="nuclide-language-status-icon"
           dangerouslySetInnerHTML={{
-            __html: marked(iconMarkdown),
+            __html: marked(iconMarkdown, {renderer}),
           }}
         />
       );
