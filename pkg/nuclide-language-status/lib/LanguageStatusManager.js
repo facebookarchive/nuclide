@@ -11,6 +11,7 @@
 
 import type {LanguageStatusProvider, StatusKind} from './types';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import nullthrows from 'nullthrows';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -22,19 +23,13 @@ import StatusComponent from './StatusComponent';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
+const FEATURE_CONFIG_SETTINGS = 'nuclide-language-status.settings';
 const DEFAULT_SETTINGS_KIND: StatusKind = 'yellow';
 
 export class LanguageStatusManager {
   _providerRegistry: ProviderRegistry<LanguageStatusProvider>;
   _providersChanged: BehaviorSubject<void>;
-  _settings: Map<LanguageStatusProvider, StatusKind>;
-  // TODO (T30575384): This is currently a hack for deserializing settings.
-  // The (key,value) pairs in _deserializedSettings are (server name, kind)
-  // are populated immediately after LanguageStatusManager is constructed.
-  // When new entries are inserted into _settings, we look up whether or not
-  // there is an entry in _deserializedSettings first and use it if there is
-  // one, defaulting to DEFAULT_SETTINGS_KIND otherwise.
-  _deserializedSettings: Map<string, StatusKind> = new Map();
+  _settings: Map<string, StatusKind>;
   _statusComponentDisposables: Map<atom$TextEditor, IDisposable>;
   _disposables: UniversalDisposable;
 
@@ -42,7 +37,9 @@ export class LanguageStatusManager {
     this._providerRegistry = new ProviderRegistry();
     this._providersChanged = new BehaviorSubject();
     this._statusComponentDisposables = new Map();
-    this._settings = new Map();
+    this._settings = new Map(
+      featureConfig.getWithDefaults(FEATURE_CONFIG_SETTINGS, []),
+    );
     this._disposables = new UniversalDisposable();
     this._disposables.add(() =>
       this._statusComponentDisposables.forEach(d => d.dispose),
@@ -50,29 +47,6 @@ export class LanguageStatusManager {
     this._disposables.add(
       atom.workspace.observeActiveTextEditor(this._onActiveTextEditor),
     );
-  }
-
-  serialize(): any {
-    const serializedSettings = {};
-    // TODO (T30575384): Figure out how to serialize information to uniquely
-    // identify a provider instead of just the name.
-    for (const [providerName, kind] of this._deserializedSettings) {
-      serializedSettings[providerName] = kind;
-    }
-    // Add any changes made to the settings during this Nuclide session.
-    for (const [provider, kind] of this._settings) {
-      serializedSettings[provider.name] = kind;
-    }
-
-    return {
-      settings: serializedSettings,
-    };
-  }
-
-  deserialize(state: any): void {
-    for (const key in state.settings) {
-      this._deserializedSettings.set(key, state.settings[key]);
-    }
   }
 
   dispose() {
@@ -124,19 +98,18 @@ export class LanguageStatusManager {
     }
   };
 
-  _onUpdateSettings = (
-    newSettings: Map<LanguageStatusProvider, StatusKind>,
-  ) => {
+  _onUpdateSettings = (newSettings: Map<string, StatusKind>) => {
     const changedSettings = {};
-    for (const [provider, kind] of newSettings) {
-      if (this._settings.get(provider) !== kind) {
-        changedSettings[provider.name] = kind;
+    for (const [name, kind] of newSettings) {
+      if (this._settings.get(name) !== kind) {
+        changedSettings[name] = kind;
       }
+      this._settings.set(name, kind);
     }
-    this._settings = newSettings;
+    featureConfig.set(FEATURE_CONFIG_SETTINGS, Array.from(this._settings));
     this._providersChanged.next();
     track('nuclide-language-status.settings-changed', {
-      settings: this.serialize().settings,
+      settings: this._settings,
       changedSettings,
     });
   };
@@ -147,23 +120,11 @@ export class LanguageStatusManager {
         const providers = Array.from(
           this._providerRegistry.getAllProvidersForEditor(editor),
         );
-        // Add providers to settings map.
-        for (const provider of providers) {
-          if (!this._settings.has(provider)) {
-            // TODO (T30575384): This is a hack for deserialization
-            const deserializedKind = this._deserializedSettings.get(
-              provider.name,
-            );
-            this._settings.set(
-              provider,
-              deserializedKind != null
-                ? deserializedKind
-                : DEFAULT_SETTINGS_KIND,
-            );
-          }
-        }
         return providers
           .map(provider => {
+            if (!this._settings.has(provider.name)) {
+              this._settings.set(provider.name, DEFAULT_SETTINGS_KIND);
+            }
             return provider
               .observeStatus(editor)
               .startWith({kind: 'null'})

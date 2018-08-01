@@ -28,10 +28,8 @@ export type ServerStatus = {
 
 type Props = {
   serverStatuses: Array<ServerStatus>, // all providers relevant to this editor, plus their data
-  settings: Map<LanguageStatusProvider, StatusKind>,
-  onUpdateSettings: (
-    newSettings: Map<LanguageStatusProvider, StatusKind>,
-  ) => void,
+  settings: Map<string, StatusKind>,
+  onUpdateSettings: (newSettings: Map<string, StatusKind>) => void,
   editor: atom$TextEditor,
 };
 
@@ -81,7 +79,7 @@ export default class StatusComponent extends React.Component<Props, State> {
         // For a status to be potentially visible, (1) the user has to have set its
         // preference to be shown (always/on-progress/on-errors), and (2) the status
         // provider must have reported a non-null status.data.kind.
-        const settingKind = settings.get(status.provider);
+        const settingKind = settings.get(status.provider.name);
         return (
           settingKind != null &&
           settingKind !== 'null' &&
@@ -94,7 +92,7 @@ export default class StatusComponent extends React.Component<Props, State> {
         // "contingently-visible" (i.e. visible only when you hover)
         // There's no extra value in showing the tab when things are working
         // so visible === false whenever status.data.kind === 'green'.
-        const kind = settings.get(status.provider);
+        const kind = settings.get(status.provider.name);
         const visible =
           status.data.kind !== 'green' &&
           kindPriorities.indexOf(kind) >=
@@ -169,7 +167,7 @@ export default class StatusComponent extends React.Component<Props, State> {
       .filter(([status, _]) => {
         // Don't show the success bar for servers unless the setting is
         // 'Show Always'.
-        const setting = settings.get(status.provider);
+        const setting = settings.get(status.provider.name);
         return !(setting !== 'green' && status.data.kind === 'green');
       })
       .map(([s, _]) => s.data.kind)

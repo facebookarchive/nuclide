@@ -17,11 +17,9 @@ import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import * as React from 'react';
 
 type Props = {
-  onUpdateSettings: (
-    newSettings: Map<LanguageStatusProvider, StatusKind>,
-  ) => void,
+  onUpdateSettings: (newSettings: Map<string, StatusKind>) => void,
   providers: Array<LanguageStatusProvider>,
-  settings: Map<LanguageStatusProvider, StatusKind>,
+  settings: Map<string, StatusKind>,
   tooltipRoot: HTMLElement,
 };
 
@@ -39,15 +37,18 @@ const dropdownItems: Array<MenuItem> = Array.from(dropdownLabels).map(
 class SettingsTooltipComponent extends React.PureComponent<Props> {
   render(): React.Node {
     const relevantProviders = [...this.props.settings.entries()]
-      .filter(([provider, _]) => this.props.providers.includes(provider))
+      .map(([name]) =>
+        this.props.providers.find(provider => provider.name === name),
+      )
+      .filter(Boolean)
       .sort(
-        ([a], [b]) =>
+        (a, b) =>
           a.priority === b.priority
             ? a.name.localeCompare(b.name)
             : b.priority - a.priority,
       );
     this._styleTooltip();
-    const servers = relevantProviders.map(([provider, kind]) => {
+    const servers = relevantProviders.map(provider => {
       return (
         <p
           className="nuclide-language-status-settings-item"
@@ -58,7 +59,7 @@ class SettingsTooltipComponent extends React.PureComponent<Props> {
             className="nuclide-language-status-settings-dropdown"
             isFlat={true}
             options={dropdownItems}
-            value={kind}
+            value={this.props.settings.get(provider.name)}
           />
         </p>
       );
@@ -81,7 +82,7 @@ class SettingsTooltipComponent extends React.PureComponent<Props> {
 
   _updateSettings(provider: LanguageStatusProvider, newKind: StatusKind): void {
     const newSettings = new Map(this.props.settings);
-    newSettings.set(provider, newKind);
+    newSettings.set(provider.name, newKind);
     this.props.onUpdateSettings(newSettings);
   }
 }
