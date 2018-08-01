@@ -102,6 +102,14 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         const {isCollapsed} = this.state;
         const newIsCollapsed = isCollapsed && !this._threadIsFocused();
         this._setCollapsed(newIsCollapsed);
+        setTimeout(() => {
+          if (this._threadIsFocused() && this._nestedTreeItem != null) {
+            const el = ReactDOM.findDOMNode(this._nestedTreeItem);
+            if (el instanceof Element) {
+              scrollIntoViewIfNeeded(el, false);
+            }
+          }
+        }, 100);
       }),
       this._expandedSubject
         .asObservable()
@@ -143,16 +151,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
             isCollapsed: newIsCollapsed,
           });
         }),
-      observableFromSubscribeFunction(
-        service.onDidChangeActiveThread.bind(service),
-      ).subscribe(() => {
-        if (this._threadIsFocused() && this._nestedTreeItem != null) {
-          const el = ReactDOM.findDOMNode(this._nestedTreeItem);
-          if (el instanceof Element) {
-            scrollIntoViewIfNeeded(el, false);
-          }
-        }
-      }),
     );
   }
 
