@@ -161,6 +161,10 @@ export class BigDigServer {
   }
 
   _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
+    ws.on('error', err => {
+      this._logger.error('Received error from socket', err);
+    });
+
     const {pathname} = url.parse(req.url);
     const clientId = req.headers.client_id;
     this._logger.info(`connection negotiation via path ${String(pathname)}`);
