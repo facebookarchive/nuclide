@@ -76,6 +76,7 @@ type ProcessExitCallback = () => mixed;
 export class TerminalView implements PtyClient, TerminalInstance {
   _paneUri: string;
   _cwd: ?NuclideUri;
+  _key: string;
   _path: ?NuclideUri;
   _command: ?Command;
   _useTitleAsPath: boolean;
@@ -103,6 +104,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
     this._terminalInfo = info;
     const cwd = (this._cwd = info.cwd || fallbackCwd);
     this._command = info.command == null ? null : info.command;
+    this._key = info.key;
     this._title = info.title == null ? 'terminal' : info.title;
     this._path = cwd;
     this._initialInput =
@@ -639,6 +641,10 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   getURI(): string {
     return this._paneUri;
+  }
+
+  getTerminalKey(): string {
+    return this._key;
   }
 
   getDefaultLocation(): string {

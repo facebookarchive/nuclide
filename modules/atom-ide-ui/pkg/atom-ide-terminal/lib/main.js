@@ -13,7 +13,6 @@
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
 import os from 'os';
-import nullthrows from 'nullthrows';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
@@ -23,7 +22,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {setRpcService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
+import {uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
@@ -78,17 +77,12 @@ class Activation {
       },
       close: (key: string) => {
         destroyItemWhere(item => {
-          if (item.getURI == null || item.getURI() == null) {
+          // $FlowFixMe this is on TerminalViews only
+          if (typeof item.getTerminalKey !== 'function') {
             return false;
           }
 
-          const uri = nullthrows(item.getURI());
-          try {
-            // Only close terminal tabs with the same unique key.
-            const otherInfo = infoFromUri(uri);
-            return otherInfo.key === key;
-          } catch (e) {}
-          return false;
+          return item.getTerminalKey() === key;
         });
       },
     };
