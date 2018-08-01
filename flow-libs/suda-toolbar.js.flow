@@ -8,12 +8,14 @@
  * @flow
  */
 
+type toolbar$Callback = string | (() => void);
+
 type toolbar$ButtonSpec = {
     priority?: number,
     tooltip?: string,
     iconset?: string,
     icon?: string,
-    callback?: string | (() => void),
+    callback?: toolbar$Callback | {[string]: toolbar$Callback},
 }
 
 type toolbar$ToolbarManager = {
