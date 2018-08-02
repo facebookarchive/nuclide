@@ -20,7 +20,7 @@ const p = nuclidePath => path.resolve(__dirname, '..', nuclidePath);
 
 module.exports = {
   displayName: 'atom',
-  rootDir: p('../..'),
+  rootDir: p(''),
   roots: [p('')],
   testMatch: ['**/__atom_tests__/**/*.js?(x)'],
   transform: {
