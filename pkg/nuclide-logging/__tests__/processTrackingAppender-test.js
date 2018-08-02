@@ -35,7 +35,7 @@ describe('processTrackingAppender', () => {
 
     expect(trackSampled).toHaveBeenCalledWith('process-exit', 10, {
       command: 'true 1',
-      duration: jasmine.any(Number),
+      duration: expect.any(Number),
     });
   });
 });

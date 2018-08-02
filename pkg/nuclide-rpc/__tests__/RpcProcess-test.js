@@ -142,12 +142,12 @@ describe('RpcProcess', () => {
     await getService();
     const process = server._process;
     invariant(process != null);
-    const spy = jasmine.createSpy();
+    const spy = jest.fn();
     process.on('exit', spy);
     server.dispose();
-    waitsFor(() => spy.wasCalled);
+    await waitsFor(() => spy.mock.calls.length > 0);
 
-    const exitSpy = jasmine.createSpy();
+    const exitSpy = jest.fn();
     server.observeExitMessage().subscribe(() => exitSpy());
     // Manual dispose should not trigger any side effects.
     expect(exitSpy).not.toHaveBeenCalled();

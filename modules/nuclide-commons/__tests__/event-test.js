@@ -17,7 +17,7 @@ import {attachEvent, observableFromSubscribeFunction} from '../event';
 describe('attachEvent', () => {
   describe('the returned disposable', () => {
     it("doesn't remove other listeners when disposed multiple times", () => {
-      const foo = jasmine.createSpy('foo');
+      const foo = jest.fn();
       const emitter = new EventEmitter();
       const d1 = attachEvent(emitter, 'event', foo);
       attachEvent(emitter, 'event', foo);

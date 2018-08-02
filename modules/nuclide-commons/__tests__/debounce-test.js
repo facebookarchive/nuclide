@@ -18,7 +18,7 @@ const sleep = n => new Promise(resolve => setTimeout(resolve, n));
 describe('debounce()', () => {
   it('only calls function once after time advances', async () => {
     jest.useRealTimers();
-    const timerCallback: any = jasmine.createSpy('timerCallback');
+    const timerCallback: any = jest.fn();
     const debouncedFunc = debounce(timerCallback, 10, false);
 
     debouncedFunc();
@@ -30,7 +30,7 @@ describe('debounce()', () => {
 
   it('disposes', () => {
     jest.useFakeTimers();
-    const timerCallback: any = jasmine.createSpy('timerCallback');
+    const timerCallback: any = jest.fn();
     const debouncedFunc = debounce(timerCallback, 100, false);
 
     debouncedFunc();

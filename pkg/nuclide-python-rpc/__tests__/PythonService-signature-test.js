@@ -67,7 +67,7 @@ describe('PythonService', () => {
         signatures: [
           {
             label: 'isinstance(obj, class_or_tuple)',
-            documentation: jasmine.any(String),
+            documentation: expect.any(String),
             parameters: [
               {label: 'obj', documentation: ''},
               {label: 'class_or_tuple', documentation: ''},
@@ -85,7 +85,7 @@ describe('PythonService', () => {
         signatures: [
           {
             label: 'isinstance(obj, class_or_tuple)',
-            documentation: jasmine.any(String),
+            documentation: expect.any(String),
             parameters: [
               {label: 'obj', documentation: ''},
               {label: 'class_or_tuple', documentation: ''},

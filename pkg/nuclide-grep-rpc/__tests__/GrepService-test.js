@@ -48,7 +48,7 @@ describe('GrepService.grepReplace', () => {
       {
         type: 'error',
         filePath: nuclideUri.join(tempDir, 'nonexistent.txt'),
-        message: jasmine.any(String),
+        message: expect.any(String),
       },
       {
         type: 'success',

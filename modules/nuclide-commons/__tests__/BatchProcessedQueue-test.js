@@ -16,7 +16,7 @@ jest.useFakeTimers();
 
 describe('analytics - BatchProcessedQueue', () => {
   it('regular operation', () => {
-    const handler = jasmine.createSpy('handler');
+    const handler = jest.fn();
     const queue = new BatchProcessedQueue(5000, handler);
 
     queue.add(1);
