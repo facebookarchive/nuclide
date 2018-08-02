@@ -20,11 +20,33 @@ import type {ComponentProp} from './types';
 
 const babelParserOptions = babylonOptions;
 
+function matchesExtension(
+  parts: Array<string>,
+  extension: Array<string>,
+): boolean {
+  if (parts.length !== extension.length + 1) {
+    return false;
+  }
+
+  // Start at 1 to skip the basename, parts should be the entire filename.
+  for (let i = 1; i < parts.length; i++) {
+    if (parts[i] !== extension[i - 1]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function getComponentNameFromUri(uri: NuclideUri): ?string {
   const basename = nuclideUri.basename(uri);
   const parts = basename.split('.');
-  if (!(parts.length === 3 && parts[1] === 'react' && parts[2] === 'js')) {
-    // This must be exactly ComponentName.react.js.
+  if (
+    !matchesExtension(parts, ['react', 'js']) &&
+    !matchesExtension(parts, ['experimental', 'react', 'js'])
+  ) {
+    // This must be exactly ComponentName.react.js or
+    // ComponentName.experimental.react.js.
     // We don't want to index ComponentName.example.react.js and clobber over
     // the ComponentName definition.
     return null;
