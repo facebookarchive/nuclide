@@ -43,13 +43,21 @@ export class ConfirmRefactorComponent extends React.PureComponent<Props> {
   render(): React.Node {
     const {response} = this.props.phase;
     const editCount = new Map();
+    let isLargeRefactoring = false;
     for (const [path, edits] of response.edits) {
+      // To avoid crashing the UI with too many edits to render, we place a
+      //   threshold at 1000
+      if (editCount.size > 1000) {
+        isLargeRefactoring = true;
+        break;
+      }
       editCount.set(path, (editCount.get(path) || 0) + edits.length);
     }
     // TODO: display actual diff output here.
     return (
       <div>
-        This refactoring will affect {editCount.size} files. Confirm?
+        This refactoring will affect {response.edits.size} files
+        {isLargeRefactoring ? ' (showing first 1000)' : ''}. Confirm?
         <div
           // Make the text copyable + selectable.
           className="nuclide-refactorizer-confirm-list native-key-bindings"
