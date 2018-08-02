@@ -28,6 +28,6 @@ export default (async function waitsFor(
       throw error;
     }
     // eslint-disable-next-line no-await-in-loop
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 40));
   }
 });
