@@ -289,7 +289,9 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
+  async getVariablesByScope(
+    selectedScope: ?string,
+  ): Promise<VariablesInScope[]> {
     const session = this._ensureDebugSession();
 
     const activeThread = this.getActiveThread();

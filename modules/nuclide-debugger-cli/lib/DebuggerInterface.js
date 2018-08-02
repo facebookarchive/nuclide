@@ -40,8 +40,7 @@ export interface DebuggerInterface {
   ): Promise<DebugProtocol.StackFrame[]>;
   setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>;
   getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>;
-  getVariables(): Promise<VariablesInScope[]>;
-  getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>;
+  getVariablesByScope(selectedScope: ?string): Promise<VariablesInScope[]>;
   setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>;
   setFunctionBreakpoint(func: string): Promise<BreakpointSetResult>;
   getAllBreakpoints(): Breakpoint[];

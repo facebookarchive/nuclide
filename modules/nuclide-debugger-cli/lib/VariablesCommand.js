@@ -49,7 +49,7 @@ when the program stops the most recent frame will be selected.
       throw new Error("'variables' takes at most one scope parameter");
     }
 
-    const variables = await this._debugger.getVariables(args[0]);
+    const variables = await this._debugger.getVariablesByScope(args[0]);
     for (const scope of variables) {
       const vars = scope.variables;
       if (scope.expensive && vars == null) {
