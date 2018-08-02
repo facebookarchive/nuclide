@@ -67,6 +67,7 @@ import type {
   DebuggerModeType,
 } from '../types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {Expected} from 'nuclide-commons/expected';
 
@@ -896,6 +897,7 @@ export class Thread implements IThread {
 }
 
 export class Process implements IProcess {
+  _breakpoints: IBreakpoint[];
   _sources: Map<string, ISource>;
   _threads: Map<number, Thread>;
   _session: ISession & ITreeElement;
@@ -904,12 +906,28 @@ export class Process implements IProcess {
   _pendingStop: boolean;
 
   constructor(configuration: IProcessConfig, session: ISession & ITreeElement) {
+    this._breakpoints = [];
     this._configuration = configuration;
     this._session = session;
     this._threads = new Map();
     this._sources = new Map();
     this._pendingStart = true;
     this._pendingStop = false;
+  }
+
+  get breakpoints(): IBreakpoint[] {
+    return this._breakpoints;
+  }
+
+  getBreakpointById(id: string): ?IBreakpoint {
+    return this._breakpoints.find(bp => bp.getId() === id);
+  }
+
+  setBreakpointById(id: string, breakpoint: IBreakpoint): void {
+    const index = this._breakpoints.findIndex(bp => bp.getId() === id);
+    if (index >= 0) {
+      this._breakpoints[index] = breakpoint;
+    }
   }
 
   get sources(): Map<string, ISource> {
@@ -1042,6 +1060,53 @@ export class Process implements IProcess {
         ExpressionContainer.allValues.clear();
       }
     }
+  }
+
+  addBreakpoints(
+    uri: string,
+    rawData: IRawBreakpoint[],
+    fireEvent?: boolean = true,
+  ): Breakpoint[] {
+    const newBreakpoints = rawData.map(
+      rawBp =>
+        new Breakpoint(
+          uri,
+          rawBp.line,
+          rawBp.column,
+          rawBp.enabled,
+          rawBp.condition,
+          rawBp.hitCondition,
+        ),
+    );
+    this._breakpoints = this._breakpoints.concat(newBreakpoints);
+
+    return newBreakpoints;
+  }
+
+  updateBreakpoints(data: {[id: string]: DebugProtocol.Breakpoint}): void {
+    const updated: IBreakpoint[] = [];
+    this._breakpoints.forEach(bp => {
+      const bpData = data[bp.getId()];
+      if (bpData != null) {
+        bp.line = bpData.line != null ? bpData.line : bp.line;
+        bp.endLine = bpData.endLine != null ? bpData.endLine : bp.endLine;
+        bp.column = bpData.column != null ? bpData.column : bp.column;
+        bp.endColumn = bpData.endColumn;
+        bp.verified = bpData.verified != null ? bpData.verified : bp.verified;
+        bp.idFromAdapter = bpData.id;
+        bp.message = bpData.message;
+        bp.adapterData = bpData.source
+          ? bpData.source.adapterData
+          : bp.adapterData;
+        updated.push(bp);
+      }
+    });
+  }
+
+  removeBreakpointsByUris(uris: Array<string>): void {
+    this._breakpoints = this._breakpoints.filter(breakpoint => {
+      return !uris.includes(breakpoint.uri);
+    });
   }
 
   async completions(
@@ -1363,6 +1428,10 @@ export class Model implements IModel {
     this._breakpointsActivated = true;
     this._sortAndDeDup();
 
+    this.getProcesses().forEach(process => {
+      process.addBreakpoints(uri, rawData);
+    });
+
     if (fireEvent) {
       this._emitter.emit(BREAKPOINTS_CHANGED, {added: newBreakpoints});
     }
@@ -1399,22 +1468,92 @@ export class Model implements IModel {
     this._emitter.emit(BREAKPOINTS_CHANGED, {changed: updated});
   }
 
-  _sortAndDeDup(): void {
-    this._breakpoints = this._breakpoints.sort((first, second) => {
-      if (first.uri !== second.uri) {
-        return first.uri.localeCompare(second.uri);
+  updateBreakpointsForProcess(
+    data: {[id: string]: DebugProtocol.Breakpoint},
+    process: IProcess,
+  ): void {
+    const updated: IBreakpoint[] = [];
+    for (const bpID of Object.keys(data)) {
+      const bpData = data[bpID];
+      if (bpData != null) {
+        const matchingBreakpoint = process.getBreakpointById(bpID);
+        if (matchingBreakpoint == null) {
+          // Create a new breakpoint in the process.
+          const targetUri = process.configuration.targetUri;
+          const sourcePath = bpData.source != null ? bpData.source.path : null;
+          const remoteUri =
+            nuclideUri.isRemote(targetUri) && sourcePath != null
+              ? nuclideUri.createRemoteUri(
+                  nuclideUri.getHostname(targetUri),
+                  sourcePath,
+                )
+              : sourcePath;
+          if (remoteUri != null && bpData.line != null) {
+            const newBreakpoint = new Breakpoint(
+              remoteUri,
+              bpData.line != null ? bpData.line : -1,
+              bpData.column,
+            );
+            process.breakpoints.push(newBreakpoint);
+            updated.push(newBreakpoint);
+          }
+        } else {
+          matchingBreakpoint.line =
+            bpData.line != null ? bpData.line : matchingBreakpoint.line;
+          matchingBreakpoint.endLine =
+            bpData.endLine != null
+              ? bpData.endLine
+              : matchingBreakpoint.endLine;
+          matchingBreakpoint.column =
+            bpData.column != null ? bpData.column : matchingBreakpoint.column;
+          matchingBreakpoint.endColumn = bpData.endColumn;
+          matchingBreakpoint.verified =
+            bpData.verified != null
+              ? bpData.verified
+              : matchingBreakpoint.verified;
+          matchingBreakpoint.idFromAdapter = bpData.id;
+          matchingBreakpoint.message = bpData.message;
+          matchingBreakpoint.adapterData = bpData.source
+            ? bpData.source.adapterData
+            : matchingBreakpoint.adapterData;
+          updated.push(matchingBreakpoint);
+          process.setBreakpointById(bpID, matchingBreakpoint);
+        }
       }
-      if (first.line === second.line) {
-        return first.column - second.column;
-      }
+    }
+    this._sortAndDeDup(process);
 
-      return first.line - second.line;
-    });
-    this._breakpoints = distinct(
-      this._breakpoints,
-      bp =>
-        `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`,
-    );
+    this._emitter.emit(BREAKPOINTS_CHANGED, {changed: updated});
+  }
+
+  _sortAndDeDup(process: ?IProcess): void {
+    const distinctFn = breakpoints => {
+      return distinct(
+        // Flow doesn't seem to be able to make breakpoints be IBreakpoint.
+        (breakpoints: any),
+        bp =>
+          `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`,
+      ).sort((first, second) => {
+        if (first.uri !== second.uri) {
+          return first.uri.localeCompare(second.uri);
+        }
+        if (first.line === second.line) {
+          return first.column - second.column;
+        }
+
+        return first.line - second.line;
+      });
+    };
+
+    if (process == null) {
+      this._breakpoints = distinctFn(this._breakpoints);
+    } else {
+      process.breakpoints.splice(
+        0,
+        process.breakpoints.length,
+        ...distinctFn(process.breakpoints),
+      );
+    }
   }
 
   setEnablement(element: IEnableable, enable: boolean): void {
