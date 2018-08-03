@@ -42,7 +42,7 @@ export function open(ui: RefactorUI): OpenAction {
 export function gotRefactorings(
   editor: atom$TextEditor,
   originalRange: atom$Range,
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   availableRefactorings: Array<AvailableRefactoring>,
 ): GotRefactoringsAction {
   return {
@@ -50,7 +50,7 @@ export function gotRefactorings(
     payload: {
       editor,
       originalRange,
-      provider,
+      providers,
       availableRefactorings,
     },
   };
@@ -87,13 +87,13 @@ export function pickedRefactor(
 }
 
 export function execute(
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   refactoring: RefactorRequest,
 ): ExecuteAction {
   return {
     type: 'execute',
     payload: {
-      provider,
+      providers,
       refactoring,
     },
   };
@@ -132,7 +132,7 @@ export function displayDiffPreview(
 
 export function displayRename(
   editor: TextEditor,
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   selectedText: string,
   mountPosition: atom$Point,
   symbolPosition: atom$Point,
@@ -141,7 +141,7 @@ export function displayRename(
     type: 'display-rename',
     payload: {
       editor,
-      provider,
+      providers,
       selectedText,
       mountPosition,
       symbolPosition,

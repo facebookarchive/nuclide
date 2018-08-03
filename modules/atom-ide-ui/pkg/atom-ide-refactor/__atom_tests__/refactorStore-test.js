@@ -175,7 +175,7 @@ describe('refactorStore', () => {
         });
         const displayRenameRequest = [
           openEditor,
-          provider,
+          [provider],
           TEST_FILE_SELECTED_TEXT,
           TEST_FILE_MOUNT_POINT,
           TEST_FILE_SYMBOL_POINT,
@@ -188,7 +188,7 @@ describe('refactorStore', () => {
           editor: openEditor,
           newName: 'bar',
         };
-        store.dispatch(Actions.execute(provider, rename));
+        store.dispatch(Actions.execute([provider], rename));
         await waitForPhase('execute');
         store.dispatch(Actions.close());
         await waitForClose();
@@ -228,7 +228,7 @@ describe('refactorStore', () => {
         refactorReturn = deferred;
         const displayRenameRequest = [
           openEditor,
-          provider,
+          [provider],
           TEST_FILE_SELECTED_TEXT,
           TEST_FILE_MOUNT_POINT,
           TEST_FILE_SYMBOL_POINT,
@@ -241,7 +241,7 @@ describe('refactorStore', () => {
           editor: openEditor,
           newName: 'bar',
         };
-        store.dispatch(Actions.execute(provider, rename));
+        store.dispatch(Actions.execute([provider], rename));
         await waitForPhase('execute');
         store.dispatch(Actions.close());
         await waitForClose();
@@ -268,7 +268,7 @@ describe('refactorStore', () => {
         refactorReturn = Observable.throw(new Error());
         const displayRenameRequest = [
           openEditor,
-          provider,
+          [provider],
           TEST_FILE_SELECTED_TEXT,
           TEST_FILE_MOUNT_POINT,
           TEST_FILE_SYMBOL_POINT,
@@ -281,7 +281,7 @@ describe('refactorStore', () => {
           editor: openEditor,
           newName: 'bar',
         };
-        store.dispatch(Actions.execute(provider, rename));
+        store.dispatch(Actions.execute([provider], rename));
         await waitForPhase('execute');
         store.dispatch(Actions.close());
         await waitForClose();
@@ -293,7 +293,7 @@ describe('refactorStore', () => {
         refactorReturn = Observable.empty();
         const displayRenameRequest = [
           openEditor,
-          provider,
+          [provider],
           TEST_FILE_SELECTED_TEXT,
           TEST_FILE_MOUNT_POINT,
           TEST_FILE_SYMBOL_POINT,
@@ -306,7 +306,7 @@ describe('refactorStore', () => {
           editor: openEditor,
           newName: 'bar',
         };
-        store.dispatch(Actions.execute(provider, rename));
+        store.dispatch(Actions.execute([provider], rename));
         await waitForPhase('execute');
         store.dispatch(Actions.close());
         await waitForClose();
@@ -331,7 +331,7 @@ describe('refactorStore', () => {
 
         const displayRenameRequest = [
           openEditor,
-          provider,
+          [provider],
           TEST_FILE_SELECTED_TEXT,
           TEST_FILE_MOUNT_POINT,
           TEST_FILE_SYMBOL_POINT,
@@ -344,7 +344,7 @@ describe('refactorStore', () => {
           editor: openEditor,
           newName: 'bar',
         };
-        store.dispatch(Actions.execute(provider, rename));
+        store.dispatch(Actions.execute([provider], rename));
         await waitForPhase('execute');
         store.dispatch(Actions.close());
         await waitForClose();
@@ -425,7 +425,7 @@ describe('refactorStore', () => {
           range: new Range([0, 0], [0, 0]),
           arguments: new Map([['new_name', 'test']]),
         };
-        store.dispatch(Actions.execute(provider, asyncify));
+        store.dispatch(Actions.execute([provider], asyncify));
         await waitForClose();
         expect(openEditor.getText()).toEqual('test\nbar\nfoo\n');
       });

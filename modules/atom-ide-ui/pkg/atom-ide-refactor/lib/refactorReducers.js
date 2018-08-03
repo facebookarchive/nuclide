@@ -100,7 +100,7 @@ function gotRefactorings(
     ui: state.ui,
     phase: {
       type: 'pick',
-      provider: action.payload.provider,
+      providers: action.payload.providers,
       editor,
       originalRange,
       availableRefactorings: action.payload.availableRefactorings,
@@ -135,18 +135,18 @@ function pickedRefactor(
   invariant(state.phase.type === 'pick');
 
   const {refactoring} = action.payload;
-  const {provider, editor, originalRange} = state.phase;
+  const {providers, editor, originalRange} = state.phase;
 
   return {
     type: 'open',
     ui: state.ui,
-    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
+    phase: getRefactoringPhase(refactoring, providers, editor, originalRange),
   };
 }
 
 function getRefactoringPhase(
   refactoring: AvailableRefactoring,
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   editor: atom$TextEditor,
   originalRange: atom$Range,
 ): RefactoringPhase {
@@ -154,7 +154,7 @@ function getRefactoringPhase(
     case 'freeform':
       return {
         type: 'freeform',
-        provider,
+        providers,
         editor,
         originalRange,
         refactoring,
@@ -232,7 +232,7 @@ function displayRename(
   action: DisplayRenameAction,
 ): RefactorState {
   const {
-    provider,
+    providers,
     editor,
     selectedText,
     mountPosition,
@@ -244,7 +244,7 @@ function displayRename(
     ui: 'rename', // Rename doesn't use MainRefactorComponent so we forgo `state.ui`
     phase: {
       type: 'rename',
-      provider,
+      providers,
       editor,
       selectedText,
       mountPosition,

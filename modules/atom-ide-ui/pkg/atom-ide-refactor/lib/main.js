@@ -120,11 +120,11 @@ class Activation {
 
           const mountPosition = editor.getSelectedBufferRange().start;
 
-          const provider = Array.from(
+          const renameProviders = Array.from(
             this._providerRegistry.getAllProvidersForEditor(editor),
-          ).find(p => p.rename != null);
+          ).filter(p => p.rename != null);
 
-          if (provider == null) {
+          if (renameProviders.length === 0) {
             getLogger('rename').error('Rename Provider Not Found');
             return null;
           }
@@ -132,7 +132,7 @@ class Activation {
           this._store.dispatch(
             Actions.displayRename(
               editor,
-              provider,
+              renameProviders,
               selectedText,
               mountPosition,
               position,

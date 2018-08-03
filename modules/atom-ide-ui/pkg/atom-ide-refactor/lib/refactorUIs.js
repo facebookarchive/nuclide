@@ -185,13 +185,13 @@ class InlineRenameRenderer {
   renderRenameInput(
     editor: atom$TextEditor,
     selectedText: string,
-    provider: RefactorProvider,
+    providers: RefactorProvider[],
     symbolPosition: atom$Point,
   ): React.Element<React.ComponentType<RenameComponentPropsType>> {
     return (
       <RenameComponent
         selectedText={selectedText}
-        provider={provider}
+        providers={providers}
         parentEditor={editor}
         store={this._store}
         symbolPosition={symbolPosition}
@@ -251,7 +251,7 @@ class InlineRenameRenderer {
       container.className = 'nuclide-refactorizer-rename-container';
 
       const {
-        provider,
+        providers,
         editor,
         selectedText,
         mountPosition,
@@ -261,7 +261,7 @@ class InlineRenameRenderer {
       const renameElement = this.renderRenameInput(
         editor,
         selectedText,
-        provider,
+        providers,
         symbolPosition,
       );
 

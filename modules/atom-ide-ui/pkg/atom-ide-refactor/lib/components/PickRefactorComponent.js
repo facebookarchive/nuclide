@@ -51,7 +51,7 @@ export class PickRefactorComponent extends React.Component<
   _pickRefactor(refactoring: AvailableRefactoring): void {
     if (refactoring.kind === 'freeform' && refactoring.arguments.length === 0) {
       this.props.store.dispatch(
-        Actions.execute(this.props.pickPhase.provider, {
+        Actions.execute(this.props.pickPhase.providers, {
           kind: 'freeform',
           editor: this.props.pickPhase.editor,
           originalRange: this.props.pickPhase.originalRange,

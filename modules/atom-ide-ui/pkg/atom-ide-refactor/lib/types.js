@@ -151,7 +151,7 @@ export type GetRefactoringsPhase = {|
 
 export type PickPhase = {|
   type: 'pick',
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   originalRange: atom$Range,
   editor: atom$TextEditor,
   availableRefactorings: Array<AvailableRefactoring>,
@@ -159,7 +159,7 @@ export type PickPhase = {|
 
 export type FreeformPhase = {|
   type: 'freeform',
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   editor: atom$TextEditor,
   originalRange: atom$Range,
   refactoring: FreeformRefactoring,
@@ -184,7 +184,7 @@ export type DiffPreviewPhase = {|
 
 export type RenamePhase = {|
   type: 'rename',
-  provider: RefactorProvider,
+  providers: RefactorProvider[],
   editor: TextEditor,
   selectedText: string,
   mountPosition: atom$Point,
@@ -201,7 +201,6 @@ export type ProgressPhase = {|
 export type Phase =
   | GetRefactoringsPhase
   | PickPhase
-  | RenamePhase
   | FreeformPhase
   | ExecutePhase
   | ConfirmPhase
@@ -230,7 +229,7 @@ export type GotRefactoringsAction = {|
   payload: {
     originalRange: atom$Range,
     editor: atom$TextEditor,
-    provider: RefactorProvider,
+    providers: RefactorProvider[],
     availableRefactorings: Array<AvailableRefactoring>,
   },
 |};
@@ -259,7 +258,7 @@ export type PickedRefactorAction = {|
 export type ExecuteAction = {|
   type: 'execute',
   payload: {
-    provider: RefactorProvider,
+    providers: RefactorProvider[],
     refactoring: RefactorRequest,
   },
 |};
@@ -291,7 +290,7 @@ export type DisplayRenameAction = {|
   type: 'display-rename',
   payload: {
     editor: TextEditor,
-    provider: RefactorProvider,
+    providers: RefactorProvider[],
     selectedText: string,
     mountPosition: atom$Point,
     symbolPosition: atom$Point,

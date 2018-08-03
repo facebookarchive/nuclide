@@ -135,7 +135,7 @@ export class FreeformRefactorComponent extends React.Component<Props, State> {
   _execute = () => {
     const {editor, originalRange, refactoring} = this.props.phase;
     this.props.store.dispatch(
-      Actions.execute(this.props.phase.provider, {
+      Actions.execute(this.props.phase.providers, {
         kind: 'freeform',
         editor,
         originalRange,
