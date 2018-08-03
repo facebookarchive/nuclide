@@ -341,7 +341,13 @@ class TreeItem extends React.Component<TreeItemProps> {
     const isSelected = selectedPaths.some(selectedPath =>
       shallowEqual(path, selectedPath),
     );
-
+    if (isSelected) {
+      process.nextTick(() => {
+        // We *are* using `scrollIntoView()` instead of the raw DOM API
+        // eslint-disable-next-line nuclide-internal/dom-apis
+        this.scrollIntoView();
+      });
+    }
     return (
       <li
         aria-activedescendant={isFocused}
