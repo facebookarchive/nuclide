@@ -245,6 +245,14 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       }
       event.stopPropagation();
     };
+    const stopReason =
+      thread.stoppedDetails == null
+        ? ''
+        : thread.stoppedDetails.description != null
+          ? ': ' + thread.stoppedDetails.description
+          : thread.stoppedDetails.reason != null
+            ? ': ' + thread.stoppedDetails.reason
+            : '';
     const formattedTitle = (
       <span
         onClick={handleTitleClick}
@@ -253,7 +261,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
         {thread.name +
-          (thread.stoppedDetails == null ? ' (Running)' : ' (Paused)')}
+          (thread.stoppedDetails == null
+            ? ' (Running)'
+            : ` (Paused${stopReason})`)}
       </span>
     );
 
