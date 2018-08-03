@@ -1291,6 +1291,7 @@ export function amend(
   const args = ['amend', ...filePaths];
   switch (amendMode) {
     case 'Clean':
+      args.push('--no-rebase'); // prevent auto-restack
       break;
     case 'Rebase':
       args.push('--rebase');

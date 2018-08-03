@@ -312,7 +312,7 @@ describe('HgService', () => {
 
     describe('::amend', () => {
       it('can amend changes with a message', async () => {
-        expectedArgs = ['amend', '-m', commitMessage];
+        expectedArgs = ['amend', '--no-rebase', '-m', commitMessage];
         await hgService
           .amend(TEST_WORKING_DIRECTORY, commitMessage, AmendMode.CLEAN)
           .refCount()
@@ -322,7 +322,7 @@ describe('HgService', () => {
       });
 
       it('can amend changes without a message', async () => {
-        expectedArgs = ['amend'];
+        expectedArgs = ['amend', '--no-rebase'];
         await hgService
           .amend(TEST_WORKING_DIRECTORY, null, AmendMode.CLEAN)
           .refCount()
