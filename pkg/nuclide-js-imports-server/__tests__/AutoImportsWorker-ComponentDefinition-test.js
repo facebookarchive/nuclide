@@ -9,11 +9,7 @@
  * @format
  * @emails oncall+nuclide
  */
-jest.mock('../../commons-node/passesGK');
 import invariant from 'assert';
-import passesGK from '../../commons-node/passesGK';
-// $FlowFixMe Jest doesn't have a type safe way to do this.
-(passesGK: any).mockImplementation(async () => true);
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import type {ExportUpdateForFile} from '../src/lib/AutoImportsWorker';
@@ -21,6 +17,13 @@ import type {ExportUpdateForFile} from '../src/lib/AutoImportsWorker';
 const {getExportsForFile} = require('../src/lib/AutoImportsWorker');
 
 describe('getExportsForFile component definitions', () => {
+  beforeEach(() => {
+    process.env.JS_IMPORTS_INITIALIZATION_SETTINGS = JSON.stringify({
+      componentModulePathFilter: null,
+      uiComponentToolsIndexingGkEnabled: true,
+    });
+  });
+
   it('gets the component definition for a React component', async () => {
     const path = nuclideUri.join(
       __dirname,

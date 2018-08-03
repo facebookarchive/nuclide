@@ -26,11 +26,7 @@ import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
 import {getHasteName, hasteReduceName} from './HasteUtils';
 import {watchDirectory, getFileIndex} from './file-index';
-import {
-  UI_COMPONENT_TOOLS_INDEXING_GK,
-  getComponentDefinitionFromAst,
-} from '../../../nuclide-ui-component-tools-common';
-import passesGK from '../../../commons-node/passesGK';
+import {getComponentDefinitionFromAst} from '../../../nuclide-ui-component-tools-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ComponentDefinition} from '../../../nuclide-ui-component-tools-common/lib/types';
@@ -364,10 +360,11 @@ export async function getExportsForFile(
     }
 
     const updateObj: ExportUpdateForFile = {...update, exports};
-    const componentModulePathFilter = process.env.componentModulePathFilter;
-
+    const settings = process.env.JS_IMPORTS_INITIALIZATION_SETTINGS;
+    const {componentModulePathFilter, uiComponentToolsIndexingGkEnabled} =
+      settings != null ? JSON.parse(settings) : {};
     if (
-      (await passesGK(UI_COMPONENT_TOOLS_INDEXING_GK)) &&
+      Boolean(uiComponentToolsIndexingGkEnabled) &&
       (componentModulePathFilter == null ||
         file.includes(componentModulePathFilter))
     ) {

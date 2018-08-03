@@ -50,7 +50,13 @@ const LARGE_FILE_LIMIT = 2000000;
 
 const MAX_CRASHES = 3;
 
+type InitializationSettings = {|
+  componentModulePathFilter: ?string,
+  uiComponentToolsIndexingGkEnabled: ?boolean,
+|};
+
 export class AutoImportsManager {
+  initializationSettings: InitializationSettings;
   componentModulePathFilter: ?string;
   definitionManager: DefinitionManager;
   suggestedImports: Map<NuclideUri, Array<ImportSuggestion>>;
@@ -59,8 +65,14 @@ export class AutoImportsManager {
   crashes: number;
   worker: ?child_process$ChildProcess;
 
-  constructor(globals: Array<string>, componentModulePathFilter?: string) {
-    this.componentModulePathFilter = componentModulePathFilter;
+  constructor(
+    globals: Array<string>,
+    initializationSettings: InitializationSettings = {
+      componentModulePathFilter: null,
+      uiComponentToolsIndexingGkEnabled: null,
+    },
+  ) {
+    this.initializationSettings = initializationSettings;
     this.definitionManager = new DefinitionManager();
     this.suggestedImports = new Map();
     this.exportsManager = new ExportManager();
@@ -88,7 +100,11 @@ export class AutoImportsManager {
       nuclideUri.join(__dirname, 'AutoImportsWorker-entry.js'),
       [root],
       {
-        env: {componentModulePathFilter: this.componentModulePathFilter},
+        env: {
+          JS_IMPORTS_INITIALIZATION_SETTINGS: JSON.stringify(
+            this.initializationSettings,
+          ),
+        },
       },
     );
     worker.on('message', (updateForFile: Array<ExportUpdateForFile>) => {

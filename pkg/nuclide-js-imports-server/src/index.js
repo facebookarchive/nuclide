@@ -88,7 +88,7 @@ connection.onInitialize(
     );
     autoImportsManager = new AutoImportsManager(
       eslintGlobals,
-      params.initializationOptions.componentModulePathFilter,
+      params.initializationOptions || undefined,
     );
     autoImportsManager.indexAndWatchDirectory(root);
     completion = new Completions(
