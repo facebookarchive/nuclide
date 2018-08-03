@@ -291,6 +291,8 @@ export default class DebuggerLayoutManager {
 
     if (_gkService != null) {
       this.convertToDebuggerTreePanes();
+    } else {
+      this.registerContextMenus();
     }
 
     this._restoreDebuggerPaneLocations();
@@ -427,6 +429,7 @@ export default class DebuggerLayoutManager {
             this.showDebuggerViews();
           }
         }
+        this.registerContextMenus();
       });
     }
   }
