@@ -28,6 +28,7 @@ module.exports = {
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.atom.js'),
   runner: p('modules/jest-atom-runner/build/index.js'),
+  testRunner: require.resolve('jest-circus/runner'),
   moduleNameMapper: {
     oniguruma: p('jest/__mocks__/emptyObject.js'),
   },
