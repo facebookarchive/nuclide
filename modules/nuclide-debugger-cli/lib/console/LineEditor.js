@@ -51,6 +51,7 @@ export default class LineEditor extends EventEmitter {
   _historyTextSave: string;
   _editedSinceHistory: boolean;
   _onData: ?(string) => void;
+  _onClose: ?(string) => void;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -112,12 +113,17 @@ export default class LineEditor extends EventEmitter {
   }
 
   close() {
+    if (this._onClose != null) {
+      this._input.removeListener('close', this._onClose);
+      this._onClose = null;
+    }
+
     if (this._onData != null) {
       this._input.removeListener('data', this._onData);
       this._onData = null;
-
-      this.emit('close');
     }
+
+    this.emit('close');
   }
 
   setPrompt(prompt: string): void {
@@ -133,17 +139,38 @@ export default class LineEditor extends EventEmitter {
       this._fieldStartCol = cursorPos.column;
       this._cursor = 0;
       this._leftEdge = 0;
+      return;
     }
+    process.stdout.write(`\n${this._prompt}`);
   }
 
   _onText(s: string): void {
-    this._buffer =
-      this._buffer.substr(0, this._cursor) +
-      s +
-      this._buffer.substr(this._cursor);
-    this._cursor += s.length;
-    this._textChanged();
-    this._repaint();
+    if (this._tty) {
+      this._buffer =
+        this._buffer.substr(0, this._cursor) +
+        s +
+        this._buffer.substr(this._cursor);
+      this._cursor += s.length;
+
+      this._textChanged();
+      this._repaint();
+      return;
+    }
+
+    let piece = s;
+    while (true) {
+      const ret = piece.indexOf('\n');
+      if (ret === -1) {
+        break;
+      }
+
+      this._buffer += piece.substr(0, ret);
+      this.emit('line', this._buffer);
+      this._buffer = '';
+      piece = piece.substr(ret + 1);
+    }
+
+    this._buffer += piece;
   }
 
   _onKey(key: ParsedANSISpecialKey): void {
@@ -260,6 +287,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   _enter(): void {
+    process.stdout.write('\r\n');
     this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
@@ -352,10 +380,16 @@ export default class LineEditor extends EventEmitter {
   }
 
   _installHooks() {
+    this._input.setEncoding('utf8');
+    this._onClose = () => {
+      process.stdout.write('\r\n');
+      this.close();
+    };
+    this._input.on('end', this._onClose);
+
     if (this._tty) {
       // $FlowFixMe has this call
       this._input.setRawMode(true);
-      this._input.setEncoding('utf8');
       this._parser = new ANSIStreamParser();
       this._onData = t => this._parser.next(t);
       this._input.on('data', this._onData);
@@ -368,6 +402,7 @@ export default class LineEditor extends EventEmitter {
       return;
     }
 
-    this._input.on('data', t => this._onText(t));
+    this._onData = t => this._onText(t);
+    this._input.on('data', this._onData);
   }
 }

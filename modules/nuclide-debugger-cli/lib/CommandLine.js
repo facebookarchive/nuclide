@@ -16,7 +16,7 @@ import LineEditor from './console/LineEditor';
 import CommandDispatcher from './CommandDispatcher';
 import {Observable, Subject} from 'rxjs';
 
-const PROMPT = 'fbdbg> ';
+const PROMPT = '\x1b[32;1mfbdbg>\x1b[0m ';
 
 export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
