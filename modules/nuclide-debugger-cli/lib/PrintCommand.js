@@ -13,6 +13,7 @@
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 
+import * as DebugProtocol from 'vscode-debugprotocol';
 import {DebuggerInterface} from './DebuggerInterface';
 
 export default class PrintCommand implements Command {
@@ -50,11 +51,59 @@ in complex ways.
     const expr: string = args.join(' ');
     try {
       const {
-        body: {result},
+        body: {result, variablesReference, namedVariables, indexedVariables},
       } = await this._debugger.evaluateExpression(expr);
-      this._console.outputLine(result);
+      if (variablesReference > 0) {
+        this._console.outputLine(
+          await this.formatVariable(
+            {
+              name: '',
+              value: result,
+              variablesReference,
+              namedVariables: namedVariables == null ? 0 : namedVariables,
+              indexedVariables: indexedVariables == null ? 0 : indexedVariables,
+            },
+            0,
+          ),
+        );
+      }
     } catch (err) {
       this._console.outputLine(err.message);
     }
+  }
+
+  async formatVariable(
+    v: DebugProtocol.Variable,
+    depth: number,
+  ): Promise<string> {
+    if (depth > 4) {
+      return '...';
+    }
+    if (v.variablesReference != null && v.variablesReference !== 0) {
+      if (
+        (v.indexedVariables === 0 || v.indexedVariables == null) &&
+        (v.namedVariables === 0 || v.namedVariables == null)
+      ) {
+        return '[]';
+      }
+
+      const children = await this._debugger.getVariablesByReference(
+        v.variablesReference,
+      );
+      const childValues = await Promise.all(
+        children.map(child => this.formatVariable(child, depth + 1)),
+      );
+      let formatted = '';
+      formatted += `${' '.repeat(depth)}[\n`;
+      for (let index = 0; index < children.length; index++) {
+        formatted += `${' '.repeat(depth + 1)}${children[index].name} => ${
+          childValues[index]
+        },\n`;
+      }
+      formatted += `${' '.repeat(depth)}]`;
+      return formatted;
+    }
+
+    return v.value;
   }
 }

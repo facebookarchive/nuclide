@@ -345,6 +345,16 @@ export default class Debugger implements DebuggerInterface {
     });
   }
 
+  async getVariablesByReference(
+    ref: number,
+  ): Promise<DebugProtocol.Variable[]> {
+    const session = this._ensureDebugSession();
+    const {
+      body: {variables},
+    } = await session.variables({variablesReference: ref});
+    return variables;
+  }
+
   async setSourceBreakpoint(
     path: string,
     line: number,
