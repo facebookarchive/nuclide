@@ -81,7 +81,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>>,
+  ): Observable<?Map<NuclideUri, Array<TextEdit>>>,
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
@@ -243,17 +243,20 @@ export class ServerLanguageService<
       .publish();
   }
 
-  async rename(
+  rename(
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
     const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    if (buffer == null) {
-      return null;
-    }
-    return this._service.rename(filePath, buffer, position, newName);
+    return Observable.fromPromise(getBufferAtVersion(fileVersion))
+      .concatMap(buffer => {
+        if (buffer == null) {
+          return Observable.of(null);
+        }
+        return this._service.rename(filePath, buffer, position, newName);
+      })
+      .publish();
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

@@ -347,7 +347,7 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+  ): Observable<?Map<NuclideUri, Array<TextEdit>>> {
     throw new Error('Not implemented');
   }
 

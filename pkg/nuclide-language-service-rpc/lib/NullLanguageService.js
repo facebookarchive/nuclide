@@ -84,8 +84,8 @@ export class NullLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-    return Promise.resolve(null);
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+    return Observable.of(null).publish();
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

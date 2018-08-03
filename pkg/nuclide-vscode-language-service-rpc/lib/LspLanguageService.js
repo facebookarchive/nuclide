@@ -1992,7 +1992,17 @@ export class LspLanguageService {
     };
   }
 
-  async rename(
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+    return Observable.fromPromise(
+      this._rename(fileVersion, position, newName),
+    ).publish();
+  }
+
+  async _rename(
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,

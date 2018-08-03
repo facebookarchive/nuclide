@@ -316,16 +316,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       .publish();
   }
 
-  async rename(
+  rename(
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-    return (await this._getLanguageServiceForFile(fileVersion.filePath)).rename(
-      fileVersion,
-      position,
-      newName,
-    );
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+    return Observable.fromPromise(
+      this._getLanguageServiceForFile(fileVersion.filePath),
+    )
+      .concatMap(ls => ls.rename(fileVersion, position, newName).refCount())
+      .publish();
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

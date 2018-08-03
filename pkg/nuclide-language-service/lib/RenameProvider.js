@@ -90,7 +90,10 @@ export class RenameProvider<T: LanguageService> {
       if (languageService == null || fileVersion == null) {
         return null;
       }
-      return (await languageService).rename(fileVersion, position, newName);
+      return (await languageService)
+        .rename(fileVersion, position, newName)
+        .refCount()
+        .toPromise();
     });
   }
 }

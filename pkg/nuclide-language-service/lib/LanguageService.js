@@ -175,6 +175,9 @@ export interface LanguageService {
     position: atom$Point,
   ): Promise<?DefinitionQueryResult>;
 
+  // NOTE: Large `findReferences` and `rename` requests can take a long
+  //        time to resolve, which can eventually cause the RPC call to timeout.
+  //        To resolve this, we return Observables instead of Promises.
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
@@ -184,7 +187,7 @@ export interface LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>>;
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 

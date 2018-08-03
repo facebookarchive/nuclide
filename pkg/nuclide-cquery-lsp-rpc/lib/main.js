@@ -90,7 +90,7 @@ export interface CqueryLanguageService extends LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>>;
+  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
