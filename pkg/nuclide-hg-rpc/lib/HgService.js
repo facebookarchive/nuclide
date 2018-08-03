@@ -1865,6 +1865,15 @@ export function observeExecution(
   return hgObserveExecution(args, execOptions).publish();
 }
 
+export function addRemove(
+  workingDirectory: NuclideUri,
+): ConnectableObservable<string> {
+  const execOptions = {
+    cwd: workingDirectory,
+  };
+  return hgRunCommand(['addremove'], execOptions).publish();
+}
+
 // not really Hg functionality, but this was chosen to be the best current home
 // for this method as it spawns processes and should live in an remote service
 export function gitDiffStrings(

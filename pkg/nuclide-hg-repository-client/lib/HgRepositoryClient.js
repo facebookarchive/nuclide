@@ -1412,4 +1412,10 @@ export class HgRepositoryClient {
       .observeExecution(this._sharedMembers.workingDirectoryPath, args)
       .refCount();
   }
+
+  addRemove(): Observable<string> {
+    return this._sharedMembers.service
+      .addRemove(this._sharedMembers.workingDirectoryPath)
+      .refCount();
+  }
 }
