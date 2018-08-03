@@ -41,6 +41,8 @@ describe('ConsoleView', () => {
         sources={[]}
         updateFilter={() => {}}
         watchEditor={null}
+        selectedSeverities={new Set(['error', 'warning', 'info'])}
+        toggleSeverity={() => {}}
       />,
     ): any);
 

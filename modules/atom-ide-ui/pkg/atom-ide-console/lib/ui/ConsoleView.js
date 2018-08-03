@@ -16,6 +16,7 @@ import type {
   OutputProvider,
   RecordHeightChangeHandler,
   Source,
+  Severity,
 } from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
@@ -35,7 +36,7 @@ import shallowEqual from 'shallowequal';
 import recordsChanged from '../recordsChanged';
 import StyleSheet from 'nuclide-commons-ui/StyleSheet';
 
-type Props = {
+type Props = {|
   displayableRecords: Array<DisplayableRecord>,
   history: Array<string>,
   clearRecords: () => void,
@@ -57,7 +58,9 @@ type Props = {
   filterText: string,
   resetAllFilters: () => void,
   fontSize: number,
-};
+  selectedSeverities: Set<Severity>,
+  toggleSeverity: (severity: Severity) => void,
+|};
 
 type State = {
   unseenMessages: boolean,
@@ -235,6 +238,8 @@ export default class ConsoleView extends React.Component<Props, State> {
           sources={this.props.sources}
           onFilterChange={this.props.updateFilter}
           onSelectedSourcesChange={this.props.selectSources}
+          selectedSeverities={this.props.selectedSeverities}
+          toggleSeverity={this.props.toggleSeverity}
         />
         {/*
           We need an extra wrapper element here in order to have the new messages notification stick

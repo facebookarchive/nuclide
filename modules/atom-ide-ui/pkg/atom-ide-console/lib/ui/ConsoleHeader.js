@@ -10,9 +10,10 @@
  * @format
  */
 
-import type {Source} from '../types';
+import type {Source, Severity} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
 import {ModalMultiSelect} from 'nuclide-commons-ui/ModalMultiSelect';
@@ -25,7 +26,7 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import invariant from 'assert';
 
-type Props = {
+type Props = {|
   clear: () => void,
   createPaste: ?() => Promise<void>,
   invalidFilterInput: boolean,
@@ -35,7 +36,9 @@ type Props = {
   sources: Array<Source>,
   onSelectedSourcesChange: (sourceIds: Array<string>) => void,
   filterText: string,
-};
+  selectedSeverities: Set<Severity>,
+  toggleSeverity: (severity: Severity) => void,
+|};
 
 export default class ConsoleHeader extends React.Component<Props> {
   _filterComponent: ?RegExpFilter;
@@ -159,6 +162,23 @@ export default class ConsoleHeader extends React.Component<Props> {
       <Toolbar location="top">
         <ToolbarLeft>
           {sourceButton}
+          <ButtonGroup className="inline-block">
+            <FilterButton
+              severity="error"
+              selectedSeverities={this.props.selectedSeverities}
+              toggleSeverity={this.props.toggleSeverity}
+            />
+            <FilterButton
+              severity="warning"
+              selectedSeverities={this.props.selectedSeverities}
+              toggleSeverity={this.props.toggleSeverity}
+            />
+            <FilterButton
+              severity="info"
+              selectedSeverities={this.props.selectedSeverities}
+              toggleSeverity={this.props.toggleSeverity}
+            />
+          </ButtonGroup>
           <RegExpFilter
             ref={component => (this._filterComponent = component)}
             value={{
@@ -204,4 +224,46 @@ function MultiSelectLabel(props: LabelProps): React.Element<any> {
       ? selectedOptions[0].label
       : `${selectedOptions.length} Sources`;
   return <span>Showing: {label}</span>;
+}
+
+type FilterButtonProps = {|
+  severity: 'error' | 'warning' | 'info',
+  selectedSeverities: Set<Severity>,
+  toggleSeverity: Severity => void,
+|};
+
+function FilterButton(props: FilterButtonProps): React.Element<any> {
+  const {severity} = props;
+  const selected = props.selectedSeverities.has(props.severity);
+  let tooltipTitle = selected ? 'Hide ' : 'Show ';
+  let icon;
+  switch (severity) {
+    case 'error':
+      tooltipTitle += 'Errors';
+      icon = 'nuclicon-error';
+      break;
+    case 'warning':
+      tooltipTitle += 'Warnings';
+      icon = 'nuclicon-warning';
+      break;
+    case 'info':
+      tooltipTitle += 'Info';
+      icon = 'info';
+      break;
+    default:
+      (severity: empty);
+      throw new Error(`Invalid severity: ${severity}`);
+  }
+
+  return (
+    <Button
+      icon={icon}
+      size={ButtonSizes.SMALL}
+      selected={props.selectedSeverities.has(severity)}
+      onClick={() => {
+        props.toggleSeverity(severity);
+      }}
+      tooltip={{title: tooltipTitle}}
+    />
+  );
 }

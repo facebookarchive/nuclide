@@ -20,12 +20,15 @@ import type {
   Source,
   Store,
   SourceInfo,
+  Severity,
+  Level,
 } from '../types';
 import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 import type {Executor} from '../types';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
+import {setDifference} from 'nuclide-commons/collection';
 import Model from 'nuclide-commons/Model';
 import shallowEqual from 'shallowequal';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -42,12 +45,13 @@ import {List} from 'immutable';
 import * as React from 'react';
 import {Observable, ReplaySubject} from 'rxjs';
 
-type Options = {
+type Options = {|
   store: Store,
   initialFilterText?: string,
   initialEnableRegExpFilter?: boolean,
   initialUnselectedSourceIds?: Array<string>,
-};
+  initialUnselectedSeverities?: Set<Severity>,
+|};
 
 //
 // State unique to this particular Console instance
@@ -57,6 +61,7 @@ type State = {
   filterText: string,
   enableRegExpFilter: boolean,
   unselectedSourceIds: Array<string>,
+  selectedSeverities: Set<Severity>,
 };
 
 type BoundActionCreators = {
@@ -72,6 +77,8 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
 const ERROR_TRANSCRIBING_MESSAGE =
   "// Nuclide couldn't find the right text to display";
 const INITIAL_RECORD_HEIGHT = 21;
+
+const ALL_SEVERITIES = new Set(['error', 'warning', 'info']);
 
 /**
  * An Atom "view model" for the console. This object is responsible for creating a stateful view
@@ -97,6 +104,7 @@ export class Console {
       initialFilterText,
       initialEnableRegExpFilter,
       initialUnselectedSourceIds,
+      initialUnselectedSeverities,
     } = options;
     this._model = new Model({
       displayableRecords: [],
@@ -104,6 +112,10 @@ export class Console {
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
       unselectedSourceIds:
         initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
+      selectedSeverities:
+        initialUnselectedSeverities == null
+          ? ALL_SEVERITIES
+          : setDifference(ALL_SEVERITIES, initialUnselectedSeverities),
     });
 
     this._store = store;
@@ -191,6 +203,10 @@ export class Console {
       initialFilterText: this._model.state.filterText,
       initialEnableRegExpFilter: this._model.state.enableRegExpFilter,
       initialUnselectedSourceIds: this._model.state.unselectedSourceIds,
+      initialUnselectedSeverities: setDifference(
+        ALL_SEVERITIES,
+        this._model.state.selectedSeverities,
+      ),
     });
   }
 
@@ -229,6 +245,7 @@ export class Console {
     invalid: boolean,
     selectedSourceIds: Array<string>,
     filteredRecords: Array<DisplayableRecord>,
+    selectedSeverities: Set<Severity>,
   } {
     const {pattern, invalid} = getFilterPattern(
       this._model.state.filterText,
@@ -242,9 +259,11 @@ export class Console {
           this._model.state.unselectedSourceIds.indexOf(sourceId) === -1,
       );
 
+    const {selectedSeverities} = this._model.state;
     const filteredRecords = filterRecords(
       this._getDisplayableRecords(),
       selectedSourceIds,
+      selectedSeverities,
       pattern,
       sources.length !== selectedSourceIds.length,
     );
@@ -252,6 +271,7 @@ export class Console {
     return {
       invalid,
       selectedSourceIds,
+      selectedSeverities,
       filteredRecords,
     };
   }
@@ -274,6 +294,7 @@ export class Console {
         const {
           invalid,
           selectedSourceIds,
+          selectedSeverities,
           filteredRecords,
         } = this._getFilterInfo();
 
@@ -309,6 +330,8 @@ export class Console {
             ._handleDisplayableRecordHeightChange,
           resetAllFilters: this._resetAllFilters,
           fontSize: globalState.fontSize,
+          selectedSeverities,
+          toggleSeverity: this._toggleSeverity,
         };
       });
 
@@ -321,12 +344,16 @@ export class Console {
       filterText,
       enableRegExpFilter,
       unselectedSourceIds,
+      selectedSeverities,
     } = this._model.state;
     return {
       deserializer: 'nuclide.Console',
       filterText,
       enableRegExpFilter,
       unselectedSourceIds,
+      unselectedSeverities: [
+        ...setDifference(ALL_SEVERITIES, selectedSeverities),
+      ],
     };
   }
 
@@ -354,6 +381,17 @@ export class Console {
       filterText: text,
       enableRegExpFilter: isRegExp,
     });
+  };
+
+  _toggleSeverity = (severity: Severity): void => {
+    const {selectedSeverities} = this._model.state;
+    const nextSelectedSeverities = new Set(selectedSeverities);
+    if (nextSelectedSeverities.has(severity)) {
+      nextSelectedSeverities.delete(severity);
+    } else {
+      nextSelectedSeverities.add(severity);
+    }
+    this._model.setState({selectedSeverities: nextSelectedSeverities});
   };
 
   _handleDisplayableRecordHeightChange = (
@@ -452,10 +490,15 @@ function getSources(options: {
 function filterRecords(
   displayableRecords: Array<DisplayableRecord>,
   selectedSourceIds: Array<string>,
+  selectedSeverities: Set<Severity>,
   filterPattern: ?RegExp,
   filterSources: boolean,
 ): Array<DisplayableRecord> {
-  if (!filterSources && filterPattern == null) {
+  if (
+    !filterSources &&
+    filterPattern == null &&
+    selectedSeverities.size === 0
+  ) {
     return displayableRecords;
   }
 
@@ -463,6 +506,10 @@ function filterRecords(
     // Only filter regular messages
     if (record.kind !== 'message') {
       return true;
+    }
+
+    if (!selectedSeverities.has(levelToSeverity(record.level))) {
+      return false;
     }
 
     const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
@@ -611,5 +658,22 @@ async function createPaste(
       detail: errorMessages.join('\n'),
       dismissable: true,
     });
+  }
+}
+
+function levelToSeverity(level: Level): Severity {
+  switch (level) {
+    case 'error':
+      return 'error';
+    case 'warning':
+      return 'warning';
+    case 'log':
+    case 'info':
+    case 'debug':
+    case 'success':
+      return 'info';
+    default:
+      // All the colors are "info"
+      return 'info';
   }
 }

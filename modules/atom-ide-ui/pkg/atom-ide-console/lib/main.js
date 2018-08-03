@@ -189,6 +189,7 @@ class Activation {
       initialFilterText: state.filterText,
       initialEnableRegExpFilter: state.enableRegExpFilter,
       initialUnselectedSourceIds: state.unselectedSourceIds,
+      initialUnselectedSeverities: new Set(state.unselectedSeverities || []),
     });
   }
 

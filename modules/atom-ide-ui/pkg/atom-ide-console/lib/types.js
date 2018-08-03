@@ -73,6 +73,8 @@ type Color =
   | 'violet'
   | 'rainbow';
 
+export type Severity = 'info' | 'warning' | 'error';
+
 // A message object, for use with the `console.append()` API.
 export type Message = {
   text: string,
@@ -196,12 +198,13 @@ export type RecordProvider = BasicRecordProvider | ControllableRecordProvider;
 // Serialized state specific to each instance of the console view. For example, each instance has
 // its own, distinct filter, so that's here. They don't, however, have distinct records, so they
 // aren't.
-export type ConsolePersistedState = {
+export type ConsolePersistedState = {|
   deserializer: 'nuclide.Console',
   filterText?: string,
   enableRegExpFilter?: boolean,
   unselectedSourceIds?: Array<string>,
-};
+  unselectedSeverities?: Array<Severity>,
+|};
 
 export type Executor = {
   id: string,
