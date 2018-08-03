@@ -27,6 +27,7 @@ import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 import {arrayEqual} from 'nuclide-commons/collection';
 
 const LOADING_DELAY_MS = 500;
+const OUTLINE_DEBOUNCE_DELAY = 100;
 
 import type {NodePath} from 'nuclide-commons-ui/SelectableTree';
 
@@ -169,6 +170,7 @@ function getHighlightedPaths(
 ): Observable<Array<NodePath>> {
   return (
     getCursorPositions(editor)
+      .debounceTime(OUTLINE_DEBOUNCE_DELAY)
       // optimization: the outline never needs to update when navigating within a row
       .distinctUntilChanged((p1, p2) => p1.row === p2.row)
       .map(position => {
