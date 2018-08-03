@@ -135,10 +135,15 @@ export class Proxy extends EventEmitter {
     const clientId = msg.clientId;
     invariant(clientId != null);
     const socket = this._socketByClientId.get(clientId);
-    invariant(socket);
     const arg = msg.arg;
 
-    if (msg.event === 'data') {
+    if (socket == null) {
+      logger.warn(
+        `received a ${
+          msg.event
+        } message for a non-existent or already closed socket`,
+      );
+    } else if (msg.event === 'data') {
       invariant(arg != null);
       socket.write(arg);
     } else if (msg.event === 'close') {
@@ -162,7 +167,7 @@ export class Proxy extends EventEmitter {
     logger.error('error on socket: ', error);
     const socket = this._socketByClientId.get(id);
     invariant(socket);
-    socket.destroy(error);
+    socket.destroy();
     this._closeSocket(id);
   }
 
