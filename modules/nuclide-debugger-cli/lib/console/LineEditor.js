@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {CursorControl} from './types';
 import type {
   ParsedANSICursorPosition,
   ParsedANSISpecialKey,
@@ -17,6 +18,8 @@ import type {
 import {ANSIStreamParser} from './ANSIStreamParser';
 import {ANSIStreamOutput} from './ANSIStreamOutput';
 import EventEmitter from 'events';
+import fs from 'fs';
+import GatedCursorControl from './GatedCursorControl';
 import History from './History';
 import invariant from 'assert';
 
@@ -40,6 +43,7 @@ export default class LineEditor extends EventEmitter {
   _input: stream$Readable;
   _output: stream$Writable;
   _outputANSI: ?ANSIStreamOutput;
+  _gatedOutputANSI: ?GatedCursorControl;
   _tty: boolean;
   _cursorPromises: Set<CursorCompletion>;
   _screenRows: number = 0;
@@ -52,6 +56,8 @@ export default class LineEditor extends EventEmitter {
   _editedSinceHistory: boolean;
   _onData: ?(string) => void;
   _onClose: ?(string) => void;
+  _borrowed: boolean;
+  _log: number;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -80,11 +86,14 @@ export default class LineEditor extends EventEmitter {
     this._editedSinceHistory = false;
 
     if (this._tty) {
-      this._outputANSI = new ANSIStreamOutput(this._output);
+      this._outputANSI = new ANSIStreamOutput(s => this.write(s));
+      this._gatedOutputANSI = new GatedCursorControl(this._outputANSI);
     }
 
     this._installHooks();
     this._onResize();
+
+    this._borrowed = false;
 
     this._keyHandlers = new Map([
       ['CTRL-A', () => this._home()],
@@ -110,6 +119,8 @@ export default class LineEditor extends EventEmitter {
       ['DEL', () => this._deleteRight(false)],
       ['ESCAPE', () => this._deleteLine()],
     ]);
+
+    this._log = fs.openSync('/tmp/cli-output.txt', 'w');
   }
 
   close() {
@@ -126,14 +137,53 @@ export default class LineEditor extends EventEmitter {
     this.emit('close');
   }
 
+  isTTY(): boolean {
+    return this._tty;
+  }
+
   setPrompt(prompt: string): void {
     this._prompt = prompt;
   }
 
+  write(s: string): void {
+    this._output.write(s);
+    fs.writeSync(this._log, s);
+    fs.fsyncSync(this._log);
+  }
+
+  borrowTTY(): ?CursorControl {
+    if (this._borrowed || !this._tty) {
+      return null;
+    }
+
+    const cursorControl = this._gatedOutputANSI;
+    invariant(cursorControl != null);
+
+    this._borrowed = true;
+    cursorControl.setEnabled(true);
+    return cursorControl;
+  }
+
+  returnTTY(): boolean {
+    if (!this._borrowed || !this._tty) {
+      return false;
+    }
+
+    const cursorControl = this._gatedOutputANSI;
+    invariant(cursorControl != null);
+
+    this._borrowed = false;
+    cursorControl.setEnabled(false);
+
+    this.write(`\r\n${this._prompt}`);
+    this._repaint();
+    return true;
+  }
+
   async prompt(): Promise<void> {
     if (this._tty) {
-      process.stdout.write('\n\r');
-      process.stdout.write(this._prompt);
+      this.write('\n\r');
+      this.write(this._prompt);
       const cursorPos = await this._getCursorPosition();
       this._fieldRow = cursorPos.row;
       this._fieldStartCol = cursorPos.column;
@@ -141,10 +191,17 @@ export default class LineEditor extends EventEmitter {
       this._leftEdge = 0;
       return;
     }
-    process.stdout.write(`\n${this._prompt}`);
+    this.write(`\n${this._prompt}`);
   }
 
   _onText(s: string): void {
+    if (this._borrowed) {
+      for (const ch of s.toUpperCase()) {
+        this.emit('key', ch);
+      }
+      return;
+    }
+
     if (this._tty) {
       this._buffer =
         this._buffer.substr(0, this._cursor) +
@@ -175,6 +232,12 @@ export default class LineEditor extends EventEmitter {
 
   _onKey(key: ParsedANSISpecialKey): void {
     const name: string = key.ctrl ? `CTRL-${key.key}` : key.key;
+
+    if (this._borrowed) {
+      this.emit('key', name);
+      return;
+    }
+
     const handler: ?() => ?void = this._keyHandlers.get(name);
     if (handler != null) {
       handler();
@@ -287,7 +350,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   _enter(): void {
-    process.stdout.write('\r\n');
+    this.write('\r\n');
     this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
@@ -382,7 +445,7 @@ export default class LineEditor extends EventEmitter {
   _installHooks() {
     this._input.setEncoding('utf8');
     this._onClose = () => {
-      process.stdout.write('\r\n');
+      this.write('\r\n');
       this.close();
     };
     this._input.on('end', this._onClose);

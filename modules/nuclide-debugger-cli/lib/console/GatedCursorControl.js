@@ -12,24 +12,34 @@
 
 import type {CursorControl} from './types';
 
-export class ANSIStreamOutput implements CursorControl {
-  _output: (s: string) => void;
+export default class GatedCursorControl implements CursorControl {
+  _enabled: boolean;
+  _inner: CursorControl;
 
-  constructor(output: string => void) {
-    this._output = output;
+  constructor(inner: CursorControl) {
+    this._inner = inner;
+    this._enabled = false;
   }
 
-  // NB as with the ANSI sequences themselves, all cursor positions are
-  // 1-based, not zero based
+  setEnabled(enabled: boolean): void {
+    this._enabled = enabled;
+  }
+
   queryCursorPosition(): void {
-    this._output('\x1b[6n');
+    if (this._enabled) {
+      this._inner.queryCursorPosition();
+    }
   }
 
   gotoXY(col: number, row: number): void {
-    this._output(`\x1b[${row};${col}H`);
+    if (this._enabled) {
+      this._inner.gotoXY(col, row);
+    }
   }
 
   clearEOL(): void {
-    this._output('\x1b[K');
+    if (this._inner) {
+      this._inner.clearEOL();
+    }
   }
 }

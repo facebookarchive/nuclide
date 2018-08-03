@@ -16,10 +16,14 @@ export interface ConsoleIO {
   // output does not add a newline. outputLine does.
   output(text: string): void;
   outputLine(line?: string): void;
+  write(data: string): void;
+  more(text: string): void;
   setPrompt(prompt: ?string): void;
   prompt(): void;
   stopInput(): void;
   startInput(): void;
   observeInterrupts(): Observable<void>;
   observeLines(): Observable<string>;
+  observeKeys(): Observable<string>;
+  isTTY(): boolean;
 }

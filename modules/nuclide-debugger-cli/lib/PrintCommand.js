@@ -54,7 +54,7 @@ in complex ways.
         body: {result, variablesReference, namedVariables, indexedVariables},
       } = await this._debugger.evaluateExpression(expr);
       if (variablesReference > 0) {
-        this._console.outputLine(
+        this._console.more(
           await this.formatVariable(
             {
               name: '',

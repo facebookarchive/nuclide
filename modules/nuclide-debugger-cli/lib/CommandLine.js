@@ -6,14 +6,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  */
 
 import type {ConsoleIO} from './ConsoleIO';
+import type {CursorControl} from './console/types';
 
 import LineEditor from './console/LineEditor';
+import invariant from 'assert';
 import CommandDispatcher from './CommandDispatcher';
+import More from './More';
 import {Observable, Subject} from 'rxjs';
 
 const PROMPT = '\x1b[32;1mfbdbg>\x1b[0m ';
@@ -28,6 +31,8 @@ export default class CommandLine implements ConsoleIO {
 
   _interrupts: Subject<void>;
   _lines: Subject<string>;
+  _keys: Subject<string>;
+  _more: ?More;
 
   _subscriptions: Array<rxjs$ISubscription> = [];
 
@@ -71,6 +76,13 @@ export default class CommandLine implements ConsoleIO {
         }),
     );
 
+    this._keys = new Subject();
+    this._subscriptions.push(
+      Observable.fromEvent(this._cli, 'key')
+        .takeUntil(Observable.fromEvent(this._cli, 'close'))
+        .subscribe(this._keys),
+    );
+
     this._shouldPrompt = true;
   }
 
@@ -84,6 +96,14 @@ export default class CommandLine implements ConsoleIO {
 
   observeLines(): Observable<string> {
     return this._lines;
+  }
+
+  observeKeys(): Observable<string> {
+    return this._keys;
+  }
+
+  isTTY(): boolean {
+    return this._cli.isTTY();
   }
 
   setPrompt(prompt: ?string): void {
@@ -101,21 +121,42 @@ export default class CommandLine implements ConsoleIO {
     }
   }
 
-  // $TODO handle paging long output (more) if termcap allows us to know the screen height
   output(text: string): void {
-    if (!this._inputStopped) {
+    if (!this._inputStopped && this._more == null) {
       if (!text.startsWith('\n')) {
-        process.stdout.write('\n');
+        this._cli.write('\n');
       }
-      process.stdout.write(text);
+      this._cli.write(text);
       this._cli.prompt();
       return;
     }
-    process.stdout.write(text);
+    this._cli.write(text);
   }
 
   outputLine(line?: string = ''): void {
-    process.stdout.write(`${line}\n`);
+    if (this._more == null) {
+      this._cli.write(`${line}\n`);
+    }
+  }
+
+  write(data: string): void {
+    this._cli.write(data);
+  }
+
+  more(text: string): void {
+    invariant(this._more == null);
+    const cursorControl: ?CursorControl = this._cli.borrowTTY();
+    if (cursorControl == null) {
+      this.output(text);
+      return;
+    }
+
+    const more: More = new More(text, this, cursorControl, () => {
+      this._cli.returnTTY();
+      this._more = null;
+    });
+    this._more = more;
+    this._more.display();
   }
 
   prompt(): void {
