@@ -24,4 +24,5 @@ module.exports = {
   ],
   testFailureExitCode: 0,
   reporters: require('./jest/reporters.config'),
+  forceExit: true,
 };
