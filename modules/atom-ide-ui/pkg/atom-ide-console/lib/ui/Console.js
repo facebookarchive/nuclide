@@ -28,7 +28,7 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 import type {Executor} from '../types';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {setDifference} from 'nuclide-commons/collection';
+import {setDifference, areSetsEqual} from 'nuclide-commons/collection';
 import Model from 'nuclide-commons/Model';
 import shallowEqual from 'shallowequal';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -497,7 +497,7 @@ function filterRecords(
   if (
     !filterSources &&
     filterPattern == null &&
-    selectedSeverities.size === 0
+    areSetsEqual(ALL_SEVERITIES, selectedSeverities)
   ) {
     return displayableRecords;
   }
