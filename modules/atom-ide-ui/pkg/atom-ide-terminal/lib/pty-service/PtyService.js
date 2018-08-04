@@ -143,8 +143,8 @@ async function getEnvironment(info: PtyInfo): Promise<Object> {
   }
   return {
     ...newEnv,
-    ...(info.environment != null ? objectFromMap(info.environment) : {}),
     TERM_PROGRAM: 'nuclide',
+    ...(info.environment != null ? objectFromMap(info.environment) : {}),
   };
 }
 
