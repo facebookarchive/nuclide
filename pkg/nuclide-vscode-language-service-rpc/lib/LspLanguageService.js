@@ -2784,7 +2784,14 @@ export class LspLanguageService {
       reason: TextDocumentSaveReason.Manual,
     };
     return Observable.create(observer => {
-      this._lspConnection
+      // Comment above notes _lspConnection is really nullable... and it's been
+      // observed to be null in this callback!
+      const connection: ?LspConnection = this._lspConnection;
+      if (connection == null) {
+        observer.complete();
+        return;
+      }
+      connection
         .willSaveWaitUntilTextDocument(params, cancellationSource.token)
         .then(
           edits => {
