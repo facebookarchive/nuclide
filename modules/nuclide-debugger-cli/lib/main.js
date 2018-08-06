@@ -121,6 +121,7 @@ async function main(): Promise<void> {
         : configFile.applyPresetToArguments(preset);
     const args = yargs(cmdLine)
       .boolean('attach')
+      .boolean('dvsp')
       .boolean('help').argv;
 
     if (args.help) {
@@ -146,8 +147,18 @@ async function main(): Promise<void> {
       process.exit(0);
     }
 
+    const muteOutputCategories =
+      args.dvsp || adapter == null
+        ? new Set()
+        : adapter.adapter.muteOutputCategories;
+
     const logger = buildLogger();
-    const debuggerInstance = new Debugger(logger, cli, preset);
+    const debuggerInstance = new Debugger(
+      logger,
+      cli,
+      preset,
+      muteOutputCategories,
+    );
 
     if (adapter != null) {
       await debuggerInstance.launch(adapter);

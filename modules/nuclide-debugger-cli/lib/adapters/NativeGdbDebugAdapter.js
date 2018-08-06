@@ -38,6 +38,7 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
 
   extensions: Set<string> = new Set();
   customArguments: Map<string, CustomArgumentType> = new Map();
+  muteOutputCategories: Set<string> = new Set('log');
 
   _includedOptions: Set<string> = new Set();
 

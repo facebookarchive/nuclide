@@ -51,6 +51,7 @@ export default class NodeDebugAdapter implements DebugAdapter {
       },
     ],
   ]);
+  muteOutputCategories: Set<string> = new Set(['telemetry', 'stderr']);
 
   _includedOptions: Set<string> = new Set(['address', 'port']);
 

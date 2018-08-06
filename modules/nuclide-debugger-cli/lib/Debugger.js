@@ -76,14 +76,21 @@ export default class Debugger implements DebuggerInterface {
   _attachMode: boolean = false;
   _preset: ?Preset;
   _readyForEvaluations: boolean = false;
+  _muteOutputCategories: Set<string>;
 
-  constructor(logger: log4js$Logger, con: ConsoleIO, preset: ?Preset) {
+  constructor(
+    logger: log4js$Logger,
+    con: ConsoleIO,
+    preset: ?Preset,
+    muteOutputCategories: Set<string>,
+  ) {
     this._logger = logger;
     this._console = con;
     this._sourceFiles = new SourceFileCache(
       this._getSourceByReference.bind(this),
     );
     this._preset = preset;
+    this._muteOutputCategories = muteOutputCategories;
   }
 
   registerCommands(dispatcher: CommandDispatcher): void {
@@ -711,7 +718,9 @@ export default class Debugger implements DebuggerInterface {
     session
       .observeOutputEvents()
       .filter(
-        x => x.body.category !== 'stderr' && x.body.category !== 'telemetry',
+        x =>
+          x.body.category != null &&
+          !this._muteOutputCategories.has(x.body.category),
       )
       .subscribe(this._onOutput.bind(this));
 

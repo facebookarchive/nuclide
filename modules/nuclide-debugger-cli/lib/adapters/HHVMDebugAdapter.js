@@ -37,6 +37,7 @@ export default class HHVMDebugAdapter implements DebugAdapter {
 
   extensions: Set<string> = new Set(['.php']);
   customArguments: Map<string, CustomArgumentType> = new Map();
+  muteOutputCategories: Set<string> = new Set();
 
   _includedOptions: Set<string> = new Set();
 

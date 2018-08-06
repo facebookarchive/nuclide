@@ -24,6 +24,7 @@ export interface DebugAdapter {
   +excludedOptions: Set<string>;
   +extensions: Set<string>;
   +customArguments: Map<string, CustomArgumentType>;
+  +muteOutputCategories: Set<string>;
   transformLaunchArguments(
     args: ?LaunchRequestArguments,
   ): LaunchRequestArguments;
