@@ -11,6 +11,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {IProcessConfig} from 'nuclide-debugger-common/types';
 
 export type SuggestedProjectPath = {
   projectPath: NuclideUri,
@@ -28,3 +29,19 @@ export interface DebuggerSourcePathsService {
     callback: (Array<SuggestedProjectPath>) => void,
   ): IDisposable;
 }
+
+export type IJavaLaunchProcessConfig = {|
+  ...IProcessConfig,
+  +config: {|
+    classPath: string,
+    entryPointClass: string,
+    runArgs?: string[],
+  |},
+|};
+
+export type IJavaAttachProcessConfig = {
+  ...IProcessConfig,
+  +config: {|
+    javaJdwpPort: number,
+  |},
+};

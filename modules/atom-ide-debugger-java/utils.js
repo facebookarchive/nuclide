@@ -224,10 +224,7 @@ export function getSourcePathClickSubscriptions(
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  const {adapterExecutable, targetUri} = configuration;
-  if (adapterExecutable == null) {
-    throw new Error('Cannot resolve configuration for unset adapterExecutable');
-  }
+  const {targetUri} = configuration;
 
   // If the incomming configuration already has a starting callback,
   // we'd need to combine them. Guard against this bug being introduced
