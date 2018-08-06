@@ -172,6 +172,10 @@ export default class Debugger implements DebuggerInterface {
       throw new Error('Cannot run an attached process; already attached.');
     }
 
+    if (this._state === 'STOPPED') {
+      throw new Error('The program is already running.');
+    }
+
     if (this._state !== 'CONFIGURING') {
       throw new Error('There is nothing to run.');
     }
