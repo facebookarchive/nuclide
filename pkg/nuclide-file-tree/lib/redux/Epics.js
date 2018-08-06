@@ -19,6 +19,7 @@ import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
 import type {FileTreeStore} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 
 import invariant from 'assert';
 import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
@@ -1223,6 +1224,39 @@ export function loadDataEpic(
       });
     })
     .filter(Boolean);
+}
+
+export function updateGeneratedStatusEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return Observable.merge(
+    actions.ofType(ActionTypes.SET_OPEN_FILES_WORKING_SET).map(action => {
+      invariant(action.type === ActionTypes.SET_OPEN_FILES_WORKING_SET);
+      return action.openFilesWorkingSet.getAbsoluteUris();
+    }),
+    actions.ofType(ActionTypes.SET_VCS_STATUSES).map(action => {
+      invariant(action.type === ActionTypes.SET_VCS_STATUSES);
+      return [...action.vcsStatuses.keys()];
+    }),
+  ).mergeMap(async filesToCheck => {
+    const generatedPromises: Map<
+      NuclideUri,
+      Promise<[NuclideUri, GeneratedFileType]>,
+    > = new Map();
+    for (const file of filesToCheck) {
+      if (!generatedPromises.has(file)) {
+        const promise = awaitGeneratedFileServiceByNuclideUri(file)
+          .then(gfs => gfs.getGeneratedFileType(file))
+          .then(type => [file, type]);
+        generatedPromises.set(file, promise);
+      }
+    }
+    const generatedFileTypes = await Promise.all(
+      Array.from(generatedPromises.values()),
+    );
+    return Actions.updateGeneratedStatuses(new Map(generatedFileTypes));
+  });
 }
 
 //

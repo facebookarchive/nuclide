@@ -217,10 +217,15 @@ function reduceState(
       return invalidateRemovedFolder(state);
     case ActionTypes.SET_TARGET_NODE:
       return setTargetNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.UPDATE_GENERATED_STATUS:
-      // FIXME: This can't be done in the reducer.
-      // this._updateGeneratedStatus(action.filesToCheck);
-      break;
+    case ActionTypes.UPDATE_GENERATED_STATUSES:
+      const {generatedFileTypes} = action;
+      return {
+        ...state,
+        _generatedOpenChangedFiles: state._generatedOpenChangedFiles
+          .merge(generatedFileTypes)
+          // just drop any non-generated files from the map
+          .filter(value => value !== 'manual'),
+      };
     case ActionTypes.ADD_FILTER_LETTER:
       return addFilterLetter(state, action.letter);
     case ActionTypes.REMOVE_FILTER_LETTER:
@@ -738,8 +743,6 @@ function setVcsStatuses(
   // in the terms used for status change, while uncommitted changes needs the HgStatusChange
   // codes the file tree doesn't.
   nextState = setFileChanges(nextState, rootKey, vcsStatuses);
-  // FIXME: We can't do this in the reducer.
-  // nextState = updateGeneratedStatus(vcsStatuses.keys());
 
   // We can't build on the child-derived properties to maintain vcs statuses in the entire
   // tree, since the reported VCS status may be for a node that is not yet present in the
@@ -803,38 +806,6 @@ function setFileChanges(
   };
 }
 
-// FIXME: This can't be done in the reducer.
-/*
-function updateGeneratedStatus(
-  filesToCheck: Iterable<NuclideUri>,
-): FileTreeStore {
-  const generatedPromises: Map<
-    NuclideUri,
-    Promise<[NuclideUri, GeneratedFileType]>,
-  > = new Map();
-  const addGeneratedPromise: NuclideUri => void = file => {
-    if (!generatedPromises.has(file)) {
-      const promise = awaitGeneratedFileServiceByNuclideUri(file)
-        .then(gfs => gfs.getGeneratedFileType(file))
-        .then(type => [file, type]);
-      generatedPromises.set(file, promise);
-    }
-  };
-  for (const file of filesToCheck) {
-    addGeneratedPromise(file);
-  }
-  Promise.all(Array.from(generatedPromises.values())).then(
-    generatedOpenChangedFiles => {
-      this._generatedOpenChangedFiles = this._generatedOpenChangedFiles
-        .merge(generatedOpenChangedFiles)
-        // just drop any non-generated files from the map
-        .filter(value => value !== 'manual');
-      this._emitChange();
-    },
-  );
-}
-*/
-
 function setRepositories(
   state: FileTreeStore,
   repositories: Immutable.Set<atom$Repository>,
@@ -862,9 +833,6 @@ function setOpenFilesWorkingSet(
   state: FileTreeStore,
   openFilesWorkingSet: WorkingSet,
 ): FileTreeStore {
-  // FIXME: We can't do this in the reducer.
-  // updateGeneratedStatus(openFilesWorkingSet.getAbsoluteUris());
-
   // Optimization: with an empty working set, we don't need a full tree refresh.
   if (state._conf.workingSet.isEmpty()) {
     return {

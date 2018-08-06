@@ -21,6 +21,7 @@ import type {WorkingSet} from '../../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {InitialData, ExportStoreData, Roots} from '../types';
+import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 
 import {ActionTypes} from '../FileTreeDispatcher';
 import * as Immutable from 'immutable';
@@ -419,12 +420,12 @@ export function setTargetNode(
   };
 }
 
-export function updateGeneratedStatus(
-  filesToCheck: Iterable<NuclideUri>,
+export function updateGeneratedStatuses(
+  generatedFileTypes: Map<NuclideUri, GeneratedFileType>,
 ): Action {
   return {
-    type: ActionTypes.UPDATE_GENERATED_STATUS,
-    filesToCheck,
+    type: ActionTypes.UPDATE_GENERATED_STATUSES,
+    generatedFileTypes,
   };
 }
 

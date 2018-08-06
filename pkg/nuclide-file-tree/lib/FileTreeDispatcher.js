@@ -20,6 +20,7 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {FileTreeNode} from './FileTreeNode';
 import type {ExportStoreData, InitialData, Roots} from './types';
+import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 
 import Dispatcher from '../../commons-node/Dispatcher';
 
@@ -243,8 +244,8 @@ export type FileTreeAction =
       nodeKey: NuclideUri,
     }
   | {
-      type: 'UPDATE_GENERATED_STATUS',
-      filesToCheck: Iterable<NuclideUri>,
+      type: 'UPDATE_GENERATED_STATUSES',
+      generatedFileTypes: Map<NuclideUri, GeneratedFileType>,
     }
   | {
       type: 'ADD_FILTER_LETTER',
@@ -464,10 +465,6 @@ export type FileTreeAction =
       type: 'SET_TARGET_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
-    |}
-  | {|
-      type: 'UPDATE_GENERATED_STATUS',
-      filesToCheck: Iterable<NuclideUri>,
     |}
   | {|
       type: 'ADD_FILTER_LETTER',
@@ -708,7 +705,7 @@ export const ActionTypes = Object.freeze({
   SET_FOLDERS_EXPANDED: 'SET_FOLDERS_EXPANDED',
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
   SET_TARGET_NODE: 'SET_TARGET_NODE',
-  UPDATE_GENERATED_STATUS: 'UPDATE_GENERATED_STATUS',
+  UPDATE_GENERATED_STATUSES: 'UPDATE_GENERATED_STATUSES',
   ADD_FILTER_LETTER: 'ADD_FILTER_LETTER',
   REMOVE_FILTER_LETTER: 'REMOVE_FILTER_LETTER',
   RESET: 'RESET',
