@@ -33,7 +33,7 @@ import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
  * single property. There are dependencies between some of the properties, so it's possible that
  * one memoized getter will call another.
  *
- * Each getter has a separate store instance which it is using for the memoization.
+ * Each getter has a separate cache instance which it is using for the memoization.
  * In this class' memoization strategy only the last value (and all its params, of course) are
  * stored.
  *
@@ -88,67 +88,67 @@ export class MemoizedFieldsDeriver {
     );
   }
 
-  _repoGetter(conf: StoreConfigData, store: Object): ?atom$Repository {
-    if (store.reposByRoot !== conf.reposByRoot) {
-      store.reposByRoot = conf.reposByRoot;
+  _repoGetter(conf: StoreConfigData, cache: Object): ?atom$Repository {
+    if (cache.reposByRoot !== conf.reposByRoot) {
+      cache.reposByRoot = conf.reposByRoot;
 
-      store.repo = store.reposByRoot[this._rootUri];
+      cache.repo = cache.reposByRoot[this._rootUri];
     }
 
-    return store.repo;
+    return cache.repo;
   }
 
   _vcsStatusCodeGetter(
     conf: StoreConfigData,
-    store: Object,
+    cache: Object,
   ): StatusCodeNumberValue {
-    if (store.vcsStatuses !== conf.vcsStatuses) {
-      store.vcsStatuses = conf.vcsStatuses;
+    if (cache.vcsStatuses !== conf.vcsStatuses) {
+      cache.vcsStatuses = conf.vcsStatuses;
 
-      const rootVcsStatuses = store.vcsStatuses.get(this._rootUri) || new Map();
-      store.vcsStatusCode =
+      const rootVcsStatuses = cache.vcsStatuses.get(this._rootUri) || new Map();
+      cache.vcsStatusCode =
         rootVcsStatuses.get(this._uri) || StatusCodeNumber.CLEAN;
     }
 
-    return store.vcsStatusCode;
+    return cache.vcsStatusCode;
   }
 
-  _isIgnoredGetter(conf: StoreConfigData, store: Object): boolean {
+  _isIgnoredGetter(conf: StoreConfigData, cache: Object): boolean {
     const repo = this._getRepo(conf);
-    if (store.repo !== repo) {
-      store.repo = repo;
+    if (cache.repo !== repo) {
+      cache.repo = repo;
 
-      store.isIgnored =
-        store.repo != null &&
-        store.repo.isProjectAtRoot() &&
-        store.repo.isPathIgnored(this._uri);
+      cache.isIgnored =
+        cache.repo != null &&
+        cache.repo.isProjectAtRoot() &&
+        cache.repo.isPathIgnored(this._uri);
     }
 
-    return store.isIgnored;
+    return cache.isIgnored;
   }
 
   _checkedStatusGetter(
     conf: StoreConfigData,
-    store: Object,
+    cache: Object,
   ): NodeCheckedStatus {
-    if (store.editedWorkingSet !== conf.editedWorkingSet) {
-      store.editedWorkingSet = conf.editedWorkingSet;
+    if (cache.editedWorkingSet !== conf.editedWorkingSet) {
+      cache.editedWorkingSet = conf.editedWorkingSet;
 
-      if (store.editedWorkingSet.isEmpty()) {
-        store.checkedStatus = 'clear';
+      if (cache.editedWorkingSet.isEmpty()) {
+        cache.checkedStatus = 'clear';
       } else {
         if (this._isContainer) {
-          if (store.editedWorkingSet.containsFileBySplitPath(this._splitPath)) {
-            store.checkedStatus = 'checked';
+          if (cache.editedWorkingSet.containsFileBySplitPath(this._splitPath)) {
+            cache.checkedStatus = 'checked';
           } else if (
-            store.editedWorkingSet.containsDirBySplitPath(this._splitPath)
+            cache.editedWorkingSet.containsDirBySplitPath(this._splitPath)
           ) {
-            store.checkedStatus = 'partial';
+            cache.checkedStatus = 'partial';
           } else {
-            store.checkedStatus = 'clear';
+            cache.checkedStatus = 'clear';
           }
         } else {
-          store.checkedStatus = store.editedWorkingSet.containsFileBySplitPath(
+          cache.checkedStatus = cache.editedWorkingSet.containsFileBySplitPath(
             this._splitPath,
           )
             ? 'checked'
@@ -157,41 +157,41 @@ export class MemoizedFieldsDeriver {
       }
     }
 
-    return store.checkedStatus;
+    return cache.checkedStatus;
   }
 
-  _containedInWorkingSetGetter(conf: StoreConfigData, store: Object): boolean {
-    if (store.workingSet !== conf.workingSet) {
-      store.workingSet = conf.workingSet;
+  _containedInWorkingSetGetter(conf: StoreConfigData, cache: Object): boolean {
+    if (cache.workingSet !== conf.workingSet) {
+      cache.workingSet = conf.workingSet;
 
-      store.containedInWorkingSet = this._isContainer
-        ? store.workingSet.containsDirBySplitPath(this._splitPath)
-        : store.workingSet.containsFileBySplitPath(this._splitPath);
+      cache.containedInWorkingSet = this._isContainer
+        ? cache.workingSet.containsDirBySplitPath(this._splitPath)
+        : cache.workingSet.containsFileBySplitPath(this._splitPath);
     }
 
-    return store.containedInWorkingSet;
+    return cache.containedInWorkingSet;
   }
 
   _containedInOpenFilesWorkingSetGetter(
     conf: StoreConfigData,
-    store: Object,
+    cache: Object,
   ): boolean {
-    if (store.openFilesWorkingSet !== conf.openFilesWorkingSet) {
-      store.openFilesWorkingSet = conf.openFilesWorkingSet;
+    if (cache.openFilesWorkingSet !== conf.openFilesWorkingSet) {
+      cache.openFilesWorkingSet = conf.openFilesWorkingSet;
 
-      if (store.openFilesWorkingSet.isEmpty()) {
-        store.containedInOpenFilesWorkingSet = false;
+      if (cache.openFilesWorkingSet.isEmpty()) {
+        cache.containedInOpenFilesWorkingSet = false;
       } else {
-        store.containedInOpenFilesWorkingSet = this._isContainer
-          ? store.openFilesWorkingSet.containsDirBySplitPath(this._splitPath)
-          : store.openFilesWorkingSet.containsFileBySplitPath(this._splitPath);
+        cache.containedInOpenFilesWorkingSet = this._isContainer
+          ? cache.openFilesWorkingSet.containsDirBySplitPath(this._splitPath)
+          : cache.openFilesWorkingSet.containsFileBySplitPath(this._splitPath);
       }
     }
 
-    return store.containedInOpenFilesWorkingSet;
+    return cache.containedInOpenFilesWorkingSet;
   }
 
-  _shouldBeShownGetter(conf: StoreConfigData, store: Object): boolean {
+  _shouldBeShownGetter(conf: StoreConfigData, cache: Object): boolean {
     const isIgnored = this._getIsIgnored(conf);
     const containedInWorkingSet = this._getContainedInWorkingSet(conf);
     const containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(
@@ -199,70 +199,70 @@ export class MemoizedFieldsDeriver {
     );
 
     if (
-      store.isIgnored !== isIgnored ||
-      store.excludeVcsIgnoredPaths !== conf.excludeVcsIgnoredPaths ||
-      store.hideVcsIgnoredPaths !== conf.hideVcsIgnoredPaths ||
-      store.hideIgnoredNames !== conf.hideIgnoredNames ||
-      store.ignoredPatterns !== conf.ignoredPatterns ||
-      store.isEditingWorkingSet !== conf.isEditingWorkingSet ||
-      store.containedInWorkingSet !== containedInWorkingSet ||
-      store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
+      cache.isIgnored !== isIgnored ||
+      cache.excludeVcsIgnoredPaths !== conf.excludeVcsIgnoredPaths ||
+      cache.hideVcsIgnoredPaths !== conf.hideVcsIgnoredPaths ||
+      cache.hideIgnoredNames !== conf.hideIgnoredNames ||
+      cache.ignoredPatterns !== conf.ignoredPatterns ||
+      cache.isEditingWorkingSet !== conf.isEditingWorkingSet ||
+      cache.containedInWorkingSet !== containedInWorkingSet ||
+      cache.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
     ) {
-      store.isIgnored = isIgnored;
-      store.excludeVcsIgnoredPaths = conf.excludeVcsIgnoredPaths;
-      store.hideVcsIgnoredPaths = conf.hideVcsIgnoredPaths;
-      store.hideIgnoredNames = conf.hideIgnoredNames;
-      store.ignoredPatterns = conf.ignoredPatterns;
-      store.isEditingWorkingSet = conf.isEditingWorkingSet;
-      store.containedInWorkingSet = containedInWorkingSet;
-      store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
+      cache.isIgnored = isIgnored;
+      cache.excludeVcsIgnoredPaths = conf.excludeVcsIgnoredPaths;
+      cache.hideVcsIgnoredPaths = conf.hideVcsIgnoredPaths;
+      cache.hideIgnoredNames = conf.hideIgnoredNames;
+      cache.ignoredPatterns = conf.ignoredPatterns;
+      cache.isEditingWorkingSet = conf.isEditingWorkingSet;
+      cache.containedInWorkingSet = containedInWorkingSet;
+      cache.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
 
       if (
-        store.isIgnored &&
-        store.excludeVcsIgnoredPaths &&
-        store.hideVcsIgnoredPaths
+        cache.isIgnored &&
+        cache.excludeVcsIgnoredPaths &&
+        cache.hideVcsIgnoredPaths
       ) {
-        store.shouldBeShown = false;
+        cache.shouldBeShown = false;
       } else if (
-        store.hideIgnoredNames &&
-        store.ignoredPatterns.some(p => p.match(this._uri))
+        cache.hideIgnoredNames &&
+        cache.ignoredPatterns.some(p => p.match(this._uri))
       ) {
-        store.shouldBeShown = false;
-      } else if (store.isEditingWorkingSet) {
-        store.shouldBeShown = true;
+        cache.shouldBeShown = false;
+      } else if (cache.isEditingWorkingSet) {
+        cache.shouldBeShown = true;
       } else {
-        store.shouldBeShown =
-          store.containedInWorkingSet || store.containedInOpenFilesWorkingSet;
+        cache.shouldBeShown =
+          cache.containedInWorkingSet || cache.containedInOpenFilesWorkingSet;
       }
     }
 
-    return store.shouldBeShown;
+    return cache.shouldBeShown;
   }
 
-  _shouldBeSoftenedGetter(conf: StoreConfigData, store: Object): boolean {
+  _shouldBeSoftenedGetter(conf: StoreConfigData, cache: Object): boolean {
     const containedInWorkingSet = this._getContainedInWorkingSet(conf);
     const containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(
       conf,
     );
 
     if (
-      store.isEditingWorkingSet !== conf.isEditingWorkingSet ||
-      store.containedInWorkingSet !== containedInWorkingSet ||
-      store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
+      cache.isEditingWorkingSet !== conf.isEditingWorkingSet ||
+      cache.containedInWorkingSet !== containedInWorkingSet ||
+      cache.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
     ) {
-      store.isEditingWorkingSet = conf.isEditingWorkingSet;
-      store.containedInWorkingSet = containedInWorkingSet;
-      store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
+      cache.isEditingWorkingSet = conf.isEditingWorkingSet;
+      cache.containedInWorkingSet = containedInWorkingSet;
+      cache.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
 
-      if (store.isEditingWorkingSet) {
-        store.shouldBeSoftened = false;
+      if (cache.isEditingWorkingSet) {
+        cache.shouldBeSoftened = false;
       } else {
-        store.shouldBeSoftened =
-          !store.containedInWorkingSet && store.containedInOpenFilesWorkingSet;
+        cache.shouldBeSoftened =
+          !cache.containedInWorkingSet && cache.containedInOpenFilesWorkingSet;
       }
     }
 
-    return store.shouldBeSoftened;
+    return cache.shouldBeSoftened;
   }
 
   buildDerivedFields(conf: StoreConfigData): Object {
@@ -284,9 +284,9 @@ export class MemoizedFieldsDeriver {
 }
 
 function memoize<T>(
-  getter: (conf: StoreConfigData, store: Object) => T,
+  getter: (conf: StoreConfigData, cache: Object) => T,
 ): (conf: StoreConfigData) => T {
-  const store = {};
+  const cache = {};
 
-  return conf => getter(conf, store);
+  return conf => getter(conf, cache);
 }
