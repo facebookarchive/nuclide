@@ -484,8 +484,7 @@ export default class FileTreeStore {
         this._reset();
         break;
       default:
-        (payload.actionType: empty);
-        throw new Error(`Unknown actionType ${payload.actionType}`);
+        break;
     }
 
     const end = performance.now();

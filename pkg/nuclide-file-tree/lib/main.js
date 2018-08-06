@@ -48,6 +48,7 @@ import passesGK from '../../commons-node/passesGK';
 import registerCommands from './registerCommands';
 import FileTreeStore from './FileTreeStore';
 import ProjectSelectionManager from './ProjectSelectionManager';
+import createStore from '../redux/createStore';
 
 type SerializedState = {
   tree: ExportStoreData,
@@ -69,7 +70,7 @@ class Activation {
   _cwdApiSubscription: ?IDisposable;
   _fileTreeComponent: ?FileTreeSidebarComponent;
   _restored: boolean; // Has the package state been restored from a previous session?
-  _store: FileTreeStore;
+  _store: Store;
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
   _disposables: UniversalDisposable;
@@ -110,15 +111,18 @@ class Activation {
       },
     );
 
-    this._store = new FileTreeStore();
-    this._actions = new FileTreeActions(this._store);
+    const legacyStore = new FileTreeStore();
+    this._actions = new FileTreeActions(legacyStore);
     const initialState = state == null ? null : state.tree;
     if (initialState != null) {
-      this._store.loadData(initialState);
+      legacyStore.loadData(initialState);
     }
-    this._disposables.add(registerCommands(this._store, this._actions));
+
+    this._store = createStore(legacyStore);
+
+    this._disposables.add(registerCommands(legacyStore, this._actions));
     this._actions.updateRootDirectories();
-    this._contextMenu = new FileTreeContextMenu(this._store);
+    this._contextMenu = new FileTreeContextMenu(this._store.getState());
     this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
@@ -290,7 +294,7 @@ class Activation {
 
   serialize(): ?SerializedState {
     return {
-      tree: Selectors.serialize(this._store),
+      tree: Selectors.serialize(this._store.getState()),
       restored: true,
       // Scrap our serialization when docks become available. Technically, we only need to scrap
       // the "restored" value, but this is simpler.
@@ -374,14 +378,16 @@ class Activation {
   }
 
   provideProjectSelectionManagerForFileTree(): ProjectSelectionManager {
-    return new ProjectSelectionManager(this._store, this._actions);
+    return new ProjectSelectionManager(this._store.getState(), this._actions);
   }
 
   provideFileTreeAdditionalLogFilesProvider(): AdditionalLogFilesProvider {
     return {
       id: 'nuclide-file-tree',
       getAdditionalLogFiles: expire => {
-        const fileTreeState = Selectors.collectDebugState(this._store);
+        const fileTreeState = Selectors.collectDebugState(
+          this._store.getState(),
+        );
         try {
           return Promise.resolve([
             {
@@ -404,7 +410,10 @@ class Activation {
   _createView(): FileTreeSidebarComponent {
     // Currently, we assume that only one will be created.
     this._fileTreeComponent = viewableFromReactElement(
-      <FileTreeSidebarComponent store={this._store} actions={this._actions} />,
+      <FileTreeSidebarComponent
+        store={this._store.getState()}
+        actions={this._actions}
+      />,
     );
     return this._fileTreeComponent;
   }
