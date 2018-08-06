@@ -19,7 +19,6 @@ import invariant from 'assert';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import * as Selectors from './FileTreeSelectors';
-import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import {FileTreeSelectionManager} from './FileTreeSelectionManager';
 import * as Immutable from 'immutable';
@@ -306,6 +305,12 @@ export default class FileTreeStore {
       case ActionTypes.CLEAR_SELECTION_RANGE:
         this._clearSelectionRange();
         break;
+      case ActionTypes.CLEAR_DRAG_HOVER:
+        this._clearDragHover();
+        break;
+      case ActionTypes.CLEAR_SELECTION:
+        this._clearSelection();
+        break;
       case ActionTypes.SET_CWD:
         this._setCwdKey(payload.rootKey);
         break;
@@ -332,9 +337,6 @@ export default class FileTreeStore {
         break;
       case ActionTypes.REORDER_ROOTS:
         this._doReorderRoots();
-        break;
-      case ActionTypes.MOVE_TO_NODE:
-        this._moveToNode(payload.rootKey, payload.nodeKey);
         break;
       case ActionTypes.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
@@ -1239,26 +1241,6 @@ export default class FileTreeStore {
       );
       this._reorderPreviewStatus = null;
       this._emitChange();
-    }
-  }
-
-  async _moveToNode(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
-    const targetNode = Selectors.getNode(this, rootKey, nodeKey);
-    if (targetNode == null || !targetNode.isContainer) {
-      return;
-    }
-
-    const selectedNodes = Selectors.getSelectedNodes(this);
-    this._clearDragHover();
-    this._clearSelection();
-
-    try {
-      await FileTreeHgHelpers.moveNodes(
-        selectedNodes.toArray(),
-        targetNode.uri,
-      );
-    } catch (e) {
-      atom.notifications.addError('Failed to move entries: ' + e.message);
     }
   }
 

@@ -1080,6 +1080,24 @@ export function deleteSelectedNodesEpic(
     .filter(Boolean);
 }
 
+export function moveToNodeEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.MOVE_TO_NODE).mergeMap(action => {
+    invariant(action.type === ActionTypes.MOVE_TO_NODE);
+    const {rootKey, nodeKey} = action;
+    const targetNode = Selectors.getNode(this, rootKey, nodeKey);
+    if (targetNode == null || !targetNode.isContainer) {
+      return Observable.empty();
+    }
+    const selectedNodes = Selectors.getSelectedNodes(store.getState());
+    // This is async but we don't care.
+    FileTreeHgHelpers.moveNodes(selectedNodes.toArray(), targetNode.uri);
+    return Observable.of(Actions.clearDragHover(), Actions.clearSelection());
+  });
+}
+
 //
 // Helper functions
 //

@@ -689,6 +689,14 @@ export function openPasteDialog(): Action {
   return {type: ActionTypes.OPEN_PASTE_DIALOG};
 }
 
+export function clearSelection(): Action {
+  return {type: ActionTypes.CLEAR_SELECTION};
+}
+
 export function clearSelectionRange(): Action {
   return {type: ActionTypes.CLEAR_SELECTION_RANGE};
+}
+
+export function clearDragHover(): Action {
+  return {type: ActionTypes.CLEAR_DRAG_HOVER};
 }

@@ -592,9 +592,13 @@ export type FileTreeAction =
       onDidConfirm: (filePaths: Array<string>) => mixed,
     |}
   | {|type: 'OPEN_PASTE_DIALOG'|}
-  | {|type: 'CLEAR_SELECTION_RANGE'|};
+  | {|type: 'CLEAR_SELECTION_RANGE'|}
+  | {|type: 'CLEAR_DRAG_HOVER'|}
+  | {|type: 'CLEAR_SELECTION'|};
 
 export const ActionTypes = Object.freeze({
+  CLEAR_DRAG_HOVER: 'CLEAR_DRAG_HOVER',
+  CLEAR_SELECTION: 'CLEAR_SELECTION',
   CLEAR_SELECTION_RANGE: 'CLEAR_SELECTION_RANGE',
   COLLAPSE_NODE: 'COLLAPSE_NODE',
   COLLAPSE_NODE_DEEP: 'COLLAPSE_NODE_DEEP',
