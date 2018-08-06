@@ -24,7 +24,7 @@ module.exports = {
   roots: [p('')],
   testMatch: ['**/__tests__/**/*.js?(x)'],
   transform: {
-    '\\.js$': p('modules/nuclide-jest/jestTransformer.js'),
+    '\\.js$': p('jest/transform.js'),
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.node.js'),
   setupFiles: [p('jest/setup.js')],

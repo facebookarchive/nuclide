@@ -24,7 +24,7 @@ module.exports = {
   roots: [p('')],
   testMatch: ['**/__atom_tests__/**/*.js?(x)'],
   transform: {
-    '\\.js$': p('modules/nuclide-jest/jestTransformer.js'),
+    '\\.js$': p('jest/transform.js'),
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.atom.js'),
   runner: p('modules/jest-atom-runner/build/index.js'),
