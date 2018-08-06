@@ -12,12 +12,9 @@
 import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as Immutable from 'immutable';
-import * as Selectors from './FileTreeSelectors';
-import * as SelectionActions from './redux/SelectionActions';
 
-import type {FileTreeAction} from './FileTreeDispatcher';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NodeCheckedStatus} from './types';
+import type {NodeCheckedStatus, StoreConfigData} from './types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
@@ -25,8 +22,6 @@ export type FileTreeNodeOptions = {
   uri: NuclideUri,
   rootUri: NuclideUri,
   isExpanded?: boolean,
-  isSelected?: boolean,
-  isFocused?: boolean,
   isDragHovered?: boolean,
   isBeingReordered?: boolean,
   isLoading?: boolean,
@@ -44,8 +39,6 @@ export type FileTreeNodeOptions = {
 
 type DefaultFileTreeNodeOptions = {
   isExpanded: boolean,
-  isSelected: boolean,
-  isFocused: boolean,
   isDragHovered: boolean,
   isBeingReordered: boolean,
   isLoading: boolean,
@@ -62,8 +55,6 @@ type DefaultFileTreeNodeOptions = {
 
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isExpanded: false,
-  isSelected: false,
-  isFocused: false,
   isDragHovered: false,
   isBeingReordered: false,
   isLoading: false,
@@ -80,8 +71,6 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
 
 export type ImmutableNodeSettableFields = {
   isExpanded?: boolean,
-  isSelected?: boolean,
-  isFocused?: boolean,
   isDragHovered?: boolean,
   isBeingReordered?: boolean,
   isLoading?: boolean,
@@ -197,7 +186,7 @@ export class FileTreeNode {
   nextSibling: ?FileTreeNode;
   prevSibling: ?FileTreeNode;
 
-  _store: Store;
+  _conf: StoreConfigData;
   _deriver: MemoizedFieldsDeriver;
 
   uri: NuclideUri;
@@ -253,21 +242,19 @@ export class FileTreeNode {
    */
   constructor(
     options: FileTreeNodeOptions,
-    store: Store,
+    conf: StoreConfigData,
     _deriver: ?MemoizedFieldsDeriver = null,
   ) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
-    this._store = store;
+    this._conf = conf;
 
     this._assignOptions(options);
 
     this._deriver =
       _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
-    const derived = this._deriver.buildDerivedFields(
-      Selectors.getConf(store.getState()),
-    );
+    const derived = this._deriver.buildDerivedFields(conf);
     this._assignDerived(derived);
 
     this._handleChildren();
@@ -344,20 +331,6 @@ export class FileTreeNode {
       options.isExpanded !== undefined
         ? options.isExpanded
         : DEFAULT_OPTIONS.isExpanded;
-    const isSelected =
-      options.isSelected !== undefined
-        ? options.isSelected
-        : DEFAULT_OPTIONS.isSelected;
-    if (isSelected) {
-      this._dispatch(SelectionActions.select(this));
-    }
-    const isFocused =
-      options.isFocused !== undefined
-        ? options.isFocused
-        : DEFAULT_OPTIONS.isFocused;
-    if (isFocused) {
-      this._dispatch(SelectionActions.focus(this));
-    }
     this.isDragHovered =
       options.isDragHovered !== undefined
         ? options.isDragHovered
@@ -436,8 +409,6 @@ export class FileTreeNode {
       uri: this.uri,
       rootUri: this.rootUri,
       isExpanded: this.isExpanded,
-      isSelected: this.isSelected(),
-      isFocused: this.isFocused(),
       isDragHovered: this.isDragHovered,
       isBeingReordered: this.isBeingReordered,
       isLoading: this.isLoading,
@@ -455,14 +426,6 @@ export class FileTreeNode {
 
   setIsExpanded(isExpanded: boolean): FileTreeNode {
     return this.set({isExpanded});
-  }
-
-  setIsSelected(isSelected: boolean): FileTreeNode {
-    return this.set({isSelected});
-  }
-
-  setIsFocused(isFocused: boolean): FileTreeNode {
-    return this.set({isFocused});
   }
 
   setIsDragHovered(isDragHovered: boolean): FileTreeNode {
@@ -500,41 +463,16 @@ export class FileTreeNode {
    */
   updateConf(): FileTreeNode {
     const children = this.children.map(c => c.updateConf());
-    return this._newNode({children}, this._store);
+    return this._newNode({children}, this._conf);
   }
 
   /**
    * Used to modify several properties at once and skip unnecessary construction of intermediate
    * instances. For example:
-   * const newNode = node.set({isExpanded: true, isSelected: false});
+   * const newNode = node.set({isExpanded: true});
    */
   set(props: ImmutableNodeSettableFields): FileTreeNode {
-    if (this._propsAreTheSame(props)) {
-      // Prevent an expensive operation on a very frequent update (selection)
-      if (
-        props.isSelected !== undefined &&
-        this.isSelected() !== props.isSelected
-      ) {
-        if (props.isSelected) {
-          this._dispatch(SelectionActions.select(this));
-        } else {
-          this._dispatch(SelectionActions.unselect(this));
-        }
-      }
-      if (
-        props.isFocused !== undefined &&
-        this.isFocused() !== props.isFocused
-      ) {
-        if (props.isFocused) {
-          this._dispatch(SelectionActions.focus(this));
-        } else {
-          this._dispatch(SelectionActions.unfocus(this));
-        }
-      }
-      return this;
-    }
-
-    return this._newNode(props, this._store);
+    return this._newNode(props, this._conf);
   }
 
   /**
@@ -827,65 +765,19 @@ export class FileTreeNode {
     return true;
   }
 
-  // FIXME: This is a huge gross hack to avoid dispatching from a reducer. It's an artfact of a
-  // refactor from an architecture where a completely separate store was created to avoid this.
-  // Why is this being done in the node?
-  _dispatch(action: FileTreeAction): void {
-    Promise.resolve().then(() => {
-      this._store.dispatch(action);
-    });
-  }
-
-  _newNode(props: ImmutableNodeSettableFields, store: Store): FileTreeNode {
+  _newNode(
+    props: ImmutableNodeSettableFields,
+    conf: StoreConfigData,
+  ): FileTreeNode {
     const options = this._buildOptions();
-    if (props.children !== undefined) {
-      this._handleChildrenChange(this.children, props.children);
-    }
-    this._dispatch(SelectionActions.unselect(this));
-    this._dispatch(SelectionActions.unfocus(this));
-
     return new FileTreeNode(
       {
         ...options,
         ...props,
       },
-      store,
+      this._conf,
       this._deriver,
     );
-  }
-
-  _handleChildrenChange(
-    oldChildren: Immutable.OrderedMap<string, FileTreeNode>,
-    newChildren: Immutable.OrderedMap<string, FileTreeNode>,
-  ): void {
-    if (oldChildren === newChildren) {
-      return;
-    }
-    const childrenToUnselect = new Set();
-    const childrenToUnfocus = new Set();
-
-    oldChildren.forEach(node => {
-      const newChild = newChildren.get(node.name);
-      if (newChild === node) {
-        return;
-      }
-
-      childrenToUnselect.add(node);
-      childrenToUnfocus.add(node);
-
-      if (newChild != null) {
-        this._handleChildrenChange(node.children, newChild.children);
-      } else {
-        this._handleChildrenChange(node.children, Immutable.OrderedMap());
-      }
-    });
-
-    childrenToUnselect.forEach(node => {
-      this._dispatch(SelectionActions.unselect(node));
-    });
-    childrenToUnfocus.forEach(node => {
-      this._dispatch(SelectionActions.unfocus(node));
-    });
   }
 
   _findLastByNamePath(childNamePath: Array<string>): FileTreeNode {
@@ -899,14 +791,6 @@ export class FileTreeNode {
     }
 
     return child._findLastByNamePath(childNamePath.slice(1));
-  }
-
-  isSelected(): boolean {
-    return Selectors.getNodeIsSelected(this._store.getState(), this);
-  }
-
-  isFocused(): boolean {
-    return Selectors.getNodeIsFocused(this._store.getState(), this);
   }
 
   collectDebugState(): DebugState {

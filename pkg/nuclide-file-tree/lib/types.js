@@ -112,8 +112,8 @@ export type FileTreeStore = {|
 
   _maxComponentWidth: number,
 
-  _selectedNodes: Immutable.Set<FileTreeNode>,
-  _focusedNodes: Immutable.Set<FileTreeNode>,
+  _selectedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
+  _focusedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';

@@ -108,13 +108,31 @@ export const usePrefixNav = (state: FileTreeStore): boolean => {
 export const getSelectedNodes = (
   state: FileTreeStore,
 ): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._selectedNodes.values());
+  const nodes = [];
+  state._selectedUris.forEach((set, rootUri) => {
+    set.forEach(uri => {
+      const node = getNode(state, rootUri, uri);
+      if (node != null) {
+        nodes.push(node);
+      }
+    });
+  });
+  return Immutable.List(nodes);
 };
 
 export const getFocusedNodes = (
   state: FileTreeStore,
 ): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._focusedNodes.values());
+  const nodes = [];
+  state._focusedUris.forEach((set, rootUri) => {
+    set.forEach(uri => {
+      const node = getNode(state, rootUri, uri);
+      if (node != null) {
+        nodes.push(node);
+      }
+    });
+  });
+  return Immutable.List(nodes);
 };
 
 // Retrieves target node in an immutable list if it's set, or all selected
@@ -308,7 +326,7 @@ export const collectSelectionDebugState = (state: FileTreeStore) => ({
 });
 
 export const getNodeIsSelected = (state: FileTreeStore, node: FileTreeNode) =>
-  state._selectedNodes.has(node);
+  state._selectedUris.get(node.rootUri, Immutable.Set()).has(node.uri);
 
 export const getNodeIsFocused = (state: FileTreeStore, node: FileTreeNode) =>
-  state._focusedNodes.has(node);
+  state._focusedUris.get(node.rootUri, Immutable.Set()).has(node.uri);

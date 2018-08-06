@@ -10,6 +10,9 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AppState} from './types';
+
+import * as Selectors from './FileTreeSelectors';
 import {FileTreeNode} from './FileTreeNode';
 
 export class RangeKey {
@@ -101,28 +104,29 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
   return null;
 }
 
+// TODO: Move this to Selectors
 export class RangeUtil {
   /**
    * Returns the current node if it is shown and selected
    * Otherwise, returns a nearby selected node.
    */
-  static findSelectedNode(node: FileTreeNode): ?FileTreeNode {
+  static findSelectedNode(state: AppState, node: FileTreeNode): ?FileTreeNode {
     const shown = findShownNode(node);
     if (shown == null) {
       return shown;
     }
-    if (shown.isSelected()) {
+    if (Selectors.getNodeIsSelected(state, shown)) {
       return shown;
     }
     let selected = shown;
-    while (selected != null && !selected.isSelected()) {
+    while (selected != null && !Selectors.getNodeIsSelected(state, selected)) {
       selected = selected.findNext();
     }
     if (selected != null) {
       return selected;
     }
     selected = shown;
-    while (selected != null && !selected.isSelected()) {
+    while (selected != null && !Selectors.getNodeIsSelected(state, selected)) {
       selected = selected.findPrevious();
     }
     return selected;

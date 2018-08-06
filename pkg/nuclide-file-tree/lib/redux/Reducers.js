@@ -90,8 +90,8 @@ const DEFAULT_STATE: FileTreeStore = {
 
   _maxComponentWidth: -1,
 
-  _selectedNodes: new Immutable.Set(),
-  _focusedNodes: new Immutable.Set(),
+  _selectedUris: new Immutable.Map(),
+  _focusedUris: new Immutable.Map(),
 
   _cwdApi: null,
   _cwdKey: null,
@@ -247,24 +247,24 @@ function reduceState(
     case SelectionActions.SELECT:
       return {
         ...state,
-        _selectedNodes: state._selectedNodes.add(action.node),
+        _selectedUris: addNodes(state._selectedUris, [action.node]),
       };
     case SelectionActions.UNSELECT:
       return {
         ...state,
-        _selectedNodes: state._selectedNodes.delete(action.node),
+        _selectedUris: deleteNodes(state._selectedUris, [action.node]),
       };
     case SelectionActions.CLEAR_SELECTED:
       return clearSelected(state);
     case SelectionActions.FOCUS:
       return {
         ...state,
-        _focusedNodes: state._focusedNodes.add(action.node),
+        _focusedUris: addNodes(state._focusedUris, [action.node]),
       };
     case SelectionActions.UNFOCUS:
       return {
         ...state,
-        _focusedNodes: state._focusedNodes.delete(action.node),
+        _focusedUris: deleteNodes(state._focusedUris, [action.node]),
       };
     case SelectionActions.CLEAR_FOCUSED:
       return clearFocused(state);
@@ -379,14 +379,14 @@ function clearSelection(state: FileTreeStore): FileTreeStore {
 function clearSelected(state: FileTreeStore): FileTreeStore {
   return {
     ...state,
-    _selectedNodes: Immutable.Set(),
+    _selectedUris: Immutable.Map(),
   };
 }
 
 function clearFocused(state: FileTreeStore): FileTreeStore {
   return {
     ...state,
-    _focusedNodes: Immutable.Set(),
+    _focusedUris: Immutable.Map(),
   };
 }
 
@@ -543,7 +543,8 @@ function collapseNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  return setRoots(
+  const nodesToUnselect = new Set();
+  const nextState = setRoots(
     state,
     updateNodeAtRoot(state._roots, rootKey, nodeKey, node => {
       // Clear all selected nodes under the node being collapsed and dispose their subscriptions
@@ -562,12 +563,22 @@ function collapseNode(
           if (childNode.uri === node.uri) {
             return childNode.set({isExpanded: false, subscription: null});
           } else {
-            return childNode.set({isSelected: false, subscription: null});
+            nodesToUnselect.add(childNode);
+            return childNode.set({subscription: null});
           }
         },
       );
     }),
   );
+
+  let nextSelectedUris = nextState._selectedUris;
+  nodesToUnselect.forEach(node => {
+    nextSelectedUris = deleteNodes(nextSelectedUris, [node]);
+  });
+  return {
+    ...nextState,
+    _selectedUris: nextSelectedUris,
+  };
 }
 
 function setExcludeVcsIgnoredPaths(
@@ -589,7 +600,10 @@ function updateConf(
 ): FileTreeStore {
   const nextConf = {...state._conf};
   predicate(nextConf);
+  const nodesToUnselect = new Set();
   const nextState = updateRoots(state, root => {
+    // TODO: We're no longer changing anything here so we should be using an iteration helper
+    // instead of `setRecursive()`
     return root.updateConf().setRecursive(
       // Remove selection from hidden nodes under this root
       node => (node.containsHidden ? null : node),
@@ -601,12 +615,19 @@ function updateConf(
         // The node is hidden - unselect all nodes under it if there are any
         return node.setRecursive(
           subNode => null,
-          subNode => subNode.setIsSelected(false),
+          subNode => {
+            nodesToUnselect.add(subNode);
+            return subNode;
+          },
         );
       },
     );
   });
-  return {...nextState, _conf: nextConf};
+  return {
+    ...nextState,
+    _selectedUris: deleteNodes(state._selectedUris, nodesToUnselect),
+    _conf: nextConf,
+  };
 }
 
 function setHideVcsIgnoredPaths(
@@ -661,7 +682,8 @@ function collapseNodeDeep(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  return setRoots(
+  const nodesToUnselect = new Set();
+  const nextState = setRoots(
     state,
     updateNodeAtRoot(state._roots, rootKey, nodeKey, node => {
       return node.setRecursive(/* prePredicate */ null, childNode => {
@@ -670,9 +692,9 @@ function collapseNodeDeep(
         }
 
         if (childNode.uri !== node.uri) {
+          nodesToUnselect.add(childNode);
           return childNode.set({
             isExpanded: false,
-            isSelected: false,
             subscription: null,
           });
         } else {
@@ -681,6 +703,10 @@ function collapseNodeDeep(
       });
     }),
   );
+  return {
+    ...nextState,
+    _selectedUris: deleteNodes(nextState._selectedUris, nodesToUnselect),
+  };
 }
 
 function setHideIgnoredNames(
@@ -976,18 +1002,7 @@ function setSelectedNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  let nextState = clearSelection(state);
-  nextState = setRoots(
-    nextState,
-    updateNodeAtRoot(nextState._roots, rootKey, nodeKey, node =>
-      node.setIsSelected(true),
-    ),
-  );
-  nextState = setTrackedNode(nextState, rootKey, nodeKey);
-  return setSelectionRange(
-    nextState,
-    SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
-  );
+  return addSelectedNode(clearSelection(state), rootKey, nodeKey);
 }
 
 function setSelectionRange(
@@ -1009,12 +1024,14 @@ function setFocusedNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  return setRoots(
-    state,
-    updateNodeAtRoot(state._roots, rootKey, nodeKey, node =>
-      node.setIsFocused(true),
-    ),
-  );
+  const node = Selectors.getNode(state, rootKey, nodeKey);
+  if (node == null) {
+    return state;
+  }
+  return {
+    ...state,
+    _focusedUris: addNodes(state._focusedUris, [node]),
+  };
 }
 
 function addSelectedNode(
@@ -1022,12 +1039,14 @@ function addSelectedNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  const nextState = setRoots(
-    state,
-    updateNodeAtRoot(state._roots, rootKey, nodeKey, node =>
-      node.setIsSelected(true),
-    ),
-  );
+  const node = Selectors.getNode(state, rootKey, nodeKey);
+  if (node == null) {
+    return state;
+  }
+  const nextState = {
+    ...state,
+    _selectedUris: addNodes(state._selectedUris, [node]),
+  };
   return setSelectionRange(
     nextState,
     SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
@@ -1039,12 +1058,15 @@ function unselectNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  return setRoots(
-    state,
-    updateNodeAtRoot(state._roots, rootKey, nodeKey, node =>
-      node.set({isSelected: false, isFocused: false}),
-    ),
-  );
+  const node = Selectors.getNode(state, rootKey, nodeKey);
+  if (node == null) {
+    return state;
+  }
+  return {
+    ...state,
+    _selectedUris: deleteNodes(state._selectedUris, [node]),
+    _focusedUris: deleteNodes(state._focusedUris, [node]),
+  };
 }
 
 /**
@@ -1089,13 +1111,15 @@ function setSelectedAndFocusedNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
+  const node = Selectors.getNode(state, rootKey, nodeKey);
   let nextState = clearSelection(state);
-  nextState = setRoots(
-    nextState,
-    updateNodeAtRoot(nextState._roots, rootKey, nodeKey, node =>
-      node.set({isSelected: true, isFocused: true}),
-    ),
-  );
+  if (node != null) {
+    nextState = {
+      ...nextState,
+      _selectedUris: addNodes(state._selectedUris, [node]),
+      _focusedUris: addNodes(state._focusedUris, [node]),
+    };
+  }
   nextState = setTrackedNode(nextState, rootKey, nodeKey);
   return setSelectionRange(
     nextState,
@@ -1132,8 +1156,13 @@ function rangeSelectToNode(
 
   let beginIndex = 1;
 
-  // traversing the tree, flip the isSelected flag when applicable.
-  const roots = nextState._roots.map(
+  const nodesToUnselect = new Set();
+  const nodesToSelect = new Set();
+
+  // Traverse the tree, determining which nodes to select/focus and unselect/unfocus.
+  // TODO: We're no longer actually setting anything in the tree here, just walking it. So don't
+  // use `setRecursive()`
+  nextState._roots.forEach(
     (rootNode: FileTreeNode): FileTreeNode =>
       rootNode.setRecursive(
         // keep traversing the sub-tree,
@@ -1171,20 +1200,31 @@ function rangeSelectToNode(
           if ((inOldRange && inNewRange) || (!inOldRange && !inNewRange)) {
             return node;
           } else if (inOldRange && !inNewRange) {
-            return node.set({isSelected: false, isFocused: false});
+            nodesToUnselect.add(node);
           } else {
-            return node.set({isSelected: true, isFocused: true});
+            nodesToSelect.add(node);
           }
+          return node;
         },
       ),
   );
-  nextState = setRoots(nextState, roots);
+  nextState = {
+    ...nextState,
+    _selectedUris: deleteNodes(
+      addNodes(nextState._selectedUris, nodesToSelect),
+      nodesToUnselect,
+    ),
+    _focusedUris: deleteNodes(
+      addNodes(nextState._focusedUris, nodesToSelect),
+      nodesToUnselect,
+    ),
+  };
 
   // expand the range to merge existing selected nodes.
   const getNextNode = (cur: FileTreeNode) =>
     nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
   let probe = getNextNode(nextRangeNode);
-  while (probe != null && probe.isSelected()) {
+  while (probe != null && Selectors.getNodeIsSelected(nextState, probe)) {
     nextRangeNode = probe;
     probe = getNextNode(nextRangeNode);
   }
@@ -1233,8 +1273,8 @@ function refreshSelectionRange(
     return invalidate();
   }
 
-  anchorNode = RangeUtil.findSelectedNode(anchorNode);
-  rangeNode = RangeUtil.findSelectedNode(rangeNode);
+  anchorNode = RangeUtil.findSelectedNode(state, anchorNode);
+  rangeNode = RangeUtil.findSelectedNode(state, rangeNode);
   if (anchorNode == null || rangeNode == null) {
     return invalidate();
   }
@@ -1285,19 +1325,19 @@ function rangeSelectMove(
 
   if (isExpanding) {
     let nextNode = getNextNode(rangeNode);
-    while (nextNode != null && nextNode.isSelected()) {
+    while (nextNode != null && Selectors.getNodeIsSelected(state, nextNode)) {
       nextNode = getNextNode(nextNode);
     }
     if (nextNode == null) {
       return nextState;
     }
-    const {newNode, updatedState} = updateNode(nextState, nextNode, n =>
-      n.set({isSelected: true, isFocused: true}),
-    );
-    nextNode = newNode;
-    nextState = updatedState;
+    nextState = {
+      ...nextState,
+      _selectedUris: addNodes(nextState._selectedUris, [nextNode]),
+      _focusedUris: addNodes(nextState._focusedUris, [nextNode]),
+    };
     let probe = getNextNode(nextNode);
-    while (probe != null && probe.isSelected()) {
+    while (probe != null && Selectors.getNodeIsSelected(nextState, probe)) {
       nextNode = probe;
       probe = getNextNode(nextNode);
     }
@@ -1311,7 +1351,7 @@ function rangeSelectMove(
     while (
       nextNode != null &&
       nextNode !== anchorNode &&
-      nextNode.isSelected() === false
+      Selectors.getNodeIsSelected(nextState, nextNode) === false
     ) {
       nextNode = getNextNode(nextNode);
     }
@@ -1325,11 +1365,11 @@ function rangeSelectMove(
       );
       return nextState;
     }
-    const {newNode, updatedState} = updateNode(nextState, nextNode, n =>
-      n.set({isSelected: false, isFocused: false}),
-    );
-    nextNode = newNode;
-    nextState = updatedState;
+    nextState = {
+      ...nextState,
+      _selectedUris: deleteNodes(nextState._selectedUris, [nextNode]),
+      _focusedUris: deleteNodes(nextState._focusedUris, [nextNode]),
+    };
     nextState = setSelectionRange(
       nextState,
       selectionRange.withNewRange(RangeKey.of(nextNode)),
@@ -1338,22 +1378,6 @@ function rangeSelectMove(
   }
 
   return nextState;
-}
-
-/**
- * Update a node by calling the predicate, returns the new node.
- */
-function updateNode(
-  state: FileTreeStore,
-  node: FileTreeNode,
-  predicate: (node: FileTreeNode) => FileTreeNode,
-): {newNode: FileTreeNode, updatedState: FileTreeStore} {
-  const newNode = predicate(node);
-  const roots = state._roots.set(node.rootUri, replaceNode(node, newNode));
-  return {
-    newNode,
-    updatedState: setRoots(state, roots),
-  };
 }
 
 /**
@@ -1608,15 +1632,32 @@ function reset(state: FileTreeStore): FileTreeStore {
   };
 }
 
-function updateMaxComponentWidth(
-  state: FileTreeStore,
-  width: ?number,
-): FileTreeStore {
-  if (width == null) {
-    return state;
+function addNodes(
+  map_: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
+  nodes: Iterable<FileTreeNode>,
+): Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>> {
+  let map = map_;
+  for (const node of nodes) {
+    map = map.updateIn([node.rootUri], (set = Immutable.Set()) =>
+      set.add(node.uri),
+    );
   }
-  return {
-    ...state,
-    _maxComponentWidth: Math.max(state._maxComponentWidth, width),
-  };
+  return map;
+}
+
+function deleteNodes(
+  map_: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
+  nodes: Iterable<FileTreeNode>,
+): Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>> {
+  let map = map_;
+  for (const node of nodes) {
+    map = map.updateIn([node.rootUri], (set = Immutable.Set()) =>
+      set.delete(node.uri),
+    );
+    const set = map.get(node.rootUri);
+    if (set != null && set.size === 0) {
+      map = map.delete(node.rootUri);
+    }
+  }
+  return map;
 }
