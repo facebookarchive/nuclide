@@ -11,13 +11,14 @@
 
 /* eslint-disable nuclide-internal/prefer-nuclide-uri */
 
+import type {Store} from '../redux/types';
+
 import path from 'path';
 import invariant from 'assert';
 import FileTreeActions from '../lib/FileTreeActions';
 import registerCommands from '../lib/registerCommands';
-import FileTreeStore from '../lib/FileTreeStore';
 
-export const setup = (store: FileTreeStore, actions: FileTreeActions) => {
+export const setup = (store: Store, actions: FileTreeActions) => {
   const fixturesPath = path.resolve(__dirname, './fixtures');
   atom.project.setPaths([fixturesPath]);
   actions.updateRootDirectories();

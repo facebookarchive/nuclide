@@ -9,9 +9,10 @@
  * @format
  */
 
+import type {Store} from '../redux/types';
+
 import {COMMANDS_SELECTOR} from './FileTreeConstants';
 import FileTreeActions from './FileTreeActions';
-import FileTreeStore from './FileTreeStore';
 import * as Selectors from './FileTreeSelectors';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
@@ -27,7 +28,7 @@ const VALID_FILTER_CHARS =
   '_abcdefghijklmnopqrstuvwxyz~';
 
 export default function registerCommands(
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 ): IDisposable {
   const disposables = new UniversalDisposable();
@@ -53,7 +54,7 @@ export default function registerCommands(
   );
   const letterKeyBindings = {
     'tree-view:remove-letter': () => {
-      if (!store.usePrefixNav()) {
+      if (!store.getState().usePrefixNav()) {
         return;
       }
       actions.removeFilterLetter();
@@ -67,7 +68,7 @@ export default function registerCommands(
   ) {
     const char = String.fromCharCode(c);
     letterKeyBindings[`tree-view:go-to-letter-${char}`] = () => {
-      if (!store.usePrefixNav()) {
+      if (!store.getState().usePrefixNav()) {
         return;
       }
       actions.addFilterLetter(char);
@@ -200,12 +201,12 @@ function revealActiveFile(event: Event, actions: FileTreeActions): void {
   actions.revealFilePath(path);
 }
 
-function searchInDirectory(event: Event, store: FileTreeStore): void {
+function searchInDirectory(event: Event, store: Store): void {
   const targetElement = ((event.target: any): HTMLElement);
   // If the event was sent to the entire tree, rather then a single element - attempt to derive
   // the path to work on from the current selection.
   if (targetElement.classList.contains('nuclide-file-tree')) {
-    const node = Selectors.getSingleSelectedNode(store);
+    const node = Selectors.getSingleSelectedNode(store.getState());
     if (node == null) {
       return;
     }

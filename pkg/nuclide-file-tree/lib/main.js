@@ -120,7 +120,7 @@ class Activation {
 
     this._store = createStore(legacyStore);
 
-    this._disposables.add(registerCommands(legacyStore, this._actions));
+    this._disposables.add(registerCommands(this._store, this._actions));
     this._actions.updateRootDirectories();
     this._contextMenu = new FileTreeContextMenu(this._store.getState());
     this._restored = state.restored === true;
@@ -410,10 +410,7 @@ class Activation {
   _createView(): FileTreeSidebarComponent {
     // Currently, we assume that only one will be created.
     this._fileTreeComponent = viewableFromReactElement(
-      <FileTreeSidebarComponent
-        store={this._store.getState()}
-        actions={this._actions}
-      />,
+      <FileTreeSidebarComponent store={this._store} actions={this._actions} />,
     );
     return this._fileTreeComponent;
   }

@@ -9,16 +9,17 @@
  * @format
  */
 
+import type {Store} from '../redux/types';
+
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import FileTreeStore from '../lib/FileTreeStore';
 import * as Selectors from '../lib/FileTreeSelectors';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {|
   remeasureHeight: () => mixed,
-  store: FileTreeStore,
+  store: Store,
 |};
 
 type State = {|
@@ -40,7 +41,9 @@ export class ProjectSelection extends React.Component<Props, State> {
     this._processExternalUpdate();
 
     this._disposables.add(
-      this.props.store.subscribe(this._processExternalUpdate.bind(this)),
+      this.props.store
+        .getState()
+        .subscribe(this._processExternalUpdate.bind(this)),
     );
   }
 
@@ -68,7 +71,9 @@ export class ProjectSelection extends React.Component<Props, State> {
   }
 
   calculateExtraContent() {
-    const list = Selectors.getExtraProjectSelectionContent(this.props.store);
+    const list = Selectors.getExtraProjectSelectionContent(
+      this.props.store.getState(),
+    );
     if (list.isEmpty()) {
       return null;
     }

@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {Store} from '../redux/types';
+
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -16,7 +18,6 @@ import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import * as Selectors from '../lib/FileTreeSelectors';
 import {WorkingSet} from '../../nuclide-working-sets-common';
@@ -27,7 +28,7 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 type Props = {
   workingSetsStore: WorkingSetsStore,
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 };
 
@@ -92,16 +93,20 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
+    const workingSetsStore = Selectors.getWorkingSetsStore(
+      this.props.store.getState(),
+    );
     let shouldShowButtonLabel;
     if (workingSetsStore != null) {
       shouldShowButtonLabel = workingSetsStore.getDefinitions().length === 0;
     }
-    const workingSet = Selectors.getWorkingSet(this.props.store);
+    const workingSet = Selectors.getWorkingSet(this.props.store.getState());
     const editedWorkingSetIsEmpty = Selectors.isEditedWorkingSetEmpty(
-      this.props.store,
+      this.props.store.getState(),
     );
-    const isEditingWorkingSet = Selectors.isEditingWorkingSet(this.props.store);
+    const isEditingWorkingSet = Selectors.isEditingWorkingSet(
+      this.props.store.getState(),
+    );
 
     let selectWorkingSetButton;
     if (!this.state.definitionsAreEmpty && !isEditingWorkingSet) {
@@ -134,7 +139,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
           'nuclide-file-tree-toolbar-fader':
             workingSet.isEmpty() &&
             !this.state.selectionIsActive &&
-            !Selectors.isEditingWorkingSet(this.props.store),
+            !Selectors.isEditingWorkingSet(this.props.store.getState()),
         })}>
         <ButtonGroup className="pull-right" size={ButtonGroupSizes.SMALL}>
           {selectWorkingSetButton}
@@ -197,7 +202,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   }
 
   _toggleWorkingSetEditMode = (): void => {
-    if (Selectors.isEditingWorkingSet(this.props.store)) {
+    if (Selectors.isEditingWorkingSet(this.props.store.getState())) {
       this._finishEditingWorkingSet();
     } else {
       this._startEditingWorkingSet(new WorkingSet());
@@ -205,19 +210,27 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   };
 
   _saveWorkingSet = (name: string): void => {
-    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
+    const workingSetsStore = Selectors.getWorkingSetsStore(
+      this.props.store.getState(),
+    );
     invariant(workingSetsStore);
 
-    const editedWorkingSet = Selectors.getEditedWorkingSet(this.props.store);
+    const editedWorkingSet = Selectors.getEditedWorkingSet(
+      this.props.store.getState(),
+    );
     this._finishEditingWorkingSet();
     workingSetsStore.saveWorkingSet(name, editedWorkingSet);
     workingSetsStore.activate(name);
   };
 
   _updateWorkingSet = (prevName: string, name: string): void => {
-    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
+    const workingSetsStore = Selectors.getWorkingSetsStore(
+      this.props.store.getState(),
+    );
     invariant(workingSetsStore);
-    const editedWorkingSet = Selectors.getEditedWorkingSet(this.props.store);
+    const editedWorkingSet = Selectors.getEditedWorkingSet(
+      this.props.store.getState(),
+    );
     this._finishEditingWorkingSet();
 
     workingSetsStore.update(prevName, name, editedWorkingSet);

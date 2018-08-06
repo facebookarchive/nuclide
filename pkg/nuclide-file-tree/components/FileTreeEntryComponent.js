@@ -11,6 +11,7 @@
 
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
+import type {Store} from '../redux/types';
 
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -24,7 +25,6 @@ import nullthrows from 'nullthrows';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
@@ -36,7 +36,7 @@ type Props = {|
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   isPreview?: boolean,
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 |};
 
@@ -380,7 +380,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   _onDragEnter = (event: DragEvent) => {
     event.stopPropagation();
 
-    const nodes = Selectors.getSelectedNodes(this.props.store);
+    const nodes = Selectors.getSelectedNodes(this.props.store.getState());
     if (
       !this.props.isPreview &&
       nodes.size === 1 &&
@@ -473,7 +473,9 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     event.preventDefault();
     event.stopPropagation();
 
-    const dragNode = Selectors.getSingleSelectedNode(this.props.store);
+    const dragNode = Selectors.getSingleSelectedNode(
+      this.props.store.getState(),
+    );
     if (dragNode != null && dragNode.isRoot) {
       this.props.actions.reorderRoots();
     } else {

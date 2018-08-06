@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
+import type {Store} from '../redux/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
@@ -18,7 +19,6 @@ import classnames from 'classnames';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import FileTreeStore from '../lib/FileTreeStore';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
@@ -42,7 +42,7 @@ type Props = {
   modifiedUris: Array<NuclideUri>,
   generatedTypes: Immutable.Map<NuclideUri, GeneratedFileType>,
   activeUri: ?NuclideUri,
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 };
 
@@ -78,7 +78,10 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
 
   _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent<>) {
     event.stopPropagation();
-    const rootNode = Selectors.getRootForPath(this.props.store, entry.uri);
+    const rootNode = Selectors.getRootForPath(
+      this.props.store.getState(),
+      entry.uri,
+    );
     if (
       FileTreeHelpers.getSelectionMode(event) === 'single-select' &&
       !entry.isSelected &&

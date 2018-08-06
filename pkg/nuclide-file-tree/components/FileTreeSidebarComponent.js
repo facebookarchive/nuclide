@@ -15,6 +15,7 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore.js';
+import type {Store} from '../redux/types';
 
 import {Emitter} from 'atom';
 import * as React from 'react';
@@ -45,7 +46,6 @@ import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import {LockableHeight} from './LockableHeightComponent';
 import FileTreeActions from '../lib/FileTreeActions';
-import FileTreeStore from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
@@ -94,7 +94,7 @@ type State = {|
 |};
 
 type Props = {|
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 |};
 
@@ -133,14 +133,20 @@ export default class FileTreeSidebarComponent extends React.Component<
       path: 'No Current Working Directory',
       title: 'File Tree',
       isFileTreeHovered: false,
-      workingSetsStore: Selectors.getWorkingSetsStore(this.props.store),
-      filter: Selectors.getFilter(this.props.store),
-      filterFound: Selectors.getFilterFound(this.props.store),
-      foldersExpanded: Selectors.getFoldersExpanded(this.props.store),
-      uncommittedChangesExpanded: Selectors.getUncommittedChangesExpanded(
-        this.props.store,
+      workingSetsStore: Selectors.getWorkingSetsStore(
+        this.props.store.getState(),
       ),
-      openFilesExpanded: Selectors.getOpenFilesExpanded(this.props.store),
+      filter: Selectors.getFilter(this.props.store.getState()),
+      filterFound: Selectors.getFilterFound(this.props.store.getState()),
+      foldersExpanded: Selectors.getFoldersExpanded(
+        this.props.store.getState(),
+      ),
+      uncommittedChangesExpanded: Selectors.getUncommittedChangesExpanded(
+        this.props.store.getState(),
+      ),
+      openFilesExpanded: Selectors.getOpenFilesExpanded(
+        this.props.store.getState(),
+      ),
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
@@ -170,7 +176,7 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._processExternalUpdate();
 
     this._disposables.add(
-      this.props.store.subscribe(this._processExternalUpdate),
+      this.props.store.getState().subscribe(this._processExternalUpdate),
       observeAllModifiedStatusChanges()
         .let(toggle(this._showOpenConfigValues))
         .subscribe(() => this._setModifiedUris()),
@@ -488,27 +494,35 @@ All the changes across your entire stacked diff.
   };
 
   _processExternalUpdate = (): void => {
-    const shouldRenderToolbar = !Selectors.isEmpty(this.props.store);
+    const shouldRenderToolbar = !Selectors.isEmpty(this.props.store.getState());
     const openFilesUris = Selectors.getOpenFilesWorkingSet(
-      this.props.store,
+      this.props.store.getState(),
     ).getAbsoluteUris();
-    const uncommittedFileChanges = Selectors.getFileChanges(this.props.store);
+    const uncommittedFileChanges = Selectors.getFileChanges(
+      this.props.store.getState(),
+    );
     const generatedOpenChangedFiles = Selectors.getGeneratedOpenChangedFiles(
-      this.props.store,
+      this.props.store.getState(),
     );
     const isCalculatingChanges = Selectors.getIsCalculatingChanges(
-      this.props.store,
+      this.props.store.getState(),
     );
     const title = this.getTitle();
     const path = this.getPath();
-    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
-    const filter = Selectors.getFilter(this.props.store);
-    const filterFound = Selectors.getFilterFound(this.props.store);
-    const foldersExpanded = Selectors.getFoldersExpanded(this.props.store);
-    const uncommittedChangesExpanded = Selectors.getUncommittedChangesExpanded(
-      this.props.store,
+    const workingSetsStore = Selectors.getWorkingSetsStore(
+      this.props.store.getState(),
     );
-    const openFilesExpanded = Selectors.getOpenFilesExpanded(this.props.store);
+    const filter = Selectors.getFilter(this.props.store.getState());
+    const filterFound = Selectors.getFilterFound(this.props.store.getState());
+    const foldersExpanded = Selectors.getFoldersExpanded(
+      this.props.store.getState(),
+    );
+    const uncommittedChangesExpanded = Selectors.getUncommittedChangesExpanded(
+      this.props.store.getState(),
+    );
+    const openFilesExpanded = Selectors.getOpenFilesExpanded(
+      this.props.store.getState(),
+    );
 
     this.setState({
       shouldRenderToolbar,
@@ -664,7 +678,7 @@ All the changes across your entire stacked diff.
   }
 
   getTitle(): string {
-    const cwdKey = Selectors.getCwdKey(this.props.store);
+    const cwdKey = Selectors.getCwdKey(this.props.store.getState());
     if (cwdKey == null) {
       return 'File Tree';
     }
@@ -675,7 +689,7 @@ All the changes across your entire stacked diff.
   // This is unfortunate, but Atom uses getTitle() to get the text in the tab and getPath() to get
   // the text in the tool-tip.
   getPath(): string {
-    const cwdKey = Selectors.getCwdKey(this.props.store);
+    const cwdKey = Selectors.getCwdKey(this.props.store.getState());
     if (cwdKey == null) {
       return 'No Current Working Directory';
     }

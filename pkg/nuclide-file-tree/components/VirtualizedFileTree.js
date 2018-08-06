@@ -10,6 +10,8 @@
  */
 /* global HTMLElement */
 
+import type {Store} from '../redux/types';
+
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -47,7 +49,7 @@ type Props = {|
   height: number,
   width: number,
   initialScrollTop: number,
-  store: FileTreeStore,
+  store: Store,
   actions: FileTreeActions,
 |};
 
@@ -74,17 +76,28 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this._getNodeByIndex = this._buildGetNodeByIndex(
-      Selectors.getRoots(this.props.store),
+      Selectors.getRoots(this.props.store.getState()),
     );
 
-    const shownNodes = countShownNodes(Selectors.getRoots(this.props.store));
+    const shownNodes = countShownNodes(
+      Selectors.getRoots(this.props.store.getState()),
+    );
     this.state = {
-      trackedIndex: findIndexOfTheTrackedNode(this.props.store, shownNodes),
-      isEditingWorkingSet: Selectors.isEditingWorkingSet(this.props.store),
-      roots: Selectors.getRoots(this.props.store),
+      trackedIndex: findIndexOfTheTrackedNode(
+        this.props.store.getState(),
+        shownNodes,
+      ),
+      isEditingWorkingSet: Selectors.isEditingWorkingSet(
+        this.props.store.getState(),
+      ),
+      roots: Selectors.getRoots(this.props.store.getState()),
       shownNodes,
-      selectedNodes: Selectors.getSelectedNodes(this.props.store).toSet(),
-      focusedNodes: Selectors.getFocusedNodes(this.props.store).toSet(),
+      selectedNodes: Selectors.getSelectedNodes(
+        this.props.store.getState(),
+      ).toSet(),
+      focusedNodes: Selectors.getFocusedNodes(
+        this.props.store.getState(),
+      ).toSet(),
       rootHeight: null,
       nodeHeight: null,
       footerHeight: null,
@@ -100,7 +113,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   componentDidMount(): void {
     this._processStoreUpdate();
     this._disposables.add(
-      this.props.store.subscribe(() => this._processStoreUpdate()),
+      this.props.store.getState().subscribe(() => this._processStoreUpdate()),
     );
 
     this._remeasureHeights();
@@ -172,15 +185,21 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 
   _processStoreUpdate(): void {
-    const isEditingWorkingSet = Selectors.isEditingWorkingSet(this.props.store);
-    const roots = Selectors.getRoots(this.props.store);
+    const isEditingWorkingSet = Selectors.isEditingWorkingSet(
+      this.props.store.getState(),
+    );
+    const roots = Selectors.getRoots(this.props.store.getState());
     const shownNodes = countShownNodes(roots);
     const trackedIndex = findIndexOfTheTrackedNode(
-      this.props.store,
+      this.props.store.getState(),
       shownNodes,
     );
-    const selectedNodes = Selectors.getSelectedNodes(this.props.store).toSet();
-    const focusedNodes = Selectors.getFocusedNodes(this.props.store).toSet();
+    const selectedNodes = Selectors.getSelectedNodes(
+      this.props.store.getState(),
+    ).toSet();
+    const focusedNodes = Selectors.getFocusedNodes(
+      this.props.store.getState(),
+    ).toSet();
 
     this.setState({
       trackedIndex,
@@ -334,7 +353,9 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     const fallbackGetByIndex = index => {
       prevRoots = this.state.roots;
       prevIndexQuery = index;
-      prevNode = Selectors.getNodeByIndex(this.props.store)(index + 1);
+      prevNode = Selectors.getNodeByIndex(this.props.store.getState())(
+        index + 1,
+      );
       return prevNode;
     };
 

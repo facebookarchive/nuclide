@@ -14,6 +14,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
+import createStore from '../redux/createStore';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
@@ -21,11 +22,12 @@ import invariant from 'assert';
 import * as Selectors from '../lib/FileTreeSelectors';
 
 describe('FileTreeController', () => {
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const legacyStore = new FileTreeStore();
+  const store = createStore(legacyStore);
+  const actions = new FileTreeActions(legacyStore);
 
   function getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    const node = Selectors.getNode(store, rootKey, nodeKey);
+    const node = Selectors.getNode(store.getState(), rootKey, nodeKey);
     invariant(node);
     return node;
   }
@@ -39,7 +41,7 @@ describe('FileTreeController', () => {
   }
 
   function numSelected(): number {
-    return Selectors.getSelectedNodes(store).size;
+    return Selectors.getSelectedNodes(store.getState()).size;
   }
 
   beforeEach(() => {
@@ -104,7 +106,7 @@ describe('FileTreeController', () => {
          */
         actions.expandNode(rootKey, rootKey);
         // Populate real files from real disk like real people.
-        await store._fetchChildKeys(rootKey);
+        await store.getState()._fetchChildKeys(rootKey);
       });
 
       describe('via _collapseSelection (left arrow) nested', () => {
@@ -129,7 +131,7 @@ describe('FileTreeController', () => {
 
       describe('via _moveDown', () => {
         it('selects the first root if there is no selection', () => {
-          expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+          expect(Selectors.getSingleSelectedNode(store.getState())).toBeNull();
           actions.moveSelectionDown();
           expect(isSelected(rootKey, rootKey)).toEqual(true);
         });
@@ -162,7 +164,7 @@ describe('FileTreeController', () => {
 
       describe('via _moveUp', () => {
         it('selects the lowermost descendant if there is no selection', () => {
-          expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+          expect(Selectors.getSingleSelectedNode(store.getState())).toBeNull();
           actions.moveSelectionUp();
           expect(isSelected(rootKey, dir2Key)).toEqual(true);
         });
@@ -216,9 +218,9 @@ describe('FileTreeController', () => {
            *     → dir2
            */
         actions.expandNode(rootKey, rootKey);
-        await store._fetchChildKeys(rootKey);
+        await store.getState()._fetchChildKeys(rootKey);
         actions.expandNode(rootKey, dir1Key);
-        await store._fetchChildKeys(dir1Key);
+        await store.getState()._fetchChildKeys(dir1Key);
       });
 
       describe('via _collapseAll ( cmd+{ )', () => {
@@ -295,13 +297,15 @@ describe('FileTreeController', () => {
            *     → dir2
            */
         actions.expandNode(rootKey, rootKey);
-        await store._fetchChildKeys(rootKey);
+        await store.getState()._fetchChildKeys(rootKey);
         // Mimic the loading state where `dir1` reports itself as expanded but has no children
         // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
         // fetch and might populate the children of `dir1`. We don't want that.
-        store._updateNodeAtRoot(rootKey, dir1Key, node =>
-          node.set({isLoading: true, isExpanded: true}),
-        );
+        store
+          .getState()
+          ._updateNodeAtRoot(rootKey, dir1Key, node =>
+            node.set({isLoading: true, isExpanded: true}),
+          );
       });
 
       describe('via _moveDown expanded + loading', () => {
@@ -374,7 +378,7 @@ describe('FileTreeController', () => {
     beforeEach(async () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
-      await store._expandNodeDeep(rootKey, rootKey);
+      await store.getState()._expandNodeDeep(rootKey, rootKey);
     });
 
     it('selects multiple items', () => {
