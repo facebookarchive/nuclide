@@ -20,6 +20,7 @@ import type {RemoteProjectsService} from '../../../nuclide-remote-projects';
 import type {WorkingSet} from '../../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {InitialData, ExportStoreData, Roots} from '../types';
 
 import {ActionTypes} from '../FileTreeDispatcher';
 import * as Immutable from 'immutable';
@@ -28,13 +29,6 @@ export function setCwd(rootKey: ?string): Action {
   return {
     type: ActionTypes.SET_CWD,
     rootKey,
-  };
-}
-
-export function setRootKeys(rootKeys: Array<string>): Action {
-  return {
-    type: ActionTypes.SET_ROOT_KEYS,
-    rootKeys,
   };
 }
 
@@ -80,16 +74,6 @@ export function expandNodeDeep(rootKey: string, nodeKey: string): Action {
 
 export function deleteSelectedNodes(): Action {
   return {type: ActionTypes.DELETE_SELECTED_NODES};
-}
-
-// Makes sure a specific child exists for a given node. If it does not exist, temporarily
-// create it and initiate a fetch. This feature is exclusively for expanding to a node deep
-// in a tree.
-export function ensureChildNode(nodeKey: string): Action {
-  return {
-    type: ActionTypes.ENSURE_CHILD_NODE,
-    nodeKey,
-  };
 }
 
 export function collapseNode(rootKey: string, nodeKey: string): Action {
@@ -699,4 +683,43 @@ export function clearSelectionRange(): Action {
 
 export function clearDragHover(): Action {
   return {type: ActionTypes.CLEAR_DRAG_HOVER};
+}
+
+export function setRoots(roots: Roots): Action {
+  return {
+    type: ActionTypes.SET_ROOTS,
+    roots,
+  };
+}
+
+export function clearLoading(nodeKey: NuclideUri): Action {
+  return {
+    type: ActionTypes.CLEAR_LOADING,
+    nodeKey,
+  };
+}
+
+export function setLoading(
+  nodeKey: NuclideUri,
+  promise: Promise<void>,
+): Action {
+  return {
+    type: ActionTypes.SET_LOADING,
+    nodeKey,
+    promise,
+  };
+}
+
+export function loadData(data: ExportStoreData): Action {
+  return {
+    type: ActionTypes.LOAD_DATA,
+    data,
+  };
+}
+
+export function setInitialData(data: InitialData): Action {
+  return {
+    type: ActionTypes.SET_INITIAL_DATA,
+    data,
+  };
 }

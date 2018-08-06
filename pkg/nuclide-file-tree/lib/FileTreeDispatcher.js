@@ -19,6 +19,7 @@ import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {FileTreeNode} from './FileTreeNode';
+import type {ExportStoreData, InitialData, Roots} from './types';
 
 import Dispatcher from '../../commons-node/Dispatcher';
 
@@ -75,10 +76,6 @@ export type FileTreeAction =
       ignoredNames: Array<string>,
     }
   | {
-      type: 'SET_ROOT_KEYS',
-      rootKeys: Array<NuclideUri>,
-    }
-  | {
       type: 'SET_TRACKED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
@@ -99,9 +96,6 @@ export type FileTreeAction =
   | {
       type: 'REORDER_DRAG_INTO',
       dragTargetNodeKey: NuclideUri,
-    }
-  | {
-      type: 'REORDER_ROOTS',
     }
   | {
       type: 'MOVE_TO_NODE',
@@ -218,10 +212,6 @@ export type FileTreeAction =
       type: 'MOVE_SELECTION_TO_BOTTOM',
     }
   | {
-      type: 'ENSURE_CHILD_NODE',
-      nodeKey: NuclideUri,
-    }
-  | {
       type: 'CLEAR_FILTER',
     }
   | {
@@ -270,10 +260,6 @@ export type FileTreeAction =
       type: 'SET_CWD',
       rootKey: ?string,
     |}
-  | {|
-      type: 'SET_ROOT_KEYS',
-      rootKeys: Array<string>,
-    |}
   | {|type: 'CLEAR_FILTER'|}
   | {|
       type: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
@@ -294,10 +280,6 @@ export type FileTreeAction =
       nodeKey: string,
     |}
   | {|type: 'DELETE_SELECTED_NODES'|}
-  | {|
-      type: 'ENSURE_CHILD_NODE',
-      nodeKey: string,
-    |}
   | {|
       type: 'COLLAPSE_NODE',
       rootKey: string,
@@ -350,9 +332,7 @@ export type FileTreeAction =
       type: 'REORDER_DRAG_INTO',
       dragTargetNodeKey: string,
     |}
-  | {|
-      type: 'REORDER_ROOTS',
-    |}
+  | {|type: 'REORDER_ROOTS'|}
   | {|
       type: 'MOVE_TO_NODE',
       nodeKey: string,
@@ -594,10 +574,32 @@ export type FileTreeAction =
   | {|type: 'OPEN_PASTE_DIALOG'|}
   | {|type: 'CLEAR_SELECTION_RANGE'|}
   | {|type: 'CLEAR_DRAG_HOVER'|}
-  | {|type: 'CLEAR_SELECTION'|};
+  | {|type: 'CLEAR_SELECTION'|}
+  | {|
+      type: 'SET_ROOTS',
+      roots: Roots,
+    |}
+  | {|
+      type: 'CLEAR_LOADING',
+      nodeKey: NuclideUri,
+    |}
+  | {|
+      type: 'SET_LOADING',
+      nodeKey: NuclideUri,
+      promise: Promise<void>,
+    |}
+  | {|
+      type: 'SET_INITIAL_DATA',
+      data: InitialData,
+    |}
+  | {|
+      type: 'LOAD_DATA',
+      data: ExportStoreData,
+    |};
 
 export const ActionTypes = Object.freeze({
   CLEAR_DRAG_HOVER: 'CLEAR_DRAG_HOVER',
+  CLEAR_LOADING: 'CLEAR_LOADING',
   CLEAR_SELECTION: 'CLEAR_SELECTION',
   CLEAR_SELECTION_RANGE: 'CLEAR_SELECTION_RANGE',
   COLLAPSE_NODE: 'COLLAPSE_NODE',
@@ -610,6 +612,7 @@ export const ActionTypes = Object.freeze({
   DELETE_SELECTION: 'DELETE_SELECTION',
   EXPAND_NODE: 'EXPAND_NODE',
   EXPAND_SELECTION: 'EXPAND_SELECTION',
+  LOAD_DATA: 'LOAD_DATA',
   SET_EXCLUDE_VCS_IGNORED_PATHS: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
   EXPAND_NODE_DEEP: 'EXPAND_NODE_DEEP',
   SET_CWD: 'SET_CWD',
@@ -619,7 +622,8 @@ export const ActionTypes = Object.freeze({
   SET_HIDE_VCS_IGNORED_PATHS: 'SET_HIDE_VCS_IGNORED_PATHS',
   SET_IS_CALCULATING_CHANGES: 'SET_IS_CALCULATING_CHANGES',
   SET_IGNORED_NAMES: 'SET_IGNORED_NAMES',
-  SET_ROOT_KEYS: 'SET_ROOT_KEYS',
+  SET_LOADING: 'SET_LOADING',
+  SET_ROOTS: 'SET_ROOTS',
   SET_TRACKED_NODE: 'SET_TRACKED_NODE',
   SET_REMOTE_PROJECTS_SERVICE: 'SET_REMOTE_PROJECTS_SERVICE',
   CLEAR_TRACKED_NODE: 'CLEAR_TRACKED_NODE',
@@ -645,6 +649,7 @@ export const ActionTypes = Object.freeze({
   REORDER_DRAG_INTO: 'REORDER_DRAG_INTO',
   REORDER_ROOTS: 'REORDER_ROOTS',
   MOVE_TO_NODE: 'MOVE_TO_NODE',
+  SET_INITIAL_DATA: 'SET_INITIAL_DATA',
   SET_USE_PREVIEW_TABS: 'SET_USE_PREVIEW_TABS',
   SET_USE_PREFIX_NAV: 'SET_USE_PREFIX_NAV',
   SET_AUTO_EXPAND_SINGLE_CHILD: 'SET_AUTO_EXPAND_SINGLE_CHILD',
@@ -672,7 +677,6 @@ export const ActionTypes = Object.freeze({
   MOVE_SELECTION_DOWN: 'MOVE_SELECTION_DOWN',
   MOVE_SELECTION_TO_TOP: 'MOVE_SELECTION_TO_TOP',
   MOVE_SELECTION_TO_BOTTOM: 'MOVE_SELECTION_TO_BOTTOM',
-  ENSURE_CHILD_NODE: 'ENSURE_CHILD_NODE',
   CLEAR_FILTER: 'CLEAR_FILTER',
   ADD_EXTRA_PROJECT_SELECTION_CONTENT: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
   REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:

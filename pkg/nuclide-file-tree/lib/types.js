@@ -25,3 +25,21 @@ export type Store = {
 };
 
 export type Action = FileTreeAction;
+
+export type ExportStoreData = {
+  childKeyMap: {[key: string]: Array<string>},
+  expandedKeysByRoot: {[key: string]: Array<string>},
+  rootKeys: Array<string>,
+  selectedKeysByRoot: {[key: string]: Array<string>},
+  version: number,
+  openFilesExpanded?: boolean,
+  uncommittedChangesExpanded?: boolean,
+  foldersExpanded?: boolean,
+};
+
+export type InitialData = {|
+  roots: Roots,
+  openFilesExpanded: ?boolean,
+  uncommittedChangesExpanded: ?boolean,
+  foldersExpanded: ?boolean,
+|};

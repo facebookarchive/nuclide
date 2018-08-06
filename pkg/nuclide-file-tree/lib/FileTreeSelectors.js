@@ -20,7 +20,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {ExportStoreData} from './FileTreeStore';
+import type {ExportStoreData} from './types';
 import type FileTreeStore from './FileTreeStore';
 
 export const serialize = (state: FileTreeStore): ExportStoreData => {
@@ -274,3 +274,13 @@ export const getNodeByIndex = (state: FileTreeStore) => {
 export const getCwdApi = (state: FileTreeStore) => {
   return state._cwdApi;
 };
+
+export const getLoading = (state: FileTreeStore, nodeKey: NuclideUri) =>
+  state._isLoadingMap.get(nodeKey);
+
+export const getAutoExpandSingleChild = (state: FileTreeStore) =>
+  state._autoExpandSingleChild;
+
+export const getConf = (state: FileTreeStore) => state._conf;
+
+export const getVersion = (state: FileTreeStore) => state.VERSION;

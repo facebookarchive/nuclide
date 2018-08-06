@@ -14,7 +14,7 @@ import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
-import type {Roots} from './types';
+import type {InitialData, Roots} from './types';
 
 import invariant from 'assert';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
@@ -34,13 +34,11 @@ import {getLogger} from 'log4js';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {HistogramTracker, track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 import type {FileTreeAction} from './FileTreeDispatcher';
-import type {Directory} from './FileTreeHelpers';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
@@ -50,17 +48,6 @@ type ChangeListener = () => mixed;
 type TargetNodeKeys = {
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-};
-
-export type ExportStoreData = {
-  childKeyMap: {[key: string]: Array<string>},
-  expandedKeysByRoot: {[key: string]: Array<string>},
-  rootKeys: Array<string>,
-  selectedKeysByRoot: {[key: string]: Array<string>},
-  version: number,
-  openFilesExpanded?: boolean,
-  uncommittedChangesExpanded?: boolean,
-  foldersExpanded?: boolean,
 };
 
 export type StoreConfigData = {
@@ -110,8 +97,6 @@ export type ReorderPreviewStatus = ?{
   target?: NuclideUri,
   targetIdx?: number,
 };
-
-const FETCH_TIMEOUT = 20000;
 
 const actionTrackers: Map<string, HistogramTracker> = new Map();
 
@@ -190,68 +175,6 @@ export default class FileTreeStore {
     this._isCalculatingChanges = false;
   }
 
-  /**
-   * Imports store data from a previous export.
-   * NOTE: This should become a private method, and ultimately `initialState`
-   */
-  loadData(data: ExportStoreData): void {
-    // Ensure we are not trying to load data from an earlier version of this package.
-    if (data.version !== this.VERSION) {
-      return;
-    }
-
-    const buildRootNode = (rootUri: string) => {
-      this._fetchChildKeys(rootUri);
-
-      return new FileTreeNode(
-        {
-          uri: rootUri,
-          rootUri,
-          isExpanded: true,
-          isSelected: false,
-          isLoading: true,
-          children: Immutable.OrderedMap(),
-          isCwd: false,
-          connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-        },
-        this._conf,
-      );
-    };
-
-    if (data.openFilesExpanded != null) {
-      this._openFilesExpanded = data.openFilesExpanded;
-    }
-
-    if (data.uncommittedChangesExpanded != null) {
-      this._uncommittedChangesExpanded = data.uncommittedChangesExpanded;
-    }
-
-    if (data.foldersExpanded != null) {
-      this._foldersExpanded = data.foldersExpanded;
-    }
-
-    const normalizedAtomPaths = atom.project
-      .getPaths()
-      .map(nuclideUri.ensureTrailingSeparator);
-    const normalizedDataPaths = data.rootKeys
-      .map(nuclideUri.ensureTrailingSeparator)
-      .filter(
-        rootUri =>
-          nuclideUri.isRemote(rootUri) ||
-          normalizedAtomPaths.indexOf(rootUri) >= 0,
-      );
-    const pathsMissingInData = normalizedAtomPaths.filter(
-      rootUri => normalizedDataPaths.indexOf(rootUri) === -1,
-    );
-    const combinedPaths = normalizedDataPaths.concat(pathsMissingInData);
-
-    this._setRoots(
-      Immutable.OrderedMap(
-        combinedPaths.map(rootUri => [rootUri, buildRootNode(rootUri)]),
-      ),
-    );
-  }
-
   _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
     this._updateConf(conf => {
       conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths;
@@ -306,6 +229,9 @@ export default class FileTreeStore {
     const start = performance.now();
 
     switch (payload.type) {
+      case ActionTypes.SET_INITIAL_DATA:
+        this._setInitialData(payload.data);
+        break;
       case ActionTypes.CLEAR_SELECTION_RANGE:
         this._clearSelectionRange();
         break;
@@ -338,18 +264,6 @@ export default class FileTreeStore {
         break;
       case ActionTypes.REORDER_DRAG_INTO:
         this._reorderDragInto(payload.dragTargetNodeKey);
-        break;
-      case ActionTypes.REORDER_ROOTS:
-        this._doReorderRoots();
-        break;
-      case ActionTypes.SET_ROOT_KEYS:
-        this._setRootKeys(payload.rootKeys);
-        break;
-      case ActionTypes.EXPAND_NODE:
-        this._expandNode(payload.rootKey, payload.nodeKey);
-        break;
-      case ActionTypes.EXPAND_NODE_DEEP:
-        this._expandNodeDeep(payload.rootKey, payload.nodeKey);
         break;
       case ActionTypes.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
@@ -450,9 +364,6 @@ export default class FileTreeStore {
       case ActionTypes.MOVE_SELECTION_TO_BOTTOM:
         this._moveSelectionToBottom();
         break;
-      case ActionTypes.ENSURE_CHILD_NODE:
-        this._ensureChildNode(payload.nodeKey);
-        break;
       case ActionTypes.CLEAR_FILTER:
         this._clearFilter();
         break;
@@ -489,6 +400,9 @@ export default class FileTreeStore {
       case ActionTypes.RESET:
         this._reset();
         break;
+      case ActionTypes.SET_ROOTS:
+        this._setRoots(payload.roots);
+        break;
       default:
         break;
     }
@@ -506,6 +420,22 @@ export default class FileTreeStore {
     }
 
     tracker.track(end - start);
+  }
+
+  _setInitialData(data: InitialData): void {
+    if (data.openFilesExpanded != null) {
+      this._openFilesExpanded = data.openFilesExpanded;
+    }
+
+    if (data.uncommittedChangesExpanded != null) {
+      this._uncommittedChangesExpanded = data.uncommittedChangesExpanded;
+    }
+
+    if (data.foldersExpanded != null) {
+      this._foldersExpanded = data.foldersExpanded;
+    }
+
+    this._setRoots(data.roots);
   }
 
   /**
@@ -716,199 +646,6 @@ export default class FileTreeStore {
     this._autoExpandSingleChild = autoExpandSingleChild;
   }
 
-  /**
-   * The node child keys may either be available immediately (cached), or
-   * require an async fetch. If all of the children are needed it's easier to
-   * return as promise, to make the caller oblivious to the way children were
-   * fetched.
-   */
-  async _promiseNodeChildKeys(
-    rootKey: string,
-    nodeKey: string,
-  ): Promise<Array<NuclideUri>> {
-    const shownChildrenUris = node => {
-      return node.children
-        .valueSeq()
-        .toArray()
-        .filter(n => n.shouldBeShown)
-        .map(n => n.uri);
-    };
-
-    const node = Selectors.getNode(this, rootKey, nodeKey);
-    if (node == null) {
-      return [];
-    }
-
-    if (!node.isLoading) {
-      return shownChildrenUris(node);
-    }
-
-    await this._fetchChildKeys(nodeKey);
-    return this._promiseNodeChildKeys(rootKey, nodeKey);
-  }
-
-  /**
-   * Initiates the fetching of node's children if it's not already in the process.
-   * Clears the node's .isLoading property once the fetch is complete.
-   * Once the fetch is completed, clears the node's .isLoading property, builds the map of the
-   * node's children out of the fetched children URIs and a change subscription is created
-   * for the node to monitor future changes.
-   */
-  _fetchChildKeys(nodeKey: NuclideUri): Promise<void> {
-    const existingPromise = this._getLoading(nodeKey);
-    if (existingPromise != null) {
-      return existingPromise;
-    }
-
-    const promise = timeoutAfterDeadline(
-      createDeadline(FETCH_TIMEOUT),
-      FileTreeHelpers.fetchChildren(nodeKey),
-    )
-      .then(
-        childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
-        error => {
-          this._logger.error(`Unable to fetch children for "${nodeKey}".`);
-          this._logger.error('Original error: ', error);
-
-          // Unless the contents were already fetched in the past
-          // collapse the node and clear its loading state on error so the
-          // user can retry expanding it.
-          this._setRoots(
-            updateNodeAtAllRoots(this._roots, nodeKey, node => {
-              if (node.wasFetched) {
-                return node.setIsLoading(false);
-              }
-
-              return node.set({
-                isExpanded: false,
-                isLoading: false,
-                children: Immutable.OrderedMap(),
-              });
-            }),
-          );
-
-          this._clearLoading(nodeKey);
-        },
-      )
-      .then(() => this._setGeneratedChildren(nodeKey));
-
-    this._setLoading(nodeKey, promise);
-    return promise;
-  }
-
-  _setFetchedKeys(nodeKey: NuclideUri, childrenKeys: Array<string> = []): void {
-    const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
-
-    const nodesToAutoExpand: Array<FileTreeNode> = [];
-
-    // The node with URI === nodeKey might be present at several roots - update them all
-    this._setRoots(
-      updateNodeAtAllRoots(this._roots, nodeKey, node => {
-        // Maintain the order fetched from the FS
-        const childrenNodes = childrenKeys.map(uri => {
-          const prevNode = node.find(uri);
-          // If we already had a child with this URI - keep it
-          if (prevNode != null) {
-            return prevNode;
-          }
-
-          return new FileTreeNode(
-            {
-              uri,
-              rootUri: node.rootUri,
-              isCwd: uri === this._cwdKey,
-            },
-            this._conf,
-          );
-        });
-
-        if (
-          this._autoExpandSingleChild &&
-          childrenNodes.length === 1 &&
-          childrenNodes[0].isContainer
-        ) {
-          nodesToAutoExpand.push(childrenNodes[0]);
-        }
-
-        const children = FileTreeNode.childrenFromArray(childrenNodes);
-        const subscription =
-          node.subscription || this._makeSubscription(nodeKey, directory);
-
-        // If the fetch indicated that some children were removed - dispose of all
-        // their subscriptions
-        const removedChildren = node.children.filter(
-          n => !children.has(n.name),
-        );
-        removedChildren.forEach(c => {
-          c.traverse(n => {
-            if (n.subscription != null) {
-              n.subscription.dispose();
-            }
-
-            return true;
-          });
-        });
-
-        return node.set({
-          isLoading: false,
-          wasFetched: true,
-          children,
-          subscription,
-        });
-      }),
-    );
-
-    this._clearLoading(nodeKey);
-    nodesToAutoExpand.forEach(node => {
-      this._expandNode(node.rootUri, node.uri);
-    });
-  }
-
-  _makeSubscription(nodeKey: NuclideUri, directory: ?Directory): ?IDisposable {
-    if (directory == null) {
-      return null;
-    }
-
-    let fetchingPromise = null;
-    let couldMissUpdate = false;
-
-    try {
-      // Here we intentionally circumvent, to a degree, the logic in the _fetchChildKeys
-      // which wouldn't schedule a new fetch if there is already one running.
-      // This is fine for the most cases, but not for the subscription handling, as the
-      // subscription is notifying us that something has changed and if a fetch is already in
-      // progress then it is racing with the change. Therefore, if we detect that there was a change
-      // during the fetch we schedule another right after the first has finished.
-      const checkMissed = () => {
-        fetchingPromise = null;
-        if (couldMissUpdate) {
-          fetchKeys();
-        }
-      };
-
-      const fetchKeys = () => {
-        if (fetchingPromise == null) {
-          couldMissUpdate = false;
-          fetchingPromise = this._fetchChildKeys(nodeKey).then(checkMissed);
-        } else {
-          couldMissUpdate = true;
-        }
-      };
-
-      // This call might fail if we try to watch a non-existing directory, or if permission denied.
-      return directory.onDidChange(() => {
-        fetchKeys();
-      });
-    } catch (ex) {
-      /*
-       * Log error and mark the directory as dirty so the failed subscription will be attempted
-       * again next time the directory is expanded.
-       */
-      this._logger.error(`Cannot subscribe to directory "${nodeKey}"`, ex);
-      return null;
-    }
-  }
-
   _getLoading(nodeKey: NuclideUri): ?Promise<void> {
     return this._isLoadingMap.get(nodeKey);
   }
@@ -935,38 +672,6 @@ export default class FileTreeStore {
 
   _setCwdApi(cwdApi: ?CwdApi): void {
     this._cwdApi = cwdApi;
-  }
-
-  async _setGeneratedChildren(nodeKey: NuclideUri): Promise<void> {
-    let generatedFileService;
-    try {
-      generatedFileService = await awaitGeneratedFileServiceByNuclideUri(
-        nodeKey,
-      );
-    } catch (e) {
-      this._logger.warn(
-        `ServerConnection cancelled while getting GeneratedFileService for ${nodeKey}`,
-        e,
-      );
-      return;
-    }
-    const generatedFileTypes = await generatedFileService.getGeneratedFileTypes(
-      nodeKey,
-    );
-    this._setRoots(
-      updateNodeAtAllRoots(this._roots, nodeKey, node => {
-        const children = node.children.map(childNode => {
-          const generatedType = generatedFileTypes.get(childNode.uri);
-          if (generatedType != null) {
-            return childNode.setGeneratedStatus(generatedType);
-          } else {
-            // if in the directory but not specified in the map, assume manual.
-            return childNode.setGeneratedStatus('manual');
-          }
-        });
-        return node.set({children});
-      }),
-    );
   }
 
   _addFilterLetter(letter: string): void {
@@ -1167,23 +872,6 @@ export default class FileTreeStore {
     this._emitChange();
   }
 
-  _doReorderRoots(): void {
-    const rootKeys = Selectors.getRootKeys(this);
-    const rps = this._reorderPreviewStatus;
-    if (rps == null) {
-      return;
-    }
-    const sourceIdx = rps.sourceIdx;
-    const targetIdx = rps.targetIdx;
-    if (targetIdx == null || sourceIdx === targetIdx) {
-      return;
-    }
-
-    rootKeys.splice(sourceIdx, 1);
-    rootKeys.splice(targetIdx, 0, rps.source);
-    this._setRootKeys(rootKeys);
-  }
-
   _endReorderDrag(): void {
     if (this._reorderPreviewStatus != null) {
       const sourceRootKey = this._reorderPreviewStatus.source;
@@ -1195,74 +883,6 @@ export default class FileTreeStore {
       this._reorderPreviewStatus = null;
       this._emitChange();
     }
-  }
-
-  _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    const recursivelyExpandNode = (node: FileTreeNode) => {
-      return node.setIsExpanded(true).setRecursive(
-        n => {
-          if (!n.isContainer) {
-            return n;
-          }
-
-          if (this._autoExpandSingleChild && n.children.size === 1) {
-            if (!n.isExpanded) {
-              return recursivelyExpandNode(n);
-            }
-
-            return null;
-          }
-
-          return !n.isExpanded ? n : null;
-        },
-        n => {
-          if (n.isContainer && n.isExpanded) {
-            this._fetchChildKeys(n.uri);
-            return n.setIsLoading(true);
-          }
-
-          return n;
-        },
-      );
-    };
-
-    this._setRoots(
-      updateNodeAtRoot(this._roots, rootKey, nodeKey, recursivelyExpandNode),
-    );
-  }
-
-  /**
-   * Performes a deep BFS scanning expand of contained nodes.
-   * returns - a promise fulfilled when the expand operation is finished
-   */
-  _expandNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
-    // Stop the traversal after 100 nodes were added to the tree
-    const itNodes = new FileTreeStoreBfsIterator(
-      this,
-      rootKey,
-      nodeKey,
-      /* limit */ 100,
-    );
-    const promise = new Promise(resolve => {
-      const expand = () => {
-        const traversedNodeKey = itNodes.traversedNode();
-        // flowlint-next-line sketchy-null-string:off
-        if (traversedNodeKey) {
-          this._expandNode(rootKey, traversedNodeKey);
-
-          const nextPromise = itNodes.next();
-          if (nextPromise) {
-            nextPromise.then(expand);
-          }
-        } else {
-          resolve();
-        }
-      };
-
-      expand();
-    });
-
-    return promise;
   }
 
   _collapseNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
@@ -1738,136 +1358,6 @@ export default class FileTreeStore {
     this._clearSelectionRange();
   }
 
-  _setRootKeys(rootKeys: Array<NuclideUri>): void {
-    const rootNodes = rootKeys.map(rootUri => {
-      const root = this._roots.get(rootUri);
-      if (root != null) {
-        return root;
-      }
-
-      this._fetchChildKeys(rootUri);
-      return new FileTreeNode(
-        {
-          uri: rootUri,
-          rootUri,
-          isLoading: true,
-          isExpanded: true,
-          connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-        },
-        this._conf,
-      );
-    });
-
-    const roots = Immutable.OrderedMap(rootNodes.map(root => [root.uri, root]));
-    const removedRoots = this._roots.filter(root => !roots.has(root.uri));
-    removedRoots.forEach(root =>
-      root.traverse(
-        node => node.isExpanded,
-        node => {
-          if (node.subscription != null) {
-            node.subscription.dispose();
-          }
-        },
-      ),
-    );
-
-    this._setRoots(roots);
-
-    // Just in case there's a race between the update of the root keys and the cwdKey and the cwdKey
-    // is set too early - set it again. If there was no race - it's a noop.
-    this._setCwdKey(this._cwdKey);
-  }
-
-  /**
-   * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
-   * needed and scheduling a child key fetch. Used by the reveal active file functionality.
-   */
-  _ensureChildNode(nodeKey: NuclideUri): void {
-    let firstRootUri;
-
-    const expandNode = node => {
-      if (node.isExpanded && node.subscription != null) {
-        return node;
-      }
-
-      if (node.subscription != null) {
-        node.subscription.dispose();
-      }
-
-      const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
-      const subscription = this._makeSubscription(node.uri, directory);
-      return node.set({subscription, isExpanded: true});
-    };
-
-    this._updateRoots(root => {
-      if (!nodeKey.startsWith(root.uri)) {
-        return root;
-      }
-
-      if (firstRootUri == null) {
-        firstRootUri = root.uri;
-      }
-
-      const deepest = root.findDeepest(nodeKey);
-      if (deepest == null) {
-        return root;
-      }
-
-      if (deepest.uri === nodeKey) {
-        return replaceNode(deepest, deepest, expandNode);
-      }
-
-      const parents = [];
-      let prevUri = nodeKey;
-      let currentParentUri = FileTreeHelpers.getParentKey(nodeKey);
-      const rootUri = root.uri;
-      while (currentParentUri !== deepest.uri && currentParentUri !== prevUri) {
-        parents.push(currentParentUri);
-        prevUri = currentParentUri;
-        currentParentUri = FileTreeHelpers.getParentKey(currentParentUri);
-      }
-
-      if (currentParentUri !== deepest.uri) {
-        // Something went wrong - we didn't find the match
-        return root;
-      }
-
-      let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, this._conf);
-
-      parents.forEach(currentUri => {
-        this._fetchChildKeys(currentUri);
-        const parent = new FileTreeNode(
-          {
-            uri: currentUri,
-            rootUri,
-            isLoading: true,
-            isExpanded: true,
-            children: FileTreeNode.childrenFromArray([currentChild]),
-          },
-          this._conf,
-        );
-
-        currentChild = parent;
-      });
-
-      this._fetchChildKeys(deepest.uri);
-      return replaceNode(
-        deepest,
-        deepest.set({
-          isLoading: true,
-          isExpanded: true,
-          isPendingLoad: true,
-          children: deepest.children.set(currentChild.name, currentChild),
-        }),
-        expandNode,
-      );
-    });
-
-    if (firstRootUri != null) {
-      this._setSelectedNode(firstRootUri, nodeKey);
-    }
-  }
-
   _clearTrackedNode(): void {
     if (this._trackedRootKey != null || this._trackedNodeKey != null) {
       this._trackedRootKey = null;
@@ -2034,73 +1524,5 @@ export default class FileTreeStore {
 
   dispatch(action: FileTreeAction): mixed {
     this._dispatcher.dispatch(action);
-  }
-}
-
-/**
- * Performs a breadth-first iteration over the directories of the tree starting
- * with a given node. The iteration stops once a given limit of nodes (both directories
- * and files) were traversed.
- * The node being currently traversed can be obtained by calling .traversedNode()
- * .next() returns a promise that is fulfilled when the traversal moves on to
- * the next directory.
- */
-class FileTreeStoreBfsIterator {
-  _fileTreeStore: FileTreeStore;
-  _rootKey: NuclideUri;
-  _nodesToTraverse: Array<NuclideUri>;
-  _currentlyTraversedNode: ?NuclideUri;
-  _limit: number;
-  _numNodesTraversed: number;
-  _promise: ?Promise<void>;
-  _count: number;
-
-  constructor(
-    fileTreeStore: FileTreeStore,
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-    limit: number,
-  ) {
-    this._fileTreeStore = fileTreeStore;
-    this._rootKey = rootKey;
-    this._nodesToTraverse = [];
-    this._currentlyTraversedNode = nodeKey;
-    this._limit = limit;
-    this._numNodesTraversed = 0;
-    this._promise = null;
-    this._count = 0;
-  }
-
-  _handlePromiseResolution(childrenKeys: Array<NuclideUri>): void {
-    this._numNodesTraversed += childrenKeys.length;
-    if (this._numNodesTraversed < this._limit) {
-      const nextLevelNodes = childrenKeys.filter(childKey =>
-        FileTreeHelpers.isDirOrArchiveKey(childKey),
-      );
-      this._nodesToTraverse = this._nodesToTraverse.concat(nextLevelNodes);
-
-      this._currentlyTraversedNode = this._nodesToTraverse.splice(0, 1)[0];
-      this._promise = null;
-    } else {
-      this._currentlyTraversedNode = null;
-      this._promise = null;
-    }
-
-    return;
-  }
-
-  next(): ?Promise<void> {
-    const currentlyTraversedNode = this._currentlyTraversedNode;
-    // flowlint-next-line sketchy-null-string:off
-    if (!this._promise && currentlyTraversedNode) {
-      this._promise = this._fileTreeStore
-        ._promiseNodeChildKeys(this._rootKey, currentlyTraversedNode)
-        .then(this._handlePromiseResolution.bind(this));
-    }
-    return this._promise;
-  }
-
-  traversedNode(): ?string {
-    return this._currentlyTraversedNode;
   }
 }

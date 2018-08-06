@@ -10,7 +10,7 @@
  */
 
 import type {TerminalApi} from 'atom-ide-ui';
-import type {ExportStoreData} from './FileTreeStore';
+import type {ExportStoreData} from './types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
@@ -109,11 +109,11 @@ class Activation {
 
     const legacyStore = new FileTreeStore();
     const initialState = state == null ? null : state.tree;
-    if (initialState != null) {
-      legacyStore.loadData(initialState);
-    }
 
     this._store = createStore(legacyStore);
+    if (initialState != null) {
+      this._store.dispatch(Actions.loadData(initialState));
+    }
 
     this._disposables.add(registerCommands(this._store));
     this._store.dispatch(Actions.updateRootDirectories());
