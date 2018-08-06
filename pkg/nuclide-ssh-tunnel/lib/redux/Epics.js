@@ -292,7 +292,9 @@ export function closeTunnelEpic(
           tunnel,
         )} (${activeTunnel.subscriptions.map(s => s.description).join(', ')})`;
         store.getState().consoleOutput.next({
-          text: `Tunnel error: ${friendlyString}\n${error.message}`,
+          text: `Tunnel error: ${friendlyString}\n${
+            error.message != null ? error.message : (error: any).code
+          }`,
           level: 'error',
         });
       }

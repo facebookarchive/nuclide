@@ -128,7 +128,7 @@ export function startTunnelingAdb(
             } else {
               detail =
                 "Your local devices won't be available on this host." +
-                (e.name !== 'Error' ? `\n \n${e.name}` : '');
+                (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
             }
             atom.notifications.addError('Failed to tunnel Android devices', {
               dismissable: true,
