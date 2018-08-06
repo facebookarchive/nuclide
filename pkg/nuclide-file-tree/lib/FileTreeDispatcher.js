@@ -595,7 +595,28 @@ export type FileTreeAction =
   | {|
       type: 'LOAD_DATA',
       data: ExportStoreData,
-    |};
+    |}
+  | SelectionAction;
+
+export type SelectionAction =
+  | {|
+      type: 'SELECTION:SELECT',
+      node: FileTreeNode,
+    |}
+  | {|
+      type: 'SELECTION:UNSELECT',
+      node: FileTreeNode,
+    |}
+  | {|
+      type: 'SELECTION:FOCUS',
+      node: FileTreeNode,
+    |}
+  | {|
+      type: 'SELECTION:UNFOCUS',
+      node: FileTreeNode,
+    |}
+  | {|type: 'SELECTION:CLEAR_SELECTED'|}
+  | {|type: 'SELECTION:CLEAR_FOCUSED'|};
 
 export const ActionTypes = Object.freeze({
   CLEAR_DRAG_HOVER: 'CLEAR_DRAG_HOVER',

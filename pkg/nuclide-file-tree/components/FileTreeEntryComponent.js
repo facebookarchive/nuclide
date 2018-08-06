@@ -146,7 +146,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     });
 
     let statusClass;
-    if (!node.conf.isEditingWorkingSet) {
+    if (!Selectors.isEditingWorkingSet(node._store.getState())) {
       const vcsStatusCode = node.vcsStatusCode;
       if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
         statusClass = 'status-modified';
@@ -241,7 +241,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   }
 
   _renderCheckbox(): ?React.Element<any> {
-    if (!this.props.node.conf.isEditingWorkingSet) {
+    if (!Selectors.isEditingWorkingSet(this.props.node._store.getState())) {
       return;
     }
 
@@ -347,11 +347,14 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       }
     } else {
       if (node.isContainer) {
-        if (isFocused || node.conf.usePreviewTabs) {
+        if (
+          isFocused ||
+          Selectors.getConf(node._store.getState()).usePreviewTabs
+        ) {
           this._toggleNodeExpanded(deep);
         }
       } else {
-        if (node.conf.usePreviewTabs) {
+        if (Selectors.getConf(node._store.getState()).usePreviewTabs) {
           this.props.store.dispatch(
             Actions.confirmNode(
               node.rootUri,

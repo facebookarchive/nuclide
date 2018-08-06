@@ -90,11 +90,12 @@ export function confirmNodeEpic(
         }
       } else {
         track('file-tree-open-file', {uri: nodeKey});
+        const conf = Selectors.getConf(store.getState());
         // goToLocation doesn't support pending panes
         // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
           activatePane:
-            (pending && node.conf.focusEditorOnFileSelection) || !pending,
+            (pending && conf.focusEditorOnFileSelection) || !pending,
           searchAllPanes: true,
           pending,
         });
@@ -1191,7 +1192,7 @@ export function loadDataEpic(
             isCwd: false,
             connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
           },
-          Selectors.getConf(store.getState()),
+          store,
         );
       };
 
@@ -1688,7 +1689,7 @@ function setFetchedKeys(
                 rootUri: node.rootUri,
                 isCwd: uri === Selectors.getCwdKey(store.getState()),
               },
-              Selectors.getConf(store.getState()),
+              store,
             );
           });
 
@@ -2028,10 +2029,7 @@ function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
       return root;
     }
 
-    let currentChild = new FileTreeNode(
-      {uri: nodeKey, rootUri},
-      Selectors.getConf(store.getState()),
-    );
+    let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, store);
 
     parents.forEach(currentUri => {
       fetchChildKeys(store, currentUri);
@@ -2043,7 +2041,7 @@ function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
           isExpanded: true,
           children: FileTreeNode.childrenFromArray([currentChild]),
         },
-        Selectors.getConf(store.getState()),
+        store,
       );
 
       currentChild = parent;
@@ -2085,7 +2083,7 @@ function setRootKeys(store: Store, rootKeys: Array<NuclideUri>): void {
         isExpanded: true,
         connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
       },
-      Selectors.getConf(store.getState()),
+      store,
     );
   });
 

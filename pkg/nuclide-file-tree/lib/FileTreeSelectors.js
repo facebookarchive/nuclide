@@ -109,13 +109,13 @@ export const usePrefixNav = (state: FileTreeStore): boolean => {
 export const getSelectedNodes = (
   state: FileTreeStore,
 ): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._selectionManager.selectedNodes().values());
+  return Immutable.List(state._selectedNodes.values());
 };
 
 export const getFocusedNodes = (
   state: FileTreeStore,
 ): Immutable.List<FileTreeNode> => {
-  return Immutable.List(state._selectionManager.focusedNodes().values());
+  return Immutable.List(state._focusedNodes.values());
 };
 
 // Retrieves target node in an immutable list if it's set, or all selected
@@ -240,7 +240,7 @@ export const collectDebugState = (state: FileTreeStore): Object => {
       root.collectDebugState(),
     ),
     _conf: state._confCollectDebugState(),
-    selectionManager: state._selectionManager.collectDebugState(),
+    selectionManager: collectSelectionDebugState(state),
   };
 };
 
@@ -284,3 +284,18 @@ export const getAutoExpandSingleChild = (state: FileTreeStore) =>
 export const getConf = (state: FileTreeStore) => state._conf;
 
 export const getVersion = (state: FileTreeStore) => state.VERSION;
+
+export const collectSelectionDebugState = (state: FileTreeStore) => ({
+  _selectedNodes: getSelectedNodes(state)
+    .toArray()
+    .map(node => node.uri),
+  _focusedNodes: getFocusedNodes(state)
+    .toArray()
+    .map(node => node.uri),
+});
+
+export const getNodeIsSelected = (state: FileTreeStore, node: FileTreeNode) =>
+  state._selectedNodes.has(node);
+
+export const getNodeIsFocused = (state: FileTreeStore, node: FileTreeNode) =>
+  state._focusedNodes.has(node);

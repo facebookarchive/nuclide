@@ -21,7 +21,6 @@ import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import * as Selectors from './FileTreeSelectors';
 import {FileTreeNode} from './FileTreeNode';
-import {FileTreeSelectionManager} from './FileTreeSelectionManager';
 import * as Immutable from 'immutable';
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
@@ -37,6 +36,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
+import * as SelectionActions from './redux/SelectionActions';
 
 import type {FileTreeAction} from './FileTreeDispatcher';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -70,7 +70,6 @@ export type StoreConfigData = {
     NuclideUri,
     Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
-  selectionManager: FileTreeSelectionManager,
 };
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -141,7 +140,11 @@ export default class FileTreeStore {
   _trackedRootKey: ?NuclideUri;
   _trackedNodeKey: ?NuclideUri;
   _isCalculatingChanges: boolean;
-  _selectionManager: FileTreeSelectionManager;
+
+  _maxComponentWidth: number;
+
+  _selectedNodes: Immutable.Set<FileTreeNode> = Immutable.Set();
+  _focusedNodes: Immutable.Set<FileTreeNode> = Immutable.Set();
 
   constructor() {
     // Used to ensure the version we serialized is the same version we are deserializing.
@@ -160,11 +163,8 @@ export default class FileTreeStore {
     this._autoExpandSingleChild = true;
     this._isLoadingMap = Immutable.Map();
     this._repositories = Immutable.Set();
-    this._selectionManager = new FileTreeSelectionManager(
-      this._emitChange.bind(this),
-    );
 
-    this._conf = {...DEFAULT_CONF, selectionManager: this._selectionManager};
+    this._conf = {...DEFAULT_CONF};
     this._filter = '';
     this._extraProjectSelectionContent = Immutable.List();
     this._foldersExpanded = true;
@@ -402,6 +402,28 @@ export default class FileTreeStore {
         break;
       case ActionTypes.SET_ROOTS:
         this._setRoots(payload.roots);
+        break;
+      case SelectionActions.SELECT:
+        this._selectedNodes = this._selectedNodes.add(payload.node);
+        this._emitChange();
+        break;
+      case SelectionActions.UNSELECT:
+        this._selectedNodes = this._selectedNodes.delete(payload.node);
+        this._emitChange();
+        break;
+      case SelectionActions.CLEAR_SELECTED:
+        this._clearSelected();
+        break;
+      case SelectionActions.FOCUS:
+        this._focusedNodes = this._focusedNodes.add(payload.node);
+        this._emitChange();
+        break;
+      case SelectionActions.UNFOCUS:
+        this._focusedNodes = this._focusedNodes.delete(payload.node);
+        this._emitChange();
+        break;
+      case SelectionActions.CLEAR_FOCUSED:
+        this._clearFocused();
         break;
       default:
         break;
@@ -1353,9 +1375,19 @@ export default class FileTreeStore {
   // Clear selections and focuses on all nodes except an optionally specified
   // current node.
   _clearSelection(): void {
-    this._selectionManager.clearSelected();
-    this._selectionManager.clearFocused();
+    this._clearSelected();
+    this._clearFocused();
     this._clearSelectionRange();
+  }
+
+  _clearSelected(): void {
+    this._selectedNodes = Immutable.Set();
+    this._emitChange();
+  }
+
+  _clearFocused(): void {
+    this._focusedNodes = Immutable.Set();
+    this._emitChange();
   }
 
   _clearTrackedNode(): void {
@@ -1510,10 +1542,10 @@ export default class FileTreeStore {
     });
 
     // Reset data store.
-    this._conf = {...DEFAULT_CONF, selectionManager: this._selectionManager};
+    this._conf = {...DEFAULT_CONF};
     this._setRoots(Immutable.OrderedMap());
-    this._selectionManager.clearSelected();
-    this._selectionManager.clearFocused();
+    this._clearSelected();
+    this._clearFocused();
     this._trackedRootKey = null;
     this._trackedNodeKey = null;
   }
