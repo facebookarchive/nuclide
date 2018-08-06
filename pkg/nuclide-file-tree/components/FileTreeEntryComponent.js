@@ -11,7 +11,7 @@
 
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
-import type {Store} from '../redux/types';
+import type {Store} from '../lib/types';
 
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Selectors from '../lib/FileTreeSelectors';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, Action, Store} from './types';
+import type {AppState, Action, Store} from '../types';
 
 import {createStore as _createStore} from 'redux';
 import {getLogger} from 'log4js';
@@ -18,7 +18,7 @@ import {
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
 import {applyMiddleware} from 'redux';
-import * as Epics from '../lib/redux/Epics';
+import * as Epics from './Epics';
 
 export default function createStore(initialState: AppState): Store {
   const epics = Object.keys(Epics)

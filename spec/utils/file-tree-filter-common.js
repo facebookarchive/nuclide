@@ -18,7 +18,7 @@ import * as Actions from '../../pkg/nuclide-file-tree/lib/redux/Actions';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Selectors from '../../pkg/nuclide-file-tree/lib/FileTreeSelectors';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import createStore from '../../pkg/nuclide-file-tree/redux/createStore';
+import createStore from '../../pkg/nuclide-file-tree/lib/redux/createStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports

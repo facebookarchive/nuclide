@@ -23,7 +23,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
-import createStore from '../redux/createStore';
+import createStore from '../lib/redux/createStore';
 
 function renderEntryComponentIntoDocument(
   componentKlass: Object,

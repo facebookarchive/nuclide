@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
-import type {Store} from '../redux/types';
+import type {Store} from '../lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';

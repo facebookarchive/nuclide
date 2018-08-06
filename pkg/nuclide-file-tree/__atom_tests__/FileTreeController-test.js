@@ -13,7 +13,7 @@ import {setup} from '../__mocks__/file_tree_setup';
 import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import createStore from '../redux/createStore';
+import createStore from '../lib/redux/createStore';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';

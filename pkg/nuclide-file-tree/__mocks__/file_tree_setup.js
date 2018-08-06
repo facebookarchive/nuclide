@@ -11,7 +11,7 @@
 
 /* eslint-disable nuclide-internal/prefer-nuclide-uri */
 
-import type {Store} from '../redux/types';
+import type {Store} from '../lib/types';
 
 import * as Actions from '../lib/redux/Actions';
 import path from 'path';

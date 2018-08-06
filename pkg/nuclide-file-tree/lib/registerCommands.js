@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Store} from '../redux/types';
+import type {Store} from './types';
 
 import {COMMANDS_SELECTOR} from './FileTreeConstants';
 import * as Selectors from './FileTreeSelectors';

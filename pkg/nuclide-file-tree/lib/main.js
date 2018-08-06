@@ -48,7 +48,7 @@ import passesGK from '../../commons-node/passesGK';
 import registerCommands from './registerCommands';
 import FileTreeStore from './FileTreeStore';
 import ProjectSelectionManager from './ProjectSelectionManager';
-import createStore from '../redux/createStore';
+import createStore from './redux/createStore';
 
 type SerializedState = {
   tree: ExportStoreData,

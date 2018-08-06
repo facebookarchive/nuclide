@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Store} from '../redux/types';
+import type {Store} from '../lib/types';
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';

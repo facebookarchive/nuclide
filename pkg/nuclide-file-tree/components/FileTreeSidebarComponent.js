@@ -15,7 +15,7 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore.js';
-import type {Store} from '../redux/types';
+import type {Store} from '../lib/types';
 
 import {Emitter} from 'atom';
 import * as React from 'react';
