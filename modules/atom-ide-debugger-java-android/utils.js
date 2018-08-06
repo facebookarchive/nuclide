@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {AdbDevice} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenConfig,
@@ -20,7 +19,6 @@ import type {
 } from 'nuclide-debugger-common/types';
 
 import {AnalyticsEvents} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/constants';
-import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
@@ -128,16 +126,16 @@ export function getCustomControlButtonsForJavaSourcePaths(
 function _getPackageName(debugMode: DebuggerConfigAction, config): string {
   return nullthrows(
     debugMode === 'launch'
-      ? (idx(config, _ => _.deviceAndPackage.selectedPackage): ?string)
-      : (idx(config, _ => _.deviceAndProcess.selectedProcess.name): ?string),
+      ? config.deviceAndPackage.selectedPackage
+      : config.deviceAndProcess.selectedProcess?.name,
   );
 }
 
-function _getDevice(debugMode: DebuggerConfigAction, config): AdbDevice {
+function _getDeviceSerial(debugMode: DebuggerConfigAction, config): string {
   return nullthrows(
     debugMode === 'launch'
-      ? (idx(config, _ => _.deviceAndPackage.device): ?AdbDevice)
-      : (idx(config, _ => _.deviceAndProcess.device): ?AdbDevice),
+      ? config.deviceAndPackage.deviceSerial
+      : config.deviceAndProcess.deviceSerial,
   );
 }
 
@@ -145,18 +143,16 @@ async function _getPid(
   debugMode: DebuggerConfigAction,
   config,
   adbServiceUri: string,
-  device: AdbDevice,
+  deviceSerial: string,
   packageName: string,
 ): Promise<number> {
-  const selectedProcessPidString = idx(
-    config,
-    _ => _.deviceAndProcess.selectedProcess.pid,
-  );
+  const selectedProcessPidString =
+    config.deviceAndProcess?.selectedProcess?.pid;
   const selectedProcessPid = parseInt(selectedProcessPidString, 10);
   const pid =
     debugMode === 'attach' && selectedProcessPidString != null
       ? selectedProcessPid
-      : await getPidFromPackageName(adbServiceUri, device, packageName);
+      : await getPidFromPackageName(adbServiceUri, deviceSerial, packageName);
   if (isNaN(pid)) {
     throw new Error(
       'Selected process pid is not a number: ' +
@@ -167,23 +163,23 @@ async function _getPid(
 }
 
 function _getResolvedTargetUri(targetUri: NuclideUri, config) {
-  const selectSources: ?string = idx(config, _ => _.selectSources);
+  const selectSources = config.selectSources;
   return selectSources != null ? selectSources : targetUri;
 }
 
 function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
-  const adbServiceUri: ?string = idx(config, _ => _.adbServiceUri);
+  const adbServiceUri = config.adbServiceUri;
   return adbServiceUri != null ? adbServiceUri : unresolvedTargetUri;
 }
 
 async function _getAndroidSdkSourcePaths(
   targetUri: NuclideUri,
   adbServiceUri: NuclideUri,
-  device: AdbDevice,
+  deviceSerial: string,
 ): Promise<Array<string>> {
   const sdkVersion = await getAdbServiceByNuclideUri(
     adbServiceUri,
-  ).getAPIVersion(device.serial);
+  ).getAPIVersion(deviceSerial);
   const sdkSourcePath =
     sdkVersion !== ''
       ? await getJavaDebuggerHelpersServiceByNuclideUri(
@@ -198,7 +194,7 @@ async function _getAndroidSdkSourcePaths(
     );
   }
   track(AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
-    deviceSerial: device.serial,
+    deviceSerial,
     sdkVersion,
     sdkSourcePathExists: sdkSourcePath != null,
     sdkSourcePath,
@@ -216,7 +212,8 @@ export async function resolveConfiguration(
   const adbServiceUri = _getAdbServiceUri(targetUri, config);
   const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
   const packageName = config.packageName || _getPackageName(debugMode, config);
-  const device = config.device || _getDevice(debugMode, config);
+  const deviceSerial =
+    config.device?.serial || _getDeviceSerial(debugMode, config);
   if (debugMode === 'launch') {
     const {service, intent, activity} = config;
     await launchAndroidServiceOrActivity(
@@ -224,7 +221,7 @@ export async function resolveConfiguration(
       (service: ?string),
       (activity: ?string),
       (intent: ?string) /* intent and action are the same */,
-      device,
+      deviceSerial,
       packageName,
     );
   }
@@ -233,13 +230,13 @@ export async function resolveConfiguration(
     debugMode,
     config,
     adbServiceUri,
-    device,
+    deviceSerial,
     packageName,
   );
 
   const subscriptions = new UniversalDisposable();
   const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
-    device,
+    deviceSerial,
     adbServiceUri,
     resolvedTargetUri,
     pid,
@@ -250,7 +247,7 @@ export async function resolveConfiguration(
   const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(
     resolvedTargetUri,
     adbServiceUri,
-    device,
+    deviceSerial,
   );
 
   const clickEvents = new Subject();
@@ -277,7 +274,7 @@ export async function resolveConfiguration(
     ),
     config: {
       ...attachPortTargetConfig,
-      device,
+      deviceSerial,
       packageName,
     },
     onDebugStartingCallback: instance => {

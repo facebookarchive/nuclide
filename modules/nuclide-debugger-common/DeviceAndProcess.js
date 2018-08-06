@@ -32,12 +32,12 @@ type ColumnName = 'pid' | 'user' | 'name';
 
 type Props = {|
   +targetUri: NuclideUri,
-  +onSelect: (device: ?AdbDevice, javaProcess: ?AndroidJavaProcess) => void,
+  +onSelect: (deviceSerial: ?string, javaProcess: ?AndroidJavaProcess) => void,
   +deserialize: () => ?string,
 |};
 
 type State = {
-  selectedDevice: ?AdbDevice,
+  selectedDeviceSerial: ?string,
   javaProcesses: Expected<Array<AndroidJavaProcess>>,
   selectedProcess: ?AndroidJavaProcess,
   selectedProcessName: ?string,
@@ -68,7 +68,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
     } catch (e) {}
 
     this.state = {
-      selectedDevice: null,
+      selectedDeviceSerial: null,
       javaProcesses: Expect.value([]),
       selectedProcess: null,
       selectedProcessName: null,
@@ -88,17 +88,20 @@ export class DeviceAndProcess extends React.Component<Props, State> {
       ...partialState,
     };
     super.setState(fullState, () => {
-      this.props.onSelect(fullState.selectedDevice, fullState.selectedProcess);
+      this.props.onSelect(
+        fullState.selectedDeviceSerial,
+        fullState.selectedProcess,
+      );
       callback && callback();
     });
   }
 
   _handleDeviceChange = (device: ?AdbDevice): void => {
-    const oldDevice = this.state.selectedDevice;
+    const oldDeviceSerial = this.state.selectedDeviceSerial;
     if (
-      oldDevice != null &&
+      oldDeviceSerial != null &&
       device != null &&
-      oldDevice.serial === device.serial
+      oldDeviceSerial === device.serial
     ) {
       // Same device selected.
       return;
@@ -111,7 +114,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
     this.setState(
       {
-        selectedDevice: device,
+        selectedDeviceSerial: device?.serial,
         javaProcesses: device == null ? Expect.value([]) : Expect.pending(),
         selectedProcess: null,
         selectedProcessName: this.props.deserialize(),
@@ -268,7 +271,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
 
   render(): React.Node {
     const emptyMessage: string =
-      this.state.selectedDevice == null
+      this.state.selectedDeviceSerial == null
         ? 'No device selected'
         : 'No debuggable Java processes found!';
     const emptyComponent = () => (

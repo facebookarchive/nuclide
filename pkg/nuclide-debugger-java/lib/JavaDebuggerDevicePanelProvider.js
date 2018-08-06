@@ -29,12 +29,9 @@ function _createAndroidDebugAttachConfig(
 ): IProcessConfig {
   const config = {
     deviceAndProcess: {
-      device: {
-        ...device,
-        // See pkg/nuclide-device-panel-android/lib/Registration.js to see why
-        // serial and identifier are interchangeable
-        serial: device.identifier,
-      },
+      // See pkg/nuclide-device-panel-android/lib/Registration.js to see why
+      // serial and identifier are interchangeable
+      deviceSerial: device.identifier,
       selectedProcess: proc,
     },
     adbServiceUri: targetUri,

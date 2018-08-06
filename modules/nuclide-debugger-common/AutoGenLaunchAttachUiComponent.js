@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {AndroidJavaProcess, AdbDevice} from 'nuclide-adb/lib/types';
+import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenProperty,
@@ -49,12 +49,12 @@ type Props = {|
 |};
 
 type DeviceAndPackageType = {|
-  +device: ?AdbDevice,
+  +deviceSerial: ?string,
   +selectedPackage: string,
 |};
 
 type DeviceAndProcessType = {|
-  +device: ?AdbDevice,
+  +deviceSerial: ?string,
   +selectedProcess: ?AndroidJavaProcess,
 |};
 
@@ -304,14 +304,14 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       const deviceAndPackageValue = this.state.deviceAndPackageValues.get(name);
       return (
         deviceAndPackageValue != null &&
-        deviceAndPackageValue.device != null &&
+        deviceAndPackageValue.deviceSerial != null &&
         deviceAndPackageValue.selectedPackage != null
       );
     } else if (type === 'deviceAndProcess') {
       const deviceAndProcessValue = this.state.deviceAndProcessValues.get(name);
       return (
         deviceAndProcessValue != null &&
-        deviceAndProcessValue.device != null &&
+        deviceAndProcessValue.deviceSerial != null &&
         deviceAndProcessValue.selectedProcess != null
       );
     } else if (type === 'selectSources') {
@@ -416,9 +416,9 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             const packageValues = new Map(packageValuesArray);
             return packageValues.get(name) || null;
           }}
-          onSelect={(device, javaPackage) => {
+          onSelect={(deviceSerial, javaPackage) => {
             this.state.deviceAndPackageValues.set(name, {
-              device,
+              deviceSerial,
               selectedPackage: javaPackage,
             });
             this.props.configIsValidChanged(this._debugButtonShouldEnable());
@@ -441,9 +441,9 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             const processValues = new Map(processValuesArray);
             return processValues.get(name) || null;
           }}
-          onSelect={(device, javaProcess) => {
+          onSelect={(deviceSerial, javaProcess) => {
             this.state.deviceAndProcessValues.set(name, {
-              device,
+              deviceSerial,
               selectedProcess: javaProcess,
             });
             this.props.configIsValidChanged(this._debugButtonShouldEnable());

@@ -23,12 +23,12 @@ import {AdbDeviceSelector} from './AdbDeviceSelector';
 
 type Props = {|
   +targetUri: NuclideUri,
-  +onSelect: (device: ?AdbDevice, javaPackage: string) => void,
+  +onSelect: (deviceSerial: ?string, javaPackage: string) => void,
   +deserialize: () => ?string,
 |};
 
 type State = {
-  selectedDevice: ?AdbDevice,
+  selectedDeviceSerial: ?string,
   launchPackage: string,
   packages: Expected<Array<string>>,
 };
@@ -37,7 +37,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      selectedDevice: null,
+      selectedDeviceSerial: null,
       launchPackage: '',
       packages: Expect.value([]),
     };
@@ -66,21 +66,24 @@ export class DeviceAndPackage extends React.Component<Props, State> {
       ...partialState,
     };
     super.setState(fullState, () => {
-      this.props.onSelect(fullState.selectedDevice, fullState.launchPackage);
+      this.props.onSelect(
+        fullState.selectedDeviceSerial,
+        fullState.launchPackage,
+      );
       callback && callback();
     });
   }
 
   _handleDeviceChange = (device: ?AdbDevice): void => {
     const state: $Shape<State> = {
-      selectedDevice: device,
+      selectedDeviceSerial: device?.serial,
       packages: device == null ? Expect.value([]) : Expect.pending(),
     };
     const value = this.props.deserialize();
     if (
       device != null &&
-      (this.state.selectedDevice == null ||
-        device.serial !== this.state.selectedDevice.serial) &&
+      (this.state.selectedDeviceSerial == null ||
+        device.serial !== this.state.selectedDeviceSerial) &&
       value != null
     ) {
       state.launchPackage = value;
@@ -104,7 +107,7 @@ export class DeviceAndPackage extends React.Component<Props, State> {
           <LoadingSpinner size="EXTRA_SMALL" />
         ) : (
           <Dropdown
-            disabled={this.state.selectedDevice == null}
+            disabled={this.state.selectedDeviceSerial == null}
             options={this.state.packages.getOrDefault([]).map(packageName => {
               return {value: packageName, label: packageName};
             })}
