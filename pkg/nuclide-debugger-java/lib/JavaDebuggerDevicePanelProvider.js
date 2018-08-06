@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IProcessConfig} from 'nuclide-debugger-common';
+import type {IJavaAndroidAttachProcessConfig} from 'atom-ide-debugger-java-android/types';
 import type {
   Device,
   DeviceProcessTaskProvider,
@@ -26,13 +26,17 @@ function _createAndroidDebugAttachConfig(
   targetUri: NuclideUri,
   device: Device,
   proc: Process,
-): IProcessConfig {
+): IJavaAndroidAttachProcessConfig {
   const config = {
     deviceAndProcess: {
       // See pkg/nuclide-device-panel-android/lib/Registration.js to see why
       // serial and identifier are interchangeable
       deviceSerial: device.identifier,
-      selectedProcess: proc,
+      selectedProcess: {
+        user: proc.user,
+        pid: String(proc.pid),
+        name: proc.name,
+      },
     },
     adbServiceUri: targetUri,
   };

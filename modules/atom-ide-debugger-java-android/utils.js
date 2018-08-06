@@ -211,9 +211,8 @@ export async function resolveConfiguration(
   const {config, debugMode, targetUri} = configuration;
   const adbServiceUri = _getAdbServiceUri(targetUri, config);
   const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
-  const packageName = config.packageName || _getPackageName(debugMode, config);
-  const deviceSerial =
-    config.device?.serial || _getDeviceSerial(debugMode, config);
+  const packageName = _getPackageName(debugMode, config);
+  const deviceSerial = _getDeviceSerial(debugMode, config);
   if (debugMode === 'launch') {
     const {service, intent, activity} = config;
     await launchAndroidServiceOrActivity(
