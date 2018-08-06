@@ -224,7 +224,7 @@ function createLogPaneForPath(path: string): ?React.Element<any> {
   const contentLoader = currentDiff.switchMap(ids => {
     const {oldId, newId} = ids;
     if (oldId == null || newId == null) {
-      return Observable.of({oldContent: null, newContent: null});
+      return Observable.of({oldContent: null, newContent: null, error: null});
     }
     return Observable.forkJoin(
       oldId !== ''
@@ -235,7 +235,18 @@ function createLogPaneForPath(path: string): ?React.Element<any> {
         : Observable.of(''),
     )
       .startWith([null, null])
-      .map(([oldContent, newContent]) => ({oldContent, newContent}));
+      .map(([oldContent, newContent]) => ({
+        oldContent,
+        newContent,
+        error: null,
+      }))
+      .catch(error => {
+        return Observable.of({
+          oldContent: null,
+          newContent: null,
+          error: error.toString(),
+        });
+      });
   });
 
   const props = Observable.combineLatest(
@@ -250,6 +261,7 @@ function createLogPaneForPath(path: string): ?React.Element<any> {
       repository,
       onDiffClick,
       logEntries,
+      fileLoadingError: content.error,
       oldContent: content.oldContent,
       newContent: content.newContent,
     };

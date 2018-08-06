@@ -31,6 +31,7 @@ type Props = {
   repository: HgRepositoryClient,
   onDiffClick: (oldId: string, newId: string) => void,
   logEntries: ?Array<VcsLogEntry>,
+  fileLoadingError: ?string,
   oldContent: ?string,
   newContent: ?string,
 };
@@ -62,7 +63,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {logEntries} = this.props;
+    const {logEntries, fileLoadingError} = this.props;
     if (logEntries != null) {
       // Even if the "Show Differential Revision" preference is enabled, only show the column if
       // there is at least one row with a Differential revision. This way, enabling the preference
@@ -118,13 +119,22 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         const filePath = this.props.files[0];
         const {oldContent, newContent} = this.props;
         const props = {filePath, oldContent, newContent};
+        const diffSection =
+          fileLoadingError != null ? (
+            <EmptyState
+              title={'Error loading diffs'}
+              message={fileLoadingError}
+            />
+          ) : (
+            <ShowDiff {...props} />
+          );
         return (
           // $FlowFixMe(>=0.53.0) Flow suppress
           <ResizableFlexContainer
             direction={FlexDirections.VERTICAL}
             className={'nuclide-vcs-log-container'}>
             <ResizableFlexItem initialFlexScale={3}>
-              <ShowDiff {...props} />
+              {diffSection}
             </ResizableFlexItem>
             <ResizableFlexItem
               initialFlexScale={1}
