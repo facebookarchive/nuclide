@@ -102,6 +102,8 @@ const actionTrackers: Map<string, HistogramTracker> = new Map();
 // TODO: Don't `export default` an object.
 const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
+const logger = getLogger('nuclide-file-tree');
+
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
@@ -129,7 +131,6 @@ export default class FileTreeStore {
   _generatedOpenChangedFiles: Immutable.Map<NuclideUri, GeneratedFileType>;
   _dispatcher: FileTreeDispatcher;
   _emitter: Emitter;
-  _logger: any;
   _animationFrameRequestSubscription: ?rxjs$Subscription;
   _cwdApi: ?CwdApi;
   _cwdKey: ?NuclideUri;
@@ -154,7 +155,6 @@ export default class FileTreeStore {
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
     this._dispatcher.register(this._onDispatch.bind(this));
-    this._logger = getLogger('nuclide-file-tree');
     this._fileChanges = Immutable.Map();
     this._generatedOpenChangedFiles = Immutable.Map();
     this._reorderPreviewStatus = null;
@@ -634,7 +634,7 @@ export default class FileTreeStore {
           // An invalid URI might cause an exception to be thrown
           ensurePresentParents(uri);
         } catch (e) {
-          this._logger.error(`Error enriching the VCS statuses for ${uri}`, e);
+          logger.error(`Error enriching the VCS statuses for ${uri}`, e);
         }
       }
     });
