@@ -11,9 +11,10 @@
  */
 import {Directory} from 'atom';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import FileTreeStore from '../lib/FileTreeStore';
+import createStore from '../lib/redux/createStore';
 import * as Selectors from '../lib/FileTreeSelectors';
 import * as Actions from '../lib/redux/Actions';
+import * as EpicHelpers from '../lib/redux/EpicHelpers';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';
@@ -47,18 +48,16 @@ describe('FileTreeStore', () => {
   let fooTxt = '';
   let dir2 = '';
 
-  const store = new FileTreeStore();
-
   /*
    * Trigger the fetch through the **internal-only** API. Enables the
    * tests to await loading children.
    */
   function loadChildKeys(rootKey: string, nodeKey: string): Promise<void> {
-    return store._getLoading(nodeKey) || Promise.resolve();
+    return Selectors.getLoading(store.getState(), nodeKey) || Promise.resolve();
   }
 
   function getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    const node = Selectors.getNode(store, rootKey, nodeKey);
+    const node = Selectors.getNode(store.getState(), rootKey, nodeKey);
     invariant(node);
     return node;
   }
@@ -78,8 +77,10 @@ describe('FileTreeStore', () => {
     return getNode(rootKey, nodeKey).isExpanded;
   }
 
+  let store;
   beforeEach(async () => {
-    store.dispatch(Actions.reset());
+    store = createStore();
+
     await tempCleanup();
     jest.clearAllMocks();
     jest.resetAllMocks();
@@ -93,79 +94,79 @@ describe('FileTreeStore', () => {
   });
 
   it('should be initialized with no root keys', () => {
-    const rootKeys = Selectors.getRootKeys(store);
+    const rootKeys = Selectors.getRootKeys(store.getState());
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.length).toBe(0);
   });
 
   describe('isEmpty', () => {
     it('returns true when the store is empty, has no roots', () => {
-      expect(Selectors.isEmpty(store)).toBe(true);
+      expect(Selectors.isEmpty(store.getState())).toBe(true);
     });
 
     it('returns false when the store has data, has roots', () => {
-      store.dispatch(Actions.setRootKeys([dir1]));
-      expect(Selectors.isEmpty(store)).toBe(false);
+      EpicHelpers.setRootKeys(store, [dir1]);
+      expect(Selectors.isEmpty(store.getState())).toBe(false);
     });
   });
 
   it('should update root keys via actions', () => {
-    store.dispatch(Actions.setRootKeys([dir1, dir2]));
-    const rootKeys = Selectors.getRootKeys(store);
+    EpicHelpers.setRootKeys(store, [dir1, dir2]);
+    const rootKeys = Selectors.getRootKeys(store.getState());
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
   });
 
   it('should expand root keys as they are added', () => {
     const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
-    store.dispatch(Actions.setRootKeys([rootKey]));
+    EpicHelpers.setRootKeys(store, [rootKey]);
     const node = getNode(rootKey, rootKey);
     expect(node.isExpanded).toBe(true);
   });
 
   it('toggles selected items', () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.setSelectedNode(dir1, dir1));
     let node = getNode(dir1, dir1);
-    expect(node.isSelected()).toBe(true);
+    expect(Selectors.getNodeIsSelected(store.getState(), node)).toBe(true);
     store.dispatch(Actions.unselectNode(dir1, dir1));
     node = getNode(dir1, dir1);
-    expect(node.isSelected()).toBe(false);
+    expect(Selectors.getNodeIsSelected(store.getState(), node)).toBe(false);
   });
 
   it('deselects items in other roots when a single node is selected', () => {
-    store.dispatch(Actions.setRootKeys([dir1, dir2]));
+    EpicHelpers.setRootKeys(store, [dir1, dir2]);
     store.dispatch(Actions.setSelectedNode(dir1, dir1));
     let node1 = getNode(dir1, dir1);
     let node2 = getNode(dir2, dir2);
 
     // Node 1 is selected, node 2 is not selected
-    expect(node1.isSelected()).toBe(true);
-    expect(node2.isSelected()).toBe(false);
+    expect(Selectors.getNodeIsSelected(store.getState(), node1)).toBe(true);
+    expect(Selectors.getNodeIsSelected(store.getState(), node2)).toBe(false);
 
     // Selecting a single node, node2, deselects nodes in all other roots
     store.dispatch(Actions.setSelectedNode(dir2, dir2));
     node1 = getNode(dir1, dir1);
     node2 = getNode(dir2, dir2);
-    expect(node1.isSelected()).toBe(false);
-    expect(node2.isSelected()).toBe(true);
+    expect(Selectors.getNodeIsSelected(store.getState(), node1)).toBe(false);
+    expect(Selectors.getNodeIsSelected(store.getState(), node2)).toBe(true);
   });
 
   describe('getSelectedNodes', () => {
     it('returns selected nodes from all roots', () => {
-      store.dispatch(Actions.setRootKeys([dir1, dir2]));
+      EpicHelpers.setRootKeys(store, [dir1, dir2]);
       store.dispatch(Actions.addSelectedNode(dir1, dir1));
       store.dispatch(Actions.addSelectedNode(dir2, dir2));
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = Selectors.getSelectedNodes(store)
+      const selectedNodes = Selectors.getSelectedNodes(store.getState())
         .map(node => node.uri)
         .toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
-      const selectedNodes = Selectors.getSelectedNodes(store)
+      const selectedNodes = Selectors.getSelectedNodes(store.getState())
         .map(node => node.uri)
         .toArray();
       expect(selectedNodes).toEqual([]);
@@ -180,22 +181,24 @@ describe('FileTreeStore', () => {
        *   → dir1
        *   → dir2
        */
-      store.dispatch(Actions.setRootKeys([dir1, dir2]));
+      EpicHelpers.setRootKeys(store, [dir1, dir2]);
     });
 
     it('returns null when no nodes are selected', () => {
-      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+      expect(Selectors.getSingleSelectedNode(store.getState())).toBeNull();
     });
 
     it('returns null when more than 1 node is selected', () => {
       store.dispatch(Actions.addSelectedNode(dir1, dir1));
       store.dispatch(Actions.addSelectedNode(dir2, dir2));
-      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
+      expect(Selectors.getSingleSelectedNode(store.getState())).toBeNull();
     });
 
     it('returns a node when only 1 is selected', () => {
       store.dispatch(Actions.setSelectedNode(dir2, dir2));
-      const singleSelectedNode = Selectors.getSingleSelectedNode(store);
+      const singleSelectedNode = Selectors.getSingleSelectedNode(
+        store.getState(),
+      );
       expect(singleSelectedNode).not.toBeNull();
       invariant(singleSelectedNode);
       expect(singleSelectedNode.uri).toEqual(dir2);
@@ -204,19 +207,19 @@ describe('FileTreeStore', () => {
 
   describe('getRootForPath', () => {
     beforeEach(async () => {
-      store.dispatch(Actions.setRootKeys([dir1, dir2]));
+      EpicHelpers.setRootKeys(store, [dir1, dir2]);
       store.dispatch(Actions.expandNode(dir1, fooTxt));
       await loadChildKeys(dir1, dir1);
     });
 
     it('returns null if path does not belong to any root', () => {
       expect(
-        Selectors.getRootForPath(store, 'random/path/file.txt'),
+        Selectors.getRootForPath(store.getState(), 'random/path/file.txt'),
       ).toBeNull();
     });
 
     it('returns a root node if path exists in a root', () => {
-      const node = Selectors.getRootForPath(store, fooTxt);
+      const node = Selectors.getRootForPath(store.getState(), fooTxt);
       expect(node).not.toBeNull();
       invariant(node);
       expect(node.uri).toEqual(dir1);
@@ -225,17 +228,19 @@ describe('FileTreeStore', () => {
 
   describe('trackedNode', () => {
     it('resets when there is a new selection', () => {
-      store.dispatch(Actions.setRootKeys([dir1]));
+      EpicHelpers.setRootKeys(store, [dir1]);
       store.dispatch(Actions.setTrackedNode(dir1, dir1));
 
       // Root is tracked after setting it.
-      const trackedNode = Selectors.getTrackedNode(store);
+      const trackedNode = Selectors.getTrackedNode(store.getState());
       expect(trackedNode && trackedNode.uri).toBe(dir1);
       store.dispatch(Actions.setSelectedNode(dir1, dir1));
 
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
-      expect(Selectors.getTrackedNode(store)).toBe(getNode(dir1, dir1));
+      expect(Selectors.getTrackedNode(store.getState())).toBe(
+        getNode(dir1, dir1),
+      );
     });
   });
 
@@ -245,7 +250,7 @@ describe('FileTreeStore', () => {
         return Promise.reject(new Error('This error **should** be thrown.'));
       });
 
-      store.dispatch(Actions.setRootKeys([dir1]));
+      EpicHelpers.setRootKeys(store, [dir1]);
 
       let node = getNode(dir1, dir1);
       expect(node.isExpanded).toBe(true);
@@ -271,7 +276,7 @@ describe('FileTreeStore', () => {
     let node;
 
     beforeEach(() => {
-      store.dispatch(Actions.setRootKeys([dir1]));
+      EpicHelpers.setRootKeys(store, [dir1]);
       node = getNode(dir1, dir1);
     });
 
@@ -282,18 +287,20 @@ describe('FileTreeStore', () => {
     }
 
     function updateFilter() {
-      expect(Selectors.getFilter(store)).toEqual('');
-      store.dispatch(Actions.setRootKeys([dir1]));
+      expect(Selectors.getFilter(store.getState())).toEqual('');
+      EpicHelpers.setRootKeys(store, [dir1]);
       checkNode('', true);
       store.dispatch(Actions.addFilterLetter(node.name));
-      expect(Selectors.getFilter(store)).toEqual(node.name);
+      expect(Selectors.getFilter(store.getState())).toEqual(node.name);
       checkNode(node.name, true);
     }
 
     function doubleFilter() {
       updateFilter();
       store.dispatch(Actions.addFilterLetter(node.name));
-      expect(Selectors.getFilter(store)).toEqual(node.name + node.name);
+      expect(Selectors.getFilter(store.getState())).toEqual(
+        node.name + node.name,
+      );
       checkNode('', false);
     }
 
@@ -329,7 +336,7 @@ describe('FileTreeStore', () => {
   });
 
   it('omits hidden nodes', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setIgnoredNames(['foo.*']));
 
@@ -339,7 +346,7 @@ describe('FileTreeStore', () => {
   });
 
   it('shows nodes if the pattern changes to no longer match', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setIgnoredNames(['foo.*']));
 
@@ -351,7 +358,7 @@ describe('FileTreeStore', () => {
   });
 
   it('obeys the hideIgnoredNames setting', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setIgnoredNames(['foo.*']));
     store.dispatch(Actions.setHideIgnoredNames(false));
@@ -374,7 +381,7 @@ describe('FileTreeStore', () => {
         .spyOn(FileTreeHelpers, 'getDirectoryByKey')
         .mockReturnValue(unsubscribeableDir);
 
-      store.dispatch(Actions.setRootKeys([dir1]));
+      EpicHelpers.setRootKeys(store, [dir1]);
       store.dispatch(Actions.expandNode(dir1, dir1));
       await loadChildKeys(dir1, dir1);
 
@@ -406,45 +413,38 @@ describe('FileTreeStore', () => {
   });
 
   it('omits vcs-excluded paths', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
     store.dispatch(Actions.setHideVcsIgnoredPaths(true));
 
     const mockRepo = new MockRepository();
-    store._updateConf(conf => {
-      conf.reposByRoot[dir1] = (mockRepo: any);
-    });
-
+    store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
     await loadChildKeys(dir1, dir1);
     expect(shownChildren(dir1, dir1).length).toBe(0);
   });
 
   it('includes vcs-excluded paths when told to', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setExcludeVcsIgnoredPaths(false));
     store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
     const mockRepo = new MockRepository();
-    store._updateConf(conf => {
-      conf.reposByRoot[dir1] = (mockRepo: any);
-    });
+    store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
 
     await loadChildKeys(dir1, dir1);
     expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
   it('includes vcs-excluded paths when explicitly told to', async () => {
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, fooTxt));
     store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
     store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
     const mockRepo = new MockRepository();
-    store._updateConf(conf => {
-      conf.reposByRoot[dir1] = (mockRepo: any);
-    });
+    store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
 
     await loadChildKeys(dir1, dir1);
     expect(shownChildren(dir1, dir1).length).toBe(1);
@@ -460,11 +460,11 @@ describe('FileTreeStore', () => {
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31);
-      store.dispatch(Actions.setRootKeys([dir3]));
+      EpicHelpers.setRootKeys(store, [dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
-      await store._expandNodeDeep(dir3, dir3);
+      await EpicHelpers.expandNodeDeep(store, dir3, dir3);
 
       expect(shownChildren(dir3, dir31).length).toBe(1);
     })();
@@ -480,11 +480,11 @@ describe('FileTreeStore', () => {
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31);
-      store.dispatch(Actions.setRootKeys([dir3]));
+      EpicHelpers.setRootKeys(store, [dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
-      await store._expandNodeDeep(dir3, dir3);
+      await EpicHelpers.expandNodeDeep(store, dir3, dir3);
       expect(isExpanded(dir3, dir31)).toBe(true);
       store.dispatch(Actions.collapseNodeDeep(dir3, dir3));
       expect(isExpanded(dir3, dir31)).toBe(false);
@@ -505,11 +505,11 @@ describe('FileTreeStore', () => {
       const dir32 = map.get('dir3/dir32');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31 && dir32);
-      store.dispatch(Actions.setRootKeys([dir3]));
+      EpicHelpers.setRootKeys(store, [dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
-      await store._expandNodeDeep(dir3, dir3);
+      await EpicHelpers.expandNodeDeep(store, dir3, dir3);
       expect(isExpanded(dir3, dir31)).toBe(true);
       expect(isExpanded(dir3, dir32)).toBe(false);
     })();
@@ -517,13 +517,15 @@ describe('FileTreeStore', () => {
   it('should be able to add, remove, then re-add a file', async () => {
     const foo2Txt = nuclideUri.join(dir1, 'foo2.txt');
 
-    store.dispatch(Actions.setRootKeys([dir1]));
+    EpicHelpers.setRootKeys(store, [dir1]);
     store.dispatch(Actions.expandNode(dir1, dir1));
     await loadChildKeys(dir1, dir1);
     fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
+    await waitsFor(() =>
+      Boolean(Selectors.getNode(store.getState(), dir1, foo2Txt)),
+    );
 
     // Ensure the child did not inherit the parent subscription.
     const child = getNode(dir1, foo2Txt);
@@ -531,12 +533,16 @@ describe('FileTreeStore', () => {
     fs.unlinkSync(foo2Txt);
 
     // Ensure that file disappears from the tree.
-    await waitsFor(() => Selectors.getNode(store, dir1, foo2Txt) == null);
+    await waitsFor(
+      () => Selectors.getNode(store.getState(), dir1, foo2Txt) == null,
+    );
 
     // Add the file back.
     fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
+    await waitsFor(() =>
+      Boolean(Selectors.getNode(store.getState(), dir1, foo2Txt)),
+    );
   });
 });
