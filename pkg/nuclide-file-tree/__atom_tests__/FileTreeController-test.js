@@ -14,12 +14,15 @@ import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import createStore from '../lib/redux/createStore';
+import FileTreeHelpers from '../lib/FileTreeHelpers';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
 import * as Selectors from '../lib/FileTreeSelectors';
 import * as Actions from '../lib/redux/Actions';
+
+const {updateNodeAtRoot} = FileTreeHelpers;
 
 describe('FileTreeController', () => {
   const store = createStore(new FileTreeStore());
@@ -301,8 +304,13 @@ describe('FileTreeController', () => {
         // fetch and might populate the children of `dir1`. We don't want that.
         store
           .getState()
-          ._updateNodeAtRoot(rootKey, dir1Key, node =>
-            node.set({isLoading: true, isExpanded: true}),
+          ._setRoots(
+            updateNodeAtRoot(
+              Selectors.getRoots(store.getState()),
+              rootKey,
+              dir1Key,
+              node => node.set({isLoading: true, isExpanded: true}),
+            ),
           );
       });
 

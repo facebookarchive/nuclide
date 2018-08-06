@@ -15,6 +15,8 @@ import type {
   RemoteFile,
 } from '../../nuclide-remote-connection';
 import type {ShowUncommittedChangesKindValue} from './Constants';
+import type {FileTreeNode} from './FileTreeNode';
+import type {Roots} from './types';
 
 import {
   ShowUncommittedChangesKind,
@@ -267,6 +269,66 @@ function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
   return 'invalid-select';
 }
 
+/**
+ * Replace a node in the tree and return the new tree's root. The newNode is assumed to be prevNode
+ * after some manipulateion done to it therefore they are assumed to belong to the same parent.
+ *
+ * An optional transformation can be provided which will be applied to all of the node's ancestors
+ * (including the node itself).
+ */
+function replaceNode(
+  prevNode: FileTreeNode,
+  newNode: FileTreeNode,
+  transform: (node: FileTreeNode) => FileTreeNode = node => node,
+): FileTreeNode {
+  const parent = prevNode.parent;
+  if (parent == null) {
+    return newNode;
+  }
+
+  const newParent = transform(parent.updateChild(newNode));
+  return replaceNode(parent, newParent, transform);
+}
+
+/**
+ * Use the predicate to update a node (or a branch) of the file-tree
+ */
+function updateNodeAtRoot(
+  roots: Roots,
+  rootKey: NuclideUri,
+  nodeKey: NuclideUri,
+  transform: (node: FileTreeNode) => FileTreeNode,
+): Roots {
+  const root = roots.get(rootKey);
+  if (root == null) {
+    return roots;
+  }
+
+  const node = root.find(nodeKey);
+  if (node == null) {
+    return roots;
+  }
+
+  return roots.set(rootKey, replaceNode(node, transform(node)));
+}
+
+/**
+ * Update a node or a branch under any of the roots it was found at
+ */
+function updateNodeAtAllRoots(
+  roots: Roots,
+  nodeKey: NuclideUri,
+  transform: (node: FileTreeNode) => FileTreeNode,
+): Roots {
+  return roots.map(root => {
+    const node = root.find(nodeKey);
+    if (node == null) {
+      return root;
+    }
+    return replaceNode(node, transform(node));
+  });
+}
+
 export default {
   dirPathToKey,
   isDirOrArchiveKey,
@@ -285,4 +347,7 @@ export default {
   observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
   getSelectionMode,
+  replaceNode,
+  updateNodeAtRoot,
+  updateNodeAtAllRoots,
 };

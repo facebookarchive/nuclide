@@ -14,6 +14,7 @@ import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
+import type {Roots} from './types';
 
 import invariant from 'assert';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
@@ -110,11 +111,12 @@ export type ReorderPreviewStatus = ?{
   targetIdx?: number,
 };
 
-type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
-
 const FETCH_TIMEOUT = 20000;
 
 const actionTrackers: Map<string, HistogramTracker> = new Map();
+
+// TODO: Don't `export default` an object.
+const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -511,29 +513,6 @@ export default class FileTreeStore {
    */
   _updateRoots(predicate: (root: FileTreeNode) => FileTreeNode): void {
     this._setRoots(this._roots.map(predicate));
-  }
-
-  /**
-   * Use the predicate to update a node (or a branch) of the file-tree
-   */
-  _updateNodeAtRoot(
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-    predicate: (node: FileTreeNode) => FileTreeNode,
-  ): void {
-    const root = this._roots.get(rootKey);
-    if (root == null) {
-      return;
-    }
-
-    const node = root.find(nodeKey);
-    if (node == null) {
-      return;
-    }
-
-    const roots = this._roots.set(rootKey, replaceNode(node, predicate(node)));
-
-    this._setRoots(roots);
   }
 
   /**
@@ -1145,8 +1124,10 @@ export default class FileTreeStore {
     if (rootIdx === -1) {
       return;
     }
-    this._updateNodeAtRoot(draggedRootKey, draggedRootKey, node =>
-      node.setIsBeingReordered(true),
+    this._setRoots(
+      updateNodeAtRoot(this._roots, draggedRootKey, draggedRootKey, node =>
+        node.setIsBeingReordered(true),
+      ),
     );
     this._reorderPreviewStatus = {
       source: draggedRootKey,
@@ -1206,8 +1187,10 @@ export default class FileTreeStore {
   _endReorderDrag(): void {
     if (this._reorderPreviewStatus != null) {
       const sourceRootKey = this._reorderPreviewStatus.source;
-      this._updateNodeAtRoot(sourceRootKey, sourceRootKey, node =>
-        node.setIsBeingReordered(false),
+      this._setRoots(
+        updateNodeAtRoot(this._roots, sourceRootKey, sourceRootKey, node =>
+          node.setIsBeingReordered(false),
+        ),
       );
       this._reorderPreviewStatus = null;
       this._emitChange();
@@ -1243,7 +1226,9 @@ export default class FileTreeStore {
       );
     };
 
-    this._updateNodeAtRoot(rootKey, nodeKey, recursivelyExpandNode);
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, recursivelyExpandNode),
+    );
   }
 
   /**
@@ -1281,60 +1266,68 @@ export default class FileTreeStore {
   }
 
   _collapseNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      // Clear all selected nodes under the node being collapsed and dispose their subscriptions
-      return node.setRecursive(
-        childNode => {
-          if (childNode.isExpanded) {
-            return null;
-          }
-          return childNode;
-        },
-        childNode => {
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node => {
+        // Clear all selected nodes under the node being collapsed and dispose their subscriptions
+        return node.setRecursive(
+          childNode => {
+            if (childNode.isExpanded) {
+              return null;
+            }
+            return childNode;
+          },
+          childNode => {
+            if (childNode.subscription != null) {
+              childNode.subscription.dispose();
+            }
+
+            if (childNode.uri === node.uri) {
+              return childNode.set({isExpanded: false, subscription: null});
+            } else {
+              return childNode.set({isSelected: false, subscription: null});
+            }
+          },
+        );
+      }),
+    );
+  }
+
+  _collapseNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node => {
+        return node.setRecursive(/* prePredicate */ null, childNode => {
           if (childNode.subscription != null) {
             childNode.subscription.dispose();
           }
 
-          if (childNode.uri === node.uri) {
-            return childNode.set({isExpanded: false, subscription: null});
+          if (childNode.uri !== node.uri) {
+            return childNode.set({
+              isExpanded: false,
+              isSelected: false,
+              subscription: null,
+            });
           } else {
-            return childNode.set({isSelected: false, subscription: null});
+            return childNode.set({isExpanded: false, subscription: null});
           }
-        },
-      );
-    });
-  }
-
-  _collapseNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      return node.setRecursive(/* prePredicate */ null, childNode => {
-        if (childNode.subscription != null) {
-          childNode.subscription.dispose();
-        }
-
-        if (childNode.uri !== node.uri) {
-          return childNode.set({
-            isExpanded: false,
-            isSelected: false,
-            subscription: null,
-          });
-        } else {
-          return childNode.set({isExpanded: false, subscription: null});
-        }
-      });
-    });
+        });
+      }),
+    );
   }
 
   _setDragHoveredNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._clearDragHover();
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.setIsDragHovered(true),
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.setIsDragHovered(true),
+      ),
     );
   }
 
   _unhoverNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.setIsDragHovered(false),
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.setIsDragHovered(false),
+      ),
     );
   }
 
@@ -1343,7 +1336,11 @@ export default class FileTreeStore {
    */
   _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._clearSelection();
-    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.setIsSelected(true),
+      ),
+    );
     this._setTrackedNode(rootKey, nodeKey);
     this._setSelectionRange(
       SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
@@ -1354,7 +1351,11 @@ export default class FileTreeStore {
    * Mark a node that has been focused, similar to selected, but only true after mouseup.
    */
   _setFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsFocused(true));
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.setIsFocused(true),
+      ),
+    );
   }
 
   /**
@@ -1362,8 +1363,10 @@ export default class FileTreeStore {
    */
   _setSelectedAndFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._clearSelection();
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: true, isFocused: true}),
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.set({isSelected: true, isFocused: true}),
+      ),
     );
     this._setTrackedNode(rootKey, nodeKey);
     this._setSelectionRange(
@@ -1372,15 +1375,21 @@ export default class FileTreeStore {
   }
 
   _addSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.setIsSelected(true),
+      ),
+    );
     this._setSelectionRange(
       SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
     );
   }
 
   _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: false, isFocused: false}),
+    this._setRoots(
+      updateNodeAtRoot(this._roots, rootKey, nodeKey, node =>
+        node.set({isSelected: false, isFocused: false}),
+      ),
     );
   }
 
@@ -2094,42 +2103,4 @@ class FileTreeStoreBfsIterator {
   traversedNode(): ?string {
     return this._currentlyTraversedNode;
   }
-}
-
-/**
- * Replace a node in the tree and return the new tree's root. The newNode is assumed to be prevNode
- * after some manipulateion done to it therefore they are assumed to belong to the same parent.
- *
- * An optional transformation can be provided which will be applied to all of the node's ancestors
- * (including the node itself).
- */
-function replaceNode(
-  prevNode: FileTreeNode,
-  newNode: FileTreeNode,
-  transform: (node: FileTreeNode) => FileTreeNode = node => node,
-): FileTreeNode {
-  const parent = prevNode.parent;
-  if (parent == null) {
-    return newNode;
-  }
-
-  const newParent = transform(parent.updateChild(newNode));
-  return replaceNode(parent, newParent, transform);
-}
-
-/**
- * Update a node or a branch under any of the roots it was found at
- */
-function updateNodeAtAllRoots(
-  roots: Roots,
-  nodeKey: NuclideUri,
-  transform: (node: FileTreeNode) => FileTreeNode,
-): Roots {
-  return roots.map(root => {
-    const node = root.find(nodeKey);
-    if (node == null) {
-      return root;
-    }
-    return replaceNode(node, transform(node));
-  });
 }

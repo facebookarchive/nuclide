@@ -11,8 +11,13 @@
 
 import type FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeAction} from '../lib/FileTreeDispatcher';
+import type Immutable from 'immutable';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {FileTreeNode} from './FileTreeNode';
 
 export type AppState = FileTreeStore;
+
+export type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
 
 export type Store = {
   getState(): AppState,
