@@ -688,3 +688,7 @@ export function openNextDuplicateDialog(
 export function openPasteDialog(): Action {
   return {type: ActionTypes.OPEN_PASTE_DIALOG};
 }
+
+export function clearSelectionRange(): Action {
+  return {type: ActionTypes.CLEAR_SELECTION_RANGE};
+}

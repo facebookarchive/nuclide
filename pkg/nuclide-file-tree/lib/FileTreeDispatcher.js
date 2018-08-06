@@ -591,9 +591,11 @@ export type FileTreeAction =
       nodes: Immutable.List<FileTreeNode>,
       onDidConfirm: (filePaths: Array<string>) => mixed,
     |}
-  | {|type: 'OPEN_PASTE_DIALOG'|};
+  | {|type: 'OPEN_PASTE_DIALOG'|}
+  | {|type: 'CLEAR_SELECTION_RANGE'|};
 
 export const ActionTypes = Object.freeze({
+  CLEAR_SELECTION_RANGE: 'CLEAR_SELECTION_RANGE',
   COLLAPSE_NODE: 'COLLAPSE_NODE',
   COLLAPSE_NODE_DEEP: 'COLLAPSE_NODE_DEEP',
   COLLAPSE_SELECTION: 'COLLAPSE_SELECTION',

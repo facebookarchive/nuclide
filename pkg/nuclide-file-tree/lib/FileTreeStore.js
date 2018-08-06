@@ -303,8 +303,8 @@ export default class FileTreeStore {
     const start = performance.now();
 
     switch (payload.type) {
-      case ActionTypes.DELETE_SELECTED_NODES:
-        this._deleteSelectedNodes();
+      case ActionTypes.CLEAR_SELECTION_RANGE:
+        this._clearSelectionRange();
         break;
       case ActionTypes.SET_CWD:
         this._setCwdKey(payload.rootKey);
@@ -1259,16 +1259,6 @@ export default class FileTreeStore {
       );
     } catch (e) {
       atom.notifications.addError('Failed to move entries: ' + e.message);
-    }
-  }
-
-  async _deleteSelectedNodes(): Promise<void> {
-    const selectedNodes = Selectors.getSelectedNodes(this);
-    try {
-      await FileTreeHgHelpers.deleteNodes(selectedNodes.toArray());
-      this._clearSelectionRange();
-    } catch (e) {
-      atom.notifications.addError('Failed to delete entries: ' + e.message);
     }
   }
 

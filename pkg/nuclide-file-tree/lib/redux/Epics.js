@@ -1060,6 +1060,26 @@ export function updateWorkingSetEpic(
     .ignoreElements();
 }
 
+export function deleteSelectedNodesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(ActionTypes.DELETE_SELECTED_NODES)
+    .mergeMap(async action => {
+      invariant(action.type === ActionTypes.DELETE_SELECTED_NODES);
+      const selectedNodes = Selectors.getSelectedNodes(store.getState());
+      try {
+        await FileTreeHgHelpers.deleteNodes(selectedNodes.toArray());
+        return Actions.clearSelectionRange();
+      } catch (e) {
+        atom.notifications.addError('Failed to delete entries: ' + e.message);
+      }
+      return null;
+    })
+    .filter(Boolean);
+}
+
 //
 // Helper functions
 //
