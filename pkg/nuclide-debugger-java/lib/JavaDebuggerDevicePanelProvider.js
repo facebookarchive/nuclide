@@ -22,11 +22,11 @@ import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 
-async function _createAndroidDebugAttachConfig(
+function _createAndroidDebugAttachConfig(
   targetUri: NuclideUri,
   device: Device,
   proc: Process,
-): Promise<IProcessConfig> {
+): IProcessConfig {
   const config = {
     deviceAndProcess: {
       device: {
@@ -77,7 +77,7 @@ export class JavaDebuggerDevicePanelProvider
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
     const debuggerService = await getDebuggerService();
-    const config = await _createAndroidDebugAttachConfig(host, device, proc);
+    const config = _createAndroidDebugAttachConfig(host, device, proc);
     debuggerService.startVspDebugging(config);
   }
 }
