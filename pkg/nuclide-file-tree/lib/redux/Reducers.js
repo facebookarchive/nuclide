@@ -1002,7 +1002,9 @@ function setSelectedNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): FileTreeStore {
-  return addSelectedNode(clearSelection(state), rootKey, nodeKey);
+  let nextState = clearSelection(state);
+  nextState = setTrackedNode(nextState, rootKey, nodeKey);
+  return addSelectedNode(nextState, rootKey, nodeKey);
 }
 
 function setSelectionRange(
