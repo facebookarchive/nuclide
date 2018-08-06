@@ -21,247 +21,250 @@ import Dispatcher from '../../commons-node/Dispatcher';
 
 export type FileTreeAction =
   | {
-      actionType: 'COLLAPSE_NODE',
+      type: 'COLLAPSE_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'COLLAPSE_NODE_DEEP',
+      type: 'COLLAPSE_NODE_DEEP',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'DELETE_SELECTED_NODES',
+      type: 'DELETE_SELECTED_NODES',
     }
   | {
-      actionType: 'EXPAND_NODE',
+      type: 'EXPAND_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
+      type: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
       excludeVcsIgnoredPaths: boolean,
     }
   | {
-      actionType: 'SET_HIDE_VCS_IGNORED_PATHS',
+      type: 'SET_HIDE_VCS_IGNORED_PATHS',
       hideVcsIgnoredPaths: boolean,
     }
   | {
-      actionType: 'EXPAND_NODE_DEEP',
+      type: 'EXPAND_NODE_DEEP',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_CWD',
+      type: 'SET_CWD',
       rootKey: ?NuclideUri,
     }
   | {
-      actionType: 'SET_CWD_API',
+      type: 'SET_CWD_API',
       cwdApi: ?CwdApi,
     }
   | {
-      actionType: 'SET_HIDE_IGNORED_NAMES',
+      type: 'SET_HIDE_IGNORED_NAMES',
       hideIgnoredNames: boolean,
     }
   | {
-      actionType: 'SET_IS_CALCULATING_CHANGES',
+      type: 'SET_IS_CALCULATING_CHANGES',
       isCalculatingChanges: boolean,
     }
   | {
-      actionType: 'SET_IGNORED_NAMES',
+      type: 'SET_IGNORED_NAMES',
       ignoredNames: Array<string>,
     }
   | {
-      actionType: 'SET_ROOT_KEYS',
+      type: 'SET_ROOT_KEYS',
       rootKeys: Array<NuclideUri>,
     }
   | {
-      actionType: 'SET_TRACKED_NODE',
+      type: 'SET_TRACKED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'CLEAR_TRACKED_NODE',
+      type: 'CLEAR_TRACKED_NODE',
     }
   | {
-      actionType: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
+      type: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
     }
   | {
-      actionType: 'START_REORDER_DRAG',
+      type: 'START_REORDER_DRAG',
       draggedRootKey: NuclideUri,
     }
   | {
-      actionType: 'END_REORDER_DRAG',
+      type: 'END_REORDER_DRAG',
     }
   | {
-      actionType: 'REORDER_DRAG_INTO',
+      type: 'REORDER_DRAG_INTO',
       dragTargetNodeKey: NuclideUri,
     }
   | {
-      actionType: 'REORDER_ROOTS',
+      type: 'REORDER_ROOTS',
     }
   | {
-      actionType: 'MOVE_TO_NODE',
+      type: 'MOVE_TO_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_USE_PREVIEW_TABS',
+      type: 'SET_USE_PREVIEW_TABS',
       usePreviewTabs: boolean,
     }
   | {
-      actionType: 'SET_FOCUS_EDITOR_ON_FILE_SELECTION',
+      type: 'SET_FOCUS_EDITOR_ON_FILE_SELECTION',
       focusEditorOnFileSelection: boolean,
     }
   | {
-      actionType: 'SET_USE_PREFIX_NAV',
+      type: 'SET_USE_PREFIX_NAV',
       usePrefixNav: boolean,
     }
   | {
-      actionType: 'SET_AUTO_EXPAND_SINGLE_CHILD',
+      type: 'SET_AUTO_EXPAND_SINGLE_CHILD',
       autoExpandSingleChild: boolean,
     }
   | {
-      actionType: 'SET_VCS_STATUSES', // VCS = version control system
+      type: 'SET_VCS_STATUSES', // VCS = version control system
       rootKey: NuclideUri,
       vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
     }
   | {
-      actionType: 'SET_REPOSITORIES',
+      type: 'SET_REPOSITORIES',
       // Immutable.Set<atom$Repository>, but since we don't have typedefs for immutable let's just be
       // honest here.
       repositories: any,
     }
   | {
-      actionType: 'SET_WORKING_SET',
+      type: 'SET_WORKING_SET',
       workingSet: WorkingSet,
     }
   | {
-      actionType: 'SET_OPEN_FILES_WORKING_SET',
+      type: 'SET_OPEN_FILES_WORKING_SET',
       openFilesWorkingSet: WorkingSet,
     }
   | {
-      actionType: 'SET_WORKING_SETS_STORE',
+      type: 'SET_WORKING_SETS_STORE',
       workingSetsStore: ?WorkingSetsStore,
     }
   | {
-      actionType: 'START_EDITING_WORKING_SET',
+      type: 'START_EDITING_WORKING_SET',
       editedWorkingSet: WorkingSet,
     }
   | {
-      actionType: 'FINISH_EDITING_WORKING_SET',
+      type: 'FINISH_EDITING_WORKING_SET',
     }
   | {
-      actionType: 'CHECK_NODE',
+      type: 'CHECK_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'UNCHECK_NODE',
+      type: 'UNCHECK_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_DRAG_HOVERED_NODE',
+      type: 'SET_DRAG_HOVERED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'UNHOVER_NODE',
+      type: 'UNHOVER_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_SELECTED_NODE',
+      type: 'SET_SELECTED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_FOCUSED_NODE',
+      type: 'SET_FOCUSED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'ADD_SELECTED_NODE',
+      type: 'ADD_SELECTED_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'UNSELECT_NODE',
+      type: 'UNSELECT_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'RANGE_SELECT_TO_NODE',
+      type: 'RANGE_SELECT_TO_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'RANGE_SELECT_UP',
+      type: 'RANGE_SELECT_UP',
     }
   | {
-      actionType: 'RANGE_SELECT_DOWN',
+      type: 'RANGE_SELECT_DOWN',
     }
   | {
-      actionType: 'MOVE_SELECTION_UP',
+      type: 'MOVE_SELECTION_UP',
     }
   | {
-      actionType: 'MOVE_SELECTION_DOWN',
+      type: 'MOVE_SELECTION_DOWN',
     }
   | {
-      actionType: 'MOVE_SELECTION_TO_TOP',
+      type: 'MOVE_SELECTION_TO_TOP',
     }
   | {
-      actionType: 'MOVE_SELECTION_TO_BOTTOM',
+      type: 'MOVE_SELECTION_TO_BOTTOM',
     }
   | {
-      actionType: 'ENSURE_CHILD_NODE',
+      type: 'ENSURE_CHILD_NODE',
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'CLEAR_FILTER',
+      type: 'CLEAR_FILTER',
     }
   | {
-      actionType: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
+      type: 'ADD_EXTRA_PROJECT_SELECTION_CONTENT',
       content: React.Element<any>,
     }
   | {
-      actionType: 'REMOVE_EXTRA_PROJECT_SELECTION_CONTENT',
+      type: 'REMOVE_EXTRA_PROJECT_SELECTION_CONTENT',
       content: React.Element<any>,
     }
   | {
-      actionType: 'SET_FOLDERS_EXPANDED',
+      type: 'SET_FOLDERS_EXPANDED',
       foldersExpanded: boolean,
     }
   | {
-      actionType: 'SET_OPEN_FILES_EXPANDED',
+      type: 'SET_OPEN_FILES_EXPANDED',
       openFilesExpanded: boolean,
     }
   | {
-      actionType: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
+      type: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
       uncommittedChangesExpanded: boolean,
     }
   | {
-      actionType: 'INVALIDATE_REMOVED_FOLDER',
+      type: 'INVALIDATE_REMOVED_FOLDER',
     }
   | {
-      actionType: 'SET_TARGET_NODE',
+      type: 'SET_TARGET_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'UPDATE_GENERATED_STATUS',
+      type: 'UPDATE_GENERATED_STATUS',
       filesToCheck: Iterable<NuclideUri>,
     }
   | {
-      actionType: 'ADD_FILTER_LETTER',
+      type: 'ADD_FILTER_LETTER',
       letter: string,
     }
   | {
-      actionType: 'REMOVE_FILTER_LETTER',
+      type: 'REMOVE_FILTER_LETTER',
     }
   | {
-      actionType: 'RESET',
+      type: 'RESET',
+    }
+  | {
+      type: 'UPDATE_MAX_COMPONENT_WIDTH',
     };
 
 export const ActionTypes = Object.freeze({
@@ -328,9 +331,9 @@ export const ActionTypes = Object.freeze({
   RESET: 'RESET',
 });
 
-// Flow hack: Every FileTreeAction actionType must be in ActionTypes.
+// Flow hack: Every FileTreeAction type must be in ActionTypes.
 // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-(('': $PropertyType<FileTreeAction, 'actionType'>): $Keys<typeof ActionTypes>);
+(('': $PropertyType<FileTreeAction, 'type'>): $Keys<typeof ActionTypes>);
 
 let instance: ?FileTreeDispatcher;
 

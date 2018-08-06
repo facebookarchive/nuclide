@@ -302,7 +302,7 @@ export default class FileTreeStore {
     const {performance} = global;
     const start = performance.now();
 
-    switch (payload.actionType) {
+    switch (payload.type) {
       case ActionTypes.DELETE_SELECTED_NODES:
         this._deleteSelectedNodes();
         break;
@@ -489,14 +489,14 @@ export default class FileTreeStore {
 
     const end = performance.now();
 
-    let tracker = actionTrackers.get(payload.actionType);
+    let tracker = actionTrackers.get(payload.type);
     if (tracker == null) {
       tracker = new HistogramTracker(
-        `file-tree-action:${payload.actionType}`,
+        `file-tree-action:${payload.type}`,
         1000,
         10,
       );
-      actionTrackers.set(payload.actionType, tracker);
+      actionTrackers.set(payload.type, tracker);
     }
 
     tracker.track(end - start);

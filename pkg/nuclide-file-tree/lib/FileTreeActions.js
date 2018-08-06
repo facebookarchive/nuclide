@@ -78,41 +78,41 @@ export default class FileTreeActions {
 
   setCwd(rootKey: ?string): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_CWD,
+      type: ActionTypes.SET_CWD,
       rootKey,
     });
   }
 
   setRootKeys(rootKeys: Array<string>): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_ROOT_KEYS,
+      type: ActionTypes.SET_ROOT_KEYS,
       rootKeys,
     });
   }
 
   clearFilter(): void {
     this._store.dispatch({
-      actionType: ActionTypes.CLEAR_FILTER,
+      type: ActionTypes.CLEAR_FILTER,
     });
   }
 
   addExtraProjectSelectionContent(content: React.Element<any>): void {
     this._store.dispatch({
-      actionType: ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
+      type: ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
       content,
     });
   }
 
   removeExtraProjectSelectionContent(content: React.Element<any>): void {
     this._store.dispatch({
-      actionType: ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
+      type: ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
       content,
     });
   }
 
   expandNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.EXPAND_NODE,
+      type: ActionTypes.EXPAND_NODE,
       rootKey,
       nodeKey,
     });
@@ -120,14 +120,14 @@ export default class FileTreeActions {
 
   expandNodeDeep(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.EXPAND_NODE_DEEP,
+      type: ActionTypes.EXPAND_NODE_DEEP,
       rootKey,
       nodeKey,
     });
   }
 
   deleteSelectedNodes(): void {
-    this._store.dispatch({actionType: ActionTypes.DELETE_SELECTED_NODES});
+    this._store.dispatch({type: ActionTypes.DELETE_SELECTED_NODES});
   }
 
   // Makes sure a specific child exists for a given node. If it does not exist, temporarily
@@ -135,14 +135,14 @@ export default class FileTreeActions {
   // in a tree.
   ensureChildNode(nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.ENSURE_CHILD_NODE,
+      type: ActionTypes.ENSURE_CHILD_NODE,
       nodeKey,
     });
   }
 
   collapseNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.COLLAPSE_NODE,
+      type: ActionTypes.COLLAPSE_NODE,
       rootKey,
       nodeKey,
     });
@@ -150,7 +150,7 @@ export default class FileTreeActions {
 
   collapseNodeDeep(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.COLLAPSE_NODE_DEEP,
+      type: ActionTypes.COLLAPSE_NODE_DEEP,
       rootKey,
       nodeKey,
     });
@@ -158,42 +158,42 @@ export default class FileTreeActions {
 
   setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
+      type: ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
       excludeVcsIgnoredPaths,
     });
   }
 
   setHideVcsIgnoredPaths(hideVcsIgnoredPaths: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_HIDE_VCS_IGNORED_PATHS,
+      type: ActionTypes.SET_HIDE_VCS_IGNORED_PATHS,
       hideVcsIgnoredPaths,
     });
   }
 
   setHideIgnoredNames(hideIgnoredNames: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_HIDE_IGNORED_NAMES,
+      type: ActionTypes.SET_HIDE_IGNORED_NAMES,
       hideIgnoredNames,
     });
   }
 
   setIsCalculatingChanges(isCalculatingChanges: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_IS_CALCULATING_CHANGES,
+      type: ActionTypes.SET_IS_CALCULATING_CHANGES,
       isCalculatingChanges,
     });
   }
 
   setIgnoredNames(ignoredNames: Array<string>): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_IGNORED_NAMES,
+      type: ActionTypes.SET_IGNORED_NAMES,
       ignoredNames,
     });
   }
 
   setTrackedNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_TRACKED_NODE,
+      type: ActionTypes.SET_TRACKED_NODE,
       nodeKey,
       rootKey,
     });
@@ -201,45 +201,45 @@ export default class FileTreeActions {
 
   clearTrackedNode(): void {
     this._store.dispatch({
-      actionType: ActionTypes.CLEAR_TRACKED_NODE,
+      type: ActionTypes.CLEAR_TRACKED_NODE,
     });
   }
 
   clearTrackedNodeIfNotLoading(): void {
     this._store.dispatch({
-      actionType: ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING,
+      type: ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING,
     });
   }
 
   startReorderDrag(draggedRootKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.START_REORDER_DRAG,
+      type: ActionTypes.START_REORDER_DRAG,
       draggedRootKey,
     });
   }
 
   endReorderDrag(): void {
     this._store.dispatch({
-      actionType: ActionTypes.END_REORDER_DRAG,
+      type: ActionTypes.END_REORDER_DRAG,
     });
   }
 
   reorderDragInto(dragTargetNodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.REORDER_DRAG_INTO,
+      type: ActionTypes.REORDER_DRAG_INTO,
       dragTargetNodeKey,
     });
   }
 
   reorderRoots(): void {
     this._store.dispatch({
-      actionType: ActionTypes.REORDER_ROOTS,
+      type: ActionTypes.REORDER_ROOTS,
     });
   }
 
   moveToNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.MOVE_TO_NODE,
+      type: ActionTypes.MOVE_TO_NODE,
       nodeKey,
       rootKey,
     });
@@ -247,28 +247,28 @@ export default class FileTreeActions {
 
   setUsePreviewTabs(usePreviewTabs: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_USE_PREVIEW_TABS,
+      type: ActionTypes.SET_USE_PREVIEW_TABS,
       usePreviewTabs,
     });
   }
 
   setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
+      type: ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
       focusEditorOnFileSelection,
     });
   }
 
   setUsePrefixNav(usePrefixNav: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_USE_PREFIX_NAV,
+      type: ActionTypes.SET_USE_PREFIX_NAV,
       usePrefixNav,
     });
   }
 
   setAutoExpandSingleChild(autoExpandSingleChild: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
+      type: ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
       autoExpandSingleChild,
     });
   }
@@ -285,13 +285,13 @@ export default class FileTreeActions {
     if (node.isContainer) {
       if (node.isExpanded) {
         this._store.dispatch({
-          actionType: ActionTypes.COLLAPSE_NODE,
+          type: ActionTypes.COLLAPSE_NODE,
           nodeKey,
           rootKey,
         });
       } else {
         this._store.dispatch({
-          actionType: ActionTypes.EXPAND_NODE,
+          type: ActionTypes.EXPAND_NODE,
           nodeKey,
           rootKey,
         });
@@ -333,7 +333,7 @@ export default class FileTreeActions {
     vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
   ): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_VCS_STATUSES,
+      type: ActionTypes.SET_VCS_STATUSES,
       rootKey,
       vcsStatuses,
     });
@@ -341,7 +341,7 @@ export default class FileTreeActions {
 
   invalidateRemovedFolder(): void {
     this._store.dispatch({
-      actionType: ActionTypes.INVALIDATE_REMOVED_FOLDER,
+      type: ActionTypes.INVALIDATE_REMOVED_FOLDER,
     });
   }
 
@@ -379,7 +379,7 @@ export default class FileTreeActions {
       rootKeysForRepository.keys(),
     );
     this._store.dispatch({
-      actionType: ActionTypes.SET_REPOSITORIES,
+      type: ActionTypes.SET_REPOSITORIES,
       repositories: nextRepos,
     });
 
@@ -438,41 +438,41 @@ export default class FileTreeActions {
       });
     }
     this._store.dispatch({
-      actionType: ActionTypes.SET_WORKING_SET,
+      type: ActionTypes.SET_WORKING_SET,
       workingSet,
     });
   }
 
   updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_OPEN_FILES_WORKING_SET,
+      type: ActionTypes.SET_OPEN_FILES_WORKING_SET,
       openFilesWorkingSet,
     });
   }
 
   updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_WORKING_SETS_STORE,
+      type: ActionTypes.SET_WORKING_SETS_STORE,
       workingSetsStore,
     });
   }
 
   startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
     this._store.dispatch({
-      actionType: ActionTypes.START_EDITING_WORKING_SET,
+      type: ActionTypes.START_EDITING_WORKING_SET,
       editedWorkingSet,
     });
   }
 
   finishEditingWorkingSet(): void {
     this._store.dispatch({
-      actionType: ActionTypes.FINISH_EDITING_WORKING_SET,
+      type: ActionTypes.FINISH_EDITING_WORKING_SET,
     });
   }
 
   checkNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.CHECK_NODE,
+      type: ActionTypes.CHECK_NODE,
       rootKey,
       nodeKey,
     });
@@ -480,7 +480,7 @@ export default class FileTreeActions {
 
   uncheckNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.UNCHECK_NODE,
+      type: ActionTypes.UNCHECK_NODE,
       rootKey,
       nodeKey,
     });
@@ -488,7 +488,7 @@ export default class FileTreeActions {
 
   setDragHoveredNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_DRAG_HOVERED_NODE,
+      type: ActionTypes.SET_DRAG_HOVERED_NODE,
       rootKey,
       nodeKey,
     });
@@ -496,7 +496,7 @@ export default class FileTreeActions {
 
   setSelectedNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_SELECTED_NODE,
+      type: ActionTypes.SET_SELECTED_NODE,
       rootKey,
       nodeKey,
     });
@@ -504,7 +504,7 @@ export default class FileTreeActions {
 
   setFocusedNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_FOCUSED_NODE,
+      type: ActionTypes.SET_FOCUSED_NODE,
       rootKey,
       nodeKey,
     });
@@ -512,7 +512,7 @@ export default class FileTreeActions {
 
   addSelectedNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.ADD_SELECTED_NODE,
+      type: ActionTypes.ADD_SELECTED_NODE,
       rootKey,
       nodeKey,
     });
@@ -520,7 +520,7 @@ export default class FileTreeActions {
 
   unselectNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.UNSELECT_NODE,
+      type: ActionTypes.UNSELECT_NODE,
       rootKey,
       nodeKey,
     });
@@ -528,7 +528,7 @@ export default class FileTreeActions {
 
   rangeSelectToNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_TO_NODE,
+      type: ActionTypes.RANGE_SELECT_TO_NODE,
       rootKey,
       nodeKey,
     });
@@ -536,19 +536,19 @@ export default class FileTreeActions {
 
   rangeSelectUp(): void {
     this._store.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_UP,
+      type: ActionTypes.RANGE_SELECT_UP,
     });
   }
 
   rangeSelectDown(): void {
     this._store.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_DOWN,
+      type: ActionTypes.RANGE_SELECT_DOWN,
     });
   }
 
   unhoverNode(rootKey: string, nodeKey: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.UNHOVER_NODE,
+      type: ActionTypes.UNHOVER_NODE,
       rootKey,
       nodeKey,
     });
@@ -556,52 +556,52 @@ export default class FileTreeActions {
 
   moveSelectionUp(): void {
     this._store.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_UP,
+      type: ActionTypes.MOVE_SELECTION_UP,
     });
   }
 
   moveSelectionDown(): void {
     this._store.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_DOWN,
+      type: ActionTypes.MOVE_SELECTION_DOWN,
     });
   }
 
   moveSelectionToTop(): void {
     this._store.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_TO_TOP,
+      type: ActionTypes.MOVE_SELECTION_TO_TOP,
     });
   }
 
   moveSelectionToBottom(): void {
     this._store.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_TO_BOTTOM,
+      type: ActionTypes.MOVE_SELECTION_TO_BOTTOM,
     });
   }
 
   setOpenFilesExpanded(openFilesExpanded: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_OPEN_FILES_EXPANDED,
+      type: ActionTypes.SET_OPEN_FILES_EXPANDED,
       openFilesExpanded,
     });
   }
 
   setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
+      type: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
       uncommittedChangesExpanded,
     });
   }
 
   setFoldersExpanded(foldersExpanded: boolean): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_FOLDERS_EXPANDED,
+      type: ActionTypes.SET_FOLDERS_EXPANDED,
       foldersExpanded,
     });
   }
 
   setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._store.dispatch({
-      actionType: ActionTypes.SET_TARGET_NODE,
+      type: ActionTypes.SET_TARGET_NODE,
       rootKey,
       nodeKey,
     });
@@ -609,27 +609,27 @@ export default class FileTreeActions {
 
   updateGeneratedStatus(filesToCheck: Iterable<NuclideUri>): void {
     this._store.dispatch({
-      actionType: ActionTypes.UPDATE_GENERATED_STATUS,
+      type: ActionTypes.UPDATE_GENERATED_STATUS,
       filesToCheck,
     });
   }
 
   addFilterLetter(letter: string): void {
     this._store.dispatch({
-      actionType: ActionTypes.ADD_FILTER_LETTER,
+      type: ActionTypes.ADD_FILTER_LETTER,
       letter,
     });
   }
 
   removeFilterLetter(): mixed {
     this._store.dispatch({
-      actionType: ActionTypes.REMOVE_FILTER_LETTER,
+      type: ActionTypes.REMOVE_FILTER_LETTER,
     });
   }
 
   reset(): mixed {
     this._store.dispatch({
-      actionType: ActionTypes.RESET,
+      type: ActionTypes.RESET,
     });
   }
 
@@ -842,7 +842,7 @@ export default class FileTreeActions {
     }
 
     this._store.dispatch({
-      actionType: ActionTypes.SET_CWD_API,
+      type: ActionTypes.SET_CWD_API,
       cwdApi,
     });
   }
