@@ -11,41 +11,19 @@
  */
 import {FileTreeNode} from '../lib/FileTreeNode';
 import * as Immutable from 'immutable';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
-
-const CONF = {
-  vcsStatuses: Immutable.Map(),
-  fileChanges: Immutable.Map(),
-  workingSet: new WorkingSet(),
-  editedWorkingSet: new WorkingSet(),
-  hideIgnoredNames: true,
-  hideVcsIgnoredPaths: true,
-  excludeVcsIgnoredPaths: true,
-  ignoredPatterns: Immutable.Set(),
-  repositories: Immutable.Set(),
-  usePreviewTabs: true,
-  focusEditorOnFileSelection: false,
-  isEditingWorkingSet: false,
-  openFilesWorkingSet: new WorkingSet(),
-  reposByRoot: {},
-  selectionManager: new FileTreeSelectionManager(() => {}),
-};
+import createStore from '../lib/redux/createStore';
 
 describe('FileTreeNode', () => {
+  let store;
+  beforeEach(() => {
+    store = createStore();
+  });
   it('properly sets the default properties', () => {
-    const node = new FileTreeNode(
-      {
-        uri: '/abc/def',
-        rootUri: '/abc/',
-      },
-      CONF,
-    );
+    const node = new FileTreeNode({uri: '/abc/def', rootUri: '/abc/'}, store);
 
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
     expect(node.isExpanded).toBe(false);
-    expect(node.isSelected()).toBe(false);
     expect(node.isLoading).toBe(false);
     expect(node.isCwd).toBe(false);
     expect(node.children.isEmpty()).toBe(true);
@@ -60,18 +38,16 @@ describe('FileTreeNode', () => {
         uri: '/abc/def',
         rootUri: '/abc/',
         isExpanded: true,
-        isSelected: true,
         isLoading: true,
         isCwd: true,
         children,
       },
-      CONF,
+      store,
     );
 
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
     expect(node.isExpanded).toBe(true);
-    expect(node.isSelected()).toBe(true);
     expect(node.isLoading).toBe(true);
     expect(node.isCwd).toBe(true);
     expect(node.children).toBe(children);
@@ -81,11 +57,8 @@ describe('FileTreeNode', () => {
 
   it('derives properties', () => {
     const node = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi',
-        rootUri: '/abc/',
-      },
-      CONF,
+      {uri: '/abc/def/ghi', rootUri: '/abc/'},
+      store,
     );
 
     // Derived
@@ -102,19 +75,13 @@ describe('FileTreeNode', () => {
 
   it('preserves instance on non-modifying updates', () => {
     const child1 = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi1',
-        rootUri: '/abc/',
-      },
-      CONF,
+      {uri: '/abc/def/ghi1', rootUri: '/abc/'},
+      store,
     );
 
     const child2 = new FileTreeNode(
-      {
-        uri: '/abc/def/ghi2',
-        rootUri: '/abc/',
-      },
-      CONF,
+      {uri: '/abc/def/ghi2', rootUri: '/abc/'},
+      store,
     );
 
     const children = Immutable.OrderedMap([
@@ -131,13 +98,11 @@ describe('FileTreeNode', () => {
         isCwd: true,
         children,
       },
-      CONF,
+      store,
     );
 
     expect(node.isExpanded).toBe(true);
     let updatedNode = node.setIsExpanded(true);
-    expect(updatedNode).toBe(node);
-    updatedNode = node.setIsSelected(false);
     expect(updatedNode).toBe(node);
     updatedNode = node.setIsLoading(false);
     expect(updatedNode).toBe(node);
@@ -145,9 +110,7 @@ describe('FileTreeNode', () => {
     expect(updatedNode).toBe(node);
     updatedNode = node.setChildren(Immutable.OrderedMap(children));
     expect(updatedNode).toBe(node);
-    updatedNode = node.setRecursive(null, child => child.setIsSelected(false));
-    expect(updatedNode).toBe(node);
-    updatedNode = node.updateChild(child1.setIsSelected(false));
+    updatedNode = node.setRecursive(null, child => child.setIsLoading(false));
     expect(updatedNode).toBe(node);
     updatedNode = node.set({
       isExpanded: true,
@@ -157,21 +120,21 @@ describe('FileTreeNode', () => {
     });
     expect(updatedNode).toBe(node);
 
-    updatedNode = node.updateChild(child2.setIsSelected(true));
+    updatedNode = node.updateChild(child2.setIsExpanded(false));
     expect(updatedNode).toBe(node);
   });
 
   it('finds nodes', () => {
     const rootUri = '/r/';
-    const nodeABC = new FileTreeNode({uri: '/r/A/B/C/', rootUri}, CONF);
-    const nodeABD = new FileTreeNode({uri: '/r/A/B/D/', rootUri}, CONF);
+    const nodeABC = new FileTreeNode({uri: '/r/A/B/C/', rootUri}, store);
+    const nodeABD = new FileTreeNode({uri: '/r/A/B/D/', rootUri}, store);
     let children = FileTreeNode.childrenFromArray([nodeABC, nodeABD]);
-    const nodeAB = new FileTreeNode({uri: '/r/A/B/', rootUri, children}, CONF);
+    const nodeAB = new FileTreeNode({uri: '/r/A/B/', rootUri, children}, store);
     children = FileTreeNode.childrenFromArray([nodeAB]);
-    const nodeA = new FileTreeNode({uri: '/r/A/', rootUri, children}, CONF);
-    const nodeB = new FileTreeNode({uri: '/r/B/', rootUri}, CONF);
+    const nodeA = new FileTreeNode({uri: '/r/A/', rootUri, children}, store);
+    const nodeB = new FileTreeNode({uri: '/r/B/', rootUri}, store);
     children = FileTreeNode.childrenFromArray([nodeA, nodeB]);
-    const root = new FileTreeNode({uri: '/r/', rootUri, children}, CONF);
+    const root = new FileTreeNode({uri: '/r/', rootUri, children}, store);
 
     expect(root.find('/r/')).toBe(root);
     expect(root.find('/r/A/')).toBe(nodeA);
