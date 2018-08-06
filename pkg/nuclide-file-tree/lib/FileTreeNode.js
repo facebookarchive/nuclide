@@ -475,7 +475,7 @@ export class FileTreeNode {
    * const newNode = node.set({isExpanded: true});
    */
   set(props: ImmutableNodeSettableFields): FileTreeNode {
-    return this._newNode(props);
+    return this._propsAreTheSame(props) ? this : this._newNode(props);
   }
 
   /**
