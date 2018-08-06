@@ -17,7 +17,7 @@ import type {RemoteFile} from '../../../nuclide-remote-connection';
 import type {File} from 'atom';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {FileTreeStore} from '../types';
+import type {FileTreeStore, MiddlewareStore} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 
@@ -63,7 +63,7 @@ const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
 export function confirmNodeEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.CONFIRM_NODE)
@@ -141,7 +141,7 @@ export function openEntrySplitEpic(
  */
 export function updateRepositoriesEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   // TODO: This isn't really the best way to manage these. Instead we should use something like
   // `reconcileSetDiffs()`. It's only done this way because this was refactored from a giant class
@@ -307,7 +307,7 @@ export function updateRepositoriesEpic(
 
 export function revealNodeKeyEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.REVEAL_NODE_KEY)
@@ -324,6 +324,7 @@ export function revealNodeKeyEpic(
 
 export function revealFilePathEpic(
   actions: ActionsObservable<Action>,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.REVEAL_FILE_PATH).switchMap(action => {
     invariant(action.type === ActionTypes.REVEAL_FILE_PATH);
@@ -403,7 +404,7 @@ export function openAndRevealDirectoryPathEpic(
 
 export function updateRootDirectoriesEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.UPDATE_ROOT_DIRECTORIES)
@@ -424,7 +425,7 @@ export function updateRootDirectoriesEpic(
 
 export function setCwdToSelectionEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.SET_CWD_TO_SELECTION)
@@ -495,7 +496,7 @@ export function setRemoteProjectsServiceEpic(
  */
 export function collapseSelectionEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.COLLAPSE_SELECTION)
@@ -538,7 +539,7 @@ export function collapseSelectionEpic(
 
 export function collapseAllEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.COLLAPSE_ALL).switchMap(() => {
     const roots = store.getState()._roots;
@@ -552,7 +553,7 @@ export function collapseAllEpic(
 
 export function deleteSelectionEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.DELETE_SELECTION)
@@ -615,7 +616,7 @@ export function deleteSelectionEpic(
  */
 export function expandSelectionEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.EXPAND_SELECTION).switchMap(action => {
     invariant(action.type === ActionTypes.EXPAND_SELECTION);
@@ -659,7 +660,7 @@ export function expandSelectionEpic(
 
 export function openSelectedEntryEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.OPEN_SELECTED_ENTRY).switchMap(() => {
     const resultActions = [Actions.clearFilter()];
@@ -678,7 +679,7 @@ export function openSelectedEntryEpic(
 
 export function openSelectedEntrySplitEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.OPEN_SELECTED_ENTRY_SPLIT)
@@ -707,7 +708,7 @@ export function openSelectedEntrySplitEpic(
 
 export function removeRootFolderSelection(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.REMOVE_ROOT_FOLDER_SELECTION)
@@ -723,7 +724,7 @@ export function removeRootFolderSelection(
 
 export function copyFilenamesWithDir(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.COPY_FILENAMES_WITH_DIR)
@@ -768,7 +769,7 @@ export function copyFilenamesWithDir(
 
 export function openAddFolderDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_ADD_FOLDER_DIALOG)
@@ -1879,7 +1880,7 @@ function expandNodeDeep(
 ): Promise<void> {
   // Stop the traversal after 100 nodes were added to the tree
   const itNodes = new FileTreeStoreBfsIterator(
-    this,
+    store,
     rootKey,
     nodeKey,
     /* limit */ 100,

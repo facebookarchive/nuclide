@@ -32,6 +32,12 @@ export type Store = {
   subscribe(cb: (AppState) => mixed): () => mixed,
 };
 
+// Middleware does not get passed the subscribe function
+export type MiddlewareStore = {
+  getState(): AppState,
+  dispatch(action: Action): void,
+};
+
 export type Action = FileTreeAction;
 
 export type ExportStoreData = {
