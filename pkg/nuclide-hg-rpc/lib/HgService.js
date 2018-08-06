@@ -205,7 +205,7 @@ export type RevisionFileChanges = {
 
 export type VcsLogEntry = {
   node: string,
-  user: string,
+  author: string,
   desc: string,
   date: [number, number],
 };
@@ -1594,7 +1594,7 @@ export async function log(
   filePaths: Array<NuclideUri>,
   limit?: ?number,
 ): Promise<VcsLogResponse> {
-  const args = ['log', '-Tjson'];
+  const args = ['log', '-T', '{dict(node|short, desc, date, author)|json}\n'];
   if (limit != null && limit > 0) {
     args.push('--limit', String(limit));
   }
@@ -1606,7 +1606,10 @@ export async function log(
     cwd: workingDirectory,
   };
   const result = await hgAsyncExecute(args, execOptions);
-  const entries = JSON.parse(result.stdout);
+  const entries = result.stdout
+    .split('\n')
+    .filter(s => s !== '')
+    .map(JSON.parse);
   return {entries};
 }
 

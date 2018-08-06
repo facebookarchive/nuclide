@@ -244,7 +244,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         </td>
         {differentialCell}
         <td className="nuclide-vcs-log-author-cell">
-          {shortNameForAuthor(logEntry.user)}
+          {shortNameForAuthor(logEntry.author)}
         </td>
         <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
           {parseFirstLine(logEntry.desc)}
