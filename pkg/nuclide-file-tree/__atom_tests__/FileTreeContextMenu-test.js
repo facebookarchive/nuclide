@@ -14,14 +14,15 @@ import invariant from 'assert';
 import FileTreeContextMenu from '../lib/FileTreeContextMenu';
 import {EVENT_HANDLER_SELECTOR} from '../lib/FileTreeConstants';
 import waitsFor from '../../../jest/waits_for';
-import FileTreeStore from '../lib/FileTreeStore';
+import createStore from '../lib/redux/createStore';
 import type {FileTreeContextMenuItem} from '../lib/FileTreeContextMenu';
 
 describe('FileTreeContextMenu', () => {
   let menu: FileTreeContextMenu;
 
   beforeEach(async () => {
-    menu = new FileTreeContextMenu(new FileTreeStore());
+    const store = createStore();
+    menu = new FileTreeContextMenu(store);
     await waitsFor(() => fileTreeItemsOrNull() != null);
   });
 

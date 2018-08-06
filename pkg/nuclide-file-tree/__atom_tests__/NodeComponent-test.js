@@ -11,31 +11,30 @@
  */
 /* global Element */
 
+import {Provider} from 'react-redux';
 import {ActionTypes} from '../lib/FileTreeDispatcher';
-import FileTreeStore from '../lib/FileTreeStore';
 import {FileTreeNode} from '../lib/FileTreeNode';
-import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import * as Actions from '../lib/redux/Actions';
+import FileTreeEntryComponent from '../components/FileTreeEntryComponent';
 import invariant from 'assert';
 import * as Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
-import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 import createStore from '../lib/redux/createStore';
+import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
+import * as SelectionActions from '../lib/redux/SelectionActions';
 
 function renderEntryComponentIntoDocument(
-  componentKlass: Object,
+  Component: Object,
   store,
   props: Object = {},
   conf: Object = {},
 ): React.Component<any, any> {
-  const selectionManager = new FileTreeSelectionManager(() => {});
   const nodeProps = {
     isExpanded: false,
     isLoading: false,
-    isSelected: false,
     isCwd: false,
     ...props,
   };
@@ -53,39 +52,41 @@ function renderEntryComponentIntoDocument(
     isEditingWorkingSet: false,
     openFilesWorkingSet: new WorkingSet(),
     reposByRoot: {},
-    selectionManager,
     ...conf,
   };
 
   const node = new FileTreeNode(nodeProps, nodeConf);
+  store.dispatch(SelectionActions.focus(node));
   return TestUtils.renderIntoDocument(
-    React.createElement(componentKlass, {
-      store,
-      node,
-      selectedNodes: selectionManager.selectedNodes(),
-      focusedNodes: selectionManager.focusedNodes(),
-    }),
+    <Provider store={store}>
+      <Component
+        node={node}
+        selectedNodes={Selectors.getSelectedNodes(store.getState()).toSet()}
+        focusedNodes={Selectors.getFocusedNodes(store.getState()).toSet()}
+      />
+    </Provider>,
   );
 }
 
 describe('Directory FileTreeEntryComponent', () => {
-  const store = createStore(new FileTreeStore());
+  let store;
+  beforeEach(() => {
+    store = createStore();
+    jest.spyOn(store, 'dispatch');
+  });
 
   describe('when expanding/collapsing dir component', () => {
-    beforeEach(() => {
-      jest.spyOn(store, 'dispatch');
-    });
-
-    it('expands on click when node is selected', () => {
+    it.only('expands on click when node is selected', () => {
+      const props = {
+        rootUri: '/a/',
+        uri: '/a/b/',
+        isContainer: true,
+      };
+      store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        {
-          rootUri: '/a/',
-          uri: '/a/b/',
-          isSelected: true,
-          isContainer: true,
-        },
+        props,
       );
 
       // The onClick is listened not by the <li> element, but by its first child.
@@ -100,23 +101,24 @@ describe('Directory FileTreeEntryComponent', () => {
 });
 
 describe('File FileTreeEntryComponent', () => {
-  const store = createStore(new FileTreeStore());
+  let store;
+  beforeEach(() => {
+    store = createStore();
+    jest.spyOn(store, 'dispatch');
+  });
 
   describe('when expanding/collapsing file component', () => {
-    beforeEach(() => {
-      jest.spyOn(store, 'dispatch');
-    });
-
     it('does not expand on click when node is selected', () => {
+      const props = {
+        rootUri: '/a/',
+        uri: '/a/b',
+        isContainer: false,
+      };
+      store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        {
-          rootUri: '/a/',
-          uri: '/a/b',
-          isSelected: true,
-          isContainer: false,
-        },
+        props,
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       invariant(domNode instanceof Element);
@@ -128,21 +130,19 @@ describe('File FileTreeEntryComponent', () => {
   });
 
   describe('when preview tabs are enabled', () => {
-    beforeEach(() => {
-      jest.spyOn(store, 'dispatch');
-    });
-
     it('opens a file if a selected node is clicked', () => {
+      const props = {
+        rootUri: '/a/',
+        uri: '/a/b',
+        isContainer: false,
+        usePreviewTabs: true,
+      };
+      store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
+
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        {
-          rootUri: '/a/',
-          uri: '/a/b',
-          isSelected: true,
-          isContainer: false,
-          usePreviewTabs: true,
-        },
+        props,
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       invariant(domNode instanceof Element);

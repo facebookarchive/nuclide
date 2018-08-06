@@ -10,7 +10,6 @@
  * @emails oncall+nuclide
  */
 import {setup} from '../__mocks__/file_tree_setup';
-import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import createStore from '../lib/redux/createStore';
@@ -21,11 +20,12 @@ import invariant from 'assert';
 
 import * as Selectors from '../lib/FileTreeSelectors';
 import * as Actions from '../lib/redux/Actions';
+import * as EpicHelpers from '../lib/redux/EpicHelpers';
 
 const {updateNodeAtRoot} = FileTreeHelpers;
 
 describe('FileTreeController', () => {
-  const store = createStore(new FileTreeStore());
+  const store = createStore();
 
   function getNode(rootKey: string, nodeKey: string): FileTreeNode {
     const node = Selectors.getNode(store.getState(), rootKey, nodeKey);
@@ -34,7 +34,10 @@ describe('FileTreeController', () => {
   }
 
   function isSelected(rootKey: string, nodeKey: string): boolean {
-    return getNode(rootKey, nodeKey).isSelected();
+    return Selectors.getNodeIsSelected(
+      store.getState(),
+      getNode(rootKey, nodeKey),
+    );
   }
 
   function isExpanded(rootKey: string, nodeKey: string): boolean {
@@ -107,7 +110,7 @@ describe('FileTreeController', () => {
          */
         store.dispatch(Actions.expandNode(rootKey, rootKey));
         // Populate real files from real disk like real people.
-        await store.getState()._fetchChildKeys(rootKey);
+        await EpicHelpers.fetchChildKeys(store, rootKey);
       });
 
       describe('via _collapseSelection (left arrow) nested', () => {
@@ -219,9 +222,9 @@ describe('FileTreeController', () => {
            *     → dir2
            */
         store.dispatch(Actions.expandNode(rootKey, rootKey));
-        await store.getState()._fetchChildKeys(rootKey);
+        await EpicHelpers.fetchChildKeys(store, rootKey);
         store.dispatch(Actions.expandNode(rootKey, dir1Key));
-        await store.getState()._fetchChildKeys(dir1Key);
+        await EpicHelpers.fetchChildKeys(store, dir1Key);
       });
 
       describe('via _collapseAll ( cmd+{ )', () => {
@@ -298,20 +301,20 @@ describe('FileTreeController', () => {
            *     → dir2
            */
         store.dispatch(Actions.expandNode(rootKey, rootKey));
-        await store.getState()._fetchChildKeys(rootKey);
+        await EpicHelpers.fetchChildKeys(store, rootKey);
         // Mimic the loading state where `dir1` reports itself as expanded but has no children
         // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
         // fetch and might populate the children of `dir1`. We don't want that.
-        store
-          .getState()
-          ._setRoots(
+        store.dispatch(
+          Actions.setRoots(
             updateNodeAtRoot(
               Selectors.getRoots(store.getState()),
               rootKey,
               dir1Key,
               node => node.set({isLoading: true, isExpanded: true}),
             ),
-          );
+          ),
+        );
       });
 
       describe('via _moveDown expanded + loading', () => {
@@ -384,7 +387,7 @@ describe('FileTreeController', () => {
     beforeEach(async () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
-      await store.getState()._expandNodeDeep(rootKey, rootKey);
+      await EpicHelpers.expandNodeDeep(store, rootKey, rootKey);
     });
 
     it('selects multiple items', () => {
