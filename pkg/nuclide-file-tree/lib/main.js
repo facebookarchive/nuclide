@@ -46,7 +46,6 @@ import * as React from 'react';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 import registerCommands from './registerCommands';
-import FileTreeStore from './FileTreeStore';
 import ProjectSelectionManager from './ProjectSelectionManager';
 import createStore from './redux/createStore';
 
@@ -107,17 +106,15 @@ class Activation {
         }),
     );
 
-    const legacyStore = new FileTreeStore();
     const initialState = state == null ? null : state.tree;
-
-    this._store = createStore(legacyStore);
+    this._store = createStore();
     if (initialState != null) {
       this._store.dispatch(Actions.loadData(initialState));
     }
 
     this._disposables.add(registerCommands(this._store));
     this._store.dispatch(Actions.updateRootDirectories());
-    this._contextMenu = new FileTreeContextMenu(this._store.getState());
+    this._contextMenu = new FileTreeContextMenu(this._store);
     this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
@@ -383,7 +380,7 @@ class Activation {
   }
 
   provideProjectSelectionManagerForFileTree(): ProjectSelectionManager {
-    return new ProjectSelectionManager(this._store.getState());
+    return new ProjectSelectionManager(this._store);
   }
 
   provideFileTreeAdditionalLogFilesProvider(): AdditionalLogFilesProvider {

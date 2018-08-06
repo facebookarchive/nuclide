@@ -17,7 +17,7 @@ import type {RemoteFile} from '../../../nuclide-remote-connection';
 import type {File} from 'atom';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type FileTreeStore from '../FileTreeStore';
+import type {FileTreeStore} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';

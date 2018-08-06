@@ -10,7 +10,7 @@
  */
 /* global HTMLElement */
 
-import type {Store} from '../lib/types';
+import type {Store, FileTreeStore} from '../lib/types';
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -20,7 +20,6 @@ import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import FileTreeStore from '../lib/FileTreeStore';
 import * as Actions from '../lib/redux/Actions';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
@@ -112,7 +111,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   componentDidMount(): void {
     this._processStoreUpdate();
     this._disposables.add(
-      this.props.store.getState().subscribe(() => this._processStoreUpdate()),
+      this.props.store.subscribe(() => this._processStoreUpdate()),
     );
 
     this._remeasureHeights();

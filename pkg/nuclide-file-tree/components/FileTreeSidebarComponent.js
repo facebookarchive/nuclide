@@ -175,7 +175,7 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._processExternalUpdate();
 
     this._disposables.add(
-      this.props.store.getState().subscribe(this._processExternalUpdate),
+      this.props.store.subscribe(this._processExternalUpdate),
       observeAllModifiedStatusChanges()
         .let(toggle(this._showOpenConfigValues))
         .subscribe(() => this._setModifiedUris()),

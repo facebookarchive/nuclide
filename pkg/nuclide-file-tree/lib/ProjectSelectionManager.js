@@ -9,7 +9,7 @@
  * @format
  */
 
-import type FileTreeStore from './FileTreeStore';
+import type {Store} from './types';
 import * as Selectors from './FileTreeSelectors';
 import * as Actions from './redux/Actions';
 // $FlowFixMe(>=0.53.0) Flow suppress
@@ -19,9 +19,9 @@ import * as Immutable from 'immutable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class ProjectSelectionManager {
-  _store: FileTreeStore;
+  _store: Store;
 
-  constructor(store: FileTreeStore) {
+  constructor(store: Store) {
     this._store = store;
   }
 
@@ -33,6 +33,6 @@ export default class ProjectSelectionManager {
   }
 
   getExtraContent(): Immutable.List<React.Element<any>> {
-    return Selectors.getExtraProjectSelectionContent(this._store);
+    return Selectors.getExtraProjectSelectionContent(this._store.getState());
   }
 }

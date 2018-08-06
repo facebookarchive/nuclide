@@ -20,8 +20,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {ExportStoreData} from './types';
-import type FileTreeStore from './FileTreeStore';
+import type {FileTreeStore, ExportStoreData} from './types';
 
 export const serialize = (state: FileTreeStore): ExportStoreData => {
   const rootKeys = state._roots
@@ -239,7 +238,21 @@ export const collectDebugState = (state: FileTreeStore): Object => {
     roots: Array.from(state._roots.values()).map(root =>
       root.collectDebugState(),
     ),
-    _conf: state._confCollectDebugState(),
+    _conf: {
+      hideIgnoredNames: state._conf.hideIgnoredNames,
+      excludeVcsIgnoredPaths: state._conf.excludeVcsIgnoredPaths,
+      hideVcsIgnoredPaths: state._conf.hideVcsIgnoredPaths,
+      usePreviewTabs: state._conf.usePreviewTabs,
+      focusEditorOnFileSelection: state._conf.focusEditorOnFileSelection,
+      isEditingWorkingSet: state._conf.isEditingWorkingSet,
+      vcsStatuses: state._conf.vcsStatuses.toObject(),
+      workingSet: state._conf.workingSet.getUris(),
+      ignoredPatterns: state._conf.ignoredPatterns
+        .toArray()
+        .map(ignored => ignored.pattern),
+      openFilesWorkingSet: state._conf.openFilesWorkingSet.getUris(),
+      editedWorkingSet: state._conf.editedWorkingSet.getUris(),
+    },
     selectionManager: collectSelectionDebugState(state),
   };
 };

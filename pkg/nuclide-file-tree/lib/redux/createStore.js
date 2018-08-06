@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, Action, Store} from '../types';
+import type {Store} from '../types';
 
 import {createStore as _createStore} from 'redux';
 import {getLogger} from 'log4js';
@@ -19,8 +19,9 @@ import {
 } from 'nuclide-commons/redux-observable';
 import {applyMiddleware} from 'redux';
 import * as Epics from './Epics';
+import Reducers from './Reducers';
 
-export default function createStore(initialState: AppState): Store {
+export default function createStore(): Store {
   const epics = Object.keys(Epics)
     .map(k => Epics[k])
     .filter(epic => typeof epic === 'function');
@@ -31,13 +32,8 @@ export default function createStore(initialState: AppState): Store {
     });
 
   return _createStore(
-    reducer,
-    initialState,
+    Reducers,
+    null,
     applyMiddleware(createEpicMiddleware(rootEpic)),
   );
-}
-
-function reducer(state: AppState, action: Action) {
-  state.dispatch(action);
-  return state;
 }

@@ -11,6 +11,7 @@
 
 import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
+import type {Store} from './types';
 
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
@@ -21,7 +22,6 @@ import {
   OPEN_FILES_MENU_SELECTOR,
   COMMANDS_SELECTOR,
 } from './FileTreeConstants';
-import FileTreeStore from './FileTreeStore';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import * as Selectors from './FileTreeSelectors';
 
@@ -153,10 +153,10 @@ export default class FileTreeContextMenu {
   _openFilesMenu: ContextMenu;
   _newMenu: ContextMenu;
   _sourceControlMenu: ContextMenu;
-  _store: FileTreeStore;
+  _store: Store;
   _disposables: UniversalDisposable;
 
-  constructor(store: FileTreeStore) {
+  constructor(store: Store) {
     this._contextMenu = new ContextMenu({
       type: 'root',
       cssSelector: EVENT_HANDLER_SELECTOR,
@@ -166,11 +166,11 @@ export default class FileTreeContextMenu {
     this._disposables.add(this._contextMenu);
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
-      const node = Selectors.getSingleSelectedNode(this._store);
+      const node = Selectors.getSingleSelectedNode(this._store.getState());
       return (
         node != null &&
         node.isContainer &&
-        Selectors.hasCwd(this._store) &&
+        Selectors.hasCwd(this._store.getState()) &&
         !node.isCwd
       );
     };
@@ -202,7 +202,7 @@ export default class FileTreeContextMenu {
       label: 'New',
       parent: this._contextMenu,
       shouldDisplay: (e: MouseEvent) => {
-        return Selectors.getSingleSelectedNode(this._store) != null;
+        return Selectors.getSingleSelectedNode(this._store.getState()) != null;
       },
     });
     this._newMenu.addItem({label: 'File', command: 'tree-view:add-file'}, 0);
@@ -244,7 +244,7 @@ export default class FileTreeContextMenu {
       shouldDisplay: (e: MouseEvent) => {
         return (
           !this._sourceControlMenu.isEmpty() &&
-          !Selectors.getSelectedNodes(this._store).isEmpty()
+          !Selectors.getSelectedNodes(this._store.getState()).isEmpty()
         );
       },
     });
@@ -277,7 +277,7 @@ export default class FileTreeContextMenu {
         label: 'Rename',
         command: 'tree-view:rename-selection',
         shouldDisplay: () => {
-          const node = Selectors.getSingleSelectedNode(this._store);
+          const node = Selectors.getSingleSelectedNode(this._store.getState());
           // For now, rename does not apply to root nodes.
           return node != null && !node.isRoot;
         },
@@ -580,11 +580,11 @@ export default class FileTreeContextMenu {
   }
 
   getSelectedNodes(): Immutable.List<FileTreeNode> {
-    return Selectors.getTargetNodes(this._store);
+    return Selectors.getTargetNodes(this._store.getState());
   }
 
   getSingleSelectedNode(): ?FileTreeNode {
-    return Selectors.getSingleTargetNode(this._store);
+    return Selectors.getSingleTargetNode(this._store.getState());
   }
 
   dispose(): void {

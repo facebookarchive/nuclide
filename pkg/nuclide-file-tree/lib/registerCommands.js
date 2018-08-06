@@ -53,7 +53,7 @@ export default function registerCommands(store: Store): IDisposable {
   );
   const letterKeyBindings = {
     'tree-view:remove-letter': () => {
-      if (!store.getState().usePrefixNav()) {
+      if (!Selectors.usePrefixNav(store.getState())) {
         return;
       }
       store.dispatch(Actions.removeFilterLetter());
@@ -69,7 +69,7 @@ export default function registerCommands(store: Store): IDisposable {
   ) {
     const char = String.fromCharCode(c);
     letterKeyBindings[`tree-view:go-to-letter-${char}`] = () => {
-      if (!store.getState().usePrefixNav()) {
+      if (!Selectors.usePrefixNav(store.getState())) {
         return;
       }
       store.dispatch(Actions.addFilterLetter(char));

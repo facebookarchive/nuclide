@@ -41,9 +41,7 @@ export class ProjectSelection extends React.Component<Props, State> {
     this._processExternalUpdate();
 
     this._disposables.add(
-      this.props.store
-        .getState()
-        .subscribe(this._processExternalUpdate.bind(this)),
+      this.props.store.subscribe(this._processExternalUpdate.bind(this)),
     );
   }
 

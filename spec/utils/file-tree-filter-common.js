@@ -12,8 +12,6 @@
 import invariant from 'assert';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import FileTreeStore from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Actions from '../../pkg/nuclide-file-tree/lib/redux/Actions';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Selectors from '../../pkg/nuclide-file-tree/lib/FileTreeSelectors';
@@ -28,7 +26,7 @@ import type {TestContext} from './remotable-tests';
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
-    const store = createStore(new FileTreeStore());
+    const store = createStore();
     spyOn(store, 'dispatch');
 
     let elem;
