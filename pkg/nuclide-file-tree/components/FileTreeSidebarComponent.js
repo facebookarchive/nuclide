@@ -23,7 +23,7 @@ import ReactDOM from 'react-dom';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
-import {Observable, Subject, Scheduler} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
@@ -49,7 +49,7 @@ import {LockableHeight} from './LockableHeightComponent';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
-import {toggle, compact} from 'nuclide-commons/observable';
+import {toggle, compact, nextAnimationFrame} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
@@ -178,8 +178,8 @@ export default class FileTreeSidebarComponent extends React.Component<
       observableFromSubscribeFunction(
         cb => new UniversalDisposable(this.props.store.subscribe(cb)),
       )
-        .throttleTime(0, undefined, {leading: false, trailing: true})
-        .observeOn(Scheduler.animationFrame)
+        // $FlowFixMe
+        .throttle(() => nextAnimationFrame)
         .subscribe(() => {
           this._processExternalUpdate();
         }),
