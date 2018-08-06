@@ -726,7 +726,7 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
     },
     {
       // An absolute file path
-      regex: /(^|\s)(\/[^<>:"\\|?*[\]\s]+)/,
+      regex: /(^|\s)((\/[^<>:"\\|?*[\]\s]+)(:\d+)?)/,
       matchIndex: 2,
       urlPattern: 'open-file-object://%s',
     },
@@ -755,14 +755,23 @@ function tryOpenInAtom(link: string, cwd: ?NuclideUri): boolean {
   const parsed = url.parse(link);
 
   if (parsed.protocol === 'open-file-object:') {
-    let path = parsed.path;
+    const path = parsed.path;
     if (path != null) {
+      const fileLine = path.split(':');
+      let filePath = fileLine[0];
+      let line = 0;
+      if (fileLine.length > 1 && parseInt(fileLine[1], 10) > 0) {
+        line = parseInt(fileLine[1], 10) - 1;
+      }
       if (cwd != null && nuclideUri.isRemote(cwd)) {
         const terminalLocation = nuclideUri.parseRemoteUri(cwd);
-        path = nuclideUri.createRemoteUri(terminalLocation.hostname, path);
+        filePath = nuclideUri.createRemoteUri(
+          terminalLocation.hostname,
+          filePath,
+        );
       }
 
-      goToLocation(path);
+      goToLocation(filePath, {line});
     }
     return true;
   }
