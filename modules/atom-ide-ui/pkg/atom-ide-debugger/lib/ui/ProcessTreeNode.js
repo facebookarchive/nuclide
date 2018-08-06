@@ -12,14 +12,18 @@
 
 import type {IProcess, IDebugService, IThread} from '../types';
 
+import {FilterThreadConditions} from '../vsp/FilterThreadConditions';
+import {Button} from 'nuclide-commons-ui/Button';
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {Observable} from 'rxjs';
+import DebuggerFilterThreadsUI from './DebuggerFilterThreadsUI';
 import ThreadTreeNode from './ThreadTreeNode';
 import {DebuggerMode} from '../constants';
+import showModal from 'nuclide-commons-ui/showModal';
 
 type Props = {
   process: IProcess,
@@ -32,6 +36,7 @@ type State = {
   threads: Array<IThread>,
   isFocused: boolean,
   pendingStart: boolean,
+  filterThreadConditions: ?FilterThreadConditions,
 };
 
 export default class ProcessTreeNode extends React.Component<Props, State> {
@@ -100,6 +105,8 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       threads: process.getAllThreads(),
       isCollapsed,
       pendingStart,
+      filterThreadConditions:
+        this.state != null ? this.state.filterThreadConditions : null,
     };
   }
 
@@ -107,9 +114,20 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     this.setState(prevState => this._getState(!prevState.isCollapsed));
   };
 
+  _addFilterThreadsConditions = (conditions: FilterThreadConditions): void => {
+    this.setState({
+      filterThreadConditions: conditions,
+    });
+  };
+
   render() {
     const {service, title, process} = this.props;
-    const {threads, isFocused, isCollapsed} = this.state;
+    const {
+      threads,
+      isFocused,
+      isCollapsed,
+      filterThreadConditions,
+    } = this.state;
 
     const tooltipTitle =
       service.viewModel.focusedProcess == null ||
@@ -128,13 +146,34 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       }
     };
 
+    const handleFilterThreadClick = event => {
+      const disposable = showModal(({dismiss}) => (
+        <DebuggerFilterThreadsUI
+          updateFilters={this._addFilterThreadsConditions}
+          dialogCloser={dismiss}
+          currentFilterConditions={this.state.filterThreadConditions}
+        />
+      ));
+      this._disposables.add(disposable);
+      event.stopPropagation();
+    };
+
     const formattedTitle = (
-      <span
-        onClick={handleTitleClick}
-        className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
-        title={tooltipTitle}>
-        {title}
-        {this.state.pendingStart ? ' (starting...)' : ''}
+      <span>
+        <span
+          onClick={handleTitleClick}
+          className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
+          title={tooltipTitle}>
+          {title}
+          {this.state.pendingStart ? ' (starting...)' : ''}
+        </span>
+        <span>
+          <Button
+            className={'debugger-tree-right-align'}
+            onClick={handleFilterThreadClick}>
+            Filter Threads
+          </Button>
+        </span>
       </span>
     );
 
@@ -146,13 +185,18 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         collapsed={isCollapsed}
         onSelect={this.handleSelect}>
         {threads.map((thread, threadIndex) => {
-          return (
-            <ThreadTreeNode
-              key={threadIndex}
-              thread={thread}
-              service={service}
-            />
-          );
+          if (
+            filterThreadConditions == null ||
+            filterThreadConditions.filterThread(thread)
+          ) {
+            return (
+              <ThreadTreeNode
+                key={threadIndex}
+                thread={thread}
+                service={service}
+              />
+            );
+          }
         })}
       </NestedTreeItem>
     );

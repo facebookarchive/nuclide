@@ -261,14 +261,12 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
         }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
         {thread.name +
-          (thread.stoppedDetails == null
-            ? ' (Running)'
-            : ` (Paused${stopReason})`)}
+          (thread.stopped ? ` (Paused${stopReason})` : ' (Running)')}
       </span>
     );
 
     if (
-      thread.stoppedDetails == null ||
+      !thread.stopped ||
       (!stackFrames.isPending &&
         !stackFrames.isError &&
         stackFrames.value.length === 0)
