@@ -548,24 +548,6 @@ export default class FileTreeStore {
   }
 
   /**
-   * Update a node or a branch under any of the roots it was found at
-   */
-  _updateNodeAtAllRoots(
-    nodeKey: NuclideUri,
-    predicate: (node: FileTreeNode) => FileTreeNode,
-  ): void {
-    const roots = this._roots.map(root => {
-      const node = root.find(nodeKey);
-      if (node == null) {
-        return root;
-      }
-
-      return replaceNode(node, predicate(node));
-    });
-    this._setRoots(roots);
-  }
-
-  /**
    * Updates the roots, maintains their sibling relationships and fires the change event.
    */
   _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
@@ -810,17 +792,19 @@ export default class FileTreeStore {
           // Unless the contents were already fetched in the past
           // collapse the node and clear its loading state on error so the
           // user can retry expanding it.
-          this._updateNodeAtAllRoots(nodeKey, node => {
-            if (node.wasFetched) {
-              return node.setIsLoading(false);
-            }
+          this._setRoots(
+            updateNodeAtAllRoots(this._roots, nodeKey, node => {
+              if (node.wasFetched) {
+                return node.setIsLoading(false);
+              }
 
-            return node.set({
-              isExpanded: false,
-              isLoading: false,
-              children: Immutable.OrderedMap(),
-            });
-          });
+              return node.set({
+                isExpanded: false,
+                isLoading: false,
+                children: Immutable.OrderedMap(),
+              });
+            }),
+          );
 
           this._clearLoading(nodeKey);
         },
@@ -837,57 +821,61 @@ export default class FileTreeStore {
     const nodesToAutoExpand: Array<FileTreeNode> = [];
 
     // The node with URI === nodeKey might be present at several roots - update them all
-    this._updateNodeAtAllRoots(nodeKey, node => {
-      // Maintain the order fetched from the FS
-      const childrenNodes = childrenKeys.map(uri => {
-        const prevNode = node.find(uri);
-        // If we already had a child with this URI - keep it
-        if (prevNode != null) {
-          return prevNode;
-        }
-
-        return new FileTreeNode(
-          {
-            uri,
-            rootUri: node.rootUri,
-            isCwd: uri === this._cwdKey,
-          },
-          this._conf,
-        );
-      });
-
-      if (
-        this._autoExpandSingleChild &&
-        childrenNodes.length === 1 &&
-        childrenNodes[0].isContainer
-      ) {
-        nodesToAutoExpand.push(childrenNodes[0]);
-      }
-
-      const children = FileTreeNode.childrenFromArray(childrenNodes);
-      const subscription =
-        node.subscription || this._makeSubscription(nodeKey, directory);
-
-      // If the fetch indicated that some children were removed - dispose of all
-      // their subscriptions
-      const removedChildren = node.children.filter(n => !children.has(n.name));
-      removedChildren.forEach(c => {
-        c.traverse(n => {
-          if (n.subscription != null) {
-            n.subscription.dispose();
+    this._setRoots(
+      updateNodeAtAllRoots(this._roots, nodeKey, node => {
+        // Maintain the order fetched from the FS
+        const childrenNodes = childrenKeys.map(uri => {
+          const prevNode = node.find(uri);
+          // If we already had a child with this URI - keep it
+          if (prevNode != null) {
+            return prevNode;
           }
 
-          return true;
+          return new FileTreeNode(
+            {
+              uri,
+              rootUri: node.rootUri,
+              isCwd: uri === this._cwdKey,
+            },
+            this._conf,
+          );
         });
-      });
 
-      return node.set({
-        isLoading: false,
-        wasFetched: true,
-        children,
-        subscription,
-      });
-    });
+        if (
+          this._autoExpandSingleChild &&
+          childrenNodes.length === 1 &&
+          childrenNodes[0].isContainer
+        ) {
+          nodesToAutoExpand.push(childrenNodes[0]);
+        }
+
+        const children = FileTreeNode.childrenFromArray(childrenNodes);
+        const subscription =
+          node.subscription || this._makeSubscription(nodeKey, directory);
+
+        // If the fetch indicated that some children were removed - dispose of all
+        // their subscriptions
+        const removedChildren = node.children.filter(
+          n => !children.has(n.name),
+        );
+        removedChildren.forEach(c => {
+          c.traverse(n => {
+            if (n.subscription != null) {
+              n.subscription.dispose();
+            }
+
+            return true;
+          });
+        });
+
+        return node.set({
+          isLoading: false,
+          wasFetched: true,
+          children,
+          subscription,
+        });
+      }),
+    );
 
     this._clearLoading(nodeKey);
     nodesToAutoExpand.forEach(node => {
@@ -950,11 +938,17 @@ export default class FileTreeStore {
 
   _setCwdKey(cwdKey: ?NuclideUri): void {
     if (this._cwdKey != null) {
-      this._updateNodeAtAllRoots(this._cwdKey, node => node.setIsCwd(false));
+      this._setRoots(
+        updateNodeAtAllRoots(this._roots, this._cwdKey, node =>
+          node.setIsCwd(false),
+        ),
+      );
     }
     this._cwdKey = cwdKey;
     if (cwdKey != null) {
-      this._updateNodeAtAllRoots(cwdKey, node => node.setIsCwd(true));
+      this._setRoots(
+        updateNodeAtAllRoots(this._roots, cwdKey, node => node.setIsCwd(true)),
+      );
     }
   }
 
@@ -978,18 +972,20 @@ export default class FileTreeStore {
     const generatedFileTypes = await generatedFileService.getGeneratedFileTypes(
       nodeKey,
     );
-    this._updateNodeAtAllRoots(nodeKey, node => {
-      const children = node.children.map(childNode => {
-        const generatedType = generatedFileTypes.get(childNode.uri);
-        if (generatedType != null) {
-          return childNode.setGeneratedStatus(generatedType);
-        } else {
-          // if in the directory but not specified in the map, assume manual.
-          return childNode.setGeneratedStatus('manual');
-        }
-      });
-      return node.set({children});
-    });
+    this._setRoots(
+      updateNodeAtAllRoots(this._roots, nodeKey, node => {
+        const children = node.children.map(childNode => {
+          const generatedType = generatedFileTypes.get(childNode.uri);
+          if (generatedType != null) {
+            return childNode.setGeneratedStatus(generatedType);
+          } else {
+            // if in the directory but not specified in the map, assume manual.
+            return childNode.setGeneratedStatus('manual');
+          }
+        });
+        return node.set({children});
+      }),
+    );
   }
 
   _addFilterLetter(letter: string): void {
@@ -2117,4 +2113,21 @@ function replaceNode(
 
   const newParent = transform(parent.updateChild(newNode));
   return replaceNode(parent, newParent, transform);
+}
+
+/**
+ * Update a node or a branch under any of the roots it was found at
+ */
+function updateNodeAtAllRoots(
+  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
+  nodeKey: NuclideUri,
+  transform: (node: FileTreeNode) => FileTreeNode,
+): Immutable.OrderedMap<NuclideUri, FileTreeNode> {
+  return roots.map(root => {
+    const node = root.find(nodeKey);
+    if (node == null) {
+      return root;
+    }
+    return replaceNode(node, transform(node));
+  });
 }
