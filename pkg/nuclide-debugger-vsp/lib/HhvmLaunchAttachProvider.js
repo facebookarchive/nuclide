@@ -181,6 +181,7 @@ export function getLaunchProcessConfig(
   return {
     targetUri,
     debugMode: 'launch',
+    isRestartable: true,
     adapterType: VsAdapterTypes.HHVM,
     processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
     config,
