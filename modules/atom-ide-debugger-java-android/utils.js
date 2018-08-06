@@ -124,11 +124,9 @@ export function getCustomControlButtonsForJavaSourcePaths(
 }
 
 function _getPackageName(debugMode: DebuggerConfigAction, config): string {
-  return nullthrows(
-    debugMode === 'launch'
-      ? config.deviceAndPackage.selectedPackage
-      : config.deviceAndProcess.selectedProcess?.name,
-  );
+  return debugMode === 'launch'
+    ? config.deviceAndPackage.selectedPackage
+    : config.deviceAndProcess.selectedProcess.name;
 }
 
 function _getDeviceSerial(debugMode: DebuggerConfigAction, config): string {
@@ -148,10 +146,9 @@ async function _getPid(
 ): Promise<number> {
   const selectedProcessPidString =
     config.deviceAndProcess?.selectedProcess?.pid;
-  const selectedProcessPid = parseInt(selectedProcessPidString, 10);
   const pid =
     debugMode === 'attach' && selectedProcessPidString != null
-      ? selectedProcessPid
+      ? parseInt(selectedProcessPidString, 10)
       : await getPidFromPackageName(adbServiceUri, deviceSerial, packageName);
   if (isNaN(pid)) {
     throw new Error(

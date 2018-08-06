@@ -20,7 +20,7 @@ export type IJavaAndroidLaunchProcessConfig = {|
     service?: string,
     intent?: string,
     deviceAndPackage: {
-      deviceSerial: ?string,
+      deviceSerial: string,
       selectedPackage: string,
     },
     selectSources: string,
@@ -31,8 +31,8 @@ export type IJavaAndroidAttachProcessConfig = {|
   ...IProcessConfig,
   +config: {|
     deviceAndProcess: {
-      deviceSerial: ?string,
-      selectedProcess: ?{
+      deviceSerial: string,
+      selectedProcess: {
         user?: string,
         pid?: string,
         name: string,

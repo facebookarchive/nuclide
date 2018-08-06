@@ -49,13 +49,13 @@ type Props = {|
 |};
 
 type DeviceAndPackageType = {|
-  +deviceSerial: ?string,
+  +deviceSerial: string,
   +selectedPackage: string,
 |};
 
 type DeviceAndProcessType = {|
-  +deviceSerial: ?string,
-  +selectedProcess: ?AndroidJavaProcess,
+  +deviceSerial: string,
+  +selectedProcess: AndroidJavaProcess,
 |};
 
 type State = {
@@ -302,18 +302,10 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       return value != null;
     } else if (type === 'deviceAndPackage') {
       const deviceAndPackageValue = this.state.deviceAndPackageValues.get(name);
-      return (
-        deviceAndPackageValue != null &&
-        deviceAndPackageValue.deviceSerial != null &&
-        deviceAndPackageValue.selectedPackage != null
-      );
+      return deviceAndPackageValue != null;
     } else if (type === 'deviceAndProcess') {
       const deviceAndProcessValue = this.state.deviceAndProcessValues.get(name);
-      return (
-        deviceAndProcessValue != null &&
-        deviceAndProcessValue.deviceSerial != null &&
-        deviceAndProcessValue.selectedProcess != null
-      );
+      return deviceAndProcessValue != null;
     } else if (type === 'selectSources') {
       const selectSourcesValue = this.state.selectSourcesValues.get(name);
       return selectSourcesValue != null;
@@ -417,10 +409,14 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             return packageValues.get(name) || null;
           }}
           onSelect={(deviceSerial, javaPackage) => {
-            this.state.deviceAndPackageValues.set(name, {
-              deviceSerial,
-              selectedPackage: javaPackage,
-            });
+            if (deviceSerial != null) {
+              this.state.deviceAndPackageValues.set(name, {
+                deviceSerial,
+                selectedPackage: javaPackage,
+              });
+            } else {
+              this.state.deviceAndPackageValues.delete(name);
+            }
             this.props.configIsValidChanged(this._debugButtonShouldEnable());
           }}
         />
@@ -442,10 +438,14 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             return processValues.get(name) || null;
           }}
           onSelect={(deviceSerial, javaProcess) => {
-            this.state.deviceAndProcessValues.set(name, {
-              deviceSerial,
-              selectedProcess: javaProcess,
-            });
+            if (deviceSerial != null && javaProcess != null) {
+              this.state.deviceAndProcessValues.set(name, {
+                deviceSerial,
+                selectedProcess: javaProcess,
+              });
+            } else {
+              this.state.deviceAndProcessValues.delete(name);
+            }
             this.props.configIsValidChanged(this._debugButtonShouldEnable());
           }}
         />
