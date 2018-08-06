@@ -12,10 +12,9 @@
 import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as Immutable from 'immutable';
-import * as Selectors from './FileTreeSelectors';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NodeCheckedStatus, MiddlewareStore} from './types';
+import type {NodeCheckedStatus, StoreConfigData} from './types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
@@ -188,7 +187,7 @@ export class FileTreeNode {
   prevSibling: ?FileTreeNode;
 
   _deriver: MemoizedFieldsDeriver;
-  _store: MiddlewareStore;
+  _conf: StoreConfigData;
 
   uri: NuclideUri;
   rootUri: NuclideUri;
@@ -243,22 +242,19 @@ export class FileTreeNode {
    */
   constructor(
     options: FileTreeNodeOptions,
-    store: MiddlewareStore,
+    conf: StoreConfigData,
     _deriver: ?MemoizedFieldsDeriver = null,
   ) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
-    this._store = store;
+    this._conf = conf;
 
     this._assignOptions(options);
 
     this._deriver =
       _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
-    const derived = this._deriver.buildDerivedFields(
-      Selectors.getConf(this._store.getState()),
-    );
-    this._assignDerived(derived);
+    this._assignDerived();
 
     this._handleChildren();
   }
@@ -387,7 +383,10 @@ export class FileTreeNode {
    * Since in heavy updates, nodes are created by the thousands we need to keep the creation
    * flow performant.
    */
-  _assignDerived(derived: DerivedFileTreeNode): void {
+  _assignDerived(): void {
+    const derived: DerivedFileTreeNode = this._deriver.buildDerivedFields(
+      this._conf,
+    );
     this.isRoot = derived.isRoot;
     this.name = derived.name;
     this.hashKey = derived.hashKey;
@@ -464,9 +463,10 @@ export class FileTreeNode {
    * Notifies the node about the change that happened in the configuration object. Will trigger
    * the complete reconstruction of the entire tree branch
    */
-  updateConf(): FileTreeNode {
-    const children = this.children.map(c => c.updateConf());
-    return this._newNode({children});
+  updateConf(conf: StoreConfigData): FileTreeNode {
+    const children = this.children.map(c => c.updateConf(conf));
+    const options = this._buildOptions();
+    return new FileTreeNode({...options, children}, conf, this._deriver);
   }
 
   /**
@@ -775,7 +775,7 @@ export class FileTreeNode {
         ...options,
         ...props,
       },
-      this._store,
+      this._conf,
       this._deriver,
     );
   }

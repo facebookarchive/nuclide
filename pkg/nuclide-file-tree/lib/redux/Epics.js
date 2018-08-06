@@ -819,7 +819,7 @@ export function openAddFolderDialogEpic(
 
 export function openAddFileDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG)
@@ -837,7 +837,7 @@ export function openAddFileDialogEpic(
 
 export function openAddFileDialogRelativeEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE)
@@ -872,7 +872,7 @@ export function openAddFileDialogRelativeEpic(
 
 export function openRenameDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE)
@@ -910,7 +910,7 @@ export function openRenameDialogEpic(
 
 export function openDuplicateDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.OPEN_DUPLICATE_DIALOG).map(action => {
     invariant(action.type === ActionTypes.OPEN_DUPLICATE_DIALOG);
@@ -922,7 +922,7 @@ export function openDuplicateDialogEpic(
 
 export function openNextDuplicateDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_NEXT_DUPLICATE_DIALOG)
@@ -985,7 +985,7 @@ export function openNextDuplicateDialogEpic(
 
 export function openPasteDialogEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.OPEN_PASTE_DIALOG)
@@ -1031,7 +1031,7 @@ export function openPasteDialogEpic(
 
 export function updateWorkingSetEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<empty> {
   return actions
     .ofType(ActionTypes.WORKING_SET_CHANGE_REQUESTED)
@@ -1069,7 +1069,7 @@ export function updateWorkingSetEpic(
 
 export function deleteSelectedNodesEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.DELETE_SELECTED_NODES)
@@ -1089,7 +1089,7 @@ export function deleteSelectedNodesEpic(
 
 export function moveToNodeEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.MOVE_TO_NODE).mergeMap(action => {
     invariant(action.type === ActionTypes.MOVE_TO_NODE);
@@ -1107,7 +1107,7 @@ export function moveToNodeEpic(
 
 export function expandNodeEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.EXPAND_NODE)
@@ -1121,7 +1121,7 @@ export function expandNodeEpic(
 
 export function expandNodeDeepEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.EXPAND_NODE_DEEP)
@@ -1135,7 +1135,7 @@ export function expandNodeDeepEpic(
 
 export function reorderRootsEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.REORDER_ROOTS)
@@ -1164,7 +1164,7 @@ export function reorderRootsEpic(
 // a second pass after loading?
 export function loadDataEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return actions
     .ofType(ActionTypes.LOAD_DATA)
@@ -1191,7 +1191,7 @@ export function loadDataEpic(
             isCwd: false,
             connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
           },
-          store,
+          Selectors.getConf(store.getState()),
         );
       };
 
@@ -1226,7 +1226,7 @@ export function loadDataEpic(
 
 export function updateGeneratedStatusEpic(
   actions: ActionsObservable<Action>,
-  store: Store,
+  store: MiddlewareStore,
 ): Observable<Action> {
   return Observable.merge(
     actions.ofType(ActionTypes.SET_OPEN_FILES_WORKING_SET).map(action => {

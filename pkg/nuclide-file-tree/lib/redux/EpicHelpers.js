@@ -11,6 +11,7 @@
 
 import type {Directory} from '../FileTreeHelpers';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {MiddlewareStore} from '../types';
 
 import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import * as Immutable from 'immutable';
@@ -44,7 +45,7 @@ const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
  * for the node to monitor future changes.
  */
 export function fetchChildKeys(
-  store: Store,
+  store: MiddlewareStore,
   nodeKey: NuclideUri,
 ): Promise<void> {
   const existingPromise = Selectors.getLoading(store.getState(), nodeKey);
@@ -95,7 +96,7 @@ export function fetchChildKeys(
 }
 
 async function setGeneratedChildren(
-  store: Store,
+  store: MiddlewareStore,
   nodeKey: NuclideUri,
 ): Promise<void> {
   let generatedFileService;
@@ -134,7 +135,7 @@ async function setGeneratedChildren(
 }
 
 function setFetchedKeys(
-  store: Store,
+  store: MiddlewareStore,
   nodeKey: NuclideUri,
   childrenKeys: Array<string> = [],
 ): void {
@@ -163,7 +164,7 @@ function setFetchedKeys(
                 rootUri: node.rootUri,
                 isCwd: uri === Selectors.getCwdKey(store.getState()),
               },
-              store,
+              Selectors.getConf(store.getState()),
             );
           });
 
@@ -212,7 +213,7 @@ function setFetchedKeys(
 }
 
 export function expandNode(
-  store: Store,
+  store: MiddlewareStore,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): void {
@@ -260,7 +261,7 @@ export function expandNode(
 }
 
 function makeSubscription(
-  store: Store,
+  store: MiddlewareStore,
   nodeKey: NuclideUri,
   directory: ?Directory,
 ): ?IDisposable {
@@ -313,7 +314,7 @@ function makeSubscription(
  * returns - a promise fulfilled when the expand operation is finished
  */
 export function expandNodeDeep(
-  store: Store,
+  store: MiddlewareStore,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): Promise<void> {

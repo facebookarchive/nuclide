@@ -58,7 +58,7 @@ export const DEFAULT_CONF = {
 const actionTrackers: Map<string, HistogramTracker> = new Map();
 
 // TODO: Don't `export default` an object.
-const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
+const {updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
 const logger = getLogger('nuclide-file-tree');
 
@@ -361,13 +361,13 @@ function clearDragHover(state: FileTreeStore): FileTreeStore {
 }
 
 /**
- * Use the predicate function to update one or more of the roots in the file tree
+ * Use the update function to update one or more of the roots in the file tree
  */
 function updateRoots(
   state: FileTreeStore,
-  predicate: (root: FileTreeNode) => FileTreeNode,
+  update: (root: FileTreeNode) => FileTreeNode,
 ): FileTreeStore {
-  return setRoots(state, state._roots.map(predicate));
+  return setRoots(state, state._roots.map(update));
 }
 
 // Clear selections and focuses on all nodes except an optionally specified
@@ -596,15 +596,15 @@ function setExcludeVcsIgnoredPaths(
  */
 function updateConf(
   state: FileTreeStore,
-  predicate: (conf: StoreConfigData) => void,
+  mutator: (conf: StoreConfigData) => void,
 ): FileTreeStore {
   const nextConf = {...state._conf};
-  predicate(nextConf);
+  mutator(nextConf);
   const nodesToUnselect = new Set();
   const nextState = updateRoots(state, root => {
     // TODO: We're no longer changing anything here so we should be using an iteration helper
     // instead of `setRecursive()`
-    return root.updateConf().setRecursive(
+    return root.updateConf(nextConf).setRecursive(
       // Remove selection from hidden nodes under this root
       node => (node.containsHidden ? null : node),
       node => {
@@ -625,8 +625,8 @@ function updateConf(
   });
   return {
     ...nextState,
-    _selectedUris: deleteNodes(state._selectedUris, nodesToUnselect),
     _conf: nextConf,
+    _selectedUris: deleteNodes(state._selectedUris, nodesToUnselect),
   };
 }
 
