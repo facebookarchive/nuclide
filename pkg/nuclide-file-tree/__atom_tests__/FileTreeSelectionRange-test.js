@@ -38,7 +38,10 @@ describe('FileTreeSelectionRange', () => {
   });
 
   function createNode(rootUri: NuclideUri, uri: NuclideUri): FileTreeNode {
-    return new FileTreeNode({rootUri, uri}, store);
+    return new FileTreeNode(
+      {rootUri, uri},
+      Selectors.getConf(store.getState()),
+    );
   }
 
   describe('RangeKey', () => {
@@ -116,16 +119,13 @@ describe('FileTreeSelectionRange', () => {
     let map: Map<string, string> = new Map();
 
     beforeEach(async () => {
-      await (async () => {
-        map = await prepareFileTree();
-        const dir = map.get('dir');
-        // flowlint-next-line sketchy-null-string:off
-        invariant(dir);
-        // Await **internal-only** API because the public `expandNodeDeep` API does not
-        // return the promise that can be awaited on
-        await EpicHelpers.expandNodeDeep(store, dir, dir);
-        //await store._expandNodeDeep(dir, dir);
-      })();
+      map = await prepareFileTree();
+      const dir = map.get('dir');
+      // flowlint-next-line sketchy-null-string:off
+      invariant(dir);
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await EpicHelpers.expandNodeDeep(store, dir, dir);
     });
 
     afterEach(async () => {

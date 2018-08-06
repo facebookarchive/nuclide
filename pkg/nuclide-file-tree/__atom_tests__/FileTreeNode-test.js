@@ -12,6 +12,7 @@
 import {FileTreeNode} from '../lib/FileTreeNode';
 import * as Immutable from 'immutable';
 import createStore from '../lib/redux/createStore';
+import * as Selectors from '../lib/FileTreeSelectors';
 
 describe('FileTreeNode', () => {
   let store;
@@ -19,7 +20,10 @@ describe('FileTreeNode', () => {
     store = createStore();
   });
   it('properly sets the default properties', () => {
-    const node = new FileTreeNode({uri: '/abc/def', rootUri: '/abc/'}, store);
+    const node = new FileTreeNode(
+      {uri: '/abc/def', rootUri: '/abc/'},
+      Selectors.getConf(store.getState()),
+    );
 
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
@@ -42,7 +46,7 @@ describe('FileTreeNode', () => {
         isCwd: true,
         children,
       },
-      store,
+      Selectors.getConf(store.getState()),
     );
 
     expect(node.uri).toBe('/abc/def');
@@ -58,7 +62,7 @@ describe('FileTreeNode', () => {
   it('derives properties', () => {
     const node = new FileTreeNode(
       {uri: '/abc/def/ghi', rootUri: '/abc/'},
-      store,
+      Selectors.getConf(store.getState()),
     );
 
     // Derived
@@ -76,12 +80,12 @@ describe('FileTreeNode', () => {
   it('preserves instance on non-modifying updates', () => {
     const child1 = new FileTreeNode(
       {uri: '/abc/def/ghi1', rootUri: '/abc/'},
-      store,
+      Selectors.getConf(store.getState()),
     );
 
     const child2 = new FileTreeNode(
       {uri: '/abc/def/ghi2', rootUri: '/abc/'},
-      store,
+      Selectors.getConf(store.getState()),
     );
 
     const children = Immutable.OrderedMap([
@@ -98,7 +102,7 @@ describe('FileTreeNode', () => {
         isCwd: true,
         children,
       },
-      store,
+      Selectors.getConf(store.getState()),
     );
 
     expect(node.isExpanded).toBe(true);
@@ -126,15 +130,33 @@ describe('FileTreeNode', () => {
 
   it('finds nodes', () => {
     const rootUri = '/r/';
-    const nodeABC = new FileTreeNode({uri: '/r/A/B/C/', rootUri}, store);
-    const nodeABD = new FileTreeNode({uri: '/r/A/B/D/', rootUri}, store);
+    const nodeABC = new FileTreeNode(
+      {uri: '/r/A/B/C/', rootUri},
+      Selectors.getConf(store.getState()),
+    );
+    const nodeABD = new FileTreeNode(
+      {uri: '/r/A/B/D/', rootUri},
+      Selectors.getConf(store.getState()),
+    );
     let children = FileTreeNode.childrenFromArray([nodeABC, nodeABD]);
-    const nodeAB = new FileTreeNode({uri: '/r/A/B/', rootUri, children}, store);
+    const nodeAB = new FileTreeNode(
+      {uri: '/r/A/B/', rootUri, children},
+      Selectors.getConf(store.getState()),
+    );
     children = FileTreeNode.childrenFromArray([nodeAB]);
-    const nodeA = new FileTreeNode({uri: '/r/A/', rootUri, children}, store);
-    const nodeB = new FileTreeNode({uri: '/r/B/', rootUri}, store);
+    const nodeA = new FileTreeNode(
+      {uri: '/r/A/', rootUri, children},
+      Selectors.getConf(store.getState()),
+    );
+    const nodeB = new FileTreeNode(
+      {uri: '/r/B/', rootUri},
+      Selectors.getConf(store.getState()),
+    );
     children = FileTreeNode.childrenFromArray([nodeA, nodeB]);
-    const root = new FileTreeNode({uri: '/r/', rootUri, children}, store);
+    const root = new FileTreeNode(
+      {uri: '/r/', rootUri, children},
+      Selectors.getConf(store.getState()),
+    );
 
     expect(root.find('/r/')).toBe(root);
     expect(root.find('/r/A/')).toBe(nodeA);
