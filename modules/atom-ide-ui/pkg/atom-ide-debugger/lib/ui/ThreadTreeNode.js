@@ -356,7 +356,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
             }
           }}
         />
-        <AtomInput />
       </div>
     );
   }
