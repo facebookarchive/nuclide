@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
+import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 import * as React from 'react';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {shell} from 'electron';
@@ -135,14 +136,14 @@ export default class VcsLogComponent extends React.Component<Props, State> {
       }
     } else {
       return (
-        <div>
-          <div>
-            <em>Loading hg log {this._files.join(' ')}</em>
-          </div>
-          <div className="nuclide-vcs-log-spinner">
-            <div className="loading-spinner-large inline-block" />
-          </div>
-        </div>
+        <EmptyState
+          title={'Loading hg log ' + this._files.join(' ')}
+          message={
+            <div className="nuclide-vcs-log-spinner">
+              <div className="loading-spinner-large inline-block" />
+            </div>
+          }
+        />
       );
     }
   }
