@@ -27,6 +27,7 @@ import {Observable, Subject} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
+import {Provider} from 'react-redux';
 
 import {
   REVEAL_FILE_ON_SWITCH_SETTING,
@@ -40,7 +41,7 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
-import {VirtualizedFileTree} from './VirtualizedFileTree';
+import VirtualizedFileTree from './VirtualizedFileTree';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
@@ -464,27 +465,28 @@ All the changes across your entire stacked diff.
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.
     return (
-      <div
-        className="nuclide-file-tree-toolbar-container"
-        onFocus={this._handleFocus}
-        tabIndex={0}>
-        {uncommittedChangesSection}
-        {openFilesSection}
-        {foldersCaption}
-        {toolbar}
-        {this.state.foldersExpanded && (
-          <VirtualizedFileTree
-            ref={this._setScrollerRef}
-            onMouseEnter={this._handleFileTreeHovered}
-            onMouseLeave={this._handleFileTreeUnhovered}
-            onScroll={this._handleScroll}
-            height={this.state.scrollerHeight}
-            width={this.state.scrollerWidth}
-            initialScrollTop={this._scrollerScrollTop}
-            store={this.props.store}
-          />
-        )}
-      </div>
+      <Provider store={this.props.store}>
+        <div
+          className="nuclide-file-tree-toolbar-container"
+          onFocus={this._handleFocus}
+          tabIndex={0}>
+          {uncommittedChangesSection}
+          {openFilesSection}
+          {foldersCaption}
+          {toolbar}
+          {this.state.foldersExpanded && (
+            <VirtualizedFileTree
+              ref={this._setScrollerRef}
+              onMouseEnter={this._handleFileTreeHovered}
+              onMouseLeave={this._handleFileTreeUnhovered}
+              onScroll={this._handleScroll}
+              height={this.state.scrollerHeight}
+              width={this.state.scrollerWidth}
+              initialScrollTop={this._scrollerScrollTop}
+            />
+          )}
+        </div>
+      </Provider>
     );
   }
 

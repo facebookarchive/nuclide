@@ -10,19 +10,20 @@
  */
 /* global HTMLElement */
 
-import type {Store, FileTreeStore} from '../lib/types';
+import type {AppState, Roots} from '../lib/types';
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import invariant from 'assert';
+import {connect} from 'react-redux';
 import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as Actions from '../lib/redux/Actions';
-import {FileTreeEntryComponent} from './FileTreeEntryComponent';
-import {ProjectSelection} from './ProjectSelection';
+import FileTreeEntryComponent from './FileTreeEntryComponent';
+import ProjectSelection from './ProjectSelection';
 
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
@@ -42,7 +43,14 @@ type Props = {|
   height: number,
   width: number,
   initialScrollTop: number,
-  store: Store,
+  roots: Roots,
+  trackedNode: ?FileTreeNode,
+  selectedNodes: Immutable.Set<FileTreeNode>,
+  focusedNodes: Immutable.Set<FileTreeNode>,
+  isEditingWorkingSet: boolean,
+  clearTrackedNode: () => void,
+  clearTrackedNodeIfNotLoading: () => void,
+  getNodeByIndex: (index: number) => ?FileTreeNode,
 |};
 
 type RowType = 'root' | 'node' | 'footer';
@@ -52,7 +60,7 @@ const DEFAULT_ROOT_HEIGHT = 30;
 const DEFAULT_NODE_HEIGHT = 24;
 const DEFAULT_FOOTER_HEIGHT = 74;
 
-export class VirtualizedFileTree extends React.Component<Props, State> {
+class VirtualizedFileTree extends React.PureComponent<Props, State> {
   _disposables: UniversalDisposable;
   _getNodeByIndex: (index: number) => ?FileTreeNode;
 
@@ -68,9 +76,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this._getNodeByIndex = this._buildGetNodeByIndex(
-      Selectors.getRoots(this.props.store.getState()),
-    );
+    this._getNodeByIndex = this._buildGetNodeByIndex(props.roots);
 
     this.state = {
       rootHeight: null,
@@ -164,34 +170,18 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 
   // TODO: Memoize
-  _getRoots = () => Selectors.getRoots(this.props.store.getState());
-
-  // TODO: Memoize
-  _getShownNodes = () => countShownNodes(this._getRoots());
+  _getShownNodes = () => countShownNodes(this.props.roots);
 
   // TODO: Memoize
   _getTrackedIndex = () =>
-    findIndexOfTheTrackedNode(
-      this.props.store.getState(),
-      this._getShownNodes(),
-    );
-
-  // TODO: Memoize
-  _getSelectedNodes = () =>
-    Selectors.getSelectedNodes(this.props.store.getState()).toSet();
-
-  // TODO: Memoize
-  _getFocusedNodes = () =>
-    Selectors.getFocusedNodes(this.props.store.getState()).toSet();
+    findIndexOfTheTrackedNode(this.props.trackedNode, this._getShownNodes());
 
   render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
       'tree-view': true,
-      'nuclide-file-tree-editing-working-set': Selectors.isEditingWorkingSet(
-        this.props.store.getState(),
-      ),
+      'nuclide-file-tree-editing-working-set': this.props.isEditingWorkingSet,
     };
 
     let scrollToIndex = undefined;
@@ -259,9 +249,9 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             List does not use them, but they will give a hint to React that the component
             should be updated, and this will cause it to rerender its children.
           */
-          roots={this._getRoots()}
-          selectedNodes={this._getSelectedNodes()}
-          focusedNodes={this._getFocusedNodes()}
+          roots={this.props.roots}
+          selectedNodes={this.props.selectedNodes}
+          focusedNodes={this.props.focusedNodes}
         />
       </div>
     );
@@ -313,7 +303,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }): void => {
     const {scrollTop} = args;
     if (!this._nextScrollingIsProgrammatic && this._getTrackedIndex() != null) {
-      this.props.store.dispatch(Actions.clearTrackedNode());
+      this.props.clearTrackedNode();
     }
     this._nextScrollingIsProgrammatic = false;
     this.props.onScroll(scrollTop);
@@ -327,16 +317,14 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     let prevNode: ?FileTreeNode = null;
 
     const fallbackGetByIndex = index => {
-      prevRoots = this._getRoots();
+      prevRoots = this.props.roots;
       prevIndexQuery = index;
-      prevNode = Selectors.getNodeByIndex(this.props.store.getState())(
-        index + 1,
-      );
+      prevNode = this.props.getNodeByIndex(index + 1);
       return prevNode;
     };
 
     return index => {
-      if (this._getRoots() !== prevRoots) {
+      if (this.props.roots !== prevRoots) {
         // The tree structure was updated
         return fallbackGetByIndex(index);
       }
@@ -378,7 +366,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
         <div key={key} style={style}>
           <ProjectSelection
             ref={this._setFooterRef}
-            store={this.props.store}
             remeasureHeight={this._clearFooterHeight}
           />
         </div>
@@ -395,9 +382,8 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
             ref={node.isRoot ? this._setRootRef : this._setNodeRef}
             node={node}
-            selectedNodes={this._getSelectedNodes()}
-            focusedNodes={this._getFocusedNodes()}
-            store={this.props.store}
+            selectedNodes={this.props.selectedNodes}
+            focusedNodes={this.props.focusedNodes}
           />
         </div>
       );
@@ -420,7 +406,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       trackedIndex >= startIndex &&
       trackedIndex <= stopIndex
     ) {
-      this.props.store.dispatch(Actions.clearTrackedNodeIfNotLoading());
+      this.props.clearTrackedNodeIfNotLoading();
     }
   };
 
@@ -443,10 +429,9 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 }
 
 function findIndexOfTheTrackedNode(
-  store: FileTreeStore,
+  trackedNode: ?FileTreeNode,
   shownNodes: number,
 ): ?number {
-  const trackedNode = Selectors.getTrackedNode(store);
   if (trackedNode == null) {
     return null;
   }
@@ -465,3 +450,26 @@ function countShownNodes(
 ): number {
   return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 }
+
+const mapStateToProps = (state: AppState): $Shape<Props> => ({
+  roots: Selectors.getRoots(state),
+  trackedNode: Selectors.getTrackedNode(state),
+  selectedNodes: Selectors.getSelectedNodes(state).toSet(),
+  focusedNodes: Selectors.getFocusedNodes(state).toSet(),
+  isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
+  getNodeByIndex: index => Selectors.getNodeByIndex(state)(index),
+});
+
+const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
+  clearTrackedNode: () => {
+    dispatch(Actions.clearTrackedNode());
+  },
+  clearTrackedNodeIfNotLoading: () => {
+    dispatch(Actions.clearTrackedNodeIfNotLoading());
+  },
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(VirtualizedFileTree);
