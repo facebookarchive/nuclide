@@ -529,10 +529,7 @@ export default class FileTreeStore {
       return;
     }
 
-    const roots = this._roots.set(
-      rootKey,
-      this._bubbleUp(node, predicate(node)),
-    );
+    const roots = this._roots.set(rootKey, replaceNode(node, predicate(node)));
 
     this._setRoots(roots);
   }
@@ -545,7 +542,7 @@ export default class FileTreeStore {
     predicate: (node: FileTreeNode) => FileTreeNode,
   ): FileTreeNode {
     const newNode = predicate(node);
-    const roots = this._roots.set(node.rootUri, this._bubbleUp(node, newNode));
+    const roots = this._roots.set(node.rootUri, replaceNode(node, newNode));
     this._setRoots(roots);
     return newNode;
   }
@@ -563,34 +560,9 @@ export default class FileTreeStore {
         return root;
       }
 
-      return this._bubbleUp(node, predicate(node));
+      return replaceNode(node, predicate(node));
     });
     this._setRoots(roots);
-  }
-
-  /**
-   * Bubble the change up. The newNode is assumed to be prevNode after some manipulateion done to it
-   * therefore they are assumed to belong to the same parent.
-   *
-   * The method updates the child to the new node (which create a new parent instance) and call
-   * recursively for the parent update. Until there are no more parents and the new root is returned
-   *
-   * As the change bubbles up, and in addition to the change from the new child assignment, an
-   * optional predicate is also being applied to each newly created parent to support more complex
-   * change patterns.
-   */
-  _bubbleUp(
-    prevNode: FileTreeNode,
-    newNode: FileTreeNode,
-    postPredicate: (node: FileTreeNode) => FileTreeNode = node => node,
-  ): FileTreeNode {
-    const parent = prevNode.parent;
-    if (parent == null) {
-      return newNode;
-    }
-
-    const newParent = postPredicate(parent.updateChild(newNode));
-    return this._bubbleUp(parent, newParent, postPredicate);
   }
 
   /**
@@ -1835,7 +1807,7 @@ export default class FileTreeStore {
       }
 
       if (deepest.uri === nodeKey) {
-        return this._bubbleUp(deepest, deepest, expandNode);
+        return replaceNode(deepest, deepest, expandNode);
       }
 
       const parents = [];
@@ -1872,7 +1844,7 @@ export default class FileTreeStore {
       });
 
       this._fetchChildKeys(deepest.uri);
-      return this._bubbleUp(
+      return replaceNode(
         deepest,
         deepest.set({
           isLoading: true,
@@ -2124,4 +2096,25 @@ class FileTreeStoreBfsIterator {
   traversedNode(): ?string {
     return this._currentlyTraversedNode;
   }
+}
+
+/**
+ * Replace a node in the tree and return the new tree's root. The newNode is assumed to be prevNode
+ * after some manipulateion done to it therefore they are assumed to belong to the same parent.
+ *
+ * An optional transformation can be provided which will be applied to all of the node's ancestors
+ * (including the node itself).
+ */
+function replaceNode(
+  prevNode: FileTreeNode,
+  newNode: FileTreeNode,
+  transform: (node: FileTreeNode) => FileTreeNode = node => node,
+): FileTreeNode {
+  const parent = prevNode.parent;
+  if (parent == null) {
+    return newNode;
+  }
+
+  const newParent = transform(parent.updateChild(newNode));
+  return replaceNode(parent, newParent, transform);
 }
