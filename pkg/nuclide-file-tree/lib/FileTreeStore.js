@@ -110,6 +110,8 @@ export type ReorderPreviewStatus = ?{
   targetIdx?: number,
 };
 
+type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
+
 const FETCH_TIMEOUT = 20000;
 
 const actionTrackers: Map<string, HistogramTracker> = new Map();
@@ -121,7 +123,7 @@ const actionTrackers: Map<string, HistogramTracker> = new Map();
  */
 export default class FileTreeStore {
   VERSION: number;
-  _roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
+  _roots: Roots;
   _openFilesExpanded: boolean;
   _uncommittedChangesExpanded: boolean;
   _foldersExpanded: boolean;
@@ -550,7 +552,7 @@ export default class FileTreeStore {
   /**
    * Updates the roots, maintains their sibling relationships and fires the change event.
    */
-  _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
+  _setRoots(roots: Roots): void {
     // Explicitly test for the empty case, otherwise configuration changes with an empty
     // tree will not emit changes.
     const changed = !Immutable.is(roots, this._roots) || roots.isEmpty();
@@ -2119,10 +2121,10 @@ function replaceNode(
  * Update a node or a branch under any of the roots it was found at
  */
 function updateNodeAtAllRoots(
-  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
+  roots: Roots,
   nodeKey: NuclideUri,
   transform: (node: FileTreeNode) => FileTreeNode,
-): Immutable.OrderedMap<NuclideUri, FileTreeNode> {
+): Roots {
   return roots.map(root => {
     const node = root.find(nodeKey);
     if (node == null) {
