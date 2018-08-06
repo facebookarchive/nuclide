@@ -33,6 +33,7 @@ type PropsType = {
 
 type StateType = {
   bpId: string,
+  enabledChecked: boolean,
 };
 
 export default class BreakpointConfigComponent extends React.Component<
@@ -49,6 +50,7 @@ export default class BreakpointConfigComponent extends React.Component<
     this._disposables = new UniversalDisposable();
     this.state = {
       bpId: this.props.breakpoint.getId(),
+      enabledChecked: this.props.breakpoint.enabled,
     };
 
     const model = this.props.service.getModel();
@@ -91,6 +93,8 @@ export default class BreakpointConfigComponent extends React.Component<
 
   async _updateBreakpoint(): Promise<void> {
     const {breakpoint, service} = this.props;
+    const {enabledChecked} = this.state;
+    service.enableOrDisableBreakpoints(enabledChecked, this.props.breakpoint);
     const condition = nullthrows(this._condition)
       .getText()
       .trim();
@@ -140,12 +144,11 @@ export default class BreakpointConfigComponent extends React.Component<
                 track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE_ENABLED, {
                   enabled: isChecked,
                 });
-                this.props.service.enableOrDisableBreakpoints(
-                  isChecked,
-                  this.props.breakpoint,
-                );
+                this.setState({
+                  enabledChecked: isChecked,
+                });
               }}
-              checked={this.props.breakpoint.enabled}
+              checked={this.state.enabledChecked}
               label="Enable breakpoint"
             />
           </div>
