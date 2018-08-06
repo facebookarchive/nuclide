@@ -87,6 +87,13 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
   componentDidMount(): void {
     this._remeasureHeights();
+    this._disposables.add(
+      // Remeasure if the theme changes, and on initial theme load, which may
+      // happen after this component mounts.
+      atom.themes.onDidChangeActiveThemes(() => {
+        this._remeasureHeights(true);
+      }),
+    );
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
@@ -108,11 +115,11 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  _remeasureHeights(): void {
+  _remeasureHeights(force: boolean = false): void {
     let heightUpdated = false;
     const newState = {};
 
-    if (this.state.rootHeight == null && this._rootRef != null) {
+    if (force || (this.state.rootHeight == null && this._rootRef != null)) {
       const rootNode = ReactDOM.findDOMNode(this._rootRef);
       if (rootNode != null) {
         invariant(rootNode instanceof HTMLElement);
@@ -124,7 +131,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       }
     }
 
-    if (this.state.nodeHeight == null && this._nodeRef != null) {
+    if (force || (this.state.nodeHeight == null && this._nodeRef != null)) {
       const node = ReactDOM.findDOMNode(this._nodeRef);
       if (node != null) {
         invariant(node instanceof HTMLElement);
@@ -136,7 +143,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       }
     }
 
-    if (this.state.footerHeight == null && this._footerRef != null) {
+    if (force || (this.state.footerHeight == null && this._footerRef != null)) {
       const footer = ReactDOM.findDOMNode(this._footerRef);
       if (footer != null) {
         invariant(footer instanceof HTMLElement);
