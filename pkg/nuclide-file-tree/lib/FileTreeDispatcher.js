@@ -270,27 +270,7 @@ export type FileTreeAction =
       type: 'REMOVE_EXTRA_PROJECT_SELECTION_CONTENT',
       content: React.Element<any>,
     |}
-  | {|
-      type: 'EXPAND_NODE',
-      rootKey: string,
-      nodeKey: string,
-    |}
-  | {|
-      type: 'EXPAND_NODE_DEEP',
-      rootKey: string,
-      nodeKey: string,
-    |}
   | {|type: 'DELETE_SELECTED_NODES'|}
-  | {|
-      type: 'COLLAPSE_NODE',
-      rootKey: string,
-      nodeKey: string,
-    |}
-  | {|
-      type: 'COLLAPSE_NODE_DEEP',
-      rootKey: string,
-      nodeKey: string,
-    |}
   | {|
       type: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
       excludeVcsIgnoredPaths: boolean,
