@@ -56,32 +56,35 @@ function renderEntryComponentIntoDocument(
   };
 
   const node = new FileTreeNode(nodeProps, nodeConf);
+
   store.dispatch(SelectionActions.focus(node));
+  // The focusedNodes selector requries that the node be in the node tree.
+  // Rather than try to get that working, we just hard code the focused nodes.
+  const focusedNodes = new Set([node]);
+  const selectedNodes = Selectors.getSelectedNodes(store.getState()).toSet();
+
   return TestUtils.renderIntoDocument(
     <Provider store={store}>
       <Component
         node={node}
-        selectedNodes={Selectors.getSelectedNodes(store.getState()).toSet()}
-        focusedNodes={Selectors.getFocusedNodes(store.getState()).toSet()}
+        {...props}
+        focusedNodes={focusedNodes}
+        selectedNodes={selectedNodes}
       />
     </Provider>,
   );
 }
 
-describe('Directory FileTreeEntryComponent', () => {
-  let store;
-  beforeEach(() => {
-    store = createStore();
-    jest.spyOn(store, 'dispatch');
-  });
+let store;
+beforeEach(() => {
+  store = createStore();
+  jest.spyOn(store, 'dispatch');
+});
 
+describe('Directory FileTreeEntryComponent', () => {
   describe('when expanding/collapsing dir component', () => {
-    it.only('expands on click when node is selected', () => {
-      const props = {
-        rootUri: '/a/',
-        uri: '/a/b/',
-        isContainer: true,
-      };
+    it('expands on click when node is selected', () => {
+      const props = {rootUri: '/a/', uri: '/a/b/', isContainer: true};
       store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
@@ -101,19 +104,9 @@ describe('Directory FileTreeEntryComponent', () => {
 });
 
 describe('File FileTreeEntryComponent', () => {
-  let store;
-  beforeEach(() => {
-    store = createStore();
-    jest.spyOn(store, 'dispatch');
-  });
-
   describe('when expanding/collapsing file component', () => {
     it('does not expand on click when node is selected', () => {
-      const props = {
-        rootUri: '/a/',
-        uri: '/a/b',
-        isContainer: false,
-      };
+      const props = {rootUri: '/a/', uri: '/a/b', isContainer: false};
       store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
@@ -131,12 +124,8 @@ describe('File FileTreeEntryComponent', () => {
 
   describe('when preview tabs are enabled', () => {
     it('opens a file if a selected node is clicked', () => {
-      const props = {
-        rootUri: '/a/',
-        uri: '/a/b',
-        isContainer: false,
-        usePreviewTabs: true,
-      };
+      const props = {rootUri: '/a/', uri: '/a/b', isContainer: false};
+      store.dispatch(Actions.setUsePreviewTabs(true));
       store.dispatch(Actions.setSelectedNode(props.rootUri, props.uri));
 
       const nodeComponent = renderEntryComponentIntoDocument(
