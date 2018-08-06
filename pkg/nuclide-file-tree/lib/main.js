@@ -461,6 +461,11 @@ class Activation {
   deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
     return this._fileTreeComponent || this._createView();
   }
+
+  // Exported for testing
+  __getStore(): Store {
+    return this._store;
+  }
 }
 
 createPackage(module.exports, Activation);

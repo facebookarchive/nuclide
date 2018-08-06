@@ -12,11 +12,11 @@
 import invariant from 'assert';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import * as main from '../../pkg/nuclide-file-tree/lib/main';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Actions from '../../pkg/nuclide-file-tree/lib/redux/Actions';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Selectors from '../../pkg/nuclide-file-tree/lib/FileTreeSelectors';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import createStore from '../../pkg/nuclide-file-tree/lib/redux/createStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -26,8 +26,8 @@ import type {TestContext} from './remotable-tests';
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
-    const store = createStore();
-    spyOn(store, 'dispatch');
+    // $FlowIgnore: createPackage is magical
+    const store = main.__getStore();
 
     let elem;
     waitsFor('DOM to load', 10000, () => {
@@ -54,7 +54,6 @@ export function runTest(context: TestContext) {
     runs(() => {
       invariant(elem != null);
       store.dispatch(Actions.clearFilter());
-
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
       expect(Selectors.getFilter(store.getState())).toEqual('a');
     });
