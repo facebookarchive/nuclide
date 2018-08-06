@@ -70,6 +70,7 @@ export default class NodeDebugAdapter implements DebugAdapter {
       const launchArgs = args._;
       const program = launchArgs[0];
 
+      commandLineArgs.set('runtimeExecutable', process.execPath);
       commandLineArgs.set('args', launchArgs.splice(1));
       commandLineArgs.set('program', nuclideUri.resolve(program));
       commandLineArgs.set('noDebug', false);
