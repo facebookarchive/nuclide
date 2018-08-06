@@ -12,9 +12,10 @@
 import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as Immutable from 'immutable';
+import * as Selectors from './FileTreeSelectors';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NodeCheckedStatus, StoreConfigData} from './types';
+import type {NodeCheckedStatus, MiddlewareStore} from './types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
@@ -186,8 +187,8 @@ export class FileTreeNode {
   nextSibling: ?FileTreeNode;
   prevSibling: ?FileTreeNode;
 
-  _conf: StoreConfigData;
   _deriver: MemoizedFieldsDeriver;
+  _store: MiddlewareStore;
 
   uri: NuclideUri;
   rootUri: NuclideUri;
@@ -242,19 +243,21 @@ export class FileTreeNode {
    */
   constructor(
     options: FileTreeNodeOptions,
-    conf: StoreConfigData,
+    store: MiddlewareStore,
     _deriver: ?MemoizedFieldsDeriver = null,
   ) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
-    this._conf = conf;
+    this._store = store;
 
     this._assignOptions(options);
 
     this._deriver =
       _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
-    const derived = this._deriver.buildDerivedFields(conf);
+    const derived = this._deriver.buildDerivedFields(
+      Selectors.getConf(this._store.getState()),
+    );
     this._assignDerived(derived);
 
     this._handleChildren();
@@ -463,7 +466,7 @@ export class FileTreeNode {
    */
   updateConf(): FileTreeNode {
     const children = this.children.map(c => c.updateConf());
-    return this._newNode({children}, this._conf);
+    return this._newNode({children});
   }
 
   /**
@@ -472,7 +475,7 @@ export class FileTreeNode {
    * const newNode = node.set({isExpanded: true});
    */
   set(props: ImmutableNodeSettableFields): FileTreeNode {
-    return this._newNode(props, this._conf);
+    return this._newNode(props);
   }
 
   /**
@@ -765,17 +768,14 @@ export class FileTreeNode {
     return true;
   }
 
-  _newNode(
-    props: ImmutableNodeSettableFields,
-    conf: StoreConfigData,
-  ): FileTreeNode {
+  _newNode(props: ImmutableNodeSettableFields): FileTreeNode {
     const options = this._buildOptions();
     return new FileTreeNode(
       {
         ...options,
         ...props,
       },
-      this._conf,
+      this._store,
       this._deriver,
     );
   }

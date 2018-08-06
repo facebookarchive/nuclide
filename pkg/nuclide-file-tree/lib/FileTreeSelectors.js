@@ -14,7 +14,7 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
-import {FileTreeNode} from './FileTreeNode';
+import type {FileTreeNode} from './FileTreeNode';
 import * as Immutable from 'immutable';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 

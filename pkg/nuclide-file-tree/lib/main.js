@@ -10,7 +10,7 @@
  */
 
 import type {TerminalApi} from 'atom-ide-ui';
-import type {ExportStoreData} from './types';
+import type {ExportStoreData, Store} from './types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
