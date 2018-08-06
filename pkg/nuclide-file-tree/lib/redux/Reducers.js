@@ -1118,8 +1118,8 @@ function setSelectedAndFocusedNode(
   if (node != null) {
     nextState = {
       ...nextState,
-      _selectedUris: addNodes(state._selectedUris, [node]),
-      _focusedUris: addNodes(state._focusedUris, [node]),
+      _selectedUris: addNodes(nextState._selectedUris, [node]),
+      _focusedUris: addNodes(nextState._focusedUris, [node]),
     };
   }
   nextState = setTrackedNode(nextState, rootKey, nodeKey);
