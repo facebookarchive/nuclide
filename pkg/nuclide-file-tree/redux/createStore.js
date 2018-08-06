@@ -12,9 +12,29 @@
 import type {AppState, Action, Store} from './types';
 
 import {createStore as _createStore} from 'redux';
+import {getLogger} from 'log4js';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from 'nuclide-commons/redux-observable';
+import {applyMiddleware} from 'redux';
+import * as Epics from '../lib/redux/Epics';
 
 export default function createStore(initialState: AppState): Store {
-  return _createStore(reducer, initialState);
+  const epics = Object.keys(Epics)
+    .map(k => Epics[k])
+    .filter(epic => typeof epic === 'function');
+  const rootEpic = (actions, store) =>
+    combineEpics(...epics)(actions, store).catch((err, stream) => {
+      getLogger('nuclide-file-tree').error(err);
+      return stream;
+    });
+
+  return _createStore(
+    reducer,
+    initialState,
+    applyMiddleware(createEpicMiddleware(rootEpic)),
+  );
 }
 
 function reducer(state: AppState, action: Action) {

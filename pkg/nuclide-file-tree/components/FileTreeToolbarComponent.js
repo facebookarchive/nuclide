@@ -18,8 +18,8 @@ import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import FileTreeActions from '../lib/FileTreeActions';
 import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
@@ -29,7 +29,6 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 type Props = {
   workingSetsStore: WorkingSetsStore,
   store: Store,
-  actions: FileTreeActions,
 };
 
 type State = {
@@ -253,7 +252,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   };
 
   _startEditingWorkingSet(workingSet: WorkingSet): void {
-    this.props.actions.startEditingWorkingSet(workingSet);
+    this.props.store.dispatch(Actions.startEditingWorkingSet(workingSet));
   }
 
   _finishEditingWorkingSet(): void {
@@ -261,7 +260,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
       isUpdatingExistingWorkingSet: false,
       updatedWorkingSetName: '',
     });
-    this.props.actions.finishEditingWorkingSet();
+    this.props.store.dispatch(Actions.finishEditingWorkingSet());
   }
 }
 

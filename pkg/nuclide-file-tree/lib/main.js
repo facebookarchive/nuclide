@@ -19,6 +19,7 @@ import type {AdditionalLogFilesProvider} from '../../nuclide-logging/lib/rpc-typ
 
 import invariant from 'assert';
 
+import * as Actions from './redux/Actions';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -36,7 +37,6 @@ import {
 } from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
-import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import * as Selectors from './FileTreeSelectors';
 import {WorkingSet} from '../../nuclide-working-sets-common';
@@ -71,7 +71,6 @@ class Activation {
   _fileTreeComponent: ?FileTreeSidebarComponent;
   _restored: boolean; // Has the package state been restored from a previous session?
   _store: Store;
-  _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
   _disposables: UniversalDisposable;
 
@@ -106,13 +105,9 @@ class Activation {
             item.destroy();
           }
         }),
-      () => {
-        this._actions.dispose();
-      },
     );
 
     const legacyStore = new FileTreeStore();
-    this._actions = new FileTreeActions(legacyStore);
     const initialState = state == null ? null : state.tree;
     if (initialState != null) {
       legacyStore.loadData(initialState);
@@ -120,8 +115,8 @@ class Activation {
 
     this._store = createStore(legacyStore);
 
-    this._disposables.add(registerCommands(this._store, this._actions));
-    this._actions.updateRootDirectories();
+    this._disposables.add(registerCommands(this._store));
+    this._store.dispatch(Actions.updateRootDirectories());
     this._contextMenu = new FileTreeContextMenu(this._store.getState());
     this._restored = state.restored === true;
 
@@ -143,7 +138,7 @@ class Activation {
         if (usePrefixNav == null) {
           return;
         }
-        this._actions.setUsePrefixNav(usePrefixNav);
+        this._store.dispatch(Actions.setUsePrefixNav(usePrefixNav));
       }),
       featureConfig
         .observeAsStream(REVEAL_FILE_ON_SWITCH_SETTING)
@@ -152,9 +147,11 @@ class Activation {
             ? this._currentActiveFilePath()
             : Observable.empty();
         })
-        .subscribe(filePath =>
-          this._actions.revealFilePath(filePath, /* showIfHidden */ false),
-        ),
+        .subscribe(filePath => {
+          this._store.dispatch(
+            Actions.revealFilePath(filePath, /* showIfHidden */ false),
+          );
+        }),
       atom.config.observe(
         ignoredNamesSetting,
         (ignoredNames: string | Array<string>) => {
@@ -166,25 +163,29 @@ class Activation {
           } else {
             normalizedIgnoredNames = ignoredNames;
           }
-          this._actions.setIgnoredNames(normalizedIgnoredNames);
+          this._store.dispatch(Actions.setIgnoredNames(normalizedIgnoredNames));
         },
       ),
       featureConfig.observe(
         hideIgnoredNamesSetting,
         (hideIgnoredNames: any) => {
-          this._actions.setHideIgnoredNames(hideIgnoredNames);
+          this._store.dispatch(Actions.setHideIgnoredNames(hideIgnoredNames));
         },
       ),
       featureConfig.observe(
         hideVcsIgnoredPathsSetting,
         (hideVcsIgnoredPaths: any) => {
-          this._actions.setHideVcsIgnoredPaths(hideVcsIgnoredPaths);
+          this._store.dispatch(
+            Actions.setHideVcsIgnoredPaths(hideVcsIgnoredPaths),
+          );
         },
       ),
       atom.config.observe(
         excludeVcsIgnoredPathsSetting,
         excludeVcsIgnoredPaths => {
-          this._actions.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
+          this._store.dispatch(
+            Actions.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths),
+          );
         },
       ),
       atom.config.observe(allowPendingPaneItems, (usePreviewTabs: ?boolean) => {
@@ -192,13 +193,13 @@ class Activation {
         if (usePreviewTabs == null) {
           return;
         }
-        this._actions.setUsePreviewTabs(usePreviewTabs);
+        this._store.dispatch(Actions.setUsePreviewTabs(usePreviewTabs));
       }),
       featureConfig.observe(autoExpandSingleChild, (value: mixed) => {
-        this._actions.setAutoExpandSingleChild(value === true);
+        this._store.dispatch(Actions.setAutoExpandSingleChild(value === true));
       }),
       featureConfig.observe(focusEditorOnFileSelection, (value: boolean) => {
-        this._actions.setFocusEditorOnFileSelection(value);
+        this._store.dispatch(Actions.setFocusEditorOnFileSelection(value));
       }),
       atom.commands.add('atom-workspace', 'tree-view:toggle-focus', () => {
         const component = this._fileTreeComponent;
@@ -274,17 +275,17 @@ class Activation {
     if (this._cwdApiSubscription != null) {
       this._cwdApiSubscription.dispose();
     }
-    this._actions.setCwdApi(cwdApi);
+    this._store.dispatch(Actions.setCwdApi(cwdApi));
     this._cwdApiSubscription = new UniversalDisposable(() =>
-      this._actions.setCwdApi(null),
+      this._store.dispatch(Actions.setCwdApi(null)),
     );
     return this._cwdApiSubscription;
   }
 
   consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
-    this._actions.setRemoteProjectsService(service);
+    this._store.dispatch(Actions.setRemoteProjectsService(service));
     return new UniversalDisposable(() => {
-      this._actions.setRemoteProjectsService(null);
+      this._store.dispatch(Actions.setRemoteProjectsService(null));
     });
   }
 
@@ -305,12 +306,14 @@ class Activation {
   }
 
   consumeWorkingSetsStore(workingSetsStore: WorkingSetsStore): ?IDisposable {
-    this._actions.updateWorkingSetsStore(workingSetsStore);
-    this._actions.updateWorkingSet(workingSetsStore.getCurrent());
+    this._store.dispatch(Actions.updateWorkingSetsStore(workingSetsStore));
+    this._store.dispatch(
+      Actions.updateWorkingSet(workingSetsStore.getCurrent()),
+    );
 
     const currentSubscription = workingSetsStore.subscribeToCurrent(
       currentWorkingSet => {
-        this._actions.updateWorkingSet(currentWorkingSet);
+        this._store.dispatch(Actions.updateWorkingSet(currentWorkingSet));
       },
     );
     this._disposables.add(currentSubscription);
@@ -343,14 +346,16 @@ class Activation {
           .filter(te => te.getPath() != null && te.getPath() !== '')
           .map(te => (te.getPath(): any));
         const openFilesWorkingSet = new WorkingSet(openUris);
-        this._actions.updateOpenFilesWorkingSet(openFilesWorkingSet);
+        this._store.dispatch(
+          Actions.updateOpenFilesWorkingSet(openFilesWorkingSet),
+        );
       }),
     );
 
     return new UniversalDisposable(() => {
-      this._actions.updateWorkingSetsStore(null);
-      this._actions.updateWorkingSet(new WorkingSet());
-      this._actions.updateOpenFilesWorkingSet(new WorkingSet());
+      this._store.dispatch(Actions.updateWorkingSetsStore(null));
+      this._store.dispatch(Actions.updateWorkingSet(new WorkingSet()));
+      this._store.dispatch(Actions.updateOpenFilesWorkingSet(new WorkingSet()));
       this._disposables.remove(currentSubscription);
       currentSubscription.dispose();
     });
@@ -378,7 +383,7 @@ class Activation {
   }
 
   provideProjectSelectionManagerForFileTree(): ProjectSelectionManager {
-    return new ProjectSelectionManager(this._store.getState(), this._actions);
+    return new ProjectSelectionManager(this._store.getState());
   }
 
   provideFileTreeAdditionalLogFilesProvider(): AdditionalLogFilesProvider {
@@ -410,7 +415,7 @@ class Activation {
   _createView(): FileTreeSidebarComponent {
     // Currently, we assume that only one will be created.
     this._fileTreeComponent = viewableFromReactElement(
-      <FileTreeSidebarComponent store={this._store} actions={this._actions} />,
+      <FileTreeSidebarComponent store={this._store} />,
     );
     return this._fileTreeComponent;
   }

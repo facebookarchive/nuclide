@@ -11,23 +11,23 @@
  */
 /* global Element */
 
-import FileTreeActions from '../lib/FileTreeActions';
+import {ActionTypes} from '../lib/FileTreeDispatcher';
 import FileTreeStore from '../lib/FileTreeStore';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-
+import * as Actions from '../lib/redux/Actions';
 import invariant from 'assert';
 import * as Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
+import createStore from '../redux/createStore';
 
 function renderEntryComponentIntoDocument(
   componentKlass: Object,
   store,
-  actions,
   props: Object = {},
   conf: Object = {},
 ): React.Component<any, any> {
@@ -61,7 +61,6 @@ function renderEntryComponentIntoDocument(
   return TestUtils.renderIntoDocument(
     React.createElement(componentKlass, {
       store,
-      actions,
       node,
       selectedNodes: selectionManager.selectedNodes(),
       focusedNodes: selectionManager.focusedNodes(),
@@ -70,19 +69,17 @@ function renderEntryComponentIntoDocument(
 }
 
 describe('Directory FileTreeEntryComponent', () => {
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const store = createStore(new FileTreeStore());
 
   describe('when expanding/collapsing dir component', () => {
     beforeEach(() => {
-      jest.spyOn(actions, 'expandNode');
+      jest.spyOn(store, 'dispatch');
     });
 
     it('expands on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        actions,
         {
           rootUri: '/a/',
           uri: '/a/b/',
@@ -95,25 +92,25 @@ describe('Directory FileTreeEntryComponent', () => {
       // $FlowFixMe
       const domNode = ReactDOM.findDOMNode(nodeComponent).children[0];
       TestUtils.Simulate.click(domNode);
-      expect(actions.expandNode).toHaveBeenCalled();
+      expect(store.dispatch.mock.calls.map(call => call[0].type)).toContain(
+        ActionTypes.EXPAND_NODE,
+      );
     });
   });
 });
 
 describe('File FileTreeEntryComponent', () => {
-  const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
+  const store = createStore(new FileTreeStore());
 
   describe('when expanding/collapsing file component', () => {
     beforeEach(() => {
-      jest.spyOn(actions, 'expandNode');
+      jest.spyOn(store, 'dispatch');
     });
 
     it('does not expand on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        actions,
         {
           rootUri: '/a/',
           uri: '/a/b',
@@ -124,20 +121,21 @@ describe('File FileTreeEntryComponent', () => {
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
-      expect(actions.expandNode).not.toHaveBeenCalled();
+      expect(store.dispatch.mock.calls.map(call => call[0].type)).not.toContain(
+        ActionTypes.EXPAND_NODE,
+      );
     });
   });
 
   describe('when preview tabs are enabled', () => {
     beforeEach(() => {
-      jest.spyOn(actions, 'confirmNode');
+      jest.spyOn(store, 'dispatch');
     });
 
     it('opens a file if a selected node is clicked', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
         store,
-        actions,
         {
           rootUri: '/a/',
           uri: '/a/b',
@@ -149,7 +147,9 @@ describe('File FileTreeEntryComponent', () => {
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
-      expect(actions.confirmNode).toHaveBeenCalled();
+      expect(store.dispatch.mock.calls.map(call => call[0].type)).toContain(
+        ActionTypes.CONFIRM_NODE,
+      );
     });
   });
 });

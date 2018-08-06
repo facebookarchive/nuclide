@@ -13,9 +13,9 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
 import type {Store} from '../redux/types';
 
-import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -37,7 +37,6 @@ type Props = {|
   focusedNodes: Immutable.Set<FileTreeNode>,
   isPreview?: boolean,
   store: Store,
-  actions: FileTreeActions,
 |};
 
 type State = {|
@@ -287,7 +286,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         // $FlowFixMe
         ReactDOM.findDOMNode(this._pathContainer).getBoundingClientRect().left;
     if (shouldToggleExpand) {
-      this.props.actions.clearTrackedNode();
+      this.props.store.dispatch(Actions.clearTrackedNode());
     }
 
     return shouldToggleExpand;
@@ -304,11 +303,17 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
     const selectionMode = FileTreeHelpers.getSelectionMode(event);
     if (selectionMode === 'multi-select' && !isSelected) {
-      this.props.actions.addSelectedNode(node.rootUri, node.uri);
+      this.props.store.dispatch(
+        Actions.addSelectedNode(node.rootUri, node.uri),
+      );
     } else if (selectionMode === 'range-select') {
-      this.props.actions.rangeSelectToNode(node.rootUri, node.uri);
+      this.props.store.dispatch(
+        Actions.rangeSelectToNode(node.rootUri, node.uri),
+      );
     } else if (selectionMode === 'single-select' && !isSelected) {
-      this.props.actions.setSelectedNode(node.rootUri, node.uri);
+      this.props.store.dispatch(
+        Actions.setSelectedNode(node.rootUri, node.uri),
+      );
     }
   };
 
@@ -335,7 +340,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
     if (selectionMode === 'multi-select') {
       if (isFocused) {
-        this.props.actions.unselectNode(node.rootUri, node.uri);
+        this.props.store.dispatch(Actions.unselectNode(node.rootUri, node.uri));
         // If this node was just unselected, immediately return and skip
         // the statement below that sets this node to focused.
         return;
@@ -347,20 +352,24 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         }
       } else {
         if (node.conf.usePreviewTabs) {
-          this.props.actions.confirmNode(
-            node.rootUri,
-            node.uri,
-            true, // pending
+          this.props.store.dispatch(
+            Actions.confirmNode(
+              node.rootUri,
+              node.uri,
+              true, // pending
+            ),
           );
         }
       }
       // Set selected node to clear any other selected nodes (i.e. in the case of
       // previously having multiple selections).
-      this.props.actions.setSelectedNode(node.rootUri, node.uri);
+      this.props.store.dispatch(
+        Actions.setSelectedNode(node.rootUri, node.uri),
+      );
     }
 
     if (isSelected) {
-      this.props.actions.setFocusedNode(node.rootUri, node.uri);
+      this.props.store.dispatch(Actions.setFocusedNode(node.rootUri, node.uri));
     }
   };
 
@@ -371,9 +380,8 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       return;
     }
 
-    this.props.actions.confirmNode(
-      this.props.node.rootUri,
-      this.props.node.uri,
+    this.props.store.dispatch(
+      Actions.confirmNode(this.props.node.rootUri, this.props.node.uri),
     );
   };
 
@@ -386,7 +394,9 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       nodes.size === 1 &&
       nullthrows(nodes.first()).isRoot
     ) {
-      this.props.actions.reorderDragInto(this.props.node.rootUri);
+      this.props.store.dispatch(
+        Actions.reorderDragInto(this.props.node.rootUri),
+      );
       return;
     }
     const movableNodes = nodes.filter(node =>
@@ -399,9 +409,11 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     }
     if (this.dragEventCount <= 0) {
       this.dragEventCount = 0;
-      this.props.actions.setDragHoveredNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
+      this.props.store.dispatch(
+        Actions.setDragHoveredNode(
+          this.props.node.rootUri,
+          this.props.node.uri,
+        ),
       );
     }
     this.dragEventCount++;
@@ -416,9 +428,8 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     this.dragEventCount--;
     if (this.dragEventCount <= 0) {
       this.dragEventCount = 0;
-      this.props.actions.unhoverNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
+      this.props.store.dispatch(
+        Actions.unhoverNode(this.props.node.rootUri, this.props.node.uri),
       );
     }
   };
@@ -454,7 +465,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     });
 
     if (this.props.node.isRoot) {
-      this.props.actions.startReorderDrag(this.props.node.uri);
+      this.props.store.dispatch(Actions.startReorderDrag(this.props.node.uri));
     }
   };
 
@@ -465,7 +476,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
   _onDragEnd = (event: DragEvent) => {
     if (this.props.node.isRoot) {
-      this.props.actions.endReorderDrag();
+      this.props.store.dispatch(Actions.endReorderDrag());
     }
   };
 
@@ -477,13 +488,12 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       this.props.store.getState(),
     );
     if (dragNode != null && dragNode.isRoot) {
-      this.props.actions.reorderRoots();
+      this.props.store.dispatch(Actions.reorderRoots());
     } else {
       // Reset the dragEventCount for the currently dragged node upon dropping.
       this.dragEventCount = 0;
-      this.props.actions.moveToNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
+      this.props.store.dispatch(
+        Actions.moveToNode(this.props.node.rootUri, this.props.node.uri),
       );
     }
   };
@@ -491,26 +501,25 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   _toggleNodeExpanded(deep: boolean): void {
     if (this.props.node.isExpanded) {
       if (deep) {
-        this.props.actions.collapseNodeDeep(
-          this.props.node.rootUri,
-          this.props.node.uri,
+        this.props.store.dispatch(
+          Actions.collapseNodeDeep(
+            this.props.node.rootUri,
+            this.props.node.uri,
+          ),
         );
       } else {
-        this.props.actions.collapseNode(
-          this.props.node.rootUri,
-          this.props.node.uri,
+        this.props.store.dispatch(
+          Actions.collapseNode(this.props.node.rootUri, this.props.node.uri),
         );
       }
     } else {
       if (deep) {
-        this.props.actions.expandNodeDeep(
-          this.props.node.rootUri,
-          this.props.node.uri,
+        this.props.store.dispatch(
+          Actions.expandNodeDeep(this.props.node.rootUri, this.props.node.uri),
         );
       } else {
-        this.props.actions.expandNode(
-          this.props.node.rootUri,
-          this.props.node.uri,
+        this.props.store.dispatch(
+          Actions.expandNode(this.props.node.rootUri, this.props.node.uri),
         );
       }
     }
@@ -518,14 +527,12 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
   _checkboxOnChange = (isChecked: boolean): void => {
     if (isChecked) {
-      this.props.actions.checkNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
+      this.props.store.dispatch(
+        Actions.checkNode(this.props.node.rootUri, this.props.node.uri),
       );
     } else {
-      this.props.actions.uncheckNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
+      this.props.store.dispatch(
+        Actions.uncheckNode(this.props.node.rootUri, this.props.node.uri),
       );
     }
   };

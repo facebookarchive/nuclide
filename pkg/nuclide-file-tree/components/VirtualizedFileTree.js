@@ -21,7 +21,7 @@ import List from 'react-virtualized/dist/commonjs/List';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import FileTreeStore from '../lib/FileTreeStore';
-import FileTreeActions from '../lib/FileTreeActions';
+import * as Actions from '../lib/redux/Actions';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
 
@@ -50,7 +50,6 @@ type Props = {|
   width: number,
   initialScrollTop: number,
   store: Store,
-  actions: FileTreeActions,
 |};
 
 type RowType = 'root' | 'node' | 'footer';
@@ -337,7 +336,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }): void => {
     const {scrollTop} = args;
     if (!this._nextScrollingIsProgrammatic && this.state.trackedIndex != null) {
-      this.props.actions.clearTrackedNode();
+      this.props.store.dispatch(Actions.clearTrackedNode());
     }
     this._nextScrollingIsProgrammatic = false;
     this.props.onScroll(scrollTop);
@@ -422,7 +421,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             selectedNodes={this.state.selectedNodes}
             focusedNodes={this.state.focusedNodes}
             store={this.props.store}
-            actions={this.props.actions}
           />
         </div>
       );
@@ -444,7 +442,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       this.state.trackedIndex >= startIndex &&
       this.state.trackedIndex <= stopIndex
     ) {
-      this.props.actions.clearTrackedNodeIfNotLoading();
+      this.props.store.dispatch(Actions.clearTrackedNodeIfNotLoading());
     }
   };
 

@@ -12,8 +12,8 @@
 import type {Store} from '../redux/types';
 
 import {COMMANDS_SELECTOR} from './FileTreeConstants';
-import FileTreeActions from './FileTreeActions';
 import * as Selectors from './FileTreeSelectors';
+import * as Actions from './redux/Actions';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 
@@ -27,28 +27,27 @@ const VALID_FILTER_CHARS =
   '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
   '_abcdefghijklmnopqrstuvwxyz~';
 
-export default function registerCommands(
-  store: Store,
-  actions: FileTreeActions,
-): IDisposable {
+export default function registerCommands(store: Store): IDisposable {
   const disposables = new UniversalDisposable();
 
   // Subsequent root directories updated on change
   disposables.add(
     atom.project.onDidChangePaths(() => {
-      actions.updateRootDirectories();
+      store.dispatch(Actions.updateRootDirectories());
     }),
     atom.commands.add('atom-workspace', {
       'tree-view:reveal-active-file': (event: Event) => {
-        revealActiveFile(event, actions);
+        revealActiveFile(event, store);
       },
       'tree-view:recursive-collapse-all': () => {
-        actions.collapseAll();
+        store.dispatch(Actions.collapseAll());
       },
       'tree-view:add-file-relative': () => {
-        actions.openAddFileDialogRelative(filePath => {
-          actions.openAndRevealFilePath(filePath);
-        });
+        store.dispatch(
+          Actions.openAddFileDialogRelative(filePath => {
+            store.dispatch(Actions.openAndRevealFilePath(filePath));
+          }),
+        );
       },
     }),
   );
@@ -57,9 +56,11 @@ export default function registerCommands(
       if (!store.getState().usePrefixNav()) {
         return;
       }
-      actions.removeFilterLetter();
+      store.dispatch(Actions.removeFilterLetter());
     },
-    'tree-view:clear-filter': () => actions.clearFilter(),
+    'tree-view:clear-filter': () => {
+      store.dispatch(Actions.clearFilter());
+    },
   };
   for (
     let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
@@ -71,94 +72,100 @@ export default function registerCommands(
       if (!store.getState().usePrefixNav()) {
         return;
       }
-      actions.addFilterLetter(char);
+      store.dispatch(Actions.addFilterLetter(char));
     };
   }
   disposables.add(
     atom.commands.add(COMMANDS_SELECTOR, {
       'core:move-down': () => {
-        actions.moveSelectionDown();
+        store.dispatch(Actions.moveSelectionDown());
       },
       'core:move-up': () => {
-        actions.moveSelectionUp();
+        store.dispatch(Actions.moveSelectionUp());
       },
       'core:move-to-top': () => {
-        actions.moveSelectionToTop();
+        store.dispatch(Actions.moveSelectionToTop());
       },
       'core:move-to-bottom': () => {
-        actions.moveSelectionToBottom();
+        store.dispatch(Actions.moveSelectionToBottom());
       },
       'core:select-up': () => {
-        actions.rangeSelectUp();
+        store.dispatch(Actions.rangeSelectUp());
       },
       'core:select-down': () => {
-        actions.rangeSelectDown();
+        store.dispatch(Actions.rangeSelectDown());
       },
       'tree-view:add-file': () => {
-        actions.openAddFileDialog(filePath => {
-          actions.openAndRevealFilePath(filePath);
-        });
+        store.dispatch(
+          Actions.openAddFileDialog(filePath => {
+            store.dispatch(Actions.openAndRevealFilePath(filePath));
+          }),
+        );
       },
       'tree-view:add-folder': () => {
-        actions.openAddFolderDialog(filePath => {
-          actions.openAndRevealDirectoryPath(filePath);
-        });
+        store.dispatch(
+          Actions.openAddFolderDialog(filePath => {
+            store.dispatch(Actions.openAndRevealDirectoryPath(filePath));
+          }),
+        );
       },
       'tree-view:collapse-directory': () => {
-        actions.collapseSelection(false);
+        store.dispatch(Actions.collapseSelection(false));
       },
       'tree-view:recursive-collapse-directory': () => {
-        actions.collapseSelection(true);
+        store.dispatch(Actions.collapseSelection(true));
       },
       'tree-view:expand-directory': () => {
-        actions.expandSelection(false);
+        store.dispatch(Actions.expandSelection(false));
       },
       'tree-view:recursive-expand-directory': () => {
-        actions.expandSelection(true);
+        store.dispatch(Actions.expandSelection(true));
       },
       'tree-view:open-selected-entry': () => {
-        actions.openSelectedEntry();
+        store.dispatch(Actions.openSelectedEntry());
       },
       'tree-view:open-selected-entry-up': () => {
-        actions.openSelectedEntrySplitUp();
+        store.dispatch(Actions.openSelectedEntrySplitUp());
       },
       'tree-view:open-selected-entry-down': () => {
-        actions.openSelectedEntrySplitDown();
+        store.dispatch(Actions.openSelectedEntrySplitDown());
       },
       'tree-view:open-selected-entry-left': () => {
-        actions.openSelectedEntrySplitLeft();
+        store.dispatch(Actions.openSelectedEntrySplitLeft());
       },
       'tree-view:open-selected-entry-right': () => {
-        actions.openSelectedEntrySplitRight();
+        store.dispatch(Actions.openSelectedEntrySplitRight());
       },
       'tree-view:remove': () => {
-        actions.deleteSelection();
+        store.dispatch(Actions.deleteSelection());
       },
       'core:delete': () => {
-        actions.deleteSelection();
+        store.dispatch(Actions.deleteSelection());
       },
       'tree-view:remove-project-folder-selection': () => {
-        actions.removeRootFolderSelection();
+        store.dispatch(Actions.removeRootFolderSelection());
       },
       'tree-view:rename-selection': () => {
-        actions.openRenameDialog();
+        store.dispatch(Actions.openRenameDialog());
       },
       'tree-view:duplicate-selection': () => {
-        actions.openDuplicateDialog(filePaths => {
-          actions.openAndRevealFilePaths(filePaths);
-        });
+        store.dispatch(
+          Actions.openDuplicateDialog(filePaths => {
+            store.dispatch(Actions.openAndRevealFilePaths(filePaths));
+          }),
+        );
       },
       'tree-view:copy-selection': () => {
-        actions.copyFilenamesWithDir();
+        store.dispatch(Actions.copyFilenamesWithDir());
       },
       'tree-view:paste-selection': () => {
-        actions.openPasteDialog();
+        store.dispatch(Actions.openPasteDialog());
       },
       'tree-view:search-in-directory': (event: Event) => {
         searchInDirectory(event, store);
       },
       'tree-view:set-current-working-root': () => {
-        actions.setCwdToSelection();
+        store.dispatch(Actions.setCwdToSelection());
       },
       ...letterKeyBindings,
     }),
@@ -182,7 +189,7 @@ function copyFullPath(event: Event): void {
   atom.clipboard.write(parsed.path);
 }
 
-function revealActiveFile(event: Event, actions: FileTreeActions): void {
+function revealActiveFile(event: Event, store: Store): void {
   let path = getElementFilePath(((event.target: any): HTMLElement), true);
 
   if (path == null) {
@@ -198,7 +205,7 @@ function revealActiveFile(event: Event, actions: FileTreeActions): void {
     }
   }
 
-  actions.revealFilePath(path);
+  store.dispatch(Actions.revealFilePath(path));
 }
 
 function searchInDirectory(event: Event, store: Store): void {

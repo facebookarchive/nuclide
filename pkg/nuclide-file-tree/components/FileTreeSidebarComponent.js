@@ -26,6 +26,7 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable, Subject} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as Actions from '../lib/redux/Actions';
 
 import {
   REVEAL_FILE_ON_SWITCH_SETTING,
@@ -45,7 +46,6 @@ import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import {LockableHeight} from './LockableHeightComponent';
-import FileTreeActions from '../lib/FileTreeActions';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
@@ -95,7 +95,6 @@ type State = {|
 
 type Props = {|
   store: Store,
-  actions: FileTreeActions,
 |};
 
 export default class FileTreeSidebarComponent extends React.Component<
@@ -242,7 +241,7 @@ export default class FileTreeSidebarComponent extends React.Component<
           'tree-view:reveal-active-file',
         );
       }
-      this.props.actions.clearFilter();
+      this.props.store.dispatch(Actions.clearFilter());
     }
   }
 
@@ -304,7 +303,6 @@ export default class FileTreeSidebarComponent extends React.Component<
             key="toolbar"
             workingSetsStore={workingSetsStore}
             store={this.props.store}
-            actions={this.props.actions}
           />
         )}
       </div>
@@ -409,7 +407,6 @@ All the changes across your entire stacked diff.
         generatedTypes={this.state.generatedOpenChangedFiles}
         activeUri={this.state.activeUri}
         store={this.props.store}
-        actions={this.props.actions}
       />
     ) : null;
     return (
@@ -478,7 +475,6 @@ All the changes across your entire stacked diff.
             width={this.state.scrollerWidth}
             initialScrollTop={this._scrollerScrollTop}
             store={this.props.store}
-            actions={this.props.actions}
           />
         )}
       </div>
@@ -555,16 +551,18 @@ All the changes across your entire stacked diff.
     if (isCollapsed) {
       this.setState({isFileTreeHovered: false});
     }
-    this.props.actions.setFoldersExpanded(!isCollapsed);
+    this.props.store.dispatch(Actions.setFoldersExpanded(!isCollapsed));
   };
 
   _handleOpenFilesExpandedChange = (isCollapsed: boolean): void => {
-    this.props.actions.setOpenFilesExpanded(!isCollapsed);
+    this.props.store.dispatch(Actions.setOpenFilesExpanded(!isCollapsed));
   };
 
   _handleUncommittedFilesExpandedChange = (isCollapsed: boolean): void => {
     track('filetree-uncommitted-file-changes-toggle');
-    this.props.actions.setUncommittedChangesExpanded(!isCollapsed);
+    this.props.store.dispatch(
+      Actions.setUncommittedChangesExpanded(!isCollapsed),
+    );
   };
 
   _handleUncommittedChangesKindDownArrow = (

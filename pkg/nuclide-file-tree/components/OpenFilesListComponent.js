@@ -17,7 +17,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import classnames from 'classnames';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
-import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
@@ -26,6 +25,7 @@ import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
 import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
 import {createSelector} from 'reselect';
 import Immutable from 'immutable';
 
@@ -43,7 +43,6 @@ type Props = {
   generatedTypes: Immutable.Map<NuclideUri, GeneratedFileType>,
   activeUri: ?NuclideUri,
   store: Store,
-  actions: FileTreeActions,
 };
 
 type State = {
@@ -87,7 +86,9 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
       !entry.isSelected &&
       rootNode != null
     ) {
-      this.props.actions.setTargetNode(rootNode.rootUri, entry.uri);
+      this.props.store.dispatch(
+        Actions.setTargetNode(rootNode.rootUri, entry.uri),
+      );
       this.setState({selectedUri: entry.uri});
     }
   }

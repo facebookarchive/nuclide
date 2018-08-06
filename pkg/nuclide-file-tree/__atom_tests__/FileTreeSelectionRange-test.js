@@ -17,7 +17,6 @@ import {
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {FileTreeNode} from '../lib/FileTreeNode';
-import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeStore from '../lib/FileTreeStore';
 import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 import {DEFAULT_CONF} from '../lib/FileTreeStore';
@@ -26,6 +25,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {denodeify} from 'nuclide-commons/promise';
 import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
 import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
 import tempModule from 'temp';
 tempModule.track();
 const tempCleanup = denodeify(tempModule.cleanup);
@@ -101,7 +101,6 @@ describe('FileTreeSelectionRange', () => {
 
   describe('RangeUtil', () => {
     const store = new FileTreeStore();
-    const actions = new FileTreeActions(store);
 
     async function prepareFileTree(): Promise<Map<string, string>> {
       const map: Map<string, string> = await buildTempDirTree(
@@ -114,7 +113,7 @@ describe('FileTreeSelectionRange', () => {
       const dir = map.get('dir');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir);
-      actions.setRootKeys([dir]);
+      store.dispatch(Actions.setRootKeys([dir]));
       return map;
     }
 
@@ -133,8 +132,8 @@ describe('FileTreeSelectionRange', () => {
     });
 
     afterEach(async () => {
-      actions.updateWorkingSet(new WorkingSet([]));
-      actions.reset();
+      store.dispatch(Actions.updateWorkingSet(new WorkingSet([])));
+      store.dispatch(Actions.reset());
       await tempCleanup();
     });
 
@@ -146,7 +145,7 @@ describe('FileTreeSelectionRange', () => {
         invariant(dir);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar1);
-        actions.setSelectedNode(dir, bar1);
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
         const node = Selectors.getNode(store, dir, bar1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(node);
@@ -162,7 +161,7 @@ describe('FileTreeSelectionRange', () => {
         invariant(bar1);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar3);
-        actions.setSelectedNode(dir, bar3);
+        store.dispatch(Actions.setSelectedNode(dir, bar3));
         const node = Selectors.getNode(store, dir, bar1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(
@@ -180,7 +179,7 @@ describe('FileTreeSelectionRange', () => {
         invariant(bar1);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar3);
-        actions.setSelectedNode(dir, bar1);
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
         const node = Selectors.getNode(store, dir, bar3);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(
@@ -213,8 +212,8 @@ describe('FileTreeSelectionRange', () => {
         invariant(foo1);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar1);
-        actions.collapseNode(dir, foo);
-        actions.setSelectedNode(dir, bar1);
+        store.dispatch(Actions.collapseNode(dir, foo));
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
         const node = Selectors.getNode(store, dir, foo1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(
@@ -232,8 +231,8 @@ describe('FileTreeSelectionRange', () => {
         invariant(foo1);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar1);
-        actions.updateWorkingSet(new WorkingSet([foo1, bar1]));
-        actions.setSelectedNode(dir, bar1);
+        store.dispatch(Actions.updateWorkingSet(new WorkingSet([foo1, bar1])));
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
         const node = Selectors.getNode(store, dir, foo1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(

@@ -9,9 +9,9 @@
  * @format
  */
 
-import type FileTreeActions from './FileTreeActions';
 import type FileTreeStore from './FileTreeStore';
 import * as Selectors from './FileTreeSelectors';
+import * as Actions from './redux/Actions';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
@@ -19,18 +19,16 @@ import * as Immutable from 'immutable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class ProjectSelectionManager {
-  _actions: FileTreeActions;
   _store: FileTreeStore;
 
-  constructor(store: FileTreeStore, actions: FileTreeActions) {
+  constructor(store: FileTreeStore) {
     this._store = store;
-    this._actions = actions;
   }
 
   addExtraContent(content: React.Element<any>): IDisposable {
-    this._actions.addExtraProjectSelectionContent(content);
+    this._store.dispatch(Actions.addExtraProjectSelectionContent(content));
     return new UniversalDisposable(() =>
-      this._actions.removeExtraProjectSelectionContent(content),
+      this._store.dispatch(Actions.removeExtraProjectSelectionContent(content)),
     );
   }
 

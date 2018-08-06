@@ -10,10 +10,10 @@
  * @emails oncall+nuclide
  */
 import {Directory} from 'atom';
-import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import FileTreeStore from '../lib/FileTreeStore';
 import * as Selectors from '../lib/FileTreeSelectors';
+import * as Actions from '../lib/redux/Actions';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';
@@ -48,7 +48,6 @@ describe('FileTreeStore', () => {
   let dir2 = '';
 
   const store = new FileTreeStore();
-  const actions = new FileTreeActions(store);
 
   /*
    * Trigger the fetch through the **internal-only** API. Enables the
@@ -80,7 +79,7 @@ describe('FileTreeStore', () => {
   }
 
   beforeEach(async () => {
-    actions.reset();
+    store.dispatch(Actions.reset());
     await tempCleanup();
     jest.clearAllMocks();
     jest.resetAllMocks();
@@ -105,13 +104,13 @@ describe('FileTreeStore', () => {
     });
 
     it('returns false when the store has data, has roots', () => {
-      actions.setRootKeys([dir1]);
+      store.dispatch(Actions.setRootKeys([dir1]));
       expect(Selectors.isEmpty(store)).toBe(false);
     });
   });
 
   it('should update root keys via actions', () => {
-    actions.setRootKeys([dir1, dir2]);
+    store.dispatch(Actions.setRootKeys([dir1, dir2]));
     const rootKeys = Selectors.getRootKeys(store);
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
@@ -119,24 +118,24 @@ describe('FileTreeStore', () => {
 
   it('should expand root keys as they are added', () => {
     const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
-    actions.setRootKeys([rootKey]);
+    store.dispatch(Actions.setRootKeys([rootKey]));
     const node = getNode(rootKey, rootKey);
     expect(node.isExpanded).toBe(true);
   });
 
   it('toggles selected items', () => {
-    actions.setRootKeys([dir1]);
-    actions.setSelectedNode(dir1, dir1);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.setSelectedNode(dir1, dir1));
     let node = getNode(dir1, dir1);
     expect(node.isSelected()).toBe(true);
-    actions.unselectNode(dir1, dir1);
+    store.dispatch(Actions.unselectNode(dir1, dir1));
     node = getNode(dir1, dir1);
     expect(node.isSelected()).toBe(false);
   });
 
   it('deselects items in other roots when a single node is selected', () => {
-    actions.setRootKeys([dir1, dir2]);
-    actions.setSelectedNode(dir1, dir1);
+    store.dispatch(Actions.setRootKeys([dir1, dir2]));
+    store.dispatch(Actions.setSelectedNode(dir1, dir1));
     let node1 = getNode(dir1, dir1);
     let node2 = getNode(dir2, dir2);
 
@@ -145,7 +144,7 @@ describe('FileTreeStore', () => {
     expect(node2.isSelected()).toBe(false);
 
     // Selecting a single node, node2, deselects nodes in all other roots
-    actions.setSelectedNode(dir2, dir2);
+    store.dispatch(Actions.setSelectedNode(dir2, dir2));
     node1 = getNode(dir1, dir1);
     node2 = getNode(dir2, dir2);
     expect(node1.isSelected()).toBe(false);
@@ -154,9 +153,9 @@ describe('FileTreeStore', () => {
 
   describe('getSelectedNodes', () => {
     it('returns selected nodes from all roots', () => {
-      actions.setRootKeys([dir1, dir2]);
-      actions.addSelectedNode(dir1, dir1);
-      actions.addSelectedNode(dir2, dir2);
+      store.dispatch(Actions.setRootKeys([dir1, dir2]));
+      store.dispatch(Actions.addSelectedNode(dir1, dir1));
+      store.dispatch(Actions.addSelectedNode(dir2, dir2));
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
       const selectedNodes = Selectors.getSelectedNodes(store)
@@ -181,7 +180,7 @@ describe('FileTreeStore', () => {
        *   → dir1
        *   → dir2
        */
-      actions.setRootKeys([dir1, dir2]);
+      store.dispatch(Actions.setRootKeys([dir1, dir2]));
     });
 
     it('returns null when no nodes are selected', () => {
@@ -189,13 +188,13 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null when more than 1 node is selected', () => {
-      actions.addSelectedNode(dir1, dir1);
-      actions.addSelectedNode(dir2, dir2);
+      store.dispatch(Actions.addSelectedNode(dir1, dir1));
+      store.dispatch(Actions.addSelectedNode(dir2, dir2));
       expect(Selectors.getSingleSelectedNode(store)).toBeNull();
     });
 
     it('returns a node when only 1 is selected', () => {
-      actions.setSelectedNode(dir2, dir2);
+      store.dispatch(Actions.setSelectedNode(dir2, dir2));
       const singleSelectedNode = Selectors.getSingleSelectedNode(store);
       expect(singleSelectedNode).not.toBeNull();
       invariant(singleSelectedNode);
@@ -205,8 +204,8 @@ describe('FileTreeStore', () => {
 
   describe('getRootForPath', () => {
     beforeEach(async () => {
-      actions.setRootKeys([dir1, dir2]);
-      actions.expandNode(dir1, fooTxt);
+      store.dispatch(Actions.setRootKeys([dir1, dir2]));
+      store.dispatch(Actions.expandNode(dir1, fooTxt));
       await loadChildKeys(dir1, dir1);
     });
 
@@ -226,13 +225,13 @@ describe('FileTreeStore', () => {
 
   describe('trackedNode', () => {
     it('resets when there is a new selection', () => {
-      actions.setRootKeys([dir1]);
-      actions.setTrackedNode(dir1, dir1);
+      store.dispatch(Actions.setRootKeys([dir1]));
+      store.dispatch(Actions.setTrackedNode(dir1, dir1));
 
       // Root is tracked after setting it.
       const trackedNode = Selectors.getTrackedNode(store);
       expect(trackedNode && trackedNode.uri).toBe(dir1);
-      actions.setSelectedNode(dir1, dir1);
+      store.dispatch(Actions.setSelectedNode(dir1, dir1));
 
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
@@ -246,7 +245,7 @@ describe('FileTreeStore', () => {
         return Promise.reject(new Error('This error **should** be thrown.'));
       });
 
-      actions.setRootKeys([dir1]);
+      store.dispatch(Actions.setRootKeys([dir1]));
 
       let node = getNode(dir1, dir1);
       expect(node.isExpanded).toBe(true);
@@ -272,7 +271,7 @@ describe('FileTreeStore', () => {
     let node;
 
     beforeEach(() => {
-      actions.setRootKeys([dir1]);
+      store.dispatch(Actions.setRootKeys([dir1]));
       node = getNode(dir1, dir1);
     });
 
@@ -284,36 +283,36 @@ describe('FileTreeStore', () => {
 
     function updateFilter() {
       expect(Selectors.getFilter(store)).toEqual('');
-      actions.setRootKeys([dir1]);
+      store.dispatch(Actions.setRootKeys([dir1]));
       checkNode('', true);
-      actions.addFilterLetter(node.name);
+      store.dispatch(Actions.addFilterLetter(node.name));
       expect(Selectors.getFilter(store)).toEqual(node.name);
       checkNode(node.name, true);
     }
 
     function doubleFilter() {
       updateFilter();
-      actions.addFilterLetter(node.name);
+      store.dispatch(Actions.addFilterLetter(node.name));
       expect(Selectors.getFilter(store)).toEqual(node.name + node.name);
       checkNode('', false);
     }
 
     function clearFilter() {
       updateFilter();
-      actions.addFilterLetter('t');
+      store.dispatch(Actions.addFilterLetter('t'));
       checkNode('', false);
-      actions.clearFilter();
+      store.dispatch(Actions.clearFilter());
       checkNode('', true);
     }
 
     it('should update when a letter is added', () => {
       updateFilter();
-      actions.clearFilter();
+      store.dispatch(Actions.clearFilter());
     });
 
     it('should not match when filter does not equal name', () => {
       doubleFilter();
-      actions.clearFilter();
+      store.dispatch(Actions.clearFilter());
     });
 
     it('should clear the filter, and return matching to normal', () => {
@@ -323,16 +322,16 @@ describe('FileTreeStore', () => {
 
     it('should remove filter letter', () => {
       updateFilter();
-      actions.removeFilterLetter();
+      store.dispatch(Actions.removeFilterLetter());
       checkNode(node.name.substr(0, node.name.length - 1), true);
-      actions.clearFilter();
+      store.dispatch(Actions.clearFilter());
     });
   });
 
   it('omits hidden nodes', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setIgnoredNames(['foo.*']);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setIgnoredNames(['foo.*']));
 
     await loadChildKeys(dir1, dir1);
 
@@ -340,22 +339,22 @@ describe('FileTreeStore', () => {
   });
 
   it('shows nodes if the pattern changes to no longer match', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setIgnoredNames(['foo.*']);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setIgnoredNames(['foo.*']));
 
     await loadChildKeys(dir1, dir1);
 
-    actions.setIgnoredNames(['bar.*']);
+    store.dispatch(Actions.setIgnoredNames(['bar.*']));
 
     expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
   it('obeys the hideIgnoredNames setting', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setIgnoredNames(['foo.*']);
-    actions.setHideIgnoredNames(false);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setIgnoredNames(['foo.*']));
+    store.dispatch(Actions.setHideIgnoredNames(false));
 
     await loadChildKeys(dir1, dir1);
 
@@ -375,8 +374,8 @@ describe('FileTreeStore', () => {
         .spyOn(FileTreeHelpers, 'getDirectoryByKey')
         .mockReturnValue(unsubscribeableDir);
 
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, dir1);
+      store.dispatch(Actions.setRootKeys([dir1]));
+      store.dispatch(Actions.expandNode(dir1, dir1));
       await loadChildKeys(dir1, dir1);
 
       // Children should load but the subscription should fail.
@@ -391,8 +390,8 @@ describe('FileTreeStore', () => {
 
       // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
       // whether a subscription is possible.
-      actions.collapseNode(dir1, dir1);
-      actions.expandNode(dir1, dir1);
+      store.dispatch(Actions.collapseNode(dir1, dir1));
+      store.dispatch(Actions.expandNode(dir1, dir1));
       await loadChildKeys(dir1, dir1);
 
       // The subscription should fail again, but the children should be refetched and match the
@@ -407,10 +406,10 @@ describe('FileTreeStore', () => {
   });
 
   it('omits vcs-excluded paths', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setExcludeVcsIgnoredPaths(true);
-    actions.setHideVcsIgnoredPaths(true);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
+    store.dispatch(Actions.setHideVcsIgnoredPaths(true));
 
     const mockRepo = new MockRepository();
     store._updateConf(conf => {
@@ -422,10 +421,10 @@ describe('FileTreeStore', () => {
   });
 
   it('includes vcs-excluded paths when told to', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setExcludeVcsIgnoredPaths(false);
-    actions.setHideVcsIgnoredPaths(false);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setExcludeVcsIgnoredPaths(false));
+    store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
     const mockRepo = new MockRepository();
     store._updateConf(conf => {
@@ -437,10 +436,10 @@ describe('FileTreeStore', () => {
   });
 
   it('includes vcs-excluded paths when explicitly told to', async () => {
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, fooTxt);
-    actions.setExcludeVcsIgnoredPaths(true);
-    actions.setHideVcsIgnoredPaths(false);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, fooTxt));
+    store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
+    store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
     const mockRepo = new MockRepository();
     store._updateConf(conf => {
@@ -461,7 +460,7 @@ describe('FileTreeStore', () => {
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31);
-      actions.setRootKeys([dir3]);
+      store.dispatch(Actions.setRootKeys([dir3]));
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
@@ -481,13 +480,13 @@ describe('FileTreeStore', () => {
       const dir31 = map.get('dir3/dir31');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31);
-      actions.setRootKeys([dir3]);
+      store.dispatch(Actions.setRootKeys([dir3]));
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
       await store._expandNodeDeep(dir3, dir3);
       expect(isExpanded(dir3, dir31)).toBe(true);
-      actions.collapseNodeDeep(dir3, dir3);
+      store.dispatch(Actions.collapseNodeDeep(dir3, dir3));
       expect(isExpanded(dir3, dir31)).toBe(false);
     })();
   });
@@ -506,7 +505,7 @@ describe('FileTreeStore', () => {
       const dir32 = map.get('dir3/dir32');
       // flowlint-next-line sketchy-null-string:off
       invariant(dir3 && dir31 && dir32);
-      actions.setRootKeys([dir3]);
+      store.dispatch(Actions.setRootKeys([dir3]));
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
       // return the promise that can be awaited on
@@ -518,8 +517,8 @@ describe('FileTreeStore', () => {
   it('should be able to add, remove, then re-add a file', async () => {
     const foo2Txt = nuclideUri.join(dir1, 'foo2.txt');
 
-    actions.setRootKeys([dir1]);
-    actions.expandNode(dir1, dir1);
+    store.dispatch(Actions.setRootKeys([dir1]));
+    store.dispatch(Actions.expandNode(dir1, dir1));
     await loadChildKeys(dir1, dir1);
     fs.writeFileSync(foo2Txt, '');
 

@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
@@ -14,9 +14,11 @@ import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeStore from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import FileTreeActions from '../../pkg/nuclide-file-tree/lib/FileTreeActions';
+import * as Actions from '../../pkg/nuclide-file-tree/lib/redux/Actions';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as Selectors from '../../pkg/nuclide-file-tree/lib/FileTreeSelectors';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import createStore from '../../pkg/nuclide-file-tree/redux/createStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -26,8 +28,9 @@ import type {TestContext} from './remotable-tests';
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
-    const store = new FileTreeStore();
-    const actions = new FileTreeActions(store);
+    const store = createStore(new FileTreeStore());
+    spyOn(store, 'dispatch');
+
     let elem;
     waitsFor('DOM to load', 10000, () => {
       elem = document.querySelector(EVENT_HANDLER_SELECTOR);
@@ -52,10 +55,10 @@ export function runTest(context: TestContext) {
 
     runs(() => {
       invariant(elem != null);
-      actions.clearFilter();
+      store.dispatch(Actions.clearFilter());
 
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
-      expect(Selectors.getFilter(store)).toEqual('a');
+      expect(Selectors.getFilter(store.getState())).toEqual('a');
     });
 
     // Close and open file tree
@@ -63,10 +66,10 @@ export function runTest(context: TestContext) {
     open();
 
     runs(() => {
-      expect(Selectors.getFilter(store)).toEqual('');
+      expect(Selectors.getFilter(store.getState())).toEqual('');
       invariant(elem != null);
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
-      expect(Selectors.getFilter(store)).toEqual('a');
+      expect(Selectors.getFilter(store.getState())).toEqual('a');
     });
   });
 }
