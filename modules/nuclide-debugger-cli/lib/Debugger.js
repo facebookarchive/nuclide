@@ -901,6 +901,12 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onAdapterExited(event: AdapterExitedEvent) {
+    // If we're initializing, this is expected - relaunch() is tearing down
+    // the adapter to build a new one.
+    if (this._state === 'INITIALIZING') {
+      return;
+    }
+
     this._state = 'TERMINATED';
     this._console.outputLine('The debug adapter has exited.');
 
