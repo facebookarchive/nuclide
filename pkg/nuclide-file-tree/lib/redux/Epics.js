@@ -498,43 +498,42 @@ export function collapseSelectionEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions
-    .ofType(ActionTypes.COLLAPSE_SELECTION)
-    .map(action => {
-      invariant(action.type === ActionTypes.COLLAPSE_SELECTION);
-      const {deep} = action;
-      const selectedNodes = Selectors.getSelectedNodes(store.getState());
-      const firstSelectedNode = nullthrows(selectedNodes.first());
-      if (
-        selectedNodes.size === 1 &&
-        !firstSelectedNode.isRoot &&
-        !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)
-      ) {
-        /*
+  return actions.ofType(ActionTypes.COLLAPSE_SELECTION).switchMap(action => {
+    invariant(action.type === ActionTypes.COLLAPSE_SELECTION);
+    const {deep} = action;
+    const selectedNodes = Selectors.getSelectedNodes(store.getState());
+    const firstSelectedNode = nullthrows(selectedNodes.first());
+    if (
+      selectedNodes.size === 1 &&
+      !firstSelectedNode.isRoot &&
+      !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)
+    ) {
+      /*
         * Select the parent of the selection if the following criteria are met:
         *   * Only 1 node is selected
         *   * The node is not a root
         *   * The node is not an expanded directory
         */
 
-        const parent = nullthrows(firstSelectedNode.parent);
-        return Actions.selectAndTrackNode(parent);
-      } else {
-        selectedNodes.forEach(node => {
-          // Only directories can be expanded. Skip non-directory nodes.
-          if (!node.isContainer) {
-            return null;
-          }
+      const parent = nullthrows(firstSelectedNode.parent);
+      return Observable.of(Actions.selectAndTrackNode(parent));
+    }
+    const collapseActions = selectedNodes
+      .map(node => {
+        // Only directories can be expanded. Skip non-directory nodes.
+        if (!node.isContainer) {
+          return null;
+        }
 
-          if (deep) {
-            return Actions.collapseNodeDeep(node.rootUri, node.uri);
-          } else {
-            return Actions.collapseNode(node.rootUri, node.uri);
-          }
-        });
-      }
-    })
-    .filter(Boolean);
+        if (deep) {
+          return Actions.collapseNodeDeep(node.rootUri, node.uri);
+        } else {
+          return Actions.collapseNode(node.rootUri, node.uri);
+        }
+      })
+      .filter(Boolean);
+    return Observable.from(collapseActions);
+  });
 }
 
 export function collapseAllEpic(
