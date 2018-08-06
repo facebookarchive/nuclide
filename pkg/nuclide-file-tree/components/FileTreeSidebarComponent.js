@@ -23,7 +23,7 @@ import ReactDOM from 'react-dom';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, Scheduler} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
@@ -175,7 +175,14 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._processExternalUpdate();
 
     this._disposables.add(
-      this.props.store.subscribe(this._processExternalUpdate),
+      observableFromSubscribeFunction(
+        cb => new UniversalDisposable(this.props.store.subscribe(cb)),
+      )
+        .throttleTime(0, undefined, {leading: false, trailing: true})
+        .observeOn(Scheduler.animationFrame)
+        .subscribe(() => {
+          this._processExternalUpdate();
+        }),
       observeAllModifiedStatusChanges()
         .let(toggle(this._showOpenConfigValues))
         .subscribe(() => this._setModifiedUris()),

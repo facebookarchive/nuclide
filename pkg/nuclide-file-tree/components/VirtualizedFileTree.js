@@ -30,12 +30,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import * as Selectors from '../lib/FileTreeSelectors';
 
 type State = {|
-  trackedIndex: ?number,
-  isEditingWorkingSet: boolean,
-  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
-  shownNodes: number,
-  selectedNodes: Immutable.Set<FileTreeNode>,
-  focusedNodes: Immutable.Set<FileTreeNode>,
   rootHeight: ?number,
   nodeHeight: ?number,
   footerHeight: ?number,
@@ -66,6 +60,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   _rootRef: ?FileTreeEntryComponent;
   _nodeRef: ?FileTreeEntryComponent;
   _footerRef: ?ProjectSelection;
+  _prevShownNodes: number = 0;
 
   _indexOfFirstRowInView: number;
   _indexOfLastRowInView: number;
@@ -77,25 +72,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       Selectors.getRoots(this.props.store.getState()),
     );
 
-    const shownNodes = countShownNodes(
-      Selectors.getRoots(this.props.store.getState()),
-    );
     this.state = {
-      trackedIndex: findIndexOfTheTrackedNode(
-        this.props.store.getState(),
-        shownNodes,
-      ),
-      isEditingWorkingSet: Selectors.isEditingWorkingSet(
-        this.props.store.getState(),
-      ),
-      roots: Selectors.getRoots(this.props.store.getState()),
-      shownNodes,
-      selectedNodes: Selectors.getSelectedNodes(
-        this.props.store.getState(),
-      ).toSet(),
-      focusedNodes: Selectors.getFocusedNodes(
-        this.props.store.getState(),
-      ).toSet(),
       rootHeight: null,
       nodeHeight: null,
       footerHeight: null,
@@ -109,17 +86,14 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    this._processStoreUpdate();
-    this._disposables.add(
-      this.props.store.subscribe(() => this._processStoreUpdate()),
-    );
-
     this._remeasureHeights();
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
     this._remeasureHeights();
-    if (this.state.shownNodes !== prevState.shownNodes) {
+    const shownNodes = this._getShownNodes();
+    if (shownNodes !== this._prevShownNodes) {
+      this._prevShownNodes = shownNodes;
       // Some folder was expanded/collaplsed or roots were modified.
       // In some themes the height of a root node is different from the height of plain node
       // The indices of root nodes could have changed -- we'll better recompute the heights
@@ -182,50 +156,47 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
   }
 
-  _processStoreUpdate(): void {
-    const isEditingWorkingSet = Selectors.isEditingWorkingSet(
-      this.props.store.getState(),
-    );
-    const roots = Selectors.getRoots(this.props.store.getState());
-    const shownNodes = countShownNodes(roots);
-    const trackedIndex = findIndexOfTheTrackedNode(
-      this.props.store.getState(),
-      shownNodes,
-    );
-    const selectedNodes = Selectors.getSelectedNodes(
-      this.props.store.getState(),
-    ).toSet();
-    const focusedNodes = Selectors.getFocusedNodes(
-      this.props.store.getState(),
-    ).toSet();
+  // TODO: Memoize
+  _getRoots = () => Selectors.getRoots(this.props.store.getState());
 
-    this.setState({
-      trackedIndex,
-      isEditingWorkingSet,
-      roots,
-      shownNodes,
-      selectedNodes,
-      focusedNodes,
-    });
-  }
+  // TODO: Memoize
+  _getShownNodes = () => countShownNodes(this._getRoots());
+
+  // TODO: Memoize
+  _getTrackedIndex = () =>
+    findIndexOfTheTrackedNode(
+      this.props.store.getState(),
+      this._getShownNodes(),
+    );
+
+  // TODO: Memoize
+  _getSelectedNodes = () =>
+    Selectors.getSelectedNodes(this.props.store.getState()).toSet();
+
+  // TODO: Memoize
+  _getFocusedNodes = () =>
+    Selectors.getFocusedNodes(this.props.store.getState()).toSet();
 
   render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
       'tree-view': true,
-      'nuclide-file-tree-editing-working-set': this.state.isEditingWorkingSet,
+      'nuclide-file-tree-editing-working-set': Selectors.isEditingWorkingSet(
+        this.props.store.getState(),
+      ),
     };
 
-    let trackedIndex = undefined;
+    let scrollToIndex = undefined;
     let scrollToAlignment = 'auto';
     let willBeActivelyScrolling = false;
+    const trackedIndex = this._getTrackedIndex();
 
-    if (this.state.trackedIndex != null) {
-      trackedIndex = this.state.trackedIndex;
+    if (trackedIndex != null) {
+      scrollToIndex = trackedIndex;
       if (
-        trackedIndex <= this._indexOfFirstRowInView ||
-        trackedIndex >= this._indexOfLastRowInView
+        scrollToIndex <= this._indexOfFirstRowInView ||
+        scrollToIndex >= this._indexOfLastRowInView
       ) {
         scrollToAlignment = 'center';
         willBeActivelyScrolling = true;
@@ -233,7 +204,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
 
     let scrollTop;
-    if (trackedIndex == null && this.props.initialScrollTop != null) {
+    if (scrollToIndex == null && this.props.initialScrollTop != null) {
       scrollTop = this.props.initialScrollTop;
       willBeActivelyScrolling = true;
     }
@@ -253,10 +224,10 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
           height={this.props.height}
           width={this.props.width}
           ref={this._setListRef}
-          rowCount={this.state.shownNodes + 1}
+          rowCount={this._getShownNodes() + 1}
           rowRenderer={this._rowRenderer}
           rowHeight={this._rowHeight}
-          scrollToIndex={trackedIndex}
+          scrollToIndex={scrollToIndex}
           scrollTop={scrollTop}
           scrollToAlignment={scrollToAlignment}
           overscanRowCount={BUFFER_ELEMENTS}
@@ -281,9 +252,9 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             List does not use them, but they will give a hint to React that the component
             should be updated, and this will cause it to rerender its children.
           */
-          roots={this.state.roots}
-          selectedNodes={this.state.selectedNodes}
-          focusedNodes={this.state.focusedNodes}
+          roots={this._getRoots()}
+          selectedNodes={this._getSelectedNodes()}
+          focusedNodes={this._getFocusedNodes()}
         />
       </div>
     );
@@ -334,7 +305,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     scrollTop: number,
   }): void => {
     const {scrollTop} = args;
-    if (!this._nextScrollingIsProgrammatic && this.state.trackedIndex != null) {
+    if (!this._nextScrollingIsProgrammatic && this._getTrackedIndex() != null) {
       this.props.store.dispatch(Actions.clearTrackedNode());
     }
     this._nextScrollingIsProgrammatic = false;
@@ -349,7 +320,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     let prevNode: ?FileTreeNode = null;
 
     const fallbackGetByIndex = index => {
-      prevRoots = this.state.roots;
+      prevRoots = this._getRoots();
       prevIndexQuery = index;
       prevNode = Selectors.getNodeByIndex(this.props.store.getState())(
         index + 1,
@@ -358,7 +329,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     };
 
     return index => {
-      if (this.state.roots !== prevRoots) {
+      if (this._getRoots() !== prevRoots) {
         // The tree structure was updated
         return fallbackGetByIndex(index);
       }
@@ -394,7 +365,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }): ?React$Node => {
     const {index, key, style} = args;
 
-    if (index === this.state.shownNodes) {
+    if (index === this._getShownNodes()) {
       // The footer
       return (
         <div key={key} style={style}>
@@ -417,8 +388,8 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
             ref={node.isRoot ? this._setRootRef : this._setNodeRef}
             node={node}
-            selectedNodes={this.state.selectedNodes}
-            focusedNodes={this.state.focusedNodes}
+            selectedNodes={this._getSelectedNodes()}
+            focusedNodes={this._getFocusedNodes()}
             store={this.props.store}
           />
         </div>
@@ -435,11 +406,12 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     const {startIndex, stopIndex} = args;
     this._indexOfFirstRowInView = startIndex;
     this._indexOfLastRowInView = stopIndex;
+    const trackedIndex = this._getTrackedIndex();
 
     if (
-      this.state.trackedIndex != null &&
-      this.state.trackedIndex >= startIndex &&
-      this.state.trackedIndex <= stopIndex
+      trackedIndex != null &&
+      trackedIndex >= startIndex &&
+      trackedIndex <= stopIndex
     ) {
       this.props.store.dispatch(Actions.clearTrackedNodeIfNotLoading());
     }
@@ -450,7 +422,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   };
 
   _rowTypeMapper(rowIndex: number): RowType {
-    if (rowIndex === this.state.shownNodes) {
+    if (rowIndex === this._getShownNodes()) {
       return 'footer';
     }
 
