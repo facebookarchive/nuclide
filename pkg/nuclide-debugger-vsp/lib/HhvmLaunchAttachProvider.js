@@ -182,6 +182,7 @@ export function getLaunchProcessConfig(
     targetUri,
     debugMode: 'launch',
     adapterType: VsAdapterTypes.HHVM,
+    processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
     config,
   };
 }
@@ -225,6 +226,13 @@ export async function startAttachProcessConfig(
     targetUri,
     debugMode: 'attach',
     adapterType: VsAdapterTypes.HHVM,
+    processName: `HHVM (${
+      serverAttach
+        ? nuclideUri.isRemote(targetUri)
+          ? nuclideUri.getHostname(targetUri)
+          : 'localhost'
+        : 'Attached to script on port ' + (attachPort || 0)
+    })`,
     config,
     customControlButtons: getCustomControlButtons(),
     threadsComponentTitle: 'Requests',
