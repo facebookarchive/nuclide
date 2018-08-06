@@ -31,23 +31,24 @@ export function observeIosDevices(): Observable<
 function createPoller(): Observable<Expected<Array<FbsimctlDevice>>> {
   return Observable.interval(2000)
     .startWith(0)
-    .switchMap(() =>
-      Observable.defer(async () =>
-        Expect.value(await getFbsimctlServiceByNuclideUri('').getDevices()),
-      ).catch(error => {
-        const friendlyError = new Error(
-          "Can't fetch iOS devices. Make sure that fbsimctl is in your $PATH and that it works properly.",
-        );
-        if (error.code !== 'ENOENT') {
-          track('nuclide-fbsimctl:error', {error});
-          getLogger().error(error);
-        } else {
-          // Keep the code so tooling higher up knows this is due to the tool missing.
-          (friendlyError: any).code = 'ENOENT';
-        }
-        return Observable.of(Expect.error(friendlyError));
-      }),
-    )
+    .exhaustMap(() => {
+      const service = getFbsimctlServiceByNuclideUri('');
+      if (service == null) {
+        // Gracefully handle a lost remote connection
+        return Observable.of(Expect.pending());
+      }
+      return Observable.fromPromise(service.getDevices())
+        .map(devices => Expect.value(devices))
+        .catch(error => {
+          const message =
+            error.code !== 'ENOENT'
+              ? error.message
+              : "'fbsimctl' not found in $PATH.";
+          return Observable.of(
+            Expect.error(new Error("Can't fetch iOS devices. " + message)),
+          );
+        });
+    })
     .distinctUntilChanged((a, b) =>
       expectedEqual(
         a,
@@ -56,6 +57,14 @@ function createPoller(): Observable<Expected<Array<FbsimctlDevice>>> {
         (e1, e2) => e1.message === e2.message,
       ),
     )
+    .do(value => {
+      if (value.isError) {
+        const {error} = value;
+        const logger = getLogger('nuclide-fbsimctl');
+        logger.warn(value.error.message);
+        track('nuclide-fbsimctl:device-poller:error', {error});
+      }
+    })
     .publishReplay(1)
     .refCount();
 }
