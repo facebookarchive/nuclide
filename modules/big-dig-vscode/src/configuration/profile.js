@@ -71,20 +71,21 @@ function loadConnectionProfiles(): Array<IConnectionProfile> {
 
   const createProfileParser = getCreateProfileParser();
   const profiles: Array<IConnectionProfile> = [];
-  const connectionIds: Set<string> = new Set();
+  const connectionIdToPorts: Map<string, string> = new Map();
   for (const profile of configurationProfiles) {
     const configParser = createProfileParser(profile);
     const parsedProfile = configParser.parse();
     const connectionId = getConnectionIdForCredentialStore(parsedProfile);
-    if (connectionIds.has(connectionId)) {
+    const existingPorts = connectionIdToPorts.get(connectionId);
+    if (existingPorts != null && existingPorts !== parsedProfile.ports) {
       throw new Error(
-        'Multiple connection profiles have the same connection data: ' +
-          `${connectionId}. Please edit settings.json to disambiguate ` +
-          'and then reload VS Code.',
+        'You have multiple connection profiles to the same hostname ' +
+          `but with different ports for ${connectionId}. ` +
+          'Please edit settings.json to disambiguate and then reload VS Code.',
       );
     }
 
-    connectionIds.add(connectionId);
+    connectionIdToPorts.set(connectionId, parsedProfile.ports);
     profiles.push(parsedProfile);
   }
   return profiles;

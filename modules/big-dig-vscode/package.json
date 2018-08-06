@@ -15,6 +15,7 @@
   ],
   "activationEvents": [
     "*",
+    "onFileSystem:big-dig",
     "onFileSystemAccess:big-dig",
     "onDebug"
   ],
