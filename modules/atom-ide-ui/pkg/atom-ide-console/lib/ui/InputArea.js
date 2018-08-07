@@ -101,7 +101,14 @@ export default class InputArea extends React.Component<Props, State> {
       return;
     }
     if (event.which === ENTER_KEY_CODE) {
-      if (!isAutocompleteOpen) {
+      // If the current auto complete settings are such that pressing
+      // enter does NOT accept a suggestion, and the auto complete box
+      // is open, treat enter as submit. Otherwise, let the event
+      // propagate so that autocomplete can handle it.
+      const setting = atom.config.get('autocomplete-plus.confirmCompletion');
+      const enterAcceptsSuggestion =
+        setting == null || String(setting).includes('enter');
+      if (!isAutocompleteOpen || !enterAcceptsSuggestion) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
