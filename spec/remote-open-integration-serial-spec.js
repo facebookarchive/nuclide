@@ -18,7 +18,8 @@ import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {describeRemote} from './utils/remotable-tests';
 
 describeRemote('Remote Open', (context: TestContext) => {
-  it('tests remote open', () => {
+  // eslint-disable-next-line
+  xit('tests remote open', () => {
     let localFilePath: string = (null: any);
     let remoteFilePath: string = (null: any);
 
