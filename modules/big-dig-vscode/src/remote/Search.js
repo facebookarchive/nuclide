@@ -6,13 +6,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
+import type {FileSearchProvider, TextSearchProvider} from 'vscode';
+
 import * as vscode from 'vscode';
 import pathModule from 'path';
-import {SearchProvider} from 'vscode';
+import {arrayFlatten} from 'nuclide-commons/collection';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getLogger} from 'log4js';
 
@@ -24,31 +26,45 @@ const logger = getLogger('search');
 
 export function startSearchProviders(): IDisposable {
   const searcher = new Search();
-  return vscode.workspace.registerSearchProvider('big-dig', searcher);
+  // TODO(hansonw): Remove after 1.26 is deployed.
+  if (vscode.workspace.registerFileSearchProvider != null) {
+    return vscode.Disposable.from(
+      vscode.workspace.registerFileSearchProvider('big-dig', searcher),
+      vscode.workspace.registerTextSearchProvider('big-dig', searcher),
+    );
+  } else {
+    return vscode.workspace.registerSearchProvider('big-dig', searcher);
+  }
 }
 
-class Search implements SearchProvider {
+// TODO(hansonw): Split after deploying 1.26.
+class Search implements FileSearchProvider, TextSearchProvider {
   async provideFileSearchResults(
     query: vscode.FileSearchQuery,
     options: vscode.FileSearchOptions,
-    progress: vscode.Progress<vscode.Uri>,
     token: vscode.CancellationToken,
-  ): Promise<void> {
+    token123Compat?: vscode.CancellationToken,
+  ): Promise<Array<vscode.Uri>> {
     // For compatibility with 1.23's provideFileSearchResults:
     // https://github.com/Microsoft/vscode/blob/1.23.1/src/vs/vscode.proposed.d.ts#L75
-    if (typeof query === 'string') {
-      await Promise.all(
+    if (typeof query === 'string' && token123Compat != null) {
+      const results = await Promise.all(
         getConnectedFilesystems().map(({fs, conn}) =>
-          this._fileSearch(fs, conn, query, progress, token),
+          this._fileSearch(fs, conn, query, token123Compat),
         ),
       );
+      for (const uri of arrayFlatten(results)) {
+        ((token: any): vscode.Progress<vscode.Uri>).report(uri);
+      }
+      return [];
     } else {
       // TODO: (hansonw) T31478806 Actually use the fields in FileSearchOptions.
-      await Promise.all(
+      const results = await Promise.all(
         getConnectedFilesystems().map(({fs, conn}) =>
-          this._fileSearch(fs, conn, query.pattern, progress, token),
+          this._fileSearch(fs, conn, query.pattern, token),
         ),
       );
+      return arrayFlatten(results);
     }
   }
 
@@ -69,31 +85,31 @@ class Search implements SearchProvider {
     fs: RemoteFileSystem,
     conn: ConnectionWrapper,
     query: string,
-    progress: vscode.Progress<vscode.Uri>,
     token: vscode.CancellationToken,
-  ): Promise<void> {
+  ): Promise<vscode.Uri[]> {
     const basePaths = fs
       .getWorkspaceFolders()
       .map(({uri}) => fs.uriToPath(uri));
     if (basePaths.length === 0) {
       // No work to do.
-      return;
+      return [];
     }
 
-    await Promise.all(
+    const allResults = await Promise.all(
       // TODO(T29797318): the RPC should support multiple base paths
       basePaths.map(async path => {
         const results = await conn.searchForFiles(path, query);
         if (token.isCancellationRequested) {
-          return;
+          return [];
         }
-        for (const result of results.results) {
-          progress.report(fs.pathToUri(result));
-        }
+        return results.results.map(result => fs.pathToUri(result));
       }),
-    ).catch(error =>
-      logger.warn(`Could not search ${conn.getAddress()}: ${error.message}`),
-    );
+    ).catch(error => {
+      logger.warn(`Could not search ${conn.getAddress()}: ${error.message}`);
+      return [];
+    });
+
+    return arrayFlatten(allResults);
   }
 
   async _textSearch(
