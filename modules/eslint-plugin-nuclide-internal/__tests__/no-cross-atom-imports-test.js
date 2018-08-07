@@ -26,8 +26,8 @@ const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester({
   parser: 'babel-eslint',
-  'parserOptions': {
-    'sourceType': 'module',
+  parserOptions: {
+    sourceType: 'module',
   },
 });
 
@@ -682,7 +682,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'import type x from "../nuclide-fake-node-apm-package-1/package.json";',
+      code:
+        'import type x from "../nuclide-fake-node-apm-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // import typeof
@@ -691,15 +692,18 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-node-apm-package-1/file.js";',
+      code:
+        'import typeof x from "../nuclide-fake-node-apm-package-1/file.js";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-node-apm-package-1/index.js";',
+      code:
+        'import typeof x from "../nuclide-fake-node-apm-package-1/index.js";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-node-apm-package-1/package.json";',
+      code:
+        'import typeof x from "../nuclide-fake-node-apm-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
@@ -712,11 +716,13 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'export type {} from "../nuclide-fake-node-apm-package-1/index.js";',
+      code:
+        'export type {} from "../nuclide-fake-node-apm-package-1/index.js";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'export type {} from "../nuclide-fake-node-apm-package-1/package.json";',
+      code:
+        'export type {} from "../nuclide-fake-node-apm-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
@@ -755,7 +761,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
+      code:
+        'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export {}
@@ -772,7 +779,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
-      code: 'export type {} from "../nuclide-fake-atom-package-1/package.json";',
+      code:
+        'export type {} from "../nuclide-fake-atom-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
 
@@ -811,7 +819,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
+      code:
+        'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
@@ -828,7 +837,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
-      code: 'export type {} from "../nuclide-fake-atom-package-1/package.json";',
+      code:
+        'export type {} from "../nuclide-fake-atom-package-1/package.json";',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
@@ -867,7 +877,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
-      code: 'import typeof x from "../nuclide-fake-atom-package-2/package.json";',
+      code:
+        'import typeof x from "../nuclide-fake-atom-package-2/package.json";',
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
@@ -884,7 +895,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
-      code: 'export type {} from "../nuclide-fake-atom-package-2/package.json";',
+      code:
+        'export type {} from "../nuclide-fake-atom-package-2/package.json";',
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
@@ -902,10 +914,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-atom-package-2']}],
     },
-
   ],
   invalid: [
-
     //--------------------------------------------------------------------------
     // node-npm-1 => atom builtin
     //--------------------------------------------------------------------------
@@ -915,7 +925,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom builtin package "atom" is not requireable from an npm package.',
+          message:
+            'Atom builtin package "atom" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],
@@ -925,7 +936,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom builtin package "atom" is not importable from an npm package.',
+          message:
+            'Atom builtin package "atom" is not importable from a Node library.',
           type: 'ImportDeclaration',
         },
       ],
@@ -935,7 +947,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom builtin package "atom" is not exportable from an npm package.',
+          message:
+            'Atom builtin package "atom" is not exportable from a Node library.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -945,7 +958,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom builtin package "atom" is not exportable from an npm package.',
+          message:
+            'Atom builtin package "atom" is not exportable from a Node library.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -961,7 +975,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],
@@ -971,7 +986,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],
@@ -981,7 +997,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],
@@ -991,7 +1008,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],
@@ -1002,7 +1020,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not importable from a Node library.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1012,7 +1031,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not importable from a Node library.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1022,7 +1042,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not importable from a Node library.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1032,7 +1053,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not importable from a Node library.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1043,7 +1065,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1053,7 +1076,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1063,7 +1087,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1073,7 +1098,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1084,7 +1110,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1094,7 +1121,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1104,7 +1132,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1114,7 +1143,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-1" is not exportable from a Node library.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1130,7 +1160,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1140,7 +1171,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1150,7 +1182,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1160,7 +1193,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1171,7 +1205,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1181,7 +1216,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1191,7 +1227,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1201,7 +1238,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1212,7 +1250,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1222,7 +1261,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1232,7 +1272,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1242,7 +1283,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1253,7 +1295,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1263,7 +1306,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1273,7 +1317,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1283,7 +1328,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1299,7 +1345,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1309,7 +1356,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1319,7 +1367,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1329,7 +1378,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1340,7 +1390,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1350,7 +1401,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1360,7 +1412,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1370,7 +1423,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1381,7 +1435,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1391,7 +1446,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1401,7 +1457,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1411,7 +1468,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1422,7 +1480,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1432,7 +1491,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1442,7 +1502,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1452,7 +1513,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1468,7 +1530,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1478,7 +1541,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1488,7 +1552,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1498,7 +1563,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1508,7 +1574,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
@@ -1519,7 +1586,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1529,7 +1597,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1539,7 +1608,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1549,7 +1619,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
           type: 'ImportDeclaration',
         },
       ],
@@ -1560,7 +1631,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1570,7 +1642,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1580,7 +1653,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1590,7 +1664,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportNamedDeclaration',
         },
       ],
@@ -1601,7 +1676,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1611,7 +1687,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1621,7 +1698,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1631,7 +1709,8 @@ ruleTester.run('no-cross-atom-imports', rule, {
       filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
           type: 'ExportAllDeclaration',
         },
       ],
@@ -1641,24 +1720,28 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // whitelist
     //--------------------------------------------------------------------------
 
-    { // whitelist does *not* apply to npm packages
+    {
+      // whitelist does *not* apply to npm packages
       code: 'require("../nuclide-fake-atom-package-1");',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-atom-package-1']}],
       errors: [
         {
-          message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
+          message:
+            'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
           type: 'CallExpression',
         },
       ],
     },
-    { // whitelist does *not* apply to npm packages
+    {
+      // whitelist does *not* apply to npm packages
       code: 'require("../nuclide-fake-node-apm-package-2");',
       filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-node-apm-package-2']}],
       errors: [
         {
-          message: 'apm package "nuclide-fake-node-apm-package-2" is not requireable from an npm package.',
+          message:
+            'Atom package "nuclide-fake-node-apm-package-2" is not requireable from a Node library.',
           type: 'CallExpression',
         },
       ],

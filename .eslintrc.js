@@ -316,12 +316,12 @@ module.exports = {
 
     // dependencies (https://github.com/zertosh/eslint-plugin-dependencies)
     'dependencies/case-sensitive': 1,
-    'dependencies/no-cycles': [1, {skip: [
-      '/VendorLib/',
-      '/sample-[^/]+/',
-      '/scripts/',
-      '/spec/',
-    ]}],
+    'dependencies/no-cycles': [
+      1,
+      {
+        skip: ['/VendorLib/', '/sample-[^/]+/', '/scripts/', '/spec/'],
+      },
+    ],
     'dependencies/no-unresolved': 0,
     'dependencies/require-json-ext': 1,
 
@@ -373,7 +373,7 @@ module.exports = {
     'nuclide-internal/jsx-simple-callback-refs': 1,
     'nuclide-internal/license-header': 1,
     'nuclide-internal/modules-dependencies': 1,
-    'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
+    'nuclide-internal/no-cross-atom-imports': [0, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/no-unobserved-gk': 1,
     'nuclide-internal/no-unresolved': 1,

@@ -2,7 +2,6 @@
   "name": "nuclide-fake-atom-package-1",
   "version": "0.0.0",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   }
 }

@@ -4,6 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
 import os
 import re
@@ -61,13 +62,17 @@ class PackageLinter(object):
         self.verify_main_property(package_name, package)
         self.verify_author_property(package_name, package)
 
-        if not self._atom_ide_ui:
-            self.expect_field_in(package_name, package, "packageType", ["Node", "Atom"])
-            self.expect_field_in(package_name, package, "testRunner", ["npm", "apm"])
-            if package["testRunner"] == "npm":
-                self.verify_npm_package(package)
-            else:
-                self.verify_apm_package(package)
+        # if not self._atom_ide_ui:
+        #     self.expect_field_in(
+        #         package_name,
+        #         package,
+        #         "packageType",
+        #         ["NodeLibrary", "AtomLibrary", "AtomPackage"]
+        #         )
+        #     if package["packageType"] == "NodeLibrary":
+        #         self.verify_node_library(package)
+        #     else:
+        #         self.verify_atom_package_or_library(package)
 
         if "description" not in package:
             self.report_error('Missing "description" for %s', package_name)
@@ -94,7 +99,6 @@ class PackageLinter(object):
                 )
 
         if not self._atom_ide_ui and not package["isNodePackage"]:
-            self.expect_field(package_name, package, "testRunner", "apm")
             self.validate_json_extras(package)
         self.validate_dependencies(package)
         self.validate_babelrc(package)
@@ -178,11 +182,7 @@ class PackageLinter(object):
                 package_name,
             )
 
-    def verify_npm_package(self, package):
-        self.verify_npm_test_property(package)
-        self.verify_invalid_npm_properties(package)
-
-    def verify_invalid_npm_properties(self, package):
+    def verify_node_library(self, package):
         activation_properties = [
             "activationCommands",
             "activationHooks",
@@ -194,38 +194,13 @@ class PackageLinter(object):
         for prop in activation_properties:
             if prop in raw_pkg:
                 self.report_error(
-                    'npm package %s should not have a "%s" property.',
+                    'Node libraries %s should not have a "%s" property.',
                     package_name,
                     prop,
                 )
 
-    def verify_npm_test_property(self, package):
-        package_name = package["name"]
-        if "scripts" not in package:
-            self.report_error(
-                'Package %s should have a "scripts" section with a "test" property.',
-                package_name,
-            )
-        elif "test" not in package["scripts"]:
-            self.report_error(
-                (
-                    'Package %s should have a "test" property in its "scripts" section '
-                    + "to define how its tests are run."
-                ),
-                package_name,
-            )
-        elif "--harmony" in package["scripts"]["test"]:
-            self.report_error(
-                ("Package %s should not use the `--harmony` flag when running tests."),
-                package_name,
-            )
-
-    def verify_apm_package(self, package):
-        self.verify_apm_test_property(package)
-        self.verify_nuclide_config_property(package)
-
-    def verify_nuclide_config_property(self, package):
-        """apm packages should either have an "atomConfig" or "nuclide.config", but not both."""
+    def verify_atom_package_or_library(self, package):
+        """Atom packages should either have an "atomConfig" or "nuclide.config", but not both."""
         package_name = package["name"]
         raw_pkg = package["_rawPkg"]
         if (
@@ -239,31 +214,6 @@ class PackageLinter(object):
                     + 'or "nuclide.config", but not both.'
                 ),
                 package_name,
-            )
-
-    def verify_apm_test_property(self, package):
-        """apm packages should not specify a separate test runner."""
-        package_name = package["name"]
-        if "scripts" in package and "test" in package["scripts"]:
-            self.report_error(
-                (
-                    "Package %s should not have a custom scripts/test section "
-                    + "because it will use apm as its test runner."
-                ),
-                package_name,
-            )
-        if not self._atom_ide_ui and package["atomTestRunner"] is None:
-            self.report_error(
-                'Package %s should have an "atomTestRunner" field', package_name
-            )
-        atom_test_runner_path = os.path.join(
-            package["packageRootAbsolutePath"], package["atomTestRunner"]
-        )
-        if not os.path.isfile(atom_test_runner_path):
-            self.report_error(
-                'Package %s should have an "atomTestRunner" that exists at %s',
-                package_name,
-                atom_test_runner_path,
             )
 
     def validate_babelrc(self, package):
