@@ -110,6 +110,58 @@ describe('FileSystemService', () => {
     expect(entries[1]).toEqual(['testfile.txt.2', true, true]);
   });
 
+  describe('readdirRecursive()', () => {
+    const testDir: string = nuclideUri.join(__dirname, 'readdirRecursive_test');
+
+    beforeEach(() => {
+      fs.mkdirSync(testDir);
+
+      fs.writeFileSync(nuclideUri.join(testDir, 'testfile.txt'), '');
+      fs.mkdirSync(nuclideUri.join(testDir, 'subdir'));
+      fs.symlinkSync(
+        nuclideUri.join(testDir, 'testfile.txt'),
+        nuclideUri.join(testDir, 'subdir', 'testsymlink.txt'),
+        'file',
+      );
+
+      fs.mkdirSync(nuclideUri.join(testDir, 'subdir', 'a'));
+      fs.mkdirSync(nuclideUri.join(testDir, 'subdir', 'a', 'b'));
+      fs.mkdirSync(nuclideUri.join(testDir, 'subdir', 'a', 'b', 'c'));
+      fs.writeFileSync(
+        nuclideUri.join(testDir, 'subdir', 'a', 'b', 'c', 'deepfile.txt'),
+        '',
+      );
+    });
+
+    afterEach(() => {
+      rimraf.sync(testDir);
+    });
+
+    it('can readdirRecursive', async () => {
+      const entries = await service.readdirRecursive(testDir);
+      expect(entries).toEqual([
+        ['subdir', false, false],
+        ['subdir/a', false, false],
+        ['subdir/a/b', false, false],
+        ['subdir/a/b/c', false, false],
+        ['subdir/a/b/c/deepfile.txt', true, false],
+        ['subdir/testsymlink.txt', true, true],
+        ['testfile.txt', true, false],
+      ]);
+    });
+
+    it('can readdirRecursive with a limit', async () => {
+      const entries = await service.readdirRecursive(testDir, 5);
+      expect(entries).toEqual([
+        ['subdir', false, false],
+        ['subdir/a', false, false],
+        ['subdir/a/b', false, false],
+        ['subdir/a/b/c', false, false],
+        ['subdir/a/b/c/deepfile.txt', true, false],
+      ]);
+    });
+  });
+
   it('can lstat', async () => {
     fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
     const lstats = await service.lstat(pathToLinkFile);

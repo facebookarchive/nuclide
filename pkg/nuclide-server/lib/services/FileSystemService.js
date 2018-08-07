@@ -146,6 +146,50 @@ export async function readdirSorted(
 }
 
 /**
+ * Recursively lists all children of the given directory. The limit param
+ * puts a bound on the maximum number of entries that can be returned.
+ * TODO: Consider adding concurrency while traversing search directories.
+ */
+export async function readdirRecursive(
+  root: NuclideUri,
+  limit: number = 100,
+): Promise<Array<DirectoryEntry>> {
+  // Keep a running array of all files and directories we encounter.
+  const result = [];
+
+  const helper = async (path): Promise<void> => {
+    const entries = await ROOT_FS.readdir(nuclideUri.join(root, path));
+
+    // We have to sort the entries to ensure that the limit is applied
+    // consistently.
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+    for (const entry of entries) {
+      // Prevent the results array from going over the limit.
+      if (result.length >= limit) {
+        break;
+      }
+
+      const [name, isFile, isSymbolicLink] = entry;
+
+      // Path to this entry from root.
+      const entryPath = nuclideUri.join(path, name);
+
+      result.push([entryPath, isFile, isSymbolicLink]);
+
+      // Recurse on directory if we aren't at the limit.
+      if (!isFile && result.length < limit) {
+        // eslint-disable-next-line no-await-in-loop
+        await helper(entryPath);
+      }
+    }
+  };
+
+  await helper('.');
+  return result;
+}
+
+/**
  * Gets the real path of a file path.
  * It could be different than the given path if the file is a symlink
  * or exists in a symlinked directory.
