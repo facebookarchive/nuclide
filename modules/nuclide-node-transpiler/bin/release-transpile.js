@@ -122,7 +122,7 @@ function runChild() {
 
   process.on('message', m => {
     const res = {};
-    if (m.cmd === 'next') {
+    if (m.cmd === 'next' && fs.lstatSync(m.filename).isFile()) {
       const src = fs.readFileSync(m.filename);
       if (NodeTranspiler.shouldCompile(src)) {
         const code = nodeTranspiler.transformWithCache(src, m.filename);
