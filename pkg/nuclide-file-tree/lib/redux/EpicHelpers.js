@@ -356,7 +356,7 @@ export function expandNodeDeep(
  * the next directory.
  */
 class FileTreeStoreBfsIterator {
-  _store: Store;
+  _store: MiddlewareStore;
   _rootKey: NuclideUri;
   _nodesToTraverse: Array<NuclideUri>;
   _currentlyTraversedNode: ?NuclideUri;
@@ -366,7 +366,7 @@ class FileTreeStoreBfsIterator {
   _count: number;
 
   constructor(
-    store: Store,
+    store: MiddlewareStore,
     rootKey: NuclideUri,
     nodeKey: NuclideUri,
     limit: number,
@@ -424,7 +424,7 @@ class FileTreeStoreBfsIterator {
  * fetched.
  */
 async function promiseNodeChildKeys(
-  store: Store,
+  store: MiddlewareStore,
   rootKey: string,
   nodeKey: string,
 ): Promise<Array<NuclideUri>> {
@@ -453,7 +453,10 @@ async function promiseNodeChildKeys(
  * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
  * needed and scheduling a child key fetch. Used by the reveal active file functionality.
  */
-export function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
+export function ensureChildNode(
+  store: MiddlewareStore,
+  nodeKey: NuclideUri,
+): void {
   let firstRootUri;
 
   const expandNode_ = node => {
@@ -504,7 +507,8 @@ export function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
       return root;
     }
 
-    let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, store);
+    const conf = Selectors.getConf(store.getState());
+    let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, conf);
 
     parents.forEach(currentUri => {
       fetchChildKeys(store, currentUri);
@@ -516,7 +520,7 @@ export function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
           isExpanded: true,
           children: FileTreeNode.childrenFromArray([currentChild]),
         },
-        store,
+        conf,
       );
 
       currentChild = parent;
@@ -542,7 +546,11 @@ export function ensureChildNode(store: Store, nodeKey: NuclideUri): void {
   }
 }
 
-export function setRootKeys(store: Store, rootKeys: Array<NuclideUri>): void {
+export function setRootKeys(
+  store: MiddlewareStore,
+  rootKeys: Array<NuclideUri>,
+): void {
+  const conf = Selectors.getConf(store.getState());
   const rootNodes = rootKeys.map(rootUri => {
     const root = Selectors.getRoots(store.getState()).get(rootUri);
     if (root != null) {
@@ -558,7 +566,7 @@ export function setRootKeys(store: Store, rootKeys: Array<NuclideUri>): void {
         isExpanded: true,
         connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
       },
-      store,
+      conf,
     );
   });
 
