@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SwiftPMTaskRunnerTaskMetadata = exports.SwiftPMTaskRunnerTestTaskMetadata = exports.SwiftPMTaskRunnerBuildTaskMetadata = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,27 +12,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
-
-export const SwiftPMTaskRunnerBuildTaskMetadata: TaskMetadata = {
+const SwiftPMTaskRunnerBuildTaskMetadata = {
   type: 'build',
   label: 'Build',
   description: 'Build a Swift package',
-  icon: 'tools',
+  icon: 'tools'
 };
-
-export const SwiftPMTaskRunnerTestTaskMetadata: TaskMetadata = {
+exports.SwiftPMTaskRunnerBuildTaskMetadata = SwiftPMTaskRunnerBuildTaskMetadata;
+const SwiftPMTaskRunnerTestTaskMetadata = {
   type: 'test',
   label: 'Test',
   description: "Run a Swift package's tests",
-  icon: 'check',
+  icon: 'check'
 };
-
-export const SwiftPMTaskRunnerTaskMetadata: Array<TaskMetadata> = [
-  SwiftPMTaskRunnerBuildTaskMetadata,
-  SwiftPMTaskRunnerTestTaskMetadata,
-];
+exports.SwiftPMTaskRunnerTestTaskMetadata = SwiftPMTaskRunnerTestTaskMetadata;
+const SwiftPMTaskRunnerTaskMetadata = [SwiftPMTaskRunnerBuildTaskMetadata, SwiftPMTaskRunnerTestTaskMetadata];
+exports.SwiftPMTaskRunnerTaskMetadata = SwiftPMTaskRunnerTaskMetadata;

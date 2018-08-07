@@ -1,3 +1,106 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _ButtonGroup() {
+  const data = require("../../../../../nuclide-commons-ui/ButtonGroup");
+
+  _ButtonGroup = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../../../../../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _ModalMultiSelect() {
+  const data = require("../../../../../nuclide-commons-ui/ModalMultiSelect");
+
+  _ModalMultiSelect = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RegExpFilter() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/RegExpFilter"));
+
+  _RegExpFilter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Toolbar() {
+  const data = require("../../../../../nuclide-commons-ui/Toolbar");
+
+  _Toolbar = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ToolbarLeft() {
+  const data = require("../../../../../nuclide-commons-ui/ToolbarLeft");
+
+  _ToolbarLeft = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ToolbarRight() {
+  const data = require("../../../../../nuclide-commons-ui/ToolbarRight");
+
+  _ToolbarRight = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _addTooltip() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/addTooltip"));
+
+  _addTooltip = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Button() {
+  const data = require("../../../../../nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,264 +109,204 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+class ConsoleHeader extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-import type {Source, Severity} from '../types';
-import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
+    return _temp = super(...args), this.focusFilter = () => {
+      if (this._filterComponent != null) {
+        this._filterComponent.focus();
+      }
+    }, this._handleClearButtonClick = event => {
+      this.props.clear();
+    }, this._handleCreatePasteButtonClick = event => {
+      if (this.props.createPaste != null) {
+        this.props.createPaste();
+      }
+    }, this._handleFilterChange = value => {
+      this.props.onFilterChange(value);
+    }, this._renderOption = optionProps => {
+      const {
+        option
+      } = optionProps;
+      const source = this.props.sources.find(s => s.id === option.value);
 
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import * as React from 'react';
-import {ModalMultiSelect} from 'nuclide-commons-ui/ModalMultiSelect';
-import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
-import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
-import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
+      if (!(source != null)) {
+        throw new Error("Invariant violation: \"source != null\"");
+      }
 
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import invariant from 'assert';
+      const startingSpinner = source.status !== 'starting' ? null : React.createElement(_LoadingSpinner().LoadingSpinner, {
+        className: "inline-block console-process-starting-spinner",
+        size: "EXTRA_SMALL"
+      });
+      return React.createElement("span", null, option.label, startingSpinner, this._renderProcessControlButton(source));
+    }, _temp;
+  }
 
-type Props = {|
-  clear: () => void,
-  createPaste: ?() => Promise<void>,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  onFilterChange: (change: RegExpFilterChange) => void,
-  selectedSourceIds: Array<string>,
-  sources: Array<Source>,
-  onSelectedSourcesChange: (sourceIds: Array<string>) => void,
-  filterText: string,
-  selectedSeverities: Set<Severity>,
-  toggleSeverity: (severity: Severity) => void,
-|};
-
-export default class ConsoleHeader extends React.Component<Props> {
-  _filterComponent: ?RegExpFilter;
-
-  focusFilter = (): void => {
-    if (this._filterComponent != null) {
-      this._filterComponent.focus();
-    }
-  };
-
-  _handleClearButtonClick = (event: SyntheticMouseEvent<>): void => {
-    this.props.clear();
-  };
-
-  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent<>): void => {
-    if (this.props.createPaste != null) {
-      this.props.createPaste();
-    }
-  };
-
-  _handleFilterChange = (value: RegExpFilterChange): void => {
-    this.props.onFilterChange(value);
-  };
-
-  _renderProcessControlButton(source: Source): ?React.Element<any> {
+  _renderProcessControlButton(source) {
     let action;
     let label;
     let icon;
+
     switch (source.status) {
       case 'starting':
-      case 'running': {
-        action = source.stop;
-        label = 'Stop Process';
-        icon = 'primitive-square';
-        break;
-      }
-      case 'stopped': {
-        action = source.start;
-        label = 'Start Process';
-        icon = 'triangle-right';
-        break;
-      }
+      case 'running':
+        {
+          action = source.stop;
+          label = 'Stop Process';
+          icon = 'primitive-square';
+          break;
+        }
+
+      case 'stopped':
+        {
+          action = source.start;
+          label = 'Start Process';
+          icon = 'triangle-right';
+          break;
+        }
     }
+
     if (action == null) {
       return;
     }
+
     const clickHandler = event => {
       event.stopPropagation();
-      invariant(action != null);
+
+      if (!(action != null)) {
+        throw new Error("Invariant violation: \"action != null\"");
+      }
+
       action();
     };
-    return (
-      <Button
-        className="pull-right console-process-control-button"
-        icon={icon}
-        onClick={clickHandler}>
-        {label}
-      </Button>
-    );
+
+    return React.createElement(_Button().Button, {
+      className: "pull-right console-process-control-button",
+      icon: icon,
+      onClick: clickHandler
+    }, label);
   }
 
-  _renderOption = (optionProps: {
-    option: {label: string, value: string},
-  }): React.Element<any> => {
-    const {option} = optionProps;
-    const source = this.props.sources.find(s => s.id === option.value);
-    invariant(source != null);
-    const startingSpinner =
-      source.status !== 'starting' ? null : (
-        <LoadingSpinner
-          className="inline-block console-process-starting-spinner"
-          size="EXTRA_SMALL"
-        />
-      );
-    return (
-      <span>
-        {option.label}
-        {startingSpinner}
-        {this._renderProcessControlButton(source)}
-      </span>
-    );
-  };
-
-  render(): React.Node {
-    const options = this.props.sources
-      .slice()
-      .sort((a, b) => sortAlpha(a.name, b.name))
-      .map(source => ({
-        label: source.name,
-        value: source.id,
-      }));
-
-    const sourceButton =
-      options.length === 0 ? null : (
-        <ModalMultiSelect
-          labelComponent={MultiSelectLabel}
-          optionComponent={this._renderOption}
-          size={ButtonSizes.SMALL}
-          options={options}
-          value={this.props.selectedSourceIds}
-          onChange={this.props.onSelectedSourcesChange}
-          className="inline-block"
-        />
-      );
-
-    const pasteButton =
-      this.props.createPaste == null ? null : (
-        <Button
-          className="inline-block"
-          size={ButtonSizes.SMALL}
-          onClick={this._handleCreatePasteButtonClick}
-          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-          ref={addTooltip({
-            title: 'Creates a Paste from the current contents of the console',
-          })}>
-          Create Paste
-        </Button>
-      );
-
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft>
-          {sourceButton}
-          <ButtonGroup className="inline-block">
-            <FilterButton
-              severity="error"
-              selectedSeverities={this.props.selectedSeverities}
-              toggleSeverity={this.props.toggleSeverity}
-            />
-            <FilterButton
-              severity="warning"
-              selectedSeverities={this.props.selectedSeverities}
-              toggleSeverity={this.props.toggleSeverity}
-            />
-            <FilterButton
-              severity="info"
-              selectedSeverities={this.props.selectedSeverities}
-              toggleSeverity={this.props.toggleSeverity}
-            />
-          </ButtonGroup>
-          <RegExpFilter
-            ref={component => (this._filterComponent = component)}
-            value={{
-              text: this.props.filterText,
-              isRegExp: this.props.enableRegExpFilter,
-              invalid: this.props.invalidFilterInput,
-            }}
-            onChange={this._handleFilterChange}
-          />
-        </ToolbarLeft>
-        <ToolbarRight>
-          {pasteButton}
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._handleClearButtonClick}>
-            Clear
-          </Button>
-        </ToolbarRight>
-      </Toolbar>
-    );
+  render() {
+    const options = this.props.sources.slice().sort((a, b) => sortAlpha(a.name, b.name)).map(source => ({
+      label: source.name,
+      value: source.id
+    }));
+    const sourceButton = options.length === 0 ? null : React.createElement(_ModalMultiSelect().ModalMultiSelect, {
+      labelComponent: MultiSelectLabel,
+      optionComponent: this._renderOption,
+      size: _Button().ButtonSizes.SMALL,
+      options: options,
+      value: this.props.selectedSourceIds,
+      onChange: this.props.onSelectedSourcesChange,
+      className: "inline-block"
+    });
+    const pasteButton = this.props.createPaste == null ? null : React.createElement(_Button().Button, {
+      className: "inline-block",
+      size: _Button().ButtonSizes.SMALL,
+      onClick: this._handleCreatePasteButtonClick // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+      ,
+      ref: (0, _addTooltip().default)({
+        title: 'Creates a Paste from the current contents of the console'
+      })
+    }, "Create Paste");
+    return React.createElement(_Toolbar().Toolbar, {
+      location: "top"
+    }, React.createElement(_ToolbarLeft().ToolbarLeft, null, sourceButton, React.createElement(_ButtonGroup().ButtonGroup, {
+      className: "inline-block"
+    }, React.createElement(FilterButton, {
+      severity: "error",
+      selectedSeverities: this.props.selectedSeverities,
+      toggleSeverity: this.props.toggleSeverity
+    }), React.createElement(FilterButton, {
+      severity: "warning",
+      selectedSeverities: this.props.selectedSeverities,
+      toggleSeverity: this.props.toggleSeverity
+    }), React.createElement(FilterButton, {
+      severity: "info",
+      selectedSeverities: this.props.selectedSeverities,
+      toggleSeverity: this.props.toggleSeverity
+    })), React.createElement(_RegExpFilter().default, {
+      ref: component => this._filterComponent = component,
+      value: {
+        text: this.props.filterText,
+        isRegExp: this.props.enableRegExpFilter,
+        invalid: this.props.invalidFilterInput
+      },
+      onChange: this._handleFilterChange
+    })), React.createElement(_ToolbarRight().ToolbarRight, null, pasteButton, React.createElement(_Button().Button, {
+      size: _Button().ButtonSizes.SMALL,
+      onClick: this._handleClearButtonClick
+    }, "Clear")));
   }
+
 }
 
-function sortAlpha(a: string, b: string): number {
+exports.default = ConsoleHeader;
+
+function sortAlpha(a, b) {
   const aLower = a.toLowerCase();
   const bLower = b.toLowerCase();
+
   if (aLower < bLower) {
     return -1;
   } else if (aLower > bLower) {
     return 1;
   }
+
   return 0;
 }
 
-type LabelProps = {
-  selectedOptions: Array<{value: string, label: string}>,
-};
-
-function MultiSelectLabel(props: LabelProps): React.Element<any> {
-  const {selectedOptions} = props;
-  const label =
-    selectedOptions.length === 1
-      ? selectedOptions[0].label
-      : `${selectedOptions.length} Sources`;
-  return <span>Showing: {label}</span>;
+function MultiSelectLabel(props) {
+  const {
+    selectedOptions
+  } = props;
+  const label = selectedOptions.length === 1 ? selectedOptions[0].label : `${selectedOptions.length} Sources`;
+  return React.createElement("span", null, "Showing: ", label);
 }
 
-type FilterButtonProps = {|
-  severity: 'error' | 'warning' | 'info',
-  selectedSeverities: Set<Severity>,
-  toggleSeverity: Severity => void,
-|};
-
-function FilterButton(props: FilterButtonProps): React.Element<any> {
-  const {severity} = props;
+function FilterButton(props) {
+  const {
+    severity
+  } = props;
   const selected = props.selectedSeverities.has(props.severity);
   let tooltipTitle = selected ? 'Hide ' : 'Show ';
   let icon;
+
   switch (severity) {
     case 'error':
       tooltipTitle += 'Errors';
       icon = 'nuclicon-error';
       break;
+
     case 'warning':
       tooltipTitle += 'Warnings';
       icon = 'nuclicon-warning';
       break;
+
     case 'info':
       tooltipTitle += 'Info';
       icon = 'info';
       break;
+
     default:
-      (severity: empty);
+      severity;
       throw new Error(`Invalid severity: ${severity}`);
   }
 
-  return (
-    <Button
-      icon={icon}
-      size={ButtonSizes.SMALL}
-      selected={props.selectedSeverities.has(severity)}
-      onClick={() => {
-        props.toggleSeverity(severity);
-      }}
-      tooltip={{title: tooltipTitle}}
-    />
-  );
+  return React.createElement(_Button().Button, {
+    icon: icon,
+    size: _Button().ButtonSizes.SMALL,
+    selected: props.selectedSeverities.has(severity),
+    onClick: () => {
+      props.toggleSeverity(severity);
+    },
+    tooltip: {
+      title: tooltipTitle
+    }
+  });
 }

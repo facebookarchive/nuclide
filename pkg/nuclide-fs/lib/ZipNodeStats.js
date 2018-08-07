@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ZipNodeStats = void 0;
+
+var _fs = _interopRequireDefault(require("fs"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,24 +16,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import fs from 'fs';
-
-export class ZipNodeStats extends fs.Stats {
-  _isDirectory: boolean;
-  _isSymbolicLink: boolean;
-
-  constructor(outer: fs.Stats, entry: any) {
+class ZipNodeStats extends _fs.default.Stats {
+  constructor(outer, entry) {
     super();
     const header = entry.header;
-
     this.dev = outer.dev;
     this.ino = outer.ino;
     this.mode = modeFromZipAttr(header.attr);
     this.nlink = 1; // TODO: figure out directory link count?
+
     this.uid = outer.uid;
     this.gid = outer.gid;
     this.rdev = outer.rdev;
@@ -32,51 +37,53 @@ export class ZipNodeStats extends fs.Stats {
     this.atime = header.time;
     this.mtime = header.time;
     this.ctime = outer.ctime;
-
     this._isDirectory = entry.isDirectory;
     this._isSymbolicLink = isSymbolicLinkAttr(header.attr);
   }
 
-  isFile(): boolean {
+  isFile() {
     return !this.isDirectory() && !this.isSymbolicLink();
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return this._isDirectory;
   }
 
-  isBlockDevice(): boolean {
+  isBlockDevice() {
     return false;
   }
 
-  isCharacterDevice(): boolean {
+  isCharacterDevice() {
     return false;
   }
 
-  isSymbolicLink(): boolean {
+  isSymbolicLink() {
     return this._isSymbolicLink;
   }
 
-  isFIFO(): boolean {
+  isFIFO() {
     return false;
   }
 
-  isSocket(): boolean {
+  isSocket() {
     return false;
   }
+
 }
 
-function modeFromZipAttr(attr: number): number {
+exports.ZipNodeStats = ZipNodeStats;
+
+function modeFromZipAttr(attr) {
   // eslint-disable-next-line no-bitwise
   return attr >>> 16;
-}
+} // eslint-disable-next-line no-bitwise
 
-// eslint-disable-next-line no-bitwise
-const ATTR_FILETYPE_MASK = 0xf << 28;
-// eslint-disable-next-line no-bitwise
+
+const ATTR_FILETYPE_MASK = 0xf << 28; // eslint-disable-next-line no-bitwise
+
 const ATTR_FILETYPE_SYMLINK = 0xa << 28;
 
-function isSymbolicLinkAttr(attr: number): boolean {
+function isSymbolicLinkAttr(attr) {
   // eslint-disable-next-line no-bitwise
   return (attr & ATTR_FILETYPE_MASK) === ATTR_FILETYPE_SYMLINK;
 }

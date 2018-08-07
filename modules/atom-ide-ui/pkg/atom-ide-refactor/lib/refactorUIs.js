@@ -1,3 +1,72 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initRefactorUIs = initRefactorUIs;
+
+function _ReactMountRootElement() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-ui/ReactMountRootElement"));
+
+  _ReactMountRootElement = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+var _atom = require("atom");
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _RenameComponent() {
+  const data = _interopRequireDefault(require("./components/RenameComponent"));
+
+  _RenameComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _MainRefactorComponent() {
+  const data = require("./components/MainRefactorComponent");
+
+  _MainRefactorComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Actions() {
+  const data = _interopRequireWildcard(require("./refactorActions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,159 +75,133 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const refactorUIFactories = [genericRefactorUI, closeOnEscape, focusEditorOnClose, renameShortcut];
 
-import type {RefactorProvider} from './types';
-import type {RefactorUIFactory, Store, RefactorState} from './types';
-
-import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import invariant from 'assert';
-import {Range} from 'atom';
-
-import {Observable} from 'rxjs';
-import RenameComponent from './components/RenameComponent';
-import type {Props as RenameComponentPropsType} from './components/RenameComponent';
-import {MainRefactorComponent} from './components/MainRefactorComponent';
-import * as Actions from './refactorActions';
-
-const refactorUIFactories: Array<RefactorUIFactory> = [
-  genericRefactorUI,
-  closeOnEscape,
-  focusEditorOnClose,
-  renameShortcut,
-];
-
-export function initRefactorUIs(store: Store): IDisposable {
+function initRefactorUIs(store) {
   const disposables = refactorUIFactories.map(uiFn => uiFn(store));
-  return new UniversalDisposable(...disposables);
+  return new (_UniversalDisposable().default)(...disposables);
 }
 
-function genericRefactorUI(store: Store): IDisposable {
-  const genericRenderer: GenericUIRenderer = new GenericUIRenderer(store);
-  const inlineRenameRenderer: InlineRenameRenderer = new InlineRenameRenderer(
-    store,
-  );
-  const disposeFn: () => void = store.subscribe(() => {
+function genericRefactorUI(store) {
+  const genericRenderer = new GenericUIRenderer(store);
+  const inlineRenameRenderer = new InlineRenameRenderer(store);
+  const disposeFn = store.subscribe(() => {
     const state = store.getState();
-    if (
-      state.type === 'closed' ||
-      (state.type === 'open' &&
-        (state.ui === 'generic' || state.ui === 'rename'))
-    ) {
+
+    if (state.type === 'closed' || state.type === 'open' && (state.ui === 'generic' || state.ui === 'rename')) {
       genericRenderer.renderState(state);
       inlineRenameRenderer.renderState(state);
     }
   });
-  return new UniversalDisposable(
-    disposeFn,
-    genericRenderer,
-    inlineRenameRenderer,
-  );
+  return new (_UniversalDisposable().default)(disposeFn, genericRenderer, inlineRenameRenderer);
 }
 
-function closeOnEscape(store: Store): IDisposable {
-  let escapeSubscription: ?IDisposable = null;
-  return new UniversalDisposable(
-    store.subscribe(() => {
-      const state = store.getState();
-      if (state.type === 'open' && escapeSubscription == null) {
-        escapeSubscription = atom.commands.add('body', 'core:cancel', () => {
-          store.dispatch(Actions.close());
-        });
-      } else if (state.type === 'closed') {
-        invariant(escapeSubscription != null);
-        escapeSubscription.dispose();
-        escapeSubscription = null;
+function closeOnEscape(store) {
+  let escapeSubscription = null;
+  return new (_UniversalDisposable().default)(store.subscribe(() => {
+    const state = store.getState();
+
+    if (state.type === 'open' && escapeSubscription == null) {
+      escapeSubscription = atom.commands.add('body', 'core:cancel', () => {
+        store.dispatch(Actions().close());
+      });
+    } else if (state.type === 'closed') {
+      if (!(escapeSubscription != null)) {
+        throw new Error("Invariant violation: \"escapeSubscription != null\"");
       }
-    }),
-  );
+
+      escapeSubscription.dispose();
+      escapeSubscription = null;
+    }
+  }));
 }
 
-function focusEditorOnClose(store: Store): IDisposable {
-  return new UniversalDisposable(
-    store.subscribe(() => {
-      const state = store.getState();
-      if (state.type === 'closed') {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor == null) {
-          return;
-        }
-        const pane = atom.workspace.paneForItem(editor);
-        if (pane == null) {
-          return;
-        }
-        pane.activate();
-        pane.activateItem(editor);
-      }
-    }),
-  );
-}
+function focusEditorOnClose(store) {
+  return new (_UniversalDisposable().default)(store.subscribe(() => {
+    const state = store.getState();
 
-function renameShortcut(store: Store): IDisposable {
-  const renderer: GenericUIRenderer = new GenericUIRenderer(store);
-  return new UniversalDisposable(
-    store.subscribe(() => {
-      const state = store.getState();
-      if (state.type === 'closed') {
-        renderer.renderState(state);
+    if (state.type === 'closed') {
+      const editor = atom.workspace.getActiveTextEditor();
+
+      if (editor == null) {
         return;
       }
-      if (state.ui === 'rename') {
-        const {phase} = state;
-        switch (phase.type) {
-          case 'pick':
-            let renameRefactoring = null;
-            for (const refactoring of phase.availableRefactorings) {
-              if (
-                refactoring.kind === 'rename' ||
-                (refactoring.kind === 'freeform' &&
-                  refactoring.disabled !== false &&
-                  refactoring.name.match(/rename/i))
-              ) {
-                renameRefactoring = refactoring;
-                break;
-              }
-            }
-            if (renameRefactoring == null) {
-              atom.notifications.addWarning(
-                'Unable to rename at this location',
-              );
-              store.dispatch(Actions.close());
-            } else {
-              store.dispatch(Actions.pickedRefactor(renameRefactoring));
-            }
-            break;
-          default:
-            renderer.renderState(state);
-        }
+
+      const pane = atom.workspace.paneForItem(editor);
+
+      if (pane == null) {
+        return;
       }
-    }),
-  );
+
+      pane.activate();
+      pane.activateItem(editor);
+    }
+  }));
+}
+
+function renameShortcut(store) {
+  const renderer = new GenericUIRenderer(store);
+  return new (_UniversalDisposable().default)(store.subscribe(() => {
+    const state = store.getState();
+
+    if (state.type === 'closed') {
+      renderer.renderState(state);
+      return;
+    }
+
+    if (state.ui === 'rename') {
+      const {
+        phase
+      } = state;
+
+      switch (phase.type) {
+        case 'pick':
+          let renameRefactoring = null;
+
+          for (const refactoring of phase.availableRefactorings) {
+            if (refactoring.kind === 'rename' || refactoring.kind === 'freeform' && refactoring.disabled !== false && refactoring.name.match(/rename/i)) {
+              renameRefactoring = refactoring;
+              break;
+            }
+          }
+
+          if (renameRefactoring == null) {
+            atom.notifications.addWarning('Unable to rename at this location');
+            store.dispatch(Actions().close());
+          } else {
+            store.dispatch(Actions().pickedRefactor(renameRefactoring));
+          }
+
+          break;
+
+        default:
+          renderer.renderState(state);
+      }
+    }
+  }));
 }
 
 class GenericUIRenderer {
-  _panel: ?atom$Panel;
-  _store: Store;
-
-  constructor(store: Store) {
+  constructor(store) {
     this._store = store;
   }
 
-  renderState(state: RefactorState) {
+  renderState(state) {
     if (state.type === 'open' && state.phase.type !== 'rename') {
       if (this._panel == null) {
         const element = document.createElement('div');
-        this._panel = atom.workspace.addModalPanel({item: element});
+        this._panel = atom.workspace.addModalPanel({
+          item: element
+        });
       }
-      ReactDOM.render(
-        <MainRefactorComponent appState={state} store={this._store} />,
-        this._panel.getItem(),
-      );
+
+      _reactDom.default.render(React.createElement(_MainRefactorComponent().MainRefactorComponent, {
+        appState: state,
+        store: this._store
+      }), this._panel.getItem());
     } else {
       this.dispose();
     }
@@ -167,119 +210,79 @@ class GenericUIRenderer {
   dispose() {
     if (this._panel != null) {
       const panel = this._panel;
-      ReactDOM.unmountComponentAtNode(panel.getItem());
+
+      _reactDom.default.unmountComponentAtNode(panel.getItem());
+
       panel.destroy();
       this._panel = null;
     }
   }
+
 }
 
 class InlineRenameRenderer {
-  _store: Store;
-  _disposable: ?IDisposable;
-
-  constructor(store: Store) {
+  constructor(store) {
     this._store = store;
   }
 
-  renderRenameInput(
-    editor: atom$TextEditor,
-    selectedText: string,
-    providers: RefactorProvider[],
-    symbolPosition: atom$Point,
-  ): React.Element<React.ComponentType<RenameComponentPropsType>> {
-    return (
-      <RenameComponent
-        selectedText={selectedText}
-        providers={providers}
-        parentEditor={editor}
-        store={this._store}
-        symbolPosition={symbolPosition}
-      />
-    );
+  renderRenameInput(editor, selectedText, providers, symbolPosition) {
+    return React.createElement(_RenameComponent().default, {
+      selectedText: selectedText,
+      providers: providers,
+      parentEditor: editor,
+      store: this._store,
+      symbolPosition: symbolPosition
+    });
   }
 
-  mountRenameInput(
-    editor: atom$TextEditor,
-    mountPosition: atom$Point,
-    container: ReactMountRootElement,
-    element: React.Element<React.ComponentType<RenameComponentPropsType>>,
-  ): IDisposable {
-    const overlayMarker = editor.markBufferRange(
-      new Range(mountPosition, mountPosition),
-      {
-        invalidate: 'never',
-      },
-    );
-
+  mountRenameInput(editor, mountPosition, container, element) {
+    const overlayMarker = editor.markBufferRange(new _atom.Range(mountPosition, mountPosition), {
+      invalidate: 'never'
+    });
     editor.decorateMarker(overlayMarker, {
       type: 'overlay',
       position: 'tail',
-      item: container,
+      item: container
     });
+    return new (_UniversalDisposable().default)(() => overlayMarker.destroy(), () => _reactDom.default.unmountComponentAtNode(container), // The editor may not mount the marker until the next update.
+    // It's not safe to render anything until that point, as overlayed containers
+    // often need to measure their size in the DOM.
+    _RxMin.Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(() => {
+      container.style.display = 'block';
 
-    return new UniversalDisposable(
-      () => overlayMarker.destroy(),
-      () => ReactDOM.unmountComponentAtNode(container),
-
-      // The editor may not mount the marker until the next update.
-      // It's not safe to render anything until that point, as overlayed containers
-      // often need to measure their size in the DOM.
-      Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
-        () => {
-          container.style.display = 'block';
-          ReactDOM.render(element, container);
-        },
-      ),
-
-      // After enabling `insert-mode` in RenameComponent.js for those who use
-      //  the `vim-mode-plus` package, the user has to press `esc` to return to `normal-mode`.
-      //  We execute this command manually for them here.
-      //  Since most users of this package operate by default in normal mode,
-      //  we assume that they'd like to return to this mode after executing the rename.
-      () =>
-        atom.commands.dispatch(
-          atom.views.getView(editor),
-          'vim-mode-plus:activate-normal-mode',
-        ),
-    );
+      _reactDom.default.render(element, container);
+    }), // After enabling `insert-mode` in RenameComponent.js for those who use
+    //  the `vim-mode-plus` package, the user has to press `esc` to return to `normal-mode`.
+    //  We execute this command manually for them here.
+    //  Since most users of this package operate by default in normal mode,
+    //  we assume that they'd like to return to this mode after executing the rename.
+    () => atom.commands.dispatch(atom.views.getView(editor), 'vim-mode-plus:activate-normal-mode'));
   }
 
-  renderState(state: RefactorState) {
+  renderState(state) {
     if (state.type === 'open' && state.phase.type === 'rename') {
-      const container = new ReactMountRootElement();
+      const container = new (_ReactMountRootElement().default)();
       container.className = 'nuclide-refactorizer-rename-container';
-
       const {
         providers,
         editor,
         selectedText,
         mountPosition,
-        symbolPosition,
+        symbolPosition
       } = state.phase;
-
-      const renameElement = this.renderRenameInput(
-        editor,
-        selectedText,
-        providers,
-        symbolPosition,
-      );
-
-      this._disposable = this.mountRenameInput(
-        editor,
-        mountPosition,
-        container,
-        renameElement,
-      );
+      const renameElement = this.renderRenameInput(editor, selectedText, providers, symbolPosition);
+      this._disposable = this.mountRenameInput(editor, mountPosition, container, renameElement);
     } else {
       this.dispose();
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (this._disposable != null) {
       this._disposable.dispose();
+
       this._disposable = null;
     }
   }
+
 }
