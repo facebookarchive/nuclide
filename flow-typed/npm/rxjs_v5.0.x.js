@@ -751,6 +751,9 @@ declare class rxjs$Observable<+T> {
     onCompleted: ?() => mixed
   ): rxjs$Subscription;
 
+  combineAll<U>(): rxjs$Observable<U>;
+  combineAll<U>(project: (...values: any[]) => U): rxjs$Observable<U>;
+
   static combineLatest<A, B>(
     a: rxjs$Observable<A>,
     resultSelector: (a: A) => B
