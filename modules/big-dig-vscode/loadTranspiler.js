@@ -19,6 +19,11 @@
 const fs = require('fs');
 const path = require('path');
 if (fs.existsSync(path.join(__dirname, 'DEVELOPMENT'))) {
+  // In the server, Yarn workspaces are copied into node_modules, so we must
+  // specify 'production-modules' to the NodeTranspiler so that import
+  // statements are transpiled appropriately.
+  process.env.NUCLIDE_TRANSPILE_ENV = 'production-modules';
+
   // eslint-disable-next-line nuclide-internal/modules-dependencies
   require('../nuclide-node-transpiler');
 }
