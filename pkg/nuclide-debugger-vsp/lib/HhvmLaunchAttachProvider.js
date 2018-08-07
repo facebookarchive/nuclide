@@ -183,8 +183,10 @@ export function getLaunchProcessConfig(
     debugMode: 'launch',
     isRestartable: true,
     adapterType: VsAdapterTypes.HHVM,
-    processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
-    config,
+    config: {
+      ...config,
+      grammarName: 'source.hackfragment',
+    },
   };
 }
 
@@ -234,7 +236,10 @@ export async function startAttachProcessConfig(
           : 'localhost'
         : 'Attached to script on port ' + (attachPort || 0)
     })`,
-    config,
+    config: {
+      ...config,
+      grammarName: 'source.hackfragment',
+    },
     customControlButtons: getCustomControlButtons(),
     threadsComponentTitle: 'Requests',
     isRestartable: true,

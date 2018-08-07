@@ -1634,7 +1634,11 @@ export default class DebugService implements IDebugService {
     // Open the console window if it's not already opened.
     // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
-    this._consoleDisposables = this._registerConsoleExecutor();
+
+    // If this is the first process, register the console executor.
+    if (this._model.getProcesses().length === 0) {
+      this._consoleDisposables = this._registerConsoleExecutor();
+    }
     await this._doCreateProcess(config, uuid.v4());
 
     if (this._model.getProcesses().length > 1) {
@@ -1928,18 +1932,38 @@ export default class DebugService implements IDebugService {
       );
     };
 
+    const emitter = new Emitter();
+    const SCOPE_CHANGED = 'SCOPE_CHANGED';
+    const viewModel = this._viewModel;
+    const executor = {
+      id: 'debugger',
+      name: 'Debugger',
+      scopeName: () => {
+        if (
+          viewModel.focusedProcess != null &&
+          viewModel.focusedProcess.configuration.config.grammarName != null
+        ) {
+          return viewModel.focusedProcess.configuration.config.grammarName;
+        }
+        return 'text.plain';
+      },
+      onDidChangeScopeName(callback: () => mixed): IDisposable {
+        return emitter.on(SCOPE_CHANGED, callback);
+      },
+      send(expression: string) {
+        evaluateExpression(expression);
+      },
+      output,
+      getProperties: (fetchChildrenForLazyComponent: any),
+    };
+
     disposables.add(
-      registerExecutor({
-        id: 'debugger',
-        name: 'Debugger',
-        scopeName: 'text.plain',
-        send(expression: string) {
-          evaluateExpression(expression);
-        },
-        output,
-        getProperties: (fetchChildrenForLazyComponent: any),
+      emitter,
+      this._viewModel.onDidChangeDebuggerFocus(() => {
+        emitter.emit(SCOPE_CHANGED);
       }),
     );
+    disposables.add(registerExecutor(executor));
     return disposables;
   }
 

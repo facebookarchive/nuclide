@@ -78,6 +78,9 @@ export type IProcessConfig = {|
   +threadsComponentTitle?: string,
   +showThreads?: boolean,
 
+  // The Atom language grammar to use for this debugger.
+  +grammarName?: string,
+
   // If true, this debug session can be restarted by the service using
   // this configuration. Debuggers should pass false here if starting
   // this session requires any external setup that cannot be replayed

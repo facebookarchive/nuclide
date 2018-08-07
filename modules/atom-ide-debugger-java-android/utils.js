@@ -272,6 +272,7 @@ export async function resolveConfiguration(
       ...attachPortTargetConfig,
       deviceSerial,
       packageName,
+      grammarName: 'source.java',
     },
     onDebugStartingCallback: instance => {
       subscriptions.add(

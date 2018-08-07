@@ -37,7 +37,7 @@ export function consumeRegisterExecutor(
     registerExecutor({
       id: 'echo',
       name: 'Echo',
-      scopeName: 'text.plain',
+      scopeName: () => 'text.plain',
       send(code: string): void {
         messages.next({
           level: 'log',

@@ -211,9 +211,10 @@ export type Executor = {
   name: string,
   send(message: string): void,
   output: Observable<Message | {result?: EvaluationResult}>,
-  scopeName: string,
+  scopeName: () => string,
   provideSymbols?: (prefix: string) => Array<string>,
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
+  onDidChangeScopeName?: (callback: () => void) => IDisposable,
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;
