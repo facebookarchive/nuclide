@@ -1073,13 +1073,8 @@ export class LspLanguageService {
       code: typeof e.code === 'number' ? e.code : null,
     });
 
-    if (
-      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-      e.code != null &&
-      // eslint-disable-next-line nuclide-internal/api-spelling
-      Number(e.code) === ErrorCodes.RequestCancelled &&
-      this._getState() === 'Running'
-    ) {
+    // eslint-disable-next-line nuclide-internal/api-spelling
+    if (this._isErrorRequestCancelled(e)) {
       // RequestCancelled is normal and shouldn't be logged.
       return;
     }
@@ -1127,6 +1122,17 @@ export class LspLanguageService {
       .refCount()
       .subscribe(); // fire and forget
     this._stop(); // method is awaitable, but we kick it off fire-and-forget.
+  }
+
+  // eslint-disable-next-line nuclide-internal/api-spelling
+  _isErrorRequestCancelled(e: Error): void {
+    return (
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+      e.code != null &&
+      // eslint-disable-next-line nuclide-internal/api-spelling
+      Number(e.code) === ErrorCodes.RequestCancelled &&
+      this._getState() === 'Running'
+    );
   }
 
   _handleClose(): void {
@@ -2029,7 +2035,12 @@ export class LspLanguageService {
       invariant(response != null, 'null textDocument/rename');
     } catch (e) {
       this._logLspException(e);
-      return null;
+      // eslint-disable-next-line nuclide-internal/api-spelling
+      if (this._isErrorRequestCancelled(e)) {
+        // RequestCancelled is normal and shouldn't be surfaced to the user
+        return null;
+      }
+      throw e;
     }
 
     return convert.lspWorkspaceEdit_atomWorkspaceEdit(response);
