@@ -39,16 +39,13 @@ type State = {|
 type Props = {|
   onMouseEnter: (event: SyntheticMouseEvent<>) => mixed,
   onMouseLeave: (event: SyntheticMouseEvent<>) => mixed,
-  onScroll: (scrollTop: number) => mixed,
   height: number,
   width: number,
-  initialScrollTop: number,
   roots: Roots,
   trackedNode: ?FileTreeNode,
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   isEditingWorkingSet: boolean,
-  clearTrackedNode: () => void,
   clearTrackedNodeIfNotLoading: () => void,
   getNodeByIndex: (index: number) => ?FileTreeNode,
 |};
@@ -70,9 +67,8 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   _footerRef: ?ProjectSelection;
   _prevShownNodes: number = 0;
 
-  _indexOfFirstRowInView: number;
-  _indexOfLastRowInView: number;
-  _nextScrollingIsProgrammatic: boolean;
+  _indexOfFirstRowInView: number = 0;
+  _indexOfLastRowInView: number = 0;
 
   constructor(props: Props) {
     super(props);
@@ -83,10 +79,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
       nodeHeight: null,
       footerHeight: null,
     };
-
-    this._indexOfFirstRowInView = 0;
-    this._indexOfLastRowInView = 0;
-    this._nextScrollingIsProgrammatic = false;
 
     this._disposables = new UniversalDisposable();
   }
@@ -184,29 +176,16 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
       'nuclide-file-tree-editing-working-set': this.props.isEditingWorkingSet,
     };
 
-    let scrollToIndex = undefined;
-    let scrollToAlignment = 'auto';
-    let willBeActivelyScrolling = false;
-    const trackedIndex = this._getTrackedIndex();
-
-    if (trackedIndex != null) {
-      scrollToIndex = trackedIndex;
-      if (
-        scrollToIndex <= this._indexOfFirstRowInView ||
-        scrollToIndex >= this._indexOfLastRowInView
-      ) {
-        scrollToAlignment = 'center';
-        willBeActivelyScrolling = true;
-      }
-    }
-
-    let scrollTop;
-    if (scrollToIndex == null && this.props.initialScrollTop != null) {
-      scrollTop = this.props.initialScrollTop;
-      willBeActivelyScrolling = true;
-    }
-
-    this._nextScrollingIsProgrammatic = willBeActivelyScrolling;
+    const scrollToIndex = this._getTrackedIndex() ?? -1;
+    // If we're moving to an offscreen index, let's center it. Otherwise, we'll maintain the current
+    // scroll position. In practice, this means centering only when the user used "Reveal in File
+    // Tree" to show an offscreen file.
+    const scrollToAlignment =
+      scrollToIndex !== -1 &&
+      (scrollToIndex <= this._indexOfFirstRowInView ||
+        scrollToIndex >= this._indexOfLastRowInView)
+        ? 'center'
+        : 'auto';
 
     return (
       <div
@@ -225,10 +204,8 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
           rowRenderer={this._rowRenderer}
           rowHeight={this._rowHeight}
           scrollToIndex={scrollToIndex}
-          scrollTop={scrollTop}
           scrollToAlignment={scrollToAlignment}
           overscanRowCount={BUFFER_ELEMENTS}
-          onScroll={this._handleScroll}
           rootHeight={this.state.rootHeight}
           nodeHeight={this.state.nodeHeight}
           footerHeight={this.state.footerHeight}
@@ -294,19 +271,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
           ? DEFAULT_FOOTER_HEIGHT
           : this.state.footerHeight;
     }
-  };
-
-  _handleScroll = (args: {
-    clientHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  }): void => {
-    const {scrollTop} = args;
-    if (!this._nextScrollingIsProgrammatic && this._getTrackedIndex() != null) {
-      this.props.clearTrackedNode();
-    }
-    this._nextScrollingIsProgrammatic = false;
-    this.props.onScroll(scrollTop);
   };
 
   _buildGetNodeByIndex(
@@ -401,6 +365,8 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     this._indexOfLastRowInView = stopIndex;
     const trackedIndex = this._getTrackedIndex();
 
+    // Stop tracking the node once we've rendered it. If it was already visible when we set the
+    // List's `scrollToIndex`, this will happen on the next render. That's fine though.
     if (
       trackedIndex != null &&
       trackedIndex >= startIndex &&
@@ -461,9 +427,6 @@ const mapStateToProps = (state: AppState): $Shape<Props> => ({
 });
 
 const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
-  clearTrackedNode: () => {
-    dispatch(Actions.clearTrackedNode());
-  },
   clearTrackedNodeIfNotLoading: () => {
     dispatch(Actions.clearTrackedNodeIfNotLoading());
   },

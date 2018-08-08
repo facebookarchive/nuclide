@@ -108,7 +108,6 @@ export default class FileTreeSidebarComponent extends React.Component<
   _showUncommittedConfigValue: Observable<boolean>;
   _showUncommittedKindConfigValue: Observable<ShowUncommittedChangesKindValue>;
   _scrollerElements: Subject<?HTMLElement>;
-  _scrollerScrollTop: number;
   // $FlowFixMe flow does not recognize VirtualizedFileTree as React component
   _scrollerRef: ?React.ElementRef<VirtualizedFileTree>;
   _menu: ?electron$Menu;
@@ -161,7 +160,6 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._showUncommittedKindConfigValue = FileTreeHelpers.observeUncommittedChangesKindConfigKey();
 
     this._scrollerElements = new Subject();
-    this._scrollerScrollTop = 0;
     this._scrollerRef = null;
     this._disposables = new UniversalDisposable(
       this._emitter,
@@ -479,10 +477,8 @@ All the changes across your entire stacked diff.
               ref={this._setScrollerRef}
               onMouseEnter={this._handleFileTreeHovered}
               onMouseLeave={this._handleFileTreeUnhovered}
-              onScroll={this._handleScroll}
               height={this.state.scrollerHeight}
               width={this.state.scrollerWidth}
-              initialScrollTop={this._scrollerScrollTop}
             />
           )}
         </div>
@@ -649,11 +645,6 @@ All the changes across your entire stacked diff.
         }),
     );
   }
-
-  _handleScroll = (scrollTop: number): void => {
-    // Do not store in state to not cause extra rendering loops on update
-    this._scrollerScrollTop = scrollTop;
-  };
 
   _getFilteredUncommittedFileChanges = createSelector(
     [(state: State) => state.uncommittedFileChanges],
