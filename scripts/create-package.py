@@ -31,10 +31,10 @@ try:
 except NameError:
     pass
 
-NPM = "npm"
-APM = "apm"
-NODE_PACKAGE = "node"
-ATOM_PACKAGE = "atom"
+ATOM_PACKAGE = "AtomPackage"
+ATOM_LIBRARY = "AtomLibrary"
+NODE_LIBRARY = "NodeLibrary"
+
 DEFAULT_PREFIX = "nuclide"
 PACKAGE_PREFIXES = [DEFAULT_PREFIX, "fb", "sample", "dev"]
 ATOM_TEST_RUNNER_FILE = os.path.join(
@@ -92,39 +92,35 @@ module.exports = {
     USERNAME,
 )
 
-ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
+ATOM_PACKAGE_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
   "author": "Replace this with the name of the team responsible for maintaining this package",
-  "atomTestRunner": "%s",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationCommands": {
   }
 }
 """
 
-NODE_APM_PACKAGE_JSON_TEMPLATE = """\
+ATOM_LIBRARY_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
   "author": "Replace this with the name of the team responsible for maintaining this package",
-  "atomTestRunner": "%s",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "apm"
+    "packageType": "AtomLibrary"
   }
 }
 """
 
-NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
+NODE_LIBRARY_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
   "main": "./lib/main.js",
@@ -132,11 +128,7 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
   "description": "",
   "author": "Replace this with the name of the team responsible for maintaining this package",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
-  },
-  "scripts": {
-    "test": "node %s"
+    "packageType": "NodeLibrary"
   }
 }
 """
@@ -152,7 +144,7 @@ def get_package_name(user_input):
     return DEFAULT_PREFIX + "-" + user_input
 
 
-def create_package(package_name, package_type, test_runner):
+def create_package(package_name, package_type):
     # Create the directory for the new package.
     pkg_dir = os.path.join(PACKAGES_PATH, package_name)
     os.makedirs(pkg_dir)
@@ -161,30 +153,25 @@ def create_package(package_name, package_type, test_runner):
     lib_dir = os.path.join(pkg_dir, "lib")
     os.makedirs(lib_dir)
     with open(os.path.join(lib_dir, "main.js"), "w") as f:
-        f.write(NODE_MAIN_JS if package_type == NODE_PACKAGE else ATOM_MAIN_JS)
+        f.write(NODE_MAIN_JS if package_type == NODE_LIBRARY else ATOM_MAIN_JS)
 
-    # Add the spec folder.
-    spec_dir = os.path.join(pkg_dir, "spec")
-    os.makedirs(spec_dir)
+    # Add the __tests__ folder.
+    tests_dir = os.path.join(pkg_dir, "__tests__")
+    atom_tests_dir = os.path.join(pkg_dir, "__atom_tests__")
+    os.makedirs(tests_dir)
+    if package_type == "AtomPackage" or package_type == "AtomLibrary":
+        os.makedirs(atom_tests_dir)
 
     # Add the package.json file.
     with open(os.path.join(pkg_dir, "package.json"), "w") as f:
-        if package_type == NODE_PACKAGE:
-            if test_runner == NPM:
-                f.write(
-                    NODE_NPM_PACKAGE_JSON_TEMPLATE
-                    % (package_name, os.path.relpath(NUCLIDE_JEST_BIN, pkg_dir))
-                )
-            else:
-                f.write(
-                    NODE_APM_PACKAGE_JSON_TEMPLATE
-                    % (package_name, os.path.relpath(ATOM_TEST_RUNNER_FILE, pkg_dir))
-                )
+        if package_type == NODE_LIBRARY:
+            f.write(NODE_LIBRARY_PACKAGE_JSON_TEMPLATE % (package_name))
+        elif package_type == ATOM_LIBRARY:
+            f.write(ATOM_LIBRARY_PACKAGE_JSON_TEMPLATE % (package_name))
+        elif package_type == ATOM_PACKAGE:
+            f.write(ATOM_PACKAGE_PACKAGE_JSON_TEMPLATE % (package_name))
         else:
-            f.write(
-                ATOM_APM_PACKAGE_JSON_TEMPLATE
-                % (package_name, os.path.relpath(ATOM_TEST_RUNNER_FILE, pkg_dir))
-            )
+            raise Exception("Unknown package type " + package_type)
 
     print("New package created at: %s." % pkg_dir)
 
@@ -199,14 +186,6 @@ def prompt_and_create_package(user_input):
         "Can this package be used outside of Atom " + "(e.g., on a server)? [Y/n]: "
     ).strip()
     if len(answer) > 0 and (answer[0] == "N" or answer[0] == "n"):
-        test_runner = APM
-        package_type = None
-    else:
-        test_runner = NPM
-        package_type = NODE_PACKAGE
-    print("Using %s as test runner." % test_runner)
-
-    if package_type is None:
         answer = input(
             "Can this package be loaded synchronously via "
             + "require() in Atom? [Y/n]: "
@@ -214,10 +193,13 @@ def prompt_and_create_package(user_input):
         if len(answer) > 0 and (answer[0] == "N" or answer[0] == "n"):
             package_type = ATOM_PACKAGE
         else:
-            package_type = NODE_PACKAGE
+            package_type = ATOM_LIBRARY
+    else:
+        package_type = NODE_LIBRARY
+
     print("Using %s as package type." % package_type)
 
-    create_package(package_name, package_type, test_runner)
+    create_package(package_name, package_type)
 
 
 def main():
