@@ -11,6 +11,8 @@ import optparse
 import os
 import sys
 import textwrap
+from distutils.spawn import find_executable as which
+
 
 CODE_FOLDER_NAME_MAP = {"js:node": "gen-nodejs", "java": "gen-java", "php": "gen-php"}
 
@@ -49,7 +51,6 @@ def add_copyright_headers_to_code_files(folder_path):
 
 
 def main():
-    # Set up the logging early on in the process.
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Parse the command-line arguments.
@@ -71,6 +72,9 @@ def main():
     (options, args) = parser.parse_args()
 
     # compile thrift file and generate thrift code to target language
+    if not which("thrift"):
+        print("thrift is not installed. See https://thrift.apache.org/ to install.")
+        exit(1)
     print("\n Generating thrift file into source code ...")
     os.system(f"thrift --gen {options.language} -r filesystem.thrift")
 
