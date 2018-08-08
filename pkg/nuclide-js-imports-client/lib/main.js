@@ -53,7 +53,6 @@ async function connectToJSImportsService(
   ]);
 
   const service = getVSCodeLanguageServiceByConnection(connection);
-  const settings = await getAutoImportSettings();
   const lspService = await service.createMultiLspLanguageService(
     'jsimports',
     './pkg/nuclide-js-imports-server/src/index-entry.js',
@@ -65,11 +64,7 @@ async function connectToJSImportsService(
       logLevel: (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
       projectFileNames: ['.flowconfig'],
       fileExtensions: ['.js', '.jsx'],
-      initializationOptions: {
-        componentModulePathFilter: settings.componentModulePathFilter,
-        uiComponentToolsIndexingGkEnabled:
-          settings.uiComponentToolsIndexingGkEnabled,
-      },
+      initializationOptions: await getAutoImportSettings(),
       fork: true,
     },
   );

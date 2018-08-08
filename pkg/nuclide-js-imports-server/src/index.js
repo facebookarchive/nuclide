@@ -88,7 +88,14 @@ connection.onInitialize(
     );
     autoImportsManager = new AutoImportsManager(
       eslintGlobals,
-      params.initializationOptions || undefined,
+      params.initializationOptions
+        ? {
+            componentModulePathFilter:
+              params.initializationOptions.componentModulePathFilter,
+            uiComponentToolsIndexingGkEnabled:
+              params.initializationOptions.uiComponentToolsIndexingGkEnabled,
+          }
+        : undefined,
     );
     autoImportsManager.indexAndWatchDirectory(root);
     completion = new Completions(
