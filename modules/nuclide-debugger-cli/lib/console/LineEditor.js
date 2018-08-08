@@ -470,6 +470,7 @@ export default class LineEditor extends EventEmitter {
     this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
+    this._cursor = 0;
     this._textChanged();
   }
 
