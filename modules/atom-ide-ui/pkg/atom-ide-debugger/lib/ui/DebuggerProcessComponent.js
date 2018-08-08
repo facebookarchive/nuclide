@@ -10,6 +10,7 @@
  * @format
  */
 
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import type {IDebugService, IProcess} from '../types';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -25,6 +26,7 @@ type Props = {
 
 type State = {
   processList: Array<IProcess>,
+  filter: ?string,
 };
 
 export default class DebuggerProcessComponent extends React.PureComponent<
@@ -33,6 +35,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
 > {
   _disposables: UniversalDisposable;
   _treeView: ?TreeList;
+  _filterInput: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -40,6 +43,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
     this._disposables = new UniversalDisposable();
     this.state = {
       processList: this.props.service.getModel().getProcesses(),
+      filter: null,
     };
   }
 
@@ -62,8 +66,14 @@ export default class DebuggerProcessComponent extends React.PureComponent<
   }
 
   render(): React.Node {
-    const {processList} = this.state;
+    const {processList, filter} = this.state;
     const {service} = this.props;
+    let filterRegEx = null;
+    try {
+      if (filter != null) {
+        filterRegEx = new RegExp(filter);
+      }
+    } catch (_) {}
     const processElements = processList.map((process, processIndex) => {
       const {adapterType, processName} = process.configuration;
       return process == null ? (
@@ -71,6 +81,8 @@ export default class DebuggerProcessComponent extends React.PureComponent<
       ) : (
         <ProcessTreeNode
           title={processName != null ? processName : adapterType}
+          filter={filter}
+          filterRegEx={filterRegEx}
           key={process.getId()}
           childItems={process.getAllThreads()}
           process={process}
@@ -79,6 +91,24 @@ export default class DebuggerProcessComponent extends React.PureComponent<
       );
     });
 
-    return <TreeList showArrows={true}>{processElements}</TreeList>;
+    return (
+      <div>
+        <AtomInput
+          placeholderText="Filter threads by name, ID, or status (i.e. &quot;paused&quot;)"
+          value={this._filterInput != null ? this._filterInput.getText() : ''}
+          size="sm"
+          onDidChange={text => {
+            this.setState({
+              filter: text,
+            });
+          }}
+          ref={input => {
+            this._filterInput = input;
+          }}
+          autofocus={false}
+        />
+        <TreeList showArrows={true}>{processElements}</TreeList>
+      </div>
+    );
   }
 }

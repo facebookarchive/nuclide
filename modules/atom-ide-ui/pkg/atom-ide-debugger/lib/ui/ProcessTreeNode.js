@@ -12,23 +12,22 @@
 
 import type {IProcess, IDebugService, IThread} from '../types';
 
-import {FilterThreadConditions} from '../vsp/FilterThreadConditions';
-import {Button} from 'nuclide-commons-ui/Button';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import DebuggerFilterThreadsUI from './DebuggerFilterThreadsUI';
 import ThreadTreeNode from './ThreadTreeNode';
 import {DebuggerMode} from '../constants';
-import showModal from 'nuclide-commons-ui/showModal';
 
 type Props = {
   process: IProcess,
   service: IDebugService,
   title: string,
+  filter: ?string,
+  filterRegEx: ?RegExp,
 };
 
 type State = {
@@ -36,11 +35,11 @@ type State = {
   threads: Array<IThread>,
   isFocused: boolean,
   pendingStart: boolean,
-  filterThreadConditions: ?FilterThreadConditions,
 };
 
 export default class ProcessTreeNode extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
+  _filter: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -105,8 +104,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       threads: process.getAllThreads(),
       isCollapsed,
       pendingStart,
-      filterThreadConditions:
-        this.state != null ? this.state.filterThreadConditions : null,
     };
   }
 
@@ -114,20 +111,33 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     this.setState(prevState => this._getState(!prevState.isCollapsed));
   };
 
-  _addFilterThreadsConditions = (conditions: FilterThreadConditions): void => {
-    this.setState({
-      filterThreadConditions: conditions,
-    });
-  };
+  // Returns true if thread should be kept.
+  filterThread(thread: IThread): boolean {
+    const {filter, filterRegEx} = this.props;
+    if (filter == null) {
+      return true;
+    } else if (filterRegEx == null) {
+      // User entered an invalid regular expression.
+      // Simply check if any thread contains the user's input.
+      return (
+        thread.name.toUpperCase().includes(filter.toUpperCase()) ||
+        thread.threadId
+          .toString()
+          .toUpperCase()
+          .includes(filter.toUpperCase())
+      );
+    } else {
+      return (
+        (filter.toUpperCase() === 'PAUSED' && thread.stopped) ||
+        thread.name.match(filterRegEx) != null ||
+        thread.threadId.toString().match(filterRegEx) != null
+      );
+    }
+  }
 
   render() {
     const {service, title, process} = this.props;
-    const {
-      threads,
-      isFocused,
-      isCollapsed,
-      filterThreadConditions,
-    } = this.state;
+    const {threads, isFocused, isCollapsed} = this.state;
 
     const tooltipTitle =
       service.viewModel.focusedProcess == null ||
@@ -146,18 +156,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       }
     };
 
-    const handleFilterThreadClick = event => {
-      const disposable = showModal(({dismiss}) => (
-        <DebuggerFilterThreadsUI
-          updateFilters={this._addFilterThreadsConditions}
-          dialogCloser={dismiss}
-          currentFilterConditions={this.state.filterThreadConditions}
-        />
-      ));
-      this._disposables.add(disposable);
-      event.stopPropagation();
-    };
-
     const formattedTitle = (
       <span>
         <span
@@ -166,13 +164,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
           title={tooltipTitle}>
           {title}
           {this.state.pendingStart ? ' (starting...)' : ''}
-        </span>
-        <span>
-          <Button
-            className={'debugger-tree-right-align'}
-            onClick={handleFilterThreadClick}>
-            Filter Threads
-          </Button>
         </span>
       </span>
     );
@@ -185,10 +176,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         collapsed={isCollapsed}
         onSelect={this.handleSelect}>
         {threads.map((thread, threadIndex) => {
-          if (
-            filterThreadConditions == null ||
-            filterThreadConditions.filterThread(thread)
-          ) {
+          if (this.filterThread(thread)) {
             return (
               <ThreadTreeNode
                 key={threadIndex}
