@@ -104,10 +104,6 @@
     "name": "VSCodeLanguageService"
   },
   {
-    "implementation": "../nuclide-cquery-lsp-rpc/lib/main.js",
-    "name": "CqueryLSPService"
-  },
-  {
     "implementation": "../../modules/atom-ide-debugger-python/RemoteDebuggerCommandService.js",
     "name": "RemoteDebuggerCommandService"
   },

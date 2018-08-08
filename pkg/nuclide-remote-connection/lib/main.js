@@ -84,7 +84,6 @@ import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
-import typeof * as CqueryLSPService from '../../nuclide-cquery-lsp-rpc';
 
 export function getBigDigClientByNuclideUri(uri: NuclideUri): BigDigClient {
   const connection = ServerConnection.getForUri(uri);
@@ -238,16 +237,4 @@ export function getVSCodeLanguageServiceByNuclideUri(
   uri: NuclideUri,
 ): VSCodeLanguageService {
   return nullthrows(getServiceByNuclideUri('VSCodeLanguageService', uri));
-}
-
-export function getCqueryLSPServiceByConnection(
-  connection: ?ServerConnection,
-): CqueryLSPService {
-  return nullthrows(getServiceByConnection('CqueryLSPService', connection));
-}
-
-export function getCqueryLSPServiceByNuclideUri(
-  uri: NuclideUri,
-): CqueryLSPService {
-  return nullthrows(getServiceByNuclideUri('CqueryLSPService', uri));
 }

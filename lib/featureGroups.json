@@ -105,7 +105,6 @@
   "cpp": [
     "nuclide-clang",
     "nuclide-clang-base",
-    "nuclide-cquery-lsp",
     "nuclide-ctags"
   ],
   "flow": ["nuclide-flow"],
@@ -155,7 +154,6 @@
   ],
   "objc": [
     "nuclide-clang",
-    "nuclide-cquery-lsp",
     "nuclide-ctags",
     "nuclide-objc"
   ],
