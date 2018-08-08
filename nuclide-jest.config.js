@@ -23,5 +23,5 @@ module.exports = {
   nodeBin: path.resolve(__dirname, '../third-party/node/bin/node'),
   rootDir: __dirname,
   testRegex: '__(atom_)?tests__\\/.*\\.js$',
-  env: {},
+  env: {JEST_ENVIRONMENT: 'nuclide:nuclide-test-runner'},
 };
