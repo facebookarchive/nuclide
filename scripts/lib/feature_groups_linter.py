@@ -18,11 +18,13 @@ class FeatureGroupsLinter(object):
     def validate(self):
         missing_features = self._included_features - self._available_features
         if missing_features:
-            self.report_error('Feature group contains non-existent features: %s',
-                              ', '.join(missing_features))
+            self.report_error(
+                "Feature group contains non-existent features: %s",
+                ", ".join(missing_features),
+            )
 
         return not self._had_error
 
     def report_error(self, message, *args):
-        logging.error('PACKAGE ERROR (' + self._path + '): ' + message, *args)
+        logging.error("PACKAGE ERROR (" + self._path + "): " + message, *args)
         self._had_error = True

@@ -26,6 +26,7 @@ import sys
 
 from lib.package_manager import PACKAGES_PATH
 
+
 try:
     input = raw_input
 except NameError:

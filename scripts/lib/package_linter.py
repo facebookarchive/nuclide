@@ -5,9 +5,11 @@
 # the root directory of this source tree.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 import os
 import re
+
 
 DEPENDENCIES_FIELDS = [
     "dependencies",
@@ -67,8 +69,8 @@ class PackageLinter(object):
                 package_name,
                 package,
                 "packageType",
-                ["NodeLibrary", "AtomLibrary", "AtomPackage"]
-                )
+                ["NodeLibrary", "AtomLibrary", "AtomPackage"],
+            )
             if package["packageType"] == "NodeLibrary":
                 self.verify_node_library(package)
             else:
