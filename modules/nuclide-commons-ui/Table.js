@@ -646,11 +646,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       'nuclide-ui-table',
       'nuclide-ui-table-body',
       {
+        // Before this class is applied only when `!this.props.selectable`
+        // because (for some reason) `onDoubleClick` isn't being fired when
+        // the element's "user-select" style is "none". Now re-enabling it to
+        // support copy text selection
+        'nuclide-ui-table-body-selectable-text': true,
         // Using native-key-bindings prevents the up and down arrows from being captured.
         'native-key-bindings': !this.props.enableKeyboardNavigation,
-        // Only enable text selection if the rows aren't selectable as these two things conflict.
-        // TODO: Add the ability to copy text that doesn't involve text selection within selections.
-        'nuclide-ui-table-body-selectable-text': !this.props.selectable,
       },
     );
     return [

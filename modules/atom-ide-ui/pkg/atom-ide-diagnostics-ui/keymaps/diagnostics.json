@@ -15,5 +15,11 @@
   ".platform-linux, .platform-win32": {
     "alt-ctrl-K": "diagnostics:go-to-previous-diagnostic-trace",
     "alt-ctrl-L": "diagnostics:go-to-next-diagnostic-trace"
+  },
+  ".platform-darwin .diagnostics-ui-table-container": {
+    "cmd-c": "diagnostics:copy"
+  },
+  ".platform-linux .diagnostics-ui-table-container, .platform-win32 .diagnostics-ui-table-container": {
+    "ctrl-c": "diagnostics:copy"
   }
 }
