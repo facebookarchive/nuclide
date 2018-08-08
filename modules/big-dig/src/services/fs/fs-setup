@@ -10,33 +10,33 @@ import logging
 import optparse
 import os
 import sys
+import textwrap
 
 CODE_FOLDER_NAME_MAP = {"js:node": "gen-nodejs", "java": "gen-java", "php": "gen-php"}
 
 
 def add_header(fpath):
-    """
-    Add facebook copy right header and 'generated' tag for all code files
-    """
-    header = (
-        "/**\n"
-        " * Copyright (c) 2017-present, Facebook, Inc.\n"
-        " * All rights reserved.\n"
-        " *\n"
-        " * This source code is licensed under the BSD-style license found in the\n"
-        " * LICENSE file in the root directory of this source tree. An additional grant\n"
-        " * of patent rights can be found in the PATENTS file in the same directory.\n"
-        " *\n"
-        " * @{0}\n"
-        " */\n\n".format("generated")
+    header = textwrap.dedent(
+        """\
+        /**
+        * Copyright (c) 2017-present, Facebook, Inc.
+        * All rights reserved.
+        *
+        * This source code is licensed under the BSD-style license found in the
+        * LICENSE file in the root directory of this source tree. An additional grant
+        * of patent rights can be found in the PATENTS file in the same directory.
+        *
+        * @generated
+        */
+
+        """
     )
-    # append header
-    with open(fpath, "r+") as f:
+
+    with open(fpath, "r") as f:
         content = f.read()
-        content = header + content
-        f.seek(0)
-        f.write(content)
-        f.truncate()
+
+    with open(fpath, "w") as f:
+        f.write(header + content)
 
 
 def add_copyright_headers_to_code_files(folder_path):
