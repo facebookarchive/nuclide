@@ -41,6 +41,7 @@ function getPythonAttachTargetProcessConfig(
     debugMode: 'attach',
     adapterType: VsAdapterTypes.PYTHON,
     config: getPythonAttachTargetConfig(target),
+    servicedFileExtensions: ['py'],
   };
 }
 

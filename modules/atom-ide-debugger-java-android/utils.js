@@ -258,7 +258,6 @@ export async function resolveConfiguration(
   if (lastPeriod >= 0) {
     processName = processName.substring(lastPeriod + 1, processName.length);
   }
-  processName += ' (Android)';
 
   return {
     ...configuration,
@@ -268,6 +267,7 @@ export async function resolveConfiguration(
     customControlButtons: getCustomControlButtonsForJavaSourcePaths(
       clickEvents,
     ),
+    servicedFileExtensions: ['java'],
     config: {
       ...attachPortTargetConfig,
       deviceSerial,

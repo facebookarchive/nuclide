@@ -192,7 +192,10 @@ export async function resolveConfiguration(
   }
   config.program = _deriveProgramFromWorkspace(config.workspace);
   delete config.workspace;
-  return configuration;
+  return {
+    ...configuration,
+    servicedFileExtensions: ['js'],
+  };
 }
 
 createPackage(module.exports, Activation);

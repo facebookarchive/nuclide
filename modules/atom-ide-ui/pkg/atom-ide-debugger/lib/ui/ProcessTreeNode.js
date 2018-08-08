@@ -139,16 +139,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     const {service, title, process} = this.props;
     const {threads, isFocused, isCollapsed} = this.state;
 
-    const tooltipTitle =
-      service.viewModel.focusedProcess == null ||
-      service.viewModel.focusedProcess.configuration.adapterExecutable == null
-        ? 'Unknown Command'
-        : service.viewModel.focusedProcess.configuration.adapterExecutable
-            .command +
-          service.viewModel.focusedProcess.configuration.adapterExecutable.args.join(
-            ' ',
-          );
-
     const handleTitleClick = event => {
       if (!this._computeIsFocused()) {
         service.viewModel.setFocusedProcess(process, true);
@@ -156,12 +146,25 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       }
     };
 
+    const firstExtension =
+      this.props.process.configuration.servicedFileExtensions == null
+        ? ''
+        : String(this.props.process.configuration.servicedFileExtensions[0]);
+    const fileIcon = (
+      <span
+        className={`debugger-tree-file-icon ${firstExtension}-icon`}
+        onClick={handleTitleClick}
+        title={firstExtension.toUpperCase()}
+      />
+    );
+
     const formattedTitle = (
       <span>
+        {fileIcon}
         <span
           onClick={handleTitleClick}
           className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
-          title={tooltipTitle}>
+          title={title}>
           {title}
           {this.state.pendingStart ? ' (starting...)' : ''}
         </span>

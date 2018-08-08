@@ -77,6 +77,7 @@ export type IProcessConfig = {|
   +customControlButtons?: Array<ControlButtonSpecification>,
   +threadsComponentTitle?: string,
   +showThreads?: boolean,
+  +servicedFileExtensions?: Array<string>,
 
   // The Atom language grammar to use for this debugger.
   +grammarName?: string,

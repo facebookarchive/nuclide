@@ -187,6 +187,8 @@ export function getLaunchProcessConfig(
       ...config,
       grammarName: 'source.hackfragment',
     },
+    processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
+    servicedFileExtensions: ['php', 'hh'],
   };
 }
 
@@ -242,6 +244,7 @@ export async function startAttachProcessConfig(
     },
     customControlButtons: getCustomControlButtons(),
     threadsComponentTitle: 'Requests',
+    servicedFileExtensions: ['php', 'hh'],
     isRestartable: true,
     onDebugStartingCallback: (instance: IVspInstance) => {
       // This IDisposable will be disposed when the debugging session ends.

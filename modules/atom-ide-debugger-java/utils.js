@@ -71,7 +71,7 @@ export function getJavaConfig(): AutoGenConfig {
       cwdPropertyName: 'cwd',
       header: null,
       getProcessName(values) {
-        return values.entryPointClass + ' (Java)';
+        return values.entryPointClass;
       },
     },
     attach: {
@@ -81,7 +81,7 @@ export function getJavaConfig(): AutoGenConfig {
       properties: [javaJdwpPort],
       header: null,
       getProcessName(values) {
-        return 'Port: ' + values.javaJdwpPort + ' (Java)';
+        return 'Port: ' + values.javaJdwpPort;
       },
     },
   };
@@ -240,6 +240,7 @@ export async function resolveConfiguration(
     customControlButtons: getCustomControlButtonsForJavaSourcePaths(
       clickEvents,
     ),
+    servicedFileExtensions: ['java'],
     adapterExecutable: javaAdapterExecutable,
     onDebugStartingCallback: (instance: IVspInstance) => {
       return new UniversalDisposable(
