@@ -64,6 +64,5 @@
     "language-cpp14:grammar-used",
     "language-objective-c:grammar-used"
   ],
-  "activationCommands": {
-  }
+  "activationCommands": {}
 }

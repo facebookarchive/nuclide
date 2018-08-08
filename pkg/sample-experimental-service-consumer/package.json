@@ -12,8 +12,7 @@
   "experimental": {
     "main": "./lib/main.js",
     "components": {
-      "sample-experimental-service-consumer.WidgetComponent":
-        "./lib/WidgetComponent"
+      "sample-experimental-service-consumer.WidgetComponent": "./lib/WidgetComponent"
     },
     "consumedServices": {
       "console": {

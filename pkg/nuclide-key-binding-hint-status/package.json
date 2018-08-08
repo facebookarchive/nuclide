@@ -9,8 +9,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "consumedServices": {
     "status-bar": {
       "versions": {

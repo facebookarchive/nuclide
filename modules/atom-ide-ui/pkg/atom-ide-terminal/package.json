@@ -58,9 +58,18 @@
       "type": "string",
       "default": "dynamic",
       "enum": [
-        {"value": "none", "description": "None (No character atlas, not recommended)"},
-        {"value": "static", "description": "Static (Generate a small character atlas on instantiation)"},
-        {"value": "dynamic", "description": "Dynamic (Experimental; Use an LRU cache to improve the cache hit rate)"}
+        {
+          "value": "none",
+          "description": "None (No character atlas, not recommended)"
+        },
+        {
+          "value": "static",
+          "description": "Static (Generate a small character atlas on instantiation)"
+        },
+        {
+          "value": "dynamic",
+          "description": "Dynamic (Experimental; Use an LRU cache to improve the cache hit rate)"
+        }
       ]
     },
     "rendererType": {
@@ -68,9 +77,18 @@
       "type": "string",
       "default": "auto",
       "enum": [
-        {"value": "auto", "description": "Automatically select best setting"},
-        {"value": "canvas", "description": "Canvas (normally faster)"},
-        {"value": "dom", "description": "DOM (Experimental fallback; may work better on some hardware)"}
+        {
+          "value": "auto",
+          "description": "Automatically select best setting"
+        },
+        {
+          "value": "canvas",
+          "description": "Canvas (normally faster)"
+        },
+        {
+          "value": "dom",
+          "description": "DOM (Experimental fallback; may work better on some hardware)"
+        }
       ]
     },
     "fontFamily": {

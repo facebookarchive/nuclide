@@ -9,14 +9,18 @@
     "diagnosticsWhitelist": {
       "title": "Directories for which the JS-Autoimports server should provide diagnostics",
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "default": [],
       "description": "If the working directory matches any of these regexes, then diagnostics will be provided. If the array is empty, diagnostics will be provided for all directories."
     },
     "requiresWhitelist": {
       "title": "Directories for which the JS-Autoimports server should use requires, not imports",
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "default": [],
       "description": "If the working directory matches any of these regexes, then suggestions will use requires rather than imports."
     },

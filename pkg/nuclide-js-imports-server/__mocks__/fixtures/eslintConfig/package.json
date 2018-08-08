@@ -8,7 +8,6 @@
       "webextensions": true,
       "node": false
     },
-    "rules": {
-    }
+    "rules": {}
   }
 }

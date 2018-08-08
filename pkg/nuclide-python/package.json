@@ -41,7 +41,11 @@
         "title": "Lint extension blacklist",
         "type": "array",
         "description": "File extensions that should not be linted with flake8.",
-        "default": [".bzl", ".tw", ""],
+        "default": [
+          ".bzl",
+          ".tw",
+          ""
+        ],
         "items": {
           "type": "string"
         }

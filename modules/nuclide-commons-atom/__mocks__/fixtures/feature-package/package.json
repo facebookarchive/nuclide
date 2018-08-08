@@ -38,7 +38,7 @@
       }
     }
   },
-  "viewProviders" : [
+  "viewProviders": [
     "provideHyperclickView"
   ],
   "private": true

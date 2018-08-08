@@ -28,6 +28,5 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  }
+  "activationCommands": {}
 }

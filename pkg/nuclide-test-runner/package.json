@@ -29,5 +29,7 @@
       }
     }
   },
-  "activationHooks": ["!nuclide_experimental_test_runner:gk:nuclide"]
+  "activationHooks": [
+    "!nuclide_experimental_test_runner:gk:nuclide"
+  ]
 }

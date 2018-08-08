@@ -20,6 +20,5 @@
     "react-dom": "15.3.1",
     "rxjs": "5.3.1"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
