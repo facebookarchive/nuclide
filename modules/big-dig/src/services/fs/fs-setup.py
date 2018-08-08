@@ -9,6 +9,8 @@
 import argparse
 import logging
 import os
+from pathlib import Path
+import subprocess
 import textwrap
 from distutils.spawn import find_executable as which
 
@@ -20,7 +22,7 @@ CODE_FOLDER_NAME_MAP = {
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def add_header(fpath: str) -> None:
+def add_header(fpath: Path) -> None:
     header = textwrap.dedent(
         """\
        /**
@@ -44,10 +46,10 @@ def add_header(fpath: str) -> None:
         f.write(header + content)
 
 
-def add_copyright_headers_to_code_files(folder_path: str) -> None:
-    for fname in os.listdir(folder_path):
-        fpath = os.path.join(folder_path, fname)
-        if os.path.isdir(fpath):
+def add_copyright_headers_to_code_files(folder_path: Path) -> None:
+    for fname in folder_path.iterdir():
+        fpath = folder_path / fname
+        if fpath.is_dir():
             add_copyright_headers_to_code_files(fpath)
         elif os.path.isfile(fpath):
             add_header(fpath)
@@ -60,10 +62,14 @@ class ThriftError(Exception):
 def run_thrift(language: str) -> None:
     source_file = "filesystem.thrift"
     logging.info(f"Compiling {source_file} into {language}")
-    if os.system(f"thrift --gen {language} -r {source_file}") != 0:
+    source_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+    if subprocess.run(
+        ["thrift", "--gen", language, "-r", source_file],
+        cwd=source_dir
+    ).returncode != 0:
         raise ThriftError
     folder_name = CODE_FOLDER_NAME_MAP[language]
-    add_copyright_headers_to_code_files(os.path.join(os.getcwd(), folder_name))
+    add_copyright_headers_to_code_files(source_dir / folder_name)
 
 
 def main():
