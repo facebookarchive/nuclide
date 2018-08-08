@@ -37,6 +37,18 @@ export default class GatedCursorControl implements CursorControl {
     }
   }
 
+  cursorLeft(cols: ?number): void {
+    if (this._enabled) {
+      this._inner.cursorLeft(cols);
+    }
+  }
+
+  cursorRight(cols: ?number): void {
+    if (this._enabled) {
+      this._inner.cursorRight(cols);
+    }
+  }
+
   clearEOL(): void {
     if (this._inner) {
       this._inner.clearEOL();

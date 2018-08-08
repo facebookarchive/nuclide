@@ -12,16 +12,21 @@
 
 import type {CursorControl} from './types';
 import type {
+  EscapeSequence,
+  Result as ParsedEscapeSequenceTextType,
+} from './ANSIEscapeSequenceParser';
+
+import type {
   ParsedANSICursorPosition,
   ParsedANSISpecialKey,
 } from './ANSIInputStreamParser';
 import {ANSIInputStreamParser} from './ANSIInputStreamParser';
 import {ANSIStreamOutput} from './ANSIStreamOutput';
 import EventEmitter from 'events';
-import fs from 'fs';
 import GatedCursorControl from './GatedCursorControl';
 import History from './History';
 import invariant from 'assert';
+import parseEscapeSequences from './ANSIEscapeSequenceParser';
 
 type CursorCompletion = {
   timeout: ?TimeoutID,
@@ -36,12 +41,18 @@ type LineEditorOptions = {
   removeHistoryDuplicates?: boolean,
 };
 
+function onlyKeepSGR(seq: EscapeSequence): boolean {
+  // m is the terminator for Set Graphics Rendition
+  return seq.final === 'm';
+}
+
 export default class LineEditor extends EventEmitter {
   _parser: ANSIInputStreamParser;
   _buffer: string = '';
-  _prompt: string = '$ ';
+  _parsedPrompt: ParsedEscapeSequenceTextType;
   _input: stream$Readable;
   _output: stream$Writable;
+  _lastOutputColumn: number;
   _outputANSI: ?ANSIStreamOutput;
   _gatedOutputANSI: ?GatedCursorControl;
   _tty: boolean;
@@ -49,7 +60,6 @@ export default class LineEditor extends EventEmitter {
   _screenRows: number = 0;
   _screenColumns: number = 0;
   _fieldRow: number = 0;
-  _fieldStartCol: number = 0;
   _keyHandlers: Map<string, () => void>;
   _history: History;
   _historyTextSave: string;
@@ -57,7 +67,8 @@ export default class LineEditor extends EventEmitter {
   _onData: ?(string) => void;
   _onClose: ?(string) => void;
   _borrowed: boolean;
-  _log: number;
+  _writing: boolean;
+  _writeQueue: ?string;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -86,14 +97,21 @@ export default class LineEditor extends EventEmitter {
     this._editedSinceHistory = false;
 
     if (this._tty) {
-      this._outputANSI = new ANSIStreamOutput(s => this.write(s));
+      // We don't want this going through this.write because that will strip
+      // out the sequences this generates.
+      this._outputANSI = new ANSIStreamOutput(s => {
+        this._output.write(s);
+        return;
+      });
       this._gatedOutputANSI = new GatedCursorControl(this._outputANSI);
     }
 
     this._installHooks();
     this._onResize();
+    this.setPrompt('$ ');
 
     this._borrowed = false;
+    this._lastOutputColumn = 1;
 
     this._keyHandlers = new Map([
       ['CTRL-A', () => this._home()],
@@ -119,8 +137,6 @@ export default class LineEditor extends EventEmitter {
       ['DEL', () => this._deleteRight(false)],
       ['ESCAPE', () => this._deleteLine()],
     ]);
-
-    this._log = fs.openSync('/tmp/cli-output.txt', 'w');
   }
 
   close() {
@@ -142,15 +158,110 @@ export default class LineEditor extends EventEmitter {
   }
 
   setPrompt(prompt: string): void {
-    this._prompt = prompt;
+    this._parsedPrompt = parseEscapeSequences(prompt, onlyKeepSGR);
   }
 
+  // NOTE that writing is an async process because we have to wait for
+  // transactions with the terminal (e.g. getting the cursor position)
+  // We don't want the client to have to wait, so queue writes and manage
+  // the async all internally.
+  //
+  // write() manages writing text to the screen from the application without
+  // bothering the prompt, even text which contains (and not always ending in)
+  // newlines.
   write(s: string): void {
-    this._output.write(s);
-    fs.writeSync(this._log, s);
-    fs.fsyncSync(this._log);
+    if (this._writeQueue == null) {
+      this._writeQueue = '';
+    }
+    this._writeQueue += s;
+
+    if (!this._writing) {
+      this._processWriteQueue();
+    }
   }
 
+  async _processWriteQueue(): Promise<void> {
+    this._writing = true;
+    while (this._writeQueue != null) {
+      const s = this._writeQueue;
+      this._writeQueue = null;
+      // await in loop is intentional here - while we're waiting, other
+      // stuff to write could come in.
+      // eslint-disable-next-line no-await-in-loop
+      await this._write(s);
+    }
+    this._writing = false;
+  }
+
+  async _write(s: string): Promise<void> {
+    if (this._tty && !this._borrowed) {
+      // here we output the string (which may not have a newline terminator)
+      // while maintaining the integrity of the prompt
+      const cursor = this._outputANSI;
+      invariant(cursor != null);
+
+      // clear out prompt
+      const here = await this._getCursorPosition();
+      cursor.gotoXY(1, here.row);
+      cursor.clearEOL();
+      this._fieldRow = here.row;
+
+      let col = this._lastOutputColumn;
+      let row = this._fieldRow;
+
+      if (col !== 1) {
+        // if there was a partial line, move to the end of it
+        row--;
+        cursor.gotoXY(col, row);
+      }
+
+      const outputPiece = (line: string): void => {
+        // strip out any escape or control sequences other than SGR, which is
+        // used for setting colors and other text attributes
+        const parsed = parseEscapeSequences(line, onlyKeepSGR);
+
+        this._output.write(parsed.filteredText);
+
+        // update the cursor position. the fact that screen cell indices are
+        // 1-based makes the mod math a bit weird. Convert col to be zero-based first.
+        col--;
+        col += parsed.displayLength;
+        row += Math.trunc(col / this._screenColumns);
+        col %= this._screenColumns;
+        col++;
+      };
+
+      // NB we are assuming no control characters other than \r and \n here
+      // anything else will interfere with column counting
+      const lines = s.replace(/\r/g, '').split('\n');
+      outputPiece(lines[0]);
+      lines.shift();
+
+      for (const line of lines) {
+        this._output.write('\n');
+        row++;
+        col = 1;
+        outputPiece(line);
+      }
+
+      this._lastOutputColumn = col;
+      this._fieldRow = Math.min(this._screenRows, row + 1);
+
+      this._output.write('\r\n');
+      cursor.clearEOL();
+      this._output.write(this._parsedPrompt.filteredText);
+
+      this._repaint();
+    } else {
+      this._output.write(s);
+    }
+
+    this._writing = false;
+  }
+
+  // borrowTTY and returnTTY allow the user of console to take over complete
+  // control of the TTY; for example, to implement paging of large amounts of
+  // data.
   borrowTTY(): ?CursorControl {
     if (this._borrowed || !this._tty) {
       return null;
@@ -175,23 +286,19 @@ export default class LineEditor extends EventEmitter {
     this._borrowed = false;
     cursorControl.setEnabled(false);
 
-    this.write(`\r\n${this._prompt}`);
+    this.write(`\n${this._parsedPrompt.filteredText}`);
     this._repaint();
     return true;
   }
 
   async prompt(): Promise<void> {
+    this._output.write(`\n${this._parsedPrompt.filteredText}`);
     if (this._tty) {
-      this.write('\n\r');
-      this.write(this._prompt);
       const cursorPos = await this._getCursorPosition();
       this._fieldRow = cursorPos.row;
-      this._fieldStartCol = cursorPos.column;
       this._cursor = 0;
       this._leftEdge = 0;
-      return;
     }
-    this.write(`\n${this._prompt}`);
   }
 
   _onText(s: string): void {
@@ -350,7 +457,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   _enter(): void {
-    this.write('\r\n');
+    this._output.write('\r\n');
     this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
@@ -384,19 +491,21 @@ export default class LineEditor extends EventEmitter {
     const outputANSI = this._outputANSI;
     invariant(output != null && outputANSI != null);
 
-    outputANSI.gotoXY(this._fieldStartCol, this._fieldRow);
+    const fieldStartCol = 1 + this._parsedPrompt.displayLength;
+
+    outputANSI.gotoXY(fieldStartCol, this._fieldRow);
     outputANSI.clearEOL();
 
-    let hwcursor: number = this._fieldStartCol + this._cursor - this._leftEdge;
-    if (hwcursor < this._fieldStartCol) {
-      this._leftEdge -= this._fieldStartCol - hwcursor;
+    let hwcursor: number = fieldStartCol + this._cursor - this._leftEdge;
+    if (hwcursor < fieldStartCol) {
+      this._leftEdge -= fieldStartCol - hwcursor;
     } else if (hwcursor >= this._screenColumns) {
       this._leftEdge += hwcursor - this._screenColumns + 1;
     }
-    hwcursor = this._fieldStartCol + this._cursor - this._leftEdge;
+    hwcursor = fieldStartCol + this._cursor - this._leftEdge;
 
-    const textColumns = this._screenColumns - this._fieldStartCol;
-    output.write(this._buffer.substr(this._leftEdge, textColumns));
+    const textColumns = this._screenColumns - fieldStartCol;
+    this._output.write(this._buffer.substr(this._leftEdge, textColumns));
     outputANSI.gotoXY(hwcursor, this._fieldRow);
   }
 
@@ -445,7 +554,7 @@ export default class LineEditor extends EventEmitter {
   _installHooks() {
     this._input.setEncoding('utf8');
     this._onClose = () => {
-      this.write('\r\n');
+      this.write('\n');
       this.close();
     };
     this._input.on('end', this._onClose);

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ * @flow strict
  * @format
  */
 
@@ -216,7 +216,7 @@ const escapeSequenceParser: ParserDefinition = new Map([
   ],
 ]);
 
-type EscapeSequence = {
+export type EscapeSequence = {
   buffer: string,
   prefix?: string,
   stringParameter?: string,
@@ -225,7 +225,7 @@ type EscapeSequence = {
   final?: string,
 };
 
-type Result = {
+export type Result = {
   filteredText: string,
   displayLength: number,
 };

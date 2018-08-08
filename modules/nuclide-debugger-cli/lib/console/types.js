@@ -13,5 +13,7 @@
 export interface CursorControl {
   queryCursorPosition(): void;
   gotoXY(col: number, row: number): void;
+  cursorLeft(cols: ?number): void;
+  cursorRight(cols: ?number): void;
   clearEOL(): void;
 }

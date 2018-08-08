@@ -122,15 +122,9 @@ export default class CommandLine implements ConsoleIO {
   }
 
   output(text: string): void {
-    if (!this._inputStopped && this._more == null) {
-      if (!text.startsWith('\n')) {
-        this._cli.write('\n');
-      }
+    if (this._more == null) {
       this._cli.write(text);
-      this._cli.prompt();
-      return;
     }
-    this._cli.write(text);
   }
 
   outputLine(line?: string = ''): void {

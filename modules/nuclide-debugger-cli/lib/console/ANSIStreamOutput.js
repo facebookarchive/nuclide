@@ -29,6 +29,14 @@ export class ANSIStreamOutput implements CursorControl {
     this._output(`\x1b[${row};${col}H`);
   }
 
+  cursorLeft(cols: ?number): void {
+    this._output(`\x1b[${cols == null ? '' : cols}G`);
+  }
+
+  cursorRight(cols: ?number): void {
+    this._output(`\x1b[${cols == null ? '' : cols}C`);
+  }
+
   clearEOL(): void {
     this._output('\x1b[K');
   }
