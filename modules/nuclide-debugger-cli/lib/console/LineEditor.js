@@ -14,8 +14,8 @@ import type {CursorControl} from './types';
 import type {
   ParsedANSICursorPosition,
   ParsedANSISpecialKey,
-} from './ANSIStreamParser';
-import {ANSIStreamParser} from './ANSIStreamParser';
+} from './ANSIInputStreamParser';
+import {ANSIInputStreamParser} from './ANSIInputStreamParser';
 import {ANSIStreamOutput} from './ANSIStreamOutput';
 import EventEmitter from 'events';
 import fs from 'fs';
@@ -37,7 +37,7 @@ type LineEditorOptions = {
 };
 
 export default class LineEditor extends EventEmitter {
-  _parser: ANSIStreamParser;
+  _parser: ANSIInputStreamParser;
   _buffer: string = '';
   _prompt: string = '$ ';
   _input: stream$Readable;
@@ -67,7 +67,7 @@ export default class LineEditor extends EventEmitter {
 
   constructor(options: LineEditorOptions) {
     super();
-    this._parser = new ANSIStreamParser();
+    this._parser = new ANSIInputStreamParser();
     this._input = options.input != null ? options.input : process.stdin;
     this._output = options.output != null ? options.output : process.stdout;
     // $FlowFixMe isTTY exists
@@ -453,7 +453,7 @@ export default class LineEditor extends EventEmitter {
     if (this._tty) {
       // $FlowFixMe has this call
       this._input.setRawMode(true);
-      this._parser = new ANSIStreamParser();
+      this._parser = new ANSIInputStreamParser();
       this._onData = t => this._parser.next(t);
       this._input.on('data', this._onData);
       this._parser.on('text', s => this._onText(s));

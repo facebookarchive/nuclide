@@ -405,7 +405,7 @@ const ANSIKeyMappings = new Map([
   ['\x1b[F', {key: SpecialKey.END, shift: false, ctrl: false}],
 ]);
 
-export class ANSIStreamParser extends EventEmitter {
+export class ANSIInputStreamParser extends EventEmitter {
   _state: number = ParseState.START;
   _buffer: string = '';
   _prefix: string = '';
