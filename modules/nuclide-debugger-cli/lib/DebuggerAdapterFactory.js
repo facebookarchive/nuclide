@@ -32,7 +32,6 @@ import VSPOptionsParser from './VSPOptionsParser';
 import HHVMDebugAdapter from './adapters/HHVMDebugAdapter';
 import NativeGdbDebugAdapter from './adapters/NativeGdbDebugAdapter';
 import NodeDebugAdapter from './adapters/NodeDebugAdapter';
-import OCamlDebugAdapter from './adapters/OCamlDebugAdapter';
 import PythonDebugAdapter from './adapters/PythonDebugAdapter';
 
 export type ParsedVSAdapter = {
@@ -55,9 +54,12 @@ export default class DebuggerAdapterFactory {
     new HHVMDebugAdapter(),
     new NativeGdbDebugAdapter(),
     new NodeDebugAdapter(),
-    new OCamlDebugAdapter(),
     new PythonDebugAdapter(),
   ];
+
+  allAdapterKeys(): string[] {
+    return this._debugAdapters.map(adapt => adapt.key);
+  }
 
   adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
     let adapter;

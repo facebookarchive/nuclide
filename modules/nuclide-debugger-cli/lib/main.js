@@ -80,7 +80,7 @@ const _help: string[] = [
   '  Attach the debugger to a running process.',
   '--preset:',
   '  Load default arguments for a session type preset',
-  '--type python|node:',
+  '--type debugger-type:',
   '  Specify the type of program to debug. Required with --attach',
   '',
   '[program]: If not attaching, the program to launch. Normally the type of',
@@ -93,6 +93,10 @@ function showHelp(
   contextSensitiveHelp: Array<string>,
 ): void {
   process.stdout.write(_help.join('\n') + '\n');
+
+  const types = new DebuggerAdapterFactory().allAdapterKeys();
+
+  process.stdout.write(`Supported debugger types:\n\t${types.join(' ')}\n`);
 
   if (contextSensitiveHelp.length !== 0) {
     process.stdout.write('Options which are specific to the debugger type:\n');
