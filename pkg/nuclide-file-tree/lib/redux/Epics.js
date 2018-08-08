@@ -875,7 +875,7 @@ export function openRenameDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE)
+    .ofType(ActionTypes.OPEN_RENAME_DIALOG)
     .do(() => {
       const targetNodes = Selectors.getTargetNodes(store.getState());
       if (targetNodes.size !== 1) {
