@@ -40,18 +40,16 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {
   ADD_ESCAPE_COMMAND,
   COLOR_CONFIGS,
-  CURSOR_BLINK_CONFIG,
-  CURSOR_STYLE_CONFIG,
   DOCUMENTATION_MESSAGE_CONFIG,
   FONT_FAMILY_CONFIG,
   FONT_SCALE_CONFIG,
   LINE_HEIGHT_CONFIG,
-  OPTION_IS_META_CONFIG,
   PRESERVED_COMMANDS_CONFIG,
-  SCROLLBACK_CONFIG,
-  getFontSize,
+  subscribeConfigChanges,
+  setTerminalOption,
+  syncTerminalFont,
 } from './config';
-import {removePrefixSink, patternCounterSink} from './sink';
+import {createOutputSink} from './sink';
 
 import type {Terminal} from './createTerminal';
 import type {TerminalInstance} from './types';
@@ -62,7 +60,6 @@ import type {InstantiatedTerminalInfo} from './nuclide-terminal-uri';
 
 import type {Sink} from './sink';
 
-const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
 export interface TerminalViewState {
@@ -85,9 +82,9 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _emitter: Emitter;
   _preservedCommands: Set<string>;
   _div: HTMLDivElement;
-  _terminal: Terminal;
+  _terminal: ?Terminal;
   _pty: ?Pty;
-  _processOutput: Sink;
+  _processOutput: ?Sink;
   _startTime: number;
   _bytesIn: number;
   _bytesOut: number;
@@ -120,80 +117,13 @@ export class TerminalView implements PtyClient, TerminalInstance {
     this._isFirstOutput = true;
 
     const subscriptions = (this._subscriptions = new UniversalDisposable());
-    this._processOutput = this._createOutputSink();
 
     this._emitter = new Emitter();
     subscriptions.add(this._emitter);
 
-    subscriptions.add(
-      featureConfig
-        .observeAsStream(PRESERVED_COMMANDS_CONFIG)
-        .subscribe((preserved: any) => {
-          this._preservedCommands = new Set([
-            ...(preserved || []),
-            ...(info.preservedCommands || []),
-          ]);
-        }),
-      atom.config.onDidChange('core.themes', this._syncAtomTheme.bind(this)),
-      atom.themes.onDidChangeActiveThemes(this._syncAtomTheme.bind(this)),
-    );
-
-    subscriptions.add(
-      // Skip the first value because the observe callback triggers once when
-      // we begin observing, duplicating work in the constructor.
-      ...Object.keys(COLOR_CONFIGS).map(color =>
-        featureConfig
-          .observeAsStream(COLOR_CONFIGS[color])
-          .skip(1)
-          .subscribe(this._syncAtomTheme.bind(this)),
-      ),
-    );
-
     const div = (this._div = document.createElement('div'));
     div.classList.add('terminal-pane');
     subscriptions.add(() => div.remove());
-
-    const terminal = (this._terminal = createTerminal());
-    terminal.attachCustomKeyEventHandler(
-      this._checkIfKeyBoundOrDivertToXTerm.bind(this),
-    );
-    this._subscriptions.add(() => terminal.dispose());
-    terminal.webLinksInit(openLink);
-    registerLinkHandlers(terminal, this._cwd);
-
-    this._subscriptions.add(
-      atom.commands.add(div, 'core:copy', () => {
-        document.execCommand('copy');
-      }),
-      atom.commands.add(div, 'core:paste', () => {
-        document.execCommand('paste');
-      }),
-      atom.commands.add(
-        div,
-        ADD_ESCAPE_COMMAND,
-        this._addEscapePrefix.bind(this),
-      ),
-      atom.commands.add(div, 'atom-ide-terminal:clear', this._clear.bind(this)),
-    );
-
-    if (process.platform === 'win32') {
-      // On Windows, add Putty-style highlight and right click to copy, right click to paste.
-      this._subscriptions.add(
-        Observable.fromEvent(div, 'contextmenu').subscribe(e => {
-          // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
-          // commands are not working correctly with terminal selection.
-          if (terminal.hasSelection()) {
-            // $FlowFixMe: add types for clipboard
-            clipboard.writeText(terminal.getSelection());
-          } else {
-            document.execCommand('paste');
-          }
-          terminal.clearSelection();
-          terminal.focus();
-          e.stopPropagation();
-        }),
-      );
-    }
 
     if (cwd != null && nuclideUri.isRemote(cwd)) {
       this._subscriptions.add(
@@ -205,10 +135,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
       );
     }
 
-    // div items don't support a 'focus' event, and we need to forward.
-    (this._div: any).focus = () => terminal.focus();
-    (this._div: any).blur = () => terminal.blur();
-
     // Terminal.open only works after its div has been attached to the DOM,
     // which happens in getElement, not in this constructor. Therefore delay
     // open and spawn until the div is visible, which means it is in the DOM.
@@ -217,47 +143,27 @@ export class TerminalView implements PtyClient, TerminalInstance {
         .filter(Boolean)
         .first()
         .subscribe(() => {
+          const terminal = createTerminal();
+          this._onTerminalCreation(terminal);
           terminal.open(this._div);
           (div: any).terminal = terminal;
           if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
             const docsUrl = 'https://nuclide.io/docs/features/terminal';
             terminal.writeln(`For more info check out the docs: ${docsUrl}`);
           }
+
           terminal.focus();
-          this._subscriptions.add(this._subscribeFitEvents());
+          this._subscriptions.add(this._subscribeFitEvents(terminal));
           this._spawn(cwd)
-            .then(pty => this._onPtyFulfill(pty))
-            .catch(error => this._onPtyFail(error));
+            .then(pty => this._onPtyFulfill(pty, terminal))
+            .catch(error => this._onPtyFail(error, terminal));
         }),
     );
   }
 
-  _subscribeFitEvents(): UniversalDisposable {
+  _subscribeFitEvents(terminal: Terminal): UniversalDisposable {
     return new UniversalDisposable(
-      featureConfig
-        .observeAsStream(OPTION_IS_META_CONFIG)
-        .skip(1)
-        .subscribe(optionIsMeta => {
-          this._setTerminalOption('macOptionIsMeta', optionIsMeta);
-        }),
-      featureConfig
-        .observeAsStream(CURSOR_STYLE_CONFIG)
-        .skip(1)
-        .subscribe(cursorStyle =>
-          this._setTerminalOption('cursorStyle', cursorStyle),
-        ),
-      featureConfig
-        .observeAsStream(CURSOR_BLINK_CONFIG)
-        .skip(1)
-        .subscribe(cursorBlink =>
-          this._setTerminalOption('cursorBlink', cursorBlink),
-        ),
-      featureConfig
-        .observeAsStream(SCROLLBACK_CONFIG)
-        .skip(1)
-        .subscribe(scrollback =>
-          this._setTerminalOption('scrollback', scrollback),
-        ),
+      subscribeConfigChanges(terminal),
       Observable.combineLatest(
         observePaneItemVisibility(this),
         Observable.merge(
@@ -267,7 +173,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
           featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
           featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
           featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
-          Observable.fromEvent(this._terminal, 'focus'),
+          Observable.fromEvent(terminal, 'focus'),
           // Debounce resize observables to reduce lag.
           Observable.merge(
             Observable.fromEvent(window, 'resize'),
@@ -277,7 +183,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
       )
         // Don't emit syncs if the pane is not visible.
         .filter(([visible]) => visible)
-        .subscribe(this._syncFontAndFit),
+        .subscribe(() => this._syncFontAndFit(terminal)),
     );
   }
 
@@ -314,7 +220,85 @@ export class TerminalView implements PtyClient, TerminalInstance {
       .then(value => (this._useTitleAsPath = value));
   }
 
-  _onPtyFulfill(pty: Pty): void {
+  _onTerminalCreation(terminal: Terminal): void {
+    this._terminal = terminal;
+    this._processOutput = createOutputSink(terminal);
+    terminal.attachCustomKeyEventHandler(
+      this._checkIfKeyBoundOrDivertToXTerm.bind(this),
+    );
+    this._subscriptions.add(() => terminal.dispose());
+    terminal.webLinksInit(openLink);
+    registerLinkHandlers(terminal, this._cwd);
+
+    // div items don't support a 'focus' event, and we need to forward.
+    (this._div: any).focus = () => terminal.focus();
+    (this._div: any).blur = () => terminal.blur();
+
+    if (process.platform === 'win32') {
+      // On Windows, add Putty-style highlight and right click to copy, right click to paste.
+      this._subscriptions.add(
+        Observable.fromEvent(this._div, 'contextmenu').subscribe(e => {
+          // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
+          // commands are not working correctly with terminal selection.
+          if (terminal.hasSelection()) {
+            // $FlowFixMe: add types for clipboard
+            clipboard.writeText(terminal.getSelection());
+          } else {
+            document.execCommand('paste');
+          }
+          terminal.clearSelection();
+          terminal.focus();
+          e.stopPropagation();
+        }),
+      );
+    }
+    this._subscriptions.add(
+      atom.commands.add(this._div, 'core:copy', () => {
+        document.execCommand('copy');
+      }),
+      atom.commands.add(this._div, 'core:paste', () => {
+        document.execCommand('paste');
+      }),
+      atom.commands.add(
+        this._div,
+        ADD_ESCAPE_COMMAND,
+        this._addEscapePrefix.bind(this),
+      ),
+      atom.commands.add(
+        this._div,
+        'atom-ide-terminal:clear',
+        terminal.clear.bind(terminal),
+      ),
+    );
+
+    this._subscriptions.add(
+      featureConfig
+        .observeAsStream(PRESERVED_COMMANDS_CONFIG)
+        .subscribe((preserved: any) => {
+          this._preservedCommands = new Set([
+            ...(preserved || []),
+            ...(this._terminalInfo.preservedCommands || []),
+          ]);
+        }),
+      atom.config.onDidChange('core.themes', () =>
+        this._syncAtomTheme(terminal),
+      ),
+      atom.themes.onDidChangeActiveThemes(() => this._syncAtomTheme(terminal)),
+    );
+
+    this._subscriptions.add(
+      // Skip the first value because the observe callback triggers once when
+      // we begin observing, duplicating work in the constructor.
+      ...Object.keys(COLOR_CONFIGS).map(color =>
+        featureConfig
+          .observeAsStream(COLOR_CONFIGS[color])
+          .skip(1)
+          .subscribe(() => this._syncAtomTheme(terminal)),
+      ),
+    );
+  }
+
+  _onPtyFulfill(pty: Pty, terminal: Terminal): void {
     invariant(this._pty == null);
     this._pty = pty;
 
@@ -328,10 +312,10 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
     this._subscriptions.add(
       this.dispose.bind(this),
-      Observable.fromEvent(this._terminal, 'data').subscribe(
+      Observable.fromEvent(terminal, 'data').subscribe(
         this._onInput.bind(this),
       ),
-      Observable.fromEvent(this._terminal, 'title').subscribe(title => {
+      Observable.fromEvent(terminal, 'title').subscribe(title => {
         this._setTitle(title);
         if (this._useTitleAsPath) {
           this._setPath(title);
@@ -340,15 +324,15 @@ export class TerminalView implements PtyClient, TerminalInstance {
       Observable.interval(60 * 60 * 1000).subscribe(() =>
         track('nuclide-terminal.hourly', this._statistics()),
       ),
-      Observable.fromEvent(this._terminal, 'focus').subscribe(
+      Observable.fromEvent(terminal, 'focus').subscribe(
         this._focused.bind(this),
       ),
-      Observable.fromEvent(this._terminal, 'blur').subscribe(
+      Observable.fromEvent(terminal, 'blur').subscribe(
         this._blurred.bind(this),
       ),
     );
-    this._syncFontAndFit();
-    this._subscriptions.add(measurePerformance(this._terminal));
+    this._syncFontAndFit(terminal);
+    this._subscriptions.add(measurePerformance(terminal));
   }
 
   _focused(): void {
@@ -383,10 +367,10 @@ export class TerminalView implements PtyClient, TerminalInstance {
     };
   }
 
-  _onPtyFail(error: Error) {
-    this._terminal.writeln('Error starting process:');
+  _onPtyFail(error: Error, terminal: Terminal) {
+    terminal.writeln('Error starting process:');
     for (const line of String(error).split('\n')) {
-      this._terminal.writeln(line);
+      terminal.writeln(line);
     }
     track('nuclide-terminal.failed', {
       pane: this._paneUri,
@@ -398,46 +382,24 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   // Since changing the font settings may resize the contents, we have to
   // trigger a re-fit when updating font settings.
-  _syncFontAndFit = (): void => {
-    this._setTerminalOption('fontSize', getFontSize());
-    this._setTerminalOption(
-      'lineHeight',
-      featureConfig.get(LINE_HEIGHT_CONFIG),
-    );
-    this._setTerminalOption(
-      'fontFamily',
-      featureConfig.get(FONT_FAMILY_CONFIG),
-    );
-    this._fitAndResize();
-  };
-
-  _setTerminalOption(optionName: string, value: mixed): void {
-    if (this._terminal.getOption(optionName) !== value) {
-      this._terminal.setOption(optionName, value);
-    }
-  }
-
-  _fitAndResize(): void {
+  _syncFontAndFit = (terminal: Terminal): void => {
+    syncTerminalFont(terminal);
     // Force character measure before 'fit' runs.
-    this._terminal.resize(this._terminal.cols, this._terminal.rows);
-    this._terminal.fit();
+    terminal.resize(terminal.cols, terminal.rows);
+    terminal.fit();
     if (this._pty != null) {
-      this._pty.resize(this._terminal.cols, this._terminal.rows);
+      this._pty.resize(terminal.cols, terminal.rows);
     }
-    this._syncAtomTheme();
+    this._syncAtomTheme(terminal);
     // documented workaround for https://github.com/xtermjs/xterm.js/issues/291
     // see https://github.com/Microsoft/vscode/commit/134cbec22f81d5558909040491286d72b547bee6
     // $FlowIgnore: using unofficial _core interface defined in https://github.com/Microsoft/vscode/blob/master/src/typings/vscode-xterm.d.ts#L682-L706
-    this._terminal.emit('scroll', this._terminal._core.buffer.ydisp);
-  }
+    terminal.emit('scroll', terminal._core.buffer.ydisp);
+  };
 
-  _syncAtomTheme(): void {
+  _syncAtomTheme(terminal: Terminal): void {
     const div = this._div;
-    this._setTerminalOption('theme', getTerminalTheme(div));
-  }
-
-  _clear(): void {
-    this._terminal.clear();
+    setTerminalOption(terminal, 'theme', getTerminalTheme(div));
   }
 
   _onInput(data: string): void {
@@ -504,49 +466,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
     }
   }
 
-  _createOutputSink(): Sink {
-    let tmuxLines = 0;
-    let lines = 0;
-    let firstChar: ?string = null;
-    let warned = false;
-    return removePrefixSink(
-      TMUX_CONTROLCONTROL_PREFIX,
-      patternCounterSink(
-        '\n%',
-        n => ++tmuxLines < 2,
-        patternCounterSink(
-          '\n',
-          n => ++lines < 2,
-          data => {
-            if (firstChar == null && data.length > 0) {
-              firstChar = data.charAt(0);
-            }
-            if (
-              firstChar === '%' &&
-              tmuxLines === lines &&
-              tmuxLines >= 2 &&
-              !warned
-            ) {
-              warned = true;
-              atom.notifications.addWarning('Tmux control protocol detected', {
-                detail:
-                  'The terminal output looks like you might be using tmux with -C or -CC.  ' +
-                  'Nuclide terminal can be used with tmux, but not with the -C or -CC options.  ' +
-                  'In your ~/.bashrc or similar, you can avoid invocations of tmux -C (or -CC) ' +
-                  'in Nuclide terminal by checking:\n' +
-                  '  if [ "$TERM_PROGRAM" != nuclide ]; then\n' +
-                  '    tmux -C ...\n' +
-                  '  fi',
-                dismissable: true,
-              });
-            }
-            this._terminal.write(data);
-          },
-        ),
-      ),
-    );
-  }
-
   _closeTab(): void {
     const pane = atom.workspace.paneForItem(this);
     if (pane != null) {
@@ -556,7 +475,9 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   onOutput(data: string): void {
     this._bytesOut += data.length;
-    this._processOutput(data);
+    if (this._processOutput != null) {
+      this._processOutput(data);
+    }
 
     if (this._isFirstOutput) {
       this._isFirstOutput = false;
@@ -565,13 +486,16 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   onExit(code: number, signal: number): void {
-    const terminal = this._terminal;
     track('nuclide-terminal.exit', {...this._statistics(), code, signal});
 
     if (code === 0 && !this._terminalInfo.remainOnCleanExit) {
       this._closeTab();
       return;
     }
+    if (this._terminal == null) {
+      return;
+    }
+    const terminal = this._terminal;
 
     terminal.writeln('');
     terminal.writeln('');
@@ -584,12 +508,12 @@ export class TerminalView implements PtyClient, TerminalInstance {
     }
     terminal.writeln('');
 
-    this._disableTerminal();
+    this._disableTerminal(terminal);
   }
 
-  _disableTerminal() {
+  _disableTerminal(terminal: Terminal) {
     this.dispose();
-    this._terminal.blur();
+    terminal.blur();
 
     // Disable terminal's ability to capture input once in error state.
     (this._div: any).focus = () => {};
@@ -601,11 +525,12 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   terminateProcess(): void {
-    if (this._pty != null) {
-      this._disableTerminal();
-      this._terminal.writeln('');
-      this._terminal.writeln('Process terminated.');
-      this._terminal.writeln('');
+    if (this._pty != null && this._terminal != null) {
+      const terminal = this._terminal;
+      this._disableTerminal(terminal);
+      terminal.writeln('');
+      terminal.writeln('Process terminated.');
+      terminal.writeln('');
     }
   }
 

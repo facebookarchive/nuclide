@@ -10,7 +10,10 @@
  * @format
  */
 
+import type {Terminal} from './createTerminal';
+
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export const COLOR_CONFIGS = Object.freeze({
   // dark
@@ -52,5 +55,58 @@ export function getFontSize(): number {
   return (
     parseFloat(featureConfig.get(FONT_SCALE_CONFIG)) *
     parseFloat(atom.config.get('editor.fontSize'))
+  );
+}
+
+export function setTerminalOption(
+  terminal: Terminal,
+  optionName: string,
+  value: mixed,
+): void {
+  if (terminal.getOption(optionName) !== value) {
+    terminal.setOption(optionName, value);
+  }
+}
+
+export function subscribeConfigChanges(terminal: Terminal): IDisposable {
+  return new UniversalDisposable(
+    featureConfig
+      .observeAsStream(OPTION_IS_META_CONFIG)
+      .skip(1)
+      .subscribe(optionIsMeta => {
+        setTerminalOption(terminal, 'macOptionIsMeta', optionIsMeta);
+      }),
+    featureConfig
+      .observeAsStream(CURSOR_STYLE_CONFIG)
+      .skip(1)
+      .subscribe(cursorStyle =>
+        setTerminalOption(terminal, 'cursorStyle', cursorStyle),
+      ),
+    featureConfig
+      .observeAsStream(CURSOR_BLINK_CONFIG)
+      .skip(1)
+      .subscribe(cursorBlink =>
+        setTerminalOption(terminal, 'cursorBlink', cursorBlink),
+      ),
+    featureConfig
+      .observeAsStream(SCROLLBACK_CONFIG)
+      .skip(1)
+      .subscribe(scrollback =>
+        setTerminalOption(terminal, 'scrollback', scrollback),
+      ),
+  );
+}
+
+export function syncTerminalFont(terminal: Terminal) {
+  setTerminalOption(terminal, 'fontSize', getFontSize());
+  setTerminalOption(
+    terminal,
+    'lineHeight',
+    featureConfig.get(LINE_HEIGHT_CONFIG),
+  );
+  setTerminalOption(
+    terminal,
+    'fontFamily',
+    featureConfig.get(FONT_FAMILY_CONFIG),
   );
 }
