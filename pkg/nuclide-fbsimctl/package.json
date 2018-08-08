@@ -5,8 +5,7 @@
   "description": "Utilities for interacting with fbsimctl",
   "author": "NEEDS OWNER",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "apm"
+    "packageType": "AtomLibrary"
   },
   "atomTestRunner": "../../lib/test-runner-entry.js"
 }

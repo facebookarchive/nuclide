@@ -19,8 +19,7 @@
         "default": true
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationHooks": [
     "language-objective-c:grammar-used"

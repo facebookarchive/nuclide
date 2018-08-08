@@ -6,8 +6,7 @@
   "author": "Nuclide : Debugging",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "debugger.native-debugger-service": {

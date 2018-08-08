@@ -7,9 +7,8 @@
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
   "nuclide": {
-    "packageType": "Node",
-    "testsCannotBeRunInParallel": true,
-    "testRunner": "npm"
+    "packageType": "NodeLibrary",
+    "testsCannotBeRunInParallel": true
   },
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-watchman-helpers",
   "scripts": {

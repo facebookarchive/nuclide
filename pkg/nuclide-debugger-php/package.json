@@ -32,8 +32,7 @@
         "description": "Port to use when attaching to webserver"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "additional-log-files": {

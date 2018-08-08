@@ -5,7 +5,6 @@
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "apm"
+    "packageType": "AtomLibrary"
   }
 }

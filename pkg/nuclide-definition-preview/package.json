@@ -26,8 +26,7 @@
         "description": "Height in ems of the Definition Preview editor."
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "nuclide-context-view": {

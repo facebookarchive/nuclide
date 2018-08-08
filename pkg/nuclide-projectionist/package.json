@@ -10,7 +10,6 @@
     "test": "true"
   },
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
+    "packageType": "NodeLibrary"
   }
 }

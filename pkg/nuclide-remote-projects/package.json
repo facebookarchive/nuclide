@@ -28,8 +28,7 @@
         "default": false
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "atom.directory-provider": {

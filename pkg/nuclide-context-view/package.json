@@ -6,8 +6,7 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "version": "0.0.0",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "deserializers": {
     "nuclide.ContextViewPanelState": "deserializeContextViewPanelState"

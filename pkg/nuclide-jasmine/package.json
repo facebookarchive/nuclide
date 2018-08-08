@@ -4,8 +4,7 @@
   "description": "Wrapper to call into modules/nuclide-jasmine",
   "author": "NEEDS OWNER",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
+    "packageType": "NodeLibrary"
   },
   "scripts": {
     "test": "node bin/jasmine-node-transpiled spec"

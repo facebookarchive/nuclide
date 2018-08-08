@@ -61,8 +61,7 @@
         "default": true
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationHooks": [
     "language-ocaml:grammar-used",

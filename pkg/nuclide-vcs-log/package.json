@@ -20,8 +20,7 @@
         "description": "This column will appear only if at least one commit in the history being displayed has a Differential Revision"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "nuclide-file-tree.context-menu": {

@@ -20,8 +20,7 @@
         "description": "Comes at the cost of more calls to the repository, potentially slowing things down in a large repository."
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "nuclide-file-tree.context-menu": {

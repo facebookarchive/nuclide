@@ -4,8 +4,7 @@
   "description": "Provides a collection of services that are run on the Nuclide server to support remote file editing",
   "author": "Nuclide : Remote",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm",
+    "packageType": "NodeLibrary",
     "testsCannotBeRunInParallel": "true"
   },
   "scripts": {

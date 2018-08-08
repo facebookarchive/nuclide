@@ -6,8 +6,7 @@
   "author": "Nuclide : Core UI",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "experimental": {
     "main": "./lib/main.js",

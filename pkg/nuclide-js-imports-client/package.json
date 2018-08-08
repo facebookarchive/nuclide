@@ -48,8 +48,7 @@
     }
   },
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "nuclide-quick-open-register-provider": {

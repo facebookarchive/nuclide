@@ -6,8 +6,7 @@
   "author": "Nuclide : Core UI",
   "atomTestRunner": "../../modules/nuclide-jest/atom-runner.js",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationCommands": {},
   "deserializers": {

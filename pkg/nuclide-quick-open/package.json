@@ -20,8 +20,7 @@
         "description": "Use current selection to pre-fill search input"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "nuclide-quick-open-register-provider": {

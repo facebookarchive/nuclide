@@ -101,7 +101,8 @@ module.exports = function(context) {
     // Node packages can only require other npm packages.
     if (
       ownPackageType === NODE_LIBRARY &&
-      resolvedPackageType !== NODE_LIBRARY
+      (resolvedPackageType === ATOM_LIBRARY ||
+        resolvedPackageType === ATOM_PACKAGE)
     ) {
       return {type: 'NO_NODE_TO_ATOM', name: resolvedPackage.name};
     }

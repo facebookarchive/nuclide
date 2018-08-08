@@ -62,17 +62,17 @@ class PackageLinter(object):
         self.verify_main_property(package_name, package)
         self.verify_author_property(package_name, package)
 
-        # if not self._atom_ide_ui:
-        #     self.expect_field_in(
-        #         package_name,
-        #         package,
-        #         "packageType",
-        #         ["NodeLibrary", "AtomLibrary", "AtomPackage"]
-        #         )
-        #     if package["packageType"] == "NodeLibrary":
-        #         self.verify_node_library(package)
-        #     else:
-        #         self.verify_atom_package_or_library(package)
+        if not self._atom_ide_ui:
+            self.expect_field_in(
+                package_name,
+                package,
+                "packageType",
+                ["NodeLibrary", "AtomLibrary", "AtomPackage"]
+                )
+            if package["packageType"] == "NodeLibrary":
+                self.verify_node_library(package)
+            else:
+                self.verify_atom_package_or_library(package)
 
         if "description" not in package:
             self.report_error('Missing "description" for %s', package_name)

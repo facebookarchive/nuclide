@@ -11,8 +11,7 @@
     "TerminalView": "deserializeTerminalView"
   },
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm",
+    "packageType": "AtomPackage",
     "configMetadata": {
       "pathComponents": [
         "IDE",
@@ -100,7 +99,7 @@
       "title": "Font Scale",
       "description": "The scale of the font used in the terminal relative to the editor font size.",
       "type": "number",
-      "default": 1.0,
+      "default": 1,
       "minimum": 0.1
     },
     "lineHeight": {

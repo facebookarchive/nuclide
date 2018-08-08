@@ -6,7 +6,6 @@
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../modules/nuclide-jest/atom-runner.js",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   }
 }

@@ -9,7 +9,6 @@
     "nuclide.SampleUiPlayground": "deserializeSampleUiPlayground"
   },
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   }
 }

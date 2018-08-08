@@ -5,9 +5,8 @@
   "description": "Provides base support for Python language features.",
   "author": "Python Foundation",
   "nuclide": {
-    "packageType": "Node",
-    "testsCannotBeRunInParallel": true,
-    "testRunner": "npm"
+    "packageType": "NodeLibrary",
+    "testsCannotBeRunInParallel": true
   },
   "scripts": {
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"

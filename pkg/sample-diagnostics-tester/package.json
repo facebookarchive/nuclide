@@ -9,8 +9,7 @@
     "nuclide.DiagnosticsTester": "deserializeDiagnosticsTester"
   },
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "linter-indie": {

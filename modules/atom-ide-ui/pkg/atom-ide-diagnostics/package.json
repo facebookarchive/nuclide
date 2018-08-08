@@ -8,8 +8,7 @@
   "author": "Nuclide : Diagnostics",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "nuclide": {
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationCommands": {},
   "consumedServices": {

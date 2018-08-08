@@ -12,8 +12,7 @@
         "Blame"
       ]
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "nuclide-blame-provider": {

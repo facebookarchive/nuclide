@@ -5,8 +5,7 @@
   "author": "devobs",
   "description": "Provides a simple API for sending traces to Artillery",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
+    "packageType": "NodeLibrary"
   },
   "scripts": {
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"

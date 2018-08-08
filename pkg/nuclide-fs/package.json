@@ -5,8 +5,7 @@
   "description": "Defines a filesystem abstraction and implements over NodeJs fsPromise, zip archives, and a unified composite of the two.",
   "author": "NEEDS OWNER",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
+    "packageType": "NodeLibrary"
   },
   "scripts": {
     "debug": "node --inspect --debug-brk ../nuclide-jasmine/bin/run-jasmine-tests.js spec",

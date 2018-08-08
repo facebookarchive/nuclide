@@ -6,7 +6,7 @@
   "main": "./lib/test-runner-entry.js",
   "atomTestRunner": "./lib/test-runner-entry.js",
   "nuclide": {
-    "packageType": "Node",
+    "packageType": "AtomLibrary",
     "testRunner": "apm"
   },
   "bin": {

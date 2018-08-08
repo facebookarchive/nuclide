@@ -14,8 +14,7 @@
         "description": "Whether to highlight poor type coverage by colorizing the status bar red or yellow"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "activationCommands": {},
   "consumedServices": {

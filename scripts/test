@@ -116,7 +116,7 @@ os.umask(022)
 package_manager = PackageManager()
 test_runner = JsTestRunner(
     package_manager,
-    not options.no_atom,
+    False,
     args,
     options.verbose,
     options.parallel,

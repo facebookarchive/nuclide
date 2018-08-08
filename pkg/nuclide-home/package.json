@@ -20,8 +20,7 @@
         "description": "Show the home pane (by default shown on first startup)."
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "nuclide-home.homeFragments": {

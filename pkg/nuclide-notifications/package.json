@@ -28,8 +28,7 @@
         "description": "Only display certain important Atom alerts (such as those relating to long-running jobs) as native notifications. Leave this checked if you want to reduce your notification frequency."
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "providedServices": {
     "nuclide-notifications.provideRaiseNativeNotification": {

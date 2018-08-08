@@ -69,8 +69,7 @@
         "description": "Display signature help while typing function/method calls. (requires restart)"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   },
   "consumedServices": {
     "linter-indie": {

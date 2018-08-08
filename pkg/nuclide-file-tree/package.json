@@ -116,7 +116,6 @@
         "description": "Focuses the editor when a file is selected and previewed"
       }
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "packageType": "AtomPackage"
   }
 }
