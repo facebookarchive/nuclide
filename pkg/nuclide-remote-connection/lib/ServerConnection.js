@@ -51,7 +51,7 @@ import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigRpcClient from './createBigDigRpcClient';
 import {isGkEnabled} from '../../commons-node/passesGK';
-import passesGK from '../../commons-node/passesGK';
+import {onceGkInitializedAsync} from '../../commons-node/passesGK';
 import {
   getOrCreateRfsClientAdapter,
   SUPPORTED_THRIFT_RFS_FUNCTIONS,
@@ -115,7 +115,7 @@ export class ServerConnection {
 
     const newConnection = new ServerConnection(config);
     try {
-      await passesGK(THRIFT_RFS_GK);
+      await onceGkInitializedAsync(); // wait for GKs to be initialized
       await newConnection.initialize();
       return newConnection;
     } catch (e) {
