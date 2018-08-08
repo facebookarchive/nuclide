@@ -102,7 +102,7 @@ export class ServerConnection {
   _directoryWatches: SharedObservableCache<string, WatchResult>;
   _bigDigClient: ?BigDigClient;
 
-  static _connections: Map<string, ServerConnection> = new Map();
+  static _hostToConnection: Map<string, ServerConnection> = new Map();
   static _emitter = new Emitter();
 
   static async getOrCreate(
@@ -140,7 +140,7 @@ export class ServerConnection {
   // should only be Called during shutdown, reload, or before autoupdate.
   static async closeAll(shutdown: boolean): Promise<void> {
     await Promise.all(
-      Array.from(ServerConnection._connections).map(([_, connection]) => {
+      Array.from(ServerConnection._hostToConnection).map(([_, connection]) => {
         return connection._closeServerConnection(shutdown);
       }),
     );
@@ -291,7 +291,7 @@ export class ServerConnection {
 
     this._monitorConnectionHeartbeat();
 
-    ServerConnection._connections.set(this.getRemoteHostname(), this);
+    ServerConnection._hostToConnection.set(this.getRemoteHostname(), this);
     await setConnectionConfig(this._config, ip.address);
     ServerConnection._emitter.emit('did-add', this);
   }
@@ -315,7 +315,7 @@ export class ServerConnection {
     }
 
     // Remove from _connections to not be considered in future connection queries.
-    if (ServerConnection._connections.delete(this.getRemoteHostname())) {
+    if (ServerConnection._hostToConnection.delete(this.getRemoteHostname())) {
       ServerConnection._emitter.emit('did-close', this);
     }
 
@@ -460,7 +460,7 @@ export class ServerConnection {
   // including those that have already connected
   static connectionAdded(): Observable<ServerConnection> {
     return Observable.concat(
-      Observable.from(ServerConnection._connections.values()),
+      Observable.from(ServerConnection._hostToConnection.values()),
       observableFromSubscribeFunction(
         ServerConnection.onDidAddServerConnection,
       ),
@@ -502,13 +502,13 @@ export class ServerConnection {
   }
 
   static getByHostname(hostname: string): ?ServerConnection {
-    return ServerConnection._connections.get(hostname);
+    return ServerConnection._hostToConnection.get(hostname);
   }
 
   static observeConnections(
     handler: (connection: ServerConnection) => mixed,
   ): IDisposable {
-    ServerConnection._connections.forEach(handler);
+    ServerConnection._hostToConnection.forEach(handler);
     return ServerConnection.onDidAddServerConnection(handler);
   }
 
@@ -642,14 +642,14 @@ export class ServerConnection {
       observableFromSubscribeFunction(cb => emitter.on('did-add', cb)),
       observableFromSubscribeFunction(cb => emitter.on('did-close', cb)),
       Observable.of(null), // so subscribers get a full list immediately
-    ).map(() => Array.from(ServerConnection._connections.values()));
+    ).map(() => Array.from(ServerConnection._hostToConnection.values()));
   }
 
   static getAllConnections(): Array<ServerConnection> {
-    return Array.from(ServerConnection._connections.values());
+    return Array.from(ServerConnection._hostToConnection.values());
   }
 }
 
 export const __test__ = {
-  connections: ServerConnection._connections,
+  connections: ServerConnection._hostToConnection,
 };
