@@ -14,7 +14,7 @@ import type {ThriftServiceConfig} from '../thrift/types';
 
 import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 
-export const FS_SERVICE_CONIFG: ThriftServiceConfig = {
+export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   name: 'thrift-rfs',
   remoteUri: '',
   remoteCommand: '',

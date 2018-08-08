@@ -67,7 +67,7 @@ import type {
   Range,
 } from 'big-dig-vscode-server/Protocol';
 
-import {FS_SERVICE_CONIFG} from 'big-dig/src/services/fs/service-config';
+import {FS_SERVICE_CONFIG} from 'big-dig/src/services/fs/service-config';
 import * as vscode from 'vscode';
 import EventEmitter from 'events';
 import {Observable} from 'rxjs';
@@ -166,7 +166,7 @@ export class ConnectionWrapper implements IDisposable {
     }
 
     this._fsThriftClientPromise = this._bigDigClient
-      .getOrCreateThriftClient(FS_SERVICE_CONIFG)
+      .getOrCreateThriftClient(FS_SERVICE_CONFIG)
       .then(
         client => {
           this._fsClientSubscription = client.onUnexpectedClientFailure(() => {
