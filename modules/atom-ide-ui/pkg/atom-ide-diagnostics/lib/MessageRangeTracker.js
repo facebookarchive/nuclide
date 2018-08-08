@@ -86,7 +86,6 @@ export default class MessageRangeTracker {
     this._assertNotDisposed();
 
     for (const message of messages) {
-      invariant(message.fix != null);
       this._fileToMessages.add(message.filePath, message);
 
       // If the file is currently open, create a marker.
@@ -123,15 +122,22 @@ export default class MessageRangeTracker {
 
   _addMarker(editor: atom$TextEditor, message: DiagnosticMessage): void {
     const fix = message.fix;
-    invariant(fix != null);
+    let marker;
+    if (fix != null) {
+      marker = editor.markBufferRange(fix.oldRange, {
+        // 'touch' is the least permissive invalidation strategy: It will invalidate for
+        // changes that touch the marked region in any way. We want to invalidate
+        // aggressively because an incorrect fix application is far worse than a failed
+        // application.
+        invalidate: 'touch',
+      });
+    } else {
+      if (!message.range) {
+        return;
+      }
+      marker = editor.markBufferRange(message.range);
+    }
 
-    const marker = editor.markBufferRange(fix.oldRange, {
-      // 'touch' is the least permissive invalidation strategy: It will invalidate for
-      // changes that touch the marked region in any way. We want to invalidate
-      // aggressively because an incorrect fix application is far worse than a failed
-      // application.
-      invalidate: 'touch',
-    });
     this._messageToMarker.set(message, marker);
 
     // The marker will be destroyed automatically when its associated TextBuffer is destroyed. Clean
