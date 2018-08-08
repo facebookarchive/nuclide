@@ -9,7 +9,6 @@
 import argparse
 import logging
 import os
-import sys
 import textwrap
 from distutils.spawn import find_executable as which
 
@@ -21,15 +20,16 @@ CODE_FOLDER_NAME_MAP = {
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def add_header(fpath):
-    header = texwrap.dedent(
-        """/**
-        * Copyright (c) 2017-present, Facebook, Inc."
-        * All rights reserved."
-        *"
-        * This source code is licensed under the BSD-style license found in the"
-        * LICENSE file in the root directory of this source tree. An additional grant"
-        * of patent rights can be found in the PATENTS file in the same directory."
+def add_header(fpath: str) -> None:
+    header = textwrap.dedent(
+        """\
+       /**
+        * Copyright (c) 2017-present, Facebook, Inc.
+        * All rights reserved.
+        *
+        * This source code is licensed under the BSD-style license found in the
+        * LICENSE file in the root directory of this source tree. An additional grant
+        * of patent rights can be found in the PATENTS file in the same directory.
         *
         * @generated
         */
@@ -44,7 +44,7 @@ def add_header(fpath):
         f.write(header + content)
 
 
-def add_copyright_headers_to_code_files(folder_path):
+def add_copyright_headers_to_code_files(folder_path: str) -> None:
     for fname in os.listdir(folder_path):
         fpath = os.path.join(folder_path, fname)
         if os.path.isdir(fpath):
@@ -53,10 +53,16 @@ def add_copyright_headers_to_code_files(folder_path):
             add_header(fpath)
 
 
-def run_thrift(language):
-    logging.info("Compiling thrift file into source code")
-    os.system(f"thrift --gen {language} -r filesystem.thrift")
-    folder_name = CODE_FOLDER_NAME_MAP[args.language]
+class ThriftError(Exception):
+    pass
+
+
+def run_thrift(language: str) -> None:
+    source_file = "filesystem.thrift"
+    logging.info(f"Compiling {source_file} into {language}")
+    if os.system(f"thrift --gen {language} -r {source_file}") != 0:
+        raise ThriftError
+    folder_name = CODE_FOLDER_NAME_MAP[language]
     add_copyright_headers_to_code_files(os.path.join(os.getcwd(), folder_name))
 
 
@@ -82,7 +88,11 @@ def main():
         )
         exit(1)
 
-    run_thrift(args.language)
+    try:
+        run_thrift(args.language)
+    except ThriftError:
+        print("There was an error running thrift")
+        exit(1)
 
 
 if __name__ == "__main__":
