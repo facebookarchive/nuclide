@@ -13,7 +13,11 @@ import sys
 import textwrap
 from distutils.spawn import find_executable as which
 
-CODE_FOLDER_NAME_MAP = {"js:node": "gen-nodejs", "java": "gen-java", "php": "gen-php"}
+CODE_FOLDER_NAME_MAP = {
+    "js:node": "gen-nodejs",
+    "java": "gen-java",
+    "php": "gen-php"
+}
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -73,7 +77,9 @@ def main():
 
     args = parser.parse_args()
     if not which("thrift"):
-        print("thrift is not installed. See https://thrift.apache.org/ to install.")
+        print(
+            "thrift is not installed. See https://thrift.apache.org/ to install."
+        )
         exit(1)
 
     run_thrift(args.language)
