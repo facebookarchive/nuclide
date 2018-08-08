@@ -17,11 +17,26 @@
 
 const NodeTranspiler = require('nuclide-node-transpiler/lib/NodeTranspiler');
 const transpiler = new NodeTranspiler();
+const crypto = require('crypto');
+const fs = require('fs');
+
+const cacheKeyBase = fs.readFileSync(__filename);
 
 module.exports = {
   process(src, path) {
     return NodeTranspiler.shouldCompile(src)
       ? transpiler.transform(src, path)
       : src;
+  },
+
+  getCacheKey(script, file, configString, options) {
+    const instrument = options.instrument;
+    return crypto
+      .createHash('md5')
+      .update(transpiler.getConfigDigest())
+      .update('\0' + cacheKeyBase)
+      .update('\0' + script + file + configString)
+      .update(instrument ? '\0instrument' : '')
+      .digest('hex');
   },
 };
