@@ -6,13 +6,12 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+import argparse
 import logging
-import optparse
 import os
 import sys
 import textwrap
 from distutils.spawn import find_executable as which
-
 
 CODE_FOLDER_NAME_MAP = {"js:node": "gen-nodejs", "java": "gen-java", "php": "gen-php"}
 
@@ -50,16 +49,13 @@ def add_copyright_headers_to_code_files(folder_path):
             add_header(fpath)
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    # Parse the command-line arguments.
-    parser = optparse.OptionParser(
-        usage="usage: %prog [options]",
-        description="Generate thrift code for remote file system service",
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate thrift code for remote file system service"
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-l",
         "--lan",
         action="store",
@@ -69,9 +65,7 @@ def main():
         help="Compile thrift to given language.",
     )
 
-    (options, args) = parser.parse_args()
-
-    # compile thrift file and generate thrift code to target language
+    args = parser.parse_args()
     if not which("thrift"):
         print("thrift is not installed. See https://thrift.apache.org/ to install.")
         exit(1)
