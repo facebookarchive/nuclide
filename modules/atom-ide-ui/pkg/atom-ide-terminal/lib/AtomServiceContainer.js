@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import typeof * as PtyService from './pty-service/PtyService';
@@ -19,12 +20,24 @@ import * as PtyServiceLocal from './pty-service/PtyService';
 import nullthrows from 'nullthrows';
 
 let _rpcService: ?nuclide$RpcService = null;
+let _gkService: ?GatekeeperService = null;
 
 export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
   _rpcService = rpcService;
   return new UniversalDisposable(() => {
     _rpcService = null;
   });
+}
+
+export function setGkService(gkService: GatekeeperService): IDisposable {
+  _gkService = gkService;
+  return new UniversalDisposable(() => {
+    _gkService = null;
+  });
+}
+
+export function getGkService(): ?GatekeeperService {
+  return _gkService;
 }
 
 export function getPtyServiceByNuclideUri(uri: ?NuclideUri): PtyService {

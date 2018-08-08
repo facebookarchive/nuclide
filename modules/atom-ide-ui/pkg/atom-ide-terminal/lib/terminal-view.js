@@ -25,7 +25,7 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import url from 'url';
 
-import {getPtyServiceByNuclideUri} from './AtomServiceContainer';
+import {getPtyServiceByNuclideUri, getGkService} from './AtomServiceContainer';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
@@ -48,6 +48,7 @@ import {
   subscribeConfigChanges,
   setTerminalOption,
   syncTerminalFont,
+  RENDERER_TYPE_CONFIG,
 } from './config';
 import {createOutputSink} from './sink';
 
@@ -138,26 +139,39 @@ export class TerminalView implements PtyClient, TerminalInstance {
     // Terminal.open only works after its div has been attached to the DOM,
     // which happens in getElement, not in this constructor. Therefore delay
     // open and spawn until the div is visible, which means it is in the DOM.
+    const gkService = getGkService();
+    const preferDom =
+      gkService != null
+        ? gkService.passesGK('nuclide_terminal_prefer_dom')
+        : Promise.resolve(false);
     this._subscriptions.add(
-      observePaneItemVisibility(this)
-        .filter(Boolean)
-        .first()
-        .subscribe(() => {
-          const terminal = createTerminal();
-          this._onTerminalCreation(terminal);
-          terminal.open(this._div);
-          (div: any).terminal = terminal;
-          if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
-            const docsUrl = 'https://nuclide.io/docs/features/terminal';
-            terminal.writeln(`For more info check out the docs: ${docsUrl}`);
-          }
+      Observable.combineLatest(
+        Observable.fromPromise(preferDom),
+        observePaneItemVisibility(this)
+          .filter(Boolean)
+          .first(),
+      ).subscribe(([passesPreferDom]) => {
+        const rendererType = featureConfig.get(RENDERER_TYPE_CONFIG);
+        const terminal = createTerminal(
+          // $FlowIgnore: rendererType config not yet added in flow typing
+          passesPreferDom && rendererType === 'auto'
+            ? {rendererType: 'dom'}
+            : {},
+        );
+        this._onTerminalCreation(terminal);
+        terminal.open(this._div);
+        (div: any).terminal = terminal;
+        if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
+          const docsUrl = 'https://nuclide.io/docs/features/terminal';
+          terminal.writeln(`For more info check out the docs: ${docsUrl}`);
+        }
 
-          terminal.focus();
-          this._subscriptions.add(this._subscribeFitEvents(terminal));
-          this._spawn(cwd)
-            .then(pty => this._onPtyFulfill(pty, terminal))
-            .catch(error => this._onPtyFail(error, terminal));
-        }),
+        terminal.focus();
+        this._subscriptions.add(this._subscribeFitEvents(terminal));
+        this._spawn(cwd)
+          .then(pty => this._onPtyFulfill(pty, terminal))
+          .catch(error => this._onPtyFail(error, terminal));
+      }),
     );
   }
 

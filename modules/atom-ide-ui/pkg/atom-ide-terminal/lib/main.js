@@ -20,12 +20,13 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {setRpcService} from './AtomServiceContainer';
+import {setRpcService, setGkService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 import type {TerminalApi, TerminalInfo, TerminalInstance} from './types';
 
 class Activation {
@@ -165,6 +166,10 @@ class Activation {
 
   consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
     return setRpcService(rpcService);
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    return setGkService(service);
   }
 
   _getPathOrCwd(event: Event): ?string {
