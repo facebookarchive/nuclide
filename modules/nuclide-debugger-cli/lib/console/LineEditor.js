@@ -216,19 +216,28 @@ export default class LineEditor extends EventEmitter {
       }
 
       const outputPiece = (line: string): void => {
-        // strip out any escape or control sequences other than SGR, which is
-        // used for setting colors and other text attributes
-        const parsed = parseEscapeSequences(line, onlyKeepSGR);
+        const tabbed = line.split('\t');
+        for (let i = 0; i < tabbed.length; i++) {
+          // strip out any escape or control sequences other than SGR, which is
+          // used for setting colors and other text attributes
+          const parsed = parseEscapeSequences(tabbed[i], onlyKeepSGR);
 
-        this._output.write(parsed.filteredText);
+          this._output.write(parsed.filteredText);
 
-        // update the cursor position. the fact that screen cell indices are
-        // 1-based makes the mod math a bit weird. Convert col to be zero-based first.
-        col--;
-        col += parsed.displayLength;
-        row += Math.trunc(col / this._screenColumns);
-        col %= this._screenColumns;
-        col++;
+          // update the cursor position. the fact that screen cell indices are
+          // 1-based makes the mod math a bit weird. Convert col to be zero-based first.
+          col--;
+          col += parsed.displayLength;
+          row += Math.trunc(col / this._screenColumns);
+          col %= this._screenColumns;
+
+          if (i < tabbed.length - 1) {
+            const target = col + 7 - (col % 8);
+            this._output.write(' '.repeat(target - col));
+            col = target;
+          }
+          col++;
+        }
       };
 
       // NB we are assuming no control characters other than \r and \n here
