@@ -139,14 +139,34 @@ export class HunkDiff extends React.Component<HunkProps> {
     super(props);
     this._disposables = new UniversalDisposable(
       // enable copying filename
+      // core:copy isn't used because it breaks the custom copy behavior below,
+      // and this selection doesn't work easily with cmd-c anyway.
       atom.contextMenu.add({
         '.nuclide-ui-file-changes-item': [
           {
             label: 'Copy',
-            command: 'core:copy',
+            command: 'nuclide-ui-file-changes-item:copy',
           },
         ],
       }),
+      atom.commands.add(
+        '.nuclide-ui-file-changes-item',
+        'nuclide-ui-file-changes-item:copy',
+        event => {
+          // need to strip out zero-width spaces that were added to the filename
+          if (!(event.target instanceof HTMLElement)) {
+            return;
+          }
+          const element: HTMLElement = event.target;
+          const text = element.innerText;
+          if (text == null) {
+            return;
+          }
+          const allSpacesRegex = new RegExp(ZERO_WIDTH_SPACE, 'g');
+          atom.clipboard.write(text.replace(allSpacesRegex, ''));
+          event.stopPropagation();
+        },
+      ),
     );
   }
 
