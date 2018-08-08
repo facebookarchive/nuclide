@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsMessageDescription = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _marked() {
+  const data = _interopRequireDefault(require("marked"));
+
+  _marked = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _dompurify() {
+  const data = _interopRequireDefault(require("dompurify"));
+
+  _dompurify = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,29 +39,30 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const domPurify = (0, _dompurify().default)();
 
-import * as React from 'react';
-import marked from 'marked';
-import createDOMPurify from 'dompurify';
-
-const domPurify = createDOMPurify();
-
-type DiagnosticsMessageDescriptionProps = {
-  description: ?string,
-};
-
-export class DiagnosticsMessageDescription extends React.PureComponent<
-  DiagnosticsMessageDescriptionProps,
-> {
+class DiagnosticsMessageDescription extends React.PureComponent {
   render() {
-    const {description} = this.props;
+    const {
+      description
+    } = this.props;
+
     if (description != null) {
-      const __html = domPurify.sanitize(marked(description));
-      return <div dangerouslySetInnerHTML={{__html}} />;
+      const __html = domPurify.sanitize((0, _marked().default)(description));
+
+      return React.createElement("div", {
+        dangerouslySetInnerHTML: {
+          __html
+        }
+      });
     }
+
     return null;
   }
+
 }
+
+exports.DiagnosticsMessageDescription = DiagnosticsMessageDescription;

@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,11 +12,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-export const BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE = `
+const BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE = `
 /**
  * Copyright 2004-present Facebook. All Rights Reserved.
  */
@@ -62,3 +68,4 @@ class FDSTest extends React.PureComponent<Props> {
 
 module.exports = FDSTest;
 `;
+exports.BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE = BASIC_FDSTEST_COMPONENT_WITH_PROPS_SOURCE;

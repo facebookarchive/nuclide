@@ -1,3 +1,78 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TunnelsPanel = exports.WORKSPACE_VIEW_URI = void 0;
+
+function _bindObservableAsProps() {
+  const data = require("../../../../modules/nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CreateObservables() {
+  const data = require("../CreateObservables");
+
+  _CreateObservables = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Actions() {
+  const data = _interopRequireWildcard(require("../redux/Actions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _TunnelsPanelContents() {
+  const data = require("./TunnelsPanelContents");
+
+  _TunnelsPanelContents = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _renderReactRoot() {
+  const data = require("../../../../modules/nuclide-commons-ui/renderReactRoot");
+
+  _renderReactRoot = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,29 +80,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const WORKSPACE_VIEW_URI = 'atom://nuclide/ssh-tunnels';
+exports.WORKSPACE_VIEW_URI = WORKSPACE_VIEW_URI;
 
-import type {AppState, Store} from '../types';
-import type {Props} from './TunnelsPanelContents';
-
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {createObservableForTunnel} from '../CreateObservables';
-import * as Actions from '../redux/Actions';
-import {Observable} from 'rxjs';
-import {TunnelsPanelContents} from './TunnelsPanelContents';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import * as React from 'react';
-
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/ssh-tunnels';
-
-export class TunnelsPanel {
-  _store: Store;
-  _wat: any;
-
-  constructor(store: Store) {
+class TunnelsPanel {
+  constructor(store) {
     this._store = store;
   }
 
@@ -39,69 +99,66 @@ export class TunnelsPanel {
     return 'milestone';
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 400;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getElement(): HTMLElement {
+  getElement() {
     // $FlowFixMe: We need to teach Flow about Symbol.observable
-    const states: Observable<AppState> = Observable.from(this._store);
+    const states = _RxMin.Observable.from(this._store);
 
-    const props: Observable<Props> = states.map((state: AppState) => {
+    const props = states.map(state => {
       let workingDirectoryHost;
+
       if (state.currentWorkingDirectory == null) {
         workingDirectoryHost = null;
       } else {
         const path = state.currentWorkingDirectory;
-        if (nuclideUri.isLocal(path)) {
+
+        if (_nuclideUri().default.isLocal(path)) {
           workingDirectoryHost = 'localhost';
         } else {
-          workingDirectoryHost = nuclideUri.getHostname(path);
+          workingDirectoryHost = _nuclideUri().default.getHostname(path);
         }
       }
+
       return {
         tunnels: state.tunnels.toList(),
         openTunnel: tunnel => {
           let noMoreNotifications = false;
-          createObservableForTunnel(tunnel, this._store)
-            .do(() => (noMoreNotifications = true))
-            .subscribe({
-              error: e => {
-                if (!noMoreNotifications) {
-                  atom.notifications.addError('Failed to open tunnel', {
-                    detail: e.code,
-                    dismissable: true,
-                  });
-                }
-              },
-            });
+          (0, _CreateObservables().createObservableForTunnel)(tunnel, this._store).do(() => noMoreNotifications = true).subscribe({
+            error: e => {
+              if (!noMoreNotifications) {
+                atom.notifications.addError('Failed to open tunnel', {
+                  detail: e.code,
+                  dismissable: true
+                });
+              }
+            }
+          });
         },
-        closeTunnel: tunnel =>
-          this._store.dispatch(
-            Actions.closeTunnel(tunnel, new Error('Closed from panel')),
-          ),
-        workingDirectoryHost,
+        closeTunnel: tunnel => this._store.dispatch(Actions().closeTunnel(tunnel, new Error('Closed from panel'))),
+        workingDirectoryHost
       };
     });
-
-    const BoundPanelContents = bindObservableAsProps(
-      props,
-      TunnelsPanelContents,
-    );
-    return renderReactRoot(<BoundPanelContents />);
+    const BoundPanelContents = (0, _bindObservableAsProps().bindObservableAsProps)(props, _TunnelsPanelContents().TunnelsPanelContents);
+    return (0, _renderReactRoot().renderReactRoot)(React.createElement(BoundPanelContents, null));
   }
 
-  serialize(): {deserializer: string} {
+  serialize() {
     return {
-      deserializer: 'nuclide.SshTunnelsPanel',
+      deserializer: 'nuclide.SshTunnelsPanel'
     };
   }
+
 }
+
+exports.TunnelsPanel = TunnelsPanel;

@@ -1,3 +1,28 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getAutocompleteArguments = getAutocompleteArguments;
+exports.getIncludeOptionalArguments = getIncludeOptionalArguments;
+exports.getPythonPath = getPythonPath;
+exports.getShowGlobalVariables = getShowGlobalVariables;
+exports.getShowSignatureHelp = getShowSignatureHelp;
+exports.getEnableLinting = getEnableLinting;
+exports.getLintExtensionBlacklist = getLintExtensionBlacklist;
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +30,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import featureConfig from 'nuclide-commons-atom/feature-config';
-
-export function getAutocompleteArguments(): boolean {
-  return (featureConfig.get('nuclide-python.autocompleteArguments'): any);
+function getAutocompleteArguments() {
+  return _featureConfig().default.get('nuclide-python.autocompleteArguments');
 }
 
-export function getIncludeOptionalArguments(): boolean {
-  return (featureConfig.get('nuclide-python.includeOptionalArguments'): any);
+function getIncludeOptionalArguments() {
+  return _featureConfig().default.get('nuclide-python.includeOptionalArguments');
 }
 
-export function getPythonPath(): string {
-  return (featureConfig.get('nuclide-python.pathToPython'): any);
+function getPythonPath() {
+  return _featureConfig().default.get('nuclide-python.pathToPython');
 }
 
-export function getShowGlobalVariables(): boolean {
-  return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
+function getShowGlobalVariables() {
+  return _featureConfig().default.get('nuclide-python.showGlobalVariables');
 }
 
-export function getShowSignatureHelp(): boolean {
-  return Boolean(featureConfig.get('nuclide-python.showSignatureHelp'));
+function getShowSignatureHelp() {
+  return Boolean(_featureConfig().default.get('nuclide-python.showSignatureHelp'));
 }
 
-export function getEnableLinting(): boolean {
-  return (featureConfig.get('nuclide-python.enableLinting'): any);
+function getEnableLinting() {
+  return _featureConfig().default.get('nuclide-python.enableLinting');
 }
 
-export function getLintExtensionBlacklist(): Array<string> {
-  return (featureConfig.get('nuclide-python.lintExtensionBlacklist'): any);
+function getLintExtensionBlacklist() {
+  return _featureConfig().default.get('nuclide-python.lintExtensionBlacklist');
 }

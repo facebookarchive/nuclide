@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.f = f;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,16 +12,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-interface I {
-  m(arg: string): Promise<string>;
-  dispose(): void;
-}
-
-export async function f(s: string, i: I): Promise<string> {
+async function f(s, i) {
   const result = await i.m(s);
   i.dispose();
   return result;

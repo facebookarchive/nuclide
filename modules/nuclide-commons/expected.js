@@ -1,3 +1,11 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.expectedEqual = expectedEqual;
+exports.Expect = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +14,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -15,89 +23,65 @@
  * and later switch back to regular values if they recover. Normally, a source finishes after
  * passing an uncaught error.
  */
-export type Expected<T> =
-  | ExpectedError<T>
-  | ExpectedValue<T>
-  | ExpectedPending<T>;
-
-type ExpectedError<T> = {|
-  isError: true,
-  isPending: false,
-  isValue: false,
-  error: Error,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-|};
-
-type ExpectedValue<T> = {|
-  isError: false,
-  isPending: false,
-  isValue: true,
-  value: T,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-|};
-
-type ExpectedPending<T> = {|
-  isError: false,
-  isPending: true,
-  isValue: false,
-  getOrDefault: (def: T) => T,
-  map<U>(fn: (T) => U): Expected<U>,
-|};
-
-export class Expect {
-  static error<T>(error: Error): ExpectedError<T> {
+class Expect {
+  static error(error) {
     return {
       isError: true,
       isPending: false,
       isValue: false,
       error,
-      getOrDefault(def: T): T {
+
+      getOrDefault(def) {
         return def;
       },
-      map<U>(fn: T => U): Expected<U> {
+
+      map(fn) {
         return Expect.error(error);
-      },
+      }
+
     };
   }
 
-  static value<T>(value: T): ExpectedValue<T> {
+  static value(value) {
     return {
       isError: false,
       isPending: false,
       isValue: true,
       value,
-      getOrDefault(def: T): T {
+
+      getOrDefault(def) {
         return this.value;
       },
-      map<U>(fn: T => U): Expected<U> {
+
+      map(fn) {
         return Expect.value(fn(value));
-      },
+      }
+
     };
   }
 
-  static pending<T>(): ExpectedPending<T> {
+  static pending() {
     return {
       isError: false,
       isPending: true,
       isValue: false,
-      getOrDefault(def: T): T {
+
+      getOrDefault(def) {
         return def;
       },
-      map<U>(fn: T => U): Expected<U> {
+
+      map(fn) {
         return Expect.pending();
-      },
+      }
+
     };
   }
+
 }
 
-export function expectedEqual<T>(
-  a: Expected<T>,
-  b: Expected<T>,
-  valueEqual: (valueA: T, valueB: T) => boolean,
-  errorEqual: (errorA: Error, errorB: Error) => boolean,
-): boolean {
+exports.Expect = Expect;
+
+function expectedEqual(a, b, valueEqual, errorEqual) {
   if (a.isValue && b.isValue) {
     return valueEqual(a.value, b.value);
   } else if (a.isError && b.isError) {

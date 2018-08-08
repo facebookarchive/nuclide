@@ -1,3 +1,17 @@
+"use strict";
+
+function _parseText() {
+  const data = _interopRequireDefault(require("../lib/parseText"));
+
+  _parseText = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,19 +20,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  * @emails oncall+nuclide
  */
-import parseText from '../lib/parseText';
-
 describe('parseText', () => {
   it('parses url pattern', () => {
-    const chunks = parseText('Message: https://facebook.com');
+    const chunks = (0, _parseText().default)('Message: https://facebook.com');
     expect(chunks.length).toBe(3);
     expect(chunks[0]).toBe('Message: ');
     expect(chunks[2]).toBe('');
-
     const reactElement = chunks[1];
     expect(typeof reactElement).toBe('object'); // type React.Element
 

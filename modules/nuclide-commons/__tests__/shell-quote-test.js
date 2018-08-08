@@ -1,3 +1,15 @@
+"use strict";
+
+function _shellQuote() {
+  const data = require("../_shell-quote");
+
+  _shellQuote = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,37 +18,43 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  * @emails oncall+nuclide
  */
-import {parse, quote} from '../_shell-quote';
 
 /**
  * The rest of shell-quote has been verified to work correctly.
  * We just need to test the comment parsing.
  */
-
 describe('shell-quote', () => {
   describe('parse', () => {
     it('parses comments correctly', () => {
-      expect(parse('beep#boop')).toEqual(['beep#boop']);
-      expect(parse('beep #boop')).toEqual(['beep', {comment: 'boop'}]);
-      expect(parse('beep # boop')).toEqual(['beep', {comment: 'boop'}]);
-      expect(parse('beep # > boop')).toEqual(['beep', {comment: '> boop'}]);
-      expect(parse('beep # "> boop"')).toEqual(['beep', {comment: '"> boop"'}]);
-      expect(parse('beep "#"')).toEqual(['beep', '#']);
-      expect(parse('beep #"#"#')).toEqual(['beep', {comment: '"#"#'}]);
-      expect(parse('beep > boop # > foo')).toEqual([
-        'beep',
-        {op: '>'},
-        'boop',
-        {comment: '> foo'},
-      ]);
+      expect((0, _shellQuote().parse)('beep#boop')).toEqual(['beep#boop']);
+      expect((0, _shellQuote().parse)('beep #boop')).toEqual(['beep', {
+        comment: 'boop'
+      }]);
+      expect((0, _shellQuote().parse)('beep # boop')).toEqual(['beep', {
+        comment: 'boop'
+      }]);
+      expect((0, _shellQuote().parse)('beep # > boop')).toEqual(['beep', {
+        comment: '> boop'
+      }]);
+      expect((0, _shellQuote().parse)('beep # "> boop"')).toEqual(['beep', {
+        comment: '"> boop"'
+      }]);
+      expect((0, _shellQuote().parse)('beep "#"')).toEqual(['beep', '#']);
+      expect((0, _shellQuote().parse)('beep #"#"#')).toEqual(['beep', {
+        comment: '"#"#'
+      }]);
+      expect((0, _shellQuote().parse)('beep > boop # > foo')).toEqual(['beep', {
+        op: '>'
+      }, 'boop', {
+        comment: '> foo'
+      }]);
     });
   });
-
   describe('quote', () => {
-    expect(quote(['X#(){}*|][!'])).toBe('X\\#\\(\\)\\{\\}\\*\\|\\]\\[\\!');
+    expect((0, _shellQuote().quote)(['X#(){}*|][!'])).toBe('X\\#\\(\\)\\{\\}\\*\\|\\]\\[\\!');
   });
 });

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +8,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 /* eslint-disable nuclide-internal/no-commonjs */
-
 module.exports = {
   rootDir: './',
   projects: ['<rootDir>/jest.config.atom.js', '<rootDir>/jest.config.node.js'],
-  testFailureExitCode: 0,
+  testFailureExitCode: 0
 };
