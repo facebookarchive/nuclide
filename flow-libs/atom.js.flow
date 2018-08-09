@@ -149,6 +149,8 @@ type atom$ConfigSchema = {
 };
 
 declare class atom$Config {
+  defaultSettings: Object,
+
   // Config Subscription
   observe(
     keyPath: string,
