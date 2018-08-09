@@ -8,6 +8,13 @@
   "nuclide": {
     "packageType": "AtomPackage"
   },
+  "consumedServices": {
+    "nuclide-remote-file-opener": {
+      "versions": {
+        "0.0.0": "consumeRemoteFileOpenerService"
+      }
+    }
+  },
   "activationCommands": {},
   "deserializers": {
     "ImageEditor": "deserializeImageEditor"

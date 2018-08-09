@@ -97,6 +97,18 @@ export type SerializableRemoteConnectionConfiguration = {
   promptReconnectOnFailure?: boolean,
 };
 
+export type Viewable = ?HTMLElement | {+getElement: () => ?HTMLElement};
+export type FileOpener = (file: RemoteFile) => ?Viewable;
+
+/**
+ * Allows other nuclide projects to override the default TextEditor view
+ * for remote files. Provides a register function with a RemoteFile instance.
+ * This RemoteFile will be disposed afterwards and should not be retained.
+ */
+export type RemoteFileOpenerService = {
+  register: ((file: RemoteFile) => ?Viewable) => IDisposable,
+};
+
 type SerializedPackageState = {|
   remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
 |};
@@ -109,6 +121,7 @@ class Activation {
   _controller = new RemoteProjectsController();
   _remoteProjectsService = new RemoteProjectsServiceImpl();
   _workingSetsStore: ?WorkingSetsStore;
+  _remoteFileOpeners: Array<FileOpener>;
 
   constructor(state: ?mixed) {
     this._subscriptions.add(
@@ -166,6 +179,8 @@ class Activation {
         : null,
     );
     reloadRemoteProjects(remoteProjectsConfig, this._remoteProjectsService);
+
+    this._remoteFileOpeners = [];
   }
 
   dispose(): Promise<void> {
@@ -241,16 +256,6 @@ class Activation {
   }
 
   _openRemoteFile = (uri = '') => {
-    if (
-      nuclideUri.looksLikeImageUri(uri) &&
-      atom.packages.getLoadedPackage('nuclide-image-view') != null
-    ) {
-      // Images will be handled by the nuclide-remote-images package. Ideally, all remote files
-      // would go through one code path and then be delegated to the appropriate handler (instead
-      // of having this need to be aware of the nuclide-remote-images package implementation), but
-      // this is quick and dirty.
-      return;
-    }
     if (!uri.startsWith('nuclide:') && !nuclideUri.isInArchive(uri)) {
       return;
     }
@@ -265,6 +270,13 @@ class Activation {
         // editor contents as appropriate.
         return;
       }
+
+      // Handle service provided fileOpeners
+      const htmlElement = this._handleRemoteFileOpeners(serverConnection, uri);
+      if (htmlElement != null) {
+        return htmlElement;
+      }
+
       const connection = RemoteConnection.getForUri(uri);
       // On Atom restart, it tries to open the uri path as a file tab because it's not a local
       // directory. We can't let that create a file with the initial working directory path.
@@ -285,6 +297,31 @@ class Activation {
     textEditorPromise.then(removeFromCache, removeFromCache);
     return textEditorPromise;
   };
+
+  _handleRemoteFileOpeners(
+    serverConnection: ServerConnection,
+    uri: NuclideUri,
+  ): ?Viewable {
+    let remoteFile: ?RemoteFile;
+    let htmlElement: ?Viewable;
+    try {
+      remoteFile = new RemoteFile(serverConnection, uri);
+      for (let i = 0; i < this._remoteFileOpeners.length; i++) {
+        htmlElement = this._remoteFileOpeners[i](remoteFile);
+        if (htmlElement != null) {
+          break;
+        }
+      }
+    } catch (error) {
+      logger.warn(`Error opening file ${uri}`, error);
+    } finally {
+      if (remoteFile != null) {
+        remoteFile.dispose();
+      }
+    }
+
+    return htmlElement;
+  }
 
   //
   // Services
@@ -336,6 +373,18 @@ class Activation {
 
   consumeWorkingSetsStore(store: WorkingSetsStore): void {
     this._workingSetsStore = store;
+  }
+
+  provideRemoteFileOpenerService(): RemoteFileOpenerService {
+    return {
+      register: (opener: FileOpener): IDisposable => {
+        this._remoteFileOpeners.push(opener);
+        return new UniversalDisposable(() => {
+          const index = this._remoteFileOpeners.indexOf(opener);
+          this._remoteFileOpeners.splice(index, 1);
+        });
+      },
+    };
   }
 
   //

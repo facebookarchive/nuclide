@@ -55,6 +55,11 @@
       "versions": {
         "0.0.0": "provideRpcServices"
       }
+    },
+    "nuclide-remote-file-opener": {
+      "versions": {
+        "0.0.0": "provideRemoteFileOpenerService"
+      }
     }
   },
   "consumedServices": {

@@ -9,6 +9,9 @@
  * @format
  */
 
+import type {RemoteFile} from '../../nuclide-remote-connection';
+import type {RemoteFileOpenerService} from '../../nuclide-remote-projects';
+
 import disablePackage, {
   DisabledReason,
 } from '../../commons-atom/disablePackage';
@@ -26,6 +29,12 @@ class Activation {
       // If you enable this package, we need to disable image-view.
       disablePackage('image-view', {reason: DisabledReason.REIMPLEMENTED}),
     );
+  }
+
+  consumeRemoteFileOpenerService(service: RemoteFileOpenerService) {
+    service.register((file: RemoteFile) => {
+      return openUri(file.getPath());
+    });
   }
 
   deserializeImageEditor(state): ImageEditor {
