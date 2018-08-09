@@ -5,13 +5,13 @@
 #
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
-
 """
 Utility to package the VS Code big-dig extension into a *.vsix file.
 """
 
 import atexit
 from distutils.version import LooseVersion
+import errno
 import json
 import optparse
 import os
@@ -92,7 +92,7 @@ def assert_clean_repository():
     """Verifies that the repository has no changes and no untracked files."""
     print("Verifying that the repository is clean...")
     # This should work in both hg and git repositories.
-    if subprocess.call(["hg", "root"], stdout=DEVNULL, stderr=DEVNULL) == 0:
+    if is_hg_repo():
         status_output = subprocess.check_output(["hg", "status"])
     else:
         status_output = subprocess.check_output(["git", "status", "--porcelain"])
@@ -100,6 +100,18 @@ def assert_clean_repository():
         eprint("There are uncommitted changes in this repository.")
         eprint("Please commit or revert all changes before running.")
         exit(1)
+
+
+def is_hg_repo():
+    try:
+        return subprocess.call(["hg", "root"], stdout=DEVNULL, stderr=DEVNULL) == 0
+    except IOError as e:
+        # If the user does not have hg installed, we expect subprocess.call() to
+        # fail with ENOENT.
+        if e.errno == errno.ENOENT:
+            return False
+        else:
+            raise
 
 
 def vsce(target, output):
