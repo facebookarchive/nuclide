@@ -43,6 +43,7 @@ export default class PythonDebugAdapter implements DebugAdapter {
   extensions: Set<string> = new Set(['.py']);
   customArguments: Map<string, CustomArgumentType> = new Map();
   muteOutputCategories: Set<string> = new Set(['telemetry', 'stderr']);
+  asyncStopThread: ?number = null;
 
   _includedOptions: Set<string> = new Set(['address', 'port']);
 

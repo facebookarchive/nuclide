@@ -77,6 +77,8 @@ export default class Debugger implements DebuggerInterface {
   _preset: ?Preset;
   _readyForEvaluations: boolean = false;
   _muteOutputCategories: Set<string>;
+  _attached: boolean = false;
+  _configured: boolean = false;
 
   constructor(
     logger: log4js$Logger,
@@ -126,6 +128,10 @@ export default class Debugger implements DebuggerInterface {
     }
 
     this._state = 'INITIALIZING';
+
+    this._configured = false;
+    this._attached = false;
+
     await this.closeSession();
     await this.createSession(adapter);
 
@@ -135,23 +141,32 @@ export default class Debugger implements DebuggerInterface {
     const session = this._ensureDebugSession(true);
 
     if (this._attachMode) {
-      await session.attach(
-        nullthrows(this._adapter).adapter.transformAttachArguments(
-          adapter.attachArgs,
-        ),
-      );
-    } else {
-      await session.launch(
-        nullthrows(this._adapter).adapter.transformLaunchArguments(
-          adapter.launchArgs,
-        ),
-      );
+      const attachArgs = nullthrows(
+        this._adapter,
+      ).adapter.transformAttachArguments(adapter.attachArgs);
+      await session.attach(attachArgs);
+      this._attached = true;
+      return this._pauseAfterAttach();
     }
+
+    await session.launch(
+      nullthrows(this._adapter).adapter.transformLaunchArguments(
+        adapter.launchArgs,
+      ),
+    );
   }
 
   async _onInitialized(): Promise<void> {
     const adapter = this._adapter;
     invariant(adapter != null);
+
+    // In attach mode, we don't have a separate configuation mode --
+    // we just let the attach finish and then force a stop
+    // Some adapters claim to support stopping on attach, but the ones
+    // supported so far don't do it reliably.
+    if (this._attachMode) {
+      return this._configurationDone();
+    }
 
     this._state = 'CONFIGURING';
     this._startConfigurationInput();
@@ -170,8 +185,34 @@ export default class Debugger implements DebuggerInterface {
       await session.configurationDone();
     }
 
-    this._cacheThreads();
+    await this._cacheThreads();
+    if (this._attachMode) {
+      this._configured = true;
+      return this._pauseAfterAttach();
+    }
+
     this._console.stopInput();
+  }
+
+  async _pauseAfterAttach(): Promise<void> {
+    if (this._configured && this._attached) {
+      const session = this._ensureDebugSession(true);
+      let threadId: ?number = nullthrows(this._adapter).adapter.asyncStopThread;
+      if (threadId == null) {
+        const threads = this._threads.allThreads;
+        if (threads.length !== 0) {
+          threadId = threads[0].id();
+        }
+      }
+
+      if (threadId == null) {
+        // nowhere to stop right now.
+        this._console.stopInput();
+        return;
+      }
+
+      await session.pause({threadId});
+    }
   }
 
   async run(): Promise<void> {
@@ -191,17 +232,23 @@ export default class Debugger implements DebuggerInterface {
   }
 
   breakInto(): void {
-    // if there is a focus thread from before, stop that one, else just
-    // pick the first.
-    const thread =
-      this._threads.focusThread != null
-        ? this._threads.focusThread
-        : this._threads.allThreads[0];
-    if (thread == null) {
+    const adapter = nullthrows(this._adapter).adapter;
+    // if there is a focus thread from before, stop that one, else pick
+    // a thread or use the adapter-specified default
+    let threadId: ?number = null;
+    if (this._threads.focusThread != null) {
+      threadId = this._threads.focusThread.id();
+    } else if (adapter.asyncStopThread != null) {
+      threadId = adapter.asyncStopThread;
+    } else if (this._threads.allThreads.length !== 0) {
+      threadId = this._threads.allThreads[0].id();
+    }
+
+    if (threadId == null) {
       return;
     }
 
-    this._ensureDebugSession().pause({threadId: thread.id()});
+    this._ensureDebugSession().pause({threadId});
   }
 
   getThreads(): ThreadCollection {
@@ -1007,12 +1054,16 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async _getSourceByReference(sourceReference: number): Promise<string> {
-    const {
-      body: {content},
-    } = await this._ensureDebugSession().source({
-      sourceReference,
-    });
-    return content;
+    try {
+      const {
+        body: {content},
+      } = await this._ensureDebugSession().source({
+        sourceReference,
+      });
+      return content;
+    } catch (err) {
+      return `Failed to retrieve source: ${err.message}`;
+    }
   }
 
   _ensureDebugSession(allowBeforeLaunch: boolean = false): VsDebugSession {

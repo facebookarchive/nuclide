@@ -38,6 +38,8 @@ export default class HHVMDebugAdapter implements DebugAdapter {
   extensions: Set<string> = new Set(['.php']);
   customArguments: Map<string, CustomArgumentType> = new Map();
   muteOutputCategories: Set<string> = new Set();
+  // for pause, use 0 which is the hhvm dummy thread
+  asyncStopThread: ?number = 0;
 
   _includedOptions: Set<string> = new Set();
 
