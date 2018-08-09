@@ -980,7 +980,6 @@ export default class Debugger implements DebuggerInterface {
     }
 
     this._state = 'TERMINATED';
-    this._console.outputLine('The debug adapter has exited.');
 
     const adapter = this._adapter;
     invariant(adapter != null);
