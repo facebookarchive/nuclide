@@ -25,7 +25,11 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createStore} from 'redux';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {getHiddenTopics, setHiddenTopics} from './config';
+import {
+  getHiddenTopics,
+  setHiddenTopics,
+  migrateShowOnboardingConfigValue,
+} from './config';
 import * as Actions from './redux/Actions';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import rootReducer from './redux/rootReducer';
@@ -51,6 +55,7 @@ class Activation {
   _store: Store;
 
   constructor() {
+    migrateShowOnboardingConfigValue();
     const hiddenTopics = getHiddenTopics();
     this._store = createStore(rootReducer, createEmptyAppState(hiddenTopics));
     this._disposables = new UniversalDisposable(
