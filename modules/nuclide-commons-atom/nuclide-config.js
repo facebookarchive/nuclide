@@ -10,22 +10,31 @@
  * @format
  */
 
-import ConfigManager from './ConfigManager';
+import invariant from 'assert';
+import {remote, ipcRenderer} from 'electron';
+invariant(remote != null && remote.ipcMain != null && ipcRenderer != null);
 import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import CSON from 'season';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import ConfigManager from './ConfigManager';
 
 /**
  * This module provides a wrapper around an atom$Config to be used for storing
  * data not intended to be accessed by Nuclide users (which should be accessed
  * using feature-config or atom.config). These config values are accessed/stored
  * on disk in the NUCLIDE_CONFIG_FILE and should only be modified via the
- * NuclideConfigManager functions provided by this module's export
+ * NuclideConfig / ConfigManager functions provided by this module's export
  */
+
+type NuclideConfigSetArgs = {
+  settings: Object,
+  options?: {source?: string},
+};
 
 const Config = atom.config.constructor;
 const NUCLIDE_CONFIG_FILE = 'nuclide-config.cson';
+const UPDATE_NUCLIDE_CONFIG_SETTINGS = 'nuclide-config-update-settings';
 
 const nuclideConfigFilePath = nuclideUri.join(
   nullthrows(process.env.ATOM_HOME),
@@ -41,9 +50,11 @@ function getConfigSettingsFromDisk() {
   return configSettings;
 }
 
-const nuclideConfig = new Config({
+const config = new Config({
   mainSource: nuclideConfigFilePath,
-  // reuse applicationDelegate's saveCallback but with nuclideConfig's context
+  // Reuse applicationDelegate's saveCallback but with nuclideConfig's context.
+  // This delegates saving to the config file to atom's main process, which
+  // handles saving contention
   saveCallback() {
     atom.applicationDelegate.setUserSettings(
       this.settings,
@@ -54,8 +65,89 @@ const nuclideConfig = new Config({
 
 // Reset the settings to match those stored in NUCLIDE_CONFIG_FILE. This sets
 // settingsLoaded to true (allowing config to be saved using the saveCallback)
-nuclideConfig.resetUserSettings(getConfigSettingsFromDisk());
+config.resetUserSettings(getConfigSettingsFromDisk());
 
-const nuclideConfigManager = new ConfigManager(nuclideConfig);
+/**
+ * Emit nuclide-config's settings so taht other processes can update their
+ * config settings to reflect changes values
+ */
+function emitConfigSettings(settings: NuclideConfigSetArgs) {
+  ipcRenderer.send(
+    UPDATE_NUCLIDE_CONFIG_SETTINGS,
+    (settings: NuclideConfigSetArgs),
+  );
+}
 
-export default nuclideConfigManager;
+/**
+ * Extend the ConfigManager to overload the set/unset functionality. This is
+ * necessary for interprocess communication so that config changes in one window
+ * (process) are reflected in the config objects of other windows (processes).
+ * Since set/unset writes to disk, we only want one set/unset call to occur for
+ * any single action done by a process. The initiating process will call set/unset
+ * and then emit the event to other processes, which will update their config objects
+ * without writing to disk (via resetUserSettings).
+ * Instead of restricting the underlying config set/unset calls to a single "main"
+ * process, we call it for any process that calls nuclideConfig.set/unset and rely
+ * on Atom's main process to handle any disk writing contention
+ */
+class NuclideConfig extends ConfigManager {
+  // Set the nuclide-config value and emit event with updated config values to
+  // push config changes to other processes
+  set(
+    keyPath: string,
+    value: ?mixed,
+    options?: {
+      scopeSelector?: string,
+      source?: string,
+    },
+  ): boolean {
+    const setSuccess = super.set(keyPath, value, options);
+    if (setSuccess) {
+      emitConfigSettings({
+        settings: this._config.settings,
+        options,
+      });
+    }
+    return setSuccess;
+  }
+
+  // Unset the nuclide-config key and emit event with updated config values to
+  // push config changes to other processes
+  unset(
+    keyPath: string,
+    options?: {
+      scopeSelector?: string,
+      source?: string,
+    },
+  ): void {
+    super.unset(keyPath, options);
+    emitConfigSettings({
+      settings: this._config.settings,
+      options,
+    });
+  }
+}
+
+const nuclideConfig = new NuclideConfig(config);
+
+const currentWindowId = remote.getCurrentWindow().id;
+
+/**
+ * Listen to incoming nuclide-config changes from other processes and reset
+ * the current process's config to match that emitted by the emitting process.
+ * Clobber the entire config settings object to have all the "latest" values,
+ * instead of setting individual key/vals, which may produce a config of merged
+ * values from different sources
+ */
+remote.ipcMain.on(
+  UPDATE_NUCLIDE_CONFIG_SETTINGS,
+  (event, {settings, options}: NuclideConfigSetArgs) => {
+    // Only update values if they come from another process
+    if (event.sender.getOwnerBrowserWindow().id !== currentWindowId) {
+      // Update all settings without saving to disk
+      nuclideConfig.getConfig().resetUserSettings(settings, options);
+    }
+  },
+);
+
+export default nuclideConfig;
