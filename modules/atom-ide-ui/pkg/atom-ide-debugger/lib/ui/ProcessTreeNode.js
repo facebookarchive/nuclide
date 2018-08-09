@@ -21,6 +21,10 @@ import * as React from 'react';
 import {Observable} from 'rxjs';
 import ThreadTreeNode from './ThreadTreeNode';
 import {DebuggerMode} from '../constants';
+import {
+  LoadingSpinnerSizes,
+  LoadingSpinner,
+} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {
   process: IProcess,
@@ -150,7 +154,14 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       this.props.process.configuration.servicedFileExtensions == null
         ? ''
         : String(this.props.process.configuration.servicedFileExtensions[0]);
-    const fileIcon = (
+    const fileIcon = this.state.pendingStart ? (
+      <div className="inline-block" title="Starting debugger...">
+        <LoadingSpinner
+          size={LoadingSpinnerSizes.EXTRA_SMALL}
+          className="inline-block"
+        />
+      </div>
+    ) : (
       <span
         className={`debugger-tree-file-icon ${firstExtension}-icon`}
         onClick={handleTitleClick}
@@ -166,7 +177,6 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
           className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
           title={title}>
           {title}
-          {this.state.pendingStart ? ' (starting...)' : ''}
         </span>
       </span>
     );
