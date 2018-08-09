@@ -13,267 +13,26 @@ import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
-
 import type {FileTreeNode} from '../FileTreeNode';
-import * as Immutable from 'immutable';
-import {WorkingSet} from '../../../nuclide-working-sets-common';
-
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {FileTreeStore, ExportStoreData} from '../types';
+import type {FileTreeStore, ExportStoreData, Roots} from '../types';
 
-export const serialize = (state: FileTreeStore): ExportStoreData => {
-  const rootKeys = state._roots
-    .valueSeq()
-    .toArray()
-    .map(root => root.uri);
+import {WorkingSet} from '../../../nuclide-working-sets-common';
+import * as Immutable from 'immutable';
+import {memoize} from 'lodash';
+import {createSelector} from 'reselect';
 
-  return {
-    version: state.VERSION,
-    childKeyMap: {},
-    expandedKeysByRoot: {},
-    rootKeys,
-    selectedKeysByRoot: {},
-    openFilesExpanded: state._openFilesExpanded,
-    uncommittedChangesExpanded: state._uncommittedChangesExpanded,
-    foldersExpanded: state._foldersExpanded,
-  };
-};
+//
+//
+// Simple selectors. These just read directly from state.
+//
+//
 
-export const getTrackedNode = (state: FileTreeStore): ?FileTreeNode => {
-  if (state._trackedRootKey == null || state._trackedNodeKey == null) {
-    return null;
-  }
+export const getAutoExpandSingleChild = (state: FileTreeStore) =>
+  state._autoExpandSingleChild;
 
-  return getNode(state, state._trackedRootKey, state._trackedNodeKey);
-};
-
-export const getRepositories = (
-  state: FileTreeStore,
-): Immutable.Set<atom$Repository> => {
-  return state._repositories;
-};
-
-export const getWorkingSet = (state: FileTreeStore): WorkingSet => {
-  return state._conf.workingSet;
-};
-
-export const getWorkingSetsStore = (
-  state: FileTreeStore,
-): ?WorkingSetsStore => {
-  return state._workingSetsStore;
-};
-
-export const getRootKeys = (state: FileTreeStore): Array<NuclideUri> => {
-  return state._roots
-    .valueSeq()
-    .toArray()
-    .map(root => root.uri);
-};
-
-export const getCwdKey = (state: FileTreeStore): ?NuclideUri => {
-  return state._cwdKey;
-};
-
-/**
- * Returns true if the store has no data, i.e. no roots, no children.
- */
-export const isEmpty = (state: FileTreeStore): boolean => {
-  return state._roots.isEmpty();
-};
-
-export const getFileChanges = (
-  state: FileTreeStore,
-): Immutable.Map<
-  NuclideUri,
-  Immutable.Map<NuclideUri, FileChangeStatusValue>,
-> => {
-  return state._fileChanges;
-};
-
-export const getGeneratedOpenChangedFiles = (
-  state: FileTreeStore,
-): Immutable.Map<NuclideUri, GeneratedFileType> => {
-  return state._generatedOpenChangedFiles;
-};
-
-export const getIsCalculatingChanges = (state: FileTreeStore): boolean => {
-  return state._isCalculatingChanges;
-};
-
-export const usePrefixNav = (state: FileTreeStore): boolean => {
-  return state._usePrefixNav;
-};
-
-export const getSelectedNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
-  const nodes = [];
-  state._selectedUris.forEach((set, rootUri) => {
-    set.forEach(uri => {
-      const node = getNode(state, rootUri, uri);
-      if (node != null) {
-        nodes.push(node);
-      }
-    });
-  });
-  return Immutable.List(nodes);
-};
-
-export const getFocusedNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
-  const nodes = [];
-  state._focusedUris.forEach((set, rootUri) => {
-    set.forEach(uri => {
-      const node = getNode(state, rootUri, uri);
-      if (node != null) {
-        nodes.push(node);
-      }
-    });
-  });
-  return Immutable.List(nodes);
-};
-
-// Retrieves target node in an immutable list if it's set, or all selected
-// nodes otherwise
-export const getTargetNodes = (
-  state: FileTreeStore,
-): Immutable.List<FileTreeNode> => {
-  if (state._targetNodeKeys) {
-    const targetNode = getNode(
-      state,
-      state._targetNodeKeys.rootKey,
-      state._targetNodeKeys.nodeKey,
-    );
-    if (targetNode) {
-      return Immutable.List([targetNode]);
-    }
-  }
-  return getSelectedNodes(state);
-};
-
-/**
- * Returns a node if it is the only one selected, or null otherwise
- */
-export const getSingleSelectedNode = (state: FileTreeStore): ?FileTreeNode => {
-  const selectedNodes = getSelectedNodes(state);
-
-  if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
-    return null;
-  }
-
-  return selectedNodes.first();
-};
-
-// Retrieves the target node, if it's set, or the first selected node otherwise
-export const getSingleTargetNode = (state: FileTreeStore): ?FileTreeNode => {
-  if (state._targetNodeKeys) {
-    const targetNode = getNode(
-      state,
-      state._targetNodeKeys.rootKey,
-      state._targetNodeKeys.nodeKey,
-    );
-    if (targetNode) {
-      return targetNode;
-    }
-  }
-  return getSingleSelectedNode(state);
-};
-
-export const getNode = (
-  state: FileTreeStore,
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
-  const rootNode = state._roots.get(rootKey);
-
-  if (rootNode == null) {
-    return null;
-  }
-
-  return rootNode.find(nodeKey);
-};
-
-export const getRootForPath = (
-  state: FileTreeStore,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
-  const rootNode = state._roots.find(root => nodeKey.startsWith(root.uri));
-  return rootNode || null;
-};
-export const isEditingWorkingSet = (state: FileTreeStore): boolean => {
-  return state._conf.isEditingWorkingSet;
-};
-
-/**
- * Builds the edited working set from the partially-child-derived .checkedStatus property
- */
-export const getEditedWorkingSet = (state: FileTreeStore): WorkingSet => {
-  return state._conf.editedWorkingSet;
-};
-
-export const isEditedWorkingSetEmpty = (state: FileTreeStore): boolean => {
-  return state._roots.every(root => root.checkedStatus === 'clear');
-};
-
-export const getOpenFilesWorkingSet = (state: FileTreeStore): WorkingSet => {
-  return state._conf.openFilesWorkingSet;
-};
-
-export const hasCwd = (state: FileTreeStore): boolean => {
-  return state._cwdKey != null;
-};
-
-export const getFilter = (state: FileTreeStore): string => {
-  return state._filter;
-};
-
-export const getExtraProjectSelectionContent = (
-  state: FileTreeStore,
-): Immutable.List<React.Element<any>> => {
-  return state._extraProjectSelectionContent;
-};
-
-export const getFilterFound = (state: FileTreeStore): boolean => {
-  return state._roots.some(root => root.containsFilterMatches);
-};
-
-export const collectDebugState = (state: FileTreeStore): Object => {
-  return {
-    currentWorkingRoot: getCwdKey(state),
-    openFilesExpanded: state._openFilesExpanded,
-    uncommittedChangesExpanded: state._uncommittedChangesExpanded,
-    foldersExpanded: state._foldersExpanded,
-    reorderPreviewStatus: state._reorderPreviewStatus,
-    _filter: state._filter,
-    _selectionRange: state._selectionRange,
-    _targetNodeKeys: state._targetNodeKeys,
-    _trackedRootKey: state._trackedRootKey,
-    _trackedNodeKey: state._trackedNodeKey,
-    _isCalculatingChanges: state._isCalculatingChanges,
-
-    roots: Array.from(state._roots.values()).map(root =>
-      root.collectDebugState(),
-    ),
-    _conf: {
-      hideIgnoredNames: state._conf.hideIgnoredNames,
-      excludeVcsIgnoredPaths: state._conf.excludeVcsIgnoredPaths,
-      hideVcsIgnoredPaths: state._conf.hideVcsIgnoredPaths,
-      usePreviewTabs: state._conf.usePreviewTabs,
-      focusEditorOnFileSelection: state._conf.focusEditorOnFileSelection,
-      isEditingWorkingSet: state._conf.isEditingWorkingSet,
-      vcsStatuses: state._conf.vcsStatuses.toObject(),
-      workingSet: state._conf.workingSet.getUris(),
-      ignoredPatterns: state._conf.ignoredPatterns
-        .toArray()
-        .map(ignored => ignored.pattern),
-      openFilesWorkingSet: state._conf.openFilesWorkingSet.getUris(),
-      editedWorkingSet: state._conf.editedWorkingSet.getUris(),
-    },
-    selectionManager: collectSelectionDebugState(state),
-  };
-};
+export const getConf = (state: FileTreeStore) => state._conf;
 
 export const getFoldersExpanded = (state: FileTreeStore) => {
   return state._foldersExpanded;
@@ -291,42 +50,355 @@ export const getRoots = (state: FileTreeStore) => {
   return state._roots;
 };
 
-export const getNodeByIndex = (state: FileTreeStore) => {
-  return function(index: number) {
-    const firstRoot = getRoots(state).find(r => r.shouldBeShown);
-    if (firstRoot == null) {
+export const getVersion = (state: FileTreeStore) => state.VERSION;
+
+export const getFilter = (state: FileTreeStore): string => state._filter;
+
+export const getExtraProjectSelectionContent = (
+  state: FileTreeStore,
+): Immutable.List<React.Element<any>> => state._extraProjectSelectionContent;
+
+const getReorderPreviewStatus = (state: FileTreeStore) =>
+  state._reorderPreviewStatus;
+
+const getSelectionRange = (state: FileTreeStore) => state._selectionRange;
+
+const getTrackedRootKey = (state: FileTreeStore) => state._trackedRootKey;
+
+const getTrackedNodeKey = (state: FileTreeStore) => state._trackedNodeKey;
+
+export const getWorkingSetsStore = (state: FileTreeStore): ?WorkingSetsStore =>
+  state._workingSetsStore;
+
+export const getRepositories = (
+  state: FileTreeStore,
+): Immutable.Set<atom$Repository> => state._repositories;
+
+export const getCwdKey = (state: FileTreeStore): ?NuclideUri => state._cwdKey;
+
+export const getFileChanges = (
+  state: FileTreeStore,
+): Immutable.Map<
+  NuclideUri,
+  Immutable.Map<NuclideUri, FileChangeStatusValue>,
+> => state._fileChanges;
+
+export const getGeneratedOpenChangedFiles = (
+  state: FileTreeStore,
+): Immutable.Map<NuclideUri, GeneratedFileType> =>
+  state._generatedOpenChangedFiles;
+
+export const getIsCalculatingChanges = (state: FileTreeStore): boolean =>
+  state._isCalculatingChanges;
+
+export const usePrefixNav = (state: FileTreeStore): boolean =>
+  state._usePrefixNav;
+
+const getSelectedUris = (state: FileTreeStore) => state._selectedUris;
+
+const getFocusedUris = (state: FileTreeStore) => state._focusedUris;
+
+const getTargetNodeKeys = (state: FileTreeStore) => state._targetNodeKeys;
+
+export const getCwdApi = (state: FileTreeStore) => state._cwdApi;
+
+export const hasCwd = createSelector([getCwdKey], cwdKey => cwdKey != null);
+
+//
+//
+// Conf selectors
+//
+//
+
+export const getWorkingSet = createSelector(
+  [getConf],
+  (conf): WorkingSet => conf.workingSet,
+);
+
+export const isEditingWorkingSet = createSelector(
+  [getConf],
+  conf => conf.isEditingWorkingSet,
+);
+
+/**
+ * Builds the edited working set from the partially-child-derived .checkedStatus property
+ */
+export const getEditedWorkingSet = createSelector(
+  [getConf],
+  conf => conf.editedWorkingSet,
+);
+
+export const getOpenFilesWorkingSet = createSelector(
+  [getConf],
+  conf => conf.openFilesWorkingSet,
+);
+
+//
+//
+// Tree selectors. These tell us about the state of the directory tree.
+//
+//
+
+export const getTrackedNode = (state: FileTreeStore): ?FileTreeNode => {
+  if (state._trackedRootKey == null || state._trackedNodeKey == null) {
+    return null;
+  }
+
+  return getNode(state, state._trackedRootKey, state._trackedNodeKey);
+};
+
+export const getRootKeys = createSelector(
+  [getRoots],
+  (roots): Array<NuclideUri> =>
+    roots
+      .valueSeq()
+      .toArray()
+      .map(root => root.uri),
+);
+
+/**
+ * Returns true if the store has no data, i.e. no roots, no children.
+ */
+export const isEmpty = createSelector([getRoots], roots => roots.isEmpty());
+
+export const getSelectedNodes = createSelector(
+  [getRoots, getSelectedUris],
+  (roots, selectedUris): Immutable.List<FileTreeNode> => {
+    const nodes = [];
+    selectedUris.forEach((set, rootUri) => {
+      set.forEach(uri => {
+        const node = getNodeInRoots(roots, rootUri, uri);
+        if (node != null) {
+          nodes.push(node);
+        }
+      });
+    });
+    return Immutable.List(nodes);
+  },
+);
+
+export const getNodeInRoots = (
+  roots: Roots,
+  rootKey: NuclideUri,
+  nodeKey: NuclideUri,
+): ?FileTreeNode => {
+  const rootNode = roots.get(rootKey);
+  if (rootNode == null) {
+    return null;
+  }
+  return rootNode.find(nodeKey);
+};
+
+export const getFocusedNodes = createSelector(
+  [getRoots, getFocusedUris],
+  (roots, focusedUris) => {
+    const nodes = [];
+    focusedUris.forEach((set, rootUri) => {
+      set.forEach(uri => {
+        const node = getNodeInRoots(roots, rootUri, uri);
+        if (node != null) {
+          nodes.push(node);
+        }
+      });
+    });
+    return Immutable.List(nodes);
+  },
+);
+
+const getTargetNode = createSelector(
+  [getRoots, getTargetNodeKeys],
+  (roots, targetNodeKeys) => {
+    if (targetNodeKeys == null) {
       return null;
     }
+    return getNodeInRoots(
+      roots,
+      targetNodeKeys.rootKey,
+      targetNodeKeys.nodeKey,
+    );
+  },
+);
 
-    return firstRoot.findByIndex(index);
-  };
+// Retrieves target node in an immutable list if it's set, or all selected
+// nodes otherwise
+export const getTargetNodes = createSelector(
+  [getRoots, getTargetNode, getSelectedNodes],
+  (roots, targetNode, selectedNodes) => {
+    if (targetNode) {
+      return Immutable.List([targetNode]);
+    }
+    return selectedNodes;
+  },
+);
+
+/**
+ * Returns a node if it is the only one selected, or null otherwise
+ */
+export const getSingleSelectedNode = createSelector(
+  [getSelectedNodes],
+  selectedNodes => {
+    if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
+      return null;
+    }
+    return selectedNodes.first();
+  },
+);
+
+// Retrieves the target node, if it's set, or the first selected node otherwise
+export const getSingleTargetNode = createSelector(
+  [getTargetNode, getSingleSelectedNode],
+  (targetNode, singleSelectedNode) => targetNode ?? singleSelectedNode,
+);
+
+export const getNode = (
+  state: FileTreeStore,
+  rootKey: NuclideUri,
+  nodeKey: NuclideUri,
+): ?FileTreeNode => getNodeInRoots(getRoots(state), rootKey, nodeKey);
+
+export const getRootForPath = (
+  state: FileTreeStore,
+  nodeKey: NuclideUri,
+): ?FileTreeNode => {
+  const rootNode = getRoots(state).find(root => nodeKey.startsWith(root.uri));
+  return rootNode || null;
 };
 
-export const getCwdApi = (state: FileTreeStore) => {
-  return state._cwdApi;
-};
+export const isEditedWorkingSetEmpty = createSelector([getRoots], roots =>
+  roots.every(root => root.checkedStatus === 'clear'),
+);
+
+export const getFilterFound = createSelector([getRoots], roots =>
+  roots.some(root => root.containsFilterMatches),
+);
+
+export const getNodeByIndex = createSelector(getRoots, roots => {
+  return memoize(index => {
+    const firstRoot = roots.find(r => r.shouldBeShown);
+    return firstRoot == null ? null : firstRoot.findByIndex(index);
+  });
+});
 
 export const getLoading = (state: FileTreeStore, nodeKey: NuclideUri) =>
   state._isLoadingMap.get(nodeKey);
 
-export const getAutoExpandSingleChild = (state: FileTreeStore) =>
-  state._autoExpandSingleChild;
-
-export const getConf = (state: FileTreeStore) => state._conf;
-
-export const getVersion = (state: FileTreeStore) => state.VERSION;
-
-export const collectSelectionDebugState = (state: FileTreeStore) => ({
-  _selectedNodes: getSelectedNodes(state)
-    .toArray()
-    .map(node => node.uri),
-  _focusedNodes: getFocusedNodes(state)
-    .toArray()
-    .map(node => node.uri),
-});
-
 export const getNodeIsSelected = (state: FileTreeStore, node: FileTreeNode) =>
-  state._selectedUris.get(node.rootUri, Immutable.Set()).has(node.uri);
+  getSelectedUris(state)
+    .get(node.rootUri, Immutable.Set())
+    .has(node.uri);
 
 export const getNodeIsFocused = (state: FileTreeStore, node: FileTreeNode) =>
-  state._focusedUris.get(node.rootUri, Immutable.Set()).has(node.uri);
+  getFocusedUris(state)
+    .get(node.rootUri, Immutable.Set())
+    .has(node.uri);
+
+//
+//
+// Serialization and debugging
+//
+//
+
+export const serialize = createSelector(
+  [
+    getRootKeys,
+    getVersion,
+    getOpenFilesExpanded,
+    getUncommittedChangesExpanded,
+    getFoldersExpanded,
+  ],
+  (
+    rootKeys,
+    version,
+    openFilesExpanded,
+    uncommittedChangesExpanded,
+    foldersExpanded,
+  ): ExportStoreData => {
+    return {
+      version,
+      childKeyMap: {},
+      expandedKeysByRoot: {},
+      rootKeys,
+      selectedKeysByRoot: {},
+      openFilesExpanded,
+      uncommittedChangesExpanded,
+      foldersExpanded,
+    };
+  },
+);
+
+export const collectSelectionDebugState = createSelector(
+  [getSelectedNodes, getFocusedNodes],
+  (selectedNodes, focusedNodes) => {
+    return {
+      _selectedNodes: selectedNodes.toArray().map(node => node.uri),
+      _focusedNodes: focusedNodes.toArray().map(node => node.uri),
+    };
+  },
+);
+
+export const collectDebugState = createSelector(
+  [
+    getCwdKey,
+    getOpenFilesExpanded,
+    getUncommittedChangesExpanded,
+    getFoldersExpanded,
+    getReorderPreviewStatus,
+    getFilter,
+    getSelectionRange,
+    getTargetNodeKeys,
+    getTrackedRootKey,
+    getTrackedNodeKey,
+    getIsCalculatingChanges,
+    getRoots,
+    getConf,
+    collectSelectionDebugState,
+  ],
+  (
+    currentWorkingRoot,
+    openFilesExpanded,
+    uncommittedChangesExpanded,
+    foldersExpanded,
+    reorderPreviewStatus,
+    _filter,
+    _selectionRange,
+    _targetNodeKeys,
+    _trackedRootKey,
+    _trackedNodeKey,
+    _isCalculatingChanges,
+    roots,
+    conf,
+    selectionManager,
+  ) => {
+    return {
+      currentWorkingRoot,
+      openFilesExpanded,
+      uncommittedChangesExpanded,
+      foldersExpanded,
+      reorderPreviewStatus,
+      _filter,
+      _selectionRange,
+      _targetNodeKeys,
+      _trackedRootKey,
+      _trackedNodeKey,
+      _isCalculatingChanges,
+
+      roots: Array.from(roots.values()).map(root => root.collectDebugState()),
+      _conf: {
+        hideIgnoredNames: conf.hideIgnoredNames,
+        excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
+        hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
+        usePreviewTabs: conf.usePreviewTabs,
+        focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
+        isEditingWorkingSet: conf.isEditingWorkingSet,
+        vcsStatuses: conf.vcsStatuses.toObject(),
+        workingSet: conf.workingSet.getUris(),
+        ignoredPatterns: conf.ignoredPatterns
+          .toArray()
+          .map(ignored => ignored.pattern),
+        openFilesWorkingSet: conf.openFilesWorkingSet.getUris(),
+        editedWorkingSet: conf.editedWorkingSet.getUris(),
+      },
+      selectionManager,
+    };
+  },
+);
