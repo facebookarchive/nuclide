@@ -34,12 +34,19 @@ import {Observable} from 'rxjs';
 
 type Props = {|
   node: FileTreeNode,
-  selectedNodes: Immutable.Set<FileTreeNode>,
-  focusedNodes: Immutable.Set<FileTreeNode>,
+  isSelected: boolean,
+  isFocused: boolean,
   isPreview?: boolean,
-
   usePreviewTabs: boolean,
   isEditingWorkingSet: boolean,
+
+  // TODO: Hoist the logic for responding to drags to VirtualizedFileTree. (This component should
+  // just report via props when it's been dragged into, etc.) Then we can remove the
+  // `selectedNodes` prop entirely (since it's the only thing that needs more than `isSelected`).
+  //
+  // IMPORTANT: This is not considered in `shouldComponentUpdate()`. If it were, we'd re-render
+  // every FileTreeEntryComponent on every selection change.
+  selectedNodes: Immutable.List<FileTreeNode>,
 
   expandNode: () => void,
   expandNodeDeep: () => void,
@@ -71,7 +78,7 @@ const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
 
-class FileTreeEntryComponent extends React.PureComponent<Props, State> {
+class FileTreeEntryComponent extends React.Component<Props, State> {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
   // when an entry is truly hovered/unhovered, since these fire many times over
   // the duration of one user interaction.
@@ -90,17 +97,22 @@ class FileTreeEntryComponent extends React.PureComponent<Props, State> {
     };
   }
 
-  /*
+  /**
+   * react-redux will cause a rerender every time because it remaps the dispatch props. Therefore
+   * we can't use PureComponent.
+   */
   shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
     return (
       nextProps.node !== this.props.node ||
-      nextProps.node.isLoading !== this.props.node.isLoading ||
-      nextState.isLoading !== this.state.isLoading ||
-      nextProps.selectedNodes !== this.props.selectedNodes ||
-      nextProps.focusedNodes !== this.props.focusedNodes
+      nextProps.isSelected !== this.props.isSelected ||
+      nextProps.isFocused !== this.props.isFocused ||
+      nextProps.isPreview !== this.props.isPreview ||
+      nextProps.usePreviewTabs !== this.props.usePreviewTabs ||
+      nextProps.isEditingWorkingSet !== this.props.isEditingWorkingSet ||
+      nextState.isLoading !== this.state.isLoading
     );
   }
-*/
+
   UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     if (nextProps.node.isLoading !== this.props.node.isLoading) {
       if (this._loadingTimeout != null) {
@@ -150,8 +162,7 @@ class FileTreeEntryComponent extends React.PureComponent<Props, State> {
   }
 
   render(): React.Node {
-    const node = this.props.node;
-    const isSelected = this.props.selectedNodes.has(node);
+    const {node, isSelected} = this.props;
 
     const outerClassName = classnames('entry', {
       'file list-item': !node.isContainer,
@@ -323,9 +334,7 @@ class FileTreeEntryComponent extends React.PureComponent<Props, State> {
       return;
     }
 
-    const node = this.props.node;
-    const isSelected = this.props.selectedNodes.has(node);
-
+    const {isSelected} = this.props;
     const selectionMode = FileTreeHelpers.getSelectionMode(event);
     if (selectionMode === 'multi-select' && !isSelected) {
       this.props.addSelectedNode();
@@ -338,10 +347,7 @@ class FileTreeEntryComponent extends React.PureComponent<Props, State> {
 
   _onClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
-    const node = this.props.node;
-    const isSelected = this.props.selectedNodes.has(node);
-    const isFocused = this.props.focusedNodes.has(node);
-
+    const {node, isSelected, isFocused} = this.props;
     const deep = event.altKey;
     if (this._isToggleNodeExpand(event)) {
       this._toggleNodeExpanded(deep);
@@ -532,7 +538,9 @@ class FileTreeEntryComponent extends React.PureComponent<Props, State> {
   };
 }
 
-const mapStateToProps = (state: AppState): $Shape<Props> => ({
+const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
+  isSelected: Selectors.getSelectedNodes(state).includes(ownProps.node),
+  isFocused: Selectors.getFocusedNodes(state).includes(ownProps.node),
   usePreviewTabs: Selectors.getConf(state).usePreviewTabs,
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
 });

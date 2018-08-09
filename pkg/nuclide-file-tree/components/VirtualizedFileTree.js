@@ -347,7 +347,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
             ref={node.isRoot ? this._setRootRef : this._setNodeRef}
             node={node}
             selectedNodes={this.props.selectedNodes}
-            focusedNodes={this.props.focusedNodes}
           />
         </div>
       );
