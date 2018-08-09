@@ -10,7 +10,7 @@
  */
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {Store} from '../types';
+import type {Store, WelcomePagePaneProps} from '../types';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {Provider} from 'react-redux';
@@ -19,16 +19,23 @@ import * as React from 'react';
 import {WelcomePageContainer} from './WelcomePageComponent';
 
 type Props = {
+  paneProps?: WelcomePagePaneProps,
   store: Store,
+  topic: string,
 };
 
-export const WELCOME_PAGE_VIEW_URI = 'atom://nuclide/welcome-page';
+export const ALL_WELCOME_PAGE_TOPICS = 'all-welcome-pages';
+export const WELCOME_PAGE_VIEW_URI_PREFIX = 'atom://nuclide/welcome-page/';
+
+export function getURIForTopic(topic: string): string {
+  return WELCOME_PAGE_VIEW_URI_PREFIX + topic;
+}
 
 export default class WelcomePageGadget extends React.Component<Props> {
   _visibilitySubscription: rxjs$ISubscription;
 
   getTitle(): string {
-    return 'Welcome to Nuclide';
+    return this.props.paneProps?.title ?? 'Welcome to Nuclide';
   }
 
   getIconName(): IconName {
@@ -61,16 +68,16 @@ export default class WelcomePageGadget extends React.Component<Props> {
   }
 
   render(): React.Node {
-    const {store} = this.props;
+    const {paneProps, store, topic} = this.props;
     const visibleStore = {...store, subscribe: this._customSubscribe};
     return (
       <Provider store={visibleStore}>
-        <WelcomePageContainer />
+        <WelcomePageContainer className={paneProps?.className} topic={topic} />
       </Provider>
     );
   }
 
-  // don't emit when smartlog's not visible to prevent needless re-calculations
+  // don't emit when welcome page is not visible to prevent needless re-calculations
   _customSubscribe = (listener: () => mixed): (() => void) => {
     const {store} = this.props;
     return (store: any).subscribe(() => {
@@ -87,6 +94,6 @@ export default class WelcomePageGadget extends React.Component<Props> {
   }
 
   getURI(): string {
-    return WELCOME_PAGE_VIEW_URI;
+    return getURIForTopic(this.props.topic);
   }
 }

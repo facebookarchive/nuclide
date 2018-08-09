@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, Action, WelcomePage, ShowOption} from '../types';
+import type {AppState, Action, WelcomePage} from '../types';
 
 import {getLogger} from 'log4js';
 import {track} from '../../../nuclide-analytics';
@@ -25,14 +25,12 @@ export default function rootReducer(state: AppState, action: Action): AppState {
       return _deleteWelcomePage(state, action.payload.topic);
     case ActionTypes.UPDATE_WELCOME_PAGE_VISIBILITY:
       return {...state, isWelcomePageVisible: action.payload.isVisible};
-    case ActionTypes.HIDE_UNHIDE_TOPICS:
-      return _hideUnhideTopics(
+    case ActionTypes.SET_TOPIC_HIDDEN:
+      return _setTopicHidden(
         state,
-        action.payload.topicsToHide,
-        action.payload.topicsToUnhide,
+        action.payload.topic,
+        action.payload.shouldHide,
       );
-    case ActionTypes.SET_SHOW_OPTION:
-      return _setShowOption(state, action.payload.showOption);
   }
 
   return state;
@@ -41,12 +39,18 @@ export default function rootReducer(state: AppState, action: Action): AppState {
 function _addWelcomePage(state: AppState, welcomePage: WelcomePage): AppState {
   const welcomePages = new Map(state.welcomePages);
   const {topic, content} = welcomePage;
-  const priority = welcomePage.priority != null ? welcomePage.priority : 1000;
   if (welcomePages.has(topic)) {
     log.warn(`Duplicate welcome page for topic '${topic}'`);
     return state;
   }
-  welcomePages.set(topic, {content, priority});
+  welcomePages.set(topic, {
+    content,
+    hideCheckboxProps: {
+      className: 'welcome-page-hide-checkbox',
+      label: "Don't show this again",
+      ...welcomePage.hideCheckboxProps,
+    },
+  });
   return {...state, welcomePages};
 }
 
@@ -56,33 +60,23 @@ function _deleteWelcomePage(state: AppState, topic: string): AppState {
   return {...state, welcomePages};
 }
 
-function _hideUnhideTopics(
+function _setTopicHidden(
   state: AppState,
-  topicsToHide: Set<string>,
-  topicsToUnhide: Set<string>,
+  topic: string,
+  shouldHide: boolean,
 ): AppState {
   const hiddenTopics = new Set(state.hiddenTopics);
-  topicsToHide.forEach(topic => {
+  const isHidden = hiddenTopics.has(topic);
+  if (!isHidden && shouldHide) {
     hiddenTopics.add(topic);
-  });
-  const hidden = Array.from(topicsToHide);
-  if (hidden.length > 0) {
-    log.info(`Hiding topics: [${hidden.join(', ')}]`);
-  }
-  topicsToUnhide.forEach(topic => {
+    log.info(`Hiding topic: ${topic}]`);
+  } else if (isHidden && !shouldHide) {
     hiddenTopics.delete(topic);
-  });
-  const unhidden = Array.from(topicsToUnhide);
-  if (unhidden.length > 0) {
-    log.info(`Unhiding topics: [${unhidden.join(', ')}]`);
+    log.info(`Unhiding topic: ${topic}`);
   }
-  track('nuclide-welcome-page-hide-unhide-topics', {
-    hidden,
-    unhidden,
+  track('nuclide-welcome-page-set-topic-hidden', {
+    topic,
+    shouldHide,
   });
   return {...state, hiddenTopics};
-}
-
-function _setShowOption(state: AppState, showOption?: ShowOption): AppState {
-  return {...state, showOption};
 }

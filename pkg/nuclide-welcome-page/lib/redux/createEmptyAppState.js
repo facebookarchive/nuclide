@@ -16,6 +16,8 @@ export function createEmptyAppState(
   overriddenDefaults: Object = {},
 ): AppState {
   return {
+    topic: '',
+    shouldHide: true,
     welcomePages: new Map(),
     hiddenTopics,
     isWelcomePageVisible: false,

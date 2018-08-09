@@ -14,11 +14,9 @@ import type {
   WelcomePage,
   AddWelcomePageAction,
   DeleteWelcomePageAction,
-  HideUnhideTopicsAction,
-  SetShowOptionAction,
+  SetTopicHiddenAction,
 } from '../types';
 
-import {showOne, showAll} from '../ShowOptions';
 import * as ActionTypes from './ActionTypes';
 
 export function addWelcomePage(welcomePage: WelcomePage): AddWelcomePageAction {
@@ -44,39 +42,12 @@ export function updateWelcomePageVisibility(
   };
 }
 
-export function hideUnhideTopics(
-  topicsToHide: Set<string>,
-  topicsToUnhide: Set<string>,
-): HideUnhideTopicsAction {
+export function setTopicHidden(
+  topic: string,
+  shouldHide: boolean,
+): SetTopicHiddenAction {
   return {
-    type: ActionTypes.HIDE_UNHIDE_TOPICS,
-    payload: {topicsToHide, topicsToUnhide},
-  };
-}
-
-export function setShowAll(): SetShowOptionAction {
-  return {
-    type: ActionTypes.SET_SHOW_OPTION,
-    payload: {
-      showOption: showAll(),
-    },
-  };
-}
-
-export function setShowOne(topic: string): SetShowOptionAction {
-  return {
-    type: ActionTypes.SET_SHOW_OPTION,
-    payload: {
-      showOption: showOne(topic),
-    },
-  };
-}
-
-export function clearShowOption(): SetShowOptionAction {
-  return {
-    type: ActionTypes.SET_SHOW_OPTION,
-    payload: {
-      showOption: undefined,
-    },
+    type: ActionTypes.SET_TOPIC_HIDDEN,
+    payload: {topic, shouldHide},
   };
 }

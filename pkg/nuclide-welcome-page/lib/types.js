@@ -9,10 +9,23 @@
  * @format
  */
 
+export type HideCheckboxProps = {
+  checkboxCallback?: boolean => void,
+  className?: string,
+  label?: string,
+};
+
+export type WelcomePagePaneProps = {
+  title?: string,
+  className?: string,
+};
+
 export type WelcomePage = {
-  topic: string,
+  hideCheckboxProps?: HideCheckboxProps,
   content: React$Node,
-  priority?: number,
+  menuLabel: string,
+  paneProps?: WelcomePagePaneProps,
+  topic: string,
 };
 
 export type ShowPageOptions = {
@@ -20,7 +33,7 @@ export type ShowPageOptions = {
 };
 
 export type WelcomePageApi = {
-  +showPageForTopic: (string, ShowPageOptions) => void,
+  +showPageForTopic: (string, options?: ShowPageOptions) => void,
 };
 
 export type ShowAll = {
@@ -35,17 +48,15 @@ export type ShowOne = {
   },
 };
 
-export type ShowOption = ShowAll | ShowOne;
-
 export type WelcomePageData = {
   content: React$Node,
-  priority: number,
+  hideCheckboxProps: HideCheckboxProps,
 };
 
 export type AppState = {
+  shouldHide: boolean,
   welcomePages: Map<string, WelcomePageData>,
   hiddenTopics: Set<string>,
-  showOption?: ShowOption,
   isWelcomePageVisible: boolean,
 };
 
@@ -76,22 +87,16 @@ export type UpdateWelcomePageVisibilityAction = {
   },
 };
 
-export type HideUnhideTopicsAction = {
-  type: 'HIDE_UNHIDE_TOPICS',
+export type SetTopicHiddenAction = {
+  type: 'SET_TOPIC_HIDDEN',
   payload: {
-    topicsToHide: Set<string>,
-    topicsToUnhide: Set<string>,
+    topic: string,
+    shouldHide: boolean,
   },
-};
-
-export type SetShowOptionAction = {
-  type: 'SET_SHOW_OPTION',
-  payload: {showOption?: ShowOption},
 };
 
 export type Action =
   | AddWelcomePageAction
   | DeleteWelcomePageAction
   | UpdateWelcomePageVisibilityAction
-  | HideUnhideTopicsAction
-  | SetShowOptionAction;
+  | SetTopicHiddenAction;
