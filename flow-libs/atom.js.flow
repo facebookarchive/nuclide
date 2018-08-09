@@ -467,7 +467,7 @@ declare class atom$Pane {
   activateItem(item: Object): ?Object,
   activateItemAtIndex(index: number): void,
   moveItemToPane(item: Object, pane: atom$Pane, index: number): void,
-  destroyItem(item: Object, force?: boolean): boolean | Promise<boolean>,
+  destroyItem(item: Object, force?: boolean): Promise<boolean>,
   itemForURI(uri: string): Object,
 
   // Event subscriptions.

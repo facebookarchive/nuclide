@@ -12,12 +12,14 @@
 
 export function destroyItemWhere(
   predicate: (item: atom$PaneItem) => boolean,
-): void {
+): Promise<Array<boolean>> {
+  const destroyItemStatuses = [];
   atom.workspace.getPanes().forEach(pane => {
     pane.getItems().forEach(item => {
       if (predicate(item)) {
-        pane.destroyItem(item, true);
+        destroyItemStatuses.push(pane.destroyItem(item, true));
       }
     });
   });
+  return Promise.all(destroyItemStatuses);
 }
