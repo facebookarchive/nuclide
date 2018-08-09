@@ -46,9 +46,9 @@ export function getTasks(
     }
     if (!nuclideUri.isRemote(buckRoot)) {
       tasks.add('test');
-      if (debuggerAvailable) {
-        tasks.add('debug');
-      }
+    }
+    if (debuggerAvailable) {
+      tasks.add('debug');
     }
   }
   return tasks;
