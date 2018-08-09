@@ -12,7 +12,7 @@
 import {Directory} from 'atom';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import createStore from '../lib/redux/createStore';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as EpicHelpers from '../lib/redux/EpicHelpers';
 import type {FileTreeNode} from '../lib/FileTreeNode';

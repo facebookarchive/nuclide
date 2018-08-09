@@ -18,7 +18,7 @@ import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';

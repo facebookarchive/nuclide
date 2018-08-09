@@ -9,18 +9,18 @@
  * @format
  */
 
-import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
-import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
+import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
+import type {FileChangeStatusValue} from '../../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
-import type {FileTreeNode} from './FileTreeNode';
+import type {FileTreeNode} from '../FileTreeNode';
 import * as Immutable from 'immutable';
-import {WorkingSet} from '../../nuclide-working-sets-common';
+import {WorkingSet} from '../../../nuclide-working-sets-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {FileTreeStore, ExportStoreData} from './types';
+import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
+import type {FileTreeStore, ExportStoreData} from '../types';
 
 export const serialize = (state: FileTreeStore): ExportStoreData => {
   const rootKeys = state._roots

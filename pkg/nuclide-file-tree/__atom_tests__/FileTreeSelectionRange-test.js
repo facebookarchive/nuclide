@@ -22,7 +22,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import {denodeify} from 'nuclide-commons/promise';
 import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as EpicHelpers from '../lib/redux/EpicHelpers';
 import tempModule from 'temp';

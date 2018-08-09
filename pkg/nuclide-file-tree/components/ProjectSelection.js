@@ -14,7 +14,7 @@ import type {AppState} from '../lib/types';
 
 import * as React from 'react';
 import {connect} from 'react-redux';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {|

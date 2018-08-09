@@ -15,7 +15,7 @@ import type {AppState} from '../lib/types';
 
 import {connect} from 'react-redux';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as React from 'react';
 import ReactDOM from 'react-dom';

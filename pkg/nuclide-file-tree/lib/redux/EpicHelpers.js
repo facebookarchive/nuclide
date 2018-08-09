@@ -18,7 +18,7 @@ import * as Immutable from 'immutable';
 import * as Actions from './Actions';
 import {getLogger} from 'log4js';
 import FileTreeHelpers from '../FileTreeHelpers';
-import * as Selectors from '../FileTreeSelectors';
+import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../../nuclide-remote-connection';
 

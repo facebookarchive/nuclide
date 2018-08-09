@@ -38,7 +38,7 @@ import {
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeContextMenu from './FileTreeContextMenu';
-import * as Selectors from './FileTreeSelectors';
+import * as Selectors from './redux/Selectors';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';

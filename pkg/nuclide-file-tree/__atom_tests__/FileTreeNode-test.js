@@ -12,7 +12,7 @@
 import {FileTreeNode} from '../lib/FileTreeNode';
 import * as Immutable from 'immutable';
 import createStore from '../lib/redux/createStore';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 
 describe('FileTreeNode', () => {
   let store;

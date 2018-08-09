@@ -10,7 +10,7 @@
  */
 
 import type {Store} from './types';
-import * as Selectors from './FileTreeSelectors';
+import * as Selectors from './redux/Selectors';
 import * as Actions from './redux/Actions';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';

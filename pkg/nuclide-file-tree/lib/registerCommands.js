@@ -12,7 +12,7 @@
 import type {Store} from './types';
 
 import {COMMANDS_SELECTOR} from './FileTreeConstants';
-import * as Selectors from './FileTreeSelectors';
+import * as Selectors from './redux/Selectors';
 import * as Actions from './redux/Actions';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';

@@ -42,7 +42,7 @@ import {repositoryForPath} from '../../../nuclide-vcs-base';
 import {ActionTypes} from '../FileTreeDispatcher';
 import {track} from '../../../nuclide-analytics';
 import FileTreeHelpers from '../FileTreeHelpers';
-import * as Selectors from '../FileTreeSelectors';
+import * as Selectors from '../redux/Selectors';
 import {hgConstants} from '../../../nuclide-hg-rpc';
 import {isRunningInWindows} from '../../../commons-node/system-info';
 import os from 'os';

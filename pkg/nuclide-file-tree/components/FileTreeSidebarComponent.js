@@ -64,7 +64,7 @@ import {remote} from 'electron';
 import {showMenuForEvent} from 'nuclide-commons-atom/ContextMenu';
 import Immutable from 'immutable';
 import {createSelector} from 'reselect';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 
 type State = {|
   shouldRenderToolbar: boolean,

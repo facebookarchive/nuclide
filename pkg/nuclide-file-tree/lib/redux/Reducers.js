@@ -17,7 +17,7 @@ import type {InitialData, Roots} from '../types';
 import invariant from 'assert';
 import {ActionTypes} from '../FileTreeDispatcher';
 import FileTreeHelpers from '../FileTreeHelpers';
-import * as Selectors from '../FileTreeSelectors';
+import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
 import * as Immutable from 'immutable';
 import {HgStatusToFileChangeStatus} from '../../../nuclide-vcs-base';

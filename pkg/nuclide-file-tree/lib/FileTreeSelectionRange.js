@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AppState} from './types';
 
-import * as Selectors from './FileTreeSelectors';
+import * as Selectors from './redux/Selectors';
 import {FileTreeNode} from './FileTreeNode';
 
 export class RangeKey {

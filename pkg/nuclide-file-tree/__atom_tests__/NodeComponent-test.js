@@ -22,7 +22,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import createStore from '../lib/redux/createStore';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as SelectionActions from '../lib/redux/SelectionActions';
 

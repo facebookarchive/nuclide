@@ -28,7 +28,7 @@ import ProjectSelection from './ProjectSelection';
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import * as Selectors from '../lib/FileTreeSelectors';
+import * as Selectors from '../lib/redux/Selectors';
 
 type State = {|
   rootHeight: ?number,
