@@ -1396,6 +1396,10 @@ export default class DebugService implements IDebugService {
       this._launchOrAttachTarget(session, configuration)
         .then(() => setRunningState())
         .catch(async error => {
+          if (process != null) {
+            this.stopProcess(process);
+          }
+
           if (
             configuration.debugMode === 'attach' &&
             configuration.adapterExecutable != null &&
