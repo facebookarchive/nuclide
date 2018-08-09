@@ -724,6 +724,7 @@ declare class electron$WebContents extends events$EventEmitter {
   isPainting(): boolean,
   setFrameRate(fps: number): void,
   getFrameRate(): ?number,
+  getOwnerBrowserWindow(): electron$BrowserWindow,
 
   id: number,
   session: electron$session,
@@ -750,6 +751,7 @@ declare class electron$Debugger extends events$EventEmitter {
 type electron$webContents = {
   getAllWebContents(): Array<electron$WebContents>,
   getFocusedWebContents: ?electron$WebContents,
+  getOwnerBrowserWindow(): electron$BrowserWindow,
   fromId(id: number): ?electron$WebContents,
 };
 

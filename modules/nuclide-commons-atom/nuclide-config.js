@@ -68,7 +68,7 @@ const config = new Config({
 config.resetUserSettings(getConfigSettingsFromDisk());
 
 /**
- * Emit nuclide-config's settings so taht other processes can update their
+ * Emit nuclide-config's settings so that other processes can update their
  * config settings to reflect changes values
  */
 function emitConfigSettings(settings: NuclideConfigSetArgs) {
@@ -130,8 +130,6 @@ class NuclideConfig extends ConfigManager {
 
 const nuclideConfig = new NuclideConfig(config);
 
-const currentWindowId = remote.getCurrentWindow().id;
-
 /**
  * Listen to incoming nuclide-config changes from other processes and reset
  * the current process's config to match that emitted by the emitting process.
@@ -141,13 +139,20 @@ const currentWindowId = remote.getCurrentWindow().id;
  */
 remote.ipcMain.on(
   UPDATE_NUCLIDE_CONFIG_SETTINGS,
-  (event, {settings, options}: NuclideConfigSetArgs) => {
-    // Only update values if they come from another process
-    if (event.sender.getOwnerBrowserWindow().id !== currentWindowId) {
-      // Update all settings without saving to disk
-      nuclideConfig.getConfig().resetUserSettings(settings, options);
-    }
-  },
+  __updateConfigSettingsListener,
 );
+
+// export for testing
+export function __updateConfigSettingsListener(
+  event: {returnValue: mixed, sender: electron$webContents},
+  {settings, options}: NuclideConfigSetArgs,
+) {
+  if (
+    event.sender.getOwnerBrowserWindow().id !== remote.getCurrentWindow().id
+  ) {
+    // Update all settings without saving to disk
+    nuclideConfig.getConfig().resetUserSettings(settings, options);
+  }
+}
 
 export default nuclideConfig;
