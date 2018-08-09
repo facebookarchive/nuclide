@@ -133,6 +133,12 @@ declare class atom$CompositeDisposable {
   clear(): void,
 }
 
+type atom$ConfigParams = {
+  saveCallback?: Object => void,
+  mainSource?: string,
+  projectHomeSchema?: atom$ConfigSchema,
+};
+
 type atom$ConfigType =
   'boolean' | 'string' | 'integer' | 'number' |
   'array' | 'object' | 'color' | 'any';
@@ -200,6 +206,7 @@ declare class atom$Config {
   getUserConfigPath(): string,
 
   // Undocumented Methods
+  constructor(params?: atom$ConfigParams): atom$Config,
   getRawValue(keyPath: ?string, options: {excludeSources?: string, sources?: string}): mixed,
   getSchema(keyPath: string): atom$ConfigSchema,
   save(): void,
