@@ -62,7 +62,11 @@ export default class CommandLine implements ConsoleIO {
         .filter(_ => !this._inputStopped)
         .switchMap(_ => {
           this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
-          return this._dispatcher.execute(this._lastLine);
+          try {
+            return this._dispatcher.execute(this._lastLine);
+          } catch (err) {
+            return err;
+          }
         })
         .subscribe(_ => {
           if (_ != null) {

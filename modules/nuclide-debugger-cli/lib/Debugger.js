@@ -127,33 +127,38 @@ export default class Debugger implements DebuggerInterface {
       throw new Error('There is nothing to relaunch.');
     }
 
-    this._state = 'INITIALIZING';
+    try {
+      this._state = 'INITIALIZING';
 
-    this._configured = false;
-    this._attached = false;
+      this._configured = false;
+      this._attached = false;
 
-    await this.closeSession();
-    await this.createSession(adapter);
+      await this.closeSession();
+      await this.createSession(adapter);
 
-    invariant(adapter.action === 'attach' || adapter.action === 'launch');
-    this._attachMode = adapter.action === 'attach';
+      invariant(adapter.action === 'attach' || adapter.action === 'launch');
+      this._attachMode = adapter.action === 'attach';
 
-    const session = this._ensureDebugSession(true);
+      const session = this._ensureDebugSession(true);
 
-    if (this._attachMode) {
-      const attachArgs = nullthrows(
-        this._adapter,
-      ).adapter.transformAttachArguments(adapter.attachArgs);
-      await session.attach(attachArgs);
-      this._attached = true;
-      return this._pauseAfterAttach();
+      if (this._attachMode) {
+        const attachArgs = nullthrows(
+          this._adapter,
+        ).adapter.transformAttachArguments(adapter.attachArgs);
+        await session.attach(attachArgs);
+        this._attached = true;
+        return this._pauseAfterAttach();
+      }
+
+      await session.launch(
+        nullthrows(this._adapter).adapter.transformLaunchArguments(
+          adapter.launchArgs,
+        ),
+      );
+    } catch (err) {
+      process.stderr.write(`Failed to debug target: ${err.message}\r\n`);
+      process.exit(0);
     }
-
-    await session.launch(
-      nullthrows(this._adapter).adapter.transformLaunchArguments(
-        adapter.launchArgs,
-      ),
-    );
   }
 
   async _onInitialized(): Promise<void> {
@@ -182,7 +187,12 @@ export default class Debugger implements DebuggerInterface {
     await session.setExceptionBreakpoints({filters: []});
 
     if (this._capabilities.supportsConfigurationDoneRequest) {
-      await session.configurationDone();
+      try {
+        await session.configurationDone();
+      } catch (err) {
+        process.stderr.write(`Failed to debug target: ${err.message}\r\n`);
+        process.exit(0);
+      }
     }
 
     await this._cacheThreads();
@@ -871,13 +881,19 @@ export default class Debugger implements DebuggerInterface {
         this._threads.setFocusThread(firstStopped);
       }
 
-      const topOfStack = await this._getTopOfStackSourceInfo(
-        nullthrows(this._threads.focusThreadId),
-      );
+      try {
+        const topOfStack = await this._getTopOfStackSourceInfo(
+          nullthrows(this._threads.focusThreadId),
+        );
 
-      if (topOfStack != null) {
+        if (topOfStack != null) {
+          this._console.outputLine(
+            `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
+          );
+        }
+      } catch (err) {
         this._console.outputLine(
-          `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
+          `failed to get source at stop point: ${err.message}`,
         );
       }
 

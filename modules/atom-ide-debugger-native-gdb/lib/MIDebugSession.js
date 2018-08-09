@@ -289,6 +289,13 @@ class MIDebugSession extends LoggingDebugSession {
       return;
     }
 
+    if (args.pid == null) {
+      this._sendFailureResponse(
+        response,
+        'to attach, process id must be given',
+      );
+    }
+
     this._attachPID = args.pid;
     this._continueOnAttach = args.stopOnAttach !== true;
 
