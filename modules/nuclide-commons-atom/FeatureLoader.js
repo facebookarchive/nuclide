@@ -18,6 +18,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import activateExperimentalPackages from './experimental-packages/activatePackages';
+import nuclideConfig from './nuclide-config';
 import featureConfig from './feature-config';
 import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 import {MultiMap, setIntersect, setUnion} from 'nuclide-commons/collection';
@@ -111,6 +112,7 @@ export default class FeatureLoader {
     );
 
     featureConfig.setPackageName(this._pkgName);
+    nuclideConfig.setPackageName(this._pkgName);
 
     //
     // Build the "config" object. This determines the config defaults and

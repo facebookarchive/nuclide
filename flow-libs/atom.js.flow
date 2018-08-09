@@ -216,6 +216,9 @@ declare class atom$Config {
     schema: atom$ConfigSchema,
   ): void,
   removeAtKeyPath(keyPath: ?string, value: ?mixed): mixed,
+
+  // Used by nuclide-config to set the initial settings from disk
+  resetUserSettings(newSettings: Object, options?: {source?: string}): void,
 }
 
 declare class atom$Cursor {
@@ -449,6 +452,9 @@ declare class atom$applicationDelegate {
     devMode?: boolean,
     safeMode?: boolean,
   }): void,
+
+  // Used by nuclide-config to replicate atom.config saveCallback
+  setUserSettings(config: atom$Config, configFilePath: string): Promise<mixed>;
 }
 
 type atom$PaneParams = {
