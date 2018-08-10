@@ -9,12 +9,10 @@
  * @format
  */
 
-export const GRAMMARS = [
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-];
+export const CPP_GRAMMARS = ['source.c', 'source.cpp'];
+export const OBJC_GRAMMARS = ['source.objc', 'source.objcpp'];
+
+export const GRAMMARS = [...CPP_GRAMMARS, ...OBJC_GRAMMARS];
 export const GRAMMAR_SET: Set<string> = new Set(GRAMMARS);
 
 export const PACKAGE_NAME = 'nuclide-clang';
