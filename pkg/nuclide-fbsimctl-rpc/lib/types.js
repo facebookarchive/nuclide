@@ -14,9 +14,7 @@ export type State =
   | 'Booting'
   | 'Shutting Down'
   | 'Shutdown'
-  | 'Booted'
-  // Physical currently always have an Unknown state
-  | 'Unknown';
+  | 'Booted';
 
 export type FbsimctlDevice = {|
   name: string,
