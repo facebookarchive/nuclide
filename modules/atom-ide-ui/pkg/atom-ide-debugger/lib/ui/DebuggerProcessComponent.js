@@ -35,7 +35,6 @@ export default class DebuggerProcessComponent extends React.PureComponent<
 > {
   _disposables: UniversalDisposable;
   _treeView: ?TreeList;
-  _filterInput: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -71,7 +70,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
     let filterRegEx = null;
     try {
       if (filter != null) {
-        filterRegEx = new RegExp(filter);
+        filterRegEx = new RegExp(filter, 'ig');
       }
     } catch (_) {}
     const processElements = processList.map((process, processIndex) => {
@@ -94,16 +93,14 @@ export default class DebuggerProcessComponent extends React.PureComponent<
     return (
       <div>
         <AtomInput
-          placeholderText="Filter threads by name, ID, or status (i.e. &quot;paused&quot;)"
-          value={this._filterInput != null ? this._filterInput.getText() : ''}
+          placeholderText="Filter threads..."
+          value={this.state.filter || ''}
           size="sm"
+          className="debugger-thread-filter-box"
           onDidChange={text => {
             this.setState({
               filter: text,
             });
-          }}
-          ref={input => {
-            this._filterInput = input;
           }}
           autofocus={false}
         />

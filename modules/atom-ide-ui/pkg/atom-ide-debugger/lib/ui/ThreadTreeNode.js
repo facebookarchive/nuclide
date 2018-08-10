@@ -34,6 +34,7 @@ import ReactDOM from 'react-dom';
 type Props = {
   thread: IThread,
   service: IDebugService,
+  threadTitle: string,
 };
 
 type State = {
@@ -245,14 +246,6 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       }
       event.stopPropagation();
     };
-    const stopReason =
-      thread.stoppedDetails == null
-        ? ''
-        : thread.stoppedDetails.description != null
-          ? ': ' + thread.stoppedDetails.description
-          : thread.stoppedDetails.reason != null
-            ? ': ' + thread.stoppedDetails.reason
-            : '';
     const formattedTitle = (
       <span
         onClick={handleTitleClick}
@@ -260,8 +253,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           isFocused ? classnames('debugger-tree-process-thread-selected') : ''
         }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
-        {thread.name +
-          (thread.stopped ? ` (Paused${stopReason})` : ' (Running)')}
+        {this.props.threadTitle}
       </span>
     );
 

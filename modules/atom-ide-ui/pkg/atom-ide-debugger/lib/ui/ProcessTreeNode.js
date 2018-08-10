@@ -115,6 +115,20 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     this.setState(prevState => this._getState(!prevState.isCollapsed));
   };
 
+  _threadTitle = (thread: IThread) => {
+    const stopReason =
+      thread.stoppedDetails == null
+        ? ''
+        : thread.stoppedDetails.description != null
+          ? ': ' + thread.stoppedDetails.description
+          : thread.stoppedDetails.reason != null
+            ? ': ' + thread.stoppedDetails.reason
+            : '';
+    return (
+      thread.name + (thread.stopped ? ` (Paused${stopReason})` : ' (Running)')
+    );
+  };
+
   // Returns true if thread should be kept.
   filterThread(thread: IThread): boolean {
     const {filter, filterRegEx} = this.props;
@@ -123,18 +137,18 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     } else if (filterRegEx == null) {
       // User entered an invalid regular expression.
       // Simply check if any thread contains the user's input.
-      return (
-        thread.name.toUpperCase().includes(filter.toUpperCase()) ||
-        thread.threadId
-          .toString()
-          .toUpperCase()
-          .includes(filter.toUpperCase())
-      );
+      return this.props.title.toUpperCase().includes(filter.toUpperCase());
     } else {
       return (
-        (filter.toUpperCase() === 'PAUSED' && thread.stopped) ||
-        thread.name.match(filterRegEx) != null ||
-        thread.threadId.toString().match(filterRegEx) != null
+        this._threadTitle(thread).match(filterRegEx) != null ||
+        thread
+          .getCachedCallStack()
+          .some(
+            frame =>
+              frame.name.match(filterRegEx) ||
+              (frame.source.name != null &&
+                frame.source.name.match(filterRegEx)),
+          )
       );
     }
   }
@@ -181,6 +195,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
       </span>
     );
 
+    const filteredThreads = threads.filter(t => this.filterThread(t));
     return threads.length === 0 ? (
       <TreeItem>{formattedTitle}</TreeItem>
     ) : (
@@ -188,17 +203,20 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         title={formattedTitle}
         collapsed={isCollapsed}
         onSelect={this.handleSelect}>
-        {threads.map((thread, threadIndex) => {
-          if (this.filterThread(thread)) {
-            return (
-              <ThreadTreeNode
-                key={threadIndex}
-                thread={thread}
-                service={service}
-              />
-            );
-          }
-        })}
+        {filteredThreads.length === 0 && this.props.filter != null ? (
+          <span className="debugger-thread-no-match-text">
+            No threads match the current filter.
+          </span>
+        ) : (
+          filteredThreads.map((thread, threadIndex) => (
+            <ThreadTreeNode
+              key={threadIndex}
+              thread={thread}
+              service={service}
+              threadTitle={this._threadTitle(thread)}
+            />
+          ))
+        )}
       </NestedTreeItem>
     );
   }
