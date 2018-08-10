@@ -12,6 +12,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
+import type Immutable from 'immutable';
 
 export type SimpleProcess = {
   user: string,
@@ -69,6 +70,6 @@ export type Tunnel = {
 
 export type SshTunnelService = {
   openTunnels(tunnels: Array<Tunnel>): Observable<'ready'>,
-  getOpenTunnels(): Set<ResolvedTunnel>,
+  getOpenTunnels(): Immutable.Set<ResolvedTunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };
