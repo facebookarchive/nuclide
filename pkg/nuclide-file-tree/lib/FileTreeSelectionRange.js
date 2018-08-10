@@ -10,9 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AppState} from './types';
 
-import * as Selectors from './redux/Selectors';
 import {FileTreeNode} from './FileTreeNode';
 
 export class RangeKey {
@@ -72,63 +70,5 @@ export class SelectionRange {
     return (
       this._anchor.equals(other._anchor) && this._range.equals(other._range)
     );
-  }
-}
-
-/**
- * Returns the current node if it is shown.
- * Otherwise, returns a nearby node that is shown.
- */
-function findShownNode(node: FileTreeNode): ?FileTreeNode {
-  if (node.shouldBeShown) {
-    return node;
-  }
-
-  let shown = node;
-  while (shown != null) {
-    const next = shown.findNextShownSibling();
-    if (next != null) {
-      return next;
-    }
-    shown = shown.parent;
-  }
-
-  shown = node;
-  while (shown != null) {
-    const next = shown.findPrevShownSibling();
-    if (next != null) {
-      return next;
-    }
-    shown = shown.parent;
-  }
-  return null;
-}
-
-// TODO: Move this to Selectors
-export class RangeUtil {
-  /**
-   * Returns the current node if it is shown and selected
-   * Otherwise, returns a nearby selected node.
-   */
-  static findSelectedNode(state: AppState, node: FileTreeNode): ?FileTreeNode {
-    const shown = findShownNode(node);
-    if (shown == null) {
-      return shown;
-    }
-    if (Selectors.getNodeIsSelected(state, shown)) {
-      return shown;
-    }
-    let selected = shown;
-    while (selected != null && !Selectors.getNodeIsSelected(state, selected)) {
-      selected = selected.findNext();
-    }
-    if (selected != null) {
-      return selected;
-    }
-    selected = shown;
-    while (selected != null && !Selectors.getNodeIsSelected(state, selected)) {
-      selected = selected.findPrevious();
-    }
-    return selected;
   }
 }

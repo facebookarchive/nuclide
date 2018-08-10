@@ -30,7 +30,7 @@ import {WorkingSet} from '../../../nuclide-working-sets-common';
 import {HistogramTracker} from '../../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
-import {RangeKey, SelectionRange, RangeUtil} from '../FileTreeSelectionRange';
+import {RangeKey, SelectionRange} from '../FileTreeSelectionRange';
 import * as SelectionActions from '../redux/SelectionActions';
 
 import type {FileTreeAction} from '../FileTreeDispatcher';
@@ -1273,8 +1273,8 @@ function refreshSelectionRange(
     return invalidate();
   }
 
-  anchorNode = RangeUtil.findSelectedNode(state, anchorNode);
-  rangeNode = RangeUtil.findSelectedNode(state, rangeNode);
+  anchorNode = Selectors.getNearbySelectedNode(state, anchorNode);
+  rangeNode = Selectors.getNearbySelectedNode(state, rangeNode);
   if (anchorNode == null || rangeNode == null) {
     return invalidate();
   }

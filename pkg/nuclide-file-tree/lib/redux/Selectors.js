@@ -250,6 +250,64 @@ export const getSingleTargetNode = createSelector(
   (targetNode, singleSelectedNode) => targetNode ?? singleSelectedNode,
 );
 
+/**
+ * Returns the current node if it is shown.
+ * Otherwise, returns a nearby node that is shown.
+ */
+function findShownNode(node: FileTreeNode): ?FileTreeNode {
+  if (node.shouldBeShown) {
+    return node;
+  }
+
+  let shown = node;
+  while (shown != null) {
+    const next = shown.findNextShownSibling();
+    if (next != null) {
+      return next;
+    }
+    shown = shown.parent;
+  }
+
+  shown = node;
+  while (shown != null) {
+    const next = shown.findPrevShownSibling();
+    if (next != null) {
+      return next;
+    }
+    shown = shown.parent;
+  }
+  return null;
+}
+
+/**
+ * Returns the current node if it is shown and selected
+ * Otherwise, returns a nearby selected node.
+ */
+export const getNearbySelectedNode = (
+  state: FileTreeStore,
+  node: FileTreeNode,
+): ?FileTreeNode => {
+  const shown = findShownNode(node);
+  if (shown == null) {
+    return shown;
+  }
+  if (getNodeIsSelected(state, shown)) {
+    return shown;
+  }
+  let selected = shown;
+  while (selected != null && !getNodeIsSelected(state, selected)) {
+    selected = selected.findNext();
+  }
+  if (selected != null) {
+    return selected;
+  }
+  selected = shown;
+  while (selected != null && !getNodeIsSelected(state, selected)) {
+    selected = selected.findPrevious();
+  }
+  return selected;
+};
+
 export const getNode = (
   state: FileTreeStore,
   rootKey: NuclideUri,

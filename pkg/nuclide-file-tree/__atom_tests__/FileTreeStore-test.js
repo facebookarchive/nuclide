@@ -1078,4 +1078,145 @@ describe('selection', () => {
       expect(numSelected()).toBe(1);
     });
   });
+
+  describe('RangeUtil', () => {
+    async function prepareFileTree(): Promise<Map<string, string>> {
+      const map: Map<string, string> = await buildTempDirTree(
+        'dir/foo/foo1',
+        'dir/foo/foo2',
+        'dir/bar/bar1',
+        'dir/bar/bar2',
+        'dir/bar/bar3',
+      );
+      const dir = map.get('dir');
+      // flowlint-next-line sketchy-null-string:off
+      invariant(dir);
+      EpicHelpers.setRootKeys(store, [dir]);
+      return map;
+    }
+
+    let map: Map<string, string> = new Map();
+
+    beforeEach(async () => {
+      map = await prepareFileTree();
+      const dir = map.get('dir');
+      // flowlint-next-line sketchy-null-string:off
+      invariant(dir);
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await EpicHelpers.expandNodeDeep(store, dir, dir);
+    });
+
+    afterEach(async () => {
+      await tempCleanup();
+    });
+
+    describe('findSelectedNode', () => {
+      it('returns the node itself if it is shown and selected', () => {
+        const dir = map.get('dir');
+        const bar1 = map.get('dir/bar/bar1');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
+        const node = Selectors.getNode(store.getState(), dir, bar1);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          node,
+        );
+      });
+
+      it('searches the next selected node if passed in node is unselected', () => {
+        const dir = map.get('dir');
+        const bar1 = map.get('dir/bar/bar1');
+        const bar3 = map.get('dir/bar/bar3');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar3);
+        store.dispatch(Actions.setSelectedNode(dir, bar3));
+        const node = Selectors.getNode(store.getState(), dir, bar1);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          Selectors.getNode(store.getState(), dir, bar3),
+        );
+      });
+
+      it('searches the prev selected node if nothing else is selected', () => {
+        const dir = map.get('dir');
+        const bar1 = map.get('dir/bar/bar1');
+        const bar3 = map.get('dir/bar/bar3');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar3);
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
+        const node = Selectors.getNode(store.getState(), dir, bar3);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          Selectors.getNode(store.getState(), dir, bar1),
+        );
+      });
+
+      it('returns null if nothing is selected', () => {
+        const dir = map.get('dir');
+        const bar1 = map.get('dir/bar/bar1');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        const node = Selectors.getNode(store.getState(), dir, bar1);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          null,
+        );
+      });
+
+      it('searches the next selected node if itself is not shown', () => {
+        const dir = map.get('dir');
+        const foo = map.get('dir/foo');
+        const foo1 = map.get('dir/foo/foo1');
+        const bar1 = map.get('dir/bar/bar1');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(foo);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(foo1);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        store.dispatch(Actions.collapseNode(dir, foo));
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
+        const node = Selectors.getNode(store.getState(), dir, foo1);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          Selectors.getNode(store.getState(), dir, bar1),
+        );
+      });
+
+      it('only searches the selected node within the working set', () => {
+        const dir = map.get('dir');
+        const foo1 = map.get('dir/foo/foo1');
+        const bar1 = map.get('dir/bar/bar1');
+        // flowlint-next-line sketchy-null-string:off
+        invariant(dir);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(foo1);
+        // flowlint-next-line sketchy-null-string:off
+        invariant(bar1);
+        store.dispatch(Actions.updateWorkingSet(new WorkingSet([foo1, bar1])));
+        store.dispatch(Actions.setSelectedNode(dir, bar1));
+        const node = Selectors.getNode(store.getState(), dir, foo1);
+        invariant(node);
+        expect(Selectors.getNearbySelectedNode(store.getState(), node)).toBe(
+          Selectors.getNode(store.getState(), dir, bar1),
+        );
+      });
+    });
+  });
 });
