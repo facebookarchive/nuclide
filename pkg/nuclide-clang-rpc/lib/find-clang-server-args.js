@@ -28,7 +28,7 @@ export type ClangServerArgs = {
 };
 
 export default (async function findClangServerArgs(
-  src?: string,
+  src: ?string,
   libclangPath: ?string = null,
   configLibclangPath: ?string,
 ): Promise<ClangServerArgs> {
