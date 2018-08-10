@@ -14,7 +14,7 @@ import type {Command} from './Command';
 import type {DebuggerInterface, BreakpointSetResult} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
-import BreakpointDeleteCommand from './BreakpointDeleteCommand';
+import BreakpointClearCommand from './BreakpointClearCommand';
 import BreakpointDisableCommand from './BreakpointDisableCommand';
 import BreakpointEnableCommand from './BreakpointEnableCommand';
 import BreakpointListCommand from './BreakpointListCommand';
@@ -54,7 +54,7 @@ file.
 
 The breakpoint command has several subcommands:
 
-* 'delete' will delete an existing breakpoint
+* 'clear' will delete an existing breakpoint
 * 'disable' will temporarily disable an existing breakpoint
 * 'enable' will re-enable an existing breakpoint
 * 'help' will give detailed information about the subcommands
@@ -70,7 +70,7 @@ The breakpoint command has several subcommands:
     this._debugger = debug;
     this._dispatcher = new CommandDispatcher(new Map());
 
-    this._dispatcher.registerCommand(new BreakpointDeleteCommand(debug));
+    this._dispatcher.registerCommand(new BreakpointClearCommand(debug));
     this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));

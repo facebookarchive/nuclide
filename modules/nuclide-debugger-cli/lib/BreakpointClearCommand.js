@@ -13,8 +13,8 @@
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
 
-export default class BreakpointDeleteCommand implements Command {
-  name = 'delete';
+export default class BreakpointClearCommand implements Command {
+  name = 'clear';
   helpText = '[index]: permanently deletes a breakpoint.';
 
   _debugger: DebuggerInterface;
