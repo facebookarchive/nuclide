@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Nuclide lldb debugging client",
   "author": "Nuclide : Debugging",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

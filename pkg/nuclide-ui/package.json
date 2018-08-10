@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Nuclide user interface components",
   "author": "Nuclide : Core UI",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   }

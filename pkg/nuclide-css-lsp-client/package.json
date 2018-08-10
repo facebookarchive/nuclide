@@ -8,7 +8,6 @@
     "language-css:grammar-used",
     "language-less:grammar-used"
   ],
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "atomConfig": {
     "logLevel": {
       "title": "Log Level",

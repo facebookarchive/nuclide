@@ -4,7 +4,6 @@
   "description": "A wrapper on autocomplete-plus to provide timeout and tracking when using autocomplete-plus",
   "author": "NEEDS OWNER",
   "main": "./lib/main.js",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

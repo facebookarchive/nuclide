@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "nuclide-home provider for Diagnostics.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

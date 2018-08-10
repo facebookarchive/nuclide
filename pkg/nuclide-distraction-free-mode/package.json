@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Hide the cruft and focus on your code",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

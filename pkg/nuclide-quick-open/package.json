@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides quick open functionality in Nuclide",
   "author": "Nuclide : Core UI",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

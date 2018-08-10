@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "A nuclide-output provider for adb logcat",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage",
     "configMetadata": {

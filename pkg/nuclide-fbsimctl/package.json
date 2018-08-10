@@ -6,6 +6,5 @@
   "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "AtomLibrary"
-  },
-  "atomTestRunner": "../../lib/test-runner-entry.js"
+  }
 }

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Utilities for interacting with the console.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomLibrary"
   }

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides support for Flow in Nuclide",
   "author": "Flow",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

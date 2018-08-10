@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Combines blame information providers and UI to create a blame feature.",
   "author": "Nuclide : Source Control",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

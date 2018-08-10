@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides commands to move an item to the next available pane",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

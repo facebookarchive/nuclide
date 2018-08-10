@@ -2,7 +2,6 @@
   "name": "nuclide-hhvm",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

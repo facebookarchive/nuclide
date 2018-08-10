@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides a service to read a definition",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

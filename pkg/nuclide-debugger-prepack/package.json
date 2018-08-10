@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Prepack debugger engine",
   "author": "Prepack",
-  "atomTestRunner": "../../modules/nuclide-jest/atom-runner.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides type coverage information for gradually-typed languages such as Hack and Flow",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "config": {
       "colorizeStatusBar": {

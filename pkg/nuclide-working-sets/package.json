@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Service for the definition of an overlay filtering layer on top of connected projects.",
   "author": "Nuclide : Core UI",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage",
     "config": {

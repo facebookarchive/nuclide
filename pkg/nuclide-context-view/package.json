@@ -3,7 +3,6 @@
   "description": "UI for Context View sidebar",
   "author": "NEEDS OWNER",
   "main": "./lib/main.js",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "version": "0.0.0",
   "nuclide": {
     "packageType": "AtomPackage"

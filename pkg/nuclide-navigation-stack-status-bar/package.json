@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Status bar UI for your Nuclide navigation stack",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

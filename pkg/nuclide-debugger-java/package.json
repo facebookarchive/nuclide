@@ -5,7 +5,6 @@
   "description": "Nuclide java debugger client",
   "author": "Nuclide : Debugging",
   "private": true,
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage",
     "configMetadata": {

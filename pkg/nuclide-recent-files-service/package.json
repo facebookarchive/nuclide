@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides a list of recently opened file paths in reverse chronological order.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

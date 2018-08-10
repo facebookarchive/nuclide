@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "A panel for running tests provided by test runner service packages",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

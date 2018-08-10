@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Copy remote aware paths to the clipboard.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

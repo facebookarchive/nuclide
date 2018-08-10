@@ -5,7 +5,6 @@
   "description": "Abstractions for dealing with files in Atom based on nuclide-fs.",
   "author": "NEEDS OWNER",
   "private": true,
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomLibrary"
   }

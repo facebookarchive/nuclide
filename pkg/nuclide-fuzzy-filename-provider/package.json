@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides fuzzy-search for filenames in project",
   "author": "Nuclide : Search",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage",
     "configMetadata": {

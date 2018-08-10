@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides support for JS auto-imports in nuclide ",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "atomConfig": {
     "diagnosticsWhitelist": {
       "title": "Directories for which the JS-Autoimports server should provide diagnostics",

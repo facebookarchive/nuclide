@@ -10,7 +10,6 @@
     "prepublish": "../scripts/prepublish.sh",
     "test": "true"
   },
-  "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {
     "escape-string-regexp": "1.0.5",
     "idb-keyval": "2.3.0",

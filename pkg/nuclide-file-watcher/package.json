@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Watch for editor conflicts and prompt to reload, ignore or compare",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   }

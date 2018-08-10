@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides a welcome message and other links for first time users.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "A single entrypoint for deep-linking into Nuclide application state.",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Exposes features from nuclide-clang in Atom",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage",
     "configMetadata": {

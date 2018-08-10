@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides hack language support in Nuclide",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

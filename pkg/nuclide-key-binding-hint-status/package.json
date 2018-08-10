@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "A status line showing a key binding for your last action",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

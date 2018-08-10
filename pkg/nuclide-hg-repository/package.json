@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides support for Mercurial source control repositories",
   "author": "NEEDS OWNER",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

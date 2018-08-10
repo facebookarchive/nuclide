@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Display Nuclide log messages in the Nuclide console",
   "author": "Nuclide : Core UI",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },

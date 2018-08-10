@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "A welcome page interface for Nuclide packages",
   "author": "nuclide",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "AtomPackage"
   },
