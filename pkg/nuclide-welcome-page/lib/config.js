@@ -13,7 +13,7 @@ import invariant from 'assert';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 
 const NUCLIDE_ONBOARDING_CONFIG_KEY = 'fb-nuclide-onboarding';
-const NUCLIDE_ONBOARDING_TOPIC_NAME = 'fb-nuclide';
+const NUCLIDE_ONBOARDING_TOPIC_NAME = 'fb-nuclide-welcome-page';
 
 export function getHiddenTopics(): Set<string> {
   const topics: ?Array<string> = (featureConfig.get(
