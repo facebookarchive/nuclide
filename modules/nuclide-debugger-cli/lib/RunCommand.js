@@ -16,7 +16,16 @@ import {DebuggerInterface} from './DebuggerInterface';
 
 export default class RunCommand implements Command {
   name = 'run';
-  helpText = 'Start execution of the target.';
+  helpText = 'Start or restart execution of the target.';
+  detailedHelpText = `
+run
+
+If the target has been loaded but not yet executed, begins execution.
+
+If the target is already running, reloads the target to start executing from
+the start of the program again, and stops at the debugger prompt to allow
+breakpoints to be set.
+  `;
 
   _debugger: DebuggerInterface;
 

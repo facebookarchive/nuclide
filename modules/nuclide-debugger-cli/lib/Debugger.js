@@ -44,7 +44,6 @@ import Thread from './Thread';
 import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
 import ListCommand from './ListCommand';
-import RestartCommand from './RestartCommand';
 import PrintCommand from './PrintCommand';
 import RunCommand from './RunCommand';
 import ThreadCollection from './ThreadCollection';
@@ -107,7 +106,6 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new BreakpointCommand(this._console, this));
     dispatcher.registerCommand(new ContinueCommand(this));
     dispatcher.registerCommand(new ListCommand(this._console, this));
-    dispatcher.registerCommand(new RestartCommand(this));
     dispatcher.registerCommand(new PrintCommand(this._console, this));
     dispatcher.registerCommand(new RunCommand(this));
     dispatcher.registerCommand(new EnterCodeCommand(this._console, this));
@@ -237,7 +235,8 @@ export default class Debugger implements DebuggerInterface {
     }
 
     if (this._state === 'STOPPED') {
-      throw new Error('The program is already running.');
+      this.relaunch();
+      return;
     }
 
     if (this._state !== 'CONFIGURING') {
