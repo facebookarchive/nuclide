@@ -24,23 +24,30 @@ type Props = {|
 |};
 
 export default class DebuggerDatatipComponent extends React.Component<Props> {
-  render(): React.Node {
+  render(): ?React.Node {
     const {expression, evaluationResult} = this.props;
     let datatipElement;
     if (evaluationResult == null) {
       datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
     } else {
-      datatipElement = (
-        <span className="debugger-datatip-value">
-          <LazyNestedValueComponent
-            evaluationResult={evaluationResult}
-            expression={expression}
-            fetchChildren={(fetchChildrenForLazyComponent: any)}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this}
-          />
-        </span>
-      );
+      if (
+        evaluationResult.value == null &&
+        evaluationResult.description == null
+      ) {
+        return null;
+      } else {
+        datatipElement = (
+          <span className="debugger-datatip-value">
+            <LazyNestedValueComponent
+              evaluationResult={evaluationResult}
+              expression={expression}
+              fetchChildren={(fetchChildrenForLazyComponent: any)}
+              simpleValueComponent={SimpleValueComponent}
+              expansionStateId={this}
+            />
+          </span>
+        );
+      }
     }
     return <div className="debugger-datatip">{datatipElement}</div>;
   }
