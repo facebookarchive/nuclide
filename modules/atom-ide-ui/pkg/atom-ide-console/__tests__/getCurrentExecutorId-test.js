@@ -33,6 +33,7 @@ const baseAppState = {
   providers: new Map(),
   providerStatuses: new Map(),
   records: Immutable.List(),
+  incompleteRecords: Immutable.List(),
   history: [],
 };
 

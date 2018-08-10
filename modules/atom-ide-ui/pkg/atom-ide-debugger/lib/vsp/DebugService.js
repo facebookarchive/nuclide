@@ -41,6 +41,7 @@ SOFTWARE.
 
 import type {ConsoleMessage} from 'atom-ide-ui';
 import type {GatekeeperService} from 'nuclide-commons-atom/types';
+import type {RecordToken} from '../../../atom-ide-console/lib/types';
 import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
 import type {
   DebuggerModeType,
@@ -68,7 +69,6 @@ import * as React from 'react';
 import invariant from 'assert';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {sleep, serializeAsyncCall} from 'nuclide-commons/promise';
 import {
@@ -798,21 +798,17 @@ export default class DebugService implements IDebugService {
         'telemetry',
         'success',
       ]);
-      const logStream = splitStream(
-        outputEvents
-          .filter(e => !KNOWN_CATEGORIES.has(e.body.category))
-          .map(e => stripAnsi(e.body.output)),
-      );
+      const logStream = outputEvents
+        .filter(e => !KNOWN_CATEGORIES.has(e.body.category))
+        .map(e => stripAnsi(e.body.output));
       const [errorStream, warningsStream, successStream] = [
         'stderr',
         'console',
         'success',
       ].map(category =>
-        splitStream(
-          outputEvents
-            .filter(e => category === e.body.category)
-            .map(e => stripAnsi(e.body.output)),
-        ),
+        outputEvents
+          .filter(e => category === e.body.category)
+          .map(e => stripAnsi(e.body.output)),
       );
       const notificationStream = outputEvents
         .filter(e => e.body.category === 'nuclide_notification')
@@ -820,19 +816,43 @@ export default class DebugService implements IDebugService {
           type: nullthrows(e.body.data).type,
           message: e.body.output,
         }));
+
+      let lastEntryToken: ?RecordToken = null;
+      const shouldUpdateLastEntry = level => {
+        return (
+          lastEntryToken != null &&
+          lastEntryToken.getCurrentLevel() === level &&
+          !lastEntryToken.getCurrentText().endsWith('\n')
+        );
+      };
+      const handleMessage = (line, level) => {
+        const incomplete = !line.endsWith('\n');
+        let newToken;
+        if (!incomplete) {
+          newToken = consoleApi.append({text: line, level, incomplete: false});
+          invariant(newToken == null);
+        } else {
+          newToken =
+            lastEntryToken != null && shouldUpdateLastEntry(level)
+              ? lastEntryToken.appendText(line)
+              : consoleApi.append({text: line, level, incomplete});
+        }
+
+        if (newToken !== lastEntryToken) {
+          if (lastEntryToken != null) {
+            lastEntryToken.setComplete();
+          }
+          lastEntryToken = newToken;
+        }
+      };
       this._sessionEndDisposables.add(
-        errorStream.subscribe(line => {
-          consoleApi.append({text: line, level: 'error'});
-        }),
-        warningsStream.subscribe(line => {
-          consoleApi.append({text: line, level: 'warning'});
-        }),
-        successStream.subscribe(line => {
-          consoleApi.append({text: line, level: 'success'});
-        }),
-        logStream.subscribe(line => {
-          consoleApi.append({text: line, level: 'log'});
-        }),
+        () => {
+          lastEntryToken = null;
+        },
+        errorStream.subscribe(line => handleMessage(line, 'error')),
+        warningsStream.subscribe(line => handleMessage(line, 'warning')),
+        successStream.subscribe(line => handleMessage(line, 'success')),
+        logStream.subscribe(line => handleMessage(line, 'log')),
         notificationStream.subscribe(({type, message}) => {
           atom.notifications.add(type, message);
         }),

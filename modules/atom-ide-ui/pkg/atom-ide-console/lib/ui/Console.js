@@ -178,8 +178,18 @@ export class Console {
   }
 
   _getSources(): Array<Source> {
-    const {providers, providerStatuses, records} = this._store.getState();
-    return this._getSourcesMemoized({providers, providerStatuses, records});
+    const {
+      providers,
+      providerStatuses,
+      records,
+      incompleteRecords,
+    } = this._store.getState();
+    return this._getSourcesMemoized({
+      providers,
+      providerStatuses,
+      records,
+      incompleteRecords,
+    });
   }
 
   // Memoize `getSources()`. Unfortunately, since we look for unrepresented sources in the record
@@ -399,9 +409,9 @@ export class Console {
     newHeight: number,
     callback: () => void,
   ): void => {
-    const {records} = this._store.getState();
-    const nextDisplayableRecords = Array(records.size);
-    records.forEach((record, i) => {
+    const {records, incompleteRecords} = this._store.getState();
+    const nextDisplayableRecords = Array(records.size + incompleteRecords.size);
+    records.concat(incompleteRecords).forEach((record, i) => {
       let displayableRecord = this._toDisplayableRecord(record);
       if (displayableRecord.id === recordId) {
         // Update the record with the new height.
@@ -419,9 +429,9 @@ export class Console {
   };
 
   _getDisplayableRecords(): Array<DisplayableRecord> {
-    const {records} = this._store.getState();
-    const displayableRecords = Array(records.size);
-    records.forEach((record, i) => {
+    const {records, incompleteRecords} = this._store.getState();
+    const displayableRecords = Array(records.size + incompleteRecords.size);
+    records.concat(incompleteRecords).forEach((record, i) => {
       displayableRecords[i] = this._toDisplayableRecord(record);
     });
     return displayableRecords;

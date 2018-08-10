@@ -10,8 +10,9 @@
  * @format
  * @emails oncall+nuclide
  */
-import type {Action, Executor} from '../lib/types';
+import type {Action, Executor, AppState} from '../lib/types';
 
+import invariant from 'assert';
 import * as Actions from '../lib/redux/Actions';
 import Reducers from '../lib/redux/Reducers';
 import * as Immutable from 'immutable';
@@ -26,6 +27,7 @@ const emptyAppState = {
   providerStatuses: new Map(),
   providerSubscriptions: new Map(),
   records: Immutable.List(),
+  incompleteRecords: Immutable.List(),
   history: [],
 };
 
@@ -76,6 +78,139 @@ describe('createStateStream', () => {
 
     it("doesn't mutate the original records list", () => {
       expect(initialRecords.size).toBe(0);
+    });
+  });
+
+  describe('RECORD_UPDATED', () => {
+    let finalState: AppState;
+    let initialRecords;
+
+    beforeEach(() => {
+      initialRecords = Immutable.List();
+      const initialState = {
+        ...emptyAppState,
+        maxMessageCount: 2,
+        records: initialRecords,
+      };
+      const actions = [];
+      for (let i = 0; i < 2; i++) {
+        actions.push({
+          type: Actions.RECORD_RECEIVED,
+          payload: {
+            record: {
+              level: 'info',
+              text: i.toString(),
+              incomplete: true,
+              messageId: i,
+            },
+          },
+        });
+      }
+
+      // Check that appending updates the text on the correct record
+      // and doesn't modify others.
+      actions.push({
+        type: Actions.RECORD_UPDATED,
+        payload: {
+          messageId: 0,
+          appendText: '!',
+          overrideLevel: 'warning',
+          setComplete: false,
+        },
+      });
+
+      // Appending twice updates the record correctly.
+      actions.push({
+        type: Actions.RECORD_UPDATED,
+        payload: {
+          messageId: 0,
+          appendText: '!',
+          overrideLevel: 'warning',
+          setComplete: false,
+        },
+      });
+
+      finalState = ((actions: any): Array<Action>).reduce(
+        Reducers,
+        initialState,
+      );
+    });
+
+    it('Updates incomplete records test and level correctly', () => {
+      expect(finalState.records.size).toBe(0);
+      expect(finalState.incompleteRecords.size).toBe(2);
+      const message0 = finalState.incompleteRecords.get(0);
+      invariant(message0 != null);
+      expect(message0.messageId).toBe(0);
+      expect(message0.text).toBe('0!!');
+      expect(message0.level).toBe('warning');
+      expect(message0.incomplete).toBe(true);
+
+      // Message 1 was not mutated.
+      const message1 = finalState.incompleteRecords.get(1);
+      invariant(message1 != null);
+      expect(message1.messageId).toBe(1);
+      expect(message1.text).toBe('1');
+      expect(message1.level).toBe('info');
+      expect(message1.incomplete).toBe(true);
+    });
+
+    it('Completes the records', () => {
+      let newState = ([
+        {
+          type: Actions.RECORD_UPDATED,
+          payload: {
+            messageId: 0,
+            appendText: null,
+            overrideLevel: null,
+            setComplete: true,
+          },
+        },
+      ]: Array<Action>).reduce(Reducers, finalState);
+      let message0 = newState.records.get(0);
+      let message1 = newState.incompleteRecords.get(0);
+
+      const verify = () => {
+        expect(newState.records.size).toBe(1);
+        expect(newState.incompleteRecords.size).toBe(1);
+
+        invariant(message0 != null);
+        expect(message0.messageId).toBe(0);
+        expect(message0.text).toBe('0!!');
+        expect(message0.level).toBe('warning');
+        expect(message0.incomplete).toBe(false);
+
+        invariant(message1 != null);
+        expect(message1.messageId).toBe(1);
+        expect(message1.text).toBe('1');
+        expect(message1.level).toBe('info');
+        expect(message1.incomplete).toBe(true);
+      };
+
+      verify();
+
+      // Attempting to update a completed message throws and doesn't
+      // change the state.
+      let thrown = false;
+      try {
+        newState = ([
+          {
+            type: Actions.RECORD_UPDATED,
+            payload: {
+              messageId: 0,
+              appendText: '!',
+              overrideLevel: null,
+              setComplete: true,
+            },
+          },
+        ]: Array<Action>).reduce(Reducers, newState);
+      } catch (_) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
+      message0 = newState.records.get(0);
+      message1 = newState.incompleteRecords.get(0);
+      verify();
     });
   });
 
@@ -130,6 +265,7 @@ describe('createStateStream', () => {
           timestamp: new Date('2017-01-01T12:34:56.789Z'),
           data: null,
           repeatCount: 1,
+          incomplete: false,
         },
       ]);
       const initialState = {

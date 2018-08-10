@@ -18,6 +18,7 @@ import type {
   Record,
   RecordProvider,
   SourceInfo,
+  Level,
 } from '../types';
 
 import type {CreatePasteFunction} from '../types';
@@ -31,6 +32,7 @@ export const REGISTER_RECORD_PROVIDER = 'REGISTER_RECORD_PROVIDER';
 export const SELECT_EXECUTOR = 'SELECT_EXECUTOR';
 export const SET_MAX_MESSAGE_COUNT = 'SET_MAX_MESSAGE_COUNT';
 export const RECORD_RECEIVED = 'RECORD_RECEIVED';
+export const RECORD_UPDATED = 'RECORD_UPDATED';
 export const REGISTER_SOURCE = 'REGISTER_SOURCE';
 export const REMOVE_SOURCE = 'REMOVE_SOURCE';
 export const UPDATE_STATUS = 'UPDATE_STATUS';
@@ -44,6 +46,18 @@ export function recordReceived(record: Record): Action {
   return {
     type: RECORD_RECEIVED,
     payload: {record},
+  };
+}
+
+export function recordUpdated(
+  messageId: number,
+  appendText: ?string,
+  overrideLevel: ?Level,
+  setComplete: boolean,
+): Action {
+  return {
+    type: RECORD_UPDATED,
+    payload: {messageId, appendText, overrideLevel, setComplete},
   };
 }
 
@@ -75,6 +89,7 @@ export function registerOutputProvider(outputProvider: OutputProvider): Action {
       data: message.data,
       tags: message.tags,
       repeatCount: 1,
+      incomplete: false,
 
       kind: 'message',
       sourceId: outputProvider.id,
