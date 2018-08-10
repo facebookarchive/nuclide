@@ -598,6 +598,33 @@ export default class Debugger implements DebuggerInterface {
     await this._resetAllFunctionBreakpoints();
   }
 
+  async toggleAllBreakpoints(): Promise<void> {
+    this._breakpoints
+      .getAllBreakpoints()
+      .forEach(bp => bp.setEnabled(!bp.enabled));
+    return this._resetAllBreakpoints();
+  }
+
+  async toggleBreakpoint(index: number): Promise<void> {
+    const session = this._ensureDebugSession();
+    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
+    const path = breakpoint.path;
+
+    breakpoint.setEnabled(!breakpoint.enabled);
+
+    if (path != null) {
+      try {
+        await this._setSourceBreakpointsForPath(session, path, index);
+      } catch (error) {
+        breakpoint.setEnabled(!breakpoint.enabled);
+        throw error;
+      }
+      return;
+    }
+
+    await this._resetAllFunctionBreakpoints();
+  }
+
   async deleteAllBreakpoints(): Promise<void> {
     const session = this._ensureDebugSession();
     const promises = this._breakpoints

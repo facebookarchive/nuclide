@@ -50,6 +50,8 @@ export interface DebuggerInterface {
   setBreakpointEnabled(index: number, enabled: boolean): Promise<void>;
   deleteAllBreakpoints(): Promise<void>;
   deleteBreakpoint(index: number): Promise<void>;
+  toggleAllBreakpoints(): Promise<void>;
+  toggleBreakpoint(index: number): Promise<void>;
   getSourceLines(
     source: DebugProtocol.Source,
     start: number,

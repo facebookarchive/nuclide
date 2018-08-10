@@ -18,6 +18,7 @@ import BreakpointClearCommand from './BreakpointClearCommand';
 import BreakpointDisableCommand from './BreakpointDisableCommand';
 import BreakpointEnableCommand from './BreakpointEnableCommand';
 import BreakpointListCommand from './BreakpointListCommand';
+import BreakpointToggleCommand from './BreakpointToggleCommand';
 import CommandDispatcher from './CommandDispatcher';
 import HelpCommand from './HelpCommand';
 
@@ -59,6 +60,7 @@ The breakpoint command has several subcommands:
 * 'enable' will re-enable an existing breakpoint
 * 'help' will give detailed information about the subcommands
 * 'list' will list all existing breakpoints
+* 'toggle' will toggle the enabled state of an existing breakpoint
   `;
 
   _debugger: DebuggerInterface;
@@ -74,6 +76,7 @@ The breakpoint command has several subcommands:
     this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));
+    this._dispatcher.registerCommand(new BreakpointToggleCommand(debug));
     this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
   }
 
