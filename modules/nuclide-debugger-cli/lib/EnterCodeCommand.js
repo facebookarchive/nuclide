@@ -29,7 +29,7 @@ type LineEvent = {
 type Event = InterruptEvent | LineEvent;
 
 export default class EnterCode implements Command {
-  name = 'code';
+  name = 'kode';
   helpText = 'Enter a multi-line code fragment for evaluation.';
 
   _debugger: DebuggerInterface;
