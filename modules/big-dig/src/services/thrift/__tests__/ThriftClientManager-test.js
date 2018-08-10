@@ -14,7 +14,6 @@ import type {ThriftServiceConfig, ThrifClientSubscription} from '../types';
 
 import {Observable, Subject} from 'rxjs';
 import {getMock} from '../../../../../../jest/jest_mock_utils';
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
 import {TunnelManager} from '../../tunnel/TunnelManager';
 import {ThriftClientManager, setTimeoutLimit} from '../ThriftClientManager';
 import thrift from 'thrift';

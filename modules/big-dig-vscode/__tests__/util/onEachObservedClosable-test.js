@@ -11,14 +11,14 @@
  * @emails oncall+nuclide
  */
 import {Subject} from 'rxjs';
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
+import {getMock} from '../../../../jest/jest_mock_utils';
 import onEachObservedClosable from '../../src/util/onEachObservedClosable';
 import {Deferred, nextTick} from 'nuclide-commons/promise';
 
 describe('onEachObservedClosable', () => {
   let obs: Subject<number>;
-  const onDisposed = jest.fn();
-  const handler = jest.fn();
+  const onDisposed: any = jest.fn();
+  const handler: any = jest.fn();
 
   beforeEach(() => {
     obs = new Subject();
@@ -74,7 +74,8 @@ describe('onEachObservedClosable', () => {
   it('teardown: Promise', async () => {
     const teardown = jest.fn();
     const teardownOnClose = jest.fn();
-    handler.mockResolvedValue(teardown);
+    // $FlowFixMe
+    getMock(handler).mockResolvedValue(teardown);
     onDisposed.mockReturnValueOnce(teardownOnClose);
 
     onEachObservedClosable(obs, handler, onDisposed);

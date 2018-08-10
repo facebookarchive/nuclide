@@ -14,7 +14,6 @@ import {
   type ConnectionProfileConfiguration,
   ProfileConfigurationParser,
 } from '../src/configuration/ProfileConfigurationParser';
-import {describe, expect, it} from 'nuclide-jest/globals';
 
 // This value functions as the $USER environment variable.
 const DEFAULT_USERNAME = 'frederick';

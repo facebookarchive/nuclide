@@ -12,7 +12,6 @@
  */
 import type {ThriftServerConfig} from '../types';
 
-import {expect, jest} from 'nuclide-jest/globals';
 import {createThriftServer} from '../createThriftServer';
 import thrift from 'thrift';
 import * as portHelper from '../../../common/ports';

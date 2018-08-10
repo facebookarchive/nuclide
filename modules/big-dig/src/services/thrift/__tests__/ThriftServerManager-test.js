@@ -12,8 +12,6 @@
  */
 import type {Observable} from 'rxjs';
 
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
-
 jest.mock(require.resolve('../createThriftServer'));
 
 import type {ThriftServerConfig} from '../types';
