@@ -31,7 +31,9 @@ import BreakpointCollection from './BreakpointCollection';
 import BreakpointCommand from './BreakpointCommand';
 import CommandDispatcher from './CommandDispatcher';
 import ContinueCommand from './ContinueCommand';
+import DownCommand from './DownCommand';
 import EnterCodeCommand from './EnterCodeCommand';
+import FrameCommand from './FrameCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -46,6 +48,7 @@ import RestartCommand from './RestartCommand';
 import PrintCommand from './PrintCommand';
 import RunCommand from './RunCommand';
 import ThreadCollection from './ThreadCollection';
+import UpCommand from './UpCommand';
 
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
@@ -108,6 +111,9 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new PrintCommand(this._console, this));
     dispatcher.registerCommand(new RunCommand(this));
     dispatcher.registerCommand(new EnterCodeCommand(this._console, this));
+    dispatcher.registerCommand(new FrameCommand(this._console, this));
+    dispatcher.registerCommand(new UpCommand(this._console, this));
+    dispatcher.registerCommand(new DownCommand(this._console, this));
   }
 
   // launch is for launching a process from scratch when we need a new

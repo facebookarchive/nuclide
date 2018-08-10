@@ -44,8 +44,23 @@ export default class HelpCommand implements Command {
     const commandNames = commands.map(x => x.name).sort();
 
     commandNames.forEach(name => {
-      this._console.outputLine(`${name}: ${commandDict[name].helpText}`);
+      this._console.outputLine(
+        `${this._markShortestAlias(name, commandNames)}: ${
+          commandDict[name].helpText
+        }`,
+      );
     });
+  }
+
+  _markShortestAlias(command: string, commands: string[]): string {
+    for (let i = 1; i <= command.length; i++) {
+      const prefix = command.substr(0, i);
+      if (commands.filter(x => x.startsWith(prefix)).length === 1) {
+        return `[${prefix}]${command.substr(i)}`;
+      }
+    }
+
+    return command;
   }
 
   _displayDetailedHelp(cmd: string): void {
