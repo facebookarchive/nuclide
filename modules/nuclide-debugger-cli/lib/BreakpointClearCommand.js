@@ -31,7 +31,7 @@ export default class BreakpointClearCommand implements Command {
       args.length !== 1 ||
       (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
     ) {
-      throw new Error("Format is 'breakpoint delete index | 'all'");
+      throw new Error("Format is 'breakpoint delete index | 'all''");
     }
 
     if (isNaN(index)) {

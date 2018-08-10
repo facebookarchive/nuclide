@@ -135,6 +135,16 @@ export default class BreakpointCollection {
     return Array.from(this._breakpoints.values());
   }
 
+  getAllBreakpointPaths(): string[] {
+    return Array.from(
+      new Set(
+        Array.from(this._breakpoints.values())
+          .filter(bp => bp.path != null)
+          .map(bp => nullthrows(bp.path)),
+      ),
+    );
+  }
+
   deleteBreakpoint(index: number): void {
     this._breakpoints.delete(index);
   }

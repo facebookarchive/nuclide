@@ -46,6 +46,7 @@ export interface DebuggerInterface {
   setFunctionBreakpoint(func: string): Promise<BreakpointSetResult>;
   getAllBreakpoints(): Breakpoint[];
   getBreakpointByIndex(index: number): Breakpoint;
+  setAllBreakpointsEnabled(enabled: boolean): Promise<void>;
   setBreakpointEnabled(index: number, enabled: boolean): Promise<void>;
   deleteAllBreakpoints(): Promise<void>;
   deleteBreakpoint(index: number): Promise<void>;

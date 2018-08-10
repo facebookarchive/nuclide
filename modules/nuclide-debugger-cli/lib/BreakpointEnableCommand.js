@@ -15,7 +15,7 @@ import type {DebuggerInterface} from './DebuggerInterface';
 
 export default class BreakpointEnableCommand implements Command {
   name = 'enable';
-  helpText = '[index]: enables a breakpoint.';
+  helpText = "index | 'all': enables a breakpoint, or all breakpoints.";
 
   _debugger: DebuggerInterface;
 
@@ -24,10 +24,18 @@ export default class BreakpointEnableCommand implements Command {
   }
 
   async execute(args: string[]): Promise<void> {
-    let index = -1;
+    let index = NaN;
 
-    if (args.length !== 1 || isNaN((index = parseInt(args[0], 10)))) {
-      throw new Error("Format is 'breakpoint enable index'");
+    if (
+      args.length !== 1 ||
+      (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
+    ) {
+      throw new Error("Format is 'breakpoint enable index | 'all''");
+    }
+
+    if (isNaN(index)) {
+      await this._debugger.setAllBreakpointsEnabled(true);
+      return;
     }
 
     await this._debugger.setBreakpointEnabled(index, true);

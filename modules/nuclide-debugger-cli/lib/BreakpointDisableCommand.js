@@ -24,10 +24,18 @@ export default class BreakpointDisableCommand implements Command {
   }
 
   async execute(args: string[]): Promise<void> {
-    let index = -1;
+    let index = NaN;
 
-    if (args.length !== 1 || isNaN((index = parseInt(args[0], 10)))) {
-      throw new Error("Format is 'breakpoint disable index'");
+    if (
+      args.length !== 1 ||
+      (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
+    ) {
+      throw new Error("Format is 'breakpoint disable index | 'all''");
+    }
+
+    if (isNaN(index)) {
+      await this._debugger.setAllBreakpointsEnabled(false);
+      return;
     }
 
     await this._debugger.setBreakpointEnabled(index, false);

@@ -569,6 +569,11 @@ export default class Debugger implements DebuggerInterface {
     return this._breakpoints.getBreakpointByIndex(index);
   }
 
+  async setAllBreakpointsEnabled(enabled: boolean): Promise<void> {
+    this._breakpoints.getAllBreakpoints().forEach(bp => bp.setEnabled(enabled));
+    return this._resetAllBreakpoints();
+  }
+
   async setBreakpointEnabled(index: number, enabled: boolean): Promise<void> {
     const session = this._ensureDebugSession();
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);
@@ -589,20 +594,17 @@ export default class Debugger implements DebuggerInterface {
       }
       return;
     }
-    // $TODO function breakpoints
+
+    await this._resetAllFunctionBreakpoints();
   }
 
   async deleteAllBreakpoints(): Promise<void> {
     const session = this._ensureDebugSession();
-    const all = this._breakpoints.getAllBreakpoints();
-    const paths: Set<string> = new Set(
-      all.filter(bp => bp.path != null).map(bp => nullthrows(bp.path)),
-    );
-    const promises = Array.from(paths).map(path =>
-      session.setBreakpoints({source: {path}, breakpoints: []}),
-    );
-    await Promise.all(promises);
+    const promises = this._breakpoints
+      .getAllBreakpointPaths()
+      .map(path => session.setBreakpoints({source: {path}, breakpoints: []}));
 
+    await Promise.all(promises);
     await session.setFunctionBreakpoints({
       breakpoints: [],
     });
