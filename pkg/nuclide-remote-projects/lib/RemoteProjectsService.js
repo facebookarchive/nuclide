@@ -12,11 +12,13 @@
 import type {SerializableRemoteConnectionConfiguration} from '..';
 import type {OpenConnectionDialogOptions} from './open-connection';
 import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
+import type {SimpleConnectConfiguration} from './SimpleConnect';
 
 import {ReplaySubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {openConnectionDialog} from './open-connection';
+import {connectToServer} from './SimpleConnect';
 
 export default class RemoteProjectsService {
   _subject: ReplaySubject<Array<string>>;
@@ -66,6 +68,10 @@ export default class RemoteProjectsService {
       initialServer: host,
       initialCwd: path,
     });
+  }
+
+  connectToServer(config: SimpleConnectConfiguration): void {
+    return connectToServer(config);
   }
 
   openConnectionDialog(
