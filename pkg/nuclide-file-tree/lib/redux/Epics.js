@@ -1094,7 +1094,7 @@ export function moveToNodeEpic(
   return actions.ofType(ActionTypes.MOVE_TO_NODE).mergeMap(action => {
     invariant(action.type === ActionTypes.MOVE_TO_NODE);
     const {rootKey, nodeKey} = action;
-    const targetNode = Selectors.getNode(this, rootKey, nodeKey);
+    const targetNode = Selectors.getNode(store.getState(), rootKey, nodeKey);
     if (targetNode == null || !targetNode.isContainer) {
       return Observable.empty();
     }
@@ -1141,7 +1141,7 @@ export function reorderRootsEpic(
     .ofType(ActionTypes.REORDER_ROOTS)
     .do(action => {
       invariant(action.type === ActionTypes.REORDER_ROOTS);
-      const rootKeys = Selectors.getRootKeys(this);
+      const rootKeys = Selectors.getRootKeys(store.getState());
       const rps = this._reorderPreviewStatus;
       if (rps == null) {
         return;
