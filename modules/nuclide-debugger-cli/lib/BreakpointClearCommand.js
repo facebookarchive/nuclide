@@ -15,7 +15,8 @@ import type {DebuggerInterface} from './DebuggerInterface';
 
 export default class BreakpointClearCommand implements Command {
   name = 'clear';
-  helpText = '[index]: permanently deletes a breakpoint.';
+  helpText =
+    "index | 'all': permanently deletes a breakpoint, or all breakpoints.";
 
   _debugger: DebuggerInterface;
 
@@ -24,10 +25,18 @@ export default class BreakpointClearCommand implements Command {
   }
 
   async execute(args: string[]): Promise<void> {
-    let index = -1;
+    let index = NaN;
 
-    if (args.length !== 1 || isNaN((index = parseInt(args[0], 10)))) {
-      throw new Error("Format is 'breakpoint delete index'");
+    if (
+      args.length !== 1 ||
+      (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
+    ) {
+      throw new Error("Format is 'breakpoint delete index | 'all'");
+    }
+
+    if (isNaN(index)) {
+      await this._debugger.deleteAllBreakpoints();
+      return;
     }
 
     await this._debugger.deleteBreakpoint(index);

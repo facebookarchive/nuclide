@@ -139,6 +139,10 @@ export default class BreakpointCollection {
     this._breakpoints.delete(index);
   }
 
+  deleteAllBreakpoints(): void {
+    this._breakpoints = new Map();
+  }
+
   setBreakpointId(index: number, id: number): void {
     const bpt = this._breakpoints.get(index);
     if (bpt != null) {

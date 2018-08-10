@@ -592,6 +592,24 @@ export default class Debugger implements DebuggerInterface {
     // $TODO function breakpoints
   }
 
+  async deleteAllBreakpoints(): Promise<void> {
+    const session = this._ensureDebugSession();
+    const all = this._breakpoints.getAllBreakpoints();
+    const paths: Set<string> = new Set(
+      all.filter(bp => bp.path != null).map(bp => nullthrows(bp.path)),
+    );
+    const promises = Array.from(paths).map(path =>
+      session.setBreakpoints({source: {path}, breakpoints: []}),
+    );
+    await Promise.all(promises);
+
+    await session.setFunctionBreakpoints({
+      breakpoints: [],
+    });
+
+    this._breakpoints.deleteAllBreakpoints();
+  }
+
   async deleteBreakpoint(index: number): Promise<void> {
     const session = this._ensureDebugSession();
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);

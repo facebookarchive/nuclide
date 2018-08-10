@@ -47,6 +47,7 @@ export interface DebuggerInterface {
   getAllBreakpoints(): Breakpoint[];
   getBreakpointByIndex(index: number): Breakpoint;
   setBreakpointEnabled(index: number, enabled: boolean): Promise<void>;
+  deleteAllBreakpoints(): Promise<void>;
   deleteBreakpoint(index: number): Promise<void>;
   getSourceLines(
     source: DebugProtocol.Source,
