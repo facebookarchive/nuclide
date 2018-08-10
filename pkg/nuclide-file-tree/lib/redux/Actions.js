@@ -442,12 +442,6 @@ export function removeFilterLetter(): Action {
   };
 }
 
-export function reset(): Action {
-  return {
-    type: ActionTypes.RESET,
-  };
-}
-
 export function confirmNode(
   rootKey: string,
   nodeKey: string,

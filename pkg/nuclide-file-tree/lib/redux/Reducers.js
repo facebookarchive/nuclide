@@ -230,8 +230,6 @@ function reduceState(
       return addFilterLetter(state, action.letter);
     case ActionTypes.REMOVE_FILTER_LETTER:
       return removeFilterLetter(state);
-    case ActionTypes.RESET:
-      return reset(state);
     case ActionTypes.SET_ROOTS:
       return setRoots(state, action.roots);
     case ActionTypes.CLEAR_LOADING:
@@ -1609,29 +1607,6 @@ function removeFilterLetter(state: FileTreeStore): FileTreeStore {
     nextState = clearFilter(nextState);
   }
   return nextState;
-}
-
-function reset(state: FileTreeStore): FileTreeStore {
-  state._roots.forEach(root => {
-    root.traverse(n => {
-      if (n.subscription != null) {
-        n.subscription.dispose();
-      }
-
-      return true;
-    });
-  });
-
-  // Reset data store.
-  let nextState = {...state, _conf: {...DEFAULT_CONF}};
-  nextState = setRoots(nextState, Immutable.OrderedMap());
-  nextState = clearSelected(nextState);
-  nextState = clearFocused(nextState);
-  return {
-    ...nextState,
-    _trackedRootKey: null,
-    _trackedNodeKey: null,
-  };
 }
 
 function addNodes(

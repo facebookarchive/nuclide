@@ -254,9 +254,6 @@ export type FileTreeAction =
   | {
       type: 'REMOVE_FILTER_LETTER',
     }
-  | {
-      type: 'RESET',
-    }
   | {|
       type: 'SET_CWD',
       rootKey: ?string,
@@ -452,9 +449,6 @@ export type FileTreeAction =
     |}
   | {|
       type: 'REMOVE_FILTER_LETTER',
-    |}
-  | {|
-      type: 'RESET',
     |}
   | {|
       type: 'UPDATE_MAX_COMPONENT_WIDTH',
@@ -688,7 +682,6 @@ export const ActionTypes = Object.freeze({
   UPDATE_GENERATED_STATUSES: 'UPDATE_GENERATED_STATUSES',
   ADD_FILTER_LETTER: 'ADD_FILTER_LETTER',
   REMOVE_FILTER_LETTER: 'REMOVE_FILTER_LETTER',
-  RESET: 'RESET',
   UPDATE_REPOSITORIES: 'UPDATE_REPOSITORIES',
   UPDATE_ROOT_DIRECTORIES: 'UPDATE_ROOT_DIRECTORIES',
 });
