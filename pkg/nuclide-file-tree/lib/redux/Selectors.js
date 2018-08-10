@@ -16,7 +16,7 @@ import type React from 'react';
 import type {FileTreeNode} from '../FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {FileTreeStore, ExportStoreData, Roots} from '../types';
+import type {AppState, ExportStoreData, Roots} from '../types';
 
 import {WorkingSet} from '../../../nuclide-working-sets-common';
 import * as Immutable from 'immutable';
@@ -29,78 +29,77 @@ import {createSelector} from 'reselect';
 //
 //
 
-export const getAutoExpandSingleChild = (state: FileTreeStore) =>
+export const getAutoExpandSingleChild = (state: AppState) =>
   state._autoExpandSingleChild;
 
-export const getConf = (state: FileTreeStore) => state._conf;
+export const getConf = (state: AppState) => state._conf;
 
-export const getFoldersExpanded = (state: FileTreeStore) => {
+export const getFoldersExpanded = (state: AppState) => {
   return state._foldersExpanded;
 };
 
-export const getUncommittedChangesExpanded = (state: FileTreeStore) => {
+export const getUncommittedChangesExpanded = (state: AppState) => {
   return state._uncommittedChangesExpanded;
 };
 
-export const getOpenFilesExpanded = (state: FileTreeStore) => {
+export const getOpenFilesExpanded = (state: AppState) => {
   return state._openFilesExpanded;
 };
 
-export const getRoots = (state: FileTreeStore) => {
+export const getRoots = (state: AppState) => {
   return state._roots;
 };
 
-export const getVersion = (state: FileTreeStore) => state.VERSION;
+export const getVersion = (state: AppState) => state.VERSION;
 
-export const getFilter = (state: FileTreeStore): string => state._filter;
+export const getFilter = (state: AppState): string => state._filter;
 
 export const getExtraProjectSelectionContent = (
-  state: FileTreeStore,
+  state: AppState,
 ): Immutable.List<React.Element<any>> => state._extraProjectSelectionContent;
 
-const getReorderPreviewStatus = (state: FileTreeStore) =>
+const getReorderPreviewStatus = (state: AppState) =>
   state._reorderPreviewStatus;
 
-const getSelectionRange = (state: FileTreeStore) => state._selectionRange;
+const getSelectionRange = (state: AppState) => state._selectionRange;
 
-const getTrackedRootKey = (state: FileTreeStore) => state._trackedRootKey;
+const getTrackedRootKey = (state: AppState) => state._trackedRootKey;
 
-const getTrackedNodeKey = (state: FileTreeStore) => state._trackedNodeKey;
+const getTrackedNodeKey = (state: AppState) => state._trackedNodeKey;
 
-export const getWorkingSetsStore = (state: FileTreeStore): ?WorkingSetsStore =>
+export const getWorkingSetsStore = (state: AppState): ?WorkingSetsStore =>
   state._workingSetsStore;
 
 export const getRepositories = (
-  state: FileTreeStore,
+  state: AppState,
 ): Immutable.Set<atom$Repository> => state._repositories;
 
-export const getCwdKey = (state: FileTreeStore): ?NuclideUri => state._cwdKey;
+export const getCwdKey = (state: AppState): ?NuclideUri => state._cwdKey;
 
 export const getFileChanges = (
-  state: FileTreeStore,
+  state: AppState,
 ): Immutable.Map<
   NuclideUri,
   Immutable.Map<NuclideUri, FileChangeStatusValue>,
 > => state._fileChanges;
 
 export const getGeneratedOpenChangedFiles = (
-  state: FileTreeStore,
+  state: AppState,
 ): Immutable.Map<NuclideUri, GeneratedFileType> =>
   state._generatedOpenChangedFiles;
 
-export const getIsCalculatingChanges = (state: FileTreeStore): boolean =>
+export const getIsCalculatingChanges = (state: AppState): boolean =>
   state._isCalculatingChanges;
 
-export const usePrefixNav = (state: FileTreeStore): boolean =>
-  state._usePrefixNav;
+export const usePrefixNav = (state: AppState): boolean => state._usePrefixNav;
 
-const getSelectedUris = (state: FileTreeStore) => state._selectedUris;
+const getSelectedUris = (state: AppState) => state._selectedUris;
 
-const getFocusedUris = (state: FileTreeStore) => state._focusedUris;
+const getFocusedUris = (state: AppState) => state._focusedUris;
 
-const getTargetNodeKeys = (state: FileTreeStore) => state._targetNodeKeys;
+const getTargetNodeKeys = (state: AppState) => state._targetNodeKeys;
 
-export const getCwdApi = (state: FileTreeStore) => state._cwdApi;
+export const getCwdApi = (state: AppState) => state._cwdApi;
 
 export const hasCwd = createSelector([getCwdKey], cwdKey => cwdKey != null);
 
@@ -139,7 +138,7 @@ export const getOpenFilesWorkingSet = createSelector(
 //
 //
 
-export const getTrackedNode = (state: FileTreeStore): ?FileTreeNode => {
+export const getTrackedNode = (state: AppState): ?FileTreeNode => {
   if (state._trackedRootKey == null || state._trackedNodeKey == null) {
     return null;
   }
@@ -284,7 +283,7 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
  * Otherwise, returns a nearby selected node.
  */
 export const getNearbySelectedNode = (
-  state: FileTreeStore,
+  state: AppState,
   node: FileTreeNode,
 ): ?FileTreeNode => {
   const shown = findShownNode(node);
@@ -309,13 +308,13 @@ export const getNearbySelectedNode = (
 };
 
 export const getNode = (
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): ?FileTreeNode => getNodeInRoots(getRoots(state), rootKey, nodeKey);
 
 export const getRootForPath = (
-  state: FileTreeStore,
+  state: AppState,
   nodeKey: NuclideUri,
 ): ?FileTreeNode => {
   const rootNode = getRoots(state).find(root => nodeKey.startsWith(root.uri));
@@ -337,15 +336,15 @@ export const getNodeByIndex = createSelector(getRoots, roots => {
   });
 });
 
-export const getLoading = (state: FileTreeStore, nodeKey: NuclideUri) =>
+export const getLoading = (state: AppState, nodeKey: NuclideUri) =>
   state._isLoadingMap.get(nodeKey);
 
-export const getNodeIsSelected = (state: FileTreeStore, node: FileTreeNode) =>
+export const getNodeIsSelected = (state: AppState, node: FileTreeNode) =>
   getSelectedUris(state)
     .get(node.rootUri, Immutable.Set())
     .has(node.uri);
 
-export const getNodeIsFocused = (state: FileTreeStore, node: FileTreeNode) =>
+export const getNodeIsFocused = (state: AppState, node: FileTreeNode) =>
   getFocusedUris(state)
     .get(node.rootUri, Immutable.Set())
     .has(node.uri);

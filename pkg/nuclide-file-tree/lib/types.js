@@ -22,8 +22,6 @@ import type {SelectionRange} from './FileTreeSelectionRange';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 
-export type AppState = FileTreeStore;
-
 export type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
 
 export type Store = {
@@ -86,7 +84,7 @@ type TargetNodeKeys = {|
 |};
 
 // TODO: Rename to AppState, FileTreeState, or something like that.
-export type FileTreeStore = {|
+export type AppState = {|
   VERSION: number,
   _roots: Roots,
   _openFilesExpanded: boolean,

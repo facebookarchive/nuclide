@@ -37,7 +37,7 @@ import type {FileTreeAction} from '../FileTreeDispatcher';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {StoreConfigData, FileTreeStore} from '../types';
+import type {StoreConfigData, AppState} from '../types';
 
 export const DEFAULT_CONF = {
   vcsStatuses: Immutable.Map(),
@@ -62,7 +62,7 @@ const {updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
 const logger = getLogger('nuclide-file-tree');
 
-const DEFAULT_STATE: FileTreeStore = {
+const DEFAULT_STATE: AppState = {
   // Used to ensure the version we serialized is the same version we are deserializing.
   VERSION: 1,
 
@@ -99,10 +99,7 @@ const DEFAULT_STATE: FileTreeStore = {
   _trackedNodeKey: null,
 };
 
-function reduceState(
-  state_: FileTreeStore,
-  action: FileTreeAction,
-): FileTreeStore {
+function reduceState(state_: AppState, action: FileTreeAction): AppState {
   const state = state_ || DEFAULT_STATE;
   switch (action.type) {
     case ActionTypes.SET_INITIAL_DATA:
@@ -272,10 +269,7 @@ function reduceState(
   return state;
 }
 
-export default function(
-  state: FileTreeStore,
-  action: FileTreeAction,
-): FileTreeStore {
+export default function(state: AppState, action: FileTreeAction): AppState {
   const {performance} = global;
   const start = performance.now();
 
@@ -293,10 +287,7 @@ export default function(
   return nextState;
 }
 
-function setInitialData(
-  state: FileTreeStore,
-  data: InitialData,
-): FileTreeStore {
+function setInitialData(state: AppState, data: InitialData): AppState {
   const nextState = {...state};
   if (data.openFilesExpanded != null) {
     nextState._openFilesExpanded = data.openFilesExpanded;
@@ -316,7 +307,7 @@ function setInitialData(
 /**
  * Updates the roots, maintains their sibling relationships and fires the change event.
  */
-function setRoots(state: FileTreeStore, roots: Roots): FileTreeStore {
+function setRoots(state: AppState, roots: Roots): AppState {
   // Explicitly test for the empty case, otherwise configuration changes with an empty
   // tree will not emit changes.
   const changed = !Immutable.is(roots, state._roots) || roots.isEmpty();
@@ -341,7 +332,7 @@ function setRoots(state: FileTreeStore, roots: Roots): FileTreeStore {
   return nextState;
 }
 
-function clearSelectionRange(state: FileTreeStore): FileTreeStore {
+function clearSelectionRange(state: AppState): AppState {
   return {
     ...state,
     _selectionRange: null,
@@ -349,7 +340,7 @@ function clearSelectionRange(state: FileTreeStore): FileTreeStore {
   };
 }
 
-function clearDragHover(state: FileTreeStore): FileTreeStore {
+function clearDragHover(state: AppState): AppState {
   return updateRoots(state, root => {
     return root.setRecursive(
       node => (node.containsDragHover ? null : node),
@@ -362,33 +353,33 @@ function clearDragHover(state: FileTreeStore): FileTreeStore {
  * Use the update function to update one or more of the roots in the file tree
  */
 function updateRoots(
-  state: FileTreeStore,
+  state: AppState,
   update: (root: FileTreeNode) => FileTreeNode,
-): FileTreeStore {
+): AppState {
   return setRoots(state, state._roots.map(update));
 }
 
 // Clear selections and focuses on all nodes except an optionally specified
 // current node.
-function clearSelection(state: FileTreeStore): FileTreeStore {
+function clearSelection(state: AppState): AppState {
   return clearSelected(clearFocused(clearSelectionRange(state)));
 }
 
-function clearSelected(state: FileTreeStore): FileTreeStore {
+function clearSelected(state: AppState): AppState {
   return {
     ...state,
     _selectedUris: Immutable.Map(),
   };
 }
 
-function clearFocused(state: FileTreeStore): FileTreeStore {
+function clearFocused(state: AppState): AppState {
   return {
     ...state,
     _focusedUris: Immutable.Map(),
   };
 }
 
-function setCwdKey(state: FileTreeStore, cwdKey: ?NuclideUri): FileTreeStore {
+function setCwdKey(state: AppState, cwdKey: ?NuclideUri): AppState {
   let nextState = {...state};
   const currentCwdKey = state._cwdKey;
   if (currentCwdKey != null) {
@@ -411,7 +402,7 @@ function setCwdKey(state: FileTreeStore, cwdKey: ?NuclideUri): FileTreeStore {
   return nextState;
 }
 
-function setCwdApi(state: FileTreeStore, cwdApi: ?CwdApi): FileTreeStore {
+function setCwdApi(state: AppState, cwdApi: ?CwdApi): AppState {
   return {
     ...state,
     _cwdApi: cwdApi,
@@ -419,10 +410,10 @@ function setCwdApi(state: FileTreeStore, cwdApi: ?CwdApi): FileTreeStore {
 }
 
 function setTrackedNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   if (state._trackedRootKey !== rootKey || state._trackedNodeKey !== nodeKey) {
     return {
       ...state,
@@ -433,7 +424,7 @@ function setTrackedNode(
   return state;
 }
 
-function clearTrackedNode(state: FileTreeStore): FileTreeStore {
+function clearTrackedNode(state: AppState): AppState {
   if (state._trackedRootKey != null || state._trackedNodeKey != null) {
     return {
       ...state,
@@ -448,7 +439,7 @@ function clearTrackedNode(state: FileTreeStore): FileTreeStore {
  * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
  * because it only changes state if a node is being tracked.
  */
-function clearTrackedNodeIfNotLoading(state: FileTreeStore): FileTreeStore {
+function clearTrackedNodeIfNotLoading(state: AppState): AppState {
   if (
     /*
        * The loading map being empty is a heuristic for when loading has completed. It is inexact
@@ -465,9 +456,9 @@ function clearTrackedNodeIfNotLoading(state: FileTreeStore): FileTreeStore {
 }
 
 function startReorderDrag(
-  state: FileTreeStore,
+  state: AppState,
   draggedRootKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const rootIdx = Selectors.getRootKeys(state).indexOf(draggedRootKey);
   if (rootIdx === -1) {
     return state;
@@ -487,7 +478,7 @@ function startReorderDrag(
   };
 }
 
-function endReorderDrag(state: FileTreeStore): FileTreeStore {
+function endReorderDrag(state: AppState): AppState {
   if (state._reorderPreviewStatus == null) {
     return state;
   }
@@ -504,10 +495,7 @@ function endReorderDrag(state: FileTreeStore): FileTreeStore {
   };
 }
 
-function reorderDragInto(
-  state: FileTreeStore,
-  targetRootKey: NuclideUri,
-): FileTreeStore {
+function reorderDragInto(state: AppState, targetRootKey: NuclideUri): AppState {
   const reorderPreviewStatus = state._reorderPreviewStatus;
   const targetIdx = Selectors.getRootKeys(state).indexOf(targetRootKey);
   const targetRootNode = Selectors.getNode(state, targetRootKey, targetRootKey);
@@ -537,10 +525,10 @@ function reorderDragInto(
 }
 
 function collapseNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const nodesToUnselect = new Set();
   const nextState = setRoots(
     state,
@@ -580,9 +568,9 @@ function collapseNode(
 }
 
 function setExcludeVcsIgnoredPaths(
-  state: FileTreeStore,
+  state: AppState,
   excludeVcsIgnoredPaths: boolean,
-): FileTreeStore {
+): AppState {
   return updateConf(state, conf => {
     conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths;
   });
@@ -593,9 +581,9 @@ function setExcludeVcsIgnoredPaths(
  * avoided.
  */
 function updateConf(
-  state: FileTreeStore,
+  state: AppState,
   mutator: (conf: StoreConfigData) => void,
-): FileTreeStore {
+): AppState {
   const nextConf = {...state._conf};
   mutator(nextConf);
   const nodesToUnselect = new Set();
@@ -629,36 +617,30 @@ function updateConf(
 }
 
 function setHideVcsIgnoredPaths(
-  state: FileTreeStore,
+  state: AppState,
   hideVcsIgnoredPaths: boolean,
-): FileTreeStore {
+): AppState {
   return updateConf(state, conf => {
     conf.hideVcsIgnoredPaths = hideVcsIgnoredPaths;
   });
 }
 
-function setUsePreviewTabs(
-  state: FileTreeStore,
-  usePreviewTabs: boolean,
-): FileTreeStore {
+function setUsePreviewTabs(state: AppState, usePreviewTabs: boolean): AppState {
   return updateConf(state, conf => {
     conf.usePreviewTabs = usePreviewTabs;
   });
 }
 
 function setFocusEditorOnFileSelection(
-  state: FileTreeStore,
+  state: AppState,
   focusEditorOnFileSelection: boolean,
-): FileTreeStore {
+): AppState {
   return updateConf(state, conf => {
     conf.focusEditorOnFileSelection = focusEditorOnFileSelection;
   });
 }
 
-function setUsePrefixNav(
-  state: FileTreeStore,
-  usePrefixNav: boolean,
-): FileTreeStore {
+function setUsePrefixNav(state: AppState, usePrefixNav: boolean): AppState {
   return {
     ...state,
     _usePrefixNav: usePrefixNav,
@@ -666,9 +648,9 @@ function setUsePrefixNav(
 }
 
 function setAutoExpandSingleChild(
-  state: FileTreeStore,
+  state: AppState,
   autoExpandSingleChild: boolean,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _autoExpandSingleChild: autoExpandSingleChild,
@@ -676,10 +658,10 @@ function setAutoExpandSingleChild(
 }
 
 function collapseNodeDeep(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const nodesToUnselect = new Set();
   const nextState = setRoots(
     state,
@@ -708,18 +690,18 @@ function collapseNodeDeep(
 }
 
 function setHideIgnoredNames(
-  state: FileTreeStore,
+  state: AppState,
   hideIgnoredNames: boolean,
-): FileTreeStore {
+): AppState {
   return updateConf(state, conf => {
     conf.hideIgnoredNames = hideIgnoredNames;
   });
 }
 
 function setIsCalculatingChanges(
-  state: FileTreeStore,
+  state: AppState,
   isCalculatingChanges: boolean,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _isCalculatingChanges: isCalculatingChanges,
@@ -731,9 +713,9 @@ function setIsCalculatingChanges(
  * update the store with them.
  */
 function setIgnoredNames(
-  state: FileTreeStore,
+  state: AppState,
   ignoredNames: Array<string>,
-): FileTreeStore {
+): AppState {
   const ignoredPatterns = Immutable.Set(ignoredNames)
     .map(ignoredName => {
       if (ignoredName === '') {
@@ -756,10 +738,10 @@ function setIgnoredNames(
 }
 
 function setVcsStatuses(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
-): FileTreeStore {
+): AppState {
   let nextState = {...state};
   // We use file changes for populating the uncommitted list, this is different as compared
   // to what is computed in the vcsStatuses in that it does not need the exact path but just
@@ -812,10 +794,10 @@ function setVcsStatuses(
 }
 
 function setFileChanges(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
-): FileTreeStore {
+): AppState {
   let fileChanges = Immutable.Map();
   vcsStatuses.forEach((statusCode, filePath) => {
     fileChanges = fileChanges.set(
@@ -831,9 +813,9 @@ function setFileChanges(
 }
 
 function setRepositories(
-  state: FileTreeStore,
+  state: AppState,
   repositories: Immutable.Set<atom$Repository>,
-): FileTreeStore {
+): AppState {
   const nextState = {...state, _repositories: repositories};
   return updateConf(nextState, conf => {
     const reposByRoot = {};
@@ -844,19 +826,16 @@ function setRepositories(
   });
 }
 
-function setWorkingSet(
-  state: FileTreeStore,
-  workingSet: WorkingSet,
-): FileTreeStore {
+function setWorkingSet(state: AppState, workingSet: WorkingSet): AppState {
   return updateConf(state, conf => {
     conf.workingSet = workingSet;
   });
 }
 
 function setOpenFilesWorkingSet(
-  state: FileTreeStore,
+  state: AppState,
   openFilesWorkingSet: WorkingSet,
-): FileTreeStore {
+): AppState {
   // Optimization: with an empty working set, we don't need a full tree refresh.
   if (state._conf.workingSet.isEmpty()) {
     return {
@@ -870,9 +849,9 @@ function setOpenFilesWorkingSet(
 }
 
 function setWorkingSetsStore(
-  state: FileTreeStore,
+  state: AppState,
   workingSetsStore: ?WorkingSetsStore,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _workingSetsStore: workingSetsStore,
@@ -880,16 +859,16 @@ function setWorkingSetsStore(
 }
 
 function startEditingWorkingSet(
-  state: FileTreeStore,
+  state: AppState,
   editedWorkingSet: WorkingSet,
-): FileTreeStore {
+): AppState {
   return updateConf(state, conf => {
     conf.editedWorkingSet = editedWorkingSet;
     conf.isEditingWorkingSet = true;
   });
 }
 
-function finishEditingWorkingSet(state: FileTreeStore): FileTreeStore {
+function finishEditingWorkingSet(state: AppState): AppState {
   return updateConf(state, conf => {
     conf.isEditingWorkingSet = false;
     conf.editedWorkingSet = new WorkingSet();
@@ -897,10 +876,10 @@ function finishEditingWorkingSet(state: FileTreeStore): FileTreeStore {
 }
 
 function checkNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   if (!state._conf.isEditingWorkingSet) {
     return state;
   }
@@ -929,10 +908,10 @@ function checkNode(
 }
 
 function uncheckNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   if (!state._conf.isEditingWorkingSet) {
     return state;
   }
@@ -966,10 +945,10 @@ function uncheckNode(
 }
 
 function setDragHoveredNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const nextState = clearDragHover(state);
   return setRoots(
     nextState,
@@ -980,10 +959,10 @@ function setDragHoveredNode(
 }
 
 function unhoverNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   return setRoots(
     state,
     updateNodeAtRoot(state._roots, rootKey, nodeKey, node =>
@@ -996,19 +975,19 @@ function unhoverNode(
  * Selects a single node and tracks it.
  */
 function setSelectedNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   let nextState = clearSelection(state);
   nextState = setTrackedNode(nextState, rootKey, nodeKey);
   return addSelectedNode(nextState, rootKey, nodeKey);
 }
 
 function setSelectionRange(
-  state: FileTreeStore,
+  state: AppState,
   selectionRange: SelectionRange,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _selectionRange: selectionRange,
@@ -1020,10 +999,10 @@ function setSelectionRange(
  * Mark a node that has been focused, similar to selected, but only true after mouseup.
  */
 function setFocusedNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const node = Selectors.getNode(state, rootKey, nodeKey);
   if (node == null) {
     return state;
@@ -1035,10 +1014,10 @@ function setFocusedNode(
 }
 
 function addSelectedNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const node = Selectors.getNode(state, rootKey, nodeKey);
   if (node == null) {
     return state;
@@ -1054,10 +1033,10 @@ function addSelectedNode(
 }
 
 function unselectNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const node = Selectors.getNode(state, rootKey, nodeKey);
   if (node == null) {
     return state;
@@ -1073,7 +1052,7 @@ function unselectNode(
  * Moves the selection one node up. In case several nodes were selected, the topmost (first in
  * the natural visual order) is considered to be the reference point for the move.
  */
-function moveSelectionUp(state: FileTreeStore): FileTreeStore {
+function moveSelectionUp(state: AppState): AppState {
   if (state._roots.isEmpty()) {
     return state;
   }
@@ -1107,10 +1086,10 @@ function moveSelectionUp(state: FileTreeStore): FileTreeStore {
  * Selects and focuses a node in one pass.
  */
 function setSelectedAndFocusedNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const node = Selectors.getNode(state, rootKey, nodeKey);
   let nextState = clearSelection(state);
   if (node != null) {
@@ -1131,10 +1110,10 @@ function setSelectedAndFocusedNode(
  * Bulk selection based on the range.
  */
 function rangeSelectToNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   const {updatedState, data} = refreshSelectionRange(state);
   let nextState = updatedState;
   if (data == null) {
@@ -1235,7 +1214,7 @@ function rangeSelectToNode(
 }
 
 type RefreshSelectionRangeResult = {
-  updatedState: FileTreeStore,
+  updatedState: AppState,
   data: ?{
     selectionRange: SelectionRange,
     anchorNode: FileTreeNode,
@@ -1253,9 +1232,7 @@ type RefreshSelectionRangeResult = {
  * - if these two nodes are not selected, and there is no nearby node to fall back to.
  * When this function returns, the selection range always contains valid data.
  */
-function refreshSelectionRange(
-  state: FileTreeStore,
-): RefreshSelectionRangeResult {
+function refreshSelectionRange(state: AppState): RefreshSelectionRangeResult {
   const invalidate = () => ({
     updatedState: clearSelectionRange(state),
     data: null,
@@ -1307,10 +1284,7 @@ function refreshSelectionRange(
 /**
  * Move the range of selections by one step.
  */
-function rangeSelectMove(
-  state: FileTreeStore,
-  move: 'up' | 'down',
-): FileTreeStore {
+function rangeSelectMove(state: AppState, move: 'up' | 'down'): AppState {
   const refreshSelectionRangeResult = refreshSelectionRange(state);
   const {data} = refreshSelectionRangeResult;
   let nextState = refreshSelectionRangeResult.updatedState;
@@ -1384,7 +1358,7 @@ function rangeSelectMove(
  * Moves the selection one node down. In case several nodes were selected, the topmost (first in
  * the natural visual order) is considered to be the reference point for the move.
  */
-function moveSelectionDown(state: FileTreeStore): FileTreeStore {
+function moveSelectionDown(state: AppState): AppState {
   if (state._roots.isEmpty()) {
     return state;
   }
@@ -1414,7 +1388,7 @@ function moveSelectionDown(state: FileTreeStore): FileTreeStore {
   );
 }
 
-function moveSelectionToTop(state: FileTreeStore): FileTreeStore {
+function moveSelectionToTop(state: AppState): AppState {
   if (state._roots.isEmpty()) {
     return state;
   }
@@ -1431,7 +1405,7 @@ function moveSelectionToTop(state: FileTreeStore): FileTreeStore {
   return setSelectedAndFocusedNode(state, nodeToSelect.uri, nodeToSelect.uri);
 }
 
-function moveSelectionToBottom(state: FileTreeStore): FileTreeStore {
+function moveSelectionToBottom(state: AppState): AppState {
   if (state._roots.isEmpty()) {
     return state;
   }
@@ -1443,7 +1417,7 @@ function moveSelectionToBottom(state: FileTreeStore): FileTreeStore {
   return setSelectedAndFocusedNode(state, lastChild.rootUri, lastChild.uri);
 }
 
-function clearFilter(state: FileTreeStore): FileTreeStore {
+function clearFilter(state: AppState): AppState {
   const nextState = {...state, _filter: ''};
   return updateRoots(nextState, root => {
     return root.setRecursive(
@@ -1454,9 +1428,9 @@ function clearFilter(state: FileTreeStore): FileTreeStore {
 }
 
 function addExtraProjectSelectionContent(
-  state: FileTreeStore,
+  state: AppState,
   content: React.Element<any>,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _extraProjectSelectionContent: state._extraProjectSelectionContent.push(
@@ -1466,9 +1440,9 @@ function addExtraProjectSelectionContent(
 }
 
 function removeExtraProjectSelectionContent(
-  state: FileTreeStore,
+  state: AppState,
   content: React.Element<any>,
-): FileTreeStore {
+): AppState {
   const index = state._extraProjectSelectionContent.indexOf(content);
   if (index === -1) {
     return state;
@@ -1482,9 +1456,9 @@ function removeExtraProjectSelectionContent(
 }
 
 function setOpenFilesExpanded(
-  state: FileTreeStore,
+  state: AppState,
   openFilesExpanded: boolean,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _openFilesExpanded: openFilesExpanded,
@@ -1492,9 +1466,9 @@ function setOpenFilesExpanded(
 }
 
 function setUncommittedChangesExpanded(
-  state: FileTreeStore,
+  state: AppState,
   uncommittedChangesExpanded: boolean,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _uncommittedChangesExpanded: uncommittedChangesExpanded,
@@ -1502,16 +1476,16 @@ function setUncommittedChangesExpanded(
 }
 
 function setFoldersExpanded(
-  state: FileTreeStore,
+  state: AppState,
   foldersExpanded: boolean,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _foldersExpanded: foldersExpanded,
   };
 }
 
-function invalidateRemovedFolder(state: FileTreeStore): FileTreeStore {
+function invalidateRemovedFolder(state: AppState): AppState {
   const updatedFileChanges = new Map();
   atom.project.getPaths().forEach(projectPath => {
     const standardizedPath = nuclideUri.ensureTrailingSeparator(projectPath);
@@ -1539,17 +1513,17 @@ function invalidateRemovedFolder(state: FileTreeStore): FileTreeStore {
  * This value gets cleared everytime a selection is set
  */
 function setTargetNode(
-  state: FileTreeStore,
+  state: AppState,
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
-): FileTreeStore {
+): AppState {
   return {
     ...state,
     _targetNodeKeys: {rootKey, nodeKey},
   };
 }
 
-function addFilterLetter(state: FileTreeStore, letter: string): FileTreeStore {
+function addFilterLetter(state: AppState, letter: string): AppState {
   let nextState = {...state};
   nextState._filter = state._filter + letter;
   nextState = updateRoots(nextState, root => {
@@ -1569,7 +1543,7 @@ function addFilterLetter(state: FileTreeStore, letter: string): FileTreeStore {
   return nextState;
 }
 
-function selectFirstFilter(state: FileTreeStore): FileTreeStore {
+function selectFirstFilter(state: AppState): AppState {
   let node = Selectors.getSingleSelectedNode(state);
   // if the current node matches the filter do nothing
   if (node != null && node.matchesFilter) {
@@ -1585,7 +1559,7 @@ function selectFirstFilter(state: FileTreeStore): FileTreeStore {
   return nextState;
 }
 
-function removeFilterLetter(state: FileTreeStore): FileTreeStore {
+function removeFilterLetter(state: AppState): AppState {
   const oldLength = state._filter.length;
   let nextState = {...state};
   nextState._filter = nextState._filter.substr(0, nextState._filter.length - 1);

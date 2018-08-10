@@ -17,7 +17,7 @@ import type {RemoteFile} from '../../../nuclide-remote-connection';
 import type {File} from 'atom';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {FileTreeStore, MiddlewareStore} from '../types';
+import type {AppState, MiddlewareStore} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 
@@ -1309,7 +1309,7 @@ function getCachedPathStatusesForGitRepo(
   return codePathStatuses;
 }
 
-function getSelectedContainerNode(state: FileTreeStore): ?FileTreeNode {
+function getSelectedContainerNode(state: AppState): ?FileTreeNode {
   /*
    * TODO: Choosing the last selected key is inexact when there is more than 1 root. The Set of
    * selected keys should be maintained as a flat list across all roots to maintain insertion
