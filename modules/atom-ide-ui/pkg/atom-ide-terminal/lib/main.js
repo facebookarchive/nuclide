@@ -57,7 +57,7 @@ class Activation {
           // HACK: we pass along the cwd in the opener's options to be able to
           // read from it above.
           // eslint-disable-next-line nuclide-internal/atom-apis
-          atom.workspace.open(URI_PREFIX, {
+          openInNewPaneItem(URI_PREFIX, {
             cwd: this._getPathOrCwd(event),
             searchAllPanes: false,
           });
@@ -70,7 +70,7 @@ class Activation {
           // HACK: we pass along the cwd in the opener's options to be able to
           // read from it above.
           // eslint-disable-next-line nuclide-internal/atom-apis
-          atom.workspace.open(URI_PREFIX, {cwd: os.homedir()});
+          openInNewPaneItem(URI_PREFIX, {cwd: os.homedir()});
         },
       ),
       atom.commands.add(
@@ -210,3 +210,22 @@ module.exports = {
 };
 
 createPackage(module.exports, Activation);
+
+async function openInNewPaneItem(
+  uri: string,
+  options: atom$WorkspaceOpenOptions,
+): Promise<atom$PaneItem> {
+  const existingPane = atom.workspace.paneForURI(uri);
+
+  // TODO: The flow types are wrong. paneForURI returns a nullable pane
+  if (!existingPane) {
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    return atom.workspace.open(uri, options);
+  }
+
+  const item = await atom.workspace.createItemForURI(uri, options);
+  existingPane.activateItem(item);
+  existingPane.activate();
+
+  return item;
+}

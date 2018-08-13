@@ -1252,6 +1252,17 @@ type AddTextEditorEvent = {
   index: number,
 };
 
+type atom$WorkspaceOpenOptions = {
+  activatePane?: ?boolean,
+  activateItem?: ?boolean,
+  initialLine?: ?number,
+  initialColumn?: ?number,
+  pending?: ?boolean,
+  split?: ?string,
+  searchAllPanes?: ?boolean,
+  location?: atom$PaneLocation,
+}
+
 declare class atom$Workspace {
   // Event Subscription
   observePanes(cb: (pane: atom$Pane) => void): IDisposable,
@@ -1274,14 +1285,7 @@ declare class atom$Workspace {
   // Opening
   open(
     uri?: string,
-    options?: {
-      activatePane?: ?boolean,
-      initialLine?: ?number,
-      initialColumn?: ?number,
-      pending?: ?boolean,
-      split?: ?string,
-      searchAllPanes?: ?boolean,
-    }
+    options?: atom$WorkspaceOpenOptions,
   ): Promise<atom$TextEditor>,
   openURIInPane(
     uri?: string,
@@ -1312,6 +1316,7 @@ declare class atom$Workspace {
   getActivePaneItem(): ?Object,
   getTextEditors(): Array<atom$TextEditor>,
   getActiveTextEditor(): ?atom$TextEditor,
+  createItemForURI(uri: string, options: atom$WorkspaceOpenOptions): atom$PaneItem,
 
   // Panes
   getPanes(): Array<atom$Pane>,
@@ -1320,6 +1325,7 @@ declare class atom$Workspace {
   activatePreviousPane(): boolean,
   paneForURI(uri: string): atom$Pane,
   paneForItem(item: mixed): ?atom$Pane,
+  paneContainers: {[location: atom$PaneLocation]: atom$AbstractPaneContainer},
 
   // Panels
   panelContainers: {[location: string]: atom$PanelContainer},
