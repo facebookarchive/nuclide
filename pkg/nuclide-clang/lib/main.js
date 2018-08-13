@@ -27,7 +27,6 @@ import type {
   ClangConfigurationProvider,
   ClangDeclarationInfoProvider,
 } from './types';
-import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -151,16 +150,6 @@ export function provideOutlineView(): OutlineProvider {
 export function provideDeclarationInfo(): ClangDeclarationInfoProvider {
   return {
     getDeclarationInfo,
-  };
-}
-
-export function provideRelatedFiles(): RelatedFilesProvider {
-  return {
-    getRelatedFiles(filePath: NuclideUri): Promise<Array<string>> {
-      return getRelatedSourceOrHeader(filePath).then(
-        related => (related == null ? [] : [related]),
-      );
-    },
   };
 }
 

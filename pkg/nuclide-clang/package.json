@@ -70,11 +70,6 @@
         "0.0.0": "provideDeclarationInfo"
       }
     },
-    "nuclide.related-files.provider": {
-      "versions": {
-        "0.0.0": "provideRelatedFiles"
-      }
-    },
     "nuclide-autocomplete.provider": {
       "versions": {
         "0.0.0": "createAutocompleteProvider"

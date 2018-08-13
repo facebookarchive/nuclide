@@ -184,12 +184,19 @@ const DEPRECATED_SOURCE_CONTROL_COMMANDS = {
     'fb-interactive-smartlog:rethink-diff',
 };
 
+const DEPRECATED_RELATED_FILES_COMMANDS = {
+  'nuclide-related-files:switch-between-header-source': 'file:open-alternate',
+  'nuclide-related-files:jump-to-next-related-file': 'file:open-alternate',
+  'nuclide-related-files:jump-to-previous-related-file': 'file:open-alternate',
+};
+
 const DEPRECATED_COMMANDS = {
   ...DEPRECATED_CONSOLE_COMMANDS,
   ...DEPRECATED_DEBUGGER_COMMANDS,
   ...DEPRECATED_FILE_TREE_COMMANDS,
   ...DEPRECATED_TERMINAL_COMMANDS,
   ...DEPRECATED_SOURCE_CONTROL_COMMANDS,
+  ...DEPRECATED_RELATED_FILES_COMMANDS,
 };
 
 class Activation {
