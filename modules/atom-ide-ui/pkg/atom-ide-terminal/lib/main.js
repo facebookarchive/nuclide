@@ -22,7 +22,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {setRpcService, setGkService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
+import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
@@ -37,29 +37,40 @@ class Activation {
     const focusManager = new FocusManager();
     this._subscriptions = new UniversalDisposable(
       focusManager,
-      atom.workspace.addOpener(uri => {
+      atom.workspace.addOpener((uri, options) => {
         if (uri.startsWith(URI_PREFIX)) {
-          return new TerminalView(
-            uri,
-            this._cwd != null ? this._cwd.getCwd() : null,
-          );
+          const info = infoFromUri(uri);
+          if (info.cwd === '') {
+            // $FlowFixMe we're threading cwd through options; it's not part of its type
+            const cwd = options.cwd || (this._cwd && this._cwd.getCwd());
+            if (cwd != null) {
+              info.cwd = cwd;
+            }
+          }
+          return new TerminalView(info);
         }
       }),
       atom.commands.add(
         'atom-workspace',
         'atom-ide-terminal:new-terminal',
         event => {
-          const cwd = this._getPathOrCwd(event);
-          const uri = cwd != null ? uriFromInfo({cwd}) : uriFromInfo({});
-          goToLocation(uri);
+          // HACK: we pass along the cwd in the opener's options to be able to
+          // read from it above.
+          // eslint-disable-next-line nuclide-internal/atom-apis
+          atom.workspace.open(URI_PREFIX, {
+            cwd: this._getPathOrCwd(event),
+            searchAllPanes: false,
+          });
         },
       ),
       atom.commands.add(
         'atom-workspace',
         'atom-ide-terminal:new-local-terminal',
-        event => {
-          const uri = uriFromInfo({cwd: os.homedir()});
-          goToLocation(uri);
+        () => {
+          // HACK: we pass along the cwd in the opener's options to be able to
+          // read from it above.
+          // eslint-disable-next-line nuclide-internal/atom-apis
+          atom.workspace.open(URI_PREFIX, {cwd: os.homedir()});
         },
       ),
       atom.commands.add(

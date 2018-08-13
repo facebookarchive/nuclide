@@ -31,7 +31,6 @@ import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
 import {createTerminal} from './createTerminal';
 import measurePerformance from './measure-performance';
-import {infoFromUri, uriFromInfo} from './nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
@@ -50,6 +49,7 @@ import {
   syncTerminalFont,
   RENDERER_TYPE_CONFIG,
 } from './config';
+import {infoFromUri} from './nuclide-terminal-uri';
 import {createOutputSink} from './sink';
 
 import type {Terminal} from './createTerminal';
@@ -65,7 +65,7 @@ export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
 export interface TerminalViewState {
   deserializer: 'TerminalView';
-  paneUri: string;
+  initialInfo: InstantiatedTerminalInfo;
   cwd: ?string;
 }
 
@@ -96,11 +96,9 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _isFirstOutput: boolean;
   _initialInput: string;
 
-  constructor(paneUri: string, fallbackCwd: ?string = '') {
-    this._paneUri = paneUri;
-    const info = infoFromUri(paneUri);
+  constructor(info: InstantiatedTerminalInfo) {
     this._terminalInfo = info;
-    const cwd = (this._cwd = info.cwd || fallbackCwd);
+    const cwd = (this._cwd = info.cwd);
     this._command = info.command == null ? null : info.command;
     this._key = info.key;
     this._title = info.title == null ? 'terminal' : info.title;
@@ -549,8 +547,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   copy(): TerminalView {
-    const paneUri = uriFromInfo(this._terminalInfo);
-    return new TerminalView(paneUri);
+    return new TerminalView(this._terminalInfo);
   }
 
   // Remote connection is closing--note the window remains open to show error
@@ -579,7 +576,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   getURI(): string {
-    return this._paneUri;
+    return 'atom://nuclide-terminal-view';
   }
 
   getTerminalKey(): string {
@@ -613,7 +610,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
   serialize(): TerminalViewState {
     return {
       deserializer: 'TerminalView',
-      paneUri: this._paneUri,
+      initialInfo: this._terminalInfo,
       cwd: this._cwd,
     };
   }
@@ -622,10 +619,10 @@ export class TerminalView implements PtyClient, TerminalInstance {
 export function deserializeTerminalView(
   state: TerminalViewState,
 ): TerminalView {
-  // Convert from/to uri to generate a new unique id.
-  const info = infoFromUri(state.paneUri, true);
-  const paneUri = uriFromInfo(info);
-  return new TerminalView(paneUri, state.cwd);
+  if (state.initialInfo != null) {
+    return new TerminalView(state.initialInfo);
+  }
+  return new TerminalView(infoFromUri(URI_PREFIX));
 }
 
 function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
