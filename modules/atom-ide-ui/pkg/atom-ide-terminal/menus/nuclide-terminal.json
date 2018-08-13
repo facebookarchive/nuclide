@@ -4,6 +4,10 @@
       "label": "View",
       "submenu": [
         {
+          "label": "Toggle Terminal",
+          "command": "atom-ide-terminal:toggle"
+        },
+        {
           "label": "Terminal",
           "submenu": [
             {

@@ -56,6 +56,9 @@ class Activation {
           return new TerminalView(info);
         }
       }),
+      atom.commands.add('atom-workspace', 'atom-ide-terminal:toggle', () => {
+        atom.workspace.toggle(URI_PREFIX);
+      }),
       atom.commands.add(
         'atom-workspace',
         'atom-ide-terminal:new-terminal',
@@ -114,8 +117,11 @@ class Activation {
     const toolBar = getToolBar('nuclide-terminal');
     toolBar.addButton({
       icon: 'terminal',
-      callback: 'atom-ide-terminal:new-terminal',
-      tooltip: 'New Terminal',
+      callback: {
+        '': 'atom-ide-terminal:toggle',
+        alt: 'atom-ide-terminal:new-terminal',
+      },
+      tooltip: 'Toggle Terminal (alt click for New)',
       priority: 700,
     });
 
