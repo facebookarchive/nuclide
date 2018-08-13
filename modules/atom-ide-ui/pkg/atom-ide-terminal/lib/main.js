@@ -12,13 +12,17 @@
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import os from 'os';
+import {Observable} from 'rxjs';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import AsyncStorage from 'idb-keyval';
+import invariant from 'assert';
 
 import {setRpcService, setGkService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
@@ -28,6 +32,8 @@ import {FocusManager} from './FocusManager';
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {GatekeeperService} from 'nuclide-commons-atom/types';
 import type {TerminalApi, TerminalInfo, TerminalInstance} from './types';
+
+const MOVED_TERMINAL_NUX_SHOWN_KEY = 'atom_ide_terminal_moved_nux';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -223,9 +229,54 @@ async function openInNewPaneItem(
     return atom.workspace.open(uri, options);
   }
 
-  const item = await atom.workspace.createItemForURI(uri, options);
+  const [item, hasShownNux] = await Promise.all([
+    atom.workspace.createItemForURI(uri, options),
+    AsyncStorage.get(MOVED_TERMINAL_NUX_SHOWN_KEY),
+  ]);
   existingPane.activateItem(item);
   existingPane.activate();
 
+  if (!hasShownNux) {
+    invariant(item instanceof TerminalView);
+    showTooltipForPaneItem(item);
+    AsyncStorage.set(MOVED_TERMINAL_NUX_SHOWN_KEY, true);
+  }
+
   return item;
+}
+
+function showTooltipForPaneItem(paneItem: TerminalView): IDisposable {
+  return new UniversalDisposable(
+    Observable.create(() => {
+      const tooltip = atom.tooltips.add(paneItem.getElement(), {
+        title: `
+        <div>
+          <span style="margin-right: 4px">
+            We now open terminals here, but if you move them, new terminals
+            will open in the same location.
+          </span>
+          <button class="btn btn-primary nuclide-moved-terminal-nux-dismiss">
+            Got it
+          </button>
+        </div>
+      `,
+        trigger: 'manual',
+        html: true,
+      });
+
+      return () => tooltip.dispose();
+    })
+      .takeUntil(Observable.timer(1000 * 60))
+      .takeUntil(
+        observableFromSubscribeFunction(cb =>
+          atom.workspace.onDidDestroyPaneItem(cb),
+        ).filter(event => event.item === paneItem),
+      )
+      .takeUntil(
+        Observable.fromEvent(document.body, 'click').filter(e =>
+          e.target.classList.contains('nuclide-moved-terminal-nux-dismiss'),
+        ),
+      )
+      .subscribe(),
+  );
 }
