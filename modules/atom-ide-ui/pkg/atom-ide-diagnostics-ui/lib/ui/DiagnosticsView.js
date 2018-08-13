@@ -36,6 +36,7 @@ import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import FilterButton from './FilterButton';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 import SettingsModal from './SettingsModal';
+import DiagnosticsTableNux from './DiagnosticsTableNux';
 
 export type Props = {
   diagnostics: Array<DiagnosticMessage>,
@@ -43,6 +44,7 @@ export type Props = {
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
   showDirectoryColumn: boolean,
   showTraces: boolean,
+  showNuxContent: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   gotoMessageLocation: (
     message: DiagnosticMessage,
@@ -60,6 +62,7 @@ export type Props = {
   onTypeFilterChange: (type: DiagnosticGroup) => mixed,
   textFilter: RegExpFilterValue,
   onTextFilterChange: (change: RegExpFilterChange) => mixed,
+  onDismissNux: () => mixed,
 };
 
 /**
@@ -90,7 +93,12 @@ export default class DiagnosticsView extends React.Component<Props> {
   }
 
   render(): React.Element<any> {
-    const {diagnostics, showDirectoryColumn, showTraces} = this.props;
+    const {
+      diagnostics,
+      showDirectoryColumn,
+      showNuxContent,
+      showTraces,
+    } = this.props;
 
     const groups = ['errors', 'warnings', 'info'];
     if (this.props.supportedMessageKinds.has('review')) {
@@ -167,6 +175,9 @@ export default class DiagnosticsView extends React.Component<Props> {
             />
           </ToolbarRight>
         </Toolbar>
+        {showNuxContent ? (
+          <DiagnosticsTableNux onDismiss={this.props.onDismissNux} />
+        ) : null}
         <div
           className="atom-ide-filterable"
           ref={el => (this._diagnosticsTableWrapperEl = el)}

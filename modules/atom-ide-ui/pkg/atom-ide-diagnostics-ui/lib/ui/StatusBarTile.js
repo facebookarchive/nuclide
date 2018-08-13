@@ -82,7 +82,7 @@ export default class StatusBarTile {
     }
 
     const item = (this._item = document.createElement('div'));
-    item.classList.add('inline-block', 'diagnostics-status-bar-item');
+    item.classList.add('inline-block');
     this._render();
 
     const statusBarPosition = featureConfig.get(

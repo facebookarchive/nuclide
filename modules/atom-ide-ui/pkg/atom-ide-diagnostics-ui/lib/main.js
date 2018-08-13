@@ -27,7 +27,6 @@ import type {
 import {areSetsEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import addNuxTooltip from './addNuxTooltip';
 import analytics from 'nuclide-commons/analytics';
 import AsyncStorage from 'idb-keyval';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -60,6 +59,7 @@ type ActivationState = {|
 type DiagnosticsState = {|
   ...ActivationState,
   diagnosticUpdater: ?DiagnosticUpdater,
+  showNuxContent: boolean,
 |};
 
 const NUX_ASYNC_STORAGE_KEY = 'nuclide_diagnostics_nux_shown';
@@ -74,6 +74,7 @@ class Activation {
 
   constructor(state: ?Object): void {
     this._model = new Model({
+      showNuxContent: false,
       filterByActiveTextEditor:
         idx(state, _ => _.filterByActiveTextEditor) === true,
       diagnosticUpdater: null,
@@ -231,19 +232,17 @@ class Activation {
         .subscribe(async () => {
           // capture the current focus since opening diagnostics will change it
           const previouslyFocusedElement = document.activeElement;
+          this._model.setState({showNuxContent: true});
+
+          // we need to await this as we must wait for the panel to activate to
+          // change the focus back
           await goToLocation(WORKSPACE_VIEW_URI);
+          AsyncStorage.set(NUX_ASYNC_STORAGE_KEY, true);
+          analytics.track('diagnostics-table-nux-shown');
+
           // and then restore the focus if it existed before
           if (previouslyFocusedElement != null) {
             previouslyFocusedElement.focus();
-          }
-
-          const statusBarNode = document.querySelector(
-            '.diagnostics-status-bar-item',
-          );
-          if (statusBarNode) {
-            addNuxTooltip(statusBarNode);
-            AsyncStorage.set(NUX_ASYNC_STORAGE_KEY, true);
-            analytics.track('diagnostics-table-nux-shown');
           }
         }),
     );
@@ -252,6 +251,12 @@ class Activation {
   _createDiagnosticsViewModel(): DiagnosticsViewModel {
     return new DiagnosticsViewModel(this._getGlobalViewStates());
   }
+
+  _dismissNux = () => {
+    this._model.setState({
+      showNuxContent: false,
+    });
+  };
 
   /**
    * An observable of the state that's shared between all panel copies. State that's unique to a
@@ -265,6 +270,9 @@ class Activation {
       const updaters = packageStates
         .map(state => state.diagnosticUpdater)
         .distinctUntilChanged();
+      const showNuxContentStream = packageStates.map(
+        state => state.showNuxContent,
+      );
 
       const diagnosticsStream = updaters
         .switchMap(
@@ -333,6 +341,7 @@ class Activation {
         showDirectoryColumnStream,
         autoVisibilityStream,
         supportedMessageKindsStream,
+        showNuxContentStream,
         uiConfigStream,
         // $FlowFixMe
         (
@@ -343,6 +352,7 @@ class Activation {
           showDirectoryColumn,
           autoVisibility,
           supportedMessageKinds,
+          showNuxContent,
           uiConfig,
         ) => ({
           diagnostics,
@@ -353,7 +363,9 @@ class Activation {
           autoVisibility,
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
+          onDismissNux: this._dismissNux,
           supportedMessageKinds,
+          showNuxContent,
           uiConfig,
         }),
       );

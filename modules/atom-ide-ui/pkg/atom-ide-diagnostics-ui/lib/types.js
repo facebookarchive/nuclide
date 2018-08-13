@@ -34,6 +34,8 @@ export type GlobalViewState = {
   showDirectoryColumn: boolean,
   autoVisibility: boolean,
   showTraces: boolean,
+  showNuxContent: boolean,
+  onDismissNux: () => mixed,
   onShowTracesChange: (isChecked: boolean) => mixed,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
   uiConfig: UiConfig,

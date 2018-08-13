@@ -112,17 +112,20 @@ export class TextEditorBanner {
   }
 }
 
-type NoticeProps = {
+type NoticeProps = {|
   messageType: MessageType,
   children: React.Node,
-};
+  contentStyle?: {[key: string]: any},
+|};
 
 export class Notice extends React.Component<NoticeProps> {
   render() {
     return (
       <div className="nuclide-ui-text-editor-banner-notice">
         <Message type={this.props.messageType}>
-          <div className="nuclide-ui-text-editor-banner-notice-content">
+          <div
+            className="nuclide-ui-text-editor-banner-notice-content"
+            style={this.props.contentStyle}>
             {this.props.children}
           </div>
         </Message>
