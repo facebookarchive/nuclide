@@ -23,6 +23,7 @@ import type {
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Reference,
   Outline,
   CodeAction,
@@ -638,7 +639,7 @@ export class FlowSingleProjectLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     newName: string,
-  ): Observable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): Observable<?RenameReturn> {
     throw new Error('Not implemented');
   }
 

@@ -82,6 +82,9 @@ export type {
   RefactorResponse,
   RefactorProvider,
   RefactorRequest,
+  RenameReturn,
+  RenameData,
+  RenameError,
 } from './pkg/atom-ide-refactor/lib/types';
 
 export type {

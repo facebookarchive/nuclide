@@ -25,6 +25,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   OutlineTree,
   CodeAction,
@@ -2002,7 +2003,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): ConnectableObservable<?RenameReturn> {
     return Observable.fromPromise(
       this._rename(fileVersion, position, newName),
     ).publish();
@@ -2012,7 +2013,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+  ): Promise<?RenameReturn> {
     if (
       this._getState() !== 'Running' ||
       !this._serverCapabilities.renameProvider ||
@@ -2040,10 +2041,16 @@ export class LspLanguageService {
         // RequestCancelled is normal and shouldn't be surfaced to the user
         return null;
       }
-      throw e;
+      return {
+        type: 'error',
+        message: e.message,
+      };
     }
 
-    return convert.lspWorkspaceEdit_atomWorkspaceEdit(response);
+    return {
+      type: 'data',
+      data: convert.lspWorkspaceEdit_atomWorkspaceEdit(response),
+    };
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

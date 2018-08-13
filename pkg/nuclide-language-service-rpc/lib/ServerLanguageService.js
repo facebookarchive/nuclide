@@ -18,6 +18,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
   SignatureHelp,
@@ -81,7 +82,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     newName: string,
-  ): Observable<?Map<NuclideUri, Array<TextEdit>>>,
+  ): Observable<?RenameReturn>,
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
@@ -247,7 +248,7 @@ export class ServerLanguageService<
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): ConnectableObservable<?RenameReturn> {
     const filePath = fileVersion.filePath;
     return Observable.fromPromise(getBufferAtVersion(fileVersion))
       .concatMap(buffer => {

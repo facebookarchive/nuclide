@@ -27,6 +27,7 @@ import type {
   Outline,
   CodeAction,
   SignatureHelp,
+  RenameReturn,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
@@ -187,7 +188,7 @@ export interface LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>>;
+  ): ConnectableObservable<?RenameReturn>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 

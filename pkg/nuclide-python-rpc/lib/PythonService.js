@@ -22,6 +22,7 @@ import type {
   DefinitionQueryResult,
   DiagnosticMessageType,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
   SignatureHelp,
@@ -264,7 +265,7 @@ class PythonSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     newName: string,
-  ): Observable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): Observable<?RenameReturn> {
     throw new Error('Not Yet Implemented');
   }
 

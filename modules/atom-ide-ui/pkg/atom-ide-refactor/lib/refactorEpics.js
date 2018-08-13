@@ -192,10 +192,16 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
       ),
     )
       .map(allEdits => {
-        const edits = allEdits.find(e => e != null && e.size > 0);
-        if (edits == null) {
+        const renameResult = allEdits.find(e => e != null);
+
+        if (renameResult != null && renameResult.type === 'error') {
+          return Actions.error('execute', Error(renameResult.message));
+        } else if (renameResult == null || renameResult.data.size === 0) {
           return Actions.close();
         }
+
+        const edits = renameResult.data;
+
         const currentFilePath = editor.getPath();
         invariant(currentFilePath != null);
 

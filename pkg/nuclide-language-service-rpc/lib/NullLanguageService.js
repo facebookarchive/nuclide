@@ -19,6 +19,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
   SignatureHelp,
@@ -84,7 +85,7 @@ export class NullLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): ConnectableObservable<?RenameReturn> {
     return Observable.of(null).publish();
   }
 

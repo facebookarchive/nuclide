@@ -36,6 +36,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
   SignatureHelp,
@@ -245,7 +246,7 @@ export interface FlowLanguageServiceType {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>>;
+  ): ConnectableObservable<?RenameReturn>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 

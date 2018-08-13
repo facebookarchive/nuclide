@@ -9,10 +9,11 @@
  * @format
  */
 
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {LanguageService} from './LanguageService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {RefactorProvider as RefactorProviderType} from 'atom-ide-ui';
+import type {
+  RefactorProvider as RefactorProviderType,
+  RenameReturn,
+} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -81,7 +82,7 @@ export class RenameProvider<T: LanguageService> {
     editor: TextEditor,
     position: atom$Point,
     newName: string,
-  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+  ): Promise<?RenameReturn> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(

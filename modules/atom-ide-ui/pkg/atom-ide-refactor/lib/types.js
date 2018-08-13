@@ -356,6 +356,18 @@ export type FreeformRefactorRequest = {|
 
 export type RefactorRequest = RenameRequest | FreeformRefactorRequest;
 
+export type RenameData = {
+  type: 'data',
+  data: Map<NuclideUri, Array<TextEdit>>,
+};
+
+export type RenameError = {
+  type: 'error',
+  message: string,
+};
+
+export type RenameReturn = RenameData | RenameError;
+
 export type RefactorProvider = {
   priority: number,
   grammarScopes: Array<string>,
@@ -377,5 +389,5 @@ export type RefactorProvider = {
     editor: TextEditor,
     position: atom$Point,
     newName: string,
-  ) => Promise<?Map<NuclideUri, Array<TextEdit>>>,
+  ) => Promise<?RenameReturn>,
 };

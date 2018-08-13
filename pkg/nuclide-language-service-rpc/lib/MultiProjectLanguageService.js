@@ -20,6 +20,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
   SignatureHelp,
@@ -320,7 +321,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     fileVersion: FileVersion,
     position: atom$Point,
     newName: string,
-  ): ConnectableObservable<?Map<NuclideUri, Array<TextEdit>>> {
+  ): ConnectableObservable<?RenameReturn> {
     return Observable.fromPromise(
       this._getLanguageServiceForFile(fileVersion.filePath),
     )

@@ -10,13 +10,12 @@
  * @format
  * @emails oncall+nuclide
  */
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   FreeformRefactorRequest,
   RefactorProvider,
   RefactorRequest,
   RenameRequest,
+  RenameReturn,
   AvailableRefactoring,
   RefactorResponse,
 } from '../lib/types';
@@ -49,7 +48,7 @@ describe('refactorStore', () => {
     Array<AvailableRefactoring>,
   > = (null: any);
   let refactorReturn: Observable<RefactorResponse> = (null: any);
-  let renameReturn: Promise<?Map<NuclideUri, Array<TextEdit>>>;
+  let renameData: Promise<?RenameReturn>;
 
   let lastError: mixed = null;
   function expectNoUncaughtErrors(): void {
@@ -98,15 +97,15 @@ describe('refactorStore', () => {
         editor: TextEditor,
         position: atom$Point,
         newName: string,
-      ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
-        return renameReturn;
+      ): Promise<?RenameReturn> {
+        return renameData;
       },
     };
 
     // TODO spy on the provider and call through
     refactoringsAtPointReturn = Promise.resolve([]);
     refactorReturn = Observable.empty();
-    renameReturn = Promise.resolve();
+    renameData = Promise.resolve();
 
     providers = new ProviderRegistry();
     store = getStore(providers);
@@ -355,7 +354,6 @@ describe('refactorStore', () => {
         // TODO test this with multiple files. it will become much more complex. We need to make
         // sure that we can apply the entire refactoring transactionally. this means if something
         // goes wrong we need to roll back the rest.
-
         await nextTick();
         expectNoUncaughtErrors();
       });
