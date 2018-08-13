@@ -13,7 +13,6 @@
 import type {IBreakpoint, IDebugService, IExceptionBreakpoint} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import * as React from 'react';
@@ -77,10 +76,7 @@ export default class BreakpointListComponent extends React.Component<
         Boolean(
           focusedProcess.session.capabilities.supportsConditionalBreakpoints,
         ),
-      breakpoints:
-        focusedProcess == null
-          ? model.getBreakpoints()
-          : focusedProcess.breakpoints,
+      breakpoints: model.getBreakpoints(),
       exceptionBreakpoints: model.getExceptionBreakpoints(),
       exceptionBreakpointsCollapsed,
       unavailableBreakpointsCollapsed: true,
@@ -95,22 +91,14 @@ export default class BreakpointListComponent extends React.Component<
       model.onDidChangeBreakpoints(() => {
         this.setState(this._computeState());
       }),
+      // Exception breakpoint filters are different for different debuggers,
+      // so we must refresh when switching debugger focus.
+      viewModel.onDidChangeDebuggerFocus(() => {
+        this.setState(this._computeState());
+      }),
       observeProjectPathsAll(projectPaths =>
         this.setState({activeProjects: projectPaths}),
       ),
-      observableFromSubscribeFunction(
-        viewModel.onDidChangeDebuggerFocus.bind(viewModel),
-      ).subscribe(() => {
-        const {service} = this.props;
-        if (service.viewModel.focusedProcess != null) {
-          this.setState({
-            breakpoints:
-              service.viewModel.focusedProcess == null
-                ? service.getModel().getBreakpoints()
-                : service.viewModel.focusedProcess.breakpoints,
-          });
-        }
-      }),
     );
   }
 

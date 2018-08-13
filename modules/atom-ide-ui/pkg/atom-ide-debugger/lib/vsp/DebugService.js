@@ -1127,7 +1127,6 @@ export default class DebugService implements IDebugService {
   addBreakpoints(uri: string, rawBreakpoints: IRawBreakpoint[]): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_ADD);
     this._model.addBreakpoints(uri, rawBreakpoints);
-
     return this._sendBreakpoints(uri);
   }
 
@@ -1166,19 +1165,16 @@ export default class DebugService implements IDebugService {
       .getBreakpoints()
       .filter(bp => id == null || bp.getId() === id);
     const urisToClear = distinct(toRemove, bp => bp.uri).map(bp => bp.uri);
-    this._model
-      .getProcesses()
-      .forEach(process => process.removeBreakpointsByUris(urisToClear));
 
     this._model.removeBreakpoints(toRemove);
-
-    await Promise.all(urisToClear.map(uri => this._sendBreakpoints(uri)));
 
     if (id == null) {
       track(AnalyticsEvents.DEBUGGER_BREAKPOINT_DELETE_ALL);
     } else if (!skipAnalytics) {
       track(AnalyticsEvents.DEBUGGER_BREAKPOINT_DELETE);
     }
+
+    await Promise.all(urisToClear.map(uri => this._sendBreakpoints(uri)));
   }
 
   setBreakpointsActivated(activated: boolean): Promise<void> {
@@ -1790,60 +1786,58 @@ export default class DebugService implements IDebugService {
     uri: string,
     sourceModified?: boolean = false,
   ): Promise<void> {
-    const processes = this._model.getProcesses();
-    processes.forEach(async process => {
-      const session = (process.session: any);
-      if (
-        process == null ||
-        session == null ||
-        !session.isReadyForBreakpoints()
-      ) {
-        return;
-      }
+    const process = this._getCurrentProcess();
+    const session = this._getCurrentSession();
+    if (
+      process == null ||
+      session == null ||
+      !session.isReadyForBreakpoints()
+    ) {
+      return;
+    }
 
-      const breakpointsToSend = this._model
-        .getBreakpoints()
-        .filter(
-          bp =>
-            this._model.areBreakpointsActivated() &&
-            bp.enabled &&
-            bp.uri === uri,
-        );
+    const breakpointsToSend = this._model
+      .getBreakpoints()
+      .filter(
+        bp =>
+          this._model.areBreakpointsActivated() && bp.enabled && bp.uri === uri,
+      );
 
-      const rawSource = process.getSource({
-        path: uri,
-        name: nuclideUri.basename(uri),
-      }).raw;
+    const rawSource = process.getSource({
+      path: uri,
+      name: nuclideUri.basename(uri),
+    }).raw;
 
-      if (breakpointsToSend.length && !rawSource.adapterData) {
-        rawSource.adapterData = breakpointsToSend[0].adapterData;
-      }
+    if (breakpointsToSend.length && !rawSource.adapterData) {
+      rawSource.adapterData = breakpointsToSend[0].adapterData;
+    }
 
-      // The UI is 0-based, while VSP is 1-based.
-      const response = await session.setBreakpoints({
-        source: (rawSource: any),
-        lines: breakpointsToSend.map(bp => bp.line),
-        breakpoints: breakpointsToSend.map(bp => ({
-          line: bp.line,
-          column: bp.column,
-          condition: bp.condition,
-          hitCondition: bp.hitCondition,
-        })),
-        sourceModified,
-      });
-      if (response != null && response.body != null) {
-        const data: {[id: string]: DebugProtocol.Breakpoint} = {};
-        for (let i = 0; i < breakpointsToSend.length; i++) {
-          data[breakpointsToSend[i].getId()] = response.body.breakpoints[i];
-          if (!breakpointsToSend[i].column) {
-            // If there was no column sent ignore the breakpoint column response from the adapter
-            data[breakpointsToSend[i].getId()].column = undefined;
-          }
-        }
-
-        this._model.updateBreakpointsForProcess(data, process);
-      }
+    // The UI is 0-based, while VSP is 1-based.
+    const response = await session.setBreakpoints({
+      source: (rawSource: any),
+      lines: breakpointsToSend.map(bp => bp.line),
+      breakpoints: breakpointsToSend.map(bp => ({
+        line: bp.line,
+        column: bp.column,
+        condition: bp.condition,
+        hitCondition: bp.hitCondition,
+      })),
+      sourceModified,
     });
+    if (response == null || response.body == null) {
+      return;
+    }
+
+    const data: {[id: string]: DebugProtocol.Breakpoint} = {};
+    for (let i = 0; i < breakpointsToSend.length; i++) {
+      data[breakpointsToSend[i].getId()] = response.body.breakpoints[i];
+      if (!breakpointsToSend[i].column) {
+        // If there was no column sent ignore the breakpoint column response from the adapter
+        data[breakpointsToSend[i].getId()].column = undefined;
+      }
+    }
+
+    this._model.updateBreakpoints(data);
   }
 
   _getCurrentSession(): ?VsDebugSession {
@@ -1857,56 +1851,50 @@ export default class DebugService implements IDebugService {
   }
 
   async _sendFunctionBreakpoints(): Promise<void> {
-    const processes = this._model.getProcesses();
-    processes.forEach(async process => {
-      const session = (process.session: any);
-      if (
-        session == null ||
-        !session.isReadyForBreakpoints() ||
-        !session.getCapabilities().supportsFunctionBreakpoints
-      ) {
-        return;
-      }
+    const session = this._getCurrentSession();
+    if (
+      session == null ||
+      !session.isReadyForBreakpoints() ||
+      !session.getCapabilities().supportsFunctionBreakpoints
+    ) {
+      return;
+    }
 
-      const breakpointsToSend: any = this._model
-        .getFunctionBreakpoints()
-        .filter(fbp => fbp.enabled && this._model.areBreakpointsActivated());
-      const response: DebugProtocol.SetFunctionBreakpointsResponse = await session.setFunctionBreakpoints(
-        {
-          breakpoints: breakpointsToSend,
-        },
-      );
-      if (response == null || response.body == null) {
-        return;
-      }
+    const breakpointsToSend: any = this._model
+      .getFunctionBreakpoints()
+      .filter(fbp => fbp.enabled && this._model.areBreakpointsActivated());
+    const response: DebugProtocol.SetFunctionBreakpointsResponse = await session.setFunctionBreakpoints(
+      {
+        breakpoints: breakpointsToSend,
+      },
+    );
+    if (response == null || response.body == null) {
+      return;
+    }
 
-      const data = {};
-      for (let i = 0; i < breakpointsToSend.length; i++) {
-        data[breakpointsToSend[i].getId()] = response.body.breakpoints[i];
-      }
+    const data = {};
+    for (let i = 0; i < breakpointsToSend.length; i++) {
+      data[breakpointsToSend[i].getId()] = response.body.breakpoints[i];
+    }
 
-      this._model.updateFunctionBreakpoints(data);
-    });
+    this._model.updateFunctionBreakpoints(data);
   }
 
   async _sendExceptionBreakpoints(): Promise<void> {
-    const processes = this._model.getProcesses();
-    processes.forEach(async process => {
-      const session = (process.session: any);
-      if (
-        session == null ||
-        !session.isReadyForBreakpoints() ||
-        this._model.getExceptionBreakpoints().length === 0
-      ) {
-        return;
-      }
+    const session = this._getCurrentSession();
+    if (
+      session == null ||
+      !session.isReadyForBreakpoints() ||
+      this._model.getExceptionBreakpoints().length === 0
+    ) {
+      return;
+    }
 
-      const enabledExceptionBps = this._model
-        .getExceptionBreakpoints()
-        .filter(exb => exb.enabled);
-      await session.setExceptionBreakpoints({
-        filters: enabledExceptionBps.map(exb => exb.filter),
-      });
+    const enabledExceptionBps = this._model
+      .getExceptionBreakpoints()
+      .filter(exb => exb.enabled);
+    await session.setExceptionBreakpoints({
+      filters: enabledExceptionBps.map(exb => exb.filter),
     });
   }
 

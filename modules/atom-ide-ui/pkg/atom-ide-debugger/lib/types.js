@@ -44,7 +44,6 @@ import type {Expected} from 'nuclide-commons/expected';
 import type {Observable} from 'rxjs';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {IProcessConfig} from 'nuclide-debugger-common';
-import type {Breakpoint} from './vsp/DebuggerModel';
 
 export interface RemoteDebuggerService {
   onDidStartDebugSession(
@@ -240,7 +239,6 @@ export interface IScope extends IExpressionContainer {
 }
 
 export interface IProcess extends ITreeElement {
-  +breakpoints: IBreakpoint[];
   +configuration: IProcessConfig;
   +session: ISession & ITreeElement;
   +sources: Map<string, ISource>;
@@ -254,15 +252,6 @@ export interface IProcess extends ITreeElement {
     position: atom$Point,
     overwriteBefore: number,
   ): Promise<Array<DebugProtocol.CompletionItem>>;
-  addBreakpoints(
-    uri: string,
-    rawData: IRawBreakpoint[],
-    fireEvent?: boolean,
-  ): Breakpoint[];
-  getBreakpointById(id: string): ?IBreakpoint;
-  updateBreakpoints(data: {[id: string]: DebugProtocol.Breakpoint}): void;
-  setBreakpointById(id: string, breakpoint: IBreakpoint): void;
-  removeBreakpointsByUris(uris: Array<string>): void;
 }
 
 export interface IEnableable extends ITreeElement {
