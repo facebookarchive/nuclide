@@ -33,8 +33,10 @@ type State = {
 export default class TabbedContainer extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
+    const {children, tabNames} = props;
+    const firstRealTabIndex = children.findIndex(val => val != null);
     this.state = {
-      activeTabName: props.tabNames[0],
+      activeTabName: tabNames[Math.max(0, firstRealTabIndex)],
     };
   }
 
