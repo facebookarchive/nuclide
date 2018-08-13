@@ -181,8 +181,9 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 onFileChosen={onFileChosen}
                 onForgetFile={this._handleForgetFile}
                 onMarkFileResolved={onMarkFileResolved}
-                onOpenFileInDiffView={this._handleOpenFileInDiffView}
-                openInDiffViewOption={openInDiffViewOption || false}
+                onOpenFileInDiffView={
+                  openInDiffViewOption ? this._handleOpenFileInDiffView : null
+                }
                 onRevertFile={this._handleRevertFile}
                 rootPath={root}
                 selectedFile={selectedFile}
