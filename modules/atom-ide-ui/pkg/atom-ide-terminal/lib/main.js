@@ -57,6 +57,35 @@ class Activation {
         }
       }),
       atom.commands.add('atom-workspace', 'atom-ide-terminal:toggle', () => {
+        const activePane = atom.workspace.getActivePaneItem();
+        if (
+          activePane &&
+          activePane.getURI &&
+          activePane.getURI() === URI_PREFIX
+        ) {
+          const container = atom.workspace.getActivePaneContainer();
+          if (container === atom.workspace.getCenter()) {
+            atom.confirm(
+              {
+                message: 'This will destroy the current terminal',
+                detail:
+                  'Toggling active terminals in the center pane closes them.',
+                buttons: ['Keep', 'Destroy'],
+                defaultId: 0,
+                cancelId: 0,
+                type: 'warning',
+              },
+              // $FlowFixMe Flow can't handle multiple definitions for confirm(). This is the newer async version.
+              response => {
+                if (response === 1) {
+                  atom.workspace.toggle(URI_PREFIX);
+                }
+              },
+            );
+
+            return;
+          }
+        }
         atom.workspace.toggle(URI_PREFIX);
       }),
       atom.commands.add(

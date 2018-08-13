@@ -1314,6 +1314,7 @@ declare class atom$Workspace {
   // Pane Items
   getPaneItems(): Array<Object>,
   getActivePaneItem(): ?Object,
+  getActivePaneContainer(): atom$PaneContainer,
   getTextEditors(): Array<atom$TextEditor>,
   getActiveTextEditor(): ?atom$TextEditor,
   createItemForURI(uri: string, options: atom$WorkspaceOpenOptions): atom$PaneItem,
