@@ -75,6 +75,8 @@ declare module 'vscode-debugprotocol' {
        *  If the attribute is missing or false, only the thread with the given threadId can be expanded.
        */
       allThreadsStopped?: boolean,
+      /** NUCLIDE: if the stop event is due to a breakpoint, and the adapter supports it, the id of the breakpoint */
+      breakpointId?: number,
     };
   }
 
@@ -1087,6 +1089,8 @@ declare module 'vscode-debugprotocol' {
     supportsTerminateThreadsRequest?: boolean,
     /** The debug adapter supports the delayed loading of parts of the stack, which requires that both the 'startFrame' and 'levels' arguments and the 'totalFrames' result of the 'StackTrace' request are supported. */
     supportsDelayedStackTraceLoading?: boolean,
+    /** NUCLIDE: the debug adapter supports sending back the id of the breakpoint that was hit in the stop event, if the stop is due to a breakpoint. */
+    supportsBreakpointIdOnStop?: boolean,
   };
 
   /** An ExceptionBreakpointsFilter is shown in the UI as an option for configuring how exceptions are dealt with. */

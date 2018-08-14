@@ -11,6 +11,7 @@
  */
 
 import type {ITerminal} from 'nuclide-prebuilt-libs/pty';
+import type {MIStoppedEventResult} from './MITypes';
 
 import {
   BreakpointEvent,
@@ -180,6 +181,7 @@ class MIDebugSession extends LoggingDebugSession {
     response.body.supportsConfigurationDoneRequest = true;
     response.body.supportsSetVariable = true;
     response.body.supportsValueFormattingOptions = true;
+    response.body.supportsBreakpointIdOnStop = true;
     response.body.exceptionBreakpointFilters = [
       {
         filter: 'uncaught',
@@ -918,6 +920,25 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
+  _breakpointIdFromStop(stop: MIStoppedEventResult): ?number {
+    const bkptno = stop.bkptno;
+    if (bkptno == null) {
+      return null;
+    }
+
+    const bkptid = parseInt(bkptno, 10);
+    if (isNaN(bkptid)) {
+      return null;
+    }
+
+    const bp = this._breakpoints.breakpointByDebuggerId(bkptid);
+    if (bp == null) {
+      return null;
+    }
+
+    return this._breakpoints.handleForBreakpoint(bp);
+  }
+
   async _onAsyncStopped(record: MIAsyncRecord): Promise<void> {
     const stopped = stoppedEventResult(record);
 
@@ -956,6 +977,7 @@ class MIDebugSession extends LoggingDebugSession {
 
     let reason = 'pause';
     let description = 'Execution paused';
+    let breakpointId: ?number = null;
 
     const exceptionReason = this._exceptionBreakpoints.stopEventReason(stopped);
     if (exceptionReason != null) {
@@ -964,6 +986,7 @@ class MIDebugSession extends LoggingDebugSession {
     } else if (stopped.reason === 'breakpoint-hit') {
       reason = 'breakpoint';
       description = 'Breakpoint hit';
+      breakpointId = this._breakpointIdFromStop(stopped);
     } else if (stopped.reason === 'end-stepping-range') {
       reason = 'step';
       description = 'Execution stepped';
@@ -999,6 +1022,7 @@ class MIDebugSession extends LoggingDebugSession {
     event.body = {
       reason,
       description,
+      breakpointId,
       threadId: parseInt(stopped['thread-id'], 10),
       preserveFocusHint: false,
       allThreadsStopped: true,

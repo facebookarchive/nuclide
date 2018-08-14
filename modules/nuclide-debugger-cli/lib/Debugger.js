@@ -81,6 +81,7 @@ export default class Debugger implements DebuggerInterface {
   _muteOutputCategories: Set<string>;
   _attached: boolean = false;
   _configured: boolean = false;
+  _stoppedAtBreakpointId: ?number = null;
 
   constructor(
     logger: log4js$Logger,
@@ -234,6 +235,8 @@ export default class Debugger implements DebuggerInterface {
       throw new Error('Cannot run an attached process; already attached.');
     }
 
+    this._stoppedAtBreakpointId = null;
+
     if (this._state === 'STOPPED') {
       this.relaunch();
       return;
@@ -333,6 +336,7 @@ export default class Debugger implements DebuggerInterface {
       // input is stopped.
       this._console.stopInput();
       const session = this._ensureDebugSession(true);
+      this._stoppedAtBreakpointId = null;
 
       // if we are attaching and still in configuration, this is where we'll
       // send configuration done.
@@ -426,6 +430,10 @@ export default class Debugger implements DebuggerInterface {
       body: {variables},
     } = await session.variables({variablesReference: ref});
     return variables;
+  }
+
+  getStoppedAtBreakpointId(): ?number {
+    return this._stoppedAtBreakpointId;
   }
 
   async setSourceBreakpoint(
@@ -902,8 +910,10 @@ export default class Debugger implements DebuggerInterface {
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
     const {
-      body: {description, threadId, allThreadsStopped},
+      body: {description, threadId, allThreadsStopped, breakpointId},
     } = event;
+
+    this._stoppedAtBreakpointId = breakpointId;
 
     const firstStop = this._threads.allThreadsRunning();
     if (firstStop && description != null) {
