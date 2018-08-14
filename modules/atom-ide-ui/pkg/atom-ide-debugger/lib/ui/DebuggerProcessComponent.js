@@ -129,6 +129,22 @@ export default class DebuggerProcessComponent extends React.PureComponent<
               }}
               tooltip={{title: 'Show only paused threads'}}
             />
+            <Button
+              icon={'x'}
+              disabled={
+                !this.state.showPausedThreadsOnly &&
+                (this.state.filter === '' || this.state.filter == null)
+              }
+              size={ButtonSizes.SMALL}
+              onClick={() => {
+                featureConfig.set(SHOW_PAUSED_ONLY_KEY, false);
+                this.setState({
+                  showPausedThreadsOnly: false,
+                  filter: '',
+                });
+              }}
+              tooltip={{title: 'Clear thread filters'}}
+            />
           </ButtonGroup>
         </div>
         <TreeList showArrows={true}>{processElements}</TreeList>
