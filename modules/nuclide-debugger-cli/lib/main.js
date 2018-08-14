@@ -82,6 +82,9 @@ const _help: string[] = [
   '  Load default arguments for a session type preset',
   '--type debugger-type:',
   '  Specify the type of program to debug. Required with --attach',
+  '--plain:',
+  '  Do not use cursor control sequences or terminal raw mode (for example,',
+  '  if running in a shell that does not well support them such as emacs)',
   '',
   '[program]: If not attaching, the program to launch. Normally the type of',
   '           program can be inferred from the file extension.',
@@ -126,6 +129,7 @@ async function main(): Promise<void> {
     const args = yargs(cmdLine)
       .boolean('attach')
       .boolean('dvsp')
+      .boolean('plain')
       .boolean('help').argv;
 
     if (args.help) {
@@ -135,7 +139,7 @@ async function main(): Promise<void> {
 
     const aliases = configFile.resolveAliasesForPreset(preset);
     const dispatcher = new CommandDispatcher(aliases);
-    const cli = new CommandLine(dispatcher);
+    const cli = new CommandLine(dispatcher, args.plain);
 
     dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
     dispatcher.registerCommand(new QuitCommand(() => cli.close()));

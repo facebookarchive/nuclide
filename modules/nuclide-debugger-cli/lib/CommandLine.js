@@ -36,12 +36,20 @@ export default class CommandLine implements ConsoleIO {
 
   _subscriptions: Array<rxjs$ISubscription> = [];
 
-  constructor(dispatcher: CommandDispatcher) {
+  constructor(dispatcher: CommandDispatcher, plain: boolean) {
     this._dispatcher = dispatcher;
-    this._cli = new LineEditor({
+
+    let lineEditorArgs = {
       input: process.stdin,
       output: process.stdout,
-    });
+    };
+    if (plain) {
+      lineEditorArgs = {
+        ...lineEditorArgs,
+        tty: false,
+      };
+    }
+    this._cli = new LineEditor(lineEditorArgs);
 
     this.setPrompt();
 
