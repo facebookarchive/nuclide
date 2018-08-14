@@ -193,7 +193,11 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         {fileIcon}
         <span
           onClick={handleTitleClick}
-          className={isFocused ? 'debugger-tree-process-thread-selected' : ''}
+          className={
+            isFocused
+              ? 'debugger-tree-process debugger-tree-process-thread-selected'
+              : 'debugger-tree-process'
+          }
           title={title}>
           {title}
         </span>
