@@ -19,6 +19,9 @@ import {TreeList} from 'nuclide-commons-ui/Tree';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
 import ProcessTreeNode from './ProcessTreeNode';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type Props = {
   service: IDebugService,
@@ -27,7 +30,10 @@ type Props = {
 type State = {
   processList: Array<IProcess>,
   filter: ?string,
+  showPausedThreadsOnly: boolean,
 };
+
+const SHOW_PAUSED_ONLY_KEY = 'debugger-show-paused-threads-only';
 
 export default class DebuggerProcessComponent extends React.PureComponent<
   Props,
@@ -43,6 +49,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
     this.state = {
       processList: this.props.service.getModel().getProcesses(),
       filter: null,
+      showPausedThreadsOnly: Boolean(featureConfig.get(SHOW_PAUSED_ONLY_KEY)),
     };
   }
 
@@ -82,6 +89,7 @@ export default class DebuggerProcessComponent extends React.PureComponent<
           title={processName != null ? processName : adapterType}
           filter={filter}
           filterRegEx={filterRegEx}
+          showPausedThreadsOnly={this.state.showPausedThreadsOnly}
           key={process.getId()}
           childItems={process.getAllThreads()}
           process={process}
@@ -92,18 +100,37 @@ export default class DebuggerProcessComponent extends React.PureComponent<
 
     return (
       <div>
-        <AtomInput
-          placeholderText="Filter threads..."
-          value={this.state.filter || ''}
-          size="sm"
-          className="debugger-thread-filter-box"
-          onDidChange={text => {
-            this.setState({
-              filter: text,
-            });
-          }}
-          autofocus={false}
-        />
+        <div className="debugger-thread-filter-row">
+          <AtomInput
+            className="debugger-thread-filter-box"
+            placeholderText="Filter threads..."
+            value={this.state.filter || ''}
+            size="sm"
+            onDidChange={text => {
+              this.setState({
+                filter: text,
+              });
+            }}
+            autofocus={false}
+          />
+          <ButtonGroup className="inline-block">
+            <Button
+              icon={'playback-pause'}
+              size={ButtonSizes.SMALL}
+              selected={this.state.showPausedThreadsOnly}
+              onClick={() => {
+                featureConfig.set(
+                  SHOW_PAUSED_ONLY_KEY,
+                  !this.state.showPausedThreadsOnly,
+                );
+                this.setState(prevState => ({
+                  showPausedThreadsOnly: !prevState.showPausedThreadsOnly,
+                }));
+              }}
+              tooltip={{title: 'Show only paused threads'}}
+            />
+          </ButtonGroup>
+        </div>
         <TreeList showArrows={true}>{processElements}</TreeList>
       </div>
     );

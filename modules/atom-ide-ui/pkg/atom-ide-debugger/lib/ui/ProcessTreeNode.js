@@ -32,6 +32,7 @@ type Props = {
   title: string,
   filter: ?string,
   filterRegEx: ?RegExp,
+  showPausedThreadsOnly: boolean,
 };
 
 type State = {
@@ -132,6 +133,10 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
   // Returns true if thread should be kept.
   filterThread(thread: IThread): boolean {
     const {filter, filterRegEx} = this.props;
+    if (this.props.showPausedThreadsOnly && !thread.stopped) {
+      return false;
+    }
+
     if (filter == null) {
       return true;
     } else if (filterRegEx == null) {
@@ -203,7 +208,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         title={formattedTitle}
         collapsed={isCollapsed}
         onSelect={this.handleSelect}>
-        {filteredThreads.length === 0 && this.props.filter != null ? (
+        {filteredThreads.length === 0 && threads.length > 0 ? (
           <span className="debugger-thread-no-match-text">
             No threads match the current filter.
           </span>
