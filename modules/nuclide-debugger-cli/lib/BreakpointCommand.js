@@ -72,11 +72,11 @@ The breakpoint command has several subcommands:
     this._debugger = debug;
     this._dispatcher = new CommandDispatcher(new Map());
 
-    this._dispatcher.registerCommand(new BreakpointClearCommand(debug));
-    this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
-    this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
+    this._dispatcher.registerCommand(new BreakpointClearCommand(con, debug));
+    this._dispatcher.registerCommand(new BreakpointDisableCommand(con, debug));
+    this._dispatcher.registerCommand(new BreakpointEnableCommand(con, debug));
     this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));
-    this._dispatcher.registerCommand(new BreakpointToggleCommand(debug));
+    this._dispatcher.registerCommand(new BreakpointToggleCommand(con, debug));
     this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
   }
 

@@ -81,7 +81,7 @@ export default class Debugger implements DebuggerInterface {
   _muteOutputCategories: Set<string>;
   _attached: boolean = false;
   _configured: boolean = false;
-  _stoppedAtBreakpointId: ?number = null;
+  _stoppedAtBreakpoint: ?Breakpoint = null;
 
   constructor(
     logger: log4js$Logger,
@@ -235,7 +235,7 @@ export default class Debugger implements DebuggerInterface {
       throw new Error('Cannot run an attached process; already attached.');
     }
 
-    this._stoppedAtBreakpointId = null;
+    this._stoppedAtBreakpoint = null;
 
     if (this._state === 'STOPPED') {
       this.relaunch();
@@ -336,7 +336,7 @@ export default class Debugger implements DebuggerInterface {
       // input is stopped.
       this._console.stopInput();
       const session = this._ensureDebugSession(true);
-      this._stoppedAtBreakpointId = null;
+      this._stoppedAtBreakpoint = null;
 
       // if we are attaching and still in configuration, this is where we'll
       // send configuration done.
@@ -432,8 +432,12 @@ export default class Debugger implements DebuggerInterface {
     return variables;
   }
 
-  getStoppedAtBreakpointId(): ?number {
-    return this._stoppedAtBreakpointId;
+  supportsStoppedAtBreakpoint(): boolean {
+    return this._capabilities.supportsBreakpointIdOnStop === true;
+  }
+
+  getStoppedAtBreakpoint(): ?Breakpoint {
+    return this._stoppedAtBreakpoint;
   }
 
   async setSourceBreakpoint(
@@ -604,9 +608,11 @@ export default class Debugger implements DebuggerInterface {
     return this._resetAllBreakpoints();
   }
 
-  async setBreakpointEnabled(index: number, enabled: boolean): Promise<void> {
+  async setBreakpointEnabled(
+    breakpoint: Breakpoint,
+    enabled: boolean,
+  ): Promise<void> {
     const session = this._ensureDebugSession();
-    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
 
     if (breakpoint.state !== BreakpointState.ENABLED) {
@@ -618,7 +624,11 @@ export default class Debugger implements DebuggerInterface {
 
     if (path != null) {
       try {
-        await this._setSourceBreakpointsForPath(session, path, index);
+        await this._setSourceBreakpointsForPath(
+          session,
+          path,
+          breakpoint.index,
+        );
       } catch (error) {
         breakpoint.setState(oldState);
         throw error;
@@ -634,9 +644,8 @@ export default class Debugger implements DebuggerInterface {
     return this._resetAllBreakpoints();
   }
 
-  async toggleBreakpoint(index: number): Promise<void> {
+  async toggleBreakpoint(breakpoint: Breakpoint): Promise<void> {
     const session = this._ensureDebugSession();
-    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
 
     const oldState = breakpoint.state;
@@ -644,7 +653,11 @@ export default class Debugger implements DebuggerInterface {
 
     if (path != null) {
       try {
-        await this._setSourceBreakpointsForPath(session, path, index);
+        await this._setSourceBreakpointsForPath(
+          session,
+          path,
+          breakpoint.index,
+        );
       } catch (error) {
         breakpoint.setState(oldState);
         throw error;
@@ -669,12 +682,11 @@ export default class Debugger implements DebuggerInterface {
     this._breakpoints.deleteAllBreakpoints();
   }
 
-  async deleteBreakpoint(index: number): Promise<void> {
+  async deleteBreakpoint(breakpoint: Breakpoint): Promise<void> {
     const session = this._ensureDebugSession();
-    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
 
-    this._breakpoints.deleteBreakpoint(index);
+    this._breakpoints.deleteBreakpoint(breakpoint.index);
 
     if (path != null) {
       const pathBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
@@ -939,7 +951,19 @@ export default class Debugger implements DebuggerInterface {
       body: {description, threadId, allThreadsStopped, breakpointId},
     } = event;
 
-    this._stoppedAtBreakpointId = breakpointId;
+    this._stoppedAtBreakpoint = null;
+    if (breakpointId != null) {
+      try {
+        this._stoppedAtBreakpoint = this._breakpoints.getBreakpointById(
+          breakpointId,
+        );
+      } catch (err) {
+        this._console.outputLine(
+          'Debugger stopped at unrecognized breakpoint -- current breakpoint will not be valid.',
+        );
+      }
+    }
+
     await this._disableBreakpointIfOneShot(breakpointId);
 
     const firstStop = this._threads.allThreadsRunning();

@@ -10,35 +10,40 @@
  * @format
  */
 
+import type Breakpoint from './Breakpoint';
 import type {Command} from './Command';
+import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
+
+import {breakpointFromArgList} from './BreakpointCommandUtils';
 
 export default class BreakpointClearCommand implements Command {
   name = 'clear';
   helpText =
-    "index | 'all': permanently deletes a breakpoint, or all breakpoints.";
+    "[index | 'all']: permanently deletes a breakpoint, or all breakpoints. With no arguments, deletes the current breakpoint.";
 
+  _console: ConsoleIO;
   _debugger: DebuggerInterface;
 
-  constructor(debug: DebuggerInterface) {
+  constructor(con: ConsoleIO, debug: DebuggerInterface) {
+    this._console = con;
     this._debugger = debug;
   }
 
   async execute(args: string[]): Promise<void> {
-    let index = NaN;
+    const bpt: ?Breakpoint = breakpointFromArgList(
+      this._debugger,
+      args,
+      this.name,
+    );
 
-    if (
-      args.length !== 1 ||
-      (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
-    ) {
-      throw new Error("Format is 'breakpoint delete index | 'all''");
-    }
-
-    if (isNaN(index)) {
+    if (bpt == null) {
       await this._debugger.deleteAllBreakpoints();
+      this._console.outputLine('All breakpoins cleared.');
       return;
     }
 
-    await this._debugger.deleteBreakpoint(index);
+    await this._debugger.deleteBreakpoint(bpt);
+    this._console.outputLine(`Breakpoint #${bpt.index} cleared.`);
   }
 }

@@ -10,6 +10,7 @@
  * @format
  */
 
+import type Breakpoint from './Breakpoint';
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
@@ -39,7 +40,7 @@ export default class BreakpointListCommand implements Command {
 
     const lastBreakpoint = breakpoints[breakpoints.length - 1];
     const indexSize = String(lastBreakpoint.index).length;
-    const stopped: ?number = this._debugger.getStoppedAtBreakpointId();
+    const stopped: ?Breakpoint = this._debugger.getStoppedAtBreakpoint();
 
     breakpoints.forEach(bpt => {
       const attributes = [bpt.state];
@@ -47,7 +48,7 @@ export default class BreakpointListCommand implements Command {
         attributes.push('unverified');
       }
 
-      const stoppedHere = bpt.id != null && stopped === bpt.id;
+      const stoppedHere = bpt.id != null && stopped === bpt;
 
       const index = leftPad(
         `${stoppedHere ? '*' : ' '}#${bpt.index}`,

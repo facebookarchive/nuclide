@@ -42,7 +42,8 @@ export interface DebuggerInterface {
   getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>;
   getVariablesByScope(selectedScope: ?string): Promise<VariablesInScope[]>;
   getVariablesByReference(ref: number): Promise<DebugProtocol.Variable[]>;
-  getStoppedAtBreakpointId(): ?number;
+  supportsStoppedAtBreakpoint(): boolean;
+  getStoppedAtBreakpoint(): ?Breakpoint;
   setSourceBreakpoint(
     path: string,
     line: number,
@@ -55,11 +56,11 @@ export interface DebuggerInterface {
   getAllBreakpoints(): Breakpoint[];
   getBreakpointByIndex(index: number): Breakpoint;
   setAllBreakpointsEnabled(enabled: boolean): Promise<void>;
-  setBreakpointEnabled(index: number, enabled: boolean): Promise<void>;
+  setBreakpointEnabled(bpt: Breakpoint, enabled: boolean): Promise<void>;
   deleteAllBreakpoints(): Promise<void>;
-  deleteBreakpoint(index: number): Promise<void>;
+  deleteBreakpoint(bpt: Breakpoint): Promise<void>;
   toggleAllBreakpoints(): Promise<void>;
-  toggleBreakpoint(index: number): Promise<void>;
+  toggleBreakpoint(bpt: Breakpoint): Promise<void>;
   getSourceLines(
     source: DebugProtocol.Source,
     start: number,
