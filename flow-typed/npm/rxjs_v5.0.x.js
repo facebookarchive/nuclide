@@ -350,6 +350,8 @@ declare class rxjs$Observable<+T> {
 
   static of(...values: T[]): rxjs$Observable<T>;
 
+  static race(...sources: rxjs$Observable<T>[]): rxjs$Observable<T>;
+
   static range(
     start?: number,
     count?: number,
