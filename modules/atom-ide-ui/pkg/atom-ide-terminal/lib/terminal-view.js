@@ -72,7 +72,6 @@ export interface TerminalViewState {
 type ProcessExitCallback = () => mixed;
 
 export class TerminalView implements PtyClient, TerminalInstance {
-  _paneUri: string;
   _cwd: ?NuclideUri;
   _key: string;
   _path: ?NuclideUri;
@@ -317,7 +316,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
     const now = performanceNow();
     this._focusStart = now;
     track('nuclide-terminal.started', {
-      pane: this._paneUri,
       uri: this._cwd,
       startDelay: Math.round(now - this._startTime),
     });
@@ -366,11 +364,8 @@ export class TerminalView implements PtyClient, TerminalInstance {
     const focusStart = this._focusStart;
     const focusDuration =
       this._focusDuration + (focusStart == null ? 0 : now - focusStart);
-    const {query} = url.parse(this._paneUri, true);
-    const id = query == null ? null : query.unique;
 
     return {
-      id,
       uri: this._cwd,
       focusDuration: Math.round(focusDuration),
       duration: Math.round(now - this._startTime),
@@ -385,7 +380,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
       terminal.writeln(line);
     }
     track('nuclide-terminal.failed', {
-      pane: this._paneUri,
       uri: this._cwd,
       startDelay: Math.round(performanceNow() - this._startTime),
       error: String(error),
