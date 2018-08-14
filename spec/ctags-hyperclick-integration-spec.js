@@ -16,28 +16,31 @@ import {
   waitsForMultipleHyperclickResults,
 } from './utils/hyperclick-common';
 
-describeRemotableTest('Ctags Hyperclick', context => {
-  it('tests ctags hyperclick example', () => {
-    let textEditor: atom$TextEditor;
-    waitsForPromise({timeout: 60000}, async () => {
-      // Create a temporary directory and some test files.
-      const testDir = await copyFixture('ctags_project', __dirname);
-      await context.setProject(testDir);
-      textEditor = await atom.workspace.open(
-        context.getProjectRelativePath('a.txt'),
+// eslint-disable-next-line
+xdescribe('Disabled Test', () => {
+  describeRemotableTest('Ctags Hyperclick', context => {
+    it('tests ctags hyperclick example', () => {
+      let textEditor: atom$TextEditor;
+      waitsForPromise({timeout: 60000}, async () => {
+        // Create a temporary directory and some test files.
+        const testDir = await copyFixture('ctags_project', __dirname);
+        await context.setProject(testDir);
+        textEditor = await atom.workspace.open(
+          context.getProjectRelativePath('a.txt'),
+        );
+      });
+
+      waitsForHyperclickResult([0, 5], 'a.txt', [0, 0]);
+
+      // 'b' has multiple options.
+      runs(() => {
+        textEditor.setCursorBufferPosition([3, 5]);
+      });
+
+      waitsForMultipleHyperclickResults(
+        [3, 5],
+        ['b (a.txt)', 'function test::b (b.txt)'],
       );
     });
-
-    waitsForHyperclickResult([0, 5], 'a.txt', [0, 0]);
-
-    // 'b' has multiple options.
-    runs(() => {
-      textEditor.setCursorBufferPosition([3, 5]);
-    });
-
-    waitsForMultipleHyperclickResults(
-      [3, 5],
-      ['b (a.txt)', 'function test::b (b.txt)'],
-    );
   });
 });
