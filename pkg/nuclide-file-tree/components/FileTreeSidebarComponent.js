@@ -36,7 +36,13 @@ import {
   SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
   WORKSPACE_VIEW_URI,
 } from '../lib/Constants';
-import {repositoryForPath} from '../../nuclide-vcs-base';
+import {
+  repositoryForPath,
+  addPath,
+  confirmAndDeletePath,
+  forgetPath,
+  confirmAndRevertPath,
+} from '../../nuclide-vcs-base';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -328,6 +334,22 @@ export default class FileTreeSidebarComponent extends React.Component<
           hideEmptyFolders={true}
           onFileChosen={this._onFileChosen}
           openInDiffViewOption={true}
+          onClickAdd={uri => {
+            const repo = repositoryForPath(uri);
+            addPath(repo, uri);
+          }}
+          onClickDelete={uri => {
+            const repo = repositoryForPath(uri);
+            confirmAndDeletePath(repo, uri);
+          }}
+          onClickForget={uri => {
+            const repo = repositoryForPath(uri);
+            forgetPath(repo, uri);
+          }}
+          onClickRevert={uri => {
+            const repo = repositoryForPath(uri);
+            confirmAndRevertPath(repo, uri);
+          }}
         />
       </div>
     );

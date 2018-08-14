@@ -12,12 +12,6 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-import {
-  addPath,
-  confirmAndRevertPath,
-  confirmAndDeletePath,
-  forgetPath,
-} from '../nuclide-vcs-base';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
 import {track} from '../nuclide-analytics';
 import * as React from 'react';
@@ -41,6 +35,10 @@ type Props = {
   onFileChosen: (filePath: NuclideUri) => mixed,
   onMarkFileResolved?: (filePath: NuclideUri) => mixed,
   getRevertTargetRevision?: () => ?string,
+  onClickAdd(filePath: NuclideUri): mixed,
+  onClickRevert(filePath: NuclideUri, toRevision: ?string): mixed,
+  onClickDelete(filePath: NuclideUri): mixed,
+  onClickForget(filePath: NuclideUri): mixed,
   openInDiffViewOption?: boolean,
 };
 
@@ -77,7 +75,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void => {
-    addPath(filePath);
+    this.props.onClickAdd(filePath);
     track(`${ANALYTICS_PREFIX}-add-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
@@ -88,7 +86,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void => {
-    confirmAndDeletePath(filePath);
+    this.props.onClickDelete(filePath);
     track(`${ANALYTICS_PREFIX}-delete-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
@@ -99,7 +97,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void => {
-    forgetPath(filePath);
+    this.props.onClickForget(filePath);
     track(`${ANALYTICS_PREFIX}-forget-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
@@ -121,12 +119,12 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void => {
-    const {getRevertTargetRevision} = this.props;
+    const {getRevertTargetRevision, onClickRevert} = this.props;
     let targetRevision = null;
     if (getRevertTargetRevision != null) {
       targetRevision = getRevertTargetRevision();
     }
-    confirmAndRevertPath(filePath, targetRevision);
+    onClickRevert(filePath, targetRevision);
     track(`${ANALYTICS_PREFIX}-revert-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),

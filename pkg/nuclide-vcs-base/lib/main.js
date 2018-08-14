@@ -33,6 +33,8 @@ type VcsInfo = {
   root: string,
 };
 
+type Repository = atom$Repository | HgRepositoryClient;
+
 const {StatusCodeNumber: HgStatusCodeNumber, MergeConflictStatus} = hgConstants;
 const vcsInfoCache: {[dir: string]: VcsInfo} = {};
 
@@ -184,8 +186,12 @@ export function observeStatusChanges(
     .map(() => getDirtyFileChanges(repository));
 }
 
-export function forgetPath(nodePath: ?NuclideUri): Promise<void> {
+export function forgetPath(
+  repository: ?Repository,
+  nodePath: ?NuclideUri,
+): Promise<void> {
   return hgActionToPath(
+    repository,
     nodePath,
     'forget',
     'Forgot',
@@ -198,8 +204,12 @@ export function forgetPath(nodePath: ?NuclideUri): Promise<void> {
   );
 }
 
-export function addPath(nodePath: ?NuclideUri): Promise<void> {
+export function addPath(
+  repository: ?Repository,
+  nodePath: ?NuclideUri,
+): Promise<void> {
   return hgActionToPath(
+    repository,
     nodePath,
     'add',
     'Added',
@@ -213,10 +223,12 @@ export function addPath(nodePath: ?NuclideUri): Promise<void> {
 }
 
 export function revertPath(
+  repository: ?Repository,
   nodePath: ?NuclideUri,
   toRevision?: ?string,
 ): Promise<void> {
   return hgActionToPath(
+    repository,
     nodePath,
     'revert',
     'Reverted',
@@ -230,6 +242,7 @@ export function revertPath(
 }
 
 export function confirmAndRevertPath(
+  repository: ?Repository,
   path: ?NuclideUri,
   toRevision?: ?string,
 ): void {
@@ -241,11 +254,12 @@ export function confirmAndRevertPath(
   });
   invariant(result === 0 || result === 1);
   if (result === 0) {
-    revertPath(path, toRevision);
+    revertPath(repository, path, toRevision);
   }
 }
 
 async function hgActionToPath(
+  repository: ?Repository,
   nodePath: ?NuclideUri,
   actionName: string,
   actionDoneMessage: string,
@@ -255,7 +269,6 @@ async function hgActionToPath(
     atom.notifications.addError(`Cannot ${actionName} an empty path!`);
     return;
   }
-  const repository = repositoryForPath(nodePath);
   if (repository == null || repository.getType() !== 'hg') {
     atom.notifications.addError(
       `Cannot ${actionName} a non-mercurial repository path`,
@@ -376,8 +389,12 @@ export function getMultiRootFileChanges(
 }
 
 export async function confirmAndDeletePath(
+  repository: ?Repository,
   nuclideFilePath: NuclideUri,
 ): Promise<boolean> {
+  if (repository == null || repository.getType() !== 'hg') {
+    return false;
+  }
   const result = atom.confirm({
     message: 'Are you sure you want to delete the following item?',
     detailedMessage: `You are deleting: \n ${nuclideUri.getPath(
@@ -387,23 +404,19 @@ export async function confirmAndDeletePath(
   });
   invariant(result === 0 || result === 1);
   if (result === 0) {
-    return deleteFile(nuclideFilePath);
+    return deleteFile(((repository: any): HgRepositoryClient), nuclideFilePath);
   }
   return false;
 }
 
-async function deleteFile(nuclideFilePath: string): Promise<boolean> {
+async function deleteFile(
+  repository: HgRepositoryClient,
+  nuclideFilePath: string,
+): Promise<boolean> {
   const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
   try {
     await fsService.unlink(nuclideFilePath);
-    const repository = repositoryForPath(nuclideFilePath);
-    if (repository == null || repository.getType() !== 'hg') {
-      return false;
-    }
-    await ((repository: any): HgRepositoryClient).remove(
-      [nuclideFilePath],
-      true,
-    );
+    await repository.remove([nuclideFilePath], true);
   } catch (error) {
     atom.notifications.addError('Failed to delete file', {
       detail: error,
