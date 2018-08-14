@@ -26,7 +26,7 @@ import type {
 import type {Preset} from './ConfigFile';
 
 import BackTraceCommand from './BackTraceCommand';
-import Breakpoint from './Breakpoint';
+import Breakpoint, {BreakpointState} from './Breakpoint';
 import BreakpointCollection from './BreakpointCollection';
 import BreakpointCommand from './BreakpointCommand';
 import CommandDispatcher from './CommandDispatcher';
@@ -439,10 +439,19 @@ export default class Debugger implements DebuggerInterface {
   async setSourceBreakpoint(
     path: string,
     line: number,
+    once: boolean,
   ): Promise<BreakpointSetResult> {
+    if (once && !this._breakpoints.supportsOnceState()) {
+      throw new Error(
+        `The ${
+          nullthrows(this._adapter).type
+        } debugger does not support one-shot breakpoints.`,
+      );
+    }
+
     // NB this call is allowed before the program is launched
     const session = this._ensureDebugSession(true);
-    const index = this._breakpoints.addSourceBreakpoint(path, line);
+    const index = this._breakpoints.addSourceBreakpoint(path, line, once);
 
     let message = 'Breakpoint pending until program starts.';
 
@@ -486,7 +495,10 @@ export default class Debugger implements DebuggerInterface {
     return breakpoint == null ? null : breakpoint[1];
   }
 
-  async setFunctionBreakpoint(func: string): Promise<BreakpointSetResult> {
+  async setFunctionBreakpoint(
+    func: string,
+    once: boolean,
+  ): Promise<BreakpointSetResult> {
     if (!this._capabilities.supportsFunctionBreakpoints) {
       throw new Error(
         `The ${
@@ -495,9 +507,17 @@ export default class Debugger implements DebuggerInterface {
       );
     }
 
+    if (once && !this._breakpoints.supportsOnceState()) {
+      throw new Error(
+        `The ${
+          nullthrows(this._adapter).type
+        } debugger does not support one-shot breakpoints.`,
+      );
+    }
+
     // NB this call is allowed before the program is launched
     const session = this._ensureDebugSession(true);
-    const index = this._breakpoints.addFunctionBreakpoint(func);
+    const index = this._breakpoints.addFunctionBreakpoint(func, once);
 
     let message = 'Breakpoint pending until program starts.';
 
@@ -578,7 +598,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async setAllBreakpointsEnabled(enabled: boolean): Promise<void> {
-    this._breakpoints.getAllBreakpoints().forEach(bp => bp.setEnabled(enabled));
+    this._breakpoints
+      .getAllBreakpoints()
+      .forEach(bp => bp.setState(BreakpointState.ENABLED));
     return this._resetAllBreakpoints();
   }
 
@@ -587,17 +609,18 @@ export default class Debugger implements DebuggerInterface {
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
 
-    if (breakpoint.enabled === enabled) {
+    if (breakpoint.state !== BreakpointState.ENABLED) {
       return;
     }
 
-    breakpoint.setEnabled(enabled);
+    const oldState = breakpoint.state;
+    breakpoint.setState(BreakpointState.ENABLED);
 
     if (path != null) {
       try {
         await this._setSourceBreakpointsForPath(session, path, index);
       } catch (error) {
-        breakpoint.setEnabled(!enabled);
+        breakpoint.setState(oldState);
         throw error;
       }
       return;
@@ -607,9 +630,7 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async toggleAllBreakpoints(): Promise<void> {
-    this._breakpoints
-      .getAllBreakpoints()
-      .forEach(bp => bp.setEnabled(!bp.enabled));
+    this._breakpoints.getAllBreakpoints().forEach(bp => bp.toggleState());
     return this._resetAllBreakpoints();
   }
 
@@ -618,13 +639,14 @@ export default class Debugger implements DebuggerInterface {
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
 
-    breakpoint.setEnabled(!breakpoint.enabled);
+    const oldState = breakpoint.state;
+    breakpoint.toggleState();
 
     if (path != null) {
       try {
         await this._setSourceBreakpointsForPath(session, path, index);
       } catch (error) {
-        breakpoint.setEnabled(!breakpoint.enabled);
+        breakpoint.setState(oldState);
         throw error;
       }
       return;
@@ -719,6 +741,10 @@ export default class Debugger implements DebuggerInterface {
     const extraBody: any = body;
     if (extraBody.supportsReadyForEvaluationsEvent === true) {
       this._readyForEvaluations = false;
+    }
+
+    if (extraBody.supportsBreakpointIdOnStop) {
+      this._breakpoints.enableOnceState();
     }
   }
 
@@ -914,6 +940,7 @@ export default class Debugger implements DebuggerInterface {
     } = event;
 
     this._stoppedAtBreakpointId = breakpointId;
+    await this._disableBreakpointIfOneShot(breakpointId);
 
     const firstStop = this._threads.allThreadsRunning();
     if (firstStop && description != null) {
@@ -961,6 +988,19 @@ export default class Debugger implements DebuggerInterface {
 
       this._state = 'STOPPED';
       this._console.startInput();
+    }
+  }
+
+  async _disableBreakpointIfOneShot(breakpointId: ?number): Promise<void> {
+    if (breakpointId == null) {
+      return;
+    }
+
+    const bpt = this._breakpoints.getBreakpointById(breakpointId);
+
+    if (bpt.state === BreakpointState.ONCE) {
+      bpt.setState(BreakpointState.DISABLED);
+      return this._resetAllBreakpoints();
     }
   }
 

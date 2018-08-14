@@ -43,8 +43,15 @@ export interface DebuggerInterface {
   getVariablesByScope(selectedScope: ?string): Promise<VariablesInScope[]>;
   getVariablesByReference(ref: number): Promise<DebugProtocol.Variable[]>;
   getStoppedAtBreakpointId(): ?number;
-  setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>;
-  setFunctionBreakpoint(func: string): Promise<BreakpointSetResult>;
+  setSourceBreakpoint(
+    path: string,
+    line: number,
+    once: boolean,
+  ): Promise<BreakpointSetResult>;
+  setFunctionBreakpoint(
+    func: string,
+    once: boolean,
+  ): Promise<BreakpointSetResult>;
   getAllBreakpoints(): Breakpoint[];
   getBreakpointByIndex(index: number): Breakpoint;
   setAllBreakpointsEnabled(enabled: boolean): Promise<void>;

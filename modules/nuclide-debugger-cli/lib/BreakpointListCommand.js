@@ -42,13 +42,9 @@ export default class BreakpointListCommand implements Command {
     const stopped: ?number = this._debugger.getStoppedAtBreakpointId();
 
     breakpoints.forEach(bpt => {
-      const attributes = [];
+      const attributes = [bpt.state];
       if (!bpt.verified) {
         attributes.push('unverified');
-      }
-
-      if (!bpt.enabled) {
-        attributes.push('disabled');
       }
 
       const stoppedHere = bpt.id != null && stopped === bpt.id;

@@ -30,7 +30,7 @@ export default class BreakpointCommand implements Command {
   helpText = 'Sets a breakpoint on the target.';
 
   detailedHelpText = `
-breakpoint [subcommand | [source-file:]line] | function-name()
+breakpoint [subcommand | [[o]nce] [source-file:]line] | [[o]nce] function-name()
 
 Sets a breakpoint, or operates on existing breakpoints.
 
@@ -96,28 +96,33 @@ The breakpoint command has several subcommands:
   async _trySettingBreakpoint(
     args: Array<string>,
   ): Promise<?BreakpointSetResult> {
-    const breakpointSpec = args[0];
+    let breakpointSpec = args[0];
+    const once: boolean = 'once'.startsWith(breakpointSpec);
+    if (once) {
+      breakpointSpec = args[1];
+    }
+
     if (breakpointSpec == null) {
-      return this._setBreakpointHere();
+      return this._setBreakpointHere(once);
     }
 
     const linePattern = /^(\d+)$/;
     const lineMatch = breakpointSpec.match(linePattern);
     if (lineMatch != null) {
-      return this._setBreakpointHere(parseInt(lineMatch[1], 10));
+      return this._setBreakpointHere(once, parseInt(lineMatch[1], 10));
     }
 
     const sourceBreakPattern = /^(.+):(\d+)$/;
     const sourceMatch = breakpointSpec.match(sourceBreakPattern);
     if (sourceMatch != null) {
       const [, path, line] = sourceMatch;
-      return this._debugger.setSourceBreakpoint(path, parseInt(line, 10));
+      return this._debugger.setSourceBreakpoint(path, parseInt(line, 10), once);
     }
 
     const functionBreakpointPattern = /^(.+)\(\)/;
     const functionMatch = breakpointSpec.match(functionBreakpointPattern);
     if (functionMatch != null) {
-      return this._debugger.setFunctionBreakpoint(functionMatch[1]);
+      return this._debugger.setFunctionBreakpoint(functionMatch[1], once);
     }
 
     return null;
@@ -130,7 +135,10 @@ The breakpoint command has several subcommands:
     }
   }
 
-  async _setBreakpointHere(line: ?number): Promise<BreakpointSetResult> {
+  async _setBreakpointHere(
+    once: boolean,
+    line: ?number,
+  ): Promise<BreakpointSetResult> {
     const frame = await this._debugger.getCurrentStackFrame();
     if (frame == null) {
       throw new Error('Cannot set breakpoint here, no current stack frame.');
@@ -145,6 +153,7 @@ The breakpoint command has several subcommands:
     const result = await this._debugger.setSourceBreakpoint(
       frame.source.path,
       line == null ? frame.line : line,
+      once,
     );
     return result;
   }

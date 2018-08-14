@@ -12,7 +12,7 @@
 
 import {arrayCompact} from 'nuclide-commons/collection';
 
-import Breakpoint from './Breakpoint';
+import Breakpoint, {BreakpointState} from './Breakpoint';
 import nullthrows from 'nullthrows';
 
 export type SourceBreakpoint = {
@@ -37,8 +37,18 @@ export type FunctionBreakpoint = {
 export default class BreakpointCollection {
   _breakpoints: Map<number, Breakpoint> = new Map();
   _nextIndex: number = 1;
+  _allowOnceState: boolean = false;
 
-  addSourceBreakpoint(path: string, line: number): number {
+  enableOnceState(): void {
+    this._allowOnceState = true;
+    this._breakpoints.forEach(breakpoint => breakpoint.enableSupportsOnce());
+  }
+
+  supportsOnceState(): boolean {
+    return this._allowOnceState;
+  }
+
+  addSourceBreakpoint(path: string, line: number, once: boolean): number {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.path === path && breakpoint.line === line) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -46,15 +56,18 @@ export default class BreakpointCollection {
     });
 
     const index = this._allocateIndex();
-    const breakpoint = new Breakpoint(index);
+    const breakpoint = new Breakpoint(index, this._allowOnceState);
     breakpoint.setPath(path);
     breakpoint.setLine(line);
+    if (once) {
+      breakpoint.setState(BreakpointState.ONCE);
+    }
 
     this._breakpoints.set(index, breakpoint);
     return index;
   }
 
-  addFunctionBreakpoint(func: string): number {
+  addFunctionBreakpoint(func: string, once: boolean): number {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.func === func) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -62,8 +75,11 @@ export default class BreakpointCollection {
     });
 
     const index = this._allocateIndex();
-    const breakpoint = new Breakpoint(index);
+    const breakpoint = new Breakpoint(index, this._allowOnceState);
     breakpoint.setFunc(func);
+    if (once) {
+      breakpoint.setState(BreakpointState.ONCE);
+    }
     this._breakpoints.set(index, breakpoint);
     return index;
   }
@@ -71,13 +87,14 @@ export default class BreakpointCollection {
   getAllEnabledBreakpointsForSource(path: string): Array<SourceBreakpoint> {
     return Array.from(this._breakpoints.values())
       .filter(
-        x => x.path === path && x.line != null && x.func == null && x.enabled,
+        x =>
+          x.path === path && x.line != null && x.func == null && x.isEnabled(),
       )
       .map(_ => ({
         index: _.index,
         id: _.id,
         verified: _.verified,
-        enabled: _.enabled,
+        enabled: true,
         path: nullthrows(_.path),
         line: nullthrows(_.line),
       }));
@@ -97,12 +114,12 @@ export default class BreakpointCollection {
 
   getAllEnabledFunctionBreakpoints(): Array<FunctionBreakpoint> {
     return Array.from(this._breakpoints.values())
-      .filter(x => x.func != null && x.enabled)
+      .filter(x => x.func != null && x.isEnabled())
       .map(x => ({
         index: x.index,
         id: x.id,
         verified: x.verified,
-        enabled: x.enabled,
+        enabled: true,
         path: x.path,
         line: x.line,
         func: nullthrows(x.func),
