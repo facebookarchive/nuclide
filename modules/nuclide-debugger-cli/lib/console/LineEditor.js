@@ -209,11 +209,8 @@ export default class LineEditor extends EventEmitter {
       let col = this._lastOutputColumn;
       let row = this._fieldRow;
 
-      if (col !== 1) {
-        // if there was a partial line, move to the end of it
-        row--;
-        cursor.gotoXY(col, row);
-      }
+      row--;
+      cursor.gotoXY(col, row);
 
       const outputPiece = (line: string): void => {
         const tabbed = line.split('\t');
