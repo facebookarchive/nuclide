@@ -1,3 +1,185 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initializeLsp = initializeLsp;
+exports.initialize = initialize;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _range() {
+  const data = require("../../../modules/nuclide-commons/range");
+
+  _range = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideVscodeLanguageServiceRpc() {
+  const data = require("../../nuclide-vscode-language-service-rpc");
+
+  _nuclideVscodeLanguageServiceRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../../nuclide-hack-common/lib/constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HackHelpers() {
+  const data = require("./HackHelpers");
+
+  _HackHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _hackConfig() {
+  const data = require("./hack-config");
+
+  _hackConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HackProcess() {
+  const data = require("./HackProcess");
+
+  _HackProcess = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Definitions() {
+  const data = require("./Definitions");
+
+  _Definitions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _OutlineView() {
+  const data = require("./OutlineView");
+
+  _OutlineView = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TypedRegions() {
+  const data = require("./TypedRegions");
+
+  _TypedRegions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FindReferences() {
+  const data = require("./FindReferences");
+
+  _FindReferences = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Diagnostics() {
+  const data = require("./Diagnostics");
+
+  _Diagnostics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _SymbolSearch() {
+  const data = require("./SymbolSearch");
+
+  _SymbolSearch = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideOpenFilesRpc() {
+  const data = require("../../nuclide-open-files-rpc");
+
+  _nuclideOpenFilesRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLanguageServiceRpc() {
+  const data = require("../../nuclide-language-service-rpc");
+
+  _nuclideLanguageServiceRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideHackCommon() {
+  const data = require("../../nuclide-hack-common");
+
+  _nuclideHackCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,557 +187,376 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+async function initializeLsp(command, args, projectFileNames, fileExtensions, logLevel, fileNotifier, host, initializationOptions) {
+  const cmd = command === '' ? await (0, _hackConfig().getHackCommand)() : command;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {HackRange} from './rpc-types';
-import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
-import type {
-  FormatOptions,
-  LanguageService,
-  Completion,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {HackDefinition} from './Definitions';
-import type {HackIdeOutline} from './OutlineView';
-import type {HackTypedRegion} from './TypedRegions';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {HackReferencesResult} from './FindReferences';
-import type {
-  DefinitionQueryResult,
-  FindReferencesReturn,
-  RenameReturn,
-  Outline,
-  CodeAction,
-  SignatureHelp,
-} from 'atom-ide-ui';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {
-  AutocompleteRequest,
-  AutocompleteResult,
-  FileDiagnosticMap,
-  FileDiagnosticMessage,
-  SymbolResult,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {HackDiagnosticsMessage} from './HackConnectionService';
-
-import {Observable} from 'rxjs';
-import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
-import invariant from 'assert';
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
-import {HACK_FILE_EXTENSIONS} from '../../nuclide-hack-common/lib/constants';
-import {callHHClient} from './HackHelpers';
-import {
-  findHackConfigDir,
-  setHackCommand,
-  getHackCommand,
-  logger,
-  HACK_LOGGER_CATEGORY,
-} from './hack-config';
-import {
-  getHackProcess,
-  observeConnections,
-  ensureProcesses,
-  closeProcesses,
-} from './HackProcess';
-import {convertDefinitions} from './Definitions';
-import {hackRangeToAtomRange} from './HackHelpers';
-import {outlineFromHackIdeOutline} from './OutlineView';
-import {convertCoverage} from './TypedRegions';
-import {convertReferences} from './FindReferences';
-import {hackMessageToDiagnosticMessage} from './Diagnostics';
-import {executeQuery} from './SymbolSearch';
-import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {
-  ServerLanguageService,
-  ensureInvalidations,
-  typeHintFromSnippet,
-} from '../../nuclide-language-service-rpc';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
-
-export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
-
-export type HackTypeAtPosResult = {
-  type: ?string,
-  pos: ?HackRange,
-};
-
-export type HackHighlightRefsResult = Array<HackRange>;
-
-export type HackFormatSourceResult = {
-  error_message: string,
-  result: string,
-  internal_error: boolean,
-};
-
-export async function initializeLsp(
-  command: string,
-  args: Array<string>,
-  projectFileNames: Array<string>,
-  fileExtensions: Array<NuclideUri>,
-  logLevel: LogLevel,
-  fileNotifier: FileNotifier,
-  host: HostServices,
-  initializationOptions: Object,
-): Promise<?LanguageService> {
-  const cmd = command === '' ? await getHackCommand() : command;
   if (cmd === '') {
     return null;
   }
 
-  return createMultiLspLanguageService('hack', cmd, args, {
-    logCategory: HACK_LOGGER_CATEGORY,
+  return (0, _nuclideVscodeLanguageServiceRpc().createMultiLspLanguageService)('hack', cmd, args, {
+    logCategory: _hackConfig().HACK_LOGGER_CATEGORY,
     logLevel,
     fileNotifier,
     host,
     initializationOptions,
     projectFileNames,
     fileExtensions,
-    additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+    additionalLogFilesRetentionPeriod: 5 * 60 * 1000 // 5 minutes
+
   });
 }
 
-export async function initialize(
-  hackCommand: string,
-  logLevel: LogLevel,
-  fileNotifier: FileNotifier,
-): Promise<LanguageService> {
-  setHackCommand(hackCommand);
-  logger.setLevel(logLevel);
-  await getHackCommand();
+async function initialize(hackCommand, logLevel, fileNotifier) {
+  (0, _hackConfig().setHackCommand)(hackCommand);
+
+  _hackConfig().logger.setLevel(logLevel);
+
+  await (0, _hackConfig().getHackCommand)();
   return new HackLanguageServiceImpl(fileNotifier);
 }
 
-class HackLanguageServiceImpl extends ServerLanguageService {
-  _resources: UniversalDisposable;
+class HackLanguageServiceImpl extends _nuclideLanguageServiceRpc().ServerLanguageService {
+  constructor(fileNotifier) {
+    if (!(fileNotifier instanceof _nuclideOpenFilesRpc().FileCache)) {
+      throw new Error("Invariant violation: \"fileNotifier instanceof FileCache\"");
+    }
 
-  constructor(fileNotifier: FileNotifier) {
-    invariant(fileNotifier instanceof FileCache);
     super(fileNotifier, new HackSingleFileLanguageService(fileNotifier));
-    this._resources = new UniversalDisposable();
-    const configObserver = new ConfigObserver(
-      fileNotifier,
-      HACK_FILE_EXTENSIONS,
-      findHackConfigDir,
-    );
-    this._resources.add(
-      configObserver,
-      configObserver.observeConfigs().subscribe(configs => {
-        ensureProcesses(fileNotifier, configs);
-      }),
-    );
+    this._resources = new (_UniversalDisposable().default)();
+    const configObserver = new (_nuclideOpenFilesRpc().ConfigObserver)(fileNotifier, _constants().HACK_FILE_EXTENSIONS, _hackConfig().findHackConfigDir);
+
+    this._resources.add(configObserver, configObserver.observeConfigs().subscribe(configs => {
+      (0, _HackProcess().ensureProcesses)(fileNotifier, configs);
+    }));
+
     this._resources.add(() => {
-      closeProcesses(fileNotifier);
+      (0, _HackProcess().closeProcesses)(fileNotifier);
     });
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
+  async getAutocompleteSuggestions(fileVersion, position, request) {
     try {
-      const process = await getHackProcess(
-        this._fileCache,
-        fileVersion.filePath,
-      );
-      return process.getAutocompleteSuggestions(
-        fileVersion,
-        position,
-        request.activatedManually,
-      );
+      const process = await (0, _HackProcess().getHackProcess)(this._fileCache, fileVersion.filePath);
+      return process.getAutocompleteSuggestions(fileVersion, position, request.activatedManually);
     } catch (e) {
       return null;
     }
   }
 
-  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+  resolveAutocompleteSuggestion(suggestion) {
     return Promise.resolve(null);
   }
-
   /**
    * Does this service want the symbol-search tab to appear in quick-open?
    */
-  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    const promises = directories.map(directory => findHackConfigDir(directory));
-    const hackRoots = await Promise.all(promises);
-    return arrayCompact(hackRoots).length > 0;
-  }
 
+
+  async supportsSymbolSearch(directories) {
+    const promises = directories.map(directory => (0, _hackConfig().findHackConfigDir)(directory));
+    const hackRoots = await Promise.all(promises);
+    return (0, _collection().arrayCompact)(hackRoots).length > 0;
+  }
   /**
    * Performs a Hack symbol search over all hack projects we manage
    */
-  async symbolSearch(
-    queryString: string,
-    directories: Array<NuclideUri>,
-  ): Promise<Array<SymbolResult>> {
-    const promises = directories.map(directory =>
-      executeQuery(directory, queryString),
-    );
+
+
+  async symbolSearch(queryString, directories) {
+    const promises = directories.map(directory => (0, _SymbolSearch().executeQuery)(directory, queryString));
     const results = await Promise.all(promises);
-    return arrayFlatten(results);
+    return (0, _collection().arrayFlatten)(results);
   }
 
-  dispose(): void {
-    logger.info('Disposing HackLanguageServiceImpl');
+  dispose() {
+    _hackConfig().logger.info('Disposing HackLanguageServiceImpl');
 
     this._resources.dispose();
+
     super.dispose();
   }
+
 }
 
 class HackSingleFileLanguageService {
-  _fileCache: FileCache;
+  constructor(fileNotifier) {
+    if (!(fileNotifier instanceof _nuclideOpenFilesRpc().FileCache)) {
+      throw new Error("Invariant violation: \"fileNotifier instanceof FileCache\"");
+    }
 
-  constructor(fileNotifier: FileNotifier) {
-    invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
   }
 
-  async getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?FileDiagnosticMap> {
+  async getDiagnostics(filePath, buffer) {
     throw new Error('replaced by observeDiagnstics');
   }
 
-  async getCodeActions(
-    filePath: NuclideUri,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
+  async getCodeActions(filePath, range, diagnostics) {
     throw new Error('Not implemented');
   }
 
-  observeDiagnostics(): Observable<FileDiagnosticMap> {
-    logger.debug('observeDiagnostics');
-    return observeConnections(this._fileCache)
-      .mergeMap(connection => {
-        logger.debug('notifyDiagnostics');
-        return ensureInvalidations(
-          logger,
-          connection
-            .notifyDiagnostics()
-            .refCount()
-            .catch(error => {
-              logger.error('Error: notifyDiagnostics', error);
-              return Observable.empty();
-            })
-            .filter((hackDiagnostics: HackDiagnosticsMessage) => {
-              // This is passed over RPC as NuclideUri, which is not allowed
-              // to be an empty string. It's better to silently skip a
-              // (most likely) useless error, than crash the entire connection.
-              // TODO: figure out a better way to display those errors
-              return hackDiagnostics.filename !== '';
-            })
-            .map((hackDiagnostics: HackDiagnosticsMessage) => {
-              logger.debug(`Got hack error in ${hackDiagnostics.filename}`);
-              return new Map([
-                [
-                  hackDiagnostics.filename,
-                  hackDiagnostics.errors.map(diagnostic =>
-                    hackMessageToDiagnosticMessage(diagnostic.message),
-                  ),
-                ],
-              ]);
-            }),
-        );
-      })
-      .catch(error => {
-        logger.error(`Error: observeDiagnostics ${error}`);
-        throw error;
-      });
+  observeDiagnostics() {
+    _hackConfig().logger.debug('observeDiagnostics');
+
+    return (0, _HackProcess().observeConnections)(this._fileCache).mergeMap(connection => {
+      _hackConfig().logger.debug('notifyDiagnostics');
+
+      return (0, _nuclideLanguageServiceRpc().ensureInvalidations)(_hackConfig().logger, connection.notifyDiagnostics().refCount().catch(error => {
+        _hackConfig().logger.error('Error: notifyDiagnostics', error);
+
+        return _RxMin.Observable.empty();
+      }).filter(hackDiagnostics => {
+        // This is passed over RPC as NuclideUri, which is not allowed
+        // to be an empty string. It's better to silently skip a
+        // (most likely) useless error, than crash the entire connection.
+        // TODO: figure out a better way to display those errors
+        return hackDiagnostics.filename !== '';
+      }).map(hackDiagnostics => {
+        _hackConfig().logger.debug(`Got hack error in ${hackDiagnostics.filename}`);
+
+        return new Map([[hackDiagnostics.filename, hackDiagnostics.errors.map(diagnostic => (0, _Diagnostics().hackMessageToDiagnosticMessage)(diagnostic.message))]]);
+      }));
+    }).catch(error => {
+      _hackConfig().logger.error(`Error: observeDiagnostics ${error}`);
+
+      throw error;
+    });
   }
 
-  async getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<?AutocompleteResult> {
+  async getAutocompleteSuggestions(filePath, buffer, position, activatedManually) {
     throw new Error('replaced by persistent connection');
   }
 
-  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+  resolveAutocompleteSuggestion(suggestion) {
     return Promise.resolve(null);
   }
 
-  async getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
+  async getDefinition(filePath, buffer, position) {
     const contents = buffer.getText();
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--ide-get-definition', formatAtomLineColumn(position)],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents,
+    /* cwd */
+    filePath);
 
-    const result: ?Array<HackDefinition> = (await callHHClient(
-      /* args */ ['--ide-get-definition', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* cwd */ filePath,
-    ): any);
     if (result == null) {
       return null;
     }
-    const projectRoot = (result: any).hackRoot;
-    invariant(typeof projectRoot === 'string');
 
-    const hackDefinitions = Array.isArray(result) ? result : [result];
-    return convertDefinitions(hackDefinitions, filePath, projectRoot);
-  }
+    const projectRoot = result.hackRoot;
 
-  findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Observable<?FindReferencesReturn> {
-    return Observable.fromPromise(
-      this._findReferences(filePath, buffer, position),
-    );
-  }
-
-  async _findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const contents = buffer.getText();
-
-    const result: ?HackReferencesResult = (await callHHClient(
-      /* args */ ['--ide-find-refs', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* cwd */ filePath,
-    ): any);
-    if (result == null || result.length === 0) {
-      return {type: 'error', message: 'No references found.'};
+    if (!(typeof projectRoot === 'string')) {
+      throw new Error("Invariant violation: \"typeof projectRoot === 'string'\"");
     }
 
-    const projectRoot: NuclideUri = (result: any).hackRoot;
-
-    return convertReferences(result, projectRoot);
+    const hackDefinitions = Array.isArray(result) ? result : [result];
+    return (0, _Definitions().convertDefinitions)(hackDefinitions, filePath, projectRoot);
   }
 
-  rename(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    newName: string,
-  ): Observable<?RenameReturn> {
+  findReferences(filePath, buffer, position) {
+    return _RxMin.Observable.fromPromise(this._findReferences(filePath, buffer, position));
+  }
+
+  async _findReferences(filePath, buffer, position) {
+    const contents = buffer.getText();
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--ide-find-refs', formatAtomLineColumn(position)],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents,
+    /* cwd */
+    filePath);
+
+    if (result == null || result.length === 0) {
+      return {
+        type: 'error',
+        message: 'No references found.'
+      };
+    }
+
+    const projectRoot = result.hackRoot;
+    return (0, _FindReferences().convertReferences)(result, projectRoot);
+  }
+
+  rename(filePath, buffer, position, newName) {
     throw new Error('Not implemented');
   }
 
-  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    const result: ?Array<HackTypedRegion> = (await callHHClient(
-      /* args */ ['--colour', filePath],
-      /* errorStream */ false,
-      /* processInput */ null,
-      /* file */ filePath,
-    ): any);
-
-    return convertCoverage(filePath, result);
+  async getCoverage(filePath) {
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--colour', filePath],
+    /* errorStream */
+    false,
+    /* processInput */
+    null,
+    /* file */
+    filePath);
+    return (0, _TypedRegions().convertCoverage)(filePath, result);
   }
 
-  async onToggleCoverage(set: boolean): Promise<void> {
+  async onToggleCoverage(set) {
     return;
   }
 
-  async getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?Outline> {
+  async getOutline(filePath, buffer) {
     const contents = buffer.getText();
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--ide-outline'],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents, filePath);
 
-    const result: ?HackIdeOutline = (await callHHClient(
-      /* args */ ['--ide-outline'],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      filePath,
-    ): any);
     if (result == null) {
       return null;
     }
 
-    return outlineFromHackIdeOutline(result);
+    return (0, _OutlineView().outlineFromHackIdeOutline)(result);
   }
 
-  async typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
+  async typeHint(filePath, buffer, position) {
     const contents = buffer.getText();
-
     const match = getIdentifierAndRange(buffer, position);
+
     if (match == null) {
       return null;
     }
 
-    const result: ?HackTypeAtPosResult = (await callHHClient(
-      /* args */ ['--type-at-pos', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--type-at-pos', formatAtomLineColumn(position)],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents,
+    /* file */
+    filePath);
 
     if (result == null || result.type == null || result.type === '_') {
       return null;
     } else {
       // TODO: Use hack range for type hints, not nuclide range.
-      return typeHintFromSnippet(result.type, match.range);
+      return (0, _nuclideLanguageServiceRpc().typeHintFromSnippet)(result.type, match.range);
     }
   }
 
-  async highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
+  async highlight(filePath, buffer, position) {
     const contents = buffer.getText();
-
     const id = getIdentifierAtPosition(buffer, position);
+
     if (id == null) {
       return null;
     }
 
-    const result: ?HackHighlightRefsResult = (await callHHClient(
-      /* args */ ['--ide-highlight-refs', formatAtomLineColumn(position)],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
-    return result == null ? null : result.map(hackRangeToAtomRange);
+    const result = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--ide-highlight-refs', formatAtomLineColumn(position)],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents,
+    /* file */
+    filePath);
+    return result == null ? null : result.map(_HackHelpers().hackRangeToAtomRange);
   }
 
-  async formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
+  async formatSource(filePath, buffer, range, options) {
     const contents = buffer.getText();
     const startOffset = buffer.characterIndexForPosition(range.start) + 1;
     const endOffset = buffer.characterIndexForPosition(range.end) + 1;
-
-    const response: ?HackFormatSourceResult = (await callHHClient(
-      /* args */ ['--format', startOffset, endOffset],
-      /* errorStream */ false,
-      /* processInput */ contents,
-      /* file */ filePath,
-    ): any);
+    const response = await (0, _HackHelpers().callHHClient)(
+    /* args */
+    ['--format', startOffset, endOffset],
+    /* errorStream */
+    false,
+    /* processInput */
+    contents,
+    /* file */
+    filePath);
 
     if (response == null) {
       throw new Error('Error formatting hack source.');
     } else if (response.internal_error) {
       throw new Error('Internal error formatting hack source.');
     } else if (response.error_message !== '') {
-      throw new Error(
-        `Error formatting hack source: ${response.error_message}`,
-      );
+      throw new Error(`Error formatting hack source: ${response.error_message}`);
     }
-    return [
-      {
-        oldRange: range,
-        newText: response.result,
-      },
-    ];
+
+    return [{
+      oldRange: range,
+      newText: response.result
+    }];
   }
 
-  formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(filePath, buffer, range, options) {
     throw new Error('Not implemented');
   }
 
-  formatAtPosition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
+  formatAtPosition(filePath, buffer, position, triggerCharacter, options) {
     throw new Error('Not implemented');
   }
 
-  signatureHelp(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?SignatureHelp> {
+  signatureHelp(filePath, buffer, position) {
     throw new Error('Not implemented');
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    return findHackConfigDir(fileUri);
+  getProjectRoot(fileUri) {
+    return (0, _hackConfig().findHackConfigDir)(fileUri);
   }
-
   /**
    * @param fileUri a file path.  It cannot be a directory.
    * @return whether the file represented by fileUri is inside of a Hack project.
    */
-  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    const hhconfigPath = await findHackConfigDir(fileUri);
+
+
+  async isFileInProject(fileUri) {
+    const hhconfigPath = await (0, _hackConfig().findHackConfigDir)(fileUri);
     return hhconfigPath != null;
   }
 
-  getExpandedSelectionRange(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
+  getExpandedSelectionRange(filePath, buffer, currentSelection) {
     throw new Error('Not implemented');
   }
 
-  getCollapsedSelectionRange(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
+  getCollapsedSelectionRange(filePath, buffer, currentSelection, originalCursorPosition) {
     throw new Error('Not implemented');
   }
 
-  dispose(): void {}
-}
+  dispose() {}
 
-// Assert that HackSingleFileLanguageService satisifes the SingleFileLanguageService interface:
-(((null: any): HackSingleFileLanguageService): SingleFileLanguageService);
+} // Assert that HackSingleFileLanguageService satisifes the SingleFileLanguageService interface:
 
-function formatAtomLineColumn(position: atom$Point): string {
+
+null;
+
+function formatAtomLineColumn(position) {
   return formatLineColumn(position.row + 1, position.column + 1);
 }
 
-function formatLineColumn(line: number, column: number): string {
+function formatLineColumn(line, column) {
   return `${line}:${column}`;
 }
 
-function getIdentifierAndRange(
-  buffer: simpleTextBuffer$TextBuffer,
-  position: atom$PointObject,
-): ?{id: string, range: atom$Range} {
-  const matchData = wordAtPositionFromBuffer(buffer, position, HACK_WORD_REGEX);
-  return matchData == null || matchData.wordMatch.length === 0
-    ? null
-    : {id: matchData.wordMatch[0], range: matchData.range};
+function getIdentifierAndRange(buffer, position) {
+  const matchData = (0, _range().wordAtPositionFromBuffer)(buffer, position, _nuclideHackCommon().HACK_WORD_REGEX);
+  return matchData == null || matchData.wordMatch.length === 0 ? null : {
+    id: matchData.wordMatch[0],
+    range: matchData.range
+  };
 }
 
-function getIdentifierAtPosition(
-  buffer: simpleTextBuffer$TextBuffer,
-  position: atom$PointObject,
-): ?string {
+function getIdentifierAtPosition(buffer, position) {
   const result = getIdentifierAndRange(buffer, position);
   return result == null ? null : result.id;
 }

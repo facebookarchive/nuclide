@@ -1,3 +1,86 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startSearchProviders = startSearchProviders;
+
+function vscode() {
+  const data = _interopRequireWildcard(require("vscode"));
+
+  vscode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _path = _interopRequireDefault(require("path"));
+
+function _collection() {
+  const data = require("../../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _state() {
+  const data = require("./state");
+
+  _state = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConnectionWrapper() {
+  const data = require("../ConnectionWrapper");
+
+  _ConnectionWrapper = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFileSystem() {
+  const data = require("../RemoteFileSystem");
+
+  _RemoteFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,173 +89,119 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const logger = (0, _log4js().getLogger)('search');
 
-import type {FileSearchProvider, TextSearchProvider} from 'vscode';
+function startSearchProviders() {
+  const searcher = new Search(); // TODO(hansonw): Remove after 1.26 is deployed.
 
-import * as vscode from 'vscode';
-import pathModule from 'path';
-import {arrayFlatten} from 'nuclide-commons/collection';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {getLogger} from 'log4js';
-
-import {getConnectedFilesystems} from './state';
-import {ConnectionWrapper} from '../ConnectionWrapper';
-import {RemoteFileSystem} from '../RemoteFileSystem';
-
-const logger = getLogger('search');
-
-export function startSearchProviders(): IDisposable {
-  const searcher = new Search();
-  // TODO(hansonw): Remove after 1.26 is deployed.
-  if (vscode.workspace.registerFileSearchProvider != null) {
-    return vscode.Disposable.from(
-      vscode.workspace.registerFileSearchProvider('big-dig', searcher),
-      vscode.workspace.registerTextSearchProvider('big-dig', searcher),
-    );
+  if (vscode().workspace.registerFileSearchProvider != null) {
+    return vscode().Disposable.from(vscode().workspace.registerFileSearchProvider('big-dig', searcher), vscode().workspace.registerTextSearchProvider('big-dig', searcher));
   } else {
-    return vscode.workspace.registerSearchProvider('big-dig', searcher);
+    return vscode().workspace.registerSearchProvider('big-dig', searcher);
   }
-}
+} // TODO(hansonw): Split after deploying 1.26.
 
-// TODO(hansonw): Split after deploying 1.26.
-class Search implements FileSearchProvider, TextSearchProvider {
-  async provideFileSearchResults(
-    query: vscode.FileSearchQuery,
-    options: vscode.FileSearchOptions,
-    token: vscode.CancellationToken,
-    token123Compat?: vscode.CancellationToken,
-  ): Promise<Array<vscode.Uri>> {
+
+class Search {
+  async provideFileSearchResults(query, options, token, token123Compat) {
     // For compatibility with 1.23's provideFileSearchResults:
     // https://github.com/Microsoft/vscode/blob/1.23.1/src/vs/vscode.proposed.d.ts#L75
     if (typeof query === 'string' && token123Compat != null) {
-      const results = await Promise.all(
-        getConnectedFilesystems().map(({fs, conn}) =>
-          this._fileSearch(fs, conn, query, token123Compat),
-        ),
-      );
-      for (const uri of arrayFlatten(results)) {
-        ((token: any): vscode.Progress<vscode.Uri>).report(uri);
+      const results = await Promise.all((0, _state().getConnectedFilesystems)().map(({
+        fs,
+        conn
+      }) => this._fileSearch(fs, conn, query, token123Compat)));
+
+      for (const uri of (0, _collection().arrayFlatten)(results)) {
+        token.report(uri);
       }
+
       return [];
     } else {
       // TODO: (hansonw) T31478806 Actually use the fields in FileSearchOptions.
-      const results = await Promise.all(
-        getConnectedFilesystems().map(({fs, conn}) =>
-          this._fileSearch(fs, conn, query.pattern, token),
-        ),
-      );
-      return arrayFlatten(results);
+      const results = await Promise.all((0, _state().getConnectedFilesystems)().map(({
+        fs,
+        conn
+      }) => this._fileSearch(fs, conn, query.pattern, token)));
+      return (0, _collection().arrayFlatten)(results);
     }
   }
 
-  async provideTextSearchResults(
-    query: vscode.TextSearchQuery,
-    options: vscode.TextSearchOptions,
-    progress: vscode.Progress<vscode.TextSearchResult>,
-    token: vscode.CancellationToken,
-  ): Promise<void> {
-    await Promise.all(
-      getConnectedFilesystems().map(({fs, conn}) =>
-        this._textSearch(fs, conn, query, options, progress, token),
-      ),
-    );
+  async provideTextSearchResults(query, options, progress, token) {
+    await Promise.all((0, _state().getConnectedFilesystems)().map(({
+      fs,
+      conn
+    }) => this._textSearch(fs, conn, query, options, progress, token)));
   }
 
-  async _fileSearch(
-    fs: RemoteFileSystem,
-    conn: ConnectionWrapper,
-    query: string,
-    token: vscode.CancellationToken,
-  ): Promise<vscode.Uri[]> {
-    const basePaths = fs
-      .getWorkspaceFolders()
-      .map(({uri}) => fs.uriToPath(uri));
+  async _fileSearch(fs, conn, query, token) {
+    const basePaths = fs.getWorkspaceFolders().map(({
+      uri
+    }) => fs.uriToPath(uri));
+
     if (basePaths.length === 0) {
       // No work to do.
       return [];
     }
 
-    const allResults = await Promise.all(
-      // TODO(T29797318): the RPC should support multiple base paths
-      basePaths.map(async path => {
-        const results = await conn.searchForFiles(path, query);
-        if (token.isCancellationRequested) {
-          return [];
-        }
-        return results.results.map(result => fs.pathToUri(result));
-      }),
-    ).catch(error => {
+    const allResults = await Promise.all( // TODO(T29797318): the RPC should support multiple base paths
+    basePaths.map(async path => {
+      const results = await conn.searchForFiles(path, query);
+
+      if (token.isCancellationRequested) {
+        return [];
+      }
+
+      return results.results.map(result => fs.pathToUri(result));
+    })).catch(error => {
       logger.warn(`Could not search ${conn.getAddress()}: ${error.message}`);
       return [];
     });
-
-    return arrayFlatten(allResults);
+    return (0, _collection().arrayFlatten)(allResults);
   }
 
-  async _textSearch(
-    fs: RemoteFileSystem,
-    conn: ConnectionWrapper,
-    query: vscode.TextSearchQuery,
-    options: vscode.TextSearchOptions,
-    progress: vscode.Progress<vscode.TextSearchResult>,
-    token: vscode.CancellationToken,
-  ): Promise<void> {
-    const paths = fs.getWorkspaceFolders().map(({uri}) => fs.uriToPath(uri));
+  async _textSearch(fs, conn, query, options, progress, token) {
+    const paths = fs.getWorkspaceFolders().map(({
+      uri
+    }) => fs.uriToPath(uri));
+
     if (paths.length === 0) {
       // No work to do.
       return;
-    }
+    } // TODO: (hansonw) T31478806 Use new fields in TextSearchOptions.
 
-    // TODO: (hansonw) T31478806 Use new fields in TextSearchOptions.
+
     const includes = getGlobalPatterns(options.includes);
     const excludes = getGlobalPatterns(options.excludes);
     const basePaths = paths.map(path => ({
       path,
       includes: [...includes, ...resolveGlobPatterns(path, options.includes)],
-      excludes: [...excludes, ...resolveGlobPatterns(path, options.excludes)],
+      excludes: [...excludes, ...resolveGlobPatterns(path, options.excludes)]
     }));
-    return conn
-      .searchForText({
-        query: query.pattern,
-        basePaths,
-        options: {
-          isRegExp: query.isRegExp || false,
-          isCaseSensitive: query.isCaseSensitive || false,
-          isWordMatch: query.isWordMatch || false,
-        },
-      })
-      .do(match => {
-        progress.report({
-          uri: fs.pathToUri(match.path),
-          range: match.range,
-          preview: {
-            // For compatibility with 1.23's TextSearchResultPreview:
-            // https://github.com/Microsoft/vscode/blob/1.23.1/src/vs/vscode.proposed.d.ts#L71
-            ...match.preview,
-            text:
-              match.preview.leading +
-              match.preview.matching +
-              match.preview.trailing,
-            match: match.range,
-          },
-        });
-      })
-      .takeUntil(
-        observableFromSubscribeFunction(cb =>
-          token.onCancellationRequested(cb),
-        ),
-      )
-      .ignoreElements()
-      .toPromise()
-      .catch(error =>
-        logger.warn(`Could not search ${conn.getAddress()}: ${error.message}`),
-      );
+    return conn.searchForText({
+      query: query.pattern,
+      basePaths,
+      options: {
+        isRegExp: query.isRegExp || false,
+        isCaseSensitive: query.isCaseSensitive || false,
+        isWordMatch: query.isWordMatch || false
+      }
+    }).do(match => {
+      progress.report({
+        uri: fs.pathToUri(match.path),
+        range: match.range,
+        preview: Object.assign({}, match.preview, {
+          text: match.preview.leading + match.preview.matching + match.preview.trailing,
+          match: match.range
+        })
+      });
+    }).takeUntil((0, _event().observableFromSubscribeFunction)(cb => token.onCancellationRequested(cb))).ignoreElements().toPromise().catch(error => logger.warn(`Could not search ${conn.getAddress()}: ${error.message}`));
   }
-}
 
+}
 /**
  * Filters out the patterns that are specifically applicable under `basePath`.
  * Plain string patterns are also filtered. `RelativePattern` is filtered out if
@@ -181,32 +210,27 @@ class Search implements FileSearchProvider, TextSearchProvider {
  * TODO(siegebell): this is our current best-guess on the semantics of
  * `RelativePattern`, but we need to double-check.
  */
-function resolveGlobPatterns(
-  basePath: string,
-  patterns: Array<vscode.GlobPattern>,
-): Array<string> {
-  return (
-    patterns
-      // Remove globally-applicable patterns:
-      .map(pattern => (typeof pattern === 'string' ? null : pattern))
-      .filter(Boolean)
-      // Keep only patterns that are under `basePath`:
-      .map(pattern => {
-        const relPattern = pathModule.relative(basePath, pattern.base);
-        if (relPattern == null || relPattern.startsWith('..')) {
-          return null;
-        } else {
-          return pattern.pattern;
-        }
-      })
-      .filter(Boolean)
-  );
-}
 
+
+function resolveGlobPatterns(basePath, patterns) {
+  return patterns // Remove globally-applicable patterns:
+  .map(pattern => typeof pattern === 'string' ? null : pattern).filter(Boolean) // Keep only patterns that are under `basePath`:
+  .map(pattern => {
+    const relPattern = _path.default.relative(basePath, pattern.base);
+
+    if (relPattern == null || relPattern.startsWith('..')) {
+      return null;
+    } else {
+      return pattern.pattern;
+    }
+  }).filter(Boolean);
+}
 /**
  * Extract the patterns that are global across all base paths (i.e. are not
  * `RelativePattern`s).
  */
-function getGlobalPatterns(patterns: Array<vscode.GlobPattern>): Array<string> {
-  return patterns.map(p => (typeof p === 'string' ? p : null)).filter(Boolean);
+
+
+function getGlobalPatterns(patterns) {
+  return patterns.map(p => typeof p === 'string' ? p : null).filter(Boolean);
 }

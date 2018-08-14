@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _AtomInput() {
+  const data = require("./AtomInput");
+
+  _AtomInput = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _SettingsUtils() {
+  const data = require("./SettingsUtils");
+
+  _SettingsUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,76 +37,65 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {SettingsPropsDefault} from './SettingsUtils';
-
-import invariant from 'assert';
-import {AtomInput} from './AtomInput';
-import * as React from 'react';
-import {
-  isDefaultConfigValue,
-  getDefaultConfigValueString,
-  normalizeIdentifier,
-  parseValue,
-  valueToString,
-} from './SettingsUtils';
-
-type Props = SettingsPropsDefault & {
-  type: string,
-  value: number | string | Array<any>,
-};
-
-export default class SettingsInput extends React.Component<Props> {
-  _ignoreInputCallback: boolean;
-  _input: ?AtomInput;
-
-  constructor(props: Object) {
+class SettingsInput extends React.Component {
+  constructor(props) {
     super(props);
+
+    this._handleChange = newValue_ => {
+      let newValue = newValue_;
+
+      if (this._ignoreInputCallback) {
+        return;
+      }
+
+      newValue = (0, _SettingsUtils().parseValue)(this.props.type, newValue);
+      this.props.onChange(newValue);
+    };
+
+    this._onFocus = () => {
+      const keyPath = this.props.keyPath;
+      const input = this._input;
+
+      if (!(input != null)) {
+        throw new Error("Invariant violation: \"input != null\"");
+      }
+
+      if ((0, _SettingsUtils().isDefaultConfigValue)(keyPath)) {
+        const defaultValue = (0, _SettingsUtils().getDefaultConfigValueString)(keyPath);
+
+        this._updateInput(input, defaultValue);
+      }
+    };
+
+    this._onBlur = () => {
+      const keyPath = this.props.keyPath;
+      const input = this._input;
+
+      if (!(input != null)) {
+        throw new Error("Invariant violation: \"input != null\"");
+      }
+
+      if ((0, _SettingsUtils().isDefaultConfigValue)(keyPath, input.getText())) {
+        this._updateInput(input, '');
+      }
+    };
+
     this._ignoreInputCallback = false;
   }
 
-  _updateInput(input: AtomInput, newValue: string) {
+  _updateInput(input, newValue) {
     this._ignoreInputCallback = true;
     input.setText(newValue);
     this._ignoreInputCallback = false;
   }
 
-  _handleChange = (newValue_: string) => {
-    let newValue = newValue_;
-    if (this._ignoreInputCallback) {
-      return;
-    }
+  _getValue() {
+    let value = (0, _SettingsUtils().valueToString)(this.props.value);
+    const defaultValue = (0, _SettingsUtils().getDefaultConfigValueString)(this.props.keyPath);
 
-    newValue = parseValue(this.props.type, newValue);
-    this.props.onChange(newValue);
-  };
-
-  _onFocus = () => {
-    const keyPath = this.props.keyPath;
-    const input = this._input;
-    invariant(input != null);
-    if (isDefaultConfigValue(keyPath)) {
-      const defaultValue = getDefaultConfigValueString(keyPath);
-      this._updateInput(input, defaultValue);
-    }
-  };
-
-  _onBlur = () => {
-    const keyPath = this.props.keyPath;
-    const input = this._input;
-    invariant(input != null);
-    if (isDefaultConfigValue(keyPath, input.getText())) {
-      this._updateInput(input, '');
-    }
-  };
-
-  _getValue(): string {
-    let value = valueToString(this.props.value);
-
-    const defaultValue = getDefaultConfigValueString(this.props.keyPath);
     if (defaultValue === value) {
       value = '';
     }
@@ -83,53 +103,59 @@ export default class SettingsInput extends React.Component<Props> {
     return value;
   }
 
-  _getPlaceholder(): string {
-    const defaultValue = getDefaultConfigValueString(this.props.keyPath);
+  _getPlaceholder() {
+    const defaultValue = (0, _SettingsUtils().getDefaultConfigValueString)(this.props.keyPath);
     return defaultValue ? 'Default: ' + defaultValue : '';
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     const input = this._input;
-    invariant(input != null);
+
+    if (!(input != null)) {
+      throw new Error("Invariant violation: \"input != null\"");
+    }
+
     const value = this._getValue();
+
     if (input.getText() !== value) {
       this._updateInput(input, value);
     }
   }
 
-  render(): React.Node {
+  render() {
     const keyPath = this.props.keyPath;
-    const id = normalizeIdentifier(keyPath);
+    const id = (0, _SettingsUtils().normalizeIdentifier)(keyPath);
     const title = this.props.title;
     const description = this.props.description;
+
     const value = this._getValue();
+
     const placeholder = this._getPlaceholder();
 
-    return (
-      <div>
-        <label className="control-label">
-          <div className="setting-title">{title}</div>
-          <div className="setting-description">{description}</div>
-        </label>
-        <div className="controls">
-          <div className="editor-container">
-            <subview>
-              <AtomInput
-                className={id}
-                initialValue={value}
-                onDidChange={this._handleChange}
-                onFocus={this._onFocus}
-                onBlur={this._onBlur}
-                placeholderText={placeholder}
-                ref={input => {
-                  this._input = input;
-                }}
-                text={value}
-              />
-            </subview>
-          </div>
-        </div>
-      </div>
-    );
+    return React.createElement("div", null, React.createElement("label", {
+      className: "control-label"
+    }, React.createElement("div", {
+      className: "setting-title"
+    }, title), React.createElement("div", {
+      className: "setting-description"
+    }, description)), React.createElement("div", {
+      className: "controls"
+    }, React.createElement("div", {
+      className: "editor-container"
+    }, React.createElement("subview", null, React.createElement(_AtomInput().AtomInput, {
+      className: id,
+      initialValue: value,
+      onDidChange: this._handleChange,
+      onFocus: this._onFocus,
+      onBlur: this._onBlur,
+      placeholderText: placeholder,
+      ref: input => {
+        this._input = input;
+      },
+      text: value
+    })))));
   }
+
 }
+
+exports.default = SettingsInput;

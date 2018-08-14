@@ -1,3 +1,15 @@
+"use strict";
+
+function _ProfileConfigurationParser() {
+  const data = require("../src/configuration/ProfileConfigurationParser");
+
+  _ProfileConfigurationParser = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,20 +18,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  * @emails oncall+nuclide
  */
-import {
-  type ConnectionProfileConfiguration,
-  ProfileConfigurationParser,
-} from '../src/configuration/ProfileConfigurationParser';
-
 // This value functions as the $USER environment variable.
-const DEFAULT_USERNAME = 'frederick';
-// This value functions as the $HOME environment variable.
-const LOCAL_HOME_DIR = `/home/${DEFAULT_USERNAME}`;
+const DEFAULT_USERNAME = 'frederick'; // This value functions as the $HOME environment variable.
 
+const LOCAL_HOME_DIR = `/home/${DEFAULT_USERNAME}`;
 describe('parse', () => {
   // Returns the expected IConnectionProfile that results when no properties
   // are specified on the ConnectionProfileConfiguration. This facilitates
@@ -34,11 +40,11 @@ describe('parse', () => {
         node: 'node',
         installationPath: `/home/${DEFAULT_USERNAME}/.big-dig/big-dig-vscode`,
         extractFileCommand: undefined,
-        autoUpdate: true,
+        autoUpdate: true
       },
       username: DEFAULT_USERNAME,
       authMethod: 'password',
-      privateKey: `${LOCAL_HOME_DIR}/.ssh/id_rsa`,
+      privateKey: `${LOCAL_HOME_DIR}/.ssh/id_rsa`
     };
   }
 
@@ -47,110 +53,105 @@ describe('parse', () => {
     const expected = createDefaultExpectedValue();
     await test(rawProfile, expected);
   });
-
   it('empty folders are preserved', async () => {
-    const rawProfile = {folders: []};
+    const rawProfile = {
+      folders: []
+    };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
-      folders: [],
+      folders: []
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('address inherits hostname', async () => {
     const rawProfile = {
-      hostname: 'foobar',
+      hostname: 'foobar'
     };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
       address: 'foobar',
-      hostname: 'foobar',
+      hostname: 'foobar'
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('address set independently of hostname', async () => {
     const rawProfile = {
-      address: 'foobar',
+      address: 'foobar'
     };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
-      address: 'foobar',
+      address: 'foobar'
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('first port in range is used', async () => {
     const rawProfile = {
-      ports: '8080-8083, 9000',
+      ports: '8080-8083, 9000'
     };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
-      ports: '8080-8083, 9000',
+      ports: '8080-8083, 9000'
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('overriding username affects other defaults', async () => {
     const rawProfile = {
-      username: 'fred',
+      username: 'fred'
     };
     const defaultExpected = createDefaultExpectedValue();
-    const {deployServer} = defaultExpected;
+    const {
+      deployServer
+    } = defaultExpected;
     const installationPath = '/home/fred/.big-dig/big-dig-vscode';
     const overrides = {
       username: 'fred',
-      deployServer: {...deployServer, installationPath},
+      deployServer: Object.assign({}, deployServer, {
+        installationPath
+      })
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('~ is expanded for privateKey', async () => {
     const rawProfile = {
-      privateKey: '~/some_dir/id_rsa',
+      privateKey: '~/some_dir/id_rsa'
     };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
-      privateKey: `${LOCAL_HOME_DIR}/some_dir/id_rsa`,
+      privateKey: `${LOCAL_HOME_DIR}/some_dir/id_rsa`
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
-
   it('authentication can be overridden', async () => {
     const rawProfile = {
-      authentication: 'private-key',
+      authentication: 'private-key'
     };
     const defaultExpected = createDefaultExpectedValue();
     const overrides = {
-      authMethod: 'private-key',
+      authMethod: 'private-key'
     };
-    const expected = {...defaultExpected, ...overrides};
+    const expected = Object.assign({}, defaultExpected, overrides);
     await test(rawProfile, expected);
   });
 });
-
 /**
  * expectedNormalizedProfile is an IConnectionProfile except that its privateKey
  * property should be resolved instead of a Promise.
  */
-async function test(
-  rawProfile: ConnectionProfileConfiguration,
-  expectedNormalizedProfile: Object,
-) {
-  const parser = new ProfileConfigurationParser(
-    rawProfile,
-    DEFAULT_USERNAME,
-    LOCAL_HOME_DIR,
-  );
+
+async function test(rawProfile, expectedNormalizedProfile) {
+  const parser = new (_ProfileConfigurationParser().ProfileConfigurationParser)(rawProfile, DEFAULT_USERNAME, LOCAL_HOME_DIR);
   const normalizedProfile = parser.parse();
   const authMethod = await normalizedProfile.authMethod;
   const privateKey = await normalizedProfile.privateKey;
-  const resolvedProfile = {...normalizedProfile, authMethod, privateKey};
+  const resolvedProfile = Object.assign({}, normalizedProfile, {
+    authMethod,
+    privateKey
+  });
   expect(resolvedProfile).toEqual(expectedNormalizedProfile);
 }

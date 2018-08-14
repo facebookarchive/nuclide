@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,9 +8,8 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
 // eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {};

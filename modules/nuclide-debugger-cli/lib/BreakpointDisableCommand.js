@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +13,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-export default class BreakpointDisableCommand implements Command {
-  name = 'disable';
-  helpText = '[index]: temporarily disables a breakpoint.';
-
-  _debugger: DebuggerInterface;
-
-  constructor(debug: DebuggerInterface) {
+class BreakpointDisableCommand {
+  constructor(debug) {
+    this.name = 'disable';
+    this.helpText = '[index]: temporarily disables a breakpoint.';
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     let index = NaN;
 
-    if (
-      args.length !== 1 ||
-      (!'all'.startsWith(args[0]) && isNaN((index = parseInt(args[0], 10))))
-    ) {
+    if (args.length !== 1 || !'all'.startsWith(args[0]) && isNaN(index = parseInt(args[0], 10))) {
       throw new Error("Format is 'breakpoint disable index | 'all''");
     }
 
@@ -40,4 +37,7 @@ export default class BreakpointDisableCommand implements Command {
 
     await this._debugger.setBreakpointEnabled(index, false);
   }
+
 }
+
+exports.default = BreakpointDisableCommand;

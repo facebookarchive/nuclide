@@ -1,3 +1,64 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DeviceAndPackage = void 0;
+
+function _nuclideAdb() {
+  const data = require("../nuclide-adb");
+
+  _nuclideAdb = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Dropdown() {
+  const data = require("../nuclide-commons-ui/Dropdown");
+
+  _Dropdown = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _AdbDeviceSelector() {
+  const data = require("./AdbDeviceSelector");
+
+  _AdbDeviceSelector = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,116 +67,81 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {AdbDevice} from 'nuclide-adb/lib/types';
-import type {Expected} from 'nuclide-commons/expected';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {Expect} from 'nuclide-commons/expected';
-import * as React from 'react';
-import {AdbDeviceSelector} from './AdbDeviceSelector';
-
-type Props = {|
-  +targetUri: NuclideUri,
-  +onSelect: (deviceSerial: ?string, javaPackage: string) => void,
-  +deserialize: () => ?string,
-|};
-
-type State = {
-  selectedDeviceSerial: ?string,
-  launchPackage: string,
-  packages: Expected<Array<string>>,
-};
-
-export class DeviceAndPackage extends React.Component<Props, State> {
-  constructor(props: Props) {
+class DeviceAndPackage extends React.Component {
+  constructor(props) {
     super(props);
+
+    this._handleDeviceChange = device => {
+      const state = {
+        selectedDeviceSerial: device === null || device === void 0 ? void 0 : device.serial,
+        packages: device == null ? _expected().Expect.value([]) : _expected().Expect.pending()
+      };
+      const value = this.props.deserialize();
+
+      if (device != null && (this.state.selectedDeviceSerial == null || device.serial !== this.state.selectedDeviceSerial) && value != null) {
+        state.launchPackage = value;
+      }
+
+      this.setState(state, () => {
+        this._refreshPackageList(device);
+      });
+    };
+
     this.state = {
       selectedDeviceSerial: null,
       launchPackage: '',
-      packages: Expect.value([]),
+      packages: _expected().Expect.value([])
     };
   }
 
-  async _refreshPackageList(device: ?AdbDevice) {
+  async _refreshPackageList(device) {
     if (device != null) {
-      const packages = Expect.value(
-        (await getAdbServiceByNuclideUri(
-          this.props.targetUri,
-        ).getInstalledPackages(device.serial)).sort(),
-      );
+      const packages = _expected().Expect.value((await (0, _nuclideAdb().getAdbServiceByNuclideUri)(this.props.targetUri).getInstalledPackages(device.serial)).sort());
+
       this.setState({
-        packages,
+        packages
       });
     } else {
       this.setState({
-        packages: Expect.value([]),
+        packages: _expected().Expect.value([])
       });
     }
   }
 
-  setState(partialState: Object, callback?: () => mixed): void {
-    const fullState: State = {
-      ...this.state,
-      ...partialState,
-    };
+  setState(partialState, callback) {
+    const fullState = Object.assign({}, this.state, partialState);
     super.setState(fullState, () => {
-      this.props.onSelect(
-        fullState.selectedDeviceSerial,
-        fullState.launchPackage,
-      );
+      this.props.onSelect(fullState.selectedDeviceSerial, fullState.launchPackage);
       callback && callback();
     });
   }
 
-  _handleDeviceChange = (device: ?AdbDevice): void => {
-    const state: $Shape<State> = {
-      selectedDeviceSerial: device?.serial,
-      packages: device == null ? Expect.value([]) : Expect.pending(),
-    };
-    const value = this.props.deserialize();
-    if (
-      device != null &&
-      (this.state.selectedDeviceSerial == null ||
-        device.serial !== this.state.selectedDeviceSerial) &&
-      value != null
-    ) {
-      state.launchPackage = value;
-    }
-
-    this.setState(state, () => {
-      this._refreshPackageList(device);
-    });
-  };
-
-  render(): React.Node {
-    return (
-      <div className="block">
-        <label>Device:</label>
-        <AdbDeviceSelector
-          onChange={this._handleDeviceChange}
-          targetUri={this.props.targetUri}
-        />
-        <label>Package: </label>
-        {this.state.packages.isPending ? (
-          <LoadingSpinner size="EXTRA_SMALL" />
-        ) : (
-          <Dropdown
-            disabled={this.state.selectedDeviceSerial == null}
-            options={this.state.packages.getOrDefault([]).map(packageName => {
-              return {value: packageName, label: packageName};
-            })}
-            onChange={value => this.setState({launchPackage: value})}
-            value={this.state.launchPackage}
-          />
-        )}
-      </div>
-    );
+  render() {
+    return React.createElement("div", {
+      className: "block"
+    }, React.createElement("label", null, "Device:"), React.createElement(_AdbDeviceSelector().AdbDeviceSelector, {
+      onChange: this._handleDeviceChange,
+      targetUri: this.props.targetUri
+    }), React.createElement("label", null, "Package: "), this.state.packages.isPending ? React.createElement(_LoadingSpinner().LoadingSpinner, {
+      size: "EXTRA_SMALL"
+    }) : React.createElement(_Dropdown().Dropdown, {
+      disabled: this.state.selectedDeviceSerial == null,
+      options: this.state.packages.getOrDefault([]).map(packageName => {
+        return {
+          value: packageName,
+          label: packageName
+        };
+      }),
+      onChange: value => this.setState({
+        launchPackage: value
+      }),
+      value: this.state.launchPackage
+    }));
   }
+
 }
+
+exports.DeviceAndPackage = DeviceAndPackage;

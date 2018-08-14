@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = parseEscapeSequences;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -26,9 +33,6 @@
  *
  * This code does not (yet) deal with Unicode surrogate pairs.
  */
-
-import invariant from 'assert';
-
 const ParseState = Object.freeze({
   START: 0,
   ESC: 1,
@@ -36,9 +40,8 @@ const ParseState = Object.freeze({
   CSI_PARAM: 3,
   CSI_INTERMEDIATE: 4,
   ESC_STRING: 5,
-  ESC_STRING_END: 6,
+  ESC_STRING_END: 6
 });
-
 const ParseAction = Object.freeze({
   NONE: 0,
   ESC: 1,
@@ -50,349 +53,278 @@ const ParseAction = Object.freeze({
   CSI_INTERMEDIATE: 7,
   CSI_FINAL: 8,
   ESC_STRING: 9,
-  ESC_STRING_END: 9,
+  ESC_STRING_END: 9
 });
 
-function charRangeSet(low: number, high: number): Set<string> {
-  const s: string[] = [];
+function charRangeSet(low, high) {
+  const s = [];
+
   for (let i = low; i <= high; i++) {
     s.push(String.fromCodePoint(i));
   }
+
   return new Set(s);
 }
 
 const ESC = '\x1b';
-const CSI = '[';
+const CSI = '['; // control characters are 0/0 - 1/15 (0x00-0x1f)
 
-// control characters are 0/0 - 1/15 (0x00-0x1f)
-const SET_CONTROL = charRangeSet(0x00, 0x1f);
+const SET_CONTROL = charRangeSet(0x00, 0x1f); // Per ECMA spec, param chars are in the range 3/0-3/15 (0x30-0x3F)
 
-// Per ECMA spec, param chars are in the range 3/0-3/15 (0x30-0x3F)
-const CSI_SET_PARAM = charRangeSet(0x30, 0x3f);
-
-// Intermediate bytes qualify the final byte as to what function to perform.
+const CSI_SET_PARAM = charRangeSet(0x30, 0x3f); // Intermediate bytes qualify the final byte as to what function to perform.
 // They are spec'ed in the range 2/0-2/15 (0x20-0x2F)
-const CSI_SET_INTERMEDIATE = charRangeSet(0x20, 0x2f);
 
-// Final bytes (terminated a sequence) are in the range 4/0-7/14 (0x40-0x7E)
-const CSI_SET_FINAL = charRangeSet(0x40, 0x7e);
+const CSI_SET_INTERMEDIATE = charRangeSet(0x20, 0x2f); // Final bytes (terminated a sequence) are in the range 4/0-7/14 (0x40-0x7E)
 
-// These non-CSI sequences are defined to take a string parameter terminated
+const CSI_SET_FINAL = charRangeSet(0x40, 0x7e); // These non-CSI sequences are defined to take a string parameter terminated
 // by ESC-backslash
+
 const ESC_SET_STRING = new Set(['P', ']', 'X', '^', '_']);
-
-type EdgeDefiniton = {
-  match: ?Set<string>,
-  action: number,
-  next: number,
-};
-
-type NodeDefinition = EdgeDefiniton[];
-
-type ParserDefinition = Map<number, NodeDefinition>;
-
 // Defines the FSM for parsing escape sequences
-const escapeSequenceParser: ParserDefinition = new Map([
-  // Nothing recognized yet
-  [
-    ParseState.START,
-    [
-      {
-        match: new Set(ESC),
-        action: ParseAction.ESC,
-        next: ParseState.ESC,
-      },
-      {
-        match: SET_CONTROL,
-        action: ParseAction.CONTROL,
-        next: ParseState.START,
-      },
-      {
-        match: null,
-        action: ParseAction.TEXT,
-        next: ParseState.START,
-      },
-    ],
-  ],
-  [
-    ParseState.ESC,
-    [
-      {
-        match: new Set(CSI),
-        action: ParseAction.CSI,
-        next: ParseState.CSI,
-      },
-      {
-        match: ESC_SET_STRING,
-        action: ParseAction.STRING_PREFIX,
-        next: ParseState.ESC_STRING,
-      },
-      {
-        match: null,
-        action: ParseAction.NONE,
-        next: ParseState.START,
-      },
-    ],
-  ],
-  [
-    ParseState.CSI,
-    [
-      {
-        match: CSI_SET_PARAM,
-        action: ParseAction.CSI_PARAM,
-        next: ParseState.CSI_PARAM,
-      },
-      {
-        match: CSI_SET_FINAL,
-        action: ParseAction.CSI_FINAL,
-        next: ParseState.START,
-      },
-    ],
-  ],
-  [
-    ParseState.CSI_PARAM,
-    [
-      {
-        match: CSI_SET_PARAM,
-        action: ParseAction.CSI_PARAM,
-        next: ParseState.CSI_PARAM,
-      },
-      {
-        match: CSI_SET_INTERMEDIATE,
-        action: ParseAction.CSI_INTERMEDIATE,
-        next: ParseState.CSI_INTERMEDIATE,
-      },
-      {
-        match: CSI_SET_FINAL,
-        action: ParseAction.CSI_FINAL,
-        next: ParseState.START,
-      },
-    ],
-  ],
-  [
-    ParseState.CSI_INTERMEDIATE,
-    [
-      {
-        match: CSI_SET_INTERMEDIATE,
-        action: ParseAction.CSI_INTERMEDIATE,
-        next: ParseState.CSI_INTERMEDIATE,
-      },
-      {
-        match: CSI_SET_FINAL,
-        action: ParseAction.CSI_FINAL,
-        next: ParseState.START,
-      },
-    ],
-  ],
-  [
-    ParseState.ESC_STRING,
-    [
-      {
-        match: new Set(ESC),
-        action: ParseAction.ESC_STRING,
-        next: ParseState.ESC_STRING_END,
-      },
-      {
-        match: null,
-        action: ParseAction.ESC_STRING,
-        next: ParseState.ESC_STRING,
-      },
-    ],
-  ],
-  [
-    ParseState.ESC_STRING_END,
-    [
-      {
-        match: new Set('\\'),
-        action: ParseAction.ESC_STRING_END,
-        next: ParseState.START,
-      },
-      {
-        match: null,
-        action: ParseAction.ESC_STRING,
-        next: ParseState.ESC_STRING,
-      },
-    ],
-  ],
-]);
+const escapeSequenceParser = new Map([// Nothing recognized yet
+[ParseState.START, [{
+  match: new Set(ESC),
+  action: ParseAction.ESC,
+  next: ParseState.ESC
+}, {
+  match: SET_CONTROL,
+  action: ParseAction.CONTROL,
+  next: ParseState.START
+}, {
+  match: null,
+  action: ParseAction.TEXT,
+  next: ParseState.START
+}]], [ParseState.ESC, [{
+  match: new Set(CSI),
+  action: ParseAction.CSI,
+  next: ParseState.CSI
+}, {
+  match: ESC_SET_STRING,
+  action: ParseAction.STRING_PREFIX,
+  next: ParseState.ESC_STRING
+}, {
+  match: null,
+  action: ParseAction.NONE,
+  next: ParseState.START
+}]], [ParseState.CSI, [{
+  match: CSI_SET_PARAM,
+  action: ParseAction.CSI_PARAM,
+  next: ParseState.CSI_PARAM
+}, {
+  match: CSI_SET_FINAL,
+  action: ParseAction.CSI_FINAL,
+  next: ParseState.START
+}]], [ParseState.CSI_PARAM, [{
+  match: CSI_SET_PARAM,
+  action: ParseAction.CSI_PARAM,
+  next: ParseState.CSI_PARAM
+}, {
+  match: CSI_SET_INTERMEDIATE,
+  action: ParseAction.CSI_INTERMEDIATE,
+  next: ParseState.CSI_INTERMEDIATE
+}, {
+  match: CSI_SET_FINAL,
+  action: ParseAction.CSI_FINAL,
+  next: ParseState.START
+}]], [ParseState.CSI_INTERMEDIATE, [{
+  match: CSI_SET_INTERMEDIATE,
+  action: ParseAction.CSI_INTERMEDIATE,
+  next: ParseState.CSI_INTERMEDIATE
+}, {
+  match: CSI_SET_FINAL,
+  action: ParseAction.CSI_FINAL,
+  next: ParseState.START
+}]], [ParseState.ESC_STRING, [{
+  match: new Set(ESC),
+  action: ParseAction.ESC_STRING,
+  next: ParseState.ESC_STRING_END
+}, {
+  match: null,
+  action: ParseAction.ESC_STRING,
+  next: ParseState.ESC_STRING
+}]], [ParseState.ESC_STRING_END, [{
+  match: new Set('\\'),
+  action: ParseAction.ESC_STRING_END,
+  next: ParseState.START
+}, {
+  match: null,
+  action: ParseAction.ESC_STRING,
+  next: ParseState.ESC_STRING
+}]]]);
+const actionHandlers = new Map([[ParseAction.NONE, actionNone], [ParseAction.ESC, actionESC], [ParseAction.TEXT, actionText], [ParseAction.CONTROL, actionControl], [ParseAction.STRING_PREFIX, actionStringPrefix], [ParseAction.CSI, actionCSI], [ParseAction.CSI_PARAM, actionCSIParam], [ParseAction.CSI_INTERMEDIATE, actionCSIIntermediate], [ParseAction.CSI_FINAL, actionCSIFinal], [ParseAction.ESC_STRING, actionESCString], [ParseAction.ESC_STRING_END, actionESCStringEnd]]);
 
-export type EscapeSequence = {
-  buffer: string,
-  prefix?: string,
-  stringParameter?: string,
-  parameters?: string,
-  intermediate?: string,
-  final?: string,
-};
-
-export type Result = {
-  filteredText: string,
-  displayLength: number,
-};
-
-type ParserState = {
-  state: number,
-  result: Result,
-  escapeSequence: EscapeSequence,
-  keepSequence: ?(seq: EscapeSequence) => boolean,
-};
-
-const actionHandlers: Map<number, (ParserState, string) => void> = new Map([
-  [ParseAction.NONE, actionNone],
-  [ParseAction.ESC, actionESC],
-  [ParseAction.TEXT, actionText],
-  [ParseAction.CONTROL, actionControl],
-  [ParseAction.STRING_PREFIX, actionStringPrefix],
-  [ParseAction.CSI, actionCSI],
-  [ParseAction.CSI_PARAM, actionCSIParam],
-  [ParseAction.CSI_INTERMEDIATE, actionCSIIntermediate],
-  [ParseAction.CSI_FINAL, actionCSIFinal],
-  [ParseAction.ESC_STRING, actionESCString],
-  [ParseAction.ESC_STRING_END, actionESCStringEnd],
-]);
-
-export default function parseEscapeSequences(
-  s: string,
-  keepSequence: ?(seq: EscapeSequence) => boolean,
-): Result {
-  const state: ParserState = {
+function parseEscapeSequences(s, keepSequence) {
+  const state = {
     state: ParseState.START,
     result: {
       filteredText: '',
-      displayLength: 0,
+      displayLength: 0
     },
     escapeSequence: {
-      buffer: '',
+      buffer: ''
     },
-    keepSequence,
+    keepSequence
   };
 
-  function next(node: NodeDefinition, ch: string): boolean {
+  function next(node, ch) {
     for (const edge of node) {
       if (edge.match == null || edge.match.has(ch)) {
         const action = actionHandlers.get(edge.action);
-        invariant(action != null);
+
+        if (!(action != null)) {
+          throw new Error("Invariant violation: \"action != null\"");
+        }
+
         action(state, ch);
         state.state = edge.next;
         return true;
       }
     }
+
     return false;
   }
 
   for (const ch of s) {
     let node = escapeSequenceParser.get(state.state);
-    invariant(node != null);
+
+    if (!(node != null)) {
+      throw new Error("Invariant violation: \"node != null\"");
+    }
 
     if (!next(node, ch)) {
       // throw out any malformed sequences
-      resetToStartState(state);
-      // NB the start state matches anything
+      resetToStartState(state); // NB the start state matches anything
+
       node = escapeSequenceParser.get(state.state);
-      invariant(node != null);
+
+      if (!(node != null)) {
+        throw new Error("Invariant violation: \"node != null\"");
+      }
+
       next(node, ch);
     }
   }
 
   return state.result;
-}
-
-//------------------------------------------------------------------------------
+} //------------------------------------------------------------------------------
 //
 // Parser action handlers
 //
 
-function actionNone(state: ParserState, s: string): void {}
 
-// The parser has encountered an ESC; save it as the start of a sequence.
-function actionESC(state: ParserState, s: string): void {
+function actionNone(state, s) {} // The parser has encountered an ESC; save it as the start of a sequence.
+
+
+function actionESC(state, s) {
   state.escapeSequence.buffer += s;
-}
-
-// The parser has encountered non-control character text outside an escape
+} // The parser has encountered non-control character text outside an escape
 // sequence (i.e. normal displayable text). Save it and adjust the length.
-function actionText(state: ParserState, s: string): void {
+
+
+function actionText(state, s) {
   state.result.filteredText += s;
   state.result.displayLength += s.length;
-}
-
-// The parser has encountered a control character. Save it if it is not
+} // The parser has encountered a control character. Save it if it is not
 // filtered out (but assume it will not take a display character cell).
-function actionControl(state: ParserState, s: string): void {
+
+
+function actionControl(state, s) {
   state.escapeSequence.buffer += s;
   endEscapeSequence(state);
-}
-
-// The parser has encountered the start of a sequence that takes a string
+} // The parser has encountered the start of a sequence that takes a string
 // parameter. Save the prefix.
-function actionStringPrefix(state: ParserState, s: string): void {
+
+
+function actionStringPrefix(state, s) {
   if (state.escapeSequence.prefix == null) {
     state.escapeSequence.prefix = '';
     state.escapeSequence.stringParameter = '';
   }
+
   state.escapeSequence.buffer += s;
   state.escapeSequence.prefix += s;
-}
-
-// The parser has recognized a CSI sequence. Set up to parse the rest
+} // The parser has recognized a CSI sequence. Set up to parse the rest
 // of the seqeuence.
-function actionCSI(state: ParserState, s: string): void {
+
+
+function actionCSI(state, s) {
   state.escapeSequence.buffer += s;
   state.escapeSequence.parameters = '';
   state.escapeSequence.intermediate = '';
   state.escapeSequence.final = '';
-}
+} // The parser has encountered a CSI parameter character. Save it.
 
-// The parser has encountered a CSI parameter character. Save it.
-function actionCSIParam(state: ParserState, s: string): void {
+
+function actionCSIParam(state, s) {
   state.escapeSequence.buffer += s;
-  invariant(state.escapeSequence.parameters != null);
+
+  if (!(state.escapeSequence.parameters != null)) {
+    throw new Error("Invariant violation: \"state.escapeSequence.parameters != null\"");
+  }
+
   state.escapeSequence.parameters += s;
-}
+} // The parser has encountered a CSI intermediate character. Save it.
 
-// The parser has encountered a CSI intermediate character. Save it.
-function actionCSIIntermediate(state: ParserState, s: string): void {
+
+function actionCSIIntermediate(state, s) {
   state.escapeSequence.buffer += s;
-  invariant(state.escapeSequence.intermediate != null);
-  state.escapeSequence.intermediate += s;
-}
 
-// The parser has encountered a CSI final character. Save it, and
+  if (!(state.escapeSequence.intermediate != null)) {
+    throw new Error("Invariant violation: \"state.escapeSequence.intermediate != null\"");
+  }
+
+  state.escapeSequence.intermediate += s;
+} // The parser has encountered a CSI final character. Save it, and
 // selecively keep the sequence in the final string.
-function actionCSIFinal(state: ParserState, s: string): void {
+
+
+function actionCSIFinal(state, s) {
   state.escapeSequence.buffer += s;
   state.escapeSequence.final = s;
   endEscapeSequence(state);
-}
+} // The parser has encountered text inside a string parameter. Save it.
 
-// The parser has encountered text inside a string parameter. Save it.
-function actionESCString(state: ParserState, s: string): void {
+
+function actionESCString(state, s) {
   state.escapeSequence.buffer += s;
-  invariant(state.escapeSequence.stringParameter != null);
+
+  if (!(state.escapeSequence.stringParameter != null)) {
+    throw new Error("Invariant violation: \"state.escapeSequence.stringParameter != null\"");
+  }
+
   state.escapeSequence.stringParameter += s;
-}
-
-// The parser has encountered the end of a string parameter. Save it,
+} // The parser has encountered the end of a string parameter. Save it,
 // and selectively keep the sequence in the final string.
-function actionESCStringEnd(state: ParserState, s: string): void {
+
+
+function actionESCStringEnd(state, s) {
   state.escapeSequence.buffer += s;
-  invariant(state.escapeSequence.stringParameter != null);
+
+  if (!(state.escapeSequence.stringParameter != null)) {
+    throw new Error("Invariant violation: \"state.escapeSequence.stringParameter != null\"");
+  }
+
   state.escapeSequence.stringParameter += s;
   endEscapeSequence(state);
-}
-
-//------------------------------------------------------------------------------
+} //------------------------------------------------------------------------------
 //
 // Utilities
 //
-function endEscapeSequence(state: ParserState): void {
+
+
+function endEscapeSequence(state) {
   if (state.keepSequence == null || state.keepSequence(state.escapeSequence)) {
     state.result.filteredText += state.escapeSequence.buffer;
   }
-  state.escapeSequence = {buffer: ''};
+
+  state.escapeSequence = {
+    buffer: ''
+  };
 }
 
-function resetToStartState(state: ParserState): void {
+function resetToStartState(state) {
   state.state = ParseState.START;
-  state.escapeSequence = {buffer: ''};
+  state.escapeSequence = {
+    buffer: ''
+  };
 }

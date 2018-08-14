@@ -1,3 +1,128 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setCwd = setCwd;
+exports.clearFilter = clearFilter;
+exports.addExtraProjectSelectionContent = addExtraProjectSelectionContent;
+exports.removeExtraProjectSelectionContent = removeExtraProjectSelectionContent;
+exports.expandNode = expandNode;
+exports.expandNodeDeep = expandNodeDeep;
+exports.deleteSelectedNodes = deleteSelectedNodes;
+exports.collapseNode = collapseNode;
+exports.collapseNodeDeep = collapseNodeDeep;
+exports.setExcludeVcsIgnoredPaths = setExcludeVcsIgnoredPaths;
+exports.setHideVcsIgnoredPaths = setHideVcsIgnoredPaths;
+exports.setHideIgnoredNames = setHideIgnoredNames;
+exports.setIsCalculatingChanges = setIsCalculatingChanges;
+exports.setIgnoredNames = setIgnoredNames;
+exports.setTrackedNode = setTrackedNode;
+exports.clearTrackedNode = clearTrackedNode;
+exports.clearTrackedNodeIfNotLoading = clearTrackedNodeIfNotLoading;
+exports.startReorderDrag = startReorderDrag;
+exports.endReorderDrag = endReorderDrag;
+exports.reorderDragInto = reorderDragInto;
+exports.reorderRoots = reorderRoots;
+exports.moveToNode = moveToNode;
+exports.setUsePreviewTabs = setUsePreviewTabs;
+exports.setFocusEditorOnFileSelection = setFocusEditorOnFileSelection;
+exports.setUsePrefixNav = setUsePrefixNav;
+exports.setAutoExpandSingleChild = setAutoExpandSingleChild;
+exports.setVcsStatuses = setVcsStatuses;
+exports.invalidateRemovedFolder = invalidateRemovedFolder;
+exports.updateWorkingSet = updateWorkingSet;
+exports.setWorkingSet = setWorkingSet;
+exports.updateOpenFilesWorkingSet = updateOpenFilesWorkingSet;
+exports.updateWorkingSetsStore = updateWorkingSetsStore;
+exports.startEditingWorkingSet = startEditingWorkingSet;
+exports.finishEditingWorkingSet = finishEditingWorkingSet;
+exports.checkNode = checkNode;
+exports.uncheckNode = uncheckNode;
+exports.setDragHoveredNode = setDragHoveredNode;
+exports.setSelectedNode = setSelectedNode;
+exports.setFocusedNode = setFocusedNode;
+exports.addSelectedNode = addSelectedNode;
+exports.unselectNode = unselectNode;
+exports.rangeSelectToNode = rangeSelectToNode;
+exports.rangeSelectUp = rangeSelectUp;
+exports.rangeSelectDown = rangeSelectDown;
+exports.unhoverNode = unhoverNode;
+exports.moveSelectionUp = moveSelectionUp;
+exports.moveSelectionDown = moveSelectionDown;
+exports.moveSelectionToTop = moveSelectionToTop;
+exports.moveSelectionToBottom = moveSelectionToBottom;
+exports.setOpenFilesExpanded = setOpenFilesExpanded;
+exports.setUncommittedChangesExpanded = setUncommittedChangesExpanded;
+exports.setFoldersExpanded = setFoldersExpanded;
+exports.setTargetNode = setTargetNode;
+exports.updateGeneratedStatuses = updateGeneratedStatuses;
+exports.addFilterLetter = addFilterLetter;
+exports.removeFilterLetter = removeFilterLetter;
+exports.confirmNode = confirmNode;
+exports.keepPreviewTab = keepPreviewTab;
+exports.openEntrySplit = openEntrySplit;
+exports.updateRepositories = updateRepositories;
+exports.revealNodeKey = revealNodeKey;
+exports.revealFilePath = revealFilePath;
+exports.openAndRevealFilePath = openAndRevealFilePath;
+exports.openAndRevealFilePaths = openAndRevealFilePaths;
+exports.openAndRevealDirectoryPath = openAndRevealDirectoryPath;
+exports.updateRootDirectories = updateRootDirectories;
+exports.setCwdToSelection = setCwdToSelection;
+exports.setCwdApi = setCwdApi;
+exports.setRemoteProjectsService = setRemoteProjectsService;
+exports.collapseSelection = collapseSelection;
+exports.selectAndTrackNode = selectAndTrackNode;
+exports.collapseAll = collapseAll;
+exports.deleteSelection = deleteSelection;
+exports.expandSelection = expandSelection;
+exports.openSelectedEntry = openSelectedEntry;
+exports.openSelectedEntrySplit = openSelectedEntrySplit;
+exports.openSelectedEntrySplitUp = openSelectedEntrySplitUp;
+exports.openSelectedEntrySplitDown = openSelectedEntrySplitDown;
+exports.openSelectedEntrySplitLeft = openSelectedEntrySplitLeft;
+exports.openSelectedEntrySplitRight = openSelectedEntrySplitRight;
+exports.removeRootFolderSelection = removeRootFolderSelection;
+exports.copyFilenamesWithDir = copyFilenamesWithDir;
+exports.openAddFolderDialog = openAddFolderDialog;
+exports.openAddFileDialog = openAddFileDialog;
+exports.openAddFileDialogRelative = openAddFileDialogRelative;
+exports.openRenameDialog = openRenameDialog;
+exports.openDuplicateDialog = openDuplicateDialog;
+exports.openNextDuplicateDialog = openNextDuplicateDialog;
+exports.openPasteDialog = openPasteDialog;
+exports.clearSelection = clearSelection;
+exports.clearSelectionRange = clearSelectionRange;
+exports.clearDragHover = clearDragHover;
+exports.setRoots = setRoots;
+exports.clearLoading = clearLoading;
+exports.setLoading = setLoading;
+exports.loadData = loadData;
+exports.setInitialData = setInitialData;
+
+function _FileTreeDispatcher() {
+  const data = require("../FileTreeDispatcher");
+
+  _FileTreeDispatcher = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Immutable() {
+  const data = _interopRequireWildcard(require("immutable"));
+
+  Immutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,716 +130,668 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
 // $FlowFixMe(>=0.53.0) Flow suppress
-import type React from 'react';
 // eslint-disable-next-line nuclide-internal/import-type-style
-import type {FileTreeAction as Action} from '../FileTreeDispatcher';
-import type {FileTreeNode} from '../FileTreeNode';
-import type CwdApi from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {RemoteProjectsService} from '../../../nuclide-remote-projects';
-import type {WorkingSet} from '../../../nuclide-working-sets-common';
-import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {InitialData, ExportStoreData, Roots} from '../types';
-import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
-
-import {ActionTypes} from '../FileTreeDispatcher';
-import * as Immutable from 'immutable';
-
-export function setCwd(rootKey: ?string): Action {
+function setCwd(rootKey) {
   return {
-    type: ActionTypes.SET_CWD,
+    type: _FileTreeDispatcher().ActionTypes.SET_CWD,
+    rootKey
+  };
+}
+
+function clearFilter() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_FILTER
+  };
+}
+
+function addExtraProjectSelectionContent(content) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
+    content
+  };
+}
+
+function removeExtraProjectSelectionContent(content) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
+    content
+  };
+}
+
+function expandNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.EXPAND_NODE,
     rootKey,
+    nodeKey
   };
 }
 
-export function clearFilter(): Action {
+function expandNodeDeep(rootKey, nodeKey) {
   return {
-    type: ActionTypes.CLEAR_FILTER,
+    type: _FileTreeDispatcher().ActionTypes.EXPAND_NODE_DEEP,
+    rootKey,
+    nodeKey
   };
 }
 
-export function addExtraProjectSelectionContent(
-  content: React.Element<any>,
-): Action {
+function deleteSelectedNodes() {
   return {
-    type: ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
-    content,
+    type: _FileTreeDispatcher().ActionTypes.DELETE_SELECTED_NODES
   };
 }
 
-export function removeExtraProjectSelectionContent(
-  content: React.Element<any>,
-): Action {
+function collapseNode(rootKey, nodeKey) {
   return {
-    type: ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
-    content,
+    type: _FileTreeDispatcher().ActionTypes.COLLAPSE_NODE,
+    rootKey,
+    nodeKey
   };
 }
 
-export function expandNode(rootKey: string, nodeKey: string): Action {
+function collapseNodeDeep(rootKey, nodeKey) {
   return {
-    type: ActionTypes.EXPAND_NODE,
+    type: _FileTreeDispatcher().ActionTypes.COLLAPSE_NODE_DEEP,
+    rootKey,
+    nodeKey
+  };
+}
+
+function setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
+    excludeVcsIgnoredPaths
+  };
+}
+
+function setHideVcsIgnoredPaths(hideVcsIgnoredPaths) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_HIDE_VCS_IGNORED_PATHS,
+    hideVcsIgnoredPaths
+  };
+}
+
+function setHideIgnoredNames(hideIgnoredNames) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_HIDE_IGNORED_NAMES,
+    hideIgnoredNames
+  };
+}
+
+function setIsCalculatingChanges(isCalculatingChanges) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_IS_CALCULATING_CHANGES,
+    isCalculatingChanges
+  };
+}
+
+function setIgnoredNames(ignoredNames) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_IGNORED_NAMES,
+    ignoredNames
+  };
+}
+
+function setTrackedNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_TRACKED_NODE,
+    nodeKey,
+    rootKey
+  };
+}
+
+function clearTrackedNode() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_TRACKED_NODE
+  };
+}
+
+function clearTrackedNodeIfNotLoading() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING
+  };
+}
+
+function startReorderDrag(draggedRootKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.START_REORDER_DRAG,
+    draggedRootKey
+  };
+}
+
+function endReorderDrag() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.END_REORDER_DRAG
+  };
+}
+
+function reorderDragInto(dragTargetNodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.REORDER_DRAG_INTO,
+    dragTargetNodeKey
+  };
+}
+
+function reorderRoots() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.REORDER_ROOTS
+  };
+}
+
+function moveToNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.MOVE_TO_NODE,
+    nodeKey,
+    rootKey
+  };
+}
+
+function setUsePreviewTabs(usePreviewTabs) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_USE_PREVIEW_TABS,
+    usePreviewTabs
+  };
+}
+
+function setFocusEditorOnFileSelection(focusEditorOnFileSelection) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
+    focusEditorOnFileSelection
+  };
+}
+
+function setUsePrefixNav(usePrefixNav) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_USE_PREFIX_NAV,
+    usePrefixNav
+  };
+}
+
+function setAutoExpandSingleChild(autoExpandSingleChild) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
+    autoExpandSingleChild
+  };
+}
+
+function setVcsStatuses(rootKey, vcsStatuses) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_VCS_STATUSES,
+    rootKey,
+    vcsStatuses
+  };
+}
+
+function invalidateRemovedFolder() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.INVALIDATE_REMOVED_FOLDER
+  };
+}
+
+function updateWorkingSet(workingSet) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.WORKING_SET_CHANGE_REQUESTED,
+    workingSet
+  };
+}
+
+function setWorkingSet(workingSet) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_WORKING_SET,
+    workingSet
+  };
+}
+
+function updateOpenFilesWorkingSet(openFilesWorkingSet) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_OPEN_FILES_WORKING_SET,
+    openFilesWorkingSet
+  };
+}
+
+function updateWorkingSetsStore(workingSetsStore) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_WORKING_SETS_STORE,
+    workingSetsStore
+  };
+}
+
+function startEditingWorkingSet(editedWorkingSet) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.START_EDITING_WORKING_SET,
+    editedWorkingSet
+  };
+}
+
+function finishEditingWorkingSet() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.FINISH_EDITING_WORKING_SET
+  };
+}
+
+function checkNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CHECK_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function uncheckNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.UNCHECK_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function setDragHoveredNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_DRAG_HOVERED_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function setSelectedNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_SELECTED_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function setFocusedNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_FOCUSED_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function addSelectedNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.ADD_SELECTED_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function unselectNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.UNSELECT_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function rangeSelectToNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.RANGE_SELECT_TO_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function rangeSelectUp() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.RANGE_SELECT_UP
+  };
+}
+
+function rangeSelectDown() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.RANGE_SELECT_DOWN
+  };
+}
+
+function unhoverNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.UNHOVER_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function moveSelectionUp() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.MOVE_SELECTION_UP
+  };
+}
+
+function moveSelectionDown() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.MOVE_SELECTION_DOWN
+  };
+}
+
+function moveSelectionToTop() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.MOVE_SELECTION_TO_TOP
+  };
+}
+
+function moveSelectionToBottom() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.MOVE_SELECTION_TO_BOTTOM
+  };
+}
+
+function setOpenFilesExpanded(openFilesExpanded) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_OPEN_FILES_EXPANDED,
+    openFilesExpanded
+  };
+}
+
+function setUncommittedChangesExpanded(uncommittedChangesExpanded) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
+    uncommittedChangesExpanded
+  };
+}
+
+function setFoldersExpanded(foldersExpanded) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_FOLDERS_EXPANDED,
+    foldersExpanded
+  };
+}
+
+function setTargetNode(rootKey, nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_TARGET_NODE,
+    rootKey,
+    nodeKey
+  };
+}
+
+function updateGeneratedStatuses(generatedFileTypes) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.UPDATE_GENERATED_STATUSES,
+    generatedFileTypes
+  };
+}
+
+function addFilterLetter(letter) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.ADD_FILTER_LETTER,
+    letter
+  };
+}
+
+function removeFilterLetter() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.REMOVE_FILTER_LETTER
+  };
+}
+
+function confirmNode(rootKey, nodeKey, pending = false) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CONFIRM_NODE,
     rootKey,
     nodeKey,
+    pending
   };
 }
 
-export function expandNodeDeep(rootKey: string, nodeKey: string): Action {
+function keepPreviewTab() {
   return {
-    type: ActionTypes.EXPAND_NODE_DEEP,
-    rootKey,
-    nodeKey,
+    type: _FileTreeDispatcher().ActionTypes.KEEP_PREVIEW_TAB
   };
 }
 
-export function deleteSelectedNodes(): Action {
-  return {type: ActionTypes.DELETE_SELECTED_NODES};
-}
-
-export function collapseNode(rootKey: string, nodeKey: string): Action {
+function openEntrySplit(nodeKey, orientation, side) {
   return {
-    type: ActionTypes.COLLAPSE_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function collapseNodeDeep(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.COLLAPSE_NODE_DEEP,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function setExcludeVcsIgnoredPaths(
-  excludeVcsIgnoredPaths: boolean,
-): Action {
-  return {
-    type: ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
-    excludeVcsIgnoredPaths,
-  };
-}
-
-export function setHideVcsIgnoredPaths(hideVcsIgnoredPaths: boolean): Action {
-  return {
-    type: ActionTypes.SET_HIDE_VCS_IGNORED_PATHS,
-    hideVcsIgnoredPaths,
-  };
-}
-
-export function setHideIgnoredNames(hideIgnoredNames: boolean): Action {
-  return {
-    type: ActionTypes.SET_HIDE_IGNORED_NAMES,
-    hideIgnoredNames,
-  };
-}
-
-export function setIsCalculatingChanges(isCalculatingChanges: boolean): Action {
-  return {
-    type: ActionTypes.SET_IS_CALCULATING_CHANGES,
-    isCalculatingChanges,
-  };
-}
-
-export function setIgnoredNames(ignoredNames: Array<string>): Action {
-  return {
-    type: ActionTypes.SET_IGNORED_NAMES,
-    ignoredNames,
-  };
-}
-
-export function setTrackedNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.SET_TRACKED_NODE,
-    nodeKey,
-    rootKey,
-  };
-}
-
-export function clearTrackedNode(): Action {
-  return {
-    type: ActionTypes.CLEAR_TRACKED_NODE,
-  };
-}
-
-export function clearTrackedNodeIfNotLoading(): Action {
-  return {
-    type: ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING,
-  };
-}
-
-export function startReorderDrag(draggedRootKey: string): Action {
-  return {
-    type: ActionTypes.START_REORDER_DRAG,
-    draggedRootKey,
-  };
-}
-
-export function endReorderDrag(): Action {
-  return {
-    type: ActionTypes.END_REORDER_DRAG,
-  };
-}
-
-export function reorderDragInto(dragTargetNodeKey: string): Action {
-  return {
-    type: ActionTypes.REORDER_DRAG_INTO,
-    dragTargetNodeKey,
-  };
-}
-
-export function reorderRoots(): Action {
-  return {
-    type: ActionTypes.REORDER_ROOTS,
-  };
-}
-
-export function moveToNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.MOVE_TO_NODE,
-    nodeKey,
-    rootKey,
-  };
-}
-
-export function setUsePreviewTabs(usePreviewTabs: boolean): Action {
-  return {
-    type: ActionTypes.SET_USE_PREVIEW_TABS,
-    usePreviewTabs,
-  };
-}
-
-export function setFocusEditorOnFileSelection(
-  focusEditorOnFileSelection: boolean,
-): Action {
-  return {
-    type: ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
-    focusEditorOnFileSelection,
-  };
-}
-
-export function setUsePrefixNav(usePrefixNav: boolean): Action {
-  return {
-    type: ActionTypes.SET_USE_PREFIX_NAV,
-    usePrefixNav,
-  };
-}
-
-export function setAutoExpandSingleChild(
-  autoExpandSingleChild: boolean,
-): Action {
-  return {
-    type: ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
-    autoExpandSingleChild,
-  };
-}
-
-export function setVcsStatuses(
-  rootKey: string,
-  vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
-): Action {
-  return {
-    type: ActionTypes.SET_VCS_STATUSES,
-    rootKey,
-    vcsStatuses,
-  };
-}
-
-export function invalidateRemovedFolder(): Action {
-  return {
-    type: ActionTypes.INVALIDATE_REMOVED_FOLDER,
-  };
-}
-
-export function updateWorkingSet(workingSet: WorkingSet): Action {
-  return {
-    type: ActionTypes.WORKING_SET_CHANGE_REQUESTED,
-    workingSet,
-  };
-}
-
-export function setWorkingSet(workingSet: WorkingSet): Action {
-  return {
-    type: ActionTypes.SET_WORKING_SET,
-    workingSet,
-  };
-}
-
-export function updateOpenFilesWorkingSet(
-  openFilesWorkingSet: WorkingSet,
-): Action {
-  return {
-    type: ActionTypes.SET_OPEN_FILES_WORKING_SET,
-    openFilesWorkingSet,
-  };
-}
-
-export function updateWorkingSetsStore(
-  workingSetsStore: ?WorkingSetsStore,
-): Action {
-  return {
-    type: ActionTypes.SET_WORKING_SETS_STORE,
-    workingSetsStore,
-  };
-}
-
-export function startEditingWorkingSet(editedWorkingSet: WorkingSet): Action {
-  return {
-    type: ActionTypes.START_EDITING_WORKING_SET,
-    editedWorkingSet,
-  };
-}
-
-export function finishEditingWorkingSet(): Action {
-  return {
-    type: ActionTypes.FINISH_EDITING_WORKING_SET,
-  };
-}
-
-export function checkNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.CHECK_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function uncheckNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.UNCHECK_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function setDragHoveredNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.SET_DRAG_HOVERED_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function setSelectedNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.SET_SELECTED_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function setFocusedNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.SET_FOCUSED_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function addSelectedNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.ADD_SELECTED_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function unselectNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.UNSELECT_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function rangeSelectToNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.RANGE_SELECT_TO_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function rangeSelectUp(): Action {
-  return {
-    type: ActionTypes.RANGE_SELECT_UP,
-  };
-}
-
-export function rangeSelectDown(): Action {
-  return {
-    type: ActionTypes.RANGE_SELECT_DOWN,
-  };
-}
-
-export function unhoverNode(rootKey: string, nodeKey: string): Action {
-  return {
-    type: ActionTypes.UNHOVER_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function moveSelectionUp(): Action {
-  return {
-    type: ActionTypes.MOVE_SELECTION_UP,
-  };
-}
-
-export function moveSelectionDown(): Action {
-  return {
-    type: ActionTypes.MOVE_SELECTION_DOWN,
-  };
-}
-
-export function moveSelectionToTop(): Action {
-  return {
-    type: ActionTypes.MOVE_SELECTION_TO_TOP,
-  };
-}
-
-export function moveSelectionToBottom(): Action {
-  return {
-    type: ActionTypes.MOVE_SELECTION_TO_BOTTOM,
-  };
-}
-
-export function setOpenFilesExpanded(openFilesExpanded: boolean): Action {
-  return {
-    type: ActionTypes.SET_OPEN_FILES_EXPANDED,
-    openFilesExpanded,
-  };
-}
-
-export function setUncommittedChangesExpanded(
-  uncommittedChangesExpanded: boolean,
-): Action {
-  return {
-    type: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
-    uncommittedChangesExpanded,
-  };
-}
-
-export function setFoldersExpanded(foldersExpanded: boolean): Action {
-  return {
-    type: ActionTypes.SET_FOLDERS_EXPANDED,
-    foldersExpanded,
-  };
-}
-
-export function setTargetNode(
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-): Action {
-  return {
-    type: ActionTypes.SET_TARGET_NODE,
-    rootKey,
-    nodeKey,
-  };
-}
-
-export function updateGeneratedStatuses(
-  generatedFileTypes: Map<NuclideUri, GeneratedFileType>,
-): Action {
-  return {
-    type: ActionTypes.UPDATE_GENERATED_STATUSES,
-    generatedFileTypes,
-  };
-}
-
-export function addFilterLetter(letter: string): Action {
-  return {
-    type: ActionTypes.ADD_FILTER_LETTER,
-    letter,
-  };
-}
-
-export function removeFilterLetter(): Action {
-  return {
-    type: ActionTypes.REMOVE_FILTER_LETTER,
-  };
-}
-
-export function confirmNode(
-  rootKey: string,
-  nodeKey: string,
-  pending: boolean = false,
-): Action {
-  return {
-    type: ActionTypes.CONFIRM_NODE,
-    rootKey,
-    nodeKey,
-    pending,
-  };
-}
-
-export function keepPreviewTab(): Action {
-  return {type: ActionTypes.KEEP_PREVIEW_TAB};
-}
-
-export function openEntrySplit(
-  nodeKey: string,
-  orientation: atom$PaneSplitOrientation,
-  side: atom$PaneSplitSide,
-): Action {
-  return {
-    type: ActionTypes.OPEN_ENTRY_SPLIT,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_ENTRY_SPLIT,
     nodeKey,
     orientation,
-    side,
+    side
   };
 }
 
-export function updateRepositories(
-  rootDirectories: Array<atom$Directory>,
-): Action {
+function updateRepositories(rootDirectories) {
   return {
-    type: ActionTypes.UPDATE_REPOSITORIES,
-    rootDirectories,
+    type: _FileTreeDispatcher().ActionTypes.UPDATE_REPOSITORIES,
+    rootDirectories
   };
 }
 
-export function revealNodeKey(nodeKey: ?string): Action {
+function revealNodeKey(nodeKey) {
   return {
-    type: ActionTypes.REVEAL_NODE_KEY,
-    nodeKey,
+    type: _FileTreeDispatcher().ActionTypes.REVEAL_NODE_KEY,
+    nodeKey
   };
 }
 
-export function revealFilePath(
-  filePath: ?string,
-  showIfHidden?: boolean = true,
-): Action {
+function revealFilePath(filePath, showIfHidden = true) {
   return {
-    type: ActionTypes.REVEAL_FILE_PATH,
+    type: _FileTreeDispatcher().ActionTypes.REVEAL_FILE_PATH,
     filePath,
-    showIfHidden,
+    showIfHidden
   };
 }
 
-export function openAndRevealFilePath(filePath: ?string): Action {
+function openAndRevealFilePath(filePath) {
   return {
-    type: ActionTypes.OPEN_AND_REVEAL_FILE_PATH,
-    filePath,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_AND_REVEAL_FILE_PATH,
+    filePath
   };
 }
 
-export function openAndRevealFilePaths(filePaths: Array<string>): Action {
+function openAndRevealFilePaths(filePaths) {
   return {
-    type: ActionTypes.OPEN_AND_REVEAL_FILE_PATHS,
-    filePaths,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_AND_REVEAL_FILE_PATHS,
+    filePaths
   };
 }
 
-export function openAndRevealDirectoryPath(path: ?string): Action {
+function openAndRevealDirectoryPath(path) {
   return {
-    type: ActionTypes.OPEN_AND_REVEAL_DIRECTORY_PATH,
-    path,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_AND_REVEAL_DIRECTORY_PATH,
+    path
   };
 }
 
-export function updateRootDirectories(): Action {
+function updateRootDirectories() {
   return {
-    type: ActionTypes.UPDATE_ROOT_DIRECTORIES,
+    type: _FileTreeDispatcher().ActionTypes.UPDATE_ROOT_DIRECTORIES
   };
 }
 
-export function setCwdToSelection(): Action {
+function setCwdToSelection() {
   return {
-    type: ActionTypes.SET_CWD_TO_SELECTION,
+    type: _FileTreeDispatcher().ActionTypes.SET_CWD_TO_SELECTION
   };
 }
 
-export function setCwdApi(cwdApi: ?CwdApi): Action {
+function setCwdApi(cwdApi) {
   return {
-    type: ActionTypes.SET_CWD_API,
-    cwdApi,
+    type: _FileTreeDispatcher().ActionTypes.SET_CWD_API,
+    cwdApi
   };
 }
 
-export function setRemoteProjectsService(
-  service: ?RemoteProjectsService,
-): Action {
+function setRemoteProjectsService(service) {
   return {
-    type: ActionTypes.SET_REMOTE_PROJECTS_SERVICE,
-    service,
+    type: _FileTreeDispatcher().ActionTypes.SET_REMOTE_PROJECTS_SERVICE,
+    service
   };
 }
 
-export function collapseSelection(deep: boolean = false): Action {
+function collapseSelection(deep = false) {
   return {
-    type: ActionTypes.COLLAPSE_SELECTION,
-    deep,
+    type: _FileTreeDispatcher().ActionTypes.COLLAPSE_SELECTION,
+    deep
   };
 }
 
-export function selectAndTrackNode(node: FileTreeNode): Action {
+function selectAndTrackNode(node) {
   return setSelectedNode(node.rootUri, node.uri);
 }
 
-export function collapseAll(): Action {
-  return {type: ActionTypes.COLLAPSE_ALL};
-}
-
-export function deleteSelection(): Action {
-  return {type: ActionTypes.DELETE_SELECTION};
-}
-
-export function expandSelection(deep: boolean): Action {
+function collapseAll() {
   return {
-    type: ActionTypes.EXPAND_SELECTION,
-    deep,
+    type: _FileTreeDispatcher().ActionTypes.COLLAPSE_ALL
   };
 }
 
-export function openSelectedEntry(): Action {
-  return {type: ActionTypes.OPEN_SELECTED_ENTRY};
+function deleteSelection() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.DELETE_SELECTION
+  };
 }
 
-export function openSelectedEntrySplit(
-  orientation: atom$PaneSplitOrientation,
-  side: atom$PaneSplitSide,
-): Action {
+function expandSelection(deep) {
   return {
-    type: ActionTypes.OPEN_SELECTED_ENTRY_SPLIT,
+    type: _FileTreeDispatcher().ActionTypes.EXPAND_SELECTION,
+    deep
+  };
+}
+
+function openSelectedEntry() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.OPEN_SELECTED_ENTRY
+  };
+}
+
+function openSelectedEntrySplit(orientation, side) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.OPEN_SELECTED_ENTRY_SPLIT,
     orientation,
-    side,
+    side
   };
 }
 
-export function openSelectedEntrySplitUp(): Action {
+function openSelectedEntrySplitUp() {
   return openSelectedEntrySplit('vertical', 'before');
 }
 
-export function openSelectedEntrySplitDown(): Action {
+function openSelectedEntrySplitDown() {
   return openSelectedEntrySplit('vertical', 'after');
 }
 
-export function openSelectedEntrySplitLeft(): Action {
+function openSelectedEntrySplitLeft() {
   return openSelectedEntrySplit('horizontal', 'before');
 }
 
-export function openSelectedEntrySplitRight(): Action {
+function openSelectedEntrySplitRight() {
   return openSelectedEntrySplit('horizontal', 'after');
 }
 
-export function removeRootFolderSelection(): Action {
-  return {type: ActionTypes.REMOVE_ROOT_FOLDER_SELECTION};
-}
-
-export function copyFilenamesWithDir(): Action {
-  return {type: ActionTypes.COPY_FILENAMES_WITH_DIR};
-}
-
-export function openAddFolderDialog(
-  onDidConfirm: (filePath: ?string) => mixed,
-): Action {
+function removeRootFolderSelection() {
   return {
-    type: ActionTypes.OPEN_ADD_FOLDER_DIALOG,
-    onDidConfirm,
+    type: _FileTreeDispatcher().ActionTypes.REMOVE_ROOT_FOLDER_SELECTION
   };
 }
 
-export function openAddFileDialog(
-  onDidConfirm: (filePath: ?string) => mixed,
-): Action {
+function copyFilenamesWithDir() {
   return {
-    type: ActionTypes.OPEN_ADD_FILE_DIALOG,
-    onDidConfirm,
+    type: _FileTreeDispatcher().ActionTypes.COPY_FILENAMES_WITH_DIR
   };
 }
 
-export function openAddFileDialogRelative(
-  onDidConfirm: (filePath: ?string) => mixed,
-): Action {
+function openAddFolderDialog(onDidConfirm) {
   return {
-    type: ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE,
-    onDidConfirm,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_ADD_FOLDER_DIALOG,
+    onDidConfirm
   };
 }
 
-export function openRenameDialog(): Action {
-  return {type: ActionTypes.OPEN_RENAME_DIALOG};
-}
-
-export function openDuplicateDialog(
-  onDidConfirm: (filePaths: Array<string>) => mixed,
-): Action {
+function openAddFileDialog(onDidConfirm) {
   return {
-    type: ActionTypes.OPEN_DUPLICATE_DIALOG,
-    onDidConfirm,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_ADD_FILE_DIALOG,
+    onDidConfirm
   };
 }
 
-export function openNextDuplicateDialog(
-  nodes: Immutable.List<FileTreeNode>,
-  onDidConfirm: (filePaths: Array<string>) => mixed,
-): Action {
+function openAddFileDialogRelative(onDidConfirm) {
   return {
-    type: ActionTypes.OPEN_NEXT_DUPLICATE_DIALOG,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE,
+    onDidConfirm
+  };
+}
+
+function openRenameDialog() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.OPEN_RENAME_DIALOG
+  };
+}
+
+function openDuplicateDialog(onDidConfirm) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.OPEN_DUPLICATE_DIALOG,
+    onDidConfirm
+  };
+}
+
+function openNextDuplicateDialog(nodes, onDidConfirm) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.OPEN_NEXT_DUPLICATE_DIALOG,
     nodes,
-    onDidConfirm,
+    onDidConfirm
   };
 }
 
-export function openPasteDialog(): Action {
-  return {type: ActionTypes.OPEN_PASTE_DIALOG};
-}
-
-export function clearSelection(): Action {
-  return {type: ActionTypes.CLEAR_SELECTION};
-}
-
-export function clearSelectionRange(): Action {
-  return {type: ActionTypes.CLEAR_SELECTION_RANGE};
-}
-
-export function clearDragHover(): Action {
-  return {type: ActionTypes.CLEAR_DRAG_HOVER};
-}
-
-export function setRoots(roots: Roots): Action {
+function openPasteDialog() {
   return {
-    type: ActionTypes.SET_ROOTS,
-    roots,
+    type: _FileTreeDispatcher().ActionTypes.OPEN_PASTE_DIALOG
   };
 }
 
-export function clearLoading(nodeKey: NuclideUri): Action {
+function clearSelection() {
   return {
-    type: ActionTypes.CLEAR_LOADING,
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_SELECTION
+  };
+}
+
+function clearSelectionRange() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_SELECTION_RANGE
+  };
+}
+
+function clearDragHover() {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_DRAG_HOVER
+  };
+}
+
+function setRoots(roots) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_ROOTS,
+    roots
+  };
+}
+
+function clearLoading(nodeKey) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.CLEAR_LOADING,
+    nodeKey
+  };
+}
+
+function setLoading(nodeKey, promise) {
+  return {
+    type: _FileTreeDispatcher().ActionTypes.SET_LOADING,
     nodeKey,
+    promise
   };
 }
 
-export function setLoading(
-  nodeKey: NuclideUri,
-  promise: Promise<void>,
-): Action {
+function loadData(data) {
   return {
-    type: ActionTypes.SET_LOADING,
-    nodeKey,
-    promise,
+    type: _FileTreeDispatcher().ActionTypes.LOAD_DATA,
+    data
   };
 }
 
-export function loadData(data: ExportStoreData): Action {
+function setInitialData(data) {
   return {
-    type: ActionTypes.LOAD_DATA,
-    data,
-  };
-}
-
-export function setInitialData(data: InitialData): Action {
-  return {
-    type: ActionTypes.SET_INITIAL_DATA,
-    data,
+    type: _FileTreeDispatcher().ActionTypes.SET_INITIAL_DATA,
+    data
   };
 }
