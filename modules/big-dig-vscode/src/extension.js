@@ -10,7 +10,6 @@
  * @format
  */
 
-import {getLogger} from 'log4js';
 import * as vscode from 'vscode';
 import {devInit as initServerDevelopmentDeployment} from './server-deployment';
 import {startBigDigTomlServices} from './remote/big-dig-toml';
@@ -32,7 +31,6 @@ import {BIG_DIG_SESSION, startCli} from './terminal/cli';
 import {__DEV__} from './dev';
 
 export function activate(context: vscode.ExtensionContext) {
-  reloadIfFirstWorkspaceFolder(context);
   if (__DEV__) {
     initServerDevelopmentDeployment();
   }
@@ -116,26 +114,4 @@ function startMultiplexingFilesystems(): IDisposable {
   const sub = onEachFilesystem(fs => fsMultiplexer.addFileSystem(fs));
   fsMultiplexer.register();
   return vscode.Disposable.from(sub, fsMultiplexer);
-}
-
-// As a safeguard, don't reload the window if we added the workspace
-// more than a minute ago.
-const MAX_RELOAD_AGE = 60 * 1000;
-
-// See comment where firstWorkspaceFolder is set (in workspace.js).
-function reloadIfFirstWorkspaceFolder(context: vscode.ExtensionContext) {
-  const firstWorkspaceFolder = context.globalState.get('firstWorkspaceFolder');
-  if (
-    firstWorkspaceFolder != null &&
-    Date.now() - firstWorkspaceFolder.time < MAX_RELOAD_AGE &&
-    vscode.workspace.workspaceFolders &&
-    vscode.workspace.workspaceFolders.length === 1 &&
-    vscode.workspace.workspaceFolders[0].uri.toString() ===
-      firstWorkspaceFolder.uri
-  ) {
-    getLogger().info('Reloading window to work around ENOENT bug');
-    context.globalState.update('firstWorkspaceFolder', undefined);
-    vscode.commands.executeCommand('workbench.action.reloadWindow');
-    return;
-  }
 }

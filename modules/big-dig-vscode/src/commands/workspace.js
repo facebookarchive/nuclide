@@ -25,23 +25,6 @@ function appendFolderToWorkspace(
   const insertPos = vscode.workspace.workspaceFolders
     ? vscode.workspace.workspaceFolders.length
     : 0;
-  if (insertPos === 0) {
-    // If there are currently no workspace folders, adding one triggers a bug.
-    // https://github.com/Microsoft/vscode/issues/36177#issuecomment-355728701
-    //
-    // VSCode reloads the extension host when the first folder is added:
-    // https://code.visualstudio.com/docs/extensionAPI/vscode-api#details-1693
-    //
-    // This races with the explorer's attempt to resolve the remote filepath,
-    // which is aborted when the extension host shuts down.
-    // The easiest workaround for now is to force a window reload when the
-    // extension gets loaded again...
-    logger.info('Triggering window reload for ENOENT bug');
-    context.globalState.update('firstWorkspaceFolder', {
-      uri: file.toString(),
-      time: Date.now(),
-    });
-  }
   return vscode.workspace.updateWorkspaceFolders(insertPos, 0, {uri: file});
 }
 
