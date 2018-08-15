@@ -34,7 +34,7 @@ jest.unmock('log4js');
 
 import type {WatchResult} from '..';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {sleep} from 'nuclide-commons/promise';
+import {sleep, nextTick} from 'nuclide-commons/promise';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import fs from 'fs';
 import log4js from 'log4js';
@@ -72,7 +72,9 @@ describe('FileWatcherService', () => {
       isFile: () => path === TEST_FILE,
     }));
 
-    realpathMock = jest.spyOn(fsPromise, 'realpath').mockImplementation(x => x);
+    realpathMock = jest
+      .spyOn(fsPromise, 'realpath')
+      .mockImplementation(x => Promise.resolve(x));
     jest.spyOn(fs, 'watch');
 
     await createNodeTestFile();
@@ -299,6 +301,38 @@ describe('FileWatcherService', () => {
         errorMock.mock.calls.length > 0 &&
         errorMockWithNode.mock.calls.length > 0,
     );
+  });
+
+  it('allows watching non-existant files', async () => {
+    const changes = [];
+
+    statMock.mockImplementation(() => {
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject({code: 'ENOENT'});
+    });
+
+    const watch = watchDirectoryRecursive(TEST_DIR).refCount();
+    watch.subscribe();
+    await watch.take(1).toPromise();
+
+    watchFile(TEST_FILE)
+      .refCount()
+      .subscribe({
+        next: change => changes.push(change),
+      });
+
+    await nextTick();
+
+    emitter.emit('change', [
+      {
+        name: 'file',
+        new: true,
+        exists: true,
+        mode: 0,
+      },
+    ]);
+
+    expect(changes).toEqual([{path: TEST_FILE, type: 'change'}]);
   });
 
   it('warns when you try to watch the wrong entity type', async () => {

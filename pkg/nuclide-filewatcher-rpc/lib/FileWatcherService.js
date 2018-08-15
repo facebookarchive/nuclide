@@ -37,6 +37,8 @@ const entityWatches = new SharedObservableCache(registerWatch);
 // dispatch events from the root subscription.
 const entityObserver: Map<string, rxjs$IObserver<WatchEvent>> = new Map();
 
+const watchedDirectories: Set<string> = new Set();
+
 let watchmanClient: ?WatchmanClient = null;
 function getWatchmanClient(): WatchmanClient {
   if (watchmanClient == null) {
@@ -90,35 +92,50 @@ function watchEntity(
   entityPath: string,
   isFile: boolean,
 ): Observable<WatchResult> {
-  return Observable.fromPromise(getRealPath(entityPath, isFile)).switchMap(
-    realPath => debounceDeletes(entityWatches.get(realPath)),
-  );
+  return Observable.fromPromise(
+    getRealOrWatchablePath(entityPath, isFile),
+  ).switchMap(realPath => debounceDeletes(entityWatches.get(realPath)));
 }
 
 // Register an observable for the given path.
 function registerWatch(path: string): Observable<WatchResult> {
   return Observable.create(observer => {
     entityObserver.set(path, observer);
-    return () => entityObserver.delete(path);
+    return () => {
+      entityObserver.delete(path);
+    };
   })
     .map(type => ({path, type}))
     .share();
 }
 
-async function getRealPath(
+async function getRealOrWatchablePath(
   entityPath: string,
   isFile: boolean,
 ): Promise<string> {
-  // NOTE: this will throw when trying to watch non-existent entities.
-  const stat = await fsPromise.stat(entityPath);
-  if (stat.isFile() !== isFile) {
-    getLogger('nuclide-filewatcher-rpc').warn(
-      `FileWatcherService: expected ${entityPath} to be a ${
-        isFile ? 'file' : 'directory'
-      }`,
-    );
+  try {
+    const stat = await fsPromise.stat(entityPath);
+    if (stat.isFile() !== isFile) {
+      getLogger('nuclide-filewatcher-rpc').warn(
+        `FileWatcherService: expected ${entityPath} to be a ${
+          isFile ? 'file' : 'directory'
+        }`,
+      );
+    }
+
+    return await fsPromise.realpath(entityPath);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      for (const dir of watchedDirectories) {
+        if (entityPath.startsWith(nuclideUri.ensureTrailingSeparator(dir))) {
+          // We have at least one watched directory that will find this path,
+          // continue with the watch assuming it's canonical
+          return entityPath;
+        }
+      }
+    }
+    throw error;
   }
-  return fsPromise.realpath(entityPath);
 }
 
 export function watchDirectoryRecursive(
@@ -142,6 +159,8 @@ export function watchDirectoryRecursive(
       watcher.on('change', entries => {
         onWatcherChange(watcher, entries);
       });
+
+      watchedDirectories.add(directoryPath);
 
       return Observable.create(observer => {
         // Notify success watcher setup.
@@ -185,5 +204,6 @@ function onWatcherChange(
 }
 
 async function unwatchDirectoryRecursive(directoryPath: string): Promise<void> {
+  watchedDirectories.delete(directoryPath);
   await getWatchmanClient().unwatch(directoryPath);
 }
