@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,52 +13,49 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import type {CursorControl} from './types';
-
-export default class GatedCursorControl implements CursorControl {
-  _enabled: boolean;
-  _inner: CursorControl;
-
-  constructor(inner: CursorControl) {
+class GatedCursorControl {
+  constructor(inner) {
     this._inner = inner;
     this._enabled = false;
   }
 
-  setEnabled(enabled: boolean): void {
+  setEnabled(enabled) {
     this._enabled = enabled;
   }
 
-  queryCursorPosition(): void {
+  queryCursorPosition() {
     if (this._enabled) {
       this._inner.queryCursorPosition();
     }
   }
 
-  gotoXY(col: number, row: number): void {
+  gotoXY(col, row) {
     if (this._enabled) {
       this._inner.gotoXY(col, row);
     }
   }
 
-  cursorLeft(cols: ?number): void {
+  cursorLeft(cols) {
     if (this._enabled) {
       this._inner.cursorLeft(cols);
     }
   }
 
-  cursorRight(cols: ?number): void {
+  cursorRight(cols) {
     if (this._enabled) {
       this._inner.cursorRight(cols);
     }
   }
 
-  clearEOL(): void {
+  clearEOL() {
     if (this._inner) {
       this._inner.clearEOL();
     }
   }
+
 }
+
+exports.default = GatedCursorControl;

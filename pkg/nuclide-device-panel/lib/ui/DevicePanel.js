@@ -1,3 +1,84 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DevicePanel = void 0;
+
+function _bindObservableAsProps() {
+  const data = require("../../../../modules/nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Icon() {
+  const data = require("../../../../modules/nuclide-commons-ui/Icon");
+
+  _Icon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _AppInfoTable() {
+  const data = require("./AppInfoTable");
+
+  _AppInfoTable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _InfoTable() {
+  const data = require("./InfoTable");
+
+  _InfoTable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ProcessTable() {
+  const data = require("./ProcessTable");
+
+  _ProcessTable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TaskButton() {
+  const data = require("./TaskButton");
+
+  _TaskButton = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LoadingSpinner() {
+  const data = require("../../../../modules/nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,165 +86,120 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Expected} from 'nuclide-commons/expected';
-import type {
-  Process,
-  Task,
-  ProcessTask,
-  AppInfoRow,
-} from 'nuclide-debugger-common/types';
-import type {Props as TaskButtonPropsType} from './TaskButton';
-import type {TaskEvent} from 'nuclide-commons/process';
-
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import * as React from 'react';
-import {AppInfoTable} from './AppInfoTable';
-import {InfoTable} from './InfoTable';
-import {ProcessTable} from './ProcessTable';
-import {TaskButton} from './TaskButton';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-
-type Props = {|
-  toggleProcessPolling: (isActive: boolean) => void,
-  goToRootPanel: () => void,
-  infoTables: Expected<Map<string, Map<string, string>>>,
-  appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
-  processes: Expected<Process[]>,
-  processTasks: ProcessTask[],
-  deviceTasks: Array<Task>,
-  isDeviceConnected: boolean,
-|};
-
-export class DevicePanel extends React.Component<Props> {
-  _createInfoTables(): React.Element<any>[] {
+class DevicePanel extends React.Component {
+  _createInfoTables() {
     if (this.props.infoTables.isError) {
-      return [
-        <div className="block" key="infoTableError">
-          {
-            // $FlowFixMe
-            this.props.infoTables.error
-          }
-        </div>,
-      ];
+      return [React.createElement("div", {
+        className: "block",
+        key: "infoTableError"
+      }, // $FlowFixMe
+      this.props.infoTables.error)];
     } else if (this.props.infoTables.isPending) {
-      return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
+      return [React.createElement(_LoadingSpinner().LoadingSpinner, {
+        size: "EXTRA_SMALL",
+        key: "infoTableLoading"
+      })];
     } else {
-      return Array.from(this.props.infoTables.value.entries()).map(
-        ([title, infoTable]) => (
-          <div className="block" key={title}>
-            <InfoTable title={title} table={infoTable} />
-          </div>
-        ),
-      );
+      return Array.from(this.props.infoTables.value.entries()).map(([title, infoTable]) => React.createElement("div", {
+        className: "block",
+        key: title
+      }, React.createElement(_InfoTable().InfoTable, {
+        title: title,
+        table: infoTable
+      })));
     }
   }
 
-  _createAppInfoTables(): React.Element<any>[] {
+  _createAppInfoTables() {
     const appInfoTables = this.props.appInfoTables;
 
     if (appInfoTables.isError) {
-      return [
-        <div className="block" key="infoTableError">
-          {
-            // $FlowFixMe
-            appInfoTables.error
-          }
-        </div>,
-      ];
+      return [React.createElement("div", {
+        className: "block",
+        key: "infoTableError"
+      }, // $FlowFixMe
+      appInfoTables.error)];
     } else if (appInfoTables.isPending) {
-      return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
+      return [React.createElement(_LoadingSpinner().LoadingSpinner, {
+        size: "EXTRA_SMALL",
+        key: "infoTableLoading"
+      })];
     } else {
-      return Array.from(appInfoTables.value.entries()).map(
-        ([appName, appInfoRows]) => (
-          <div className="block" key={appName}>
-            <AppInfoTable title={appName} rows={appInfoRows} />
-          </div>
-        ),
-      );
+      return Array.from(appInfoTables.value.entries()).map(([appName, appInfoRows]) => React.createElement("div", {
+        className: "block",
+        key: appName
+      }, React.createElement(_AppInfoTable().AppInfoTable, {
+        title: appName,
+        rows: appInfoRows
+      })));
     }
   }
 
-  _createProcessTable(): React.Element<any> {
-    return (
-      <div className="block" key="process-table">
-        <ProcessTable
-          processes={this.props.processes}
-          processTasks={this.props.processTasks}
-          toggleProcessPolling={this.props.toggleProcessPolling}
-        />
-      </div>
-    );
+  _createProcessTable() {
+    return React.createElement("div", {
+      className: "block",
+      key: "process-table"
+    }, React.createElement(_ProcessTable().ProcessTable, {
+      processes: this.props.processes,
+      processTasks: this.props.processTasks,
+      toggleProcessPolling: this.props.toggleProcessPolling
+    }));
   }
 
-  _taskEventsToProps(task: Task, taskEvent: ?TaskEvent): TaskButtonPropsType {
+  _taskEventsToProps(task, taskEvent) {
     return {
       name: task.getName(),
       start: () => task.start(),
       cancel: () => task.cancel(),
       isRunning: taskEvent != null,
-      progress: null,
+      progress: null
     };
   }
 
-  _getTasks(): React.Element<any> {
+  _getTasks() {
     const tasks = Array.from(this.props.deviceTasks).map(task => {
-      const StreamedTaskButton = bindObservableAsProps(
-        task
-          .getTaskEvents()
-          .distinctUntilChanged()
-          .map(taskEvent => this._taskEventsToProps(task, taskEvent)),
-        TaskButton,
-      );
-      return <StreamedTaskButton key={task.getName()} />;
+      const StreamedTaskButton = (0, _bindObservableAsProps().bindObservableAsProps)(task.getTaskEvents().distinctUntilChanged().map(taskEvent => this._taskEventsToProps(task, taskEvent)), _TaskButton().TaskButton);
+      return React.createElement(StreamedTaskButton, {
+        key: task.getName()
+      });
     });
-    return (
-      <div className="block nuclide-device-panel-tasks-container">{tasks}</div>
-    );
+    return React.createElement("div", {
+      className: "block nuclide-device-panel-tasks-container"
+    }, tasks);
   }
 
-  _getBackButton(): React.Element<any> {
-    return (
-      <div className="block">
-        <span>
-          <a
-            className="nuclide-device-panel-text-with-icon"
-            onClick={() => this.props.goToRootPanel()}>
-            <Icon icon="chevron-left">Choose another device</Icon>
-          </a>
-        </span>
-      </div>
-    );
+  _getBackButton() {
+    return React.createElement("div", {
+      className: "block"
+    }, React.createElement("span", null, React.createElement("a", {
+      className: "nuclide-device-panel-text-with-icon",
+      onClick: () => this.props.goToRootPanel()
+    }, React.createElement(_Icon().Icon, {
+      icon: "chevron-left"
+    }, "Choose another device"))));
   }
 
-  _getStatus(): ?React.Element<any> {
+  _getStatus() {
     if (this.props.isDeviceConnected) {
       return null;
     }
 
-    return (
-      <div className="block">
-        <span className="nuclide-device-panel-text-with-icon nuclide-device-panel-disconnected-icon">
-          <Icon icon="primitive-dot">Disconnected</Icon>
-        </span>
-      </div>
-    );
+    return React.createElement("div", {
+      className: "block"
+    }, React.createElement("span", {
+      className: "nuclide-device-panel-text-with-icon nuclide-device-panel-disconnected-icon"
+    }, React.createElement(_Icon().Icon, {
+      icon: "primitive-dot"
+    }, "Disconnected")));
   }
 
-  render(): React.Node {
-    return (
-      <div>
-        {this._getBackButton()}
-        {this._getStatus()}
-        {this._getTasks()}
-        {this._createInfoTables()}
-        {this._createAppInfoTables()}
-        {this._createProcessTable()}
-      </div>
-    );
+  render() {
+    return React.createElement("div", null, this._getBackButton(), this._getStatus(), this._getTasks(), this._createInfoTables(), this._createAppInfoTables(), this._createProcessTable());
   }
+
 }
+
+exports.DevicePanel = DevicePanel;

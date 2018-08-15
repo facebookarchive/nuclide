@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = onEachObservedClosable;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _promise() {
+  const data = require("../../../nuclide-commons/promise");
+
+  _promise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,19 +35,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Observable} from 'rxjs';
-import type {AnyTeardown as UniversalAnyTeardownType} from 'nuclide-commons/UniversalDisposable';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {isPromise} from 'nuclide-commons/promise';
-
-export type AnyTeardown =
-  | ?UniversalAnyTeardownType
-  | Promise<?UniversalAnyTeardownType>;
 
 /**
  * Applies a construct-destruct pattern to a stream of resources that can be
@@ -47,61 +66,44 @@ export type AnyTeardown =
  * `disposeHandlersOnUnsubscribe` is true, then all active handlers will also be
  * disposed.
  */
-export default function onEachObservedClosable<T>(
-  observable: Observable<T>,
-  handler: T => AnyTeardown,
-  onDisposed: (T, () => mixed) => IDisposable,
-  options: {
-    disposeHandlersOnUnsubscribe?: boolean,
-    disposeHandlerOnNext?: boolean,
-  } = {},
-): IDisposable {
+function onEachObservedClosable(observable, handler, onDisposed, options = {}) {
   const disposeOnUnsubscribe = options.disposeHandlersOnUnsubscribe || false;
-  const disposeHandlerOnNext = options.disposeHandlerOnNext || false;
+  const disposeHandlerOnNext = options.disposeHandlerOnNext || false; // Stops listening to observable and possibly disposes all handlers.
 
-  // Stops listening to observable and possibly disposes all handlers.
-  const unsubscribe = new UniversalDisposable();
+  const unsubscribe = new (_UniversalDisposable().default)();
+  let currentCleanup = null;
+  unsubscribe.add(observable.subscribe(item => {
+    if (disposeHandlerOnNext && currentCleanup != null) {
+      currentCleanup.dispose();
+    }
 
-  let currentCleanup: ?UniversalDisposable = null;
+    const teardown = handler(item);
+    const cleanup = currentCleanup = new (_UniversalDisposable().default)();
+    cleanup.add(() => dispose(teardown), onDisposed(item, () => {
+      // Don't keep around a long list of disposed disposables (in case
+      // disposeOnUnsubscribe is true).
+      unsubscribe.remove(cleanup);
+      cleanup.dispose();
+    }));
 
-  unsubscribe.add(
-    observable.subscribe(item => {
-      if (disposeHandlerOnNext && currentCleanup != null) {
-        currentCleanup.dispose();
-      }
-
-      const teardown: any = handler(item);
-      const cleanup = (currentCleanup = new UniversalDisposable());
-
-      cleanup.add(
-        () => dispose(teardown),
-        onDisposed(item, () => {
-          // Don't keep around a long list of disposed disposables (in case
-          // disposeOnUnsubscribe is true).
-          unsubscribe.remove(cleanup);
-
-          cleanup.dispose();
-        }),
-      );
-
-      if (disposeOnUnsubscribe) {
-        // Unsubscribing will cause any active services/handlers to be disposed.
-        unsubscribe.add(cleanup);
-      }
-    }),
-  );
+    if (disposeOnUnsubscribe) {
+      // Unsubscribing will cause any active services/handlers to be disposed.
+      unsubscribe.add(cleanup);
+    }
+  }));
   return unsubscribe;
 }
-
 /**
  * Helper to dispose of `AnyTeardown`.
  */
-function dispose(teardown: any): void {
+
+
+function dispose(teardown) {
   if (teardown == null) {
     return;
   }
 
-  if (isPromise(teardown)) {
+  if ((0, _promise().isPromise)(teardown)) {
     teardown.then(dispose);
   } else if (typeof teardown.dispose === 'function') {
     teardown.dispose();

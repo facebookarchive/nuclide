@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.destroyItemWhere = destroyItemWhere;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,13 +13,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-export function destroyItemWhere(
-  predicate: (item: atom$PaneItem) => boolean,
-): Promise<Array<boolean>> {
+function destroyItemWhere(predicate) {
   const destroyItemStatuses = [];
   atom.workspace.getPanes().forEach(pane => {
     pane.getItems().forEach(item => {

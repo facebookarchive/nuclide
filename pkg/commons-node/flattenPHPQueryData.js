@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.flattenPHPQueryData = flattenPHPQueryData;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +12,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -43,50 +50,25 @@
  * @param  Object obj Map of query keys to values.
  * @return Object Flattened version of the input object.
  */
-import invariant from 'assert';
-
-type TPrimitive = boolean | number | string;
-
-type TTreeNode<T> = {[string]: TTree<T>};
-type TTree<T> = T | null | void | TTreeNode<T>;
-
-type TFlattened<T> = {[string]: T | void};
-
-export function flattenPHPQueryData<T: TPrimitive, O: TTree<T>>(
-  obj: O,
-): TFlattened<T> {
+function flattenPHPQueryData(obj) {
   /* Ideally the return type would be TFlattened<T> but it generated too
      many type errors at the existing callsites. */
-
   return _flattenPHPQueryData(obj, '', {});
 }
 
-function _flattenPHPQueryData<T: TPrimitive, O: TTree<T>>(
-  obj: O,
-  name: string,
-  componentsObject: TFlattened<T>,
-): TFlattened<T> {
+function _flattenPHPQueryData(obj, name, componentsObject) {
   if (obj == null || obj === undefined) {
     componentsObject[name] = undefined;
   } else if (typeof obj === 'object') {
-    invariant(
-      typeof obj.appendChild !== 'function',
-      'Trying to serialize a DOM node. Bad idea.',
-    );
+    if (!(typeof obj.appendChild !== 'function')) {
+      throw new Error('Trying to serialize a DOM node. Bad idea.');
+    }
 
     for (const k in obj) {
       // $$typeof markings are only for internal use, and do not
       // need to be serialized for forms.
-      if (
-        k !== '$$typeof' &&
-        Object.prototype.hasOwnProperty.call(obj, k) &&
-        obj[k] !== undefined
-      ) {
-        _flattenPHPQueryData(
-          obj[k],
-          name ? name + '[' + k + ']' : k,
-          componentsObject,
-        );
+      if (k !== '$$typeof' && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== undefined) {
+        _flattenPHPQueryData(obj[k], name ? name + '[' + k + ']' : k, componentsObject);
       }
     }
   } else {

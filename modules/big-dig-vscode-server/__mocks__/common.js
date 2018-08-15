@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createFileHierarchy = createFileHierarchy;
+
+var pathModule = _interopRequireWildcard(require("path"));
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _promise() {
+  const data = require("../../nuclide-commons/promise");
+
+  _promise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +39,33 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import * as pathModule from 'path';
-import fs from 'nuclide-commons/fsPromise';
-import {asyncLimit} from 'nuclide-commons/promise';
-
-export type Directory = {
-  [name: string]: FileOrDirectory,
-};
-export type FileOrDirectory = Directory | string;
 
 /**
  * Creates the given directories and files.
  * @return the filesystem, but with names mapped to absolute paths.
  */
-export async function createFileHierarchy<T: Directory>(
-  filesystem: T,
-  base: string,
-): Promise<T> {
+async function createFileHierarchy(filesystem, base) {
   const result = {
     toString() {
       return base;
-    },
-  };
+    }
 
-  await asyncLimit(Object.keys(filesystem), 100, async name => {
+  };
+  await (0, _promise().asyncLimit)(Object.keys(filesystem), 100, async name => {
     const absName = pathModule.join(base, name);
     const value = filesystem[name];
+
     if (typeof value === 'string') {
-      await fs.writeFile(absName, value);
+      await _fsPromise().default.writeFile(absName, value);
       result[name] = absName;
     } else {
-      await fs.mkdir(absName);
+      await _fsPromise().default.mkdir(absName);
       const dir = await createFileHierarchy(value, absName);
       result[name] = dir;
     }
   });
-  return (result: any);
+  return result;
 }

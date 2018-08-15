@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TextSearchHarness = void 0;
+
+function proto() {
+  const data = _interopRequireWildcard(require("../Protocol.js"));
+
+  proto = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _SearchRpcMethods() {
+  const data = require("../SearchRpcMethods");
+
+  _SearchRpcMethods = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,106 +37,104 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {QueryResult} from '../TextSearch';
-import type {SearchProvider} from '../SearchRpcMethods';
-
-import * as proto from '../Protocol.js';
-import invariant from 'assert';
-import {Subject} from 'rxjs';
-import {SearchRpcMethods} from '../SearchRpcMethods';
-
-export class TextSearchHarness {
-  static +defaultOptions = {
-    isRegExp: false,
-    isCaseSensitive: false,
-    isWordMatch: false,
-  };
-
-  _isStarted = false;
+class TextSearchHarness {
   // Collects all of the results
-  _search: Promise<proto.SearchForTextData>;
   // The mock search provider we give to `SearchRpcMethods`.
-  searcher: SearchProvider;
   // Corresponding to each `basePath`, each `Subject` sends results to `_doTextSearch`.
-  _matchResults: Array<Subject<QueryResult>> = [];
   // Collects results of `_doTextSearch`.
-  +_currentResults: Array<proto.SearchForTextDatum> = [];
-  +forText: Function = jest.fn();
-  rpc: SearchRpcMethods;
-
   constructor() {
+    this._isStarted = false;
+    this._matchResults = [];
+    this._currentResults = [];
+    this.forText = jest.fn();
     this.searcher = {
       // We are not testing this:
       forFiles(...args) {
         throw new Error('forFiles should not be called');
       },
+
       // We are testing this:
-      forText: this.forText,
+      forText: this.forText
     };
-    this.rpc = new SearchRpcMethods(this.searcher);
+    this.rpc = new (_SearchRpcMethods().SearchRpcMethods)(this.searcher);
   }
 
-  start(
-    query: string,
-    basePaths: Array<string | proto.SearchBase>,
-    options: $Rest<proto.SearchForTextQueryOptions, {}> = {},
-  ): void {
-    invariant(this._isStarted === false, 'Already started');
-    this._isStarted = true;
+  start(query, basePaths, options = {}) {
+    if (!(this._isStarted === false)) {
+      throw new Error('Already started');
+    }
 
+    this._isStarted = true;
     basePaths.forEach(() => {
-      const newQuery = new Subject();
+      const newQuery = new _RxMin.Subject();
       this.forText.mockReturnValueOnce(newQuery);
+
       this._matchResults.push(newQuery);
     });
-
     const params = {
       query,
-      basePaths: basePaths.map(
-        x =>
-          typeof x === 'string' ? {path: x, includes: [], excludes: []} : x,
-      ),
-      options: {...TextSearchHarness.defaultOptions, ...options},
+      basePaths: basePaths.map(x => typeof x === 'string' ? {
+        path: x,
+        includes: [],
+        excludes: []
+      } : x),
+      options: Object.assign({}, TextSearchHarness.defaultOptions, options)
     };
-
-    this._search = this.rpc
-      ._doTextSearch(params)
-      .mergeAll()
-      .do(x => this._currentResults.push(x))
-      .toArray()
-      .toPromise();
+    this._search = this.rpc._doTextSearch(params).mergeAll().do(x => this._currentResults.push(x)).toArray().toPromise();
   }
 
-  dispose(): void {
+  dispose() {
     this.rpc.dispose();
   }
 
-  results(): Promise<proto.SearchForTextData> {
-    invariant(this._isStarted === true, 'Must call `start()` first');
+  results() {
+    if (!(this._isStarted === true)) {
+      throw new Error('Must call `start()` first');
+    }
+
     return this._search;
   }
 
-  currentResults(): proto.SearchForTextData {
-    invariant(this._isStarted === true, 'Must call `start()` first');
+  currentResults() {
+    if (!(this._isStarted === true)) {
+      throw new Error('Must call `start()` first');
+    }
+
     return this._currentResults;
   }
 
-  nextMatch(basePathId: number, value: QueryResult): void {
-    invariant(this._isStarted === true, 'Must call `start()` first');
+  nextMatch(basePathId, value) {
+    if (!(this._isStarted === true)) {
+      throw new Error('Must call `start()` first');
+    }
+
     this._matchResults[basePathId].next(value);
   }
 
-  completeMatch(basePathId: number): void {
-    invariant(this._isStarted === true, 'Must call `start()` first');
+  completeMatch(basePathId) {
+    if (!(this._isStarted === true)) {
+      throw new Error('Must call `start()` first');
+    }
+
     this._matchResults[basePathId].complete();
   }
 
-  completeMatches(): void {
-    invariant(this._isStarted === true, 'Must call `start()` first');
+  completeMatches() {
+    if (!(this._isStarted === true)) {
+      throw new Error('Must call `start()` first');
+    }
+
     this._matchResults.forEach(m => m.complete());
   }
+
 }
+
+exports.TextSearchHarness = TextSearchHarness;
+TextSearchHarness.defaultOptions = {
+  isRegExp: false,
+  isCaseSensitive: false,
+  isWordMatch: false
+};

@@ -1,3 +1,68 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createVsRawAdapterSpawnerService = createVsRawAdapterSpawnerService;
+exports.getProcessTree = getProcessTree;
+exports.getBuckRootFromUri = getBuckRootFromUri;
+exports.getBuckRootFromPid = getBuckRootFromPid;
+exports.realpath = realpath;
+exports.getAdapterExecutableInfo = getAdapterExecutableInfo;
+exports.VsRawAdapterSpawnerService = void 0;
+
+function _process() {
+  const data = require("../nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _VsAdapterSpawner() {
+  const data = _interopRequireDefault(require("./VsAdapterSpawner"));
+
+  _VsAdapterSpawner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _debuggerRegistry() {
+  const data = require("./debugger-registry");
+
+  _debuggerRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,60 +71,51 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {ConnectableObservable} from 'rxjs';
-import type {VSAdapterExecutableInfo, VsAdapterType} from './types';
-import type {ProcessInfo, ProcessMessage} from 'nuclide-commons/process';
-
-import {psTree} from 'nuclide-commons/process';
-import VsAdapterSpawner from './VsAdapterSpawner';
-import {getAdapterExecutable} from './debugger-registry';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {getAbsoluteBinaryPathForPid} from 'nuclide-commons/process';
-
-export class VsRawAdapterSpawnerService extends VsAdapterSpawner {
-  spawnAdapter(
-    adapter: VSAdapterExecutableInfo,
-  ): ConnectableObservable<ProcessMessage> {
+class VsRawAdapterSpawnerService extends _VsAdapterSpawner().default {
+  spawnAdapter(adapter) {
     return super.spawnAdapter(adapter);
   }
 
-  write(input: string): Promise<void> {
+  write(input) {
     return super.write(input);
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     return super.dispose();
   }
+
 }
 
-export async function createVsRawAdapterSpawnerService(): Promise<
-  VsRawAdapterSpawnerService,
-> {
+exports.VsRawAdapterSpawnerService = VsRawAdapterSpawnerService;
+
+async function createVsRawAdapterSpawnerService() {
   return new VsRawAdapterSpawnerService();
 }
 
-export async function getProcessTree(): Promise<Array<ProcessInfo>> {
-  return psTree();
+async function getProcessTree() {
+  return (0, _process().psTree)();
 }
 
-export async function getBuckRootFromUri(uri: string): Promise<?string> {
-  if (!nuclideUri.isAbsolute(uri)) {
+async function getBuckRootFromUri(uri) {
+  if (!_nuclideUri().default.isAbsolute(uri)) {
     return null;
   }
+
   let path = uri;
 
   while (true) {
-    const rootTest = nuclideUri.join(path, '.buckconfig');
-    // eslint-disable-next-line no-await-in-loop
-    if (await fsPromise.exists(rootTest)) {
+    const rootTest = _nuclideUri().default.join(path, '.buckconfig'); // eslint-disable-next-line no-await-in-loop
+
+
+    if (await _fsPromise().default.exists(rootTest)) {
       return path;
     }
-    const newPath = nuclideUri.getParent(path);
+
+    const newPath = _nuclideUri().default.getParent(path);
+
     if (newPath === path) {
       break;
     }
@@ -70,8 +126,9 @@ export async function getBuckRootFromUri(uri: string): Promise<?string> {
   return null;
 }
 
-export async function getBuckRootFromPid(pid: number): Promise<?string> {
-  const path = await getAbsoluteBinaryPathForPid(pid);
+async function getBuckRootFromPid(pid) {
+  const path = await (0, _process().getAbsoluteBinaryPathForPid)(pid);
+
   if (path == null) {
     return null;
   }
@@ -79,12 +136,10 @@ export async function getBuckRootFromPid(pid: number): Promise<?string> {
   return getBuckRootFromUri(path);
 }
 
-export async function realpath(path: string): Promise<string> {
-  return fsPromise.realpath(path);
+async function realpath(path) {
+  return _fsPromise().default.realpath(path);
 }
 
-export async function getAdapterExecutableInfo(
-  adapterType: VsAdapterType,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutable(adapterType);
+async function getAdapterExecutableInfo(adapterType) {
+  return (0, _debuggerRegistry().getAdapterExecutable)(adapterType);
 }

@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.JavaDebuggerDevicePanelProvider = void 0;
+
+function _nuclideDebuggerCommon() {
+  const data = require("../../../modules/nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _debugger() {
+  const data = require("../../../modules/nuclide-commons-atom/debugger");
+
+  _debugger = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,28 +34,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {IJavaAndroidAttachProcessConfig} from 'atom-ide-debugger-java-android/types';
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from 'nuclide-debugger-common/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {VsAdapterTypes} from 'nuclide-debugger-common';
-import {Observable} from 'rxjs';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-
-function _createAndroidDebugAttachConfig(
-  targetUri: NuclideUri,
-  device: Device,
-  proc: Process,
-): IJavaAndroidAttachProcessConfig {
+function _createAndroidDebugAttachConfig(targetUri, device, proc) {
   const config = {
     deviceAndProcess: {
       // See pkg/nuclide-device-panel-android/lib/Registration.js to see why
@@ -35,50 +46,47 @@ function _createAndroidDebugAttachConfig(
       selectedProcess: {
         user: proc.user,
         pid: String(proc.pid),
-        name: proc.name,
-      },
+        name: proc.name
+      }
     },
-    adbServiceUri: targetUri,
+    adbServiceUri: targetUri
   };
   return {
     targetUri,
     debugMode: 'attach',
-    adapterType: VsAdapterTypes.JAVA_ANDROID,
+    adapterType: _nuclideDebuggerCommon().VsAdapterTypes.JAVA_ANDROID,
     config,
-    processName:
-      'Process ' + proc.pid + ' (Android Java ' + device.displayName + ')',
+    processName: 'Process ' + proc.pid + ' (Android Java ' + device.displayName + ')'
   };
 }
 
-export class JavaDebuggerDevicePanelProvider
-  implements DeviceProcessTaskProvider {
+class JavaDebuggerDevicePanelProvider {
   constructor() {}
 
-  getType(): string {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'DEBUG';
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(
-      new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)),
-    );
+  getSupportedPIDs(host, device, procs) {
+    return _RxMin.Observable.of(new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)));
   }
 
-  getName(): string {
+  getName() {
     return 'Attach Java debugger';
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    const debuggerService = await getDebuggerService();
+  async run(host, device, proc) {
+    const debuggerService = await (0, _debugger().getDebuggerService)();
+
     const config = _createAndroidDebugAttachConfig(host, device, proc);
+
     debuggerService.startVspDebugging(config);
   }
+
 }
+
+exports.JavaDebuggerDevicePanelProvider = JavaDebuggerDevicePanelProvider;

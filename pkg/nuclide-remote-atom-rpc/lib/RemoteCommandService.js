@@ -1,3 +1,42 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerAtomCommands = registerAtomCommands;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FileCache() {
+  const data = require("../../nuclide-open-files-rpc/lib/FileCache");
+
+  _FileCache = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _commandServerSingleton() {
+  const data = require("./command-server-singleton");
+
+  _commandServerSingleton = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,37 +44,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {AtomCommands} from './rpc-types';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
-import {getCommandServer} from './command-server-singleton';
-import invariant from 'assert';
-
-// This interface is exposed by the nuclide server process to the client side
-// Atom process.
-
-/** Dummy alias for IDisposable to satisfy Nuclide-RPC. */
-export interface Unregister {
-  dispose(): void;
-}
 
 /**
  * Called by Atom once for each new remote connection.
  */
-export async function registerAtomCommands(
-  fileNotifier: FileNotifier,
-  atomCommands: AtomCommands,
-): Promise<Unregister> {
-  invariant(fileNotifier instanceof FileCache);
-  const fileCache = fileNotifier;
+async function registerAtomCommands(fileNotifier, atomCommands) {
+  if (!(fileNotifier instanceof _FileCache().FileCache)) {
+    throw new Error("Invariant violation: \"fileNotifier instanceof FileCache\"");
+  }
 
-  const disposables = new UniversalDisposable();
-  disposables.add(await getCommandServer().register(fileCache, atomCommands));
+  const fileCache = fileNotifier;
+  const disposables = new (_UniversalDisposable().default)();
+  disposables.add((await (0, _commandServerSingleton().getCommandServer)().register(fileCache, atomCommands)));
   return disposables;
 }

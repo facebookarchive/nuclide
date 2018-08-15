@@ -1,3 +1,192 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deserializeTerminalView = deserializeTerminalView;
+exports.getSafeInitialInput = getSafeInitialInput;
+exports.TerminalView = exports.URI_PREFIX = void 0;
+
+var _atom = require("atom");
+
+var _electron = require("electron");
+
+function _observePaneItemVisibility() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/observePaneItemVisibility"));
+
+  _observePaneItemVisibility = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _projects() {
+  const data = require("../../../../nuclide-commons-atom/projects");
+
+  _projects = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _observable() {
+  const data = require("../../../../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+var _url = _interopRequireDefault(require("url"));
+
+function _AtomServiceContainer() {
+  const data = require("./AtomServiceContainer");
+
+  _AtomServiceContainer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _observableDom() {
+  const data = require("../../../../nuclide-commons-ui/observable-dom");
+
+  _observableDom = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _performanceNow() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/performanceNow"));
+
+  _performanceNow = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _createTerminal() {
+  const data = require("./createTerminal");
+
+  _createTerminal = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _measurePerformance() {
+  const data = _interopRequireDefault(require("./measure-performance"));
+
+  _measurePerformance = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _analytics() {
+  const data = require("../../../../nuclide-commons/analytics");
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _goToLocation() {
+  const data = require("../../../../nuclide-commons-atom/go-to-location");
+
+  _goToLocation = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _config() {
+  const data = require("./config");
+
+  _config = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideTerminalUri() {
+  const data = require("./nuclide-terminal-uri");
+
+  _nuclideTerminalUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _sink() {
+  const data = require("./sink");
+
+  _sink = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,441 +195,298 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* eslint-env browser */
+const URI_PREFIX = 'atom://nuclide-terminal-view';
+exports.URI_PREFIX = URI_PREFIX;
 
-import invariant from 'assert';
-import {Emitter} from 'atom';
-import {shell, clipboard} from 'electron';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {
-  observeAddedHostnames,
-  observeRemovedHostnames,
-} from 'nuclide-commons-atom/projects';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {fastDebounce} from 'nuclide-commons/observable';
-import {Observable} from 'rxjs';
-import url from 'url';
+class TerminalView {
+  constructor(info) {
+    this._syncFontAndFit = terminal => {
+      (0, _config().syncTerminalFont)(terminal); // Force character measure before 'fit' runs.
 
-import {getPtyServiceByNuclideUri, getGkService} from './AtomServiceContainer';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
-import performanceNow from 'nuclide-commons/performanceNow';
-import {createTerminal} from './createTerminal';
-import measurePerformance from './measure-performance';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from 'nuclide-commons/analytics';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+      terminal.resize(terminal.cols, terminal.rows);
+      terminal.fit();
 
-import {
-  ADD_ESCAPE_COMMAND,
-  COLOR_CONFIGS,
-  DOCUMENTATION_MESSAGE_CONFIG,
-  FONT_FAMILY_CONFIG,
-  FONT_SCALE_CONFIG,
-  LINE_HEIGHT_CONFIG,
-  PRESERVED_COMMANDS_CONFIG,
-  subscribeConfigChanges,
-  setTerminalOption,
-  syncTerminalFont,
-  RENDERER_TYPE_CONFIG,
-} from './config';
-import {infoFromUri} from './nuclide-terminal-uri';
-import {createOutputSink} from './sink';
+      if (this._pty != null) {
+        this._pty.resize(terminal.cols, terminal.rows);
+      }
 
-import type {Terminal} from './createTerminal';
-import type {TerminalInstance} from './types';
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';
-import type {InstantiatedTerminalInfo} from './nuclide-terminal-uri';
+      this._syncAtomTheme(terminal); // documented workaround for https://github.com/xtermjs/xterm.js/issues/291
+      // see https://github.com/Microsoft/vscode/commit/134cbec22f81d5558909040491286d72b547bee6
+      // $FlowIgnore: using unofficial _core interface defined in https://github.com/Microsoft/vscode/blob/master/src/typings/vscode-xterm.d.ts#L682-L706
 
-import type {Sink} from './sink';
 
-export const URI_PREFIX = 'atom://nuclide-terminal-view';
+      terminal.emit('scroll', terminal._core.buffer.ydisp);
+    };
 
-export interface TerminalViewState {
-  deserializer: 'TerminalView';
-  initialInfo: InstantiatedTerminalInfo;
-  cwd: ?string;
-}
-
-type ProcessExitCallback = () => mixed;
-
-export class TerminalView implements PtyClient, TerminalInstance {
-  _paneUri: string;
-  _cwd: ?NuclideUri;
-  _key: string;
-  _path: ?NuclideUri;
-  _command: ?Command;
-  _useTitleAsPath: boolean;
-  _title: string;
-  _subscriptions: UniversalDisposable;
-  _emitter: Emitter;
-  _preservedCommands: Set<string>;
-  _div: HTMLDivElement;
-  _terminal: ?Terminal;
-  _pty: ?Pty;
-  _processOutput: ?Sink;
-  _startTime: number;
-  _bytesIn: number;
-  _bytesOut: number;
-  _focusStart: ?number;
-  _focusDuration: number;
-  _terminalInfo: InstantiatedTerminalInfo;
-  _processExitCallback: ProcessExitCallback;
-  _isFirstOutput: boolean;
-  _initialInput: string;
-
-  constructor(info: InstantiatedTerminalInfo) {
     this._terminalInfo = info;
-    const cwd = (this._cwd = info.cwd);
+    const cwd = this._cwd = info.cwd;
     this._command = info.command == null ? null : info.command;
     this._key = info.key;
     this._title = info.title == null ? 'terminal' : info.title;
     this._path = cwd;
-    this._initialInput =
-      info.initialInput == null ? '' : getSafeInitialInput(info.initialInput);
-    this._processExitCallback = () => {};
-    this._useTitleAsPath = false;
+    this._initialInput = info.initialInput == null ? '' : getSafeInitialInput(info.initialInput);
 
-    this._startTime = performanceNow();
+    this._processExitCallback = () => {};
+
+    this._useTitleAsPath = false;
+    this._startTime = (0, _performanceNow().default)();
     this._bytesIn = 0;
     this._bytesOut = 0;
     this._focusStart = null;
     this._focusDuration = 0;
     this._isFirstOutput = true;
-
-    const subscriptions = (this._subscriptions = new UniversalDisposable());
-
-    this._emitter = new Emitter();
+    const subscriptions = this._subscriptions = new (_UniversalDisposable().default)();
+    this._emitter = new _atom.Emitter();
     subscriptions.add(this._emitter);
-
-    const div = (this._div = document.createElement('div'));
+    const div = this._div = document.createElement('div');
     div.classList.add('terminal-pane');
     subscriptions.add(() => div.remove());
 
-    if (cwd != null && nuclideUri.isRemote(cwd)) {
-      this._subscriptions.add(
-        observeRemovedHostnames().subscribe(hostname => {
-          if (nuclideUri.getHostname(cwd) === hostname) {
-            this._closeTab();
-          }
-        }),
-      );
-    }
-
-    // Terminal.open only works after its div has been attached to the DOM,
+    if (cwd != null && _nuclideUri().default.isRemote(cwd)) {
+      this._subscriptions.add((0, _projects().observeRemovedHostnames)().subscribe(hostname => {
+        if (_nuclideUri().default.getHostname(cwd) === hostname) {
+          this._closeTab();
+        }
+      }));
+    } // Terminal.open only works after its div has been attached to the DOM,
     // which happens in getElement, not in this constructor. Therefore delay
     // open and spawn until the div is visible, which means it is in the DOM.
-    const gkService = getGkService();
-    const preferDom =
-      gkService != null
-        ? gkService.passesGK('nuclide_terminal_prefer_dom')
-        : Promise.resolve(false);
-    this._subscriptions.add(
-      Observable.combineLatest(
-        Observable.fromPromise(preferDom),
-        observePaneItemVisibility(this)
-          .filter(Boolean)
-          .first(),
-      ).subscribe(([passesPreferDom]) => {
-        const rendererType = featureConfig.get(RENDERER_TYPE_CONFIG);
-        const terminal = createTerminal(
-          // $FlowIgnore: rendererType config not yet added in flow typing
-          passesPreferDom && rendererType === 'auto'
-            ? {rendererType: 'dom'}
-            : {},
-        );
-        this._onTerminalCreation(terminal);
-        terminal.open(this._div);
-        (div: any).terminal = terminal;
-        if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
-          const docsUrl = 'https://nuclide.io/docs/features/terminal';
-          terminal.writeln(`For more info check out the docs: ${docsUrl}`);
-        }
 
-        terminal.focus();
-        this._subscriptions.add(this._subscribeFitEvents(terminal));
-        this._spawn(cwd)
-          .then(pty => this._onPtyFulfill(pty, terminal))
-          .catch(error => this._onPtyFail(error, terminal));
-      }),
-    );
+
+    const gkService = (0, _AtomServiceContainer().getGkService)();
+    const preferDom = gkService != null ? gkService.passesGK('nuclide_terminal_prefer_dom') : Promise.resolve(false);
+
+    this._subscriptions.add(_RxMin.Observable.combineLatest(_RxMin.Observable.fromPromise(preferDom), (0, _observePaneItemVisibility().default)(this).filter(Boolean).first()).subscribe(([passesPreferDom]) => {
+      const rendererType = _featureConfig().default.get(_config().RENDERER_TYPE_CONFIG);
+
+      const terminal = (0, _createTerminal().createTerminal)( // $FlowIgnore: rendererType config not yet added in flow typing
+      passesPreferDom && rendererType === 'auto' ? {
+        rendererType: 'dom'
+      } : {});
+
+      this._onTerminalCreation(terminal);
+
+      terminal.open(this._div);
+      div.terminal = terminal;
+
+      if (_featureConfig().default.get(_config().DOCUMENTATION_MESSAGE_CONFIG)) {
+        const docsUrl = 'https://nuclide.io/docs/features/terminal';
+        terminal.writeln(`For more info check out the docs: ${docsUrl}`);
+      }
+
+      terminal.focus();
+
+      this._subscriptions.add(this._subscribeFitEvents(terminal));
+
+      this._spawn(cwd).then(pty => this._onPtyFulfill(pty, terminal)).catch(error => this._onPtyFail(error, terminal));
+    }));
   }
 
-  _subscribeFitEvents(terminal: Terminal): UniversalDisposable {
-    return new UniversalDisposable(
-      subscribeConfigChanges(terminal),
-      Observable.combineLatest(
-        observePaneItemVisibility(this),
-        Observable.merge(
-          observableFromSubscribeFunction(cb =>
-            atom.config.onDidChange('editor.fontSize', cb),
-          ),
-          featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
-          featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
-          featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
-          Observable.fromEvent(terminal, 'focus'),
-          // Debounce resize observables to reduce lag.
-          Observable.merge(
-            Observable.fromEvent(window, 'resize'),
-            new ResizeObservable(this._div),
-          ).let(fastDebounce(100)),
-        ).startWith(null),
-      )
-        // Don't emit syncs if the pane is not visible.
-        .filter(([visible]) => visible)
-        .subscribe(() => this._syncFontAndFit(terminal)),
-    );
+  _subscribeFitEvents(terminal) {
+    return new (_UniversalDisposable().default)((0, _config().subscribeConfigChanges)(terminal), _RxMin.Observable.combineLatest((0, _observePaneItemVisibility().default)(this), _RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(cb => atom.config.onDidChange('editor.fontSize', cb)), _featureConfig().default.observeAsStream(_config().FONT_SCALE_CONFIG).skip(1), _featureConfig().default.observeAsStream(_config().FONT_FAMILY_CONFIG).skip(1), _featureConfig().default.observeAsStream(_config().LINE_HEIGHT_CONFIG).skip(1), _RxMin.Observable.fromEvent(terminal, 'focus'), // Debounce resize observables to reduce lag.
+    _RxMin.Observable.merge(_RxMin.Observable.fromEvent(window, 'resize'), new (_observableDom().ResizeObservable)(this._div)).let((0, _observable().fastDebounce)(100))).startWith(null)) // Don't emit syncs if the pane is not visible.
+    .filter(([visible]) => visible).subscribe(() => this._syncFontAndFit(terminal)));
   }
 
-  _spawn(cwd: ?NuclideUri): Promise<Pty> {
+  _spawn(cwd) {
     const command = this._command;
-    const info: PtyInfo = {
+    const info = Object.assign({
       terminalType: 'xterm-256color',
-      environment: this._terminalInfo.environmentVariables,
-      ...(command == null ? {} : {command}),
-    };
+      environment: this._terminalInfo.environmentVariables
+    }, command == null ? {} : {
+      command
+    });
+
     const performSpawn = () => {
       this._setUseTitleAsPath(cwd);
-      return getPtyServiceByNuclideUri(cwd).spawn(
-        cwd != null ? {...info, cwd: nuclideUri.getPath(cwd)} : info,
-        this,
-      );
+
+      return (0, _AtomServiceContainer().getPtyServiceByNuclideUri)(cwd).spawn(cwd != null ? Object.assign({}, info, {
+        cwd: _nuclideUri().default.getPath(cwd)
+      }) : info, this);
     };
-    if (cwd == null || nuclideUri.isLocal(cwd)) {
+
+    if (cwd == null || _nuclideUri().default.isLocal(cwd)) {
       return performSpawn();
     } else {
-      const cwdHostname = nuclideUri.getHostname(cwd);
-      // Wait for the remote connection to be added before spawning.
-      const hostnameAddedPromise = observeAddedHostnames()
-        .filter(hostname => hostname === cwdHostname)
-        .take(1)
-        .toPromise();
+      const cwdHostname = _nuclideUri().default.getHostname(cwd); // Wait for the remote connection to be added before spawning.
+
+
+      const hostnameAddedPromise = (0, _projects().observeAddedHostnames)().filter(hostname => hostname === cwdHostname).take(1).toPromise();
       return hostnameAddedPromise.then(performSpawn);
     }
   }
 
-  _setUseTitleAsPath(cwd: ?NuclideUri): void {
-    getPtyServiceByNuclideUri(cwd)
-      .useTitleAsPath(this)
-      .then(value => (this._useTitleAsPath = value));
+  _setUseTitleAsPath(cwd) {
+    (0, _AtomServiceContainer().getPtyServiceByNuclideUri)(cwd).useTitleAsPath(this).then(value => this._useTitleAsPath = value);
   }
 
-  _onTerminalCreation(terminal: Terminal): void {
+  _onTerminalCreation(terminal) {
     this._terminal = terminal;
-    this._processOutput = createOutputSink(terminal);
-    terminal.attachCustomKeyEventHandler(
-      this._checkIfKeyBoundOrDivertToXTerm.bind(this),
-    );
-    this._subscriptions.add(() => terminal.dispose());
-    terminal.webLinksInit(openLink);
-    registerLinkHandlers(terminal, this._cwd);
+    this._processOutput = (0, _sink().createOutputSink)(terminal);
+    terminal.attachCustomKeyEventHandler(this._checkIfKeyBoundOrDivertToXTerm.bind(this));
 
-    // div items don't support a 'focus' event, and we need to forward.
-    (this._div: any).focus = () => terminal.focus();
-    (this._div: any).blur = () => terminal.blur();
+    this._subscriptions.add(() => terminal.dispose());
+
+    terminal.webLinksInit(openLink);
+    registerLinkHandlers(terminal, this._cwd); // div items don't support a 'focus' event, and we need to forward.
+
+    this._div.focus = () => terminal.focus();
+
+    this._div.blur = () => terminal.blur();
 
     if (process.platform === 'win32') {
       // On Windows, add Putty-style highlight and right click to copy, right click to paste.
-      this._subscriptions.add(
-        Observable.fromEvent(this._div, 'contextmenu').subscribe(e => {
-          // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
-          // commands are not working correctly with terminal selection.
-          if (terminal.hasSelection()) {
-            // $FlowFixMe: add types for clipboard
-            clipboard.writeText(terminal.getSelection());
-          } else {
-            document.execCommand('paste');
-          }
-          terminal.clearSelection();
-          terminal.focus();
-          e.stopPropagation();
-        }),
-      );
+      this._subscriptions.add(_RxMin.Observable.fromEvent(this._div, 'contextmenu').subscribe(e => {
+        // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
+        // commands are not working correctly with terminal selection.
+        if (terminal.hasSelection()) {
+          // $FlowFixMe: add types for clipboard
+          _electron.clipboard.writeText(terminal.getSelection());
+        } else {
+          document.execCommand('paste');
+        }
+
+        terminal.clearSelection();
+        terminal.focus();
+        e.stopPropagation();
+      }));
     }
-    this._subscriptions.add(
-      atom.commands.add(this._div, 'core:copy', () => {
-        document.execCommand('copy');
-      }),
-      atom.commands.add(this._div, 'core:paste', () => {
-        document.execCommand('paste');
-      }),
-      atom.commands.add(
-        this._div,
-        ADD_ESCAPE_COMMAND,
-        this._addEscapePrefix.bind(this),
-      ),
-      atom.commands.add(
-        this._div,
-        'atom-ide-terminal:clear',
-        terminal.clear.bind(terminal),
-      ),
-    );
 
-    this._subscriptions.add(
-      featureConfig
-        .observeAsStream(PRESERVED_COMMANDS_CONFIG)
-        .subscribe((preserved: any) => {
-          this._preservedCommands = new Set([
-            ...(preserved || []),
-            ...(this._terminalInfo.preservedCommands || []),
-          ]);
-        }),
-      atom.config.onDidChange('core.themes', () =>
-        this._syncAtomTheme(terminal),
-      ),
-      atom.themes.onDidChangeActiveThemes(() => this._syncAtomTheme(terminal)),
-    );
+    this._subscriptions.add(atom.commands.add(this._div, 'core:copy', () => {
+      document.execCommand('copy');
+    }), atom.commands.add(this._div, 'core:paste', () => {
+      document.execCommand('paste');
+    }), atom.commands.add(this._div, _config().ADD_ESCAPE_COMMAND, this._addEscapePrefix.bind(this)), atom.commands.add(this._div, 'atom-ide-terminal:clear', terminal.clear.bind(terminal)));
 
-    this._subscriptions.add(
-      // Skip the first value because the observe callback triggers once when
-      // we begin observing, duplicating work in the constructor.
-      ...Object.keys(COLOR_CONFIGS).map(color =>
-        featureConfig
-          .observeAsStream(COLOR_CONFIGS[color])
-          .skip(1)
-          .subscribe(() => this._syncAtomTheme(terminal)),
-      ),
-    );
+    this._subscriptions.add(_featureConfig().default.observeAsStream(_config().PRESERVED_COMMANDS_CONFIG).subscribe(preserved => {
+      this._preservedCommands = new Set([...(preserved || []), ...(this._terminalInfo.preservedCommands || [])]);
+    }), atom.config.onDidChange('core.themes', () => this._syncAtomTheme(terminal)), atom.themes.onDidChangeActiveThemes(() => this._syncAtomTheme(terminal)));
+
+    this._subscriptions.add( // Skip the first value because the observe callback triggers once when
+    // we begin observing, duplicating work in the constructor.
+    ...Object.keys(_config().COLOR_CONFIGS).map(color => _featureConfig().default.observeAsStream(_config().COLOR_CONFIGS[color]).skip(1).subscribe(() => this._syncAtomTheme(terminal))));
   }
 
-  _onPtyFulfill(pty: Pty, terminal: Terminal): void {
-    invariant(this._pty == null);
-    this._pty = pty;
+  _onPtyFulfill(pty, terminal) {
+    if (!(this._pty == null)) {
+      throw new Error("Invariant violation: \"this._pty == null\"");
+    }
 
-    const now = performanceNow();
+    this._pty = pty;
+    const now = (0, _performanceNow().default)();
     this._focusStart = now;
-    track('nuclide-terminal.started', {
+    (0, _analytics().track)('nuclide-terminal.started', {
       pane: this._paneUri,
       uri: this._cwd,
-      startDelay: Math.round(now - this._startTime),
+      startDelay: Math.round(now - this._startTime)
     });
 
-    this._subscriptions.add(
-      this.dispose.bind(this),
-      Observable.fromEvent(terminal, 'data').subscribe(
-        this._onInput.bind(this),
-      ),
-      Observable.fromEvent(terminal, 'title').subscribe(title => {
-        this._setTitle(title);
-        if (this._useTitleAsPath) {
-          this._setPath(title);
-        }
-      }),
-      Observable.interval(60 * 60 * 1000).subscribe(() =>
-        track('nuclide-terminal.hourly', this._statistics()),
-      ),
-      Observable.fromEvent(terminal, 'focus').subscribe(
-        this._focused.bind(this),
-      ),
-      Observable.fromEvent(terminal, 'blur').subscribe(
-        this._blurred.bind(this),
-      ),
-    );
+    this._subscriptions.add(this.dispose.bind(this), _RxMin.Observable.fromEvent(terminal, 'data').subscribe(this._onInput.bind(this)), _RxMin.Observable.fromEvent(terminal, 'title').subscribe(title => {
+      this._setTitle(title);
+
+      if (this._useTitleAsPath) {
+        this._setPath(title);
+      }
+    }), _RxMin.Observable.interval(60 * 60 * 1000).subscribe(() => (0, _analytics().track)('nuclide-terminal.hourly', this._statistics())), _RxMin.Observable.fromEvent(terminal, 'focus').subscribe(this._focused.bind(this)), _RxMin.Observable.fromEvent(terminal, 'blur').subscribe(this._blurred.bind(this)));
+
     this._syncFontAndFit(terminal);
-    this._subscriptions.add(measurePerformance(terminal));
+
+    this._subscriptions.add((0, _measurePerformance().default)(terminal));
   }
 
-  _focused(): void {
+  _focused() {
     if (this._focusStart == null) {
-      this._focusStart = performanceNow();
+      this._focusStart = (0, _performanceNow().default)();
     }
   }
 
-  _blurred(): void {
+  _blurred() {
     const focusStart = this._focusStart;
+
     if (focusStart != null) {
       this._focusStart = null;
-      this._focusDuration += performanceNow() - focusStart;
+      this._focusDuration += (0, _performanceNow().default)() - focusStart;
     }
   }
 
-  _statistics(): Object {
-    const now = performanceNow();
+  _statistics() {
+    const now = (0, _performanceNow().default)();
     const focusStart = this._focusStart;
-    const focusDuration =
-      this._focusDuration + (focusStart == null ? 0 : now - focusStart);
-    const {query} = url.parse(this._paneUri, true);
-    const id = query == null ? null : query.unique;
+    const focusDuration = this._focusDuration + (focusStart == null ? 0 : now - focusStart);
 
+    const {
+      query
+    } = _url.default.parse(this._paneUri, true);
+
+    const id = query == null ? null : query.unique;
     return {
       id,
       uri: this._cwd,
       focusDuration: Math.round(focusDuration),
       duration: Math.round(now - this._startTime),
       bytesIn: this._bytesIn,
-      bytesOut: this._bytesOut,
+      bytesOut: this._bytesOut
     };
   }
 
-  _onPtyFail(error: Error, terminal: Terminal) {
+  _onPtyFail(error, terminal) {
     terminal.writeln('Error starting process:');
+
     for (const line of String(error).split('\n')) {
       terminal.writeln(line);
     }
-    track('nuclide-terminal.failed', {
+
+    (0, _analytics().track)('nuclide-terminal.failed', {
       pane: this._paneUri,
       uri: this._cwd,
-      startDelay: Math.round(performanceNow() - this._startTime),
-      error: String(error),
+      startDelay: Math.round((0, _performanceNow().default)() - this._startTime),
+      error: String(error)
     });
-  }
-
-  // Since changing the font settings may resize the contents, we have to
+  } // Since changing the font settings may resize the contents, we have to
   // trigger a re-fit when updating font settings.
-  _syncFontAndFit = (terminal: Terminal): void => {
-    syncTerminalFont(terminal);
-    // Force character measure before 'fit' runs.
-    terminal.resize(terminal.cols, terminal.rows);
-    terminal.fit();
-    if (this._pty != null) {
-      this._pty.resize(terminal.cols, terminal.rows);
-    }
-    this._syncAtomTheme(terminal);
-    // documented workaround for https://github.com/xtermjs/xterm.js/issues/291
-    // see https://github.com/Microsoft/vscode/commit/134cbec22f81d5558909040491286d72b547bee6
-    // $FlowIgnore: using unofficial _core interface defined in https://github.com/Microsoft/vscode/blob/master/src/typings/vscode-xterm.d.ts#L682-L706
-    terminal.emit('scroll', terminal._core.buffer.ydisp);
-  };
 
-  _syncAtomTheme(terminal: Terminal): void {
+
+  _syncAtomTheme(terminal) {
     const div = this._div;
-    setTerminalOption(terminal, 'theme', getTerminalTheme(div));
+    (0, _config().setTerminalOption)(terminal, 'theme', getTerminalTheme(div));
   }
 
-  _onInput(data: string): void {
+  _onInput(data) {
     if (this._pty != null) {
       this._bytesIn += data.length;
+
       this._pty.writeInput(data);
     }
   }
 
-  _setTitle(title: string) {
+  _setTitle(title) {
     this._title = title;
+
     this._emitter.emit('did-change-title', title);
   }
 
-  _setPath(path: string) {
+  _setPath(path) {
     this._path = path;
+
     this._emitter.emit('did-change-path', path);
   }
 
-  _addEscapePrefix(event: Object): void {
+  _addEscapePrefix(event) {
     if (typeof event.originalEvent === 'object') {
-      const keyEvent: Object = event.originalEvent;
+      const keyEvent = event.originalEvent;
+
       if (typeof keyEvent.key === 'string') {
         this._onInput(`\x1B${keyEvent.key}`);
       }
     }
   }
 
-  _checkIfKeyBoundOrDivertToXTerm(event: Event): boolean {
+  _checkIfKeyBoundOrDivertToXTerm(event) {
     // Only allow input if we have somewhere to send it.
     if (this._pty == null) {
       return false;
@@ -449,313 +495,318 @@ export class TerminalView implements PtyClient, TerminalInstance {
     const keystroke = atom.keymaps.keystrokeForKeyboardEvent(event);
     const bindings = atom.keymaps.findKeyBindings({
       keystrokes: keystroke,
-      target: this._div,
+      target: this._div
     });
     const preserved = this._preservedCommands;
 
-    if (
-      preserved.has(ADD_ESCAPE_COMMAND) &&
-      bindings.some(b => b.command === ADD_ESCAPE_COMMAND)
-    ) {
+    if (preserved.has(_config().ADD_ESCAPE_COMMAND) && bindings.some(b => b.command === _config().ADD_ESCAPE_COMMAND)) {
       // Intercept the add escape binding and send escape directly, then
       // divert to xterm (to handle keys like Backspace).
       this._onInput('\x1B');
+
       return true;
     }
 
-    const result = !bindings.some(b => preserved.has(b.command));
-    // This facilitates debugging keystroke issues.  You can set a breakpoint
+    const result = !bindings.some(b => preserved.has(b.command)); // This facilitates debugging keystroke issues.  You can set a breakpoint
     // in the else block without stopping on modifier keys.
-    if (
-      keystroke === 'alt' ||
-      keystroke === 'shift' ||
-      keystroke === 'ctrl' ||
-      keystroke === 'cmd'
-    ) {
+
+    if (keystroke === 'alt' || keystroke === 'shift' || keystroke === 'ctrl' || keystroke === 'cmd') {
       return result;
     } else {
       return result;
     }
   }
 
-  _closeTab(): void {
+  _closeTab() {
     const pane = atom.workspace.paneForItem(this);
+
     if (pane != null) {
       pane.destroyItem(this);
     }
   }
 
-  onOutput(data: string): void {
+  onOutput(data) {
     this._bytesOut += data.length;
+
     if (this._processOutput != null) {
       this._processOutput(data);
     }
 
     if (this._isFirstOutput) {
       this._isFirstOutput = false;
+
       this._onInput(this._initialInput);
     }
   }
 
-  onExit(code: number, signal: number): void {
-    track('nuclide-terminal.exit', {...this._statistics(), code, signal});
+  onExit(code, signal) {
+    (0, _analytics().track)('nuclide-terminal.exit', Object.assign({}, this._statistics(), {
+      code,
+      signal
+    }));
 
     if (code === 0 && !this._terminalInfo.remainOnCleanExit) {
       this._closeTab();
+
       return;
     }
+
     if (this._terminal == null) {
       return;
     }
-    const terminal = this._terminal;
 
+    const terminal = this._terminal;
     terminal.writeln('');
     terminal.writeln('');
     const command = this._terminalInfo.command;
-    const process =
-      command == null ? 'Process' : `${command.file} ${command.args.join(' ')}`;
+    const process = command == null ? 'Process' : `${command.file} ${command.args.join(' ')}`;
     terminal.writeln(`${process} exited with error code '${code}'.`);
+
     if (signal !== 0) {
       terminal.writeln(`  killed by signal '${signal}'.`);
     }
+
     terminal.writeln('');
 
     this._disableTerminal(terminal);
   }
 
-  _disableTerminal(terminal: Terminal) {
+  _disableTerminal(terminal) {
     this.dispose();
-    terminal.blur();
+    terminal.blur(); // Disable terminal's ability to capture input once in error state.
 
-    // Disable terminal's ability to capture input once in error state.
-    (this._div: any).focus = () => {};
-    (this._div: any).blur = () => {};
+    this._div.focus = () => {};
+
+    this._div.blur = () => {};
   }
 
-  setProcessExitCallback(callback: ProcessExitCallback): void {
+  setProcessExitCallback(callback) {
     this._processExitCallback = callback;
   }
 
-  terminateProcess(): void {
+  terminateProcess() {
     if (this._pty != null && this._terminal != null) {
       const terminal = this._terminal;
+
       this._disableTerminal(terminal);
+
       terminal.writeln('');
       terminal.writeln('Process terminated.');
       terminal.writeln('');
     }
   }
 
-  copy(): TerminalView {
+  copy() {
     return new TerminalView(this._terminalInfo);
-  }
-
-  // Remote connection is closing--note the window remains open to show error
+  } // Remote connection is closing--note the window remains open to show error
   // output if the process exit code was not 0.
-  dispose(): void {
+
+
+  dispose() {
     if (this._pty != null) {
       this._pty.dispose();
+
       this._pty = null;
     }
 
     this._processExitCallback();
-    this._processExitCallback = () => {};
-  }
 
-  // Window is closing, so close everything.
-  destroy(): void {
+    this._processExitCallback = () => {};
+  } // Window is closing, so close everything.
+
+
+  destroy() {
     this._subscriptions.dispose();
   }
 
-  getTitle(): string {
+  getTitle() {
     return this._title;
   }
 
-  getIconName(): IconName {
-    return (this._terminalInfo.icon: any);
+  getIconName() {
+    return this._terminalInfo.icon;
   }
 
-  getURI(): string {
+  getURI() {
     return 'atom://nuclide-terminal-view';
   }
 
-  getTerminalKey(): string {
+  getTerminalKey() {
     return this._key;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return this._terminalInfo.defaultLocation;
   }
 
-  getElement(): any {
+  getElement() {
     return this._div;
   }
 
-  getPath(): ?NuclideUri {
+  getPath() {
     return this._path;
   }
 
-  onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
+  onDidChangePath(callback) {
     return this.on('did-change-path', callback);
   }
 
-  onDidChangeTitle(callback: (v: ?string) => mixed): IDisposable {
+  onDidChangeTitle(callback) {
     return this.on('did-change-title', callback);
   }
 
-  on(name: string, callback: (v: any) => mixed): IDisposable {
+  on(name, callback) {
     return this._emitter.on(name, callback);
   }
 
-  serialize(): TerminalViewState {
+  serialize() {
     return {
       deserializer: 'TerminalView',
       initialInfo: this._terminalInfo,
-      cwd: this._cwd,
+      cwd: this._cwd
     };
   }
+
 }
 
-export function deserializeTerminalView(
-  state: TerminalViewState,
-): TerminalView {
+exports.TerminalView = TerminalView;
+
+function deserializeTerminalView(state) {
   if (state.initialInfo != null) {
     return new TerminalView(state.initialInfo);
   }
-  return new TerminalView(infoFromUri(URI_PREFIX));
+
+  return new TerminalView((0, _nuclideTerminalUri().infoFromUri)(URI_PREFIX));
 }
 
-function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
-  const diffPattern = toString(
-    featureConfig.get('atom-ide-console.diffUrlPattern'),
-  );
-  const taskPattern = toString(
-    featureConfig.get('atom-ide-console.taskUrlPattern'),
-  );
-  const bindings = [
-    {
-      // Diff (e.g. 'D1234') with word boundary on either side.
-      regex: /\bD[1-9][0-9]{3,}\b/,
-      matchIndex: 0,
-      urlPattern: diffPattern,
-    },
-    {
-      // Paste (e.g. 'P1234') with word boundary on either side.
-      regex: /\bP[1-9][0-9]{3,}\b/,
-      matchIndex: 0,
-      urlPattern: diffPattern,
-    },
-    {
-      // Task (e.g. 't1234' or 'T1234') with word boundary on either side.
-      // Note the [tT] is not included in the resulting URL.
-      regex: /\b[tT]([1-9][0-9]{3,})\b/,
-      matchIndex: 1,
-      urlPattern: taskPattern,
-    },
-    {
-      // Task (e.g. '#1234') preceded by beginning-of-line or whitespace and followed
-      // by word boundary.  Unfortunately, since '#' is punctuation, the point before
-      // it is not normally a word boundary, so this has to be registered separately.
-      regex: /(^|\s)#([1-9][0-9]{3,})\b/,
-      matchIndex: 2,
-      urlPattern: taskPattern,
-    },
-    {
-      // An absolute file path
-      regex: /(^|\s)((\/[^<>:"\\|?*[\]\s]+)(:\d+)?)/,
-      matchIndex: 2,
-      urlPattern: 'open-file-object://%s',
-    },
-  ];
+function registerLinkHandlers(terminal, cwd) {
+  const diffPattern = toString(_featureConfig().default.get('atom-ide-console.diffUrlPattern'));
+  const taskPattern = toString(_featureConfig().default.get('atom-ide-console.taskUrlPattern'));
+  const bindings = [{
+    // Diff (e.g. 'D1234') with word boundary on either side.
+    regex: /\bD[1-9][0-9]{3,}\b/,
+    matchIndex: 0,
+    urlPattern: diffPattern
+  }, {
+    // Paste (e.g. 'P1234') with word boundary on either side.
+    regex: /\bP[1-9][0-9]{3,}\b/,
+    matchIndex: 0,
+    urlPattern: diffPattern
+  }, {
+    // Task (e.g. 't1234' or 'T1234') with word boundary on either side.
+    // Note the [tT] is not included in the resulting URL.
+    regex: /\b[tT]([1-9][0-9]{3,})\b/,
+    matchIndex: 1,
+    urlPattern: taskPattern
+  }, {
+    // Task (e.g. '#1234') preceded by beginning-of-line or whitespace and followed
+    // by word boundary.  Unfortunately, since '#' is punctuation, the point before
+    // it is not normally a word boundary, so this has to be registered separately.
+    regex: /(^|\s)#([1-9][0-9]{3,})\b/,
+    matchIndex: 2,
+    urlPattern: taskPattern
+  }, {
+    // An absolute file path
+    regex: /(^|\s)((\/[^<>:"\\|?*[\]\s]+)(:\d+)?)/,
+    matchIndex: 2,
+    urlPattern: 'open-file-object://%s'
+  }];
 
-  for (const {regex, matchIndex, urlPattern} of bindings) {
-    terminal.registerLinkMatcher(
+  for (const _ref of bindings) {
+    const {
       regex,
-      (event, match) => {
-        const replacedUrl = urlPattern.replace('%s', match);
-        if (replacedUrl !== '') {
-          const commandClicked =
-            process.platform === 'win32' ? event.ctrlKey : event.metaKey;
-          if (commandClicked && tryOpenInAtom(replacedUrl, cwd)) {
-            return;
-          }
-          shell.openExternal(replacedUrl);
+      matchIndex,
+      urlPattern
+    } = _ref;
+    terminal.registerLinkMatcher(regex, (event, match) => {
+      const replacedUrl = urlPattern.replace('%s', match);
+
+      if (replacedUrl !== '') {
+        const commandClicked = process.platform === 'win32' ? event.ctrlKey : event.metaKey;
+
+        if (commandClicked && tryOpenInAtom(replacedUrl, cwd)) {
+          return;
         }
-      },
-      {matchIndex},
-    );
+
+        _electron.shell.openExternal(replacedUrl);
+      }
+    }, {
+      matchIndex
+    });
   }
 }
 
-function tryOpenInAtom(link: string, cwd: ?NuclideUri): boolean {
-  const parsed = url.parse(link);
+function tryOpenInAtom(link, cwd) {
+  const parsed = _url.default.parse(link);
 
   if (parsed.protocol === 'open-file-object:') {
     const path = parsed.path;
+
     if (path != null) {
       const fileLine = path.split(':');
       let filePath = fileLine[0];
       let line = 0;
+
       if (fileLine.length > 1 && parseInt(fileLine[1], 10) > 0) {
         line = parseInt(fileLine[1], 10) - 1;
       }
-      if (cwd != null && nuclideUri.isRemote(cwd)) {
-        const terminalLocation = nuclideUri.parseRemoteUri(cwd);
-        filePath = nuclideUri.createRemoteUri(
-          terminalLocation.hostname,
-          filePath,
-        );
+
+      if (cwd != null && _nuclideUri().default.isRemote(cwd)) {
+        const terminalLocation = _nuclideUri().default.parseRemoteUri(cwd);
+
+        filePath = _nuclideUri().default.createRemoteUri(terminalLocation.hostname, filePath);
       }
 
-      goToLocation(filePath, {line});
+      (0, _goToLocation().goToLocation)(filePath, {
+        line
+      });
     }
+
     return true;
   }
 
   return false;
 }
 
-function openLink(event: Event, link: string): void {
-  shell.openExternal(trimTrailingDot(link));
+function openLink(event, link) {
+  _electron.shell.openExternal(trimTrailingDot(link));
 }
 
-function trimTrailingDot(s: string): string {
+function trimTrailingDot(s) {
   return s.endsWith('.') ? s.substring(0, s.length - 1) : s;
 }
 
-function toString(value: mixed): string {
+function toString(value) {
   return typeof value === 'string' ? value : '';
-}
+} // As a precaution, we should not let any undisplayable or potentially unsafe characters through
 
-// As a precaution, we should not let any undisplayable or potentially unsafe characters through
-export function getSafeInitialInput(initialInput: string): string {
+
+function getSafeInitialInput(initialInput) {
   for (let i = 0; i < initialInput.length; i++) {
-    const code = initialInput.charCodeAt(i);
-    // ASCII codes under 32 and 127 are control characters (potentially dangerous)
+    const code = initialInput.charCodeAt(i); // ASCII codes under 32 and 127 are control characters (potentially dangerous)
     // ASCII codes 128-165 are extended ASCII characters that have uses in other languages
+
     if (code < 32 || code === 127 || code > 165) {
-      atom.notifications.addWarning(
-        'Initial input for terminal unable to be prefilled',
-        {
-          detail: `Potentially malicious characters were found in the prefill command: ${initialInput}`,
-          dismissable: true,
-        },
-      );
+      atom.notifications.addWarning('Initial input for terminal unable to be prefilled', {
+        detail: `Potentially malicious characters were found in the prefill command: ${initialInput}`,
+        dismissable: true
+      });
       return '';
     }
   }
+
   return initialInput;
 }
 
-function getTerminalColors(): {[$Keys<typeof COLOR_CONFIGS>]: string} {
+function getTerminalColors() {
   const colorsMap = {};
-  for (const color of Object.keys(COLOR_CONFIGS)) {
-    const configValue: ?(string | atom$Color) = (featureConfig.get(
-      COLOR_CONFIGS[color],
-    ): any);
-    // config value may be string when Atom deserializes the terminal package
+
+  for (const color of Object.keys(_config().COLOR_CONFIGS)) {
+    const configValue = _featureConfig().default.get(_config().COLOR_CONFIGS[color]); // config value may be string when Atom deserializes the terminal package
     // on startup, and it may be undefined if this is the first time the package
     // is being deserialized after the config was added.
+
+
     if (configValue != null) {
       if (typeof configValue === 'string') {
         colorsMap[color] = configValue;
@@ -764,18 +815,18 @@ function getTerminalColors(): {[$Keys<typeof COLOR_CONFIGS>]: string} {
       }
     }
   }
+
   return colorsMap;
 }
 
-function getTerminalTheme(div: HTMLDivElement): any {
+function getTerminalTheme(div) {
   const style = window.getComputedStyle(div);
   const foreground = style.getPropertyValue('color');
-  const background = style.getPropertyValue('background-color');
-  // return type: https://git.io/vxooH
-  return {
+  const background = style.getPropertyValue('background-color'); // return type: https://git.io/vxooH
+
+  return Object.assign({
     foreground,
     background,
-    cursor: foreground,
-    ...getTerminalColors(),
-  };
+    cursor: foreground
+  }, getTerminalColors());
 }

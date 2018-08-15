@@ -1,3 +1,69 @@
+"use strict";
+
+var _fs = _interopRequireDefault(require("fs"));
+
+function _admZip() {
+  const data = _interopRequireDefault(require("adm-zip"));
+
+  _admZip = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FileSystem() {
+  const data = require("../lib/FileSystem");
+
+  _FileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FsFileSystem() {
+  const data = require("../lib/FsFileSystem");
+
+  _FsFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ZipFileSystem() {
+  const data = require("../lib/ZipFileSystem");
+
+  _ZipFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CompositeFileSystem() {
+  const data = require("../lib/CompositeFileSystem");
+
+  _CompositeFileSystem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,219 +71,173 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  * @emails oncall+nuclide
  */
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DirectoryEntry} from '../lib/FileSystem';
-
-import fs from 'fs';
-import AdmZip from 'adm-zip';
-import {FileSystem} from '../lib/FileSystem';
-import {FsFileSystem} from '../lib/FsFileSystem';
-import {ZipFileSystem} from '../lib/ZipFileSystem';
-import {CompositeFileSystem} from '../lib/CompositeFileSystem';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-const fixtures = nuclideUri.join(__dirname, '../__mocks__/fixtures');
+const fixtures = _nuclideUri().default.join(__dirname, '../__mocks__/fixtures');
 
 const PARENT_TEXT = 'Parent directory text file contents\n';
 const CHILD_TEXT = 'Child directory text file contents\n';
-const PARENT_DIR = [
-  // name, isFile, isSymbolicLink
-  ['Directory', false, false],
-  ['EmptyDirectory', false, false],
-  ['EmptyFile', true, false],
-  ['LinkDirectory', false, true],
-  ['LinkDirectorySlashTextFile.txt', false, true],
-  ['LinkLinkDirectory', false, true],
-  ['LinkLinkDirectorySlashTextFile.txt', true, true],
-  ['TextFile.txt', true, false],
-];
-const CHILD_DIR = [
-  // name, isFile, isSymbolicLink
-  ['LinkDotDotSlashTextFile.txt', true, true],
-  ['TextFile.txt', true, false],
-];
-
+const PARENT_DIR = [// name, isFile, isSymbolicLink
+['Directory', false, false], ['EmptyDirectory', false, false], ['EmptyFile', true, false], ['LinkDirectory', false, true], ['LinkDirectorySlashTextFile.txt', false, true], ['LinkLinkDirectory', false, true], ['LinkLinkDirectorySlashTextFile.txt', true, true], ['TextFile.txt', true, false]];
+const CHILD_DIR = [// name, isFile, isSymbolicLink
+['LinkDotDotSlashTextFile.txt', true, true], ['TextFile.txt', true, false]];
 const MODE_RWXR_XR_X = 0b111101101;
-const MODE_RW_R__R__ = 0b110100100;
-// eslint-disable-next-line no-bitwise
-const MODE_FILE = 0x8 << 12;
-// eslint-disable-next-line no-bitwise
-const MODE_DIRECTORY = 0x4 << 12;
-// eslint-disable-next-line no-bitwise
+const MODE_RW_R__R__ = 0b110100100; // eslint-disable-next-line no-bitwise
+
+const MODE_FILE = 0x8 << 12; // eslint-disable-next-line no-bitwise
+
+const MODE_DIRECTORY = 0x4 << 12; // eslint-disable-next-line no-bitwise
+
 const MODE_SYMLINK = 0xa << 12;
 
-type StatCheck = {
-  mode: number,
-  size: number,
-  isFile: boolean,
-  isDirectory: boolean,
-  isSymbolicLink: boolean,
-};
-
-function statsDir(): StatCheck {
+function statsDir() {
   return {
     // eslint-disable-next-line no-bitwise
     mode: MODE_DIRECTORY | MODE_RWXR_XR_X,
     size: 0,
     isFile: false,
     isDirectory: true,
-    isSymbolicLink: false,
+    isSymbolicLink: false
   };
 }
 
-function statsFile(size: number): StatCheck {
+function statsFile(size) {
   return {
     // eslint-disable-next-line no-bitwise
     mode: MODE_FILE | MODE_RW_R__R__,
     size,
     isFile: true,
     isDirectory: false,
-    isSymbolicLink: false,
+    isSymbolicLink: false
   };
 }
 
-function statsDirLink(): StatCheck {
+function statsDirLink() {
   return {
     // eslint-disable-next-line no-bitwise
     mode: MODE_SYMLINK | MODE_RWXR_XR_X,
     size: 0,
     isFile: false,
     isDirectory: false,
-    isSymbolicLink: true,
+    isSymbolicLink: true
   };
 }
 
-function statsFileLink(size: number): StatCheck {
+function statsFileLink(size) {
   return {
     // eslint-disable-next-line no-bitwise
     mode: MODE_SYMLINK | MODE_RWXR_XR_X,
     size,
     isFile: false,
     isDirectory: false,
-    isSymbolicLink: true,
+    isSymbolicLink: true
   };
 }
 
 describe('FsFS', () => {
-  const fsFs = new FsFileSystem();
-  const dir = fixture('dir');
-
-  // I want to include an empty directory test, but source control
+  const fsFs = new (_FsFileSystem().FsFileSystem)();
+  const dir = fixture('dir'); // I want to include an empty directory test, but source control
   // systems do not track empty directories.  So ensure this exists.
+
   const emptyDir = fixture('dir/EmptyDirectory');
+
   try {
-    fs.mkdirSync(emptyDir);
+    _fs.default.mkdirSync(emptyDir);
   } catch (e) {}
 
   describe('dir', () => {
-    checkRoot(fsFs, dir, dir, true, nuclideUri.join);
+    checkRoot(fsFs, dir, dir, true, _nuclideUri().default.join);
   });
   describe('dir/Directory/..', () => {
     const dotDotDir = fixture('dir/Directory/..');
-    checkRoot(fsFs, dotDotDir, dir, true, nuclideUri.join);
+    checkRoot(fsFs, dotDotDir, dir, true, _nuclideUri().default.join);
   });
 });
-
 describe('ZipFS dir.zip', () => {
-  const zip = new AdmZip(fixture('dir.zip'));
-  const zipFs = new ZipFileSystem(zip, new fs.Stats(), new fs.Stats());
-  checkRoot(zipFs, 'dir', 'dir', false, nuclideUri.join);
+  const zip = new (_admZip().default)(fixture('dir.zip'));
+  const zipFs = new (_ZipFileSystem().ZipFileSystem)(zip, new _fs.default.Stats(), new _fs.default.Stats());
+  checkRoot(zipFs, 'dir', 'dir', false, _nuclideUri().default.join);
 });
-
 describe('ZipFS dir.jar', () => {
-  const jar = new AdmZip(fixture('dir.jar'));
-  const zipFs = new ZipFileSystem(jar, new fs.Stats(), new fs.Stats());
-  checkRoot(zipFs, 'dir', 'dir', false, nuclideUri.join);
+  const jar = new (_admZip().default)(fixture('dir.jar'));
+  const zipFs = new (_ZipFileSystem().ZipFileSystem)(jar, new _fs.default.Stats(), new _fs.default.Stats());
+  checkRoot(zipFs, 'dir', 'dir', false, _nuclideUri().default.join);
 });
-
 describe('CompositeFS dir.zip$dir', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   const dir = fixture('dir.zip', 'dir');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.join);
+  checkRoot(compositeFs, dir, dir, false, _nuclideUri().default.join);
 });
-
 describe('CompositeFS dir.jar$dir', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   const dir = fixture('dir.jar', 'dir');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.join);
+  checkRoot(compositeFs, dir, dir, false, _nuclideUri().default.join);
 });
-
 describe('CompositeFS dirRoot.zip', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   const dir = fixture('dirRoot.zip');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.archiveJoin);
+  checkRoot(compositeFs, dir, dir, false, _nuclideUri().default.archiveJoin);
 });
-
 describe('CompositeFS dirRoot.jar', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   const dir = fixture('dirRoot.jar');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.archiveJoin);
+  checkRoot(compositeFs, dir, dir, false, _nuclideUri().default.archiveJoin);
 });
-
 describe('CompositeFS nonexist.jar', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   describe('nonexist.jar', () => {
     const dir = fixture('nonexist.jar');
     it('does not exist', async () => {
-      expect(await compositeFs.exists(dir)).toBe(false);
+      expect((await compositeFs.exists(dir))).toBe(false);
     });
     describe('!no.txt', () => {
-      const notxt = nuclideUri.archiveJoin(dir, 'no.txt');
+      const notxt = _nuclideUri().default.archiveJoin(dir, 'no.txt');
+
       it('does not exist', async () => {
-        expect(await compositeFs.exists(notxt)).toBe(false);
+        expect((await compositeFs.exists(notxt))).toBe(false);
       });
     });
     describe('!no/no.txt', () => {
-      const notxt = nuclideUri.archiveJoin(dir, 'no/no.txt');
+      const notxt = _nuclideUri().default.archiveJoin(dir, 'no/no.txt');
+
       it('does not exist', async () => {
-        expect(await compositeFs.exists(notxt)).toBe(false);
+        expect((await compositeFs.exists(notxt))).toBe(false);
       });
     });
   });
 });
-
 describe('ComposeFS nonfile.zip', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
+  const compositeFs = new (_CompositeFileSystem().CompositeFileSystem)(new (_FsFileSystem().FsFileSystem)());
   const nonfile = fixture('nonfile.zip');
   describe('EmptyFile', () => {
-    const empty = nuclideUri.join(nonfile, 'EmptyFile');
+    const empty = _nuclideUri().default.join(nonfile, 'EmptyFile');
+
     it('exists', async () => {
-      expect(await compositeFs.exists(empty)).toBe(true);
+      expect((await compositeFs.exists(empty))).toBe(true);
     });
   });
   it('contains EmptyFile', async () => {
-    expect(await compositeFs.findNearestFile('EmptyFile', nonfile)).toBe(
-      nonfile,
-    );
+    expect((await compositeFs.findNearestFile('EmptyFile', nonfile))).toBe(nonfile);
   });
 });
 
-function checkRoot(
-  checkFs: FileSystem,
-  linkRootPath: NuclideUri,
-  realRootPath: NuclideUri,
-  checkLinks: boolean,
-  rootJoin: (string, string) => string,
-) {
+function checkRoot(checkFs, linkRootPath, realRootPath, checkLinks, rootJoin) {
   const linkPath = path => rootJoin(linkRootPath, path);
+
   const realPath = path => rootJoin(realRootPath, path);
 
   describe('root', () => {
     checkRealPath(linkRootPath, realRootPath);
     checkReaddir(linkRootPath, PARENT_DIR);
   });
-
   describe('Directory', () => {
     const directory = linkPath('Directory');
     checkExistingPath(directory);
     checkBothStat(directory, statsDir());
     checkRealPath(directory, realPath('Directory'));
     checkReaddir(directory, CHILD_DIR);
-
     describe('TextFile', () => {
       const directoryTextFile = linkPath('Directory/TextFile.txt');
       checkExistingPath(directoryTextFile);
@@ -261,7 +281,9 @@ function checkRoot(
       const linkDirectory = linkPath('LinkDirectory');
       checkExistingPath(linkDirectory);
       checkStat(linkDirectory, statsDir());
-      checkLStat(linkDirectory, statsDirLink(), {checkLinksMode: false});
+      checkLStat(linkDirectory, statsDirLink(), {
+        checkLinksMode: false
+      });
       checkRealPath(linkDirectory, realPath('Directory'));
       checkReaddir(linkDirectory, CHILD_DIR);
     });
@@ -269,7 +291,9 @@ function checkRoot(
       const linkLinkDirectory = linkPath('LinkLinkDirectory');
       checkExistingPath(linkLinkDirectory);
       checkStat(linkLinkDirectory, statsDir());
-      checkLStat(linkLinkDirectory, statsDirLink(), {checkLinksMode: false});
+      checkLStat(linkLinkDirectory, statsDirLink(), {
+        checkLinksMode: false
+      });
       checkRealPath(linkLinkDirectory, realPath('Directory'));
       checkReaddir(linkLinkDirectory, CHILD_DIR);
     });
@@ -278,90 +302,80 @@ function checkRoot(
       checkExistingPath(linkDirectoryTextFile);
       checkStat(linkDirectoryTextFile, statsFile(CHILD_TEXT.length));
       checkLStat(linkDirectoryTextFile, statsFileLink(CHILD_TEXT.length), {
-        checkLinksMode: false,
+        checkLinksMode: false
       });
       checkRealPath(linkDirectoryTextFile, realPath('Directory/TextFile.txt'));
       checkTextFile(linkDirectoryTextFile, CHILD_TEXT);
     });
     describe('LinkLinkDirectorySlashTextFile', () => {
-      const linkLinkDirectoryTextFile = linkPath(
-        'LinkLinkDirectorySlashTextFile.txt',
-      );
+      const linkLinkDirectoryTextFile = linkPath('LinkLinkDirectorySlashTextFile.txt');
       checkExistingPath(linkLinkDirectoryTextFile);
       checkStat(linkLinkDirectoryTextFile, statsFile(CHILD_TEXT.length));
       checkLStat(linkLinkDirectoryTextFile, statsFileLink(CHILD_TEXT.length), {
-        checkLinksMode: false,
+        checkLinksMode: false
       });
-      checkRealPath(
-        linkLinkDirectoryTextFile,
-        realPath('Directory/TextFile.txt'),
-      );
+      checkRealPath(linkLinkDirectoryTextFile, realPath('Directory/TextFile.txt'));
       checkTextFile(linkLinkDirectoryTextFile, CHILD_TEXT);
     });
   }
 
-  function checkExistingPath(path: NuclideUri): void {
+  function checkExistingPath(path) {
     describe(path, () => {
       it('exists', async () => {
-        expect(await checkFs.exists(path)).toBeTruthy();
+        expect((await checkFs.exists(path))).toBeTruthy();
       });
       it('can be found', async () => {
-        const dir = nuclideUri.dirname(path);
-        const base = nuclideUri.basename(path);
-        expect(await checkFs.findNearestFile(base, dir)).toEqual(dir);
+        const dir = _nuclideUri().default.dirname(path);
+
+        const base = _nuclideUri().default.basename(path);
+
+        expect((await checkFs.findNearestFile(base, dir))).toEqual(dir);
       });
       it('is not NFS', async () => {
-        expect(await checkFs.isNfs(path)).toBe(false);
+        expect((await checkFs.isNfs(path))).toBe(false);
       });
     });
   }
 
-  function checkNonExistingPath(path: NuclideUri): void {
+  function checkNonExistingPath(path) {
     describe(path, () => {
       it('does not exist', async () => {
-        expect(await checkFs.exists(path)).toBe(false);
+        expect((await checkFs.exists(path))).toBe(false);
       });
     });
   }
 
-  function checkBothStat(path: NuclideUri, expected: StatCheck) {
+  function checkBothStat(path, expected) {
     checkStat(path, expected);
     checkLStat(path, expected);
   }
 
-  function checkStat(path: NuclideUri, expected: StatCheck) {
+  function checkStat(path, expected) {
     describe('stat', () => {
       checkStatValues(() => checkFs.stat(path), expected);
     });
   }
 
-  function checkLStat(
-    path: NuclideUri,
-    expected: StatCheck,
-    options: {checkLinksMode?: boolean} = {},
-  ) {
+  function checkLStat(path, expected, options = {}) {
     describe('lstat', () => {
       checkStatValues(() => checkFs.lstat(path), expected, {
-        checkLinksMode: options.checkLinksMode,
+        checkLinksMode: options.checkLinksMode
       });
     });
   }
 
-  function checkStatValues(
-    get: () => Promise<fs.Stats>,
-    expected: StatCheck,
-    options: {checkLinksMode?: boolean} = {},
-  ) {
+  function checkStatValues(get, expected, options = {}) {
     let actual;
     beforeEach(async () => {
       actual = await get();
-    });
-    // Symlinks' mode on Linux is always ignored
+    }); // Symlinks' mode on Linux is always ignored
+
     if (options.checkLinksMode !== false) {
       it('has correct mode', () => {
         expect(actual.mode).toEqual(expected.mode);
       });
     }
+
     it('has correct isFile', () => {
       expect(actual.isFile()).toEqual(expected.isFile);
     });
@@ -371,6 +385,7 @@ function checkRoot(
     it('has correct isSymbolicLink', () => {
       expect(actual.isSymbolicLink()).toEqual(expected.isSymbolicLink);
     });
+
     if (expected.isFile) {
       it('has correct size', () => {
         expect(actual.size).toEqual(expected.size);
@@ -378,10 +393,7 @@ function checkRoot(
     }
   }
 
-  function checkReaddir(
-    path: NuclideUri,
-    expected: Array<DirectoryEntry>,
-  ): void {
+  function checkReaddir(path, expected) {
     describe('readdir', () => {
       let actual;
       beforeEach(async () => {
@@ -393,22 +405,22 @@ function checkRoot(
     });
   }
 
-  function checkRealPath(path: NuclideUri, expected: NuclideUri) {
+  function checkRealPath(path, expected) {
     describe('realpath', () => {
       it('has expected value', async () => {
-        expect(await checkFs.realpath(path)).toEqual(expected);
+        expect((await checkFs.realpath(path))).toEqual(expected);
       });
     });
   }
 
-  function checkTextFile(path: NuclideUri, contents: string) {
-    describe(`text file ${nuclideUri.basename(path)}`, () => {
+  function checkTextFile(path, contents) {
+    describe(`text file ${_nuclideUri().default.basename(path)}`, () => {
       checkExistingPath(path);
       checkText(path, contents);
     });
   }
 
-  function checkText(path: NuclideUri, contents: string): void {
+  function checkText(path, contents) {
     describe(path, () => {
       it('has expected contents', async () => {
         expect((await checkFs.readFile(path)).toString()).toEqual(contents);
@@ -417,15 +429,16 @@ function checkRoot(
   }
 }
 
-function fixture(dir: string, archiveOffset?: string): string {
-  const fsDir = nuclideUri.join(fixtures, dir);
+function fixture(dir, archiveOffset) {
+  const fsDir = _nuclideUri().default.join(fixtures, dir);
+
   if (archiveOffset == null) {
     return fsDir;
   } else {
-    return nuclideUri.archiveJoin(fsDir, archiveOffset);
+    return _nuclideUri().default.archiveJoin(fsDir, archiveOffset);
   }
 }
 
-function names(entries: Array<DirectoryEntry>): Array<string> {
+function names(entries) {
   return entries.map(([name, isFile, isLink]) => name);
 }

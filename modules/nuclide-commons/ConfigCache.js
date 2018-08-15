@@ -1,3 +1,52 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConfigCache = void 0;
+
+function _lruCache() {
+  const data = _interopRequireDefault(require("lru-cache"));
+
+  _lruCache = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("./collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("./fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("./nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,78 +55,53 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {LRUCache} from 'lru-cache';
-import type {NuclideUri} from './nuclideUri';
-
-import LRU from 'lru-cache';
-import {findSubArrayIndex} from './collection';
-import fsPromise from './fsPromise';
-import nuclideUri from './nuclideUri';
-
-export type SearchStrategy =
-  | 'nearest'
-  | 'aurora'
-  | 'eclipse'
-  | 'ocaml'
-  | 'thrift';
-
-export class ConfigCache {
-  _configPatterns: Array<string>;
-  _searchStrategy: SearchStrategy;
-  _configCache: LRUCache<NuclideUri, Promise<?NuclideUri>>;
-
-  constructor(
-    configPatterns: Array<string>,
-    searchStrategy?: SearchStrategy = 'nearest',
-  ) {
+class ConfigCache {
+  constructor(configPatterns, searchStrategy = 'nearest') {
     this._configPatterns = configPatterns;
     this._searchStrategy = searchStrategy;
-    this._configCache = LRU({
-      max: 200, // Want this to exceed the maximum expected number of open files + dirs.
-      maxAge: 1000 * 30, // 30 seconds
+    this._configCache = (0, _lruCache().default)({
+      max: 200,
+      // Want this to exceed the maximum expected number of open files + dirs.
+      maxAge: 1000 * 30 // 30 seconds
+
     });
   }
 
-  getConfigDir(path: NuclideUri): Promise<?NuclideUri> {
+  getConfigDir(path) {
     let result = this._configCache.get(path);
+
     if (result == null) {
       result = this._findConfigDir(path);
+
       this._configCache.set(path, result);
     }
+
     return result;
   }
 
-  async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
+  async _findConfigDir(path) {
     if (this._searchStrategy === 'eclipse') {
-      const configDirs = await Promise.all(
-        this._configPatterns.map(configFile =>
-          fsPromise.findFurthestFile(configFile, path),
-        ),
-      );
+      const configDirs = await Promise.all(this._configPatterns.map(configFile => _fsPromise().default.findFurthestFile(configFile, path)));
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length < previous.length) {
           return configDir;
         }
+
         return previous;
       }, null);
     } else if (this._searchStrategy === 'thrift') {
       // Find the first occurrence of a config segment in the path.
-      const pathSplit = nuclideUri.split(path);
-      return this._configPatterns
-        .map(configPattern => {
-          const configSplit = nuclideUri.split(configPattern);
-          const foundIndex = findSubArrayIndex(pathSplit, configSplit);
-          return foundIndex !== -1
-            ? nuclideUri.join(
-                ...pathSplit.slice(0, foundIndex + configSplit.length),
-              )
-            : null;
-        })
-        .find(Boolean);
+      const pathSplit = _nuclideUri().default.split(path);
+
+      return this._configPatterns.map(configPattern => {
+        const configSplit = _nuclideUri().default.split(configPattern);
+
+        const foundIndex = (0, _collection().findSubArrayIndex)(pathSplit, configSplit);
+        return foundIndex !== -1 ? _nuclideUri().default.join(...pathSplit.slice(0, foundIndex + configSplit.length)) : null;
+      }).find(Boolean);
     } else if (this._searchStrategy === 'ocaml') {
       // ocaml-language-server (the LSP server) is the same single LSP server binary
       // for all ocaml projects and for all versions of merlin.
@@ -94,53 +118,46 @@ export class ConfigCache {
       // Therefore: to find project root for a given file, we'll either use the nearest
       // containing parent such that directory parent/node_modules/.cache/_esy/build/bin exists,
       // or "/" otherwise.
+      let dir = _nuclideUri().default.dirname(path);
 
-      let dir = nuclideUri.dirname(path);
       while (true) {
-        const wrapper = nuclideUri.join(
-          dir,
-          'node_modules',
-          '.cache',
-          '_esy',
-          'build',
-          'bin',
-        );
-        // eslint-disable-next-line no-await-in-loop
-        if (await fsPromise.exists(wrapper)) {
+        const wrapper = _nuclideUri().default.join(dir, 'node_modules', '.cache', '_esy', 'build', 'bin'); // eslint-disable-next-line no-await-in-loop
+
+
+        if (await _fsPromise().default.exists(wrapper)) {
           return dir;
-        } else if (nuclideUri.isRoot(dir)) {
+        } else if (_nuclideUri().default.isRoot(dir)) {
           return dir;
         } else {
-          dir = nuclideUri.dirname(dir);
+          dir = _nuclideUri().default.dirname(dir);
         }
       }
     } else if (this._searchStrategy === 'aurora') {
-      const candidateDir = await fsPromise.findNearestFile('.hhconfig', path);
-      if (
-        candidateDir != null &&
-        (await fsPromise.exists(nuclideUri.join(candidateDir, '.arcconfig')))
-      ) {
+      const candidateDir = await _fsPromise().default.findNearestFile('.hhconfig', path);
+
+      if (candidateDir != null && (await _fsPromise().default.exists(_nuclideUri().default.join(candidateDir, '.arcconfig')))) {
         return candidateDir;
       }
+
       return null;
     } else {
-      (this._searchStrategy: 'nearest');
-      // Find the result with the greatest length (the closest match).
-      const configDirs = await Promise.all(
-        this._configPatterns.map(configFile =>
-          fsPromise.findNearestFile(configFile, path),
-        ),
-      );
+      this._searchStrategy; // Find the result with the greatest length (the closest match).
+
+      const configDirs = await Promise.all(this._configPatterns.map(configFile => _fsPromise().default.findNearestFile(configFile, path)));
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length > previous.length) {
           return configDir;
         }
+
         return previous;
       }, null);
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._configCache.reset();
   }
+
 }
+
+exports.ConfigCache = ConfigCache;

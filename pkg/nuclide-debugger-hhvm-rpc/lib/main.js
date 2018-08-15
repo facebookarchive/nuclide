@@ -1,3 +1,71 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDebuggerArgs = getDebuggerArgs;
+exports.getLaunchArgs = getLaunchArgs;
+exports.getHhvmStackTraces = getHhvmStackTraces;
+exports.getDebugServerLog = getDebugServerLog;
+exports.getAttachTargetList = getAttachTargetList;
+exports.terminateHhvmWrapperProcesses = terminateHhvmWrapperProcesses;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _serverPort() {
+  const data = require("../../../modules/nuclide-commons/serverPort");
+
+  _serverPort = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _os = _interopRequireDefault(require("os"));
+
+function _process() {
+  const data = require("../../../modules/nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _fs = _interopRequireDefault(require("fs"));
+
+function _passesGK() {
+  const data = _interopRequireDefault(require("../../commons-node/passesGK"));
+
+  _passesGK = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,115 +73,68 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAvailableServerPort} from 'nuclide-commons/serverPort';
-import fsPromise from 'nuclide-commons/fsPromise';
-import os from 'os';
-import {runCommand} from 'nuclide-commons/process';
-import fs from 'fs';
-import passesGK from '../../commons-node/passesGK';
-import {psTree} from 'nuclide-commons/process';
-
-export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
-
-const DEFAULT_HHVM_PATH = '/usr/local/bin/hhvm';
-
-// The default path (relative to Hack Root) to use for the startup document,
+const DEFAULT_HHVM_PATH = '/usr/local/bin/hhvm'; // The default path (relative to Hack Root) to use for the startup document,
 // which is loaded by the dummy request thread in the debugger backend.
+
 const DEFAULT_STARTUP_DOC_PATH = 'scripts/vsdebug_includes.php';
 
-export async function getDebuggerArgs(
-  config: HHVMAttachConfig | HHVMLaunchConfig,
-): Promise<Object> {
+async function getDebuggerArgs(config) {
   switch (config.action) {
     case 'launch':
-      const launchConfig: HHVMLaunchConfig = (config: any);
+      const launchConfig = config;
       return getLaunchArgs(launchConfig);
+
     case 'attach':
-      const attachConfig: HHVMAttachConfig = (config: any);
+      const attachConfig = config;
       return _getAttachArgs(attachConfig);
+
     default:
       throw new Error('Invalid launch/attach action:' + JSON.stringify(config));
   }
 }
 
-function _expandPath(path: string, cwd: string): string {
+function _expandPath(path, cwd) {
   // Expand a path to interpret ~/ as home and ./ as relative
   // to the current working directory.
-  return path.startsWith('./')
-    ? nuclideUri.resolve(
-        cwd != null ? nuclideUri.expandHomeDir(cwd) : '',
-        path.substring(2),
-      )
-    : nuclideUri.expandHomeDir(path);
+  return path.startsWith('./') ? _nuclideUri().default.resolve(cwd != null ? _nuclideUri().default.expandHomeDir(cwd) : '', path.substring(2)) : _nuclideUri().default.expandHomeDir(path);
 }
 
-export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
-  const launchWrapperCommand =
-    config.launchWrapperCommand != null &&
-    config.launchWrapperCommand.trim() !== ''
-      ? _expandPath(
-          config.launchWrapperCommand,
-          nuclideUri.dirname(config.targetUri),
-        )
-      : null;
+async function getLaunchArgs(config) {
+  const launchWrapperCommand = config.launchWrapperCommand != null && config.launchWrapperCommand.trim() !== '' ? _expandPath(config.launchWrapperCommand, _nuclideUri().default.dirname(config.targetUri)) : null;
+  const cwd = config.cwd != null && config.cwd.trim() !== '' ? config.cwd : _nuclideUri().default.dirname(config.targetUri); // Expand paths in the launch config from the front end.
 
-  const cwd =
-    config.cwd != null && config.cwd.trim() !== ''
-      ? config.cwd
-      : nuclideUri.dirname(config.targetUri);
-
-  // Expand paths in the launch config from the front end.
   if (config.hhvmRuntimePath != null) {
     config.hhvmRuntimePath = _expandPath(config.hhvmRuntimePath, cwd);
   }
 
   config.launchScriptPath = _expandPath(config.launchScriptPath, cwd);
-
   const deferArgs = [];
   let debugPort = null;
+
   if (config.deferLaunch) {
-    debugPort = await getAvailableServerPort();
+    debugPort = await (0, _serverPort().getAvailableServerPort)();
     deferArgs.push('--vsDebugPort');
     deferArgs.push(debugPort);
   }
 
   const hhvmPath = await _getHhvmPath(config);
-  const launchArgs =
-    launchWrapperCommand != null
-      ? [launchWrapperCommand, config.launchScriptPath]
-      : [config.launchScriptPath];
-
+  const launchArgs = launchWrapperCommand != null ? [launchWrapperCommand, config.launchScriptPath] : [config.launchScriptPath];
   let hhvmRuntimeArgs = config.hhvmRuntimeArgs || [];
+
   try {
     // $FlowFB
-    const fbConfig = require('./fbConfig');
+    const fbConfig = require("./fbConfig");
+
     hhvmRuntimeArgs = fbConfig.getHHVMRuntimeArgs(config);
   } catch (_) {}
 
-  const hhvmArgs = [
-    ...hhvmRuntimeArgs,
-    '--mode',
-    'vsdebug',
-    ...deferArgs,
-    ...launchArgs,
-    ...config.scriptArgs,
-  ];
-
-  const startupDocumentPath: ?string = await _getStartupDocumentPath(config);
-
+  const hhvmArgs = [...hhvmRuntimeArgs, '--mode', 'vsdebug', ...deferArgs, ...launchArgs, ...config.scriptArgs];
+  const startupDocumentPath = await _getStartupDocumentPath(config);
   const logFilePath = await _getHHVMLogFilePath();
-
-  const warnOnInterceptedFunctions = await passesGK(
-    'nuclide_debugger_hhvm_warn_on_intercept',
-  );
-
+  const warnOnInterceptedFunctions = await (0, _passesGK().default)('nuclide_debugger_hhvm_warn_on_intercept');
   return {
     hhvmPath,
     hhvmArgs,
@@ -122,96 +143,102 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
     debugPort,
     cwd,
     warnOnInterceptedFunctions,
-    notifyOnBpCalibration: true,
+    notifyOnBpCalibration: true
   };
 }
 
-async function _getHHVMLogFilePath(): Promise<string> {
-  const path = nuclideUri.join(
-    os.tmpdir(),
-    `nuclide-${os.userInfo().username}-logs`,
-    'hhvm-debugger.log',
-  );
+async function _getHHVMLogFilePath() {
+  const path = _nuclideUri().default.join(_os.default.tmpdir(), `nuclide-${_os.default.userInfo().username}-logs`, 'hhvm-debugger.log');
 
   await _rotateHHVMLogs(path);
   await _createLogFile(path);
   return path;
 }
 
-async function _createLogFile(path: string): Promise<void> {
+async function _createLogFile(path) {
   // Ensure the log file exists, and is write-able by everyone so that
   // HHVM, which is running as a different user, can append to it.
   const mode = 0o666;
+
   try {
-    const fd = await fsPromise.open(path, 'a+', mode);
+    const fd = await _fsPromise().default.open(path, 'a+', mode);
+
     if (fd >= 0) {
-      await fsPromise.chmod(path, mode);
+      await _fsPromise().default.chmod(path, mode);
     }
-    fs.close(fd, () => {});
+
+    _fs.default.close(fd, () => {});
   } catch (_) {}
 }
 
-async function _rotateHHVMLogs(path: string): Promise<void> {
+async function _rotateHHVMLogs(path) {
   let fileStat;
+
   try {
-    fileStat = await fsPromise.stat(path);
+    fileStat = await _fsPromise().default.stat(path);
   } catch (_) {
     return;
-  }
+  } // Cap the size of the log file so it can't grow forever.
 
-  // Cap the size of the log file so it can't grow forever.
+
   const MAX_LOG_FILE_SIZE_BYTES = 512 * 1024; // 0.5 MB
+
   const MAX_LOGS_TO_KEEP = 5;
+
   if (fileStat.size >= MAX_LOG_FILE_SIZE_BYTES) {
     // Rotate the logs.
     for (let i = MAX_LOGS_TO_KEEP - 1; i >= 0; i--) {
       const fromFile = i > 0 ? path + i : path;
-      const toFile = path + (i + 1);
+      const toFile = path + (i + 1); // eslint-disable-next-line no-await-in-loop
 
-      // eslint-disable-next-line no-await-in-loop
-      const exists = await fsPromise.exists(toFile);
+      const exists = await _fsPromise().default.exists(toFile);
+
       if (exists) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          await fsPromise.unlink(toFile).catch(() => {});
+          await _fsPromise().default.unlink(toFile).catch(() => {});
         } catch (_) {}
       }
 
       try {
         // eslint-disable-next-line no-await-in-loop
-        await fsPromise.mv(fromFile, toFile).catch(() => {});
+        await _fsPromise().default.mv(fromFile, toFile).catch(() => {});
       } catch (_) {}
     }
   }
 }
 
-export async function getHhvmStackTraces(): Promise<Array<string>> {
+async function getHhvmStackTraces() {
   try {
     // $FlowFB
-    const fbConfig = require('./fbConfig');
+    const fbConfig = require("./fbConfig");
+
     return fbConfig.getHhvmStackTraces();
   } catch (_) {}
+
   return [];
 }
 
-export async function getDebugServerLog(): Promise<string> {
+async function getDebugServerLog() {
   try {
-    return fsPromise.readFile(await _getHHVMLogFilePath(), 'utf8');
+    return _fsPromise().default.readFile((await _getHHVMLogFilePath()), 'utf8');
   } catch (error) {
     return '';
   }
 }
 
-async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
-  const startupDocumentPath: ?string = await _getStartupDocumentPath(config);
+async function _getAttachArgs(config) {
+  const startupDocumentPath = await _getStartupDocumentPath(config);
   const logFilePath = await _getHHVMLogFilePath();
-
   let debugPort = config.debugPort;
+
   if (debugPort == null) {
     try {
       // $FlowFB
-      const fetch = require('../../commons-node/fb-sitevar').fetchSitevarOnce;
+      const fetch = require("../../commons-node/fb-sitevar").fetchSitevarOnce;
+
       const siteVar = await fetch('NUCLIDE_VSP_DEBUGGER_CONFIG');
+
       if (siteVar != null && siteVar.hhvm_attach_port != null) {
         debugPort = siteVar.hhvm_attach_port;
       }
@@ -222,102 +249,81 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
     }
   }
 
-  const warnOnInterceptedFunctions = await passesGK(
-    'nuclide_debugger_hhvm_warn_on_intercept',
-  );
-
+  const warnOnInterceptedFunctions = await (0, _passesGK().default)('nuclide_debugger_hhvm_warn_on_intercept');
   return {
     debugPort,
     startupDocumentPath,
     logFilePath,
     warnOnInterceptedFunctions,
-    notifyOnBpCalibration: true,
+    notifyOnBpCalibration: true
   };
 }
 
-async function _getStartupDocumentPath(
-  config: HHVMAttachConfig | HHVMLaunchConfig,
-): Promise<?string> {
+async function _getStartupDocumentPath(config) {
   if (config.startupDocumentPath != null) {
-    const configPath = nuclideUri.expandHomeDir(config.startupDocumentPath);
-    if (await fsPromise.exists(configPath)) {
+    const configPath = _nuclideUri().default.expandHomeDir(config.startupDocumentPath);
+
+    if (await _fsPromise().default.exists(configPath)) {
       return configPath;
     }
-  }
-
-  // Otherwise, fall back to the default path, relative to the current
+  } // Otherwise, fall back to the default path, relative to the current
   // hack root directory.
-  const filePath = nuclideUri.getPath(config.targetUri);
-  const hackRoot = await fsPromise.findNearestFile('.hhconfig', filePath);
-  const startupDocPath = nuclideUri.join(
-    hackRoot != null ? hackRoot : '',
-    DEFAULT_STARTUP_DOC_PATH,
-  );
 
-  if (await fsPromise.exists(startupDocPath)) {
+
+  const filePath = _nuclideUri().default.getPath(config.targetUri);
+
+  const hackRoot = await _fsPromise().default.findNearestFile('.hhconfig', filePath);
+
+  const startupDocPath = _nuclideUri().default.join(hackRoot != null ? hackRoot : '', DEFAULT_STARTUP_DOC_PATH);
+
+  if (await _fsPromise().default.exists(startupDocPath)) {
     return startupDocPath;
   }
 
   return null;
 }
 
-async function _getHhvmPath(config: HHVMLaunchConfig): Promise<string> {
+async function _getHhvmPath(config) {
   // If the client specified an HHVM runtime path, and it exists, use that.
   if (config.hhvmRuntimePath != null && config.hhvmRuntimePath !== '') {
-    const exists = await fsPromise.exists(config.hhvmRuntimePath);
+    const exists = await _fsPromise().default.exists(config.hhvmRuntimePath);
+
     if (exists) {
       return String(config.hhvmRuntimePath);
     }
-  }
+  } // Otherwise try to fall back to a default path.
 
-  // Otherwise try to fall back to a default path.
+
   try {
     // $FlowFB
-    return require('./fbConfig').DEVSERVER_HHVM_PATH;
+    return require("./fbConfig").DEVSERVER_HHVM_PATH;
   } catch (error) {
     return DEFAULT_HHVM_PATH;
   }
 }
 
-export async function getAttachTargetList(): Promise<
-  Array<{pid: number, command: string}>,
-> {
-  const commands = await runCommand(
-    'ps',
-    ['-e', '-o', 'pid,args'],
-    {},
-  ).toPromise();
-  return commands
-    .toString()
-    .split('\n')
-    .filter(line => line.indexOf('vsDebugPort') > 0)
-    .map(line => {
-      const words = line.trim().split(' ');
-      const pid = Number(words[0]);
-      const command = words.slice(1).join(' ');
-      return {
-        pid,
-        command,
-      };
-    });
+async function getAttachTargetList() {
+  const commands = await (0, _process().runCommand)('ps', ['-e', '-o', 'pid,args'], {}).toPromise();
+  return commands.toString().split('\n').filter(line => line.indexOf('vsDebugPort') > 0).map(line => {
+    const words = line.trim().split(' ');
+    const pid = Number(words[0]);
+    const command = words.slice(1).join(' ');
+    return {
+      pid,
+      command
+    };
+  });
 }
 
-export async function terminateHhvmWrapperProcesses(): Promise<void> {
+async function terminateHhvmWrapperProcesses() {
   // Note: we cannot match the full path to the wrapper reliably due
   // to V8 caching, which might map to a prior version of Nuclide
   // if it's available and the source of the hasn't changed between versions.
-  const wrapperPathSuffix =
-    'nuclide/pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js';
-  (await psTree())
-    .filter(p => {
-      const parts = p.commandWithArgs.split(' ');
-      return (
-        parts.length === 2 &&
-        parts[0].endsWith('node') &&
-        parts[1].endsWith(wrapperPathSuffix)
-      );
-    })
-    .forEach(p => {
-      process.kill(p.pid, 'SIGKILL');
-    });
+  const wrapperPathSuffix = 'nuclide/pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js';
+  (await (0, _process().psTree)()).filter(p => {
+    const parts = p.commandWithArgs.split(' ');
+    return parts.length === 2 && parts[0].endsWith('node') && parts[1].endsWith(wrapperPathSuffix);
+  }).forEach(p => {
+    process.kill(p.pid, 'SIGKILL');
+  });
 }
