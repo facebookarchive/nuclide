@@ -75,7 +75,6 @@ export default class More {
     this._size = screenSize();
 
     if (!this._cli.isTTY() || this._text.length < this._size.rows) {
-      this._cli.write('asdhfshjkadfhkjsafhjkasfhkjashjklf\n');
       for (const line of this._text) {
         this._cli.write(`${line}\n`);
       }

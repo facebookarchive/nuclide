@@ -49,28 +49,25 @@ when the program stops the most recent frame will be selected.
       throw new Error("'variables' takes at most one scope parameter");
     }
 
+    let text = '';
     const variables = await this._debugger.getVariablesByScope(args[0]);
     for (const scope of variables) {
       const vars = scope.variables;
       if (scope.expensive && vars == null) {
-        this._console.outputLine();
-        this._console.outputLine(
-          `Variables in scope '${
-            scope.scopeName
-          }' have been elided as they are expensive`,
-        );
-
-        this._console.outputLine(
-          `to evaluate. Use 'variables ${scope.scopeName}' to see them.`,
-        );
+        text += `\nVariables in scope '${
+          scope.scopeName
+        }' have been elided as they are expensive\nto evaluate. Use 'variables ${
+          scope.scopeName
+        }' to see them.\n`;
         continue;
       }
 
       if (vars != null) {
-        this._console.outputLine();
-        this._console.outputLine(`Variables in scope '${scope.scopeName}':`);
-        vars.forEach(v => this._console.outputLine(`${v.name} => ${v.value}`));
+        text += `\nVariables in scope '${scope.scopeName}':\n`;
+        text += vars.map(v => `${v.name} => ${v.value}`).join('\n');
       }
+      text += '\n';
     }
+    this._console.more(text);
   }
 }
