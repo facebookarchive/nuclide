@@ -106,6 +106,7 @@ export default class LineEditor extends EventEmitter {
       this._gatedOutputANSI = new GatedCursorControl(this._outputANSI);
     }
 
+    this._output.write('\n');
     this._installHooks();
     this._onResize();
     this.setPrompt('$ ');
