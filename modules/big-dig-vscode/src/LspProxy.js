@@ -139,10 +139,9 @@ export async function createLsp(
         },
         outputChannelName,
         stdioEncoding: encoding,
-        initializationFailedHandler: {
-          error(err) {
-            logger.error(`Initialization of ${name} failed.`, err);
-          },
+        initializationFailedHandler: err => {
+          logger.error(`Initialization of ${name} failed.`, err);
+          return false;
         },
         errorHandler: {
           error(err) {
@@ -158,14 +157,13 @@ export async function createLsp(
 
     logger.info(`Starting ${name}`);
     cleanup.add(client.start());
+    cleanup.add(() => {
+      logger.info(`Stopped ${name}`);
+    });
   } catch (error) {
     logger.error(error);
     cleanup.dispose();
   }
-
-  cleanup.add(() => {
-    logger.info(`Stopped ${name}`);
-  });
 
   return cleanup;
 }
