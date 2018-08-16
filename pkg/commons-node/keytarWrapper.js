@@ -11,67 +11,12 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, ProcessExitError} from 'nuclide-commons/process';
-import passesGK from './passesGK';
 
 /**
  * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
  * (May throw if prebuilt libs aren't available for the current platform!)
  */
 import * as keytar from 'nuclide-prebuilt-libs/keytar';
-
-async function shouldUseApmNode(): Promise<boolean> {
-  return !(await passesGK('nuclide_prebuilt_keytar'));
-}
-
-// KeyTar>=4.x APM>=1.18
-const getPasswordScriptAsync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    keytar.getPassword(data.service, data.account).then(function(password) {
-      console.log(JSON.stringify(password));
-      rl.close();
-    }, function(err) {
-      console.error(err);
-      process.exit(1);
-    });
-  });
-`;
-
-// KeyTar>=4.x APM>=1.18
-const replacePasswordScriptAsync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    keytar.setPassword(data.service, data.account, data.password).then(function() {
-      rl.close();
-    }, function(err) {
-      console.error(err);
-      process.exit(1);
-    });
-  });
-`;
-
-// KeyTar>=4.x APM>=1.18
-const deletePasswordScriptAsync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    keytar.deletePassword(data.service, data.account).then(function(result) {
-      console.log(JSON.stringify(result));
-      rl.close();
-    }, function(err) {
-      console.error(err);
-      process.exit(1);
-    });
-  });
-`;
 
 function getApmNodePath(): string {
   const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
@@ -115,11 +60,6 @@ export default {
    * Rejects on keychain access failure.
    */
   async getPassword(service: string, account: string): Promise<?string> {
-    if (typeof atom === 'object' && (await shouldUseApmNode())) {
-      return JSON.parse(
-        await runScriptInApmNode(getPasswordScriptAsync, service, account),
-      );
-    }
     return keytar.getPassword(service, account);
   },
 
@@ -132,15 +72,6 @@ export default {
     account: string,
     password: string,
   ): Promise<void> {
-    if (typeof atom === 'object' && (await shouldUseApmNode())) {
-      await runScriptInApmNode(
-        replacePasswordScriptAsync,
-        service,
-        account,
-        password,
-      );
-      return;
-    }
     return keytar.setPassword(service, account, password);
   },
 
@@ -149,11 +80,6 @@ export default {
    * Rejects on keychain access failure.
    */
   async deletePassword(service: string, account: string): Promise<boolean> {
-    if (typeof atom === 'object' && (await shouldUseApmNode())) {
-      return JSON.parse(
-        await runScriptInApmNode(deletePasswordScriptAsync, service, account),
-      );
-    }
     return keytar.deletePassword(service, account);
   },
 };
