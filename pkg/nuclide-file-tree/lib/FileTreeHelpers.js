@@ -36,7 +36,6 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import crypto from 'crypto';
 import os from 'os';
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
 
 export type Directory =
   | LocalDirectory
@@ -124,14 +123,8 @@ function getDirectoryByKey(key: string): ?Directory {
     } else {
       return connection.createDirectory(path);
     }
-  } else if (nuclideUri.hasKnownArchiveExtension(key)) {
-    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-    return ROOT_ARCHIVE_FS.newArchiveFileAsDirectory(path);
-  } else if (!nuclideUri.isInArchive(path)) {
-    return new LocalDirectory(path);
   } else {
-    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-    return ROOT_ARCHIVE_FS.newArchiveDirectory(path);
+    return new LocalDirectory(path);
   }
 }
 
@@ -145,11 +138,8 @@ function getFileByKey(key: string): ?File {
       return null;
     }
     return connection.createFile(path);
-  } else if (!nuclideUri.isInArchive(path)) {
-    return new LocalFile(path);
   } else {
-    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-    return ROOT_ARCHIVE_FS.newArchiveFile(path);
+    return new LocalFile(path);
   }
 }
 

@@ -630,20 +630,16 @@ function isRoot(uri: NuclideUri): boolean {
 function parsePath(uri: NuclideUri): ParsedPath {
   _testForIllegalUri(uri);
   const uriPathModule = _pathModuleFor(uri);
-  if (!isInArchive(uri)) {
-    return uriPathModule.parse(getPath(uri));
-  } else {
-    const parsed = uriPathModule.parse(
-      _archiveEncode(uriPathModule, getPath(uri)),
-    );
-    return {
-      root: _archiveDecode(uriPathModule, parsed.root),
-      dir: _archiveDecode(uriPathModule, parsed.dir),
-      base: _archiveDecode(uriPathModule, parsed.base),
-      ext: _archiveDecode(uriPathModule, parsed.ext),
-      name: _archiveDecode(uriPathModule, parsed.name),
-    };
-  }
+  const parsed = uriPathModule.parse(
+    _archiveEncode(uriPathModule, getPath(uri)),
+  );
+  return {
+    root: _archiveDecode(uriPathModule, parsed.root),
+    dir: _archiveDecode(uriPathModule, parsed.dir),
+    base: _archiveDecode(uriPathModule, parsed.base),
+    ext: _archiveDecode(uriPathModule, parsed.ext),
+    name: _archiveDecode(uriPathModule, parsed.name),
+  };
 }
 
 function pathSeparatorFor(uri: NuclideUri): string {
