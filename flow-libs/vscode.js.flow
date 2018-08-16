@@ -6727,10 +6727,37 @@ declare module 'vscode' {
     encoding?: string;
   }
 
-  declare export interface TextSearchResult {
+  declare export type TextSearchResultPreview = {
+    /**
+     * The matching line of text, or a portion of the matching line that contains the match.
+     * For now, this can only be a single line.
+     */
+    text: string;
+
+    /**
+     * The Range within `text` corresponding to the text of the match.
+     */
+    match: Range;
+  }
+
+  /**
+   * A match from a text search
+   */
+  declare export type TextSearchResult = {
+    /**
+     * The uri for the matching document.
+     */
     uri: Uri;
+
+    /**
+     * The range of the match within the document.
+     */
     range: Range;
-    preview: { text: string, match: Range };
+
+    /**
+     * A preview of the matching line
+     */
+    preview: TextSearchResultPreview;
   }
 
   declare export interface FileSearchProvider {
