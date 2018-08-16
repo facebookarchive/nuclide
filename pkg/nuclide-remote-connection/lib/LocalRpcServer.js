@@ -47,6 +47,15 @@ process.on('exit', () => {
   });
 });
 
+// According to https://nodejs.org/api/process.html#process_signal_events,
+// Node.js should ignore SIGPIPE by default.
+// However, we've seen reports in production of users getting SIGPIPE
+// from their LocalRpcServer processes. Let's try to find out why...
+process.on('SIGPIPE', () => {
+  // Wrap in an Error to get a stack trace.
+  logger.error(Error('Received unexpected SIGPIPE, ignoring...'));
+});
+
 // If we started this with --inspect, don't pass that on to the children.
 // Can be removed once --inspect=0 is usable.
 if (
