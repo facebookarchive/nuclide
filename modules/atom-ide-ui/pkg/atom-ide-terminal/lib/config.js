@@ -94,6 +94,13 @@ export function subscribeConfigChanges(terminal: Terminal): IDisposable {
       .subscribe(scrollback =>
         setTerminalOption(terminal, 'scrollback', scrollback),
       ),
+    featureConfig
+      .observeAsStream(RENDERER_TYPE_CONFIG)
+      .skip(1)
+      .map(rendererType => (rendererType === 'auto' ? 'canvas' : rendererType))
+      .subscribe(rendererType =>
+        setTerminalOption(terminal, 'rendererType', rendererType),
+      ),
   );
 }
 
