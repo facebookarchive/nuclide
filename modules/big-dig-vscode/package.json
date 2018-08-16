@@ -8,7 +8,7 @@
   "publisher": "Facebook",
   "repository": "https://github.com/big-dig/vscode",
   "engines": {
-    "vscode": "^1.22.0"
+    "vscode": "^1.26.0"
   },
   "categories": [
     "Other"
@@ -237,7 +237,7 @@
     "big-dig-vscode-server": "0.7.2-dev",
     "nuclide-jest": "0.7.2-dev",
     "vsce": "1.30.0",
-    "vscode": "1.1.4"
+    "vscode": "1.1.21"
   },
   "scripts": {
     "test": "true",
