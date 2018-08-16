@@ -192,7 +192,9 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           frame,
           isSelected,
         },
-        className: isSelected ? 'debugger-callstack-item-selected' : undefined,
+        className: isSelected
+          ? 'debugger-callstack-item-selected debugger-current-line-highlight'
+          : undefined,
       };
       return cellData;
     });
