@@ -17,7 +17,6 @@ import AdmZip from 'adm-zip';
 import {FileSystem} from '../lib/FileSystem';
 import {FsFileSystem} from '../lib/FsFileSystem';
 import {ZipFileSystem} from '../lib/ZipFileSystem';
-import {CompositeFileSystem} from '../lib/CompositeFileSystem';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const fixtures = nuclideUri.join(__dirname, '../__mocks__/fixtures');
@@ -132,68 +131,6 @@ describe('ZipFS dir.jar', () => {
   const jar = new AdmZip(fixture('dir.jar'));
   const zipFs = new ZipFileSystem(jar, new fs.Stats(), new fs.Stats());
   checkRoot(zipFs, 'dir', 'dir', false, nuclideUri.join);
-});
-
-describe('CompositeFS dir.zip$dir', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  const dir = fixture('dir.zip', 'dir');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.join);
-});
-
-describe('CompositeFS dir.jar$dir', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  const dir = fixture('dir.jar', 'dir');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.join);
-});
-
-describe('CompositeFS dirRoot.zip', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  const dir = fixture('dirRoot.zip');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.archiveJoin);
-});
-
-describe('CompositeFS dirRoot.jar', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  const dir = fixture('dirRoot.jar');
-  checkRoot(compositeFs, dir, dir, false, nuclideUri.archiveJoin);
-});
-
-describe('CompositeFS nonexist.jar', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  describe('nonexist.jar', () => {
-    const dir = fixture('nonexist.jar');
-    it('does not exist', async () => {
-      expect(await compositeFs.exists(dir)).toBe(false);
-    });
-    describe('!no.txt', () => {
-      const notxt = nuclideUri.archiveJoin(dir, 'no.txt');
-      it('does not exist', async () => {
-        expect(await compositeFs.exists(notxt)).toBe(false);
-      });
-    });
-    describe('!no/no.txt', () => {
-      const notxt = nuclideUri.archiveJoin(dir, 'no/no.txt');
-      it('does not exist', async () => {
-        expect(await compositeFs.exists(notxt)).toBe(false);
-      });
-    });
-  });
-});
-
-describe('ComposeFS nonfile.zip', () => {
-  const compositeFs = new CompositeFileSystem(new FsFileSystem());
-  const nonfile = fixture('nonfile.zip');
-  describe('EmptyFile', () => {
-    const empty = nuclideUri.join(nonfile, 'EmptyFile');
-    it('exists', async () => {
-      expect(await compositeFs.exists(empty)).toBe(true);
-    });
-  });
-  it('contains EmptyFile', async () => {
-    expect(await compositeFs.findNearestFile('EmptyFile', nonfile)).toBe(
-      nonfile,
-    );
-  });
 });
 
 function checkRoot(

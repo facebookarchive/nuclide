@@ -9,11 +9,10 @@
  * @format
  */
 
-import {CompositeFileSystem} from './CompositeFileSystem';
 import {FsFileSystem} from './FsFileSystem';
 
 export type {DirectoryEntry, ReadOptions, WriteOptions} from './FileSystem';
 
 export {FileSystem} from './FileSystem';
 
-export const ROOT_FS = new CompositeFileSystem(new FsFileSystem());
+export const ROOT_FS = new FsFileSystem();

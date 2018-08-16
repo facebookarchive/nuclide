@@ -45,7 +45,7 @@ import os from 'os';
 import {maybeToString} from './string';
 
 const ARCHIVE_SEPARATOR = '!';
-const KNOWN_ARCHIVE_EXTENSIONS = ['.jar', '.zip'];
+const KNOWN_ARCHIVE_EXTENSIONS = [];
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 // TODO(ljw): following regex is incorrect. A URI scheme must start with
