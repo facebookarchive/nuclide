@@ -149,7 +149,11 @@ async function enforceExclusive(exclusive: string): Promise<void> {
 
   // Attempt to clean up the pid file on graceful exits.
   process.on('exit', () => {
-    fs.unlinkSync(pidFile);
+    try {
+      fs.unlinkSync(pidFile);
+    } catch (err) {
+      // It's fine if the file no longer exists.
+    }
   });
 }
 
