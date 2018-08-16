@@ -4403,6 +4403,95 @@ declare module 'vscode' {
   }
 
   /**
+   * An object representing an executed Task. It can be used
+   * to terminate a task.
+   *
+   * This interface is not intended to be implemented.
+   */
+  declare export type TaskExecution = {
+    /**
+     * The task that got started.
+     */
+    task: Task;
+
+    /**
+     * Terminates the task execution.
+     */
+    terminate(): void;
+  }
+
+  /**
+   * An event signaling the start of a task execution.
+   *
+   * This interface is not intended to be implemented.
+   */
+  declare export type TaskStartEvent = {
+    /**
+     * The task item representing the task that got started.
+     */
+    execution: TaskExecution;
+  }
+
+  /**
+   * An event signaling the end of an executed task.
+   *
+   * This interface is not intended to be implemented.
+   */
+  declare export type TaskEndEvent = {
+    /**
+     * The task item representing the task that finished.
+     */
+    execution: TaskExecution;
+  }
+
+  /**
+   * An event signaling the start of a process execution
+   * triggered through a task
+   */
+  declare export type TaskProcessStartEvent = {
+
+    /**
+     * The task execution for which the process got started.
+     */
+    execution: TaskExecution;
+
+    /**
+     * The underlying process id.
+     */
+    processId: number;
+  }
+
+  /**
+   * An event signaling the end of a process execution
+   * triggered through a task
+   */
+  declare export type TaskProcessEndEvent = {
+
+    /**
+     * The task execution for which the process got started.
+     */
+    execution: TaskExecution;
+
+    /**
+     * The process's exit code.
+     */
+    exitCode: number;
+  }
+
+  declare export type TaskFilter = {
+    /**
+     * The task version as used in the tasks.json file.
+     * The string support the package.json semver notation.
+     */
+    version?: string;
+
+    /**
+     * The task type to return;
+     */
+    type?: string;
+  }
+
+  /**
    * Namespace describing the environment the editor runs in.
    */
   declare export var env: {
@@ -5464,15 +5553,6 @@ declare module 'vscode' {
     +onDidChangeConfiguration: Event<ConfigurationChangeEvent>;
 
     /**
-     * Register a task provider.
-     *
-     * @param type The task kind type this provider is registered for.
-     * @param provider A task provider.
-     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-     */
-    registerTaskProvider(type: string, provider: TaskProvider): Disposable;
-
-    /**
      * Register a filesystem provider for a given scheme, e.g. `ftp`.
      *
      * There can only be one provider per scheme and an error is being thrown when a scheme
@@ -5585,6 +5665,68 @@ declare module 'vscode' {
      */
     updateWorkspaceFolders(start: number, deleteCount: ?number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
     /* END PROPOSED *********************************************************************************/
+  }
+
+  /**
+   * Namespace for tasks functionality.
+   */
+  declare export var tasks: {
+    /**
+     * Register a task provider.
+     *
+     * @param type The task kind type this provider is registered for.
+     * @param provider A task provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    registerTaskProvider(type: string, provider: TaskProvider): Disposable;
+
+    /**
+     * Fetches all tasks available in the systems. This includes tasks
+     * from `tasks.json` files as well as tasks from task providers
+     * contributed through extensions.
+     *
+     * @param filter a filter to filter the return tasks.
+     */
+    fetchTasks(filter?: TaskFilter): Thenable<Task[]>;
+
+    /**
+     * Executes a task that is managed by VS Code. The returned
+     * task execution can be used to terminate the task.
+     *
+     * @param task the task to execute
+     */
+    executeTask(task: Task): Thenable<TaskExecution>;
+
+    /**
+     * The currently active task executions or an empty array.
+     *
+     * @readonly
+     */
+    +taskExecutions: $ReadOnlyArray<TaskExecution>;
+
+    /**
+     * Fires when a task starts.
+     */
+    +onDidStartTask: Event<TaskStartEvent>;
+
+    /**
+     * Fires when a task ends.
+     */
+    +onDidEndTask: Event<TaskEndEvent>;
+
+    /**
+     * Fires when the underlying process has been started.
+     * This event will not fire for tasks that don't
+     * execute an underlying process.
+     */
+    +onDidStartTaskProcess: Event<TaskProcessStartEvent>;
+
+    /**
+     * Fires when the underlying process has ended.
+     * This event will not fire for tasks that don't
+     * execute an underlying process.
+     */
+    +onDidEndTaskProcess: Event<TaskProcessEndEvent>;
   }
 
   /**
