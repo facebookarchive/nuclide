@@ -66,6 +66,8 @@ in complex ways.
             0,
           ),
         );
+      } else {
+        this._console.outputLine(result);
       }
     } catch (err) {
       this._console.outputLine(err.message);
