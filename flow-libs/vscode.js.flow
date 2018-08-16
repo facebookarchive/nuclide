@@ -4170,7 +4170,7 @@ declare module 'vscode' {
    * A structure that defines a task kind in the system.
    * The value must be JSON-stringifyable.
    */
-  declare export interface TaskDefinition {
+  declare export type TaskDefinition = {
     /**
      * The task definition describing the task provided by an extension.
      * Usually a task provider defines more properties to identify
