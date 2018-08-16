@@ -283,14 +283,14 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
               .filter(t -> t.uniqueID() == arguments.threadId)
               .findFirst()
               .orElse(null);
-      List<JSONObject> stackFrames = new ArrayList<JSONObject>();
       try {
         List<com.sun.jdi.StackFrame> jdiStackFrames = thread.frames();
+        int totalFrames = jdiStackFrames.size();
         int endExclusive =
             arguments.levels != 0
                 ? Math.min(arguments.startFrame + arguments.levels, jdiStackFrames.size())
                 : jdiStackFrames.size();
-        stackFrames =
+        List<JSONObject> stackFrames =
             IntStream.range(arguments.startFrame, endExclusive)
                 .mapToObj(
                     stackFrameIndex -> {
@@ -336,14 +336,17 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
                 .filter(Objects::nonNull)
                 .map(StackFrame::toJSON)
                 .collect(Collectors.toList());
+        JSONObject body =
+            new JSONObject()
+                .put("stackFrames", new JSONArray(stackFrames))
+                .put("totalFrames", totalFrames);
+        response.setBody(body);
       } catch (Exception ex) {
-        Utils.logException("Error in trying to get stackframes:", ex);
+        Utils.logVerboseException("Error in trying to get stackframes:", ex);
+        response.setSuccess(false);
+        response.setMessage(ex.toString());
       }
-      JSONObject body =
-          new JSONObject()
-              .put("stackFrames", new JSONArray(stackFrames))
-              .put("totalFrames", stackFrames.size());
-      send(response.setBody(body));
+      send(response);
     } catch (VMDisconnectedException ex) {
       // sometimes we get stackTraceRequests after program execution is done
       // this seems to happen on small, trivial programs
