@@ -19,7 +19,7 @@ import type {
 import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
-import keytarWrapper from '../../commons-node/keytarWrapper';
+import keytarWrapper from 'nuclide-commons/keytarWrapper';
 import electron from 'electron';
 
 const CONFIG_DIR = 'nuclide-connections';
