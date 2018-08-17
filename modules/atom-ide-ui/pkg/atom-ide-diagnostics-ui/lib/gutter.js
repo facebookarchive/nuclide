@@ -66,9 +66,9 @@ const GUTTER_CSS_GROUPS = {
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
-const handleMouseEnterSpawnPopupEvents = new Subject();
+const handleSpawnPopupEvents = new Subject();
 
-const handleMouseEnterSpawnPopupEventsObservable = handleMouseEnterSpawnPopupEvents
+const SpawnPopupEvents = handleSpawnPopupEvents
   .switchMap(({messages, diagnosticUpdater, gutter, item}) => {
     return spawnPopup(messages, diagnosticUpdater, gutter, item)
       .let(
@@ -244,39 +244,45 @@ function createGutterItem(
   icon.className = `icon icon-${GroupUtils.getIcon(group)}`;
   item.appendChild(icon);
 
+  let spawnBlockDecorationOnClickEvents = Observable.empty();
+  if (messages.some(message => message.kind === 'review')) {
+    spawnBlockDecorationOnClickEvents = Observable.fromEvent(
+      item,
+      'click',
+    ).exhaustMap(() => {
+      return spawnBlock(messages).let(
+        completingSwitchMap((blockElement: HTMLElement) => {
+          // assumes first message is block
+          // this will change later when handling different types of messages
+          // at one line
+          const lineNumber = Math.max(
+            messages[0].range ? messages[0].range.start.row : 0,
+            0,
+          );
+          const marker = editor.markScreenPosition([lineNumber, 0]);
+          editor.decorateMarker(marker, {
+            type: 'block',
+            position: 'after',
+            item: blockElement,
+          });
+
+          return Observable.empty();
+        }),
+      );
+    });
+  }
+
   const disposable = new UniversalDisposable(
-    handleMouseEnterSpawnPopupEventsObservable.subscribe(),
+    SpawnPopupEvents.subscribe(),
     Observable.fromEvent(item, 'mouseenter').subscribe(() => {
-      handleMouseEnterSpawnPopupEvents.next({
+      handleSpawnPopupEvents.next({
         messages,
         diagnosticUpdater,
         gutter,
         item,
       });
     }),
-    Observable.fromEvent(item, 'click')
-      .exhaustMap(() => {
-        return spawnBlock(messages).let(
-          completingSwitchMap((blockElement: HTMLElement) => {
-            // assumes first message is block
-            // this will change later when handling different types of messages
-            // at one line
-            const lineNumber = Math.max(
-              messages[0].range ? messages[0].range.start.row : 0,
-              0,
-            );
-            const marker = editor.markScreenPosition([lineNumber, 0]);
-            editor.decorateMarker(marker, {
-              type: 'block',
-              position: 'after',
-              item: blockElement,
-            });
-
-            return Observable.empty();
-          }),
-        );
-      })
-      .subscribe(),
+    spawnBlockDecorationOnClickEvents.subscribe(),
   );
 
   return {
