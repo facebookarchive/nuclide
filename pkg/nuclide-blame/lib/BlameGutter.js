@@ -19,7 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {shell} from 'electron';
 import escapeHTML from 'escape-html';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {shortNameForAuthor} from '../../nuclide-vcs-log';
+import {getEmployeeIdentifierFromAuthorString} from '../../commons-node/fb-vcs-utils';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -324,12 +324,14 @@ class GutterElement extends React.Component<Props> {
     const opacity = 0.2 + 0.8 * alpha;
 
     if (isFirstLine) {
-      const unixname = shortNameForAuthor(revision.author);
+      const employeeIdentifier = getEmployeeIdentifierFromAuthorString(
+        revision.author,
+      );
       const tooltip = {
         title:
           escapeHTML(revision.title) +
           '<br />' +
-          escapeHTML(unixname) +
+          escapeHTML(employeeIdentifier) +
           ' &middot; ' +
           escapeHTML(revision.date.toDateString()),
         delay: 0,
@@ -345,9 +347,9 @@ class GutterElement extends React.Component<Props> {
             <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
           ) : null}
           {Avatar ? (
-            <Avatar size={16} employeeIdentifier={unixname} />
+            <Avatar size={16} employeeIdentifier={employeeIdentifier} />
           ) : (
-            unixname + ': '
+            employeeIdentifier + ': '
           )}
           <span>{revision.title}</span>
           <div style={{opacity}} className="nuclide-blame-border-age" />
