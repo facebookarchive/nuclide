@@ -95,16 +95,22 @@ export class BigDigClient {
   async createTunnel(
     localPort: number,
     remotePort: number,
-    isReverse: ?boolean = false,
-    useIPv4: ?boolean = false,
+    options: {
+      isReverse?: boolean,
+      useIPv4?: boolean,
+    } = {},
   ): Promise<Tunnel> {
-    if (!isReverse) {
-      return this._tunnelManager.createTunnel(localPort, remotePort, useIPv4);
+    if (!options.isReverse) {
+      return this._tunnelManager.createTunnel(
+        localPort,
+        remotePort,
+        options.useIPv4,
+      );
     } else {
       return this._tunnelManager.createReverseTunnel(
         localPort,
         remotePort,
-        useIPv4,
+        options.useIPv4,
       );
     }
   }

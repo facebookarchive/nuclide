@@ -205,12 +205,10 @@ export function requestTunnelEpic(
           );
 
           newTunnelPromise = bigDigClient
-            .createTunnel(
-              localTunnelHost.port,
-              remoteTunnelHost.port,
+            .createTunnel(localTunnelHost.port, remoteTunnelHost.port, {
               isReverse,
               useIPv4,
-            )
+            })
             .catch(error => {
               onOpen(error);
               store.dispatch(Actions.closeTunnel(tunnel, error));
