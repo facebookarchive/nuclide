@@ -48,6 +48,7 @@ import getDiagnosticDatatip from './getDiagnosticDatatip';
 import showActionsMenu from './showActionsMenu';
 import showAtomLinterWarning from './showAtomLinterWarning';
 import StatusBarTile from './ui/StatusBarTile';
+import ReactDOM from 'react-dom';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -449,6 +450,16 @@ function gutterConsumeDiagnosticUpdates(
   const subscriptions = new UniversalDisposable();
   subscriptions.add(
     atom.workspace.observeTextEditors((editor: TextEditor) => {
+      // blockDecorationContainer is unique per editor and will get cleaned up
+      // when editor destroys and diagnostics package deactivates
+      const blockDecorationContainer = document.createElement('div');
+      editor.onDidDestroy(() => {
+        ReactDOM.unmountComponentAtNode(blockDecorationContainer);
+      });
+      subscriptions.add(() => {
+        ReactDOM.unmountComponentAtNode(blockDecorationContainer);
+      });
+
       const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater)
         .finally(() => {
           subscriptions.remove(subscription);
@@ -458,7 +469,12 @@ function gutterConsumeDiagnosticUpdates(
           // the very act of destroying the editor can trigger diagnostic updates.
           // Thus this callback can still be triggered after the editor is destroyed.
           if (!editor.isDestroyed()) {
-            applyUpdateToEditor(editor, update, diagnosticUpdater);
+            applyUpdateToEditor(
+              editor,
+              update,
+              diagnosticUpdater,
+              blockDecorationContainer,
+            );
           }
         });
       subscriptions.add(subscription);

@@ -20,6 +20,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 import {Range} from 'atom';
 import invariant from 'assert';
+import {Button} from 'nuclide-commons-ui/Button';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -29,7 +30,7 @@ import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-locat
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons/analytics';
 import {Observable, Subject} from 'rxjs';
-import DiagnosticsBlock from './ui/DiagnosticsBlock';
+import BlockDecoration from 'nuclide-commons-ui/BlockDecoration';
 import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
 import {makeDatatipComponent} from './getDiagnosticDatatip.js';
@@ -67,6 +68,7 @@ const GUTTER_CSS_GROUPS = {
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 const handleSpawnPopupEvents = new Subject();
+const openedMessageIds = new Set();
 
 const SpawnPopupEvents = handleSpawnPopupEvents
   .switchMap(({messages, diagnosticUpdater, gutter, item}) => {
@@ -97,6 +99,7 @@ export function applyUpdateToEditor(
   editor: TextEditor,
   update: DiagnosticMessages,
   diagnosticUpdater: DiagnosticUpdater,
+  blockDecorationContainer: HTMLElement,
 ): void {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
@@ -201,6 +204,9 @@ export function applyUpdateToEditor(
     }
   }
 
+  // create diagnostics messages with block decoration and maintain their openness
+  createBlockDecorations(editor, rowToMessage, blockDecorationContainer);
+
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
   for (const [row, messages] of rowToMessage.entries()) {
     // This marker adds some UI to the gutter.
@@ -228,6 +234,50 @@ export function applyUpdateToEditor(
   }
 }
 
+function createBlockDecorations(
+  editor: TextEditor,
+  rowToMessage: Map<number, Array<DiagnosticMessage>>,
+  blockDecorationContainer: HTMLElement,
+): void {
+  const blockRowToMessages: Map<number, Array<DiagnosticMessage>> = new Map();
+  rowToMessage.forEach((messages, row) => {
+    if (
+      messages.some(
+        message =>
+          message.kind === 'review' &&
+          message.id != null &&
+          openedMessageIds != null &&
+          openedMessageIds.has(message.id),
+      )
+    ) {
+      blockRowToMessages.set(row, messages);
+    }
+  });
+
+  const fragment = (
+    <React.Fragment>
+      {Array.from(blockRowToMessages).map(([row, messages]) => {
+        return (
+          <BlockDecoration
+            range={new Range([row, 0], [row, 0])}
+            editor={editor}
+            key={messages[0].id}>
+            <Button onClick={() => removeOpenMessageId(messages)}>Close</Button>
+            {messages.map(message => {
+              if (!message.getBlockComponent) {
+                return null;
+              }
+              const Component = message.getBlockComponent();
+              return <Component key={message.id} />;
+            })}
+          </BlockDecoration>
+        );
+      })}
+    </React.Fragment>
+  );
+  ReactDOM.render(fragment, blockDecorationContainer);
+}
+
 function createGutterItem(
   editor: TextEditor,
   messages: Array<DiagnosticMessage>,
@@ -249,26 +299,6 @@ function createGutterItem(
   icon.className = `icon icon-${GroupUtils.getIcon(group)}`;
   item.appendChild(icon);
 
-  let spawnBlockDecorationOnClickEvents = Observable.empty();
-  const handleSpawnBlockDecorationEvent = new Subject();
-  if (messages.some(message => message.kind === 'review')) {
-    spawnBlockDecorationOnClickEvents = handleSpawnBlockDecorationEvent.exhaustMap(
-      () => {
-        const marker = editor.markScreenPosition([row, 0]);
-        return spawnBlock(messages, marker).let(
-          completingSwitchMap((blockElement: HTMLElement) => {
-            editor.decorateMarker(marker, {
-              type: 'block',
-              position: 'after',
-              item: blockElement,
-            });
-            return Observable.empty();
-          }),
-        );
-      },
-    );
-  }
-
   const disposable = new UniversalDisposable(
     SpawnPopupEvents.subscribe(),
     Observable.fromEvent(item, 'mouseenter').subscribe(() => {
@@ -279,9 +309,8 @@ function createGutterItem(
         item,
       });
     }),
-    spawnBlockDecorationOnClickEvents.subscribe(),
     Observable.fromEvent(item, 'click').subscribe(() => {
-      handleSpawnBlockDecorationEvent.next({messages});
+      addOpenMessageId(messages);
     }),
   );
 
@@ -292,23 +321,19 @@ function createGutterItem(
     },
   };
 }
-
-function spawnBlock(
-  messages: Array<DiagnosticMessage>,
-  marker: atom$Marker,
-): Observable<HTMLElement> {
-  return Observable.create(observer => {
-    function _onCloseBlock() {
-      marker.destroy();
-      observer.complete();
+function addOpenMessageId(messages: Array<DiagnosticMessage>) {
+  messages.forEach(message => {
+    if (message.id != null) {
+      openedMessageIds.add(message.id);
     }
+  });
+}
 
-    const hostElement = document.createElement('div');
-    const blockElement = (
-      <DiagnosticsBlock messages={messages} onClose={_onCloseBlock} />
-    );
-    ReactDOM.render(blockElement, hostElement);
-    observer.next(hostElement);
+function removeOpenMessageId(messages: Array<DiagnosticMessage>) {
+  messages.forEach(message => {
+    if (message.id != null) {
+      openedMessageIds.delete(message.id);
+    }
   });
 }
 

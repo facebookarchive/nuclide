@@ -164,6 +164,7 @@ export function linterMessageV2ToDiagnosticMessage(
     });
   }
   return {
+    id: msg.id,
     // flowlint-next-line sketchy-null-string:off
     providerName: msg.linterName || providerName,
     type: convertLinterType(msg.severity),

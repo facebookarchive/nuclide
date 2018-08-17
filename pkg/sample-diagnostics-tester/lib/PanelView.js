@@ -114,6 +114,7 @@ class BlockComponent extends React.Component<{}> {
     return (
       <div>
         <h1>Hello! This is a DOM diagnostic message🐲</h1>
+        <textarea />
       </div>
     );
   }

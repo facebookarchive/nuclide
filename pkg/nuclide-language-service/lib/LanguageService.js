@@ -99,6 +99,7 @@ export type AutocompleteRequest = {|
 
 // A (RPC-able) subset of DiagnosticMessage.
 export type FileDiagnosticMessage = {|
+  id?: string,
   kind?: DiagnosticMessageKind,
   providerName: string,
   type: DiagnosticMessageType,
