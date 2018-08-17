@@ -18,11 +18,11 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {shell} from 'electron';
 import escapeHTML from 'escape-html';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getEmployeeIdentifierFromAuthorString} from '../../commons-node/fb-vcs-utils';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {shortNameForAuthor} from '../../nuclide-vcs-log';
 
 const BLAME_DECORATION_CLASS = 'blame-decoration';
 
@@ -32,6 +32,15 @@ try {
   Avatar = require('../../nuclide-ui/fb-Avatar').default;
 } catch (err) {
   Avatar = null;
+}
+
+let getEmployeeIdentifierFromAuthorString: string => string;
+try {
+  // $FlowFB
+  getEmployeeIdentifierFromAuthorString = require('../../commons-node/fb-vcs-utils')
+    .getEmployeeIdentifierFromAuthorString;
+} catch (err) {
+  getEmployeeIdentifierFromAuthorString = shortNameForAuthor;
 }
 
 function getHash(revision: ?RevisionInfo): ?string {
