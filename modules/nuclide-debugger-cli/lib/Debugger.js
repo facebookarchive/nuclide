@@ -315,15 +315,25 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async stepIn(): Promise<void> {
-    await this._ensureDebugSession().stepIn({
-      threadId: this.getActiveThread().id(),
-    });
+    try {
+      await this._ensureDebugSession().stepIn({
+        threadId: this.getActiveThread().id(),
+      });
+    } catch (error) {
+      this._console.startInput();
+      throw error;
+    }
   }
 
   async stepOver(): Promise<void> {
-    await this._ensureDebugSession().next({
-      threadId: this.getActiveThread().id(),
-    });
+    try {
+      await this._ensureDebugSession().next({
+        threadId: this.getActiveThread().id(),
+      });
+    } catch (error) {
+      this._console.startInput();
+      throw error;
+    }
   }
 
   async continue(): Promise<void> {
