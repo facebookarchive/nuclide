@@ -12,6 +12,7 @@
 import fs from 'fs';
 import invariant from 'assert';
 import once from './once';
+import semver from 'semver';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -25,6 +26,17 @@ export const OS_TYPE = {
   WIN64: 'win64',
   LINUX: 'linux',
   OSX: 'darwin',
+};
+
+const getMinorNuclideVersion = once(() => {
+  const nuclideVersion = getNuclideVersion();
+  const semVersion = semver.parse(nuclideVersion);
+  invariant(semVersion != null);
+  return `${semVersion.major}.${semVersion.minor}`;
+});
+
+export const NUCLIDE_VERSION_HEADER = {
+  'Nuclide-Version': getMinorNuclideVersion(),
 };
 
 // Prior to Atom v1.7.0, `atom.inSpecMode` had a chance of performing an IPC call that could be
