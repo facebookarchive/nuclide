@@ -18,6 +18,7 @@ import type {
   CodeAction,
   CodeActionFetcher,
 } from '../../atom-ide-code-actions/lib/types';
+import * as React from 'react';
 
 export type UiConfig = Array<{providerName: string, settings: Array<string>}>;
 
@@ -106,6 +107,7 @@ export type DiagnosticMessage = {|
   // that it is out of date. TODO(matthewwithanm) implement this UI.
   stale?: boolean,
   code?: number,
+  getBlockComponent?: () => React.ComponentType<any>,
 |};
 
 export type DiagnosticMessages = {
@@ -191,6 +193,7 @@ export type LinterMessageV2 = {
   linterName?: string,
   // custom extension
   kind?: DiagnosticMessageKind,
+  getBlockComponent?: () => React.ComponentType<any>,
 };
 
 export type LinterMessage = LinterMessageV1 | LinterMessageV2;

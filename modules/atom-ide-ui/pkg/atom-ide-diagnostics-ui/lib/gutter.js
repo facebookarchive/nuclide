@@ -29,6 +29,7 @@ import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-locat
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons/analytics';
 import {Observable, Subject} from 'rxjs';
+import DiagnosticsBlock from './ui/DiagnosticsBlock';
 import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
 import {makeDatatipComponent} from './getDiagnosticDatatip.js';
@@ -201,6 +202,7 @@ export function applyUpdateToEditor(
   for (const [row, messages] of rowToMessage.entries()) {
     // This marker adds some UI to the gutter.
     const {item, dispose} = createGutterItem(
+      editor,
       messages,
       diagnosticUpdater,
       gutter,
@@ -223,6 +225,7 @@ export function applyUpdateToEditor(
 }
 
 function createGutterItem(
+  editor: TextEditor,
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
   gutter: atom$Gutter,
@@ -251,6 +254,29 @@ function createGutterItem(
         item,
       });
     }),
+    Observable.fromEvent(item, 'click')
+      .exhaustMap(() => {
+        return spawnBlock(messages).let(
+          completingSwitchMap((blockElement: HTMLElement) => {
+            // assumes first message is block
+            // this will change later when handling different types of messages
+            // at one line
+            const lineNumber = Math.max(
+              messages[0].range ? messages[0].range.start.row : 0,
+              0,
+            );
+            const marker = editor.markScreenPosition([lineNumber, 0]);
+            editor.decorateMarker(marker, {
+              type: 'block',
+              position: 'after',
+              item: blockElement,
+            });
+
+            return Observable.empty();
+          }),
+        );
+      })
+      .subscribe(),
   );
 
   return {
@@ -261,6 +287,22 @@ function createGutterItem(
   };
 }
 
+function spawnBlock(
+  messages: Array<DiagnosticMessage>,
+): Observable<HTMLElement> {
+  return Observable.create(observer => {
+    const hostElement = document.createElement('div');
+    const block = <DiagnosticsBlock messages={messages} />;
+    ReactDOM.render(block, hostElement);
+    observer.next(hostElement);
+
+    return () => {
+      ReactDOM.unmountComponentAtNode(hostElement);
+      invariant(hostElement.parentNode != null);
+      hostElement.parentNode.removeChild(hostElement);
+    };
+  });
+}
 function spawnPopup(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,

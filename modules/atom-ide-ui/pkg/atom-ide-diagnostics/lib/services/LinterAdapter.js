@@ -175,6 +175,7 @@ export function linterMessageV2ToDiagnosticMessage(
     trace,
     fix,
     actions,
+    getBlockComponent: msg.getBlockComponent,
   };
 }
 

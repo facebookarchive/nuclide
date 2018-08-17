@@ -13,6 +13,11 @@ import type {LinterMessageV2} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject, ReplaySubject} from 'rxjs';
+import * as React from 'react';
+
+export type addMessageOption = {
+  getBlockComponent?: () => React.ComponentType<any>,
+};
 
 export default class PackageModel {
   _disposed = new ReplaySubject(1);
@@ -23,7 +28,12 @@ export default class PackageModel {
     this._disposed.next();
   }
 
-  addMessages = (severity: 'error' | 'warning' | 'info', count: number = 1) => {
+  addMessages = (
+    severity: 'error' | 'warning' | 'info',
+    count: number = 1,
+    kind?: 'review',
+    option?: addMessageOption,
+  ) => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       atom.notifications.addError("There's no active text editor.");
@@ -43,10 +53,12 @@ export default class PackageModel {
           file: path,
           position,
         },
+        kind,
         excerpt: 'Here is an excerpt of the error',
-        severity,
         description:
           'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        severity,
+        getBlockComponent: option ? option.getBlockComponent : null,
       });
     }
     this._messages.next([...this._messages.getValue(), ...newMessages]);

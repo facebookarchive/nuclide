@@ -111,6 +111,7 @@ export type FileDiagnosticMessage = {|
   actions?: void, // Help Flow believe this is a subtype.
   stale?: boolean,
   code?: number,
+  getBlockComponent?: any, // Help Flow believe this is a subtype.
 |};
 
 // Ensure that this is actually a subset.

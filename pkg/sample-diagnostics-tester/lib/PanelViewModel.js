@@ -12,10 +12,13 @@
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import PanelView from './PanelView';
 import * as React from 'react';
+import type {addMessageOption} from './PackageModel';
 
 export type AddMessagesType = (
   severity: 'error' | 'warning' | 'info',
   count: number,
+  kind?: 'review',
+  option?: addMessageOption,
 ) => mixed;
 export type ClearType = () => mixed;
 
