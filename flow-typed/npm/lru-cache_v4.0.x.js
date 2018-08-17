@@ -12,7 +12,8 @@ declare module 'lru-cache' {
     has: (key: K) => boolean;
     dump: () => Array<{k: K, v: V}>;
     load: (Array<{k: K, v: V}>) => void;
-    itemCount: number,
+    itemCount: number;
+    forEach: (value: V, key: K, cacheInstance: LRUCache<K, V>) => void;
     // TODO add the rest of the things documented at https://www.npmjs.com/package/lru-cache
   };
 
