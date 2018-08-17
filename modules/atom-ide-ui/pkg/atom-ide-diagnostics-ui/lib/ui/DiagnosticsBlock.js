@@ -18,6 +18,7 @@ import analytics from 'nuclide-commons/analytics';
 
 type DiagnosticsBlockProps = {
   messages: Array<DiagnosticMessage>,
+  onClose: () => void,
 };
 
 export default class DiagnosticsBlock extends React.Component<
@@ -31,10 +32,10 @@ export default class DiagnosticsBlock extends React.Component<
   }
 
   render() {
-    const {messages} = this.props;
+    const {messages, onClose} = this.props;
     return (
       <div className="diagnostics-block">
-        <Button>Close</Button>
+        <Button onClick={onClose}>Close</Button>
         {messages.map((message, index) => {
           if (message.getBlockComponent) {
             const Component = message.getBlockComponent();

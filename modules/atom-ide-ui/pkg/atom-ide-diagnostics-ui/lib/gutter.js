@@ -82,6 +82,9 @@ const SpawnPopupEvents = handleSpawnPopupEvents
             observableFromSubscribeFunction(cb =>
               atom.workspace.onDidChangeActivePaneItem(cb),
             ).mapTo(false),
+            Observable.fromEvent(item, 'click')
+              .filter(() => messages.some(message => message.kind === 'review'))
+              .mapTo(false),
           );
         }),
       )
@@ -206,6 +209,7 @@ export function applyUpdateToEditor(
       messages,
       diagnosticUpdater,
       gutter,
+      row,
     );
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
@@ -229,6 +233,7 @@ function createGutterItem(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
   gutter: atom$Gutter,
+  row: number,
 ): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
   const messageGroups = new Set();
@@ -250,22 +255,15 @@ function createGutterItem(
       item,
       'click',
     ).exhaustMap(() => {
-      return spawnBlock(messages).let(
+      const marker = editor.markScreenPosition([row, 0]);
+      const onDestroyMarker = () => marker.destroy();
+      return spawnBlock(messages, onDestroyMarker).let(
         completingSwitchMap((blockElement: HTMLElement) => {
-          // assumes first message is block
-          // this will change later when handling different types of messages
-          // at one line
-          const lineNumber = Math.max(
-            messages[0].range ? messages[0].range.start.row : 0,
-            0,
-          );
-          const marker = editor.markScreenPosition([lineNumber, 0]);
           editor.decorateMarker(marker, {
             type: 'block',
             position: 'after',
             item: blockElement,
           });
-
           return Observable.empty();
         }),
       );
@@ -295,20 +293,23 @@ function createGutterItem(
 
 function spawnBlock(
   messages: Array<DiagnosticMessage>,
+  onDestroyMarker: () => void,
 ): Observable<HTMLElement> {
   return Observable.create(observer => {
-    const hostElement = document.createElement('div');
-    const block = <DiagnosticsBlock messages={messages} />;
-    ReactDOM.render(block, hostElement);
-    observer.next(hostElement);
+    function _onCloseBlock() {
+      onDestroyMarker();
+      observer.complete();
+    }
 
-    return () => {
-      ReactDOM.unmountComponentAtNode(hostElement);
-      invariant(hostElement.parentNode != null);
-      hostElement.parentNode.removeChild(hostElement);
-    };
+    const hostElement = document.createElement('div');
+    const blockElement = (
+      <DiagnosticsBlock messages={messages} onClose={_onCloseBlock} />
+    );
+    ReactDOM.render(blockElement, hostElement);
+    observer.next(hostElement);
   });
 }
+
 function spawnPopup(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
