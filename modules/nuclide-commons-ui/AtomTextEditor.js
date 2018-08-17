@@ -96,7 +96,7 @@ type Props = {
   grammar?: ?Object,
   // these are processed in setupTextEditor below
   /* eslint-disable react/no-unused-prop-types */
-  onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
+  onDidTextBufferChange?: ?(event: atom$AggregatedTextEditEvent) => mixed,
   path?: string,
   placeholderText?: string,
   syncTextContents: boolean,
