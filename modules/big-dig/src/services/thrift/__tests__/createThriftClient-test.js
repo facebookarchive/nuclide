@@ -50,34 +50,34 @@ describe('createThriftClient', () => {
       .mockImplementationOnce(() => mockedConnection);
   });
 
-  it('cannot get a closed client', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('cannot get a closed client', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     client.close();
     expect(() => client.getClient()).toThrow('Cannot get a closed client');
   });
 
-  it('successfully initialize a client', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('successfully initialize a client', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     expect(client.getClient()).toBe(mockedClient);
   });
 
-  it('cannot get a client after connection end', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('cannot get a client after connection end', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     mockedConnection.emit('close');
     expect(() => client.getClient()).toThrow(
       'Cannot get a client because connection is closed',
     );
   });
 
-  it('successfully close a client', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('successfully close a client', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     client.close();
     client.close();
     expect(mockedConnection.end).toHaveBeenCalledTimes(1);
   });
 
-  it('fire connection end handler while manually close connection', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('fire connection end handler while manually close connection', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     const clientClosedHandler = jest.fn();
     const clientBrokenHandler = jest.fn();
     client.onClientClose(clientClosedHandler);
@@ -88,8 +88,8 @@ describe('createThriftClient', () => {
     expect(clientBrokenHandler).not.toHaveBeenCalled();
   });
 
-  it('fire connection close handler while connection is broken', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('fire connection close handler while connection is broken', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     const clientClosedHandler = jest.fn();
     const clientBrokenHandler = jest.fn();
     client.onClientClose(clientClosedHandler);
@@ -99,8 +99,8 @@ describe('createThriftClient', () => {
     expect(clientBrokenHandler).toHaveBeenCalledTimes(1);
   });
 
-  it('handle unsubscription to connection end event', async () => {
-    const client = await createThriftClient(mockServiceConfig, mockPort);
+  it('handle unsubscription to connection end event', () => {
+    const client = createThriftClient(mockServiceConfig, mockPort);
     const fn = jest.fn();
     const subscription = client.onClientClose(fn);
     subscription.unsubscribe();

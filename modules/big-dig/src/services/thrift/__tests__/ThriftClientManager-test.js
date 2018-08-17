@@ -155,8 +155,8 @@ describe('ThriftClientManager', () => {
     mockClientServerCommunication(clientMessage, serverMessage);
     // mock failed to create tunnel
     const mockedFailureMessage = 'failed to create thrift client';
-    getMock(createThriftClient).mockImplementation(async (...args) => {
-      return Promise.reject(new Error(mockedFailureMessage));
+    getMock(createThriftClient).mockImplementation((...args) => {
+      throw new Error(mockedFailureMessage);
     });
     manager = new ThriftClientManager(mockedTransport, mockedTunnelManager);
     await expect(

@@ -86,10 +86,10 @@ export class ThriftClientClass {
   }
 }
 
-export async function createThriftClient(
+export function createThriftClient(
   serviceConfig: ThriftServiceConfig,
   port: number,
-): Promise<ThriftClient> {
+): ThriftClient {
   const connection = thrift.createConnection('localhost', port, {
     transport: getTransport(serviceConfig),
     protocol: getProtocol(serviceConfig),
