@@ -43,6 +43,12 @@ export default class EnterCode implements Command {
   }
 
   async execute(): Promise<void> {
+    if (!this._debugger.supportsCodeBlocks()) {
+      this._console.outputLine(
+        'This debug adapter does not support interpreted code.',
+      );
+      return;
+    }
     this._console.output(
       "Enter code, end with a single dot '.'. Use ctrl+c to abort.\n",
     );

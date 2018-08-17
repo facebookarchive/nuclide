@@ -36,6 +36,8 @@ export interface DebugAdapter {
   // if not null, the thread which should be used for user-initiated pause
   // if null, the first enumerated thread from the target process will be used
   +asyncStopThread: ?number;
+  // whether or not the adapter handles interpreted code blocks via evaluation
+  +supportsCodeBlocks: boolean;
   transformLaunchArguments(
     args: ?LaunchRequestArguments,
   ): LaunchRequestArguments;

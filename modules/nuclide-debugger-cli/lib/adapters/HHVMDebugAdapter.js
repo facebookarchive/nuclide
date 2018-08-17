@@ -40,6 +40,7 @@ export default class HHVMDebugAdapter implements DebugAdapter {
   muteOutputCategories: Set<string> = new Set();
   // for pause, use 0 which is the hhvm dummy thread
   asyncStopThread: ?number = 0;
+  supportsCodeBlocks: boolean = true;
 
   _includedOptions: Set<string> = new Set();
 

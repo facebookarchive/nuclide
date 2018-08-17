@@ -70,4 +70,5 @@ export interface DebuggerInterface {
   evaluateExpression(
     expression: string,
   ): Promise<DebugProtocol.EvaluateResponse>;
+  supportsCodeBlocks(): boolean;
 }

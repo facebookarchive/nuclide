@@ -729,6 +729,13 @@ export default class Debugger implements DebuggerInterface {
     return session.evaluate(args);
   }
 
+  supportsCodeBlocks(): boolean {
+    if (this._adapter == null) {
+      return false;
+    }
+    return this._adapter.adapter.supportsCodeBlocks;
+  }
+
   async createSession(adapter: ParsedVSAdapter): Promise<void> {
     this._console.stopInput();
 

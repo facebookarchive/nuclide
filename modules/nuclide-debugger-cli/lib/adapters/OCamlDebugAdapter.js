@@ -33,6 +33,7 @@ export default class OCamlDebugAdapter implements DebugAdapter {
   customArguments: Map<string, CustomArgumentType> = new Map();
   muteOutputCategories: Set<string> = new Set();
   asyncStopThread: ?number = null;
+  supportsCodeBlocks: boolean = false;
 
   _includedOptions: Set<string> = new Set();
 
