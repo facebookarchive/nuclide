@@ -250,24 +250,23 @@ function createGutterItem(
   item.appendChild(icon);
 
   let spawnBlockDecorationOnClickEvents = Observable.empty();
+  const handleSpawnBlockDecorationEvent = new Subject();
   if (messages.some(message => message.kind === 'review')) {
-    spawnBlockDecorationOnClickEvents = Observable.fromEvent(
-      item,
-      'click',
-    ).exhaustMap(() => {
-      const marker = editor.markScreenPosition([row, 0]);
-      const onDestroyMarker = () => marker.destroy();
-      return spawnBlock(messages, onDestroyMarker).let(
-        completingSwitchMap((blockElement: HTMLElement) => {
-          editor.decorateMarker(marker, {
-            type: 'block',
-            position: 'after',
-            item: blockElement,
-          });
-          return Observable.empty();
-        }),
-      );
-    });
+    spawnBlockDecorationOnClickEvents = handleSpawnBlockDecorationEvent.exhaustMap(
+      () => {
+        const marker = editor.markScreenPosition([row, 0]);
+        return spawnBlock(messages, marker).let(
+          completingSwitchMap((blockElement: HTMLElement) => {
+            editor.decorateMarker(marker, {
+              type: 'block',
+              position: 'after',
+              item: blockElement,
+            });
+            return Observable.empty();
+          }),
+        );
+      },
+    );
   }
 
   const disposable = new UniversalDisposable(
@@ -281,6 +280,9 @@ function createGutterItem(
       });
     }),
     spawnBlockDecorationOnClickEvents.subscribe(),
+    Observable.fromEvent(item, 'click').subscribe(() => {
+      handleSpawnBlockDecorationEvent.next({messages});
+    }),
   );
 
   return {
@@ -293,11 +295,11 @@ function createGutterItem(
 
 function spawnBlock(
   messages: Array<DiagnosticMessage>,
-  onDestroyMarker: () => void,
+  marker: atom$Marker,
 ): Observable<HTMLElement> {
   return Observable.create(observer => {
     function _onCloseBlock() {
-      onDestroyMarker();
+      marker.destroy();
       observer.complete();
     }
 
