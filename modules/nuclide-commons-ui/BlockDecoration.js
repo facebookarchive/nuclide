@@ -40,7 +40,7 @@ export default class BlockDecoration extends React.Component<
   componentDidUpdate(prevProps: BlockDecorationProps) {
     if (prevProps.editor !== this.props.editor) {
       this._createMarker();
-    } else if (prevProps.range.isEqual(this.props.range)) {
+    } else if (!prevProps.range.isEqual(this.props.range)) {
       this._marker.setBufferRange(this.props.range);
     }
   }

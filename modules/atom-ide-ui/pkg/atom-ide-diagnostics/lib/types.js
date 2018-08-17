@@ -91,7 +91,7 @@ export type DiagnosticAction = {
 };
 
 export type DiagnosticMessage = {|
-  id?: string,
+  id?: ?string,
   kind?: DiagnosticMessageKind,
   providerName: string,
   type: DiagnosticMessageType, // TODO: Rename to severity.

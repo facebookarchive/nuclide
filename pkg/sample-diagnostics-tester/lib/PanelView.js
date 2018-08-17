@@ -85,7 +85,7 @@ class Group extends React.Component<{
               return BlockComponent;
             },
           }
-        : {};
+        : null;
     this.props.addMessages(severity, n, kind, option);
   };
 

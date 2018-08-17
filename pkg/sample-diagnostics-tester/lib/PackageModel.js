@@ -33,7 +33,7 @@ export default class PackageModel {
     severity: 'error' | 'warning' | 'info',
     count: number = 1,
     kind?: 'review',
-    option?: addMessageOption,
+    option?: ?addMessageOption,
   ) => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -50,7 +50,7 @@ export default class PackageModel {
     const newMessages = [];
     for (let i = 0; i < count; i++) {
       newMessages.push({
-        id: uuid.v4(),
+        id: option ? uuid.v4() : null,
         location: {
           file: path,
           position,

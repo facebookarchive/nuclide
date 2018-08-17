@@ -25,7 +25,7 @@ import type {
 } from '../../atom-ide-diagnostics/lib/types';
 
 import {areSetsEqual} from 'nuclide-commons/collection';
-import {fastDebounce} from 'nuclide-commons/observable';
+import {fastDebounce, diffSets} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import analytics from 'nuclide-commons/analytics';
 import AsyncStorage from 'idb-keyval';
@@ -57,10 +57,15 @@ type ActivationState = {|
   filterByActiveTextEditor: boolean,
 |};
 
-type DiagnosticsState = {|
+export type DiagnosticsState = {|
   ...ActivationState,
+  ...OpenBlockDecorationState,
   diagnosticUpdater: ?DiagnosticUpdater,
   showNuxContent: boolean,
+|};
+
+type OpenBlockDecorationState = {|
+  openedMessageIds: Set<string>,
 |};
 
 const NUX_ASYNC_STORAGE_KEY = 'nuclide_diagnostics_nux_shown';
@@ -79,6 +84,7 @@ class Activation {
       filterByActiveTextEditor:
         idx(state, _ => _.filterByActiveTextEditor) === true,
       diagnosticUpdater: null,
+      openedMessageIds: new Set(),
     });
     this._subscriptions = new UniversalDisposable(
       this.registerOpenerAndCommand(),
@@ -119,8 +125,10 @@ class Activation {
 
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
-    this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
+    this._subscriptions.add(
+      this._gutterConsumeDiagnosticUpdates(diagnosticUpdater),
+    );
     // Currently, the DiagnosticsView is designed to work with only one DiagnosticUpdater.
     if (this._model.state.diagnosticUpdater != null) {
       return new UniversalDisposable();
@@ -128,6 +136,9 @@ class Activation {
     this._model.setState({diagnosticUpdater});
     const atomCommandsDisposable = addAtomCommands(diagnosticUpdater);
     this._subscriptions.add(atomCommandsDisposable);
+    this._subscriptions.add(
+      this._observeDiagnosticsAndCleanUpOpenedMessageIds(),
+    );
     this._subscriptions.add(
       // Track diagnostics for all active editors.
       atom.workspace.observeTextEditors((editor: TextEditor) => {
@@ -185,6 +196,39 @@ class Activation {
     return {
       filterByActiveTextEditor,
     };
+  }
+
+  _observeDiagnosticsAndCleanUpOpenedMessageIds(): IDisposable {
+    const packageStates = this._model.toObservable();
+
+    const updaters = packageStates
+      .map(state => state.diagnosticUpdater)
+      .distinctUntilChanged();
+
+    const diagnosticMessageIdsStream = updaters
+      .switchMap(
+        updater =>
+          updater == null
+            ? Observable.of([])
+            : observableFromSubscribeFunction(updater.observeMessages),
+      )
+      .map(diagnostics => {
+        const messageIds = diagnostics
+          .map(message => message.id)
+          .filter(Boolean);
+        return new Set(messageIds);
+      })
+      .let(diffSets());
+
+    return new UniversalDisposable(
+      diagnosticMessageIdsStream.subscribe(({_, removed}) => {
+        const newOpenedMessageIds = new Set(this._model.state.openedMessageIds);
+        removed.forEach(msgId => {
+          newOpenedMessageIds.delete(msgId);
+        });
+        this._model.setState({openedMessageIds: newOpenedMessageIds});
+      }),
+    );
   }
 
   _observeDiagnosticsAndOfferTable(): IDisposable {
@@ -442,45 +486,62 @@ class Activation {
       message => message.range != null && message.range.containsPoint(position),
     );
   }
-}
 
-function gutterConsumeDiagnosticUpdates(
-  diagnosticUpdater: DiagnosticUpdater,
-): IDisposable {
-  const subscriptions = new UniversalDisposable();
-  subscriptions.add(
-    atom.workspace.observeTextEditors((editor: TextEditor) => {
-      // blockDecorationContainer is unique per editor and will get cleaned up
-      // when editor destroys and diagnostics package deactivates
-      const blockDecorationContainer = document.createElement('div');
-      editor.onDidDestroy(() => {
-        ReactDOM.unmountComponentAtNode(blockDecorationContainer);
-      });
-      subscriptions.add(() => {
-        ReactDOM.unmountComponentAtNode(blockDecorationContainer);
-      });
+  _gutterConsumeDiagnosticUpdates(
+    diagnosticUpdater: DiagnosticUpdater,
+  ): IDisposable {
+    const subscriptions = new UniversalDisposable();
+    const updateOpenedMessageIds = this._model
+      .toObservable()
+      .map(state => state.openedMessageIds)
+      .distinctUntilChanged();
 
-      const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater)
-        .finally(() => {
-          subscriptions.remove(subscription);
-        })
-        .subscribe(update => {
-          // Although the subscription should be cleaned up on editor destroy,
-          // the very act of destroying the editor can trigger diagnostic updates.
-          // Thus this callback can still be triggered after the editor is destroyed.
-          if (!editor.isDestroyed()) {
-            applyUpdateToEditor(
-              editor,
-              update,
-              diagnosticUpdater,
-              blockDecorationContainer,
-            );
-          }
+    this._subscriptions.add(updateOpenedMessageIds.subscribe());
+
+    const setOpenedMessageIds = openedMessageIds => {
+      this._model.setState({openedMessageIds});
+    };
+    subscriptions.add(
+      atom.workspace.observeTextEditors((editor: TextEditor) => {
+        // blockDecorationContainer is unique per editor and will get cleaned up
+        // when editor destroys and diagnostics package deactivates
+        const blockDecorationContainer = document.createElement('div');
+        editor.onDidDestroy(() => {
+          ReactDOM.unmountComponentAtNode(blockDecorationContainer);
         });
-      subscriptions.add(subscription);
-    }),
-  );
-  return subscriptions;
+        subscriptions.add(() => {
+          ReactDOM.unmountComponentAtNode(blockDecorationContainer);
+        });
+
+        const subscription = Observable.combineLatest(
+          updateOpenedMessageIds,
+          getEditorDiagnosticUpdates(editor, diagnosticUpdater),
+        )
+          .finally(() => {
+            subscriptions.remove(subscription);
+          })
+          .subscribe(
+            ([openedMessageIds: Set<string>, update: DiagnosticMessages]) => {
+              // Although the subscription should be cleaned up on editor destroy,
+              // the very act of destroying the editor can trigger diagnostic updates.
+              // Thus this callback can still be triggered after the editor is destroyed.
+              if (!editor.isDestroyed()) {
+                applyUpdateToEditor(
+                  editor,
+                  update,
+                  diagnosticUpdater,
+                  blockDecorationContainer,
+                  openedMessageIds,
+                  setOpenedMessageIds,
+                );
+              }
+            },
+          );
+        subscriptions.add(subscription);
+      }),
+    );
+    return subscriptions;
+  }
 }
 
 function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): IDisposable {

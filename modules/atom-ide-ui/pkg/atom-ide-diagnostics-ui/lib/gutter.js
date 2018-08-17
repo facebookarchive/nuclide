@@ -68,7 +68,6 @@ const GUTTER_CSS_GROUPS = {
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 const handleSpawnPopupEvents = new Subject();
-const openedMessageIds = new Set();
 
 const SpawnPopupEvents = handleSpawnPopupEvents
   .switchMap(({messages, diagnosticUpdater, gutter, item}) => {
@@ -100,6 +99,8 @@ export function applyUpdateToEditor(
   update: DiagnosticMessages,
   diagnosticUpdater: DiagnosticUpdater,
   blockDecorationContainer: HTMLElement,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
 ): void {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
@@ -205,7 +206,13 @@ export function applyUpdateToEditor(
   }
 
   // create diagnostics messages with block decoration and maintain their openness
-  createBlockDecorations(editor, rowToMessage, blockDecorationContainer);
+  createBlockDecorations(
+    editor,
+    rowToMessage,
+    blockDecorationContainer,
+    openedMessageIds,
+    setOpenMessageIds,
+  );
 
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
   for (const [row, messages] of rowToMessage.entries()) {
@@ -215,7 +222,8 @@ export function applyUpdateToEditor(
       messages,
       diagnosticUpdater,
       gutter,
-      row,
+      openedMessageIds,
+      setOpenMessageIds,
     );
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
@@ -225,7 +233,10 @@ export function applyUpdateToEditor(
   }
 
   editorToMarkers.set(editor, markers);
-
+  editor.onDidDestroy(() => {
+    // clean up openned message ids
+    removeOpenMessageId(update.messages, openedMessageIds, setOpenMessageIds);
+  });
   // Once the gutter is shown for the first time, it is displayed for the lifetime of the
   // TextEditor.
   if (update.messages.length > 0) {
@@ -238,6 +249,8 @@ function createBlockDecorations(
   editor: TextEditor,
   rowToMessage: Map<number, Array<DiagnosticMessage>>,
   blockDecorationContainer: HTMLElement,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
 ): void {
   const blockRowToMessages: Map<number, Array<DiagnosticMessage>> = new Map();
   rowToMessage.forEach((messages, row) => {
@@ -262,7 +275,16 @@ function createBlockDecorations(
             range={new Range([row, 0], [row, 0])}
             editor={editor}
             key={messages[0].id}>
-            <Button onClick={() => removeOpenMessageId(messages)}>Close</Button>
+            <Button
+              onClick={() =>
+                removeOpenMessageId(
+                  messages,
+                  openedMessageIds,
+                  setOpenMessageIds,
+                )
+              }>
+              Close
+            </Button>
             {messages.map(message => {
               if (!message.getBlockComponent) {
                 return null;
@@ -283,7 +305,8 @@ function createGutterItem(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
   gutter: atom$Gutter,
-  row: number,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
 ): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
   const messageGroups = new Set();
@@ -310,7 +333,7 @@ function createGutterItem(
       });
     }),
     Observable.fromEvent(item, 'click').subscribe(() => {
-      addOpenMessageId(messages);
+      addOpenMessageId(messages, openedMessageIds, setOpenMessageIds);
     }),
   );
 
@@ -321,20 +344,33 @@ function createGutterItem(
     },
   };
 }
-function addOpenMessageId(messages: Array<DiagnosticMessage>) {
+
+function addOpenMessageId(
+  messages: Array<DiagnosticMessage>,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
+) {
+  const newOpenedMessageIds = new Set([...openedMessageIds]);
   messages.forEach(message => {
     if (message.id != null) {
-      openedMessageIds.add(message.id);
+      newOpenedMessageIds.add(message.id);
     }
   });
+  setOpenMessageIds(newOpenedMessageIds);
 }
 
-function removeOpenMessageId(messages: Array<DiagnosticMessage>) {
+function removeOpenMessageId(
+  messages: Array<DiagnosticMessage>,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
+) {
+  const newOpenedMessageIds = new Set([...openedMessageIds]);
   messages.forEach(message => {
     if (message.id != null) {
-      openedMessageIds.delete(message.id);
+      newOpenedMessageIds.delete(message.id);
     }
   });
+  setOpenMessageIds(newOpenedMessageIds);
 }
 
 function spawnPopup(

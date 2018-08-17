@@ -18,7 +18,7 @@ export type AddMessagesType = (
   severity: 'error' | 'warning' | 'info',
   count: number,
   kind?: 'review',
-  option?: addMessageOption,
+  option?: ?addMessageOption,
 ) => mixed;
 export type FunctionType = () => mixed;
 
