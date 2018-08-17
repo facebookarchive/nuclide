@@ -194,44 +194,44 @@ export class AtomTextEditor extends React.Component<Props, void> {
     }
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: Props): void {
+  componentDidUpdate(prevProps: Props): void {
     if (
-      nextProps.textBuffer !== this.props.textBuffer ||
-      nextProps.readOnly !== this.props.readOnly
+      this.props.textBuffer !== prevProps.textBuffer ||
+      this.props.readOnly !== prevProps.readOnly
     ) {
       const previousTextContents = this.getTextBuffer().getText();
       const nextTextContents =
-        nextProps.textBuffer == null
-          ? nextProps.textBuffer
-          : nextProps.textBuffer.getText();
+        this.props.textBuffer == null
+          ? this.props.textBuffer
+          : this.props.textBuffer.getText();
       if (nextTextContents !== previousTextContents) {
-        const textEditorSetup = setupTextEditor(nextProps);
+        const textEditorSetup = setupTextEditor(this.props);
 
-        if (nextProps.syncTextContents) {
+        if (this.props.syncTextContents) {
           textEditorSetup.textEditor.setText(previousTextContents);
         }
         this._updateTextEditor(textEditorSetup);
-        this._onDidUpdateTextEditorElement(nextProps);
+        this._onDidUpdateTextEditorElement(this.props);
       }
     }
-    if (nextProps.path !== this.props.path) {
+    if (this.props.path !== prevProps.path) {
       // $FlowIgnore
-      this.getTextBuffer().setPath(nextProps.path || '');
+      this.getTextBuffer().setPath(this.props.path || '');
     }
-    if (nextProps.gutterHidden !== this.props.gutterHidden) {
-      this.getModel().setLineNumberGutterVisible(nextProps.gutterHidden);
+    if (this.props.gutterHidden !== prevProps.gutterHidden) {
+      this.getModel().setLineNumberGutterVisible(this.props.gutterHidden);
     }
-    if (nextProps.grammar !== this.props.grammar) {
-      this.getModel().setGrammar(nextProps.grammar);
+    if (this.props.grammar !== prevProps.grammar) {
+      this.getModel().setGrammar(this.props.grammar);
     }
-    if (nextProps.softWrapped !== this.props.softWrapped) {
-      this.getModel().setSoftWrapped(nextProps.softWrapped);
+    if (this.props.softWrapped !== prevProps.softWrapped) {
+      this.getModel().setSoftWrapped(this.props.softWrapped);
     }
-    if (nextProps.disabled !== this.props.disabled) {
-      this._updateDisabledState(nextProps.disabled);
+    if (this.props.disabled !== prevProps.disabled) {
+      this._updateDisabledState(this.props.disabled);
     }
-    if (nextProps.placeholderText !== this.props.placeholderText) {
-      this.getModel().setPlaceholderText(nextProps.placeholderText || '');
+    if (this.props.placeholderText !== prevProps.placeholderText) {
+      this.getModel().setPlaceholderText(this.props.placeholderText || '');
       this.getModel().scheduleComponentUpdate();
     }
   }
