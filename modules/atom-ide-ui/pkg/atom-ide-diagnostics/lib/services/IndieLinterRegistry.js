@@ -82,7 +82,9 @@ export class IndieLinterDelegate {
   }
 
   setAllMessages(messages: Array<LinterMessageV2>): void {
-    this.clearMessages();
+    if (messages.length === 0) {
+      this._invalidations.next({scope: 'all'});
+    }
     this._messages = messages;
     this._updates.next(
       linterMessagesToDiagnosticUpdate(null, [...messages], this._name),

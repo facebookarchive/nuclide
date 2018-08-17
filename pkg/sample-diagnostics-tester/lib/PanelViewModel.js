@@ -20,14 +20,19 @@ export type AddMessagesType = (
   kind?: 'review',
   option?: addMessageOption,
 ) => mixed;
-export type ClearType = () => mixed;
+export type FunctionType = () => mixed;
 
 export const WORKSPACE_ITEM_URI = 'atom://nuclide/sample-diagnostics-tester';
 
 export default class PanelViewModel {
   element: ?HTMLElement;
 
-  constructor(options: {+addMessages: AddMessagesType, +clear: ClearType}) {
+  constructor(options: {
+    +addMessages: AddMessagesType,
+    +clear: FunctionType,
+    +changeMessageLine: FunctionType,
+    +changeMessageContent: FunctionType,
+  }) {
     this.element = renderReactRoot(<PanelView {...options} />);
   }
 

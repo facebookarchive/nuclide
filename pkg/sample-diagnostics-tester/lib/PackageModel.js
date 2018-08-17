@@ -14,6 +14,7 @@ import type {LinterMessageV2} from 'atom-ide-ui';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject, ReplaySubject} from 'rxjs';
 import * as React from 'react';
+import uuid from 'uuid';
 
 export type addMessageOption = {
   getBlockComponent?: () => React.ComponentType<any>,
@@ -49,6 +50,7 @@ export default class PackageModel {
     const newMessages = [];
     for (let i = 0; i < count; i++) {
       newMessages.push({
+        id: uuid.v4(),
         location: {
           file: path,
           position,
@@ -62,6 +64,34 @@ export default class PackageModel {
       });
     }
     this._messages.next([...this._messages.getValue(), ...newMessages]);
+  };
+
+  changeMessageLine = (): void => {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (editor == null) {
+      atom.notifications.addError("There's no active text editor.");
+      return;
+    }
+    const position = editor.getSelectedBufferRange();
+    const newMessages = this._messages.getValue().map(message => {
+      return {
+        ...message,
+        location: {...message.location, position},
+      };
+    });
+    this._messages.next(newMessages);
+  };
+
+  changeMessageContent = (): void => {
+    const newMessages = this._messages.getValue().map(message => {
+      return {
+        ...message,
+        getBlockComponent() {
+          return NewBlockComponent;
+        },
+      };
+    });
+    this._messages.next(newMessages);
   };
 
   clear = (): void => {
@@ -78,6 +108,16 @@ export default class PackageModel {
         .subscribe(messages => {
           callback(messages);
         }),
+    );
+  }
+}
+
+class NewBlockComponent extends React.Component<{}> {
+  render() {
+    return (
+      <div>
+        <h1>Content Changed</h1>
+      </div>
     );
   }
 }

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AddMessagesType, ClearType} from './PanelViewModel';
+import type {AddMessagesType, FunctionType} from './PanelViewModel';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button} from 'nuclide-commons-ui/Button';
@@ -17,7 +17,9 @@ import * as React from 'react';
 
 type Props = {
   addMessages: AddMessagesType,
-  clear: ClearType,
+  clear: FunctionType,
+  changeMessageLine: FunctionType,
+  changeMessageContent: FunctionType,
 };
 
 export default class PanelView extends React.Component<Props> {
@@ -39,6 +41,21 @@ export default class PanelView extends React.Component<Props> {
           }}>
           Clear
         </Button>
+        <br />
+        <Button
+          onClick={() => {
+            this.props.changeMessageLine();
+          }}>
+          Change Messages Position to selection
+        </Button>
+        <br />
+        <Button
+          onClick={() => {
+            this.props.changeMessageContent();
+          }}>
+          Change Messages Content
+        </Button>
+        <br />
       </div>
     );
   }
