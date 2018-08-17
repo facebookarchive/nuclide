@@ -24,6 +24,7 @@ import {__DEV__} from '../dev';
 
 import * as zutil from './zip-util';
 import {createProductionZip, patchPackageVersion} from './production';
+import {startDevPackagerWorker} from './dev-worker';
 
 const ASYNC_LIMIT = 100;
 const logger = getLogger('deploy');
@@ -53,7 +54,7 @@ const logger = getLogger('deploy');
 
 const cacheFilename = path.join(os.tmpdir(), 'big-dig-vscode-server-dev.zip');
 
-type DevelopmentZipResult = {
+export type DevelopmentZipResult = {
   /** If a delta package was produced, then this is the version it is based off of; otherwise null. */
   baseVersion?: string,
   version: string,
@@ -77,15 +78,22 @@ const devZipVersion: Deferred<string> = new Deferred();
  */
 export function init() {
   if (__DEV__) {
-    createDevZip()
-      .then(result => devZip.resolve(result))
-      .catch(err => logger.error('Could not create development package', err));
+    startDevPackagerWorker(devZip, devZipVersion);
+
+    // The above code essentially runs the following in another process. If it
+    // needs to be debugged, you should consider running this:
+    // createDevZip()
+    //   .then(result => devZip.resolve(result))
+    //   .catch(err => logger.error('Could not create development package', err));
   } else {
     devZip.reject(new Error('Development-mode server package not available'));
   }
 }
 
 /**
+ * Returns the version string of the development server.
+ * NOTE: this will not resolve unless `init()` or `createDevZip()` is also
+ * called, although this may resolve sooner than `createDevZip()`.
  * @return The version string of the server.
  */
 export function packageVersion(): Promise<string> {
@@ -141,7 +149,7 @@ export async function createServerPackage(existingVersion: ?string) {
   }
 }
 
-async function createDevZip(): Promise<DevelopmentZipResult> {
+export async function createDevZip(): Promise<DevelopmentZipResult> {
   logger.info('Creating server package for development');
   const archive = cacheFilename;
   const {version, files: serverFiles} = await packageServer();
@@ -202,10 +210,14 @@ async function createDevZip(): Promise<DevelopmentZipResult> {
     logger.info(`Server package delta is ready (${data.length} bytes)`),
   );
 
-  // Update the cached zip:
-  const fullPkgData = zutil
-    .addFilesToZip(zip, files)
-    .then(() => zutil.zipToBuffer(zip));
+  // TODO(siegbell): Cannot update an existing zip: https://github.com/cthackers/adm-zip/issues/64
+  // // Update the cached zip:
+  // const fullPkgData = zutil
+  //   .addFilesToZip(zip, files)
+  //   .then(() => zutil.zipToBuffer(zip));
+  const fullPkgData = createProductionZip(archive, devVersion, files).then(
+    ({data}) => data,
+  );
 
   // Assume this will be used to update an installation
   return {
