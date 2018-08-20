@@ -20,9 +20,6 @@
     "shallowequal": "0.2.2",
     "toml": "2.3.3"
   },
-  "devDependencies": {
-    "nuclide-jest": "0.7.2-dev"
-  },
   "scripts": {
     "test": "true",
     "jest": "../../jest/fb-jest big-dig-vscode-server"

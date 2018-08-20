@@ -1,6 +1,0 @@
-{
-  "rules": {
-    "nuclide-internal/modules-dependencies": [1, {"allowDevDependencies": true}],
-    "nuclide-internal/no-unresolved": 0
-  }
-}

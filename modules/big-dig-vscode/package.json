@@ -235,7 +235,6 @@
   },
   "devDependencies": {
     "big-dig-vscode-server": "0.7.2-dev",
-    "nuclide-jest": "0.7.2-dev",
     "vsce": "1.30.0",
     "vscode": "1.1.21"
   },
