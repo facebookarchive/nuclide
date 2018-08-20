@@ -133,6 +133,27 @@ async function validateCurrentServer(
 export async function makeConnection(
   profile: IConnectionProfile,
 ): Promise<ConnectionWrapper> {
+  const canceller = new vscode.CancellationTokenSource();
+  const progressConfig = {
+    location: vscode.ProgressLocation.Window,
+    title: `Connecting to ${profile.address}`,
+  };
+
+  try {
+    return await vscode.window.withProgress(
+      progressConfig,
+      connectOrReconnect.bind(null, profile, canceller),
+    );
+  } finally {
+    canceller.dispose();
+  }
+}
+
+async function connectOrReconnect(
+  profile: IConnectionProfile,
+  canceller: vscode.CancellationTokenSource,
+  progress: vscode.Progress<{message?: string}>,
+): Promise<ConnectionWrapper> {
   const {
     address,
     deployServer,
@@ -145,37 +166,26 @@ export async function makeConnection(
   const {autoUpdate} = deployServer;
   const connectionId = getConnectionIdForCredentialStore(profile);
 
-  const canceller = new vscode.CancellationTokenSource();
-
-  try {
-    const conn = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Window,
-        title: `Connecting to ${address}`,
-      },
-      async progress =>
-        (await doReconnect(progress, connectionId, address)) ||
-        doConnect(
-          progress,
-          connectionId,
-          address,
-          autoUpdate,
-          canceller,
-          authMethodPromise,
-          privateKeyPromise,
-          username,
-          server,
-          ports,
-        ),
+  let connectionWrapper = await doReconnect(connectionId, address, progress);
+  if (connectionWrapper == null) {
+    connectionWrapper = await doConnect(
+      connectionId,
+      address,
+      autoUpdate,
+      canceller,
+      authMethodPromise,
+      privateKeyPromise,
+      username,
+      server,
+      ports,
+      progress,
     );
-    return conn;
-  } finally {
-    canceller.dispose();
   }
+
+  return connectionWrapper;
 }
 
 async function doConnect(
-  progress: vscode.Progress<{message?: string}>,
   connectionId: string,
   address: string,
   autoUpdate: boolean,
@@ -185,6 +195,7 @@ async function doConnect(
   username: string,
   server: ServerExecutable,
   ports: string,
+  progress: vscode.Progress<{message?: string}>,
 ): Promise<ConnectionWrapper> {
   const sshConnectionDelegate = {
     onKeyboardInteractive: connectionPrompt(progress, {
@@ -269,9 +280,9 @@ async function doConnect(
 }
 
 async function doReconnect(
-  progress: vscode.Progress<{message?: string}>,
   connectionId: string,
   address: string,
+  progress: vscode.Progress<{message?: string}>,
 ): Promise<?ConnectionWrapper> {
   try {
     // Attempt to reconnect using cached credentials
