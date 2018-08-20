@@ -598,7 +598,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
   }
 
   on(name: string, callback: (v: any) => mixed): IDisposable {
-    return this._emitter.on(name, callback);
+    if (this._subscriptions.disposed) {
+      return new UniversalDisposable();
+    } else {
+      return this._emitter.on(name, callback);
+    }
   }
 
   serialize(): TerminalViewState {
