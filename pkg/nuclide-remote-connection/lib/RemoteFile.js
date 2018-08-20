@@ -16,6 +16,7 @@ import typeof * as FileSystemService from '../../nuclide-server/lib/services/Fil
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
+import loadingNotification from '../../commons-atom/loading-notification';
 import passesGK from '../../commons-node/passesGK';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
@@ -24,6 +25,9 @@ import {getLogger} from 'log4js';
 import Stream from 'stream';
 
 const logger = getLogger('nuclide-remote-connection');
+
+// Warn if a file takes too long to save.
+const LONG_FILE_WRITE_MS = 10000;
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
 export class RemoteFile {
@@ -399,15 +403,21 @@ export class RemoteFile {
     // $FlowIgnore
     stream.end = cb => {
       invariant(cb instanceof Function, 'end() called without a callback');
-      this._getFileSystemService()
-        .writeFileBuffer(this._path, Buffer.concat(writeData, writeLength))
-        .then(
-          () => cb(),
-          err => {
-            stream.emit('error', err);
-            cb();
-          },
-        );
+      loadingNotification(
+        this._getFileSystemService().writeFileBuffer(
+          this._path,
+          Buffer.concat(writeData, writeLength),
+        ),
+        `File ${nuclideUri.nuclideUriToDisplayString(this._path)} ` +
+          'is taking an unexpectedly long time to save, please be patient...',
+        LONG_FILE_WRITE_MS,
+      ).then(
+        () => cb(),
+        err => {
+          stream.emit('error', err);
+          cb();
+        },
+      );
       originalEnd.call(stream);
     };
     return stream;
