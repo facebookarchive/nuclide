@@ -112,7 +112,7 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
             .stream()
             .allMatch(FileLineBreakpointSpec::isResolved);
 
-    if (allBreakpointsForClassNameResolved) {
+    if (allBreakpointsForClassNameResolved && classPrepareRequest != null) {
       classPrepareRequest.disable();
       getContextManager()
           .getVirtualMachine()
