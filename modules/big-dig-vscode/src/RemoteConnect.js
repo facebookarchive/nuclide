@@ -15,7 +15,11 @@ import type {
   ExtractionMethod,
   ServerExecutable,
 } from 'big-dig/src/client/SshHandshake';
-import type {DeployServer, IConnectionProfile} from './configuration';
+import type {
+  DeployServer,
+  AuthenticationMethod,
+  IConnectionProfile,
+} from './configuration';
 
 import {SshHandshake, createBigDigClient} from 'big-dig/src/client';
 import {setPassword, getPassword} from 'nuclide-prebuilt-libs/keytar';
@@ -142,119 +146,6 @@ export async function makeConnection(
   const connectionId = getConnectionIdForCredentialStore(profile);
 
   const canceller = new vscode.CancellationTokenSource();
-  async function doReconnect(
-    progress: vscode.Progress<{message?: string}>,
-  ): Promise<?ConnectionWrapper> {
-    try {
-      // Attempt to reconnect using cached credentials
-      const credentials = await getCredentials(connectionId);
-      if (credentials != null) {
-        progress.report({message: `Reconnecting to ${address}...`});
-        const bigDigClient = await createBigDigClient({
-          ...credentials,
-          host: address,
-          // TODO(hansonw): Resolve the family of the hostname, preferring IPv6.
-          ignoreIntransientErrors: false,
-        });
-        const conn = new ConnectionWrapper(bigDigClient);
-        const compatible = await validateCurrentServer(conn);
-        if (!compatible) {
-          conn.dispose();
-          return null;
-        } else {
-          return conn;
-        }
-      }
-    } catch (error) {
-      logger.info(`Could not automatically reconnect to ${address}`, error);
-      return null;
-    }
-  }
-
-  async function doConnect(
-    progress: vscode.Progress<{message?: string}>,
-  ): Promise<ConnectionWrapper> {
-    const sshConnectionDelegate = {
-      onKeyboardInteractive: connectionPrompt(progress, {
-        hostname: address,
-        autoUpdate,
-        canceller,
-      }),
-      onWillConnect() {},
-      onDidConnect(connectionConfig, config) {},
-      onError(errorType, error, config) {
-        // No need to log here because SshHandshake.connect() already logs any
-        // errors.
-      },
-    };
-
-    const sshHandshake = new SshHandshake(sshConnectionDelegate);
-
-    canceller.token.onCancellationRequested(() => sshHandshake.cancel());
-
-    let authMethod;
-    // TODO(T27503297): It does not make sense to set pathToPrivateKey when
-    // password auth is set. We should tighten up the Flow types so that
-    // SshConnectionConfiguration has a single authentication property that is a
-    // tagged union where each value in the union includes only the data
-    // necessary to support the authentication mechanism.
-    let pathToPrivateKey;
-    const userAuthMethod = await authMethodPromise;
-
-    switch (userAuthMethod) {
-      case 'private-key':
-        authMethod = 'PRIVATE_KEY';
-        pathToPrivateKey = await privateKeyPromise;
-        break;
-      case 'password':
-        authMethod = 'PASSWORD';
-        pathToPrivateKey = ''; // Dummy value.
-        break;
-      default:
-        (userAuthMethod: empty);
-        throw new Error(`Unhandled userAuthMethod: ${userAuthMethod}`);
-    }
-
-    const [connectionConfig] = await sshHandshake.connect({
-      host: address,
-      sshPort: 22,
-      username,
-      pathToPrivateKey,
-      authMethod,
-      remoteServer: server,
-      remoteServerPorts: ports,
-      // We set password to the empty string so that if
-      // SshHandshake._connectFallbackViaPassword() is called, it does not
-      // appear as though the user has attempted a password yet.
-      password: '',
-      exclusive: 'vscode',
-    });
-
-    const bigDigClient = await createBigDigClient({
-      ...connectionConfig,
-      ignoreIntransientErrors: false,
-    });
-
-    const {
-      certificateAuthorityCertificate,
-      clientCertificate,
-      clientKey,
-      port,
-    } = connectionConfig;
-    if (
-      certificateAuthorityCertificate != null &&
-      clientCertificate != null &&
-      clientKey != null
-    ) {
-      await saveCredentials(connectionId, {
-        certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
-        clientCertificate: clientCertificate.toString(),
-        clientKey: clientKey.toString(),
-        port,
-      });
-    }
-    return new ConnectionWrapper(bigDigClient);
-  }
 
   try {
     const conn = await vscode.window.withProgress(
@@ -262,10 +153,148 @@ export async function makeConnection(
         location: vscode.ProgressLocation.Window,
         title: `Connecting to ${address}`,
       },
-      async progress => (await doReconnect(progress)) || doConnect(progress),
+      async progress =>
+        (await doReconnect(progress, connectionId, address)) ||
+        doConnect(
+          progress,
+          connectionId,
+          address,
+          autoUpdate,
+          canceller,
+          authMethodPromise,
+          privateKeyPromise,
+          username,
+          server,
+          ports,
+        ),
     );
     return conn;
   } finally {
     canceller.dispose();
+  }
+}
+
+async function doConnect(
+  progress: vscode.Progress<{message?: string}>,
+  connectionId: string,
+  address: string,
+  autoUpdate: boolean,
+  canceller: vscode.CancellationTokenSource,
+  authMethodPromise: Promise<AuthenticationMethod>,
+  privateKeyPromise: Promise<string>,
+  username: string,
+  server: ServerExecutable,
+  ports: string,
+): Promise<ConnectionWrapper> {
+  const sshConnectionDelegate = {
+    onKeyboardInteractive: connectionPrompt(progress, {
+      hostname: address,
+      autoUpdate,
+      canceller,
+    }),
+    onWillConnect() {},
+    onDidConnect(connectionConfig, config) {},
+    onError(errorType, error, config) {
+      // No need to log here because SshHandshake.connect() already logs any
+      // errors.
+    },
+  };
+
+  const sshHandshake = new SshHandshake(sshConnectionDelegate);
+
+  canceller.token.onCancellationRequested(() => sshHandshake.cancel());
+
+  let authMethod;
+  // TODO(T27503297): It does not make sense to set pathToPrivateKey when
+  // password auth is set. We should tighten up the Flow types so that
+  // SshConnectionConfiguration has a single authentication property that is a
+  // tagged union where each value in the union includes only the data
+  // necessary to support the authentication mechanism.
+  let pathToPrivateKey;
+  const userAuthMethod = await authMethodPromise;
+
+  switch (userAuthMethod) {
+    case 'private-key':
+      authMethod = 'PRIVATE_KEY';
+      pathToPrivateKey = await privateKeyPromise;
+      break;
+    case 'password':
+      authMethod = 'PASSWORD';
+      pathToPrivateKey = ''; // Dummy value.
+      break;
+    default:
+      (userAuthMethod: empty);
+      throw new Error(`Unhandled userAuthMethod: ${userAuthMethod}`);
+  }
+
+  const [connectionConfig] = await sshHandshake.connect({
+    host: address,
+    sshPort: 22,
+    username,
+    pathToPrivateKey,
+    authMethod,
+    remoteServer: server,
+    remoteServerPorts: ports,
+    // We set password to the empty string so that if
+    // SshHandshake._connectFallbackViaPassword() is called, it does not
+    // appear as though the user has attempted a password yet.
+    password: '',
+    exclusive: 'vscode',
+  });
+
+  const bigDigClient = await createBigDigClient({
+    ...connectionConfig,
+    ignoreIntransientErrors: false,
+  });
+
+  const {
+    certificateAuthorityCertificate,
+    clientCertificate,
+    clientKey,
+    port,
+  } = connectionConfig;
+  if (
+    certificateAuthorityCertificate != null &&
+    clientCertificate != null &&
+    clientKey != null
+  ) {
+    await saveCredentials(connectionId, {
+      certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
+      clientCertificate: clientCertificate.toString(),
+      clientKey: clientKey.toString(),
+      port,
+    });
+  }
+  return new ConnectionWrapper(bigDigClient);
+}
+
+async function doReconnect(
+  progress: vscode.Progress<{message?: string}>,
+  connectionId: string,
+  address: string,
+): Promise<?ConnectionWrapper> {
+  try {
+    // Attempt to reconnect using cached credentials
+    const credentials = await getCredentials(connectionId);
+    if (credentials != null) {
+      progress.report({message: `Reconnecting to ${address}...`});
+      const bigDigClient = await createBigDigClient({
+        ...credentials,
+        host: address,
+        // TODO(hansonw): Resolve the family of the hostname, preferring IPv6.
+        ignoreIntransientErrors: false,
+      });
+      const conn = new ConnectionWrapper(bigDigClient);
+      const compatible = await validateCurrentServer(conn);
+      if (!compatible) {
+        conn.dispose();
+        return null;
+      } else {
+        return conn;
+      }
+    }
+  } catch (error) {
+    logger.info(`Could not automatically reconnect to ${address}`, error);
+    return null;
   }
 }

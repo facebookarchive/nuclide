@@ -18,6 +18,7 @@ export {
 
 export type {
   DeployServer,
+  AuthenticationMethod,
   IConnectionProfile,
 } from './ProfileConfigurationParser';
 
