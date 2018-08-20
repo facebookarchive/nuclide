@@ -364,6 +364,9 @@ function removeOpenMessageId(
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
 ) {
+  if (openedMessageIds.size === 0) {
+    return;
+  }
   const newOpenedMessageIds = new Set([...openedMessageIds]);
   messages.forEach(message => {
     if (message.id != null) {
