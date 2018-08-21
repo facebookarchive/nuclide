@@ -10,14 +10,14 @@
  */
 
 import type {SerializableRemoteConnectionConfiguration} from '..';
-import type {OpenConnectionDialogOptions} from './open-connection';
+import type {StartConnectFlowOptions} from './startConnectFlow';
 import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {SimpleConnectConfiguration} from './SimpleConnect';
 
 import {ReplaySubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import {openConnectionDialog} from './open-connection';
+import startConnectFlow from './startConnectFlow';
 import {connectToServer} from './SimpleConnect';
 
 export default class RemoteProjectsService {
@@ -64,7 +64,7 @@ export default class RemoteProjectsService {
       return null;
     }
     // If connection fails using saved config, open connect dialog.
-    return openConnectionDialog({
+    return startConnectFlow({
       initialServer: host,
       initialCwd: path,
     });
@@ -75,9 +75,9 @@ export default class RemoteProjectsService {
   }
 
   openConnectionDialog(
-    options: OpenConnectionDialogOptions,
+    options: StartConnectFlowOptions,
   ): Promise<?RemoteConnection> {
-    return openConnectionDialog(options);
+    return startConnectFlow(options);
   }
 
   async findOrCreate(

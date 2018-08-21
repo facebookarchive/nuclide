@@ -12,7 +12,7 @@
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {OpenConnectionDialogOptions} from './open-connection';
+import type {StartConnectFlowOptions} from './startConnectFlow';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import idx from 'idx';
@@ -42,7 +42,7 @@ import {
   getCodeSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
-import {openConnectionDialog} from './open-connection';
+import startConnectFlow from './startConnectFlow';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';
 import RemoteDirectorySearcher from './RemoteDirectorySearcher';
@@ -75,7 +75,7 @@ export type RemoteProjectsService = {
    * the previously cached connections.
    */
   openConnectionDialog(
-    config: OpenConnectionDialogOptions,
+    config: StartConnectFlowOptions,
   ): Promise<?RemoteConnection>,
 
   /**
@@ -137,7 +137,7 @@ class Activation {
         'nuclide-remote-projects:connect',
         event => {
           const {initialCwd, project} = event.detail || {};
-          openConnectionDialog({
+          startConnectFlow({
             initialCwd,
             project,
           });
