@@ -69,6 +69,7 @@ export default class LineEditor extends EventEmitter {
   _borrowed: boolean;
   _writing: boolean;
   _writeQueue: ?string;
+  _firstOut: boolean; // true if write is first one since entered command
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -110,6 +111,7 @@ export default class LineEditor extends EventEmitter {
     this._installHooks();
     this._onResize();
     this.setPrompt('$ ');
+    this._firstOut = true;
 
     this._borrowed = false;
     this._lastOutputColumn = 1;
@@ -210,7 +212,13 @@ export default class LineEditor extends EventEmitter {
       let col = this._lastOutputColumn;
       let row = this._fieldRow;
 
-      row--;
+      // if this is the first write after the user hit 'enter' on a command,
+      // we don't want to back up a line - this would put us over the prompt
+      // rather than the clear line after it.
+      if (!this._firstOut) {
+        row--;
+      }
+      this._firstOut = false;
       cursor.gotoXY(col, row);
 
       const outputPiece = (line: string): void => {
@@ -469,6 +477,7 @@ export default class LineEditor extends EventEmitter {
     this.emit('line', this._buffer);
     this._buffer = '';
     this._cursor = 0;
+    this._firstOut = true;
     this._textChanged();
   }
 
