@@ -378,7 +378,7 @@ export async function listAliases(
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
     args,
-  );
+  ).toPromise();
   const stdout = result.trim();
   return stdout ? stdout.split('\n') : [];
 }
@@ -395,7 +395,7 @@ export async function listFlavors(
     const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
       rootPath,
       args,
-    );
+    ).toPromise();
     return JSON.parse(result);
   } catch (e) {
     return null;
@@ -420,7 +420,7 @@ export async function showOutput(
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
     args,
-  );
+  ).toPromise();
   return JSON.parse(result.trim());
 }
 
@@ -449,7 +449,9 @@ export async function buildRuleTypeFor(
 }
 
 export async function clean(rootPath: NuclideUri): Promise<void> {
-  await BuckServiceImpl.runBuckCommandFromProjectRoot(rootPath, ['clean']);
+  await BuckServiceImpl.runBuckCommandFromProjectRoot(rootPath, [
+    'clean',
+  ]).toPromise();
 }
 
 export async function kill(rootPath: NuclideUri): Promise<void> {
@@ -458,7 +460,7 @@ export async function kill(rootPath: NuclideUri): Promise<void> {
     ['kill'],
     {},
     false,
-  );
+  ).toPromise();
 }
 
 export async function _buildRuleTypeFor(
@@ -479,7 +481,7 @@ export async function _buildRuleTypeFor(
     result = await BuckServiceImpl.query(rootPath, canonicalName, [
       '--output-attributes',
       'buck.type',
-    ]);
+    ]).toPromise();
   } catch (error) {
     getLogger('nuclide-buck-rpc').error(error.message);
     return null;
@@ -554,7 +556,7 @@ export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
     args,
-  );
+  ).toPromise();
   const json: Object = JSON.parse(result);
   port = json['http.port'];
   _cachedPorts.set(rootPath, port);
@@ -567,7 +569,11 @@ export function query(
   queryString: string,
   extraArguments: Array<string>,
 ): Promise<Array<string>> {
-  return BuckServiceImpl.query(rootPath, queryString, extraArguments);
+  return BuckServiceImpl.query(
+    rootPath,
+    queryString,
+    extraArguments,
+  ).toPromise();
 }
 
 /**
@@ -588,7 +594,7 @@ export async function queryWithArgs(
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
     completeArgs,
-  );
+  ).toPromise();
   const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result);
 
   // `buck query` does not include entries in the JSON for params that did not match anything. We
@@ -627,7 +633,7 @@ export async function queryWithAttributes(
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
     completeArgs,
-  );
+  ).toPromise();
   return JSON.parse(result);
 }
 
