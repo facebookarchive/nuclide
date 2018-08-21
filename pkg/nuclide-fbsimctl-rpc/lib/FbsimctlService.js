@@ -52,17 +52,27 @@ export async function relaunch(port: string, bundleId: string): Promise<void> {
 export async function getBundleIdOfBundleAtPath(
   bundlePath: NuclideUri,
 ): Promise<string> {
-  const bundle = await fsPromise.readFile(nuclideUri.getPath(bundlePath));
-  const infoPlist = new AdmZip(bundle)
-    .getEntries()
-    .find(entry => entry.entryName.match(/.app\/Info.plist$/));
+  let plistData = null;
 
-  if (!infoPlist) {
-    throw new Error("App bundle doesn't contain Info.plist");
+  const stat = await fsPromise.stat(nuclideUri.getPath(bundlePath));
+  if (stat.isFile()) {
+    const bundle = await fsPromise.readFile(nuclideUri.getPath(bundlePath));
+    const infoPlist = new AdmZip(bundle)
+      .getEntries()
+      .find(entry => entry.entryName.match(/.app\/Info.plist$/));
+
+    if (!infoPlist) {
+      throw new Error("App bundle doesn't contain Info.plist");
+    }
+    plistData = infoPlist.getData();
+  } else {
+    plistData = await fsPromise.readFile(
+      nuclideUri.getPath(nuclideUri.join(bundlePath, 'Info.plist')),
+    );
   }
 
   let CFBundleIdentifier;
-  bplist.parseFile(infoPlist.getData(), (error, parsed) => {
+  bplist.parseFile(plistData, (error, parsed) => {
     if (parsed && parsed.length > 0) {
       CFBundleIdentifier = parsed[0].CFBundleIdentifier;
     }
