@@ -38,6 +38,7 @@ import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
+import OutCommand from './OutCommand';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
 import Thread from './Thread';
@@ -113,6 +114,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new FrameCommand(this._console, this));
     dispatcher.registerCommand(new UpCommand(this._console, this));
     dispatcher.registerCommand(new DownCommand(this._console, this));
+    dispatcher.registerCommand(new OutCommand(this));
   }
 
   // launch is for launching a process from scratch when we need a new
@@ -337,6 +339,17 @@ export default class Debugger implements DebuggerInterface {
   async stepOver(): Promise<void> {
     try {
       await this._ensureDebugSession().next({
+        threadId: this.getActiveThread().id(),
+      });
+    } catch (error) {
+      this._console.startInput();
+      throw error;
+    }
+  }
+
+  async stepOut(): Promise<void> {
+    try {
+      await this._ensureDebugSession().stepOut({
         threadId: this.getActiveThread().id(),
       });
     } catch (error) {
