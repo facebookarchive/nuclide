@@ -44,6 +44,8 @@ const {remote} = electron;
 invariant(remote != null);
 
 type Props = {
+  dirty: boolean,
+  setDirty: boolean => void,
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the initial
@@ -73,7 +75,6 @@ type Props = {
 type State = {
   finish: (answers: Array<string>) => mixed,
   instructions: string,
-  isDirty: boolean,
   mode: number,
 };
 
@@ -94,7 +95,6 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   state = {
     finish: (answers: Array<string>) => {},
     instructions: '',
-    isDirty: false,
     mode: REQUEST_CONNECTION_DETAILS,
   };
 
@@ -108,8 +108,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     } else if (
       this.state.mode === REQUEST_CONNECTION_DETAILS &&
       this.props.selectedProfileIndex === prevProps.selectedProfileIndex &&
-      !this.state.isDirty &&
-      prevState.isDirty &&
+      !this.props.dirty &&
+      prevProps.dirty &&
       this._okButton != null
     ) {
       // When editing a profile and clicking "Save", the Save button disappears. Focus the primary
@@ -131,7 +131,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   _handleDidChange = (): void => {
-    this.setState({isDirty: true});
+    this.props.setDirty(true);
   };
 
   _handleClickSave = (): void => {
@@ -165,7 +165,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     }
 
     this.props.onSaveProfile(this.props.selectedProfileIndex, newProfile);
-    this.setState({isDirty: false});
+    this.props.setDirty(false);
   };
 
   _validateInitialDirectory(path: string): boolean {
@@ -229,7 +229,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       ];
     }
     if (
-      this.state.isDirty &&
+      this.props.dirty &&
       selectedProfile != null &&
       selectedProfile.saveable
     ) {
@@ -277,10 +277,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     }
 
     if (mode === WAITING_FOR_CONNECTION) {
-      this.setState({
-        isDirty: false,
-        mode: REQUEST_CONNECTION_DETAILS,
-      });
+      this.props.setDirty(false);
+      this.setState({mode: REQUEST_CONNECTION_DETAILS});
     } else {
       this.props.onCancel();
       this.close();
@@ -299,7 +297,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   ok = () => {
-    const {mode, isDirty} = this.state;
+    const {mode} = this.state;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -326,58 +324,20 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       }
 
       if (username && server && cwd && remoteServerCommand) {
-        this.setState({
-          isDirty: false,
-          mode: WAITING_FOR_CONNECTION,
+        this.props.setDirty(false);
+        this.setState({mode: WAITING_FOR_CONNECTION});
+        this._connect({
+          host: server,
+          sshPort: parseInt(sshPort, 10),
+          username,
+          pathToPrivateKey,
+          authMethod,
+          cwd,
+          remoteServerCommand,
+          password,
+          // Modified profiles probably don't match the display title.
+          displayTitle: this.props.dirty ? '' : displayTitle,
         });
-        const delegate = decorateSshConnectionDelegateWithTracking({
-          onKeyboardInteractive: (
-            name,
-            instructions,
-            instructionsLang,
-            prompts,
-            finish,
-          ) => {
-            // TODO: Display all prompts, not just the first one.
-            this.requestAuthentication(prompts[0], finish);
-          },
-
-          onWillConnect: () => {},
-
-          onDidConnect: (
-            connection: RemoteConnection,
-            config: SshConnectionConfiguration,
-          ) => {
-            this.close(); // Close the dialog.
-            this.props.onConnect(connection, config);
-          },
-
-          onError: (
-            errorType: SshHandshakeErrorType,
-            error: Error,
-            config: SshConnectionConfiguration,
-          ) => {
-            this.close(); // Close the dialog.
-            notifySshHandshakeError(errorType, error, config);
-            this.props.onError(error, config);
-            logger.debug(error);
-          },
-        });
-        this._pendingHandshake = connect(
-          delegate,
-          {
-            host: server,
-            sshPort: parseInt(sshPort, 10),
-            username,
-            pathToPrivateKey,
-            authMethod,
-            cwd,
-            remoteServerCommand,
-            password,
-            // Modified profiles probably don't match the display title.
-            displayTitle: isDirty ? '' : displayTitle,
-          },
-        );
       } else {
         remote.dialog.showErrorBox(
           'Missing information',
@@ -390,11 +350,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       const password = authenticationPrompt.getPassword();
 
       this.state.finish([password]);
-
-      this.setState({
-        isDirty: false,
-        mode: WAITING_FOR_AUTHENTICATION,
-      });
+      this.props.setDirty(false);
+      this.setState({mode: WAITING_FOR_AUTHENTICATION});
     }
   };
 
@@ -402,10 +359,10 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     instructions: {echo: boolean, prompt: string},
     finish: (answers: Array<string>) => void,
   ) {
+    this.props.setDirty(false);
     this.setState({
       finish,
       instructions: instructions.prompt,
-      isDirty: false,
       mode: REQUEST_AUTHENTICATION_DETAILS,
     });
   }
@@ -439,8 +396,48 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   onProfileClicked = (selectedProfileIndex: number): void => {
-    this.setState({isDirty: false});
+    this.props.setDirty(false);
     this.props.onProfileSelected(selectedProfileIndex);
+  };
+
+  _connect = (connectionConfig: SshConnectionConfiguration): void => {
+    const delegate = decorateSshConnectionDelegateWithTracking({
+      onKeyboardInteractive: (
+        name,
+        instructions,
+        instructionsLang,
+        prompts,
+        finish,
+      ) => {
+        // TODO: Display all prompts, not just the first one.
+        this.requestAuthentication(prompts[0], finish);
+      },
+
+      onWillConnect: () => {},
+
+      onDidConnect: (
+        connection: RemoteConnection,
+        config: SshConnectionConfiguration,
+      ) => {
+        this.close(); // Close the dialog.
+        this.props.onConnect(connection, config);
+      },
+
+      onError: (
+        errorType: SshHandshakeErrorType,
+        error: Error,
+        config: SshConnectionConfiguration,
+      ) => {
+        this.close(); // Close the dialog.
+        notifySshHandshakeError(errorType, error, config);
+        this.props.onError(error, config);
+        logger.debug(error);
+      },
+    });
+    this._pendingHandshake = connect(
+      delegate,
+      connectionConfig,
+    );
   };
 }
 

@@ -89,6 +89,9 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     initialFormFields: defaultConnectionProfile.params,
     profileHosts: getUniqueHostsForProfiles(initialConnectionProfiles),
 
+    setConnectionFormDirty(dirty: boolean): void {
+      updateState({connectionFormDirty: dirty});
+    },
     onScreenChange: screen => {
       updateState({screen});
     },
@@ -180,6 +183,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
   }
 
   const model = new Model({
+    connectionFormDirty: false,
     screen: 'connect',
     selectedProfileIndex: 0,
     connectionProfiles: initialConnectionProfiles,
