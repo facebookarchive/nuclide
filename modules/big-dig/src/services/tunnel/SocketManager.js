@@ -55,6 +55,8 @@ export class SocketManager extends EventEmitter {
       this._forwardData(message);
     } else if (message.event === 'error') {
       this._handleError(message);
+    } else if (message.event === 'close') {
+      this._endSocket(message);
     }
   }
 
@@ -113,6 +115,13 @@ export class SocketManager extends EventEmitter {
 
   _handleError(message: Object) {
     this.emit('error', message.arg);
+  }
+
+  _endSocket(message: Object) {
+    const socket = this._socketByClientId.get(message.clientId);
+    if (socket != null) {
+      socket.end();
+    }
   }
 
   _sendMessage(msg: Object): void {
