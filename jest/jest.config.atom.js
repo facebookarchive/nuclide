@@ -27,6 +27,7 @@ module.exports = {
     '\\.js$': p('jest/transform.js'),
   },
   setupTestFrameworkScriptFile: p('jest/setupTestFrameworkScriptFile.atom.js'),
+  setupFiles: [p('jest/setup.js')],
   runner: p('modules/jest-atom-runner/build/index.js'),
   testRunner: require.resolve('jest-circus/runner'),
   moduleNameMapper: {
