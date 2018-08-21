@@ -89,53 +89,14 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   _cancelButton: ?Button;
   _okButton: ?Button;
   _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
-  _delegate: SshConnectionDelegate;
   _pendingHandshake: ?IDisposable;
 
-  constructor(props: Props) {
-    super(props);
-
-    this._delegate = decorateSshConnectionDelegateWithTracking({
-      onKeyboardInteractive: (
-        name,
-        instructions,
-        instructionsLang,
-        prompts,
-        finish,
-      ) => {
-        // TODO: Display all prompts, not just the first one.
-        this.requestAuthentication(prompts[0], finish);
-      },
-
-      onWillConnect: () => {},
-
-      onDidConnect: (
-        connection: RemoteConnection,
-        config: SshConnectionConfiguration,
-      ) => {
-        this.close(); // Close the dialog.
-        this.props.onConnect(connection, config);
-      },
-
-      onError: (
-        errorType: SshHandshakeErrorType,
-        error: Error,
-        config: SshConnectionConfiguration,
-      ) => {
-        this.close(); // Close the dialog.
-        notifySshHandshakeError(errorType, error, config);
-        this.props.onError(error, config);
-        logger.debug(error);
-      },
-    });
-
-    this.state = {
-      finish: answers => {},
-      instructions: '',
-      isDirty: false,
-      mode: REQUEST_CONNECTION_DETAILS,
-    };
-  }
+  state = {
+    finish: (answers: Array<string>) => {},
+    instructions: '',
+    isDirty: false,
+    mode: REQUEST_CONNECTION_DETAILS,
+  };
 
   componentDidMount(): void {
     this._focus();
@@ -369,8 +330,41 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           isDirty: false,
           mode: WAITING_FOR_CONNECTION,
         });
+        const delegate = decorateSshConnectionDelegateWithTracking({
+          onKeyboardInteractive: (
+            name,
+            instructions,
+            instructionsLang,
+            prompts,
+            finish,
+          ) => {
+            // TODO: Display all prompts, not just the first one.
+            this.requestAuthentication(prompts[0], finish);
+          },
+
+          onWillConnect: () => {},
+
+          onDidConnect: (
+            connection: RemoteConnection,
+            config: SshConnectionConfiguration,
+          ) => {
+            this.close(); // Close the dialog.
+            this.props.onConnect(connection, config);
+          },
+
+          onError: (
+            errorType: SshHandshakeErrorType,
+            error: Error,
+            config: SshConnectionConfiguration,
+          ) => {
+            this.close(); // Close the dialog.
+            notifySshHandshakeError(errorType, error, config);
+            this.props.onError(error, config);
+            logger.debug(error);
+          },
+        });
         this._pendingHandshake = connect(
-          this._delegate,
+          delegate,
           {
             host: server,
             sshPort: parseInt(sshPort, 10),
