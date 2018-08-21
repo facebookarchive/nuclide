@@ -19,7 +19,7 @@ import http from 'http';
 import EventEmitter from 'events';
 
 // Process to run in vscode's terminal
-const PROCESS_WRAPPER = './process_wrapper.js';
+const PROCESS_WRAPPER = './proxy_executable.js';
 
 type ParsedMessage =
   | {ch: 'stdin', data: string}

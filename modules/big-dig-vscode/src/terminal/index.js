@@ -12,7 +12,7 @@
 
 import * as vscode from 'vscode';
 import {ConnectionWrapper} from '../ConnectionWrapper';
-import {TerminalWrapper} from './TerminalWrapper';
+import {TerminalWrapper} from '../util/TerminalWrapper';
 import {getIntegratedTerminal} from '../configuration';
 import {spawnRemote} from '../RemoteProcess';
 
