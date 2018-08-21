@@ -55,6 +55,9 @@ type Props = {
   connectionPromptInstructions: string,
   setConnectionPromptInstructions: string => void,
 
+  mode: number,
+  setMode: number => void,
+
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the initial
@@ -81,11 +84,7 @@ type Props = {
   onProfileSelected: (index: number) => mixed,
 };
 
-type State = {
-  mode: number,
-};
-
-const REQUEST_CONNECTION_DETAILS = 1;
+export const REQUEST_CONNECTION_DETAILS = 1;
 const WAITING_FOR_CONNECTION = 2;
 const REQUEST_AUTHENTICATION_DETAILS = 3;
 const WAITING_FOR_AUTHENTICATION = 4;
@@ -93,25 +92,21 @@ const WAITING_FOR_AUTHENTICATION = 4;
 /**
  * Component that manages the state transitions as the user connects to a server.
  */
-export default class ConnectionDialog extends React.Component<Props, State> {
+export default class ConnectionDialog extends React.Component<Props> {
   _cancelButton: ?Button;
   _okButton: ?Button;
   _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
   _pendingHandshake: ?IDisposable;
 
-  state = {
-    mode: REQUEST_CONNECTION_DETAILS,
-  };
-
   componentDidMount(): void {
     this._focus();
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    if (this.state.mode !== prevState.mode) {
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.mode !== prevProps.mode) {
       this._focus();
     } else if (
-      this.state.mode === REQUEST_CONNECTION_DETAILS &&
+      this.props.mode === REQUEST_CONNECTION_DETAILS &&
       this.props.selectedProfileIndex === prevProps.selectedProfileIndex &&
       !this.props.dirty &&
       prevProps.dirty &&
@@ -178,7 +173,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const mode = this.state.mode;
+    const mode = this.props.mode;
     let content;
     let isOkDisabled;
     let okButtonText;
@@ -274,7 +269,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   cancel = () => {
-    const mode = this.state.mode;
+    const mode = this.props.mode;
 
     if (this._pendingHandshake != null) {
       this._pendingHandshake.dispose();
@@ -283,7 +278,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
     if (mode === WAITING_FOR_CONNECTION) {
       this.props.setDirty(false);
-      this.setState({mode: REQUEST_CONNECTION_DETAILS});
+      this.props.setMode(REQUEST_CONNECTION_DETAILS);
     } else {
       this.props.onCancel();
       this.close();
@@ -302,7 +297,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   ok = () => {
-    const {mode} = this.state;
+    const {mode} = this.props;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -330,7 +325,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
       if (username && server && cwd && remoteServerCommand) {
         this.props.setDirty(false);
-        this.setState({mode: WAITING_FOR_CONNECTION});
+        this.props.setMode(WAITING_FOR_CONNECTION);
         this._connect({
           host: server,
           sshPort: parseInt(sshPort, 10),
@@ -356,7 +351,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
       this.props.confirmConnectionPrompt([password]);
       this.props.setDirty(false);
-      this.setState({mode: WAITING_FOR_AUTHENTICATION});
+      this.props.setMode(WAITING_FOR_AUTHENTICATION);
     }
   };
 
@@ -367,9 +362,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     this.props.setDirty(false);
     this.props.setConnectionPromptConfirmation(confirm);
     this.props.setConnectionPromptInstructions(instructions.prompt);
-    this.setState({
-      mode: REQUEST_AUTHENTICATION_DETAILS,
-    });
+    this.props.setMode(REQUEST_AUTHENTICATION_DETAILS);
   }
 
   getFormFields(): ?NuclideRemoteConnectionParams {

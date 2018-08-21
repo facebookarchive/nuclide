@@ -31,6 +31,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger as getLogger_} from 'log4js';
 import * as React from 'react';
 import {Observable} from 'rxjs';
+import {REQUEST_CONNECTION_DETAILS} from './ConnectionDialog';
 
 export type OpenConnectionDialogOptions = {
   initialServer?: string,
@@ -101,6 +102,9 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
       connectionPromptInstructions: string,
     ): void => {
       updateState({connectionPromptInstructions});
+    },
+    setConnectionDialogMode: (connectionDialogMode: number): void => {
+      updateState({connectionDialogMode});
     },
 
     onScreenChange: screen => {
@@ -198,6 +202,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     confirmConnectionPrompt: () => {},
     connectionPromptInstructions: '',
     screen: 'connect',
+    connectionDialogMode: REQUEST_CONNECTION_DETAILS,
     selectedProfileIndex: 0,
     connectionProfiles: initialConnectionProfiles,
   });

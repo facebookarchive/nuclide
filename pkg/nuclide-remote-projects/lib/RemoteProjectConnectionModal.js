@@ -39,6 +39,9 @@ export type Props = {
   connectionPromptInstructions: string,
   setConnectionPromptInstructions: string => void,
 
+  connectionDialogMode: number,
+  setConnectionDialogMode: number => void,
+
   connectionProfiles: Array<NuclideRemoteConnectionProfile>,
   initialFormFields:
     | NuclideNewConnectionProfileInitialFields
@@ -117,6 +120,8 @@ export default class RemoteProjectConnectionModal extends React.Component<
             setConnectionPromptInstructions={
               this.props.setConnectionPromptInstructions
             }
+            mode={this.props.connectionDialogMode}
+            setMode={this.props.setConnectionDialogMode}
             selectedProfileIndex={this.props.selectedProfileIndex}
             connectionProfiles={this.props.connectionProfiles}
             onAddProfileClicked={() => {
