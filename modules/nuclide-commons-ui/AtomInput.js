@@ -18,6 +18,7 @@ import {maybeToString} from 'nuclide-commons/string';
 import {microtask} from 'nuclide-commons/observable';
 import debounce from 'nuclide-commons/debounce';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import atomTabIndexForwarder from './atomTabIndexForwarder';
 
 type DefaultProps = {
   disabled: boolean,
@@ -74,6 +75,7 @@ export class AtomInput extends React.Component<Props, State> {
   _debouncedEditorBlur: (blurEvent: Event) => void;
   _debouncedEditorFocus: () => void;
   _isFocused: boolean;
+  _tabIndexForwarding: ?IDisposable;
 
   static defaultProps: DefaultProps = {
     disabled: false,
@@ -279,7 +281,7 @@ export class AtomInput extends React.Component<Props, State> {
       <atom-text-editor
         class={className}
         mini
-        ref={rootNode => (this._rootNode = rootNode)}
+        ref={this._textEditorRef}
         onClick={this.props.onClick}
         onFocus={this._debouncedEditorFocus}
         onBlur={this._debouncedEditorBlur}
@@ -287,6 +289,18 @@ export class AtomInput extends React.Component<Props, State> {
       />
     );
   }
+
+  _textEditorRef = (rootNode: ?HTMLElement): void => {
+    this._rootNode = rootNode;
+    if (rootNode == null) {
+      if (this._tabIndexForwarding != null) {
+        this._tabIndexForwarding.dispose();
+        this._tabIndexForwarding = null;
+      }
+    } else {
+      this._tabIndexForwarding = atomTabIndexForwarder(rootNode);
+    }
+  };
 
   getText(): string {
     return this.state.value;

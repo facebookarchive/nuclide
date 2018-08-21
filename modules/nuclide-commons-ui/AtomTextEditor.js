@@ -19,6 +19,8 @@ import {
   enforceSoftWrap,
 } from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
+import atomTabIndexForwarder from './atomTabIndexForwarder';
 
 const doNothing = () => {};
 
@@ -150,6 +152,19 @@ export class AtomTextEditor extends React.Component<Props, void> {
     const textEditorElement: atom$TextEditorElement = (this._textEditorElement = (document.createElement(
       'atom-text-editor',
     ): any));
+
+    // Make tab move to next element instead of inserting a 'tab' character
+    this._editorDisposables.add(
+      // Make AtomTextEditor properly shift-tabbable
+      atomTabIndexForwarder(textEditorElement),
+      // Make 'Tab' change focus instead of inserting tab character
+      Observable.fromEvent(textEditorElement, 'keydown').subscribe(event => {
+        if (event.key === 'Tab') {
+          event.stopPropagation();
+        }
+      }),
+    );
+
     textEditorElement.setModel(textEditor);
     textEditorElement.setAttribute('tabindex', this.props.tabIndex);
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for
