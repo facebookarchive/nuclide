@@ -10,7 +10,6 @@
  */
 
 import type {Subscription} from 'rxjs';
-import {asyncObjFilter} from 'nuclide-commons/promise';
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {
@@ -28,6 +27,7 @@ import {spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchWithNode} from '../../nuclide-filewatcher-rpc';
+import {VENDOR_PYTHONPATH} from './find-clang-server-args';
 
 export type ClangServerStatus =
   | 'finding_flags'
@@ -70,16 +70,16 @@ async function getLibClangOverrideFromFlags(
     );
     if (libClangPath != null && (await fsPromise.exists(libClangPath))) {
       const realLibClangPath = await fsPromise.realpath(libClangPath);
-      return asyncObjFilter(
-        {
-          libClangLibraryFile: realLibClangPath,
-          pythonPathEnv: nuclideUri.join(
-            realLibClangPath,
-            '../../../../src/llvm/tools/clang/bindings/python',
-          ),
-        },
-        fsPromise.exists,
+      const derivedPythonPath = nuclideUri.join(
+        realLibClangPath,
+        '../../../../src/llvm/tools/clang/bindings/python',
       );
+      return {
+        libClangLibraryFile: realLibClangPath,
+        pythonPathEnv: (await fsPromise.exists(derivedPythonPath))
+          ? derivedPythonPath
+          : VENDOR_PYTHONPATH,
+      };
     }
   }
   return {};

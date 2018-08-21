@@ -13,6 +13,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {runCommand} from 'nuclide-commons/process';
 
+export const VENDOR_PYTHONPATH = nuclideUri.join(__dirname, '../VendorLib');
+
 let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
 
 export type PartialClangServerArgs = {
@@ -64,7 +66,7 @@ export default (async function findClangServerArgs(
   let clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python2.7',
-    pythonPathEnv: nuclideUri.join(__dirname, '../VendorLib'),
+    pythonPathEnv: VENDOR_PYTHONPATH,
   };
 
   if (typeof fbFindClangServerArgs === 'function') {
