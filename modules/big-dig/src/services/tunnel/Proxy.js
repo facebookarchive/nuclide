@@ -138,7 +138,7 @@ export class Proxy extends EventEmitter {
   }
 
   receive(msg: TunnelMessage): void {
-    const clientId = msg.clientId;
+    const {clientId} = msg;
     invariant(clientId != null);
 
     if (msg.event === 'data') {

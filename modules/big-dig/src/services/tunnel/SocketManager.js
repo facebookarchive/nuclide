@@ -11,6 +11,7 @@
  */
 
 import type {Transport} from './Proxy';
+import type {TunnelMessage} from './types';
 
 import invariant from 'assert';
 import net from 'net';
@@ -41,29 +42,31 @@ export class SocketManager extends EventEmitter {
     this._socketByClientId = new Map();
   }
 
-  receive(message: Object) {
-    this._handleMessage(message);
-  }
-
   getId(): string {
     return this._tunnelId;
   }
 
-  _handleMessage(message: Object) {
-    if (message.event === 'connection') {
-      this._createConnection(message);
-    } else if (message.event === 'data') {
-      this._forwardData(message);
-    } else if (message.event === 'error') {
-      this._destroySocket(message);
-    } else if (message.event === 'close') {
-      this._ensureSocketClosed(message);
-    } else if (message.event === 'end') {
-      this._endSocket(message);
+  receive(msg: TunnelMessage): void {
+    const {clientId} = msg;
+    invariant(clientId != null);
+
+    if (msg.event === 'connection') {
+      this._createConnection(clientId);
+    } else if (msg.event === 'data') {
+      invariant(msg.arg != null);
+      this._forwardData(clientId, msg.arg);
+    } else if (msg.event === 'close') {
+      this._ensureSocketClosed(clientId);
+    } else if (msg.event === 'error') {
+      invariant(clientId != null);
+      invariant(msg.error != null);
+      this._destroySocket(clientId, msg.error);
+    } else if (msg.event === 'end') {
+      this._endSocket(clientId);
     }
   }
 
-  _createConnection(message: Object) {
+  _createConnection(clientId: number) {
     const connectOptions = {
       port: this._port,
       family: this._useIPv4 ? 4 : 6,
@@ -77,8 +80,7 @@ export class SocketManager extends EventEmitter {
       this._sendMessage({
         event: 'error',
         error,
-        clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        clientId,
       });
       socket.destroy(error);
     });
@@ -87,39 +89,34 @@ export class SocketManager extends EventEmitter {
       this._sendMessage({
         event: 'data',
         arg: data,
-        clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        clientId,
       });
     });
 
     socket.on('end', () => {
       this._sendMessage({
         event: 'end',
-        clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        clientId,
       });
     });
 
     socket.on('close', () => {
       this._sendMessage({
         event: 'close',
-        clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        clientId,
       });
-      this._deleteSocket(message.clientId);
+      this._deleteSocket(clientId);
     });
 
-    this._socketByClientId.set(message.clientId, socket);
+    this._socketByClientId.set(clientId, socket);
   }
 
-  _forwardData(message: Object) {
-    const socket = this._socketByClientId.get(message.clientId);
+  _forwardData(id: number, data: string) {
+    const socket = this._socketByClientId.get(id);
     if (socket != null) {
-      socket.write(message.arg);
+      socket.write(data);
     } else {
-      logger.error(
-        `data loss - socket already closed or nonexistent: ${message.clientId}`,
-      );
+      logger.error(`data loss - socket already closed or nonexistent: ${id}`);
     }
   }
 
@@ -131,45 +128,40 @@ export class SocketManager extends EventEmitter {
     this._socketByClientId.delete(id);
   }
 
-  _destroySocket(message: Object) {
-    const socket = this._socketByClientId.get(message.clientId);
-    const {error} = message;
+  _destroySocket(id: number, error: Error) {
+    const socket = this._socketByClientId.get(id);
     if (socket != null) {
       socket.destroy(error);
     } else {
       logger.info(
-        `no socket ${
-          message.clientId
-        } found for ${error}, this is expected if it was closed recently`,
+        `no socket ${id} found for ${
+          error.message
+        }, this is expected if it was closed recently`,
       );
     }
   }
 
-  _endSocket(message: Object) {
-    const socket = this._socketByClientId.get(message.clientId);
+  _endSocket(id: number) {
+    const socket = this._socketByClientId.get(id);
     if (socket != null) {
       socket.end();
     } else {
       logger.info(
-        `no socket ${
-          message.clientId
-        } found to be ended, this is expected if it was closed recently`,
+        `no socket ${id} found to be ended, this is expected if it was closed recently`,
       );
     }
   }
 
-  _ensureSocketClosed(message: Object) {
-    const socket = this._socketByClientId.get(message.clientId);
+  _ensureSocketClosed(id: number) {
+    const socket = this._socketByClientId.get(id);
     if (socket != null) {
-      logger.info(
-        `socket ${message.clientId} wasn't closed in time, force closing it`,
-      );
+      logger.info(`socket ${id} wasn't closed in time, force closing it`);
       socket.destroy();
     }
   }
 
-  _sendMessage(msg: Object): void {
-    this._transport.send(Encoder.encode(msg));
+  _sendMessage(msg: TunnelMessage): void {
+    this._transport.send(Encoder.encode({tunnelId: this._tunnelId, ...msg}));
   }
 
   close() {
