@@ -38,6 +38,11 @@
         "0.1.0": "consumeDiagnosticsProviderV1",
         "0.2.0": "consumeDiagnosticsProviderV2"
       }
+    },
+    "fb-gatekeeper": {
+      "versions": {
+        "0.0.0": "consumeGatekeeperService"
+      }
     }
   },
   "providedServices": {
