@@ -65,6 +65,7 @@ async function getTerminalLocation(
   } else {
     const pick = await pickRemoteWorkspaceFolder(
       'Select a folder to open in a terminal:',
+      {skipUIForSingleWorkspace: true},
     );
     if (pick == null) {
       return null;

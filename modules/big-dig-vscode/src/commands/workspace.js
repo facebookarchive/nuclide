@@ -99,17 +99,27 @@ export async function addFolderToWorkspace(
  */
 export async function pickRemoteWorkspaceFolder(
   prompt: string,
+  options?: {
+    /**
+     * If there is only one remote workspace, then return it without prompting
+     * the user. */
+    skipUIForSingleWorkspace?: boolean,
+  },
 ): Promise<?{fs: RemoteFileSystem, folder: vscode.WorkspaceFolder}> {
-  const items = [];
-  for (const fs of getFilesystems()) {
-    items.push(
-      ...fs.getWorkspaceFolders().map(folder => ({
+  const items = Array.prototype.concat(
+    ...getFilesystems().map(fs =>
+      fs.getWorkspaceFolders().map(folder => ({
         label: folder.name,
         description: folder.uri.toString(),
         result: {fs, folder},
       })),
-    );
+    ),
+  );
+
+  if (items.length === 1 && options?.skipUIForSingleWorkspace === true) {
+    return items[0].result;
   }
+
   const pick = await vscode.window.showQuickPick(items, {
     placeHolder: prompt,
   });
