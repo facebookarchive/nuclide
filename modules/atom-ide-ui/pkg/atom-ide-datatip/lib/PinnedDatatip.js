@@ -94,7 +94,7 @@ export class PinnedDatatip {
     this._marker = null;
     this._rangeDecoration = null;
     this._hostElement = document.createElement('div');
-    this._hostElement.className = 'datatip-overlay';
+    this._hostElement.className = 'datatip-element';
     this._boundDispose = this.dispose.bind(this);
     this._boundHandleMouseDown = this.handleMouseDown.bind(this);
     this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
@@ -267,7 +267,7 @@ export class PinnedDatatip {
       _editor.decorateMarker(marker, {
         type: 'overlay',
         position: 'head',
-        class: 'overlay-no-events',
+        class: 'datatip-pinned-overlay',
         item: this._hostElement,
         // above-range datatips currently assume that the overlay is below.
         avoidOverflow: this._position !== 'above-range',

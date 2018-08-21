@@ -1,7 +1,7 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-.datatip-overlay {
+.datatip-element {
   background: @app-background-color;
   box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
   color: @syntax-text-color;
@@ -20,6 +20,18 @@
 
 .datatip-pinned {
   cursor: -webkit-grab;
+}
+
+.datatip-overlay {
+  z-index: 12 !important; // HACK: exceed the z-index of
+                          // .atom-dock-resize-handle-resizable, so that
+                          // mouseleaves aren't triggered when the cursor enters
+                          // the resizable
+}
+
+.datatip-pinned-overlay {
+  &:extend(.datatip-overlay);
+  pointer-events: none;
 }
 
 .datatip-container {
@@ -68,10 +80,6 @@
 }
 
 atom-text-editor {
-
-  .overlay-no-events {
-    pointer-events: none;
-  }
 
   .datatip-highlight-region > .region {
     background: @syntax-selection-color;

@@ -204,6 +204,7 @@ function mountDatatipWithMarker(
       () => {
         editor.decorateMarker(overlayMarker, {
           type: 'overlay',
+          class: 'datatip-overlay',
           position: 'tail',
           item: element,
         });
@@ -266,7 +267,7 @@ class DatatipManagerForEditor {
     this._datatipProviders = datatipProviders;
     this._modifierDatatipProviders = modifierDatatipProviders;
     this._datatipElement = document.createElement('div');
-    this._datatipElement.className = 'datatip-overlay';
+    this._datatipElement.className = 'datatip-element';
     this._datatipState = DatatipState.HIDDEN;
     this._heldKeys = new Set();
     this._interactedWith = false;
