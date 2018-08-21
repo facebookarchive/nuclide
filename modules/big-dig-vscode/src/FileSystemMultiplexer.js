@@ -47,24 +47,20 @@ export class FileSystemMultiplexer implements FileSystemProvider {
 
   /**
    * Registers this FileSystemProvider with vscode.
-   * @return a disposable that unregisters this filesystem. *Does not dispose of
-   * the filesystems it multiplexes over.*
    */
-  register(): vscode.IDisposable {
+  register(): void {
     if (this._fsRegistration != null) {
       throw new Error('Cannot register this filesystem more than once');
     }
 
-    const sub = vscode.workspace.registerFileSystemProvider('big-dig', this, {
-      // TODO(T28798298): automatically determine if case sensitive.
-      isCaseSensitive: true,
-    });
-    this._fsRegistration = sub;
-
-    return new vscode.Disposable(() => {
-      sub.dispose();
-      this._fsRegistration = null;
-    });
+    this._fsRegistration = vscode.workspace.registerFileSystemProvider(
+      'big-dig',
+      this,
+      {
+        // TODO(T28798298): automatically determine if case sensitive.
+        isCaseSensitive: true,
+      },
+    );
   }
 
   /**
