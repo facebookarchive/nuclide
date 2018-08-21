@@ -44,5 +44,10 @@ export interface DebugAdapter {
   transformAttachArguments(
     args: ?AttachRequestArguments,
   ): AttachRequestArguments;
+  // if the adapter overrides this, it can use checks other than just the file
+  // extension to see if it can debug the file (such as the shebang line or
+  // actual file contents. the adapter will be considered viable if canDebugFile
+  // returns true OR the extension is in the `extensions` set.
+  canDebugFile(file: string): Promise<boolean>;
   parseArguments(args: Arguments): Map<string, any>;
 }

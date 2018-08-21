@@ -21,8 +21,10 @@ import type {DebugAdapter} from '../DebugAdapter';
 import type {VsAdapterType} from 'nuclide-debugger-common';
 
 import {getAdapterPackageRoot} from 'nuclide-debugger-common/debugger-registry';
+import {runCommand} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
+import {Observable} from 'rxjs';
 import VSPOptionsParser from '../VSPOptionsParser';
 
 export default class NativeGdbDebugAdapter implements DebugAdapter {
@@ -36,7 +38,7 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
     'program',
   ]);
 
-  extensions: Set<string> = new Set();
+  extensions: Set<string> = new Set('.exe');
   customArguments: Map<string, CustomArgumentType> = new Map();
   muteOutputCategories: Set<string> = new Set('log');
   asyncStopThread: ?number = null;
@@ -79,5 +81,24 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
     args: ?AttachRequestArguments,
   ): AttachRequestArguments {
     return args || {};
+  }
+
+  async canDebugFile(file: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        runCommand('file', ['-b', '--mime-type', file], {
+          dontLogInNuclide: true,
+        })
+          .catch(_ => Observable.of(''))
+          .map(
+            stdout =>
+              stdout.split(/\n/).filter(line => line.startsWith('application/'))
+                .length > 0,
+          )
+          .subscribe(value => resolve(value));
+      } catch (ex) {
+        reject(ex);
+      }
+    });
   }
 }

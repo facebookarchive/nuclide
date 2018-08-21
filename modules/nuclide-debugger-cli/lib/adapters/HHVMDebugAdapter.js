@@ -97,4 +97,9 @@ export default class HHVMDebugAdapter implements DebugAdapter {
       showDummyOnAsyncPause: true,
     };
   }
+
+  async canDebugFile(file: string): Promise<boolean> {
+    // no special cases, just use file extension
+    return false;
+  }
 }

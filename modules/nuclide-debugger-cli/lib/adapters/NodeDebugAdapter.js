@@ -94,6 +94,11 @@ export default class NodeDebugAdapter implements DebugAdapter {
   ): AttachRequestArguments {
     return args || {};
   }
+
+  async canDebugFile(file: string): Promise<boolean> {
+    // no special cases, just use file extension
+    return false;
+  }
 }
 
 function _parseSourceMapPathOverrides(entries: string[]): {[string]: string} {

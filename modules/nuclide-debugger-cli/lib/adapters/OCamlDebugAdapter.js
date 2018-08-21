@@ -73,4 +73,9 @@ export default class OCamlDebugAdapter implements DebugAdapter {
   ): AttachRequestArguments {
     return args || {};
   }
+
+  async canDebugFile(file: string): Promise<boolean> {
+    // no special cases, just use file extension
+    return false;
+  }
 }

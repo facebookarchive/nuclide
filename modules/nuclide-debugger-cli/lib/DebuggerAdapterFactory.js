@@ -61,7 +61,7 @@ export default class DebuggerAdapterFactory {
     return this._debugAdapters.map(adapt => adapt.key);
   }
 
-  adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
+  adapterFromArguments(args: Arguments): Promise<?ParsedVSAdapter> {
     let adapter;
 
     if (args.attach) {
@@ -91,8 +91,8 @@ export default class DebuggerAdapterFactory {
     );
   }
 
-  _parseAttachArguments(args: Arguments): ?ParsedVSAdapter {
-    const adapter = this._adapterFromCommandLine(args);
+  async _parseAttachArguments(args: Arguments): Promise<?ParsedVSAdapter> {
+    const adapter = await this._adapterFromCommandLine(args);
 
     if (adapter == null) {
       throw new Error(
@@ -111,7 +111,7 @@ export default class DebuggerAdapterFactory {
     };
   }
 
-  _parseLaunchArguments(args: Arguments): ?ParsedVSAdapter {
+  async _parseLaunchArguments(args: Arguments): Promise<?ParsedVSAdapter> {
     const launchArgs = args._;
     const program = launchArgs[0];
 
@@ -123,7 +123,7 @@ export default class DebuggerAdapterFactory {
 
     const adapter =
       this._adapterFromCommandLine(args) ||
-      this._adapterFromProgramName(program);
+      (await this._adapterFromProgramName(program));
 
     if (adapter == null) {
       throw new Error(
@@ -160,11 +160,17 @@ export default class DebuggerAdapterFactory {
     return null;
   }
 
-  _adapterFromProgramName(program: string): DebugAdapter {
+  async _adapterFromProgramName(program: string): Promise<DebugAdapter> {
     const programUri = nuclideUri.parsePath(program);
     const ext = programUri.ext;
 
-    const adapters = this._debugAdapters.filter(a => a.extensions.has(ext));
+    const canDebug: Array<boolean> = await Promise.all(
+      this._debugAdapters.map(a => a.canDebugFile(program)),
+    );
+
+    const adapters = this._debugAdapters.filter(
+      (a, idx) => a.extensions.has(ext) || canDebug[idx],
+    );
 
     if (adapters.length > 1) {
       throw new Error(

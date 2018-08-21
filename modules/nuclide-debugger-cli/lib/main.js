@@ -57,6 +57,7 @@ function buildLogger(): log4js$Logger {
       },
     ],
     levels: {
+      'nuclide-commons/process': 'FATAL',
       '[all]': 'DEBUG',
     },
   };
@@ -147,7 +148,7 @@ async function main(): Promise<void> {
     let adapter;
 
     try {
-      adapter = debuggerAdapterFactory.adapterFromArguments(args);
+      adapter = await debuggerAdapterFactory.adapterFromArguments(args);
     } catch (error) {
       cli.outputLine(error.message);
       cli.outputLine();
