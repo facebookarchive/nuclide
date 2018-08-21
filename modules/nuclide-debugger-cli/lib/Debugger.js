@@ -652,7 +652,9 @@ export default class Debugger implements DebuggerInterface {
     }
 
     const oldState = breakpoint.state;
-    breakpoint.setState(BreakpointState.ENABLED);
+    breakpoint.setState(
+      enabled ? BreakpointState.ENABLED : BreakpointState.DISABLED,
+    );
 
     if (path != null) {
       try {
