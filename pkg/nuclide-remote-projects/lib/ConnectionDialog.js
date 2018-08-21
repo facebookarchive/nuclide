@@ -46,6 +46,12 @@ invariant(remote != null);
 type Props = {
   dirty: boolean,
   setDirty: boolean => void,
+
+  confirmConnectionPrompt: (answers: Array<string>) => void,
+  setConnectionPromptConfirmation: (
+    confirm: (answers: Array<string>) => mixed,
+  ) => void,
+
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the initial
@@ -73,7 +79,6 @@ type Props = {
 };
 
 type State = {
-  finish: (answers: Array<string>) => mixed,
   instructions: string,
   mode: number,
 };
@@ -93,7 +98,6 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   _pendingHandshake: ?IDisposable;
 
   state = {
-    finish: (answers: Array<string>) => {},
     instructions: '',
     mode: REQUEST_CONNECTION_DETAILS,
   };
@@ -349,7 +353,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       invariant(authenticationPrompt instanceof AuthenticationPrompt);
       const password = authenticationPrompt.getPassword();
 
-      this.state.finish([password]);
+      this.props.confirmConnectionPrompt([password]);
       this.props.setDirty(false);
       this.setState({mode: WAITING_FOR_AUTHENTICATION});
     }
@@ -357,11 +361,11 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
   requestAuthentication(
     instructions: {echo: boolean, prompt: string},
-    finish: (answers: Array<string>) => void,
+    confirm: (answers: Array<string>) => void,
   ) {
     this.props.setDirty(false);
+    this.props.setConnectionPromptConfirmation(confirm);
     this.setState({
-      finish,
       instructions: instructions.prompt,
       mode: REQUEST_AUTHENTICATION_DETAILS,
     });
@@ -407,10 +411,10 @@ export default class ConnectionDialog extends React.Component<Props, State> {
         instructions,
         instructionsLang,
         prompts,
-        finish,
+        confirm,
       ) => {
         // TODO: Display all prompts, not just the first one.
-        this.requestAuthentication(prompts[0], finish);
+        this.requestAuthentication(prompts[0], confirm);
       },
 
       onWillConnect: () => {},

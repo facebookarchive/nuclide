@@ -30,6 +30,12 @@ type Screen = 'connect' | 'create-connection';
 export type Props = {
   connectionFormDirty: boolean,
   setConnectionFormDirty: boolean => void,
+
+  confirmConnectionPrompt: (answers: Array<string>) => void,
+  setConnectionPromptConfirmation: (
+    confirm: (answers: Array<string>) => mixed,
+  ) => void,
+
   connectionProfiles: Array<NuclideRemoteConnectionProfile>,
   initialFormFields:
     | NuclideNewConnectionProfileInitialFields
@@ -98,6 +104,10 @@ export default class RemoteProjectConnectionModal extends React.Component<
           <ConnectionDialog
             dirty={this.props.connectionFormDirty}
             setDirty={this.props.setConnectionFormDirty}
+            confirmConnectionPrompt={this.props.confirmConnectionPrompt}
+            setConnectionPromptConfirmation={
+              this.props.setConnectionPromptConfirmation
+            }
             selectedProfileIndex={this.props.selectedProfileIndex}
             connectionProfiles={this.props.connectionProfiles}
             onAddProfileClicked={() => {
