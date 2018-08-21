@@ -82,6 +82,7 @@ export default class VsDebugSession extends V8Protocol {
   _onDidCustom: Subject<DebugProtocol.DebugEvent>;
   _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
   _runInTerminalHandler: ?RunInTerminalHandler;
+  _isReadOnly: boolean;
 
   constructor(
     id: string,
@@ -92,12 +93,14 @@ export default class VsDebugSession extends V8Protocol {
     sendPreprocessors?: MessageProcessor[] = [],
     receivePreprocessors?: MessageProcessor[] = [],
     runInTerminalHandler?: RunInTerminalHandler,
+    isReadOnly?: boolean = false,
   ) {
     super(id, logger, sendPreprocessors, receivePreprocessors);
     this._adapterExecutable = adapterExecutable;
     this._logger = logger;
     this._readyForBreakpoints = false;
     this._spawner = spawner == null ? new VsAdapterSpawner() : spawner;
+    this._isReadOnly = isReadOnly;
     this._adapterAnalyticsExtras = {
       ...adapterAnalyticsExtras,
       // $FlowFixMe flow doesn't consider uuid callable, but it is
@@ -376,6 +379,10 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   next(args: DebugProtocol.NextArguments): Promise<DebugProtocol.NextResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot step.');
+    }
+
     this._fireFakeContinued(args.threadId);
     return this.send('next', args);
   }
@@ -383,6 +390,10 @@ export default class VsDebugSession extends V8Protocol {
   stepIn(
     args: DebugProtocol.StepInArguments,
   ): Promise<DebugProtocol.StepInResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot step.');
+    }
+
     this._fireFakeContinued(args.threadId);
     return this.send('stepIn', args);
   }
@@ -390,6 +401,10 @@ export default class VsDebugSession extends V8Protocol {
   stepOut(
     args: DebugProtocol.StepOutArguments,
   ): Promise<DebugProtocol.StepOutResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot step.');
+    }
+
     this._fireFakeContinued(args.threadId);
     return this.send('stepOut', args);
   }
@@ -397,6 +412,10 @@ export default class VsDebugSession extends V8Protocol {
   continue(
     args: DebugProtocol.ContinueArguments,
   ): Promise<DebugProtocol.ContinueResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot continue.');
+    }
+
     this._fireFakeContinued(args.threadId);
     return this.send('continue', args);
   }
@@ -404,12 +423,20 @@ export default class VsDebugSession extends V8Protocol {
   pause(
     args: DebugProtocol.PauseArguments,
   ): Promise<DebugProtocol.PauseResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot pause.');
+    }
+
     return this.send('pause', args);
   }
 
   setVariable(
     args: DebugProtocol.SetVariableArguments,
   ): Promise<DebugProtocol.SetVariableResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot set variable.');
+    }
+
     return this.send('setVariable', args);
   }
 
@@ -417,6 +444,10 @@ export default class VsDebugSession extends V8Protocol {
     args: DebugProtocol.RestartFrameArguments,
     threadId: number,
   ): Promise<DebugProtocol.RestartFrameResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot restart frame.');
+    }
+
     this._fireFakeContinued(threadId);
     return this.send('restartFrame', args);
   }
@@ -516,6 +547,10 @@ export default class VsDebugSession extends V8Protocol {
   reverseContinue(
     args: DebugProtocol.ReverseContinueArguments,
   ): Promise<DebugProtocol.ReverseContinueResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot reverse continue.');
+    }
+
     this._fireFakeContinued(args.threadId);
     return this.send('reverseContinue', args);
   }
@@ -523,6 +558,10 @@ export default class VsDebugSession extends V8Protocol {
   nuclide_continueToLocation(
     args: DebugProtocol.nuclide_ContinueToLocationArguments,
   ): Promise<DebugProtocol.nuclide_ContinueToLocationResponse> {
+    if (this._isReadOnly) {
+      throw new Error('Read only target cannot run to location.');
+    }
+
     return this.custom('nuclide_continueToLocation', args);
   }
 

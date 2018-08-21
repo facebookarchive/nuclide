@@ -10,8 +10,7 @@
  * @format
  */
 
-import type {DebuggerModeType, IDebugService, IThread} from '../types';
-import type {ControlButtonSpecification} from 'nuclide-debugger-common';
+import type {IDebugService, IThread, IProcess} from '../types';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -34,9 +33,9 @@ type DebuggerSteppingComponentProps = {
 };
 
 type DebuggerSteppingComponentState = {
-  debuggerMode: DebuggerModeType,
   waitingForPause: boolean,
-  customControlButtons: Array<ControlButtonSpecification>,
+  focusedProcess: ?IProcess,
+  focusedThread: ?IThread,
 };
 
 const defaultTooltipOptions = {
@@ -101,9 +100,9 @@ export default class DebuggerSteppingComponent extends React.Component<
 
     this._disposables = new UniversalDisposable();
     this.state = {
-      debuggerMode: DebuggerMode.STOPPED,
       waitingForPause: false,
-      customControlButtons: [],
+      focusedProcess: null,
+      focusedThread: null,
     };
   }
 
@@ -124,25 +123,19 @@ export default class DebuggerSteppingComponent extends React.Component<
         .let(fastDebounce(10))
         .subscribe(() => {
           const {viewModel} = this.props.service;
-          const {focusedProcess} = viewModel;
+          const {focusedProcess, focusedThread} = viewModel;
           const debuggerMode =
             focusedProcess == null
               ? DebuggerMode.STOPPED
               : focusedProcess.debuggerMode;
 
-          this.setState({
-            debuggerMode,
-            customControlButtons:
-              focusedProcess == null
-                ? []
-                : focusedProcess.configuration.customControlButtons || [],
-          });
-          if (
-            this.state.waitingForPause &&
-            debuggerMode !== DebuggerMode.RUNNING
-          ) {
-            this._setWaitingForPause(false);
-          }
+          this.setState(prevState => ({
+            focusedProcess,
+            focusedThread,
+            waitingForPause:
+              prevState.waitingForPause &&
+              debuggerMode === DebuggerMode.RUNNING,
+          }));
         }),
     );
   }
@@ -184,9 +177,20 @@ export default class DebuggerSteppingComponent extends React.Component<
   };
 
   render(): React.Node {
-    const {debuggerMode, waitingForPause, customControlButtons} = this.state;
+    const {waitingForPause, focusedProcess, focusedThread} = this.state;
     const {service} = this.props;
-    const {focusedProcess, focusedThread} = service.viewModel;
+    const debuggerMode =
+      focusedProcess == null
+        ? DebuggerMode.STOPPED
+        : focusedProcess.debuggerMode;
+    const readOnly =
+      focusedProcess == null
+        ? false
+        : Boolean(focusedProcess.configuration.isReadOnly);
+    const customControlButtons =
+      focusedProcess == null
+        ? []
+        : focusedProcess.configuration.customControlButtons || [];
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
@@ -208,7 +212,7 @@ export default class DebuggerSteppingComponent extends React.Component<
         <Button
           icon="sync"
           className="debugger-stepping-button-separated"
-          disabled={isStopped}
+          disabled={isStopped || readOnly}
           tooltip={{
             ...defaultTooltipOptions,
             title:
@@ -233,7 +237,7 @@ export default class DebuggerSteppingComponent extends React.Component<
     }) => (
       <SVGButton
         icon={props.icon}
-        disabled={props.disabled}
+        disabled={props.disabled || readOnly}
         tooltip={{
           ...defaultTooltipOptions,
           title: props.title,
@@ -264,7 +268,7 @@ export default class DebuggerSteppingComponent extends React.Component<
         <ButtonGroup className="debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
-            disabled={isPausing || pausableThread == null}
+            disabled={isPausing || pausableThread == null || readOnly}
             tooltip={{
               ...defaultTooltipOptions,
               title: playPauseTitle,

@@ -162,6 +162,9 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     const {service, title, process} = this.props;
     const {threads, isFocused, isCollapsed} = this.state;
 
+    const readOnly =
+      service.viewModel.focusedProcess != null &&
+      service.viewModel.focusedProcess.configuration.isReadOnly;
     const handleTitleClick = event => {
       if (!this._computeIsFocused()) {
         service.viewModel.setFocusedProcess(process, true);
@@ -200,6 +203,7 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
           }
           title={title}>
           {title}
+          {readOnly ? ' (READ ONLY)' : null}
         </span>
       </span>
     );

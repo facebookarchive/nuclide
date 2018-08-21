@@ -77,6 +77,14 @@ export function getNativeAutoGenConfig(
     defaultValue: '',
     visible: true,
   };
+  const corePath = {
+    name: 'coreDumpPath',
+    type: 'path',
+    description: 'Optional path to a core file to load in the debugger',
+    required: false,
+    defaultValue: '',
+    visible: true,
+  };
 
   const debugTypeMessage = `using ${
     vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
@@ -86,7 +94,7 @@ export function getNativeAutoGenConfig(
     launch: true,
     vsAdapterType,
     threads: true,
-    properties: [program, cwd, args, env, sourcePath],
+    properties: [program, cwd, args, env, sourcePath, corePath],
     scriptPropertyName: 'program',
     cwdPropertyName: 'working directory',
     header: <p>Debug native programs {debugTypeMessage}.</p>,

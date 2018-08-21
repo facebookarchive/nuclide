@@ -299,7 +299,10 @@ class Activation {
               if (target.dataset.threadid) {
                 const threadId = parseInt(target.dataset.threadid, 10);
                 if (!Number.isNaN(threadId)) {
-                  return this._supportsTerminateThreadsRequest();
+                  return (
+                    this._supportsTerminateThreadsRequest() &&
+                    !this._isReadOnlyTarget()
+                  );
                 }
               }
               return false;
@@ -371,7 +374,8 @@ class Activation {
                 label: 'Run to Location',
                 command: 'debugger:run-to-location',
                 shouldDisplay: event =>
-                  this._service.getDebuggerMode() === DebuggerMode.PAUSED,
+                  this._service.getDebuggerMode() === DebuggerMode.PAUSED &&
+                  !this._isReadOnlyTarget(),
               },
             ],
           },
@@ -544,7 +548,17 @@ class Activation {
     return disposable;
   }
 
+  _isReadOnlyTarget(): boolean {
+    const {focusedProcess} = this._service.viewModel;
+    return (
+      focusedProcess != null && Boolean(focusedProcess.configuration.isReadOnly)
+    );
+  }
+
   _continue() {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
@@ -560,6 +574,9 @@ class Activation {
   }
 
   _restart() {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const {focusedProcess} = this._service.viewModel;
     if (focusedProcess) {
       this._service.restartProcess(focusedProcess);
@@ -567,6 +584,9 @@ class Activation {
   }
 
   _stepOver() {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_OVER);
@@ -575,6 +595,9 @@ class Activation {
   }
 
   _stepInto() {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_INTO);
@@ -583,6 +606,9 @@ class Activation {
   }
 
   _stepOut() {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_OUT);
@@ -652,6 +678,9 @@ class Activation {
   }
 
   _terminateThread(event: any) {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     const target: HTMLElement = event.target;
     if (target.dataset.threadid) {
       const threadId = parseInt(target.dataset.threadid, 10);
@@ -813,6 +842,9 @@ class Activation {
   }
 
   _runToLocation(event) {
+    if (this._isReadOnlyTarget()) {
+      return;
+    }
     this._executeWithEditorPath(event, (path, line) => {
       this._service.runToLocation(path, line);
     });

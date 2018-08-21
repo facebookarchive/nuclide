@@ -1515,6 +1515,7 @@ export default class DebugService implements IDebugService {
       clientPreprocessors,
       adapterPreprocessors,
       this._runInTerminal,
+      Boolean(configuration.isReadOnly),
     );
   }
 
