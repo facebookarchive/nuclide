@@ -20,7 +20,7 @@ export interface ConsoleIO {
   more(text: string): void;
   setPrompt(prompt: ?string): void;
   prompt(): void;
-  stopInput(): void;
+  stopInput(keepPromptWhenStopped?: boolean): void;
   startInput(): void;
   observeInterrupts(): Observable<void>;
   observeLines(): Observable<string>;

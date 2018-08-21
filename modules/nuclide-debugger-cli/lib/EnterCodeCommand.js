@@ -53,7 +53,7 @@ export default class EnterCode implements Command {
       "Enter code, end with a single dot '.'. Use ctrl+c to abort.\n",
     );
     this._pendingText = '';
-    this._console.stopInput();
+    this._console.stopInput(true);
     this._console.setPrompt('... ');
 
     this._console.prompt();

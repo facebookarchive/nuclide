@@ -25,6 +25,7 @@ export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
   _cli: LineEditor;
   _inputStopped = false;
+  _keepPromptWhenStopped: boolean = false;
   _shouldPrompt = false;
   _lastLine = '';
   _overridePrompt: ?string = null;
@@ -124,7 +125,7 @@ export default class CommandLine implements ConsoleIO {
   }
 
   _updatePrompt(): void {
-    if (this._inputStopped) {
+    if (this._inputStopped && !this._keepPromptWhenStopped) {
       this._cli.setPrompt('');
     } else {
       this._cli.setPrompt(
@@ -169,7 +170,8 @@ export default class CommandLine implements ConsoleIO {
     this._cli.prompt();
   }
 
-  stopInput(): void {
+  stopInput(keepPromptWhenStopped?: boolean): void {
+    this._keepPromptWhenStopped = keepPromptWhenStopped === true;
     this._inputStopped = true;
     this._shouldPrompt = true;
     this._updatePrompt();

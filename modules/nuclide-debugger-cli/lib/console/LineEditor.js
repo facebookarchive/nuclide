@@ -307,7 +307,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   async prompt(): Promise<void> {
-    this._output.write(`\n${this._parsedPrompt.filteredText}`);
+    this._output.write(`\r${this._parsedPrompt.filteredText}`);
     if (this._tty) {
       const cursorPos = await this._getCursorPosition();
       this._fieldRow = cursorPos.row;
