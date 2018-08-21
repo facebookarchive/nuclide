@@ -75,6 +75,17 @@ export class SocketManager extends EventEmitter {
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
     const socket = net.createConnection(connectOptions);
 
+    // forward events over the transport
+    ['timeout', 'end', 'close', 'data'].forEach(event => {
+      socket.on(event, arg => {
+        this._sendMessage({
+          event,
+          arg,
+          clientId,
+        });
+      });
+    });
+
     socket.on('error', error => {
       logger.error('error on socket: ', error);
       this._sendMessage({
@@ -84,27 +95,7 @@ export class SocketManager extends EventEmitter {
       });
       socket.destroy(error);
     });
-
-    socket.on('data', data => {
-      this._sendMessage({
-        event: 'data',
-        arg: data,
-        clientId,
-      });
-    });
-
-    socket.on('end', () => {
-      this._sendMessage({
-        event: 'end',
-        clientId,
-      });
-    });
-
     socket.on('close', () => {
-      this._sendMessage({
-        event: 'close',
-        clientId,
-      });
       this._deleteSocket(clientId);
     });
 

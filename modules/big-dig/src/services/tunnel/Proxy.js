@@ -76,7 +76,6 @@ export class Proxy extends EventEmitter {
     return new Promise((resolve, reject) => {
       this._server = net.createServer(socket => {
         const clientId: number = socket.remotePort;
-        this._socketByClientId.set(clientId, socket);
         this._sendMessage({
           event: 'connection',
           clientId,
@@ -103,6 +102,8 @@ export class Proxy extends EventEmitter {
           socket.destroy(error);
         });
         socket.on('close', () => this._deleteSocket(clientId));
+
+        this._socketByClientId.set(clientId, socket);
       });
 
       this._server.on('error', error => {
