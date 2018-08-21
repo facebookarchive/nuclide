@@ -49,9 +49,16 @@ export default class ConfigFile {
         try {
           const contents = fs.readFileSync(fname, 'utf8');
           const presets = JSON.parse(contents);
-          const combined = {presets: {}};
-          Object.assign(combined, agg, presets);
-          return combined;
+          return {
+            aliases: {
+              ...agg.aliases,
+              ...presets.aliases,
+            },
+            presets: {
+              ...agg.presets,
+              ...presets.presets,
+            },
+          };
         } catch (_) {
           throw new Error(`Invalid JSON in config file ${fname}.`);
         }
