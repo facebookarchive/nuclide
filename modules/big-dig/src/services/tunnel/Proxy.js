@@ -102,7 +102,7 @@ export class Proxy extends EventEmitter {
           });
           socket.destroy(error);
         });
-        socket.once('close', this._closeSocket.bind(this, clientId));
+        socket.on('close', () => this._deleteSocket(clientId));
       });
 
       this._server.on('error', error => {
@@ -161,7 +161,7 @@ export class Proxy extends EventEmitter {
     }
   }
 
-  _closeSocket(id: number) {
+  _deleteSocket(id: number) {
     logger.info(`socket ${id} closed`);
     const socket = this._socketByClientId.get(id);
     invariant(socket);

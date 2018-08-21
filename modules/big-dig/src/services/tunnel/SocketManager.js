@@ -12,6 +12,7 @@
 
 import type {Transport} from './Proxy';
 
+import invariant from 'assert';
 import net from 'net';
 import {getLogger} from 'log4js';
 import Encoder from './Encoder';
@@ -90,15 +91,12 @@ export class SocketManager extends EventEmitter {
     });
 
     socket.on('close', () => {
-      logger.info(
-        `received close event on socket ${message.clientId} in socketManager`,
-      );
       this._sendMessage({
         event: 'close',
         clientId: message.clientId,
         tunnelId: this._tunnelId,
       });
-      this._socketByClientId.delete(message.clientId);
+      this._deleteSocket(message.clientId);
     });
 
     this._socketByClientId.set(message.clientId, socket);
@@ -111,6 +109,14 @@ export class SocketManager extends EventEmitter {
     } else {
       logger.error('no socket found for this data: ', message);
     }
+  }
+
+  _deleteSocket(id: number) {
+    logger.info(`socket ${id} closed`);
+    const socket = this._socketByClientId.get(id);
+    invariant(socket);
+    socket.removeAllListeners();
+    this._socketByClientId.delete(id);
   }
 
   _destroySocket(message: Object) {
