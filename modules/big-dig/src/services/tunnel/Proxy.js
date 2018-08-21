@@ -153,11 +153,13 @@ export class Proxy extends EventEmitter {
       invariant(arg != null);
       socket.write(arg);
     } else if (msg.event === 'close') {
-      socket.end();
+      this._ensureSocketClosed(clientId);
     } else if (msg.event === 'error') {
       invariant(clientId != null);
       invariant(msg.error != null);
       this._destroySocket(clientId, msg.error);
+    } else if (msg.event === 'end') {
+      this._endSocket(clientId);
     }
   }
 
@@ -173,6 +175,21 @@ export class Proxy extends EventEmitter {
     const socket = this._socketByClientId.get(id);
     if (socket != null) {
       socket.destroy(error);
+    }
+  }
+
+  _endSocket(id: number) {
+    const socket = this._socketByClientId.get(id);
+    if (socket != null) {
+      socket.end();
+    }
+  }
+
+  _ensureSocketClosed(id: number) {
+    const socket = this._socketByClientId.get(id);
+    if (socket != null) {
+      logger.info(`socket ${id} wasn't closed in time, force closing it`);
+      socket.destroy();
     }
   }
 

@@ -57,6 +57,8 @@ export class SocketManager extends EventEmitter {
     } else if (message.event === 'error') {
       this._destroySocket(message);
     } else if (message.event === 'close') {
+      this._ensureSocketClosed(message);
+    } else if (message.event === 'end') {
       this._endSocket(message);
     }
   }
@@ -85,6 +87,14 @@ export class SocketManager extends EventEmitter {
       this._sendMessage({
         event: 'data',
         arg: data,
+        clientId: message.clientId,
+        tunnelId: this._tunnelId,
+      });
+    });
+
+    socket.on('end', () => {
+      this._sendMessage({
+        event: 'end',
         clientId: message.clientId,
         tunnelId: this._tunnelId,
       });
@@ -131,6 +141,16 @@ export class SocketManager extends EventEmitter {
     const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
       socket.end();
+    }
+  }
+
+  _ensureSocketClosed(message: Object) {
+    const socket = this._socketByClientId.get(message.clientId);
+    if (socket != null) {
+      logger.info(
+        `socket ${message.clientId} wasn't closed in time, force closing it`,
+      );
+      socket.destroy();
     }
   }
 
