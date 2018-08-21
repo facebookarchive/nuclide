@@ -54,7 +54,7 @@ export class SocketManager extends EventEmitter {
     } else if (message.event === 'data') {
       this._forwardData(message);
     } else if (message.event === 'error') {
-      this._handleError(message);
+      this._destroySocket(message);
     } else if (message.event === 'close') {
       this._endSocket(message);
     }
@@ -70,14 +70,14 @@ export class SocketManager extends EventEmitter {
     const socket = net.createConnection(connectOptions);
 
     socket.on('error', error => {
-      logger.error(error);
+      logger.error('error on socket: ', error);
       this._sendMessage({
         event: 'error',
         error,
         clientId: message.clientId,
         tunnelId: this._tunnelId,
       });
-      socket.end();
+      socket.destroy(error);
     });
 
     socket.on('data', data => {
@@ -113,8 +113,12 @@ export class SocketManager extends EventEmitter {
     }
   }
 
-  _handleError(message: Object) {
-    this.emit('error', message.arg);
+  _destroySocket(message: Object) {
+    const socket = this._socketByClientId.get(message.clientId);
+    const {error} = message;
+    if (socket != null) {
+      socket.destroy(error);
+    }
   }
 
   _endSocket(message: Object) {

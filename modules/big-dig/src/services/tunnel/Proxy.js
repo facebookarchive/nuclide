@@ -83,7 +83,7 @@ export class Proxy extends EventEmitter {
         });
 
         // forward events over the transport
-        ['timeout', 'error', 'end', 'close', 'data'].forEach(event => {
+        ['timeout', 'end', 'close', 'data'].forEach(event => {
           socket.on(event, arg => {
             this._sendMessage({
               event,
@@ -93,8 +93,14 @@ export class Proxy extends EventEmitter {
           });
         });
 
-        socket.once('error', error => {
-          this._destroySocket(clientId, error);
+        socket.on('error', error => {
+          logger.error('error on socket: ', error);
+          this._sendMessage({
+            event: 'error',
+            error,
+            clientId,
+          });
+          socket.destroy(error);
         });
         socket.once('close', this._closeSocket.bind(this, clientId));
       });
@@ -164,11 +170,10 @@ export class Proxy extends EventEmitter {
   }
 
   _destroySocket(id: number, error: Error) {
-    logger.error('error on socket: ', error);
     const socket = this._socketByClientId.get(id);
-    invariant(socket);
-    socket.destroy();
-    this._closeSocket(id);
+    if (socket != null) {
+      socket.destroy(error);
+    }
   }
 
   _sendMessage(msg: TunnelMessage): void {
