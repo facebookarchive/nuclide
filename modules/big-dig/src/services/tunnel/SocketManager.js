@@ -117,7 +117,9 @@ export class SocketManager extends EventEmitter {
     if (socket != null) {
       socket.write(message.arg);
     } else {
-      logger.error('no socket found for this data: ', message);
+      logger.error(
+        `data loss - socket already closed or nonexistent: ${message.clientId}`,
+      );
     }
   }
 
@@ -134,6 +136,12 @@ export class SocketManager extends EventEmitter {
     const {error} = message;
     if (socket != null) {
       socket.destroy(error);
+    } else {
+      logger.info(
+        `no socket ${
+          message.clientId
+        } found for ${error}, this is expected if it was closed recently`,
+      );
     }
   }
 
@@ -141,6 +149,12 @@ export class SocketManager extends EventEmitter {
     const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
       socket.end();
+    } else {
+      logger.info(
+        `no socket ${
+          message.clientId
+        } found to be ended, this is expected if it was closed recently`,
+      );
     }
   }
 

@@ -140,18 +140,10 @@ export class Proxy extends EventEmitter {
   receive(msg: TunnelMessage): void {
     const clientId = msg.clientId;
     invariant(clientId != null);
-    const socket = this._socketByClientId.get(clientId);
-    const arg = msg.arg;
 
-    if (socket == null) {
-      logger.warn(
-        `received a ${
-          msg.event
-        } message for a non-existent or already closed socket`,
-      );
-    } else if (msg.event === 'data') {
-      invariant(arg != null);
-      socket.write(arg);
+    if (msg.event === 'data') {
+      invariant(msg.arg != null);
+      this._forwardData(clientId, msg.arg);
     } else if (msg.event === 'close') {
       this._ensureSocketClosed(clientId);
     } else if (msg.event === 'error') {
@@ -160,6 +152,15 @@ export class Proxy extends EventEmitter {
       this._destroySocket(clientId, msg.error);
     } else if (msg.event === 'end') {
       this._endSocket(clientId);
+    }
+  }
+
+  _forwardData(id: number, data: string) {
+    const socket = this._socketByClientId.get(id);
+    if (socket != null) {
+      socket.write(data);
+    } else {
+      logger.error(`data loss - socket already closed or nonexistent: ${id}`);
     }
   }
 
@@ -175,6 +176,12 @@ export class Proxy extends EventEmitter {
     const socket = this._socketByClientId.get(id);
     if (socket != null) {
       socket.destroy(error);
+    } else {
+      logger.info(
+        `no socket ${id} found for ${
+          error.message
+        }, this is expected if it was closed recently`,
+      );
     }
   }
 
@@ -182,6 +189,10 @@ export class Proxy extends EventEmitter {
     const socket = this._socketByClientId.get(id);
     if (socket != null) {
       socket.end();
+    } else {
+      logger.info(
+        `no socket ${id} found to be ended, this is expected if it was closed recently`,
+      );
     }
   }
 
