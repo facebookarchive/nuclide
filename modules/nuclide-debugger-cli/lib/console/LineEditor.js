@@ -70,6 +70,7 @@ export default class LineEditor extends EventEmitter {
   _writing: boolean;
   _writeQueue: ?string;
   _firstOut: boolean; // true if write is first one since entered command
+  _closePending: boolean;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -143,6 +144,17 @@ export default class LineEditor extends EventEmitter {
   }
 
   close() {
+    this._closePending = true;
+    if (this._cursorPromises.size !== 0) {
+      // we don't want to quit with cursor promises pending, because the TTY
+      // driver will still send the response after the app exits, resulting
+      // in garbage at the shell prompt
+      return;
+    }
+    this._close();
+  }
+
+  _close() {
     if (this._onClose != null) {
       this._input.removeListener('close', this._onClose);
       this._onClose = null;
@@ -438,6 +450,7 @@ export default class LineEditor extends EventEmitter {
 
   _deleteRight(eofOnEmpty: boolean): void {
     if (this._buffer === '' && eofOnEmpty) {
+      this._output.write('\r\n');
       this.close();
       return;
     }
@@ -530,6 +543,12 @@ export default class LineEditor extends EventEmitter {
     return new Promise((resolve, reject) => {
       if (!this._tty) {
         reject(new Error('_getCursorPosition called and not a TTY'));
+        return;
+      }
+
+      if (this._closePending) {
+        reject(new Error('requesting cursor position while closing the app'));
+        return;
       }
 
       const completion: CursorCompletion = {
@@ -555,6 +574,9 @@ export default class LineEditor extends EventEmitter {
       completion.resolve(pos);
     }
     this._cursorPromises.clear();
+    if (this._closePending) {
+      this._close();
+    }
   }
 
   _onResize() {
