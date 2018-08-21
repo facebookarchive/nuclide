@@ -20,6 +20,7 @@ import type {
   SshConnectionDelegate,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -89,7 +90,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   _okButton: ?Button;
   _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
   _delegate: SshConnectionDelegate;
-  _pendingHandshake: ?rxjs$ISubscription;
+  _pendingHandshake: ?IDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -310,7 +311,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     const mode = this.state.mode;
 
     if (this._pendingHandshake != null) {
-      this._pendingHandshake.unsubscribe();
+      this._pendingHandshake.dispose();
       this._pendingHandshake = null;
     }
 
@@ -327,7 +328,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
   close() {
     if (this._pendingHandshake != null) {
-      this._pendingHandshake.unsubscribe();
+      this._pendingHandshake.dispose();
       this._pendingHandshake = null;
     }
 
@@ -368,18 +369,21 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           isDirty: false,
           mode: WAITING_FOR_CONNECTION,
         });
-        this._pendingHandshake = this._connect({
-          host: server,
-          sshPort: parseInt(sshPort, 10),
-          username,
-          pathToPrivateKey,
-          authMethod,
-          cwd,
-          remoteServerCommand,
-          password,
-          // Modified profiles probably don't match the display title.
-          displayTitle: isDirty ? '' : displayTitle,
-        });
+        this._pendingHandshake = connect(
+          this._delegate,
+          {
+            host: server,
+            sshPort: parseInt(sshPort, 10),
+            username,
+            pathToPrivateKey,
+            authMethod,
+            cwd,
+            remoteServerCommand,
+            password,
+            // Modified profiles probably don't match the display title.
+            displayTitle: isDirty ? '' : displayTitle,
+          },
+        );
       } else {
         remote.dialog.showErrorBox(
           'Missing information',
@@ -444,9 +448,14 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     this.setState({isDirty: false});
     this.props.onProfileSelected(selectedProfileIndex);
   };
+}
 
-  _connect(connectionConfig: SshConnectionConfiguration): rxjs$ISubscription {
-    return Observable.defer(() =>
+function connect(
+  delegate: SshConnectionDelegate,
+  connectionConfig: SshConnectionConfiguration,
+): IDisposable {
+  return new UniversalDisposable(
+    Observable.defer(() =>
       RemoteConnection.reconnect(
         connectionConfig.host,
         connectionConfig.cwd,
@@ -455,13 +464,13 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     )
       .switchMap(existingConnection => {
         if (existingConnection != null) {
-          this._delegate.onWillConnect(connectionConfig); // required for the API
-          this._delegate.onDidConnect(existingConnection, connectionConfig);
+          delegate.onWillConnect(connectionConfig); // required for the API
+          delegate.onDidConnect(existingConnection, connectionConfig);
           return Observable.empty();
         }
         const sshHandshake = connectBigDigSshHandshake(
           connectionConfig,
-          this._delegate,
+          delegate,
         );
         return Observable.create(() => {
           return () => sshHandshake.cancel();
@@ -470,11 +479,11 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       .subscribe(
         next => {},
         err =>
-          this._delegate.onError(
+          delegate.onError(
             err.sshHandshakeErrorType || 'UNKNOWN',
             err,
             connectionConfig,
           ),
-      );
-  }
+      ),
+  );
 }
