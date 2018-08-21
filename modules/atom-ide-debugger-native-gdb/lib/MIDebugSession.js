@@ -90,7 +90,6 @@ class MIDebugSession extends LoggingDebugSession {
   _stepping: boolean;
   _steppingThread: number = 0;
   _configurationDoneResponse: ?DebugProtocol.ConfigurationDoneResponse;
-  _silenceSIGINT: boolean = false;
 
   constructor() {
     const logfile = nuclideUri.join(os.tmpdir(), 'native-debugger-vsp.log');
@@ -151,17 +150,38 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
+  _discardMessage(msg: string): boolean {
+    // remove hint about fbload since it doesn't directly work from here
+    if (msg.indexOf('fbload') !== -1) {
+      return true;
+    }
+
+    // remove messages about stopping, because (a) sometimes we stop and
+    // resume silently and the user shouldn't care, and (b) debuggers
+    // print there own stop messages
+    //
+    // Program received signal SIGINT, Interrupt.
+    // 0x00007ffff7ad3550 in __nanosleep_nocancel () from /lib64/libc.so.6
+
+    // '\nProgram' and ' received signal' come in as two separate events
+    if (
+      msg === '\nProgram' ||
+      msg.startsWith(' received signal') ||
+      /^0x[0-9a-f]+ in.*from.*/.test(msg)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   _streamRecord(record: MIStreamRecord): void {
     // NB we never get target output here, that's handled by the pty. The
     // output here is mainly from raw pass-through gdb commands.
     if (
       (record.streamTarget === 'console' || record.streamTarget === 'log') &&
-      !this._silenceSIGINT
+      !this._discardMessage(record.text)
     ) {
-      // remove hint about fbload since it doesn't directly work from here
-      if (record.text.indexOf('fbload') !== -1) {
-        return;
-      }
       const event = new OutputEvent();
       event.body = {
         category: 'log',
@@ -171,7 +191,7 @@ class MIDebugSession extends LoggingDebugSession {
         output: record.text,
       };
 
-      return this.sendEvent(event);
+      this.sendEvent(event);
     }
   }
 
@@ -913,9 +933,8 @@ class MIDebugSession extends LoggingDebugSession {
       // after the target is changed from stopped to running, it doesn't send another
       // stopped event. This really should be a throttle, not done every time.
       setTimeout(() => {
-        // prevent the norma logging of messages about SIGINT, which are just
+        // prevent the normal logging of messages about SIGINT, which are just
         // confusing since the user won't know why we're stopping
-        this._silenceSIGINT = true;
         this._client.pause();
       }, 125);
     }
@@ -953,7 +972,6 @@ class MIDebugSession extends LoggingDebugSession {
   }
 
   async _onAsyncStopped(record: MIAsyncRecord): Promise<void> {
-    this._silenceSIGINT = false;
     const stopped = stoppedEventResult(record);
 
     await this._processPauseQueue();
