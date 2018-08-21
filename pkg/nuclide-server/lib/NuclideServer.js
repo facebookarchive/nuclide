@@ -228,7 +228,7 @@ export default class NuclideServer {
     }
   }
 
-  connect(): Promise<any> {
+  connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this._webServer.on('listening', () => {
         resolve();
@@ -325,7 +325,7 @@ export default class NuclideServer {
     }
   }
 
-  close() {
+  close(): Promise<void> {
     return new Promise(resolve => {
       invariant(NuclideServer._theServer === this);
       NuclideServer._theServer = null;
