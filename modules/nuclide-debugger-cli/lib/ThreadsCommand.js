@@ -15,8 +15,16 @@ import type {DebuggerInterface} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
 export default class ThreadsCommand implements Command {
-  name = 'threads';
-  helpText = "List all of the target's threads.";
+  name = 'thread';
+  helpText = "[[l]ist | thread-id] Work with target's threads.";
+  detailedHelpText = `
+With no parameters, shows information about the current thread.
+
+[t]hread [l]ist shows all of the target's threads.
+
+Given a numeric thread-id, sets the debugger's current thread context to that
+thread.
+  `;
 
   _debugger: DebuggerInterface;
   _console: ConsoleIO;
@@ -26,17 +34,53 @@ export default class ThreadsCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
+  async execute(args: string[]): Promise<void> {
+    if (args.length === 0) {
+      this.printCurrentThread();
+      return;
+    }
+
+    if ('list'.startsWith(args[0])) {
+      this.printAllThreads();
+      return;
+    }
+
+    const tid = parseInt(args[0], 10);
+    if (isNaN(tid) || tid < 0) {
+      throw new Error('Thread id must be a positive integer.');
+    }
+
+    this._debugger.getThreads().setFocusThread(tid);
+  }
+
+  printCurrentThread(): void {
+    const threads = this._debugger.getThreads();
+    const thread = threads.focusThread;
+    if (thread == null) {
+      throw new Error('There is no focused thread.');
+    }
+
+    this._console.outputLine(
+      `Thread #${thread.id()} ${thread.name() || ''}${
+        thread.isStopped ? ' [stopped]' : ''
+      }`,
+    );
+  }
+
+  printAllThreads(): void {
     const threads = this._debugger.getThreads();
     const focusThread = threads.focusThreadId;
 
-    threads.allThreads
-      .sort((left, right) => left.id() - right.id())
-      .forEach(thread => {
-        const activeMarker = thread.id() === focusThread ? '*' : ' ';
-        this._console.outputLine(
-          `${activeMarker} ${thread.id()} ${thread.name() || ''}`,
-        );
-      });
+    this._console.more(
+      threads.allThreads
+        .sort((left, right) => left.id() - right.id())
+        .map(thread => {
+          const activeMarker = thread.id() === focusThread ? '*' : ' ';
+          return `${activeMarker} ${thread.id()} ${thread.name() || ''} ${
+            thread.isStopped ? ' [stopped]' : ''
+          }`;
+        })
+        .join('\n'),
+    );
   }
 }

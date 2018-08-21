@@ -280,13 +280,22 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async getStackTrace(
-    thread: number,
+    tid: number,
     levels: number,
   ): Promise<DebugProtocol.StackFrame[]> {
+    const thread = this._threads.getThreadById(tid);
+    if (thread == null) {
+      throw new Error(`There is no thread #${tid}.`);
+    }
+
+    if (!thread.isStopped) {
+      throw new Error(`Thread #${tid} is not stopped.`);
+    }
+
     const {
       body: {stackFrames},
     } = await this._ensureDebugSession().stackTrace({
-      threadId: thread,
+      threadId: tid,
       levels,
     });
     return stackFrames;
