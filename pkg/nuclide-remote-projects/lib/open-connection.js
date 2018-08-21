@@ -24,7 +24,6 @@ import {
   saveConnectionConfig,
   saveConnectionProfiles,
 } from './connection-profile-utils';
-import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import RemoteProjectConnectionModal from './RemoteProjectConnectionModal';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -86,9 +85,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
 
   // These props don't change over the lifetime of the modal.
   const staticProps = {
-    defaultConnectionProfile,
     initialFormFields: defaultConnectionProfile.params,
-    profileHosts: getUniqueHostsForProfiles(initialConnectionProfiles),
 
     setConnectionFormDirty(dirty: boolean): void {
       updateState({connectionFormDirty: dirty});

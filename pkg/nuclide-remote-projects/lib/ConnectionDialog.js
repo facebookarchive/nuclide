@@ -43,7 +43,7 @@ const logger = getLogger('nuclide-remote-projects');
 const {remote} = electron;
 invariant(remote != null);
 
-type Props = {
+type Props = {|
   dirty: boolean,
   setDirty: boolean => void,
 
@@ -82,7 +82,7 @@ type Props = {
     profile: NuclideRemoteConnectionProfile,
   ) => mixed,
   onProfileSelected: (index: number) => mixed,
-};
+|};
 
 export const REQUEST_CONNECTION_DETAILS = 1;
 const WAITING_FOR_CONNECTION = 2;

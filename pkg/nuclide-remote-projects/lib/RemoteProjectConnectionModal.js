@@ -27,7 +27,7 @@ import ReactDOM from 'react-dom';
 
 type Screen = 'connect' | 'create-connection';
 
-export type Props = {
+export type Props = {|
   connectionFormDirty: boolean,
   setConnectionFormDirty: boolean => void,
 
@@ -65,7 +65,7 @@ export type Props = {
   onProfileSelected: (selectedProfileIndex: number) => void,
 
   onProfileCreated: (profile: NuclideRemoteConnectionProfile) => mixed,
-};
+|};
 
 export default class RemoteProjectConnectionModal extends React.Component<
   Props,
