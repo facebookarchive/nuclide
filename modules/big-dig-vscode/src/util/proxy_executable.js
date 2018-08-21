@@ -19,8 +19,14 @@
 
 /**
  * A command line program that forwards stdio to the given websocket address.
- * We use this because vscode does not allow us to directly hook stdio of terminals.
+ * We use this because vscode does not allow us to directly hook stdio of tasks.
+ *
  * This file is run as a separate process from the rest of the extension.
+ *
+ * Usage: node proxy_executable.js ${server} ${args...}
+ *   server - the address (including a pathname representing a handler) of a
+ *     websocket we will forward stdio between.
+ *   args - these will be passed to the handler.
 */
 
 
@@ -30,9 +36,15 @@ const WS = require('ws');
 let openChannels = 3;
 
 try {
-  const server = new WS(process.argv[2]);
-  process.stdin.setRawMode(true);
+  // The first arguments are 'node', this file, and then the WS address.
+  const serverAddress = process.argv[2];
+  // Subsequent arguments will be passed to the WS.
+  const args = process.argv.slice(3);
 
+  const server = new WS(`${serverAddress}?args=${encodeURIComponent(JSON.stringify(args))}`, {args});
+  if (typeof process.stdin.setRawMode === 'function') {
+    process.stdin.setRawMode(true);
+  }
   function onResize() {
     const msg = JSON.stringify({
       ch: 'resize',
@@ -45,7 +57,7 @@ try {
     process.stdout.write(data);
   }
   function onStderr(data) {
-    process.stdout.write(data);
+    process.stderr.write(data);
   }
   function onStdin(data) {
     const msg = JSON.stringify({ch: 'stdin', data: data.toString()});
