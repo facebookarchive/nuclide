@@ -97,6 +97,11 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     ): void => {
       updateState({confirmConnectionPrompt});
     },
+    setConnectionPromptInstructions: (
+      connectionPromptInstructions: string,
+    ): void => {
+      updateState({connectionPromptInstructions});
+    },
 
     onScreenChange: screen => {
       updateState({screen});
@@ -191,6 +196,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
   const model = new Model({
     connectionFormDirty: false,
     confirmConnectionPrompt: () => {},
+    connectionPromptInstructions: '',
     screen: 'connect',
     selectedProfileIndex: 0,
     connectionProfiles: initialConnectionProfiles,

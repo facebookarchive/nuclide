@@ -52,6 +52,9 @@ type Props = {
     confirm: (answers: Array<string>) => mixed,
   ) => void,
 
+  connectionPromptInstructions: string,
+  setConnectionPromptInstructions: string => void,
+
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the initial
@@ -79,7 +82,6 @@ type Props = {
 };
 
 type State = {
-  instructions: string,
   mode: number,
 };
 
@@ -98,7 +100,6 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   _pendingHandshake: ?IDisposable;
 
   state = {
-    instructions: '',
     mode: REQUEST_CONNECTION_DETAILS,
   };
 
@@ -210,7 +211,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     } else {
       content = (
         <AuthenticationPrompt
-          instructions={this.state.instructions}
+          instructions={this.props.connectionPromptInstructions}
           onCancel={this.cancel}
           onConfirm={this.ok}
           ref={prompt => {
@@ -365,8 +366,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   ) {
     this.props.setDirty(false);
     this.props.setConnectionPromptConfirmation(confirm);
+    this.props.setConnectionPromptInstructions(instructions.prompt);
     this.setState({
-      instructions: instructions.prompt,
       mode: REQUEST_AUTHENTICATION_DETAILS,
     });
   }

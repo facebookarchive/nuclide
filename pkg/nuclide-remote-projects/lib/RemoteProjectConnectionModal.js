@@ -36,6 +36,9 @@ export type Props = {
     confirm: (answers: Array<string>) => mixed,
   ) => void,
 
+  connectionPromptInstructions: string,
+  setConnectionPromptInstructions: string => void,
+
   connectionProfiles: Array<NuclideRemoteConnectionProfile>,
   initialFormFields:
     | NuclideNewConnectionProfileInitialFields
@@ -107,6 +110,12 @@ export default class RemoteProjectConnectionModal extends React.Component<
             confirmConnectionPrompt={this.props.confirmConnectionPrompt}
             setConnectionPromptConfirmation={
               this.props.setConnectionPromptConfirmation
+            }
+            connectionPromptInstructions={
+              this.props.connectionPromptInstructions
+            }
+            setConnectionPromptInstructions={
+              this.props.setConnectionPromptInstructions
             }
             selectedProfileIndex={this.props.selectedProfileIndex}
             connectionProfiles={this.props.connectionProfiles}
