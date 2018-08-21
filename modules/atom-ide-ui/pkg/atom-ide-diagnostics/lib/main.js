@@ -113,8 +113,7 @@ class Activation {
           });
       })
       .subscribe(filePath => {
-        // TODO: Mark diagnotics messages on the current file stale
-        // this._store.dispatch(Actions.markMessagesStale(filePath));
+        this._store.dispatch(Actions.markMessagesStale(filePath));
       });
   }
 

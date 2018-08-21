@@ -372,6 +372,7 @@ export default class DiagnosticsTable extends React.PureComponent<
             classification: {
               kind: diagnostic.kind || 'lint',
               severity: diagnostic.type,
+              stale: diagnostic.stale,
             },
             providerName: diagnostic.providerName,
             description: {
@@ -408,12 +409,18 @@ const EmptyComponent = () => (
 type Classification = {
   kind: DiagnosticMessageKind,
   severity: DiagnosticMessageType,
+  stale?: boolean,
 };
 
 function TypeComponent(props: {data: Classification}): React.Element<any> {
   const classification = props.data;
   const iconName = getIconName(classification);
-  return <Icon icon={iconName} />;
+  return (
+    <Icon
+      icon={iconName}
+      className={classification.stale ? 'nuclide-ui-table-type-icon-stale' : ''}
+    />
+  );
 }
 
 function getIconName(classification: Classification): IconName {

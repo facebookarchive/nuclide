@@ -29,6 +29,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
 
+    .icon.diagnostics-icon-stale {
+      color: @text-color-subtle;
+    }
+
     .diagnostics-full-description-message {
       white-space: normal;
     }
@@ -99,6 +103,12 @@
     .icon-nuclicon-error { color: @text-color-error; }
     .icon-nuclicon-warning { color: @text-color-warning; }
   }
+}
+
+.nuclide-ui-table .nuclide-ui-table-row
+.nuclide-diagnostics-ui-cell-classification.nuclide-ui-table-body-cell
+.icon.nuclide-ui-table-type-icon-stale {
+  color: @text-color-subtle;
 }
 
 .nuclide-diagnostics-ui-settings-modal {

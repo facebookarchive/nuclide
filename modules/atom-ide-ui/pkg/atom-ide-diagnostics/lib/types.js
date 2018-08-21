@@ -324,4 +324,10 @@ export type Action =
         provider: ObservableDiagnosticProvider,
         invalidation: DiagnosticInvalidationMessage,
       },
+    }
+  | {
+      type: 'MARK_MESSAGES_STALE',
+      payload: {
+        filePath: NuclideUri,
+      },
     };

@@ -153,6 +153,7 @@ export function applyUpdateToEditor(
     const highlightCssClass = classnames(
       HIGHLIGHT_CSS,
       HIGHLIGHT_CSS_LEVELS[message.type],
+      message.stale ? 'diagnostics-gutter-ui-highlight-stale' : '',
     );
 
     let highlightMarker;
@@ -315,7 +316,11 @@ function createGutterItem(
 
   const item = document.createElement('span');
   const groupClassName = GUTTER_CSS_GROUPS[group];
-  item.className = `diagnostics-gutter-ui-item ${groupClassName || ''}`;
+  item.className = classnames('diagnostics-gutter-ui-item', groupClassName, {
+    'diagnostics-gutter-ui-gutter-stale': messages.some(
+      message => message.stale,
+    ),
+  });
 
   // Add the icon
   const icon = document.createElement('span');

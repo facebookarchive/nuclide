@@ -35,11 +35,19 @@ export const APPLY_FIX = 'APPLY_FIX';
 export const APPLY_FIXES_FOR_FILE = 'APPLY_FIXES_FOR_FILE';
 export const FIX_FAILED = 'FIX_FAILED';
 export const FIXES_APPLIED = 'FIXES_APPLIED';
+export const MARK_MESSAGES_STALE = 'MARK_MESSAGES_STALE';
 
 export function addProvider(provider: ObservableDiagnosticProvider): Action {
   return {
     type: ADD_PROVIDER,
     payload: {provider},
+  };
+}
+
+export function markMessagesStale(filePath: string): Action {
+  return {
+    type: MARK_MESSAGES_STALE,
+    payload: {filePath},
   };
 }
 

@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Action,
   CodeActionsState,
@@ -116,6 +117,10 @@ export function messages(
     case Actions.REMOVE_PROVIDER: {
       return mapDelete(state, action.payload.provider);
     }
+    case Actions.MARK_MESSAGES_STALE: {
+      const {filePath} = action.payload;
+      return markStaleMessages(state, filePath);
+    }
   }
 
   return state;
@@ -187,4 +192,24 @@ function mapDelete<K, V>(map: Map<K, V>, key: K): Map<K, V> {
     return copy;
   }
   return map;
+}
+
+/**
+ * Mark all messages on the provided filepath stale
+ */
+function markStaleMessages(state: MessagesState, filePath: NuclideUri) {
+  const nextState = new Map(state);
+  nextState.forEach((fileToMessages, provider) => {
+    const newFileToMessages = new Map(fileToMessages);
+    const messagesOnCurrentFile = newFileToMessages.get(filePath);
+    if (messagesOnCurrentFile) {
+      const staleMessagesOnCurrentFile = messagesOnCurrentFile.map(msg => {
+        // Mark message stale
+        return {...msg, stale: true};
+      });
+      newFileToMessages.set(filePath, staleMessagesOnCurrentFile);
+    }
+    nextState.set(provider, newFileToMessages);
+  });
+  return nextState;
 }
