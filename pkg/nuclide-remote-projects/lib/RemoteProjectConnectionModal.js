@@ -11,7 +11,6 @@
 
 /* globals Element */
 
-import type {RemoteConnection} from '../../nuclide-remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 import type {
   NuclideNewConnectionProfileInitialFields,
@@ -32,15 +31,13 @@ export type Props = {|
   setConnectionFormDirty: boolean => void,
 
   confirmConnectionPrompt: (answers: Array<string>) => void,
-  setConnectionPromptConfirmation: (
-    confirm: (answers: Array<string>) => mixed,
-  ) => void,
-
   connectionPromptInstructions: string,
-  setConnectionPromptInstructions: string => void,
 
   connectionDialogMode: number,
   setConnectionDialogMode: number => void,
+
+  connect: SshConnectionConfiguration => void,
+  cancelConnection: () => void,
 
   connectionProfiles: Array<NuclideRemoteConnectionProfile>,
   initialFormFields:
@@ -50,13 +47,6 @@ export type Props = {|
   screen: Screen,
   onScreenChange: (screen: Screen) => mixed,
 
-  onCancel: () => mixed,
-  onClosed?: () => mixed,
-  onConnect: (
-    connection: RemoteConnection,
-    config: SshConnectionConfiguration,
-  ) => mixed,
-  onError: (error: Error, config: SshConnectionConfiguration) => mixed,
   onDeleteProfileClicked: (selectedProfileIndex: number) => mixed,
   onSaveProfile: (
     index: number,
@@ -111,26 +101,18 @@ export default class RemoteProjectConnectionModal extends React.Component<
             dirty={this.props.connectionFormDirty}
             setDirty={this.props.setConnectionFormDirty}
             confirmConnectionPrompt={this.props.confirmConnectionPrompt}
-            setConnectionPromptConfirmation={
-              this.props.setConnectionPromptConfirmation
-            }
             connectionPromptInstructions={
               this.props.connectionPromptInstructions
             }
-            setConnectionPromptInstructions={
-              this.props.setConnectionPromptInstructions
-            }
             mode={this.props.connectionDialogMode}
             setMode={this.props.setConnectionDialogMode}
+            connect={this.props.connect}
+            cancelConnection={this.props.cancelConnection}
             selectedProfileIndex={this.props.selectedProfileIndex}
             connectionProfiles={this.props.connectionProfiles}
             onAddProfileClicked={() => {
               this.props.onScreenChange('create-connection');
             }}
-            onCancel={this.props.onCancel}
-            onClosed={this.props.onClosed}
-            onConnect={this.props.onConnect}
-            onError={this.props.onError}
             onDeleteProfileClicked={this.props.onDeleteProfileClicked}
             onSaveProfile={this.props.onSaveProfile}
             onProfileSelected={this.props.onProfileSelected}

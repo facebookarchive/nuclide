@@ -14,32 +14,18 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
   NuclideRemoteConnectionProfile,
 } from './connection-types';
-import type {
-  SshHandshakeErrorType,
-  SshConnectionConfiguration,
-  SshConnectionDelegate,
-} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/lib/SshHandshake';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import connectBigDigSshHandshake from './connectBigDigSshHandshake';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
-import {notifySshHandshakeError} from './notification';
 import * as React from 'react';
 import electron from 'electron';
-import {
-  RemoteConnection,
-  decorateSshConnectionDelegateWithTracking,
-} from '../../nuclide-remote-connection';
 import {validateFormInputs} from './form-validation-utils';
-import {getLogger} from 'log4js';
 
-const logger = getLogger('nuclide-remote-projects');
 const {remote} = electron;
 invariant(remote != null);
 
@@ -48,15 +34,13 @@ type Props = {|
   setDirty: boolean => void,
 
   confirmConnectionPrompt: (answers: Array<string>) => void,
-  setConnectionPromptConfirmation: (
-    confirm: (answers: Array<string>) => mixed,
-  ) => void,
-
   connectionPromptInstructions: string,
-  setConnectionPromptInstructions: string => void,
 
   mode: number,
   setMode: number => void,
+
+  connect: SshConnectionConfiguration => void,
+  cancelConnection: () => void,
 
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
@@ -70,13 +54,6 @@ type Props = {|
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
   onDeleteProfileClicked: (selectedProfileIndex: number) => mixed,
-  onConnect: (
-    connection: RemoteConnection,
-    config: SshConnectionConfiguration,
-  ) => mixed,
-  onError: (error: Error, config: SshConnectionConfiguration) => mixed,
-  onCancel: () => mixed,
-  onClosed: ?() => mixed,
   onSaveProfile: (
     index: number,
     profile: NuclideRemoteConnectionProfile,
@@ -85,8 +62,8 @@ type Props = {|
 |};
 
 export const REQUEST_CONNECTION_DETAILS = 1;
-const WAITING_FOR_CONNECTION = 2;
-const REQUEST_AUTHENTICATION_DETAILS = 3;
+export const WAITING_FOR_CONNECTION = 2;
+export const REQUEST_AUTHENTICATION_DETAILS = 3;
 const WAITING_FOR_AUTHENTICATION = 4;
 
 /**
@@ -96,7 +73,6 @@ export default class ConnectionDialog extends React.Component<Props> {
   _cancelButton: ?Button;
   _okButton: ?Button;
   _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
-  _pendingHandshake: ?IDisposable;
 
   componentDidMount(): void {
     this._focus();
@@ -184,7 +160,7 @@ export default class ConnectionDialog extends React.Component<Props> {
           connectionProfiles={this.props.connectionProfiles}
           selectedProfileIndex={this.props.selectedProfileIndex}
           onAddProfileClicked={this.props.onAddProfileClicked}
-          onCancel={this.cancel}
+          onCancel={this._cancel}
           onConfirm={this.ok}
           onDeleteProfileClicked={this.props.onDeleteProfileClicked}
           onDidChange={this._handleDidChange}
@@ -207,7 +183,7 @@ export default class ConnectionDialog extends React.Component<Props> {
       content = (
         <AuthenticationPrompt
           instructions={this.props.connectionPromptInstructions}
-          onCancel={this.cancel}
+          onCancel={this._cancel}
           onConfirm={this.ok}
           ref={prompt => {
             this._content = prompt;
@@ -247,7 +223,7 @@ export default class ConnectionDialog extends React.Component<Props> {
           {saveButtonGroup}
           <ButtonGroup>
             <Button
-              onClick={this.cancel}
+              onClick={this._cancel}
               ref={button => {
                 this._cancelButton = button;
               }}>
@@ -268,33 +244,9 @@ export default class ConnectionDialog extends React.Component<Props> {
     );
   }
 
-  cancel = () => {
-    const mode = this.props.mode;
-
-    if (this._pendingHandshake != null) {
-      this._pendingHandshake.dispose();
-      this._pendingHandshake = null;
-    }
-
-    if (mode === WAITING_FOR_CONNECTION) {
-      this.props.setDirty(false);
-      this.props.setMode(REQUEST_CONNECTION_DETAILS);
-    } else {
-      this.props.onCancel();
-      this.close();
-    }
+  _cancel = () => {
+    this.props.cancelConnection();
   };
-
-  close() {
-    if (this._pendingHandshake != null) {
-      this._pendingHandshake.dispose();
-      this._pendingHandshake = null;
-    }
-
-    if (this.props.onClosed) {
-      this.props.onClosed();
-    }
-  }
 
   ok = () => {
     const {mode} = this.props;
@@ -324,9 +276,7 @@ export default class ConnectionDialog extends React.Component<Props> {
       }
 
       if (username && server && cwd && remoteServerCommand) {
-        this.props.setDirty(false);
-        this.props.setMode(WAITING_FOR_CONNECTION);
-        this._connect({
+        this.props.connect({
           host: server,
           sshPort: parseInt(sshPort, 10),
           username,
@@ -354,16 +304,6 @@ export default class ConnectionDialog extends React.Component<Props> {
       this.props.setMode(WAITING_FOR_AUTHENTICATION);
     }
   };
-
-  requestAuthentication(
-    instructions: {echo: boolean, prompt: string},
-    confirm: (answers: Array<string>) => void,
-  ) {
-    this.props.setDirty(false);
-    this.props.setConnectionPromptConfirmation(confirm);
-    this.props.setConnectionPromptInstructions(instructions.prompt);
-    this.props.setMode(REQUEST_AUTHENTICATION_DETAILS);
-  }
 
   getFormFields(): ?NuclideRemoteConnectionParams {
     const connectionDetailsForm = this._content;
@@ -397,82 +337,4 @@ export default class ConnectionDialog extends React.Component<Props> {
     this.props.setDirty(false);
     this.props.onProfileSelected(selectedProfileIndex);
   };
-
-  _connect = (connectionConfig: SshConnectionConfiguration): void => {
-    const delegate = decorateSshConnectionDelegateWithTracking({
-      onKeyboardInteractive: (
-        name,
-        instructions,
-        instructionsLang,
-        prompts,
-        confirm,
-      ) => {
-        // TODO: Display all prompts, not just the first one.
-        this.requestAuthentication(prompts[0], confirm);
-      },
-
-      onWillConnect: () => {},
-
-      onDidConnect: (
-        connection: RemoteConnection,
-        config: SshConnectionConfiguration,
-      ) => {
-        this.close(); // Close the dialog.
-        this.props.onConnect(connection, config);
-      },
-
-      onError: (
-        errorType: SshHandshakeErrorType,
-        error: Error,
-        config: SshConnectionConfiguration,
-      ) => {
-        this.close(); // Close the dialog.
-        notifySshHandshakeError(errorType, error, config);
-        this.props.onError(error, config);
-        logger.debug(error);
-      },
-    });
-    this._pendingHandshake = connect(
-      delegate,
-      connectionConfig,
-    );
-  };
-}
-
-function connect(
-  delegate: SshConnectionDelegate,
-  connectionConfig: SshConnectionConfiguration,
-): IDisposable {
-  return new UniversalDisposable(
-    Observable.defer(() =>
-      RemoteConnection.reconnect(
-        connectionConfig.host,
-        connectionConfig.cwd,
-        connectionConfig.displayTitle,
-      ),
-    )
-      .switchMap(existingConnection => {
-        if (existingConnection != null) {
-          delegate.onWillConnect(connectionConfig); // required for the API
-          delegate.onDidConnect(existingConnection, connectionConfig);
-          return Observable.empty();
-        }
-        const sshHandshake = connectBigDigSshHandshake(
-          connectionConfig,
-          delegate,
-        );
-        return Observable.create(() => {
-          return () => sshHandshake.cancel();
-        });
-      })
-      .subscribe(
-        next => {},
-        err =>
-          delegate.onError(
-            err.sshHandshakeErrorType || 'UNKNOWN',
-            err,
-            connectionConfig,
-          ),
-      ),
-  );
 }

@@ -9,10 +9,14 @@
  * @format
  */
 
-import type {RemoteConnection} from '../../nuclide-remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 // eslint-disable-next-line nuclide-internal/import-type-style
 import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectConnectionModal';
+import type {
+  SshHandshakeErrorType,
+  SshConnectionConfiguration,
+  SshConnectionDelegate,
+} from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import Model from 'nuclide-commons/Model';
 import showModal from 'nuclide-commons-ui/showModal';
@@ -27,10 +31,21 @@ import {
 import RemoteProjectConnectionModal from './RemoteProjectConnectionModal';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getLogger as getLogger_} from 'log4js';
+import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import {REQUEST_CONNECTION_DETAILS} from './ConnectionDialog';
+import {
+  REQUEST_CONNECTION_DETAILS,
+  REQUEST_AUTHENTICATION_DETAILS,
+  WAITING_FOR_CONNECTION,
+} from './ConnectionDialog';
+import {
+  RemoteConnection,
+  decorateSshConnectionDelegateWithTracking,
+} from '../../nuclide-remote-connection';
+import connectBigDigSshHandshake from './connectBigDigSshHandshake';
+import {notifySshHandshakeError} from './notification';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export type OpenConnectionDialogOptions = {
   initialServer?: string,
@@ -43,7 +58,7 @@ export type OpenConnectionDialogOptions = {
   |},
 };
 
-const getLogger = () => getLogger_('nuclide-remote-projects');
+const logger = getLogger('nuclide-remote-projects');
 
 /**
  * Opens the remote connection dialog flow, which includes asking the user
@@ -73,6 +88,8 @@ export function openConnectionDialog(
  * component.
  */
 function createPropsStream({dismiss, onConnected, dialogOptions}) {
+  let pendingHandshake: ?IDisposable = null;
+
   // During the lifetime of this 'openConnectionDialog' flow, the 'default'
   // connection profile should not change (even if it is reset by the user
   // connecting to a remote project from another Atom window).
@@ -83,6 +100,47 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     ...getSavedConnectionProfiles(),
   ];
 
+  const delegate = decorateSshConnectionDelegateWithTracking({
+    onKeyboardInteractive: (
+      name,
+      instructions,
+      instructionsLang,
+      prompts,
+      confirm,
+    ) => {
+      updateState({
+        connectionFormDirty: false,
+        confirmConnectionPrompt: confirm,
+        // TODO: Display all prompts, not just the first one.
+        connectionPromptInstructions: prompts[0].prompt,
+        connectionDialogMode: REQUEST_AUTHENTICATION_DETAILS,
+      });
+    },
+
+    onWillConnect: () => {},
+
+    onDidConnect: (
+      connection: RemoteConnection,
+      config: SshConnectionConfiguration,
+    ) => {
+      dismiss(); // Close the dialog.
+      onConnected(connection);
+      saveConnectionConfig(config, getOfficialRemoteServerCommand());
+    },
+
+    onError: (
+      errorType: SshHandshakeErrorType,
+      error: Error,
+      config: SshConnectionConfiguration,
+    ) => {
+      dismiss(); // Close the dialog.
+      notifySshHandshakeError(errorType, error, config);
+      onConnected(/* connection */ null);
+      logger.debug(error);
+      saveConnectionConfig(config, getOfficialRemoteServerCommand());
+    },
+  });
+
   // These props don't change over the lifetime of the modal.
   const staticProps = {
     initialFormFields: defaultConnectionProfile.params,
@@ -90,37 +148,12 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     setConnectionFormDirty(dirty: boolean): void {
       updateState({connectionFormDirty: dirty});
     },
-    setConnectionPromptConfirmation: (
-      confirmConnectionPrompt: (answers: Array<string>) => mixed,
-    ): void => {
-      updateState({confirmConnectionPrompt});
-    },
-    setConnectionPromptInstructions: (
-      connectionPromptInstructions: string,
-    ): void => {
-      updateState({connectionPromptInstructions});
-    },
     setConnectionDialogMode: (connectionDialogMode: number): void => {
       updateState({connectionDialogMode});
     },
 
     onScreenChange: screen => {
       updateState({screen});
-    },
-    onConnect: async (connection, config) => {
-      onConnected(connection);
-      saveConnectionConfig(config, getOfficialRemoteServerCommand());
-    },
-    onCancel: () => {
-      onConnected(null);
-      dismiss();
-    },
-    onError: (err_, config) => {
-      onConnected(/* connection */ null);
-      saveConnectionConfig(config, getOfficialRemoteServerCommand());
-    },
-    onClosed: () => {
-      dismiss();
     },
     onSaveProfile(
       index: number,
@@ -143,7 +176,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
       const {connectionProfiles, selectedProfileIndex} = model.state;
       if (connectionProfiles) {
         if (indexToDelete >= connectionProfiles.length) {
-          getLogger().fatal(
+          logger.fatal(
             'Tried to delete a connection profile with an index that does not exist. ' +
               'This should never happen.',
           );
@@ -174,6 +207,36 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     },
     onProfileSelected(selectedProfileIndex: number): void {
       updateState({selectedProfileIndex});
+    },
+
+    connect(config: SshConnectionConfiguration): void {
+      updateState({
+        connectionFormDirty: false,
+        connectionDialogMode: WAITING_FOR_CONNECTION,
+      });
+      if (pendingHandshake != null) {
+        pendingHandshake.dispose();
+      }
+      pendingHandshake = connect(
+        delegate,
+        config,
+      );
+    },
+    cancelConnection(): void {
+      if (pendingHandshake != null) {
+        pendingHandshake.dispose();
+        pendingHandshake = null;
+      }
+
+      if (model.state.connectionDialogMode === WAITING_FOR_CONNECTION) {
+        updateState({
+          connectionFormDirty: false,
+          connectionDialogMode: REQUEST_CONNECTION_DETAILS,
+        });
+      } else {
+        onConnected(null);
+        dismiss();
+      }
     },
   };
 
@@ -225,5 +288,43 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
         );
       }),
     () => props,
+  );
+}
+
+function connect(
+  delegate: SshConnectionDelegate,
+  connectionConfig: SshConnectionConfiguration,
+): IDisposable {
+  return new UniversalDisposable(
+    Observable.defer(() =>
+      RemoteConnection.reconnect(
+        connectionConfig.host,
+        connectionConfig.cwd,
+        connectionConfig.displayTitle,
+      ),
+    )
+      .switchMap(existingConnection => {
+        if (existingConnection != null) {
+          delegate.onWillConnect(connectionConfig); // required for the API
+          delegate.onDidConnect(existingConnection, connectionConfig);
+          return Observable.empty();
+        }
+        const sshHandshake = connectBigDigSshHandshake(
+          connectionConfig,
+          delegate,
+        );
+        return Observable.create(() => {
+          return () => sshHandshake.cancel();
+        });
+      })
+      .subscribe(
+        next => {},
+        err =>
+          delegate.onError(
+            err.sshHandshakeErrorType || 'UNKNOWN',
+            err,
+            connectionConfig,
+          ),
+      ),
   );
 }
