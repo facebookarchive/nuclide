@@ -17,6 +17,7 @@ import type {
   SshConnectionConfiguration,
   SshConnectionDelegate,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {ConnectionDialogMode} from './ConnectionDialog';
 
 import Model from 'nuclide-commons/Model';
 import showModal from 'nuclide-commons-ui/showModal';
@@ -34,11 +35,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import {
-  REQUEST_CONNECTION_DETAILS,
-  REQUEST_AUTHENTICATION_DETAILS,
-  WAITING_FOR_CONNECTION,
-} from './ConnectionDialog';
+import {ConnectionDialogModes} from './ConnectionDialog';
 import {
   RemoteConnection,
   decorateSshConnectionDelegateWithTracking,
@@ -113,7 +110,8 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
         confirmConnectionPrompt: confirm,
         // TODO: Display all prompts, not just the first one.
         connectionPromptInstructions: prompts[0].prompt,
-        connectionDialogMode: REQUEST_AUTHENTICATION_DETAILS,
+        connectionDialogMode:
+          ConnectionDialogModes.REQUEST_AUTHENTICATION_DETAILS,
       });
     },
 
@@ -148,7 +146,9 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     setConnectionFormDirty(dirty: boolean): void {
       updateState({connectionFormDirty: dirty});
     },
-    setConnectionDialogMode: (connectionDialogMode: number): void => {
+    setConnectionDialogMode: (
+      connectionDialogMode: ConnectionDialogMode,
+    ): void => {
       updateState({connectionDialogMode});
     },
 
@@ -212,7 +212,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     connect(config: SshConnectionConfiguration): void {
       updateState({
         connectionFormDirty: false,
-        connectionDialogMode: WAITING_FOR_CONNECTION,
+        connectionDialogMode: ConnectionDialogModes.WAITING_FOR_CONNECTION,
       });
       if (pendingHandshake != null) {
         pendingHandshake.dispose();
@@ -228,10 +228,14 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
         pendingHandshake = null;
       }
 
-      if (model.state.connectionDialogMode === WAITING_FOR_CONNECTION) {
+      if (
+        model.state.connectionDialogMode ===
+        ConnectionDialogModes.WAITING_FOR_CONNECTION
+      ) {
         updateState({
           connectionFormDirty: false,
-          connectionDialogMode: REQUEST_CONNECTION_DETAILS,
+          connectionDialogMode:
+            ConnectionDialogModes.REQUEST_CONNECTION_DETAILS,
         });
       } else {
         onConnected(null);
@@ -262,7 +266,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     confirmConnectionPrompt: () => {},
     connectionPromptInstructions: '',
     screen: 'connect',
-    connectionDialogMode: REQUEST_CONNECTION_DETAILS,
+    connectionDialogMode: ConnectionDialogModes.REQUEST_CONNECTION_DETAILS,
     selectedProfileIndex: 0,
     connectionProfiles: initialConnectionProfiles,
   });

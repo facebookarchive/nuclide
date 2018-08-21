@@ -17,6 +17,7 @@ import type {
   NuclideRemoteConnectionParams,
 } from './connection-types';
 import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {ConnectionDialogMode} from './ConnectionDialog';
 
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import ConnectionDialog from './ConnectionDialog';
@@ -33,8 +34,8 @@ export type Props = {|
   confirmConnectionPrompt: (answers: Array<string>) => void,
   connectionPromptInstructions: string,
 
-  connectionDialogMode: number,
-  setConnectionDialogMode: number => void,
+  connectionDialogMode: ConnectionDialogMode,
+  setConnectionDialogMode: ConnectionDialogMode => void,
 
   connect: SshConnectionConfiguration => void,
   cancelConnection: () => void,

@@ -36,8 +36,8 @@ type Props = {|
   confirmConnectionPrompt: (answers: Array<string>) => void,
   connectionPromptInstructions: string,
 
-  mode: number,
-  setMode: number => void,
+  mode: ConnectionDialogMode,
+  setMode: ConnectionDialogMode => void,
 
   connect: SshConnectionConfiguration => void,
   cancelConnection: () => void,
@@ -61,10 +61,18 @@ type Props = {|
   onProfileSelected: (index: number) => mixed,
 |};
 
-export const REQUEST_CONNECTION_DETAILS = 1;
-export const WAITING_FOR_CONNECTION = 2;
-export const REQUEST_AUTHENTICATION_DETAILS = 3;
-const WAITING_FOR_AUTHENTICATION = 4;
+export opaque type ConnectionDialogMode = number;
+export const ConnectionDialogModes: {|
+  REQUEST_CONNECTION_DETAILS: ConnectionDialogMode,
+  WAITING_FOR_CONNECTION: ConnectionDialogMode,
+  REQUEST_AUTHENTICATION_DETAILS: ConnectionDialogMode,
+  WAITING_FOR_AUTHENTICATION: ConnectionDialogMode,
+|} = {
+  REQUEST_CONNECTION_DETAILS: 1,
+  WAITING_FOR_CONNECTION: 2,
+  REQUEST_AUTHENTICATION_DETAILS: 3,
+  WAITING_FOR_AUTHENTICATION: 4,
+};
 
 /**
  * Component that manages the state transitions as the user connects to a server.
@@ -82,7 +90,7 @@ export default class ConnectionDialog extends React.Component<Props> {
     if (this.props.mode !== prevProps.mode) {
       this._focus();
     } else if (
-      this.props.mode === REQUEST_CONNECTION_DETAILS &&
+      this.props.mode === ConnectionDialogModes.REQUEST_CONNECTION_DETAILS &&
       this.props.selectedProfileIndex === prevProps.selectedProfileIndex &&
       !this.props.dirty &&
       prevProps.dirty &&
@@ -154,7 +162,7 @@ export default class ConnectionDialog extends React.Component<Props> {
     let isOkDisabled;
     let okButtonText;
 
-    if (mode === REQUEST_CONNECTION_DETAILS) {
+    if (mode === ConnectionDialogModes.REQUEST_CONNECTION_DETAILS) {
       content = (
         <ConnectionDetailsPrompt
           connectionProfiles={this.props.connectionProfiles}
@@ -173,8 +181,8 @@ export default class ConnectionDialog extends React.Component<Props> {
       isOkDisabled = false;
       okButtonText = 'Connect';
     } else if (
-      mode === WAITING_FOR_CONNECTION ||
-      mode === WAITING_FOR_AUTHENTICATION
+      mode === ConnectionDialogModes.WAITING_FOR_CONNECTION ||
+      mode === ConnectionDialogModes.WAITING_FOR_AUTHENTICATION
     ) {
       content = <IndeterminateProgressBar />;
       isOkDisabled = true;
@@ -251,7 +259,7 @@ export default class ConnectionDialog extends React.Component<Props> {
   ok = () => {
     const {mode} = this.props;
 
-    if (mode === REQUEST_CONNECTION_DETAILS) {
+    if (mode === ConnectionDialogModes.REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
       const connectionDetailsForm = this._content;
       invariant(connectionDetailsForm instanceof ConnectionDetailsPrompt);
@@ -294,14 +302,14 @@ export default class ConnectionDialog extends React.Component<Props> {
           "Please make sure you've filled out all the form fields.",
         );
       }
-    } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
+    } else if (mode === ConnectionDialogModes.REQUEST_AUTHENTICATION_DETAILS) {
       const authenticationPrompt = this._content;
       invariant(authenticationPrompt instanceof AuthenticationPrompt);
       const password = authenticationPrompt.getPassword();
 
       this.props.confirmConnectionPrompt([password]);
       this.props.setDirty(false);
-      this.props.setMode(WAITING_FOR_AUTHENTICATION);
+      this.props.setMode(ConnectionDialogModes.WAITING_FOR_AUTHENTICATION);
     }
   };
 
