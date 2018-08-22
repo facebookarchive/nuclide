@@ -145,6 +145,9 @@ export class DefaultMetroAtomService implements MetroAtomService {
     return this._projectRootPath.distinctUntilChanged().subscribe(path => {
       if (this._logTailer.getStatus() !== 'stopped') {
         this.stop();
+        if (path == null) {
+          return;
+        }
         const notification = atom.notifications.addWarning(
           'Metro was stopped, because your Current Working Root has changed.',
           {
