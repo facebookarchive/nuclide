@@ -32,3 +32,5 @@ export const ShowUncommittedChangesKind = Object.freeze({
 (ShowUncommittedChangesKind: {[key: string]: ShowUncommittedChangesKindValue});
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/file-tree';
+
+export const PREFERRED_WIDTH = 300;

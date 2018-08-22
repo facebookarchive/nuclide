@@ -28,7 +28,6 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import disablePackage, {
   DisabledReason,
 } from '../../commons-atom/disablePackage';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   compact,
   macrotask,
@@ -36,18 +35,17 @@ import {
   fastDebounce,
 } from 'nuclide-commons/observable';
 
-import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import * as Selectors from './redux/Selectors';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import * as React from 'react';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 import registerCommands from './registerCommands';
 import ProjectSelectionManager from './ProjectSelectionManager';
 import createStore from './redux/createStore';
+import ViewModel from './ViewModel';
 
 type SerializedState = {
   tree: ExportStoreData,
@@ -67,7 +65,7 @@ const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
 class Activation {
   _didActivateDisposable: IDisposable;
   _cwdApiSubscription: ?IDisposable;
-  _fileTreeComponent: ?FileTreeSidebarComponent;
+  _viewModel: ?ViewModel;
   _restored: boolean; // Has the package state been restored from a previous session?
   _store: Store;
   _contextMenu: FileTreeContextMenu;
@@ -199,11 +197,11 @@ class Activation {
         this._store.dispatch(Actions.setFocusEditorOnFileSelection(value));
       }),
       atom.commands.add('atom-workspace', 'tree-view:toggle-focus', () => {
-        const component = this._fileTreeComponent;
-        if (component == null) {
+        const viewModel = this._viewModel;
+        if (viewModel == null) {
           return;
         }
-        if (component.isFocused()) {
+        if (viewModel.isFocused()) {
           // Focus the center.
           const center = atom.workspace.getCenter
             ? atom.workspace.getCenter()
@@ -211,7 +209,7 @@ class Activation {
           center.getActivePane().activate();
         } else {
           // Focus the file tree.
-          component.focus();
+          viewModel.focus();
         }
       }),
       this._registerCommandAndOpener(),
@@ -409,12 +407,10 @@ class Activation {
     };
   }
 
-  _createView(): FileTreeSidebarComponent {
+  _createView(): ViewModel {
     // Currently, we assume that only one will be created.
-    this._fileTreeComponent = viewableFromReactElement(
-      <FileTreeSidebarComponent store={this._store} />,
-    );
-    return this._fileTreeComponent;
+    this._viewModel = new ViewModel(this._store);
+    return this._viewModel;
   }
 
   _registerCommandAndOpener(): UniversalDisposable {
@@ -424,7 +420,7 @@ class Activation {
           return this._createView();
         }
       }),
-      () => destroyItemWhere(item => item instanceof FileTreeSidebarComponent),
+      () => destroyItemWhere(item => item instanceof ViewModel),
       atom.commands.add('atom-workspace', 'tree-view:toggle', () => {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
@@ -458,8 +454,8 @@ class Activation {
     return disposable;
   }
 
-  deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
-    return this._fileTreeComponent || this._createView();
+  deserializeFileTreeSidebarComponent(): ViewModel {
+    return this._viewModel || this._createView();
   }
 
   // Exported for testing

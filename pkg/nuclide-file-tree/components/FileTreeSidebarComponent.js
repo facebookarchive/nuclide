@@ -20,21 +20,18 @@ import type {Store} from '../lib/types';
 import {Emitter} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable, Subject} from 'rxjs';
-import {ShowUncommittedChangesKind} from '../lib/Constants';
+import {ShowUncommittedChangesKind, PREFERRED_WIDTH} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
 import {Provider} from 'react-redux';
 
 import {
-  REVEAL_FILE_ON_SWITCH_SETTING,
   SHOW_OPEN_FILE_CONFIG_KEY,
   SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY,
   SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
-  WORKSPACE_VIEW_URI,
 } from '../lib/Constants';
 import {
   repositoryForPath,
@@ -81,15 +78,12 @@ type State = {|
   openFilesUris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
-  hidden: boolean,
   uncommittedFileChanges: Immutable.Map<
     NuclideUri,
     Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
   generatedOpenChangedFiles: Immutable.Map<NuclideUri, GeneratedFileType>,
   isCalculatingChanges: boolean,
-  path: string,
-  title: string,
   isFileTreeHovered: boolean,
   workingSetsStore: ?WorkingSetsStore,
   filter: string,
@@ -121,10 +115,9 @@ export default class FileTreeSidebarComponent extends React.Component<
     super(props);
     this._emitter = new Emitter();
     this.state = {
-      hidden: false,
       shouldRenderToolbar: false,
       scrollerHeight: window.innerHeight,
-      scrollerWidth: this.getPreferredWidth(),
+      scrollerWidth: PREFERRED_WIDTH,
       showOpenFiles: true,
       showUncommittedChanges: true,
       showUncommittedChangesKind: 'Uncommitted changes',
@@ -134,8 +127,6 @@ export default class FileTreeSidebarComponent extends React.Component<
       uncommittedFileChanges: Immutable.Map(),
       generatedOpenChangedFiles: Immutable.Map(),
       isCalculatingChanges: false,
-      path: 'No Current Working Directory',
-      title: 'File Tree',
       isFileTreeHovered: false,
       workingSetsStore: Selectors.getWorkingSetsStore(
         this.props.store.getState(),
@@ -229,9 +220,6 @@ export default class FileTreeSidebarComponent extends React.Component<
           return Observable.create(() => showMenuForEvent(event, menuTemplate));
         })
         .subscribe(),
-      observePaneItemVisibility(this).subscribe(visible => {
-        this.didChangeVisibility(visible);
-      }),
     );
   }
 
@@ -242,26 +230,16 @@ export default class FileTreeSidebarComponent extends React.Component<
     }
   }
 
-  componentDidUpdate(prevProps: mixed, prevState: State): void {
-    if (prevState.hidden && !this.state.hidden) {
-      // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
-      // user expects when the side bar shows the file tree.
-      if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'tree-view:reveal-active-file',
-        );
-      }
-      this.props.store.dispatch(Actions.clearFilter());
+  isFocused(): boolean {
+    if (this._scrollerRef == null) {
+      return false;
     }
 
-    if (
-      prevState.title !== this.state.title ||
-      prevState.path !== this.state.path
-    ) {
-      this._emitter.emit('did-change-title', this.state.title);
-      this._emitter.emit('did-change-path', this.state.path);
+    const el = ReactDOM.findDOMNode(this._scrollerRef);
+    if (el == null) {
+      return false;
     }
+    return el.contains(document.activeElement);
   }
 
   _subscribeToResizeEvents(): rxjs$Subscription {
@@ -302,6 +280,18 @@ export default class FileTreeSidebarComponent extends React.Component<
     invariant(scroller instanceof HTMLElement);
     this._scrollerElements.next(scroller);
   };
+
+  focus(): void {
+    if (this._scrollerRef == null) {
+      return;
+    }
+    const el = ReactDOM.findDOMNode(this._scrollerRef);
+    if (el == null) {
+      return;
+    }
+    invariant(el instanceof HTMLElement);
+    el.focus();
+  }
 
   _handleFocus = (event: SyntheticEvent<>): void => {
     if (event.target === ReactDOM.findDOMNode(this)) {
@@ -537,8 +527,6 @@ All the changes across your entire stacked diff.
     const isCalculatingChanges = Selectors.getIsCalculatingChanges(
       this.props.store.getState(),
     );
-    const title = Selectors.getSidebarTitle(this.props.store.getState());
-    const path = Selectors.getSidebarPath(this.props.store.getState());
     const workingSetsStore = Selectors.getWorkingSetsStore(
       this.props.store.getState(),
     );
@@ -560,8 +548,6 @@ All the changes across your entire stacked diff.
       uncommittedFileChanges,
       generatedOpenChangedFiles,
       isCalculatingChanges,
-      title,
-      path,
       workingSetsStore,
       filter,
       filterFound,
@@ -674,87 +660,6 @@ All the changes across your entire stacked diff.
     [(state: State) => state.uncommittedFileChanges],
     filterMultiRootFileChanges,
   );
-
-  isFocused(): boolean {
-    if (this._scrollerRef == null) {
-      return false;
-    }
-
-    const el = ReactDOM.findDOMNode(this._scrollerRef);
-    if (el == null) {
-      return false;
-    }
-    return el.contains(document.activeElement);
-  }
-
-  focus(): void {
-    if (this._scrollerRef == null) {
-      return;
-    }
-    const el = ReactDOM.findDOMNode(this._scrollerRef);
-    if (el == null) {
-      return;
-    }
-    invariant(el instanceof HTMLElement);
-    el.focus();
-  }
-
-  getTitle(): string {
-    return this.state.title;
-  }
-
-  // This is unfortunate, but Atom uses getTitle() to get the text in the tab and getPath() to get
-  // the text in the tool-tip.
-  getPath(): string {
-    return this.state.path;
-  }
-
-  getDefaultLocation(): atom$PaneLocation {
-    return 'left';
-  }
-
-  getAllowedLocations(): Array<atom$PaneLocation> {
-    return ['left', 'right'];
-  }
-
-  getPreferredWidth(): number {
-    return 300;
-  }
-
-  getIconName(): string {
-    return 'file-directory';
-  }
-
-  getURI(): string {
-    return WORKSPACE_VIEW_URI;
-  }
-
-  didChangeVisibility(visible: boolean): void {
-    this.setState({hidden: !visible});
-  }
-
-  serialize(): Object {
-    return {
-      deserializer: 'nuclide.FileTreeSidebarComponent',
-    };
-  }
-
-  copy(): mixed {
-    // The file tree store wasn't written to support multiple instances, so try to prevent it.
-    return false;
-  }
-
-  isPermanentDockItem(): boolean {
-    return true;
-  }
-
-  onDidChangeTitle(callback: (v: string) => mixed): IDisposable {
-    return this._emitter.on('did-change-title', callback);
-  }
-
-  onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
-    return this._emitter.on('did-change-path', callback);
-  }
 }
 
 function observeAllModifiedStatusChanges(): Observable<void> {
