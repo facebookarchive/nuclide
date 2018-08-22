@@ -37,21 +37,17 @@ class Activation {
   _allLinterAdapters: Set<LinterAdapter>;
   _store: Store;
   _busySignalService: ?BusySignalService;
-  _messageRangeTracker: MessageRangeTracker;
 
   constructor() {
     this._allLinterAdapters = new Set();
 
-    this._messageRangeTracker = new MessageRangeTracker();
-    this._store = createStore(this._messageRangeTracker);
+    const messageRangeTracker = new MessageRangeTracker();
+    this._store = createStore(messageRangeTracker);
 
-    this._disposables = new UniversalDisposable(
-      this._messageRangeTracker,
-      () => {
-        this._allLinterAdapters.forEach(adapter => adapter.dispose());
-        this._allLinterAdapters.clear();
-      },
-    );
+    this._disposables = new UniversalDisposable(messageRangeTracker, () => {
+      this._allLinterAdapters.forEach(adapter => adapter.dispose());
+      this._allLinterAdapters.clear();
+    });
   }
 
   dispose() {
@@ -62,7 +58,7 @@ class Activation {
    * @return A wrapper around the methods on DiagnosticStore that allow reading data.
    */
   provideDiagnosticUpdates(): DiagnosticUpdater {
-    return new DiagnosticUpdater(this._store, this._messageRangeTracker);
+    return new DiagnosticUpdater(this._store);
   }
 
   provideIndie(): RegisterIndieLinter {

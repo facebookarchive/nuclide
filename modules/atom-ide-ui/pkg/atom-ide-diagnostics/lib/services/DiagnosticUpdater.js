@@ -9,7 +9,7 @@
  * @flow strict-local
  * @format
  */
-import type MessageRangeTracker from '../MessageRangeTracker';
+
 import type {
   AppState,
   CodeActionsState,
@@ -32,69 +32,23 @@ export default class DiagnosticUpdater {
   _store: Store;
   _states: Observable<AppState>;
   _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
-  _messageRangeTracker: MessageRangeTracker;
 
-  constructor(store: Store, messageRangeTracker: MessageRangeTracker) {
+  constructor(store: Store) {
     this._store = store;
     // $FlowIgnore: Flow doesn't know about Symbol.observable
     this._states = Observable.from(store);
-    this._messageRangeTracker = messageRangeTracker;
+
     this._allMessageUpdates = this._states
-      .distinctUntilChanged((a, b) => a.messages === b.messages)
-      .map(this._getMessagesSupportedByMessageRangeTracker)
-      .distinctUntilChanged((a, b) => arrayEqual(a, b));
-  }
-
-  // Following two helper function is to keep track of messages whose marker may
-  // already shifted lines when an update is triggered. In that case, we replace
-  // the message.range with the range we get from atom
-
-  // wrapper on Selectors.getMessages
-  _getMessagesSupportedByMessageRangeTracker = (
-    state: AppState,
-  ): Array<DiagnosticMessage> => {
-    const messages = Selectors.getMessages(state);
-    return this._updateMessageRangeFromAtomRange(messages);
-  };
-
-  // wrapper on Selectors.getFileMessageUpdates()
-  _getFileMessageUpdatesSupportedByMessageRangeTracker = (
-    filePath: NuclideUri,
-    state: AppState,
-  ): DiagnosticMessages => {
-    const currentState = state ? state : this._store.getState();
-    const diagnosticsMessages = Selectors.getFileMessageUpdates(
-      currentState,
-      filePath,
-    );
-    return {
-      ...diagnosticsMessages,
-      messages: this._updateMessageRangeFromAtomRange(
-        diagnosticsMessages.messages,
-      ),
-    };
-  };
-
-  _updateMessageRangeFromAtomRange(
-    messages: Array<DiagnosticMessage>,
-  ): Array<DiagnosticMessage> {
-    return messages.map(message => {
-      const range = this._messageRangeTracker.getCurrentRange(message);
-      return range ? {...message, range} : message;
-    });
+      .map(Selectors.getMessages)
+      .distinctUntilChanged();
   }
 
   getMessages = (): Array<DiagnosticMessage> => {
-    return this._getMessagesSupportedByMessageRangeTracker(
-      this._store.getState(),
-    );
+    return Selectors.getMessages(this._store.getState());
   };
 
   getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
-    return this._getFileMessageUpdatesSupportedByMessageRangeTracker(
-      filePath,
-      this._store.getState(),
-    );
+    return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
   };
 
   observeMessages = (
@@ -112,12 +66,7 @@ export default class DiagnosticUpdater {
       // Whether that's worth it depends on how often this is actually called with the same path.
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .map(state =>
-          this._getFileMessageUpdatesSupportedByMessageRangeTracker(
-            filePath,
-            state,
-          ),
-        )
+        .map(state => Selectors.getFileMessageUpdates(state, filePath))
         .distinctUntilChanged((a, b) => arrayEqual(a.messages, b.messages))
         .subscribe(callback),
     );
