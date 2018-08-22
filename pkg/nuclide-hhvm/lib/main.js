@@ -78,7 +78,6 @@ class Activation {
 
   async _debugDeepWithHhvm(params: DeepLinkParams): Promise<void> {
     const {nuclidePath, hackRoot, line, addBreakpoint, source} = params;
-
     if (
       typeof nuclidePath !== 'string' ||
       !nuclideUri.isRemote(nuclidePath) ||
@@ -164,18 +163,15 @@ class Activation {
     // Open the script path in the editor.
     const lineNumber = parseInt(line, 10);
     if (Number.isNaN(lineNumber)) {
-      goToLocation(navUri);
-    } else if (addBreakpoint !== 'true') {
-      // If addBreakpoint === 'true', we will run the goToLocation later.
-      // NOTE: line numbers start at 0, so subtract 1.
-      goToLocation(navUri, {line: lineNumber - 1});
+      await goToLocation(navUri);
+    } else {
+      // Note: editor line numbers are 0-based, so subtract 1.
+      await goToLocation(navUri, {line: lineNumber - 1});
     }
 
     if (startDebugger) {
       if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
         // Insert a breakpoint if requested.
-        // NOTE: line numbers start at 0, so subtract 1.
-        await goToLocation(navUri, {line: lineNumber - 1});
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),
           'debugger:add-breakpoint',
