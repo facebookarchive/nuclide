@@ -18,6 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {AppState, ExportStoreData, Roots} from '../types';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
 import * as Immutable from 'immutable';
 import {memoize} from 'lodash';
@@ -348,6 +349,25 @@ export const getNodeIsFocused = (state: AppState, node: FileTreeNode) =>
   getFocusedUris(state)
     .get(node.rootUri, Immutable.Set())
     .has(node.uri);
+
+export const getSidebarTitle = createSelector([getCwdKey], cwdKey => {
+  return cwdKey == null ? 'File Tree' : nuclideUri.basename(cwdKey);
+});
+
+export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
+  if (cwdKey == null) {
+    return 'No Current Working Directory';
+  }
+
+  const trimmed = nuclideUri.trimTrailingSeparator(cwdKey);
+  const directory = nuclideUri.getPath(trimmed);
+  const host = nuclideUri.getHostnameOpt(trimmed);
+  if (host == null) {
+    return `Current Working Directory: ${directory}`;
+  }
+
+  return `Current Working Directory: '${directory}' on '${host}'`;
+});
 
 //
 //

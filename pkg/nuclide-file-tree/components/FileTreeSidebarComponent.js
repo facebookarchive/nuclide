@@ -63,7 +63,6 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Section} from 'nuclide-commons-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
@@ -530,8 +529,8 @@ All the changes across your entire stacked diff.
     const isCalculatingChanges = Selectors.getIsCalculatingChanges(
       this.props.store.getState(),
     );
-    const title = this.getTitle();
-    const path = this.getPath();
+    const title = Selectors.getSidebarTitle(this.props.store.getState());
+    const path = Selectors.getSidebarPath(this.props.store.getState());
     const workingSetsStore = Selectors.getWorkingSetsStore(
       this.props.store.getState(),
     );
@@ -698,30 +697,13 @@ All the changes across your entire stacked diff.
   }
 
   getTitle(): string {
-    const cwdKey = Selectors.getCwdKey(this.props.store.getState());
-    if (cwdKey == null) {
-      return 'File Tree';
-    }
-
-    return nuclideUri.basename(cwdKey);
+    return this.state.title;
   }
 
   // This is unfortunate, but Atom uses getTitle() to get the text in the tab and getPath() to get
   // the text in the tool-tip.
   getPath(): string {
-    const cwdKey = Selectors.getCwdKey(this.props.store.getState());
-    if (cwdKey == null) {
-      return 'No Current Working Directory';
-    }
-
-    const trimmed = nuclideUri.trimTrailingSeparator(cwdKey);
-    const directory = nuclideUri.getPath(trimmed);
-    const host = nuclideUri.getHostnameOpt(trimmed);
-    if (host == null) {
-      return `Current Working Directory: ${directory}`;
-    }
-
-    return `Current Working Directory: '${directory}' on '${host}'`;
+    return this.state.path;
   }
 
   getDefaultLocation(): atom$PaneLocation {
