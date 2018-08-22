@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {RemoteChildProcess} from '../RemoteProcess';
+
 import * as vscode from 'vscode';
 import {ConnectionWrapper} from '../ConnectionWrapper';
 import {TerminalWrapper} from '../util/TerminalWrapper';
@@ -36,6 +38,16 @@ export async function createRemoteTerminal(
   });
   await proxy.ready;
 
+  connectProxyToRemoteProcess(proxy, remote);
+
+  proxy.terminal.show(false);
+  return proxy.terminal;
+}
+
+function connectProxyToRemoteProcess(
+  proxy: TerminalWrapper,
+  remote: RemoteChildProcess,
+): void {
   proxy.on('close', () => {
     remote.kill('SIGTERM');
   });
@@ -52,7 +64,4 @@ export async function createRemoteTerminal(
     vscode.window.showWarningMessage(`Error from terminal: ${err.toString()}`);
     proxy.close();
   });
-
-  proxy.terminal.show(false);
-  return proxy.terminal;
 }
