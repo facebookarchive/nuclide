@@ -24,6 +24,9 @@ import {
   addFolderToWorkspace,
   quickAddFolderToWorkspace,
 } from './commands/workspace';
+
+// @fb-only: import {addOnDemandToWorkspace} from './commands/fb-on-demand';
+import {unavailable as addOnDemandToWorkspace} from './commands/unavailable'; // @oss-only
 import {openRemoteTerminal} from './commands/terminal';
 import {shutdownRemoteServer} from './commands/server';
 import {startDebugProviders} from './debugger';
@@ -106,6 +109,11 @@ function loadCommands(context: vscode.ExtensionContext): void {
   // Add an explorer-selected folder to the workspace.
   registerCommand('big-dig.addFolderToWorkspace', file =>
     addFolderToWorkspace(context, file),
+  );
+
+  // Add an on demand instance to the workspace.
+  registerCommand('big-dig.addOnDemandWWWToWorkspace', () =>
+    addOnDemandToWorkspace(context),
   );
 
   // UI to select an active remote connection and shut down its server.

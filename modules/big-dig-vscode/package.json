@@ -54,6 +54,11 @@
         "category": "Big Dig"
       },
       {
+        "command": "big-dig.addOnDemandWWWToWorkspace",
+        "title": "Add On Demand WWW Folder to Workspace",
+        "category": "Big Dig"
+      },
+      {
         "command": "big-dig.shutdown",
         "title": "Shut down remote server",
         "category": "Big Dig"
