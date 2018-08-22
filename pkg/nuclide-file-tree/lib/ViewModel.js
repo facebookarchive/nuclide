@@ -15,8 +15,8 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {Observable, ReplaySubject} from 'rxjs';
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import * as Selectors from './redux/Selectors';
 import * as Actions from './redux/Actions';
@@ -33,6 +33,7 @@ export default class ViewModel {
   _component: ?FileTreeSidebarComponent;
   _disposable: UniversalDisposable;
   _focusRef: ?HTMLElement;
+  _disposed = new ReplaySubject(1);
 
   constructor(store: Store) {
     this._store = store;
@@ -61,6 +62,7 @@ export default class ViewModel {
           this._store.dispatch(Actions.clearFilter());
         }),
       () => {
+        this._disposed.next();
         ReactDOM.unmountComponentAtNode(this._element);
       },
     );
@@ -133,6 +135,7 @@ export default class ViewModel {
       Observable.from(this._store)
         .map(Selectors.getSidebarTitle)
         .distinctUntilChanged()
+        .takeUntil(this._disposed)
         .subscribe(callback),
     );
   }
@@ -143,6 +146,7 @@ export default class ViewModel {
       Observable.from(this._store)
         .map(Selectors.getSidebarPath)
         .distinctUntilChanged()
+        .takeUntil(this._disposed)
         .subscribe(callback),
     );
   }
