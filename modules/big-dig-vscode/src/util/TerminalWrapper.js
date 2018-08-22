@@ -142,6 +142,7 @@ export class TerminalWrapper extends EventEmitter {
     this._httpServer.close();
     this.stdout.end();
     this.stderr.end();
+    this.emit('close');
   }
 
   static _makeHttpServer(
