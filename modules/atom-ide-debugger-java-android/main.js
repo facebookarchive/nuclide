@@ -1,3 +1,47 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideDebuggerCommon() {
+  const data = require("../nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AutoGenLaunchAttachProvider() {
+  const data = require("../nuclide-debugger-common/AutoGenLaunchAttachProvider");
+
+  _AutoGenLaunchAttachProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("./utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,45 +50,30 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  NuclideDebuggerProvider,
-  DebuggerConfigurationProvider,
-} from 'nuclide-debugger-common';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
-import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import {getJavaAndroidConfig, resolveConfiguration} from './utils';
-
 class Activation {
   constructor() {}
+
   dispose() {}
 
-  createDebuggerProvider(): NuclideDebuggerProvider {
+  createDebuggerProvider() {
     return {
-      type: VsAdapterTypes.JAVA_ANDROID,
+      type: _nuclideDebuggerCommon().VsAdapterTypes.JAVA_ANDROID,
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          VsAdapterNames.JAVA_ANDROID,
-          connection,
-          getJavaAndroidConfig(),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider().AutoGenLaunchAttachProvider)(_nuclideDebuggerCommon().VsAdapterNames.JAVA_ANDROID, connection, (0, _utils().getJavaAndroidConfig)());
+      }
     };
   }
 
-  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
-    return [
-      {
-        resolveConfiguration,
-        adapterType: VsAdapterTypes.JAVA_ANDROID,
-      },
-    ];
+  createDebuggerConfigurator() {
+    return [{
+      resolveConfiguration: _utils().resolveConfiguration,
+      adapterType: _nuclideDebuggerCommon().VsAdapterTypes.JAVA_ANDROID
+    }];
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

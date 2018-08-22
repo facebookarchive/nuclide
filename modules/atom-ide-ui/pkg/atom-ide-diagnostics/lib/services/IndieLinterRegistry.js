@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.IndieLinterDelegate = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LinterAdapter() {
+  const data = require("../services/LinterAdapter");
+
+  _LinterAdapter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,137 +37,111 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  DiagnosticProviderUpdate,
-  DiagnosticInvalidationMessage,
-  DiagnosticMessageKind,
-  LinterConfig,
-  LinterMessageV2,
-} from '../types';
-
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {linterMessagesToDiagnosticUpdate} from '../services/LinterAdapter';
-
-export class IndieLinterDelegate {
-  _name: string;
-  _supportedMessageKinds: Array<DiagnosticMessageKind>;
-  _uiSettings: Array<string>;
-  _messages: Array<LinterMessageV2>;
-  _updates: Subject<DiagnosticProviderUpdate>;
-  _invalidations: Subject<DiagnosticInvalidationMessage>;
-  _destroyed: BehaviorSubject<boolean>;
-
+class IndieLinterDelegate {
   // For compatibility with the Nuclide API.
-  updates: Observable<DiagnosticProviderUpdate>;
-  invalidations: Observable<DiagnosticInvalidationMessage>;
-
-  constructor(config: LinterConfig) {
+  constructor(config) {
     this._name = config.name;
     this._supportedMessageKinds = config.supportedMessageKinds || ['lint'];
-    this._uiSettings = Object.freeze(
-      config.uiSettings ? config.uiSettings.slice() : [],
-    );
+    this._uiSettings = Object.freeze(config.uiSettings ? config.uiSettings.slice() : []);
     this._messages = [];
-    this._updates = new Subject();
-    this._invalidations = new Subject();
-    this._destroyed = new BehaviorSubject(false);
-
+    this._updates = new _RxMin.Subject();
+    this._invalidations = new _RxMin.Subject();
+    this._destroyed = new _RxMin.BehaviorSubject(false);
     this.updates = this._updates.asObservable();
     this.invalidations = this._invalidations.asObservable();
   }
 
-  get name(): string {
+  get name() {
     return this._name;
   }
 
-  get supportedMessageKinds(): Array<DiagnosticMessageKind> {
+  get supportedMessageKinds() {
     // We'll count on ourselves not to mutate this.
     return this._supportedMessageKinds;
   }
 
-  get uiSettings(): Array<string> {
+  get uiSettings() {
     return this._uiSettings;
   }
 
-  getMessages(): Array<LinterMessageV2> {
+  getMessages() {
     return this._messages;
   }
 
-  clearMessages(): void {
+  clearMessages() {
     this._messages = [];
-    this._invalidations.next({scope: 'all'});
+
+    this._invalidations.next({
+      scope: 'all'
+    });
   }
 
-  setMessages(filePath: string, messages: Array<LinterMessageV2>): void {
-    this._messages = this._messages
-      .filter(message => message.location.file !== filePath)
-      .concat(messages);
-    this._updates.next(
-      linterMessagesToDiagnosticUpdate(filePath, [...messages], this._name),
-    );
+  setMessages(filePath, messages) {
+    this._messages = this._messages.filter(message => message.location.file !== filePath).concat(messages);
+
+    this._updates.next((0, _LinterAdapter().linterMessagesToDiagnosticUpdate)(filePath, [...messages], this._name));
   }
 
-  setAllMessages(messages: Array<LinterMessageV2>): void {
+  setAllMessages(messages) {
     if (messages.length === 0) {
-      this._invalidations.next({scope: 'all'});
+      this._invalidations.next({
+        scope: 'all'
+      });
     }
+
     this._messages = messages;
-    this._updates.next(
-      linterMessagesToDiagnosticUpdate(null, [...messages], this._name),
-    );
+
+    this._updates.next((0, _LinterAdapter().linterMessagesToDiagnosticUpdate)(null, [...messages], this._name));
   }
 
-  onDidUpdate(
-    callback: (messages: Array<LinterMessageV2>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      Observable.merge(this.updates, this.invalidations).subscribe(() => {
-        callback(this._messages);
-      }),
-    );
+  onDidUpdate(callback) {
+    return new (_UniversalDisposable().default)(_RxMin.Observable.merge(this.updates, this.invalidations).subscribe(() => {
+      callback(this._messages);
+    }));
   }
 
-  onDidDestroy(callback: () => mixed): IDisposable {
-    return new UniversalDisposable(
-      this._destroyed
-        .filter(Boolean)
-        .take(1)
-        .subscribe(callback),
-    );
+  onDidDestroy(callback) {
+    return new (_UniversalDisposable().default)(this._destroyed.filter(Boolean).take(1).subscribe(callback));
   }
 
   dispose() {
     // Guard against double-destruction.
     if (!this._destroyed.getValue()) {
       this.clearMessages();
+
       this._destroyed.next(true);
     }
   }
+
 }
 
-export default class IndieLinterRegistry {
-  _delegates: Set<IndieLinterDelegate>;
+exports.IndieLinterDelegate = IndieLinterDelegate;
 
+class IndieLinterRegistry {
   constructor() {
     this._delegates = new Set();
   }
 
-  register(config: LinterConfig): IndieLinterDelegate {
+  register(config) {
     const delegate = new IndieLinterDelegate(config);
+
     this._delegates.add(delegate);
+
     delegate.onDidDestroy(() => {
       this._delegates.delete(delegate);
     });
     return delegate;
   }
 
-  dispose(): void {
+  dispose() {
     this._delegates.forEach(delegate => delegate.dispose());
+
     this._delegates.clear();
   }
+
 }
+
+exports.default = IndieLinterRegistry;

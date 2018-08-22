@@ -1,3 +1,55 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerOnWillSave = registerOnWillSave;
+exports.observeTextEditors = observeTextEditors;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _ProviderRegistry() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/ProviderRegistry"));
+
+  _ProviderRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _textEdit() {
+  const data = require("../../../modules/nuclide-commons-atom/text-edit");
+
+  _textEdit = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,65 +57,31 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const onWillSaveProviders = new (_ProviderRegistry().default)();
 
-import type {Provider} from 'nuclide-commons-atom/ProviderRegistry';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-
-import {Observable} from 'rxjs';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
-import {arrayFlatten} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export type FileEventHandlersConfig = {|
-  supportsOnWillSave: boolean,
-  onWillSaveTimeout?: number,
-  onWillSavePriority?: number,
-|};
-
-type OnWillSaveProvider = Provider & {
-  timeout: number,
-  callback: (e: atom$TextEditor) => Observable<TextEdit>,
-};
-
-const onWillSaveProviders: ProviderRegistry<
-  OnWillSaveProvider,
-> = new ProviderRegistry();
-
-function onWillSave(editor: atom$TextEditor): IDisposable {
+function onWillSave(editor) {
   return editor.getBuffer().onWillSave(async _ => {
-    const providers = Array.from(
-      onWillSaveProviders.getAllProvidersForEditor(editor),
-    );
-    const textEdits: Array<Array<TextEdit>> = await Promise.all(
-      providers.map(async provider =>
-        provider
-          .callback(editor)
-          .toArray()
-          .race(Observable.of([]).delay(provider.timeout))
-          .toPromise(),
-      ),
-    );
+    const providers = Array.from(onWillSaveProviders.getAllProvidersForEditor(editor));
+    const textEdits = await Promise.all(providers.map(async provider => provider.callback(editor).toArray().race(_RxMin.Observable.of([]).delay(provider.timeout)).toPromise()));
     const path = editor.getPath();
+
     if (path != null) {
-      await applyTextEdits(path, ...arrayFlatten(textEdits));
+      await (0, _textEdit().applyTextEdits)(path, ...(0, _collection().arrayFlatten)(textEdits));
     }
   });
 }
 
-export function registerOnWillSave(provider: OnWillSaveProvider): IDisposable {
+function registerOnWillSave(provider) {
   return onWillSaveProviders.addProvider(provider);
 }
 
-export function observeTextEditors(): IDisposable {
-  const disposables = new UniversalDisposable();
-  disposables.add(
-    atom.workspace.observeTextEditors(editor => {
-      disposables.add(onWillSave(editor));
-    }),
-  );
+function observeTextEditors() {
+  const disposables = new (_UniversalDisposable().default)();
+  disposables.add(atom.workspace.observeTextEditors(editor => {
+    disposables.add(onWillSave(editor));
+  }));
   return disposables;
 }

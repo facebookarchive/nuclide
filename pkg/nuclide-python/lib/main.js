@@ -1,3 +1,107 @@
+"use strict";
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LinkTreeLinter() {
+  const data = _interopRequireDefault(require("./LinkTreeLinter"));
+
+  _LinkTreeLinter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LintHelpers() {
+  const data = _interopRequireDefault(require("./LintHelpers"));
+
+  _LintHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideOpenFiles() {
+  const data = require("../../nuclide-open-files");
+
+  _nuclideOpenFiles = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLanguageService() {
+  const data = require("../../nuclide-language-service");
+
+  _nuclideLanguageService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _config() {
+  const data = require("./config");
+
+  _config = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _pythonPlatform() {
+  const data = require("./pythonPlatform");
+
+  _pythonPlatform = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,181 +109,135 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {LinterProvider, RegisterIndieLinter} from 'atom-ide-ui';
-import type {BuckTaskRunnerService} from '../../nuclide-buck/lib/types';
-import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-
-import {GRAMMARS, GRAMMAR_SET} from './constants';
-import LinkTreeLinter from './LinkTreeLinter';
-import LintHelpers from './LintHelpers';
-import {
-  getPythonServiceByConnection,
-  ServerConnection,
-} from '../../nuclide-remote-connection';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {
-  AtomLanguageService,
-  updateAutocompleteFirstResults,
-  updateAutocompleteResults,
-} from '../../nuclide-language-service';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {
-  getShowGlobalVariables,
-  getShowSignatureHelp,
-  getAutocompleteArguments,
-  getIncludeOptionalArguments,
-} from './config';
-import {providePythonPlatformGroup} from './pythonPlatform';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-async function connectionToPythonService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const pythonService = getPythonServiceByConnection(connection);
-  const fileNotifier = await getNotifierByConnection(connection);
+async function connectionToPythonService(connection) {
+  const pythonService = (0, _nuclideRemoteConnection().getPythonServiceByConnection)(connection);
+  const fileNotifier = await (0, _nuclideOpenFiles().getNotifierByConnection)(connection);
   const languageService = await pythonService.initialize(fileNotifier, {
-    showGlobalVariables: getShowGlobalVariables(),
-    autocompleteArguments: getAutocompleteArguments(),
-    includeOptionalArguments: getIncludeOptionalArguments(),
+    showGlobalVariables: (0, _config().getShowGlobalVariables)(),
+    autocompleteArguments: (0, _config().getAutocompleteArguments)(),
+    includeOptionalArguments: (0, _config().getIncludeOptionalArguments)()
   });
-
   return languageService;
 }
 
-function getAtomConfig(): AtomLanguageServiceConfig {
+function getAtomConfig() {
   return {
     name: 'Python',
-    grammars: GRAMMARS,
+    grammars: _constants().GRAMMARS,
     outline: {
       version: '0.1.0',
       priority: 1,
-      analyticsEventName: 'python.outline',
+      analyticsEventName: 'python.outline'
     },
     codeFormat: {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'python.formatCode',
       canFormatRanges: false,
-      canFormatAtPosition: false,
+      canFormatAtPosition: false
     },
     findReferences: {
       version: '0.1.0',
-      analyticsEventName: 'python.get-references',
+      analyticsEventName: 'python.get-references'
     },
     autocomplete: {
       inclusionPriority: 5,
-      suggestionPriority: 5, // Higher than the snippets provider.
+      suggestionPriority: 5,
+      // Higher than the snippets provider.
       disableForSelector: '.source.python .comment, .source.python .string',
       excludeLowerPriority: false,
       analytics: {
         eventName: 'nuclide-python',
-        shouldLogInsertedSuggestion: false,
+        shouldLogInsertedSuggestion: false
       },
       autocompleteCacherConfig: {
-        updateResults: updateAutocompleteResults,
-        updateFirstResults: updateAutocompleteFirstResults,
+        updateResults: _nuclideLanguageService().updateAutocompleteResults,
+        updateFirstResults: _nuclideLanguageService().updateAutocompleteFirstResults
       },
-      supportsResolve: false,
+      supportsResolve: false
     },
     definition: {
       version: '0.1.0',
       priority: 20,
-      definitionEventName: 'python.get-definition',
+      definitionEventName: 'python.get-definition'
     },
     typeHint: {
       version: '0.0.0',
       priority: 5,
-      analyticsEventName: 'python.hover',
+      analyticsEventName: 'python.hover'
     },
-    signatureHelp: getShowSignatureHelp()
-      ? {
-          version: '0.1.0',
-          priority: 1,
-          triggerCharacters: new Set(['(', ',']),
-          analyticsEventName: 'python.signatureHelp',
-        }
-      : undefined,
+    signatureHelp: (0, _config().getShowSignatureHelp)() ? {
+      version: '0.1.0',
+      priority: 1,
+      triggerCharacters: new Set(['(', ',']),
+      analyticsEventName: 'python.signatureHelp'
+    } : undefined
   };
 }
 
-function resetServices(): void {
-  getPythonServiceByConnection(null).reset();
-  ServerConnection.getAllConnections().forEach(conn => {
-    getPythonServiceByConnection(conn).reset();
+function resetServices() {
+  (0, _nuclideRemoteConnection().getPythonServiceByConnection)(null).reset();
+
+  _nuclideRemoteConnection().ServerConnection.getAllConnections().forEach(conn => {
+    (0, _nuclideRemoteConnection().getPythonServiceByConnection)(conn).reset();
   });
 }
 
 class Activation {
-  _pythonLanguageService: AtomLanguageService<LanguageService>;
-  _linkTreeLinter: LinkTreeLinter;
-  _subscriptions: UniversalDisposable;
+  constructor(rawState) {
+    this._pythonLanguageService = new (_nuclideLanguageService().AtomLanguageService)(connectionToPythonService, getAtomConfig());
 
-  constructor(rawState: ?Object) {
-    this._pythonLanguageService = new AtomLanguageService(
-      connectionToPythonService,
-      getAtomConfig(),
-    );
     this._pythonLanguageService.activate();
-    this._linkTreeLinter = new LinkTreeLinter();
-    this._subscriptions = new UniversalDisposable(
-      this._pythonLanguageService,
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-python:reset-language-services',
-        resetServices,
-      ),
-    );
+
+    this._linkTreeLinter = new (_LinkTreeLinter().default)();
+    this._subscriptions = new (_UniversalDisposable().default)(this._pythonLanguageService, atom.commands.add('atom-workspace', 'nuclide-python:reset-language-services', resetServices));
   }
 
-  provideLint(): LinterProvider {
+  provideLint() {
     return {
-      grammarScopes: Array.from(GRAMMAR_SET),
+      grammarScopes: Array.from(_constants().GRAMMAR_SET),
       scope: 'file',
       name: 'flake8',
-      lint: editor => LintHelpers.lint(editor),
+      lint: editor => _LintHelpers().default.lint(editor)
     };
   }
 
-  consumeLinterIndie(register: RegisterIndieLinter): IDisposable {
-    const linter = register({name: 'Python'});
-    const disposable = new UniversalDisposable(
-      linter,
-      this._linkTreeLinter
-        .observeMessages()
-        .subscribe(messages => linter.setAllMessages(messages)),
-    );
+  consumeLinterIndie(register) {
+    const linter = register({
+      name: 'Python'
+    });
+    const disposable = new (_UniversalDisposable().default)(linter, this._linkTreeLinter.observeMessages().subscribe(messages => linter.setAllMessages(messages)));
+
     this._subscriptions.add(disposable);
-    return new UniversalDisposable(disposable, () =>
-      this._subscriptions.remove(disposable),
-    );
+
+    return new (_UniversalDisposable().default)(disposable, () => this._subscriptions.remove(disposable));
   }
 
-  consumePlatformService(service: PlatformService): IDisposable {
-    const disposable = service.register(providePythonPlatformGroup);
+  consumePlatformService(service) {
+    const disposable = service.register(_pythonPlatform().providePythonPlatformGroup);
+
     this._subscriptions.add(disposable);
-    return new UniversalDisposable(() => {
+
+    return new (_UniversalDisposable().default)(() => {
       this._subscriptions.remove(disposable);
     });
   }
 
-  consumeBuckTaskRunner(service: BuckTaskRunnerService): IDisposable {
+  consumeBuckTaskRunner(service) {
     return this._linkTreeLinter.consumeBuckTaskRunner(service);
   }
 
-  consumeCwdApi(api: CwdApi): IDisposable {
+  consumeCwdApi(api) {
     return this._linkTreeLinter.consumeCwdApi(api);
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

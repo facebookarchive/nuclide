@@ -1,3 +1,15 @@
+"use strict";
+
+function _cli() {
+  const data = require("../big-dig/src/server/cli");
+
+  _cli = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,11 +18,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const absolutePathToServerMain = require.resolve("./server.js");
 
-import {parseArgsAndRunMain} from 'big-dig/src/server/cli';
-
-const absolutePathToServerMain = require.resolve('./server.js');
-parseArgsAndRunMain(absolutePathToServerMain);
+(0, _cli().parseArgsAndRunMain)(absolutePathToServerMain);

@@ -1,27 +1,65 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+"use strict";
 
-export {
-  getConnectionProfileDictionary,
-  getConnectionIdForCredentialStore,
-  getConnectionProfiles,
-} from './profile';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "getConnectionProfileDictionary", {
+  enumerable: true,
+  get: function () {
+    return _profile().getConnectionProfileDictionary;
+  }
+});
+Object.defineProperty(exports, "getConnectionIdForCredentialStore", {
+  enumerable: true,
+  get: function () {
+    return _profile().getConnectionIdForCredentialStore;
+  }
+});
+Object.defineProperty(exports, "getConnectionProfiles", {
+  enumerable: true,
+  get: function () {
+    return _profile().getConnectionProfiles;
+  }
+});
+Object.defineProperty(exports, "getIntegratedTerminal", {
+  enumerable: true,
+  get: function () {
+    return _terminal().getIntegratedTerminal;
+  }
+});
+Object.defineProperty(exports, "connectionProfileUpdates", {
+  enumerable: true,
+  get: function () {
+    return _profileUpdates().connectionProfileUpdates;
+  }
+});
 
-export type {
-  DeployServer,
-  AuthenticationMethod,
-  IConnectionProfile,
-} from './ProfileConfigurationParser';
+function _profile() {
+  const data = require("./profile");
 
-export type {IIntegratedTerminal} from './terminal';
-export {getIntegratedTerminal} from './terminal';
-export {connectionProfileUpdates} from './profile-updates';
+  _profile = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _terminal() {
+  const data = require("./terminal");
+
+  _terminal = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _profileUpdates() {
+  const data = require("./profile-updates");
+
+  _profileUpdates = function () {
+    return data;
+  };
+
+  return data;
+}

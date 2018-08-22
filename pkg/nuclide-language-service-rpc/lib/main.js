@@ -1,25 +1,91 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+"use strict";
 
-export type {SingleFileLanguageService} from './ServerLanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "ServerLanguageService", {
+  enumerable: true,
+  get: function () {
+    return _ServerLanguageService().ServerLanguageService;
+  }
+});
+Object.defineProperty(exports, "ensureInvalidations", {
+  enumerable: true,
+  get: function () {
+    return _ServerLanguageService().ensureInvalidations;
+  }
+});
+Object.defineProperty(exports, "NullLanguageService", {
+  enumerable: true,
+  get: function () {
+    return _NullLanguageService().NullLanguageService;
+  }
+});
+Object.defineProperty(exports, "MultiProjectLanguageService", {
+  enumerable: true,
+  get: function () {
+    return _MultiProjectLanguageService().MultiProjectLanguageService;
+  }
+});
+Object.defineProperty(exports, "forkHostServices", {
+  enumerable: true,
+  get: function () {
+    return _HostServicesAggregator().forkHostServices;
+  }
+});
+Object.defineProperty(exports, "typeHintFromSnippet", {
+  enumerable: true,
+  get: function () {
+    return _TypeHintFromSnippet().typeHintFromSnippet;
+  }
+});
 
-export {
-  ServerLanguageService,
-  ensureInvalidations,
-} from './ServerLanguageService';
+function _ServerLanguageService() {
+  const data = require("./ServerLanguageService");
 
-export {NullLanguageService} from './NullLanguageService';
+  _ServerLanguageService = function () {
+    return data;
+  };
 
-export {MultiProjectLanguageService} from './MultiProjectLanguageService';
+  return data;
+}
 
-export {forkHostServices} from './HostServicesAggregator';
+function _NullLanguageService() {
+  const data = require("./NullLanguageService");
 
-export {typeHintFromSnippet} from './TypeHintFromSnippet';
+  _NullLanguageService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _MultiProjectLanguageService() {
+  const data = require("./MultiProjectLanguageService");
+
+  _MultiProjectLanguageService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HostServicesAggregator() {
+  const data = require("./HostServicesAggregator");
+
+  _HostServicesAggregator = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TypeHintFromSnippet() {
+  const data = require("./TypeHintFromSnippet");
+
+  _TypeHintFromSnippet = function () {
+    return data;
+  };
+
+  return data;
+}

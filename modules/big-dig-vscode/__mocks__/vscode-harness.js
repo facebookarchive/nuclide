@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.workspace = exports.window = exports.EventEmitter = exports.Uri = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,42 +13,48 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+class Uri {}
 
-export class Uri {
-  static parse: string => any = jest.fn();
+exports.Uri = Uri;
+Uri.parse = jest.fn();
+
+class EventEmitter {
+  constructor() {
+    this._listeners = new Set();
+    this.event = jest.fn(listener => {
+      const _listeners = this._listeners;
+
+      _listeners.add(listener);
+
+      return {
+        dispose() {
+          _listeners.delete(listener);
+        }
+
+      };
+    });
+    this.dispose = jest.fn(() => this._listeners.clear());
+    this.fire = jest.fn(x => this._listeners.forEach(listener => listener(x)));
+  }
+
 }
 
-export class EventEmitter<T> {
-  +_listeners: Set<(T) => mixed> = new Set();
-  +event: ((T) => void) => IDisposable = jest.fn(listener => {
-    const _listeners = this._listeners;
-    _listeners.add(listener);
-    return {
-      dispose() {
-        _listeners.delete(listener);
-      },
-    };
-  });
-
-  +dispose: () => void = jest.fn(() => this._listeners.clear());
-  +fire: T => void = jest.fn(x =>
-    this._listeners.forEach(listener => listener(x)),
-  );
-}
-
-export const window = {
-  showErrorMessage: (jest.fn(): any),
+exports.EventEmitter = EventEmitter;
+const window = {
+  showErrorMessage: jest.fn()
 };
-
-export const workspace = {
-  getConfiguration(property: string) {
+exports.window = window;
+const workspace = {
+  getConfiguration(property) {
     return {
-      get: (name: string, defaultValue: boolean): boolean => {
+      get: (name, defaultValue) => {
         return defaultValue;
-      },
+      }
     };
-  },
+  }
+
 };
+exports.workspace = workspace;

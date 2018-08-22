@@ -1,3 +1,106 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AvdComponentProvider = void 0;
+
+function _nuclideWatchmanHelpers() {
+  const data = require("../../../../modules/nuclide-watchman-helpers");
+
+  _nuclideWatchmanHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../../../../modules/nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _fsPromise() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/fsPromise"));
+
+  _fsPromise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _bindObservableAsProps() {
+  const data = require("../../../../modules/nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _os = _interopRequireDefault(require("os"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _process() {
+  const data = require("../../../../modules/nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAnalytics() {
+  const data = require("../../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AvdTable() {
+  const data = _interopRequireDefault(require("../ui/AvdTable"));
+
+  _AvdTable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,58 +108,52 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from 'nuclide-commons/expected';
-import type {
-  DeviceTypeComponent,
-  DeviceTypeComponentProvider,
-} from 'nuclide-debugger-common/types';
-
-import {WatchmanClient} from 'nuclide-watchman-helpers';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Expect} from 'nuclide-commons/expected';
-import invariant from 'assert';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import os from 'os';
-import {Observable, Subject} from 'rxjs';
-import {runCommand} from 'nuclide-commons/process';
-import {track} from '../../../nuclide-analytics';
-import AvdTable from '../ui/AvdTable';
-
-export type Avd = {
-  name: string,
-  running: boolean,
-  pid?: number,
-};
-
-const AVD_DIRECTORY = `${os.homedir()}/.android/avd`;
-const AVD_LOCKFILE = 'hardware-qemu.ini.lock';
-// We create a temporary .watchmanconfig so Watchman recognizes the AVD
+const AVD_DIRECTORY = `${_os.default.homedir()}/.android/avd`;
+const AVD_LOCKFILE = 'hardware-qemu.ini.lock'; // We create a temporary .watchmanconfig so Watchman recognizes the AVD
 // directory as a project root.
+
 const AVD_WATCHMAN_CONFIG = `${AVD_DIRECTORY}/.watchmanconfig`;
 
-export class AvdComponentProvider implements DeviceTypeComponentProvider {
-  _refresh: Subject<void> = new Subject();
-  _emulator: ?string;
+class AvdComponentProvider {
+  constructor() {
+    this._refresh = new _RxMin.Subject();
 
-  getType(): string {
+    this._populateAvdPIDs = avds => {
+      return _RxMin.Observable.fromPromise(Promise.all(avds.map(this._populateAvdPID)));
+    };
+
+    this._refreshAvds = () => {
+      this._refresh.next();
+    };
+
+    this._startAvd = avd => {
+      (0, _nuclideAnalytics().track)('nuclide-device-panel-android.start-emulator');
+
+      if (!(this._emulator != null)) {
+        throw new Error("Invariant violation: \"this._emulator != null\"");
+      }
+
+      (0, _process().runCommand)(this._emulator, ['@' + avd.name]).subscribe(stdout => {}, err => {
+        atom.notifications.addError(`Failed to start up emulator ${avd.name}.`, {
+          detail: err,
+          dismissable: true
+        });
+      });
+    };
+  }
+
+  getType() {
     return 'Android';
   }
 
-  observe(
-    host: NuclideUri,
-    callback: (?DeviceTypeComponent) => void,
-  ): IDisposable {
+  observe(host, callback) {
     // TODO (T26257016): Don't hide the table when ADB tunneling is on.
-    if (nuclideUri.isRemote(host)) {
+    if (_nuclideUri().default.isRemote(host)) {
       callback(null);
-      return new UniversalDisposable();
+      return new (_UniversalDisposable().default)();
     }
 
     const disposables = this._watchAvdDirectory();
@@ -64,43 +161,38 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
     const getProps = this._getAvds().map(avds => {
       return {
         avds,
-        startAvd: this._startAvd,
+        startAvd: this._startAvd
       };
     });
+
     const props = getProps.concat(this._refresh.exhaustMap(_ => getProps));
     callback({
       position: 'below_table',
-      type: bindObservableAsProps(props, AvdTable),
-      key: 'emulators',
+      type: (0, _bindObservableAsProps().bindObservableAsProps)(props, _AvdTable().default),
+      key: 'emulators'
     });
-
     return disposables;
   }
 
-  _watchAvdDirectory(): IDisposable {
-    const watchAvdDirectory: Promise<() => mixed> = (async () => {
-      const avdDirectoryExists = await fsPromise.exists(AVD_DIRECTORY);
+  _watchAvdDirectory() {
+    const watchAvdDirectory = (async () => {
+      const avdDirectoryExists = await _fsPromise().default.exists(AVD_DIRECTORY);
+
       if (!avdDirectoryExists) {
         return () => {};
-      }
-
-      // Create a .watchmanconfig so Watchman recognizes the AVD directory as a
+      } // Create a .watchmanconfig so Watchman recognizes the AVD directory as a
       // project root.
-      await fsPromise.writeFile(AVD_WATCHMAN_CONFIG, '{}');
 
-      const watchmanClient = new WatchmanClient();
-      const watchmanSubscription = await watchmanClient.watchDirectoryRecursive(
-        AVD_DIRECTORY,
-        AVD_DIRECTORY,
-        {
-          expression: ['match', '*.avd'],
-        },
-      );
+
+      await _fsPromise().default.writeFile(AVD_WATCHMAN_CONFIG, '{}');
+      const watchmanClient = new (_nuclideWatchmanHelpers().WatchmanClient)();
+      const watchmanSubscription = await watchmanClient.watchDirectoryRecursive(AVD_DIRECTORY, AVD_DIRECTORY, {
+        expression: ['match', '*.avd']
+      });
       watchmanSubscription.on('change', () => {
         this._refreshAvds();
       });
-
-      return () => fsPromise.unlink(AVD_WATCHMAN_CONFIG).catch(() => {});
+      return () => _fsPromise().default.unlink(AVD_WATCHMAN_CONFIG).catch(() => {});
     })();
 
     return {
@@ -108,81 +200,54 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
         watchAvdDirectory.then(dispose => {
           dispose();
         });
-      },
+      }
     };
   }
 
-  _getEmulator(): Observable<?string> {
-    return Observable.defer(async () => {
+  _getEmulator() {
+    return _RxMin.Observable.defer(async () => {
       const androidHome = process.env.ANDROID_HOME;
-      const emulator =
-        androidHome != null ? `${androidHome}/tools/emulator` : null;
+      const emulator = androidHome != null ? `${androidHome}/tools/emulator` : null;
+
       if (emulator == null) {
         return null;
       }
-      const exists = await fsPromise.exists(emulator);
+
+      const exists = await _fsPromise().default.exists(emulator);
       this._emulator = exists ? emulator : null;
       return this._emulator;
     });
   }
 
-  _parseAvds(emulatorOutput: string): Array<string> {
+  _parseAvds(emulatorOutput) {
     const trimmedOutput = emulatorOutput.trim();
-    return trimmedOutput === '' ? [] : trimmedOutput.split(os.EOL);
+    return trimmedOutput === '' ? [] : trimmedOutput.split(_os.default.EOL);
   }
 
-  async _populateAvdPID(avdName: string): Promise<Avd> {
+  async _populateAvdPID(avdName) {
     const lockFile = `${AVD_DIRECTORY}/${avdName}.avd/${AVD_LOCKFILE}`;
-    if (await fsPromise.exists(lockFile)) {
-      const pid = parseInt(await fsPromise.readFile(lockFile, 'utf8'), 10);
+
+    if (await _fsPromise().default.exists(lockFile)) {
+      const pid = parseInt((await _fsPromise().default.readFile(lockFile, 'utf8')), 10);
       return {
         name: avdName,
         running: true,
-        pid,
+        pid
       };
     } else {
       return {
         name: avdName,
-        running: false,
+        running: false
       };
     }
   }
 
-  _populateAvdPIDs = (avds: Array<string>): Observable<Array<Avd>> => {
-    return Observable.fromPromise(Promise.all(avds.map(this._populateAvdPID)));
-  };
-
-  _getAvds(): Observable<Expected<Array<Avd>>> {
+  _getAvds() {
     return this._getEmulator().switchMap(emulator => {
-      return emulator != null
-        ? runCommand(emulator, ['-list-avds'])
-            .map(this._parseAvds)
-            .switchMap(this._populateAvdPIDs)
-            .map(Expect.value)
-        : Observable.of(
-            Expect.error(new Error("Cannot find 'emulator' command.")),
-          );
+      return emulator != null ? (0, _process().runCommand)(emulator, ['-list-avds']).map(this._parseAvds).switchMap(this._populateAvdPIDs).map(_expected().Expect.value) : _RxMin.Observable.of(_expected().Expect.error(new Error("Cannot find 'emulator' command.")));
     });
   }
 
-  _refreshAvds = (): void => {
-    this._refresh.next();
-  };
-
-  _startAvd = (avd: Avd): void => {
-    track('nuclide-device-panel-android.start-emulator');
-    invariant(this._emulator != null);
-    runCommand(this._emulator, ['@' + avd.name]).subscribe(
-      stdout => {},
-      err => {
-        atom.notifications.addError(
-          `Failed to start up emulator ${avd.name}.`,
-          {
-            detail: err,
-            dismissable: true,
-          },
-        );
-      },
-    );
-  };
 }
+
+exports.AvdComponentProvider = AvdComponentProvider;

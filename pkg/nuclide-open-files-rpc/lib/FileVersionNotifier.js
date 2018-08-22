@@ -1,3 +1,40 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileVersionNotifier = void 0;
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _promise() {
+  const data = require("../../../modules/nuclide-commons/promise");
+
+  _promise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,68 +42,66 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LocalFileEvent, FileVersion} from './rpc-types';
-
-import {FileEventKind} from './constants';
-import {Deferred} from 'nuclide-commons/promise';
-import {MultiMap} from 'nuclide-commons/collection';
-
-export class FileVersionNotifier {
-  _versions: Map<NuclideUri, number>;
-  _requests: MultiMap<NuclideUri, Request>;
-
+class FileVersionNotifier {
   constructor() {
     this._versions = new Map();
-    this._requests = new MultiMap();
-  }
-
-  // If any out of sync state is detected then an Error is thrown.
+    this._requests = new (_collection().MultiMap)();
+  } // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onEvent(event: LocalFileEvent): void {
+
+
+  onEvent(event) {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
+
     switch (event.kind) {
-      case FileEventKind.OPEN:
+      case _constants().FileEventKind.OPEN:
         this._versions.set(filePath, changeCount);
+
         break;
-      case FileEventKind.CLOSE:
+
+      case _constants().FileEventKind.CLOSE:
         this._versions.delete(filePath);
+
         break;
-      case FileEventKind.EDIT:
+
+      case _constants().FileEventKind.EDIT:
         this._versions.set(filePath, changeCount);
+
         break;
-      case FileEventKind.SAVE:
+
+      case _constants().FileEventKind.SAVE:
         break;
+
       default:
-        (event.kind: empty);
+        event.kind;
         throw new Error(`Unexpected LocalFileEvent.kind: ${event.kind}`);
     }
+
     this._checkRequests(filePath);
   }
 
-  dispose(): void {
+  dispose() {
     for (const request of this._requests.values()) {
       request.reject(createRejectError());
     }
   }
 
-  getVersion(filePath: NuclideUri): ?number {
+  getVersion(filePath) {
     return this._versions.get(filePath);
   }
 
-  isBufferAtVersion(fileVersion: FileVersion): boolean {
+  isBufferAtVersion(fileVersion) {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
-    const currentVersion = this._versions.get(filePath);
-    return currentVersion === version;
-  }
 
-  // waitForBufferAtVersion:
+    const currentVersion = this._versions.get(filePath);
+
+    return currentVersion === version;
+  } // waitForBufferAtVersion:
   // Asynchronously waits until a FileEdit has passed through fileNotifier.onEvent
   // for this particular version of the file. If for whatever reason this precise version
   // doesn't get passed through onEvent then returns false as soon as we discover that.
@@ -86,55 +121,58 @@ export class FileVersionNotifier {
   // (4) Network goes back up
   // (5) User types to version N+2 which invokes onEvent for N+2
   // At step 5 we know we will never be able to deliver buffer at version N+1, so we return false.
-  waitForBufferAtVersion(fileVersion: FileVersion): Promise<boolean> {
+
+
+  waitForBufferAtVersion(fileVersion) {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
+
     const currentVersion = this._versions.get(filePath);
+
     if (currentVersion === version) {
       return Promise.resolve(true);
     } else if (currentVersion != null && currentVersion > version) {
       return Promise.resolve(false);
     }
+
     const request = new Request(filePath, version);
+
     this._requests.add(filePath, request);
+
     return request.promise;
   }
 
-  _checkRequests(filePath: NuclideUri): void {
+  _checkRequests(filePath) {
     const currentVersion = this._versions.get(filePath);
+
     if (currentVersion == null) {
       return;
     }
 
     const requests = Array.from(this._requests.get(filePath));
-    const resolves = requests.filter(
-      request => request.changeCount === currentVersion,
-    );
-    const rejects = requests.filter(
-      request => request.changeCount < currentVersion,
-    );
-    const remaining = requests.filter(
-      request => request.changeCount > currentVersion,
-    );
+    const resolves = requests.filter(request => request.changeCount === currentVersion);
+    const rejects = requests.filter(request => request.changeCount < currentVersion);
+    const remaining = requests.filter(request => request.changeCount > currentVersion);
+
     this._requests.set(filePath, remaining);
 
     resolves.forEach(request => request.resolve(true));
     rejects.forEach(request => request.resolve(false));
   }
+
 }
 
-function createRejectError(): Error {
+exports.FileVersionNotifier = FileVersionNotifier;
+
+function createRejectError() {
   return new Error('File modified past requested change');
 }
 
-class Request extends Deferred<boolean> {
-  filePath: NuclideUri;
-  changeCount: number;
-
-  constructor(filePath: NuclideUri, changeCount: number) {
+class Request extends _promise().Deferred {
+  constructor(filePath, changeCount) {
     super();
-
     this.filePath = filePath;
     this.changeCount = changeCount;
   }
+
 }

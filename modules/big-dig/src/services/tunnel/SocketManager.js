@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SocketManager = void 0;
+
+var _net = _interopRequireDefault(require("net"));
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Encoder() {
+  const data = _interopRequireDefault(require("./Encoder"));
+
+  _Encoder = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _events = _interopRequireDefault(require("events"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +39,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const logger = (0, _log4js().getLogger)('tunnel-socket-manager');
 
-import type {Transport} from './Proxy';
-
-import net from 'net';
-import {getLogger} from 'log4js';
-import Encoder from './Encoder';
-import EventEmitter from 'events';
-
-const logger = getLogger('tunnel-socket-manager');
-
-export class SocketManager extends EventEmitter {
-  _port: number;
-  _transport: Transport;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
-  _useIPv4: boolean;
-
-  constructor(
-    tunnelId: string,
-    port: number,
-    useIPv4: boolean,
-    transport: Transport,
-  ) {
+class SocketManager extends _events.default {
+  constructor(tunnelId, port, useIPv4, transport) {
     super();
     this._tunnelId = tunnelId;
     this._port = port;
@@ -40,15 +54,15 @@ export class SocketManager extends EventEmitter {
     this._socketByClientId = new Map();
   }
 
-  receive(message: Object) {
+  receive(message) {
     this._handleMessage(message);
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  _handleMessage(message: Object) {
+  _handleMessage(message) {
     if (message.event === 'connection') {
       this._createConnection(message);
     } else if (message.event === 'data') {
@@ -58,52 +72,53 @@ export class SocketManager extends EventEmitter {
     }
   }
 
-  _createConnection(message: Object) {
+  _createConnection(message) {
     const connectOptions = {
       port: this._port,
-      family: this._useIPv4 ? 4 : 6,
+      family: this._useIPv4 ? 4 : 6
     };
-
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
-    const socket = net.createConnection(connectOptions);
+
+    const socket = _net.default.createConnection(connectOptions);
 
     socket.on('error', error => {
       logger.error(error);
+
       this._sendMessage({
         event: 'error',
         error,
         clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        tunnelId: this._tunnelId
       });
+
       socket.end();
     });
-
     socket.on('data', data => {
       this._sendMessage({
         event: 'data',
         arg: data,
         clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        tunnelId: this._tunnelId
       });
     });
-
     socket.on('close', () => {
-      logger.info(
-        `received close event on socket ${message.clientId} in socketManager`,
-      );
+      logger.info(`received close event on socket ${message.clientId} in socketManager`);
+
       this._sendMessage({
         event: 'close',
         clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        tunnelId: this._tunnelId
       });
+
       this._socketByClientId.delete(message.clientId);
     });
 
     this._socketByClientId.set(message.clientId, socket);
   }
 
-  _forwardData(message: Object) {
+  _forwardData(message) {
     const socket = this._socketByClientId.get(message.clientId);
+
     if (socket != null) {
       socket.write(message.arg);
     } else {
@@ -111,12 +126,12 @@ export class SocketManager extends EventEmitter {
     }
   }
 
-  _handleError(message: Object) {
+  _handleError(message) {
     this.emit('error', message.arg);
   }
 
-  _sendMessage(msg: Object): void {
-    this._transport.send(Encoder.encode(msg));
+  _sendMessage(msg) {
+    this._transport.send(_Encoder().default.encode(msg));
   }
 
   close() {
@@ -124,4 +139,7 @@ export class SocketManager extends EventEmitter {
       socket.end();
     });
   }
+
 }
+
+exports.SocketManager = SocketManager;

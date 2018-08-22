@@ -1,3 +1,64 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FreeformRefactorComponent = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _AtomInput() {
+  const data = require("../../../../../nuclide-commons-ui/AtomInput");
+
+  _AtomInput = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Button() {
+  const data = require("../../../../../nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Checkbox() {
+  const data = require("../../../../../nuclide-commons-ui/Checkbox");
+
+  _Checkbox = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Dropdown() {
+  const data = require("../../../../../nuclide-commons-ui/Dropdown");
+
+  _Dropdown = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Actions() {
+  const data = _interopRequireWildcard(require("../refactorActions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +67,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-import type {Store, FreeformPhase, FreeformRefactoringArgument} from '../types';
-
-import * as React from 'react';
-
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-
-import * as Actions from '../refactorActions';
-
-type Props = {
-  phase: FreeformPhase,
-  store: Store,
-};
-
-type State = {
-  args: Map<string, mixed>,
-};
-
-function getDefault(arg: FreeformRefactoringArgument): string | boolean {
+function getDefault(arg) {
   if (arg.default != null) {
     return arg.default;
   }
@@ -37,8 +78,10 @@ function getDefault(arg: FreeformRefactoringArgument): string | boolean {
   switch (arg.type) {
     case 'string':
       return '';
+
     case 'boolean':
       return false;
+
     case 'enum':
       return arg.options[0].value;
   }
@@ -46,103 +89,97 @@ function getDefault(arg: FreeformRefactoringArgument): string | boolean {
   throw new Error('unreachable');
 }
 
-export class FreeformRefactorComponent extends React.Component<Props, State> {
-  constructor(props: Props) {
+class FreeformRefactorComponent extends React.Component {
+  constructor(props) {
     super(props);
-    const defaultArgs = new Map(
-      props.phase.refactoring.arguments.map(arg => [arg.name, getDefault(arg)]),
-    );
-    this.state = {
-      args: defaultArgs,
-    };
-  }
 
-  render(): React.Node {
-    return (
-      <div>
-        {this._getControls()}
-        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-          <Button
-            className="nuclide-refactorizer-execute-button"
-            buttonType={ButtonTypes.PRIMARY}
-            onClick={this._execute}>
-            Execute
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  _getControls() {
-    return this.props.phase.refactoring.arguments
-      .map((arg, index) => {
-        switch (arg.type) {
-          case 'string':
-            return [
-              <div key="label" className="nuclide-refactorizer-freeform-label">
-                {arg.description}
-              </div>,
-              <AtomInput
-                key="input"
-                autofocus={index === 0}
-                startSelected={index === 0}
-                className="nuclide-refactorizer-freeform-editor"
-                value={String(this.state.args.get(arg.name))}
-                onDidChange={text => this._updateArg(arg.name, text)}
-                onConfirm={this._execute}
-              />,
-            ];
-          case 'boolean':
-            return (
-              <Checkbox
-                label={arg.description}
-                checked={Boolean(this.state.args.get(arg.name))}
-                onChange={checked => this._updateArg(arg.name, checked)}
-              />
-            );
-          case 'enum':
-            return [
-              <div key="label" className="nuclide-refactorizer-freeform-label">
-                {arg.description}
-              </div>,
-              <Dropdown
-                key="dropdown"
-                value={this.state.args.get(arg.name) || arg.options[0]}
-                options={arg.options.map(val => ({
-                  value: val.value,
-                  label: val.description,
-                }))}
-                onChange={value => this._updateArg(arg.name, value)}
-              />,
-            ];
-        }
-      })
-      .map((elem, index) => {
-        return (
-          <div key={index} className="nuclide-refactorizer-freeform-group">
-            {elem}
-          </div>
-        );
-      });
-  }
-
-  _updateArg(name: string, value: mixed) {
-    // A bit hacky, but immutability isn't a requirement here.
-    this.state.args.set(name, value);
-    this.forceUpdate();
-  }
-
-  _execute = () => {
-    const {editor, originalRange, refactoring} = this.props.phase;
-    this.props.store.dispatch(
-      Actions.execute(this.props.phase.providers, {
+    this._execute = () => {
+      const {
+        editor,
+        originalRange,
+        refactoring
+      } = this.props.phase;
+      this.props.store.dispatch(Actions().execute(this.props.phase.providers, {
         kind: 'freeform',
         editor,
         originalRange,
         id: refactoring.id,
         range: refactoring.range,
-        arguments: this.state.args,
-      }),
-    );
-  };
+        arguments: this.state.args
+      }));
+    };
+
+    const defaultArgs = new Map(props.phase.refactoring.arguments.map(arg => [arg.name, getDefault(arg)]));
+    this.state = {
+      args: defaultArgs
+    };
+  }
+
+  render() {
+    return React.createElement("div", null, this._getControls(), React.createElement("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'flex-end'
+      }
+    }, React.createElement(_Button().Button, {
+      className: "nuclide-refactorizer-execute-button",
+      buttonType: _Button().ButtonTypes.PRIMARY,
+      onClick: this._execute
+    }, "Execute")));
+  }
+
+  _getControls() {
+    return this.props.phase.refactoring.arguments.map((arg, index) => {
+      switch (arg.type) {
+        case 'string':
+          return [React.createElement("div", {
+            key: "label",
+            className: "nuclide-refactorizer-freeform-label"
+          }, arg.description), React.createElement(_AtomInput().AtomInput, {
+            key: "input",
+            autofocus: index === 0,
+            startSelected: index === 0,
+            className: "nuclide-refactorizer-freeform-editor",
+            value: String(this.state.args.get(arg.name)),
+            onDidChange: text => this._updateArg(arg.name, text),
+            onConfirm: this._execute
+          })];
+
+        case 'boolean':
+          return React.createElement(_Checkbox().Checkbox, {
+            label: arg.description,
+            checked: Boolean(this.state.args.get(arg.name)),
+            onChange: checked => this._updateArg(arg.name, checked)
+          });
+
+        case 'enum':
+          return [React.createElement("div", {
+            key: "label",
+            className: "nuclide-refactorizer-freeform-label"
+          }, arg.description), React.createElement(_Dropdown().Dropdown, {
+            key: "dropdown",
+            value: this.state.args.get(arg.name) || arg.options[0],
+            options: arg.options.map(val => ({
+              value: val.value,
+              label: val.description
+            })),
+            onChange: value => this._updateArg(arg.name, value)
+          })];
+      }
+    }).map((elem, index) => {
+      return React.createElement("div", {
+        key: index,
+        className: "nuclide-refactorizer-freeform-group"
+      }, elem);
+    });
+  }
+
+  _updateArg(name, value) {
+    // A bit hacky, but immutability isn't a requirement here.
+    this.state.args.set(name, value);
+    this.forceUpdate();
+  }
+
 }
+
+exports.FreeformRefactorComponent = FreeformRefactorComponent;

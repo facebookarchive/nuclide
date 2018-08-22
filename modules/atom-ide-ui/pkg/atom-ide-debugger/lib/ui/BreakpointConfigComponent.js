@@ -1,3 +1,118 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _AtomInput() {
+  const data = require("../../../../../nuclide-commons-ui/AtomInput");
+
+  _AtomInput = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _Button() {
+  const data = require("../../../../../nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ButtonGroup() {
+  const data = require("../../../../../nuclide-commons-ui/ButtonGroup");
+
+  _ButtonGroup = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Checkbox() {
+  const data = require("../../../../../nuclide-commons-ui/Checkbox");
+
+  _Checkbox = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Modal() {
+  const data = require("../../../../../nuclide-commons-ui/Modal");
+
+  _Modal = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _analytics() {
+  const data = require("../../../../../nuclide-commons/analytics");
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,180 +121,126 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {IBreakpoint, IRawBreakpoint, IDebugService} from '../types';
-
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import * as React from 'react';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {Modal} from 'nuclide-commons-ui/Modal';
-import {Observable} from 'rxjs';
-import {track} from 'nuclide-commons/analytics';
-import {AnalyticsEvents} from '../constants';
-
-type PropsType = {
-  onDismiss: () => void,
-  breakpoint: IBreakpoint,
-  service: IDebugService,
-};
-
-type StateType = {
-  bpId: string,
-  enabledChecked: boolean,
-};
-
-export default class BreakpointConfigComponent extends React.Component<
-  PropsType,
-  StateType,
-> {
-  _condition: ?AtomInput;
-  props: PropsType;
-  state: StateType;
-  _disposables: UniversalDisposable;
-
-  constructor(props: PropsType) {
+class BreakpointConfigComponent extends React.Component {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
     this.state = {
       bpId: this.props.breakpoint.getId(),
-      enabledChecked: this.props.breakpoint.enabled,
+      enabledChecked: this.props.breakpoint.enabled
     };
-
     const model = this.props.service.getModel();
-    this._disposables.add(
-      model.onDidChangeBreakpoints(() => {
-        const breakpoint = model
-          .getBreakpoints()
-          .filter(bp => bp.getId() === this.state.bpId);
-        if (breakpoint == null) {
-          // Breakpoint no longer exists.
-          this.props.onDismiss();
-        }
-        this.forceUpdate();
-      }),
-    );
+
+    this._disposables.add(model.onDidChangeBreakpoints(() => {
+      const breakpoint = model.getBreakpoints().filter(bp => bp.getId() === this.state.bpId);
+
+      if (breakpoint == null) {
+        // Breakpoint no longer exists.
+        this.props.onDismiss();
+      }
+
+      this.forceUpdate();
+    }));
   }
 
-  componentDidMount(): void {
-    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_CONFIG_UI_SHOW, {
-      fileExtension: nuclideUri.extname(this.props.breakpoint.uri),
+  componentDidMount() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_BREAKPOINT_CONFIG_UI_SHOW, {
+      fileExtension: _nuclideUri().default.extname(this.props.breakpoint.uri)
     });
-    this._disposables.add(
-      atom.commands.add('atom-workspace', 'core:cancel', this.props.onDismiss),
-      atom.commands.add(
-        'atom-workspace',
-        'core:confirm',
-        this._updateBreakpoint.bind(this),
-      ),
-      Observable.timer(100).subscribe(() => {
-        if (this._condition != null) {
-          this._condition.focus();
-        }
-      }),
-    );
+
+    this._disposables.add(atom.commands.add('atom-workspace', 'core:cancel', this.props.onDismiss), atom.commands.add('atom-workspace', 'core:confirm', this._updateBreakpoint.bind(this)), _RxMin.Observable.timer(100).subscribe(() => {
+      if (this._condition != null) {
+        this._condition.focus();
+      }
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  async _updateBreakpoint(): Promise<void> {
-    const {breakpoint, service} = this.props;
-    const {enabledChecked} = this.state;
+  async _updateBreakpoint() {
+    const {
+      breakpoint,
+      service
+    } = this.props;
+    const {
+      enabledChecked
+    } = this.state;
     service.enableOrDisableBreakpoints(enabledChecked, this.props.breakpoint);
-    const condition = nullthrows(this._condition)
-      .getText()
-      .trim();
+    const condition = (0, _nullthrows().default)(this._condition).getText().trim();
+
     if (condition === (breakpoint.condition || '')) {
       this.props.onDismiss();
       return;
     }
 
     await service.removeBreakpoints(breakpoint.getId());
-
-    const bp: IRawBreakpoint = {
+    const bp = {
       line: breakpoint.line,
       column: breakpoint.column,
-      enabled: breakpoint.enabled,
+      enabled: breakpoint.enabled
     };
+
     if (condition !== '') {
       bp.condition = condition;
     }
 
     await service.addBreakpoints(breakpoint.uri, [bp]);
-    track(AnalyticsEvents.DEBUGGER_BREAKPOINT_UPDATE_CONDITION, {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_BREAKPOINT_UPDATE_CONDITION, {
       path: breakpoint.uri,
       line: breakpoint.line,
       condition,
-      fileExtension: nuclideUri.extname(breakpoint.uri),
+      fileExtension: _nuclideUri().default.extname(breakpoint.uri)
     });
     this.props.onDismiss();
   }
 
-  render(): React.Node {
-    return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="padded debugger-bp-dialog">
-          <h1 className="debugger-bp-config-header">Edit breakpoint</h1>
-          <div className="block">
-            <label>
-              Breakpoint at {nuclideUri.basename(this.props.breakpoint.uri)}
-              :
-              {this.props.breakpoint.endLine != null
-                ? this.props.breakpoint.endLine
-                : this.props.breakpoint.line}
-            </label>
-          </div>
-          <div className="block">
-            <Checkbox
-              onChange={isChecked => {
-                track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE_ENABLED, {
-                  enabled: isChecked,
-                });
-                this.setState({
-                  enabledChecked: isChecked,
-                });
-              }}
-              checked={this.state.enabledChecked}
-              label="Enable breakpoint"
-            />
-          </div>
-          <div className="block">
-            <AtomInput
-              placeholderText="Breakpoint hit condition..."
-              value={this.props.breakpoint.condition || ''}
-              size="sm"
-              ref={input => {
-                this._condition = input;
-              }}
-              autofocus={true}
-            />
-          </div>
-          <label>
-            This expression will be evaluated each time the corresponding line
-            is hit, but the debugger will only break execution if the expression
-            evaluates to true.
-          </label>
-          <div className="debugger-bp-config-actions">
-            <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>Cancel</Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._updateBreakpoint.bind(this)}>
-                Update
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
-    );
+  render() {
+    return React.createElement(_Modal().Modal, {
+      onDismiss: this.props.onDismiss
+    }, React.createElement("div", {
+      className: "padded debugger-bp-dialog"
+    }, React.createElement("h1", {
+      className: "debugger-bp-config-header"
+    }, "Edit breakpoint"), React.createElement("div", {
+      className: "block"
+    }, React.createElement("label", null, "Breakpoint at ", _nuclideUri().default.basename(this.props.breakpoint.uri), ":", this.props.breakpoint.endLine != null ? this.props.breakpoint.endLine : this.props.breakpoint.line)), React.createElement("div", {
+      className: "block"
+    }, React.createElement(_Checkbox().Checkbox, {
+      onChange: isChecked => {
+        (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE_ENABLED, {
+          enabled: isChecked
+        });
+        this.setState({
+          enabledChecked: isChecked
+        });
+      },
+      checked: this.state.enabledChecked,
+      label: "Enable breakpoint"
+    })), React.createElement("div", {
+      className: "block"
+    }, React.createElement(_AtomInput().AtomInput, {
+      placeholderText: "Breakpoint hit condition...",
+      value: this.props.breakpoint.condition || '',
+      size: "sm",
+      ref: input => {
+        this._condition = input;
+      },
+      autofocus: true
+    })), React.createElement("label", null, "This expression will be evaluated each time the corresponding line is hit, but the debugger will only break execution if the expression evaluates to true."), React.createElement("div", {
+      className: "debugger-bp-config-actions"
+    }, React.createElement(_ButtonGroup().ButtonGroup, null, React.createElement(_Button().Button, {
+      onClick: this.props.onDismiss
+    }, "Cancel"), React.createElement(_Button().Button, {
+      buttonType: _Button().ButtonTypes.PRIMARY,
+      onClick: this._updateBreakpoint.bind(this)
+    }, "Update")))));
   }
+
 }
+
+exports.default = BreakpointConfigComponent;

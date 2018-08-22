@@ -1,3 +1,50 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.connectToServer = connectToServer;
+
+function _client() {
+  const data = require("../../../modules/big-dig/src/client");
+
+  _client = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _systemInfo() {
+  const data = require("../../commons-node/system-info");
+
+  _systemInfo = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ServerConnection() {
+  const data = require("../../nuclide-remote-connection/lib/ServerConnection");
+
+  _ServerConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,27 +52,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Prompt} from 'big-dig/src/client/SshHandshake';
-
-import {SshHandshake} from 'big-dig/src/client/index';
-import {getLogger} from 'log4js';
-import {getNuclideVersion} from '../../commons-node/system-info';
-import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
-
 let remoteServerCommand = 'nuclide-fetch-and-start-server'; // default for open-source
 
 try {
   // $FlowFB
-  const defaults = require('./fb/config').getConnectionDialogDefaultSettings();
+  const defaults = require("./fb/config").getConnectionDialogDefaultSettings();
+
   remoteServerCommand = defaults.remoteServerCommand;
 } catch (e) {}
 
-const logger = getLogger('simple-connection');
-
+const logger = (0, _log4js().getLogger)('simple-connection');
 /**
  * @param host the remote host
  * @param port the ssh port on the remote host
@@ -37,56 +76,45 @@ const logger = getLogger('simple-connection');
  *        ServerConnection
  * @param onError called on an error with an Error object
  */
-export type SimpleConnectConfiguration = {
-  host: string,
-  port: number,
-  user: string,
-  password: string,
-  onPrompt: (prompt: Prompt, next: (response: string) => mixed) => mixed,
-  onConnect: ServerConnection => mixed,
-  onError: Error => mixed,
-  remoteServerCommand?: string,
-};
 
-export function connectToServer(config: SimpleConnectConfiguration) {
+function connectToServer(config) {
   const simpleDelegate = {
     onKeyboardInteractive(name, instructions, instructionsLang, prompts) {
       logger.info('onKeyboardInteractive called');
       const prompt = prompts[0];
       return new Promise(resolve => {
-        config.onPrompt(prompt, (response: string) => resolve([response]));
+        config.onPrompt(prompt, response => resolve([response]));
       });
     },
+
     onWillConnect() {
       logger.info('onWillConnect called');
     },
+
     onDidConnect(remoteConfig) {
       logger.info('onDidConnect called');
-      ServerConnection.getOrCreate({version: 2, ...remoteConfig})
-        .then(serverConnection => {
-          config.onConnect(serverConnection);
-        })
-        .catch(error => {
-          logger.error(error);
-          config.onError(error);
-        });
+
+      _ServerConnection().ServerConnection.getOrCreate(Object.assign({
+        version: 2
+      }, remoteConfig)).then(serverConnection => {
+        config.onConnect(serverConnection);
+      }).catch(error => {
+        logger.error(error);
+        config.onError(error);
+      });
     },
+
     onError(errorType, error) {
       logger.error(error);
       config.onError(error);
-    },
+    }
+
   };
-
-  const sshHandshake = new SshHandshake(simpleDelegate);
-  const version = getNuclideVersion();
-  remoteServerCommand =
-    config.remoteServerCommand != null
-      ? config.remoteServerCommand
-      : remoteServerCommand;
-
+  const sshHandshake = new (_client().SshHandshake)(simpleDelegate);
+  const version = (0, _systemInfo().getNuclideVersion)();
+  remoteServerCommand = config.remoteServerCommand != null ? config.remoteServerCommand : remoteServerCommand;
   remoteServerCommand += ` --big-dig --version=${version}`;
   const remoteServerPorts = '9093-9090';
-
   sshHandshake.connect({
     host: config.host,
     sshPort: config.port,
@@ -94,10 +122,10 @@ export function connectToServer(config: SimpleConnectConfiguration) {
     password: config.password,
     pathToPrivateKey: '',
     remoteServer: {
-      command: remoteServerCommand,
+      command: remoteServerCommand
     },
     remoteServerPorts,
     authMethod: 'PASSWORD',
-    displayTitle: '',
+    displayTitle: ''
   });
 }
