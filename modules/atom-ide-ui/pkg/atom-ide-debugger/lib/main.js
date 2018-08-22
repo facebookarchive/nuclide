@@ -25,7 +25,6 @@ import type {
 } from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {SerializedState, IBreakpoint} from './types';
-import type {GatekeeperService} from 'nuclide-commons-atom/types';
 
 import idx from 'idx';
 import {observeRemovedHostnames} from 'nuclide-commons-atom/projects';
@@ -471,12 +470,6 @@ class Activation {
 
   dispose() {
     this._disposables.dispose();
-  }
-
-  consumeGatekeeperService(service: GatekeeperService): IDisposable {
-    const disposable = this._layoutManager.consumeGatekeeperService(service);
-    disposable.add(this._service.consumeGatekeeperService(service));
-    return disposable;
   }
 
   _registerCommandsContextMenuAndOpener(): UniversalDisposable {

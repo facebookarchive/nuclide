@@ -26,7 +26,6 @@ const DEVICE_PANEL_URL = 'atom://nuclide/devices';
 
 type Props = {
   service: IDebugService,
-  passesMultiGK: boolean,
 };
 
 type State = {
@@ -89,7 +88,7 @@ export default class DebuggerControlsView extends React.PureComponent<
   }
 
   render(): React.Node {
-    const {service, passesMultiGK} = this.props;
+    const {service} = this.props;
     const {mode} = this.state;
     const debuggerStoppedNotice =
       mode !== DebuggerMode.STOPPED ? null : (
@@ -114,7 +113,7 @@ export default class DebuggerControlsView extends React.PureComponent<
       );
 
     const debuggerNotice =
-      mode !== DebuggerMode.STOPPED && !passesMultiGK ? null : (
+      mode !== DebuggerMode.STOPPED ? null : (
         <div className="padded">
           <TruncatedButton
             onClick={() =>

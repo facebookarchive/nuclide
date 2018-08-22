@@ -40,7 +40,6 @@ SOFTWARE.
 */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {GatekeeperService} from 'nuclide-commons-atom/types';
 import type {RecordToken} from '../../../atom-ide-console/lib/types';
 import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
 import type {
@@ -132,8 +131,6 @@ const CHANGE_EXPRESSION_CONTEXT = 'CHANGE_EXPRESSION_CONTEXT';
 
 // Berakpoint events may arrive sooner than breakpoint responses.
 const MAX_BREAKPOINT_EVENT_DELAY_MS = 5 * 1000;
-
-let _gkService: ?GatekeeperService;
 
 class ViewModel implements IViewModel {
   _focusedProcess: ?IProcess;
@@ -1359,6 +1356,11 @@ export default class DebugService implements IDebugService {
           sessionId,
         );
 
+        // If this is the first process, register the console executor.
+        if (this._model.getProcesses().length === 0) {
+          this._consoleDisposables = this._registerConsoleExecutor();
+        }
+
         process = this._model.addProcess(config, newSession);
         this._viewModel.setFocusedProcess(process, false);
         this._onDebuggerModeChanged(process, DebuggerMode.STARTING);
@@ -1624,42 +1626,10 @@ export default class DebugService implements IDebugService {
   async startDebugging(config: IProcessConfig): Promise<void> {
     this._timer = startTracking('debugger-atom:startDebugging');
 
-    const currentProcess = this._viewModel.focusedProcess;
-    if (currentProcess != null) {
-      // We currently support only running only one debug session at a time,
-      // so stop the current debug session.
-
-      if (_gkService != null) {
-        const passesMultiGK = await _gkService.passesGK(
-          'nuclide_multitarget_debugging',
-        );
-
-        if (!passesMultiGK && currentProcess != null) {
-          this.stopProcess(currentProcess);
-        }
-      } else {
-        this.stopProcess(currentProcess);
-      }
-    }
-
-    if (_gkService != null) {
-      _gkService
-        .passesGK('nuclide_processtree_debugging')
-        .then(passesProcessTree => {
-          if (passesProcessTree) {
-            track(AnalyticsEvents.DEBUGGER_TREE_OPENED);
-          }
-        });
-    }
-
     // Open the console window if it's not already opened.
     // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
-    // If this is the first process, register the console executor.
-    if (this._model.getProcesses().length === 0) {
-      this._consoleDisposables = this._registerConsoleExecutor();
-    }
     await this._doCreateProcess(config, uuid.v4());
 
     if (this._model.getProcesses().length > 1) {
@@ -1672,11 +1642,6 @@ export default class DebugService implements IDebugService {
         debuggerTypes,
       });
     }
-  }
-
-  consumeGatekeeperService(service: GatekeeperService): IDisposable {
-    _gkService = service;
-    return new UniversalDisposable(() => (_gkService = null));
   }
 
   _onSessionEnd = async (session: VsDebugSession): Promise<void> => {

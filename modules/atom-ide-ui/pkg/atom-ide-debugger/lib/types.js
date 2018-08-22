@@ -326,10 +326,6 @@ export interface IModel extends ITreeElement {
     callback: (expression: ?IExpression) => mixed,
   ): IDisposable;
   onDidChangeProcesses(callback: () => mixed): IDisposable;
-
-  // TODO: Ericblue this is here for the legacy DebuggerThreadsComponent,
-  // which is going away soon.
-  refreshCallStack(threadI: IThread, fetchAllFrames: boolean): Promise<void>;
 }
 
 export interface IBreakpointsChangeEvent {
