@@ -26,7 +26,6 @@ function getFBFormatGeneratedModule(buildCommand) {
     flowText,
     hash,
     devTextGenerator,
-    relayRuntimeModule,
   }) => {
     const objectName =
       documentType === 'ConcreteOperation' ? 'batch' : 'fragment';
@@ -52,7 +51,7 @@ function getFBFormatGeneratedModule(buildCommand) {
 
 /*::
 // flowlint untyped-type-import:off
-import type { ${documentType} } from '${relayRuntimeModule}';
+import type { ${documentType} } from 'relay-runtime';
 ${flowText || ''}
 */
 
