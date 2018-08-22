@@ -49,6 +49,7 @@ export type DeployServer = {
   installationPath: string,
   extractFileCommand?: string,
   autoUpdate: boolean,
+  validateServerVersion?: boolean,
 };
 
 export function createParser(

@@ -165,8 +165,18 @@ async function connectOrReconnect(
   const server = getServer(profile);
   const {autoUpdate} = deployServer;
   const connectionId = getConnectionIdForCredentialStore(profile);
+  const checkServer =
+    deployServer.validateServerVersion != null
+      ? deployServer.validateServerVersion
+      : true;
 
-  let connectionWrapper = await doReconnect(connectionId, address, progress);
+  let connectionWrapper = await doReconnect(
+    connectionId,
+    address,
+    checkServer,
+    progress,
+  );
+
   if (connectionWrapper == null) {
     connectionWrapper = await doConnect(
       connectionId,
@@ -282,6 +292,7 @@ async function doConnect(
 async function doReconnect(
   connectionId: string,
   address: string,
+  validateServerVersion: boolean,
   progress: vscode.Progress<{message?: string}>,
 ): Promise<?ConnectionWrapper> {
   try {
@@ -296,7 +307,10 @@ async function doReconnect(
         ignoreIntransientErrors: false,
       });
       const conn = new ConnectionWrapper(bigDigClient);
-      const compatible = await validateCurrentServer(conn);
+      const compatible = validateServerVersion
+        ? await validateCurrentServer(conn)
+        : true;
+
       if (!compatible) {
         conn.dispose();
         return null;
