@@ -92,6 +92,10 @@
     "name": "RemoteCommandService"
   },
   {
+    "implementation": "../nuclide-rsync-rpc/lib/RsyncService.js",
+    "name": "RsyncService"
+  },
+  {
     "implementation": "../nuclide-socket-rpc/lib/SocketService.js",
     "name": "SocketService"
   },
