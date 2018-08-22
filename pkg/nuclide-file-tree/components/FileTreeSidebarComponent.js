@@ -254,6 +254,14 @@ export default class FileTreeSidebarComponent extends React.Component<
       }
       this.props.store.dispatch(Actions.clearFilter());
     }
+
+    if (
+      prevState.title !== this.state.title ||
+      prevState.path !== this.state.path
+    ) {
+      this._emitter.emit('did-change-title', this.state.title);
+      this._emitter.emit('did-change-path', this.state.path);
+    }
   }
 
   _subscribeToResizeEvents(): rxjs$Subscription {
@@ -561,11 +569,6 @@ All the changes across your entire stacked diff.
       uncommittedChangesExpanded,
       openFilesExpanded,
     });
-
-    if (title !== this.state.title || path !== this.state.path) {
-      this._emitter.emit('did-change-title', title);
-      this._emitter.emit('did-change-path', path);
-    }
   };
 
   _onFileChosen(filePath: NuclideUri): void {
