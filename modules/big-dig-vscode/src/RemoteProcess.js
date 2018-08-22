@@ -39,7 +39,7 @@ export type RemoteSpawnOptions = {
  * A process running on a remote machine. This interface is modeled after NodeJS's `ChildProcess`,
  * but does not support all features (e.g. no IPC).
  */
-export type RemoteChildProcess = $ReadOnly<RemoteProcess>;
+export type RemoteChildProcess = RemoteProcess;
 
 /**
  * Create a remote process.
