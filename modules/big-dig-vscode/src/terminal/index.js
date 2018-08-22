@@ -17,7 +17,7 @@ import {getIntegratedTerminal} from '../configuration';
 import {spawnRemote} from '../RemoteProcess';
 
 /**
- * Creates a vscode.Terminal attached to a remote
+ * Creates a `vscode.Terminal` attached to a remote process.
  */
 export async function createRemoteTerminal(
   conn: ConnectionWrapper,
@@ -25,30 +25,34 @@ export async function createRemoteTerminal(
   env?: {[x: string]: string},
 ): Promise<vscode.Terminal> {
   const {shell, shellArgs} = getIntegratedTerminal();
-  const t = new TerminalWrapper('term: ' + conn.getAddress());
+  const proxy = new TerminalWrapper('term: ' + conn.getAddress());
   // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-  const p = await spawnRemote(conn, shell, shellArgs, {
+  const remote = await spawnRemote(conn, shell, shellArgs, {
     cwd,
     shell: false,
     usePty: true,
     env,
     addBigDigToPath: true,
   });
-  await t.ready;
-  t.terminal.show(false);
-  t.stdin.pipe(p.stdin);
-  t.on('close', () => {
-    p.kill('SIGTERM');
+  await proxy.ready;
+
+  proxy.on('close', () => {
+    remote.kill('SIGTERM');
   });
-  t.on('resize', () => {
-    p.resize(t.columns, t.rows);
+  proxy.on('resize', () => {
+    const {columns, rows} = proxy;
+    remote.resize(columns, rows);
   });
-  p.stdout.pipe(t.stdout);
-  p.stderr.pipe(t.stderr);
-  p.once('close', () => t.close());
-  p.once('error', err => {
+  proxy.stdin.pipe(remote.stdin);
+
+  remote.stdout.pipe(proxy.stdout);
+  remote.stderr.pipe(proxy.stderr);
+  remote.once('close', () => proxy.close());
+  remote.once('error', err => {
     vscode.window.showWarningMessage(`Error from terminal: ${err.toString()}`);
-    t.close();
+    proxy.close();
   });
-  return t.terminal;
+
+  proxy.terminal.show(false);
+  return proxy.terminal;
 }
