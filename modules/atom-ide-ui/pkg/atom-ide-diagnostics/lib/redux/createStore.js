@@ -17,7 +17,7 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
-import {arrayFlatten} from 'nuclide-commons/collection';
+import {arrayFlatten, setFilter} from 'nuclide-commons/collection';
 import {diffSets} from 'nuclide-commons/observable';
 import * as Reducers from './Reducers';
 import * as Epics from './Epics';
@@ -49,9 +49,11 @@ export default function createStore(
     applyMiddleware(createEpicMiddleware(rootEpic)),
   );
 
-  // When we get new messages, track them.
-  const allMessages = getFileMessages(store);
-  allMessages.let(diffSets()).subscribe(({added, removed}) => {
+  // When we get new messages with fixes, track them.
+  const messagesWithFixes = getFileMessages(store)
+    .map(messageSet => setFilter(messageSet, message => message.fix != null))
+    .filter(messageSet => messageSet.size > 0);
+  messagesWithFixes.let(diffSets()).subscribe(({added, removed}) => {
     if (added.size > 0) {
       messageRangeTracker.addFileMessages(added);
     }

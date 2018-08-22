@@ -89,9 +89,8 @@ describe('createStore', () => {
   };
 
   beforeEach(() => {
-    const messageRangeTracker = new MessageRangeTracker();
-    store = createStore(messageRangeTracker);
-    updater = new DiagnosticUpdater(store, messageRangeTracker);
+    store = createStore(new MessageRangeTracker());
+    updater = new DiagnosticUpdater(store);
   });
 
   afterEach(() => {
