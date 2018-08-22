@@ -30,7 +30,11 @@ import {startDebugProviders} from './debugger';
 import {BIG_DIG_SESSION, startCli} from './terminal/cli';
 import {__DEV__} from './dev';
 
-export function activate(context: vscode.ExtensionContext) {
+type ExtensionExports = {
+  fileSystemProvider: vscode.FileSystemProvider,
+};
+
+export function activate(context: vscode.ExtensionContext): ExtensionExports {
   if (__DEV__) {
     initServerDevelopmentDeployment();
   }
@@ -39,7 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(startFilesystems());
 
-  context.subscriptions.push(startMultiplexingFilesystems());
+  const filesystems = startMultiplexingFilesystems();
+  context.subscriptions.push(filesystems.disposable);
 
   context.subscriptions.push(startBigDigTomlServices());
 
@@ -50,6 +55,10 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(startDebugProviders());
 
   context.subscriptions.push(startSearchProviders());
+
+  return {
+    fileSystemProvider: filesystems.fileSystemProvider,
+  };
 }
 
 /** This function is called when this extension is deactivated. */
@@ -109,9 +118,13 @@ function loadCommands(context: vscode.ExtensionContext): void {
  * @return a disposable that unregisters the multiplexer and stops listening
  * for new filesystems.
  */
-function startMultiplexingFilesystems(): IDisposable {
+function startMultiplexingFilesystems(): {
+  disposable: IDisposable,
+  fileSystemProvider: vscode.FileSystemProvider,
+} {
   const fsMultiplexer = new FileSystemMultiplexer();
   const sub = onEachFilesystem(fs => fsMultiplexer.addFileSystem(fs));
   fsMultiplexer.register();
-  return vscode.Disposable.from(sub, fsMultiplexer);
+  const disposable = vscode.Disposable.from(sub, fsMultiplexer);
+  return {disposable, fileSystemProvider: fsMultiplexer};
 }
