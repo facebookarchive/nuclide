@@ -68,6 +68,7 @@
     "domexception": "1.0.1",
     "dompurify": "1.0.3",
     "double-ended-queue": "2.1.0-0",
+    "electron-window-state": "^4.1.1",
     "escape-carriage": "1.2.0",
     "escape-html": "1.0.3",
     "escape-string-regexp": "1.0.5",
