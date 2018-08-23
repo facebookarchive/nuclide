@@ -16,6 +16,7 @@ jest.mock(require.resolve('../../../../../nuclide-commons/which'));
 
 import {getLogger} from 'log4js';
 import * as processModule from 'nuclide-commons/process';
+import * as serverPortModule from 'nuclide-commons/serverPort';
 import {Observable} from 'rxjs';
 import which from 'nuclide-commons/which';
 import {genConfigId} from 'big-dig/src/services/thrift/config-utils';
@@ -27,6 +28,45 @@ const logger = getLogger();
 
 describe('startThriftServer', () => {
   let serverPort;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    (which: any).mockImplementation(cmd => cmd);
+  });
+
+  describe('config', () => {
+    it('throws if remote command is not valid', async () => {
+      // all commands are invalid
+      (which: any).mockImplementation(cmd => null);
+      await expect(
+        startThriftServer({
+          name: 'thriftservername',
+          remoteCommand: 'test',
+          remoteCommandArgs: [],
+          remotePort: 123,
+          killOldThriftServerProcess: true,
+        })
+          .refCount()
+          .take(1)
+          .toPromise(),
+      ).rejects.toThrow('Remote command not found: test');
+    });
+
+    it('throws if remote port is 0 but "{PORT}" is not part of arguments', async () => {
+      await expect(
+        startThriftServer({
+          name: 'thriftservername',
+          remoteCommand: 'test',
+          remoteCommandArgs: [],
+          remotePort: 0,
+          killOldThriftServerProcess: true,
+        })
+          .refCount()
+          .take(1)
+          .toPromise(),
+      ).rejects.toThrow('Expected placeholder "{PORT}" for remote port');
+    });
+  });
 
   describe('thrift server runs', () => {
     let listener: net.Server;
@@ -49,15 +89,42 @@ describe('startThriftServer', () => {
       });
     });
 
-    beforeEach(() => {
-      jest.resetAllMocks();
-      (which: any).mockImplementation(cmd => cmd);
-    });
-
     afterAll(async () => {
       await new Promise(resolve => {
         listener.close(resolve);
       });
+    });
+
+    it('computes remote port', async () => {
+      // there is no process running
+      jest.spyOn(processModule, 'psTree').mockReturnValue(Promise.resolve([]));
+      // all commands are invalid
+      (which: any).mockImplementation(cmd => cmd);
+      // thrift server's messages
+      jest
+        .spyOn(processModule, 'observeProcess')
+        .mockImplementation(command => {
+          if (command === 'test') {
+            return Observable.empty();
+          }
+          throw new Error('invalid command');
+        });
+      // available port
+      jest
+        .spyOn(serverPortModule, 'getAvailableServerPort')
+        .mockReturnValue(baseConfig.remotePort);
+      expect(
+        await startThriftServer({
+          name: 'thriftservername',
+          remoteCommand: 'test',
+          remoteCommandArgs: ['--port', '{PORT}'],
+          remotePort: 0,
+          killOldThriftServerProcess: true,
+        })
+          .refCount()
+          .take(1)
+          .toPromise(),
+      ).toBe(baseConfig.remotePort);
     });
 
     it('kills old server', async () => {
@@ -212,13 +279,11 @@ describe('startThriftServer', () => {
         });
       // ignore timers
       jest.spyOn(Observable, 'timer').mockImplementation(() => {
-        return Observable.of(1);
+        return Observable.of(0);
       });
-      // make remote command valid
-      (which: any).mockImplementation(cmd => cmd);
       // port with no servers running
       const serverPort2 = 1;
-      expect(
+      await expect(
         startThriftServer({
           name: 'thriftservername',
           remoteCommand: 'test',

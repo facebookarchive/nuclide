@@ -15,6 +15,7 @@ import type {ThriftServerConfig} from 'big-dig/src/services/thrift/types';
 import escapeRegExp from 'escape-string-regexp';
 import {getLogger} from 'log4js';
 import {track} from 'nuclide-commons/analytics';
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {observeProcess, psTree, killPid} from 'nuclide-commons/process';
 import net from 'net';
@@ -25,37 +26,33 @@ const logger = getLogger('thrift-service-server');
 const cache: Map<string, Observable<number>> = new Map();
 
 export function startThriftServer(
-  config: ThriftServerConfig,
+  originalConfig: ThriftServerConfig,
 ): ConnectableObservable<number> {
   return Observable.defer(() => {
-    const configId = genConfigId(config);
+    const configId = genConfigId(originalConfig);
     let thriftServer = cache.get(configId);
     if (thriftServer == null) {
-      thriftServer = isValidCommand(config.remoteCommand)
-        .switchMap(valid => {
-          if (!valid) {
-            return Observable.throw(
-              new Error(`Remote command not found: ${config.remoteCommand}`),
-            );
+      thriftServer = Observable.defer(() => validateConfig(originalConfig))
+        .switchMap(validationResult => {
+          if (!validationResult.valid) {
+            return Observable.throw(new Error(validationResult.error));
           }
-          return mayKillOldServerProcess(config).switchMap(_ =>
-            Observable.merge(
-              observeProcess(config.remoteCommand, config.remoteCommandArgs, {
-                isExitError: () => true,
-                detached: false,
-                env: {
-                  ...process.env,
-                },
-              })
-                .do(logProcessMessage(configId))
-                .ignoreElements(),
-              observeServerStatus(config.remotePort)
-                .do(() =>
-                  logger.info(`(${config.name}) `, 'Thrift Server is ready'),
-                )
-                .map(() => config.remotePort),
-            ),
-          );
+          return mayKillOldServerProcess(originalConfig)
+            .switchMap(_ =>
+              Observable.defer(() => mayAdjustRemotePort(originalConfig)),
+            )
+            .switchMap(config =>
+              Observable.merge(
+                observeServerProcess(config)
+                  .do(logProcessMessage(configId))
+                  .ignoreElements(),
+                observeServerStatus(config.remotePort)
+                  .do(() =>
+                    logger.info(`(${config.name}) `, 'Thrift Server is ready'),
+                  )
+                  .map(() => config.remotePort),
+              ),
+            );
         })
         .finally(() => {
           cache.delete(configId);
@@ -68,6 +65,23 @@ export function startThriftServer(
     }
     return thriftServer;
   }).publish();
+}
+
+async function mayAdjustRemotePort(
+  config: ThriftServerConfig,
+): Promise<ThriftServerConfig> {
+  if (config.remotePort === 0) {
+    const remotePort = await getAvailableServerPort();
+    const remoteCommandArgs = config.remoteCommandArgs.map(arg =>
+      arg.replace('{PORT}', String(remotePort)),
+    );
+    return {
+      ...config,
+      remotePort,
+      remoteCommandArgs,
+    };
+  }
+  return config;
 }
 
 function mayKillOldServerProcess(config: ThriftServerConfig): Observable<void> {
@@ -92,6 +106,18 @@ function mayKillOldServerProcess(config: ThriftServerConfig): Observable<void> {
         track('thrift-service-server:kill-server');
         killPid(processInfo.pid);
       });
+  });
+}
+
+function observeServerProcess(
+  config: ThriftServerConfig,
+): Observable<ProcessMessage> {
+  return observeProcess(config.remoteCommand, config.remoteCommandArgs, {
+    isExitError: () => true,
+    detached: false,
+    env: {
+      ...process.env,
+    },
   });
 }
 
@@ -165,6 +191,26 @@ function logProcessMessage(name: string): ProcessMessage => void {
   };
 }
 
-function isValidCommand(command: string): Observable<boolean> {
-  return Observable.defer(() => which(command)).map(path => path != null);
+async function validateConfig(
+  config: ThriftServerConfig,
+): Promise<{valid: true} | {valid: false, error: string}> {
+  if (config.remotePort === 0) {
+    const hasPlaceholderForPort =
+      config.remoteCommandArgs.find(arg => arg.includes('{PORT}')) != null;
+    if (!hasPlaceholderForPort) {
+      return {
+        valid: false,
+        error: 'Expected placeholder "{PORT}" for remote port',
+      };
+    }
+  }
+
+  const hasValidCommand = (await which(config.remoteCommand)) != null;
+  if (!hasValidCommand) {
+    return {
+      valid: false,
+      error: `Remote command not found: ${config.remoteCommand}`,
+    };
+  }
+  return {valid: true};
 }
