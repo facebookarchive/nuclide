@@ -5,7 +5,21 @@
   "author": "NEEDS OWNER",
   "main": "./lib/main.js",
   "nuclide": {
-    "packageType": "AtomPackage"
+    "packageType": "AtomPackage",
+    "configMetadata": {
+      "pathComponents": [
+        "Language",
+        "General"
+      ]
+    },
+    "config": {
+      "timeout": {
+        "title": "Autocomplete Timeout (ms)",
+        "type": "integer",
+        "default": 5000,
+        "minimum": 50
+      }
+    }
   },
   "consumedServices": {
     "nuclide-autocomplete.provider": {

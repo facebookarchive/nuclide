@@ -24,16 +24,6 @@ import {
   trackTimingSampled,
 } from '../../nuclide-analytics';
 
-/**
- * Autocomplete is extremely critical to the user experience!
- * Don't tolerate anything longer than AUTOCOMPLETE_TIMEOUT seconds; just fail
- * fast and let the fallback providers provide something at least.
- *
- * NOTE: We keep a higher time limit for only testing envirnoment since the
- * autocomplete check happens right after you open the file and providers don't
- * have enough time to initialize.
- */
-const AUTOCOMPLETE_TIMEOUT = atom.inSpecMode() ? 3000 : 500;
 const E2E_SAMPLE_RATE = 10;
 const ON_GET_SUGGESTIONS_SAMPLE_RATE = 10;
 
@@ -45,7 +35,10 @@ const durationBySuggestion = new WeakMap();
  */
 export default function createAutocompleteProvider<
   Suggestion: atom$AutocompleteSuggestion,
->(provider: AutocompleteProvider<Suggestion>): atom$AutocompleteProvider {
+>(
+  provider: AutocompleteProvider<Suggestion>,
+  getTimeout: () => number,
+): atom$AutocompleteProvider {
   // The `eventNames` could be computed in deep functions, but we don't want
   // to change the logger if a provider decides to changes its name.
   const eventNames = getAnalytics(provider);
@@ -53,7 +46,7 @@ export default function createAutocompleteProvider<
     get: (target, prop, receiver) => {
       switch (prop) {
         case 'getSuggestions':
-          return getSuggestions.bind(null, target, eventNames);
+          return getSuggestions.bind(null, target, eventNames, getTimeout);
         case 'onDidInsertSuggestion':
           return onDidInsertSuggestion.bind(null, target, eventNames);
         case 'getSuggestionDetailsOnSelect':
@@ -86,6 +79,7 @@ const requestTrackers: WeakMap<atom$Point, RequestTracker> = new WeakMap();
 function _getRequestTracker(
   request: atom$AutocompleteRequest,
   provider: AutocompleteProvider<any>,
+  timeout: number,
 ): RequestTracker {
   // Kind of hacky.. but the bufferPosition is a unique object per request.
   const key = request.bufferPosition;
@@ -95,15 +89,15 @@ function _getRequestTracker(
   }
   const startTime = performanceNow();
   const newTracker = {
-    timeoutPromise: sleep(AUTOCOMPLETE_TIMEOUT).then(() => {
+    timeoutPromise: sleep(timeout).then(() => {
       if (newTracker.pendingProviders) {
         trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
           path: request.editor.getPath(),
-          duration: AUTOCOMPLETE_TIMEOUT,
+          duration: timeout,
           slowestProvider: 'timeout',
           pendingProviders: newTracker.pendingProviders,
         });
-        throw new TimedOutError(AUTOCOMPLETE_TIMEOUT);
+        throw new TimedOutError(timeout);
       }
       const {slowestProvider, slowestProviderTime} = newTracker;
       trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
@@ -123,10 +117,12 @@ function _getRequestTracker(
 function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
   provider: AutocompleteProvider<Suggestion>,
   eventNames: AutocompleteAnalyticEventNames,
+  getTimeout: () => number,
   request: atom$AutocompleteRequest,
 ): Promise<?Array<*>> | ?Array<*> {
   const logObject = {};
-  const requestTracker = _getRequestTracker(request, provider);
+  const timeout = getTimeout();
+  const requestTracker = _getRequestTracker(request, provider, timeout);
   requestTracker.pendingProviders++;
 
   return trackTimingSampled(
@@ -148,9 +144,9 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
           ]);
         } catch (e) {
           if (e instanceof TimedOutError) {
-            track(eventNames.timeoutOnGetSuggestions);
+            track(eventNames.timeoutOnGetSuggestions, {timeout});
           } else {
-            track(eventNames.errorOnGetSuggestions);
+            track(eventNames.errorOnGetSuggestions, {timeout});
           }
         }
       }

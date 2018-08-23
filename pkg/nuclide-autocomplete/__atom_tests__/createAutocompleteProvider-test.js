@@ -21,29 +21,35 @@ describe('getSuggestions', () => {
       getPath: () => '',
     },
   };
-  const autocompleteProviderThatThrowsExecption = createAutocompleteProvider({
-    selector: '',
-    getSuggestions() {
-      throw new Error();
+  const autocompleteProviderThatThrowsExecption = createAutocompleteProvider(
+    {
+      selector: '',
+      getSuggestions() {
+        throw new Error();
+      },
+      analytics: {
+        eventName: 'test',
+        shouldLogInsertedSuggestion: false,
+      },
     },
-    analytics: {
-      eventName: 'test',
-      shouldLogInsertedSuggestion: false,
-    },
-  });
+    () => 3000,
+  );
 
-  const autocompleteProviderThatTimeOut = createAutocompleteProvider({
-    selector: '',
-    getSuggestions() {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => resolve(null), 5000);
-      });
+  const autocompleteProviderThatTimeOut = createAutocompleteProvider(
+    {
+      selector: '',
+      getSuggestions() {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => resolve(null), 5000);
+        });
+      },
+      analytics: {
+        eventName: 'test',
+        shouldLogInsertedSuggestion: false,
+      },
     },
-    analytics: {
-      eventName: 'test',
-      shouldLogInsertedSuggestion: false,
-    },
-  });
+    () => 3000,
+  );
 
   let trackSpy;
   beforeEach(() => {
