@@ -20,7 +20,7 @@ import type {ProcessMessage} from 'nuclide-commons/process';
 
 import VsAdapterSpawner from './VsAdapterSpawner';
 import V8Protocol from './V8Protocol';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, TimeoutError} from 'rxjs';
 import idx from 'idx';
 import invariant from 'assert';
 import {track, trackTiming} from 'nuclide-commons/analytics';
@@ -470,7 +470,15 @@ export default class VsDebugSession extends V8Protocol {
     if (this._adapterProcessSubscription != null && !this._disconnected) {
       // point of no return: from now on don't report any errors
       this._disconnected = true;
-      await this.send('disconnect', {restart});
+      await Observable.fromPromise(this.send('disconnect', {restart}))
+        .timeout(5000)
+        .catch(err => {
+          if (!(err instanceof TimeoutError)) {
+            throw err;
+          }
+          return Observable.empty();
+        })
+        .toPromise();
       this._stopServer();
     }
   }
