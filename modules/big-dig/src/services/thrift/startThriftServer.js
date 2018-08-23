@@ -22,11 +22,11 @@ import {genConfigId} from './config-utils';
 import which from 'nuclide-commons/which';
 
 const logger = getLogger('thrift-service-server');
-const cache: Map<string, Observable<'ready'>> = new Map();
+const cache: Map<string, Observable<number>> = new Map();
 
 export function startThriftServer(
   config: ThriftServerConfig,
-): ConnectableObservable<'ready'> {
+): ConnectableObservable<number> {
   return Observable.defer(() => {
     const configId = genConfigId(config);
     let thriftServer = cache.get(configId);
@@ -53,7 +53,7 @@ export function startThriftServer(
                 .do(() =>
                   logger.info(`(${config.name}) `, 'Thrift Server is ready'),
                 )
-                .map(() => 'ready'),
+                .map(() => config.remotePort),
             ),
           );
         })

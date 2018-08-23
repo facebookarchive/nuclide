@@ -142,7 +142,7 @@ describe('startThriftServer', () => {
         .refCount()
         .take(1)
         .toPromise();
-      expect(serverMessage).toEqual('ready');
+      expect(serverMessage).toEqual(baseConfig.remotePort);
     });
 
     it('caches servers', async () => {
@@ -163,7 +163,7 @@ describe('startThriftServer', () => {
       const promiseStatusA = observableServerA.take(1).toPromise();
       const subscriptonA = observableServerA.connect();
       const statusA = await promiseStatusA;
-      expect(statusA).toBe('ready');
+      expect(statusA).toBe(baseConfig.remotePort);
 
       // we must have one log entry after start the first server
       expect(getMock(logger.info)).toHaveBeenCalledTimes(1);
@@ -179,7 +179,7 @@ describe('startThriftServer', () => {
       const promiseStatusB = observableServerB.take(1).toPromise();
       const subscriptonB = observableServerB.connect();
       const statusB = await promiseStatusB;
-      expect(statusB).toBe('ready');
+      expect(statusB).toBe(baseConfig.remotePort);
 
       // release observableServerA but don't kill the server process
       subscriptonA.unsubscribe();
