@@ -87,3 +87,8 @@ export interface ThriftClient {
     handler: ClientCloseCallBack,
   ): ThrifClientSubscription;
 }
+
+export interface ThriftServer {
+  getPort(): number;
+  close(): void;
+}

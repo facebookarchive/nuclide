@@ -72,24 +72,21 @@ export function startThriftServer(
 async function replacePlaceholders(
   config: ThriftServerConfig,
 ): Promise<ThriftServerConfig> {
-  return replaceRemoteCommandPlaceholder(
+  return replaceEnvironmentPlaceholder(
     await replaceRemotePortPlaceholder(config),
   );
 }
 
-async function replaceRemoteCommandPlaceholder(
+function replaceEnvironmentPlaceholder(
   config: ThriftServerConfig,
-): Promise<ThriftServerConfig> {
-  if (config.remoteCommand.includes('{BIG_DIG_SERVICES_PATH}')) {
-    return {
-      ...config,
-      remoteCommand: config.remoteCommand.replace(
-        '{BIG_DIG_SERVICES_PATH}',
-        path.join(__dirname, '../../../'),
-      ),
-    };
-  }
-  return config;
+): ThriftServerConfig {
+  const replace = value =>
+    value.replace('{BIG_DIG_SERVICES_PATH}', path.join(__dirname, '../../../'));
+  return {
+    ...config,
+    remoteCommand: replace(config.remoteCommand),
+    remoteCommandArgs: config.remoteCommandArgs.map(replace),
+  };
 }
 
 async function replaceRemotePortPlaceholder(
@@ -230,7 +227,8 @@ async function validateConfig(
     }
   }
 
-  const hasValidCommand = (await which(config.remoteCommand)) != null;
+  const hasValidCommand =
+    (await which(replaceEnvironmentPlaceholder(config).remoteCommand)) != null;
   if (!hasValidCommand) {
     return {
       valid: false,

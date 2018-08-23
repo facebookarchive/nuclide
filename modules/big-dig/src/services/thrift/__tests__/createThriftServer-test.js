@@ -41,7 +41,7 @@ jest.spyOn(thrift, 'createServer').mockImplementation(() => {
   };
 });
 
-test('remote file system client factory function', async () => {
+test.skip('remote file system client factory function', async () => {
   const serverConfig: ThriftServerConfig = {
     name: 'thrift-rfs',
     remoteCommand: '',

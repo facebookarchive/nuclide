@@ -12,22 +12,21 @@
 
 import type {Subscription} from 'rxjs';
 import type {
-  ThriftServerConfig,
   FailureResponse,
   SuccessResponse,
+  ThriftMessage,
+  ThriftServer,
+  ThriftServerConfig,
 } from './types';
-
 import type {Transport} from '../../server/BigDigServer';
-import type {ThriftMessage} from './types';
 
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {createThriftServer} from './createThriftServer';
 import {encodeMessage, decodeMessage} from './util';
 import {genConfigId} from './config-utils';
-import {RemoteFileSystemServer} from '../fs/fsServer';
 
-type ServerCacheEntry = {server: RemoteFileSystemServer, refCount: number};
+type ServerCacheEntry = {server: ThriftServer, refCount: number};
 
 /**
  * This class manages the creation and disposal of thrift servers. A new server

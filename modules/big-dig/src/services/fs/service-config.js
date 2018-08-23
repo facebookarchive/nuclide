@@ -17,8 +17,11 @@ import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
 export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   name: 'thrift-rfs',
   remoteUri: '',
-  remoteCommand: '',
-  remoteCommandArgs: [],
+  remoteCommand: 'node',
+  remoteCommandArgs: [
+    '{BIG_DIG_SERVICES_PATH}/src/services/fs/launchServer-entry.js',
+    '{PORT}',
+  ],
   remotePort: 0,
   thriftTransport: 'buffered',
   thriftProtocol: 'binary',

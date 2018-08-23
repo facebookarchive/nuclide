@@ -10,14 +10,20 @@
  * @format
  */
 
-import type {ThriftServerConfig} from './types';
-import {RemoteFileSystemServer} from '../fs/fsServer';
+import type {ThriftServerConfig, ThriftServer} from './types';
+
+import {startThriftServer} from './startThriftServer';
 
 export async function createThriftServer(
   serverConfig: ThriftServerConfig,
-): Promise<RemoteFileSystemServer> {
-  const server = new RemoteFileSystemServer(serverConfig.remotePort);
-  // Make sure we successfully start a thrift server
-  await server.initialize();
-  return server;
+): Promise<ThriftServer> {
+  const thriftServerStream = startThriftServer(serverConfig);
+  const thriftServerPromise = thriftServerStream.take(1).toPromise();
+  const subscription = thriftServerStream.connect();
+
+  const thriftServerPort = await thriftServerPromise;
+  return {
+    getPort: () => thriftServerPort,
+    close: () => subscription.unsubscribe(),
+  };
 }
