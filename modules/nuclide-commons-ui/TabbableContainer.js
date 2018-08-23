@@ -228,7 +228,7 @@ function eachTabIndexedElement(
       // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       element.disabled === true ||
       element.tabIndex == null ||
-      element.tabIndex === -1
+      element.tabIndex < 0
     ) {
       continue;
     }
@@ -239,18 +239,7 @@ function eachTabIndexedElement(
 }
 
 function getFocusedElement(): ?Element {
-  // Some inputs have a hidden-input with tabindex = -1 that gets focused, so
-  // activeElement is actually not what we want. In these cases, we must find
-  // the parent tag that has the actual tabindex to use. An example is the
-  // atom-text-editor.
-  let currentElement = document.activeElement;
-  if (currentElement && currentElement.classList.contains('hidden-input')) {
-    currentElement = findParentElement(
-      currentElement.parentElement,
-      element => element instanceof HTMLElement && element.tabIndex >= 0,
-    );
-  }
-  return currentElement;
+  return document.activeElement;
 }
 
 /**
