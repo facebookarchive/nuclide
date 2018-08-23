@@ -48,8 +48,8 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'rmdirAll',
   'rename',
   'move',
-  // 'readdir',
-  // 'readdirSorted',
+  'readdir',
+  'readdirSorted',
   'copy',
   'copyDir',
 ]);
