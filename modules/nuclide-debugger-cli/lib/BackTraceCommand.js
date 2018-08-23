@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,20 +13,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-import idx from 'idx';
-
-export default class BackTraceCommand implements Command {
-  name = 'where [num-frames]';
-  helpText = 'Displays the call stack of the active thread.';
-  detailedHelpText = `
+class BackTraceCommand {
+  constructor(con, debug) {
+    this.name = 'where [num-frames]';
+    this.helpText = 'Displays the call stack of the active thread.';
+    this.detailedHelpText = `
 where [num-frames]
 
 Displays the call stack, showing the most recent stack frame first. For each
@@ -29,44 +30,35 @@ line number are shown. An asterisk marks the currently selected frame.
 If num-frames is specified, at most that many frames will be displayed. The
 default number of frames to display is 100.
 `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  static _defaultFrames: number = 100;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     const activeThread = this._debugger.getActiveThread();
 
-    const frameCount =
-      args.length < 1 ? BackTraceCommand._defaultFrames : parseInt(args[0], 10);
+    const frameCount = args.length < 1 ? BackTraceCommand._defaultFrames : parseInt(args[0], 10);
+
     if (isNaN(frameCount) || frameCount <= 0) {
-      this._console.outputLine(
-        'The number of frames must be a positive integer.',
-      );
+      this._console.outputLine('The number of frames must be a positive integer.');
+
       return;
     }
 
-    const frames = await this._debugger.getStackTrace(
-      activeThread.id(),
-      frameCount,
-    );
+    const frames = await this._debugger.getStackTrace(activeThread.id(), frameCount);
     const selectedFrame = activeThread.selectedStackFrame();
-    this._console.more(
-      frames
-        .map((frame, index) => {
-          const selectedMarker = index === selectedFrame ? '*' : ' ';
-          const path = idx(frame, _ => _.source.path) || null;
-          const location =
-            path != null ? `${path}:${frame.line}` : '[no source]';
-          return `${selectedMarker} #${index} ${frame.name} ${location}`;
-        })
-        .join('\n'),
-    );
+
+    this._console.more(frames.map((frame, index) => {
+      var _ref;
+
+      const selectedMarker = index === selectedFrame ? '*' : ' ';
+      const path = ((_ref = frame) != null ? (_ref = _ref.source) != null ? _ref.path : _ref : _ref) || null;
+      const location = path != null ? `${path}:${frame.line}` : '[no source]';
+      return `${selectedMarker} #${index} ${frame.name} ${location}`;
+    }).join('\n'));
   }
+
 }
+
+exports.default = BackTraceCommand;
+BackTraceCommand._defaultFrames = 100;

@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = send;
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,22 +23,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import type {DevForkProtocol} from './types';
-
-import {getLogger} from 'log4js';
-
 if (process.send == null) {
-  getLogger('deploy').warn(
-    'This program is intended to be run as a child process using Node IPC ' +
-      'communication, but process.send is null.',
-  );
+  (0, _log4js().getLogger)('deploy').warn('This program is intended to be run as a child process using Node IPC ' + 'communication, but process.send is null.');
 }
 
-export default function send(msg: DevForkProtocol): void {
+function send(msg) {
   if (process.send != null) {
     process.send(msg);
   }

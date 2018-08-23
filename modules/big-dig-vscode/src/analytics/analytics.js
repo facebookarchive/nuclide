@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.logToScribe = logToScribe;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +13,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+let logToScribeImpl;
 
-let logToScribeImpl: (
-  key: string,
-  values: {[key: string]: mixed},
-) => Promise<mixed>;
 try {
   // $FlowFB
-  logToScribeImpl = require('./fb-analytics').logToScribe;
+  logToScribeImpl = require("./fb-analytics").logToScribe;
 } catch (e) {
   // MODULE_NOT_FOUND is expected for non-FB.
   if (e.code !== 'MODULE_NOT_FOUND') {
     throw e;
   } else {
-    logToScribeImpl = (key: string, values: {[key: string]: mixed}) =>
-      Promise.resolve();
+    logToScribeImpl = (key, values) => Promise.resolve();
   }
 }
-
 /**
  * Although this returns a Promise, generally, it is not worth await'ing.
  */
-export function logToScribe(
-  key: string,
-  values: {[key: string]: mixed},
-): Promise<mixed> {
+
+
+function logToScribe(key, values) {
   return logToScribeImpl(key, values);
 }

@@ -1,3 +1,64 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Server = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _vscode() {
+  const data = require("vscode");
+
+  _vscode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConnectionWrapper() {
+  const data = require("../ConnectionWrapper");
+
+  _ConnectionWrapper = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteConnect() {
+  const data = require("../RemoteConnect");
+
+  _RemoteConnect = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _onEachObservedClosable() {
+  const data = _interopRequireDefault(require("../util/onEachObservedClosable"));
+
+  _onEachObservedClosable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,46 +67,32 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const logger = (0, _log4js().getLogger)('remote');
 
-import type {AnyTeardown} from '../util/onEachObservedClosable';
-import type {IConnectionProfile} from '../configuration';
-
-import {Observable, Subject} from 'rxjs';
-import {getLogger} from 'log4js';
-import {Disposable} from 'vscode';
-import invariant from 'assert';
-import {ConnectionWrapper} from '../ConnectionWrapper';
-import {makeConnection} from '../RemoteConnect';
-import onEachObservedClosable from '../util/onEachObservedClosable';
-
-export type OnConnection = {|connection: ConnectionWrapper|} | {|error: any|};
-
-const logger = getLogger('remote');
-
-export class Server {
+class Server {
   // Invariant: Only one of _conn and _readyConn can be non-null.
-  _conn: ?ConnectionWrapper = null;
-  _readyConn: ?Promise<ConnectionWrapper> = null;
-  _onConnection: Subject<ConnectionWrapper> = new Subject();
-  _profile: IConnectionProfile;
-  _disposed = false;
-
-  constructor(profile: IConnectionProfile) {
+  constructor(profile) {
+    this._conn = null;
+    this._readyConn = null;
+    this._onConnection = new _RxMin.Subject();
+    this._disposed = false;
     this._profile = profile;
   }
-
   /**
    * Returns the current connection, or else creates a new one if one is not
    * open.
    */
-  connect(): Promise<ConnectionWrapper> {
+
+
+  connect() {
     if (this._disposed) {
       throw new Error('Cannot connect after this server has been disposed');
     } else if (this._conn != null) {
       const conn = this._conn;
+
       if (conn.isClosed()) {
         logger.info(`Connection to ${this.getAddress()} was closed`);
         conn.dispose();
@@ -58,51 +105,57 @@ export class Server {
     return this._getReadyConn();
   }
 
-  _getReadyConn(): Promise<ConnectionWrapper> {
-    invariant(!this._disposed);
+  _getReadyConn() {
+    if (!!this._disposed) {
+      throw new Error("Invariant violation: \"!this._disposed\"");
+    }
+
     if (this._readyConn != null) {
       return this._readyConn;
     }
 
-    getLogger().info(`Connecting to ${this.getAddress()}...`);
-    this._readyConn = makeConnection(this._profile).then(
-      conn => {
-        this._readyConn = null;
-        this._conn = conn;
-        getLogger().info(`Connected to ${this.getAddress()}`);
-        this._onConnection.next(conn);
-        return conn;
-      },
-      error => {
-        this._readyConn = null;
-        return Promise.reject(error);
-      },
-    );
+    (0, _log4js().getLogger)().info(`Connecting to ${this.getAddress()}...`);
+    this._readyConn = (0, _RemoteConnect().makeConnection)(this._profile).then(conn => {
+      this._readyConn = null;
+      this._conn = conn;
+      (0, _log4js().getLogger)().info(`Connected to ${this.getAddress()}`);
 
+      this._onConnection.next(conn);
+
+      return conn;
+    }, error => {
+      this._readyConn = null;
+      return Promise.reject(error);
+    });
     return this._readyConn;
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._profile.address || this._profile.hostname;
   }
 
-  getProfile(): IConnectionProfile {
+  getProfile() {
     return this._profile;
   }
-
   /** Returns the current connection, or else `null` if not connected. */
-  getCurrentConnection(): ?ConnectionWrapper {
+
+
+  getCurrentConnection() {
     if (this._conn != null && this._conn.isClosed()) {
       this._conn.dispose();
+
       this._conn = null;
     }
+
     return this._conn;
   }
-
   /** Closes the current connection. */
+
+
   disconnect() {
     if (this._conn != null) {
       this._conn.dispose();
+
       this._conn = null;
     }
   }
@@ -113,31 +166,36 @@ export class Server {
     }
 
     this._disposed = true;
+
     this._onConnection.complete();
 
     if (this._readyConn != null) {
       // TODO(siegebell) be able to cancel a connection attempt
       const onSettled = () => this.disconnect();
+
       this._readyConn.then(onSettled, onSettled);
     } else {
       this.disconnect();
     }
   }
-
   /**
    * Observe every successful connection.
    * @param emitCurrent Immediately pass the subscriber the current connection. Otherwise, the
    * subscriber will only see *new* connections.
    */
-  onConnection(emitCurrent: boolean = false): Observable<ConnectionWrapper> {
+
+
+  onConnection(emitCurrent = false) {
     const obs = this._onConnection.asObservable();
+
     const current = this.getCurrentConnection();
+
     if (emitCurrent && current != null) {
       return obs.startWith(current);
     }
+
     return obs;
   }
-
   /**
    * Listens for remote connections. The given `handler` will be called on
    * each connection, and the returned function/Disposable will be called when
@@ -156,26 +214,17 @@ export class Server {
    *    when unsubscribed. Otherwise, let them continue until closed.
    *    Default: `false`.
    */
-  onEachConnection(
-    handler: ConnectionWrapper => AnyTeardown,
-    options: {
-      ignoreCurrent?: boolean,
-      stayAliveOnUnsubscribe?: boolean,
-    } = {},
-  ): Disposable {
+
+
+  onEachConnection(handler, options = {}) {
     const emitCurrent = !options.ignoreCurrent;
     const disposeHandlersOnUnsubscribe = !options.stayAliveOnUnsubscribe;
-
-    return Disposable.from(
-      onEachObservedClosable(
-        this.onConnection(emitCurrent),
-        handler,
-        (conn, listener) => conn.onClose(listener),
-        {
-          disposeHandlersOnUnsubscribe,
-          disposeHandlerOnNext: true,
-        },
-      ),
-    );
+    return _vscode().Disposable.from((0, _onEachObservedClosable().default)(this.onConnection(emitCurrent), handler, (conn, listener) => conn.onClose(listener), {
+      disposeHandlersOnUnsubscribe,
+      disposeHandlerOnNext: true
+    }));
   }
+
 }
+
+exports.Server = Server;

@@ -1,3 +1,39 @@
+"use strict";
+
+function log4js() {
+  const data = _interopRequireWildcard(require("log4js"));
+
+  log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _development() {
+  const data = require("../development");
+
+  _development = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _send() {
+  const data = _interopRequireDefault(require("./send"));
+
+  _send = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +42,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
@@ -15,71 +51,60 @@
  * development package of the remote server. It communicates with a host
  * process using Node IPC.
  */
-
-import type {DevelopmentZipResult} from '../development';
-import type {DevForkProtocol, DevForkErrors} from './types.js';
-
-import * as log4js from 'log4js';
-
-import {createDevZip, packageVersion} from '../development';
-import send from './send';
-
-export type {DevForkProtocol};
-
-log4js.configure({
-  appenders: [
-    {
-      type: require.resolve('./send-appender'),
-    },
-    {
-      type: 'console',
-    },
-  ],
+log4js().configure({
+  appenders: [{
+    type: require.resolve("./send-appender")
+  }, {
+    type: 'console'
+  }]
 });
 
-function handleError(tag: DevForkErrors): Error => void {
-  return (error: Error) =>
-    send({
-      tag,
-      error: error.message + '\n' + error.stack,
-    });
+function handleError(tag) {
+  return error => (0, _send().default)({
+    tag,
+    error: error.message + '\n' + error.stack
+  });
 }
 
-function sendVersion(version: string): void {
-  send({tag: 'packageVersion', version});
+function sendVersion(version) {
+  (0, _send().default)({
+    tag: 'packageVersion',
+    version
+  });
 }
 
-function sendDeltaPkgData(deltaPkgData: Buffer): void {
-  send({tag: 'deltaPkgData', deltaPkgData: deltaPkgData.toString('binary')});
+function sendDeltaPkgData(deltaPkgData) {
+  (0, _send().default)({
+    tag: 'deltaPkgData',
+    deltaPkgData: deltaPkgData.toString('binary')
+  });
 }
 
-function sendFullPkgData(fullPkgData: Buffer): void {
-  send({tag: 'fullPkgData', fullPkgData: fullPkgData.toString('binary')});
+function sendFullPkgData(fullPkgData) {
+  (0, _send().default)({
+    tag: 'fullPkgData',
+    fullPkgData: fullPkgData.toString('binary')
+  });
 }
 
-function sendResult(result: DevelopmentZipResult): void {
-  send({
+function sendResult(result) {
+  (0, _send().default)({
     tag: 'result',
     baseVersion: result.baseVersion,
     version: result.version,
     fullPkgFilename: result.fullPkgFilename,
-    deltaPkgData: result.deltaPkgData != null,
+    deltaPkgData: result.deltaPkgData != null
   });
 }
 
 async function main() {
   try {
-    packageVersion().then(sendVersion, handleError('packageVersion-error'));
-
-    const result = await createDevZip();
-
+    (0, _development().packageVersion)().then(sendVersion, handleError('packageVersion-error'));
+    const result = await (0, _development().createDevZip)();
     sendResult(result);
 
     if (result.deltaPkgData != null) {
-      result.deltaPkgData.then(
-        sendDeltaPkgData,
-        handleError('deltaPkgData-error'),
-      );
+      result.deltaPkgData.then(sendDeltaPkgData, handleError('deltaPkgData-error'));
     }
 
     result.fullPkgData.then(sendFullPkgData, handleError('fullPkgData-error'));

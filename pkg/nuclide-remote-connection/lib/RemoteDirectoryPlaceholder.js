@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _stream = _interopRequireDefault(require("stream"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,241 +36,239 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import Stream from 'stream';
 
 /**
  * A Directory object that returns the bare minimum that's required by Atom.
  * It always exists, to satisfy Atom's existence checks.
  * Should be removed ASAP once the remote connection is restored.
  */
-export default class RemoteDirectoryPlaceholder {
-  symlink = false;
-
-  _uri: string;
-  _hostname: ?string;
-  _path: string;
-
-  constructor(uri: string) {
+class RemoteDirectoryPlaceholder {
+  constructor(uri) {
+    this.symlink = false;
     this._uri = uri;
-    const {hostname, path} = nuclideUri.parse(uri);
+
+    const {
+      hostname,
+      path
+    } = _nuclideUri().default.parse(uri);
+
     this._hostname = hostname;
     this._path = path;
   }
 
-  create(mode?: number): Promise<boolean> {
+  create(mode) {
     return Promise.resolve(true);
   }
 
-  onDidChange(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidChange(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  onDidChangeFiles(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidChangeFiles(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  isFile(): boolean {
+  isFile() {
     return false;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return true;
   }
 
-  isRoot(): boolean {
+  isRoot() {
     return this._path === '/';
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return Promise.resolve(true);
   }
 
-  existsSync(): boolean {
+  existsSync() {
     return true;
   }
 
-  getPath(): string {
+  getPath() {
     return this._uri;
   }
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._uri);
+  getBaseName() {
+    return _nuclideUri().default.basename(this._uri);
   }
 
-  relativize(uri: string): string {
+  relativize(uri) {
     if (!uri) {
       return uri;
     }
-    const parsedUrl = nuclideUri.parse(uri);
+
+    const parsedUrl = _nuclideUri().default.parse(uri);
+
     if (parsedUrl.hostname !== this._hostname) {
       return uri;
     }
-    return nuclideUri.relative(this._path, parsedUrl.path);
+
+    return _nuclideUri().default.relative(this._path, parsedUrl.path);
   }
 
-  onDidRename(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidRename(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  onDidDelete(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidDelete(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  getParent(): RemoteDirectoryPlaceholder {
-    return new RemoteDirectoryPlaceholder(nuclideUri.dirname(this._uri));
+  getParent() {
+    return new RemoteDirectoryPlaceholder(_nuclideUri().default.dirname(this._uri));
   }
 
-  getFile(filename: string): RemoteFilePlaceholder {
-    return new RemoteFilePlaceholder(nuclideUri.join(this._uri, filename));
+  getFile(filename) {
+    return new RemoteFilePlaceholder(_nuclideUri().default.join(this._uri, filename));
   }
 
-  getSubdirectory(dirname: string): RemoteDirectoryPlaceholder {
-    return new RemoteDirectoryPlaceholder(nuclideUri.join(this._uri, dirname));
+  getSubdirectory(dirname) {
+    return new RemoteDirectoryPlaceholder(_nuclideUri().default.join(this._uri, dirname));
   }
 
-  getEntries(
-    callback: (
-      error: ?atom$GetEntriesError,
-      // $FlowFixMe
-      entries: ?Array<atom$Directory | atom$File>,
-    ) => mixed,
-  ): void {
+  getEntries(callback) {
     callback(null, []);
   }
 
-  contains(path: ?string): boolean {
+  contains(path) {
     if (path == null) {
       return false;
     }
-    return nuclideUri.contains(this._uri, path);
-  }
-}
 
+    return _nuclideUri().default.contains(this._uri, path);
+  }
+
+}
 /**
  * In contrast to the directory placeholders, the file placeholders never exist.
  * Atom's Git integration, for example, checks for the existence of .git files.
  */
-class RemoteFilePlaceholder implements atom$Fileish {
-  _uri: string;
 
-  constructor(uri: string) {
+
+exports.default = RemoteDirectoryPlaceholder;
+
+class RemoteFilePlaceholder {
+  constructor(uri) {
     this._uri = uri;
   }
 
-  onDidChange(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidChange(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  onDidRename(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidRename(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  onDidDelete(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidDelete(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  onWillThrowWatchError(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onWillThrowWatchError(callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  isFile(): boolean {
+  isFile() {
     return true;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return false;
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return Promise.resolve(false);
   }
 
-  existsSync(): boolean {
+  existsSync() {
     return false;
   }
 
-  getDigestSync(): string {
+  getDigestSync() {
     return '';
   }
 
-  async getDigest(): Promise<string> {
+  async getDigest() {
     return Promise.resolve('');
   }
 
-  setEncoding(encoding: string) {}
+  setEncoding(encoding) {}
 
-  getEncoding(): ?string {
+  getEncoding() {
     return null;
   }
 
-  setPath(uri: string): void {
+  setPath(uri) {
     this._uri = uri;
   }
 
-  getPath(): string {
+  getPath() {
     return this._uri;
   }
 
-  getRealPathSync(): string {
+  getRealPathSync() {
     return this._uri;
   }
 
-  getRealPath(): Promise<string> {
+  getRealPath() {
     return Promise.resolve(this._uri);
   }
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._uri);
+  getBaseName() {
+    return _nuclideUri().default.basename(this._uri);
   }
 
-  create(): Promise<boolean> {
+  create() {
     return Promise.resolve(true);
   }
 
-  delete(): Promise<any> {
+  delete() {
     return Promise.resolve();
   }
 
-  copy(newPath: string): Promise<boolean> {
+  copy(newPath) {
     return Promise.resolve(true);
   }
 
-  read(flushCache?: boolean): Promise<string> {
+  read(flushCache) {
     return Promise.resolve('');
   }
 
-  readSync(flushCache: boolean): string {
+  readSync(flushCache) {
     return '';
   }
 
-  write(text: string): Promise<void> {
+  write(text) {
     return Promise.resolve();
   }
 
-  getParent(): RemoteDirectoryPlaceholder {
-    return new RemoteDirectoryPlaceholder(nuclideUri.dirname(this._uri));
+  getParent() {
+    return new RemoteDirectoryPlaceholder(_nuclideUri().default.dirname(this._uri));
   }
 
-  isSymbolicLink(): boolean {
+  isSymbolicLink() {
     return false;
   }
 
-  createReadStream(): stream$Readable {
-    const stream = new Stream.Readable({
+  createReadStream() {
+    const stream = new _stream.default.Readable({
       read(size) {
         stream.push(null);
-      },
+      }
+
     });
     return stream;
   }
 
-  createWriteStream(): stream$Writable {
+  createWriteStream() {
     throw new Error('Cannot write to a RemoteFilePlaceholder');
   }
+
 }

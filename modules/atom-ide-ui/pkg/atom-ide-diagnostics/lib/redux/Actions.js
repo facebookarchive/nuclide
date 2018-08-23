@@ -1,3 +1,23 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.addProvider = addProvider;
+exports.removeProvider = removeProvider;
+exports.setCodeActionFetcher = setCodeActionFetcher;
+exports.fetchCodeActions = fetchCodeActions;
+exports.setCodeActions = setCodeActions;
+exports.fetchDescriptions = fetchDescriptions;
+exports.setDescriptions = setDescriptions;
+exports.invalidateMessages = invalidateMessages;
+exports.updateMessages = updateMessages;
+exports.applyFix = applyFix;
+exports.applyFixesForFile = applyFixesForFile;
+exports.fixFailed = fixFailed;
+exports.fixesApplied = fixesApplied;
+exports.FIXES_APPLIED = exports.FIX_FAILED = exports.APPLY_FIXES_FOR_FILE = exports.APPLY_FIX = exports.INVALIDATE_MESSAGES = exports.UPDATE_MESSAGES = exports.SET_DESCRIPTIONS = exports.FETCH_DESCRIPTIONS = exports.SET_CODE_ACTIONS = exports.FETCH_CODE_ACTIONS = exports.SET_CODE_ACTION_FETCHER = exports.REMOVE_PROVIDER = exports.ADD_PROVIDER = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,148 +26,153 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const ADD_PROVIDER = 'ADD_PROVIDER';
+exports.ADD_PROVIDER = ADD_PROVIDER;
+const REMOVE_PROVIDER = 'REMOVE_PROVIDER';
+exports.REMOVE_PROVIDER = REMOVE_PROVIDER;
+const SET_CODE_ACTION_FETCHER = 'SET_CODE_ACTION_FETCHER';
+exports.SET_CODE_ACTION_FETCHER = SET_CODE_ACTION_FETCHER;
+const FETCH_CODE_ACTIONS = 'FETCH_CODE_ACTIONS';
+exports.FETCH_CODE_ACTIONS = FETCH_CODE_ACTIONS;
+const SET_CODE_ACTIONS = 'SET_CODE_ACTIONS';
+exports.SET_CODE_ACTIONS = SET_CODE_ACTIONS;
+const FETCH_DESCRIPTIONS = 'FETCH_DESCRIPTIONS';
+exports.FETCH_DESCRIPTIONS = FETCH_DESCRIPTIONS;
+const SET_DESCRIPTIONS = 'SET_DESCRIPTIONS';
+exports.SET_DESCRIPTIONS = SET_DESCRIPTIONS;
+const UPDATE_MESSAGES = 'UPDATE_MESSAGES';
+exports.UPDATE_MESSAGES = UPDATE_MESSAGES;
+const INVALIDATE_MESSAGES = 'INVALIDATE_MESSAGES';
+exports.INVALIDATE_MESSAGES = INVALIDATE_MESSAGES;
+const APPLY_FIX = 'APPLY_FIX';
+exports.APPLY_FIX = APPLY_FIX;
+const APPLY_FIXES_FOR_FILE = 'APPLY_FIXES_FOR_FILE';
+exports.APPLY_FIXES_FOR_FILE = APPLY_FIXES_FOR_FILE;
+const FIX_FAILED = 'FIX_FAILED';
+exports.FIX_FAILED = FIX_FAILED;
+const FIXES_APPLIED = 'FIXES_APPLIED';
+exports.FIXES_APPLIED = FIXES_APPLIED;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  Action,
-  CodeActionsState,
-  DescriptionsState,
-  DiagnosticInvalidationMessage,
-  DiagnosticProviderUpdate,
-  DiagnosticMessage,
-  ObservableDiagnosticProvider,
-} from '../types';
-import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
-
-export const ADD_PROVIDER = 'ADD_PROVIDER';
-export const REMOVE_PROVIDER = 'REMOVE_PROVIDER';
-export const SET_CODE_ACTION_FETCHER = 'SET_CODE_ACTION_FETCHER';
-export const FETCH_CODE_ACTIONS = 'FETCH_CODE_ACTIONS';
-export const SET_CODE_ACTIONS = 'SET_CODE_ACTIONS';
-export const FETCH_DESCRIPTIONS = 'FETCH_DESCRIPTIONS';
-export const SET_DESCRIPTIONS = 'SET_DESCRIPTIONS';
-export const UPDATE_MESSAGES = 'UPDATE_MESSAGES';
-export const INVALIDATE_MESSAGES = 'INVALIDATE_MESSAGES';
-export const APPLY_FIX = 'APPLY_FIX';
-export const APPLY_FIXES_FOR_FILE = 'APPLY_FIXES_FOR_FILE';
-export const FIX_FAILED = 'FIX_FAILED';
-export const FIXES_APPLIED = 'FIXES_APPLIED';
-
-export function addProvider(provider: ObservableDiagnosticProvider): Action {
+function addProvider(provider) {
   return {
     type: ADD_PROVIDER,
-    payload: {provider},
+    payload: {
+      provider
+    }
   };
 }
 
-export function removeProvider(provider: ObservableDiagnosticProvider): Action {
+function removeProvider(provider) {
   return {
     type: REMOVE_PROVIDER,
-    payload: {provider},
+    payload: {
+      provider
+    }
   };
 }
 
-export function setCodeActionFetcher(
-  codeActionFetcher: ?CodeActionFetcher,
-): Action {
+function setCodeActionFetcher(codeActionFetcher) {
   return {
     type: SET_CODE_ACTION_FETCHER,
-    payload: {codeActionFetcher},
+    payload: {
+      codeActionFetcher
+    }
   };
 }
 
-export function fetchCodeActions(
-  editor: atom$TextEditor,
-  messages: Array<DiagnosticMessage>,
-): Action {
+function fetchCodeActions(editor, messages) {
   return {
     type: FETCH_CODE_ACTIONS,
-    payload: {editor, messages},
+    payload: {
+      editor,
+      messages
+    }
   };
 }
 
-export function setCodeActions(
-  codeActionsForMessage: CodeActionsState,
-): Action {
+function setCodeActions(codeActionsForMessage) {
   return {
     type: SET_CODE_ACTIONS,
-    payload: {codeActionsForMessage},
+    payload: {
+      codeActionsForMessage
+    }
   };
 }
 
-export function fetchDescriptions(messages: Array<DiagnosticMessage>): Action {
+function fetchDescriptions(messages) {
   return {
     type: FETCH_DESCRIPTIONS,
-    payload: {messages},
+    payload: {
+      messages
+    }
   };
 }
 
-export function setDescriptions(
-  descriptions: DescriptionsState,
-  keepDescriptions: boolean,
-): Action {
+function setDescriptions(descriptions, keepDescriptions) {
   return {
     type: SET_DESCRIPTIONS,
-    payload: {descriptions, keepDescriptions},
+    payload: {
+      descriptions,
+      keepDescriptions
+    }
   };
 }
 
-export function invalidateMessages(
-  provider: ObservableDiagnosticProvider,
-  invalidation: DiagnosticInvalidationMessage,
-): Action {
+function invalidateMessages(provider, invalidation) {
   return {
     type: INVALIDATE_MESSAGES,
-    payload: {provider, invalidation},
+    payload: {
+      provider,
+      invalidation
+    }
   };
-}
-
-// TODO: This will become `{provider, path: ?NuclideUri, messages: Array<Message>}` eventually, with
+} // TODO: This will become `{provider, path: ?NuclideUri, messages: Array<Message>}` eventually, with
 // a null path representing a project diagnostic.
-export function updateMessages(
-  provider: ObservableDiagnosticProvider,
-  update: DiagnosticProviderUpdate,
-): Action {
+
+
+function updateMessages(provider, update) {
   return {
     type: UPDATE_MESSAGES,
     payload: {
       provider,
-      update,
-    },
+      update
+    }
   };
 }
 
-export function applyFix(message: DiagnosticMessage): Action {
+function applyFix(message) {
   return {
     type: APPLY_FIX,
     payload: {
-      message,
-    },
+      message
+    }
   };
 }
 
-export function applyFixesForFile(file: NuclideUri): Action {
+function applyFixesForFile(file) {
   return {
     type: APPLY_FIXES_FOR_FILE,
     payload: {
-      file,
-    },
+      file
+    }
   };
 }
 
-export function fixFailed(): Action {
-  return {type: FIX_FAILED};
+function fixFailed() {
+  return {
+    type: FIX_FAILED
+  };
 }
 
-export function fixesApplied(
-  filePath: NuclideUri,
-  messages: Set<DiagnosticMessage>,
-): Action {
+function fixesApplied(filePath, messages) {
   return {
     type: FIXES_APPLIED,
-    payload: {filePath, messages},
+    payload: {
+      filePath,
+      messages
+    }
   };
 }
