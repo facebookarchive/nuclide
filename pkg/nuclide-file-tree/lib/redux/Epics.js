@@ -12,7 +12,7 @@
 import type {Directory} from '../FileTreeHelpers';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 // eslint-disable-next-line nuclide-internal/import-type-style
-import type {FileTreeAction as Action} from '../FileTreeDispatcher';
+import type {Action} from '../types';
 import type {RemoteFile} from '../../../nuclide-remote-connection';
 import type {File} from 'atom';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
@@ -39,7 +39,6 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {repositoryForPath} from '../../../nuclide-vcs-base';
-import {ActionTypes} from '../FileTreeDispatcher';
 import {track} from '../../../nuclide-analytics';
 import FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
@@ -64,9 +63,9 @@ export function confirmNodeEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.CONFIRM_NODE)
+    .ofType(Actions.CONFIRM_NODE)
     .do(action => {
-      invariant(action.type === ActionTypes.CONFIRM_NODE);
+      invariant(action.type === Actions.CONFIRM_NODE);
       const {rootKey, nodeKey, pending} = action;
 
       const node = Selectors.getNode(store.getState(), rootKey, nodeKey);
@@ -76,13 +75,13 @@ export function confirmNodeEpic(
       if (node.isContainer) {
         if (node.isExpanded) {
           store.dispatch({
-            type: ActionTypes.COLLAPSE_NODE,
+            type: Actions.COLLAPSE_NODE,
             nodeKey,
             rootKey,
           });
         } else {
           store.dispatch({
-            type: ActionTypes.EXPAND_NODE,
+            type: Actions.EXPAND_NODE,
             nodeKey,
             rootKey,
           });
@@ -107,7 +106,7 @@ export function keepPreviewTabEpic(
   actions: ActionsObservable<Action>,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.KEEP_PREVIEW_TAB)
+    .ofType(Actions.KEEP_PREVIEW_TAB)
     .do(() => {
       const activePane = atom.workspace.getActivePane();
       if (activePane != null) {
@@ -121,9 +120,9 @@ export function openEntrySplitEpic(
   actions: ActionsObservable<Action>,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_ENTRY_SPLIT)
+    .ofType(Actions.OPEN_ENTRY_SPLIT)
     .do(action => {
-      invariant(action.type === ActionTypes.OPEN_ENTRY_SPLIT);
+      invariant(action.type === Actions.OPEN_ENTRY_SPLIT);
       const {nodeKey, orientation, side} = action;
       const pane = atom.workspace.getCenter().getActivePane();
       atom.workspace.openURIInPane(
@@ -150,9 +149,9 @@ export function updateRepositoriesEpic(
   > = new Immutable.Map();
 
   return actions
-    .ofType(ActionTypes.UPDATE_REPOSITORIES)
+    .ofType(Actions.UPDATE_REPOSITORIES)
     .switchMap(async action => {
-      invariant(action.type === ActionTypes.UPDATE_REPOSITORIES);
+      invariant(action.type === Actions.UPDATE_REPOSITORIES);
       const {rootDirectories} = action;
       const rootKeys = rootDirectories.map(directory =>
         FileTreeHelpers.dirPathToKey(directory.getPath()),
@@ -188,7 +187,7 @@ export function updateRepositoriesEpic(
         rootKeysForRepository.keys(),
       );
       store.dispatch({
-        type: ActionTypes.SET_REPOSITORIES,
+        type: Actions.SET_REPOSITORIES,
         repositories: nextRepos,
       });
 
@@ -308,9 +307,9 @@ export function revealNodeKeyEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.REVEAL_NODE_KEY)
+    .ofType(Actions.REVEAL_NODE_KEY)
     .do(action => {
-      invariant(action.type === ActionTypes.REVEAL_NODE_KEY);
+      invariant(action.type === Actions.REVEAL_NODE_KEY);
       const {nodeKey} = action;
       if (nodeKey == null) {
         return;
@@ -324,8 +323,8 @@ export function revealFilePathEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.REVEAL_FILE_PATH).switchMap(action => {
-    invariant(action.type === ActionTypes.REVEAL_FILE_PATH);
+  return actions.ofType(Actions.REVEAL_FILE_PATH).switchMap(action => {
+    invariant(action.type === Actions.REVEAL_FILE_PATH);
     const {filePath, showIfHidden} = action;
     const resultActions = [];
 
@@ -352,7 +351,7 @@ export function openAndRevealFilePathEpic(
   return actions
     .map(
       action =>
-        action.type === ActionTypes.OPEN_AND_REVEAL_FILE_PATH ? action : null,
+        action.type === Actions.OPEN_AND_REVEAL_FILE_PATH ? action : null,
     )
     .filter(Boolean)
     .filter(action => action.filePath != null)
@@ -369,7 +368,7 @@ export function openAndRevealFilePathsEpic(
   return actions
     .map(
       action =>
-        action.type === ActionTypes.OPEN_AND_REVEAL_FILE_PATHS ? action : null,
+        action.type === Actions.OPEN_AND_REVEAL_FILE_PATHS ? action : null,
     )
     .filter(Boolean)
     .do(({filePaths}) => {
@@ -390,9 +389,9 @@ export function openAndRevealDirectoryPathEpic(
   actions: ActionsObservable<Action>,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.OPEN_AND_REVEAL_DIRECTORY_PATH)
+    .ofType(Actions.OPEN_AND_REVEAL_DIRECTORY_PATH)
     .map(action => {
-      invariant(action.type === ActionTypes.OPEN_AND_REVEAL_DIRECTORY_PATH);
+      invariant(action.type === Actions.OPEN_AND_REVEAL_DIRECTORY_PATH);
       return action.path == null
         ? null
         : Actions.revealNodeKey(FileTreeHelpers.dirPathToKey(action.path));
@@ -405,7 +404,7 @@ export function updateRootDirectoriesEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.UPDATE_ROOT_DIRECTORIES)
+    .ofType(Actions.UPDATE_ROOT_DIRECTORIES)
     .do(() => {
       // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
       // local directories but with invalid paths. We need to exclude those.
@@ -426,7 +425,7 @@ export function setCwdToSelectionEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.SET_CWD_TO_SELECTION)
+    .ofType(Actions.SET_CWD_TO_SELECTION)
     .do(() => {
       const node = Selectors.getSingleSelectedNode(store.getState());
       if (node == null) {
@@ -445,9 +444,9 @@ export function setCwdApiEpic(
   actions: ActionsObservable<Action>,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.SET_CWD_API)
+    .ofType(Actions.SET_CWD_API)
     .switchMap(action => {
-      invariant(action.type === ActionTypes.SET_CWD_API);
+      invariant(action.type === Actions.SET_CWD_API);
       const {cwdApi} = action;
       return cwdApi == null
         ? Observable.of(null)
@@ -464,9 +463,9 @@ export function setRemoteProjectsServiceEpic(
   actions: ActionsObservable<Action>,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.SET_REMOTE_PROJECTS_SERVICE)
+    .ofType(Actions.SET_REMOTE_PROJECTS_SERVICE)
     .switchMap(action => {
-      invariant(action.type === ActionTypes.SET_REMOTE_PROJECTS_SERVICE);
+      invariant(action.type === Actions.SET_REMOTE_PROJECTS_SERVICE);
       const {service} = action;
       // This is to workaround the initialization order problem between the
       // nuclide-remote-projects and nuclide-file-tree packages.
@@ -496,8 +495,8 @@ export function collapseSelectionEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.COLLAPSE_SELECTION).switchMap(action => {
-    invariant(action.type === ActionTypes.COLLAPSE_SELECTION);
+  return actions.ofType(Actions.COLLAPSE_SELECTION).switchMap(action => {
+    invariant(action.type === Actions.COLLAPSE_SELECTION);
     const {deep} = action;
     const selectedNodes = Selectors.getSelectedNodes(store.getState());
     const firstSelectedNode = nullthrows(selectedNodes.first());
@@ -538,7 +537,7 @@ export function collapseAllEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.COLLAPSE_ALL).switchMap(() => {
+  return actions.ofType(Actions.COLLAPSE_ALL).switchMap(() => {
     const roots = store.getState()._roots;
     return Observable.from(
       [...roots.values()].map(root =>
@@ -553,7 +552,7 @@ export function deleteSelectionEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.DELETE_SELECTION)
+    .ofType(Actions.DELETE_SELECTION)
     .do(() => {
       const nodes = Selectors.getTargetNodes(store.getState());
       if (nodes.size === 0) {
@@ -615,8 +614,8 @@ export function expandSelectionEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.EXPAND_SELECTION).switchMap(action => {
-    invariant(action.type === ActionTypes.EXPAND_SELECTION);
+  return actions.ofType(Actions.EXPAND_SELECTION).switchMap(action => {
+    invariant(action.type === Actions.EXPAND_SELECTION);
     const {deep} = action;
     const resultActions = [Actions.clearFilter()];
 
@@ -659,7 +658,7 @@ export function openSelectedEntryEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.OPEN_SELECTED_ENTRY).switchMap(() => {
+  return actions.ofType(Actions.OPEN_SELECTED_ENTRY).switchMap(() => {
     const resultActions = [Actions.clearFilter()];
     const singleSelectedNode = Selectors.getSingleSelectedNode(
       store.getState(),
@@ -679,9 +678,9 @@ export function openSelectedEntrySplitEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.OPEN_SELECTED_ENTRY_SPLIT)
+    .ofType(Actions.OPEN_SELECTED_ENTRY_SPLIT)
     .map(action => {
-      invariant(action.type === ActionTypes.OPEN_SELECTED_ENTRY_SPLIT);
+      invariant(action.type === Actions.OPEN_SELECTED_ENTRY_SPLIT);
       const {orientation, side} = action;
       const singleSelectedNode = Selectors.getSingleTargetNode(
         store.getState(),
@@ -708,7 +707,7 @@ export function removeRootFolderSelection(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.REMOVE_ROOT_FOLDER_SELECTION)
+    .ofType(Actions.REMOVE_ROOT_FOLDER_SELECTION)
     .do(() => {
       const rootNode = Selectors.getSingleSelectedNode(store.getState());
       if (rootNode != null && rootNode.isRoot) {
@@ -724,7 +723,7 @@ export function copyFilenamesWithDir(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.COPY_FILENAMES_WITH_DIR)
+    .ofType(Actions.COPY_FILENAMES_WITH_DIR)
     .do(() => {
       const nodes = Selectors.getSelectedNodes(store.getState());
       const dirs = [];
@@ -769,9 +768,9 @@ export function openAddFolderDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_ADD_FOLDER_DIALOG)
+    .ofType(Actions.OPEN_ADD_FOLDER_DIALOG)
     .do(action => {
-      invariant(action.type === ActionTypes.OPEN_ADD_FOLDER_DIALOG);
+      invariant(action.type === Actions.OPEN_ADD_FOLDER_DIALOG);
       const {onDidConfirm} = action;
       const node = getSelectedContainerNode(store.getState());
       if (!node) {
@@ -822,9 +821,9 @@ export function openAddFileDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG)
+    .ofType(Actions.OPEN_ADD_FILE_DIALOG)
     .do(action => {
-      invariant(action.type === ActionTypes.OPEN_ADD_FILE_DIALOG);
+      invariant(action.type === Actions.OPEN_ADD_FILE_DIALOG);
       const {onDidConfirm} = action;
       const node = getSelectedContainerNode(store.getState());
       if (!node) {
@@ -840,9 +839,9 @@ export function openAddFileDialogRelativeEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE)
+    .ofType(Actions.OPEN_ADD_FILE_DIALOG_RELATIVE)
     .do(action => {
-      invariant(action.type === ActionTypes.OPEN_ADD_FILE_DIALOG_RELATIVE);
+      invariant(action.type === Actions.OPEN_ADD_FILE_DIALOG_RELATIVE);
       const {onDidConfirm} = action;
       const editor = atom.workspace.getActiveTextEditor();
       const filePath = editor != null ? editor.getPath() : null;
@@ -875,7 +874,7 @@ export function openRenameDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_RENAME_DIALOG)
+    .ofType(Actions.OPEN_RENAME_DIALOG)
     .do(() => {
       const targetNodes = Selectors.getTargetNodes(store.getState());
       if (targetNodes.size !== 1) {
@@ -912,8 +911,8 @@ export function openDuplicateDialogEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.OPEN_DUPLICATE_DIALOG).map(action => {
-    invariant(action.type === ActionTypes.OPEN_DUPLICATE_DIALOG);
+  return actions.ofType(Actions.OPEN_DUPLICATE_DIALOG).map(action => {
+    invariant(action.type === Actions.OPEN_DUPLICATE_DIALOG);
     const {onDidConfirm} = action;
     const targetNodes = Selectors.getTargetNodes(store.getState());
     return Actions.openNextDuplicateDialog(targetNodes, onDidConfirm);
@@ -925,9 +924,9 @@ export function openNextDuplicateDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_NEXT_DUPLICATE_DIALOG)
+    .ofType(Actions.OPEN_NEXT_DUPLICATE_DIALOG)
     .do(action => {
-      invariant(action.type === ActionTypes.OPEN_NEXT_DUPLICATE_DIALOG);
+      invariant(action.type === Actions.OPEN_NEXT_DUPLICATE_DIALOG);
       const {nodes, onDidConfirm} = action;
       const node = nodes.first();
       invariant(node != null);
@@ -988,7 +987,7 @@ export function openPasteDialogEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.OPEN_PASTE_DIALOG)
+    .ofType(Actions.OPEN_PASTE_DIALOG)
     .do(() => {
       const node = Selectors.getSingleSelectedNode(store.getState());
       if (node == null) {
@@ -1034,9 +1033,9 @@ export function updateWorkingSetEpic(
   store: MiddlewareStore,
 ): Observable<empty> {
   return actions
-    .ofType(ActionTypes.WORKING_SET_CHANGE_REQUESTED)
+    .ofType(Actions.WORKING_SET_CHANGE_REQUESTED)
     .do(action => {
-      invariant(action.type === ActionTypes.WORKING_SET_CHANGE_REQUESTED);
+      invariant(action.type === Actions.WORKING_SET_CHANGE_REQUESTED);
       const {workingSet} = action;
 
       // TODO (T30814717): Make this the default behavior after some research.
@@ -1072,9 +1071,9 @@ export function deleteSelectedNodesEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.DELETE_SELECTED_NODES)
+    .ofType(Actions.DELETE_SELECTED_NODES)
     .mergeMap(async action => {
-      invariant(action.type === ActionTypes.DELETE_SELECTED_NODES);
+      invariant(action.type === Actions.DELETE_SELECTED_NODES);
       const selectedNodes = Selectors.getSelectedNodes(store.getState());
       try {
         await FileTreeHgHelpers.deleteNodes(selectedNodes.toArray());
@@ -1091,8 +1090,8 @@ export function moveToNodeEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.MOVE_TO_NODE).mergeMap(action => {
-    invariant(action.type === ActionTypes.MOVE_TO_NODE);
+  return actions.ofType(Actions.MOVE_TO_NODE).mergeMap(action => {
+    invariant(action.type === Actions.MOVE_TO_NODE);
     const {rootKey, nodeKey} = action;
     const targetNode = Selectors.getNode(store.getState(), rootKey, nodeKey);
     if (targetNode == null || !targetNode.isContainer) {
@@ -1110,9 +1109,9 @@ export function expandNodeEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.EXPAND_NODE)
+    .ofType(Actions.EXPAND_NODE)
     .do(action => {
-      invariant(action.type === ActionTypes.EXPAND_NODE);
+      invariant(action.type === Actions.EXPAND_NODE);
       const {rootKey, nodeKey} = action;
       EpicHelpers.expandNode(store, rootKey, nodeKey);
     })
@@ -1124,9 +1123,9 @@ export function expandNodeDeepEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.EXPAND_NODE_DEEP)
+    .ofType(Actions.EXPAND_NODE_DEEP)
     .do(action => {
-      invariant(action.type === ActionTypes.EXPAND_NODE_DEEP);
+      invariant(action.type === Actions.EXPAND_NODE_DEEP);
       const {rootKey, nodeKey} = action;
       EpicHelpers.expandNodeDeep(store, rootKey, nodeKey);
     })
@@ -1138,9 +1137,9 @@ export function reorderRootsEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.REORDER_ROOTS)
+    .ofType(Actions.REORDER_ROOTS)
     .do(action => {
-      invariant(action.type === ActionTypes.REORDER_ROOTS);
+      invariant(action.type === Actions.REORDER_ROOTS);
       const rootKeys = Selectors.getRootKeys(store.getState());
       const rps = this._reorderPreviewStatus;
       if (rps == null) {
@@ -1167,9 +1166,9 @@ export function loadDataEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return actions
-    .ofType(ActionTypes.LOAD_DATA)
+    .ofType(Actions.LOAD_DATA)
     .map(action => {
-      invariant(action.type === ActionTypes.LOAD_DATA);
+      invariant(action.type === Actions.LOAD_DATA);
       const {data} = action;
 
       // Ensure we are not trying to load data from an earlier version of this package.
@@ -1229,12 +1228,12 @@ export function updateGeneratedStatusEpic(
   store: MiddlewareStore,
 ): Observable<Action> {
   return Observable.merge(
-    actions.ofType(ActionTypes.SET_OPEN_FILES_WORKING_SET).map(action => {
-      invariant(action.type === ActionTypes.SET_OPEN_FILES_WORKING_SET);
+    actions.ofType(Actions.SET_OPEN_FILES_WORKING_SET).map(action => {
+      invariant(action.type === Actions.SET_OPEN_FILES_WORKING_SET);
       return action.openFilesWorkingSet.getAbsoluteUris();
     }),
-    actions.ofType(ActionTypes.SET_VCS_STATUSES).map(action => {
-      invariant(action.type === ActionTypes.SET_VCS_STATUSES);
+    actions.ofType(Actions.SET_VCS_STATUSES).map(action => {
+      invariant(action.type === Actions.SET_VCS_STATUSES);
       return [...action.vcsStatuses.keys()];
     }),
   ).mergeMap(async filesToCheck => {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {SelectionAction} from '../FileTreeDispatcher';
+import type {SelectionAction} from '../types';
 import type {FileTreeNode} from '../FileTreeNode';
 
 export const SELECT = 'SELECTION:SELECT';

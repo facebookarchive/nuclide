@@ -15,7 +15,6 @@ import type React from 'react';
 import type {InitialData, Roots} from '../types';
 
 import invariant from 'assert';
-import {ActionTypes} from '../FileTreeDispatcher';
 import FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
@@ -32,12 +31,12 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange} from '../FileTreeSelectionRange';
 import * as SelectionActions from '../redux/SelectionActions';
+import * as Actions from '../redux/Actions';
 
-import type {FileTreeAction} from '../FileTreeDispatcher';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {StoreConfigData, AppState} from '../types';
+import type {StoreConfigData, AppState, Action} from '../types';
 
 export const DEFAULT_CONF = {
   vcsStatuses: Immutable.Map(),
@@ -99,122 +98,122 @@ const DEFAULT_STATE: AppState = {
   _trackedNodeKey: null,
 };
 
-function reduceState(state_: AppState, action: FileTreeAction): AppState {
+function reduceState(state_: AppState, action: Action): AppState {
   const state = state_ || DEFAULT_STATE;
   switch (action.type) {
-    case ActionTypes.SET_INITIAL_DATA:
+    case Actions.SET_INITIAL_DATA:
       return setInitialData(state, action.data);
-    case ActionTypes.CLEAR_SELECTION_RANGE:
+    case Actions.CLEAR_SELECTION_RANGE:
       return clearSelectionRange(state);
-    case ActionTypes.CLEAR_DRAG_HOVER:
+    case Actions.CLEAR_DRAG_HOVER:
       return clearDragHover(state);
-    case ActionTypes.CLEAR_SELECTION:
+    case Actions.CLEAR_SELECTION:
       return clearSelection(state);
-    case ActionTypes.SET_CWD:
+    case Actions.SET_CWD:
       return setCwdKey(state, action.rootKey);
-    case ActionTypes.SET_CWD_API:
+    case Actions.SET_CWD_API:
       return setCwdApi(state, action.cwdApi);
-    case ActionTypes.SET_TRACKED_NODE:
+    case Actions.SET_TRACKED_NODE:
       return setTrackedNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.CLEAR_TRACKED_NODE:
+    case Actions.CLEAR_TRACKED_NODE:
       return clearTrackedNode(state);
-    case ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
+    case Actions.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
       return clearTrackedNodeIfNotLoading(state);
-    case ActionTypes.START_REORDER_DRAG:
+    case Actions.START_REORDER_DRAG:
       return startReorderDrag(state, action.draggedRootKey);
-    case ActionTypes.END_REORDER_DRAG:
+    case Actions.END_REORDER_DRAG:
       return endReorderDrag(state);
-    case ActionTypes.REORDER_DRAG_INTO:
+    case Actions.REORDER_DRAG_INTO:
       return reorderDragInto(state, action.dragTargetNodeKey);
-    case ActionTypes.COLLAPSE_NODE:
+    case Actions.COLLAPSE_NODE:
       return collapseNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS:
+    case Actions.SET_EXCLUDE_VCS_IGNORED_PATHS:
       return setExcludeVcsIgnoredPaths(state, action.excludeVcsIgnoredPaths);
-    case ActionTypes.SET_HIDE_VCS_IGNORED_PATHS:
+    case Actions.SET_HIDE_VCS_IGNORED_PATHS:
       return setHideVcsIgnoredPaths(state, action.hideVcsIgnoredPaths);
-    case ActionTypes.SET_USE_PREVIEW_TABS:
+    case Actions.SET_USE_PREVIEW_TABS:
       return setUsePreviewTabs(state, action.usePreviewTabs);
-    case ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION:
+    case Actions.SET_FOCUS_EDITOR_ON_FILE_SELECTION:
       return setFocusEditorOnFileSelection(
         state,
         action.focusEditorOnFileSelection,
       );
-    case ActionTypes.SET_USE_PREFIX_NAV:
+    case Actions.SET_USE_PREFIX_NAV:
       return setUsePrefixNav(state, action.usePrefixNav);
-    case ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD:
+    case Actions.SET_AUTO_EXPAND_SINGLE_CHILD:
       return setAutoExpandSingleChild(state, action.autoExpandSingleChild);
-    case ActionTypes.COLLAPSE_NODE_DEEP:
+    case Actions.COLLAPSE_NODE_DEEP:
       return collapseNodeDeep(state, action.rootKey, action.nodeKey);
-    case ActionTypes.SET_HIDE_IGNORED_NAMES:
+    case Actions.SET_HIDE_IGNORED_NAMES:
       return setHideIgnoredNames(state, action.hideIgnoredNames);
-    case ActionTypes.SET_IS_CALCULATING_CHANGES:
+    case Actions.SET_IS_CALCULATING_CHANGES:
       return setIsCalculatingChanges(state, action.isCalculatingChanges);
-    case ActionTypes.SET_IGNORED_NAMES:
+    case Actions.SET_IGNORED_NAMES:
       return setIgnoredNames(state, action.ignoredNames);
-    case ActionTypes.SET_VCS_STATUSES:
+    case Actions.SET_VCS_STATUSES:
       return setVcsStatuses(state, action.rootKey, action.vcsStatuses);
-    case ActionTypes.SET_REPOSITORIES:
+    case Actions.SET_REPOSITORIES:
       return setRepositories(state, action.repositories);
-    case ActionTypes.SET_WORKING_SET:
+    case Actions.SET_WORKING_SET:
       return setWorkingSet(state, action.workingSet);
-    case ActionTypes.SET_OPEN_FILES_WORKING_SET:
+    case Actions.SET_OPEN_FILES_WORKING_SET:
       return setOpenFilesWorkingSet(state, action.openFilesWorkingSet);
-    case ActionTypes.SET_WORKING_SETS_STORE:
+    case Actions.SET_WORKING_SETS_STORE:
       return setWorkingSetsStore(state, action.workingSetsStore);
-    case ActionTypes.START_EDITING_WORKING_SET:
+    case Actions.START_EDITING_WORKING_SET:
       return startEditingWorkingSet(state, action.editedWorkingSet);
-    case ActionTypes.FINISH_EDITING_WORKING_SET:
+    case Actions.FINISH_EDITING_WORKING_SET:
       return finishEditingWorkingSet(state);
-    case ActionTypes.CHECK_NODE:
+    case Actions.CHECK_NODE:
       return checkNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.UNCHECK_NODE:
+    case Actions.UNCHECK_NODE:
       return uncheckNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.SET_DRAG_HOVERED_NODE:
+    case Actions.SET_DRAG_HOVERED_NODE:
       return setDragHoveredNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.UNHOVER_NODE:
+    case Actions.UNHOVER_NODE:
       return unhoverNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.SET_SELECTED_NODE:
+    case Actions.SET_SELECTED_NODE:
       return setSelectedNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.SET_FOCUSED_NODE:
+    case Actions.SET_FOCUSED_NODE:
       return setFocusedNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.ADD_SELECTED_NODE:
+    case Actions.ADD_SELECTED_NODE:
       return addSelectedNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.UNSELECT_NODE:
+    case Actions.UNSELECT_NODE:
       return unselectNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.MOVE_SELECTION_UP:
+    case Actions.MOVE_SELECTION_UP:
       return moveSelectionUp(state);
-    case ActionTypes.RANGE_SELECT_TO_NODE:
+    case Actions.RANGE_SELECT_TO_NODE:
       return rangeSelectToNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.RANGE_SELECT_UP:
+    case Actions.RANGE_SELECT_UP:
       return rangeSelectMove(state, 'up');
-    case ActionTypes.RANGE_SELECT_DOWN:
+    case Actions.RANGE_SELECT_DOWN:
       return rangeSelectMove(state, 'down');
-    case ActionTypes.MOVE_SELECTION_DOWN:
+    case Actions.MOVE_SELECTION_DOWN:
       return moveSelectionDown(state);
-    case ActionTypes.MOVE_SELECTION_TO_TOP:
+    case Actions.MOVE_SELECTION_TO_TOP:
       return moveSelectionToTop(state);
-    case ActionTypes.MOVE_SELECTION_TO_BOTTOM:
+    case Actions.MOVE_SELECTION_TO_BOTTOM:
       return moveSelectionToBottom(state);
-    case ActionTypes.CLEAR_FILTER:
+    case Actions.CLEAR_FILTER:
       return clearFilter(state);
-    case ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
+    case Actions.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
       return addExtraProjectSelectionContent(state, action.content);
-    case ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:
+    case Actions.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:
       return removeExtraProjectSelectionContent(state, action.content);
-    case ActionTypes.SET_OPEN_FILES_EXPANDED:
+    case Actions.SET_OPEN_FILES_EXPANDED:
       return setOpenFilesExpanded(state, action.openFilesExpanded);
-    case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
+    case Actions.SET_UNCOMMITTED_CHANGES_EXPANDED:
       return setUncommittedChangesExpanded(
         state,
         action.uncommittedChangesExpanded,
       );
-    case ActionTypes.SET_FOLDERS_EXPANDED:
+    case Actions.SET_FOLDERS_EXPANDED:
       return setFoldersExpanded(state, action.foldersExpanded);
-    case ActionTypes.INVALIDATE_REMOVED_FOLDER:
+    case Actions.INVALIDATE_REMOVED_FOLDER:
       return invalidateRemovedFolder(state);
-    case ActionTypes.SET_TARGET_NODE:
+    case Actions.SET_TARGET_NODE:
       return setTargetNode(state, action.rootKey, action.nodeKey);
-    case ActionTypes.UPDATE_GENERATED_STATUSES:
+    case Actions.UPDATE_GENERATED_STATUSES:
       const {generatedFileTypes} = action;
       return {
         ...state,
@@ -223,18 +222,18 @@ function reduceState(state_: AppState, action: FileTreeAction): AppState {
           // just drop any non-generated files from the map
           .filter(value => value !== 'manual'),
       };
-    case ActionTypes.ADD_FILTER_LETTER:
+    case Actions.ADD_FILTER_LETTER:
       return addFilterLetter(state, action.letter);
-    case ActionTypes.REMOVE_FILTER_LETTER:
+    case Actions.REMOVE_FILTER_LETTER:
       return removeFilterLetter(state);
-    case ActionTypes.SET_ROOTS:
+    case Actions.SET_ROOTS:
       return setRoots(state, action.roots);
-    case ActionTypes.CLEAR_LOADING:
+    case Actions.CLEAR_LOADING:
       return {
         ...state,
         _isLoadingMap: state._isLoadingMap.delete(action.nodeKey),
       };
-    case ActionTypes.SET_LOADING:
+    case Actions.SET_LOADING:
       return {
         ...state,
         _isLoadingMap: state._isLoadingMap.set(action.nodeKey, action.promise),
@@ -269,7 +268,7 @@ function reduceState(state_: AppState, action: FileTreeAction): AppState {
   return state;
 }
 
-export default function(state: AppState, action: FileTreeAction): AppState {
+export default function(state: AppState, action: Action): AppState {
   const {performance} = global;
   const start = performance.now();
 

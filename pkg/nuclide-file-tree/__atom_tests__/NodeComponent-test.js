@@ -12,7 +12,6 @@
 /* global Element */
 
 import {Provider} from 'react-redux';
-import {ActionTypes} from '../lib/FileTreeDispatcher';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import FileTreeEntryComponent from '../components/FileTreeEntryComponent';
@@ -90,7 +89,7 @@ describe('Directory FileTreeEntryComponent', () => {
       const domNode = ReactDOM.findDOMNode(nodeComponent).children[0];
       TestUtils.Simulate.click(domNode);
       expect(store.dispatch.mock.calls.map(call => call[0].type)).toContain(
-        ActionTypes.EXPAND_NODE,
+        Actions.EXPAND_NODE,
       );
     });
   });
@@ -110,7 +109,7 @@ describe('File FileTreeEntryComponent', () => {
       invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
       expect(store.dispatch.mock.calls.map(call => call[0].type)).not.toContain(
-        ActionTypes.EXPAND_NODE,
+        Actions.EXPAND_NODE,
       );
     });
   });
@@ -130,7 +129,7 @@ describe('File FileTreeEntryComponent', () => {
       invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
       expect(store.dispatch.mock.calls.map(call => call[0].type)).toContain(
-        ActionTypes.CONFIRM_NODE,
+        Actions.CONFIRM_NODE,
       );
     });
   });
