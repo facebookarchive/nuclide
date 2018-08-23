@@ -153,17 +153,19 @@ export class AtomTextEditor extends React.Component<Props, void> {
       'atom-text-editor',
     ): any));
 
-    // Make tab move to next element instead of inserting a 'tab' character
-    this._editorDisposables.add(
-      // Make AtomTextEditor properly shift-tabbable
-      atomTabIndexForwarder(textEditorElement),
-      // Make 'Tab' change focus instead of inserting tab character
-      Observable.fromEvent(textEditorElement, 'keydown').subscribe(event => {
-        if (event.key === 'Tab') {
-          event.stopPropagation();
-        }
-      }),
-    );
+    if (parseInt(this.props.tabIndex, 10) >= 0) {
+      // Make tab move to next element instead of inserting a 'tab' character
+      this._editorDisposables.add(
+        // Make AtomTextEditor properly shift-tabbable
+        atomTabIndexForwarder(textEditorElement),
+        // Make 'Tab' change focus instead of inserting tab character
+        Observable.fromEvent(textEditorElement, 'keydown').subscribe(event => {
+          if (event.key === 'Tab') {
+            event.stopPropagation();
+          }
+        }),
+      );
+    }
 
     textEditorElement.setModel(textEditor);
     textEditorElement.setAttribute('tabindex', this.props.tabIndex);
