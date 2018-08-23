@@ -20,13 +20,7 @@ import {getLogger} from 'log4js';
 import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
-import {
-  FallbackToRpcError,
-  rejectArchivePaths,
-  convertToFsFileStat,
-  convertToFsDirectoryEntries,
-  checkArchivePathsToFallbackToRpc,
-} from './util';
+import {convertToFsFileStat, convertToFsDirectoryEntries} from './util';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
 
 export const BUFFER_ENCODING = 'utf-8';
@@ -68,7 +62,6 @@ export class ThriftRfsClientAdapter {
 
   async stat(uri: NuclideUri): Promise<fs.Stats> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'stat');
       return await this._statPath(nuclideUri.getPath(uri));
     } catch (err) {
       throw err;
@@ -77,7 +70,6 @@ export class ThriftRfsClientAdapter {
 
   async lstat(uri: NuclideUri): Promise<fs.Stats> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'lstat');
       const thriftFileStat = await this._client.lstat(nuclideUri.getPath(uri));
       return convertToFsFileStat(thriftFileStat);
     } catch (err) {
@@ -87,7 +79,6 @@ export class ThriftRfsClientAdapter {
 
   async exists(uri: NuclideUri): Promise<boolean> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'exists');
       await this._statPath(nuclideUri.getPath(uri));
       return true;
     } catch (error) {
@@ -101,7 +92,6 @@ export class ThriftRfsClientAdapter {
 
   async readFile(uri: NuclideUri, options?: {flag?: string}): Promise<Buffer> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'readFile');
       const path = nuclideUri.getPath(uri);
       return await this._client.readFile(path);
     } catch (err) {
@@ -115,7 +105,6 @@ export class ThriftRfsClientAdapter {
     options?: WriteOptions,
   ): Promise<void> {
     try {
-      rejectArchivePaths(uri, 'writeFile');
       const data = new Buffer(content, BUFFER_ENCODING);
       await this.writeFileBuffer(uri, data, options);
     } catch (err) {
@@ -129,7 +118,6 @@ export class ThriftRfsClientAdapter {
     options?: WriteOptions,
   ): Promise<void> {
     try {
-      rejectArchivePaths(uri, 'writeFileBuffer');
       const path = nuclideUri.getPath(uri);
       const writeOptions = options || {};
       await this._client.writeFile(path, data, writeOptions);
@@ -140,7 +128,6 @@ export class ThriftRfsClientAdapter {
 
   async mkdir(uri: NuclideUri): Promise<void> {
     try {
-      rejectArchivePaths(uri, 'mkdir');
       await this._client.createDirectory(nuclideUri.getPath(uri));
     } catch (err) {
       throw err;
@@ -149,7 +136,6 @@ export class ThriftRfsClientAdapter {
 
   async mkdirp(uri: NuclideUri): Promise<boolean> {
     try {
-      rejectArchivePaths(uri, 'mkdirp');
       await this._client.createDirectory(nuclideUri.getPath(uri));
       return true;
     } catch (err) {
@@ -160,7 +146,6 @@ export class ThriftRfsClientAdapter {
 
   async newFile(uri: NuclideUri): Promise<boolean> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'newFile');
       const isExistingFile = await this.exists(uri);
       if (isExistingFile) {
         return false;
@@ -178,12 +163,8 @@ export class ThriftRfsClientAdapter {
    */
   async unlink(uri: NuclideUri): Promise<void> {
     try {
-      checkArchivePathsToFallbackToRpc(uri, 'unlink');
       await this._client.deletePath(nuclideUri.getPath(uri));
     } catch (error) {
-      if (error instanceof FallbackToRpcError) {
-        throw error;
-      }
       if (error.code !== filesystem_types.ErrorCode.ENOENT) {
         throw error;
       }
@@ -196,7 +177,6 @@ export class ThriftRfsClientAdapter {
    */
   async rmdir(uri: NuclideUri): Promise<void> {
     try {
-      rejectArchivePaths(uri, 'rmdir');
       await this._client.deletePath(nuclideUri.getPath(uri), {
         recursive: true,
       });
@@ -217,8 +197,6 @@ export class ThriftRfsClientAdapter {
     destinationUri: NuclideUri,
   ): Promise<void> {
     try {
-      rejectArchivePaths(sourceUri, 'rename');
-      rejectArchivePaths(destinationUri, 'rename');
       return this._client.rename(
         nuclideUri.getPath(sourceUri),
         nuclideUri.getPath(destinationUri),
@@ -251,12 +229,6 @@ export class ThriftRfsClientAdapter {
    */
   async readdir(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
     try {
-      // try to read archive dir, should fallback to use RPC method
-      if (nuclideUri.hasKnownArchiveExtension(uri)) {
-        throw new FallbackToRpcError(
-          `Unable to perform: readdir on archive file: ${uri}, fallback to use RPC method`,
-        );
-      }
       const entries = await this._client.readDirectory(nuclideUri.getPath(uri));
       return convertToFsDirectoryEntries(entries);
     } catch (err) {
@@ -282,8 +254,6 @@ export class ThriftRfsClientAdapter {
     destinationUri: NuclideUri,
   ): Promise<boolean> {
     try {
-      rejectArchivePaths(sourceUri, 'copy');
-      rejectArchivePaths(destinationUri, 'copy');
       await this._client.copy(
         nuclideUri.getPath(sourceUri),
         nuclideUri.getPath(destinationUri),
@@ -310,8 +280,6 @@ export class ThriftRfsClientAdapter {
     destinationUri: NuclideUri,
   ): Promise<boolean> {
     try {
-      rejectArchivePaths(sourceUri, 'copyDir');
-      rejectArchivePaths(destinationUri, 'copyDir');
       const oldContents = (await Promise.all([
         this.mkdir(destinationUri),
         this.readdir(sourceUri),

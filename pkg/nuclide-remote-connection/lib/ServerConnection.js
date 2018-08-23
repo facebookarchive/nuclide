@@ -56,7 +56,6 @@ import {
   getOrCreateRfsClientAdapter,
   SUPPORTED_THRIFT_RFS_FUNCTIONS,
 } from './thrift-service-adapters/createRfsClientAdapter';
-import {FallbackToRpcError} from './thrift-service-adapters/util';
 
 import electron from 'electron';
 
@@ -582,32 +581,19 @@ export class ServerConnection {
     fname: string,
     args: Array<any>,
   ): Promise<any> {
-    try {
-      return await trackTimingSampled(
-        `file-system-service:${fname}`,
-        async () => {
-          const serviceAdapter = await getOrCreateRfsClientAdapter(
-            this.getBigDigClient(),
-          );
-          // $FlowFixMe: suppress 'indexer property is missing warning'
-          const method = serviceAdapter[fname];
-          return method.apply(serviceAdapter, args);
-        },
-        FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
-        {serviceProvider: 'thrift'},
-      );
-    } catch (err) {
-      if (err instanceof FallbackToRpcError) {
-        logger.error(
-          `Thrift RFS method ${fname} exception, use RPC fallback`,
-          err,
+    return trackTimingSampled(
+      `file-system-service:${fname}`,
+      async () => {
+        const serviceAdapter = await getOrCreateRfsClientAdapter(
+          this.getBigDigClient(),
         );
-        const func = rpcService[fname];
-        return func.apply(rpcService, args);
-      }
-      // Otherwise throw legit file system errors
-      throw err;
-    }
+        // $FlowFixMe: suppress 'indexer property is missing warning'
+        const method = serviceAdapter[fname];
+        return method.apply(serviceAdapter, args);
+      },
+      FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
+      {serviceProvider: 'thrift'},
+    );
   }
 
   _getInfoService(): InfoService {

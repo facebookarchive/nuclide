@@ -9,34 +9,10 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DirectoryEntry} from '../../../nuclide-fs';
 
 import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
-
-export class FallbackToRpcError extends Error {}
-export class AccessArchiveError extends Error {}
-
-export function rejectArchivePaths(uri: NuclideUri, operation: string) {
-  if (nuclideUri.isInArchive(uri)) {
-    throw new AccessArchiveError(
-      `The '${operation}' operation does not support archive paths like '${uri}'`,
-    );
-  }
-}
-
-export function checkArchivePathsToFallbackToRpc(
-  uri: NuclideUri,
-  operation: string,
-) {
-  if (nuclideUri.isInArchive(uri)) {
-    throw new FallbackToRpcError(
-      `Unable to perform: ${operation} on archive file: ${uri}, fallback to use RPC method`,
-    );
-  }
-}
 
 export function convertToFsFileStat(stat: filesystem_types.FileStat): fs.Stats {
   const fileStat = new fs.Stats();
