@@ -12,6 +12,7 @@
 
 import type {ProcessMessage} from 'nuclide-commons/process';
 import type {ThriftServerConfig} from 'big-dig/src/services/thrift/types';
+
 import escapeRegExp from 'escape-string-regexp';
 import {getLogger} from 'log4js';
 import {track} from 'nuclide-commons/analytics';
@@ -21,6 +22,7 @@ import {observeProcess, psTree, killPid} from 'nuclide-commons/process';
 import net from 'net';
 import {genConfigId} from './config-utils';
 import which from 'nuclide-commons/which';
+import path from 'path';
 
 const logger = getLogger('thrift-service-server');
 const cache: Map<string, Observable<number>> = new Map();
@@ -39,7 +41,7 @@ export function startThriftServer(
           }
           return mayKillOldServerProcess(originalConfig)
             .switchMap(_ =>
-              Observable.defer(() => mayAdjustRemotePort(originalConfig)),
+              Observable.defer(() => replacePlaceholders(originalConfig)),
             )
             .switchMap(config =>
               Observable.merge(
@@ -67,7 +69,30 @@ export function startThriftServer(
   }).publish();
 }
 
-async function mayAdjustRemotePort(
+async function replacePlaceholders(
+  config: ThriftServerConfig,
+): Promise<ThriftServerConfig> {
+  return replaceRemoteCommandPlaceholder(
+    await replaceRemotePortPlaceholder(config),
+  );
+}
+
+async function replaceRemoteCommandPlaceholder(
+  config: ThriftServerConfig,
+): Promise<ThriftServerConfig> {
+  if (config.remoteCommand.includes('{BIG_DIG_SERVICES_PATH}')) {
+    return {
+      ...config,
+      remoteCommand: config.remoteCommand.replace(
+        '{BIG_DIG_SERVICES_PATH}',
+        path.join(__dirname, '../../../'),
+      ),
+    };
+  }
+  return config;
+}
+
+async function replaceRemotePortPlaceholder(
   config: ThriftServerConfig,
 ): Promise<ThriftServerConfig> {
   if (config.remotePort === 0) {
