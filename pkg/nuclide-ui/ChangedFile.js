@@ -289,7 +289,8 @@ export default class ChangedFile extends React.Component<Props> {
       onForgetFile != null && fileStatus === FileChangeStatus.MISSING;
     const enableResolve =
       onMarkFileResolved != null &&
-      fileStatus === FileChangeStatus.CHANGE_DELETE;
+      (fileStatus === FileChangeStatus.CHANGE_DELETE ||
+        fileStatus === FileChangeStatus.BOTH_CHANGED);
 
     const eligibleActions = [];
     if (enableDiffView) {
