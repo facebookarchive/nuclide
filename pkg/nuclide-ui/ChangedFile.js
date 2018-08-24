@@ -361,7 +361,7 @@ export default class ChangedFile extends React.Component<Props> {
           />
           <PathWithFileIcon
             path={displayPath}
-            title={`${statusName}:${LF}${relativePath}${LF}(Click to open in Nuclide)`}
+            title={`${statusName}:${LF}${relativePath}${LF}(Click to open)`}
           />
         </span>
         {actions}
