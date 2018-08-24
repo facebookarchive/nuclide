@@ -85,19 +85,28 @@ export default class BreakpointCollection {
   }
 
   getAllEnabledBreakpointsForSource(path: string): Array<SourceBreakpoint> {
-    return Array.from(this._breakpoints.values())
-      .filter(
-        x =>
-          x.path === path && x.line != null && x.func == null && x.isEnabled(),
-      )
-      .map(_ => ({
-        index: _.index,
-        id: _.id,
-        verified: _.verified,
-        enabled: true,
-        path: nullthrows(_.path),
-        line: nullthrows(_.line),
-      }));
+    try {
+      return Array.from(this._breakpoints.values())
+        .filter(
+          x =>
+            x.path === path &&
+            x.line != null &&
+            x.func == null &&
+            x.isEnabled(),
+        )
+        .map(_ => ({
+          index: _.index,
+          id: _.id,
+          verified: _.verified,
+          enabled: true,
+          path: nullthrows(_.path),
+          line: nullthrows(_.line),
+        }));
+    } catch (_) {
+      throw new Error(
+        'Path or line missing in getAllEnabledBreakpointsForSource',
+      );
+    }
   }
 
   getAllEnabledBreakpointsByPath(): Map<string, Array<SourceBreakpoint>> {
@@ -113,17 +122,21 @@ export default class BreakpointCollection {
   }
 
   getAllEnabledFunctionBreakpoints(): Array<FunctionBreakpoint> {
-    return Array.from(this._breakpoints.values())
-      .filter(x => x.func != null && x.isEnabled())
-      .map(x => ({
-        index: x.index,
-        id: x.id,
-        verified: x.verified,
-        enabled: true,
-        path: x.path,
-        line: x.line,
-        func: nullthrows(x.func),
-      }));
+    try {
+      return Array.from(this._breakpoints.values())
+        .filter(x => x.func != null && x.isEnabled())
+        .map(x => ({
+          index: x.index,
+          id: x.id,
+          verified: x.verified,
+          enabled: true,
+          path: x.path,
+          line: x.line,
+          func: nullthrows(x.func),
+        }));
+    } catch (_) {
+      throw new Error('Missing function in function breakpoint');
+    }
   }
 
   getBreakpointByIndex(index: number): Breakpoint {
@@ -153,13 +166,17 @@ export default class BreakpointCollection {
   }
 
   getAllBreakpointPaths(): string[] {
-    return Array.from(
-      new Set(
-        Array.from(this._breakpoints.values())
-          .filter(bp => bp.path != null)
-          .map(bp => nullthrows(bp.path)),
-      ),
-    );
+    try {
+      return Array.from(
+        new Set(
+          Array.from(this._breakpoints.values())
+            .filter(bp => bp.path != null)
+            .map(bp => nullthrows(bp.path)),
+        ),
+      );
+    } catch (_) {
+      throw new Error('Missing breakpoint path in getAllBreakpointPaths');
+    }
   }
 
   deleteBreakpoint(index: number): void {

@@ -15,7 +15,6 @@ import type {ConsoleIO} from './ConsoleIO';
 
 import {DebuggerInterface} from './DebuggerInterface';
 import {Observable} from 'rxjs';
-import nullthrows from 'nullthrows';
 
 type InterruptEvent = {
   type: 'interrupt',
@@ -85,7 +84,9 @@ export default class EnterCode implements Command {
   }
 
   _closeNestedInput() {
-    nullthrows(this._subscription).unsubscribe();
+    if (this._subscription != null) {
+      this._subscription.unsubscribe();
+    }
     this._subscription = null;
     this._console.setPrompt();
     this._console.startInput();

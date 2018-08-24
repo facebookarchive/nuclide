@@ -37,7 +37,6 @@ import FrameCommand from './FrameCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
 import OutCommand from './OutCommand';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
@@ -148,19 +147,22 @@ export default class Debugger implements DebuggerInterface {
 
       const session = this._ensureDebugSession(true);
 
+      const _adapter = this._adapter;
+      if (_adapter == null) {
+        throw new Error('Adapter is not set up in relaunch()');
+      }
+
       if (this._attachMode) {
-        const attachArgs = nullthrows(
-          this._adapter,
-        ).adapter.transformAttachArguments(adapter.attachArgs);
+        const attachArgs = _adapter.adapter.transformAttachArguments(
+          adapter.attachArgs,
+        );
         await session.attach(attachArgs);
         this._attached = true;
         return this._pauseAfterAttach();
       }
 
       await session.launch(
-        nullthrows(this._adapter).adapter.transformLaunchArguments(
-          adapter.launchArgs,
-        ),
+        _adapter.adapter.transformLaunchArguments(adapter.launchArgs),
       );
     } catch (err) {
       process.stderr.write(`Failed to debug target: ${err.message}\r\n`);
@@ -214,7 +216,10 @@ export default class Debugger implements DebuggerInterface {
   async _pauseAfterAttach(): Promise<void> {
     if (this._configured && this._attached) {
       const session = this._ensureDebugSession(true);
-      let threadId: ?number = nullthrows(this._adapter).adapter.asyncStopThread;
+      if (this._adapter == null) {
+        throw new Error('Adapter not set up in _pauseAfterAttach');
+      }
+      let threadId: ?number = this._adapter.adapter.asyncStopThread;
       if (threadId == null) {
         const threads = this._threads.allThreads;
         if (threads.length !== 0) {
@@ -252,7 +257,10 @@ export default class Debugger implements DebuggerInterface {
   }
 
   breakInto(): void {
-    const adapter = nullthrows(this._adapter).adapter;
+    if (this._adapter == null) {
+      throw new Error('No adapter set up in breakInto()');
+    }
+    const adapter = this._adapter.adapter;
     // if there is a focus thread from before, stop that one, else pick
     // a thread or use the adapter-specified default
     let threadId: ?number = null;
@@ -278,7 +286,10 @@ export default class Debugger implements DebuggerInterface {
 
   getActiveThread(): Thread {
     this._ensureDebugSession();
-    return nullthrows(this._threads.focusThread);
+    if (this._threads.focusThread == null) {
+      throw new Error('There is no active thread.');
+    }
+    return this._threads.focusThread;
   }
 
   async getStackTrace(
@@ -480,7 +491,7 @@ export default class Debugger implements DebuggerInterface {
     if (once && !this._breakpoints.supportsOnceState()) {
       throw new Error(
         `The ${
-          nullthrows(this._adapter).type
+          this._adapter == null ? 'current' : this._adapter.type
         } debugger does not support one-shot breakpoints.`,
       );
     }
@@ -538,7 +549,7 @@ export default class Debugger implements DebuggerInterface {
     if (!this._capabilities.supportsFunctionBreakpoints) {
       throw new Error(
         `The ${
-          nullthrows(this._adapter).type
+          this._adapter == null ? 'current' : this._adapter.type
         } debugger does not support function breakpoints.`,
       );
     }
@@ -546,7 +557,7 @@ export default class Debugger implements DebuggerInterface {
     if (once && !this._breakpoints.supportsOnceState()) {
       throw new Error(
         `The ${
-          nullthrows(this._adapter).type
+          this._adapter == null ? 'current' : this._adapter.type
         } debugger does not support one-shot breakpoints.`,
       );
     }
@@ -1017,9 +1028,11 @@ export default class Debugger implements DebuggerInterface {
       this._threads.allThreads.map(_ => _.clearSelectedStackFrame());
     } else if (threadId != null) {
       this._threads.markThreadStopped(threadId);
-      nullthrows(
-        this._threads.getThreadById(threadId),
-      ).clearSelectedStackFrame();
+      const thread = this._threads.getThreadById(threadId);
+      if (thread == null) {
+        throw new Error("Couldn't get data for stopped thread.");
+      }
+      thread.clearSelectedStackFrame();
     } else {
       // the call didn't actually contain information about anything stopping.
       this._console.outputLine('stop event with no thread information.');
@@ -1036,9 +1049,13 @@ export default class Debugger implements DebuggerInterface {
       }
 
       try {
-        const topOfStack = await this._getTopOfStackSourceInfo(
-          nullthrows(this._threads.focusThreadId),
-        );
+        const focusThread = this._threads.focusThreadId;
+        if (focusThread == null) {
+          throw new Error(
+            'No focused thread trying to get stack at stop time.',
+          );
+        }
+        const topOfStack = await this._getTopOfStackSourceInfo(focusThread);
 
         if (topOfStack != null) {
           this._console.outputLine(

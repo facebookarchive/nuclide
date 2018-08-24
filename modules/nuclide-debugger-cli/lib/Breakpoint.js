@@ -149,6 +149,10 @@ export default class Breakpoint {
       return `${func}() [${this._path}:${this._line}]`;
     }
 
-    return `${nullthrows(this._path)}:${nullthrows(this._line)}`;
+    try {
+      return `${nullthrows(this._path)}:${nullthrows(this._line)}`;
+    } catch (_) {
+      throw new Error('Missing path or line in breakpoint description');
+    }
   }
 }
