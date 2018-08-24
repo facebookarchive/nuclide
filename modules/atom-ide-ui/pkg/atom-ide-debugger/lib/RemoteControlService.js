@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {IDebugService, RemoteDebuggerService, IProcess} from './types';
+import type {IDebugService, RemoteDebuggerService} from './types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
 
 export default class RemoteControlService implements RemoteDebuggerService {
@@ -24,17 +24,23 @@ export default class RemoteControlService implements RemoteDebuggerService {
     return this._service.startDebugging(config);
   }
 
-  onDidStartDebugSession(
-    callback: (config: IProcessConfig) => mixed,
-  ): IDisposable {
-    return this._service.onDidStartDebugSession(callback);
-  }
-
-  onDidChangeProcesses(
-    callback: (processes: Array<IProcess>) => void,
+  onDidChangeDebuggerSessions(
+    callback: (sessionConfigs: IProcessConfig[]) => mixed,
   ): IDisposable {
     return this._service.getModel().onDidChangeProcesses(() => {
-      callback(this._service.getModel().getProcesses());
+      callback(
+        this._service
+          .getModel()
+          .getProcesses()
+          .map(p => p.configuration),
+      );
     });
+  }
+
+  getDebugSessions(): IProcessConfig[] {
+    return this._service
+      .getModel()
+      .getProcesses()
+      .map(p => p.configuration);
   }
 }

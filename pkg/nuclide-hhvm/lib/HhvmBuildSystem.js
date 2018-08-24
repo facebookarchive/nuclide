@@ -13,12 +13,14 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 
 import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
@@ -96,15 +98,51 @@ export default class HhvmBuildSystem {
       .map(store => store.isHHVMProject() === true)
       .distinctUntilChanged();
 
-    const tasksObservable = Observable.of([
+    const getTask = (disabled: boolean) => [
       {
         type: 'debug',
         label: 'Debug',
-        description: 'Debug an HHVM project',
+        description: disabled
+          ? 'The HHVM debugger is already attached to this server'
+          : this._projectStore.getDebugMode() === 'webserver'
+            ? 'Attach HHVM debugger to webserver'
+            : 'Debug Hack/PHP Script',
         icon: 'nuclicon-debugger',
         cancelable: false,
+        disabled,
       },
-    ]);
+    ];
+
+    const tasksObservable = Observable.concat(
+      Observable.of(null),
+      Observable.fromPromise(getDebuggerService()),
+    ).switchMap(debugService => {
+      if (debugService == null) {
+        return Observable.of(getTask(false));
+      }
+      return Observable.concat(
+        Observable.of(getTask(false)),
+        Observable.merge(
+          observableFromSubscribeFunction(
+            debugService.onDidChangeDebuggerSessions.bind(debugService),
+          ),
+          observableFromSubscribeFunction(
+            this._projectStore.onChange.bind(this._projectStore),
+          ),
+        ).switchMap(() => {
+          const disabled =
+            this._projectStore.getDebugMode() === 'webserver' &&
+            debugService
+              .getDebugSessions()
+              .some(
+                c =>
+                  c.adapterType === VsAdapterTypes.HHVM &&
+                  c.targetUri === projectRoot,
+              );
+          return Observable.of(getTask(disabled));
+        }),
+      );
+    });
 
     const subscription = Observable.combineLatest(
       enabledObservable,

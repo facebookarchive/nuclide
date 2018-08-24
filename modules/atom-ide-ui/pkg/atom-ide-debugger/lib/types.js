@@ -46,13 +46,11 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import type {IProcessConfig} from 'nuclide-debugger-common';
 
 export interface RemoteDebuggerService {
-  onDidStartDebugSession(
-    callback: (config: IProcessConfig) => mixed,
+  onDidChangeDebuggerSessions(
+    callback: (sessionConfigs: IProcessConfig[]) => mixed,
   ): IDisposable;
   startVspDebugging(config: IProcessConfig): Promise<void>;
-  onDidChangeProcesses(
-    callback: (processes: Array<IProcess>) => void,
-  ): IDisposable;
+  getDebugSessions(): IProcessConfig[];
 }
 
 export interface ITreeElement {
