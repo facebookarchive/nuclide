@@ -10,7 +10,7 @@
  * @format
  */
 
-/* global HTMLElement */
+/* eslint-env browser */
 
 import invariant from 'assert';
 import * as React from 'react';
@@ -26,14 +26,14 @@ class ReactMountRootElement extends HTMLElement {
     this._reactElement = reactElement;
   }
 
-  attachedCallback(): mixed {
+  connectedCallback(): mixed {
     if (this._reactElement == null) {
       return;
     }
     ReactDOM.render(this._reactElement, this);
   }
 
-  detachedCallback(): mixed {
+  disconnectedCallback(): mixed {
     if (this._reactElement == null) {
       return;
     }
@@ -43,13 +43,12 @@ class ReactMountRootElement extends HTMLElement {
 
 let reactMountRootElement;
 try {
-  reactMountRootElement = document.registerElement('nuclide-react-mount-root', {
-    prototype: ReactMountRootElement.prototype,
-  });
+  customElements.define('nuclide-react-mount-root', ReactMountRootElement);
+  reactMountRootElement = ReactMountRootElement;
 } catch (e) {
   // Element was already registered. Retrieve its constructor:
   const oldElem = document.createElement('nuclide-react-mount-root');
-  invariant(oldElem.constructor.name === 'nuclide-react-mount-root');
+  invariant(oldElem.constructor.name === 'ReactMountRootElement');
   reactMountRootElement = (oldElem.constructor: any);
 }
 

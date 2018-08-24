@@ -20,6 +20,6 @@ describe('ReactMountRootElement', () => {
     expect(element1).toBe(element2);
     // Make sure this doesn't throw.
     const createdElement = new element2();
-    expect(createdElement.constructor.name).toBe('nuclide-react-mount-root');
+    expect(createdElement.constructor.name).toBe('ReactMountRootElement');
   });
 });
