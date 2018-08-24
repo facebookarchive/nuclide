@@ -124,6 +124,9 @@ export default class DiagnosticsView extends React.Component<Props> {
           flexDirection: 'column',
           width: '100%',
         }}>
+        {showNuxContent ? (
+          <DiagnosticsTableNux onDismiss={this.props.onDismissNux} />
+        ) : null}
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup className="inline-block">
@@ -175,9 +178,6 @@ export default class DiagnosticsView extends React.Component<Props> {
             />
           </ToolbarRight>
         </Toolbar>
-        {showNuxContent ? (
-          <DiagnosticsTableNux onDismiss={this.props.onDismissNux} />
-        ) : null}
         <div
           className="atom-ide-filterable"
           ref={el => (this._diagnosticsTableWrapperEl = el)}
