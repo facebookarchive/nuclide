@@ -13,7 +13,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observeProcess} from 'nuclide-commons/process';
+import {splitStream} from 'nuclide-commons/observable';
+import {observeProcess, observeProcessRaw} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 
@@ -102,6 +103,33 @@ read only = no`;
             ),
         ),
       );
+    })
+    .publish();
+}
+
+export function syncFolder(
+  from: string,
+  to: string,
+): ConnectableObservable<number> {
+  return splitStream(
+    observeProcessRaw('rsync', [
+      '-rtvuc',
+      '--delete',
+      '--progress',
+      '--info=progress2',
+      from,
+      to,
+    ])
+      .concatMap(
+        msg =>
+          msg.kind === 'stdout' ? Observable.of(msg.data) : Observable.empty(),
+      )
+      .map(data => data.replace(/\r/g, '\n')),
+  )
+    .concatMap(line => {
+      const PROGRESS_PATTERN = /(\d+)%/g;
+      const match = PROGRESS_PATTERN.exec(line);
+      return match ? Observable.of(parseInt(match[1], 10)) : Observable.empty();
     })
     .publish();
 }
