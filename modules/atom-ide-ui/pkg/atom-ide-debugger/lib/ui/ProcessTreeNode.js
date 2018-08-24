@@ -25,6 +25,7 @@ import {
   LoadingSpinnerSizes,
   LoadingSpinner,
 } from 'nuclide-commons-ui/LoadingSpinner';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {
   process: IProcess,
@@ -209,6 +210,16 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
     );
 
     const filteredThreads = threads.filter(t => this.filterThread(t));
+    const focusedThread = service.viewModel.focusedThread;
+    const selectedThreadFiltered =
+      threads.some(t => t === focusedThread) &&
+      !filteredThreads.some(t => t === focusedThread);
+    const focusedThreadHiddenWarning = (
+      <span className="debugger-thread-no-match-text">
+        <Icon icon="nuclicon-warning" />
+        The focused thread is hidden by your thread filter!
+      </span>
+    );
     return threads.length === 0 ? (
       <TreeItem>{formattedTitle}</TreeItem>
     ) : (
@@ -217,18 +228,24 @@ export default class ProcessTreeNode extends React.Component<Props, State> {
         collapsed={isCollapsed}
         onSelect={this.handleSelect}>
         {filteredThreads.length === 0 && threads.length > 0 ? (
-          <span className="debugger-thread-no-match-text">
-            No threads match the current filter.
-          </span>
+          selectedThreadFiltered ? (
+            focusedThreadHiddenWarning
+          ) : (
+            <span className="debugger-thread-no-match-text">
+              No threads match the current filter.
+            </span>
+          )
         ) : (
-          filteredThreads.map((thread, threadIndex) => (
-            <ThreadTreeNode
-              key={threadIndex}
-              thread={thread}
-              service={service}
-              threadTitle={this._threadTitle(thread)}
-            />
-          ))
+          filteredThreads
+            .map((thread, threadIndex) => (
+              <ThreadTreeNode
+                key={threadIndex}
+                thread={thread}
+                service={service}
+                threadTitle={this._threadTitle(thread)}
+              />
+            ))
+            .concat(selectedThreadFiltered ? focusedThreadHiddenWarning : null)
         )}
       </NestedTreeItem>
     );
