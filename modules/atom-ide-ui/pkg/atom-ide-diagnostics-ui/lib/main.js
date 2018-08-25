@@ -69,6 +69,7 @@ type OpenBlockDecorationState = {|
 |};
 
 const NUX_ASYNC_STORAGE_KEY = 'nuclide_diagnostics_nux_shown';
+const NUCLIDE_DIAGNOSTICS_STALE_GK = 'nuclide_diagnostics_stale';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -149,6 +150,7 @@ class Activation {
         const subscription = getEditorDiagnosticUpdates(
           editor,
           diagnosticUpdater,
+          this._getIsStaleMessageEnabledSteam(),
         )
           .finally(() => {
             this._subscriptions.remove(subscription);
@@ -303,6 +305,17 @@ class Activation {
     });
   };
 
+  _getIsStaleMessageEnabledSteam(): Observable<boolean> {
+    return this._gatekeeperServices
+      .switchMap(gkService => {
+        if (gkService != null) {
+          return gkService.passesGK(NUCLIDE_DIAGNOSTICS_STALE_GK);
+        }
+        return Observable.of(false);
+      })
+      .distinctUntilChanged();
+  }
+
   /**
    * An observable of the state that's shared between all panel copies. State that's unique to a
    * single copy of the diagnostics panel is managed in DiagnosticsViewModel. Generally, users will
@@ -326,7 +339,15 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
-        .map(diagnostics => diagnostics.filter(d => d.type !== 'Hint'))
+        .withLatestFrom(this._getIsStaleMessageEnabledSteam())
+        .map(([diagnostics, isStaleMessageEnabled]) =>
+          diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
+            if (!isStaleMessageEnabled) {
+              diagnostic.stale = false;
+            }
+            return diagnostic;
+          }),
+        )
         .let(fastDebounce(100))
         .startWith([]);
 
@@ -515,7 +536,11 @@ class Activation {
 
         const subscription = Observable.combineLatest(
           updateOpenedMessageIds,
-          getEditorDiagnosticUpdates(editor, diagnosticUpdater),
+          getEditorDiagnosticUpdates(
+            editor,
+            diagnosticUpdater,
+            this._getIsStaleMessageEnabledSteam(),
+          ),
         )
           .finally(() => {
             subscriptions.remove(subscription);
@@ -648,6 +673,7 @@ function getActiveEditorPaths(): Observable<?NuclideUri> {
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
+  isStaleMessageEnabledSteam: Observable<boolean>,
 ): Observable<DiagnosticMessages> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
@@ -659,12 +685,18 @@ function getEditorDiagnosticUpdates(
             )
           : Observable.empty(),
     )
-    .map(diagnosticMessages => {
+    .withLatestFrom(isStaleMessageEnabledSteam)
+    .map(([diagnosticMessages, isStaleMessageEnabled]) => {
       return {
         ...diagnosticMessages,
-        messages: diagnosticMessages.messages.filter(
-          diagnostic => diagnostic.type !== 'Hint',
-        ),
+        messages: diagnosticMessages.messages
+          .filter(diagnostic => diagnostic.type !== 'Hint')
+          .map(message => {
+            if (!isStaleMessageEnabled) {
+              message.stale = false;
+            }
+            return message;
+          }),
       };
     })
     .takeUntil(
