@@ -103,6 +103,20 @@ export function findSubArrayIndex<T>(
 }
 
 /**
+ * Separates an array into two subarrays -- the first contains all elements that
+ * match the predicate and the latter contains all the rest that fail.
+ */
+export function arrayPartition<T>(
+  array: $ReadOnlyArray<T>,
+  predicate: (elem: T) => boolean,
+): [Array<T>, Array<T>] {
+  const pass = [];
+  const fail = [];
+  array.forEach(elem => (predicate(elem) ? pass.push(elem) : fail.push(elem)));
+  return [pass, fail];
+}
+
+/**
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */

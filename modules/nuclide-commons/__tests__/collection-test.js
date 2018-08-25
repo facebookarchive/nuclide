@@ -16,6 +16,7 @@ import {
   arrayEqual,
   arrayCompact,
   arrayFindLastIndex,
+  arrayPartition,
   mapUnion,
   insideOut,
   isEmpty,
@@ -150,6 +151,21 @@ describe('arrayFindLastIndex', () => {
 
   it('returns -1 if no match is found', () => {
     expect(arrayFindLastIndex([1, 1, 2], x => x === 0)).toBe(-1);
+  });
+});
+
+describe('arrayPartition', () => {
+  it('partitions an array into two', () => {
+    expect(arrayPartition([1, 2, 3], x => x === 1)).toEqual([[1], [2, 3]]);
+  });
+  it('can partition an empty passing array', () => {
+    expect(arrayPartition([2, 3, 4], x => x === 1)).toEqual([[], [2, 3, 4]]);
+  });
+  it('can partition an empty failing array', () => {
+    expect(arrayPartition([1, 1, 1], x => x === 1)).toEqual([[1, 1, 1], []]);
+  });
+  it('handles empty arrays', () => {
+    expect(arrayPartition([], x => x === 1)).toEqual([[], []]);
   });
 });
 
