@@ -16,13 +16,13 @@ import {createThriftServer} from '../createThriftServer';
 import thrift from 'thrift';
 import * as portHelper from '../../../common/ports';
 
-const RemoteFileSystemServiceHandler = jest.fn(function(root, watchman) {
+const ThriftFileSystemServiceHandler = jest.fn(function(root, watchman) {
   this._watcher = watchman;
 });
 const mockPort = 9090;
 
 jest.mock(require.resolve('../../fs/ThriftFileSystemServiceHandler'), () => ({
-  RemoteFileSystemServiceHandler,
+  ThriftFileSystemServiceHandler,
 }));
 
 jest

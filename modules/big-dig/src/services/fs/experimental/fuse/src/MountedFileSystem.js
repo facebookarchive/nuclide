@@ -17,7 +17,7 @@
 import fuse from 'fuse-bindings';
 import thrift from 'thrift';
 import LRU from 'lru-cache';
-import RemoteFileSystemService from '../../../gen-nodejs/RemoteFileSystemService';
+import ThriftFileSystemService from '../../../gen-nodejs/ThriftFileSystemService';
 
 export class MountedFileSystem {
   _root: string;
@@ -209,7 +209,7 @@ export class MountedFileSystem {
       transport: thrift.TBufferedTransport(),
       protocol: thrift.TBinaryProtocol(),
     });
-    const client = thrift.createClient(RemoteFileSystemService, connection);
+    const client = thrift.createClient(ThriftFileSystemService, connection);
     return Promise.resolve(
       new MountedFileSystem(root, mountPath, client, connection),
     );

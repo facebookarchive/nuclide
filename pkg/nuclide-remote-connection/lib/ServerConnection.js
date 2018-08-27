@@ -60,6 +60,7 @@ import {
 import electron from 'electron';
 
 const logger = getLogger('nuclide-remote-connection');
+const thriftRfsLogger = getLogger('thrift-rfs-server-connection');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 const THRIFT_RFS_GK = 'nuclide_thrift_rfs';
@@ -571,7 +572,6 @@ export class ServerConnection {
             return this._makeThriftRfsCall(propKey, args);
           };
         }
-        logger.error('Using legacy rfs for method: ', propKey);
         return target[propKey];
       },
     };
@@ -585,12 +585,20 @@ export class ServerConnection {
     return trackTimingSampled(
       `file-system-service:${fsOperation}`,
       async () => {
-        const thriftRfsClient = await getOrCreateRfsClientAdapter(
-          this.getBigDigClient(),
-        );
-        // $FlowFixMe: suppress 'indexer property is missing warning'
-        const method = thriftRfsClient[fsOperation];
-        return method.apply(thriftRfsClient, args);
+        try {
+          const thriftRfsClient = await getOrCreateRfsClientAdapter(
+            this.getBigDigClient(),
+          );
+          // $FlowFixMe: suppress 'indexer property is missing warning'
+          const method = thriftRfsClient[fsOperation];
+          return await method.apply(thriftRfsClient, args);
+        } catch (e) {
+          thriftRfsLogger.error(
+            `failed to run method ${fsOperation} from Thrift client`,
+            e,
+          );
+          throw e;
+        }
       },
       FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
       {serviceProvider: 'thrift'},
