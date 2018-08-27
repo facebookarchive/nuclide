@@ -552,14 +552,11 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     );
   }
 
-  async sendLspNotification(
-    filePath: NuclideUri,
-    method: string,
-    params: mixed,
-  ): Promise<void> {
-    return (await this._getLanguageServiceForFile(
-      filePath,
-    )).sendLspNotification(filePath, method, params);
+  async sendLspNotification(method: string, params: mixed): Promise<void> {
+    const languageServices = await this.getAllLanguageServices();
+    languageServices.forEach(service =>
+      service.sendLspNotification(method, params),
+    );
   }
 
   observeLspNotifications(

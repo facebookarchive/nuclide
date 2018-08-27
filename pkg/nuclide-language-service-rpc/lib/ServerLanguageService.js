@@ -465,11 +465,7 @@ export class ServerLanguageService<
     params: mixed,
   ): Promise<mixed> {}
 
-  async sendLspNotification(
-    filePath: NuclideUri,
-    method: string,
-    params: mixed,
-  ): Promise<void> {}
+  async sendLspNotification(method: string, params: mixed): Promise<void> {}
 
   observeLspNotifications(
     notificationMethod: string,

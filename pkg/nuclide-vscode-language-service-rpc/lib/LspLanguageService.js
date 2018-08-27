@@ -2868,10 +2868,14 @@ export class LspLanguageService {
   }
 
   async sendLspNotification(
-    filePath: NuclideUri,
     notificationMethod: string,
     params: mixed,
   ): Promise<void> {
+    // Wait until state is running before sending notification.
+    const waitUntilRunning = this._state
+      .takeWhile(s => s !== 'Running')
+      .ignoreElements();
+    await waitUntilRunning.toPromise();
     this._lspConnection._jsonRpcConnection.sendNotification(
       notificationMethod,
       params,

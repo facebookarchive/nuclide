@@ -346,11 +346,7 @@ export interface FlowLanguageServiceType {
     params: mixed,
   ): Promise<mixed>;
 
-  sendLspNotification(
-    filePath: NuclideUri,
-    method: string,
-    params: mixed,
-  ): Promise<void>;
+  sendLspNotification(method: string, params: mixed): Promise<void>;
 
   observeLspNotifications(
     notificationMethod: string,
