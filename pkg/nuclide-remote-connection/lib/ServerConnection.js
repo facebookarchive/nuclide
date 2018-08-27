@@ -530,20 +530,22 @@ export class ServerConnection {
     return this.getConnections().length === 1;
   }
 
-  getService(serviceName: string): any {
+  getService(serviceName: string): Object {
+    const rpcService = this.getClient().getService(serviceName);
     if (serviceName === 'FileSystemService') {
       if (isGkEnabled(THRIFT_RFS_GK)) {
-        return this._getFileSystemProxy(serviceName);
+        return this._getThriftRfsServiceProxy(rpcService);
       }
-      return this._genRpcRfsProxy(serviceName);
+      return this._getLegacyRfsServiceProxy(rpcService);
     }
-    return this.getClient().getService(serviceName);
+    return rpcService;
   }
 
-  _genRpcRfsProxy(serviceName: string): any {
-    const rpcService = this.getClient().getService(serviceName);
+  _getLegacyRfsServiceProxy(rpcService: any): Object {
     const handler = {
       get: (target, propKey, receiver) => {
+        // time function if it has a corresponding thrift call
+        // so the two can be compared
         if (SUPPORTED_THRIFT_RFS_FUNCTIONS.has(propKey)) {
           return (...args) => {
             return trackTimingSampled(
@@ -561,15 +563,15 @@ export class ServerConnection {
     return new Proxy(rpcService, handler);
   }
 
-  _getFileSystemProxy(serviceName: string): any {
-    const rpcService = this.getClient().getService(serviceName);
+  _getThriftRfsServiceProxy(rpcService: Object): Object {
     const handler = {
-      get: (target, propKey, receiver) => {
+      get: (target: Object, propKey: string, receiver) => {
         if (SUPPORTED_THRIFT_RFS_FUNCTIONS.has(propKey)) {
           return (...args) => {
-            return this._makeThriftRfsCall(rpcService, propKey, args);
+            return this._makeThriftRfsCall(propKey, args);
           };
         }
+        logger.error('Using legacy rfs for method: ', propKey);
         return target[propKey];
       },
     };
@@ -577,19 +579,18 @@ export class ServerConnection {
   }
 
   async _makeThriftRfsCall(
-    rpcService: Object,
-    fname: string,
+    fsOperation: string,
     args: Array<any>,
   ): Promise<any> {
     return trackTimingSampled(
-      `file-system-service:${fname}`,
+      `file-system-service:${fsOperation}`,
       async () => {
-        const serviceAdapter = await getOrCreateRfsClientAdapter(
+        const thriftRfsClient = await getOrCreateRfsClientAdapter(
           this.getBigDigClient(),
         );
         // $FlowFixMe: suppress 'indexer property is missing warning'
-        const method = serviceAdapter[fname];
-        return method.apply(serviceAdapter, args);
+        const method = thriftRfsClient[fsOperation];
+        return method.apply(thriftRfsClient, args);
       },
       FILE_SYSTEM_PERFORMANCE_SAMPLE_RATE,
       {serviceProvider: 'thrift'},
