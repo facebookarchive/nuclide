@@ -32,7 +32,7 @@ type Props = {
   hideEmptyFolders?: boolean,
   // Callback when a file's checkbox is toggled
   onFileChecked?: (filePath: NuclideUri) => mixed,
-  onFileChosen: (filePath: NuclideUri) => mixed,
+  onFileChosen(filePath: NuclideUri): mixed,
   onMarkFileResolved?: (filePath: NuclideUri) => mixed,
   getRevertTargetRevision?: () => ?string,
   onClickAdd(filePath: NuclideUri): mixed,

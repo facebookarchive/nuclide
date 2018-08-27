@@ -101,7 +101,7 @@ type Props = {
   // Callback when a file's checkbox is toggled
   onFileChecked: (filePath: NuclideUri) => void,
 
-  onFileChosen?: ?(filePath: NuclideUri) => void,
+  onFileChosen(filePath: NuclideUri): void,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
   onAddFile?: ?(filePath: NuclideUri) => void,

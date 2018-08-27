@@ -15,7 +15,6 @@ import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {getLogger} from 'log4js';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -51,7 +50,7 @@ type Props = {
   // onFileChecked: What to do when the checkbox is toggled
   onFileChecked?: ?(filePath: NuclideUri) => void,
 
-  onFileChosen?: ?(filePath: NuclideUri) => void,
+  onFileChosen(filePath: NuclideUri): void,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
   onAddFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
@@ -75,7 +74,8 @@ export default class ChangedFile extends React.Component<Props> {
     const node: HTMLElement = (ReactDOM.findDOMNode(this): any);
     this._disposables = new UniversalDisposable(
       atom.commands.add(node, `${COMMAND_PREFIX}:goto-file`, event => {
-        goToLocation(this.props.filePath);
+        const {filePath, onFileChosen} = this.props;
+        onFileChosen(filePath);
       }),
       atom.commands.add(node, `${COMMAND_PREFIX}:copy-full-path`, event => {
         atom.clipboard.write(nuclideUri.getPath(this.props.filePath || ''));
