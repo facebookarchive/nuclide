@@ -42,6 +42,9 @@ def add_header(fpath: Path) -> None:
     with open(fpath, "r") as f:
         content = f.read()
 
+    if content.startswith(header):
+        return
+
     with open(fpath, "w") as f:
         f.write(header + content)
 

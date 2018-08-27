@@ -21,7 +21,7 @@ const RemoteFileSystemServiceHandler = jest.fn(function(root, watchman) {
 });
 const mockPort = 9090;
 
-jest.mock(require.resolve('../../fs/RemoteFileSystemServiceHandler'), () => ({
+jest.mock(require.resolve('../../fs/ThriftFileSystemServiceHandler'), () => ({
   RemoteFileSystemServiceHandler,
 }));
 

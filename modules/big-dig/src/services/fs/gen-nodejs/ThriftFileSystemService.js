@@ -24,7 +24,7 @@ var Q = thrift.Q;
 var ttypes = require('./filesystem_types');
 //HELPER FUNCTIONS AND STRUCTURES
 
-var RemoteFileSystemService_watch_args = function(args) {
+var ThriftFileSystemService_watch_args = function(args) {
   this.uri = null;
   this.options = null;
   if (args) {
@@ -36,8 +36,8 @@ var RemoteFileSystemService_watch_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_watch_args.prototype = {};
-RemoteFileSystemService_watch_args.prototype.read = function(input) {
+ThriftFileSystemService_watch_args.prototype = {};
+ThriftFileSystemService_watch_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -74,8 +74,8 @@ RemoteFileSystemService_watch_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_watch_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_watch_args');
+ThriftFileSystemService_watch_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_watch_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -91,7 +91,7 @@ RemoteFileSystemService_watch_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_watch_result = function(args) {
+var ThriftFileSystemService_watch_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -107,8 +107,8 @@ var RemoteFileSystemService_watch_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_watch_result.prototype = {};
-RemoteFileSystemService_watch_result.prototype.read = function(input) {
+ThriftFileSystemService_watch_result.prototype = {};
+ThriftFileSystemService_watch_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -145,8 +145,8 @@ RemoteFileSystemService_watch_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_watch_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_watch_result');
+ThriftFileSystemService_watch_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_watch_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.STRING, 0);
     output.writeString(this.success);
@@ -162,7 +162,7 @@ RemoteFileSystemService_watch_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_unwatch_args = function(args) {
+var ThriftFileSystemService_unwatch_args = function(args) {
   this.watchId = null;
   if (args) {
     if (args.watchId !== undefined && args.watchId !== null) {
@@ -170,8 +170,8 @@ var RemoteFileSystemService_unwatch_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_unwatch_args.prototype = {};
-RemoteFileSystemService_unwatch_args.prototype.read = function(input) {
+ThriftFileSystemService_unwatch_args.prototype = {};
+ThriftFileSystemService_unwatch_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -203,8 +203,8 @@ RemoteFileSystemService_unwatch_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_unwatch_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_unwatch_args');
+ThriftFileSystemService_unwatch_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_unwatch_args');
   if (this.watchId !== null && this.watchId !== undefined) {
     output.writeFieldBegin('watchId', Thrift.Type.STRING, 1);
     output.writeString(this.watchId);
@@ -215,7 +215,7 @@ RemoteFileSystemService_unwatch_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_unwatch_result = function(args) {
+var ThriftFileSystemService_unwatch_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -227,8 +227,8 @@ var RemoteFileSystemService_unwatch_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_unwatch_result.prototype = {};
-RemoteFileSystemService_unwatch_result.prototype.read = function(input) {
+ThriftFileSystemService_unwatch_result.prototype = {};
+ThriftFileSystemService_unwatch_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -261,8 +261,8 @@ RemoteFileSystemService_unwatch_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_unwatch_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_unwatch_result');
+ThriftFileSystemService_unwatch_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_unwatch_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -273,7 +273,7 @@ RemoteFileSystemService_unwatch_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_pollFileChanges_args = function(args) {
+var ThriftFileSystemService_pollFileChanges_args = function(args) {
   this.watchId = null;
   if (args) {
     if (args.watchId !== undefined && args.watchId !== null) {
@@ -281,8 +281,8 @@ var RemoteFileSystemService_pollFileChanges_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_pollFileChanges_args.prototype = {};
-RemoteFileSystemService_pollFileChanges_args.prototype.read = function(input) {
+ThriftFileSystemService_pollFileChanges_args.prototype = {};
+ThriftFileSystemService_pollFileChanges_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -314,8 +314,8 @@ RemoteFileSystemService_pollFileChanges_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_pollFileChanges_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_pollFileChanges_args');
+ThriftFileSystemService_pollFileChanges_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_pollFileChanges_args');
   if (this.watchId !== null && this.watchId !== undefined) {
     output.writeFieldBegin('watchId', Thrift.Type.STRING, 1);
     output.writeString(this.watchId);
@@ -326,7 +326,7 @@ RemoteFileSystemService_pollFileChanges_args.prototype.write = function(output) 
   return;
 };
 
-var RemoteFileSystemService_pollFileChanges_result = function(args) {
+var ThriftFileSystemService_pollFileChanges_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -342,8 +342,8 @@ var RemoteFileSystemService_pollFileChanges_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_pollFileChanges_result.prototype = {};
-RemoteFileSystemService_pollFileChanges_result.prototype.read = function(input) {
+ThriftFileSystemService_pollFileChanges_result.prototype = {};
+ThriftFileSystemService_pollFileChanges_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -394,8 +394,8 @@ RemoteFileSystemService_pollFileChanges_result.prototype.read = function(input) 
   return;
 };
 
-RemoteFileSystemService_pollFileChanges_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_pollFileChanges_result');
+ThriftFileSystemService_pollFileChanges_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_pollFileChanges_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRUCT, this.success.length);
@@ -420,7 +420,7 @@ RemoteFileSystemService_pollFileChanges_result.prototype.write = function(output
   return;
 };
 
-var RemoteFileSystemService_stat_args = function(args) {
+var ThriftFileSystemService_stat_args = function(args) {
   this.uri = null;
   if (args) {
     if (args.uri !== undefined && args.uri !== null) {
@@ -428,8 +428,8 @@ var RemoteFileSystemService_stat_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_stat_args.prototype = {};
-RemoteFileSystemService_stat_args.prototype.read = function(input) {
+ThriftFileSystemService_stat_args.prototype = {};
+ThriftFileSystemService_stat_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -461,8 +461,8 @@ RemoteFileSystemService_stat_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_stat_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_stat_args');
+ThriftFileSystemService_stat_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_stat_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -473,7 +473,7 @@ RemoteFileSystemService_stat_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_stat_result = function(args) {
+var ThriftFileSystemService_stat_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -489,8 +489,8 @@ var RemoteFileSystemService_stat_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_stat_result.prototype = {};
-RemoteFileSystemService_stat_result.prototype.read = function(input) {
+ThriftFileSystemService_stat_result.prototype = {};
+ThriftFileSystemService_stat_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -528,8 +528,8 @@ RemoteFileSystemService_stat_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_stat_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_stat_result');
+ThriftFileSystemService_stat_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_stat_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
     this.success.write(output);
@@ -545,7 +545,7 @@ RemoteFileSystemService_stat_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_lstat_args = function(args) {
+var ThriftFileSystemService_lstat_args = function(args) {
   this.uri = null;
   if (args) {
     if (args.uri !== undefined && args.uri !== null) {
@@ -553,8 +553,8 @@ var RemoteFileSystemService_lstat_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_lstat_args.prototype = {};
-RemoteFileSystemService_lstat_args.prototype.read = function(input) {
+ThriftFileSystemService_lstat_args.prototype = {};
+ThriftFileSystemService_lstat_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -586,8 +586,8 @@ RemoteFileSystemService_lstat_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_lstat_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_lstat_args');
+ThriftFileSystemService_lstat_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_lstat_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -598,7 +598,7 @@ RemoteFileSystemService_lstat_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_lstat_result = function(args) {
+var ThriftFileSystemService_lstat_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -614,8 +614,8 @@ var RemoteFileSystemService_lstat_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_lstat_result.prototype = {};
-RemoteFileSystemService_lstat_result.prototype.read = function(input) {
+ThriftFileSystemService_lstat_result.prototype = {};
+ThriftFileSystemService_lstat_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -653,8 +653,8 @@ RemoteFileSystemService_lstat_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_lstat_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_lstat_result');
+ThriftFileSystemService_lstat_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_lstat_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
     this.success.write(output);
@@ -670,7 +670,7 @@ RemoteFileSystemService_lstat_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_readDirectory_args = function(args) {
+var ThriftFileSystemService_readDirectory_args = function(args) {
   this.uri = null;
   if (args) {
     if (args.uri !== undefined && args.uri !== null) {
@@ -678,8 +678,8 @@ var RemoteFileSystemService_readDirectory_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_readDirectory_args.prototype = {};
-RemoteFileSystemService_readDirectory_args.prototype.read = function(input) {
+ThriftFileSystemService_readDirectory_args.prototype = {};
+ThriftFileSystemService_readDirectory_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -711,8 +711,8 @@ RemoteFileSystemService_readDirectory_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_readDirectory_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_readDirectory_args');
+ThriftFileSystemService_readDirectory_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_readDirectory_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -723,7 +723,7 @@ RemoteFileSystemService_readDirectory_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_readDirectory_result = function(args) {
+var ThriftFileSystemService_readDirectory_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -739,8 +739,8 @@ var RemoteFileSystemService_readDirectory_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_readDirectory_result.prototype = {};
-RemoteFileSystemService_readDirectory_result.prototype.read = function(input) {
+ThriftFileSystemService_readDirectory_result.prototype = {};
+ThriftFileSystemService_readDirectory_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -791,8 +791,8 @@ RemoteFileSystemService_readDirectory_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_readDirectory_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_readDirectory_result');
+ThriftFileSystemService_readDirectory_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_readDirectory_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRUCT, this.success.length);
@@ -817,7 +817,7 @@ RemoteFileSystemService_readDirectory_result.prototype.write = function(output) 
   return;
 };
 
-var RemoteFileSystemService_createDirectory_args = function(args) {
+var ThriftFileSystemService_createDirectory_args = function(args) {
   this.uri = null;
   if (args) {
     if (args.uri !== undefined && args.uri !== null) {
@@ -825,8 +825,8 @@ var RemoteFileSystemService_createDirectory_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_createDirectory_args.prototype = {};
-RemoteFileSystemService_createDirectory_args.prototype.read = function(input) {
+ThriftFileSystemService_createDirectory_args.prototype = {};
+ThriftFileSystemService_createDirectory_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -858,8 +858,8 @@ RemoteFileSystemService_createDirectory_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_createDirectory_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_createDirectory_args');
+ThriftFileSystemService_createDirectory_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_createDirectory_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -870,7 +870,7 @@ RemoteFileSystemService_createDirectory_args.prototype.write = function(output) 
   return;
 };
 
-var RemoteFileSystemService_createDirectory_result = function(args) {
+var ThriftFileSystemService_createDirectory_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -882,8 +882,8 @@ var RemoteFileSystemService_createDirectory_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_createDirectory_result.prototype = {};
-RemoteFileSystemService_createDirectory_result.prototype.read = function(input) {
+ThriftFileSystemService_createDirectory_result.prototype = {};
+ThriftFileSystemService_createDirectory_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -916,8 +916,8 @@ RemoteFileSystemService_createDirectory_result.prototype.read = function(input) 
   return;
 };
 
-RemoteFileSystemService_createDirectory_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_createDirectory_result');
+ThriftFileSystemService_createDirectory_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_createDirectory_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -928,7 +928,7 @@ RemoteFileSystemService_createDirectory_result.prototype.write = function(output
   return;
 };
 
-var RemoteFileSystemService_readFile_args = function(args) {
+var ThriftFileSystemService_readFile_args = function(args) {
   this.uri = null;
   if (args) {
     if (args.uri !== undefined && args.uri !== null) {
@@ -936,8 +936,8 @@ var RemoteFileSystemService_readFile_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_readFile_args.prototype = {};
-RemoteFileSystemService_readFile_args.prototype.read = function(input) {
+ThriftFileSystemService_readFile_args.prototype = {};
+ThriftFileSystemService_readFile_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -969,8 +969,8 @@ RemoteFileSystemService_readFile_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_readFile_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_readFile_args');
+ThriftFileSystemService_readFile_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_readFile_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -981,7 +981,7 @@ RemoteFileSystemService_readFile_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_readFile_result = function(args) {
+var ThriftFileSystemService_readFile_result = function(args) {
   this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
@@ -997,8 +997,8 @@ var RemoteFileSystemService_readFile_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_readFile_result.prototype = {};
-RemoteFileSystemService_readFile_result.prototype.read = function(input) {
+ThriftFileSystemService_readFile_result.prototype = {};
+ThriftFileSystemService_readFile_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1035,8 +1035,8 @@ RemoteFileSystemService_readFile_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_readFile_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_readFile_result');
+ThriftFileSystemService_readFile_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_readFile_result');
   if (this.success !== null && this.success !== undefined) {
     output.writeFieldBegin('success', Thrift.Type.STRING, 0);
     output.writeBinary(this.success);
@@ -1052,7 +1052,7 @@ RemoteFileSystemService_readFile_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_writeFile_args = function(args) {
+var ThriftFileSystemService_writeFile_args = function(args) {
   this.uri = null;
   this.content = null;
   this.options = null;
@@ -1068,8 +1068,8 @@ var RemoteFileSystemService_writeFile_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_writeFile_args.prototype = {};
-RemoteFileSystemService_writeFile_args.prototype.read = function(input) {
+ThriftFileSystemService_writeFile_args.prototype = {};
+ThriftFileSystemService_writeFile_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1113,8 +1113,8 @@ RemoteFileSystemService_writeFile_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_writeFile_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_writeFile_args');
+ThriftFileSystemService_writeFile_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_writeFile_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -1135,7 +1135,7 @@ RemoteFileSystemService_writeFile_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_writeFile_result = function(args) {
+var ThriftFileSystemService_writeFile_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -1147,8 +1147,8 @@ var RemoteFileSystemService_writeFile_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_writeFile_result.prototype = {};
-RemoteFileSystemService_writeFile_result.prototype.read = function(input) {
+ThriftFileSystemService_writeFile_result.prototype = {};
+ThriftFileSystemService_writeFile_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1181,8 +1181,8 @@ RemoteFileSystemService_writeFile_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_writeFile_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_writeFile_result');
+ThriftFileSystemService_writeFile_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_writeFile_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -1193,7 +1193,7 @@ RemoteFileSystemService_writeFile_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_deletePath_args = function(args) {
+var ThriftFileSystemService_deletePath_args = function(args) {
   this.uri = null;
   this.options = null;
   if (args) {
@@ -1205,8 +1205,8 @@ var RemoteFileSystemService_deletePath_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_deletePath_args.prototype = {};
-RemoteFileSystemService_deletePath_args.prototype.read = function(input) {
+ThriftFileSystemService_deletePath_args.prototype = {};
+ThriftFileSystemService_deletePath_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1243,8 +1243,8 @@ RemoteFileSystemService_deletePath_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_deletePath_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_deletePath_args');
+ThriftFileSystemService_deletePath_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_deletePath_args');
   if (this.uri !== null && this.uri !== undefined) {
     output.writeFieldBegin('uri', Thrift.Type.STRING, 1);
     output.writeString(this.uri);
@@ -1260,7 +1260,7 @@ RemoteFileSystemService_deletePath_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_deletePath_result = function(args) {
+var ThriftFileSystemService_deletePath_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -1272,8 +1272,8 @@ var RemoteFileSystemService_deletePath_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_deletePath_result.prototype = {};
-RemoteFileSystemService_deletePath_result.prototype.read = function(input) {
+ThriftFileSystemService_deletePath_result.prototype = {};
+ThriftFileSystemService_deletePath_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1306,8 +1306,8 @@ RemoteFileSystemService_deletePath_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_deletePath_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_deletePath_result');
+ThriftFileSystemService_deletePath_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_deletePath_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -1318,7 +1318,7 @@ RemoteFileSystemService_deletePath_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_rename_args = function(args) {
+var ThriftFileSystemService_rename_args = function(args) {
   this.oldUri = null;
   this.newUri = null;
   this.options = null;
@@ -1334,8 +1334,8 @@ var RemoteFileSystemService_rename_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_rename_args.prototype = {};
-RemoteFileSystemService_rename_args.prototype.read = function(input) {
+ThriftFileSystemService_rename_args.prototype = {};
+ThriftFileSystemService_rename_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1379,8 +1379,8 @@ RemoteFileSystemService_rename_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_rename_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_rename_args');
+ThriftFileSystemService_rename_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_rename_args');
   if (this.oldUri !== null && this.oldUri !== undefined) {
     output.writeFieldBegin('oldUri', Thrift.Type.STRING, 1);
     output.writeString(this.oldUri);
@@ -1401,7 +1401,7 @@ RemoteFileSystemService_rename_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_rename_result = function(args) {
+var ThriftFileSystemService_rename_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -1413,8 +1413,8 @@ var RemoteFileSystemService_rename_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_rename_result.prototype = {};
-RemoteFileSystemService_rename_result.prototype.read = function(input) {
+ThriftFileSystemService_rename_result.prototype = {};
+ThriftFileSystemService_rename_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1447,8 +1447,8 @@ RemoteFileSystemService_rename_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_rename_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_rename_result');
+ThriftFileSystemService_rename_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_rename_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -1459,7 +1459,7 @@ RemoteFileSystemService_rename_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_copy_args = function(args) {
+var ThriftFileSystemService_copy_args = function(args) {
   this.source = null;
   this.destination = null;
   this.options = null;
@@ -1475,8 +1475,8 @@ var RemoteFileSystemService_copy_args = function(args) {
     }
   }
 };
-RemoteFileSystemService_copy_args.prototype = {};
-RemoteFileSystemService_copy_args.prototype.read = function(input) {
+ThriftFileSystemService_copy_args.prototype = {};
+ThriftFileSystemService_copy_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1520,8 +1520,8 @@ RemoteFileSystemService_copy_args.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_copy_args.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_copy_args');
+ThriftFileSystemService_copy_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_copy_args');
   if (this.source !== null && this.source !== undefined) {
     output.writeFieldBegin('source', Thrift.Type.STRING, 1);
     output.writeString(this.source);
@@ -1542,7 +1542,7 @@ RemoteFileSystemService_copy_args.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemService_copy_result = function(args) {
+var ThriftFileSystemService_copy_result = function(args) {
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
@@ -1554,8 +1554,8 @@ var RemoteFileSystemService_copy_result = function(args) {
     }
   }
 };
-RemoteFileSystemService_copy_result.prototype = {};
-RemoteFileSystemService_copy_result.prototype.read = function(input) {
+ThriftFileSystemService_copy_result.prototype = {};
+ThriftFileSystemService_copy_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -1588,8 +1588,8 @@ RemoteFileSystemService_copy_result.prototype.read = function(input) {
   return;
 };
 
-RemoteFileSystemService_copy_result.prototype.write = function(output) {
-  output.writeStructBegin('RemoteFileSystemService_copy_result');
+ThriftFileSystemService_copy_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftFileSystemService_copy_result');
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -1600,16 +1600,16 @@ RemoteFileSystemService_copy_result.prototype.write = function(output) {
   return;
 };
 
-var RemoteFileSystemServiceClient = exports.Client = function(output, pClass) {
+var ThriftFileSystemServiceClient = exports.Client = function(output, pClass) {
     this.output = output;
     this.pClass = pClass;
     this._seqid = 0;
     this._reqs = {};
 };
-RemoteFileSystemServiceClient.prototype = {};
-RemoteFileSystemServiceClient.prototype.seqid = function() { return this._seqid; };
-RemoteFileSystemServiceClient.prototype.new_seqid = function() { return this._seqid += 1; };
-RemoteFileSystemServiceClient.prototype.watch = function(uri, options, callback) {
+ThriftFileSystemServiceClient.prototype = {};
+ThriftFileSystemServiceClient.prototype.seqid = function() { return this._seqid; };
+ThriftFileSystemServiceClient.prototype.new_seqid = function() { return this._seqid += 1; };
+ThriftFileSystemServiceClient.prototype.watch = function(uri, options, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1628,20 +1628,20 @@ RemoteFileSystemServiceClient.prototype.watch = function(uri, options, callback)
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_watch = function(uri, options) {
+ThriftFileSystemServiceClient.prototype.send_watch = function(uri, options) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('watch', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri,
     options: options
   };
-  var args = new RemoteFileSystemService_watch_args(params);
+  var args = new ThriftFileSystemService_watch_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_watch = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_watch = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1650,7 +1650,7 @@ RemoteFileSystemServiceClient.prototype.recv_watch = function(input,mtype,rseqid
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_watch_result();
+  var result = new ThriftFileSystemService_watch_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1662,7 +1662,7 @@ RemoteFileSystemServiceClient.prototype.recv_watch = function(input,mtype,rseqid
   }
   return callback('watch failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.unwatch = function(watchId, callback) {
+ThriftFileSystemServiceClient.prototype.unwatch = function(watchId, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1681,19 +1681,19 @@ RemoteFileSystemServiceClient.prototype.unwatch = function(watchId, callback) {
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_unwatch = function(watchId) {
+ThriftFileSystemServiceClient.prototype.send_unwatch = function(watchId) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('unwatch', Thrift.MessageType.CALL, this.seqid());
   var params = {
     watchId: watchId
   };
-  var args = new RemoteFileSystemService_unwatch_args(params);
+  var args = new ThriftFileSystemService_unwatch_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_unwatch = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_unwatch = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1702,7 +1702,7 @@ RemoteFileSystemServiceClient.prototype.recv_unwatch = function(input,mtype,rseq
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_unwatch_result();
+  var result = new ThriftFileSystemService_unwatch_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1711,7 +1711,7 @@ RemoteFileSystemServiceClient.prototype.recv_unwatch = function(input,mtype,rseq
   }
   callback(null);
 };
-RemoteFileSystemServiceClient.prototype.pollFileChanges = function(watchId, callback) {
+ThriftFileSystemServiceClient.prototype.pollFileChanges = function(watchId, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1730,19 +1730,19 @@ RemoteFileSystemServiceClient.prototype.pollFileChanges = function(watchId, call
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_pollFileChanges = function(watchId) {
+ThriftFileSystemServiceClient.prototype.send_pollFileChanges = function(watchId) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('pollFileChanges', Thrift.MessageType.CALL, this.seqid());
   var params = {
     watchId: watchId
   };
-  var args = new RemoteFileSystemService_pollFileChanges_args(params);
+  var args = new ThriftFileSystemService_pollFileChanges_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_pollFileChanges = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_pollFileChanges = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1751,7 +1751,7 @@ RemoteFileSystemServiceClient.prototype.recv_pollFileChanges = function(input,mt
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_pollFileChanges_result();
+  var result = new ThriftFileSystemService_pollFileChanges_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1763,7 +1763,7 @@ RemoteFileSystemServiceClient.prototype.recv_pollFileChanges = function(input,mt
   }
   return callback('pollFileChanges failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.stat = function(uri, callback) {
+ThriftFileSystemServiceClient.prototype.stat = function(uri, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1782,19 +1782,19 @@ RemoteFileSystemServiceClient.prototype.stat = function(uri, callback) {
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_stat = function(uri) {
+ThriftFileSystemServiceClient.prototype.send_stat = function(uri) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('stat', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri
   };
-  var args = new RemoteFileSystemService_stat_args(params);
+  var args = new ThriftFileSystemService_stat_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_stat = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_stat = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1803,7 +1803,7 @@ RemoteFileSystemServiceClient.prototype.recv_stat = function(input,mtype,rseqid)
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_stat_result();
+  var result = new ThriftFileSystemService_stat_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1815,7 +1815,7 @@ RemoteFileSystemServiceClient.prototype.recv_stat = function(input,mtype,rseqid)
   }
   return callback('stat failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.lstat = function(uri, callback) {
+ThriftFileSystemServiceClient.prototype.lstat = function(uri, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1834,19 +1834,19 @@ RemoteFileSystemServiceClient.prototype.lstat = function(uri, callback) {
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_lstat = function(uri) {
+ThriftFileSystemServiceClient.prototype.send_lstat = function(uri) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('lstat', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri
   };
-  var args = new RemoteFileSystemService_lstat_args(params);
+  var args = new ThriftFileSystemService_lstat_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_lstat = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_lstat = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1855,7 +1855,7 @@ RemoteFileSystemServiceClient.prototype.recv_lstat = function(input,mtype,rseqid
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_lstat_result();
+  var result = new ThriftFileSystemService_lstat_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1867,7 +1867,7 @@ RemoteFileSystemServiceClient.prototype.recv_lstat = function(input,mtype,rseqid
   }
   return callback('lstat failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.readDirectory = function(uri, callback) {
+ThriftFileSystemServiceClient.prototype.readDirectory = function(uri, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1886,19 +1886,19 @@ RemoteFileSystemServiceClient.prototype.readDirectory = function(uri, callback) 
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_readDirectory = function(uri) {
+ThriftFileSystemServiceClient.prototype.send_readDirectory = function(uri) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('readDirectory', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri
   };
-  var args = new RemoteFileSystemService_readDirectory_args(params);
+  var args = new ThriftFileSystemService_readDirectory_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_readDirectory = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_readDirectory = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1907,7 +1907,7 @@ RemoteFileSystemServiceClient.prototype.recv_readDirectory = function(input,mtyp
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_readDirectory_result();
+  var result = new ThriftFileSystemService_readDirectory_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1919,7 +1919,7 @@ RemoteFileSystemServiceClient.prototype.recv_readDirectory = function(input,mtyp
   }
   return callback('readDirectory failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.createDirectory = function(uri, callback) {
+ThriftFileSystemServiceClient.prototype.createDirectory = function(uri, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1938,19 +1938,19 @@ RemoteFileSystemServiceClient.prototype.createDirectory = function(uri, callback
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_createDirectory = function(uri) {
+ThriftFileSystemServiceClient.prototype.send_createDirectory = function(uri) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('createDirectory', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri
   };
-  var args = new RemoteFileSystemService_createDirectory_args(params);
+  var args = new ThriftFileSystemService_createDirectory_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_createDirectory = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_createDirectory = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -1959,7 +1959,7 @@ RemoteFileSystemServiceClient.prototype.recv_createDirectory = function(input,mt
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_createDirectory_result();
+  var result = new ThriftFileSystemService_createDirectory_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -1968,7 +1968,7 @@ RemoteFileSystemServiceClient.prototype.recv_createDirectory = function(input,mt
   }
   callback(null);
 };
-RemoteFileSystemServiceClient.prototype.readFile = function(uri, callback) {
+ThriftFileSystemServiceClient.prototype.readFile = function(uri, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -1987,19 +1987,19 @@ RemoteFileSystemServiceClient.prototype.readFile = function(uri, callback) {
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_readFile = function(uri) {
+ThriftFileSystemServiceClient.prototype.send_readFile = function(uri) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('readFile', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri
   };
-  var args = new RemoteFileSystemService_readFile_args(params);
+  var args = new ThriftFileSystemService_readFile_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_readFile = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_readFile = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -2008,7 +2008,7 @@ RemoteFileSystemServiceClient.prototype.recv_readFile = function(input,mtype,rse
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_readFile_result();
+  var result = new ThriftFileSystemService_readFile_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -2020,7 +2020,7 @@ RemoteFileSystemServiceClient.prototype.recv_readFile = function(input,mtype,rse
   }
   return callback('readFile failed: unknown result');
 };
-RemoteFileSystemServiceClient.prototype.writeFile = function(uri, content, options, callback) {
+ThriftFileSystemServiceClient.prototype.writeFile = function(uri, content, options, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -2039,7 +2039,7 @@ RemoteFileSystemServiceClient.prototype.writeFile = function(uri, content, optio
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_writeFile = function(uri, content, options) {
+ThriftFileSystemServiceClient.prototype.send_writeFile = function(uri, content, options) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('writeFile', Thrift.MessageType.CALL, this.seqid());
   var params = {
@@ -2047,13 +2047,13 @@ RemoteFileSystemServiceClient.prototype.send_writeFile = function(uri, content, 
     content: content,
     options: options
   };
-  var args = new RemoteFileSystemService_writeFile_args(params);
+  var args = new ThriftFileSystemService_writeFile_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_writeFile = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_writeFile = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -2062,7 +2062,7 @@ RemoteFileSystemServiceClient.prototype.recv_writeFile = function(input,mtype,rs
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_writeFile_result();
+  var result = new ThriftFileSystemService_writeFile_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -2071,7 +2071,7 @@ RemoteFileSystemServiceClient.prototype.recv_writeFile = function(input,mtype,rs
   }
   callback(null);
 };
-RemoteFileSystemServiceClient.prototype.deletePath = function(uri, options, callback) {
+ThriftFileSystemServiceClient.prototype.deletePath = function(uri, options, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -2090,20 +2090,20 @@ RemoteFileSystemServiceClient.prototype.deletePath = function(uri, options, call
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_deletePath = function(uri, options) {
+ThriftFileSystemServiceClient.prototype.send_deletePath = function(uri, options) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('deletePath', Thrift.MessageType.CALL, this.seqid());
   var params = {
     uri: uri,
     options: options
   };
-  var args = new RemoteFileSystemService_deletePath_args(params);
+  var args = new ThriftFileSystemService_deletePath_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_deletePath = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_deletePath = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -2112,7 +2112,7 @@ RemoteFileSystemServiceClient.prototype.recv_deletePath = function(input,mtype,r
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_deletePath_result();
+  var result = new ThriftFileSystemService_deletePath_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -2121,7 +2121,7 @@ RemoteFileSystemServiceClient.prototype.recv_deletePath = function(input,mtype,r
   }
   callback(null);
 };
-RemoteFileSystemServiceClient.prototype.rename = function(oldUri, newUri, options, callback) {
+ThriftFileSystemServiceClient.prototype.rename = function(oldUri, newUri, options, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -2140,7 +2140,7 @@ RemoteFileSystemServiceClient.prototype.rename = function(oldUri, newUri, option
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_rename = function(oldUri, newUri, options) {
+ThriftFileSystemServiceClient.prototype.send_rename = function(oldUri, newUri, options) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('rename', Thrift.MessageType.CALL, this.seqid());
   var params = {
@@ -2148,13 +2148,13 @@ RemoteFileSystemServiceClient.prototype.send_rename = function(oldUri, newUri, o
     newUri: newUri,
     options: options
   };
-  var args = new RemoteFileSystemService_rename_args(params);
+  var args = new ThriftFileSystemService_rename_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_rename = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_rename = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -2163,7 +2163,7 @@ RemoteFileSystemServiceClient.prototype.recv_rename = function(input,mtype,rseqi
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_rename_result();
+  var result = new ThriftFileSystemService_rename_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -2172,7 +2172,7 @@ RemoteFileSystemServiceClient.prototype.recv_rename = function(input,mtype,rseqi
   }
   callback(null);
 };
-RemoteFileSystemServiceClient.prototype.copy = function(source, destination, options, callback) {
+ThriftFileSystemServiceClient.prototype.copy = function(source, destination, options, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -2191,7 +2191,7 @@ RemoteFileSystemServiceClient.prototype.copy = function(source, destination, opt
   }
 };
 
-RemoteFileSystemServiceClient.prototype.send_copy = function(source, destination, options) {
+ThriftFileSystemServiceClient.prototype.send_copy = function(source, destination, options) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('copy', Thrift.MessageType.CALL, this.seqid());
   var params = {
@@ -2199,13 +2199,13 @@ RemoteFileSystemServiceClient.prototype.send_copy = function(source, destination
     destination: destination,
     options: options
   };
-  var args = new RemoteFileSystemService_copy_args(params);
+  var args = new ThriftFileSystemService_copy_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-RemoteFileSystemServiceClient.prototype.recv_copy = function(input,mtype,rseqid) {
+ThriftFileSystemServiceClient.prototype.recv_copy = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -2214,7 +2214,7 @@ RemoteFileSystemServiceClient.prototype.recv_copy = function(input,mtype,rseqid)
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new RemoteFileSystemService_copy_result();
+  var result = new ThriftFileSystemService_copy_result();
   result.read(input);
   input.readMessageEnd();
 
@@ -2223,11 +2223,11 @@ RemoteFileSystemServiceClient.prototype.recv_copy = function(input,mtype,rseqid)
   }
   callback(null);
 };
-var RemoteFileSystemServiceProcessor = exports.Processor = function(handler) {
+var ThriftFileSystemServiceProcessor = exports.Processor = function(handler) {
   this._handler = handler;
 }
 ;
-RemoteFileSystemServiceProcessor.prototype.process = function(input, output) {
+ThriftFileSystemServiceProcessor.prototype.process = function(input, output) {
   var r = input.readMessageBegin();
   if (this['process_' + r.fname]) {
     return this['process_' + r.fname].call(this, r.rseqid, input, output);
@@ -2242,14 +2242,14 @@ RemoteFileSystemServiceProcessor.prototype.process = function(input, output) {
   }
 }
 ;
-RemoteFileSystemServiceProcessor.prototype.process_watch = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_watch_args();
+ThriftFileSystemServiceProcessor.prototype.process_watch = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_watch_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.watch.length === 2) {
     Q.fcall(this._handler.watch.bind(this._handler), args.uri, args.options)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_watch_result({success: result});
+        var result_obj = new ThriftFileSystemService_watch_result({success: result});
         output.writeMessageBegin("watch", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2257,7 +2257,7 @@ RemoteFileSystemServiceProcessor.prototype.process_watch = function(seqid, input
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_watch_result(err);
+          result = new ThriftFileSystemService_watch_result(err);
           output.writeMessageBegin("watch", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2271,7 +2271,7 @@ RemoteFileSystemServiceProcessor.prototype.process_watch = function(seqid, input
     this._handler.watch(args.uri, args.options, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_watch_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_watch_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("watch", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2283,14 +2283,14 @@ RemoteFileSystemServiceProcessor.prototype.process_watch = function(seqid, input
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_unwatch = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_unwatch_args();
+ThriftFileSystemServiceProcessor.prototype.process_unwatch = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_unwatch_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.unwatch.length === 1) {
     Q.fcall(this._handler.unwatch.bind(this._handler), args.watchId)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_unwatch_result({success: result});
+        var result_obj = new ThriftFileSystemService_unwatch_result({success: result});
         output.writeMessageBegin("unwatch", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2298,7 +2298,7 @@ RemoteFileSystemServiceProcessor.prototype.process_unwatch = function(seqid, inp
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_unwatch_result(err);
+          result = new ThriftFileSystemService_unwatch_result(err);
           output.writeMessageBegin("unwatch", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2312,7 +2312,7 @@ RemoteFileSystemServiceProcessor.prototype.process_unwatch = function(seqid, inp
     this._handler.unwatch(args.watchId, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_unwatch_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_unwatch_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("unwatch", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2324,14 +2324,14 @@ RemoteFileSystemServiceProcessor.prototype.process_unwatch = function(seqid, inp
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_pollFileChanges = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_pollFileChanges_args();
+ThriftFileSystemServiceProcessor.prototype.process_pollFileChanges = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_pollFileChanges_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.pollFileChanges.length === 1) {
     Q.fcall(this._handler.pollFileChanges.bind(this._handler), args.watchId)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_pollFileChanges_result({success: result});
+        var result_obj = new ThriftFileSystemService_pollFileChanges_result({success: result});
         output.writeMessageBegin("pollFileChanges", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2339,7 +2339,7 @@ RemoteFileSystemServiceProcessor.prototype.process_pollFileChanges = function(se
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_pollFileChanges_result(err);
+          result = new ThriftFileSystemService_pollFileChanges_result(err);
           output.writeMessageBegin("pollFileChanges", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2353,7 +2353,7 @@ RemoteFileSystemServiceProcessor.prototype.process_pollFileChanges = function(se
     this._handler.pollFileChanges(args.watchId, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_pollFileChanges_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_pollFileChanges_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("pollFileChanges", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2365,14 +2365,14 @@ RemoteFileSystemServiceProcessor.prototype.process_pollFileChanges = function(se
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_stat = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_stat_args();
+ThriftFileSystemServiceProcessor.prototype.process_stat = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_stat_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.stat.length === 1) {
     Q.fcall(this._handler.stat.bind(this._handler), args.uri)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_stat_result({success: result});
+        var result_obj = new ThriftFileSystemService_stat_result({success: result});
         output.writeMessageBegin("stat", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2380,7 +2380,7 @@ RemoteFileSystemServiceProcessor.prototype.process_stat = function(seqid, input,
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_stat_result(err);
+          result = new ThriftFileSystemService_stat_result(err);
           output.writeMessageBegin("stat", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2394,7 +2394,7 @@ RemoteFileSystemServiceProcessor.prototype.process_stat = function(seqid, input,
     this._handler.stat(args.uri, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_stat_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_stat_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("stat", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2406,14 +2406,14 @@ RemoteFileSystemServiceProcessor.prototype.process_stat = function(seqid, input,
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_lstat = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_lstat_args();
+ThriftFileSystemServiceProcessor.prototype.process_lstat = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_lstat_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.lstat.length === 1) {
     Q.fcall(this._handler.lstat.bind(this._handler), args.uri)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_lstat_result({success: result});
+        var result_obj = new ThriftFileSystemService_lstat_result({success: result});
         output.writeMessageBegin("lstat", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2421,7 +2421,7 @@ RemoteFileSystemServiceProcessor.prototype.process_lstat = function(seqid, input
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_lstat_result(err);
+          result = new ThriftFileSystemService_lstat_result(err);
           output.writeMessageBegin("lstat", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2435,7 +2435,7 @@ RemoteFileSystemServiceProcessor.prototype.process_lstat = function(seqid, input
     this._handler.lstat(args.uri, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_lstat_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_lstat_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("lstat", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2447,14 +2447,14 @@ RemoteFileSystemServiceProcessor.prototype.process_lstat = function(seqid, input
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_readDirectory = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_readDirectory_args();
+ThriftFileSystemServiceProcessor.prototype.process_readDirectory = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_readDirectory_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.readDirectory.length === 1) {
     Q.fcall(this._handler.readDirectory.bind(this._handler), args.uri)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_readDirectory_result({success: result});
+        var result_obj = new ThriftFileSystemService_readDirectory_result({success: result});
         output.writeMessageBegin("readDirectory", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2462,7 +2462,7 @@ RemoteFileSystemServiceProcessor.prototype.process_readDirectory = function(seqi
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_readDirectory_result(err);
+          result = new ThriftFileSystemService_readDirectory_result(err);
           output.writeMessageBegin("readDirectory", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2476,7 +2476,7 @@ RemoteFileSystemServiceProcessor.prototype.process_readDirectory = function(seqi
     this._handler.readDirectory(args.uri, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_readDirectory_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_readDirectory_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("readDirectory", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2488,14 +2488,14 @@ RemoteFileSystemServiceProcessor.prototype.process_readDirectory = function(seqi
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_createDirectory = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_createDirectory_args();
+ThriftFileSystemServiceProcessor.prototype.process_createDirectory = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_createDirectory_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.createDirectory.length === 1) {
     Q.fcall(this._handler.createDirectory.bind(this._handler), args.uri)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_createDirectory_result({success: result});
+        var result_obj = new ThriftFileSystemService_createDirectory_result({success: result});
         output.writeMessageBegin("createDirectory", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2503,7 +2503,7 @@ RemoteFileSystemServiceProcessor.prototype.process_createDirectory = function(se
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_createDirectory_result(err);
+          result = new ThriftFileSystemService_createDirectory_result(err);
           output.writeMessageBegin("createDirectory", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2517,7 +2517,7 @@ RemoteFileSystemServiceProcessor.prototype.process_createDirectory = function(se
     this._handler.createDirectory(args.uri, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_createDirectory_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_createDirectory_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("createDirectory", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2529,14 +2529,14 @@ RemoteFileSystemServiceProcessor.prototype.process_createDirectory = function(se
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_readFile = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_readFile_args();
+ThriftFileSystemServiceProcessor.prototype.process_readFile = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_readFile_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.readFile.length === 1) {
     Q.fcall(this._handler.readFile.bind(this._handler), args.uri)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_readFile_result({success: result});
+        var result_obj = new ThriftFileSystemService_readFile_result({success: result});
         output.writeMessageBegin("readFile", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2544,7 +2544,7 @@ RemoteFileSystemServiceProcessor.prototype.process_readFile = function(seqid, in
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_readFile_result(err);
+          result = new ThriftFileSystemService_readFile_result(err);
           output.writeMessageBegin("readFile", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2558,7 +2558,7 @@ RemoteFileSystemServiceProcessor.prototype.process_readFile = function(seqid, in
     this._handler.readFile(args.uri, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_readFile_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_readFile_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("readFile", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2570,14 +2570,14 @@ RemoteFileSystemServiceProcessor.prototype.process_readFile = function(seqid, in
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_writeFile = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_writeFile_args();
+ThriftFileSystemServiceProcessor.prototype.process_writeFile = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_writeFile_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.writeFile.length === 3) {
     Q.fcall(this._handler.writeFile.bind(this._handler), args.uri, args.content, args.options)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_writeFile_result({success: result});
+        var result_obj = new ThriftFileSystemService_writeFile_result({success: result});
         output.writeMessageBegin("writeFile", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2585,7 +2585,7 @@ RemoteFileSystemServiceProcessor.prototype.process_writeFile = function(seqid, i
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_writeFile_result(err);
+          result = new ThriftFileSystemService_writeFile_result(err);
           output.writeMessageBegin("writeFile", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2599,7 +2599,7 @@ RemoteFileSystemServiceProcessor.prototype.process_writeFile = function(seqid, i
     this._handler.writeFile(args.uri, args.content, args.options, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_writeFile_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_writeFile_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("writeFile", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2611,14 +2611,14 @@ RemoteFileSystemServiceProcessor.prototype.process_writeFile = function(seqid, i
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_deletePath = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_deletePath_args();
+ThriftFileSystemServiceProcessor.prototype.process_deletePath = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_deletePath_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.deletePath.length === 2) {
     Q.fcall(this._handler.deletePath.bind(this._handler), args.uri, args.options)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_deletePath_result({success: result});
+        var result_obj = new ThriftFileSystemService_deletePath_result({success: result});
         output.writeMessageBegin("deletePath", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2626,7 +2626,7 @@ RemoteFileSystemServiceProcessor.prototype.process_deletePath = function(seqid, 
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_deletePath_result(err);
+          result = new ThriftFileSystemService_deletePath_result(err);
           output.writeMessageBegin("deletePath", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2640,7 +2640,7 @@ RemoteFileSystemServiceProcessor.prototype.process_deletePath = function(seqid, 
     this._handler.deletePath(args.uri, args.options, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_deletePath_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_deletePath_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("deletePath", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2652,14 +2652,14 @@ RemoteFileSystemServiceProcessor.prototype.process_deletePath = function(seqid, 
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_rename = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_rename_args();
+ThriftFileSystemServiceProcessor.prototype.process_rename = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_rename_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.rename.length === 3) {
     Q.fcall(this._handler.rename.bind(this._handler), args.oldUri, args.newUri, args.options)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_rename_result({success: result});
+        var result_obj = new ThriftFileSystemService_rename_result({success: result});
         output.writeMessageBegin("rename", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2667,7 +2667,7 @@ RemoteFileSystemServiceProcessor.prototype.process_rename = function(seqid, inpu
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_rename_result(err);
+          result = new ThriftFileSystemService_rename_result(err);
           output.writeMessageBegin("rename", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2681,7 +2681,7 @@ RemoteFileSystemServiceProcessor.prototype.process_rename = function(seqid, inpu
     this._handler.rename(args.oldUri, args.newUri, args.options, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_rename_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_rename_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("rename", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2693,14 +2693,14 @@ RemoteFileSystemServiceProcessor.prototype.process_rename = function(seqid, inpu
     });
   }
 };
-RemoteFileSystemServiceProcessor.prototype.process_copy = function(seqid, input, output) {
-  var args = new RemoteFileSystemService_copy_args();
+ThriftFileSystemServiceProcessor.prototype.process_copy = function(seqid, input, output) {
+  var args = new ThriftFileSystemService_copy_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.copy.length === 3) {
     Q.fcall(this._handler.copy.bind(this._handler), args.source, args.destination, args.options)
       .then(function(result) {
-        var result_obj = new RemoteFileSystemService_copy_result({success: result});
+        var result_obj = new ThriftFileSystemService_copy_result({success: result});
         output.writeMessageBegin("copy", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
@@ -2708,7 +2708,7 @@ RemoteFileSystemServiceProcessor.prototype.process_copy = function(seqid, input,
       }, function (err) {
         var result;
         if (err instanceof ttypes.Error) {
-          result = new RemoteFileSystemService_copy_result(err);
+          result = new ThriftFileSystemService_copy_result(err);
           output.writeMessageBegin("copy", Thrift.MessageType.REPLY, seqid);
         } else {
           result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
@@ -2722,7 +2722,7 @@ RemoteFileSystemServiceProcessor.prototype.process_copy = function(seqid, input,
     this._handler.copy(args.source, args.destination, args.options, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined') || err instanceof ttypes.Error) {
-        result_obj = new RemoteFileSystemService_copy_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        result_obj = new ThriftFileSystemService_copy_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("copy", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);

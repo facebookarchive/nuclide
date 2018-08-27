@@ -43,7 +43,7 @@ const commonWatchIgnoredExpressions = [
 /**
  * Create a service handler class to manage server methods
  */
-export class RemoteFileSystemServiceHandler {
+export class ThriftFileSystemServiceHandler {
   _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;

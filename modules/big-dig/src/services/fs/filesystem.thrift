@@ -142,7 +142,7 @@ struct CopyOpt{
 }
 
 
-service RemoteFileSystemService {
+service ThriftFileSystemService {
 
   /**
    * Initialize watcher for target file or directory.

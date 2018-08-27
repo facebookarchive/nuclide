@@ -12,7 +12,7 @@
 
 import type {ThriftServiceConfig} from '../thrift/types';
 
-import RemoteFileSystemService from './gen-nodejs/RemoteFileSystemService';
+import ThriftFileSystemService from './gen-nodejs/ThriftFileSystemService';
 
 export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   name: 'thrift-rfs',
@@ -25,6 +25,6 @@ export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   remotePort: 0,
   thriftTransport: 'buffered',
   thriftProtocol: 'binary',
-  thriftService: RemoteFileSystemService,
+  thriftService: ThriftFileSystemService,
   killOldThriftServerProcess: true,
 };
