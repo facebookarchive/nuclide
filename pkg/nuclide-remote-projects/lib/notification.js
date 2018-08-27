@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
@@ -17,6 +17,7 @@ import type {
 import {SshHandshake} from '../../nuclide-remote-connection';
 
 import {shell} from 'electron';
+import escapeHtml from 'escape-html';
 import child_process from 'child_process';
 
 export function notifySshHandshakeError(
@@ -28,52 +29,59 @@ export function notifySshHandshakeError(
   let detail = '';
   let buttons = [];
   const originalErrorDetail = `Original error message:\n ${error.message}`;
+
+  // This comes from people and people can't be trusted. Escape it before dumping it into the DOM.
+  const host = escapeHtml(config.host);
+  const remoteServerCommand = escapeHtml(config.remoteServerCommand);
+  const cwd = escapeHtml(config.cwd);
+  const sshPort = escapeHtml(config.sshPort.toString());
+  const pathToPrivateKey = escapeHtml(config.pathToPrivateKey);
+  const authMethod = escapeHtml(config.authMethod);
+
   const createTimeoutDetail = () =>
     'Troubleshooting:\n' +
-    `Make sure you can run "sftp ${config.host}" on the command line.\n` +
+    `Make sure you can run "sftp ${host}" on the command line.\n` +
     'Check your .bashrc / .bash_profile for extraneous output.\n' +
     'You may need to add the following to the top of your .bashrc:\n' +
     '  [ -z "$PS1" ] && return';
 
   switch (errorType) {
     case 'HOST_NOT_FOUND':
-      message = `Can't resolve IP address for host ${config.host}.`;
+      message = `Can't resolve IP address for host ${host}.`;
       detail =
         'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
-        `  2. Make sure the hostname ${config.host} is valid.\n`;
+        `  2. Make sure the hostname ${host} is valid.\n`;
       break;
     case 'CANT_READ_PRIVATE_KEY':
-      message = `Can't read content of private key path ${
-        config.pathToPrivateKey
-      }.`;
+      message = `Can't read content of private key path ${pathToPrivateKey}.`;
       detail =
         'Make sure the private key path is properly configured.\n' +
         'You may need to convert your private key from PKCS to RSA.\n' +
         originalErrorDetail;
       break;
     case 'SSH_CONNECT_TIMEOUT':
-      message = `Timeout while connecting to ${config.host}.`;
+      message = `Timeout while connecting to ${host}.`;
       detail =
         'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         '  2. Input correct 2Fac passcode when prompted.';
       break;
     case 'SFTP_TIMEOUT':
-      message = `Timeout while connecting to ${config.host}.`;
+      message = `Timeout while connecting to ${host}.`;
       detail = createTimeoutDetail();
       break;
     case 'USER_CANCELLED':
-      message = `User cancelled while connecting to ${config.host}.`;
+      message = `User cancelled while connecting to ${host}.`;
       detail = createTimeoutDetail();
       break;
     case 'SSH_CONNECT_FAILED':
-      message = `Failed to connect to ${config.host}:${config.sshPort}.`;
+      message = `Failed to connect to ${host}:${sshPort}.`;
       detail =
         'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
-        `  2. Make sure the host ${config.host} is running and has` +
-        ` ssh server running on ${config.sshPort}.\n\n` +
+        `  2. Make sure the host ${host} is running and has` +
+        ` ssh server running on ${sshPort}.\n\n` +
         originalErrorDetail;
       break;
     case 'SSH_AUTHENTICATION':
@@ -102,30 +110,24 @@ export function notifySshHandshakeError(
         default:
           message = 'Unknown SSH Authentication Method failed';
           detail =
-            `Unknown authentication method '${
-              config.authMethod
-            }' provided. Make sure your` +
+            `Unknown authentication method '${authMethod}' provided. Make sure your` +
             ' SSH connection is properly configured.';
           break;
       }
       break;
     case 'DIRECTORY_NOT_FOUND':
-      message = `There is no such directory ${config.cwd} on ${config.host}.`;
-      detail = `Make sure ${config.cwd} exists on ${config.host}.`;
+      message = `There is no such directory ${cwd} on ${host}.`;
+      detail = `Make sure ${cwd} exists on ${host}.`;
       break;
     case 'SERVER_START_FAILED':
       message =
-        `Failed to start nuclide-server on ${config.host} using  ` +
-        `${config.remoteServerCommand}`;
+        `Failed to start nuclide-server on ${host} using  ` +
+        `${remoteServerCommand}`;
       detail =
         'Troubleshooting: \n' +
-        `  1. Make sure the command "${
-          config.remoteServerCommand
-        }" is correct.\n` +
+        `  1. Make sure the command "${remoteServerCommand}" is correct.\n` +
         '  2. The server might take longer to start up than expected, try to connect again.\n' +
-        `  3. If none of above works, ssh to ${
-          config.host
-        } and kill existing nuclide-server` +
+        `  3. If none of above works, ssh to ${host} and kill existing nuclide-server` +
         ' by running "killall node", and reconnect.\n\n\n' +
         originalErrorDetail;
       break;
