@@ -27,14 +27,14 @@ export default function quickInputDialog(
   onConfirm: ?(string) => mixed,
   validateInput: string => ?string,
   initialValue: string = '',
-): Promise<string> {
+): Promise<?string> {
   const item = document.createElement('div');
   const panel = atom.workspace.addModalPanel({item});
 
   return new Promise((resolve, reject) => {
     const cancel = () => {
       panel.destroy();
-      reject(new Error('User cancelled'));
+      resolve(null);
     };
 
     ReactDOM.render(
