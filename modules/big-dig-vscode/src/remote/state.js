@@ -73,6 +73,14 @@ export function getFilesystems(): Array<RemoteFileSystem> {
 }
 
 /**
+ * @return the filesystem that matches the given hostname, where the hostname
+ * was the result of calling `fs.getHostname()`.
+ */
+export function getFilesystemByHostname(hostname: string): ?RemoteFileSystem {
+  return hostnameToFilesystem.get(hostname);
+}
+
+/**
  * @return a list of all filesystems that have current connections.
  */
 export function getConnectedFilesystems(): Array<{

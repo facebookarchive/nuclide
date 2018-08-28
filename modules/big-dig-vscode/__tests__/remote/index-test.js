@@ -38,6 +38,7 @@ jest.mock(require.resolve('../../src/RemoteFileSystem'), () => ({
 
 describe('remote', () => {
   let getFilesystems;
+  let getFilesystemByHostname;
   let startFilesystems;
   let onEachFilesystem;
 
@@ -45,6 +46,7 @@ describe('remote', () => {
     // Reimport for each test
     const remote = require('../../src/remote');
     getFilesystems = remote.getFilesystems;
+    getFilesystemByHostname = remote.getFilesystemByHostname;
     startFilesystems = remote.startFilesystems;
     onEachFilesystem = remote.onEachFilesystem;
   });
@@ -76,8 +78,10 @@ describe('remote', () => {
       const sub = startFilesystems();
       expect(vscode.window.showErrorMessage).toHaveBeenCalledTimes(0);
       expect(getFilesystems()).toHaveLength(0);
+      expect(getFilesystemByHostname('foo')).toBe(undefined);
       sub.dispose();
       expect(getFilesystems()).toHaveLength(0);
+      expect(getFilesystemByHostname('foo')).toBe(undefined);
     });
 
     it('one profile', () => {
@@ -93,9 +97,12 @@ describe('remote', () => {
         Server.mock.instances[0],
       );
       expect(getFilesystems()).toEqual(rfs);
+      expect(getFilesystemByHostname('foo')).toBe(undefined);
       expect(rfs[0].getHostname()).toBe('localhost');
+      expect(getFilesystemByHostname('localhost')).toBe(rfs[0]);
       sub.dispose();
       expect(getFilesystems()).toHaveLength(0);
+      expect(getFilesystemByHostname('localhost')).toBe(undefined);
     });
   });
 

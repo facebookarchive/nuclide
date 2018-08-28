@@ -14,6 +14,7 @@ export {Server} from './Server';
 export {startSearchProviders} from './Search';
 export {
   getConnectedFilesystems,
+  getFilesystemByHostname,
   getFilesystemForUri,
   getFilesystems,
   getServers,
