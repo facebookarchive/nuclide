@@ -45,14 +45,11 @@ export class ThriftServerManager {
   _logger: log4js$Logger;
   _subscription: Subscription;
 
-  _availableServices: Set<string>;
   _configIdToServer: Map<string, ServerCacheEntry>;
 
   constructor(transport: Transport) {
     this._transport = transport;
     this._logger = getLogger('bigdig-thrift-service-manager');
-    // TODO: Support start server by config to support more thrift services
-    this._availableServices = new Set(['thrift-rfs']);
     this._configIdToServer = new Map();
 
     // Transport onMessage returns observable
@@ -83,10 +80,6 @@ export class ThriftServerManager {
       this._sendMessage(createFailureMessage(id, errorMessage));
       return;
     }
-    invariant(
-      this._availableServices.has(serverConfig.name),
-      `No available thrift service for ${serverConfig.name}`,
-    );
 
     if (command === 'start-server') {
       await this._startServer(id, serverConfig);
