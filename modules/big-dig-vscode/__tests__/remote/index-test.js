@@ -10,8 +10,10 @@
  * @format
  * @emails oncall+nuclide
  */
-import {Observable} from 'rxjs';
 
+import type {RemoteFileSystem as RemoteFileSystemType} from '../../src/RemoteFileSystem';
+
+import {Observable} from 'rxjs';
 import * as vscode from '../../__mocks__/vscode-harness';
 
 const configuration = {
@@ -19,7 +21,7 @@ const configuration = {
 };
 
 const Server = jest.fn();
-const RemoteFileSystem = jest.fn(function(root, hostname, server) {
+const RemoteFileSystem = jest.fn(function(hostname, server) {
   const disposer = new vscode.EventEmitter();
   this.isDisposed = jest.fn();
   this.onDisposed = jest.fn(listener => disposer.event(listener));
@@ -80,14 +82,18 @@ describe('remote', () => {
 
     it('one profile', () => {
       const sub = startFilesystems();
+      const rfs = ((RemoteFileSystem.mock.instances: any): Array<
+        RemoteFileSystemType,
+      >);
       expect(vscode.window.showErrorMessage).toHaveBeenCalledTimes(0);
       expect(Server.mock.instances).toHaveLength(1);
-      expect(RemoteFileSystem.mock.instances).toHaveLength(1);
+      expect(rfs).toHaveLength(1);
       expect(RemoteFileSystem).toHaveBeenCalledWith(
         'localhost',
         Server.mock.instances[0],
       );
-      expect(getFilesystems()).toEqual(RemoteFileSystem.mock.instances);
+      expect(getFilesystems()).toEqual(rfs);
+      expect(rfs[0].getHostname()).toBe('localhost');
       sub.dispose();
       expect(getFilesystems()).toHaveLength(0);
     });
