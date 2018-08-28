@@ -1,6 +1,0 @@
-{
-  "rules": {
-    "nuclide-internal/no-unresolved": 0,
-    "nuclide-internal/prefer-nuclide-uri": 0
-  }
-}
