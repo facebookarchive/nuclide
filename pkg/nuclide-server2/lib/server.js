@@ -1,3 +1,67 @@
+"use strict";
+
+function _server() {
+  const data = _interopRequireDefault(require("../../../modules/big-dig-vscode-server/server"));
+
+  _server = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLogging() {
+  const data = require("../../nuclide-logging");
+
+  _nuclideLogging = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideMarshalersCommon() {
+  const data = require("../../nuclide-marshalers-common");
+
+  _nuclideMarshalersCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRpc() {
+  const data = require("../../nuclide-rpc");
+
+  _nuclideRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _servicesConfig() {
+  const data = _interopRequireDefault(require("../../nuclide-server/lib/servicesConfig"));
+
+  _servicesConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,51 +69,40 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+(0, _nuclideLogging().initializeLogging)();
 
-import type {Transport} from 'big-dig/src/server/BigDigServer';
-import type {BigDigServer, LauncherType} from 'big-dig/src/server/BigDigServer';
-import type {Transport as RpcTransportType} from '../../nuclide-rpc';
-
-import vscodeLaunch from 'big-dig-vscode-server/server';
-import {initializeLogging} from '../../nuclide-logging';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
-import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {NUCLIDE_RPC_TAG} from './constants';
-
-initializeLogging();
-
-function launch(server: BigDigServer): Promise<void> {
-  const rpcServiceRegistry = new ServiceRegistry(
-    getServerSideMarshalers,
-    servicesConfig,
-  );
-
-  server.addSubscriber(NUCLIDE_RPC_TAG, {
-    onConnection(transport: Transport) {
-      const rpcTransport: RpcTransportType = {
+function launch(server) {
+  const rpcServiceRegistry = new (_nuclideRpc().ServiceRegistry)(_nuclideMarshalersCommon().getServerSideMarshalers, _servicesConfig().default);
+  server.addSubscriber(_constants().NUCLIDE_RPC_TAG, {
+    onConnection(transport) {
+      const rpcTransport = {
         send(message) {
           transport.send(message);
         },
+
         onMessage() {
           return transport.onMessage();
         },
+
         // TODO: Right now, connections are never closed.
         close() {},
+
         isClosed() {
           return false;
-        },
+        }
+
       };
-      RpcConnection.createServer(rpcServiceRegistry, rpcTransport, {});
-    },
-  });
 
-  // Enable VSCode to connect to Nuclide servers by default.
-  return vscodeLaunch(server);
-}
+      _nuclideRpc().RpcConnection.createServer(rpcServiceRegistry, rpcTransport, {});
+    }
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
-module.exports = (launch: LauncherType);
+  }); // Enable VSCode to connect to Nuclide servers by default.
+
+  return (0, _server().default)(server);
+} // eslint-disable-next-line nuclide-internal/no-commonjs
+
+
+module.exports = launch;

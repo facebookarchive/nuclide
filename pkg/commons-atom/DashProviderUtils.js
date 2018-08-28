@@ -1,3 +1,23 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.prefixRequiresSpace = prefixRequiresSpace;
+exports.fuzzyRelevance = fuzzyRelevance;
+
+function _fuzzaldrinPlus() {
+  const data = _interopRequireDefault(require("fuzzaldrin-plus"));
+
+  _fuzzaldrinPlus = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,19 +25,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import fuzzldrin from 'fuzzaldrin-plus';
-
 const noSpaceNeededPrefixes = new Set(' !@#$%^&*();[]-_?/\'".,<>{}:');
 noSpaceNeededPrefixes.add(''); // empty prefix (omnisearch) also doesn't require a space
 
-export function prefixRequiresSpace(prefix: string): boolean {
+function prefixRequiresSpace(prefix) {
   return prefix.length > 1 || !noSpaceNeededPrefixes.has(prefix);
 }
 
-export function fuzzyRelevance(string: string, query: string) {
-  return fuzzldrin.score(string, query) / fuzzldrin.score(string, string);
+function fuzzyRelevance(string, query) {
+  return _fuzzaldrinPlus().default.score(string, query) / _fuzzaldrinPlus().default.score(string, string);
 }

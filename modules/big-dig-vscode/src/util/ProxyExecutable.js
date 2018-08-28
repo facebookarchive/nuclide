@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createProxyExecutable = createProxyExecutable;
+
+function vscode() {
+  const data = _interopRequireWildcard(require("vscode"));
+
+  vscode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _TerminalWrapper() {
+  const data = require("./TerminalWrapper");
+
+  _TerminalWrapper = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,28 +37,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import * as vscode from 'vscode';
-import {Observable} from 'rxjs';
-
-import {TerminalWrapper} from './TerminalWrapper';
-
-export type ExecutableWrapper = {
-  /**
-   * Observe each time that this wrapped executable is invoked. Each invocation
-   * provides:
-   *  - `proc` - gives access to the stdio of the process so the caller may
-   *   e.g. pipe the stdio of a remote process.
-   *  - `args` - a list of *additional* arguments (ignoring the arguments
-   *   provided by `ExecutableWrapper.args`).
-   */
-  +spawned: Observable<{proxy: TerminalWrapper, args: Array<string>}>,
-
-  +terminal: vscode.Terminal,
-};
 
 /**
  * Returns a local executable path and arguments, which together will spawn a
@@ -42,11 +54,14 @@ export type ExecutableWrapper = {
  * executables to be specified. Please avoid using this approach if at all
  * possible.
  */
-export async function createProxyExecutable(): Promise<ExecutableWrapper> {
-  const proxy = new TerminalWrapper('big-dig terminal');
+async function createProxyExecutable() {
+  const proxy = new (_TerminalWrapper().TerminalWrapper)('big-dig terminal');
   await proxy.ready;
   return {
-    spawned: Observable.of({proxy, args: []}),
-    terminal: proxy.terminal,
+    spawned: _RxMin.Observable.of({
+      proxy,
+      args: []
+    }),
+    terminal: proxy.terminal
   };
 }

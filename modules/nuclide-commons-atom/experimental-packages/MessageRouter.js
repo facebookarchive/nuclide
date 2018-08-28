@@ -1,3 +1,64 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function jsonrpc() {
+  const data = _interopRequireWildcard(require("vscode-jsonrpc"));
+
+  jsonrpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _messageReader() {
+  const data = require("vscode-jsonrpc/lib/messageReader");
+
+  _messageReader = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _messageWriter() {
+  const data = require("vscode-jsonrpc/lib/messageWriter");
+
+  _messageWriter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,55 +67,42 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {PipedMessage, ServiceConnection} from './types';
-
-import {getLogger} from 'log4js';
-import {DefaultMap} from 'nuclide-commons/collection';
-import {Observable, Subject} from 'rxjs';
-import * as jsonrpc from 'vscode-jsonrpc';
-import {AbstractMessageReader} from 'vscode-jsonrpc/lib/messageReader';
-import {AbstractMessageWriter} from 'vscode-jsonrpc/lib/messageWriter';
-
-// We'll represent sockets in pairs (numbers and their negatives).
-// After writing to a socket, the message may be read through its negative.
-// eslint-disable-next-line
-export opaque type Socket = number;
-
-type DataCallback = (data: PipedMessage) => mixed;
 
 /**
  * In the new package model, communication between packages will be modeled as sockets.
  * For each producer <-> consumer pair, we will create a socket:
  * the consumer gets one end of the socket, while the producer gets the other end.
  */
-export default class MessageRouter {
-  _curSocketID = 1;
-  _sockets: Map<Socket, Subject<PipedMessage>> = new Map();
-
-  // If messages are sent to a socket before a listener gets attached,
-  // buffer it up here. The buffer will be cleared after the first getMessages call.
-  _buffer: DefaultMap<Socket, Array<PipedMessage>> = new DefaultMap(Array);
+class MessageRouter {
+  constructor() {
+    this._curSocketID = 1;
+    this._sockets = new Map();
+    this._buffer = new (_collection().DefaultMap)(Array);
+  }
 
   /**
    * Returns a pair of sockets.
    */
-  getSocket(): [Socket, Socket] {
+  getSocket() {
     const socket = [this._curSocketID, -this._curSocketID];
     this._curSocketID++;
     return socket;
   }
 
-  reverseSocket(socket: Socket): Socket {
+  reverseSocket(socket) {
     return -socket;
   }
 
-  send(message: PipedMessage): void {
-    const {socket} = message;
+  send(message) {
+    const {
+      socket
+    } = message;
+
     const subject = this._sockets.get(socket);
+
     if (subject == null) {
       this._buffer.get(socket).push(message);
     } else {
@@ -62,56 +110,59 @@ export default class MessageRouter {
     }
   }
 
-  getMessages(socket: Socket): Observable<PipedMessage> {
+  getMessages(socket) {
     let subject = this._sockets.get(socket);
+
     if (subject == null) {
-      subject = new Subject();
+      subject = new _RxMin.Subject();
+
       this._sockets.set(socket, subject);
+
       const buffered = this._buffer.get(socket);
+
       this._buffer.delete(socket);
-      return Observable.from(buffered).concat(subject);
+
+      return _RxMin.Observable.from(buffered).concat(subject);
     }
+
     return subject;
   }
 
-  createConnection(socket: Socket, config: ?Object): ServiceConnection {
-    const connection: ServiceConnection = (jsonrpc.createMessageConnection(
-      // Messages intended for socket actually come through -socket.
-      new SimpleReader(cb =>
-        this.getMessages(this.reverseSocket(socket)).subscribe(cb),
-      ),
-      // Tag each message with the socket it originated from.
-      new SimpleWriter(msg => this.send({...msg, socket})),
-      getLogger('ExperimentalMessageRouter-jsonrpc'),
-    ): any);
+  createConnection(socket, config) {
+    const connection = jsonrpc().createMessageConnection( // Messages intended for socket actually come through -socket.
+    new SimpleReader(cb => this.getMessages(this.reverseSocket(socket)).subscribe(cb)), // Tag each message with the socket it originated from.
+    new SimpleWriter(msg => this.send(Object.assign({}, msg, {
+      socket
+    }))), (0, _log4js().getLogger)('ExperimentalMessageRouter-jsonrpc'));
     connection.config = config || {};
     connection.listen();
     return connection;
   }
+
 }
 
-class SimpleReader extends AbstractMessageReader {
-  _subscribe: (callback: DataCallback) => mixed;
+exports.default = MessageRouter;
 
-  constructor(subscribe: (callback: DataCallback) => mixed): void {
+class SimpleReader extends _messageReader().AbstractMessageReader {
+  constructor(subscribe) {
     super();
     this._subscribe = subscribe;
   }
 
-  listen(callback: (data: PipedMessage) => mixed): void {
+  listen(callback) {
     this._subscribe(callback);
   }
+
 }
 
-class SimpleWriter extends AbstractMessageWriter {
-  _write: (message: PipedMessage) => mixed;
-
-  constructor(write: (message: PipedMessage) => mixed) {
+class SimpleWriter extends _messageWriter().AbstractMessageWriter {
+  constructor(write) {
     super();
     this._write = write;
   }
 
-  write(message: PipedMessage): void {
+  write(message) {
     this._write(message);
   }
+
 }

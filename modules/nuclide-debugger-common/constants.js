@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.VsAdapterNames = exports.VsAdapterTypes = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,13 +13,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {VsAdapterType} from './types';
-
-export const VsAdapterTypes = Object.freeze({
+const VsAdapterTypes = Object.freeze({
   HHVM: 'hhvm',
   PYTHON: 'python',
   REACT_NATIVE: 'react-native',
@@ -23,13 +27,12 @@ export const VsAdapterTypes = Object.freeze({
   OCAML: 'ocaml',
   MOBILEJS: 'mobilejs',
   NATIVE_GDB: 'native_gdb',
-  NATIVE_LLDB: 'native_lldb',
-});
+  NATIVE_LLDB: 'native_lldb'
+}); // This is to work around flow's missing support of enums.
 
-// This is to work around flow's missing support of enums.
-(VsAdapterTypes: {[key: string]: VsAdapterType});
-
-export const VsAdapterNames = Object.freeze({
+exports.VsAdapterTypes = VsAdapterTypes;
+VsAdapterTypes;
+const VsAdapterNames = Object.freeze({
   HHVM: 'Hack / PHP',
   PYTHON: 'Python',
   REACT_NATIVE: 'React Native',
@@ -40,5 +43,6 @@ export const VsAdapterNames = Object.freeze({
   OCAML: 'OCaml',
   MOBILEJS: 'Mobile JS',
   NATIVE_GDB: 'Native - GDB (C/C++)',
-  NATIVE_LLDB: 'Native - LLDB (C/C++)',
+  NATIVE_LLDB: 'Native - LLDB (C/C++)'
 });
+exports.VsAdapterNames = VsAdapterNames;

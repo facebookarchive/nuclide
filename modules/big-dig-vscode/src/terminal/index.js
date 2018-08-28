@@ -1,3 +1,62 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createRemoteTerminal = createRemoteTerminal;
+
+function vscode() {
+  const data = _interopRequireWildcard(require("vscode"));
+
+  vscode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConnectionWrapper() {
+  const data = require("../ConnectionWrapper");
+
+  _ConnectionWrapper = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _configuration() {
+  const data = require("../configuration");
+
+  _configuration = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteProcess() {
+  const data = require("../RemoteProcess");
+
+  _RemoteProcess = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ProxyExecutable() {
+  const data = require("../util/ProxyExecutable");
+
+  _ProxyExecutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,65 +65,56 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {RemoteChildProcess} from '../RemoteProcess';
-import type {TerminalWrapper} from '../util/TerminalWrapper';
-
-import * as vscode from 'vscode';
-import {ConnectionWrapper} from '../ConnectionWrapper';
-import {getIntegratedTerminal} from '../configuration';
-import {spawnRemote} from '../RemoteProcess';
-import {createProxyExecutable} from '../util/ProxyExecutable';
 
 /**
  * Creates a `vscode.Terminal` attached to a remote process.
  */
-export async function createRemoteTerminal(
-  conn: ConnectionWrapper,
-  cwd?: string,
-  env?: {[x: string]: string},
-): Promise<vscode.Terminal> {
-  const {shell, shellArgs} = getIntegratedTerminal();
+async function createRemoteTerminal(conn, cwd, env) {
+  const {
+    shell,
+    shellArgs
+  } = (0, _configuration().getIntegratedTerminal)(); // TODO(siegbell): use the new, proposed `TerminalRenderer` API instead of a proxy process.
 
-  // TODO(siegbell): use the new, proposed `TerminalRenderer` API instead of a proxy process.
-  const exec = await createProxyExecutable();
-  exec.spawned.take(1).subscribe(async ({proxy}) => {
+  const exec = await (0, _ProxyExecutable().createProxyExecutable)();
+  exec.spawned.take(1).subscribe(async ({
+    proxy
+  }) => {
     // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-    const remote = await spawnRemote(conn, shell, shellArgs, {
+    const remote = await (0, _RemoteProcess().spawnRemote)(conn, shell, shellArgs, {
       cwd,
       shell: false,
       usePty: true,
       env,
-      addBigDigToPath: true,
+      addBigDigToPath: true
     });
     connectProxyToRemoteProcess(proxy, remote);
   });
-
-  exec.terminal.show(false /* take UI focus */);
+  exec.terminal.show(false
+  /* take UI focus */
+  );
   return exec.terminal;
 }
 
-function connectProxyToRemoteProcess(
-  proxy: TerminalWrapper,
-  remote: RemoteChildProcess,
-): void {
+function connectProxyToRemoteProcess(proxy, remote) {
   proxy.on('close', () => {
     remote.kill('SIGTERM');
   });
   proxy.on('resize', () => {
-    const {columns, rows} = proxy;
+    const {
+      columns,
+      rows
+    } = proxy;
     remote.resize(columns, rows);
   });
   proxy.stdin.pipe(remote.stdin);
-
   remote.stdout.pipe(proxy.stdout);
   remote.stderr.pipe(proxy.stderr);
   remote.once('close', () => proxy.close());
   remote.once('error', err => {
-    vscode.window.showWarningMessage(`Error from terminal: ${err.toString()}`);
+    vscode().window.showWarningMessage(`Error from terminal: ${err.toString()}`);
     proxy.close();
   });
 }

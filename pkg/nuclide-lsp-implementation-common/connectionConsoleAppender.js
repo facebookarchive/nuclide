@@ -1,3 +1,37 @@
+"use strict";
+
+function _log4js() {
+  const data = _interopRequireDefault(require("log4js"));
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _vscodeLanguageserver() {
+  const data = require("vscode-languageserver");
+
+  _vscodeLanguageserver = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _protocol() {
+  const data = require("../nuclide-vscode-language-service-rpc/lib/protocol");
+
+  _protocol = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,48 +39,44 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import log4js from 'log4js';
-import {IConnection} from 'vscode-languageserver';
-import {
-  type LogMessageParams,
-  MessageType,
-} from '../nuclide-vscode-language-service-rpc/lib/protocol';
-
-function getMessageType(levelStr: string) {
+function getMessageType(levelStr) {
   switch (levelStr) {
     case 'ERROR':
-      return MessageType.Error;
+      return _protocol().MessageType.Error;
+
     case 'WARN':
-      return MessageType.Warning;
+      return _protocol().MessageType.Warning;
+
     case 'INFO':
-      return MessageType.Info;
+      return _protocol().MessageType.Info;
+
     default:
-      return MessageType.Log;
+      return _protocol().MessageType.Log;
   }
 }
 
-function appender(config: {connection: IConnection}) {
-  const {connection} = config;
+function appender(config) {
+  const {
+    connection
+  } = config; // eslint-disable-next-line flowtype/no-weak-types
 
-  // eslint-disable-next-line flowtype/no-weak-types
-  return (loggingEvent: any): void => {
+  return loggingEvent => {
     // $FlowFixMe: type log4js.layouts
-    const message = log4js.layouts.basicLayout(loggingEvent);
-    if (loggingEvent.level.level >= log4js.levels.INFO.level) {
+    const message = _log4js().default.layouts.basicLayout(loggingEvent);
+
+    if (loggingEvent.level.level >= _log4js().default.levels.INFO.level) {
       connection.console.log(message);
     }
-    connection.telemetry.logEvent(
-      ({
-        type: getMessageType(loggingEvent.level.levelStr),
-        message,
-      }: LogMessageParams),
-    );
-  };
-}
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
+    connection.telemetry.logEvent({
+      type: getMessageType(loggingEvent.level.levelStr),
+      message
+    });
+  };
+} // eslint-disable-next-line nuclide-internal/no-commonjs
+
+
 module.exports.configure = module.exports.appender = appender;

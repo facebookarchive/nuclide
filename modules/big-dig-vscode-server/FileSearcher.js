@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createFileSearcher = createFileSearcher;
+
+var _path = _interopRequireDefault(require("path"));
+
+function _process() {
+  const data = require("../nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +27,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import pathModule from 'path';
-import {runCommand} from 'nuclide-commons/process';
-
 // Limit the number of file search results that are sent back to the client.
 const MAX_RESULTS = 20;
 
-export interface FileSearcher {
-  /** @return a list of absolute file paths. */
-  search(directory: string, query: string): Promise<Array<string>>;
-}
-
-/** A `FileSearcher` that is hardcoded to search a specific directory. */
-export interface DirectoryFileSearcher {
-  /** @return a list of absolute file paths. */
-  search(query: string): Promise<Array<string>>;
-}
-
 /** Creates a new FileSearcher for the local host. */
-export async function createFileSearcher(): Promise<FileSearcher> {
+async function createFileSearcher() {
   return new FileSearcherProxy();
 }
-
 /**
  * FileSearcher that creates a cache of directories to DirectoryFileSearchers.
  * It forwards search requests to the appropriate DirectoryFileSearcher,
@@ -42,30 +47,36 @@ export async function createFileSearcher(): Promise<FileSearcher> {
  * DirectoryFileSearcher (and because the DirectoryFileSearchers may be
  * stateful), it makes sense to keep them around.
  */
-class FileSearcherProxy implements FileSearcher {
-  _searchers: Map<string, Promise<DirectoryFileSearcher>>;
 
+
+class FileSearcherProxy {
   constructor() {
     this._searchers = new Map();
   }
 
-  search(directory: string, query: string): Promise<Array<string>> {
+  search(directory, query) {
     let searcherPromise = this._searchers.get(directory);
+
     if (searcherPromise == null) {
       searcherPromise = getFileSearcherForDirectory(directory);
+
       this._searchers.set(directory, searcherPromise);
     }
+
     return searcherPromise.then(searcher => searcher.search(query));
   }
+
 }
 
-async function getFileSearcherForDirectory(
-  directoryToSearch: string,
-): Promise<DirectoryFileSearcher> {
+async function getFileSearcherForDirectory(directoryToSearch) {
   try {
     // $FlowFB
-    const {getCustomFileSearcher} = require('./fb-CustomFileSearcher');
+    const {
+      getCustomFileSearcher
+    } = require("./fb-CustomFileSearcher");
+
     const searcher = await getCustomFileSearcher(directoryToSearch);
+
     if (searcher != null) {
       return searcher;
     }
@@ -73,26 +84,24 @@ async function getFileSearcherForDirectory(
 
   return new FindAndGrepFileSearcher(directoryToSearch);
 }
-
 /** Crude file search using `find` and `grep`. */
-class FindAndGrepFileSearcher implements DirectoryFileSearcher {
-  /** Absolute path of the directory that will be searched by this searcher. */
-  _directoryToSearch: string;
 
-  constructor(directoryToSearch: string) {
+
+class FindAndGrepFileSearcher {
+  /** Absolute path of the directory that will be searched by this searcher. */
+  constructor(directoryToSearch) {
     this._directoryToSearch = directoryToSearch;
   }
 
-  async search(query: string): Promise<Array<string>> {
+  async search(query) {
     const findArgs = ['.', '-type', 'f', '-iname', `*${query}*`];
-    const stdout = await runCommand('find', findArgs, {
-      cwd: this._directoryToSearch,
+    const stdout = await (0, _process().runCommand)('find', findArgs, {
+      cwd: this._directoryToSearch
     }).toPromise();
-    const lines = stdout.split('\n').slice(0, MAX_RESULTS);
-    // Trim lines and return non-empty ones. Each resulting line should be
+    const lines = stdout.split('\n').slice(0, MAX_RESULTS); // Trim lines and return non-empty ones. Each resulting line should be
     // a path relative to _directoryToSearch.
-    return lines
-      .map(x => pathModule.join(this._directoryToSearch, x))
-      .filter(line => line.length > 0);
+
+    return lines.map(x => _path.default.join(this._directoryToSearch, x)).filter(line => line.length > 0);
   }
+
 }

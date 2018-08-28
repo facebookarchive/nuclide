@@ -1,37 +1,62 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import React from 'react';
-import classnames from 'classnames';
-import nullthrows from 'nullthrows';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-type Props = {
-  className?: string,
-};
+var _react = _interopRequireDefault(require("react"));
 
-export default class UnstyledButton extends React.Component<Props> {
-  props: Props;
-  _node: ?HTMLButtonElement;
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
 
-  focus(): void {
-    nullthrows(this._node).focus();
-  }
+  _classnames = function () {
+    return data;
+  };
 
-  _setRef = (node: ?HTMLButtonElement) => (this._node = node);
-
-  render(): React$Element<any> {
-    const {className, ...props} = this.props;
-    const classes = classnames('nuclide-ui-unstyled-button', className);
-    // eslint-disable-next-line nuclide-internal/use-nuclide-ui-components
-    return <button className={classes} ref={this._setRef} {...props} />;
-  }
+  return data;
 }
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+class UnstyledButton extends _react.default.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._setRef = node => this._node = node, _temp;
+  }
+
+  focus() {
+    (0, _nullthrows().default)(this._node).focus();
+  }
+
+  render() {
+    const _this$props = this.props,
+          {
+      className
+    } = _this$props,
+          props = _objectWithoutProperties(_this$props, ["className"]);
+
+    const classes = (0, _classnames().default)('nuclide-ui-unstyled-button', className); // eslint-disable-next-line nuclide-internal/use-nuclide-ui-components
+
+    return _react.default.createElement("button", Object.assign({
+      className: classes,
+      ref: this._setRef
+    }, props));
+  }
+
+}
+
+exports.default = UnstyledButton;

@@ -1,3 +1,66 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Selectors = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function Immutable() {
+  const data = _interopRequireWildcard(require("immutable"));
+
+  Immutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Dropdown() {
+  const data = require("../../../../modules/nuclide-commons-ui/Dropdown");
+
+  _Dropdown = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Button() {
+  const data = require("../../../../modules/nuclide-commons-ui/Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ButtonGroup() {
+  const data = require("../../../../modules/nuclide-commons-ui/ButtonGroup");
+
+  _ButtonGroup = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,129 +68,104 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Option} from 'nuclide-commons-ui/Dropdown';
-import type {DeviceTypeComponent} from 'nuclide-debugger-common/types';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as React from 'react';
-import * as Immutable from 'immutable';
-import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
-
 const FB_HOST_SUFFIX = '.facebook.com';
 
-type Props = {|
-  setHost: (host: NuclideUri) => void,
-  setDeviceType: (deviceType: string) => void,
-  toggleDevicePolling: (isActive: boolean) => void,
-  hosts: NuclideUri[],
-  host: NuclideUri,
-  deviceTypes: string[],
-  deviceType: ?string,
-  hostSelectorComponents: Immutable.List<DeviceTypeComponent>,
-|};
+class Selectors extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-export class Selectors extends React.Component<Props> {
-  componentDidMount(): void {
+    return _temp = super(...args), this._getHostSelectorNodes = () => {
+      return this.props.hostSelectorComponents.map(component => {
+        const Type = component.type;
+        return React.createElement(Type, {
+          key: component.key
+        });
+      });
+    }, _temp;
+  }
+
+  componentDidMount() {
     if (this.props.deviceTypes.length > 0) {
       this._setDeviceType(this.props.deviceTypes[0]);
     }
   }
 
-  _getLabelForHost(host: string): string {
+  _getLabelForHost(host) {
     if (host === '') {
       return 'local';
     }
-    const hostName = nuclideUri.getHostname(host);
-    return hostName.endsWith(FB_HOST_SUFFIX)
-      ? hostName.substring(0, hostName.length - FB_HOST_SUFFIX.length)
-      : hostName;
+
+    const hostName = _nuclideUri().default.getHostname(host);
+
+    return hostName.endsWith(FB_HOST_SUFFIX) ? hostName.substring(0, hostName.length - FB_HOST_SUFFIX.length) : hostName;
   }
 
-  _getHostOptions(): Array<Option> {
+  _getHostOptions() {
     return this.props.hosts.map(host => {
-      return {value: host, label: this._getLabelForHost(host)};
+      return {
+        value: host,
+        label: this._getLabelForHost(host)
+      };
     });
   }
 
-  _getHostSelectorNodes = (): Immutable.List<React.Element<any>> => {
-    return this.props.hostSelectorComponents.map(component => {
-      const Type = component.type;
-      return <Type key={component.key} />;
-    });
-  };
-
-  _getTypesButtons(): React.Element<any>[] {
+  _getTypesButtons() {
     return this.props.deviceTypes.map(deviceType => {
       if (deviceType === this.props.deviceType) {
-        return (
-          <Button key={deviceType} buttonType={ButtonTypes.PRIMARY}>
-            {deviceType}
-          </Button>
-        );
+        return React.createElement(_Button().Button, {
+          key: deviceType,
+          buttonType: _Button().ButtonTypes.PRIMARY
+        }, deviceType);
       }
-      return (
-        <Button
-          key={deviceType}
-          onClick={() => this._setDeviceType(deviceType)}>
-          {deviceType}
-        </Button>
-      );
+
+      return React.createElement(_Button().Button, {
+        key: deviceType,
+        onClick: () => this._setDeviceType(deviceType)
+      }, deviceType);
     });
   }
 
-  _setDeviceType(deviceType: string) {
+  _setDeviceType(deviceType) {
     this.props.setDeviceType(deviceType);
     this.props.toggleDevicePolling(true);
   }
 
-  _getTypesSelector(): React.Element<any> {
-    return (
-      <ButtonGroup size={ButtonGroupSizes.SMALL}>
-        {this._getTypesButtons()}
-      </ButtonGroup>
-    );
+  _getTypesSelector() {
+    return React.createElement(_ButtonGroup().ButtonGroup, {
+      size: _ButtonGroup().ButtonGroupSizes.SMALL
+    }, this._getTypesButtons());
   }
 
-  _getHostSelector(): React.Element<any> {
-    return (
-      <div className="nuclide-device-panel-host-selector">
-        {this._getHostSelectorNodes()}
-        <Dropdown
-          options={this._getHostOptions()}
-          onChange={host => {
-            this.props.setHost(host);
-            this._updateDeviceType();
-          }}
-          value={this.props.host}
-          key="connection"
-        />
-      </div>
-    );
+  _getHostSelector() {
+    return React.createElement("div", {
+      className: "nuclide-device-panel-host-selector"
+    }, this._getHostSelectorNodes(), React.createElement(_Dropdown().Dropdown, {
+      options: this._getHostOptions(),
+      onChange: host => {
+        this.props.setHost(host);
+
+        this._updateDeviceType();
+      },
+      value: this.props.host,
+      key: "connection"
+    }));
   }
 
-  _updateDeviceType(): void {
+  _updateDeviceType() {
     if (this.props.deviceTypes.length > 0) {
-      this._setDeviceType(
-        this.props.deviceType != null
-          ? this.props.deviceType
-          : this.props.deviceTypes[0],
-      );
+      this._setDeviceType(this.props.deviceType != null ? this.props.deviceType : this.props.deviceTypes[0]);
     }
   }
 
-  render(): React.Node {
-    return (
-      <div className="block nuclide-device-panel-navigation-row">
-        {this._getTypesSelector()}
-        {this._getHostSelector()}
-      </div>
-    );
+  render() {
+    return React.createElement("div", {
+      className: "block nuclide-device-panel-navigation-row"
+    }, this._getTypesSelector(), this._getHostSelector());
   }
+
 }
+
+exports.Selectors = Selectors;

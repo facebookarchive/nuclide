@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _systemInfo() {
+  const data = require("./system-info");
+
+  _systemInfo = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nodeFetch() {
+  const data = _interopRequireDefault(require("node-fetch"));
+
+  _nodeFetch = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +34,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -33,27 +62,21 @@
  *
  * https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
  */
-
 // The `fetch` function is directly exported (no wrapper) so that this module
 // doesn't create a frame in stack traces. Also, so the "initiator" in the
 // Network Panel reflects the actual `fetch` call site and not this module.
 // The export is typed with `typeof fetch` so flow treats the polyfill as the
 // real `fetch`.
+const fetchImpl = typeof global.fetch === 'function' ? global.fetch : _nodeFetch().default; // Stub out `fetch` in all tests so we don't inadvertently rely on external URLs.
 
-import {isRunningInTest} from './system-info';
-import nodeFetch from 'node-fetch';
-
-const fetchImpl =
-  typeof global.fetch === 'function' ? global.fetch : (nodeFetch: typeof fetch);
-
-// Stub out `fetch` in all tests so we don't inadvertently rely on external URLs.
-const testFetch: typeof fetch = function testFetch(url) {
+const testFetch = function testFetch(url) {
   if (typeof url === 'string' && url.startsWith('http://localhost')) {
     return fetchImpl(url);
   }
-  return Promise.reject(
-    Error('fetch is stubbed out for testing. Use a spy instead.'),
-  );
+
+  return Promise.reject(Error('fetch is stubbed out for testing. Use a spy instead.'));
 };
 
-export default (isRunningInTest() ? testFetch : fetchImpl);
+var _default = (0, _systemInfo().isRunningInTest)() ? testFetch : fetchImpl;
+
+exports.default = _default;

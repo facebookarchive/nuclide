@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.open = open;
+exports.gotRefactorings = gotRefactorings;
+exports.error = error;
+exports.backFromDiffPreview = backFromDiffPreview;
+exports.pickedRefactor = pickedRefactor;
+exports.execute = execute;
+exports.confirm = confirm;
+exports.loadDiffPreview = loadDiffPreview;
+exports.displayDiffPreview = displayDiffPreview;
+exports.displayRename = displayRename;
+exports.apply = apply;
+exports.progress = progress;
+exports.close = close;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,137 +25,96 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {RefactorRequest, RefactorProvider} from './types';
-import type {AvailableRefactoring, RefactorEditResponse} from './types';
-import type {
-  ApplyAction,
-  BackFromDiffPreviewAction,
-  CloseAction,
-  ConfirmAction,
-  DisplayDiffPreviewAction,
-  ErrorAction,
-  ErrorSource,
-  ExecuteAction,
-  GotRefactoringsAction,
-  OpenAction,
-  Phase,
-  ProgressAction,
-  PickedRefactorAction,
-  RefactorUI,
-  LoadDiffPreviewAction,
-  DisplayRenameAction,
-} from './types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-export function open(ui: RefactorUI): OpenAction {
+function open(ui) {
   return {
     type: 'open',
-    ui,
+    ui
   };
 }
 
-export function gotRefactorings(
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-  providers: RefactorProvider[],
-  availableRefactorings: Array<AvailableRefactoring>,
-): GotRefactoringsAction {
+function gotRefactorings(editor, originalRange, providers, availableRefactorings) {
   return {
     type: 'got-refactorings',
     payload: {
       editor,
       originalRange,
       providers,
-      availableRefactorings,
-    },
+      availableRefactorings
+    }
   };
 }
 
-export function error(source: ErrorSource, err: Error): ErrorAction {
+function error(source, err) {
   return {
     type: 'error',
     payload: {
       source,
-      error: err,
-    },
+      error: err
+    }
   };
 }
 
-export function backFromDiffPreview(phase: Phase): BackFromDiffPreviewAction {
+function backFromDiffPreview(phase) {
   return {
     type: 'back-from-diff-preview',
     payload: {
-      phase,
-    },
+      phase
+    }
   };
 }
 
-export function pickedRefactor(
-  refactoring: AvailableRefactoring,
-): PickedRefactorAction {
+function pickedRefactor(refactoring) {
   return {
     type: 'picked-refactor',
     payload: {
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function execute(
-  providers: RefactorProvider[],
-  refactoring: RefactorRequest,
-): ExecuteAction {
+function execute(providers, refactoring) {
   return {
     type: 'execute',
     payload: {
       providers,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function confirm(response: RefactorEditResponse): ConfirmAction {
+function confirm(response) {
   return {
     type: 'confirm',
-    payload: {response},
+    payload: {
+      response
+    }
   };
 }
 
-export function loadDiffPreview(
-  previousPhase: Phase,
-  uri: NuclideUri,
-  response: RefactorEditResponse,
-): LoadDiffPreviewAction {
+function loadDiffPreview(previousPhase, uri, response) {
   return {
     type: 'load-diff-preview',
     payload: {
       previousPhase,
       uri,
-      response,
-    },
+      response
+    }
   };
 }
 
-export function displayDiffPreview(
-  diffs: Array<diffparser$FileDiff>,
-): DisplayDiffPreviewAction {
+function displayDiffPreview(diffs) {
   return {
     type: 'display-diff-preview',
-    payload: {diffs},
+    payload: {
+      diffs
+    }
   };
 }
 
-export function displayRename(
-  editor: TextEditor,
-  providers: RefactorProvider[],
-  selectedText: string,
-  mountPosition: atom$Point,
-  symbolPosition: atom$Point,
-): DisplayRenameAction {
+function displayRename(editor, providers, selectedText, mountPosition, symbolPosition) {
   return {
     type: 'display-rename',
     payload: {
@@ -144,31 +122,33 @@ export function displayRename(
       providers,
       selectedText,
       mountPosition,
-      symbolPosition,
-    },
+      symbolPosition
+    }
   };
 }
 
-export function apply(response: RefactorEditResponse): ApplyAction {
+function apply(response) {
   return {
     type: 'apply',
-    payload: {response},
+    payload: {
+      response
+    }
   };
 }
 
-export function progress(
-  message: string,
-  value: number,
-  max: number,
-): ProgressAction {
+function progress(message, value, max) {
   return {
     type: 'progress',
-    payload: {message, value, max},
+    payload: {
+      message,
+      value,
+      max
+    }
   };
 }
 
-export function close(): CloseAction {
+function close() {
   return {
-    type: 'close',
+    type: 'close'
   };
 }
