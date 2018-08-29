@@ -13,7 +13,7 @@ import type {Transport} from 'big-dig/src/server/BigDigServer';
 import type {BigDigServer, LauncherType} from 'big-dig/src/server/BigDigServer';
 import type {Transport as RpcTransportType} from '../../nuclide-rpc';
 
-import vscodeLaunch from 'fb-big-dig-vscode-server/server';
+// @fb-only: import vscodeLaunch from 'fb-big-dig-vscode-server/server';
 import {initializeLogging} from '../../nuclide-logging';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
@@ -48,7 +48,8 @@ function launch(server: BigDigServer): Promise<void> {
   });
 
   // Enable VSCode to connect to Nuclide servers by default.
-  return vscodeLaunch(server);
+  // @fb-only: return vscodeLaunch(server);
+  return Promise.resolve(); // @oss-only
 }
 
 // eslint-disable-next-line nuclide-internal/no-commonjs
