@@ -70,7 +70,7 @@ const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 const handleSpawnPopupEvents = new Subject();
 
 const SpawnPopupEvents = handleSpawnPopupEvents
-  .switchMap(({messages, diagnosticUpdater, gutter, item}) => {
+  .switchMap(({messages, diagnosticUpdater, gutter, item, editorElement}) => {
     return spawnPopup(messages, diagnosticUpdater, gutter, item)
       .let(
         completingSwitchMap((popupElement: HTMLElement) => {
@@ -78,7 +78,7 @@ const SpawnPopupEvents = handleSpawnPopupEvents
           invariant(innerPopupElement instanceof HTMLElement);
           // Events which should cause the popup to close.
           return Observable.merge(
-            hoveringOrAiming(item, innerPopupElement),
+            hoveringOrAiming(item, innerPopupElement, editorElement),
             // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
             observableFromSubscribeFunction(cb =>
               atom.workspace.onDidChangeActivePaneItem(cb),
@@ -327,6 +327,7 @@ function createGutterItem(
   icon.className = `icon icon-${GroupUtils.getIcon(group)}`;
   item.appendChild(icon);
 
+  const editorElement = editor.getElement();
   const disposable = new UniversalDisposable(
     SpawnPopupEvents.subscribe(),
     Observable.fromEvent(item, 'mouseenter').subscribe(() => {
@@ -335,6 +336,7 @@ function createGutterItem(
         diagnosticUpdater,
         gutter,
         item,
+        editorElement,
       });
     }),
     Observable.fromEvent(item, 'click').subscribe(() => {

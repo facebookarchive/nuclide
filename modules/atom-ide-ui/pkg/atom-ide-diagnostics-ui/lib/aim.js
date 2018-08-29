@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  */
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
 
 type Point = {x: number, y: number};
@@ -26,10 +27,14 @@ const eventToPoint = (e: MouseEvent): Point => ({
 });
 
 // Combine mouseenter and mouseleave to create an observable of hovering state.
-function areHovering(element: HTMLElement): Observable<boolean> {
+function areHovering(
+  element: HTMLElement,
+  editorElement: atom$TextEditorElement,
+): Observable<boolean> {
   return Observable.merge(
     Observable.fromEvent(element, 'mouseenter').mapTo(true),
     Observable.fromEvent(element, 'mouseleave').mapTo(false),
+    editorScrolled(editorElement).mapTo(false),
   );
 }
 
@@ -66,18 +71,32 @@ function areAiming(from: HTMLElement, to: HTMLElement): Observable<boolean> {
     .distinctUntilChanged();
 }
 
+function editorScrolled(
+  editorElement: atom$TextEditorElement,
+): Observable<number> {
+  return observableFromSubscribeFunction(cb =>
+    editorElement.onDidChangeScrollTop(cb),
+  );
+}
+
 export function hoveringOrAiming(
   from: HTMLElement,
   to: HTMLElement,
+  editorElement: atom$TextEditorElement,
 ): Observable<boolean> {
   return Observable.concat(
-    areHovering(from)
+    areHovering(from, editorElement)
       .startWith(true)
       .takeWhile(Boolean),
     Observable.combineLatest(
       areAiming(from, to).startWith(true),
-      areHovering(to).startWith(false),
-      (aiming, hovering) => aiming || hovering,
+      areHovering(to, editorElement).startWith(false),
+      editorScrolled(editorElement)
+        .mapTo(true)
+        .startWith(false),
+      (aiming, hovering, scrolled) => {
+        return (aiming || hovering) && !scrolled;
+      },
     ),
   ).distinctUntilChanged();
 }
