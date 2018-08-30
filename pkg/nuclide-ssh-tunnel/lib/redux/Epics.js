@@ -13,7 +13,6 @@ import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {Action, Store} from '../types';
 
 import {getSocketServiceByHost} from '../Normalization';
-import {validateTunnel} from '../Whitelist';
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
 import {getLogger} from 'log4js';
@@ -126,22 +125,7 @@ export function requestTunnelEpic(
       const {tunnel, onOpen} = action.payload;
       const {from, to} = tunnel;
 
-      const [useBigDigTunnel, isValidated] = await Promise.all([
-        passesGK('nuclide_big_dig_tunnel'),
-        validateTunnel(tunnel),
-      ]);
-
-      if (!isValidated) {
-        onOpen(
-          new Error(
-            `Trying to open a tunnel on a non-whitelisted port: ${
-              to.port
-            }\n\n` +
-              'Contact the Nuclide team if you would like this port to be available.',
-          ),
-        );
-        return null;
-      }
+      const useBigDigTunnel = await passesGK('nuclide_big_dig_tunnel');
 
       const remoteTunnelHost = from.host === 'localhost' ? to : from;
       const localTunnelHost = from.host === 'localhost' ? from : to;
