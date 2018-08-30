@@ -106,8 +106,11 @@ export class TunnelManager extends EventEmitter {
       this.once(`proxyMessage:${tunnel.getId()}`, msg => {
         if (msg.event === 'proxyCreated') {
           resolve(tunnel);
+        } else if (msg.event === 'proxyError') {
+          tunnel.close();
+          reject(msg.error);
         } else {
-          reject(JSON.parse(msg.error));
+          reject(new Error('unexpected response to createProxy'));
         }
       });
     });
