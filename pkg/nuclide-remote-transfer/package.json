@@ -14,7 +14,13 @@
     "config": {},
     "packageType": "AtomPackage"
   },
-  "providedServices": {},
+  "providedServices": {
+    "nuclide-remote-transfer": {
+      "versions": {
+        "0.0.0": "provideService"
+      }
+    }
+  },
   "consumedServices": {
     "nuclide-file-tree.context-menu": {
       "versions": {

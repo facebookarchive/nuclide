@@ -96,6 +96,7 @@ const DEFAULT_STATE: AppState = {
   _cwdKey: null,
   _trackedRootKey: null,
   _trackedNodeKey: null,
+  remoteTransferService: null,
 };
 
 function reduceState(state_: AppState, action: Action): AppState {
@@ -238,6 +239,8 @@ function reduceState(state_: AppState, action: Action): AppState {
         ...state,
         _isLoadingMap: state._isLoadingMap.set(action.nodeKey, action.promise),
       };
+    case Actions.GOT_REMOTE_TRANSFER_SERVICE:
+      return {...state, remoteTransferService: action.remoteTransferService};
     case SelectionActions.SELECT:
       return {
         ...state,

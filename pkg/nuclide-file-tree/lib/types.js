@@ -11,6 +11,7 @@
 
 import type Immutable from 'immutable';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {RemoteTransferService} from '../../nuclide-remote-transfer';
 import type {FileTreeNode} from './FileTreeNode';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import * as React from 'react';
@@ -116,6 +117,7 @@ export type AppState = {|
 
   _selectedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
   _focusedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
+  remoteTransferService: ?RemoteTransferService,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -669,6 +671,10 @@ export type Action =
   | {|
       type: 'LOAD_DATA',
       data: ExportStoreData,
+    |}
+  | {|
+      type: 'GOT_REMOTE_TRANSFER_SERVICE',
+      remoteTransferService: ?RemoteTransferService,
     |}
   | SelectionAction;
 

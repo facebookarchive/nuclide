@@ -23,6 +23,13 @@ import {track} from '../../nuclide-analytics';
 import {writeToStream} from 'nuclide-commons/stream';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+export type RemoteTransferService = {
+  uploadFiles: (
+    localFiles: Array<string>,
+    remoteDirectory: string,
+  ) => Promise<mixed>,
+};
+
 const REMOTE_TRANSFER_FILE_TREE_CONTEXT_MENU_PRIORITY = 500;
 
 invariant(remote != null);
@@ -391,6 +398,12 @@ class Activation {
 
   constructor() {
     this._disposables = new UniversalDisposable();
+  }
+
+  provideService(): RemoteTransferService {
+    return {
+      uploadFiles: uploadFilesWithNotifications,
+    };
   }
 
   consumeFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {

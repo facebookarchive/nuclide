@@ -12,6 +12,7 @@
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 // eslint-disable-next-line nuclide-internal/import-type-style
+import type {RemoteTransferService} from '../../../nuclide-remote-transfer';
 import type {Action} from '../types';
 import type {FileTreeNode} from '../FileTreeNode';
 import type CwdApi from '../../../nuclide-current-working-directory/lib/CwdApi';
@@ -123,6 +124,7 @@ export const ADD_FILTER_LETTER = 'ADD_FILTER_LETTER';
 export const REMOVE_FILTER_LETTER = 'REMOVE_FILTER_LETTER';
 export const UPDATE_REPOSITORIES = 'UPDATE_REPOSITORIES';
 export const UPDATE_ROOT_DIRECTORIES = 'UPDATE_ROOT_DIRECTORIES';
+export const GOT_REMOTE_TRANSFER_SERVICE = 'GOT_REMOTE_TRANSFER_SERVICE';
 
 export function setCwd(rootKey: ?string): Action {
   return {
@@ -815,4 +817,10 @@ export function setInitialData(data: InitialData): Action {
     type: SET_INITIAL_DATA,
     data,
   };
+}
+
+export function gotRemoteTransferService(
+  remoteTransferService: ?RemoteTransferService,
+): Action {
+  return {type: GOT_REMOTE_TRANSFER_SERVICE, remoteTransferService};
 }

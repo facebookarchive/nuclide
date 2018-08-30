@@ -16,6 +16,7 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AdditionalLogFilesProvider} from '../../nuclide-logging/lib/rpc-types';
+import type {RemoteTransferService} from '../../nuclide-remote-transfer/lib/main';
 
 import invariant from 'assert';
 
@@ -237,6 +238,15 @@ class Activation {
     };
 
     return disposables;
+  }
+
+  consumeRemoteFileTransfer(remoteTransferService: RemoteTransferService) {
+    this._store.dispatch(
+      Actions.gotRemoteTransferService(remoteTransferService),
+    );
+    return new UniversalDisposable(() => {
+      this._store.dispatch(Actions.gotRemoteTransferService(null));
+    });
   }
 
   consumeTerminal(terminal: TerminalApi): IDisposable {

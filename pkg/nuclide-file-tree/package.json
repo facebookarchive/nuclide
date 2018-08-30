@@ -24,6 +24,11 @@
       "versions": {
         "0.0.0": "consumeRemoteProjectsService"
       }
+    },
+    "nuclide-remote-transfer": {
+      "versions": {
+        "0.0.0": "consumeRemoteFileTransfer"
+      }
     }
   },
   "providedServices": {
