@@ -240,6 +240,7 @@ class Activation {
     return disposables;
   }
 
+  // Currently we only support one remoteTransferService at a time.
   consumeRemoteFileTransfer(remoteTransferService: RemoteTransferService) {
     this._store.dispatch(
       Actions.gotRemoteTransferService(remoteTransferService),

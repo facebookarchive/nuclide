@@ -413,6 +413,9 @@ export const collectSelectionDebugState = createSelector(
   },
 );
 
+export const getCanTransferFiles = (state: AppState) =>
+  Boolean(state.remoteTransferService);
+
 export const collectDebugState = createSelector(
   [
     getCwdKey,

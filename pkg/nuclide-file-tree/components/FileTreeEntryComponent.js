@@ -68,6 +68,8 @@ type Props = {|
   endReorderDrag: () => void,
   reorderRoots: () => void,
   moveToNode: () => void,
+  uploadDroppedFiles: (files: FileList) => void,
+  canTransferFiles: boolean,
 |};
 
 type State = {|
@@ -416,8 +418,14 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       FileTreeHgHelpers.isValidRename(node, this.props.node.uri),
     );
 
+    const haveMovableNodes = movableNodes.size > 0;
+    const haveUploadableOSFiles =
+      this.props.canTransferFiles &&
+      event.dataTransfer &&
+      event.dataTransfer.types.includes('Files');
+    const nothingToMove = !(haveMovableNodes || haveUploadableOSFiles);
     // Ignores hover over invalid targets.
-    if (!this.props.node.isContainer || movableNodes.size === 0) {
+    if (!this.props.node.isContainer || nothingToMove) {
       return;
     }
     if (this.dragEventCount <= 0) {
@@ -442,7 +450,6 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 
   _onDragStart = (event: DragEvent) => {
     event.stopPropagation();
-
     if (this._pathContainer == null) {
       return;
     }
@@ -501,6 +508,15 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       this.dragEventCount = 0;
       this.props.moveToNode();
     }
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length && this.props.canTransferFiles) {
+      if (this.props.node.isContainer) {
+        this.props.uploadDroppedFiles(files);
+      } else {
+        // TODO: Show warning
+      }
+    }
   };
 
   _toggleNodeExpanded(deep: boolean): void {
@@ -543,6 +559,7 @@ const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   isFocused: Selectors.getFocusedNodes(state).includes(ownProps.node),
   usePreviewTabs: Selectors.getConf(state).usePreviewTabs,
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
+  canTransferFiles: Selectors.getCanTransferFiles(state),
 });
 
 const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
@@ -613,6 +630,9 @@ const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
   },
   moveToNode: () => {
     dispatch(Actions.moveToNode(ownProps.node.rootUri, ownProps.node.uri));
+  },
+  uploadDroppedFiles: (files: FileList) => {
+    dispatch(Actions.uploadDroppedFiles(ownProps.node, files));
   },
 });
 

@@ -125,6 +125,7 @@ export const REMOVE_FILTER_LETTER = 'REMOVE_FILTER_LETTER';
 export const UPDATE_REPOSITORIES = 'UPDATE_REPOSITORIES';
 export const UPDATE_ROOT_DIRECTORIES = 'UPDATE_ROOT_DIRECTORIES';
 export const GOT_REMOTE_TRANSFER_SERVICE = 'GOT_REMOTE_TRANSFER_SERVICE';
+export const UPLOAD_DROPPED_FILES = 'UPLOAD_DROPPED_FILES';
 
 export function setCwd(rootKey: ?string): Action {
   return {
@@ -823,4 +824,11 @@ export function gotRemoteTransferService(
   remoteTransferService: ?RemoteTransferService,
 ): Action {
   return {type: GOT_REMOTE_TRANSFER_SERVICE, remoteTransferService};
+}
+
+export function uploadDroppedFiles(
+  destination: FileTreeNode,
+  files: FileList,
+): Action {
+  return {type: UPLOAD_DROPPED_FILES, destination, files};
 }

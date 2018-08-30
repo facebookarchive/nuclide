@@ -1256,6 +1256,30 @@ export function updateGeneratedStatusEpic(
   });
 }
 
+export function uploadDroppedFilesEpic(
+  actions: ActionsObservable<Action>,
+  store: MiddlewareStore,
+): Observable<Action> {
+  return actions.ofType(Actions.UPLOAD_DROPPED_FILES).mergeMap(action => {
+    invariant(action.type === 'UPLOAD_DROPPED_FILES');
+    const {destination} = action;
+    const {remoteTransferService} = store.getState();
+    if (remoteTransferService == null || !destination.isContainer) {
+      return Observable.empty();
+    }
+    return Observable.fromPromise(
+      remoteTransferService.uploadFiles(
+        // > Electron has added a path attribute to the File interface which exposes
+        // > the file's real path on filesystem.
+        // -- https://electronjs.org/docs/api/file-object
+        // $FlowFixMe
+        Array.from(action.files).map(file => file.path),
+        destination.uri,
+      ),
+    ).mapTo(Actions.expandNode(destination.rootUri, destination.uri));
+  });
+}
+
 //
 // Helper functions
 //

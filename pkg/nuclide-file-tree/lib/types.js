@@ -676,6 +676,11 @@ export type Action =
       type: 'GOT_REMOTE_TRANSFER_SERVICE',
       remoteTransferService: ?RemoteTransferService,
     |}
+  | {|
+      type: 'UPLOAD_DROPPED_FILES',
+      destination: FileTreeNode,
+      files: FileList,
+    |}
   | SelectionAction;
 
 export type SelectionAction =
