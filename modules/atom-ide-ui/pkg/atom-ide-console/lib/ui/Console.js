@@ -22,6 +22,7 @@ import type {
   SourceInfo,
   Severity,
   Level,
+  AppState,
 } from '../types';
 import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
@@ -292,10 +293,12 @@ export class Console {
     }
 
     const actionCreators = this._getBoundActionCreators();
+    // $FlowIssue: Flow doesn't know about Symbol.observable
+    const globalStates: Observable<AppState> = Observable.from(this._store);
+
     const props = Observable.combineLatest(
       this._model.toObservable(),
-      // $FlowIssue: Flow doesn't know about Symbol.observable
-      Observable.from(this._store),
+      globalStates,
     )
       // Don't re-render when the console isn't visible.
       .let(toggle(observePaneItemVisibility(this)))

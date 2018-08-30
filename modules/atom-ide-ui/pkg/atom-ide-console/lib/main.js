@@ -147,7 +147,6 @@ class Activation {
   consumeWatchEditor(watchEditor: atom$AutocompleteWatchEditor): IDisposable {
     this._getStore().dispatch(Actions.setWatchEditor(watchEditor));
     return new UniversalDisposable(() => {
-      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (this._getStore().getState().watchEditor === watchEditor) {
         this._getStore().dispatch(Actions.setWatchEditor(null));
       }

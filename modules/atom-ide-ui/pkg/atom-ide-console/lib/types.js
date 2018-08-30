@@ -156,7 +156,7 @@ export type RecordToken = {|
   setComplete: () => void,
 |};
 
-export type AppState = {
+export type AppState = {|
   createPasteFunction: ?CreatePasteFunction,
   currentExecutorId: ?string,
   executors: Map<string, Executor>,
@@ -169,7 +169,9 @@ export type AppState = {
   history: Array<string>,
   providers: Map<string, SourceInfo>,
   providerStatuses: Map<string, OutputProviderStatus>,
-};
+  fontSize?: number,
+  watchEditor?: ?atom$AutocompleteWatchEditor,
+|};
 
 // A special type used internally by the Console component to represent each record that is
 // displayed with its height. This is stored at the component level since the expansion state of any

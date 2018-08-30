@@ -25,7 +25,6 @@ const emptyAppState = {
   executors: new Map(),
   providers: new Map(),
   providerStatuses: new Map(),
-  providerSubscriptions: new Map(),
   records: Immutable.List(),
   incompleteRecords: Immutable.List(),
   history: [],
@@ -38,7 +37,7 @@ describe('createStateStream', () => {
 
     beforeEach(() => {
       initialRecords = Immutable.List();
-      const initialState = {
+      const initialState: AppState = {
         ...emptyAppState,
         maxMessageCount: 2,
         records: initialRecords,
