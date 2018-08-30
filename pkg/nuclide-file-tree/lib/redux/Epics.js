@@ -1267,15 +1267,14 @@ export function uploadDroppedFilesEpic(
     if (remoteTransferService == null || !destination.isContainer) {
       return Observable.empty();
     }
+    // > Electron has added a path attribute to the File interface which exposes
+    // > the file's real path on filesystem.
+    // -- https://electronjs.org/docs/api/file-object
+    // $FlowFixMe
+    const files = Array.from(action.files).map(file => file.path);
+    track('file-tree-upload-dropped-files', {count: files.length});
     return Observable.fromPromise(
-      remoteTransferService.uploadFiles(
-        // > Electron has added a path attribute to the File interface which exposes
-        // > the file's real path on filesystem.
-        // -- https://electronjs.org/docs/api/file-object
-        // $FlowFixMe
-        Array.from(action.files).map(file => file.path),
-        destination.uri,
-      ),
+      remoteTransferService.uploadFiles(files, destination.uri),
     ).mapTo(Actions.expandNode(destination.rootUri, destination.uri));
   });
 }
