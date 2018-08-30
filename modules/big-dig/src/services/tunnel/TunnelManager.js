@@ -232,14 +232,18 @@ export class TunnelManager extends EventEmitter {
         this._idToTunnel.delete(tunnelComponent.getId());
       }
     } else if (msg.event === 'createProxy') {
-      const proxy = await Proxy.createProxy(
-        msg.tunnelId,
-        msg.localPort,
-        msg.remotePort,
-        msg.useIPv4,
-        this._transport,
-      );
-      this._idToTunnel.set(msg.tunnelId, proxy);
+      try {
+        const proxy = await Proxy.createProxy(
+          msg.tunnelId,
+          msg.localPort,
+          msg.remotePort,
+          msg.useIPv4,
+          this._transport,
+        );
+        this._idToTunnel.set(msg.tunnelId, proxy);
+      } catch (e) {
+        // We already responded with proxyError, nothing else to do
+      }
     } else if (msg.event === 'closeProxy') {
       invariant(tunnelComponent);
       tunnelComponent.close();

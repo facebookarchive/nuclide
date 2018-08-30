@@ -107,6 +107,10 @@ export class Proxy extends EventEmitter {
       });
 
       this._server.on('error', error => {
+        logger.error(
+          `error when listening on port ${this._localPort}: `,
+          error,
+        );
         this._sendMessage({
           event: 'proxyError',
           port: this._localPort,
