@@ -169,3 +169,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-console::before {
   content: "\f12f";
 }
+.icon-nuclicon-haskell::before {
+  content: "\f130";
+}
