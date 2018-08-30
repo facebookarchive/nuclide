@@ -125,7 +125,10 @@ class Activation {
   }
 
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
-    this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
+    this._getStatusBarTile().consumeDiagnosticUpdates(
+      diagnosticUpdater,
+      this._getIsStaleMessageEnabledSteam(),
+    );
 
     this._subscriptions.add(
       this._gutterConsumeDiagnosticUpdates(diagnosticUpdater),
@@ -343,6 +346,10 @@ class Activation {
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
             if (!isStaleMessageEnabled) {
+              // Note: reason of doing this is currently Flow is sending message
+              // marked as stale sometimes(on user type or immediately on save).
+              // Until we turn on the gk, we don't want user to see the Stale
+              // style/behavior just yet. so here we mark them as not stale.
               diagnostic.stale = false;
             }
             return diagnostic;
@@ -693,6 +700,10 @@ function getEditorDiagnosticUpdates(
           .filter(diagnostic => diagnostic.type !== 'Hint')
           .map(message => {
             if (!isStaleMessageEnabled) {
+              // Note: reason of doing this is currently Flow is sending message
+              // marked as stale sometimes(on user type or immediately on save).
+              // Until we turn on the gk, we don't want user to see the Stale
+              // style/behavior just yet. so here we mark them as not stale.
               message.stale = false;
             }
             return message;

@@ -54,8 +54,16 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
       </Button>
     );
   }
+
+  const staleBox = message.stale ? (
+    <span className="diagnostics-popup-header-stale-box highlight">
+      {'Stale'}
+    </span>
+  ) : null;
+
   return (
     <div className="diagnostics-popup-header">
+      {staleBox}
       <ButtonGroup>{fixButton}</ButtonGroup>
       <span className={providerClassName}>{message.providerName}</span>
     </div>
