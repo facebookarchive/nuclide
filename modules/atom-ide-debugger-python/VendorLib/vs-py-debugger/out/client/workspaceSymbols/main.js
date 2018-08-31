@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
 const vscode_1 = require("vscode");
 const constants_1 = require("../common/constants");
 const helpers_1 = require("../common/helpers");
@@ -27,8 +26,8 @@ class WorkspaceSymbols {
         this.disposables.push(this.outputChannel);
         this.registerCommands();
         this.initializeGenerators();
-        vscode.languages.registerWorkspaceSymbolProvider(new provider_1.WorkspaceSymbolProvider(this.generators, this.outputChannel));
-        this.disposables.push(vscode.workspace.onDidChangeWorkspaceFolders(() => this.initializeGenerators()));
+        vscode_1.languages.registerWorkspaceSymbolProvider(new provider_1.WorkspaceSymbolProvider(this.generators, this.outputChannel));
+        this.disposables.push(vscode_1.workspace.onDidChangeWorkspaceFolders(() => this.initializeGenerators()));
     }
     dispose() {
         this.disposables.forEach(d => d.dispose());
@@ -38,15 +37,15 @@ class WorkspaceSymbols {
             const generator = this.generators.shift();
             generator.dispose();
         }
-        if (Array.isArray(vscode.workspace.workspaceFolders)) {
-            vscode.workspace.workspaceFolders.forEach(wkSpc => {
-                const processService = this.serviceContainer.get(types_1.IProcessService);
-                this.generators.push(new generator_1.Generator(wkSpc.uri, this.outputChannel, processService));
+        if (Array.isArray(vscode_1.workspace.workspaceFolders)) {
+            vscode_1.workspace.workspaceFolders.forEach(wkSpc => {
+                const processServiceFactory = this.serviceContainer.get(types_1.IProcessServiceFactory);
+                this.generators.push(new generator_1.Generator(wkSpc.uri, this.outputChannel, processServiceFactory));
             });
         }
     }
     registerCommands() {
-        this.disposables.push(vscode.commands.registerCommand(constants_1.Commands.Build_Workspace_Symbols, (rebuild = true, token) => __awaiter(this, void 0, void 0, function* () {
+        this.disposables.push(vscode_1.commands.registerCommand(constants_1.Commands.Build_Workspace_Symbols, (rebuild = true, token) => __awaiter(this, void 0, void 0, function* () {
             const promises = this.buildWorkspaceSymbols(rebuild, token);
             return Promise.all(promises);
         })));

@@ -59,7 +59,7 @@ let CommandPromptAndPowerShell = class CommandPromptAndPowerShell extends baseAc
                     const powershellExe = targetShell === types_3.TerminalShellType.powershell ? 'powershell' : 'pwsh';
                     const activationCmd = scriptFile.fileToCommandArgument();
                     return [
-                        `& cmd /k "${activationCmd} & ${powershellExe}"`
+                        `& cmd /k "${activationCmd.replace(/"/g, '""')} & ${powershellExe}"`
                     ];
                 }
                 else {

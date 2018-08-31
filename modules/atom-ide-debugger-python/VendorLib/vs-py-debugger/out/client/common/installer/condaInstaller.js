@@ -44,8 +44,8 @@ let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstal
      */
     isSupported(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.isCondaAvailable !== undefined) {
-                return this.isCondaAvailable;
+            if (this.isCondaAvailable === false) {
+                return false;
             }
             const condaLocator = this.serviceContainer.get(contracts_1.ICondaService);
             this.isCondaAvailable = yield condaLocator.isCondaAvailable();
@@ -76,8 +76,7 @@ let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstal
             args.push(moduleName);
             return {
                 args,
-                execPath: condaFile,
-                moduleName: ''
+                execPath: condaFile
             };
         });
     }

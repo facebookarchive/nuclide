@@ -22,27 +22,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const contracts_1 = require("../../interpreter/contracts");
 const types_1 = require("../../ioc/types");
-const types_2 = require("../terminal/types");
-const pipenvName = 'pipenv';
-let PipEnvInstaller = class PipEnvInstaller {
+const moduleInstaller_1 = require("./moduleInstaller");
+exports.pipenvName = 'pipenv';
+let PipEnvInstaller = class PipEnvInstaller extends moduleInstaller_1.ModuleInstaller {
     constructor(serviceContainer) {
-        this.serviceContainer = serviceContainer;
+        super(serviceContainer);
         this.pipenv = this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.PIPENV_SERVICE);
     }
     get displayName() {
-        return pipenvName;
+        return exports.pipenvName;
     }
     get priority() {
         return 10;
-    }
-    installModule(name) {
-        const terminalService = this.serviceContainer.get(types_2.ITerminalServiceFactory).getTerminalService();
-        return terminalService.sendCommand(pipenvName, ['install', name]);
     }
     isSupported(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const interpreters = yield this.pipenv.getInterpreters(resource);
             return interpreters && interpreters.length > 0;
+        });
+    }
+    getExecutionInfo(moduleName, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return {
+                args: ['install', moduleName, '--dev'],
+                execPath: exports.pipenvName
+            };
         });
     }
 };

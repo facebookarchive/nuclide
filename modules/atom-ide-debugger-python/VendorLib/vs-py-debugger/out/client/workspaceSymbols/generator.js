@@ -16,15 +16,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 const configSettings_1 = require("../common/configSettings");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 class Generator {
-    constructor(workspaceFolder, output, processService) {
+    constructor(workspaceFolder, output, processServiceFactory) {
         this.workspaceFolder = workspaceFolder;
         this.output = output;
-        this.processService = processService;
+        this.processServiceFactory = processServiceFactory;
         this.disposables = [];
         this.optionsFile = path.join(__dirname, '..', '..', '..', 'resources', 'ctagOptions');
         this.pythonSettings = configSettings_1.PythonSettings.getInstance(workspaceFolder);
@@ -43,7 +43,7 @@ class Generator {
             if (!this.pythonSettings.workspaceSymbols.enabled) {
                 return;
             }
-            return yield this.generateTags({ directory: this.workspaceFolder.fsPath });
+            return this.generateTags({ directory: this.workspaceFolder.fsPath });
         });
     }
     buildCmdArgs() {
@@ -69,8 +69,9 @@ class Generator {
         args.push('-o', outputFile, '.');
         this.output.appendLine(`${'-'.repeat(10)}Generating Tags${'-'.repeat(10)}`);
         this.output.appendLine(`${cmd} ${args.join(' ')}`);
-        const promise = new Promise((resolve, reject) => {
-            const result = this.processService.execObservable(cmd, args, { cwd: source.directory });
+        const promise = new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const processService = yield this.processServiceFactory.create();
+            const result = processService.execObservable(cmd, args, { cwd: source.directory });
             let errorMsg = '';
             result.out.subscribe(output => {
                 if (output.source === 'stderr') {
@@ -85,8 +86,8 @@ class Generator {
                     resolve();
                 }
             });
-        });
-        vscode.window.setStatusBarMessage('Generating Tags', promise);
+        }));
+        vscode_1.window.setStatusBarMessage('Generating Tags', promise);
         return promise;
     }
 }

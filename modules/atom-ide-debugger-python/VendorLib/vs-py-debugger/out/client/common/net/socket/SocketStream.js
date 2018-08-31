@@ -96,7 +96,7 @@ class SocketStream {
         let type = new Buffer([byteRead]).toString();
         let isUnicode = false;
         switch (type) {
-            case "N":// null string
+            case "N": // null string
                 return null;
             case "U":
                 isUnicode = true;

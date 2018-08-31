@@ -2,8 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
+const applicationEnvironment_1 = require("./application/applicationEnvironment");
 const applicationShell_1 = require("./application/applicationShell");
 const commandManager_1 = require("./application/commandManager");
+const debugService_1 = require("./application/debugService");
 const documentManager_1 = require("./application/documentManager");
 const terminalManager_1 = require("./application/terminalManager");
 const types_1 = require("./application/types");
@@ -11,6 +13,7 @@ const workspace_1 = require("./application/workspace");
 const service_1 = require("./configuration/service");
 const productInstaller_1 = require("./installer/productInstaller");
 const logger_1 = require("./logger");
+const browser_1 = require("./net/browser");
 const persistentState_1 = require("./persistentState");
 const constants_1 = require("./platform/constants");
 const pathUtils_1 = require("./platform/pathUtils");
@@ -36,6 +39,9 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(types_1.IWorkspaceService, workspace_1.WorkspaceService);
     serviceManager.addSingleton(types_1.IDocumentManager, documentManager_1.DocumentManager);
     serviceManager.addSingleton(types_1.ITerminalManager, terminalManager_1.TerminalManager);
+    serviceManager.addSingleton(types_1.IDebugService, debugService_1.DebugService);
+    serviceManager.addSingleton(types_1.IApplicationEnvironment, applicationEnvironment_1.ApplicationEnvironment);
+    serviceManager.addSingleton(types_3.IBrowserService, browser_1.BrowserService);
     serviceManager.addSingleton(types_2.ITerminalHelper, helper_1.TerminalHelper);
     serviceManager.addSingleton(types_2.ITerminalActivationCommandProvider, bash_1.Bash, 'bashCShellFish');
     serviceManager.addSingleton(types_2.ITerminalActivationCommandProvider, commandPrompt_1.CommandPromptAndPowerShell, 'commandPromptAndPowerShell');

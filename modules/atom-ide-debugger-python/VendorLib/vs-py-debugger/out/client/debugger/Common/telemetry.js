@@ -4,8 +4,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-function-expression no-any no-invalid-this no-use-before-declare
 const vscode_debugadapter_1 = require("vscode-debugadapter");
+const stopWatch_1 = require("../../common/stopWatch");
 const constants_1 = require("../../telemetry/constants");
-const stopWatch_1 = require("../../telemetry/stopWatch");
 const Contracts_1 = require("./Contracts");
 const executionStack = [];
 var PerformanceTelemetryCondition;

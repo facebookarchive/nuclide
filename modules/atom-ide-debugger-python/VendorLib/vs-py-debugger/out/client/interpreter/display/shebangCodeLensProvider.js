@@ -18,7 +18,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const vscode = require("vscode");
 const vscode_1 = require("vscode");
 const settings = require("../../common/configSettings");
 const types_1 = require("../../common/process/types");
@@ -27,8 +26,8 @@ const types_2 = require("../../ioc/types");
 let ShebangCodeLensProvider = class ShebangCodeLensProvider {
     constructor(serviceContainer) {
         // tslint:disable-next-line:no-any
-        this.onDidChangeCodeLenses = vscode.workspace.onDidChangeConfiguration;
-        this.processService = serviceContainer.get(types_1.IProcessService);
+        this.onDidChangeCodeLenses = vscode_1.workspace.onDidChangeConfiguration;
+        this.processServiceFactory = serviceContainer.get(types_1.IProcessServiceFactory);
     }
     detectShebang(document) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,7 +39,7 @@ let ShebangCodeLensProvider = class ShebangCodeLensProvider {
                 return;
             }
             const shebang = firstLine.text.substr(2).trim();
-            const pythonPath = yield this.getFullyQualifiedPathToInterpreter(shebang);
+            const pythonPath = yield this.getFullyQualifiedPathToInterpreter(shebang, document.uri);
             return typeof pythonPath === 'string' && pythonPath.length > 0 ? pythonPath : undefined;
         });
     }
@@ -50,7 +49,7 @@ let ShebangCodeLensProvider = class ShebangCodeLensProvider {
             return Promise.resolve(codeLenses);
         });
     }
-    getFullyQualifiedPathToInterpreter(pythonPath) {
+    getFullyQualifiedPathToInterpreter(pythonPath, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             let cmdFile = pythonPath;
             let args = ['-c', 'import sys;print(sys.executable)'];
@@ -60,7 +59,8 @@ let ShebangCodeLensProvider = class ShebangCodeLensProvider {
                 cmdFile = parts.shift();
                 args = parts.concat(args);
             }
-            return this.processService.exec(cmdFile, args)
+            const processService = yield this.processServiceFactory.create(resource);
+            return processService.exec(cmdFile, args)
                 .then(output => output.stdout.trim())
                 .catch(() => '');
         });
@@ -69,14 +69,14 @@ let ShebangCodeLensProvider = class ShebangCodeLensProvider {
         return __awaiter(this, void 0, void 0, function* () {
             const shebang = yield this.detectShebang(document);
             const pythonPath = settings.PythonSettings.getInstance(document.uri).pythonPath;
-            const resolvedPythonPath = yield this.getFullyQualifiedPathToInterpreter(pythonPath);
+            const resolvedPythonPath = yield this.getFullyQualifiedPathToInterpreter(pythonPath, document.uri);
             if (!shebang || shebang === resolvedPythonPath) {
                 return [];
             }
             const firstLine = document.lineAt(0);
-            const startOfShebang = new vscode.Position(0, 0);
-            const endOfShebang = new vscode.Position(0, firstLine.text.length - 1);
-            const shebangRange = new vscode.Range(startOfShebang, endOfShebang);
+            const startOfShebang = new vscode_1.Position(0, 0);
+            const endOfShebang = new vscode_1.Position(0, firstLine.text.length - 1);
+            const shebangRange = new vscode_1.Range(startOfShebang, endOfShebang);
             const cmd = {
                 command: 'python.setShebangInterpreter',
                 title: 'Set as interpreter'

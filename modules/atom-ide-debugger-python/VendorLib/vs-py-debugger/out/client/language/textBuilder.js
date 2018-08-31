@@ -15,8 +15,14 @@ class TextBuilder {
         }
         return this.segments.join('');
     }
-    softAppendSpace() {
-        if (!this.isLastWhiteSpace() && this.segments.length > 0) {
+    softAppendSpace(count = 1) {
+        if (this.segments.length === 0) {
+            return;
+        }
+        if (this.isLastWhiteSpace()) {
+            count = count - 1;
+        }
+        for (let i = 0; i < count; i += 1) {
             this.segments.push(' ');
         }
     }

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
+require("../common/extensions");
 const types_1 = require("../common/types");
 const utils_1 = require("./../common/utils");
 const baseLinter_1 = require("./baseLinter");
@@ -49,6 +50,8 @@ class PyDocStyle extends baseLinter_1.BaseLinter {
                 }
                 return line.substring(line.indexOf(':') + 1).trim();
             })
+                // Iterate through the lines (skipping the messages).
+                // So, just iterate the response in pairs.
                 .map(line => {
                 try {
                     if (line.trim().length === 0) {
@@ -61,6 +64,7 @@ class PyDocStyle extends baseLinter_1.BaseLinter {
                     const sourceLine = document.lineAt(lineNumber - 1).text;
                     const trmmedSourceLine = sourceLine.trim();
                     const sourceStart = sourceLine.indexOf(trmmedSourceLine);
+                    // tslint:disable-next-line:no-object-literal-type-assertion
                     return {
                         code: code,
                         message: message,

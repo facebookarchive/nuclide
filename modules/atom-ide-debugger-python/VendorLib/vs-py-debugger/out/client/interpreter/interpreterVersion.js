@@ -20,14 +20,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 require("../common/extensions");
 const types_1 = require("../common/process/types");
-exports.PIP_VERSION_REGEX = '\\d+\\.\\d+(\\.\\d+)';
+exports.PIP_VERSION_REGEX = '\\d+\\.\\d+(\\.\\d+)?';
 let InterpreterVersionService = class InterpreterVersionService {
-    constructor(processService) {
-        this.processService = processService;
+    constructor(processServiceFactory) {
+        this.processServiceFactory = processServiceFactory;
     }
     getVersion(pythonPath, defaultValue) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.processService.exec(pythonPath, ['--version'], { mergeStdOutErr: true })
+            const processService = yield this.processServiceFactory.create();
+            return processService.exec(pythonPath, ['--version'], { mergeStdOutErr: true })
                 .then(output => output.stdout.splitLines()[0])
                 .then(version => version.length === 0 ? defaultValue : version)
                 .catch(() => defaultValue);
@@ -35,7 +36,8 @@ let InterpreterVersionService = class InterpreterVersionService {
     }
     getPipVersion(pythonPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const output = yield this.processService.exec(pythonPath, ['-m', 'pip', '--version'], { mergeStdOutErr: true });
+            const processService = yield this.processServiceFactory.create();
+            const output = yield processService.exec(pythonPath, ['-m', 'pip', '--version'], { mergeStdOutErr: true });
             if (output.stdout.length > 0) {
                 // Here's a sample output:
                 // pip 9.0.1 from /Users/donjayamanne/anaconda3/lib/python3.6/site-packages (python 3.6).
@@ -51,7 +53,7 @@ let InterpreterVersionService = class InterpreterVersionService {
 };
 InterpreterVersionService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_1.IProcessService))
+    __param(0, inversify_1.inject(types_1.IProcessServiceFactory))
 ], InterpreterVersionService);
 exports.InterpreterVersionService = InterpreterVersionService;
 //# sourceMappingURL=interpreterVersion.js.map

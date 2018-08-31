@@ -10,7 +10,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable:no-invalid-template-strings
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_1 = require("vscode");
@@ -23,52 +32,71 @@ let BaseConfigurationProvider = class BaseConfigurationProvider {
         this.serviceContainer = serviceContainer;
     }
     resolveDebugConfiguration(folder, debugConfiguration, token) {
-        const config = debugConfiguration;
-        const numberOfSettings = Object.keys(config);
-        const workspaceFolder = this.getWorkspaceFolder(folder, config);
-        if ((config.noDebug === true && numberOfSettings.length === 1) || numberOfSettings.length === 0) {
-            const defaultProgram = this.getProgram(config);
-            config.name = 'Launch';
-            config.type = this.debugType;
-            config.request = 'launch';
-            config.program = defaultProgram ? defaultProgram : '';
-            config.env = {};
-        }
-        this.provideDefaults(workspaceFolder, config);
-        return config;
+        return __awaiter(this, void 0, void 0, function* () {
+            const workspaceFolder = this.getWorkspaceFolder(folder);
+            if (debugConfiguration.request === 'attach') {
+                yield this.provideAttachDefaults(workspaceFolder, debugConfiguration);
+            }
+            else {
+                const config = debugConfiguration;
+                const numberOfSettings = Object.keys(config);
+                if ((config.noDebug === true && numberOfSettings.length === 1) || numberOfSettings.length === 0) {
+                    const defaultProgram = this.getProgram();
+                    config.name = 'Launch';
+                    config.type = this.debugType;
+                    config.request = 'launch';
+                    config.program = defaultProgram ? defaultProgram : '';
+                    config.env = {};
+                }
+                yield this.provideLaunchDefaults(workspaceFolder, config);
+            }
+            const dbgConfig = debugConfiguration;
+            if (Array.isArray(dbgConfig.debugOptions)) {
+                dbgConfig.debugOptions = dbgConfig.debugOptions.filter((item, pos) => dbgConfig.debugOptions.indexOf(item) === pos);
+            }
+            return debugConfiguration;
+        });
     }
-    provideDefaults(workspaceFolder, debugConfiguration) {
-        this.resolveAndUpdatePythonPath(workspaceFolder, debugConfiguration);
-        if (typeof debugConfiguration.cwd !== 'string' && workspaceFolder) {
-            debugConfiguration.cwd = workspaceFolder.fsPath;
-        }
-        if (typeof debugConfiguration.envFile !== 'string' && workspaceFolder) {
-            const envFile = workspaceFolder ? path.join(workspaceFolder.fsPath, '.env') : '';
-            debugConfiguration.envFile = envFile;
-        }
-        if (typeof debugConfiguration.stopOnEntry !== 'boolean') {
-            debugConfiguration.stopOnEntry = false;
-        }
-        if (!debugConfiguration.console) {
-            debugConfiguration.console = 'none';
-        }
-        // If using a terminal, then never open internal console.
-        if (debugConfiguration.console !== 'none' && !debugConfiguration.internalConsoleOptions) {
-            debugConfiguration.internalConsoleOptions = 'neverOpen';
-        }
-        if (!Array.isArray(debugConfiguration.debugOptions)) {
-            debugConfiguration.debugOptions = [];
-        }
-        // Always redirect output.
-        if (debugConfiguration.debugOptions.indexOf('RedirectOutput') === -1) {
-            debugConfiguration.debugOptions.push('RedirectOutput');
-        }
+    provideAttachDefaults(workspaceFolder, debugConfiguration) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!Array.isArray(debugConfiguration.debugOptions)) {
+                debugConfiguration.debugOptions = [];
+            }
+            if (!debugConfiguration.host) {
+                debugConfiguration.host = 'localhost';
+            }
+        });
     }
-    getWorkspaceFolder(folder, config) {
+    provideLaunchDefaults(workspaceFolder, debugConfiguration) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.resolveAndUpdatePythonPath(workspaceFolder, debugConfiguration);
+            if (typeof debugConfiguration.cwd !== 'string' && workspaceFolder) {
+                debugConfiguration.cwd = workspaceFolder.fsPath;
+            }
+            if (typeof debugConfiguration.envFile !== 'string' && workspaceFolder) {
+                const envFile = workspaceFolder ? path.join(workspaceFolder.fsPath, '.env') : '';
+                debugConfiguration.envFile = envFile;
+            }
+            if (typeof debugConfiguration.stopOnEntry !== 'boolean') {
+                debugConfiguration.stopOnEntry = false;
+            }
+            if (!debugConfiguration.console) {
+                debugConfiguration.console = 'integratedTerminal';
+            }
+            // If using a terminal, then never open internal console.
+            if (debugConfiguration.console !== 'none' && !debugConfiguration.internalConsoleOptions) {
+                debugConfiguration.internalConsoleOptions = 'neverOpen';
+            }
+            if (!Array.isArray(debugConfiguration.debugOptions)) {
+                debugConfiguration.debugOptions = [];
+            }
+        });
+    }
+    getWorkspaceFolder(folder) {
         if (folder) {
             return folder.uri;
         }
-        const program = this.getProgram(config);
+        const program = this.getProgram();
         const workspaceService = this.serviceContainer.get(types_1.IWorkspaceService);
         if (!Array.isArray(workspaceService.workspaceFolders) || workspaceService.workspaceFolders.length === 0) {
             return program ? vscode_1.Uri.file(path.dirname(program)) : undefined;
@@ -83,10 +111,10 @@ let BaseConfigurationProvider = class BaseConfigurationProvider {
             }
         }
     }
-    getProgram(config) {
+    getProgram() {
         const documentManager = this.serviceContainer.get(types_1.IDocumentManager);
         const editor = documentManager.activeTextEditor;
-        if (editor && editor.document.languageId === constants_1.PythonLanguage.language) {
+        if (editor && editor.document.languageId === constants_1.PYTHON_LANGUAGE) {
             return editor.document.fileName;
         }
     }

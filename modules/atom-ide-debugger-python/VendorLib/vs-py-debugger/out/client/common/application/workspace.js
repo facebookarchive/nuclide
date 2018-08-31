@@ -23,6 +23,9 @@ let WorkspaceService = class WorkspaceService {
     get onDidChangeWorkspaceFolders() {
         return vscode.workspace.onDidChangeWorkspaceFolders;
     }
+    get hasWorkspaceFolders() {
+        return Array.isArray(vscode.workspace.workspaceFolders) && vscode.workspace.workspaceFolders.length > 0;
+    }
     getConfiguration(section, resource) {
         return vscode.workspace.getConfiguration(section, resource);
     }

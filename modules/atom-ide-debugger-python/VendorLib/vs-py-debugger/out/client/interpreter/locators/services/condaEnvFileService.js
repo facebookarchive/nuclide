@@ -18,7 +18,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const path = require("path");
 const types_1 = require("../../../common/platform/types");
 const types_2 = require("../../../common/types");
 const types_3 = require("../../../ioc/types");
@@ -26,9 +25,9 @@ const contracts_1 = require("../../contracts");
 const cacheableLocatorService_1 = require("./cacheableLocatorService");
 const conda_1 = require("./conda");
 let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorService_1.CacheableLocatorService {
-    constructor(versionService, condaService, fileSystem, serviceContainer, logger) {
+    constructor(helperService, condaService, fileSystem, serviceContainer, logger) {
         super('CondaEnvFileService', serviceContainer);
-        this.versionService = versionService;
+        this.helperService = helperService;
         this.condaService = condaService;
         this.fileSystem = fileSystem;
         this.logger = logger;
@@ -43,7 +42,7 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
             if (!this.condaService.condaEnvironmentsFile) {
                 return [];
             }
-            return this.fileSystem.fileExistsAsync(this.condaService.condaEnvironmentsFile)
+            return this.fileSystem.fileExists(this.condaService.condaEnvironmentsFile)
                 .then(exists => exists ? this.getEnvironmentsFromFile(this.condaService.condaEnvironmentsFile) : Promise.resolve([]));
         });
     }
@@ -81,19 +80,15 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
     getInterpreterDetails(environmentPath) {
         return __awaiter(this, void 0, void 0, function* () {
             const interpreter = this.condaService.getInterpreterPath(environmentPath);
-            if (!interpreter || !(yield this.fileSystem.fileExistsAsync(interpreter))) {
+            if (!interpreter || !(yield this.fileSystem.fileExists(interpreter))) {
                 return;
             }
-            const version = yield this.versionService.getVersion(interpreter, path.basename(interpreter));
-            const versionWithoutCompanyName = this.stripCompanyName(version);
-            return {
-                displayName: `${conda_1.AnacondaDisplayName} ${versionWithoutCompanyName}`,
-                path: interpreter,
-                companyDisplayName: conda_1.AnacondaCompanyName,
-                version: version,
-                type: contracts_1.InterpreterType.Conda,
-                envPath: environmentPath
-            };
+            const details = yield this.helperService.getInterpreterInformation(interpreter);
+            if (!details) {
+                return;
+            }
+            const versionWithoutCompanyName = this.stripCompanyName(details.version);
+            return Object.assign({ displayName: `${conda_1.AnacondaDisplayName} ${versionWithoutCompanyName}` }, details, { path: interpreter, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath: environmentPath });
         });
     }
     stripCompanyName(content) {
@@ -109,7 +104,7 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
 };
 CondaEnvFileService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(contracts_1.IInterpreterVersionService)),
+    __param(0, inversify_1.inject(contracts_1.IInterpreterHelper)),
     __param(1, inversify_1.inject(contracts_1.ICondaService)),
     __param(2, inversify_1.inject(types_1.IFileSystem)),
     __param(3, inversify_1.inject(types_3.IServiceContainer)),

@@ -31,7 +31,7 @@ let BaseActivationCommandProvider = class BaseActivationCommandProvider {
             for (const scriptFileName of scriptFileNames) {
                 // Generate scripts are found in the same directory as the interpreter.
                 const scriptFile = path.join(path.dirname(pythonPath), scriptFileName);
-                const found = yield fs.fileExistsAsync(scriptFile);
+                const found = yield fs.fileExists(scriptFile);
                 if (found) {
                     return scriptFile;
                 }

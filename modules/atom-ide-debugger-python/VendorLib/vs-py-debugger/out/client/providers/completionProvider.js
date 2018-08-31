@@ -18,9 +18,10 @@ const types_1 = require("../common/types");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 const completionSource_1 = require("./completionSource");
+const itemInfoSource_1 = require("./itemInfoSource");
 class PythonCompletionItemProvider {
     constructor(jediFactory, serviceContainer) {
-        this.completionSource = new completionSource_1.CompletionSource(jediFactory);
+        this.completionSource = new completionSource_1.CompletionSource(jediFactory, serviceContainer, new itemInfoSource_1.ItemInfoSource(jediFactory));
         this.configService = serviceContainer.get(types_1.IConfigurationService);
     }
     provideCompletionItems(document, position, token) {

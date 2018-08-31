@@ -39,6 +39,7 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, globalVirtualEnvService_1.GlobalVirtualEnvService, contracts_1.GLOBAL_VIRTUAL_ENV_SERVICE);
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, workspaceVirtualEnvService_1.WorkspaceVirtualEnvService, contracts_1.WORKSPACE_VIRTUAL_ENV_SERVICE);
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, pipEnvService_1.PipEnvService, contracts_1.PIPENV_SERVICE);
+    serviceManager.addSingleton(contracts_1.IPipEnvService, pipEnvService_1.PipEnvService);
     const isWindows = serviceManager.get(types_1.IsWindows);
     if (isWindows) {
         serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, windowsRegistryService_1.WindowsRegistryService, contracts_1.WINDOWS_REGISTRY_SERVICE);

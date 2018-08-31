@@ -10,15 +10,22 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
+const path = require("path");
 const types_1 = require("../types");
 const constants_1 = require("./constants");
-// TO DO: Deprecate in favor of IPlatformService
 let PathUtils = class PathUtils {
     constructor(isWindows) {
         this.isWindows = isWindows;
     }
+    get delimiter() {
+        return path.delimiter;
+    }
+    // TO DO: Deprecate in favor of IPlatformService
     getPathVariableName() {
         return this.isWindows ? constants_1.WINDOWS_PATH_VARIABLE_NAME : constants_1.NON_WINDOWS_PATH_VARIABLE_NAME;
+    }
+    basename(pathValue, ext) {
+        return path.basename(pathValue, ext);
     }
 };
 PathUtils = __decorate([

@@ -78,20 +78,24 @@ function isLineBreak(ch) {
     return ch === 13 /* CarriageReturn */ || ch === 10 /* LineFeed */;
 }
 exports.isLineBreak = isLineBreak;
+function isNumber(ch) {
+    return ch >= 48 /* _0 */ && ch <= 57 /* _9 */ || ch === 95 /* Underscore */;
+}
+exports.isNumber = isNumber;
 function isDecimal(ch) {
-    return ch >= 48 /* _0 */ && ch <= 57 /* _9 */;
+    return ch >= 48 /* _0 */ && ch <= 57 /* _9 */ || ch === 95 /* Underscore */;
 }
 exports.isDecimal = isDecimal;
 function isHex(ch) {
-    return isDecimal(ch) || (ch >= 97 /* a */ && ch <= 102 /* f */) || (ch >= 65 /* A */ && ch <= 70 /* F */);
+    return isDecimal(ch) || (ch >= 97 /* a */ && ch <= 102 /* f */) || (ch >= 65 /* A */ && ch <= 70 /* F */) || ch === 95 /* Underscore */;
 }
 exports.isHex = isHex;
 function isOctal(ch) {
-    return ch >= 48 /* _0 */ && ch <= 55 /* _7 */;
+    return ch >= 48 /* _0 */ && ch <= 55 /* _7 */ || ch === 95 /* Underscore */;
 }
 exports.isOctal = isOctal;
 function isBinary(ch) {
-    return ch === 48 /* _0 */ || ch === 49 /* _1 */;
+    return ch === 48 /* _0 */ || ch === 49 /* _1 */ || ch === 95 /* Underscore */;
 }
 exports.isBinary = isBinary;
 //# sourceMappingURL=characters.js.map

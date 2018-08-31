@@ -1,4 +1,4 @@
-// tslint:disable:quotemark ordered-imports promise-must-complete member-ordering no-any prefer-template cyclomatic-complexity no-empty no-multiline-string one-line no-invalid-template-strings no-suspicious-comment no-var-self
+// tslint:disable:quotemark ordered-imports promise-must-complete member-ordering no-any prefer-template cyclomatic-complexity no-empty no-multiline-string one-line no-invalid-template-strings no-suspicious-comment no-var-self no-duplicate-imports
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -16,7 +16,6 @@ if (Reflect.metadata === undefined) {
 const fs = require("fs");
 const path = require("path");
 const vscode_debugadapter_1 = require("vscode-debugadapter");
-const vscode_debugadapter_2 = require("vscode-debugadapter");
 const constants_1 = require("../../client/telemetry/constants");
 const helpers_1 = require("../common/helpers");
 const Contracts_1 = require("./Common/Contracts");
@@ -24,7 +23,6 @@ const Contracts_2 = require("./Common/Contracts");
 const Utils_1 = require("./Common/Utils");
 const DebugFactory_1 = require("./DebugClients/DebugFactory");
 const PythonProcess_1 = require("./PythonProcess");
-const Utils_2 = require("./Common/Utils");
 const telemetry_1 = require("./Common/telemetry");
 const logger_1 = require("vscode-debugadapter/lib/logger");
 const CHILD_ENUMEARATION_TIMEOUT = 5000;
@@ -32,6 +30,8 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
     constructor(debuggerLinesStartAt1, isServer) {
         super(path.join(__dirname, '..', '..', '..', 'debug.log'), debuggerLinesStartAt1, isServer === true);
         this.breakPointCounter = 0;
+        this._supportsRunInTerminalRequest = false;
+        this.terminateEventSent = false;
         this._variableHandles = new vscode_debugadapter_1.Handles();
         this._pythonStackFrames = new vscode_debugadapter_1.Handles();
         this.registeredBreakpoints = new Map();
@@ -71,7 +71,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
     startDebugServer() {
         let programDirectory = '';
         if ((this.launchArgs && this.launchArgs.program) || (this.attachArgs && this.attachArgs.localRoot)) {
-            programDirectory = this.launchArgs ? path.dirname(this.launchArgs.program) : this.attachArgs.localRoot;
+            programDirectory = (this.launchArgs && this.launchArgs.program) ? path.dirname(this.launchArgs.program) : this.attachArgs.localRoot;
         }
         if (this.launchArgs && typeof this.launchArgs.cwd === 'string' && this.launchArgs.cwd.length > 0 && this.launchArgs.cwd !== 'null') {
             programDirectory = this.launchArgs.cwd;
@@ -122,7 +122,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         this.stopDebugServer();
     }
     onPythonThreadCreated(pyThread) {
-        this.sendEvent(new vscode_debugadapter_2.ThreadEvent("started", pyThread.Int32Id));
+        this.sendEvent(new vscode_debugadapter_1.ThreadEvent("started", pyThread.Int32Id));
     }
     onStepCompleted(pyThread) {
         this.sendEvent(new vscode_debugadapter_1.StoppedEvent("step", pyThread.Int32Id));
@@ -133,7 +133,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         this.sendEvent(new vscode_debugadapter_1.OutputEvent(`${ex.TypeName}, ${ex.Description}\n`, "stderr"));
     }
     onPythonThreadExited(pyThread) {
-        this.sendEvent(new vscode_debugadapter_2.ThreadEvent("exited", pyThread.Int32Id));
+        this.sendEvent(new vscode_debugadapter_1.ThreadEvent("exited", pyThread.Int32Id));
     }
     onPythonProcessPaused(pyThread) {
         this.sendEvent(new vscode_debugadapter_1.StoppedEvent("pause", pyThread.Int32Id));
@@ -199,18 +199,9 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         }
         catch (ex) {
         }
-        if (Array.isArray(args.debugOptions) && args.debugOptions.indexOf("Pyramid") >= 0) {
-            const pserve = Utils_2.IS_WINDOWS ? "pserve.exe" : "pserve";
-            if (fs.existsSync(args.pythonPath)) {
-                args.program = path.join(path.dirname(args.pythonPath), pserve);
-            }
-            else {
-                args.program = pserve;
-            }
-        }
         // Confirm the file exists
         if (typeof args.module !== 'string' || args.module.length === 0) {
-            if (!fs.existsSync(args.program)) {
+            if (!args.program || !fs.existsSync(args.program)) {
                 return this.sendErrorResponse(response, 2001, `File does not exist. "${args.program}"`);
             }
         }
@@ -244,6 +235,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
             this.configurationDonePromiseResolve = resolve;
         });
         this.entryResponse = response;
+        // tslint:disable-next-line:no-this-assignment
         const that = this;
         this.startDebugServer().then(dbgServer => {
             return that.debugClient.LaunchApplicationToDebug(dbgServer);
@@ -265,6 +257,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         this.attachArgs = args;
         this.debugClient = DebugFactory_1.CreateAttachDebugClient(args, this);
         this.entryResponse = response;
+        // tslint:disable-next-line:no-this-assignment
         const that = this;
         this.canStartDebugger().then(() => {
             return this.startDebugServer();
@@ -306,7 +299,12 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         let isDjangoFile = false;
         if (this.launchArgs &&
             Array.isArray(this.launchArgs.debugOptions) &&
-            this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0) {
+            this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0) {
+            isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
+        }
+        if (this.attachArgs != null &&
+            Array.isArray(this.attachArgs.debugOptions) &&
+            this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0) {
             isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
         }
         if (this.attachArgs != null &&
@@ -723,5 +721,4 @@ process.on('uncaughtException', (err) => {
     setTimeout(() => process.exit(-1), 1000);
 });
 vscode_debugadapter_1.LoggingDebugSession.run(PythonDebugger);
-
 //# sourceMappingURL=Main.js.map

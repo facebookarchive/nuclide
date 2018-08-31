@@ -1,4 +1,5 @@
 "use strict";
+// tslint:disable:no-console
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -23,6 +24,14 @@ let Logger = class Logger {
         }
         else {
             console.warn(`${PREFIX}${message}`);
+        }
+    }
+    logInformation(message, ex) {
+        if (ex) {
+            console.info(`${PREFIX}${message}`, ex);
+        }
+        else {
+            console.info(`${PREFIX}${message}`);
         }
     }
 };

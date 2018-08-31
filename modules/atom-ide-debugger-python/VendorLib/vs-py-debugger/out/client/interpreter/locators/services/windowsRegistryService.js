@@ -40,6 +40,7 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
         super('WindowsRegistryService', serviceContainer);
         this.registry = registry;
         this.is64Bit = is64Bit;
+        this.pathUtils = serviceContainer.get(types_2.IPathUtils);
     }
     // tslint:disable-next-line:no-empty
     dispose() { }
@@ -68,6 +69,7 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
             // tslint:disable-next-line:underscore-consistent-invocation
             return _.flatten(companyInterpreters)
                 .filter(item => item !== undefined && item !== null)
+                // tslint:disable-next-line:no-non-null-assertion
                 .map(item => item)
                 .reduce((prev, current) => {
                 if (prev.findIndex(item => item.path.toUpperCase() === current.path.toUpperCase()) === -1) {
@@ -81,7 +83,7 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
         return __awaiter(this, void 0, void 0, function* () {
             return this.registry.getKeys('\\Software\\Python', hive, arch)
                 .then(companyKeys => companyKeys
-                .filter(companyKey => CompaniesToIgnore.indexOf(path.basename(companyKey).toUpperCase()) === -1)
+                .filter(companyKey => CompaniesToIgnore.indexOf(this.pathUtils.basename(companyKey).toUpperCase()) === -1)
                 .map(companyKey => {
                 return { companyKey, hive, arch };
             }));
@@ -114,27 +116,25 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
             ])
                 .then(([installedPath, executablePath, displayName, version, companyDisplayName]) => {
                 companyDisplayName = conda_1.AnacondaCompanyNames.indexOf(companyDisplayName) === -1 ? companyDisplayName : conda_1.AnacondaCompanyName;
-                // tslint:disable-next-line:prefer-type-cast
+                // tslint:disable-next-line:prefer-type-cast no-object-literal-type-assertion
                 return { installPath: installedPath, executablePath, displayName, version, companyDisplayName };
             });
         })
-            .then((interpreterInfo) => {
+            .then((interpreterInfo) => __awaiter(this, void 0, void 0, function* () {
             if (!interpreterInfo) {
                 return;
             }
             const executablePath = interpreterInfo.executablePath && interpreterInfo.executablePath.length > 0 ? interpreterInfo.executablePath : path.join(interpreterInfo.installPath, DefaultPythonExecutable);
             const displayName = interpreterInfo.displayName;
-            const version = interpreterInfo.version ? path.basename(interpreterInfo.version) : path.basename(tagKey);
-            // tslint:disable-next-line:prefer-type-cast
-            return {
-                architecture: arch,
-                displayName,
-                path: executablePath,
-                version,
-                companyDisplayName: interpreterInfo.companyDisplayName,
-                type: contracts_1.InterpreterType.Unknown
-            };
-        })
+            const helper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
+            const details = yield helper.getInterpreterInformation(executablePath);
+            if (!details) {
+                return;
+            }
+            const version = interpreterInfo.version ? this.pathUtils.basename(interpreterInfo.version) : this.pathUtils.basename(tagKey);
+            // tslint:disable-next-line:prefer-type-cast no-object-literal-type-assertion
+            return Object.assign({}, details, { architecture: arch, displayName, path: executablePath, version, companyDisplayName: interpreterInfo.companyDisplayName, type: contracts_1.InterpreterType.Unknown });
+        }))
             .then(interpreter => interpreter ? fs.pathExists(interpreter.path).catch(() => false).then(exists => exists ? interpreter : null) : null)
             .catch(error => {
             console.error(`Failed to retrieve interpreter details for company ${companyKey},tag: ${tagKey}, hive: ${hive}, arch: ${arch}`);
@@ -156,7 +156,7 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
             if (displayName && displayName.length > 0) {
                 return displayName;
             }
-            const company = path.basename(companyKey);
+            const company = this.pathUtils.basename(companyKey);
             return company.toUpperCase() === PythonCoreComany ? PythonCoreCompanyDisplayName : company;
         });
     }

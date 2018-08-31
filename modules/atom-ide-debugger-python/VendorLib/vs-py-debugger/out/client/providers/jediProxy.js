@@ -19,88 +19,88 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
 const pidusage = require("pidusage");
-const timers_1 = require("timers");
 const vscode_1 = require("vscode");
-const vscode = require("vscode");
 const configSettings_1 = require("../common/configSettings");
+const constants_1 = require("../common/constants");
 const decorators_1 = require("../common/decorators");
 require("../common/extensions");
 const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/process/types");
+const stopWatch_1 = require("../common/stopWatch");
 const types_2 = require("../common/types");
 const types_3 = require("../common/variables/types");
 const logger = require("./../common/logger");
 const IS_WINDOWS = /^win/.test(process.platform);
 const pythonVSCodeTypeMappings = new Map();
-pythonVSCodeTypeMappings.set('none', vscode.CompletionItemKind.Value);
-pythonVSCodeTypeMappings.set('type', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('tuple', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('dict', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('dictionary', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('function', vscode.CompletionItemKind.Function);
-pythonVSCodeTypeMappings.set('lambda', vscode.CompletionItemKind.Function);
-pythonVSCodeTypeMappings.set('generator', vscode.CompletionItemKind.Function);
-pythonVSCodeTypeMappings.set('class', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('instance', vscode.CompletionItemKind.Reference);
-pythonVSCodeTypeMappings.set('method', vscode.CompletionItemKind.Method);
-pythonVSCodeTypeMappings.set('builtin', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('builtinfunction', vscode.CompletionItemKind.Function);
-pythonVSCodeTypeMappings.set('module', vscode.CompletionItemKind.Module);
-pythonVSCodeTypeMappings.set('file', vscode.CompletionItemKind.File);
-pythonVSCodeTypeMappings.set('xrange', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('slice', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('traceback', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('frame', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('buffer', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('dictproxy', vscode.CompletionItemKind.Class);
-pythonVSCodeTypeMappings.set('funcdef', vscode.CompletionItemKind.Function);
-pythonVSCodeTypeMappings.set('property', vscode.CompletionItemKind.Property);
-pythonVSCodeTypeMappings.set('import', vscode.CompletionItemKind.Module);
-pythonVSCodeTypeMappings.set('keyword', vscode.CompletionItemKind.Keyword);
-pythonVSCodeTypeMappings.set('constant', vscode.CompletionItemKind.Variable);
-pythonVSCodeTypeMappings.set('variable', vscode.CompletionItemKind.Variable);
-pythonVSCodeTypeMappings.set('value', vscode.CompletionItemKind.Value);
-pythonVSCodeTypeMappings.set('param', vscode.CompletionItemKind.Variable);
-pythonVSCodeTypeMappings.set('statement', vscode.CompletionItemKind.Keyword);
+pythonVSCodeTypeMappings.set('none', vscode_1.CompletionItemKind.Value);
+pythonVSCodeTypeMappings.set('type', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('tuple', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('dict', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('dictionary', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('function', vscode_1.CompletionItemKind.Function);
+pythonVSCodeTypeMappings.set('lambda', vscode_1.CompletionItemKind.Function);
+pythonVSCodeTypeMappings.set('generator', vscode_1.CompletionItemKind.Function);
+pythonVSCodeTypeMappings.set('class', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('instance', vscode_1.CompletionItemKind.Reference);
+pythonVSCodeTypeMappings.set('method', vscode_1.CompletionItemKind.Method);
+pythonVSCodeTypeMappings.set('builtin', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('builtinfunction', vscode_1.CompletionItemKind.Function);
+pythonVSCodeTypeMappings.set('module', vscode_1.CompletionItemKind.Module);
+pythonVSCodeTypeMappings.set('file', vscode_1.CompletionItemKind.File);
+pythonVSCodeTypeMappings.set('xrange', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('slice', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('traceback', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('frame', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('buffer', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('dictproxy', vscode_1.CompletionItemKind.Class);
+pythonVSCodeTypeMappings.set('funcdef', vscode_1.CompletionItemKind.Function);
+pythonVSCodeTypeMappings.set('property', vscode_1.CompletionItemKind.Property);
+pythonVSCodeTypeMappings.set('import', vscode_1.CompletionItemKind.Module);
+pythonVSCodeTypeMappings.set('keyword', vscode_1.CompletionItemKind.Keyword);
+pythonVSCodeTypeMappings.set('constant', vscode_1.CompletionItemKind.Variable);
+pythonVSCodeTypeMappings.set('variable', vscode_1.CompletionItemKind.Variable);
+pythonVSCodeTypeMappings.set('value', vscode_1.CompletionItemKind.Value);
+pythonVSCodeTypeMappings.set('param', vscode_1.CompletionItemKind.Variable);
+pythonVSCodeTypeMappings.set('statement', vscode_1.CompletionItemKind.Keyword);
 const pythonVSCodeSymbolMappings = new Map();
-pythonVSCodeSymbolMappings.set('none', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('type', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('tuple', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('dict', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('dictionary', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('function', vscode.SymbolKind.Function);
-pythonVSCodeSymbolMappings.set('lambda', vscode.SymbolKind.Function);
-pythonVSCodeSymbolMappings.set('generator', vscode.SymbolKind.Function);
-pythonVSCodeSymbolMappings.set('class', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('instance', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('method', vscode.SymbolKind.Method);
-pythonVSCodeSymbolMappings.set('builtin', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('builtinfunction', vscode.SymbolKind.Function);
-pythonVSCodeSymbolMappings.set('module', vscode.SymbolKind.Module);
-pythonVSCodeSymbolMappings.set('file', vscode.SymbolKind.File);
-pythonVSCodeSymbolMappings.set('xrange', vscode.SymbolKind.Array);
-pythonVSCodeSymbolMappings.set('slice', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('traceback', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('frame', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('buffer', vscode.SymbolKind.Array);
-pythonVSCodeSymbolMappings.set('dictproxy', vscode.SymbolKind.Class);
-pythonVSCodeSymbolMappings.set('funcdef', vscode.SymbolKind.Function);
-pythonVSCodeSymbolMappings.set('property', vscode.SymbolKind.Property);
-pythonVSCodeSymbolMappings.set('import', vscode.SymbolKind.Module);
-pythonVSCodeSymbolMappings.set('keyword', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('constant', vscode.SymbolKind.Constant);
-pythonVSCodeSymbolMappings.set('variable', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('value', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('param', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('statement', vscode.SymbolKind.Variable);
-pythonVSCodeSymbolMappings.set('boolean', vscode.SymbolKind.Boolean);
-pythonVSCodeSymbolMappings.set('int', vscode.SymbolKind.Number);
-pythonVSCodeSymbolMappings.set('longlean', vscode.SymbolKind.Number);
-pythonVSCodeSymbolMappings.set('float', vscode.SymbolKind.Number);
-pythonVSCodeSymbolMappings.set('complex', vscode.SymbolKind.Number);
-pythonVSCodeSymbolMappings.set('string', vscode.SymbolKind.String);
-pythonVSCodeSymbolMappings.set('unicode', vscode.SymbolKind.String);
-pythonVSCodeSymbolMappings.set('list', vscode.SymbolKind.Array);
+pythonVSCodeSymbolMappings.set('none', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('type', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('tuple', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('dict', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('dictionary', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('function', vscode_1.SymbolKind.Function);
+pythonVSCodeSymbolMappings.set('lambda', vscode_1.SymbolKind.Function);
+pythonVSCodeSymbolMappings.set('generator', vscode_1.SymbolKind.Function);
+pythonVSCodeSymbolMappings.set('class', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('instance', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('method', vscode_1.SymbolKind.Method);
+pythonVSCodeSymbolMappings.set('builtin', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('builtinfunction', vscode_1.SymbolKind.Function);
+pythonVSCodeSymbolMappings.set('module', vscode_1.SymbolKind.Module);
+pythonVSCodeSymbolMappings.set('file', vscode_1.SymbolKind.File);
+pythonVSCodeSymbolMappings.set('xrange', vscode_1.SymbolKind.Array);
+pythonVSCodeSymbolMappings.set('slice', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('traceback', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('frame', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('buffer', vscode_1.SymbolKind.Array);
+pythonVSCodeSymbolMappings.set('dictproxy', vscode_1.SymbolKind.Class);
+pythonVSCodeSymbolMappings.set('funcdef', vscode_1.SymbolKind.Function);
+pythonVSCodeSymbolMappings.set('property', vscode_1.SymbolKind.Property);
+pythonVSCodeSymbolMappings.set('import', vscode_1.SymbolKind.Module);
+pythonVSCodeSymbolMappings.set('keyword', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('constant', vscode_1.SymbolKind.Constant);
+pythonVSCodeSymbolMappings.set('variable', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('value', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('param', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('statement', vscode_1.SymbolKind.Variable);
+pythonVSCodeSymbolMappings.set('boolean', vscode_1.SymbolKind.Boolean);
+pythonVSCodeSymbolMappings.set('int', vscode_1.SymbolKind.Number);
+pythonVSCodeSymbolMappings.set('longlean', vscode_1.SymbolKind.Number);
+pythonVSCodeSymbolMappings.set('float', vscode_1.SymbolKind.Number);
+pythonVSCodeSymbolMappings.set('complex', vscode_1.SymbolKind.Number);
+pythonVSCodeSymbolMappings.set('string', vscode_1.SymbolKind.String);
+pythonVSCodeSymbolMappings.set('unicode', vscode_1.SymbolKind.String);
+pythonVSCodeSymbolMappings.set('list', vscode_1.SymbolKind.Array);
 function getMappedVSCodeType(pythonType) {
     if (pythonVSCodeTypeMappings.has(pythonType)) {
         const value = pythonVSCodeTypeMappings.get(pythonType);
@@ -108,7 +108,7 @@ function getMappedVSCodeType(pythonType) {
             return value;
         }
     }
-    return vscode.CompletionItemKind.Keyword;
+    return vscode_1.CompletionItemKind.Keyword;
 }
 function getMappedVSCodeSymbol(pythonType) {
     if (pythonVSCodeSymbolMappings.has(pythonType)) {
@@ -117,7 +117,7 @@ function getMappedVSCodeSymbol(pythonType) {
             return value;
         }
     }
-    return vscode.SymbolKind.Variable;
+    return vscode_1.SymbolKind.Variable;
 }
 var CommandType;
 (function (CommandType) {
@@ -145,17 +145,17 @@ class JediProxy {
         this.commandQueue = [];
         this.spawnRetryAttempts = 0;
         this.additionalAutoCompletePaths = [];
+        this.ignoreJediMemoryFootprint = false;
+        this.pidUsageFailures = { timer: new stopWatch_1.StopWatch(), counter: 0 };
         this.workspacePath = workspacePath;
-        this.pythonSettings = configSettings_1.PythonSettings.getInstance(vscode.Uri.file(workspacePath));
+        this.pythonSettings = configSettings_1.PythonSettings.getInstance(vscode_1.Uri.file(workspacePath));
         this.lastKnownPythonInterpreter = this.pythonSettings.pythonPath;
         this.logger = serviceContainer.get(types_2.ILogger);
         this.pythonSettings.on('change', () => this.pythonSettingsChangeHandler());
         this.initialized = helpers_1.createDeferred();
         this.startLanguageServer().then(() => this.initialized.resolve()).ignoreErrors();
-        // Check memory footprint periodically. Do not check on every request due to
-        // the performance impact. See https://github.com/soyuka/pidusage - on Windows
-        // it is using wmic which means spawning cmd.exe process on every request.
-        timers_1.setInterval(() => this.checkJediMemoryFootprint(), 2000);
+        this.proposeNewLanguageServerPopup = serviceContainer.get(types_2.IPythonExtensionBanner, types_2.BANNER_NAME_PROPOSE_LS);
+        this.checkJediMemoryFootprint().ignoreErrors();
     }
     static getProperty(o, name) {
         return o[name];
@@ -207,20 +207,63 @@ class JediProxy {
             this.handleError('spawnProcess', ex);
         });
     }
-    checkJediMemoryFootprint() {
-        if (!this.proc || this.proc.killed) {
-            return;
+    shouldCheckJediMemoryFootprint() {
+        if (this.ignoreJediMemoryFootprint || this.pythonSettings.jediMemoryLimit === -1) {
+            return false;
         }
-        pidusage.stat(this.proc.pid, (err, result) => __awaiter(this, void 0, void 0, function* () {
-            if (err) {
-                return console.error('Python Extension: (pidusage)', err);
+        if (this.lastCmdIdProcessedForPidUsage && this.lastCmdIdProcessed &&
+            this.lastCmdIdProcessedForPidUsage === this.lastCmdIdProcessed) {
+            // If no more commands were processed since the last time,
+            //  then there's no need to check again.
+            return false;
+        }
+        return true;
+    }
+    checkJediMemoryFootprint() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Check memory footprint periodically. Do not check on every request due to
+            // the performance impact. See https://github.com/soyuka/pidusage - on Windows
+            // it is using wmic which means spawning cmd.exe process on every request.
+            if (this.pythonSettings.jediMemoryLimit === -1) {
+                return;
             }
-            const limit = Math.min(Math.max(this.pythonSettings.jediMemoryLimit, 1024), 8192);
-            if (result && result.memory > limit * 1024 * 1024) {
-                this.logger.logWarning(`IntelliSense process memory consumption exceeded limit of ${limit} MB and process will be restarted.\nThe limit is controlled by the 'python.jediMemoryLimit' setting.`);
-                yield this.restartLanguageServer();
+            yield this.checkJediMemoryFootprintImpl();
+            setTimeout(() => this.checkJediMemoryFootprint(), 15 * 1000);
+        });
+    }
+    checkJediMemoryFootprintImpl() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.proc || this.proc.killed) {
+                return;
             }
-        }));
+            if (!this.shouldCheckJediMemoryFootprint()) {
+                return;
+            }
+            this.lastCmdIdProcessedForPidUsage = this.lastCmdIdProcessed;
+            // Do not run pidusage over and over, wait for it to finish.
+            const deferred = helpers_1.createDeferred();
+            pidusage.stat(this.proc.pid, (err, result) => __awaiter(this, void 0, void 0, function* () {
+                if (err) {
+                    this.pidUsageFailures.counter += 1;
+                    // If this function fails 2 times in the last 60 seconds, lets not try ever again.
+                    if (this.pidUsageFailures.timer.elapsedTime > 60 * 1000) {
+                        this.ignoreJediMemoryFootprint = this.pidUsageFailures.counter > 2;
+                        this.pidUsageFailures.counter = 0;
+                        this.pidUsageFailures.timer.reset();
+                    }
+                    console.error('Python Extension: (pidusage)', err);
+                }
+                else {
+                    const limit = Math.min(Math.max(this.pythonSettings.jediMemoryLimit, 1024), 8192);
+                    if (result && result.memory > limit * 1024 * 1024) {
+                        this.logger.logWarning(`IntelliSense process memory consumption exceeded limit of ${limit} MB and process will be restarted.\nThe limit is controlled by the 'python.jediMemoryLimit' setting.`);
+                        yield this.restartLanguageServer();
+                    }
+                }
+                deferred.resolve();
+            }));
+            return deferred.promise;
+        });
     }
     pythonSettingsChangeHandler() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -245,6 +288,9 @@ class JediProxy {
         return __awaiter(this, void 0, void 0, function* () {
             const newAutoComletePaths = yield this.buildAutoCompletePaths();
             this.additionalAutoCompletePaths = newAutoComletePaths;
+            if (!constants_1.isTestExecution()) {
+                yield this.proposeNewLanguageServerPopup.showBanner();
+            }
             return this.restartLanguageServer();
         });
     }
@@ -270,7 +316,7 @@ class JediProxy {
             // tslint:disable-next-line:no-empty
         }
         catch (ex) { }
-        this.proc = null;
+        this.proc = undefined;
     }
     handleError(source, errorMessage) {
         logger.error(`${source} jediProxy`, `Error (${source}) ${errorMessage}`);
@@ -279,16 +325,21 @@ class JediProxy {
     spawnProcess(cwd) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.languageServerStarted && !this.languageServerStarted.completed) {
-                this.languageServerStarted.reject();
+                this.languageServerStarted.reject(new Error('Language Server not started.'));
             }
             this.languageServerStarted = helpers_1.createDeferred();
-            const pythonProcess = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create(vscode_1.Uri.file(this.workspacePath));
+            const pythonProcess = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(this.workspacePath) });
+            // Check if the python path is valid.
+            if ((yield pythonProcess.getExecutablePath().catch(() => '')).length === 0) {
+                return;
+            }
             const args = ['completion.py'];
             if (typeof this.pythonSettings.jediPath === 'string' && this.pythonSettings.jediPath.length > 0) {
                 args.push('custom');
                 args.push(this.pythonSettings.jediPath);
             }
-            if (Array.isArray(this.pythonSettings.autoComplete.preloadModules) &&
+            if (this.pythonSettings.autoComplete &&
+                Array.isArray(this.pythonSettings.autoComplete.preloadModules) &&
                 this.pythonSettings.autoComplete.preloadModules.length > 0) {
                 const modules = this.pythonSettings.autoComplete.preloadModules.filter(m => m.trim().length > 0).join(',');
                 args.push(modules);
@@ -339,11 +390,18 @@ class JediProxy {
                         return;
                     }
                     responses.forEach((response) => {
-                        const responseId = JediProxy.getProperty(response, 'id');
-                        const cmd = this.commands.get(responseId);
-                        if (cmd === null) {
+                        if (!response) {
                             return;
                         }
+                        const responseId = JediProxy.getProperty(response, 'id');
+                        if (!this.commands.has(responseId)) {
+                            return;
+                        }
+                        const cmd = this.commands.get(responseId);
+                        if (!cmd) {
+                            return;
+                        }
+                        this.lastCmdIdProcessed = cmd.id;
                         if (JediProxy.getProperty(response, 'arguments')) {
                             this.commandQueue.splice(this.commandQueue.indexOf(cmd.id), 1);
                             return;
@@ -496,6 +554,7 @@ class JediProxy {
     onArguments(command, response) {
         // tslint:disable-next-line:no-any
         const defs = JediProxy.getProperty(response, 'results');
+        // tslint:disable-next-line:no-object-literal-type-assertion
         this.safeResolve(command, {
             requestId: command.id,
             definitions: defs
@@ -541,7 +600,7 @@ class JediProxy {
     getPathFromPythonCommand(args) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const pythonProcess = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create(vscode_1.Uri.file(this.workspacePath));
+                const pythonProcess = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(this.workspacePath) });
                 const result = yield pythonProcess.exec(args, { cwd: this.workspacePath });
                 const lines = result.stdout.trim().splitLines();
                 if (lines.length === 0) {
@@ -601,15 +660,16 @@ class JediProxy {
     }
     getConfig() {
         // Add support for paths relative to workspace.
-        const extraPaths = this.pythonSettings.autoComplete.extraPaths.map(extraPath => {
-            if (path.isAbsolute(extraPath)) {
-                return extraPath;
-            }
-            if (typeof this.workspacePath !== 'string') {
-                return '';
-            }
-            return path.join(this.workspacePath, extraPath);
-        });
+        const extraPaths = this.pythonSettings.autoComplete ?
+            this.pythonSettings.autoComplete.extraPaths.map(extraPath => {
+                if (path.isAbsolute(extraPath)) {
+                    return extraPath;
+                }
+                if (typeof this.workspacePath !== 'string') {
+                    return '';
+                }
+                return path.join(this.workspacePath, extraPath);
+            }) : [];
         // Always add workspace path into extra paths.
         if (typeof this.workspacePath === 'string') {
             extraPaths.unshift(this.workspacePath);
@@ -664,7 +724,7 @@ class JediProxyHandler {
                 ct.cancel();
             }
         }
-        const cancellation = new vscode.CancellationTokenSource();
+        const cancellation = new vscode_1.CancellationTokenSource();
         this.commandCancellationTokenSources.set(cmd.command, cancellation);
         executionCmd.token = cancellation.token;
         return this.jediProxy.sendCommand(executionCmd)

@@ -6,7 +6,6 @@ import json
 import traceback
 import platform
 
-WORD_RE = re.compile(r'\w')
 jediPreview = False
 
 class RedirectStdout(object):
@@ -16,7 +15,7 @@ class RedirectStdout(object):
 
     def __enter__(self):
         sys.stdout.flush()
-        oldstdout_fno = self.oldstdout_fno = os.dup(sys.stdout.fileno())
+        self.oldstdout_fno = os.dup(sys.stdout.fileno())
         os.dup2(self._new_stdout.fileno(), 1)
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -34,6 +33,7 @@ class JediCompletion(object):
 
     def __init__(self):
         self.default_sys_path = sys.path
+        self.environment = jedi.api.environment.Environment(sys.prefix, sys.executable)
         self._input = io.open(sys.stdin.fileno(), encoding='utf-8')
         if (os.path.sep == '/') and (platform.uname()[2].find('Microsoft') > -1):
             # WSL; does not support UNC paths
@@ -48,7 +48,6 @@ class JediCompletion(object):
             self.drive_mount = ''
 
     def _get_definition_type(self, definition):
-        is_built_in = definition.in_builtin_module
         # if definition.type not in ['import', 'keyword'] and is_built_in():
         #    return 'builtin'
         try:
@@ -90,7 +89,7 @@ class JediCompletion(object):
             return ''
         return '%s(%s)' % (
             completion.name,
-            ', '.join(p.description for p in completion.params if p))
+            ', '.join(p.description[6:] for p in completion.params if p))
 
     def _get_call_signatures(self, script):
         """Extract call signatures from jedi.api.Script object in failsafe way.
@@ -109,19 +108,27 @@ class JediCompletion(object):
             for pos, param in enumerate(signature.params):
                 if not param.name:
                     continue
+
+                name = self._get_param_name(param)
                 if param.name == 'self' and pos == 0:
                     continue
-                if WORD_RE.match(param.name) is None:
-                    continue
-                try:
-                    name, value = param.description.split('=')
-                except ValueError:
-                    name = param.description
-                    value = None
                 if name.startswith('*'):
                     continue
+
+                value = self._get_param_value(param)
                 _signatures.append((signature, name, value))
         return _signatures
+
+    def _get_param_name(self, p):
+        if(p.name.startswith('param ')):
+            return p.name[6:] # drop leading 'param '
+        return p.name
+
+    def _get_param_value(self, p):
+        pair = p.description.split('=')
+        if(len(pair) > 1):
+            return pair[1]
+        return None
 
     def _get_call_signatures_with_args(self, script):
         """Extract call signatures from jedi.api.Script object in failsafe way.
@@ -144,7 +151,7 @@ class JediCompletion(object):
             except Exception:
                 sig["docstring"] = ''
                 sig["raw_docstring"] = ''
-                
+
             sig["name"] = signature.name
             sig["paramindex"] = signature.index
             sig["bracketstart"].append(signature.index)
@@ -153,18 +160,12 @@ class JediCompletion(object):
             for pos, param in enumerate(signature.params):
                 if not param.name:
                     continue
+
+                name = self._get_param_name(param)
                 if param.name == 'self' and pos == 0:
                     continue
-                if WORD_RE.match(param.name) is None:
-                    continue
-                try:
-                    name, value = param.description.split('=')
-                except ValueError:
-                    name = param.description
-                    value = None
-                # if name.startswith('*'):
-                #    continue
-                #_signatures.append((signature, name, value))
+
+                value = self._get_param_value(param)
                 paramDocstring = ''
                 try:
                     paramDocstring = param.docstring()
@@ -199,25 +200,15 @@ class JediCompletion(object):
             }
             _completion['description'] = ''
             _completion['raw_docstring'] = ''
-            
+
             # we pass 'text' here only for fuzzy matcher
             if value:
                 _completion['snippet'] = '%s=${1:%s}$0' % (name, value)
-                _completion['text'] = '%s=%s' % (name, value)
+                _completion['text'] = '%s=' % (name)
             else:
                 _completion['snippet'] = '%s=$1$0' % name
                 _completion['text'] = name
                 _completion['displayText'] = name
-            if self.show_doc_strings:
-                try:
-                    _completion['description'] = signature.docstring()
-                    _completion['raw_docstring'] = signature.docstring(raw=True)
-                except Exception:
-                    _completion['description'] = ''
-                    _completion['raw_docstring'] = ''
-            else:
-                _completion['description'] = self._generate_signature(
-                    signature)
             _completions.append(_completion)
 
         try:
@@ -227,24 +218,13 @@ class JediCompletion(object):
         except :
             completions = []
         for completion in completions:
-            if self.show_doc_strings:
-                try:
-                    description = completion.docstring()
-                except Exception:
-                    description = ''
-            else:
-                description = self._generate_signature(completion)
-
             try:
-                rawDocstring = completion.docstring(raw=True)
                 _completion = {
                     'text': completion.name,
                     'type': self._get_definition_type(completion),
                     'raw_type': completion.type,
-                    'description': description,
-                    'raw_docstring': rawDocstring,
                     'rightLabel': self._additional_info(completion)
-                }                
+                }
             except Exception:
                 continue
 
@@ -252,11 +232,7 @@ class JediCompletion(object):
                 if c['text'] == _completion['text']:
                     c['type'] = _completion['type']
                     c['raw_type'] = _completion['raw_type']
-                    if len(c['description']) == 0 and len(c['raw_docstring']) == 0:
-                        c['description'] = _completion['description']
-                        c['raw_docstring'] = _completion['description']
-                    
-            
+
             if any([c['text'].split('=')[0] == _completion['text']
                     for c in _completions]):
                 # ignore function arguments we already have
@@ -281,8 +257,7 @@ class JediCompletion(object):
         for completion in completions:
             params = []
             if hasattr(completion, 'params'):
-                params = [p.description for p in completion.params
-                          if ARGUMENT_RE.match(p.description)]
+                params = [p.description for p in completion.params if p]
             if completion.parent().type == 'class':
               _methods.append({
                 'parent': completion.parent().name,
@@ -318,50 +293,8 @@ class JediCompletion(object):
                 return d
         return definition
 
-    def _extract_range_jedi_0_9_0(self, definition):
-        from jedi import common
-        from jedi.parser.utils import load_parser
-        # get the scope range
-        try:
-            if definition.type in ['class', 'function'] and hasattr(definition, '_definition'):
-                scope = definition._definition
-                start_line = scope.start_pos[0] - 1
-                start_column = scope.start_pos[1]
-                end_line = scope.end_pos[0] - 1
-                end_column = scope.end_pos[1]
-                # get the lines
-                path = definition._definition.get_parent_until().path
-                parser = load_parser(path)
-                lines = common.splitlines(parser.source)
-                lines[end_line] = lines[end_line][:end_column]
-                # trim the lines
-                lines = lines[start_line:end_line + 1]
-                lines = '\n'.join(lines).rstrip().split('\n')
-                end_line = start_line + len(lines) - 1
-                end_column = len(lines[-1]) - 1
-            else:
-                symbol = definition._name
-                start_line = symbol.start_pos[0] - 1
-                start_column = symbol.start_pos[1]
-                end_line = symbol.end_pos[0] - 1
-                end_column =  symbol.end_pos[1]
-            return {
-                'start_line': start_line,
-                'start_column': start_column,
-                'end_line': end_line,
-                'end_column': end_column
-            }
-        except Exception as e:
-            return {
-                'start_line': definition.line - 1,
-                'start_column': definition.column, 
-                'end_line': definition.line - 1,
-                'end_column': definition.column
-            }
-
-    def _extract_range_jedi_0_10_1(self, definition):
-        from jedi import common
-        from jedi.parser.python import parse
+    def _extract_range_jedi_0_11_1(self, definition):
+        from parso.utils import split_lines
         # get the scope range
         try:
             if definition.type in ['class', 'function']:
@@ -371,7 +304,7 @@ class JediCompletion(object):
                 start_column = scope.start_pos[1]
                 # get the lines
                 code = scope.get_code(include_prefix=False)
-                lines = common.splitlines(code)
+                lines = split_lines(code)
                 # trim the lines
                 lines = '\n'.join(lines).rstrip().split('\n')
                 end_line = start_line + len(lines) - 1
@@ -410,10 +343,7 @@ class JediCompletion(object):
         last character of actual code. That's why we extract the lines that
         make up our scope and trim the trailing whitespace.
         """
-        if jedi.__version__ in ('0.9.0', '0.10.0'):
-            return self._extract_range_jedi_0_9_0(definition)
-        else:
-            return self._extract_range_jedi_0_10_1(definition)
+        return self._extract_range_jedi_0_11_1(definition)
 
     def _get_definitionsx(self, definitions, identifier=None, ignoreNoModulePath=False):
         """Serialize response to be read from VSCode.
@@ -432,7 +362,7 @@ class JediCompletion(object):
                     definition = self._top_definition(definition)
                 definitionRange = {
                     'start_line': 0,
-                    'start_column': 0, 
+                    'start_column': 0,
                     'end_line': 0,
                     'end_column': 0
                 }
@@ -448,7 +378,7 @@ class JediCompletion(object):
                     container = parent.name if parent.type != 'module' else ''
                 except Exception:
                     container = ''
-                
+
                 try:
                     docstring = definition.docstring()
                     rawdocstring = definition.docstring(raw=True)
@@ -495,7 +425,7 @@ class JediCompletion(object):
                         container = parent.name if parent.type != 'module' else ''
                     except Exception:
                         container = ''
-                
+
                     try:
                         docstring = definition.docstring()
                         rawdocstring = definition.docstring(raw=True)
@@ -545,7 +475,7 @@ class JediCompletion(object):
                 'type': self._get_definition_type(definition),
                 'text': definition.name,
                 'description': description,
-                'docstring': description, 
+                'docstring': description,
                 'signature': signature
             }
             _definitions.append(_definition)
@@ -622,7 +552,7 @@ class JediCompletion(object):
 
         self._normalize_request_path(request)
         path = self._get_top_level_module(request.get('path', ''))
-        if path not in sys.path:
+        if len(path) > 0 and path not in sys.path:
             sys.path.insert(0, path)
         lookup = request.get('lookup', 'completions')
 
@@ -634,26 +564,13 @@ class JediCompletion(object):
                     all_scopes=True),
                 request['id'])
 
-        script = jedi.api.Script(
+        script = jedi.Script(
             source=request.get('source', None), line=request['line'] + 1,
-            column=request['column'], path=request.get('path', ''))
-        
+            column=request['column'], path=request.get('path', ''),
+            sys_path=sys.path, environment=self.environment)
+
         if lookup == 'definitions':
-            defs = []
-            try:
-                defs = self._get_definitionsx(script.goto_assignments(follow_imports=False), request['id'])
-            except:
-                pass
-            try:
-                if len(defs) == 0:
-                    defs = self._get_definitionsx(script.goto_definitions(), request['id'])
-            except:
-                pass
-            try:
-                if len(defs) == 0:
-                    defs = self._get_definitionsx(script.goto_assignments(), request['id'])
-            except:
-                pass
+            defs = self._get_definitionsx(script.goto_assignments(follow_imports=True), request['id'])
             return json.dumps({'id': request['id'], 'results': defs})
         if lookup == 'tooltip':
             if jediPreview:
@@ -695,7 +612,7 @@ class JediCompletion(object):
             try:
                 rq = self._input.readline()
                 if len(rq) == 0:
-                    # Reached EOF - indication our parent process is gone. 
+                    # Reached EOF - indication our parent process is gone.
                     sys.stderr.write('Received EOF from the standard input,exiting' + '\n')
                     sys.stderr.flush()
                     return
@@ -710,22 +627,17 @@ class JediCompletion(object):
 if __name__ == '__main__':
     cachePrefix = 'v'
     modulesToLoad = ''
-    if len(sys.argv) > 0 and sys.argv[1] == 'preview':
-        jediPath = os.path.join(os.path.dirname(__file__), 'preview')
-        jediPreview = True
-        if len(sys.argv) > 2:
-            modulesToLoad = sys.argv[2]
-    elif len(sys.argv) > 0 and sys.argv[1] == 'custom':
+    if len(sys.argv) > 2 and sys.argv[1] == 'custom':
         jediPath = sys.argv[2]
         jediPreview = True
         cachePrefix = 'custom_v'
         if len(sys.argv) > 3:
             modulesToLoad = sys.argv[3]
     else:
-        #std
-        jediPath = os.path.join(os.path.dirname(__file__), 'release')
-        if len(sys.argv) > 2:
-            modulesToLoad = sys.argv[2]
+        #release
+        jediPath = os.path.dirname(__file__)
+        if len(sys.argv) > 1:
+            modulesToLoad = sys.argv[1]
 
     sys.path.insert(0, jediPath)
     import jedi

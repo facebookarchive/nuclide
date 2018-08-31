@@ -4,13 +4,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var TerminalShellType;
 (function (TerminalShellType) {
-    TerminalShellType[TerminalShellType["powershell"] = 1] = "powershell";
-    TerminalShellType[TerminalShellType["powershellCore"] = 2] = "powershellCore";
-    TerminalShellType[TerminalShellType["commandPrompt"] = 3] = "commandPrompt";
-    TerminalShellType[TerminalShellType["bash"] = 4] = "bash";
-    TerminalShellType[TerminalShellType["fish"] = 5] = "fish";
-    TerminalShellType[TerminalShellType["cshell"] = 6] = "cshell";
-    TerminalShellType[TerminalShellType["other"] = 7] = "other";
+    TerminalShellType["powershell"] = "powershell";
+    TerminalShellType["powershellCore"] = "powershellCore";
+    TerminalShellType["commandPrompt"] = "commandPrompt";
+    TerminalShellType["gitbash"] = "gitbash";
+    TerminalShellType["bash"] = "bash";
+    TerminalShellType["zsh"] = "zsh";
+    TerminalShellType["ksh"] = "ksh";
+    TerminalShellType["fish"] = "fish";
+    TerminalShellType["cshell"] = "cshell";
+    TerminalShellType["tcshell"] = "tshell";
+    TerminalShellType["wsl"] = "wsl";
+    TerminalShellType["other"] = "other";
 })(TerminalShellType = exports.TerminalShellType || (exports.TerminalShellType = {}));
 exports.ITerminalServiceFactory = Symbol('ITerminalServiceFactory');
 exports.ITerminalHelper = Symbol('ITerminalHelper');

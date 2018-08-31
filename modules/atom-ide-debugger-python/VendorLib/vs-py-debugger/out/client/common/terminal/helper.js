@@ -30,20 +30,30 @@ const condaActivationProvider_1 = require("./environmentActivationProviders/cond
 const types_5 = require("./types");
 // Types of shells can be found here:
 // 1. https://wiki.ubuntu.com/ChangingShells
-const IS_BASH = /(bash.exe$|wsl.exe$|bash$|zsh$|ksh$)/i;
+const IS_GITBASH = /(gitbash.exe$)/i;
+const IS_BASH = /(bash.exe$|bash$)/i;
+const IS_WSL = /(wsl.exe$)/i;
+const IS_ZSH = /(zsh$)/i;
+const IS_KSH = /(ksh$)/i;
 const IS_COMMAND = /cmd.exe$/i;
 const IS_POWERSHELL = /(powershell.exe$|powershell$)/i;
 const IS_POWERSHELL_CORE = /(pwsh.exe$|pwsh$)/i;
 const IS_FISH = /(fish$)/i;
 const IS_CSHELL = /(csh$)/i;
+const IS_TCSHELL = /(tcsh$)/i;
 let TerminalHelper = class TerminalHelper {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
         this.detectableShells = new Map();
         this.detectableShells.set(types_5.TerminalShellType.powershell, IS_POWERSHELL);
+        this.detectableShells.set(types_5.TerminalShellType.gitbash, IS_GITBASH);
         this.detectableShells.set(types_5.TerminalShellType.bash, IS_BASH);
+        this.detectableShells.set(types_5.TerminalShellType.wsl, IS_WSL);
+        this.detectableShells.set(types_5.TerminalShellType.zsh, IS_ZSH);
+        this.detectableShells.set(types_5.TerminalShellType.ksh, IS_KSH);
         this.detectableShells.set(types_5.TerminalShellType.commandPrompt, IS_COMMAND);
         this.detectableShells.set(types_5.TerminalShellType.fish, IS_FISH);
+        this.detectableShells.set(types_5.TerminalShellType.tcshell, IS_TCSHELL);
         this.detectableShells.set(types_5.TerminalShellType.cshell, IS_CSHELL);
         this.detectableShells.set(types_5.TerminalShellType.powershellCore, IS_POWERSHELL_CORE);
     }

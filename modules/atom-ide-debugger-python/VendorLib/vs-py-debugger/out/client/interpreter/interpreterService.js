@@ -51,7 +51,7 @@ let InterpreterService = class InterpreterService {
     initialize() {
         const disposables = this.serviceContainer.get(types_3.IDisposableRegistry);
         const documentManager = this.serviceContainer.get(types_1.IDocumentManager);
-        disposables.push(documentManager.onDidChangeActiveTextEditor((e) => this.refresh(e.document.uri)));
+        disposables.push(documentManager.onDidChangeActiveTextEditor((e) => e ? this.refresh(e.document.uri) : undefined));
         const configService = this.serviceContainer.get(types_3.IConfigurationService);
         configService.getSettings().addListener('change', this.onConfigChanged);
     }
@@ -105,29 +105,35 @@ let InterpreterService = class InterpreterService {
     getActiveInterpreter(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const pythonExecutionFactory = this.serviceContainer.get(types_2.IPythonExecutionFactory);
-            const pythonExecutionService = yield pythonExecutionFactory.create(resource);
+            const pythonExecutionService = yield pythonExecutionFactory.create({ resource });
             const fullyQualifiedPath = yield pythonExecutionService.getExecutablePath().catch(() => undefined);
             // Python path is invalid or python isn't installed.
             if (!fullyQualifiedPath) {
                 return;
             }
+            return this.getInterpreterDetails(fullyQualifiedPath, resource);
+        });
+    }
+    getInterpreterDetails(pythonPath, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
             const interpreters = yield this.getInterpreters(resource);
-            const interpreter = interpreters.find(i => utils.arePathsSame(i.path, fullyQualifiedPath));
+            const interpreter = interpreters.find(i => utils.arePathsSame(i.path, pythonPath));
             if (interpreter) {
                 return interpreter;
             }
-            const pythonExecutableName = path.basename(fullyQualifiedPath);
-            const versionInfo = yield this.serviceContainer.get(contracts_1.IInterpreterVersionService).getVersion(fullyQualifiedPath, pythonExecutableName);
+            const interpreterHelper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
             const virtualEnvManager = this.serviceContainer.get(types_6.IVirtualEnvironmentManager);
-            const virtualEnvName = yield virtualEnvManager.getEnvironmentName(fullyQualifiedPath);
+            const [details, virtualEnvName, type] = yield Promise.all([
+                interpreterHelper.getInterpreterInformation(pythonPath),
+                virtualEnvManager.getEnvironmentName(pythonPath),
+                virtualEnvManager.getEnvironmentType(pythonPath)
+            ]);
+            if (details) {
+                return;
+            }
             const dislayNameSuffix = virtualEnvName.length > 0 ? ` (${virtualEnvName})` : '';
-            const displayName = `${versionInfo}${dislayNameSuffix}`;
-            return {
-                displayName,
-                path: fullyQualifiedPath,
-                type: virtualEnvName.length > 0 ? contracts_1.InterpreterType.VirtualEnv : contracts_1.InterpreterType.Unknown,
-                version: versionInfo
-            };
+            const displayName = `${details.version}${dislayNameSuffix}`;
+            return Object.assign({}, details, { displayName, path: pythonPath, envName: virtualEnvName, type: type });
         });
     }
     shouldAutoSetInterpreter() {

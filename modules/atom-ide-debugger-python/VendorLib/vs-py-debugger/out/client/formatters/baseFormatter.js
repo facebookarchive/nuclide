@@ -47,14 +47,13 @@ class BaseFormatter {
     }
     provideDocumentFormattingEdits(document, options, token, args, cwd) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.outputChannel.clear();
             if (typeof cwd !== 'string' || cwd.length === 0) {
                 cwd = this.getWorkspaceUri(document).fsPath;
             }
             // autopep8 and yapf have the ability to read from the process input stream and return the formatted code out of the output stream.
             // However they don't support returning the diff of the formatted text when reading data from the input stream.
-            // Yes getting text formatted that way avoids having to create a temporary file, however the diffing will have
-            // to be done here in node (extension), i.e. extension cpu, i.e. les responsive solution.
+            // Yet getting text formatted that way avoids having to create a temporary file, however the diffing will have
+            // to be done here in node (extension), i.e. extension CPU, i.e. less responsive solution.
             const tempFile = yield this.createTempFile(document);
             if (this.checkCancellation(document.fileName, tempFile, token)) {
                 return [];
@@ -62,7 +61,7 @@ class BaseFormatter {
             const executionInfo = this.helper.getExecutionInfo(this.product, args, document.uri);
             executionInfo.args.push(tempFile);
             const pythonToolsExecutionService = this.serviceContainer.get(types_2.IPythonToolExecutionService);
-            const promise = pythonToolsExecutionService.exec(executionInfo, { cwd, throwOnStdErr: true, token }, document.uri)
+            const promise = pythonToolsExecutionService.exec(executionInfo, { cwd, throwOnStdErr: false, token }, document.uri)
                 .then(output => output.stdout)
                 .then(data => {
                 if (this.checkCancellation(document.fileName, tempFile, token)) {
@@ -103,7 +102,7 @@ class BaseFormatter {
     createTempFile(document) {
         return __awaiter(this, void 0, void 0, function* () {
             return document.isDirty
-                ? yield editor_1.getTempFileWithDocumentContents(document)
+                ? editor_1.getTempFileWithDocumentContents(document)
                 : document.fileName;
         });
     }

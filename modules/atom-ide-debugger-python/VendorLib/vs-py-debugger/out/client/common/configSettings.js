@@ -3,9 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const child_process = require("child_process");
 const events_1 = require("events");
 const path = require("path");
-const vscode = require("vscode");
 const vscode_1 = require("vscode");
-const constants_1 = require("./constants");
+const telemetry_1 = require("../telemetry");
+const constants_1 = require("../telemetry/constants");
+const constants_2 = require("./constants");
 const systemVariables_1 = require("./variables/systemVariables");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify = require('untildify');
@@ -14,10 +15,25 @@ exports.IS_WINDOWS = /^win/.test(process.platform);
 class PythonSettings extends events_1.EventEmitter {
     constructor(workspaceFolder) {
         super();
+        this.downloadLanguageServer = true;
+        this.jediEnabled = true;
+        this.jediPath = '';
+        this.jediMemoryLimit = 1024;
+        this.envFile = '';
+        this.venvPath = '';
+        this.venvFolders = [];
+        this.devOptions = [];
+        this.disableInstallationChecks = false;
+        this.globalModuleInstallation = false;
         this.disposables = [];
-        this.workspaceRoot = workspaceFolder ? workspaceFolder : vscode.Uri.file(__dirname);
-        this.disposables.push(vscode.workspace.onDidChangeConfiguration(() => {
+        // tslint:disable-next-line:variable-name
+        this._pythonPath = '';
+        this.workspaceRoot = workspaceFolder ? workspaceFolder : vscode_1.Uri.file(__dirname);
+        this.disposables.push(vscode_1.workspace.onDidChangeConfiguration(() => {
             this.initializeSettings();
+            // If workspace config changes, then we could have a cascading effect of on change events.
+            // Let's defer the change notification.
+            setTimeout(() => this.emit('change'), 1);
         }));
         this.initializeSettings();
     }
@@ -28,22 +44,26 @@ class PythonSettings extends events_1.EventEmitter {
         if (!PythonSettings.pythonSettings.has(workspaceFolderKey)) {
             const settings = new PythonSettings(workspaceFolderUri);
             PythonSettings.pythonSettings.set(workspaceFolderKey, settings);
+            const formatOnType = vscode_1.workspace.getConfiguration('editor', resource ? resource : null).get('formatOnType', false);
+            telemetry_1.sendTelemetryEvent(constants_1.COMPLETION_ADD_BRACKETS, undefined, { enabled: settings.autoComplete.addBrackets });
+            telemetry_1.sendTelemetryEvent(constants_1.FORMAT_ON_TYPE, undefined, { enabled: formatOnType });
         }
         // tslint:disable-next-line:no-non-null-assertion
         return PythonSettings.pythonSettings.get(workspaceFolderKey);
     }
+    // tslint:disable-next-line:type-literal-delimiter
     static getSettingsUriAndTarget(resource) {
-        const workspaceFolder = resource ? vscode.workspace.getWorkspaceFolder(resource) : undefined;
+        const workspaceFolder = resource ? vscode_1.workspace.getWorkspaceFolder(resource) : undefined;
         let workspaceFolderUri = workspaceFolder ? workspaceFolder.uri : undefined;
-        if (!workspaceFolderUri && Array.isArray(vscode.workspace.workspaceFolders) && vscode.workspace.workspaceFolders.length > 0) {
-            workspaceFolderUri = vscode.workspace.workspaceFolders[0].uri;
+        if (!workspaceFolderUri && Array.isArray(vscode_1.workspace.workspaceFolders) && vscode_1.workspace.workspaceFolders.length > 0) {
+            workspaceFolderUri = vscode_1.workspace.workspaceFolders[0].uri;
         }
         const target = workspaceFolderUri ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Global;
         return { uri: workspaceFolderUri, target };
     }
     // tslint:disable-next-line:function-name
     static dispose() {
-        if (!constants_1.isTestExecution()) {
+        if (!constants_2.isTestExecution()) {
             throw new Error('Dispose can only be called from unit tests');
         }
         // tslint:disable-next-line:no-void-expression
@@ -59,22 +79,26 @@ class PythonSettings extends events_1.EventEmitter {
     initializeSettings() {
         const workspaceRoot = this.workspaceRoot.fsPath;
         const systemVariables = new systemVariables_1.SystemVariables(this.workspaceRoot ? this.workspaceRoot.fsPath : undefined);
-        const pythonSettings = vscode.workspace.getConfiguration('python', this.workspaceRoot);
+        const pythonSettings = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.pythonPath = systemVariables.resolveAny(pythonSettings.get('pythonPath'));
         this.pythonPath = getAbsolutePath(this.pythonPath, workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.venvPath = systemVariables.resolveAny(pythonSettings.get('venvPath'));
         this.venvFolders = systemVariables.resolveAny(pythonSettings.get('venvFolders'));
-        // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
-        this.jediPath = systemVariables.resolveAny(pythonSettings.get('jediPath'));
-        if (typeof this.jediPath === 'string' && this.jediPath.length > 0) {
-            this.jediPath = getAbsolutePath(systemVariables.resolveAny(this.jediPath), workspaceRoot);
+        this.downloadLanguageServer = systemVariables.resolveAny(pythonSettings.get('downloadLanguageServer', true));
+        this.jediEnabled = systemVariables.resolveAny(pythonSettings.get('jediEnabled', true));
+        if (this.jediEnabled) {
+            // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
+            this.jediPath = systemVariables.resolveAny(pythonSettings.get('jediPath'));
+            if (typeof this.jediPath === 'string' && this.jediPath.length > 0) {
+                this.jediPath = getAbsolutePath(systemVariables.resolveAny(this.jediPath), workspaceRoot);
+            }
+            else {
+                this.jediPath = '';
+            }
+            this.jediMemoryLimit = pythonSettings.get('jediMemoryLimit');
         }
-        else {
-            this.jediPath = '';
-        }
-        this.jediMemoryLimit = pythonSettings.get('jediMemoryLimit');
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.envFile = systemVariables.resolveAny(pythonSettings.get('envFile'));
         // tslint:disable-next-line:no-any
@@ -83,14 +107,19 @@ class PythonSettings extends events_1.EventEmitter {
         this.devOptions = Array.isArray(this.devOptions) ? this.devOptions : [];
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         const lintingSettings = systemVariables.resolveAny(pythonSettings.get('linting'));
-        // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
-        this.disablePromptForFeatures = pythonSettings.get('disablePromptForFeatures');
-        this.disablePromptForFeatures = Array.isArray(this.disablePromptForFeatures) ? this.disablePromptForFeatures : [];
         if (this.linting) {
             Object.assign(this.linting, lintingSettings);
         }
         else {
             this.linting = lintingSettings;
+        }
+        // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
+        const analysisSettings = systemVariables.resolveAny(pythonSettings.get('analysis'));
+        if (this.analysis) {
+            Object.assign(this.analysis, analysisSettings);
+        }
+        else {
+            this.analysis = analysisSettings;
         }
         this.disableInstallationChecks = pythonSettings.get('disableInstallationCheck') === true;
         this.globalModuleInstallation = pythonSettings.get('globalModuleInstallation') === true;
@@ -117,27 +146,27 @@ class PythonSettings extends events_1.EventEmitter {
             pydocstyleArgs: [], pydocstyleEnabled: false, pydocstylePath: 'pydocstyle',
             pylintArgs: [], pylintEnabled: false, pylintPath: 'pylint',
             pylintCategorySeverity: {
-                convention: vscode.DiagnosticSeverity.Hint,
-                error: vscode.DiagnosticSeverity.Error,
-                fatal: vscode.DiagnosticSeverity.Error,
-                refactor: vscode.DiagnosticSeverity.Hint,
-                warning: vscode.DiagnosticSeverity.Warning
+                convention: vscode_1.DiagnosticSeverity.Hint,
+                error: vscode_1.DiagnosticSeverity.Error,
+                fatal: vscode_1.DiagnosticSeverity.Error,
+                refactor: vscode_1.DiagnosticSeverity.Hint,
+                warning: vscode_1.DiagnosticSeverity.Warning
             },
             pep8CategorySeverity: {
-                E: vscode.DiagnosticSeverity.Error,
-                W: vscode.DiagnosticSeverity.Warning
+                E: vscode_1.DiagnosticSeverity.Error,
+                W: vscode_1.DiagnosticSeverity.Warning
             },
             flake8CategorySeverity: {
-                E: vscode.DiagnosticSeverity.Error,
-                W: vscode.DiagnosticSeverity.Warning,
+                E: vscode_1.DiagnosticSeverity.Error,
+                W: vscode_1.DiagnosticSeverity.Warning,
                 // Per http://flake8.pycqa.org/en/latest/glossary.html#term-error-code
                 // 'F' does not mean 'fatal as in PyLint but rather 'pyflakes' such as
                 // unused imports, variables, etc.
-                F: vscode.DiagnosticSeverity.Warning
+                F: vscode_1.DiagnosticSeverity.Warning
             },
             mypyCategorySeverity: {
-                error: vscode.DiagnosticSeverity.Error,
-                note: vscode.DiagnosticSeverity.Hint
+                error: vscode_1.DiagnosticSeverity.Error,
+                note: vscode_1.DiagnosticSeverity.Hint
             },
             pylintUseMinimalCheckers: false
         };
@@ -160,6 +189,7 @@ class PythonSettings extends events_1.EventEmitter {
         this.formatting = this.formatting ? this.formatting : {
             autopep8Args: [], autopep8Path: 'autopep8',
             provider: 'autopep8',
+            blackArgs: [], blackPath: 'black',
             yapfArgs: [], yapfPath: 'yapf'
         };
         this.formatting.autopep8Path = getAbsolutePath(systemVariables.resolveAny(this.formatting.autopep8Path), workspaceRoot);
@@ -176,7 +206,9 @@ class PythonSettings extends events_1.EventEmitter {
         this.autoComplete = this.autoComplete ? this.autoComplete : {
             extraPaths: [],
             addBrackets: false,
-            preloadModules: []
+            preloadModules: [],
+            showAdvancedMembers: false,
+            typeshedPaths: []
         };
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         const workspaceSymbolsSettings = systemVariables.resolveAny(pythonSettings.get('workspaceSymbols'));
@@ -203,13 +235,14 @@ class PythonSettings extends events_1.EventEmitter {
         }
         else {
             this.unitTest = unitTestSettings;
-            if (constants_1.isTestExecution() && !this.unitTest) {
+            if (constants_2.isTestExecution() && !this.unitTest) {
                 // tslint:disable-next-line:prefer-type-cast
+                // tslint:disable-next-line:no-object-literal-type-assertion
                 this.unitTest = {
                     nosetestArgs: [], pyTestArgs: [], unittestArgs: [],
                     promptToConfigure: true, debugPort: 3000,
                     nosetestsEnabled: false, pyTestEnabled: false, unittestEnabled: false,
-                    nosetestPath: 'nosetests', pyTestPath: 'pytest'
+                    nosetestPath: 'nosetests', pyTestPath: 'pytest', autoTestDiscoverOnSaveEnabled: true
                 };
             }
         }
@@ -219,7 +252,7 @@ class PythonSettings extends events_1.EventEmitter {
             debugPort: 3000,
             nosetestArgs: [], nosetestPath: 'nosetest', nosetestsEnabled: false,
             pyTestArgs: [], pyTestEnabled: false, pyTestPath: 'pytest',
-            unittestArgs: [], unittestEnabled: false
+            unittestArgs: [], unittestEnabled: false, autoTestDiscoverOnSaveEnabled: true
         };
         this.unitTest.pyTestPath = getAbsolutePath(systemVariables.resolveAny(this.unitTest.pyTestPath), workspaceRoot);
         this.unitTest.nosetestPath = getAbsolutePath(systemVariables.resolveAny(this.unitTest.nosetestPath), workspaceRoot);
@@ -237,8 +270,9 @@ class PythonSettings extends events_1.EventEmitter {
         }
         else {
             this.terminal = terminalSettings;
-            if (constants_1.isTestExecution() && !this.terminal) {
+            if (constants_2.isTestExecution() && !this.terminal) {
                 // tslint:disable-next-line:prefer-type-cast
+                // tslint:disable-next-line:no-object-literal-type-assertion
                 this.terminal = {};
             }
         }
@@ -248,9 +282,6 @@ class PythonSettings extends events_1.EventEmitter {
             launchArgs: [],
             activateEnvironment: true
         };
-        // If workspace config changes, then we could have a cascading effect of on change events.
-        // Let's defer the change notification.
-        setTimeout(() => this.emit('change'), 1);
     }
     get pythonPath() {
         return this._pythonPath;
@@ -274,7 +305,7 @@ exports.PythonSettings = PythonSettings;
 function getAbsolutePath(pathToCheck, rootDir) {
     // tslint:disable-next-line:prefer-type-cast no-unsafe-any
     pathToCheck = untildify(pathToCheck);
-    if (constants_1.isTestExecution() && !pathToCheck) {
+    if (constants_2.isTestExecution() && !pathToCheck) {
         return rootDir;
     }
     if (pathToCheck.indexOf(path.sep) === -1) {

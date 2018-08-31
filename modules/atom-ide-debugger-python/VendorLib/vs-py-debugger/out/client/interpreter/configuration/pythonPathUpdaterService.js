@@ -20,16 +20,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_1 = require("vscode");
-const types_1 = require("../../ioc/types");
+const types_1 = require("../../common/process/types");
+const stopWatch_1 = require("../../common/stopWatch");
+const types_2 = require("../../ioc/types");
 const telemetry_1 = require("../../telemetry");
 const constants_1 = require("../../telemetry/constants");
-const stopWatch_1 = require("../../telemetry/stopWatch");
 const contracts_1 = require("../contracts");
-const types_2 = require("./types");
+const types_3 = require("./types");
 let PythonPathUpdaterService = class PythonPathUpdaterService {
     constructor(serviceContainer) {
-        this.pythonPathSettingsUpdaterFactory = serviceContainer.get(types_2.IPythonPathUpdaterServiceFactory);
+        this.pythonPathSettingsUpdaterFactory = serviceContainer.get(types_3.IPythonPathUpdaterServiceFactory);
         this.interpreterVersionService = serviceContainer.get(contracts_1.IInterpreterVersionService);
+        this.executionFactory = serviceContainer.get(types_1.IPythonExecutionFactory);
     }
     updatePythonPath(pythonPath, configTarget, trigger, wkspace) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -57,17 +59,17 @@ let PythonPathUpdaterService = class PythonPathUpdaterService {
                 failed, trigger
             };
             if (!failed) {
-                const pyVersionPromise = this.interpreterVersionService.getVersion(pythonPath, '')
-                    .then(pyVersion => pyVersion.length === 0 ? undefined : pyVersion);
+                const processService = yield this.executionFactory.create({ pythonPath });
+                const infoPromise = processService.getInterpreterInformation().catch(() => undefined);
                 const pipVersionPromise = this.interpreterVersionService.getPipVersion(pythonPath)
                     .then(value => value.length === 0 ? undefined : value)
                     .catch(() => undefined);
-                const versions = yield Promise.all([pyVersionPromise, pipVersionPromise]);
-                if (versions[0]) {
-                    telemtryProperties.version = versions[0];
+                const [info, pipVersion] = yield Promise.all([infoPromise, pipVersionPromise]);
+                if (info) {
+                    telemtryProperties.version = info.version;
                 }
-                if (versions[1]) {
-                    telemtryProperties.pipVersion = versions[1];
+                if (pipVersion) {
+                    telemtryProperties.pipVersion = pipVersion;
                 }
             }
             telemetry_1.sendTelemetryEvent(constants_1.PYTHON_INTERPRETER, duration, telemtryProperties);
@@ -97,7 +99,7 @@ let PythonPathUpdaterService = class PythonPathUpdaterService {
 };
 PythonPathUpdaterService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_1.IServiceContainer))
+    __param(0, inversify_1.inject(types_2.IServiceContainer))
 ], PythonPathUpdaterService);
 exports.PythonPathUpdaterService = PythonPathUpdaterService;
 //# sourceMappingURL=pythonPathUpdaterService.js.map

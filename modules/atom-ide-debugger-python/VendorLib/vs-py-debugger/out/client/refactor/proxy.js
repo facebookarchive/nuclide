@@ -10,13 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const vscode = require("vscode");
 const vscode_1 = require("vscode");
 require("../common/extensions");
 const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/process/types");
 const utils_1 = require("../common/utils");
-class RefactorProxy extends vscode.Disposable {
+class RefactorProxy extends vscode_1.Disposable {
     constructor(extensionDir, pythonSettings, workspaceRoot, serviceContainer) {
         super(() => { });
         this.pythonSettings = pythonSettings;
@@ -49,7 +48,7 @@ class RefactorProxy extends vscode.Disposable {
     }
     rename(document, name, filePath, range, options) {
         if (!options) {
-            options = vscode.window.activeTextEditor.options;
+            options = vscode_1.window.activeTextEditor.options;
         }
         const command = {
             lookup: 'rename',
@@ -63,7 +62,7 @@ class RefactorProxy extends vscode.Disposable {
     }
     extractVariable(document, name, filePath, range, options) {
         if (!options) {
-            options = vscode.window.activeTextEditor.options;
+            options = vscode_1.window.activeTextEditor.options;
         }
         const command = {
             lookup: 'extract_variable',
@@ -78,7 +77,7 @@ class RefactorProxy extends vscode.Disposable {
     }
     extractMethod(document, name, filePath, range, options) {
         if (!options) {
-            options = vscode.window.activeTextEditor.options;
+            options = vscode_1.window.activeTextEditor.options;
         }
         // Ensure last line is an empty line
         if (!document.lineAt(document.lineCount - 1).isEmptyOrWhitespace && range.start.line === document.lineCount - 1) {
@@ -107,7 +106,7 @@ class RefactorProxy extends vscode.Disposable {
     }
     initialize(pythonPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pythonProc = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create(vscode_1.Uri.file(this.workspaceRoot));
+            const pythonProc = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(this.workspaceRoot) });
             this.initialized = helpers_1.createDeferred();
             const args = ['refactor.py', this.workspaceRoot];
             const cwd = path.join(this._extensionDir, 'pythonFiles');

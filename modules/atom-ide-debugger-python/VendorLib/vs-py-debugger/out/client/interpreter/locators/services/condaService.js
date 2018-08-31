@@ -28,15 +28,15 @@ const contracts_1 = require("../../contracts");
 const condaHelper_1 = require("./condaHelper");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify = require('untildify');
-exports.KNOWN_CONDA_LOCATIONS = ['~/anaconda/bin/conda', '~/miniconda/bin/conda',
-    '~/anaconda2/bin/conda', '~/miniconda2/bin/conda',
-    '~/anaconda3/bin/conda', '~/miniconda3/bin/conda'];
+// This glob pattern will match all of the following:
+// ~/anaconda/bin/conda, ~/anaconda3/bin/conda, ~/miniconda/bin/conda, ~/miniconda3/bin/conda
+exports.CondaLocationsGlob = '~/*conda*/bin/conda';
 let CondaService = class CondaService {
     constructor(serviceContainer, registryLookupForConda) {
         this.serviceContainer = serviceContainer;
         this.registryLookupForConda = registryLookupForConda;
         this.condaHelper = new condaHelper_1.CondaHelper();
-        this.processService = this.serviceContainer.get(types_2.IProcessService);
+        this.processServiceFactory = this.serviceContainer.get(types_2.IProcessServiceFactory);
         this.platform = this.serviceContainer.get(types_1.IPlatformService);
         this.logger = this.serviceContainer.get(types_3.ILogger);
         this.fileSystem = this.serviceContainer.get(types_1.IFileSystem);
@@ -69,15 +69,17 @@ let CondaService = class CondaService {
     }
     getCondaVersion() {
         return __awaiter(this, void 0, void 0, function* () {
+            const processService = yield this.processServiceFactory.create();
             return this.getCondaFile()
-                .then(condaFile => this.processService.exec(condaFile, ['--version'], {}))
+                .then(condaFile => processService.exec(condaFile, ['--version'], {}))
                 .then(result => result.stdout.trim())
                 .catch(() => undefined);
         });
     }
     isCondaInCurrentPath() {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.processService.exec('conda', ['--version'])
+            const processService = yield this.processServiceFactory.create();
+            return processService.exec('conda', ['--version'])
                 .then(output => output.stdout.length > 0)
                 .catch(() => false);
         });
@@ -86,7 +88,8 @@ let CondaService = class CondaService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const condaFile = yield this.getCondaFile();
-                const condaInfo = yield this.processService.exec(condaFile, ['info', '--json']).then(output => output.stdout);
+                const processService = yield this.processServiceFactory.create();
+                const condaInfo = yield processService.exec(condaFile, ['info', '--json']).then(output => output.stdout);
                 return JSON.parse(condaInfo);
             }
             catch (ex) {
@@ -109,7 +112,7 @@ let CondaService = class CondaService {
             const dir = path.dirname(interpreterPath);
             const isWindows = this.serviceContainer.get(types_1.IPlatformService).isWindows;
             const condaMetaDirectory = isWindows ? path.join(dir, 'conda-meta') : path.join(dir, '..', 'conda-meta');
-            return fs.directoryExistsAsync(condaMetaDirectory);
+            return fs.directoryExists(condaMetaDirectory);
         });
     }
     getCondaEnvironment(interpreterPath) {
@@ -149,7 +152,8 @@ let CondaService = class CondaService {
             }
             try {
                 const condaFile = yield this.getCondaFile();
-                const envInfo = yield this.processService.exec(condaFile, ['env', 'list']).then(output => output.stdout);
+                const processService = yield this.processServiceFactory.create();
+                const envInfo = yield processService.exec(condaFile, ['env', 'list']).then(output => output.stdout);
                 const environments = this.condaHelper.parseCondaEnvironmentNames(envInfo);
                 yield globalPersistence.updateValue({ data: environments });
                 return environments;
@@ -159,7 +163,7 @@ let CondaService = class CondaService {
                 // Failed because either:
                 //   1. conda is not installed.
                 //   2. `conda env list has changed signature.
-                this.logger.logError('Failed to get conda environment list from conda', ex);
+                this.logger.logInformation('Failed to get conda environment list from conda', ex);
             }
         });
     }
@@ -194,7 +198,7 @@ let CondaService = class CondaService {
                     return condaInterpreter ? path.join(path.dirname(condaInterpreter.path), 'conda.exe') : 'conda';
                 })
                     .then((condaPath) => __awaiter(this, void 0, void 0, function* () {
-                    return this.fileSystem.fileExistsAsync(condaPath).then(exists => exists ? condaPath : 'conda');
+                    return this.fileSystem.fileExists(condaPath).then(exists => exists ? condaPath : 'conda');
                 }));
             }
             return this.getCondaFileFromKnownLocations();
@@ -202,9 +206,8 @@ let CondaService = class CondaService {
     }
     getCondaFileFromKnownLocations() {
         return __awaiter(this, void 0, void 0, function* () {
-            const condaFiles = yield Promise.all(exports.KNOWN_CONDA_LOCATIONS
-                .map(untildify)
-                .map((condaPath) => __awaiter(this, void 0, void 0, function* () { return this.fileSystem.fileExistsAsync(condaPath).then(exists => exists ? condaPath : ''); })));
+            const condaFiles = yield this.fileSystem.search(untildify(exports.CondaLocationsGlob))
+                .catch(() => []);
             const validCondaFiles = condaFiles.filter(condaPath => condaPath.length > 0);
             return validCondaFiles.length === 0 ? 'conda' : validCondaFiles[0];
         });

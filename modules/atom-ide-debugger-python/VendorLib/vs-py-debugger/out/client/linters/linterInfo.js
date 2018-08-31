@@ -59,7 +59,6 @@ class LinterInfo {
         const args = this.linterArgs(resource).concat(customArgs);
         let moduleName;
         // If path information is not available, then treat it as a module,
-        // Except for prospector as that needs to be run as an executable (its a python package).
         if (path.basename(execPath) === execPath) {
             moduleName = execPath;
         }

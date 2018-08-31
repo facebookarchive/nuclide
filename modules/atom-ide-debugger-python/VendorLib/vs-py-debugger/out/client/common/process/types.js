@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IBufferDecoder = Symbol('IBufferDecoder');
-exports.IProcessService = Symbol('IProcessService');
+exports.IProcessServiceFactory = Symbol('IProcessServiceFactory');
 exports.IPythonExecutionFactory = Symbol('IPythonExecutionFactory');
 exports.IPythonExecutionService = Symbol('IPythonExecutionService');
 class StdErrError extends Error {

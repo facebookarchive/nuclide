@@ -1,4 +1,4 @@
-// tslint:disable:quotemark ordered-imports no-any no-empty curly member-ordering one-line max-func-body-length no-var-self prefer-const cyclomatic-complexity prefer-template
+// tslint:disable:quotemark ordered-imports no-any no-empty curly member-ordering one-line max-func-body-length no-var-self prefer-const cyclomatic-complexity prefer-template no-this-assignment
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_debugadapter_1 = require("vscode-debugadapter");

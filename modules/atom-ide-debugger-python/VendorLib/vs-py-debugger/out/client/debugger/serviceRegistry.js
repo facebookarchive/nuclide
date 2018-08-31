@@ -12,6 +12,7 @@ const types_2 = require("../common/types");
 const container_1 = require("../ioc/container");
 const serviceManager_1 = require("../ioc/serviceManager");
 const types_3 = require("../ioc/types");
+const banner_1 = require("./banner");
 const debugStreamProvider_1 = require("./Common/debugStreamProvider");
 const protocolLogger_1 = require("./Common/protocolLogger");
 const protocolParser_1 = require("./Common/protocolParser");
@@ -22,11 +23,11 @@ function initializeIoc() {
     const serviceManager = new serviceManager_1.ServiceManager(cont);
     const serviceContainer = new container_1.ServiceContainer(cont);
     serviceManager.addSingletonInstance(types_3.IServiceContainer, serviceContainer);
-    registerTypes(serviceManager);
+    registerDebuggerTypes(serviceManager);
     return serviceContainer;
 }
 exports.initializeIoc = initializeIoc;
-function registerTypes(serviceManager) {
+function registerDebuggerTypes(serviceManager) {
     serviceManager.addSingleton(types_2.ICurrentProcess, currentProcess_1.CurrentProcess);
     serviceManager.addSingleton(types_4.IDebugStreamProvider, debugStreamProvider_1.DebugStreamProvider);
     serviceManager.addSingleton(types_4.IProtocolLogger, protocolLogger_1.ProtocolLogger);
@@ -36,4 +37,8 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(types_2.ISocketServer, socketServer_1.SocketServer);
     serviceManager.addSingleton(types_4.IProtocolMessageWriter, protocolWriter_1.ProtocolMessageWriter);
 }
+function registerTypes(serviceManager) {
+    serviceManager.addSingleton(types_2.IExperimentalDebuggerBanner, banner_1.ExperimentalDebuggerBanner);
+}
+exports.registerTypes = registerTypes;
 //# sourceMappingURL=serviceRegistry.js.map

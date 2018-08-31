@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("../common/extensions");
 const types_1 = require("../common/types");
 const baseLinter_1 = require("./baseLinter");
 const COLUMN_OFF_SET = 1;

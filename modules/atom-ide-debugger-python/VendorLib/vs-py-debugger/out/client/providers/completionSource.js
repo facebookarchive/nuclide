@@ -11,8 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const configSettings_1 = require("../common/configSettings");
-const itemInfoSource_1 = require("./itemInfoSource");
+const types_1 = require("../common/types");
 const proxy = require("./jediProxy");
 const providerUtilities_1 = require("./providerUtilities");
 class DocumentPosition {
@@ -30,9 +29,10 @@ class DocumentPosition {
     }
 }
 class CompletionSource {
-    constructor(jediFactory) {
+    constructor(jediFactory, serviceContainer, itemInfoSource) {
+        this.serviceContainer = serviceContainer;
+        this.itemInfoSource = itemInfoSource;
         this.jediFactory = jediFactory;
-        this.itemInfoSource = new itemInfoSource_1.ItemInfoSource(jediFactory);
     }
     getVsCodeCompletionItems(document, position, token) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -52,29 +52,20 @@ class CompletionSource {
             // Supply hover source with simulated document text where item in question was 'already typed'.
             const document = documentPosition.document;
             const position = documentPosition.position;
-            const itemText = completionItem.insertText ? completionItem.insertText : completionItem.label;
             const wordRange = document.getWordRangeAtPosition(position);
             const leadingRange = wordRange !== undefined
                 ? new vscode.Range(new vscode.Position(0, 0), wordRange.start)
                 : new vscode.Range(new vscode.Position(0, 0), position);
-            const itemString = `${itemText}`;
+            const itemString = completionItem.label;
             const sourceText = `${document.getText(leadingRange)}${itemString}`;
             const range = new vscode.Range(leadingRange.end, leadingRange.end.translate(0, itemString.length));
-            return yield this.itemInfoSource.getItemInfoFromText(document.uri, document.fileName, range, sourceText, token);
+            return this.itemInfoSource.getItemInfoFromText(document.uri, document.fileName, range, sourceText, token);
         });
     }
     getCompletionResult(document, position, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (position.character <= 0) {
-                return undefined;
-            }
-            const filename = document.fileName;
-            const lineText = document.lineAt(position.line).text;
-            if (lineText.match(/^\s*\/\//)) {
-                return undefined;
-            }
-            // Suppress completion inside string and comments.
-            if (providerUtilities_1.isPositionInsideStringOrComment(document, position)) {
+            if (position.character <= 0 ||
+                providerUtilities_1.isPositionInsideStringOrComment(document, position)) {
                 return undefined;
             }
             const type = proxy.CommandType.Completions;
@@ -82,12 +73,12 @@ class CompletionSource {
             const source = document.getText();
             const cmd = {
                 command: type,
-                fileName: filename,
+                fileName: document.fileName,
                 columnIndex: columnIndex,
                 lineIndex: position.line,
                 source: source
             };
-            return yield this.jediFactory.getJediProxyHandler(document.uri).sendCommand(cmd, token);
+            return this.jediFactory.getJediProxyHandler(document.uri).sendCommand(cmd, token);
         });
     }
     toVsCodeCompletions(documentPosition, data, resource) {
@@ -96,7 +87,9 @@ class CompletionSource {
     toVsCodeCompletion(documentPosition, item, resource) {
         const completionItem = new vscode.CompletionItem(item.text);
         completionItem.kind = item.type;
-        if (configSettings_1.PythonSettings.getInstance(resource).autoComplete.addBrackets === true &&
+        const configurationService = this.serviceContainer.get(types_1.IConfigurationService);
+        const pythonSettings = configurationService.getSettings(resource);
+        if (pythonSettings.autoComplete.addBrackets === true &&
             (item.kind === vscode.SymbolKind.Function || item.kind === vscode.SymbolKind.Method)) {
             completionItem.insertText = new vscode.SnippetString(item.text).appendText('(').appendTabstop().appendText(')');
         }

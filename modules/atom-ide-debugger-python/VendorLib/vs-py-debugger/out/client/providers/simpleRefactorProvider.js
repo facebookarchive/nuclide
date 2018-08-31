@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const configSettings_1 = require("../common/configSettings");
 const editor_1 = require("../common/editor");
+const stopWatch_1 = require("../common/stopWatch");
 const types_1 = require("../common/types");
 const proxy_1 = require("../refactor/proxy");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
-const stopWatch_1 = require("../telemetry/stopWatch");
 let installer;
 function activateSimplePythonRefactorProvider(context, outputChannel, serviceContainer) {
     installer = serviceContainer.get(types_1.IInstaller);

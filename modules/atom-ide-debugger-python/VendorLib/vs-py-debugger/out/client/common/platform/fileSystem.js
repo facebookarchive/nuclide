@@ -11,9 +11,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const crypto_1 = require("crypto");
 const fs = require("fs-extra");
+const glob = require("glob");
 const inversify_1 = require("inversify");
 const path = require("path");
+const tmp = require("tmp");
+const helpers_1 = require("../helpers");
 const types_1 = require("./types");
 let FileSystem = class FileSystem {
     constructor(platformService) {
@@ -22,7 +26,7 @@ let FileSystem = class FileSystem {
     get directorySeparatorChar() {
         return path.sep;
     }
-    objectExistsAsync(filePath, statCheck) {
+    objectExists(filePath, statCheck) {
         return new Promise(resolve => {
             fs.stat(filePath, (error, stats) => {
                 if (error) {
@@ -32,8 +36,11 @@ let FileSystem = class FileSystem {
             });
         });
     }
-    fileExistsAsync(filePath) {
-        return this.objectExistsAsync(filePath, (stats) => stats.isFile());
+    fileExists(filePath) {
+        return this.objectExists(filePath, (stats) => stats.isFile());
+    }
+    fileExistsSync(filePath) {
+        return fs.existsSync(filePath);
     }
     /**
      * Reads the contents of the file using utf8 and returns the string contents.
@@ -44,13 +51,13 @@ let FileSystem = class FileSystem {
     readFile(filePath) {
         return fs.readFile(filePath).then(buffer => buffer.toString());
     }
-    directoryExistsAsync(filePath) {
-        return this.objectExistsAsync(filePath, (stats) => stats.isDirectory());
+    directoryExists(filePath) {
+        return this.objectExists(filePath, (stats) => stats.isDirectory());
     }
-    createDirectoryAsync(directoryPath) {
+    createDirectory(directoryPath) {
         return fs.mkdirp(directoryPath);
     }
-    getSubDirectoriesAsync(rootDir) {
+    getSubDirectories(rootDir) {
         return new Promise(resolve => {
             fs.readdir(rootDir, (error, files) => {
                 if (error) {
@@ -84,10 +91,61 @@ let FileSystem = class FileSystem {
     appendFileSync(filename, data, optionsOrEncoding) {
         return fs.appendFileSync(filename, data, optionsOrEncoding);
     }
-    getRealPathAsync(filePath) {
+    getRealPath(filePath) {
         return new Promise(resolve => {
             fs.realpath(filePath, (err, realPath) => {
                 resolve(err ? filePath : realPath);
+            });
+        });
+    }
+    copyFile(src, dest) {
+        const deferred = helpers_1.createDeferred();
+        const rs = fs.createReadStream(src).on('error', (err) => {
+            deferred.reject(err);
+        });
+        const ws = fs.createWriteStream(dest).on('error', (err) => {
+            deferred.reject(err);
+        }).on('close', () => {
+            deferred.resolve();
+        });
+        rs.pipe(ws);
+        return deferred.promise;
+    }
+    deleteFile(filename) {
+        const deferred = helpers_1.createDeferred();
+        fs.unlink(filename, err => err ? deferred.reject(err) : deferred.resolve());
+        return deferred.promise;
+    }
+    getFileHash(filePath) {
+        return new Promise(resolve => {
+            fs.lstat(filePath, (err, stats) => {
+                if (err) {
+                    resolve();
+                }
+                else {
+                    const actual = crypto_1.createHash('sha512').update(`${stats.ctimeMs}-${stats.mtimeMs}`).digest('hex');
+                    resolve(actual);
+                }
+            });
+        });
+    }
+    search(globPattern) {
+        return new Promise((resolve, reject) => {
+            glob(globPattern, (ex, files) => {
+                if (ex) {
+                    return reject(ex);
+                }
+                resolve(Array.isArray(files) ? files : []);
+            });
+        });
+    }
+    createTemporaryFile(extension) {
+        return new Promise((resolve, reject) => {
+            tmp.file({ postfix: extension }, (err, tmpFile, _, cleanupCallback) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve({ filePath: tmpFile, dispose: cleanupCallback });
             });
         });
     }

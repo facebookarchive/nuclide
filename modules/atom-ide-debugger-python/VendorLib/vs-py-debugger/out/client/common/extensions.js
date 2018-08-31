@@ -8,7 +8,7 @@
 String.prototype.splitLines = function (splitOptions = { removeEmptyEntries: true, trim: true }) {
     let lines = this.split(/\r?\n/g);
     if (splitOptions && splitOptions.trim) {
-        lines = lines.filter(line => line.trim());
+        lines = lines.map(line => line.trim());
     }
     if (splitOptions && splitOptions.removeEmptyEntries) {
         lines = lines.filter(line => line.length > 0);
@@ -43,4 +43,10 @@ Promise.prototype.ignoreErrors = function () {
     // tslint:disable-next-line:no-empty
     this.catch(() => { });
 };
+if (!String.prototype.format) {
+    String.prototype.format = function () {
+        const args = arguments;
+        return this.replace(/{(\d+)}/g, (match, number) => args[number] === undefined ? match : args[number]);
+    };
+}
 //# sourceMappingURL=extensions.js.map

@@ -8,14 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process = require("child_process");
+const child_process_1 = require("child_process");
 const path = require("path");
 const vscode_debugadapter_1 = require("vscode-debugadapter");
-const constants_1 = require("../../common/constants");
 const open_1 = require("../../common/open");
 const pathUtils_1 = require("../../common/platform/pathUtils");
 const currentProcess_1 = require("../../common/process/currentProcess");
 const environment_1 = require("../../common/variables/environment");
+const constants_1 = require("../Common/constants");
 const Contracts_1 = require("../Common/Contracts");
 const Utils_1 = require("../Common/Utils");
 const LocalDebugServer_1 = require("../DebugServers/LocalDebugServer");
@@ -84,8 +84,7 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
             const environmentVariables = yield helper.getEnvironmentVariables(this.args);
             if (this.args.type === 'pythonExperimental') {
                 // Import the PTVSD debugger, allowing users to use their own latest copies.
-                const experimentalPTVSDPath = path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd');
-                environmentVariablesService.appendPythonPath(environmentVariables, experimentalPTVSDPath);
+                environmentVariablesService.appendPythonPath(environmentVariables, constants_1.PTVSD_PATH);
             }
             // tslint:disable-next-line:max-func-body-length cyclomatic-complexity no-any
             return new Promise((resolve, reject) => {
@@ -98,9 +97,7 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
                 if (typeof this.args.pythonPath === 'string' && this.args.pythonPath.trim().length > 0) {
                     pythonPath = this.args.pythonPath;
                 }
-                const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
-                const launcherArgs = this.buildLauncherArguments();
-                const args = [ptVSToolsFilePath, processCwd, dbgServer.port.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14'].concat(launcherArgs);
+                const args = this.buildLaunchArguments(processCwd, dbgServer.port);
                 switch (this.args.console) {
                     case 'externalTerminal':
                     case 'integratedTerminal': {
@@ -109,7 +106,7 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
                         break;
                     }
                     default: {
-                        this.pyProc = child_process.spawn(pythonPath, args, { cwd: processCwd, env: environmentVariables });
+                        this.pyProc = child_process_1.spawn(pythonPath, args, { cwd: processCwd, env: environmentVariables });
                         this.handleProcessOutput(this.pyProc, reject);
                         // Here we wait for the application to connect to the socket server.
                         // Only once connected do we know that the application has successfully launched.
@@ -156,18 +153,34 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
             let x = 0;
         });
     }
+    buildLaunchArguments(cwd, debugPort) {
+        return [...this.buildDebugArguments(cwd, debugPort), ...this.buildStandardArguments()];
+    }
     // tslint:disable-next-line:member-ordering
-    buildLauncherArguments() {
-        const vsDebugOptions = ['RedirectOutput'];
+    buildDebugArguments(cwd, debugPort) {
+        const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
+        const vsDebugOptions = [Contracts_1.DebugOptions.RedirectOutput];
         if (Array.isArray(this.args.debugOptions)) {
             this.args.debugOptions.filter(opt => Contracts_1.VALID_DEBUG_OPTIONS.indexOf(opt) >= 0)
                 .forEach(item => vsDebugOptions.push(item));
         }
+        const djangoIndex = vsDebugOptions.indexOf(Contracts_1.DebugOptions.Django);
+        // PTVSD expects the string `DjangoDebugging`
+        if (djangoIndex >= 0) {
+            vsDebugOptions[djangoIndex] = 'DjangoDebugging';
+        }
+        return [ptVSToolsFilePath, cwd, debugPort.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14', vsDebugOptions.join(',')];
+    }
+    // tslint:disable-next-line:member-ordering
+    buildStandardArguments() {
         const programArgs = Array.isArray(this.args.args) && this.args.args.length > 0 ? this.args.args : [];
         if (typeof this.args.module === 'string' && this.args.module.length > 0) {
-            return [vsDebugOptions.join(','), '-m', this.args.module].concat(programArgs);
+            return ['-m', this.args.module, ...programArgs];
         }
-        return [vsDebugOptions.join(','), this.args.program].concat(programArgs);
+        if (this.args.program && this.args.program.length > 0) {
+            return [this.args.program, ...programArgs];
+        }
+        return programArgs;
     }
     launchExternalTerminal(sudo, cwd, pythonPath, args, env) {
         return new Promise((resolve, reject) => {

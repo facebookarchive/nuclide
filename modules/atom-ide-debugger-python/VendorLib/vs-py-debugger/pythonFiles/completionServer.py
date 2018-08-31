@@ -54,8 +54,8 @@ try:
 except ImportError:
     from queue import Empty, Queue  # Python 3
 
-DEBUG = os.environ.get('DEBUG_DJAYAMANNE_IPYTHON', '0') == '1'
-TEST = os.environ.get('PYTHON_DONJAYAMANNE_TEST', '0') == '1'
+DEBUG = os.environ.get('DEBUG_EXTENSION_IPYTHON', '0') == '1'
+TEST = os.environ.get('VSC_PYTHON_CI_TEST', '0') == '1'
 
 def _debug_write(out):
     if DEBUG:

@@ -19,19 +19,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const _ = require("lodash");
-const path = require("path");
-const configSettings_1 = require("../../../common/configSettings");
-const types_1 = require("../../../common/process/types");
-const types_2 = require("../../../ioc/types");
+const types_1 = require("../../../common/platform/types");
+const types_2 = require("../../../common/process/types");
+const types_3 = require("../../../common/types");
+const types_4 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
-const types_3 = require("../../virtualEnvs/types");
+const types_5 = require("../../virtualEnvs/types");
 const cacheableLocatorService_1 = require("./cacheableLocatorService");
 let CurrentPathService = class CurrentPathService extends cacheableLocatorService_1.CacheableLocatorService {
-    constructor(virtualEnvMgr, versionProvider, processService, serviceContainer) {
+    constructor(virtualEnvMgr, helper, processServiceFactory, serviceContainer) {
         super('CurrentPathService', serviceContainer);
         this.virtualEnvMgr = virtualEnvMgr;
-        this.versionProvider = versionProvider;
-        this.processService = processService;
+        this.helper = helper;
+        this.processServiceFactory = processServiceFactory;
+        this.fs = serviceContainer.get(types_1.IFileSystem);
     }
     // tslint:disable-next-line:no-empty
     dispose() { }
@@ -40,47 +41,61 @@ let CurrentPathService = class CurrentPathService extends cacheableLocatorServic
     }
     suggestionsFromKnownPaths(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            const currentPythonInterpreter = this.getInterpreter(configSettings_1.PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
+            const configSettings = this.serviceContainer.get(types_3.IConfigurationService).getSettings(resource);
+            const currentPythonInterpreter = this.getInterpreter(configSettings.pythonPath, '').then(interpreter => [interpreter]);
             const python = this.getInterpreter('python', '').then(interpreter => [interpreter]);
             const python2 = this.getInterpreter('python2', '').then(interpreter => [interpreter]);
             const python3 = this.getInterpreter('python3', '').then(interpreter => [interpreter]);
             return Promise.all([currentPythonInterpreter, python, python2, python3])
+                // tslint:disable-next-line:underscore-consistent-invocation
                 .then(listOfInterpreters => _.flatten(listOfInterpreters))
                 .then(interpreters => interpreters.filter(item => item.length > 0))
-                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))));
+                // tslint:disable-next-line:promise-function-async
+                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter, resource))));
         });
     }
-    getInterpreterDetails(interpreter) {
+    getInterpreterDetails(interpreter, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             return Promise.all([
-                this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
-                this.virtualEnvMgr.getEnvironmentName(interpreter)
+                this.helper.getInterpreterInformation(interpreter),
+                this.virtualEnvMgr.getEnvironmentName(interpreter),
+                this.virtualEnvMgr.getEnvironmentType(interpreter, resource)
             ]).
-                then(([displayName, virtualEnvName]) => {
-                displayName += virtualEnvName.length > 0 ? ` (${virtualEnvName})` : '';
-                return {
-                    displayName,
-                    path: interpreter,
-                    type: virtualEnvName ? contracts_1.InterpreterType.VirtualEnv : contracts_1.InterpreterType.Unknown
-                };
+                then(([details, virtualEnvName, type]) => {
+                if (!details) {
+                    return;
+                }
+                const displayName = `${details.version ? details.version : ''}${virtualEnvName.length > 0 ? ` (${virtualEnvName})` : ''}`;
+                return Object.assign({}, details, { displayName, envName: virtualEnvName, path: interpreter, type: type ? type : contracts_1.InterpreterType.Unknown });
             });
         });
     }
     getInterpreter(pythonPath, defaultValue) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.processService.exec(pythonPath, ['-c', 'import sys;print(sys.executable)'], {})
-                .then(output => output.stdout.trim())
-                .then(value => value.length === 0 ? defaultValue : value)
-                .catch(() => defaultValue); // Ignore exceptions in getting the executable.
+            try {
+                const processService = yield this.processServiceFactory.create();
+                return processService.exec(pythonPath, ['-c', 'import sys;print(sys.executable)'], {})
+                    .then(output => output.stdout.trim())
+                    .then((value) => __awaiter(this, void 0, void 0, function* () {
+                    if (value.length > 0 && (yield this.fs.fileExists(value))) {
+                        return value;
+                    }
+                    return defaultValue;
+                }))
+                    .catch(() => defaultValue); // Ignore exceptions in getting the executable.
+            }
+            catch (_a) {
+                return defaultValue; // Ignore exceptions in getting the executable.
+            }
         });
     }
 };
 CurrentPathService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_3.IVirtualEnvironmentManager)),
-    __param(1, inversify_1.inject(contracts_1.IInterpreterVersionService)),
-    __param(2, inversify_1.inject(types_1.IProcessService)),
-    __param(3, inversify_1.inject(types_2.IServiceContainer))
+    __param(0, inversify_1.inject(types_5.IVirtualEnvironmentManager)),
+    __param(1, inversify_1.inject(contracts_1.IInterpreterHelper)),
+    __param(2, inversify_1.inject(types_2.IProcessServiceFactory)),
+    __param(3, inversify_1.inject(types_4.IServiceContainer))
 ], CurrentPathService);
 exports.CurrentPathService = CurrentPathService;
 //# sourceMappingURL=currentPathService.js.map

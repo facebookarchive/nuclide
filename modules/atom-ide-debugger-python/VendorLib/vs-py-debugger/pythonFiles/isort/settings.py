@@ -25,8 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import fnmatch
+import io
 import os
 import posixpath
+import sys
 from collections import namedtuple
 
 from .pie_slice import itemsview, lru_cache, native_str
@@ -36,10 +38,11 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-MAX_CONFIG_SEARCH_DEPTH = 25 # The number of parent directories isort will look for a config file within
+MAX_CONFIG_SEARCH_DEPTH = 25  # The number of parent directories isort will look for a config file within
 DEFAULT_SECTIONS = ('FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER')
 
-WrapModes = ('GRID', 'VERTICAL', 'HANGING_INDENT', 'VERTICAL_HANGING_INDENT', 'VERTICAL_GRID', 'VERTICAL_GRID_GROUPED', 'NOQA')
+WrapModes = ('GRID', 'VERTICAL', 'HANGING_INDENT', 'VERTICAL_HANGING_INDENT', 'VERTICAL_GRID', 'VERTICAL_GRID_GROUPED',
+             'VERTICAL_GRID_GROUPED_NO_COMMA', 'NOQA')
 WrapModes = namedtuple('WrapModes', WrapModes)(*range(len(WrapModes)))
 
 # Note that none of these lists must be complete as they are simply fallbacks for when included auto-detection fails.
@@ -48,6 +51,7 @@ default = {'force_to_top': [],
            'skip_glob': [],
            'line_length': 79,
            'wrap_length': 0,
+           'line_ending': None,
            'sections': DEFAULT_SECTIONS,
            'no_sections': False,
            'known_future_library': ['__future__'],
@@ -101,6 +105,7 @@ default = {'force_to_top': [],
            'multi_line_output': WrapModes.GRID,
            'forced_separate': [],
            'indent': ' ' * 4,
+           'comment_prefix': '  #',
            'length_sort': False,
            'add_imports': [],
            'remove_imports': [],
@@ -120,6 +125,7 @@ default = {'force_to_top': [],
            'lines_between_types': 0,
            'combine_as_imports': False,
            'combine_star': False,
+           'keep_direct_and_as_imports': False,
            'include_trailing_comma': False,
            'from_first': False,
            'verbose': False,
@@ -130,7 +136,9 @@ default = {'force_to_top': [],
            'force_grid_wrap': 0,
            'force_sort_within_sections': False,
            'show_diff': False,
-           'ignore_whitespace': False}
+           'ignore_whitespace': False,
+           'no_lines_before': [],
+           'no_inline_sort': False}
 
 
 @lru_cache()
@@ -214,7 +222,7 @@ def _as_list(value):
 
 @lru_cache()
 def _get_config_data(file_path, sections):
-    with open(file_path, 'rU') as config_file:
+    with io.open(file_path, 'r') as config_file:
         if file_path.endswith('.editorconfig'):
             line = '\n'
             last_position = config_file.tell()
@@ -225,9 +233,14 @@ def _get_config_data(file_path, sections):
                     break
                 last_position = config_file.tell()
 
-        config = configparser.SafeConfigParser()
-        config.readfp(config_file)
-        settings = dict()
+        if sys.version_info >= (3, 2):
+            config = configparser.ConfigParser()
+            config.read_file(config_file)
+        else:
+            config = configparser.SafeConfigParser()
+            config.readfp(config_file)
+
+        settings = {}
         for section in sections:
             if config.has_section(section):
                 settings.update(dict(config.items(section)))

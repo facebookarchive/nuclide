@@ -14,6 +14,7 @@ const timers_1 = require("timers");
 const types_1 = require("../common/application/types");
 const types_2 = require("../common/types");
 const autoPep8Formatter_1 = require("./../formatters/autoPep8Formatter");
+const blackFormatter_1 = require("./../formatters/blackFormatter");
 const dummyFormatter_1 = require("./../formatters/dummyFormatter");
 const yapfFormatter_1 = require("./../formatters/yapfFormatter");
 class PythonFormattingEditProvider {
@@ -26,15 +27,17 @@ class PythonFormattingEditProvider {
         this.saving = false;
         const yapfFormatter = new yapfFormatter_1.YapfFormatter(serviceContainer);
         const autoPep8 = new autoPep8Formatter_1.AutoPep8Formatter(serviceContainer);
+        const black = new blackFormatter_1.BlackFormatter(serviceContainer);
         const dummy = new dummyFormatter_1.DummyFormatter(serviceContainer);
         this.formatters.set(yapfFormatter.Id, yapfFormatter);
+        this.formatters.set(black.Id, black);
         this.formatters.set(autoPep8.Id, autoPep8);
         this.formatters.set(dummy.Id, dummy);
         this.commands = serviceContainer.get(types_1.ICommandManager);
         this.workspace = serviceContainer.get(types_1.IWorkspaceService);
         this.documentManager = serviceContainer.get(types_1.IDocumentManager);
         this.config = serviceContainer.get(types_2.IConfigurationService);
-        this.disposables.push(this.documentManager.onDidSaveTextDocument((document) => __awaiter(this, void 0, void 0, function* () { return yield this.onSaveDocument(document); })));
+        this.disposables.push(this.documentManager.onDidSaveTextDocument((document) => __awaiter(this, void 0, void 0, function* () { return this.onSaveDocument(document); })));
     }
     dispose() {
         this.disposables.forEach(d => d.dispose());

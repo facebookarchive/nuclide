@@ -265,7 +265,7 @@ class PythonProcessCallbackHandler extends events_1.EventEmitter {
         if (this.stream.HasInsufficientDataForReading) {
             return;
         }
-        if (typeName && desc) {
+        if (typeName || desc) {
             let ex = {
                 TypeName: typeName,
                 Description: desc

@@ -17,10 +17,10 @@ class NotInstalledErrorHandler extends baseErrorHandler_1.BaseErrorHandler {
     }
     handleError(error, resource, execInfo) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pythonExecutionService = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create(resource);
+            const pythonExecutionService = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource });
             const isModuleInstalled = yield pythonExecutionService.isModuleInstalled(execInfo.moduleName);
             if (isModuleInstalled) {
-                return this.nextHandler ? yield this.nextHandler.handleError(error, resource, execInfo) : false;
+                return this.nextHandler ? this.nextHandler.handleError(error, resource, execInfo) : false;
             }
             this.installer.promptToInstall(this.product, resource)
                 .catch(this.logger.logError.bind(this, 'NotInstalledErrorHandler.promptToInstall'));

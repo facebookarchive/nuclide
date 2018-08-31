@@ -26,7 +26,6 @@ require("../../common/extensions");
 const types_2 = require("../../common/platform/types");
 const types_3 = require("../../common/terminal/types");
 const types_4 = require("../../common/types");
-const types_5 = require("../../common/types");
 let TerminalCodeExecutionProvider = class TerminalCodeExecutionProvider {
     constructor(terminalServiceFactory, configurationService, workspace, disposables, platformService) {
         this.terminalServiceFactory = terminalServiceFactory;
@@ -102,7 +101,7 @@ TerminalCodeExecutionProvider = __decorate([
     __param(0, inversify_1.inject(types_3.ITerminalServiceFactory)),
     __param(1, inversify_1.inject(types_4.IConfigurationService)),
     __param(2, inversify_1.inject(types_1.IWorkspaceService)),
-    __param(3, inversify_1.inject(types_5.IDisposableRegistry)),
+    __param(3, inversify_1.inject(types_4.IDisposableRegistry)),
     __param(4, inversify_1.inject(types_2.IPlatformService))
 ], TerminalCodeExecutionProvider);
 exports.TerminalCodeExecutionProvider = TerminalCodeExecutionProvider;

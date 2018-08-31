@@ -11,6 +11,12 @@ exports.IMemento = Symbol('IGlobalMemento');
 exports.GLOBAL_MEMENTO = Symbol('IGlobalMemento');
 exports.WORKSPACE_MEMENTO = Symbol('IWorkspaceMemento');
 exports.IPersistentStateFactory = Symbol('IPersistentStateFactory');
+var LogLevel;
+(function (LogLevel) {
+    LogLevel["Information"] = "Information";
+    LogLevel["Error"] = "Error";
+    LogLevel["Warning"] = "Warning";
+})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
 exports.ILogger = Symbol('ILogger');
 var InstallerResponse;
 (function (InstallerResponse) {
@@ -18,6 +24,14 @@ var InstallerResponse;
     InstallerResponse[InstallerResponse["Disabled"] = 1] = "Disabled";
     InstallerResponse[InstallerResponse["Ignore"] = 2] = "Ignore";
 })(InstallerResponse = exports.InstallerResponse || (exports.InstallerResponse = {}));
+var ProductType;
+(function (ProductType) {
+    ProductType["Linter"] = "Linter";
+    ProductType["Formatter"] = "Formatter";
+    ProductType["TestFramework"] = "TestFramework";
+    ProductType["RefactoringLibrary"] = "RefactoringLibrary";
+    ProductType["WorkspaceSymbols"] = "WorkspaceSymbols";
+})(ProductType = exports.ProductType || (exports.ProductType = {}));
 var Product;
 (function (Product) {
     Product[Product["pytest"] = 1] = "pytest";
@@ -35,6 +49,7 @@ var Product;
     Product[Product["ctags"] = 13] = "ctags";
     Product[Product["rope"] = 14] = "rope";
     Product[Product["isort"] = 15] = "isort";
+    Product[Product["black"] = 16] = "black";
 })(Product = exports.Product || (exports.Product = {}));
 var ModuleNamePurpose;
 (function (ModuleNamePurpose) {
@@ -46,4 +61,10 @@ exports.IPathUtils = Symbol('IPathUtils');
 exports.ICurrentProcess = Symbol('ICurrentProcess');
 exports.IConfigurationService = Symbol('IConfigurationService');
 exports.ISocketServer = Symbol('ISocketServer');
+exports.IExtensionContext = Symbol('ExtensionContext');
+exports.IBrowserService = Symbol('IBrowserService');
+exports.IExperimentalDebuggerBanner = Symbol('IExperimentalDebuggerBanner');
+exports.IPythonExtensionBanner = Symbol('IPythonExtensionBanner');
+exports.BANNER_NAME_LS_SURVEY = 'LSSurveyBanner';
+exports.BANNER_NAME_PROPOSE_LS = 'ProposeLS';
 //# sourceMappingURL=types.js.map

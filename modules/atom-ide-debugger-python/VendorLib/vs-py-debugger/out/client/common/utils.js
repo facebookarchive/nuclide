@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable: no-any one-line no-suspicious-comment prefer-template prefer-const no-unnecessary-callback-wrapper no-function-expression no-string-literal no-control-regex no-shadowed-variable
+const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -109,4 +110,16 @@ function arePathsSame(path1, path2) {
     }
 }
 exports.arePathsSame = arePathsSame;
+function getRandom() {
+    let num = 0;
+    const buf = crypto.randomBytes(2);
+    num = (buf.readUInt8(0) << 8) + buf.readUInt8(1);
+    const maxValue = Math.pow(16, 4) - 1;
+    return (num / maxValue);
+}
+function getRandomBetween(min = 0, max = 10) {
+    const randomVal = getRandom();
+    return min + (randomVal * (max - min));
+}
+exports.getRandomBetween = getRandomBetween;
 //# sourceMappingURL=utils.js.map

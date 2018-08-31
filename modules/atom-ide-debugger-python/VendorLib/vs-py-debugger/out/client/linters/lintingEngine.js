@@ -26,12 +26,12 @@ const vscode = require("vscode");
 const types_1 = require("../common/application/types");
 const constants_1 = require("../common/constants");
 const types_2 = require("../common/platform/types");
+const stopWatch_1 = require("../common/stopWatch");
 const types_3 = require("../common/types");
 const types_4 = require("../ioc/types");
 const provider_1 = require("../jupyter/provider");
 const telemetry_1 = require("../telemetry");
 const constants_2 = require("../telemetry/constants");
-const stopWatch_1 = require("../telemetry/stopWatch");
 const types_5 = require("./types");
 const PYTHON = { language: 'python' };
 const lintSeverityToVSSeverity = new Map();
@@ -63,7 +63,7 @@ let LintingEngine = class LintingEngine {
     lintOpenPythonFiles() {
         return __awaiter(this, void 0, void 0, function* () {
             this.diagnosticCollection.clear();
-            const promises = this.documents.textDocuments.map((document) => __awaiter(this, void 0, void 0, function* () { return yield this.lintDocument(document, 'auto'); }));
+            const promises = this.documents.textDocuments.map((document) => __awaiter(this, void 0, void 0, function* () { return this.lintDocument(document, 'auto'); }));
             yield Promise.all(promises);
             return this.diagnosticCollection;
         });
@@ -86,7 +86,6 @@ let LintingEngine = class LintingEngine {
                 }
             });
             this.pendingLintings.set(document.uri.fsPath, cancelToken);
-            this.outputChannel.clear();
             const promises = this.linterManager.getActiveLinters(document.uri)
                 .map(info => {
                 const stopWatch = new stopWatch_1.StopWatch();
@@ -182,7 +181,7 @@ let LintingEngine = class LintingEngine {
             if (document.uri.scheme !== 'file' || !document.uri.fsPath) {
                 return false;
             }
-            return yield this.fileSystem.fileExistsAsync(document.uri.fsPath);
+            return this.fileSystem.fileExists(document.uri.fsPath);
         });
     }
 };

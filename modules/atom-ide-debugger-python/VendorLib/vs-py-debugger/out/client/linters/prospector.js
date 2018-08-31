@@ -8,6 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const path = require("path");
+require("../common/extensions");
 const types_1 = require("../common/types");
 const baseLinter_1 = require("./baseLinter");
 class Prospector extends baseLinter_1.BaseLinter {
@@ -16,7 +18,9 @@ class Prospector extends baseLinter_1.BaseLinter {
     }
     runLinter(document, cancellation) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.run(['--absolute-paths', '--output-format=json', document.uri.fsPath], document, cancellation);
+            const cwd = this.getWorkspaceRootPath(document);
+            const relativePath = path.relative(cwd, document.uri.fsPath);
+            return this.run(['--absolute-paths', '--output-format=json', relativePath], document, cancellation);
         });
     }
     parseMessages(output, document, token, regEx) {

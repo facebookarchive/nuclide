@@ -21,8 +21,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
+require("../../common/extensions");
+const contracts_1 = require("../../interpreter/contracts");
 const types_1 = require("../../ioc/types");
+const telemetry_1 = require("../../telemetry");
+const constants_1 = require("../../telemetry/constants");
 const types_2 = require("../application/types");
+const core_utils_1 = require("../core.utils");
 const types_3 = require("../types");
 const types_4 = require("./types");
 let TerminalService = class TerminalService {
@@ -60,13 +65,13 @@ let TerminalService = class TerminalService {
             this.terminal.sendText(text);
         });
     }
-    show() {
+    show(preserveFocus = true) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.ensureTerminal();
-            this.terminal.show(true);
+            yield this.ensureTerminal(preserveFocus);
+            this.terminal.show(preserveFocus);
         });
     }
-    ensureTerminal() {
+    ensureTerminal(preserveFocus = true) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.terminal) {
                 return;
@@ -79,14 +84,16 @@ let TerminalService = class TerminalService {
             const activationCommamnds = yield this.terminalHelper.getEnvironmentActivationCommands(this.terminalShellType, this.resource);
             if (activationCommamnds) {
                 for (const command of activationCommamnds) {
-                    this.terminal.show(true);
+                    this.terminal.show(preserveFocus);
                     this.terminal.sendText(command);
                     // Give the command some time to complete.
                     // Its been observed that sending commands too early will strip some text off.
-                    yield new Promise(resolve => setTimeout(resolve, 500));
+                    const delay = (this.terminalShellType === types_4.TerminalShellType.powershell || types_4.TerminalShellType.powershellCore) ? 1000 : 500;
+                    yield core_utils_1.sleep(delay);
                 }
             }
-            this.terminal.show(true);
+            this.terminal.show(preserveFocus);
+            this.sendTelemetry().ignoreErrors();
         });
     }
     terminalCloseHandler(terminal) {
@@ -94,6 +101,15 @@ let TerminalService = class TerminalService {
             this.terminalClosed.fire();
             this.terminal = undefined;
         }
+    }
+    sendTelemetry() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const pythonPath = this.serviceContainer.get(types_3.IConfigurationService).getSettings(this.resource).pythonPath;
+            const interpreterInfo = yield this.serviceContainer.get(contracts_1.IInterpreterService).getInterpreterDetails(pythonPath);
+            const pythonVersion = interpreterInfo.version_info ? interpreterInfo.version_info.join('.') : undefined;
+            const interpreterType = interpreterInfo.type;
+            telemetry_1.captureTelemetry(constants_1.TERMINAL_CREATE, { terminal: this.terminalShellType, pythonVersion, interpreterType });
+        });
     }
 };
 TerminalService = __decorate([

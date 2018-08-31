@@ -30,7 +30,12 @@ let Bash = class Bash extends baseActivationProvider_1.BaseActivationCommandProv
     }
     isShellSupported(targetShell) {
         return targetShell === types_2.TerminalShellType.bash ||
+            targetShell === types_2.TerminalShellType.gitbash ||
+            targetShell === types_2.TerminalShellType.wsl ||
+            targetShell === types_2.TerminalShellType.ksh ||
+            targetShell === types_2.TerminalShellType.zsh ||
             targetShell === types_2.TerminalShellType.cshell ||
+            targetShell === types_2.TerminalShellType.tcshell ||
             targetShell === types_2.TerminalShellType.fish;
     }
     getActivationCommands(resource, targetShell) {
@@ -44,9 +49,14 @@ let Bash = class Bash extends baseActivationProvider_1.BaseActivationCommandProv
     }
     getScriptsInOrderOfPreference(targetShell) {
         switch (targetShell) {
+            case types_2.TerminalShellType.wsl:
+            case types_2.TerminalShellType.ksh:
+            case types_2.TerminalShellType.zsh:
+            case types_2.TerminalShellType.gitbash:
             case types_2.TerminalShellType.bash: {
                 return ['activate.sh', 'activate'];
             }
+            case types_2.TerminalShellType.tcshell:
             case types_2.TerminalShellType.cshell: {
                 return ['activate.csh'];
             }

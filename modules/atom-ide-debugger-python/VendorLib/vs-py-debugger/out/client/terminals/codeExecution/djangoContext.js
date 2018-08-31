@@ -59,7 +59,7 @@ let DjangoContextInitializer = class DjangoContextInitializer {
         return __awaiter(this, void 0, void 0, function* () {
             const activeWorkspace = this.getActiveWorkspace();
             if (!activeWorkspace) {
-                return yield this.isDjangoProject.set(false);
+                return this.isDjangoProject.set(false);
             }
             if (this.lastCheckedWorkspace === activeWorkspace) {
                 return;
@@ -68,7 +68,7 @@ let DjangoContextInitializer = class DjangoContextInitializer {
                 yield this.isDjangoProject.set(this.workspaceContextKeyValues.get(activeWorkspace));
             }
             else {
-                const exists = yield this.fileSystem.fileExistsAsync(path.join(activeWorkspace, 'manage.py'));
+                const exists = yield this.fileSystem.fileExists(path.join(activeWorkspace, 'manage.py'));
                 yield this.isDjangoProject.set(exists);
                 this.workspaceContextKeyValues.set(activeWorkspace, exists);
                 this.lastCheckedWorkspace = activeWorkspace;

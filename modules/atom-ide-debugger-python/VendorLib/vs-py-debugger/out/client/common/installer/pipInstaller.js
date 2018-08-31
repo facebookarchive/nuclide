@@ -20,9 +20,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const vscode_1 = require("vscode");
 const types_1 = require("../../ioc/types");
-const types_2 = require("../process/types");
+const types_2 = require("../application/types");
+const types_3 = require("../process/types");
 const moduleInstaller_1 = require("./moduleInstaller");
 let PipInstaller = class PipInstaller extends moduleInstaller_1.ModuleInstaller {
     constructor(serviceContainer) {
@@ -40,21 +40,21 @@ let PipInstaller = class PipInstaller extends moduleInstaller_1.ModuleInstaller 
     getExecutionInfo(moduleName, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const proxyArgs = [];
-            const proxy = vscode_1.workspace.getConfiguration('http').get('proxy', '');
+            const workspaceService = this.serviceContainer.get(types_2.IWorkspaceService);
+            const proxy = workspaceService.getConfiguration('http').get('proxy', '');
             if (proxy.length > 0) {
                 proxyArgs.push('--proxy');
                 proxyArgs.push(proxy);
             }
             return {
                 args: [...proxyArgs, 'install', '-U', moduleName],
-                execPath: '',
                 moduleName: 'pip'
             };
         });
     }
     isPipAvailable(resource) {
-        const pythonExecutionFactory = this.serviceContainer.get(types_2.IPythonExecutionFactory);
-        return pythonExecutionFactory.create(resource)
+        const pythonExecutionFactory = this.serviceContainer.get(types_3.IPythonExecutionFactory);
+        return pythonExecutionFactory.create({ resource })
             .then(proc => proc.isModuleInstalled('pip'))
             .catch(() => false);
     }

@@ -11,6 +11,7 @@ const vscode_1 = require("vscode");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 const proxy = require("./jediProxy");
+const providerUtilities_1 = require("./providerUtilities");
 const DOCSTRING_PARAM_PATTERNS = [
     '\\s*:type\\s*PARAMNAME:\\s*([^\\n, ]+)',
     '\\s*:param\\s*(\\w?)\\s*PARAMNAME:[^\\n]+',
@@ -60,26 +61,34 @@ class PythonSignatureProvider {
                 // Some functions do not come with parameter docs
                 let label;
                 let documentation;
-                const validParamInfo = def.params && def.params.length > 0 && def.docstring.startsWith(`${def.name}(`);
+                const validParamInfo = def.params && def.params.length > 0 && def.docstring && def.docstring.startsWith(`${def.name}(`);
                 if (validParamInfo) {
                     const docLines = def.docstring.splitLines();
                     label = docLines.shift().trim();
                     documentation = docLines.join(os_1.EOL).trim();
                 }
                 else {
-                    label = def.description;
-                    documentation = def.docstring;
+                    if (def.params && def.params.length > 0) {
+                        label = `${def.name}(${def.params.map(p => p.name).join(', ')})`;
+                        documentation = def.docstring;
+                    }
+                    else {
+                        label = def.description;
+                        documentation = def.docstring;
+                    }
                 }
+                // tslint:disable-next-line:no-object-literal-type-assertion
                 const sig = {
                     label,
                     documentation,
                     parameters: []
                 };
-                if (validParamInfo) {
+                if (def.params && def.params.length) {
                     sig.parameters = def.params.map(arg => {
                         if (arg.docstring.length === 0) {
                             arg.docstring = extractParamDocString(arg.name, def.docstring);
                         }
+                        // tslint:disable-next-line:no-object-literal-type-assertion
                         return {
                             documentation: arg.docstring.length > 0 ? arg.docstring : arg.description,
                             label: arg.name.trim()
@@ -93,6 +102,11 @@ class PythonSignatureProvider {
         return new vscode_1.SignatureHelp();
     }
     provideSignatureHelp(document, position, token) {
+        // early exit if we're in a string or comment (or in an undefined position)
+        if (position.character <= 0 ||
+            providerUtilities_1.isPositionInsideStringOrComment(document, position)) {
+            return Promise.resolve(new vscode_1.SignatureHelp());
+        }
         const cmd = {
             command: proxy.CommandType.Arguments,
             fileName: document.fileName,

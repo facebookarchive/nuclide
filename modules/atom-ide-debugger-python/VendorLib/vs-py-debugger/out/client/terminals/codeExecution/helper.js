@@ -20,20 +20,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const os_1 = require("os");
+const path = require("path");
 const vscode_1 = require("vscode");
 const types_1 = require("../../common/application/types");
 const constants_1 = require("../../common/constants");
 require("../../common/extensions");
+const types_2 = require("../../common/process/types");
+const types_3 = require("../../common/types");
+const types_4 = require("../../ioc/types");
 let CodeExecutionHelper = class CodeExecutionHelper {
-    constructor(documentManager, applicationShell) {
-        this.documentManager = documentManager;
-        this.applicationShell = applicationShell;
+    constructor(serviceContainer) {
+        this.documentManager = serviceContainer.get(types_1.IDocumentManager);
+        this.applicationShell = serviceContainer.get(types_1.IApplicationShell);
+        this.processServiceFactory = serviceContainer.get(types_2.IProcessServiceFactory);
+        this.configurationService = serviceContainer.get(types_3.IConfigurationService);
     }
-    normalizeLines(code) {
-        const codeLines = code.splitLines({ trim: false, removeEmptyEntries: false });
-        const codeLinesWithoutEmptyLines = codeLines.filter(line => line.trim().length > 0);
-        return codeLinesWithoutEmptyLines.join(os_1.EOL);
+    normalizeLines(code, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (code.trim().length === 0) {
+                    return '';
+                }
+                const pythonPath = this.configurationService.getSettings(resource).pythonPath;
+                const args = [path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'normalizeForInterpreter.py'), code];
+                const processService = yield this.processServiceFactory.create(resource);
+                const proc = yield processService.exec(pythonPath, args, { throwOnStdErr: true });
+                return proc.stdout;
+            }
+            catch (ex) {
+                console.error(ex, 'Python: Failed to normalize code for execution in terminal');
+                return code;
+            }
+        });
     }
     getFileToExecute() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -46,9 +64,12 @@ let CodeExecutionHelper = class CodeExecutionHelper {
                 this.applicationShell.showErrorMessage('The active file needs to be saved before it can be run');
                 return;
             }
-            if (activeEditor.document.languageId !== constants_1.PythonLanguage.language) {
+            if (activeEditor.document.languageId !== constants_1.PYTHON_LANGUAGE) {
                 this.applicationShell.showErrorMessage('The active file is not a Python source file');
                 return;
+            }
+            if (activeEditor.document.isDirty) {
+                yield activeEditor.document.save();
             }
             return activeEditor.document.uri;
         });
@@ -70,11 +91,18 @@ let CodeExecutionHelper = class CodeExecutionHelper {
             return code;
         });
     }
+    saveFileIfDirty(file) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const docs = this.documentManager.textDocuments.filter(d => d.uri.path === file.path);
+            if (docs.length === 1 && docs[0].isDirty) {
+                yield docs[0].save();
+            }
+        });
+    }
 };
 CodeExecutionHelper = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_1.IDocumentManager)),
-    __param(1, inversify_1.inject(types_1.IApplicationShell))
+    __param(0, inversify_1.inject(types_4.IServiceContainer))
 ], CodeExecutionHelper);
 exports.CodeExecutionHelper = CodeExecutionHelper;
 //# sourceMappingURL=helper.js.map

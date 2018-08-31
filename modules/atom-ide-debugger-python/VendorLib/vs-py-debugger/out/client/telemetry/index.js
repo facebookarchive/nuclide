@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
-const stopWatch_1 = require("./stopWatch");
+const stopWatch_1 = require("../common/stopWatch");
 const telemetry_1 = require("./telemetry");
 function sendTelemetryEvent(eventName, durationMs, properties) {
     const reporter = telemetry_1.getTelemetryReporter();
@@ -47,6 +47,7 @@ function captureTelemetry(eventName, properties, captureDuration = true) {
                     sendTelemetryEvent(eventName, stopWatch.elapsedTime, properties);
                     return data;
                 })
+                    // tslint:disable-next-line:promise-function-async
                     .catch(ex => {
                     sendTelemetryEvent(eventName, stopWatch.elapsedTime, properties);
                     return Promise.reject(ex);

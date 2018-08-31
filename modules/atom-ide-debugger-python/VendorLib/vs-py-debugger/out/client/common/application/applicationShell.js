@@ -11,40 +11,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-require-imports no-var-requires no-any unified-signatures
 const opn = require('opn');
 const inversify_1 = require("inversify");
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 let ApplicationShell = class ApplicationShell {
     showInformationMessage(message, options, ...items) {
-        return vscode.window.showInformationMessage(message, options, ...items);
+        return vscode_1.window.showInformationMessage(message, options, ...items);
     }
     showWarningMessage(message, options, ...items) {
-        return vscode.window.showWarningMessage(message, options, ...items);
+        return vscode_1.window.showWarningMessage(message, options, ...items);
     }
     showErrorMessage(message, options, ...items) {
-        return vscode.window.showErrorMessage(message, options, ...items);
+        return vscode_1.window.showErrorMessage(message, options, ...items);
     }
     showQuickPick(items, options, token) {
-        return vscode.window.showQuickPick(items, options, token);
+        return vscode_1.window.showQuickPick(items, options, token);
     }
     showOpenDialog(options) {
-        return vscode.window.showOpenDialog(options);
+        return vscode_1.window.showOpenDialog(options);
     }
     showSaveDialog(options) {
-        return vscode.window.showSaveDialog(options);
+        return vscode_1.window.showSaveDialog(options);
     }
     showInputBox(options, token) {
-        return vscode.window.showInputBox(options, token);
+        return vscode_1.window.showInputBox(options, token);
     }
     openUrl(url) {
         opn(url);
     }
     setStatusBarMessage(text, arg) {
-        return vscode.window.setStatusBarMessage(text, arg);
+        return vscode_1.window.setStatusBarMessage(text, arg);
     }
     createStatusBarItem(alignment, priority) {
-        return vscode.window.createStatusBarItem(alignment, priority);
+        return vscode_1.window.createStatusBarItem(alignment, priority);
     }
     showWorkspaceFolderPick(options) {
-        return vscode.window.showWorkspaceFolderPick(options);
+        return vscode_1.window.showWorkspaceFolderPick(options);
     }
 };
 ApplicationShell = __decorate([

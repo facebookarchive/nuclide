@@ -6,6 +6,7 @@ const types_1 = require("../types");
 // tslint:disable-next-line:variable-name
 exports.ProductNames = new Map();
 exports.ProductNames.set(types_1.Product.autopep8, 'autopep8');
+exports.ProductNames.set(types_1.Product.black, 'black');
 exports.ProductNames.set(types_1.Product.flake8, 'flake8');
 exports.ProductNames.set(types_1.Product.mypy, 'mypy');
 exports.ProductNames.set(types_1.Product.nosetest, 'nosetest');

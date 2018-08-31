@@ -1,7 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-exports.PythonLanguage = { language: 'python' };
+exports.PYTHON_LANGUAGE = 'python';
+exports.PYTHON = [
+    { scheme: 'file', language: exports.PYTHON_LANGUAGE },
+    { scheme: 'untitled', language: exports.PYTHON_LANGUAGE }
+];
 var Commands;
 (function (Commands) {
     Commands.Set_Interpreter = 'python.setInterpreter';
@@ -70,9 +74,12 @@ var LinterErrors;
 })(LinterErrors = exports.LinterErrors || (exports.LinterErrors = {}));
 exports.STANDARD_OUTPUT_CHANNEL = 'STANDARD_OUTPUT_CHANNEL';
 function isTestExecution() {
-    // tslint:disable-next-line:interface-name no-string-literal
-    return process.env['VSC_PYTHON_CI_TEST'] === '1';
+    return process.env.VSC_PYTHON_CI_TEST === '1';
 }
 exports.isTestExecution = isTestExecution;
+function isLanguageServerTest() {
+    return process.env.VSC_PYTHON_LANGUAGE_SERVER === '1';
+}
+exports.isLanguageServerTest = isLanguageServerTest;
 exports.EXTENSION_ROOT_DIR = path.join(__dirname, '..', '..', '..');
 //# sourceMappingURL=constants.js.map

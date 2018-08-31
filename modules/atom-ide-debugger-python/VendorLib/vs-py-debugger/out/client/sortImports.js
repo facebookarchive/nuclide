@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = require("os");
 const vscode = require("vscode");
-const types_1 = require("./common/process/types");
 const sortProvider = require("./providers/importSortProvider");
 function activate(context, outChannel, serviceContainer) {
     const rootDir = context.asAbsolutePath('.');
@@ -28,13 +27,12 @@ function activate(context, outChannel, serviceContainer) {
             });
         }
         return emptyLineAdded.then(() => {
-            const processService = serviceContainer.get(types_1.IProcessService);
-            const pythonExecutionFactory = serviceContainer.get(types_1.IPythonExecutionFactory);
-            return new sortProvider.PythonImportSortProvider(pythonExecutionFactory, processService).sortImports(rootDir, activeEditor.document);
+            return new sortProvider.PythonImportSortProvider(serviceContainer).sortImports(rootDir, activeEditor.document);
         }).then(changes => {
             if (!changes || changes.length === 0) {
                 return;
             }
+            // tslint:disable-next-line:no-any
             return new Promise((resolve, reject) => activeEditor.edit(builder => changes.forEach(change => builder.replace(change.range, change.newText))).then(resolve, reject));
         }).catch(error => {
             const message = typeof error === 'string' ? error : (error.message ? error.message : error);

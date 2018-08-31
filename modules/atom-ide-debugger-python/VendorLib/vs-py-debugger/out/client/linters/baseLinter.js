@@ -13,12 +13,12 @@ const types_1 = require("../common/application/types");
 require("../common/extensions");
 const types_2 = require("../common/process/types");
 const types_3 = require("../common/types");
-const types_4 = require("../common/types");
 const errorHandler_1 = require("./errorHandlers/errorHandler");
-const types_5 = require("./types");
+const types_4 = require("./types");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const namedRegexp = require('named-js-regexp');
-const REGEX = '(?<line>\\d+),(?<column>\\d+),(?<type>\\w+),(?<code>\\w\\d+):(?<message>.*)\\r?(\\n|$)';
+// Allow negative column numbers (https://github.com/PyCQA/pylint/issues/1822)
+const REGEX = '(?<line>\\d+),(?<column>-?\\d+),(?<type>\\w+),(?<code>\\w\\d+):(?<message>.*)\\r?(\\n|$)';
 function matchNamedRegEx(data, regex) {
     const compiledRegexp = namedRegexp(regex, 'g');
     const rawMatch = compiledRegexp.exec(data);
@@ -33,7 +33,7 @@ class BaseLinter {
         this.outputChannel = outputChannel;
         this.serviceContainer = serviceContainer;
         this.columnOffset = columnOffset;
-        this._info = serviceContainer.get(types_5.ILinterManager).getLinterInfo(product);
+        this._info = serviceContainer.get(types_4.ILinterManager).getLinterInfo(product);
         this.errorHandler = new errorHandler_1.ErrorHandler(this.info.product, outputChannel, serviceContainer);
         this.configService = serviceContainer.get(types_3.IConfigurationService);
         this.workspace = serviceContainer.get(types_1.IWorkspaceService);
@@ -60,7 +60,7 @@ class BaseLinter {
         return typeof workspaceRootPath === 'string' ? workspaceRootPath : path.dirname(document.uri.fsPath);
     }
     get logger() {
-        return this.serviceContainer.get(types_4.ILogger);
+        return this.serviceContainer.get(types_3.ILogger);
     }
     // tslint:disable-next-line:no-any
     parseMessagesSeverity(error, categorySeverity) {
@@ -68,22 +68,22 @@ class BaseLinter {
             const severityName = categorySeverity[error];
             switch (severityName) {
                 case 'Error':
-                    return types_5.LintMessageSeverity.Error;
+                    return types_4.LintMessageSeverity.Error;
                 case 'Hint':
-                    return types_5.LintMessageSeverity.Hint;
+                    return types_4.LintMessageSeverity.Hint;
                 case 'Information':
-                    return types_5.LintMessageSeverity.Information;
+                    return types_4.LintMessageSeverity.Information;
                 case 'Warning':
-                    return types_5.LintMessageSeverity.Warning;
+                    return types_4.LintMessageSeverity.Warning;
                 default: {
-                    if (types_5.LintMessageSeverity[severityName]) {
+                    if (types_4.LintMessageSeverity[severityName]) {
                         // tslint:disable-next-line:no-any
-                        return types_5.LintMessageSeverity[severityName];
+                        return types_4.LintMessageSeverity[severityName];
                     }
                 }
             }
         }
-        return types_5.LintMessageSeverity.Information;
+        return types_4.LintMessageSeverity.Information;
     }
     run(args, document, cancellation, regEx = REGEX) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -94,7 +94,7 @@ class BaseLinter {
             const cwd = this.getWorkspaceRootPath(document);
             const pythonToolsExecutionService = this.serviceContainer.get(types_2.IPythonToolExecutionService);
             try {
-                const result = yield pythonToolsExecutionService.exec(executionInfo, { cwd, token: cancellation, mergeStdOutErr: true }, document.uri);
+                const result = yield pythonToolsExecutionService.exec(executionInfo, { cwd, token: cancellation, mergeStdOutErr: false }, document.uri);
                 this.displayLinterResultHeader(result.stdout);
                 return yield this.parseMessages(result.stdout, document, cancellation, regEx);
             }
@@ -126,7 +126,7 @@ class BaseLinter {
         return {
             code: match.code,
             message: match.message,
-            column: isNaN(match.column) || match.column === 0 ? 0 : match.column - this.columnOffset,
+            column: isNaN(match.column) || match.column <= 0 ? 0 : match.column - this.columnOffset,
             line: match.line,
             type: match.type,
             provider: this.info.id

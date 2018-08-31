@@ -19,6 +19,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = require("dotenv");
 const fs = require("fs-extra");
 const inversify_1 = require("inversify");
 const path = require("path");
@@ -36,14 +37,7 @@ let EnvironmentVariablesService = class EnvironmentVariablesService {
             if (!fs.lstatSync(filePath).isFile()) {
                 return undefined;
             }
-            return new Promise((resolve, reject) => {
-                fs.readFile(filePath, 'utf8', (error, data) => {
-                    if (error) {
-                        return reject(error);
-                    }
-                    resolve(parseEnvironmentVariables(data));
-                });
-            });
+            return dotenv.parse(yield fs.readFile(filePath));
         });
     }
     mergeVariables(source, target) {
@@ -88,21 +82,4 @@ EnvironmentVariablesService = __decorate([
     __param(0, inversify_1.inject(types_1.IPathUtils))
 ], EnvironmentVariablesService);
 exports.EnvironmentVariablesService = EnvironmentVariablesService;
-function parseEnvironmentVariables(contents) {
-    if (typeof contents !== 'string' || contents.length === 0) {
-        return undefined;
-    }
-    const env = {};
-    contents.split('\n').forEach(line => {
-        const match = line.match(/^\s*([\w\.\-]+)\s*=\s*(.*)?\s*$/);
-        if (match !== null) {
-            let value = typeof match[2] === 'string' ? match[2] : '';
-            if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
-                value = value.replace(/\\n/gm, '\n');
-            }
-            env[match[1]] = value.replace(/(^['"]|['"]$)/g, '');
-        }
-    });
-    return env;
-}
 //# sourceMappingURL=environment.js.map

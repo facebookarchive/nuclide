@@ -48,6 +48,7 @@ let CodeExecutionManager = class CodeExecutionManager {
             if (!fileToExecute) {
                 return;
             }
+            yield codeExecutionHelper.saveFileIfDirty(fileToExecute);
             const executionService = this.serviceContainer.get(types_4.ICodeExecutionService, 'standard');
             yield executionService.executeFile(fileToExecute);
         });
@@ -72,11 +73,11 @@ let CodeExecutionManager = class CodeExecutionManager {
             }
             const codeExecutionHelper = this.serviceContainer.get(types_4.ICodeExecutionHelper);
             const codeToExecute = yield codeExecutionHelper.getSelectedTextToExecute(activeEditor);
-            const normalizedCode = codeExecutionHelper.normalizeLines(codeToExecute);
+            const normalizedCode = yield codeExecutionHelper.normalizeLines(codeToExecute);
             if (!normalizedCode || normalizedCode.trim().length === 0) {
                 return;
             }
-            yield executionService.execute(codeToExecute, activeEditor.document.uri);
+            yield executionService.execute(normalizedCode, activeEditor.document.uri);
         });
     }
 };

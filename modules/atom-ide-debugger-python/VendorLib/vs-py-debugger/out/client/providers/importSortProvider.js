@@ -18,13 +18,14 @@ const fs = require("fs-extra");
 const path = require("path");
 const configSettings_1 = require("../common/configSettings");
 const editor_1 = require("../common/editor");
+const types_1 = require("../common/process/types");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 // tslint:disable-next-line:completed-docs
 class PythonImportSortProvider {
-    constructor(pythonExecutionFactory, processService) {
-        this.pythonExecutionFactory = pythonExecutionFactory;
-        this.processService = processService;
+    constructor(serviceContainer) {
+        this.pythonExecutionFactory = serviceContainer.get(types_1.IPythonExecutionFactory);
+        this.processServiceFactory = serviceContainer.get(types_1.IProcessServiceFactory);
     }
     sortImports(extensionDir, document) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -44,10 +45,11 @@ class PythonImportSortProvider {
             let promise;
             if (typeof isort === 'string' && isort.length > 0) {
                 // Lets just treat this as a standard tool.
-                promise = this.processService.exec(isort, args, { throwOnStdErr: true });
+                const processService = yield this.processServiceFactory.create(document.uri);
+                promise = processService.exec(isort, args, { throwOnStdErr: true });
             }
             else {
-                promise = this.pythonExecutionFactory.create(document.uri)
+                promise = this.pythonExecutionFactory.create({ resource: document.uri })
                     .then(executionService => executionService.exec([importScript].concat(args), { throwOnStdErr: true }));
             }
             try {

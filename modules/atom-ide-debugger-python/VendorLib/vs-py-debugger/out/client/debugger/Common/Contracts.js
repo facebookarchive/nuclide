@@ -1,4 +1,4 @@
-// tslint:disable:interface-name member-access no-single-line-block-comment no-any no-stateless-class member-ordering prefer-method-signature
+// tslint:disable:interface-name member-access no-single-line-block-comment no-any no-stateless-class member-ordering prefer-method-signature no-unnecessary-class
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_debugadapter_1 = require("vscode-debugadapter");
@@ -11,26 +11,36 @@ class TelemetryEvent extends vscode_debugadapter_1.OutputEvent {
     }
 }
 exports.TelemetryEvent = TelemetryEvent;
-exports.VALID_DEBUG_OPTIONS = ['WaitOnAbnormalExit',
+exports.VALID_DEBUG_OPTIONS = [
+    'WaitOnAbnormalExit',
     'WaitOnNormalExit',
     'RedirectOutput',
     'DebugStdLib',
     'BreakOnSystemExitZero',
-    'DjangoDebugging'];
+    'DjangoDebugging',
+    'Django'
+];
 var DebugFlags;
 (function (DebugFlags) {
     DebugFlags[DebugFlags["None"] = 0] = "None";
     DebugFlags[DebugFlags["IgnoreCommandBursts"] = 1] = "IgnoreCommandBursts";
 })(DebugFlags = exports.DebugFlags || (exports.DebugFlags = {}));
-class DebugOptions {
-    static get WaitOnAbnormalExit() { return 'WaitOnAbnormalExit'; }
-    static get WaitOnNormalExit() { return 'WaitOnNormalExit'; }
-    static get RedirectOutput() { return 'RedirectOutput'; }
-    static get DjangoDebugging() { return 'DjangoDebugging'; }
-    static get DebugStdLib() { return 'DebugStdLib'; }
-    static get BreakOnSystemExitZero() { return 'BreakOnSystemExitZero'; }
-}
-exports.DebugOptions = DebugOptions;
+var DebugOptions;
+(function (DebugOptions) {
+    DebugOptions["WaitOnAbnormalExit"] = "WaitOnAbnormalExit";
+    DebugOptions["WaitOnNormalExit"] = "WaitOnNormalExit";
+    DebugOptions["RedirectOutput"] = "RedirectOutput";
+    DebugOptions["Django"] = "Django";
+    DebugOptions["DjangoDebugging"] = "DjangoDebugging";
+    DebugOptions["Jinja"] = "Jinja";
+    DebugOptions["DebugStdLib"] = "DebugStdLib";
+    DebugOptions["BreakOnSystemExitZero"] = "BreakOnSystemExitZero";
+    DebugOptions["Sudo"] = "Sudo";
+    DebugOptions["Pyramid"] = "Pyramid";
+    DebugOptions["FixFilePathCase"] = "FixFilePathCase";
+    DebugOptions["WindowsClient"] = "WindowsClient";
+    DebugOptions["UnixClient"] = "UnixClient";
+})(DebugOptions = exports.DebugOptions || (exports.DebugOptions = {}));
 var FrameKind;
 (function (FrameKind) {
     FrameKind[FrameKind["None"] = 0] = "None";

@@ -39,8 +39,15 @@ let CondaActivationCommandProvider = class CondaActivationCommandProvider {
             }
             const isWindows = this.serviceContainer.get(types_1.IPlatformService).isWindows;
             if (targetShell === types_3.TerminalShellType.powershell || targetShell === types_3.TerminalShellType.powershellCore) {
+                if (!isWindows) {
+                    return;
+                }
                 // https://github.com/conda/conda/issues/626
-                return;
+                // On windows, the solution is to go into cmd, then run the batch (.bat) file and go back into powershell.
+                const powershellExe = targetShell === types_3.TerminalShellType.powershell ? 'powershell' : 'pwsh';
+                return [
+                    `& cmd /k "activate ${envInfo.name.toCommandArgument().replace(/"/g, '""')} & ${powershellExe}"`
+                ];
             }
             else if (targetShell === types_3.TerminalShellType.fish) {
                 // https://github.com/conda/conda/blob/be8c08c083f4d5e05b06bd2689d2cd0d410c2ffe/shell/etc/fish/conf.d/conda.fish#L18-L28

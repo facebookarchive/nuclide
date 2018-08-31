@@ -33,7 +33,9 @@
   },
   "dependencies": {
     "arch": "2.1.0",
+    "dotenv": "5.0.1",
     "fs-extra": "4.0.3",
+    "getos": "3.1.0",
     "inversify": "4.11.1",
     "line-by-line": "0.1.5",
     "lodash": "4.17.10",

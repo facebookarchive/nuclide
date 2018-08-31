@@ -28,10 +28,10 @@ const cacheableLocatorService_1 = require("./cacheableLocatorService");
 const conda_1 = require("./conda");
 const condaHelper_1 = require("./condaHelper");
 let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.CacheableLocatorService {
-    constructor(condaService, versionService, logger, serviceContainer, fileSystem) {
+    constructor(condaService, helper, logger, serviceContainer, fileSystem) {
         super('CondaEnvService', serviceContainer);
         this.condaService = condaService;
-        this.versionService = versionService;
+        this.helper = helper;
         this.logger = logger;
         this.fileSystem = fileSystem;
         this.condaHelper = new condaHelper_1.CondaHelper();
@@ -50,26 +50,20 @@ let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.Ca
             const promises = envs
                 .map((envPath) => __awaiter(this, void 0, void 0, function* () {
                 const pythonPath = this.condaService.getInterpreterPath(envPath);
-                const existsPromise = pythonPath ? this.fileSystem.fileExistsAsync(pythonPath) : Promise.resolve(false);
-                const versionPromise = this.versionService.getVersion(pythonPath, '');
-                const [exists, version] = yield Promise.all([existsPromise, versionPromise]);
-                if (!exists) {
+                if (!(yield this.fileSystem.fileExists(pythonPath))) {
                     return;
                 }
-                const versionWithoutCompanyName = this.stripCondaDisplayName(this.stripCompanyName(version), condaDisplayName);
+                const details = yield this.helper.getInterpreterInformation(pythonPath);
+                if (!details) {
+                    return;
+                }
+                const versionWithoutCompanyName = this.stripCondaDisplayName(this.stripCompanyName(details.version), condaDisplayName);
                 const displayName = `${condaDisplayName} ${versionWithoutCompanyName}`.trim();
-                // tslint:disable-next-line:no-unnecessary-local-variable
-                const interpreter = {
-                    path: pythonPath,
-                    displayName,
-                    companyDisplayName: conda_1.AnacondaCompanyName,
-                    type: contracts_1.InterpreterType.Conda,
-                    envPath
-                };
-                return interpreter;
+                return Object.assign({}, details, { path: pythonPath, displayName, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath });
             }));
             return Promise.all(promises)
                 .then(interpreters => interpreters.filter(interpreter => interpreter !== null && interpreter !== undefined))
+                // tslint:disable-next-line:no-non-null-assertion
                 .then(interpreters => interpreters.map(interpreter => interpreter));
         });
     }
@@ -135,7 +129,7 @@ let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.Ca
 CondaEnvService = __decorate([
     inversify_1.injectable(),
     __param(0, inversify_1.inject(contracts_1.ICondaService)),
-    __param(1, inversify_1.inject(contracts_1.IInterpreterVersionService)),
+    __param(1, inversify_1.inject(contracts_1.IInterpreterHelper)),
     __param(2, inversify_1.inject(types_2.ILogger)),
     __param(3, inversify_1.inject(types_3.IServiceContainer)),
     __param(4, inversify_1.inject(types_1.IFileSystem))

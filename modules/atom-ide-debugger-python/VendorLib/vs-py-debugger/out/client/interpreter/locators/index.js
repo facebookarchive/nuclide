@@ -35,12 +35,6 @@ let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
     }
     getInterpreters(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Pipenv always wins
-            const pipenv = this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.PIPENV_SERVICE);
-            const interpreters = yield pipenv.getInterpreters(resource);
-            if (interpreters.length > 0) {
-                return interpreters;
-            }
             return this.getInterpretersPerResource(resource);
         });
     }
@@ -54,6 +48,8 @@ let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
             const listOfInterpreters = yield Promise.all(promises);
             // tslint:disable-next-line:underscore-consistent-invocation
             return _.flatten(listOfInterpreters)
+                .filter(item => !!item)
+                .map(item => item)
                 .map(helpers_1.fixInterpreterDisplayName)
                 .map(item => { item.path = path.normalize(item.path); return item; })
                 .reduce((accumulator, current) => {
@@ -77,6 +73,9 @@ let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
     getLocators() {
         const locators = [];
         // The order of the services is important.
+        // The order is important because the data sources at the bottom of the list do not contain all,
+        //  the information about the interpreters (e.g. type, environment name, etc).
+        // This way, the items returned from the top of the list will win, when we combine the items returned.
         if (this.platform.isWindows) {
             locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.WINDOWS_REGISTRY_SERVICE));
         }
@@ -88,6 +87,7 @@ let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
             locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.KNOWN_PATH_SERVICE));
         }
         locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.CURRENT_PATH_SERVICE));
+        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.PIPENV_SERVICE));
         return locators;
     }
 };

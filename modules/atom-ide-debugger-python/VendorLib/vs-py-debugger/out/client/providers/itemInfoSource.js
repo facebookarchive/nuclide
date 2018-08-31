@@ -59,7 +59,7 @@ class ItemInfoSource {
             if (!range || range.isEmpty) {
                 return;
             }
-            return yield this.getHoverResultFromDocumentRange(document, range, token);
+            return this.getHoverResultFromDocumentRange(document, range, token);
         });
     }
     getHoverResultFromDocumentRange(document, range, token) {
@@ -73,7 +73,7 @@ class ItemInfoSource {
             if (document.isDirty) {
                 cmd.source = document.getText();
             }
-            return yield this.jediFactory.getJediProxyHandler(document.uri).sendCommand(cmd, token);
+            return this.jediFactory.getJediProxyHandler(document.uri).sendCommand(cmd, token);
         });
     }
     getHoverResultFromTextRange(documentUri, fileName, range, sourceText, token) {
@@ -85,7 +85,7 @@ class ItemInfoSource {
                 lineIndex: range.end.line,
                 source: sourceText
             };
-            return yield this.jediFactory.getJediProxyHandler(documentUri).sendCommand(cmd, token);
+            return this.jediFactory.getJediProxyHandler(documentUri).sendCommand(cmd, token);
         });
     }
     getItemInfoFromHoverResult(data, currentWord) {
@@ -123,7 +123,7 @@ class ItemInfoSource {
                 infos.push(new LanguageItemInfo(tooltip, item.description, new vscode.MarkdownString(signature)));
                 return;
             }
-            if (item.text) {
+            if (item.text) { // Most probably variable type
                 const code = currentWord && currentWord.length > 0
                     ? `${currentWord}: ${item.text}`
                     : item.text;

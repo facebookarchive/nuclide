@@ -30,7 +30,7 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
         super(name, serviceContainer, cachePerWorkspace);
         this.searchPathsProvider = searchPathsProvider;
         this.virtualEnvMgr = serviceContainer.get(types_2.IVirtualEnvironmentManager);
-        this.versionProvider = serviceContainer.get(contracts_1.IInterpreterVersionService);
+        this.helper = serviceContainer.get(contracts_1.IInterpreterHelper);
         this.fileSystem = serviceContainer.get(types_1.IFileSystem);
     }
     // tslint:disable-next-line:no-empty
@@ -41,18 +41,19 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
     suggestionsFromKnownVenvs(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const searchPaths = this.searchPathsProvider.getSearchPaths(resource);
-            return Promise.all(searchPaths.map(dir => this.lookForInterpretersInVenvs(dir)))
+            return Promise.all(searchPaths.map(dir => this.lookForInterpretersInVenvs(dir, resource)))
                 .then(listOfInterpreters => _.flatten(listOfInterpreters));
         });
     }
-    lookForInterpretersInVenvs(pathToCheck) {
+    lookForInterpretersInVenvs(pathToCheck, resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.fileSystem.getSubDirectoriesAsync(pathToCheck)
+            return this.fileSystem.getSubDirectories(pathToCheck)
                 .then(subDirs => Promise.all(this.getProspectiveDirectoriesForLookup(subDirs)))
                 .then(dirs => dirs.filter(dir => dir.length > 0))
                 .then(dirs => Promise.all(dirs.map(helpers_1.lookForInterpretersInDirectory)))
                 .then(pathsWithInterpreters => _.flatten(pathsWithInterpreters))
                 .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter))))
+                .then(interpreters => interpreters.filter(interpreter => !!interpreter).map(interpreter => interpreter))
                 .catch((err) => {
                 console.error('Python Extension (lookForInterpretersInVenvs):', err);
                 // Ignore exceptions.
@@ -63,7 +64,7 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
     getProspectiveDirectoriesForLookup(subDirs) {
         const platform = this.serviceContainer.get(types_1.IPlatformService);
         const dirToLookFor = platform.virtualEnvBinName;
-        return subDirs.map(subDir => this.fileSystem.getSubDirectoriesAsync(subDir)
+        return subDirs.map(subDir => this.fileSystem.getSubDirectories(subDir)
             .then(dirs => {
             const scriptOrBinDirs = dirs.filter(dir => {
                 const folderName = path.basename(dir);
@@ -80,16 +81,16 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
     getVirtualEnvDetails(interpreter) {
         return __awaiter(this, void 0, void 0, function* () {
             return Promise.all([
-                this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
-                this.virtualEnvMgr.getEnvironmentName(interpreter)
+                this.helper.getInterpreterInformation(interpreter),
+                this.virtualEnvMgr.getEnvironmentName(interpreter),
+                this.virtualEnvMgr.getEnvironmentType(interpreter)
             ])
-                .then(([displayName, virtualEnvName]) => {
+                .then(([details, virtualEnvName, type]) => {
+                if (!details) {
+                    return;
+                }
                 const virtualEnvSuffix = virtualEnvName.length ? virtualEnvName : this.getVirtualEnvironmentRootDirectory(interpreter);
-                return {
-                    displayName: `${displayName} (${virtualEnvSuffix})`.trim(),
-                    path: interpreter,
-                    type: virtualEnvName.length > 0 ? contracts_1.InterpreterType.VirtualEnv : contracts_1.InterpreterType.Unknown
-                };
+                return Object.assign({}, details, { displayName: `${details.version} (${virtualEnvSuffix})`.trim(), envName: virtualEnvName, type: type });
             });
         });
     }

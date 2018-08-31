@@ -21,19 +21,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const types_1 = require("../../ioc/types");
-const types_2 = require("../variables/types");
+const types_2 = require("../types");
 const pythonProcess_1 = require("./pythonProcess");
+const types_3 = require("./types");
 let PythonExecutionFactory = class PythonExecutionFactory {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
-        this.envVarsService = serviceContainer.get(types_2.IEnvironmentVariablesProvider);
+        this.processServiceFactory = serviceContainer.get(types_3.IProcessServiceFactory);
+        this.configService = serviceContainer.get(types_2.IConfigurationService);
     }
-    create(resource) {
+    create(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.envVarsService.getEnvironmentVariables(resource)
-                .then(customEnvVars => {
-                return new pythonProcess_1.PythonExecutionService(this.serviceContainer, customEnvVars, resource);
-            });
+            const pythonPath = options.pythonPath ? options.pythonPath : this.configService.getSettings(options.resource).pythonPath;
+            const processService = yield this.processServiceFactory.create(options.resource);
+            return new pythonProcess_1.PythonExecutionService(this.serviceContainer, processService, pythonPath);
         });
     }
 };

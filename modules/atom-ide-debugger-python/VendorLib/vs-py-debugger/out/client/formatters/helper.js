@@ -14,16 +14,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const types_1 = require("../common/types");
-const types_2 = require("../common/types");
-const types_3 = require("../ioc/types");
+const types_2 = require("../ioc/types");
 let FormatterHelper = class FormatterHelper {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
     }
     translateToId(formatter) {
         switch (formatter) {
-            case types_2.Product.autopep8: return 'autopep8';
-            case types_2.Product.yapf: return 'yapf';
+            case types_1.Product.autopep8: return 'autopep8';
+            case types_1.Product.black: return 'black';
+            case types_1.Product.yapf: return 'yapf';
             default: {
                 throw new Error(`Unrecognized Formatter '${formatter}'`);
             }
@@ -44,7 +44,6 @@ let FormatterHelper = class FormatterHelper {
         args = args.concat(customArgs);
         let moduleName;
         // If path information is not available, then treat it as a module,
-        // except for prospector as that needs to be run as an executable (it's a Python package).
         if (path.basename(execPath) === execPath) {
             moduleName = execPath;
         }
@@ -53,7 +52,7 @@ let FormatterHelper = class FormatterHelper {
 };
 FormatterHelper = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_3.IServiceContainer))
+    __param(0, inversify_1.inject(types_2.IServiceContainer))
 ], FormatterHelper);
 exports.FormatterHelper = FormatterHelper;
 //# sourceMappingURL=helper.js.map

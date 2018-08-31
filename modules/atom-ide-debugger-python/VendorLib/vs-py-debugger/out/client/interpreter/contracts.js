@@ -16,12 +16,16 @@ exports.IInterpreterLocatorService = Symbol('IInterpreterLocatorService');
 exports.ICondaService = Symbol('ICondaService');
 var InterpreterType;
 (function (InterpreterType) {
-    InterpreterType[InterpreterType["Unknown"] = 1] = "Unknown";
-    InterpreterType[InterpreterType["Conda"] = 2] = "Conda";
-    InterpreterType[InterpreterType["VirtualEnv"] = 4] = "VirtualEnv";
+    InterpreterType["Unknown"] = "Unknown";
+    InterpreterType["Conda"] = "Conda";
+    InterpreterType["VirtualEnv"] = "VirtualEnv";
+    InterpreterType["PipEnv"] = "PipEnv";
+    InterpreterType["Pyenv"] = "Pyenv";
+    InterpreterType["Venv"] = "Venv";
 })(InterpreterType = exports.InterpreterType || (exports.InterpreterType = {}));
 exports.IInterpreterService = Symbol('IInterpreterService');
 exports.IInterpreterDisplay = Symbol('IInterpreterDisplay');
 exports.IShebangCodeLensProvider = Symbol('IShebangCodeLensProvider');
 exports.IInterpreterHelper = Symbol('IInterpreterHelper');
+exports.IPipEnvService = Symbol('IPipEnvService');
 //# sourceMappingURL=contracts.js.map

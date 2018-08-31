@@ -85,10 +85,9 @@ let InterpreterSelector = class InterpreterSelector {
     removeDuplicates(interpreters) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = [];
-            yield Promise.all(interpreters.map((item) => __awaiter(this, void 0, void 0, function* () { return item.realPath = yield this.fileSystem.getRealPathAsync(item.path); })));
             interpreters.forEach(x => {
                 if (result.findIndex(a => a.displayName === x.displayName
-                    && a.type === x.type && this.fileSystem.arePathsSame(a.realPath, x.realPath)) < 0) {
+                    && a.type === x.type && this.fileSystem.arePathsSame(path.dirname(a.path), path.dirname(x.path))) < 0) {
                     result.push(x);
                 }
             });

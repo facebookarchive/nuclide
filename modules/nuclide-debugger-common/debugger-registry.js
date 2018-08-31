@@ -15,10 +15,10 @@ import fs from 'fs';
 
 import type {VSAdapterExecutableInfo, VsAdapterType} from './types';
 
-type AdapterInfo = {
+type AdapterInfo = {|
   executable: VSAdapterExecutableInfo,
   root: string,
-};
+|};
 
 const modulesPath = nuclideUri.dirname(__dirname);
 

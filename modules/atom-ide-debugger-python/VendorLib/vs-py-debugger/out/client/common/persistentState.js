@@ -22,17 +22,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const types_1 = require("./types");
 class PersistentState {
-    constructor(storage, key, defaultValue) {
+    constructor(storage, key, defaultValue, expiryDurationMs) {
         this.storage = storage;
         this.key = key;
         this.defaultValue = defaultValue;
+        this.expiryDurationMs = expiryDurationMs;
     }
     get value() {
-        return this.storage.get(this.key, this.defaultValue);
+        if (this.expiryDurationMs) {
+            const cachedData = this.storage.get(this.key, { data: this.defaultValue });
+            if (!cachedData || !cachedData.expiry || cachedData.expiry < Date.now()) {
+                return this.defaultValue;
+            }
+            else {
+                return cachedData.data;
+            }
+        }
+        else {
+            return this.storage.get(this.key, this.defaultValue);
+        }
     }
     updateValue(newValue) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.storage.update(this.key, newValue);
+            if (this.expiryDurationMs) {
+                yield this.storage.update(this.key, { data: newValue, expiry: Date.now() + this.expiryDurationMs });
+            }
+            else {
+                yield this.storage.update(this.key, newValue);
+            }
         });
     }
 }
@@ -41,11 +58,11 @@ let PersistentStateFactory = class PersistentStateFactory {
         this.globalState = globalState;
         this.workspaceState = workspaceState;
     }
-    createGlobalPersistentState(key, defaultValue) {
-        return new PersistentState(this.globalState, key, defaultValue);
+    createGlobalPersistentState(key, defaultValue, expiryDurationMs) {
+        return new PersistentState(this.globalState, key, defaultValue, expiryDurationMs);
     }
-    createWorkspacePersistentState(key, defaultValue) {
-        return new PersistentState(this.workspaceState, key, defaultValue);
+    createWorkspacePersistentState(key, defaultValue, expiryDurationMs) {
+        return new PersistentState(this.workspaceState, key, defaultValue, expiryDurationMs);
     }
 };
 PersistentStateFactory = __decorate([

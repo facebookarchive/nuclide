@@ -12,6 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = require("os");
 const path = require("path");
+require("../common/extensions");
 const types_1 = require("../common/platform/types");
 const types_2 = require("../common/types");
 const baseLinter_1 = require("./baseLinter");
@@ -97,30 +98,30 @@ class Pylint extends baseLinter_1.BaseLinter {
             if (process.env.PYLINTRC) {
                 return true;
             }
-            if ((yield fs.fileExistsAsync(path.join(folder, pylintrc))) || (yield fs.fileExistsAsync(path.join(folder, dotPylintrc)))) {
+            if ((yield fs.fileExists(path.join(folder, pylintrc))) || (yield fs.fileExists(path.join(folder, dotPylintrc)))) {
                 return true;
             }
             let current = folder;
             let above = path.dirname(folder);
             do {
-                if (!(yield fs.fileExistsAsync(path.join(current, '__init__.py')))) {
+                if (!(yield fs.fileExists(path.join(current, '__init__.py')))) {
                     break;
                 }
-                if ((yield fs.fileExistsAsync(path.join(current, pylintrc))) || (yield fs.fileExistsAsync(path.join(current, dotPylintrc)))) {
+                if ((yield fs.fileExists(path.join(current, pylintrc))) || (yield fs.fileExists(path.join(current, dotPylintrc)))) {
                     return true;
                 }
                 current = above;
                 above = path.dirname(above);
             } while (!fs.arePathsSame(current, above));
             const home = os.homedir();
-            if (yield fs.fileExistsAsync(path.join(home, dotPylintrc))) {
+            if (yield fs.fileExists(path.join(home, dotPylintrc))) {
                 return true;
             }
-            if (yield fs.fileExistsAsync(path.join(home, '.config', pylintrc))) {
+            if (yield fs.fileExists(path.join(home, '.config', pylintrc))) {
                 return true;
             }
             if (!platformService.isWindows) {
-                if (yield fs.fileExistsAsync(path.join('/etc', pylintrc))) {
+                if (yield fs.fileExists(path.join('/etc', pylintrc))) {
                     return true;
                 }
             }
@@ -134,7 +135,7 @@ class Pylint extends baseLinter_1.BaseLinter {
             let current = folder;
             let above = path.dirname(current);
             do {
-                if ((yield fs.fileExistsAsync(path.join(current, pylintrc))) || (yield fs.fileExistsAsync(path.join(current, dotPylintrc)))) {
+                if ((yield fs.fileExists(path.join(current, pylintrc))) || (yield fs.fileExists(path.join(current, dotPylintrc)))) {
                     return true;
                 }
                 current = above;

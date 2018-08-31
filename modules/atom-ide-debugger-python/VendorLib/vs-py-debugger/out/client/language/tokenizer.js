@@ -22,9 +22,9 @@ class Token extends types_1.TextRange {
 }
 class Tokenizer {
     constructor() {
+        this.cs = new characterStream_1.CharacterStream('');
         this.tokens = [];
-        this.floatRegex = /[-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?/;
-        //this.floatRegex.compile();
+        this.mode = types_1.TokenizerMode.Full;
     }
     tokenize(text, start, length, mode) {
         if (start === undefined) {
@@ -60,11 +60,18 @@ class Tokenizer {
             this.cs.moveNext();
         }
     }
+    // tslint:disable-next-line:cyclomatic-complexity
     handleCharacter() {
-        const quoteType = this.getQuoteType();
-        if (quoteType !== QuoteType.None) {
-            this.handleString(quoteType);
-            return true;
+        // f-strings, b-strings, etc
+        const stringPrefixLength = this.getStringPrefixLength();
+        if (stringPrefixLength >= 0) {
+            // Indeed a string
+            this.cs.advance(stringPrefixLength);
+            const quoteType = this.getQuoteType();
+            if (quoteType !== QuoteType.None) {
+                this.handleString(quoteType, stringPrefixLength);
+                return true;
+            }
         }
         if (this.cs.currentChar === 35 /* Hash */) {
             this.handleComment();
@@ -101,15 +108,15 @@ class Tokenizer {
             case 58 /* Colon */:
                 this.tokens.push(new Token(types_1.TokenType.Colon, this.cs.position, 1));
                 break;
-            case 64 /* At */:
-            case 46 /* Period */:
-                this.tokens.push(new Token(types_1.TokenType.Operator, this.cs.position, 1));
-                break;
             default:
                 if (this.isPossibleNumber()) {
                     if (this.tryNumber()) {
                         return true;
                     }
+                }
+                if (this.cs.currentChar === 46 /* Period */) {
+                    this.tokens.push(new Token(types_1.TokenType.Operator, this.cs.position, 1));
+                    break;
                 }
                 if (!this.tryIdentifier()) {
                     if (!this.tryOperator()) {
@@ -136,78 +143,122 @@ class Tokenizer {
         }
         return false;
     }
+    // tslint:disable-next-line:cyclomatic-complexity
     isPossibleNumber() {
-        if (this.cs.currentChar === 45 /* Hyphen */ || this.cs.currentChar === 43 /* Plus */) {
-            // Next character must be decimal or a dot otherwise
-            // it is not a number. No whitespace is allowed.
-            if (characters_1.isDecimal(this.cs.nextChar) || this.cs.nextChar === 46 /* Period */) {
-                // Check what previous token is, if any
-                if (this.tokens.length === 0) {
-                    // At the start of the file this can only be a number
-                    return true;
-                }
-                const prev = this.tokens[this.tokens.length - 1];
-                if (prev.type === types_1.TokenType.OpenBrace
-                    || prev.type === types_1.TokenType.OpenBracket
-                    || prev.type === types_1.TokenType.Comma
-                    || prev.type === types_1.TokenType.Semicolon
-                    || prev.type === types_1.TokenType.Operator) {
-                    return true;
-                }
-            }
-            return false;
-        }
         if (characters_1.isDecimal(this.cs.currentChar)) {
             return true;
         }
         if (this.cs.currentChar === 46 /* Period */ && characters_1.isDecimal(this.cs.nextChar)) {
             return true;
         }
+        const next = (this.cs.currentChar === 45 /* Hyphen */ || this.cs.currentChar === 43 /* Plus */) ? 1 : 0;
+        // Next character must be decimal or a dot otherwise
+        // it is not a number. No whitespace is allowed.
+        if (characters_1.isDecimal(this.cs.lookAhead(next)) || this.cs.lookAhead(next) === 46 /* Period */) {
+            // Check what previous token is, if any
+            if (this.tokens.length === 0) {
+                // At the start of the file this can only be a number
+                return true;
+            }
+            const prev = this.tokens[this.tokens.length - 1];
+            if (prev.type === types_1.TokenType.OpenBrace
+                || prev.type === types_1.TokenType.OpenBracket
+                || prev.type === types_1.TokenType.Comma
+                || prev.type === types_1.TokenType.Colon
+                || prev.type === types_1.TokenType.Semicolon
+                || prev.type === types_1.TokenType.Operator) {
+                return true;
+            }
+        }
+        if (this.cs.lookAhead(next) === 48 /* _0 */) {
+            const nextNext = this.cs.lookAhead(next + 1);
+            if (nextNext === 120 /* x */ || nextNext === 88 /* X */) {
+                return true;
+            }
+            if (nextNext === 98 /* b */ || nextNext === 66 /* B */) {
+                return true;
+            }
+            if (nextNext === 111 /* o */ || nextNext === 79 /* O */) {
+                return true;
+            }
+        }
         return false;
     }
     // tslint:disable-next-line:cyclomatic-complexity
     tryNumber() {
         const start = this.cs.position;
+        let leadingSign = 0;
+        if (this.cs.currentChar === 45 /* Hyphen */ || this.cs.currentChar === 43 /* Plus */) {
+            this.cs.moveNext(); // Skip leading +/-
+            leadingSign = 1;
+        }
         if (this.cs.currentChar === 48 /* _0 */) {
             let radix = 0;
-            // Try hex
-            if (this.cs.nextChar === 120 /* x */ || this.cs.nextChar === 88 /* X */) {
+            // Try hex => hexinteger: "0" ("x" | "X") (["_"] hexdigit)+
+            if ((this.cs.nextChar === 120 /* x */ || this.cs.nextChar === 88 /* X */) && characters_1.isHex(this.cs.lookAhead(2))) {
                 this.cs.advance(2);
                 while (characters_1.isHex(this.cs.currentChar)) {
                     this.cs.moveNext();
                 }
                 radix = 16;
             }
-            // Try binary
-            if (this.cs.nextChar === 98 /* b */ || this.cs.nextChar === 66 /* B */) {
+            // Try binary => bininteger: "0" ("b" | "B") (["_"] bindigit)+
+            if ((this.cs.nextChar === 98 /* b */ || this.cs.nextChar === 66 /* B */) && characters_1.isBinary(this.cs.lookAhead(2))) {
                 this.cs.advance(2);
                 while (characters_1.isBinary(this.cs.currentChar)) {
                     this.cs.moveNext();
                 }
                 radix = 2;
             }
-            // Try octal
-            if (this.cs.nextChar === 111 /* o */ || this.cs.nextChar === 79 /* O */) {
+            // Try octal => octinteger: "0" ("o" | "O") (["_"] octdigit)+
+            if ((this.cs.nextChar === 111 /* o */ || this.cs.nextChar === 79 /* O */) && characters_1.isOctal(this.cs.lookAhead(2))) {
                 this.cs.advance(2);
                 while (characters_1.isOctal(this.cs.currentChar)) {
                     this.cs.moveNext();
                 }
                 radix = 8;
             }
-            const text = this.cs.getText().substr(start, this.cs.position - start);
-            if (radix > 0 && parseInt(text.substr(2), radix)) {
-                this.tokens.push(new Token(types_1.TokenType.Number, start, text.length));
+            if (radix > 0) {
+                const text = this.cs.getText().substr(start + leadingSign, this.cs.position - start - leadingSign);
+                if (!isNaN(parseInt(text, radix))) {
+                    this.tokens.push(new Token(types_1.TokenType.Number, start, text.length + leadingSign));
+                    return true;
+                }
+            }
+        }
+        let decimal = false;
+        // Try decimal int =>
+        //    decinteger: nonzerodigit (["_"] digit)* | "0" (["_"] "0")*
+        //    nonzerodigit: "1"..."9"
+        //    digit: "0"..."9"
+        if (this.cs.currentChar >= 49 /* _1 */ && this.cs.currentChar <= 57 /* _9 */) {
+            while (characters_1.isDecimal(this.cs.currentChar)) {
+                this.cs.moveNext();
+            }
+            decimal = this.cs.currentChar !== 46 /* Period */ && this.cs.currentChar !== 101 /* e */ && this.cs.currentChar !== 69 /* E */;
+        }
+        if (this.cs.currentChar === 48 /* _0 */) { // "0" (["_"] "0")*
+            while (this.cs.currentChar === 48 /* _0 */ || this.cs.currentChar === 95 /* Underscore */) {
+                this.cs.moveNext();
+            }
+            decimal = this.cs.currentChar !== 46 /* Period */ && this.cs.currentChar !== 101 /* e */ && this.cs.currentChar !== 69 /* E */;
+        }
+        if (decimal) {
+            const text = this.cs.getText().substr(start + leadingSign, this.cs.position - start - leadingSign);
+            if (!isNaN(parseInt(text, 10))) {
+                this.tokens.push(new Token(types_1.TokenType.Number, start, text.length + leadingSign));
                 return true;
             }
         }
-        if (characters_1.isDecimal(this.cs.currentChar) ||
-            this.cs.currentChar === 43 /* Plus */ || this.cs.currentChar === 45 /* Hyphen */ || this.cs.currentChar === 46 /* Period */) {
-            const candidate = this.cs.getText().substr(this.cs.position);
-            const re = this.floatRegex.exec(candidate);
-            if (re && re.length > 0 && re[0] && candidate.startsWith(re[0])) {
-                this.tokens.push(new Token(types_1.TokenType.Number, start, re[0].length));
-                this.cs.position = start + re[0].length;
-                return true;
+        // Floating point. Sign was already skipped over.
+        if ((this.cs.currentChar >= 48 /* _0 */ && this.cs.currentChar <= 57 /* _9 */) ||
+            (this.cs.currentChar === 46 /* Period */ && this.cs.nextChar >= 48 /* _0 */ && this.cs.nextChar <= 57 /* _9 */)) {
+            if (this.skipFloatingPointCandidate(false)) {
+                const text = this.cs.getText().substr(start, this.cs.position - start);
+                if (!isNaN(parseFloat(text))) {
+                    this.tokens.push(new Token(types_1.TokenType.Number, start, this.cs.position - start));
+                    return true;
+                }
             }
         }
         this.cs.position = start;
@@ -219,13 +270,17 @@ class Tokenizer {
         const nextChar = this.cs.nextChar;
         switch (this.cs.currentChar) {
             case 43 /* Plus */:
-            case 45 /* Hyphen */:
             case 38 /* Ampersand */:
             case 124 /* Bar */:
             case 94 /* Caret */:
             case 61 /* Equal */:
             case 33 /* ExclamationMark */:
+            case 37 /* Percent */:
+            case 126 /* Tilde */:
                 length = nextChar === 61 /* Equal */ ? 2 : 1;
+                break;
+            case 45 /* Hyphen */:
+                length = nextChar === 61 /* Equal */ || nextChar === 62 /* Greater */ ? 2 : 1;
                 break;
             case 42 /* Asterisk */:
                 if (nextChar === 42 /* Asterisk */) {
@@ -251,7 +306,7 @@ class Tokenizer {
                     length = this.cs.lookAhead(2) === 61 /* Equal */ ? 3 : 2;
                 }
                 else {
-                    length = 1;
+                    length = nextChar === 61 /* Equal */ ? 2 : 1;
                 }
                 break;
             case 62 /* Greater */:
@@ -259,11 +314,11 @@ class Tokenizer {
                     length = this.cs.lookAhead(2) === 61 /* Equal */ ? 3 : 2;
                 }
                 else {
-                    length = 1;
+                    length = nextChar === 61 /* Equal */ ? 2 : 1;
                 }
                 break;
             case 64 /* At */:
-                length = nextChar === 61 /* Equal */ ? 2 : 0;
+                length = nextChar === 61 /* Equal */ ? 2 : 1;
                 break;
             default:
                 return false;
@@ -287,6 +342,39 @@ class Tokenizer {
         this.cs.skipToEol();
         this.tokens.push(new Token(types_1.TokenType.Comment, start, this.cs.position - start));
     }
+    // tslint:disable-next-line:cyclomatic-complexity
+    getStringPrefixLength() {
+        if (this.cs.currentChar === 39 /* SingleQuote */ || this.cs.currentChar === 34 /* DoubleQuote */) {
+            return 0; // Simple string, no prefix
+        }
+        if (this.cs.nextChar === 39 /* SingleQuote */ || this.cs.nextChar === 34 /* DoubleQuote */) {
+            switch (this.cs.currentChar) {
+                case 102 /* f */:
+                case 70 /* F */:
+                case 114 /* r */:
+                case 82 /* R */:
+                case 98 /* b */:
+                case 66 /* B */:
+                case 117 /* u */:
+                case 85 /* U */:
+                    return 1; // single-char prefix like u"" or r""
+                default:
+                    break;
+            }
+        }
+        if (this.cs.lookAhead(2) === 39 /* SingleQuote */ || this.cs.lookAhead(2) === 34 /* DoubleQuote */) {
+            const prefix = this.cs.getText().substr(this.cs.position, 2).toLowerCase();
+            switch (prefix) {
+                case 'rf':
+                case 'ur':
+                case 'br':
+                    return 2;
+                default:
+                    break;
+            }
+        }
+        return -1;
+    }
     getQuoteType() {
         if (this.cs.currentChar === 39 /* SingleQuote */) {
             return this.cs.nextChar === 39 /* SingleQuote */ && this.cs.lookAhead(2) === 39 /* SingleQuote */
@@ -300,8 +388,8 @@ class Tokenizer {
         }
         return QuoteType.None;
     }
-    handleString(quoteType) {
-        const start = this.cs.position;
+    handleString(quoteType, stringPrefixLength) {
+        const start = this.cs.position - stringPrefixLength;
         if (quoteType === QuoteType.Single || quoteType === QuoteType.Double) {
             this.cs.moveNext();
             this.skipToSingleEndQuote(quoteType === QuoteType.Single
@@ -318,6 +406,9 @@ class Tokenizer {
     }
     skipToSingleEndQuote(quote) {
         while (!this.cs.isEndOfStream()) {
+            if (this.cs.currentChar === 10 /* LineFeed */ || this.cs.currentChar === 13 /* CarriageReturn */) {
+                return; // Unterminated single-line string
+            }
             if (this.cs.currentChar === 92 /* Backslash */ && this.cs.nextChar === quote) {
                 this.cs.advance(2);
                 continue;
@@ -334,6 +425,33 @@ class Tokenizer {
             this.cs.moveNext();
         }
         this.cs.advance(3);
+    }
+    skipFloatingPointCandidate(allowSign) {
+        // Determine end of the potential floating point number
+        const start = this.cs.position;
+        this.skipFractionalNumber(allowSign);
+        if (this.cs.position > start) {
+            if (this.cs.currentChar === 101 /* e */ || this.cs.currentChar === 69 /* E */) {
+                this.cs.moveNext(); // Optional exponent sign
+            }
+            this.skipDecimalNumber(true); // skip exponent value
+        }
+        return this.cs.position > start;
+    }
+    skipFractionalNumber(allowSign) {
+        this.skipDecimalNumber(allowSign);
+        if (this.cs.currentChar === 46 /* Period */) {
+            this.cs.moveNext(); // Optional period
+        }
+        this.skipDecimalNumber(false);
+    }
+    skipDecimalNumber(allowSign) {
+        if (allowSign && (this.cs.currentChar === 45 /* Hyphen */ || this.cs.currentChar === 43 /* Plus */)) {
+            this.cs.moveNext(); // Optional sign
+        }
+        while (characters_1.isDecimal(this.cs.currentChar)) {
+            this.cs.moveNext(); // skip integer part
+        }
     }
 }
 exports.Tokenizer = Tokenizer;

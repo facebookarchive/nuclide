@@ -21,8 +21,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const types_1 = require("../../ioc/types");
-const types_2 = require("../variables/types");
-const types_3 = require("./types");
+const types_2 = require("./types");
 let PythonToolExecutionService = class PythonToolExecutionService {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
@@ -33,13 +32,12 @@ let PythonToolExecutionService = class PythonToolExecutionService {
                 throw new Error('Environment variables are not supported');
             }
             if (executionInfo.moduleName && executionInfo.moduleName.length > 0) {
-                const pythonExecutionService = yield this.serviceContainer.get(types_3.IPythonExecutionFactory).create(resource);
+                const pythonExecutionService = yield this.serviceContainer.get(types_2.IPythonExecutionFactory).create({ resource });
                 return pythonExecutionService.execModuleObservable(executionInfo.moduleName, executionInfo.args, options);
             }
             else {
-                const env = yield this.serviceContainer.get(types_2.IEnvironmentVariablesProvider).getEnvironmentVariables(resource);
-                const processService = this.serviceContainer.get(types_3.IProcessService);
-                return processService.execObservable(executionInfo.execPath, executionInfo.args, Object.assign({}, options, { env }));
+                const processService = yield this.serviceContainer.get(types_2.IProcessServiceFactory).create(resource);
+                return processService.execObservable(executionInfo.execPath, executionInfo.args, Object.assign({}, options));
             }
         });
     }
@@ -49,13 +47,12 @@ let PythonToolExecutionService = class PythonToolExecutionService {
                 throw new Error('Environment variables are not supported');
             }
             if (executionInfo.moduleName && executionInfo.moduleName.length > 0) {
-                const pythonExecutionService = yield this.serviceContainer.get(types_3.IPythonExecutionFactory).create(resource);
+                const pythonExecutionService = yield this.serviceContainer.get(types_2.IPythonExecutionFactory).create({ resource });
                 return pythonExecutionService.execModule(executionInfo.moduleName, executionInfo.args, options);
             }
             else {
-                const env = yield this.serviceContainer.get(types_2.IEnvironmentVariablesProvider).getEnvironmentVariables(resource);
-                const processService = this.serviceContainer.get(types_3.IProcessService);
-                return processService.exec(executionInfo.execPath, executionInfo.args, Object.assign({}, options, { env }));
+                const processService = yield this.serviceContainer.get(types_2.IProcessServiceFactory).create(resource);
+                return processService.exec(executionInfo.execPath, executionInfo.args, Object.assign({}, options));
             }
         });
     }

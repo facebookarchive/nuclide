@@ -5,4 +5,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IModuleInstaller = Symbol('IModuleInstaller');
 exports.IPythonInstallation = Symbol('IPythonInstallation');
 exports.IInstallationChannelManager = Symbol('IInstallationChannelManager');
+exports.IProductService = Symbol('IProductService');
+exports.IProductPathService = Symbol('IProductPathService');
 //# sourceMappingURL=types.js.map

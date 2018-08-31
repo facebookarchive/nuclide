@@ -8,6 +8,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const _ = require("lodash");
@@ -20,10 +28,10 @@ const cacheableLocatorService_1 = require("./cacheableLocatorService");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify = require('untildify');
 let KnownPathsService = class KnownPathsService extends cacheableLocatorService_1.CacheableLocatorService {
-    constructor(knownSearchPaths, versionProvider, serviceContainer) {
+    constructor(knownSearchPaths, helper, serviceContainer) {
         super('KnownPathsService', serviceContainer);
         this.knownSearchPaths = knownSearchPaths;
-        this.versionProvider = versionProvider;
+        this.helper = helper;
     }
     // tslint:disable-next-line:no-empty
     dispose() { }
@@ -33,18 +41,19 @@ let KnownPathsService = class KnownPathsService extends cacheableLocatorService_
     suggestionsFromKnownPaths() {
         const promises = this.knownSearchPaths.map(dir => this.getInterpretersInDirectory(dir));
         return Promise.all(promises)
+            // tslint:disable-next-line:underscore-consistent-invocation
             .then(listOfInterpreters => _.flatten(listOfInterpreters))
             .then(interpreters => interpreters.filter(item => item.length > 0))
-            .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))));
+            .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))))
+            .then(interpreters => interpreters.filter(interpreter => !!interpreter).map(interpreter => interpreter));
     }
     getInterpreterDetails(interpreter) {
-        return this.versionProvider.getVersion(interpreter, path.basename(interpreter))
-            .then(displayName => {
-            return {
-                displayName,
-                path: interpreter,
-                type: contracts_1.InterpreterType.Unknown
-            };
+        return __awaiter(this, void 0, void 0, function* () {
+            const details = yield this.helper.getInterpreterInformation(interpreter);
+            if (!details) {
+                return;
+            }
+            return Object.assign({}, details, { path: interpreter, type: contracts_1.InterpreterType.Unknown });
         });
     }
     getInterpretersInDirectory(dir) {
@@ -55,7 +64,7 @@ let KnownPathsService = class KnownPathsService extends cacheableLocatorService_
 KnownPathsService = __decorate([
     inversify_1.injectable(),
     __param(0, inversify_1.inject(contracts_1.IKnownSearchPathsForInterpreters)),
-    __param(1, inversify_1.inject(contracts_1.IInterpreterVersionService)),
+    __param(1, inversify_1.inject(contracts_1.IInterpreterHelper)),
     __param(2, inversify_1.inject(types_1.IServiceContainer))
 ], KnownPathsService);
 exports.KnownPathsService = KnownPathsService;

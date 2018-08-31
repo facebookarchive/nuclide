@@ -8,11 +8,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
 const types_1 = require("../common/application/types");
-const types_2 = require("../ioc/types");
+const types_2 = require("../common/platform/types");
+const types_3 = require("../common/process/types");
+const types_4 = require("../common/types");
+const types_5 = require("../ioc/types");
+const EXPITY_DURATION = 24 * 60 * 60 * 1000;
 function getFirstNonEmptyLineFromMultilineString(stdout) {
     if (!stdout) {
         return '';
@@ -24,11 +36,13 @@ exports.getFirstNonEmptyLineFromMultilineString = getFirstNonEmptyLineFromMultil
 let InterpreterHelper = class InterpreterHelper {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
+        this.persistentFactory = this.serviceContainer.get(types_4.IPersistentStateFactory);
+        this.fs = this.serviceContainer.get(types_2.IFileSystem);
     }
     getActiveWorkspaceUri() {
         const workspaceService = this.serviceContainer.get(types_1.IWorkspaceService);
         const documentManager = this.serviceContainer.get(types_1.IDocumentManager);
-        if (!Array.isArray(workspaceService.workspaceFolders) || workspaceService.workspaceFolders.length === 0) {
+        if (!workspaceService.hasWorkspaceFolders) {
             return;
         }
         if (workspaceService.workspaceFolders.length === 1) {
@@ -41,10 +55,33 @@ let InterpreterHelper = class InterpreterHelper {
             }
         }
     }
+    getInterpreterInformation(pythonPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const fileHash = yield this.fs.getFileHash(pythonPath).catch(() => '');
+            const store = this.persistentFactory.createGlobalPersistentState(pythonPath, undefined, EXPITY_DURATION);
+            if (store.value && store.value.fileHash === fileHash) {
+                return store.value;
+            }
+            const processService = yield this.serviceContainer.get(types_3.IPythonExecutionFactory).create({ pythonPath });
+            try {
+                const info = yield processService.getInterpreterInformation().catch(() => undefined);
+                if (!info) {
+                    return;
+                }
+                const details = Object.assign({}, (info), { fileHash });
+                yield store.updateValue(details);
+                return details;
+            }
+            catch (ex) {
+                console.error(`Failed to get interpreter information for '${pythonPath}'`, ex);
+                return {};
+            }
+        });
+    }
 };
 InterpreterHelper = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_2.IServiceContainer))
+    __param(0, inversify_1.inject(types_5.IServiceContainer))
 ], InterpreterHelper);
 exports.InterpreterHelper = InterpreterHelper;
 //# sourceMappingURL=helpers.js.map

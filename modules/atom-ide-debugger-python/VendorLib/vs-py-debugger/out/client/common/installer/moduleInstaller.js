@@ -23,11 +23,10 @@ const inversify_1 = require("inversify");
 const path = require("path");
 const vscode = require("vscode");
 const contracts_1 = require("../../interpreter/contracts");
-const configSettings_1 = require("../configSettings");
 const constants_1 = require("../constants");
-const types_1 = require("../platform/types");
-const types_2 = require("../terminal/types");
-const types_3 = require("../types");
+const core_utils_1 = require("../core.utils");
+const types_1 = require("../terminal/types");
+const types_2 = require("../types");
 let ModuleInstaller = class ModuleInstaller {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
@@ -35,17 +34,15 @@ let ModuleInstaller = class ModuleInstaller {
     installModule(name, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const executionInfo = yield this.getExecutionInfo(name, resource);
-            const terminalService = this.serviceContainer.get(types_2.ITerminalServiceFactory).getTerminalService();
+            const terminalService = this.serviceContainer.get(types_1.ITerminalServiceFactory).getTerminalService(resource);
+            const executionInfoArgs = yield this.processInstallArgs(executionInfo.args, resource);
             if (executionInfo.moduleName) {
-                const settings = configSettings_1.PythonSettings.getInstance(resource);
-                const args = ['-m', 'pip'].concat(executionInfo.args);
+                const configService = this.serviceContainer.get(types_2.IConfigurationService);
+                const settings = configService.getSettings(resource);
+                const args = ['-m', executionInfo.moduleName].concat(executionInfoArgs);
                 const pythonPath = settings.pythonPath;
-                const locator = this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.INTERPRETER_LOCATOR_SERVICE);
-                const fileSystem = this.serviceContainer.get(types_1.IFileSystem);
-                const interpreters = yield locator.getInterpreters(resource);
-                const currentInterpreter = interpreters.length > 1
-                    ? interpreters.filter(x => fileSystem.arePathsSame(x.path, pythonPath))[0]
-                    : interpreters[0];
+                const interpreterService = this.serviceContainer.get(contracts_1.IInterpreterService);
+                const currentInterpreter = yield interpreterService.getActiveInterpreter(resource);
                 if (!currentInterpreter || currentInterpreter.type !== contracts_1.InterpreterType.Unknown) {
                     yield terminalService.sendCommand(pythonPath, args);
                 }
@@ -62,8 +59,26 @@ let ModuleInstaller = class ModuleInstaller {
                 }
             }
             else {
-                yield terminalService.sendCommand(executionInfo.execPath, executionInfo.args);
+                yield terminalService.sendCommand(executionInfo.execPath, executionInfoArgs);
             }
+        });
+    }
+    processInstallArgs(args, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const indexOfPylint = args.findIndex(arg => arg.toUpperCase() === 'PYLINT');
+            if (indexOfPylint === -1) {
+                return args;
+            }
+            // If installing pylint on python 2.x, then use pylint~=1.9.0
+            const interpreterService = this.serviceContainer.get(contracts_1.IInterpreterService);
+            const currentInterpreter = yield interpreterService.getActiveInterpreter(resource);
+            if (currentInterpreter && currentInterpreter.version_info && currentInterpreter.version_info[0] === 2) {
+                const newArgs = [...args];
+                // This command could be sent to the terminal, hence '<' needs to be escaped for UNIX.
+                newArgs[indexOfPylint] = '"pylint<2.0.0"';
+                return newArgs;
+            }
+            return args;
         });
     }
     isPathWritableAsync(directoryPath) {
@@ -73,7 +88,7 @@ let ModuleInstaller = class ModuleInstaller {
                 fs.open(filePath, fs.constants.O_CREAT | fs.constants.O_RDWR, (error, fd) => {
                     if (!error) {
                         fs.close(fd, (e) => {
-                            fs.unlink(filePath);
+                            fs.unlink(filePath, core_utils_1.noop);
                         });
                     }
                     return resolve(!error);
@@ -85,7 +100,7 @@ let ModuleInstaller = class ModuleInstaller {
         const options = {
             name: 'VS Code Python'
         };
-        const outputChannel = this.serviceContainer.get(types_3.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
+        const outputChannel = this.serviceContainer.get(types_2.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
         const command = `"${execPath.replace(/\\/g, '/')}" ${args.join(' ')}`;
         outputChannel.appendLine('');
         outputChannel.appendLine(`[Elevated] ${command}`);

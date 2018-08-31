@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 const lineFormatter_1 = require("../formatters/lineFormatter");
 const types_1 = require("../language/types");
 const providerUtilities_1 = require("../providers/providerUtilities");
@@ -25,11 +25,11 @@ class OnEnterFormatter {
                 return [];
             }
         }
-        const formatted = this.formatter.formatLine(prevLine.text);
+        const formatted = this.formatter.formatLine(document, prevLine.lineNumber);
         if (formatted === prevLine.text) {
             return [];
         }
-        return [new vscode.TextEdit(prevLine.range, formatted)];
+        return [new vscode_1.TextEdit(prevLine.range, formatted)];
     }
 }
 exports.OnEnterFormatter = OnEnterFormatter;

@@ -32,7 +32,6 @@ let InterpreterDisplay = class InterpreterDisplay {
     constructor(serviceContainer) {
         this.interpreterService = serviceContainer.get(contracts_1.IInterpreterService);
         this.virtualEnvMgr = serviceContainer.get(types_5.IVirtualEnvironmentManager);
-        this.versionProvider = serviceContainer.get(contracts_1.IInterpreterVersionService);
         this.fileSystem = serviceContainer.get(types_2.IFileSystem);
         this.configurationService = serviceContainer.get(types_3.IConfigurationService);
         this.helper = serviceContainer.get(contracts_1.IInterpreterHelper);
@@ -72,16 +71,16 @@ let InterpreterDisplay = class InterpreterDisplay {
                 }
             }
             else {
-                const defaultDisplayName = `${path.basename(pythonPath)} [Environment]`;
                 yield Promise.all([
-                    this.fileSystem.fileExistsAsync(pythonPath),
-                    this.versionProvider.getVersion(pythonPath, defaultDisplayName),
+                    this.fileSystem.fileExists(pythonPath),
+                    this.helper.getInterpreterInformation(pythonPath).catch(() => undefined),
                     this.getVirtualEnvironmentName(pythonPath).catch(() => '')
                 ])
-                    .then(([interpreterExists, displayName, virtualEnvName]) => {
+                    .then(([interpreterExists, details, virtualEnvName]) => {
+                    const defaultDisplayName = `${path.basename(pythonPath)} [Environment]`;
                     const dislayNameSuffix = virtualEnvName.length > 0 ? ` (${virtualEnvName})` : '';
-                    this.statusBar.text = `${displayName}${dislayNameSuffix}`;
-                    if (!interpreterExists && displayName === defaultDisplayName && interpreters.length > 0) {
+                    this.statusBar.text = `${details ? details.version : defaultDisplayName}${dislayNameSuffix}`;
+                    if (!interpreterExists && !details && interpreters.length > 0) {
                         this.statusBar.color = 'yellow';
                         this.statusBar.text = '$(alert) Select Python Environment';
                     }

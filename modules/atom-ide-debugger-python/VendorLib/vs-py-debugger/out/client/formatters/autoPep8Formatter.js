@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const productInstaller_1 = require("../common/installer/productInstaller");
+const stopWatch_1 = require("../common/stopWatch");
 const types_1 = require("../common/types");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
-const stopWatch_1 = require("../telemetry/stopWatch");
 const baseFormatter_1 = require("./baseFormatter");
 class AutoPep8Formatter extends baseFormatter_1.BaseFormatter {
     constructor(serviceContainer) {

@@ -17,73 +17,77 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const contracts_1 = require("../../interpreter/contracts");
+const path = require("path");
+const constants_1 = require("../constants");
 const errorUtils_1 = require("../errors/errorUtils");
 const moduleNotInstalledError_1 = require("../errors/moduleNotInstalledError");
 const types_1 = require("../platform/types");
-const types_2 = require("../types");
-const types_3 = require("./types");
 let PythonExecutionService = class PythonExecutionService {
-    constructor(serviceContainer, envVars, resource) {
+    constructor(serviceContainer, procService, pythonPath) {
         this.serviceContainer = serviceContainer;
-        this.envVars = envVars;
-        this.resource = resource;
-        this.procService = serviceContainer.get(types_3.IProcessService);
-        this.configService = serviceContainer.get(types_2.IConfigurationService);
+        this.procService = procService;
+        this.pythonPath = pythonPath;
         this.fileSystem = serviceContainer.get(types_1.IFileSystem);
     }
-    getVersion() {
+    getInterpreterInformation() {
         return __awaiter(this, void 0, void 0, function* () {
-            const versionService = this.serviceContainer.get(contracts_1.IInterpreterVersionService);
-            return versionService.getVersion(this.pythonPath, '');
+            const file = path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'interpreterInfo.py');
+            try {
+                const [version, jsonValue] = yield Promise.all([
+                    this.procService.exec(this.pythonPath, ['--version'], { mergeStdOutErr: true })
+                        .then(output => output.stdout.trim()),
+                    this.procService.exec(this.pythonPath, [file], { mergeStdOutErr: true })
+                        .then(output => output.stdout.trim())
+                ]);
+                const json = JSON.parse(jsonValue);
+                return {
+                    architecture: json.is64Bit ? types_1.Architecture.x64 : types_1.Architecture.x86,
+                    path: this.pythonPath,
+                    version,
+                    sysVersion: json.sysVersion,
+                    version_info: json.versionInfo,
+                    sysPrefix: json.sysPrefix
+                };
+            }
+            catch (ex) {
+                console.error(`Failed to get interpreter information for '${this.pythonPath}'`, ex);
+            }
         });
     }
     getExecutablePath() {
         return __awaiter(this, void 0, void 0, function* () {
             // If we've passed the python file, then return the file.
             // This is because on mac if using the interpreter /usr/bin/python2.7 we can get a different value for the path
-            if (yield this.fileSystem.fileExistsAsync(this.pythonPath)) {
+            if (yield this.fileSystem.fileExists(this.pythonPath)) {
                 return this.pythonPath;
             }
-            return this.procService.exec(this.pythonPath, ['-c', 'import sys;print(sys.executable)'], { env: this.envVars, throwOnStdErr: true })
+            return this.procService.exec(this.pythonPath, ['-c', 'import sys;print(sys.executable)'], { throwOnStdErr: true })
                 .then(output => output.stdout.trim());
         });
     }
     isModuleInstalled(moduleName) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.procService.exec(this.pythonPath, ['-c', `import ${moduleName}`], { env: this.envVars, throwOnStdErr: true })
+            return this.procService.exec(this.pythonPath, ['-c', `import ${moduleName}`], { throwOnStdErr: true })
                 .then(() => true).catch(() => false);
         });
     }
     execObservable(args, options) {
         const opts = Object.assign({}, options);
-        if (this.envVars) {
-            opts.env = this.envVars;
-        }
         return this.procService.execObservable(this.pythonPath, args, opts);
     }
     execModuleObservable(moduleName, args, options) {
         const opts = Object.assign({}, options);
-        if (this.envVars) {
-            opts.env = this.envVars;
-        }
         return this.procService.execObservable(this.pythonPath, ['-m', moduleName, ...args], opts);
     }
     exec(args, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const opts = Object.assign({}, options);
-            if (this.envVars) {
-                opts.env = this.envVars;
-            }
             return this.procService.exec(this.pythonPath, args, opts);
         });
     }
     execModule(moduleName, args, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const opts = Object.assign({}, options);
-            if (this.envVars) {
-                opts.env = this.envVars;
-            }
             const result = yield this.procService.exec(this.pythonPath, ['-m', moduleName, ...args], opts);
             // If a module is not installed we'll have something in stderr.
             if (moduleName && errorUtils_1.ErrorUtils.outputHasModuleNotInstalledError(moduleName, result.stderr)) {
@@ -94,9 +98,6 @@ let PythonExecutionService = class PythonExecutionService {
             }
             return result;
         });
-    }
-    get pythonPath() {
-        return this.configService.getSettings(this.resource).pythonPath;
     }
 };
 PythonExecutionService = __decorate([

@@ -19,6 +19,7 @@ class DebugClientHelper {
             const pathVariableName = this.pathUtils.getPathVariableName();
             // Merge variables from both .env file and env json variables.
             const envFileVars = yield this.envParser.parseFile(args.envFile);
+            // tslint:disable-next-line:no-any
             const debugLaunchEnvVars = (args.env && Object.keys(args.env).length > 0) ? Object.assign({}, args.env) : {};
             const env = envFileVars ? Object.assign({}, envFileVars) : {};
             this.envParser.mergeVariables(debugLaunchEnvVars, env);
@@ -53,6 +54,9 @@ class DebugClientHelper {
             }
             if (!env.hasOwnProperty('PYTHONUNBUFFERED')) {
                 env.PYTHONUNBUFFERED = '1';
+            }
+            if (args.gevent) {
+                env.GEVENT_SUPPORT = 'True'; // this is read in pydevd_constants.py
             }
             return env;
         });

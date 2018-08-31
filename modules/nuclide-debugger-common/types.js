@@ -32,10 +32,10 @@ export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 
 export type DebuggerConfigAction = 'launch' | 'attach';
 
-export type VSAdapterExecutableInfo = {
+export type VSAdapterExecutableInfo = {|
   command: string,
   args: Array<string>,
-};
+|};
 
 export type NativeVsAdapterType = 'native_lldb' | 'native_gdb';
 

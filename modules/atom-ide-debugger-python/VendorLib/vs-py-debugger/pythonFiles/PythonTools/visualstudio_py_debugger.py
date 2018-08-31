@@ -2192,7 +2192,8 @@ def report_execution_error(exc_text, execution_id):
 
 def report_execution_exception(execution_id, exc_info):
     try:
-        exc_text = str(exc_info[1])
+        exc_type, exc_value, traceback = exc_info
+        exc_text = '{}: {}'.format(get_exception_name(exc_type), exc_value)
     except:
         exc_text = 'An exception was thrown'
 
