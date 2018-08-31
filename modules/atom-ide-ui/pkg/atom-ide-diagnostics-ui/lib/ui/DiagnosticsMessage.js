@@ -55,7 +55,7 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
     );
   }
 
-  const staleBox = message.stale ? (
+  const staleBox = Boolean(message.stale) ? (
     <span className="diagnostics-popup-header-stale-box highlight">
       {'Stale'}
     </span>

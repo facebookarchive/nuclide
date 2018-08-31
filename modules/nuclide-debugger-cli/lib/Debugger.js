@@ -195,7 +195,7 @@ export default class Debugger implements DebuggerInterface {
     // this needs to be sent last for adapters that don't support configurationDone
     await session.setExceptionBreakpoints({filters: []});
 
-    if (this._capabilities.supportsConfigurationDoneRequest) {
+    if (Boolean(this._capabilities.supportsConfigurationDoneRequest)) {
       try {
         await session.configurationDone();
       } catch (err) {
@@ -546,7 +546,7 @@ export default class Debugger implements DebuggerInterface {
     func: string,
     once: boolean,
   ): Promise<BreakpointSetResult> {
-    if (!this._capabilities.supportsFunctionBreakpoints) {
+    if (!Boolean(this._capabilities.supportsFunctionBreakpoints)) {
       throw new Error(
         `The ${
           this._adapter == null ? 'current' : this._adapter.type
@@ -850,7 +850,7 @@ export default class Debugger implements DebuggerInterface {
     const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
 
     if (
-      !this._capabilities.supportsFunctionBreakpoints ||
+      !Boolean(this._capabilities.supportsFunctionBreakpoints) ||
       funcBreakpoints.length === 0
     ) {
       return;
