@@ -481,6 +481,18 @@ export async function getOriginalEnvironment(): Promise<Object> {
   return cachedOriginalEnvironment;
 }
 
+export async function getOriginalEnvironmentArray(): Promise<Array<string>> {
+  await new Promise(resolve => {
+    whenShellEnvironmentLoaded(resolve);
+  });
+  const {NUCLIDE_ORIGINAL_ENV} = process.env;
+  if (NUCLIDE_ORIGINAL_ENV != null && NUCLIDE_ORIGINAL_ENV.trim() !== '') {
+    const envString = new Buffer(NUCLIDE_ORIGINAL_ENV, 'base64').toString();
+    return envString.split('\0');
+  }
+  return [];
+}
+
 /**
  * Returns a string suitable for including in displayed error messages.
  */
