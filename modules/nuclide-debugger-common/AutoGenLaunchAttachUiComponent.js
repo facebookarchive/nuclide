@@ -530,10 +530,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             const value = atomInputValues.get(name) || '';
             if (type === 'path') {
               try {
+                const trimmedValue = value.trim();
                 const resolvedPath =
                   this.props.pathResolver == null
-                    ? value
-                    : await this.props.pathResolver(targetUri, value);
+                    ? trimmedValue
+                    : await this.props.pathResolver(targetUri, trimmedValue);
                 stringValues.set(name, resolvedPath);
               } catch (_) {
                 stringValues.set(name, value);

@@ -59,21 +59,21 @@ class Activation {
 export function getPythonAutoGenConfig(): AutoGenConfig {
   const program = {
     name: 'program',
-    type: 'string',
+    type: 'path',
     description: 'Absolute path to the program.',
     required: true,
     visible: true,
   };
   const pythonPath = {
     name: 'pythonPath',
-    type: 'string',
+    type: 'path',
     description: 'Path to python executable.',
     required: true,
     visible: true,
   };
   const cwd = {
     name: 'cwd',
-    type: 'string',
+    type: 'path',
     description:
       '(Optional) Absolute path to the working directory of the program being debugged. Default is the root directory of the file.',
     required: true,
