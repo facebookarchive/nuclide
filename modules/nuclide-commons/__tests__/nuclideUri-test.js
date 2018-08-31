@@ -466,7 +466,7 @@ describe('nuclide-uri', () => {
 
   it('properly converts file URIs to local paths', () => {
     expect(nuclideUri.uriToNuclideUri('\\abc\\def')).toEqual(null);
-    expect(nuclideUri.uriToNuclideUri('file://somehost/file/path')).toEqual(
+    expect(nuclideUri.uriToNuclideUri('file:///file/path')).toEqual(
       '/file/path',
     );
     expect(
@@ -480,6 +480,9 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.uriToNuclideUri('file://C:\\some\\file\\path')).toEqual(
       'C:\\some\\file\\path',
     );
+    // Make sure that this is treated as a Windows drive.
+    // (The slashes don't change unless this runs on Windows, though.)
+    expect(nuclideUri.uriToNuclideUri('file:///c:/path')).toMatch(/^c:/);
   });
 
   it('properly converts local paths to file URIs', () => {

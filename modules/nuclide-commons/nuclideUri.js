@@ -338,24 +338,19 @@ function _getWindowsPathFromWindowsFileUri(uri: string): ?string {
  * Returns null if not a valid file: URI.
  */
 function uriToNuclideUri(uri: string): ?string {
-  // TODO(ljw): the following check is incorrect. It's designed to support
-  // two-slash file URLs of the form "file://c:\path". But those are invalid
-  // file URLs, and indeed it fails to %-escape "file://c:\My%20Documents".
+  // file:// URIs should never normally contain Windows backslashes:
+  // e.g. vscode-uri escapes C:\abc to file:///c:/abc.
+  // This just handles any hacky users that simply prepended 'file://'.
+  // (vscode-uri does not know how to handle file://C:\abc.)
   const windowsPathFromUri = _getWindowsPathFromWindowsFileUri(uri);
-  // flowlint-next-line sketchy-null-string:off
-  if (windowsPathFromUri) {
-    // If the specified URI is a local file:// URI to a Windows path,
-    // handle specially first. url.parse() gets confused by the "X:"
-    // part of the Windows path and thinks the X is the name of a remote
-    // host.
+  if (windowsPathFromUri != null) {
     return windowsPathFromUri;
   }
 
   const lspUri = LspUri.parse(uri);
-
   if (lspUri.scheme === 'file' && lspUri.path) {
     // only handle real files for now.
-    return lspUri.path;
+    return lspUri.fsPath;
   } else if (isRemote(uri)) {
     return uri;
   } else {
