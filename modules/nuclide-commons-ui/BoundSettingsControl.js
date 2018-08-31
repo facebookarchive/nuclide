@@ -15,6 +15,7 @@ import * as React from 'react';
 
 type Props = {|
   keyPath: string,
+  hideDetails?: boolean,
 |};
 
 type State = {|
@@ -71,6 +72,7 @@ export default class BoundSettingsControl extends React.Component<
         value={this.state.value}
         onChange={this._onChange}
         schema={schema}
+        hideDetails={this.props.hideDetails}
       />
     );
   }

@@ -22,11 +22,14 @@ type Props = {
   schema: atom$ConfigSchema,
   value: any,
   onChange: (value: any) => mixed,
+  hideDetails?: boolean,
 };
 
-export default function SettingsControl(props: Props): ?React.Element<any> {
-  const {keyPath, value, onChange, schema} = props;
-  const {description, title} = schema;
+export default function SettingsControl(props: Props): React.Node {
+  const {keyPath, value, onChange, schema, hideDetails} = props;
+  const {description: settingDescription, title} = schema;
+
+  const description = hideDetails === true ? '' : settingDescription;
 
   if (schema) {
     if (schema.enum) {
