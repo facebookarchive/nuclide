@@ -47,11 +47,12 @@ export function observeAndroidDevices(
               error.code !== 'ENOENT'
                 ? error.message
                 : "'adb' not found in $PATH.";
-            return Observable.of(
-              Expect.error(
-                new Error("Can't fetch Android devices. " + message),
-              ),
+            const newError = new Error(
+              "Can't fetch Android devices. " + message,
             );
+            // $FlowIgnore
+            (newError: any).originalError = error;
+            return Observable.of(Expect.error(newError));
           });
       })
       .distinctUntilChanged((a, b) =>
