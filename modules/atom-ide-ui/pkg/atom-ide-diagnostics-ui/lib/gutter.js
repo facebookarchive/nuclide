@@ -475,7 +475,10 @@ function showPopupFor(
   invariant(popupElement instanceof HTMLElement);
   const popupHeight = popupElement.clientHeight;
   if (itemTop + itemHeight + popupHeight > editorTop + editorHeight) {
-    popupElement.style.top = `${popupTop - popupHeight - itemHeight}px`;
+    // if the popup top is out of editor's top bound, position popup at top: 0px
+    // so it does not get cutoff.
+    const popupTopEdge = Math.max(0, popupTop - popupHeight - itemHeight);
+    popupElement.style.top = `${popupTopEdge}px`;
   }
 
   try {
