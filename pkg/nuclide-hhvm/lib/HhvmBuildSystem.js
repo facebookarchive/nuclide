@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
+import type {DebugMode} from './types';
 
 import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
@@ -21,11 +22,20 @@ import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
+import invariant from 'assert';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {
+  getLaunchProcessConfig,
+  startAttachProcessConfig,
+} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 
-import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
 import ProjectStore from './ProjectStore';
 import * as React from 'react';
+
+const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
+const SCRIPT_OPTION = {label: 'Launch Script', value: 'script'};
+const DEBUG_OPTIONS = [WEB_SERVER_OPTION, SCRIPT_OPTION];
 
 export default class HhvmBuildSystem {
   id: string;
@@ -37,6 +47,11 @@ export default class HhvmBuildSystem {
     this.id = 'hhvm';
     this.name = 'HHVM';
     this._projectStore = new ProjectStore();
+    try {
+      // $FlowFB
+      const helpers = require('./fb-hhvm.js');
+      DEBUG_OPTIONS.push(...helpers.getAdditionalLaunchOptions());
+    } catch (e) {}
   }
 
   dispose() {
@@ -50,7 +65,9 @@ export default class HhvmBuildSystem {
         projectStore.onChange.bind(projectStore),
       );
       this._extraUi = bindObservableAsProps(
-        subscription.startWith(null).mapTo({projectStore}),
+        subscription
+          .startWith(null)
+          .mapTo({projectStore, debugOptions: DEBUG_OPTIONS}),
         HhvmToolbar,
       );
     }
@@ -70,7 +87,7 @@ export default class HhvmBuildSystem {
   runTask(taskName: string): Task {
     return taskFromObservable(
       Observable.fromPromise(
-        debug(
+        this._debug(
           this._projectStore.getDebugMode(),
           this._projectStore.getProjectRoot(),
           this._projectStore.getDebugTarget(),
@@ -79,6 +96,53 @@ export default class HhvmBuildSystem {
         ),
       ).ignoreElements(),
     );
+  }
+
+  async _debug(
+    debugMode: DebugMode,
+    activeProjectRoot: ?string,
+    target: string,
+    useTerminal: boolean,
+    scriptArguments: string,
+  ): Promise<void> {
+    let processConfig = null;
+    invariant(activeProjectRoot != null, 'Active project is null');
+
+    // See if this is a custom debug mode type.
+    try {
+      // $FlowFB
+      const helper = require('./fb-hhvm');
+      processConfig = await helper.getCustomLaunchInfo(
+        debugMode,
+        activeProjectRoot,
+        target,
+        scriptArguments,
+      );
+    } catch (e) {}
+
+    if (processConfig == null) {
+      if (debugMode === 'script') {
+        processConfig = getLaunchProcessConfig(
+          activeProjectRoot,
+          target,
+          scriptArguments,
+          null /* script wrapper */,
+          useTerminal,
+          '' /* cwdPath */,
+        );
+      } else {
+        await startAttachProcessConfig(
+          activeProjectRoot,
+          null /* attachPort */,
+          true /* serverAttach */,
+        );
+        return;
+      }
+    }
+
+    invariant(processConfig != null);
+    const debuggerService = await getDebuggerService();
+    await debuggerService.startVspDebugging(processConfig);
   }
 
   setProjectRoot(
@@ -98,18 +162,19 @@ export default class HhvmBuildSystem {
       .map(store => store.isHHVMProject() === true)
       .distinctUntilChanged();
 
-    const getTask = (disabled: boolean) => [
+    const getTask = (disabledMsg: ?string) => [
       {
         type: 'debug',
         label: 'Debug',
-        description: disabled
-          ? 'The HHVM debugger is already attached to this server'
-          : this._projectStore.getDebugMode() === 'webserver'
-            ? 'Attach HHVM debugger to webserver'
-            : 'Debug Hack/PHP Script',
+        description:
+          disabledMsg != null
+            ? disabledMsg
+            : this._projectStore.getDebugMode() === 'webserver'
+              ? 'Attach HHVM debugger to webserver'
+              : 'Debug Hack/PHP Script',
         icon: 'nuclicon-debugger',
         cancelable: false,
-        disabled,
+        disabled: disabledMsg != null,
       },
     ];
 
@@ -118,10 +183,10 @@ export default class HhvmBuildSystem {
       Observable.fromPromise(getDebuggerService()),
     ).switchMap(debugService => {
       if (debugService == null) {
-        return Observable.of(getTask(false));
+        return Observable.of(getTask(null));
       }
       return Observable.concat(
-        Observable.of(getTask(false)),
+        Observable.of(getTask(null)),
         Observable.merge(
           observableFromSubscribeFunction(
             debugService.onDidChangeDebuggerSessions.bind(debugService),
@@ -130,7 +195,14 @@ export default class HhvmBuildSystem {
             this._projectStore.onChange.bind(this._projectStore),
           ),
         ).switchMap(() => {
-          const disabled =
+          let disabledMsg = null;
+          if (!this._projectStore.isCurrentSettingDebuggable()) {
+            disabledMsg =
+              this._projectStore.getDebugMode() === 'webserver'
+                ? 'Cannot debug this project: Your current working root is not a Hack root!'
+                : 'Cannot debug this project: The current file is not a Hack/PHP file!';
+          }
+          if (
             this._projectStore.getDebugMode() === 'webserver' &&
             debugService
               .getDebugSessions()
@@ -138,8 +210,12 @@ export default class HhvmBuildSystem {
                 c =>
                   c.adapterType === VsAdapterTypes.HHVM &&
                   c.targetUri === projectRoot,
-              );
-          return Observable.of(getTask(disabled));
+              )
+          ) {
+            disabledMsg =
+              'The HHVM debugger is already attached to this server';
+          }
+          return Observable.of(getTask(disabledMsg));
         }),
       );
     });
