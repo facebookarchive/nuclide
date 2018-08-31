@@ -112,7 +112,7 @@ declare module 'vscode-languageclient' {
 
   declare export interface LanguageClientOptions {
     documentSelector?: DocumentSelector | Array<string>;
-    // synchronize?: SynchronizeOptions;
+    synchronize?: any;
     // diagnosticCollectionName?: string;
     // outputChannel?: OutputChannel;
     outputChannelName?: string;
@@ -132,6 +132,28 @@ declare module 'vscode-languageclient' {
     // };
     // workspaceFolder?: VWorkspaceFolder;
   }
+
+  declare export var ErrorAction: {
+    /**
+     * Continue running the server.
+     */
+    Continue: 1,
+    /**
+     * Shutdown the server.
+     */
+    Shutdown: 2,
+  };
+
+  declare export var CloseAction: {
+    /**
+     * Don't restart the server. The connection stays closed.
+     */
+    DoNotRestart: 1,
+    /**
+     * Restart the server.
+     */
+    Restart: 2,
+  };
 
   declare export class LanguageClient {
     constructor(
@@ -156,6 +178,7 @@ declare module 'vscode-languageclient' {
     ): void;
 
     start(): IDisposable;
+    stop(): Thenable<void>;
     registerFeature(feature: StaticFeature): void;
   }
 }

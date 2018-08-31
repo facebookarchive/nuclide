@@ -39,7 +39,7 @@
     "redux": "3.6.0",
     "reselect": "3.0.1",
     "rxjs": "5.5.5",
-    "semver": "5.3.0",
+    "semver": "5.5.0",
     "shallowequal": "0.2.2",
     "strip-ansi": "3.0.1",
     "uuid": "3.0.1",

@@ -46,7 +46,7 @@
     "react": "16.4.1",
     "reflect-metadata": "0.1.12",
     "rxjs": "5.5.5",
-    "semver": "5.3.0",
+    "semver": "5.5.0",
     "tmp": "0.0.29",
     "tree-kill": "1.1.0",
     "uint64be": "1.0.1",

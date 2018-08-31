@@ -43,6 +43,8 @@ def load_package_configs(package_dir=PACKAGES_PATH):
 
     # Performs a depth-first search of the project root for package.json files.
     for (path, dirs, files) in os.walk(package_dir):
+        if "node_modules" in path:
+            continue
         if "package.json" in files:
             # No need to explore subdirectories once package.json is found.
             del dirs[:]

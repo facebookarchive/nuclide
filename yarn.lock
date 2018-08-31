@@ -533,6 +533,10 @@ align-text@^0.1.1, align-text@^0.1.3:
     longest "^1.0.1"
     repeat-string "^1.5.2"
 
+amd-loader@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/amd-loader/-/amd-loader-0.0.8.tgz#1022928040e567e8e6a6fb58bda052f819189206"
+
 amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
@@ -1661,6 +1665,13 @@ chownr@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.0.1.tgz#e2a75042a9551908bebd25b8523d5f9769d79181"
 
+chrome-remote-interface@^0.25.3:
+  version "0.25.7"
+  resolved "https://registry.yarnpkg.com/chrome-remote-interface/-/chrome-remote-interface-0.25.7.tgz#827e85fbef3cc561a9ef2404eb7eee355968c5bc"
+  dependencies:
+    commander "2.11.x"
+    ws "3.3.x"
+
 ci-info@^1.0.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-1.1.2.tgz#03561259db48d0474c8bdc90f5b47b068b6bbfb4"
@@ -1812,7 +1823,7 @@ command-join@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/command-join/-/command-join-2.0.0.tgz#52e8b984f4872d952ff1bdc8b98397d27c7144cf"
 
-commander@2.11.0:
+commander@2.11.0, commander@2.11.x:
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.11.0.tgz#157152fd1e7a6c8d98a5b715cf376df928004563"
 
@@ -2439,6 +2450,13 @@ duplexify@^3.2.0:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
+eachr@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/eachr/-/eachr-3.2.0.tgz#2c35e43ea086516f7997cf80b7aa64d55a4a4484"
+  dependencies:
+    editions "^1.1.1"
+    typechecker "^4.3.0"
+
 easy-stack@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/easy-stack/-/easy-stack-1.0.0.tgz#12c91b3085a37f0baa336e9486eac4bf94e3e788"
@@ -2448,6 +2466,10 @@ ecc-jsbn@~0.1.1:
   resolved "https://registry.yarnpkg.com/ecc-jsbn/-/ecc-jsbn-0.1.1.tgz#0fc73a9ed5f0d53c38193398523ef7e543777505"
   dependencies:
     jsbn "~0.1.0"
+
+editions@^1.1.1, editions@^1.3.4:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/editions/-/editions-1.3.4.tgz#3662cb592347c3168eb8e498a0ff73271d67f50b"
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -2877,6 +2899,14 @@ extglob@^2.0.2, extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+extract-opts@^3.2.0:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/extract-opts/-/extract-opts-3.3.1.tgz#5abbedc98c0d5202e3278727f9192d7e086c6be1"
+  dependencies:
+    eachr "^3.2.0"
+    editions "^1.1.1"
+    typechecker "^4.3.0"
+
 extsprintf@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.0.2.tgz#e1080e0658e300b06294990cc70e1502235fd550"
@@ -3234,6 +3264,13 @@ get-stream@^3.0.0:
 get-value@^2.0.3, get-value@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/get-value/-/get-value-2.0.6.tgz#dc15ca1c672387ca76bd37ac0a395ba2042a2c28"
+
+getmac@1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/getmac/-/getmac-1.4.1.tgz#cfefcb3ee7d7a73cba5292129cb100c19afbe17a"
+  dependencies:
+    editions "^1.3.4"
+    extract-opts "^3.2.0"
 
 getpass@^0.1.1:
   version "0.1.6"
@@ -4682,6 +4719,10 @@ js-yaml@3.11.0, js-yaml@^3.10.0, js-yaml@^3.11.0, js-yaml@^3.7.0:
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
+
+jschardet@1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/jschardet/-/jschardet-1.6.0.tgz#c7d1a71edcff2839db2f9ec30fc5d5ebd3c1a678"
 
 jsdom@^11.5.1:
   version "11.6.2"
@@ -6792,11 +6833,11 @@ season@6.0.2:
     fs-plus "^3.0.0"
     yargs "^3.23.0"
 
-"semver@2 || 3 || 4 || 5", semver@5.3.0, semver@^5.1.0, semver@^5.3.0:
+"semver@2 || 3 || 4 || 5", semver@^5.1.0, semver@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
-semver@^5.4.1, semver@^5.5.0:
+semver@5.5.0, semver@^5.4.1, semver@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
 
@@ -7619,6 +7660,12 @@ type-check@~0.3.2:
   dependencies:
     prelude-ls "~1.1.2"
 
+typechecker@^4.3.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/typechecker/-/typechecker-4.5.0.tgz#c382920097812364bbaf4595b0ab6588244117a6"
+  dependencies:
+    editions "^1.3.4"
+
 typed-rest-client@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/typed-rest-client/-/typed-rest-client-0.9.0.tgz#f768cc0dc3f4e950f06e04825c36b3e7834aa1f2"
@@ -7800,6 +7847,12 @@ uuid@^3.0.1, uuid@^3.1.0:
 v8-compile-cache@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-1.1.0.tgz#1dc2a340fb8e5f800a32bcdbfb8c23cd747021b9"
+
+v8-inspect-profiler@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/v8-inspect-profiler/-/v8-inspect-profiler-0.0.8.tgz#4d6bedb7c3d1bfc69e5bfdc2ded3d6784a5a76a6"
+  dependencies:
+    chrome-remote-interface "^0.25.3"
 
 v8flags@^2.1.1:
   version "2.1.1"
@@ -8201,6 +8254,14 @@ write@^0.2.1:
 ws@3.2.0, "ws@>= 2.2.3":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-3.2.0.tgz#d5d3d6b11aff71e73f808f40cc69d52bb6d4a185"
+  dependencies:
+    async-limiter "~1.0.0"
+    safe-buffer "~5.1.0"
+    ultron "~1.1.0"
+
+ws@3.3.x:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-3.3.3.tgz#f1cf84fe2d5e901ebce94efaece785f187a228f2"
   dependencies:
     async-limiter "~1.0.0"
     safe-buffer "~5.1.0"
