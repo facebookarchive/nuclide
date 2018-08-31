@@ -41,10 +41,15 @@ type DiffChunk = {
 
 export type OffsetMap = Map<number, number>;
 
-export function computeDiff(oldText: string, newText: string): TextDiff {
+export function computeDiff(
+  oldText: string,
+  newText: string,
+  ignoreWhitespace?: boolean = false,
+): TextDiff {
   const {addedLines, removedLines, chunks} = _computeDiffChunks(
     oldText,
     newText,
+    ignoreWhitespace,
   );
   const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
   const {oldToNew, newToOld} = _computeLineDiffMapping(chunks);
@@ -59,7 +64,11 @@ export function computeDiff(oldText: string, newText: string): TextDiff {
   };
 }
 
-function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
+function _computeDiffChunks(
+  oldText_: string,
+  newText_: string,
+  ignoreWhitespace: boolean,
+): DiffChunk {
   let oldText = oldText_;
   let newText = newText_;
 
@@ -73,7 +82,9 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
     newText += '\n';
   }
 
-  const lineDiff = diffLines(oldText, newText);
+  const lineDiff = diffLines(oldText, newText, {
+    ignoreWhitespace,
+  });
   const chunks = [];
 
   let addedCount = 0;
