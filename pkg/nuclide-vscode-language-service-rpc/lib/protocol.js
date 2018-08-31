@@ -414,9 +414,9 @@ export type ServerCapabilities = {
   documentOnTypeFormattingProvider?: DocumentOnTypeFormattingOptions,
   // The server provides rename support.
   renameProvider?: boolean,
-  // The server provides type coverage support.
+  // nuclide-specific The server provides type coverage support.
   typeCoverageProvider?: boolean,
-  // The server responds to rage requests
+  // nuclide-specific The server responds to rage requests
   rageProvider?: boolean,
 };
 

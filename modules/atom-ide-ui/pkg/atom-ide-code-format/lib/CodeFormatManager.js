@@ -19,6 +19,7 @@ import type {
   RangeCodeFormatProvider,
 } from './types';
 
+import nullthrows from 'nullthrows';
 import {getFormatOnSave, getFormatOnType} from './config';
 import {Range} from 'atom';
 import {getLogger} from 'log4js';
@@ -235,48 +236,74 @@ export default class CodeFormatManager {
           selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
         );
       }
-      const rangeProvider = this._rangeProviders.getProviderForEditor(editor);
-      const fileProvider = this._fileProviders.getProviderForEditor(editor);
+      const rangeProviders = Array.from(
+        this._rangeProviders.getAllProvidersForEditor(editor),
+      );
+      const fileProviders = Array.from(
+        this._fileProviders.getAllProvidersForEditor(editor),
+      );
       const contents = editor.getText();
       if (
-        rangeProvider != null &&
+        rangeProviders.length > 0 &&
         // When formatting the entire file, prefer file-based providers.
-        (!formatRange.isEqual(buffer.getRange()) || fileProvider == null)
+        (!formatRange.isEqual(buffer.getRange()) || fileProviders.length === 0)
       ) {
         return Observable.defer(() =>
           this._reportBusy(
             editor,
-            rangeProvider.formatCode(editor, formatRange),
+            Promise.all(
+              rangeProviders.map(p => p.formatCode(editor, formatRange)),
+            ),
           ),
-        ).map(edits => {
-          // Throws if contents have changed since the time of triggering format code.
-          this._checkContentsAreSame(contents, editor.getText());
-          if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
-            throw new Error('Could not apply edits to text buffer.');
-          }
-          return true;
-        });
-      } else if (fileProvider != null) {
+        )
+          .switchMap(allEdits => {
+            const firstNonEmpty = allEdits.find(edits => edits.length > 0);
+            if (firstNonEmpty == null) {
+              return Observable.empty();
+            } else {
+              return Observable.of(firstNonEmpty);
+            }
+          })
+          .map(edits => {
+            // Throws if contents have changed since the time of triggering format code.
+            this._checkContentsAreSame(contents, editor.getText());
+            if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+              throw new Error('Could not apply edits to text buffer.');
+            }
+            return true;
+          });
+      } else if (fileProviders.length > 0) {
         return Observable.defer(() =>
           this._reportBusy(
             editor,
-            fileProvider.formatEntireFile(editor, formatRange),
+            Promise.all(
+              fileProviders.map(p => p.formatEntireFile(editor, formatRange)),
+            ),
           ),
-        ).map(({newCursor, formatted}) => {
-          // Throws if contents have changed since the time of triggering format code.
-          this._checkContentsAreSame(contents, editor.getText());
-          buffer.setTextViaDiff(formatted);
+        )
+          .switchMap(allResults => {
+            const firstNonNull = allResults.find(result => result != null);
+            if (firstNonNull == null) {
+              return Observable.empty();
+            } else {
+              return Observable.of(firstNonNull);
+            }
+          })
+          .map(({newCursor, formatted}) => {
+            // Throws if contents have changed since the time of triggering format code.
+            this._checkContentsAreSame(contents, editor.getText());
+            buffer.setTextViaDiff(formatted);
 
-          const newPosition =
-            newCursor != null
-              ? buffer.positionForCharacterIndex(newCursor)
-              : editor.getCursorBufferPosition();
+            const newPosition =
+              newCursor != null
+                ? buffer.positionForCharacterIndex(newCursor)
+                : editor.getCursorBufferPosition();
 
-          // We call setCursorBufferPosition even when there is no newCursor,
-          // because it unselects the text selection.
-          editor.setCursorBufferPosition(newPosition);
-          return true;
-        });
+            // We call setCursorBufferPosition even when there is no newCursor,
+            // because it unselects the text selection.
+            editor.setCursorBufferPosition(newPosition);
+            return true;
+          });
       } else {
         return Observable.of(false);
       }
@@ -301,8 +328,10 @@ export default class CodeFormatManager {
       // the character that will usually cause a reformat (i.e. `}` instead of `{`).
       const character = event.newText[event.newText.length - 1];
 
-      const provider = this._onTypeProviders.getProviderForEditor(editor);
-      if (provider == null) {
+      const providers = Array.from(
+        this._onTypeProviders.getAllProvidersForEditor(editor),
+      );
+      if (providers.length === 0) {
         return Observable.empty();
       }
 
@@ -323,13 +352,30 @@ export default class CodeFormatManager {
       // also let any other event handlers have their go).
       return microtask
         .switchMap(() =>
-          provider.formatAtPosition(
-            editor,
-            editor.getCursorBufferPosition(),
-            character,
+          Promise.all(
+            providers.map(p =>
+              p.formatAtPosition(
+                editor,
+                editor.getCursorBufferPosition(),
+                character,
+              ),
+            ),
           ),
         )
-        .do(edits => {
+        .switchMap(allEdits => {
+          const firstNonEmptyIndex = allEdits.findIndex(
+            edits => edits.length > 0,
+          );
+          if (firstNonEmptyIndex === -1) {
+            return Observable.empty();
+          } else {
+            return Observable.of({
+              edits: nullthrows(allEdits[firstNonEmptyIndex]),
+              provider: providers[firstNonEmptyIndex],
+            });
+          }
+        })
+        .do(({edits, provider}) => {
           if (edits.length === 0) {
             return;
           }
@@ -345,7 +391,8 @@ export default class CodeFormatManager {
           if (provider.keepCursorPosition) {
             editor.setCursorBufferPosition(cursorPosition);
           }
-        });
+        })
+        .map(({edits}) => edits);
     });
   }
 
@@ -359,13 +406,28 @@ export default class CodeFormatManager {
   }
 
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
-    const saveProvider = this._onSaveProviders.getProviderForEditor(editor);
-    if (saveProvider != null) {
+    const saveProviders = Array.from(
+      this._onSaveProviders.getAllProvidersForEditor(editor),
+    );
+    if (saveProviders.length > 0) {
       return Observable.defer(() =>
-        this._reportBusy(editor, saveProvider.formatOnSave(editor), false),
-      ).map(edits => {
-        applyTextEditsToBuffer(editor.getBuffer(), edits);
-      });
+        this._reportBusy(
+          editor,
+          Promise.all(saveProviders.map(p => p.formatOnSave(editor))),
+          false,
+        ),
+      )
+        .switchMap(allEdits => {
+          const firstNonEmpty = allEdits.find(edits => edits.length > 0);
+          if (firstNonEmpty == null) {
+            return Observable.empty();
+          } else {
+            return Observable.of(firstNonEmpty);
+          }
+        })
+        .map(edits => {
+          applyTextEditsToBuffer(editor.getBuffer(), edits);
+        });
     } else if (getFormatOnSave(editor)) {
       return this._formatCodeInTextEditor(
         editor,

@@ -2153,126 +2153,13 @@ export class LspLanguageService {
         },
       ],
     );
-    return {outlineTrees: this._createOutlineTreeHierarchy(list).children};
-  }
-
-  _createOutlineTreeHierarchy(
-    list: Array<[SymbolInformation, OutlineTree]>,
-  ): OutlineTree {
-    // Sorting the list of symbols is the first thing we do! First, sort by start
-    // location (smallest first) and within that by end location (largest first).
-    // This results in our list being a pre-order flattening of the tree.
-    list.sort(([, aNode], [, bNode]) => {
-      const r = aNode.startPosition.compare(bNode.startPosition);
-      if (r !== 0) {
-        return r;
-      }
-      // LSP always provides an endPosition
-      invariant(aNode.endPosition != null && bNode.endPosition != null);
-      return bNode.endPosition.compare(aNode.endPosition);
-    });
-
-    const root: OutlineTree = {
-      plainText: '',
-      startPosition: new Point(0, 0),
-      children: [],
+    return {
+      outlineTrees: createOutlineTreeHierarchy(
+        list,
+        this._lspPreferences.reconstructOutlineStrategy,
+        this._logger,
+      ).children,
     };
-
-    // Q. how to reconstruct a hierarchy out of a flat list of symbols?
-    // There are two answers...
-
-    if (this._lspPreferences.reconstructOutlineStrategy === 'containerName') {
-      // A1. We'll do it based on containerName.
-
-      // We'll need to look up for parents by name, so construct a map from names to nodes
-      // of that name. Note: an undefined SymbolInformation.containerName means root,
-      // but it's easier for us to represent with ''.
-      const mapElements = list.map(([symbol, node]) => [symbol.name, node]);
-      const map: Map<string, Array<OutlineTree>> = collect(mapElements);
-      if (map.has('')) {
-        this._logger.error(
-          'Outline textDocument/documentSymbol returned an empty symbol name',
-        );
-      }
-
-      // The algorithm for reconstructing the tree out of list items rests on identifying
-      // an item's parent based on the item's containerName. It's easy if there's only one
-      // parent of that name. But if there are multiple parent candidates, we'll try to pick
-      // the one that comes immediately lexically before the item. (If there are no parent
-      // candidates, we've been given a malformed item, so we'll just ignore it.)
-      map.set('', [root]);
-      for (const [symbol, node] of list) {
-        const parentName = symbol.containerName || '';
-        const parentCandidates = map.get(parentName);
-        if (parentCandidates == null) {
-          this._logger.error(
-            `Outline textDocument/documentSymbol ${
-              symbol.name
-            } is missing container ${parentName}, setting container to root`,
-          );
-          root.children.push(node);
-        } else {
-          invariant(parentCandidates.length > 0);
-          // Find the first candidate that's lexically *after* our symbol.
-          const symbolPos = convert.lspPosition_atomPoint(
-            symbol.location.range.start,
-          );
-          const iAfter = parentCandidates.findIndex(
-            p => p.startPosition.compare(symbolPos) > 0,
-          );
-          if (iAfter === -1) {
-            // No candidates after item? Then item's parent is the last candidate.
-            parentCandidates[parentCandidates.length - 1].children.push(node);
-          } else if (iAfter === 0) {
-            // All candidates after item? That's an error! We'll arbitrarily pick first one.
-            parentCandidates[0].children.push(node);
-            this._logger.error(
-              `Outline textDocument/documentSymbol ${
-                symbol.name
-              } comes after its container`,
-            );
-          } else {
-            // Some candidates before+after? Then item's parent is the last candidate before.
-            parentCandidates[iAfter - 1].children.push(node);
-          }
-        }
-      }
-    } else {
-      // A2. We'll use their ranges. Any node whose range is entirely contained
-      // within another is a child of that other.
-      // Implementation: We'll trust that there aren't overlapping spans.
-      // First, sort by start location (smallest first) and within that by end
-      // location (largest first). After that sort, our list will be a pre-order
-      // flattening of the tree.
-      // Next, iterate through the list in order, maintaining a "spine" to the
-      // most recent node we've done. For each subsequent element of the list,
-      // it will be a child of the lowest element in the spine to contain it.
-      const spine = [root];
-      for (const [, node] of list) {
-        while (spine.length > 1) {
-          const candidate = spine[spine.length - 1]; // parent candidate
-          invariant(node.endPosition != null);
-          const nodeRange = new atom$Range(
-            node.startPosition,
-            node.endPosition,
-          );
-          invariant(candidate.endPosition != null);
-          const candidateRange = new atom$Range(
-            candidate.startPosition,
-            candidate.endPosition,
-          );
-          if (candidateRange.containsRange(nodeRange)) {
-            break; // found the lowest element in the spine that contains node
-          }
-          spine.pop();
-        }
-        const parent = spine[spine.length - 1];
-        parent.children.push(node);
-        spine.push(node);
-      }
-    }
-
-    return root;
   }
 
   /** Returns code lens information for the given file. */
@@ -3015,4 +2902,122 @@ class JsonRpcTraceLogger {
   log(message: string, data: ?string): void {
     this._logger.trace(`LSP.trace: ${message} ${data || ''}`);
   }
+}
+
+export function createOutlineTreeHierarchy(
+  list: Array<[SymbolInformation, OutlineTree]>,
+  reconstructOutlineStrategy: ?string,
+  logger: MemoryLogger,
+): OutlineTree {
+  // Sorting the list of symbols is the first thing we do! First, sort by start
+  // location (smallest first) and within that by end location (largest first).
+  // This results in our list being a pre-order flattening of the tree.
+  list.sort(([, aNode], [, bNode]) => {
+    const r = aNode.startPosition.compare(bNode.startPosition);
+    if (r !== 0) {
+      return r;
+    }
+    // LSP always provides an endPosition
+    invariant(aNode.endPosition != null && bNode.endPosition != null);
+    return bNode.endPosition.compare(aNode.endPosition);
+  });
+
+  const root: OutlineTree = {
+    plainText: '',
+    startPosition: new Point(0, 0),
+    children: [],
+  };
+
+  // Q. how to reconstruct a hierarchy out of a flat list of symbols?
+  // There are two answers...
+
+  if (reconstructOutlineStrategy === 'containerName') {
+    // A1. We'll do it based on containerName.
+
+    // We'll need to look up for parents by name, so construct a map from names to nodes
+    // of that name. Note: an undefined SymbolInformation.containerName means root,
+    // but it's easier for us to represent with ''.
+    const mapElements = list.map(([symbol, node]) => [symbol.name, node]);
+    const map: Map<string, Array<OutlineTree>> = collect(mapElements);
+    if (map.has('')) {
+      logger.error(
+        'Outline textDocument/documentSymbol returned an empty symbol name',
+      );
+    }
+
+    // The algorithm for reconstructing the tree out of list items rests on identifying
+    // an item's parent based on the item's containerName. It's easy if there's only one
+    // parent of that name. But if there are multiple parent candidates, we'll try to pick
+    // the one that comes immediately lexically before the item. (If there are no parent
+    // candidates, we've been given a malformed item, so we'll just ignore it.)
+    map.set('', [root]);
+    for (const [symbol, node] of list) {
+      const parentName = symbol.containerName || '';
+      const parentCandidates = map.get(parentName);
+      if (parentCandidates == null) {
+        logger.error(
+          `Outline textDocument/documentSymbol ${
+            symbol.name
+          } is missing container ${parentName}, setting container to root`,
+        );
+        root.children.push(node);
+      } else {
+        invariant(parentCandidates.length > 0);
+        // Find the first candidate that's lexically *after* our symbol.
+        const symbolPos = convert.lspPosition_atomPoint(
+          symbol.location.range.start,
+        );
+        const iAfter = parentCandidates.findIndex(
+          p => p.startPosition.compare(symbolPos) > 0,
+        );
+        if (iAfter === -1) {
+          // No candidates after item? Then item's parent is the last candidate.
+          parentCandidates[parentCandidates.length - 1].children.push(node);
+        } else if (iAfter === 0) {
+          // All candidates after item? That's an error! We'll arbitrarily pick first one.
+          parentCandidates[0].children.push(node);
+          logger.error(
+            `Outline textDocument/documentSymbol ${
+              symbol.name
+            } comes after its container`,
+          );
+        } else {
+          // Some candidates before+after? Then item's parent is the last candidate before.
+          parentCandidates[iAfter - 1].children.push(node);
+        }
+      }
+    }
+  } else {
+    // A2. We'll use their ranges. Any node whose range is entirely contained
+    // within another is a child of that other.
+    // Implementation: We'll trust that there aren't overlapping spans.
+    // First, sort by start location (smallest first) and within that by end
+    // location (largest first). After that sort, our list will be a pre-order
+    // flattening of the tree.
+    // Next, iterate through the list in order, maintaining a "spine" to the
+    // most recent node we've done. For each subsequent element of the list,
+    // it will be a child of the lowest element in the spine to contain it.
+    const spine = [root];
+    for (const [, node] of list) {
+      while (spine.length > 1) {
+        const candidate = spine[spine.length - 1]; // parent candidate
+        invariant(node.endPosition != null);
+        const nodeRange = new atom$Range(node.startPosition, node.endPosition);
+        invariant(candidate.endPosition != null);
+        const candidateRange = new atom$Range(
+          candidate.startPosition,
+          candidate.endPosition,
+        );
+        if (candidateRange.containsRange(nodeRange)) {
+          break; // found the lowest element in the spine that contains node
+        }
+        spine.pop();
+      }
+      const parent = spine[spine.length - 1];
+      parent.children.push(node);
+      spine.push(node);
+    }
+  }
+
+  return root;
 }

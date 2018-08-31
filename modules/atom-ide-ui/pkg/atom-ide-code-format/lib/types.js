@@ -55,7 +55,7 @@ export type FileCodeFormatProvider = {|
   formatEntireFile: (
     editor: atom$TextEditor,
     range: atom$Range,
-  ) => Promise<{
+  ) => Promise<?{
     newCursor?: number,
     formatted: string,
   }>,

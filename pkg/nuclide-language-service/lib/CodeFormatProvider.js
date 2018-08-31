@@ -185,7 +185,7 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   formatEntireFile(
     editor: atom$TextEditor,
     range: atom$Range,
-  ): Promise<{
+  ): Promise<?{
     newCursor?: number,
     formatted: string,
   }> {
@@ -205,7 +205,7 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
         }
       }
 
-      return {formatted: editor.getText()};
+      return null;
     });
   }
 
@@ -275,7 +275,7 @@ class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   }
 }
 
-function getFormatOptions(editor: atom$TextEditor): FormatOptions {
+export function getFormatOptions(editor: atom$TextEditor): FormatOptions {
   return {
     tabSize: editor.getTabLength(),
     insertSpaces: editor.getSoftTabs(),
