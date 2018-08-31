@@ -9,10 +9,14 @@
  * @format
  */
 
+/* global localStorage */
+
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebugMode} from './types';
 
 import {Emitter} from 'atom';
+import {getLogger} from 'log4js';
+import debounce from 'nuclide-commons/debounce';
 import {BehaviorSubject} from 'rxjs';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -35,9 +39,15 @@ type LaunchScriptSettings = {|
   debugMode: DebugMode,
   scriptCommand: string,
   scriptArguments: string,
+  lastUsageKey: number,
 |};
 
 type ScriptSettings = AttachToServerSettings | LaunchScriptSettings;
+
+const LOCAL_STORAGE_KEY = 'hhvm_toolbar_settings';
+const STORAGE_VERSION = 1;
+const MRU_MAX_LENGTH = 20;
+let mruIndex = 0;
 
 export default class ProjectStore {
   _disposables: UniversalDisposable;
@@ -53,6 +63,7 @@ export default class ProjectStore {
 
   _launchSettingsByPath: Map<NuclideUri, Map<DebugMode, LaunchScriptSettings>>;
   _attachSettingsByHost: Map<string, AttachToServerSettings>;
+  _dirty: boolean;
 
   constructor() {
     this._emitter = new Emitter();
@@ -65,6 +76,8 @@ export default class ProjectStore {
     this._stickySettings = null;
     this._launchSettingsByPath = new Map();
     this._attachSettingsByHost = new Map();
+    this._dirty = false;
+    this._saveSettings = debounce(this._saveSettings, 1000);
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);
     this._disposables = new UniversalDisposable(
@@ -86,7 +99,99 @@ export default class ProjectStore {
         }),
       atom.workspace.onDidStopChangingActivePaneItem(onDidChange),
     );
+
+    this._restoreSettings();
     onDidChange();
+  }
+
+  saveSettings(): void {
+    this._saveSettings();
+  }
+
+  _saveSettings = () => {
+    if (!this._dirty) {
+      return;
+    }
+
+    const launchSettings = [
+      ...Array.from(this._launchSettingsByPath.entries())
+        .sort((a, b) => {
+          // Save settings for the MRU_MAX_LENGTH most recently used launch
+          // configurations. Cap this so we don't store values for every
+          // script ever launched, forever.
+          let lastUsageA = 0;
+          for (const entry of a[1]) {
+            if (entry[1].lastUsageKey > lastUsageA) {
+              lastUsageA = entry[1].lastUsageKey;
+            }
+          }
+
+          let lastUsageB = 0;
+          for (const entry of b[1]) {
+            if (entry[1].lastUsageKey > lastUsageB) {
+              lastUsageB = entry[1].lastUsageKey;
+            }
+          }
+
+          return lastUsageB - lastUsageA;
+        })
+        .slice(0, MRU_MAX_LENGTH),
+    ];
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify({
+        launchSettings,
+        lastDebugMode: this.getDebugMode(),
+        storageVersion: STORAGE_VERSION,
+      }),
+    );
+    this._dirty = false;
+  };
+
+  _restoreSettings(): void {
+    try {
+      const serialized = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (serialized != null) {
+        const obj = JSON.parse(serialized);
+        if (
+          obj.storageVersion == null ||
+          Number.isNaN(parseInt(obj.storageVersion, 10))
+        ) {
+          return;
+        }
+
+        if (obj.lastDebugMode != null) {
+          this.setDebugMode(obj.lastDebugMode);
+        }
+
+        if (obj.launchSettings != null) {
+          this._launchSettingsByPath = new Map();
+          mruIndex = 0;
+          for (const data of obj.launchSettings) {
+            const key = data.shift();
+            const values = (data: Array<[DebugMode, LaunchScriptSettings]>);
+            // Serialized items are already in MRU order. Update the last
+            // usage keys so they are numbered relative to mruIndex which
+            // can reset to 0 on each nuclide launch and still preserve the
+            // MRU order.
+            for (const value of values) {
+              value[1].lastUsageKey = ++mruIndex;
+            }
+            this._launchSettingsByPath.set(key, new Map(values));
+          }
+        }
+      }
+    } catch (e) {
+      getLogger('hhvm-toolbar').warn(
+        'Failed to restore HHVM settings: ' + e.toString(),
+      );
+    }
+    this._emitter.emit('change');
+  }
+
+  _onChanged(): void {
+    this._dirty = true;
+    this._emitter.emit('change');
   }
 
   _onDidChangeActivePaneItem(): void {
@@ -160,6 +265,7 @@ export default class ProjectStore {
       debugMode,
       scriptCommand: nuclideUri.getPath(path),
       scriptArguments: '',
+      lastUsageKey: ++mruIndex,
     };
 
     // If the debug mode is a custom wrapper, determine what the script
@@ -217,7 +323,7 @@ export default class ProjectStore {
 
   setDebugMode(debugMode: DebugMode): void {
     this._debugMode = debugMode;
-    this._emitter.emit('change');
+    this._onChanged();
   }
 
   setUseTerminal(useTerminal: boolean): void {
@@ -236,7 +342,14 @@ export default class ProjectStore {
     } else {
       this._stickySettings = null;
     }
-    this._emitter.emit('change');
+    this._onChanged();
+  }
+
+  updateLastUsed(): void {
+    const settings = this._getCurrentSettings(true);
+    if (settings.type === 'launch') {
+      settings.lastUsageKey = ++mruIndex;
+    }
   }
 
   getScriptArguments(): string {
@@ -251,7 +364,7 @@ export default class ProjectStore {
     const settings = this._getCurrentSettings(true);
     invariant(settings.type === 'launch');
     settings.scriptArguments = args;
-    this._emitter.emit('change');
+    this._onChanged();
   }
 
   getUseTerminal(): boolean {
@@ -272,7 +385,7 @@ export default class ProjectStore {
     } else {
       settings.scriptCommand = target;
     }
-    this._emitter.emit('change');
+    this._onChanged();
   }
 
   getDebugTarget(): string {

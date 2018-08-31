@@ -600,11 +600,18 @@ export function printTaskSucceededEpic(
     invariant(action.type === Actions.TASK_COMPLETED);
     const {type} = action.payload.taskStatus.metadata;
     const {taskRunner} = action.payload;
-    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
+    let text;
+    if (type !== 'debug') {
+      const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
+      text = `${capitalizedType} succeeded.`;
+    } else {
+      // "Debug succeeded." makes no sense here.
+      text = 'Debugger started.';
+    }
     return {
       type: Actions.TASK_MESSAGE,
       payload: {
-        message: {text: `${capitalizedType} succeeded.`, level: 'success'},
+        message: {text, level: 'success'},
         taskRunner,
       },
     };

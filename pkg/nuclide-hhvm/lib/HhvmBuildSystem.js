@@ -87,13 +87,17 @@ export default class HhvmBuildSystem {
   runTask(taskName: string): Task {
     return taskFromObservable(
       Observable.fromPromise(
-        this._debug(
-          this._projectStore.getDebugMode(),
-          this._projectStore.getProjectRoot(),
-          this._projectStore.getDebugTarget(),
-          this._projectStore.getUseTerminal(),
-          this._projectStore.getScriptArguments(),
-        ),
+        (async () => {
+          this._projectStore.updateLastUsed();
+          this._projectStore.saveSettings();
+          return this._debug(
+            this._projectStore.getDebugMode(),
+            this._projectStore.getProjectRoot(),
+            this._projectStore.getDebugTarget(),
+            this._projectStore.getUseTerminal(),
+            this._projectStore.getScriptArguments(),
+          );
+        })(),
       ).ignoreElements(),
     );
   }
