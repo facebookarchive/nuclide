@@ -88,8 +88,9 @@ const logger = getLogger(LOG_CATEGORY);
  *
  * The observable returned by this function can error with any of the following:
  *
- * - [Node System Errors][2] Represented as augmented `Error` objects, these errors include things
- *   like `ENOENT`.
+ * - `ProcessSystemError` Wrap [Node System Errors][2] (which are just augmented `Error` objects)
+ *    and include things like `ENOENT`. These contain all of the properties of node system errors
+ *    as well as a reference to the process.
  * - `ProcessExitError` Indicate that the process has ended cleanly, but with an unsuccessful exit
  *    code. Whether a `ProcessExitError` is thrown is determined by the `isExitError` option. This
  *    error includes the exit code as well as accumulated stdout and stderr. See its definition for
