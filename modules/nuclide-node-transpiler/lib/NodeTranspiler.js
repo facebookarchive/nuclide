@@ -172,7 +172,7 @@ class NodeTranspiler {
   static shouldCompile(bufferOrString) {
     const src = bufferOrString.toString();
     const directives = docblock.parseAsObject(docblock.extract(src));
-    return directives.hasOwnProperty('flow');
+    return directives.hasOwnProperty('flow') || directives.hasOwnProperty('transpile');
   }
 
   constructor() {

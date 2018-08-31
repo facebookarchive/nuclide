@@ -101,7 +101,9 @@ module.exports = function(context) {
   return {
     Program(node) {
       const sourceCode = context.getSourceCode();
-      const source = sourceCode.text.replace(/^.*@emails.*\n/gm, '');
+      const source = sourceCode.text
+        // May want to transpile even if not flow checked.
+        .replace(/^.*@(?:emails|transpile).*\n/gm, '');
       const useBSDLicense = idx(context, _ => _.options[0].useBSDLicense);
 
       const flowHeader = useBSDLicense
@@ -118,7 +120,12 @@ module.exports = function(context) {
       const noFlowHeader = useBSDLicense
         ? BSD_NO_FLOW_AND_NO_TRANSPILE
         : NO_FLOW_AND_NO_TRANSPILE;
-      if (source.replace(SHEBANG_RE, '').startsWith(noFlowHeader)) {
+      if (
+        source.replace(SHEBANG_RE, '')
+          // May want to format even if not flow checked.
+          .replace(/^.*@format\n/gm, '')
+          .startsWith(noFlowHeader)
+        ) {
         return;
       }
 
