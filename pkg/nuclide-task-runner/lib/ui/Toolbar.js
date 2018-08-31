@@ -115,15 +115,16 @@ export default class Toolbar extends React.Component<Props> {
         key="taskButtons">
         <ButtonGroup>
           {taskButtons}
-          <Button
-            className="nuclide-task-button"
-            key="stop"
-            size={ButtonSizes.SMALL}
-            icon="primitive-square"
-            tooltip={tooltip('Stop')}
-            disabled={this.props.runningTaskIsCancelable !== true}
-            onClick={this.props.stopRunningTask}
-          />
+          {this.props.runningTaskIsCancelable === true ? (
+            <Button
+              className="nuclide-task-button"
+              key="stop"
+              size={ButtonSizes.SMALL}
+              icon="primitive-square"
+              tooltip={tooltip('Stop')}
+              onClick={this.props.stopRunningTask}
+            />
+          ) : null}
         </ButtonGroup>
       </span>
     );
