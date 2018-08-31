@@ -210,7 +210,7 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
   if (debugPort == null) {
     try {
       // $FlowFB
-      const fetch = require('../../commons-node/fb-sitevar').fetchSitevarOnce;
+      const fetch = require('fb-interngraph/sitevar').fetchSitevarOnce;
       const siteVar = await fetch('NUCLIDE_VSP_DEBUGGER_CONFIG');
       if (siteVar != null && siteVar.hhvm_attach_port != null) {
         debugPort = siteVar.hhvm_attach_port;
