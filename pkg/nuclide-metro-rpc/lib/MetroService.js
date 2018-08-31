@@ -78,7 +78,7 @@ export function startMetro(
           killTreeWhenDone: true,
         },
       ).catch(error => {
-        if (error.exitCode === 11) {
+        if (error.exitCode === 22) {
           return Observable.throw(metroPortBusyError());
         } else {
           return Observable.throw(error);

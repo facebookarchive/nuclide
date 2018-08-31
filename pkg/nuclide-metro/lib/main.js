@@ -33,7 +33,7 @@ class Activation {
       this._metroAtomService,
       atom.commands.add('atom-workspace', {
         // Ideally based on CWD, the commands can be disabled and the UI would explain why.
-        'nuclide-metro:start': (event: {
+        'nuclide-metro:start': async (event: {
           detail: ?{
             port?: number,
             tunnelBehavior?: TunnelBehavior,
@@ -41,11 +41,13 @@ class Activation {
           },
         }) => {
           const detail = event.detail || {};
-          this._metroAtomService.start(
-            detail.tunnelBehavior || 'ask_about_tunnel',
-            detail.port,
-            detail.extraArgs,
-          );
+          try {
+            await this._metroAtomService.start(
+              detail.tunnelBehavior || 'ask_about_tunnel',
+              detail.port,
+              detail.extraArgs,
+            );
+          } catch (e) {}
         },
         'nuclide-metro:stop': () => this._metroAtomService.stop(),
         'nuclide-metro:restart': () => this._metroAtomService.restart(),
@@ -76,8 +78,10 @@ class Activation {
         id: 'Metro',
         messages: this._metroAtomService._logTailer.getMessages(),
         observeStatus: cb => this._metroAtomService.observeStatus(cb),
-        start: () => {
-          this._metroAtomService.start('ask_about_tunnel');
+        start: async () => {
+          try {
+            await this._metroAtomService.start('ask_about_tunnel');
+          } catch (e) {}
         },
         stop: () => {
           this._metroAtomService.stop();

@@ -19,10 +19,14 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
+import {track} from '../../nuclide-analytics';
 import {getMetroServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {openTunnel} from './Tunnel';
 import {MetroAtomService} from './types';
-import {NO_METRO_PROJECT_ERROR} from '../../nuclide-metro-rpc/lib/types';
+import {
+  METRO_PORT_BUSY_ERROR,
+  NO_METRO_PROJECT_ERROR,
+} from '../../nuclide-metro-rpc/lib/types';
 import {LogTailer} from '../../nuclide-console-base/lib/LogTailer';
 import electron from 'electron';
 
@@ -71,17 +75,6 @@ export class DefaultMetroAtomService implements MetroAtomService {
       this._logTailer.start({
         onRunning: error => {
           if (error != null) {
-            // Handling these errors here because LogTailer never becomes "ready"
-            // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-            if (error.code === NO_METRO_PROJECT_ERROR) {
-              atom.notifications.addError('Could not find Metro project', {
-                dismissable: true,
-                description:
-                  'Make sure that your current working root (or its ancestor) contains a' +
-                  ' `node_modules` directory with react-native installed, or a .buckconfig file' +
-                  ' with a `[react-native]` section that has a `server` key.',
-              });
-            }
             reject(error);
           } else {
             resolve();
@@ -172,8 +165,6 @@ export class DefaultMetroAtomService implements MetroAtomService {
     port: BehaviorSubject<number>,
     extraArgs: BehaviorSubject<Array<string>>,
   ) => {
-    const self = this;
-
     const metroEvents = Observable.defer(() => {
       const path = projectRootPath.getValue();
       if (path == null) {
@@ -188,7 +179,39 @@ export class DefaultMetroAtomService implements MetroAtomService {
           extraArgs.getValue(),
         )
         .refCount();
-    }).share();
+    })
+      .catch((error: Error) => {
+        track('nuclide-metro:error', {error});
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+        if (error.code === NO_METRO_PROJECT_ERROR) {
+          atom.notifications.addError('Could not find Metro project', {
+            dismissable: true,
+            description:
+              'Make sure that your current working root (or its ancestor) contains a' +
+              ' `node_modules` directory with react-native installed, or a .buckconfig file' +
+              ' with a `[react-native]` section that has a `server` key.',
+            icon: 'nuclicon-metro',
+          });
+          // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+        } else if (error.code === METRO_PORT_BUSY_ERROR) {
+          atom.notifications.addInfo(
+            `Metro could not start, port ${port.getValue()} is busy.`,
+            {
+              description:
+                "If you are running Metro in a different window or in a terminal, this is expected and you don't need to do anything.",
+              dismissable: true,
+              icon: 'nuclicon-metro',
+            },
+          );
+        } else if (error.message.includes('Terminated')) {
+          atom.notifications.addWarning('Metro was killed.', {
+            dismissable: true,
+            icon: 'nuclicon-metro',
+          });
+        }
+        return Observable.throw(error);
+      })
+      .share();
 
     const messages = metroEvents
       .filter(event => event.type === 'message')
@@ -204,24 +227,6 @@ export class DefaultMetroAtomService implements MetroAtomService {
       name: 'Metro',
       messages,
       ready,
-      handleError(error) {
-        if (error.message != null && error.message.includes('EADDRINUSE')) {
-          atom.notifications.addInfo(
-            `Port ${port.getValue()} is busy. Most likely it's another metro instance and you don't need to do anything`,
-          );
-          return;
-        }
-
-        atom.notifications.addError(
-          `Unexpected error while running Metro.\n\n${error.message}`,
-          {
-            dismissable: true,
-          },
-        );
-
-        logger.warn('stopping metro due to an error');
-        self.stop();
-      },
       trackingEvents: {
         start: 'metro:start',
         stop: 'metro:stop',
