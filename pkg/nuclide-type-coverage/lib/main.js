@@ -57,9 +57,7 @@ class Activation {
     );
 
     this._disposables = new UniversalDisposable();
-    this._activeEditorRegistry = new ActiveEditorRegistry(resultFunction, {
-      updateOnEdit: false,
-    });
+    this._activeEditorRegistry = new ActiveEditorRegistry(resultFunction);
 
     this._disposables.add(
       atom.commands.add(

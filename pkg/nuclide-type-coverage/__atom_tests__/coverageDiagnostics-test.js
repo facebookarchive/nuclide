@@ -185,7 +185,6 @@ describe('diagnosticProviderForResultStream', () => {
 
     it('should not emit an invalidation on edit or save', () => {
       isEnabledStream.next(true);
-      inputResults.next({kind: 'edit', editor});
       inputResults.next({kind: 'save', editor});
       expect(invalidations).toEqual([]);
     });

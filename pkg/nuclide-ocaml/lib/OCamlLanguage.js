@@ -98,7 +98,6 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'ocaml.outline',
-      updateOnEdit: false,
     },
     definition: {
       version: '0.1.0',

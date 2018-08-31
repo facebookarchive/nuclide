@@ -140,7 +140,6 @@ export function provideOutlineView(): OutlineProvider {
     name: PACKAGE_NAME,
     priority: 10,
     grammarScopes: Array.from(GRAMMAR_SET),
-    updateOnEdit: false,
     getOutline(editor) {
       return OutlineViewHelpers.getOutline(editor);
     },

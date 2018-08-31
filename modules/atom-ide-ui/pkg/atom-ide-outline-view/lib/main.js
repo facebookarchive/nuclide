@@ -37,7 +37,6 @@ class Activation {
 
     this._editorService = new ActiveEditorRegistry(
       (provider, editor) => provider.getOutline(editor),
-      {},
       getActiveEditorRegistryEventSources(),
     );
   }

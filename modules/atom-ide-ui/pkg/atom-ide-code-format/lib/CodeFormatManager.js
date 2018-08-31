@@ -236,12 +236,12 @@ export default class CodeFormatManager {
           selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
         );
       }
-      const rangeProviders = Array.from(
-        this._rangeProviders.getAllProvidersForEditor(editor),
-      );
-      const fileProviders = Array.from(
-        this._fileProviders.getAllProvidersForEditor(editor),
-      );
+      const rangeProviders = [
+        ...this._rangeProviders.getAllProvidersForEditor(editor),
+      ];
+      const fileProviders = [
+        ...this._fileProviders.getAllProvidersForEditor(editor),
+      ];
       const contents = editor.getText();
       if (
         rangeProviders.length > 0 &&
@@ -328,9 +328,9 @@ export default class CodeFormatManager {
       // the character that will usually cause a reformat (i.e. `}` instead of `{`).
       const character = event.newText[event.newText.length - 1];
 
-      const providers = Array.from(
-        this._onTypeProviders.getAllProvidersForEditor(editor),
-      );
+      const providers = [
+        ...this._onTypeProviders.getAllProvidersForEditor(editor),
+      ];
       if (providers.length === 0) {
         return Observable.empty();
       }
@@ -406,9 +406,9 @@ export default class CodeFormatManager {
   }
 
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
-    const saveProviders = Array.from(
-      this._onSaveProviders.getAllProvidersForEditor(editor),
-    );
+    const saveProviders = [
+      ...this._onSaveProviders.getAllProvidersForEditor(editor),
+    ];
     if (saveProviders.length > 0) {
       return Observable.defer(() =>
         this._reportBusy(
