@@ -1848,6 +1848,27 @@ export function fold(
   return hgRunCommand(args, execOptions).publish();
 }
 
+/**
+ * @param patch This will be the patch passed through std/in to hg import
+ * @param noCommit True will leave the imported changes uncommitted
+ */
+export function importPatch(
+  workingDirectory: NuclideUri,
+  patch: string,
+  noCommit: boolean = false,
+): ConnectableObservable<string> {
+  const args = ['import', '-'];
+  if (noCommit) {
+    args.push('--no-commit');
+  }
+  const execOptions = {
+    cwd: workingDirectory,
+    input: patch,
+  };
+
+  return hgRunCommand(args, execOptions).publish();
+}
+
 export function runCommand(
   workingDirectory: NuclideUri,
   args: Array<string>,

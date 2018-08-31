@@ -1383,6 +1383,12 @@ export class HgRepositoryClient {
       .refCount();
   }
 
+  importPatch(patch: string, noCommit: boolean = false): Observable<string> {
+    return this._sharedMembers.service
+      .importPatch(this._sharedMembers.workingDirectoryPath, patch, noCommit)
+      .refCount();
+  }
+
   _clearClientCache(filePaths: Array<NuclideUri>): void {
     if (filePaths.length === 0) {
       this._sharedMembers.hgStatusCache = new Map();
