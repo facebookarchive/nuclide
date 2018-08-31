@@ -11,14 +11,18 @@
  */
 
 import * as React from 'react';
+import classnames from 'classnames';
 
 type Props = {
   children?: mixed,
+  className?: string,
 };
 
 export const ToolbarLeft = (props: Props) => {
   return (
     // $FlowFixMe(>=0.53.0) Flow suppress
-    <div className="nuclide-ui-toolbar__left">{props.children}</div>
+    <div className={classnames('nuclide-ui-toolbar__left', props.className)}>
+      {props.children}
+    </div>
   );
 };
