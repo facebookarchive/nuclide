@@ -16,14 +16,15 @@ import ReactDOM from 'react-dom';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {Observable} from 'rxjs';
 
-type Props = {
+type Props = {|
+  fontSize: number,
   onSubmit: (value: string) => mixed,
   scopeName: ?string,
   history: Array<string>,
   watchEditor: ?atom$AutocompleteWatchEditor,
   onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
   placeholderText?: string,
-};
+|};
 
 type State = {
   historyIndex: number,
@@ -171,7 +172,9 @@ export default class InputArea extends React.Component<Props, State> {
         ? null
         : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (
-      <div className="console-input-wrapper">
+      <div
+        className="console-input-wrapper"
+        style={{fontSize: `${this.props.fontSize}px`}}>
         <AtomTextEditor
           ref={this._handleTextEditor}
           grammar={grammar}

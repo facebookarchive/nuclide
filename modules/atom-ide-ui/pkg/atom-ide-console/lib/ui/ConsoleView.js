@@ -327,6 +327,7 @@ export default class ConsoleView extends React.Component<Props, State> {
         <InputArea
           ref={(component: ?InputArea) => (this._inputArea = component)}
           scopeName={this.state.scopeName}
+          fontSize={this.props.fontSize}
           onSubmit={this._executePrompt}
           history={this.props.history}
           watchEditor={this.props.watchEditor}
