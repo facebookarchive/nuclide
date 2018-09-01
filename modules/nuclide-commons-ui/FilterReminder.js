@@ -12,12 +12,14 @@
 
 import * as React from 'react';
 
-type Props = {
+type Props = {|
+  noun?: string,
+  nounPlural?: string,
   filteredRecordCount: number,
   onReset: () => void,
-};
+|};
 
-export default class FilteredMessagesReminder extends React.Component<Props> {
+export default class FilterReminder extends React.Component<Props> {
   handleClick = (e: SyntheticEvent<>) => {
     e.preventDefault();
     this.props.onReset();
@@ -29,17 +31,20 @@ export default class FilteredMessagesReminder extends React.Component<Props> {
       return null;
     }
 
+    const noun = this.props.noun ?? 'item';
+    const nounPlural = this.props.nounPlural ?? `${noun}s`;
+
     return (
-      <div className="console-filtered-reminder">
-        <div style={{flex: 1}}>
+      <div className="nuclide-filter-reminder">
+        <div className="nuclide-filter-reminder-message">
           <pre>
             {filteredRecordCount}{' '}
-            {filteredRecordCount === 1 ? 'message is' : 'messages are'} hidden
-            by filters.
+            {filteredRecordCount === 1 ? `${noun} is` : `${nounPlural} are`}{' '}
+            hidden by filters.
           </pre>
         </div>
         <a href="#" onClick={this.handleClick}>
-          <pre>Show all messages.</pre>
+          <pre>Show all {nounPlural}</pre>
         </a>
       </div>
     );

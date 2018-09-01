@@ -24,7 +24,7 @@ import {macrotask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import FilteredMessagesReminder from './FilteredMessagesReminder';
+import FilterReminder from 'nuclide-commons-ui/FilterReminder';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
 import InputArea from './InputArea';
@@ -272,7 +272,9 @@ export default class ConsoleView extends React.Component<Props, State> {
           <div
             className="console-scroll-pane-wrapper atom-ide-filterable"
             ref={el => (this._consoleScrollPaneEl = el)}>
-            <FilteredMessagesReminder
+            <FilterReminder
+              noun="message"
+              nounPlural="messages"
               filteredRecordCount={this.props.filteredRecordCount}
               onReset={this.props.resetAllFilters}
             />
