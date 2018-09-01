@@ -255,6 +255,40 @@ describe('Completion Functions', () => {
         "import {testAbove} from '../above';",
       ]);
     });
+
+    it('prefers .react over other suffixes', () => {
+      const manager = new AutoImportsManager([]);
+      manager.indexFile(
+        '/a/node_modules/short.js',
+        'export function test() {}',
+      );
+      manager.indexFile(
+        '/a/node_modules/module.react.js',
+        'export function test() {}',
+      );
+      manager.indexFile(
+        '/a/node_modules/module.rm.js',
+        'export function test() {}',
+      );
+      const importInformation = {
+        ids: ['test'],
+        importType: 'namedValue',
+        isComplete: false,
+      };
+      const completions = provideFullImportCompletions(
+        importInformation,
+        importsFormatter,
+        manager,
+        '/a/b/test.js',
+        '',
+        0,
+      );
+      expect(completions.map(getCompletionText)).toEqual([
+        "import {test} from 'short';",
+        "import {test} from 'module.react';",
+        "import {test} from 'module.rm';",
+      ]);
+    });
   });
 
   describe('provideImportFileCompletions', () => {

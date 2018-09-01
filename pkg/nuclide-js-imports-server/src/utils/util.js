@@ -68,6 +68,16 @@ export function compareForSuggestion(path1: string, path2: string): number {
     // Provide highest-priority matches first.
     return p2 - p1;
   }
+  const parts1 = path1.split('.', 2);
+  const parts2 = path2.split('.', 2);
+  if (parts1[0] === parts2[0]) {
+    // Prefer x.react over any other x.{suffix}.
+    const isReact1 = parts1[1] === 'react';
+    const isReact2 = parts2[1] === 'react';
+    if (isReact1 !== isReact2) {
+      return Number(isReact2) - Number(isReact1);
+    }
+  }
   // Prefer shorter paths.
   if (path1.length !== path2.length) {
     return path1.length - path2.length;
