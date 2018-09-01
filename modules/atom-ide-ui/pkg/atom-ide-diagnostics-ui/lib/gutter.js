@@ -317,7 +317,7 @@ function createGutterItem(
   const item = document.createElement('span');
   const groupClassName = GUTTER_CSS_GROUPS[group];
   item.className = classnames('diagnostics-gutter-ui-item', groupClassName, {
-    'diagnostics-gutter-ui-gutter-stale': messages.some(
+    'diagnostics-gutter-ui-gutter-stale': messages.every(
       message => message.stale,
     ),
   });
