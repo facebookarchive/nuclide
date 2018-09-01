@@ -24,7 +24,11 @@ import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {parseFile} from './lib/AutoImportsManager';
 import {Range} from 'simple-text-buffer';
-import {compareForInsertion, getRequiredModule} from './utils/util';
+import {
+  compareForInsertion,
+  getRequiredModule,
+  compareForSuggestion,
+} from './utils/util';
 import {atomRangeToLSPRange} from '../../nuclide-lsp-implementation-common/lsp-utils';
 
 export type AddImportCommandParams = [JSExport, NuclideUri];
@@ -373,15 +377,22 @@ function findClosestImport(
   });
 
   if (closestExports.length > 1) {
-    const closestByModuleID = findSmallestByMeasure(closestExports, ({uri}) => {
+    const matchingModules = findSmallestByMeasure(closestExports, ({uri}) => {
       const id = moduleID(uri);
       return id === identifier ? 0 : id.indexOf(identifier) !== -1 ? 1 : 2;
     });
-
-    if (closestByModuleID.length === 1) {
-      return closestByModuleID[0];
+    // Pick the best moduleID that matches.
+    let bestModule = matchingModules[0];
+    let bestModuleID = moduleID(bestModule.uri);
+    for (let i = 1; i < matchingModules.length; i++) {
+      const thisModule = matchingModules[i];
+      const thisModuleID = moduleID(thisModule.uri);
+      if (compareForSuggestion(thisModuleID, bestModuleID) < 0) {
+        bestModule = thisModule;
+        bestModuleID = thisModuleID;
+      }
     }
-    return null;
+    return bestModule;
   }
   return closestExports[0];
 }
