@@ -342,7 +342,7 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
-        .withLatestFrom(this._getIsStaleMessageEnabledSteam())
+        .combineLatest(this._getIsStaleMessageEnabledSteam())
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
             if (!isStaleMessageEnabled) {
@@ -692,7 +692,7 @@ function getEditorDiagnosticUpdates(
             )
           : Observable.empty(),
     )
-    .withLatestFrom(isStaleMessageEnabledSteam)
+    .combineLatest(isStaleMessageEnabledSteam)
     .map(([diagnosticMessages, isStaleMessageEnabled]) => {
       return {
         ...diagnosticMessages,

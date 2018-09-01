@@ -76,7 +76,7 @@ export default class StatusBarTile {
     this._subscriptions.add(
       observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
         .let(fastDebounce(RENDER_DEBOUNCE_TIME))
-        .withLatestFrom(isStaleMessageEnabledSteam)
+        .combineLatest(isStaleMessageEnabledSteam)
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.map(diagnostic => {
             if (!isStaleMessageEnabled) {
