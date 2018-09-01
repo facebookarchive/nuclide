@@ -13,8 +13,5 @@
         "0.1.0": "consumeLanguageStatusProvider"
       }
     }
-  },
-  "activationHooks": [
-    "nuclide_language_status:gk:nuclide"
-  ]
+  }
 }
