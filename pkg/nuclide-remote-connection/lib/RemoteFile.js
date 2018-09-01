@@ -17,7 +17,6 @@ import typeof * as FileSystemService from '../../nuclide-server/lib/services/Fil
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import loadingNotification from '../../commons-atom/loading-notification';
-import passesGK from '../../commons-node/passesGK';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
 import {Emitter} from 'event-kit';
@@ -118,29 +117,6 @@ export class RemoteFile {
         this._watchSubscription = null;
       },
     );
-
-    // No need to wait for that async check.
-    this._checkWatchOutOfOpenDirectories();
-  }
-
-  async _checkWatchOutOfOpenDirectories(): Promise<void> {
-    const isPathInOpenDirectories = atom.project.contains(this._path);
-    if (
-      !isPathInOpenDirectories &&
-      (await passesGK('nuclide_watch_warn_unmanaged_file'))
-    ) {
-      atom.notifications.addWarning(
-        `Couldn't watch remote file \`${nuclideUri.basename(
-          this._path,
-        )}\` for changes!`,
-        {
-          detail:
-            "Updates to the file outside Nuclide won't reload automatically\n" +
-            "Please add the file's project directory to Nuclide\n",
-          dismissable: true,
-        },
-      );
-    }
   }
 
   _handleNativeChangeEvent(): Promise<void> {
