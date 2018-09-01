@@ -24,6 +24,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
 import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import analytics from 'nuclide-commons/analytics';
@@ -37,20 +38,23 @@ import {
 } from 'nuclide-commons-ui/LoadingSpinner';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 import {Tree} from 'nuclide-commons-ui/SelectableTree';
+import FilterReminder from 'nuclide-commons-ui/FilterReminder';
 
 import type {SearchResult} from './OutlineViewSearch';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
 
-type State = {
+type State = {|
   fontFamily: string,
   fontSize: number,
   lineHeight: number,
-};
+|};
 
-type Props = {
+type Props = {|
   outline: OutlineForUi,
   visible: boolean,
-};
+|};
+
+const SCORE_THRESHOLD = 0.1;
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   keyword: 'syntax--keyword',
@@ -202,17 +206,17 @@ type OutlineViewCoreProps = {
  */
 class OutlineViewCore extends React.PureComponent<
   OutlineViewCoreProps,
-  {
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
+  {|
     collapsedPaths: Array<NodePath>,
-  },
+    query: string,
+  |},
 > {
   _scrollerNode: ?HTMLDivElement;
   _searchRef: ?React.ElementRef<typeof OutlineViewSearchComponent>;
   _subscriptions: ?UniversalDisposable;
   state = {
     collapsedPaths: [],
-    searchResults: new Map(),
+    query: '',
   };
 
   componentDidMount() {
@@ -321,11 +325,43 @@ class OutlineViewCore extends React.PureComponent<
     // searchResults is passed here as a cache key for the memoization.
     // Since tree nodes contain `hidden` within them, we need to rerender
     // whenever searchResults changes to reflect that.
-    outlineTrees => [outlineTrees, this.state.searchResults],
+    outlineTrees => [outlineTrees, this._getSearchResults()],
+  );
+
+  /**
+   * Derive the "search results" object from the query. We store the query and results used in the
+   * last calculation to optimize when calculating the next value.
+   * TODO: This object used to be provided by a subcomponent. Now that we've hoisted, do we even
+   *     need it, or can we just derive the filtered tree directly?
+   */
+  _prevSearchResults = new Map();
+  _prevQuery = '';
+  _getSearchResults = memoizeUntilChanged(
+    () => {
+      const searchResults = new Map();
+      const outlineTrees =
+        this.props.outline.kind === 'outline'
+          ? this.props.outline.outlineTrees
+          : [];
+      outlineTrees.forEach(root =>
+        updateSearchSet(
+          this.state.query,
+          root,
+          searchResults,
+          this._prevSearchResults,
+          this._prevQuery,
+        ),
+      );
+      this._prevQuery = this.state.query;
+      this._prevSearchResults = searchResults;
+      return searchResults;
+    },
+    // Update whenever the outline or query changes.
+    () => [this.props.outline, this.state.query],
   );
 
   _outlineTreeToNode = (outlineTree: OutlineTreeForUi): TreeNode => {
-    const searchResult = this.state.searchResults.get(outlineTree);
+    const searchResult = this._getSearchResults().get(outlineTree);
 
     if (outlineTree.children.length === 0) {
       return {
@@ -343,6 +379,22 @@ class OutlineViewCore extends React.PureComponent<
     };
   };
 
+  _handleResetFilter = () => {
+    this.setState({query: ''});
+  };
+
+  _getFilteredCount(): number {
+    const {outline} = this.props;
+    if (outline.kind !== 'outline') {
+      return 0;
+    }
+    return countHiddenNodes(this._getNodes(outline.outlineTrees));
+  }
+
+  _handleQueryChange = (query: string): void => {
+    this.setState({query});
+  };
+
   render() {
     const {outline} = this.props;
     invariant(outline.kind === 'outline');
@@ -352,10 +404,14 @@ class OutlineViewCore extends React.PureComponent<
         <OutlineViewSearchComponent
           outlineTrees={outline.outlineTrees}
           editor={outline.editor}
-          updateSearchResults={searchResults => {
-            this.setState({searchResults});
-          }}
+          query={this.state.query}
+          onQueryChange={this._handleQueryChange}
+          searchResults={this._getSearchResults()}
           ref={this._setSearchRef}
+        />
+        <FilterReminder
+          filteredRecordCount={this._getFilteredCount()}
+          onReset={this._handleResetFilter}
         />
         <div
           className="outline-view-trees-scroller"
@@ -468,4 +524,63 @@ function selectNodeFromPath(
     node = node.children[path[i]];
   }
   return node;
+}
+
+function countHiddenNodes(roots: Array<TreeNode>): number {
+  let hiddenNodes = 0;
+  for (const root of roots) {
+    if (root.hidden) {
+      hiddenNodes++;
+    }
+    if (root.children != null) {
+      hiddenNodes += countHiddenNodes(root.children);
+    }
+  }
+  return hiddenNodes;
+}
+
+/* Exported for testing */
+export function updateSearchSet(
+  query: string,
+  root: OutlineTreeForUi,
+  map: Map<OutlineTreeForUi, SearchResult>,
+  prevMap: Map<OutlineTreeForUi, SearchResult>,
+  prevQuery: ?string,
+): void {
+  root.children.forEach(child =>
+    updateSearchSet(query, child, map, prevMap, prevQuery),
+  );
+  // Optimization using results from previous query.
+  // flowlint-next-line sketchy-null-string:off
+  if (prevQuery) {
+    const previousResult = prevMap.get(root);
+    if (
+      previousResult &&
+      (query === prevQuery ||
+        (query.startsWith(prevQuery) && !previousResult.visible))
+    ) {
+      map.set(root, previousResult);
+      return;
+    }
+  }
+  const text = root.tokenizedText
+    ? root.tokenizedText.map(e => e.value).join('')
+    : root.plainText || '';
+  const matches =
+    query === '' ||
+    fuzzaldrinPlus.score(text, query) / fuzzaldrinPlus.score(query, query) >
+      SCORE_THRESHOLD;
+  const visible =
+    matches ||
+    Boolean(
+      root.children.find(child => {
+        const childResult = map.get(child);
+        return !childResult || childResult.visible;
+      }),
+    );
+  let matchingCharacters;
+  if (matches) {
+    matchingCharacters = fuzzaldrinPlus.match(text, query);
+  }
+  map.set(root, {matches, visible, matchingCharacters});
 }

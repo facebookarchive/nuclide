@@ -10,7 +10,7 @@
  * @format
  * @emails oncall+nuclide
  */
-import {updateSearchSet} from '../lib/OutlineViewSearch';
+import {updateSearchSet} from '../lib/OutlineView';
 import type {OutlineTreeForUi} from '../lib/createOutlines';
 import {Point} from 'atom';
 
