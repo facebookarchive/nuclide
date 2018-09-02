@@ -6253,12 +6253,13 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-devtools-core@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-3.1.0.tgz#eec2e9e0e6edb77772e2bfc7d286a296f55a261a"
+react-devtools-core@3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-3.3.2.tgz#a8acc19a14cd465734dcc8d4821743b71320560e"
+  integrity sha512-e6CX94GZKF9qBgoK8tj/cCrPBL6quZeJGBSuvaDlOVYTT9tnH1KOWuCpB9V5ct1u5T/hfqBTy+cShIJ1qZdl1g==
   dependencies:
     shell-quote "^1.6.1"
-    ws "^2.0.3"
+    ws "^3.3.1"
 
 react-dom@16.4.1:
   version "16.4.1"
@@ -6779,10 +6780,6 @@ rxjs@5.5.5, rxjs@^5.5.2:
 safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.1.tgz#893312af69b2123def71f57889001671eeb2c853"
-
-safe-buffer@~5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
 
 safe-regex@^1.1.0:
   version "1.1.0"
@@ -8276,7 +8273,7 @@ ws@3.2.0, "ws@>= 2.2.3":
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-ws@3.3.x:
+ws@3.3.x, ws@^3.3.1:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/ws/-/ws-3.3.3.tgz#f1cf84fe2d5e901ebce94efaece785f187a228f2"
   dependencies:
@@ -8290,13 +8287,6 @@ ws@^1.1.1, ws@~1.1.4:
   dependencies:
     options ">=0.0.5"
     ultron "1.0.x"
-
-ws@^2.0.3:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-2.3.1.tgz#6b94b3e447cb6a363f785eaf94af6359e8e81c80"
-  dependencies:
-    safe-buffer "~5.0.1"
-    ultron "~1.1.0"
 
 ws@^4.0.0:
   version "4.1.0"
