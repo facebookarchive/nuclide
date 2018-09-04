@@ -1273,9 +1273,13 @@ export function uploadDroppedFilesEpic(
     // $FlowFixMe
     const files = Array.from(action.files).map(file => file.path);
     track('file-tree-upload-dropped-files', {count: files.length});
-    return Observable.fromPromise(
-      remoteTransferService.uploadFiles(files, destination.uri),
-    ).mapTo(Actions.expandNode(destination.rootUri, destination.uri));
+
+    return Observable.concat(
+      Observable.of(Actions.clearDragHover(), Actions.clearSelection()),
+      Observable.fromPromise(
+        remoteTransferService.uploadFiles(files, destination.uri),
+      ).mapTo(Actions.expandNode(destination.rootUri, destination.uri)),
+    );
   });
 }
 
