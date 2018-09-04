@@ -204,6 +204,9 @@ export function requestTunnelEpic(
               logger.error('error from tunnel: ', error);
               store.dispatch(Actions.closeTunnel(tunnel, error));
             });
+            newTunnel.on('close', () =>
+              store.dispatch(Actions.closeTunnel(tunnel, null)),
+            );
             store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
             onOpen();
 
