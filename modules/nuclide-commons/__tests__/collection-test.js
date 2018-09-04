@@ -37,6 +37,7 @@ import {
   areSetsEqual,
   someOfIterable,
   findInIterable,
+  findTopRanked,
   filterIterable,
   mapEqual,
   mapIterable,
@@ -749,5 +750,19 @@ describe('distinct', () => {
     expect(
       distinct([{x: 1}, {x: 2}, {x: 3}, {x: 4}, {x: 4}], o => String(o.x)),
     ).toEqual([{x: 1}, {x: 2}, {x: 3}, {x: 4}]);
+  });
+});
+
+describe('findTopRanked', () => {
+  it('returns the top ranked value', () => {
+    expect(findTopRanked([{a: 1}, {a: 3}, {a: 2}], x => x.a)).toEqual({a: 3});
+  });
+
+  it("doesn't include zero-ranked items", () => {
+    expect(findTopRanked([{a: 1}, {a: 2}], x => 0)).toBe(undefined);
+  });
+
+  it('stops iterating when it finds the max rank', () => {
+    expect(findTopRanked([{a: 1}, {a: 2}], x => x.a, 1)).toEqual({a: 1});
   });
 });

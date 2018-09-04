@@ -650,3 +650,28 @@ export class DefaultMap<K, V> extends Map<K, V> {
     return (super.get(key): any);
   }
 }
+
+/**
+ * Return the highest ranked item in a list, according to the provided ranking function. A max rank
+ * may optionally be provided so the whole list doesn't have to be iterated. Items with ranks of
+ * zero or less are never returned.
+ */
+export function findTopRanked<T>(
+  items: Iterable<T>,
+  ranker: T => number,
+  maxRank?: number,
+): ?T {
+  let maxSeenRank = 0;
+  let maxRankedItem;
+  for (const item of items) {
+    const rank = ranker(item);
+    if (rank === maxRank) {
+      return item;
+    }
+    if (rank > 0 && rank > maxSeenRank) {
+      maxSeenRank = rank;
+      maxRankedItem = item;
+    }
+  }
+  return maxRankedItem;
+}
