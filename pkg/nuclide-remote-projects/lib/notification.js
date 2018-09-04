@@ -20,7 +20,7 @@ import {shell} from 'electron';
 import escapeHtml from 'escape-html';
 import child_process from 'child_process';
 
-const NUCLIDE_CANT_CONNECT_URL = 'http://fburl.com/nuclidecantconnect';
+// @fb-only: const NUCLIDE_CANT_CONNECT_URL = 'http://fburl.com/nuclidecantconnect';
 
 export function notifySshHandshakeError(
   errorType: SshHandshakeErrorType,
