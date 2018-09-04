@@ -628,33 +628,35 @@ export default class VsDebugSession extends V8Protocol {
     this._adapterProcessSubscription = this._spawner
       .spawnAdapter(this._adapterExecutable)
       .refCount()
-      .subscribe(
-        (message: ProcessMessage) => {
-          if (message.kind === 'stdout') {
-            this.handleData(new Buffer(message.data));
-          } else if (message.kind === 'stderr') {
-            const event: DebugProtocol.OutputEvent = ({
-              type: 'event',
-              event: 'output',
-              body: {
-                category: 'stderr',
-                output: message.data,
-              },
-              seq: 0,
-            }: any);
-            this._onDidOutput.next(event);
-            this._onDidEvent.next(event);
-            this._logger.error(`adapter stderr: ${message.data}`);
-            this._adapterErrorOutput = this._adapterErrorOutput + message.data;
-          } else {
-            invariant(message.kind === 'exit');
+      .subscribe((message: ProcessMessage) => {
+        if (message.kind === 'stdout') {
+          this.handleData(new Buffer(message.data));
+        } else if (message.kind === 'stderr') {
+          const event: DebugProtocol.OutputEvent = ({
+            type: 'event',
+            event: 'output',
+            body: {
+              category: 'stderr',
+              output: message.data,
+            },
+            seq: 0,
+          }: any);
+          this._onDidOutput.next(event);
+          this._onDidEvent.next(event);
+          this._logger.error(`adapter stderr: ${message.data}`);
+          this._adapterErrorOutput = this._adapterErrorOutput + message.data;
+        } else {
+          invariant(message.kind === 'exit');
+          const exitCode = message.exitCode || 0;
+          if (exitCode === 0) {
             this.onServerExit(message.exitCode || 0);
+          } else {
+            this.onServerError(
+              new Error(`Debug adapter exited with code: ${exitCode}`),
+            );
           }
-        },
-        (err: Error) => {
-          this.onServerError(err);
-        },
-      );
+        }
+      });
 
     this.setOutput(this._spawner.write.bind(this._spawner));
   }

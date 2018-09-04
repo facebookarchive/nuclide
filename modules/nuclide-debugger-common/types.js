@@ -35,6 +35,8 @@ export type DebuggerConfigAction = 'launch' | 'attach';
 export type VSAdapterExecutableInfo = {|
   command: string,
   args: Array<string>,
+  cwd?: string,
+  env?: {[key: string]: string},
 |};
 
 export type NativeVsAdapterType = 'native_lldb' | 'native_gdb';
