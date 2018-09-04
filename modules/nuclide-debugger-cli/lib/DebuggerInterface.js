@@ -1,75 +1,45 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+"use strict";
 
-import * as DebugProtocol from 'vscode-debugprotocol';
+function DebugProtocol() {
+  const data = _interopRequireWildcard(require("vscode-debugprotocol"));
 
-import Breakpoint from './Breakpoint';
-import Thread from './Thread';
-import ThreadCollection from './ThreadCollection';
+  DebugProtocol = function () {
+    return data;
+  };
 
-export type VariablesInScope = {
-  expensive: boolean,
-  scopeName: string,
-  variables?: DebugProtocol.Variable[],
-};
-
-export type BreakpointSetResult = {
-  index: number,
-  message: ?string,
-};
-
-export interface DebuggerInterface {
-  run(): Promise<void>;
-  getThreads(): ThreadCollection;
-  getActiveThread(): Thread;
-  stepIn(): Promise<void>;
-  stepOver(): Promise<void>;
-  stepOut(): Promise<void>;
-  continue(): Promise<void>;
-  getStackTrace(
-    thread: number,
-    levels: number,
-  ): Promise<DebugProtocol.StackFrame[]>;
-  setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>;
-  getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>;
-  getVariablesByScope(selectedScope: ?string): Promise<VariablesInScope[]>;
-  getVariablesByReference(ref: number): Promise<DebugProtocol.Variable[]>;
-  supportsStoppedAtBreakpoint(): boolean;
-  getStoppedAtBreakpoint(): ?Breakpoint;
-  setSourceBreakpoint(
-    path: string,
-    line: number,
-    once: boolean,
-  ): Promise<BreakpointSetResult>;
-  setFunctionBreakpoint(
-    func: string,
-    once: boolean,
-  ): Promise<BreakpointSetResult>;
-  getAllBreakpoints(): Breakpoint[];
-  getBreakpointByIndex(index: number): Breakpoint;
-  setAllBreakpointsEnabled(enabled: boolean): Promise<void>;
-  setBreakpointEnabled(bpt: Breakpoint, enabled: boolean): Promise<void>;
-  deleteAllBreakpoints(): Promise<void>;
-  deleteBreakpoint(bpt: Breakpoint): Promise<void>;
-  toggleAllBreakpoints(): Promise<void>;
-  toggleBreakpoint(bpt: Breakpoint): Promise<void>;
-  getSourceLines(
-    source: DebugProtocol.Source,
-    start: number,
-    length: number,
-  ): Promise<string[]>;
-  relaunch(): Promise<void>;
-  evaluateExpression(
-    expression: string,
-  ): Promise<DebugProtocol.EvaluateResponse>;
-  supportsCodeBlocks(): boolean;
+  return data;
 }
+
+function _Breakpoint() {
+  const data = _interopRequireDefault(require("./Breakpoint"));
+
+  _Breakpoint = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Thread() {
+  const data = _interopRequireDefault(require("./Thread"));
+
+  _Thread = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ThreadCollection() {
+  const data = _interopRequireDefault(require("./ThreadCollection"));
+
+  _ThreadCollection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }

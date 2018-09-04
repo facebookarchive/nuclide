@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _LineEditor() {
+  const data = _interopRequireDefault(require("./console/LineEditor"));
+
+  _LineEditor = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CommandDispatcher() {
+  const data = _interopRequireDefault(require("./CommandDispatcher"));
+
+  _CommandDispatcher = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _More() {
+  const data = _interopRequireDefault(require("./More"));
+
+  _More = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,95 +47,64 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {ConsoleIO} from './ConsoleIO';
-import type {CursorControl} from './console/types';
-
-import LineEditor from './console/LineEditor';
-import invariant from 'assert';
-import CommandDispatcher from './CommandDispatcher';
-import More from './More';
-import {Observable, Subject} from 'rxjs';
-
 const PROMPT = '\x1b[32;1mfbdbg>\x1b[0m ';
 
-export default class CommandLine implements ConsoleIO {
-  _dispatcher: CommandDispatcher;
-  _cli: LineEditor;
-  _inputStopped = false;
-  _keepPromptWhenStopped: boolean = false;
-  _shouldPrompt = false;
-  _lastLine = '';
-  _overridePrompt: ?string = null;
-
-  _interrupts: Subject<void>;
-  _lines: Subject<string>;
-  _keys: Subject<string>;
-  _more: ?More;
-
-  _subscriptions: Array<rxjs$ISubscription> = [];
-
-  constructor(dispatcher: CommandDispatcher, plain: boolean) {
+class CommandLine {
+  constructor(dispatcher, plain) {
+    this._inputStopped = false;
+    this._keepPromptWhenStopped = false;
+    this._shouldPrompt = false;
+    this._lastLine = '';
+    this._overridePrompt = null;
+    this._subscriptions = [];
     this._dispatcher = dispatcher;
-
     let lineEditorArgs = {
       input: process.stdin,
-      output: process.stdout,
+      output: process.stdout
     };
+
     if (plain) {
-      lineEditorArgs = {
-        ...lineEditorArgs,
-        tty: false,
-      };
+      lineEditorArgs = Object.assign({}, lineEditorArgs, {
+        tty: false
+      });
     }
-    this._cli = new LineEditor(lineEditorArgs);
 
+    this._cli = new (_LineEditor().default)(lineEditorArgs);
     this.setPrompt();
+    this._interrupts = new _RxMin.Subject();
 
-    this._interrupts = new Subject();
-    this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'SIGINT').subscribe(this._interrupts),
-    );
+    this._subscriptions.push(_RxMin.Observable.fromEvent(this._cli, 'SIGINT').subscribe(this._interrupts));
 
-    this._lines = new Subject();
-    this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'line')
-        .takeUntil(Observable.fromEvent(this._cli, 'close'))
-        .subscribe(this._lines),
-    );
+    this._lines = new _RxMin.Subject();
 
-    this._subscriptions.push(
-      this._lines
-        .filter(_ => !this._inputStopped)
-        .switchMap(_ => {
-          this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
-          try {
-            return this._dispatcher.execute(this._lastLine);
-          } catch (err) {
-            return err;
-          }
-        })
-        .subscribe(_ => {
-          if (_ != null) {
-            this.outputLine(_.message);
-          }
-          if (!this._inputStopped) {
-            this._cli.prompt();
-          } else {
-            this._shouldPrompt = true;
-          }
-        }),
-    );
+    this._subscriptions.push(_RxMin.Observable.fromEvent(this._cli, 'line').takeUntil(_RxMin.Observable.fromEvent(this._cli, 'close')).subscribe(this._lines));
 
-    this._keys = new Subject();
-    this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'key')
-        .takeUntil(Observable.fromEvent(this._cli, 'close'))
-        .subscribe(this._keys),
-    );
+    this._subscriptions.push(this._lines.filter(_ => !this._inputStopped).switchMap(_ => {
+      this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
+
+      try {
+        return this._dispatcher.execute(this._lastLine);
+      } catch (err) {
+        return err;
+      }
+    }).subscribe(_ => {
+      if (_ != null) {
+        this.outputLine(_.message);
+      }
+
+      if (!this._inputStopped) {
+        this._cli.prompt();
+      } else {
+        this._shouldPrompt = true;
+      }
+    }));
+
+    this._keys = new _RxMin.Subject();
+
+    this._subscriptions.push(_RxMin.Observable.fromEvent(this._cli, 'key').takeUntil(_RxMin.Observable.fromEvent(this._cli, 'close')).subscribe(this._keys));
 
     this._shouldPrompt = true;
   }
@@ -103,90 +113,102 @@ export default class CommandLine implements ConsoleIO {
     this._subscriptions.forEach(_ => _.unsubscribe());
   }
 
-  observeInterrupts(): Observable<void> {
+  observeInterrupts() {
     return this._interrupts;
   }
 
-  observeLines(): Observable<string> {
+  observeLines() {
     return this._lines;
   }
 
-  observeKeys(): Observable<string> {
+  observeKeys() {
     return this._keys;
   }
 
-  isTTY(): boolean {
+  isTTY() {
     return this._cli.isTTY();
   }
 
-  setPrompt(prompt: ?string): void {
+  setPrompt(prompt) {
     this._overridePrompt = prompt;
+
     this._updatePrompt();
   }
 
-  _updatePrompt(): void {
+  _updatePrompt() {
     if (this._inputStopped && !this._keepPromptWhenStopped) {
       this._cli.setPrompt('');
     } else {
-      this._cli.setPrompt(
-        this._overridePrompt != null ? this._overridePrompt : PROMPT,
-      );
+      this._cli.setPrompt(this._overridePrompt != null ? this._overridePrompt : PROMPT);
     }
   }
 
-  output(text: string): void {
+  output(text) {
     if (this._more == null) {
       this._cli.write(text);
     }
   }
 
-  outputLine(line?: string = ''): void {
+  outputLine(line = '') {
     if (this._more == null) {
       this._cli.write(`${line}\n`);
     }
   }
 
-  write(data: string): void {
+  write(data) {
     this._cli.write(data);
   }
 
-  more(text: string): void {
-    invariant(this._more == null);
-    const cursorControl: ?CursorControl = this._cli.borrowTTY();
+  more(text) {
+    if (!(this._more == null)) {
+      throw new Error("Invariant violation: \"this._more == null\"");
+    }
+
+    const cursorControl = this._cli.borrowTTY();
+
     if (cursorControl == null) {
       this.output(text);
       return;
     }
 
-    const more: More = new More(text, this, cursorControl, () => {
+    const more = new (_More().default)(text, this, cursorControl, () => {
       this._cli.returnTTY();
+
       this._more = null;
     });
     this._more = more;
+
     this._more.display();
   }
 
-  prompt(): void {
+  prompt() {
     this._cli.prompt();
   }
 
-  stopInput(keepPromptWhenStopped?: boolean): void {
+  stopInput(keepPromptWhenStopped) {
     this._keepPromptWhenStopped = keepPromptWhenStopped === true;
     this._inputStopped = true;
     this._shouldPrompt = true;
+
     this._updatePrompt();
   }
 
-  startInput(): void {
+  startInput() {
     this._inputStopped = false;
+
     this._updatePrompt();
+
     if (this._shouldPrompt) {
       this._cli.prompt();
+
       this._shouldPrompt = false;
     }
   }
 
-  close(): void {
+  close() {
     this._cli.close();
   }
+
 }
+
+exports.default = CommandLine;

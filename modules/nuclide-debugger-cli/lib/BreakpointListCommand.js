@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _Format() {
+  const data = _interopRequireDefault(require("./Format"));
+
+  _Format = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +25,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type Breakpoint from './Breakpoint';
-import type {Command} from './Command';
-import type {DebuggerInterface} from './DebuggerInterface';
-import type {ConsoleIO} from './ConsoleIO';
-
-import leftPad from './Format';
-
-export default class BreakpointListCommand implements Command {
-  name = 'list';
-  helpText = 'Lists all breakpoints.';
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
+class BreakpointListCommand {
+  constructor(con, debug) {
+    this.name = 'list';
+    this.helpText = 'Lists all breakpoints.';
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const breakpoints = this._debugger
-      .getAllBreakpoints()
-      .sort((left, right) => left.index - right.index);
+  async execute(args) {
+    const breakpoints = this._debugger.getAllBreakpoints().sort((left, right) => left.index - right.index);
 
     if (breakpoints.length === 0) {
       return;
@@ -40,22 +45,24 @@ export default class BreakpointListCommand implements Command {
 
     const lastBreakpoint = breakpoints[breakpoints.length - 1];
     const indexSize = String(lastBreakpoint.index).length;
-    const stopped: ?Breakpoint = this._debugger.getStoppedAtBreakpoint();
+
+    const stopped = this._debugger.getStoppedAtBreakpoint();
 
     breakpoints.forEach(bpt => {
       const attributes = [bpt.state];
+
       if (!bpt.verified) {
         attributes.push('unverified');
       }
 
       const stoppedHere = bpt.id != null && stopped === bpt;
-
-      const index = leftPad(
-        `${stoppedHere ? '*' : ' '}#${bpt.index}`,
-        indexSize + 1,
-      );
+      const index = (0, _Format().default)(`${stoppedHere ? '*' : ' '}#${bpt.index}`, indexSize + 1);
       const attrs = attributes.length === 0 ? '' : `(${attributes.join(',')})`;
+
       this._console.outputLine(`${index} ${bpt.toString()} ${attrs}`);
     });
   }
+
 }
+
+exports.default = BreakpointListCommand;

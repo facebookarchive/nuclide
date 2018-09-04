@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -28,13 +35,11 @@
  * To use it, just wrap your callback in a ignoreTextSelectionEvents call
  *   onClick={ignoreTextSelectionEvents(this._onClick)}
  */
-
-const ignoreTextSelectionEvents = (
-  cb?: (e: SyntheticMouseEvent<>) => mixed,
-) => {
-  return (e: SyntheticMouseEvent<>) => {
+const ignoreTextSelectionEvents = cb => {
+  return e => {
     // Ignore text selection
     const selection = getSelection();
+
     if (selection != null && selection.type === 'Range') {
       e.preventDefault();
       return;
@@ -44,4 +49,5 @@ const ignoreTextSelectionEvents = (
   };
 };
 
-export default ignoreTextSelectionEvents;
+var _default = ignoreTextSelectionEvents;
+exports.default = _default;

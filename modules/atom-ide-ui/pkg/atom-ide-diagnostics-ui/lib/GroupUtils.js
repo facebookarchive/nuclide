@@ -1,3 +1,13 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getGroup = getGroup;
+exports.getDisplayName = getDisplayName;
+exports.getIcon = getIcon;
+exports.getHighestPriorityGroup = getHighestPriorityGroup;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,96 +16,104 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const PRIORITIZED_GROUPS = ['review', 'errors', 'warnings', 'info', 'action'];
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-import type {DiagnosticGroup} from './types';
+function getGroup(message) {
+  const {
+    kind
+  } = message;
 
-import invariant from 'assert';
-
-const PRIORITIZED_GROUPS: Array<DiagnosticGroup> = [
-  'review',
-  'errors',
-  'warnings',
-  'info',
-  'action',
-];
-
-export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
-  const {kind} = message;
   switch (kind) {
     case 'lint':
     case null:
     case undefined:
-      invariant(message.type !== 'Hint');
-      // We have a separate button for each severity.
+      if (!(message.type !== 'Hint')) {
+        throw new Error("Invariant violation: \"message.type !== 'Hint'\"");
+      } // We have a separate button for each severity.
+
+
       switch (message.type) {
         case 'Error':
           return 'errors';
+
         case 'Warning':
           return 'warnings';
+
         case 'Info':
           return 'info';
+
         default:
-          (message.type: empty);
+          message.type;
           throw new Error(`Invalid message severity: ${message.type}`);
       }
+
     case 'review':
       return 'review';
+
     case 'action':
       return 'action';
+
     default:
-      (kind: empty);
+      kind;
       throw new Error(`Invalid message kind: ${kind}`);
   }
 }
 
-export function getDisplayName(group: DiagnosticGroup): string {
+function getDisplayName(group) {
   switch (group) {
     case 'errors':
       return 'Errors';
+
     case 'warnings':
       return 'Warnings';
+
     case 'info':
       return 'Info';
+
     case 'review':
       return 'Review';
+
     case 'action':
       return 'Actions';
+
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid group: ${group}`);
   }
 }
 
-export function getIcon(group: DiagnosticGroup): IconName {
+function getIcon(group) {
   switch (group) {
     case 'errors':
       return 'nuclicon-error';
+
     case 'warnings':
       return 'nuclicon-warning';
+
     case 'info':
       return 'info';
+
     case 'review':
       return 'nuclicon-comment-discussion';
+
     case 'action':
       return 'nuclicon-lightbulb-filled';
+
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid filter type: ${group}`);
   }
 }
 
-export function getHighestPriorityGroup(
-  groups: Set<DiagnosticGroup>,
-): DiagnosticGroup {
+function getHighestPriorityGroup(groups) {
   for (const group of PRIORITIZED_GROUPS) {
     if (groups.has(group)) {
       return group;
     }
   }
+
   throw new Error(`Invalid group set: ${[...groups].toString()}`);
 }

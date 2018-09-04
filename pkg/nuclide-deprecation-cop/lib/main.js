@@ -1,3 +1,57 @@
+"use strict";
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAnalytics() {
+  const data = require("../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _updateKeymap() {
+  const data = _interopRequireDefault(require("./updateKeymap"));
+
+  _updateKeymap = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +59,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import {getLogger} from 'log4js';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
-import updateKeymap from './updateKeymap';
 
 /**
  * Put deprecated commands with their new equivalents here.
@@ -24,9 +72,8 @@ import updateKeymap from './updateKeymap';
 const DEPRECATED_CONSOLE_COMMANDS = {
   'nuclide-console:toggle': 'console:toggle',
   'nuclide-console:clear': 'console:clear',
-  'nuclide-console:copy-message': 'console:copy-message',
+  'nuclide-console:copy-message': 'console:copy-message'
 };
-
 const DEPRECATED_DEBUGGER_COMMANDS = {
   'nuclide-debugger:toggle': 'debugger:toggle',
   'nuclide-debugger:show': 'debugger:show',
@@ -38,17 +85,14 @@ const DEPRECATED_DEBUGGER_COMMANDS = {
   'nuclide-debugger:step-into': 'debugger:step-into',
   'nuclide-debugger:step-out': 'debugger:step-out',
   'nuclide-debugger:run-to-location': 'debugger:run-to-location',
-  'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint',
+  'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint'
 };
-
 const DEPRECATED_FILE_TREE_COMMANDS = {
-  'nuclide-file-tree:set-current-working-root':
-    'tree-view:set-current-working-root',
+  'nuclide-file-tree:set-current-working-root': 'tree-view:set-current-working-root',
   'nuclide-file-tree:add-file': 'tree-view:add-file',
   'nuclide-file-tree:add-file-relative': 'tree-view:add-file-relative',
   'nuclide-file-tree:add-folder': 'tree-view:add-folder',
-  'nuclide-file-tree:remove-project-folder-selection':
-    'tree-view:remove-project-folder-selection',
+  'nuclide-file-tree:remove-project-folder-selection': 'tree-view:remove-project-folder-selection',
   'nuclide-file-tree:toggle': 'tree-view:toggle',
   'nuclide-file-tree:toggle-focus': 'tree-view:toggle-focus',
   'nuclide-file-tree:reveal-active-file': 'tree-view:reveal-active-file',
@@ -58,21 +102,14 @@ const DEPRECATED_FILE_TREE_COMMANDS = {
   'nuclide-file-tree:duplicate-selection': 'tree-view:duplicate-selection',
   'nuclide-file-tree:expand-directory': 'tree-view:expand-directory',
   'nuclide-file-tree:collapse-directory': 'tree-view:collapse-directory',
-  'nuclide-file-tree:recursive-expand-directory':
-    'tree-view:recursive-expand-directory',
-  'nuclide-file-tree:recursive-collapse-directory':
-    'tree-view:recursive-collapse-directory',
-  'nuclide-file-tree:recursive-collapse-all':
-    'tree-view:recursive-collapse-all',
+  'nuclide-file-tree:recursive-expand-directory': 'tree-view:recursive-expand-directory',
+  'nuclide-file-tree:recursive-collapse-directory': 'tree-view:recursive-collapse-directory',
+  'nuclide-file-tree:recursive-collapse-all': 'tree-view:recursive-collapse-all',
   'nuclide-file-tree:open-selected-entry': 'tree-view:open-selected-entry',
-  'nuclide-file-tree:open-selected-entry-right':
-    'tree-view:open-selected-entry-right',
-  'nuclide-file-tree:open-selected-entry-left':
-    'tree-view:open-selected-entry-left',
-  'nuclide-file-tree:open-selected-entry-up':
-    'tree-view:open-selected-entry-up',
-  'nuclide-file-tree:open-selected-entry-down':
-    'tree-view:open-selected-entry-down',
+  'nuclide-file-tree:open-selected-entry-right': 'tree-view:open-selected-entry-right',
+  'nuclide-file-tree:open-selected-entry-left': 'tree-view:open-selected-entry-left',
+  'nuclide-file-tree:open-selected-entry-up': 'tree-view:open-selected-entry-up',
+  'nuclide-file-tree:open-selected-entry-down': 'tree-view:open-selected-entry-down',
   'nuclide-file-tree:search-in-directory': 'tree-view:search-in-directory',
   'nuclide-file-tree:remove': 'tree-view:remove',
   'nuclide-file-tree:remove-letter': 'tree-view:remove-letter',
@@ -149,103 +186,80 @@ const DEPRECATED_FILE_TREE_COMMANDS = {
   'nuclide-file-tree:go-to-letter-x': 'tree-view:go-to-letter-x',
   'nuclide-file-tree:go-to-letter-y': 'tree-view:go-to-letter-y',
   'nuclide-file-tree:go-to-letter-z': 'tree-view:go-to-letter-z',
-  'nuclide-file-tree:go-to-letter-~': 'tree-view:go-to-letter-~',
+  'nuclide-file-tree:go-to-letter-~': 'tree-view:go-to-letter-~'
 };
-
 const DEPRECATED_TERMINAL_COMMANDS = {
   'nuclide-terminal:new-terminal': 'atom-ide-terminal:new-terminal',
-  'nuclide-terminal:toggle-terminal-focus':
-    'atom-ide-terminal:toggle-terminal-focus',
+  'nuclide-terminal:toggle-terminal-focus': 'atom-ide-terminal:toggle-terminal-focus',
   'nuclide-terminal:add-escape-prefix': 'atom-ide-terminal:add-escape-prefix',
   'nuclide-terminal:create-paste': 'atom-ide-terminal:create-paste',
-  'nuclide-terminal:clear': 'atom-ide-terminal:clear',
+  'nuclide-terminal:clear': 'atom-ide-terminal:clear'
 };
-
 const DEPRECATED_SOURCE_CONTROL_COMMANDS = {
-  'fb-interactive-smartlog:copy-differential-id':
-    'fb-interactive-smartlog:copy-diff-number',
-  'fb-interactive-smartlog:copy-revision-hash':
-    'fb-interactive-smartlog:copy-commit-hash',
-  'fb-interactive-smartlog:strip-revision':
-    'fb-interactive-smartlog:strip-commit',
-  'fb-interactive-smartlog:abandon-revision':
-    'fb-interactive-smartlog:abandon-diff',
-  'fb-interactive-smartlog:accept-revision':
-    'fb-interactive-smartlog:accept-diff',
-  'fb-interactive-smartlog:publish-revision':
-    'fb-interactive-smartlog:publish-diff',
-  'fb-interactive-smartlog:reclaim-revision':
-    'fb-interactive-smartlog:reclaim-diff',
-  'fb-interactive-smartlog:reject-revision':
-    'fb-interactive-smartlog:reject-diff',
-  'fb-interactive-smartlog:request-revision':
-    'fb-interactive-smartlog:request-diff',
-  'fb-interactive-smartlog:rethink-revision':
-    'fb-interactive-smartlog:rethink-diff',
+  'fb-interactive-smartlog:copy-differential-id': 'fb-interactive-smartlog:copy-diff-number',
+  'fb-interactive-smartlog:copy-revision-hash': 'fb-interactive-smartlog:copy-commit-hash',
+  'fb-interactive-smartlog:strip-revision': 'fb-interactive-smartlog:strip-commit',
+  'fb-interactive-smartlog:abandon-revision': 'fb-interactive-smartlog:abandon-diff',
+  'fb-interactive-smartlog:accept-revision': 'fb-interactive-smartlog:accept-diff',
+  'fb-interactive-smartlog:publish-revision': 'fb-interactive-smartlog:publish-diff',
+  'fb-interactive-smartlog:reclaim-revision': 'fb-interactive-smartlog:reclaim-diff',
+  'fb-interactive-smartlog:reject-revision': 'fb-interactive-smartlog:reject-diff',
+  'fb-interactive-smartlog:request-revision': 'fb-interactive-smartlog:request-diff',
+  'fb-interactive-smartlog:rethink-revision': 'fb-interactive-smartlog:rethink-diff'
 };
-
 const DEPRECATED_RELATED_FILES_COMMANDS = {
   'nuclide-related-files:switch-between-header-source': 'file:open-alternate',
   'nuclide-related-files:jump-to-next-related-file': 'file:open-alternate',
-  'nuclide-related-files:jump-to-previous-related-file': 'file:open-alternate',
+  'nuclide-related-files:jump-to-previous-related-file': 'file:open-alternate'
 };
-
-const DEPRECATED_COMMANDS = {
-  ...DEPRECATED_CONSOLE_COMMANDS,
-  ...DEPRECATED_DEBUGGER_COMMANDS,
-  ...DEPRECATED_FILE_TREE_COMMANDS,
-  ...DEPRECATED_TERMINAL_COMMANDS,
-  ...DEPRECATED_SOURCE_CONTROL_COMMANDS,
-  ...DEPRECATED_RELATED_FILES_COMMANDS,
-};
+const DEPRECATED_COMMANDS = Object.assign({}, DEPRECATED_CONSOLE_COMMANDS, DEPRECATED_DEBUGGER_COMMANDS, DEPRECATED_FILE_TREE_COMMANDS, DEPRECATED_TERMINAL_COMMANDS, DEPRECATED_SOURCE_CONTROL_COMMANDS, DEPRECATED_RELATED_FILES_COMMANDS);
 
 class Activation {
-  _disposables: UniversalDisposable;
-  _warnedCommands: Set<string>;
-
   constructor() {
     this._warnedCommands = new Set();
-    this._disposables = new UniversalDisposable(this._deprecateCommands());
+    this._disposables = new (_UniversalDisposable().default)(this._deprecateCommands()); // $FlowIgnore: private API
 
-    // $FlowIgnore: private API
     const keymapPath = atom.keymaps.getUserKeymapPath();
-    updateKeymap(keymapPath, DEPRECATED_COMMANDS).catch(err => {
+    (0, _updateKeymap().default)(keymapPath, DEPRECATED_COMMANDS).catch(err => {
       // Nonexistent keymaps are normal.
       if (err.code !== 'ENOENT') {
-        getLogger('nuclide-deprecation-cop').error(
-          'Error updating user keymap:',
-          err,
-        );
+        (0, _log4js().getLogger)('nuclide-deprecation-cop').error('Error updating user keymap:', err);
       }
     });
   }
 
-  _deprecateCommands(): IDisposable {
+  _deprecateCommands() {
     // Catch any direct invocations of the commands (context menu, dispatch).
-    return atom.commands.onWillDispatch((event: any) => {
+    return atom.commands.onWillDispatch(event => {
       const command = event.type;
+
       if (!DEPRECATED_COMMANDS.hasOwnProperty(command)) {
         return;
       }
+
       const newCommand = DEPRECATED_COMMANDS[command];
+
       if (!this._warnedCommands.has(command)) {
-        track('deprecated-command-dispatched', {command});
+        (0, _nuclideAnalytics().track)('deprecated-command-dispatched', {
+          command
+        });
         atom.notifications.addWarning('Nuclide: Deprecated Command', {
           icon: 'nuclicon-nuclide',
-          description:
-            `The command \`${command}\` has been deprecated.\n` +
-            `Please use the new command \`${newCommand}\`.`,
-          dismissable: true,
+          description: `The command \`${command}\` has been deprecated.\n` + `Please use the new command \`${newCommand}\`.`,
+          dismissable: true
         });
+
         this._warnedCommands.add(command);
       }
+
       atom.commands.dispatch(event.target, newCommand, event.detail);
     });
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

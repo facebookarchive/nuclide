@@ -1,3 +1,108 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Model = exports.ExceptionBreakpoint = exports.FunctionBreakpoint = exports.Breakpoint = exports.Process = exports.Thread = exports.StackFrame = exports.Scope = exports.Variable = exports.Expression = exports.Source = void 0;
+
+function DebugProtocol() {
+  const data = _interopRequireWildcard(require("vscode-debugprotocol"));
+
+  DebugProtocol = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _uuid() {
+  const data = _interopRequireDefault(require("uuid"));
+
+  _uuid = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _atom = require("atom");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _analytics() {
+  const data = require("../../../../../nuclide-commons/analytics");
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("../utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _expected() {
+  const data = require("../../../../../nuclide-commons/expected");
+
+  _expected = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +111,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -38,131 +143,64 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
-import type {
-  IExpression,
-  IExpressionContainer,
-  IEvaluatableExpression,
-  IStackFrame,
-  IBreakpoint,
-  IRawModelUpdate,
-  IRawStopppedUpdate,
-  IRawThreadUpdate,
-  ISession,
-  IThread,
-  IModel,
-  IScope,
-  ISource,
-  IProcess,
-  IRawStoppedDetails,
-  IEnableable,
-  IBreakpointsChangeEvent,
-  IRawBreakpoint,
-  IExceptionInfo,
-  IExceptionBreakpoint,
-  IFunctionBreakpoint,
-  ITreeElement,
-  IVariable,
-  SourcePresentationHint,
-  DebuggerModeType,
-} from '../types';
-import type {IProcessConfig} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
-import type {Expected} from 'nuclide-commons/expected';
-
-import {Observable} from 'rxjs';
-import uuid from 'uuid';
-import nullthrows from 'nullthrows';
-import invariant from 'assert';
-import {Emitter, Range} from 'atom';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from 'nuclide-commons/analytics';
-import {
-  AnalyticsEvents,
-  UNKNOWN_SOURCE,
-  DEBUG_SOURCES_URI,
-  DebuggerMode,
-} from '../constants';
-import {openSourceLocation} from '../utils';
-import {distinct} from 'nuclide-commons/collection';
-import {Expect} from 'nuclide-commons/expected';
-
-export class Source implements ISource {
-  +uri: string;
-  available: boolean;
-  _raw: DebugProtocol.Source;
-
-  constructor(raw: ?DebugProtocol.Source, sessionId: string) {
+class Source {
+  constructor(raw, sessionId) {
     if (raw == null) {
-      this._raw = {name: UNKNOWN_SOURCE};
+      this._raw = {
+        name: _constants().UNKNOWN_SOURCE
+      };
     } else {
       this._raw = raw;
     }
+
     if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
-      this.uri = `${DEBUG_SOURCES_URI}/${sessionId}/${
-        this._raw.sourceReference
-      }/${this._raw.name == null ? UNKNOWN_SOURCE : this._raw.name}`;
+      this.uri = `${_constants().DEBUG_SOURCES_URI}/${sessionId}/${this._raw.sourceReference}/${this._raw.name == null ? _constants().UNKNOWN_SOURCE : this._raw.name}`;
     } else {
       this.uri = this._raw.path || '';
     }
+
     this.available = this.uri !== '';
   }
 
-  get name(): ?string {
+  get name() {
     return this._raw.name;
   }
 
-  get origin(): ?string {
+  get origin() {
     return this._raw.origin;
   }
 
-  get presentationHint(): ?SourcePresentationHint {
+  get presentationHint() {
     return this._raw.presentationHint;
   }
 
-  get raw(): DebugProtocol.Source {
+  get raw() {
     return this._raw;
   }
 
-  get reference(): ?number {
+  get reference() {
     return this._raw.sourceReference;
   }
 
-  get inMemory(): boolean {
-    return this.uri.startsWith(DEBUG_SOURCES_URI);
+  get inMemory() {
+    return this.uri.startsWith(_constants().DEBUG_SOURCES_URI);
   }
 
-  openInEditor(): Promise<atom$TextEditor> {
+  openInEditor() {
     // eslint-disable-next-line nuclide-internal/atom-apis
     return atom.workspace.open(this.uri, {
       searchAllPanes: true,
-      pending: true,
+      pending: true
     });
   }
+
 }
 
-class ExpressionContainer implements IExpressionContainer {
-  static allValues: Map<string, string> = new Map();
+exports.Source = Source;
+
+class ExpressionContainer {
   // Use chunks to support variable paging #9537
-  static BASE_CHUNK_SIZE = 100;
-
-  _value: string;
-  _children: ?Promise<IVariable[]>;
-  process: ?IProcess;
-  _reference: number;
-  _id: string;
-  _namedVariables: number;
-  _indexedVariables: number;
-  _startOfVariables: number;
-
-  constructor(
-    process: ?IProcess,
-    reference: number,
-    id: string,
-    namedVariables: ?number,
-    indexedVariables: ?number,
-    startOfVariables: ?number,
-  ) {
+  constructor(process, reference, id, namedVariables, indexedVariables, startOfVariables) {
     this.process = process;
     this._reference = reference;
     this._id = id;
@@ -171,16 +209,16 @@ class ExpressionContainer implements IExpressionContainer {
     this._startOfVariables = startOfVariables || 0;
   }
 
-  get reference(): number {
+  get reference() {
     return this._reference;
   }
 
-  set reference(value: number) {
+  set reference(value) {
     this._reference = value;
     this._children = null;
   }
 
-  getChildren(): Promise<IVariable[]> {
+  getChildren() {
     if (this._children == null) {
       this._children = this._doGetChildren();
     }
@@ -188,7 +226,7 @@ class ExpressionContainer implements IExpressionContainer {
     return this._children;
   }
 
-  async _doGetChildren(): Promise<IVariable[]> {
+  async _doGetChildren() {
     if (!this.hasChildren()) {
       return [];
     }
@@ -196,193 +234,131 @@ class ExpressionContainer implements IExpressionContainer {
     if (!this.getChildrenInChunks) {
       const variables = await this._fetchVariables();
       return variables;
-    }
+    } // Check if object has named variables, fetch them independent from indexed variables #9670
 
-    // Check if object has named variables, fetch them independent from indexed variables #9670
-    let childrenArray: Array<IVariable> = [];
+
+    let childrenArray = [];
+
     if (Boolean(this._namedVariables)) {
       childrenArray = await this._fetchVariables(undefined, undefined, 'named');
-    }
+    } // Use a dynamic chunk size based on the number of elements #9774
 
-    // Use a dynamic chunk size based on the number of elements #9774
+
     let chunkSize = ExpressionContainer.BASE_CHUNK_SIZE;
-    while (
-      this._indexedVariables >
-      chunkSize * ExpressionContainer.BASE_CHUNK_SIZE
-    ) {
+
+    while (this._indexedVariables > chunkSize * ExpressionContainer.BASE_CHUNK_SIZE) {
       chunkSize *= ExpressionContainer.BASE_CHUNK_SIZE;
     }
 
     if (this._indexedVariables > chunkSize) {
       // There are a lot of children, create fake intermediate values that represent chunks #9537
       const numberOfChunks = Math.ceil(this._indexedVariables / chunkSize);
+
       for (let i = 0; i < numberOfChunks; i++) {
         const start = this._startOfVariables + i * chunkSize;
-        const count = Math.min(
-          chunkSize,
-          this._indexedVariables - i * chunkSize,
-        );
-        childrenArray.push(
-          new Variable(
-            this.process,
-            this,
-            this.reference,
-            `[${start}..${start + count - 1}]`,
-            '',
-            '',
-            null,
-            count,
-            {kind: 'virtual'},
-            null,
-            true,
-            start,
-          ),
-        );
+        const count = Math.min(chunkSize, this._indexedVariables - i * chunkSize);
+        childrenArray.push(new Variable(this.process, this, this.reference, `[${start}..${start + count - 1}]`, '', '', null, count, {
+          kind: 'virtual'
+        }, null, true, start));
       }
 
       return childrenArray;
     }
 
-    const variables = await this._fetchVariables(
-      this._startOfVariables,
-      this._indexedVariables,
-      'indexed',
-    );
+    const variables = await this._fetchVariables(this._startOfVariables, this._indexedVariables, 'indexed');
     return childrenArray.concat(variables);
   }
 
-  getId(): string {
+  getId() {
     return this._id;
   }
 
-  getValue(): string {
+  getValue() {
     return this._value;
   }
 
-  hasChildren(): boolean {
+  hasChildren() {
     // only variables with reference > 0 have children.
     return this.reference > 0;
   }
 
-  async _fetchVariables(
-    start?: number,
-    count?: number,
-    filter?: 'indexed' | 'named',
-  ): Promise<IVariable[]> {
+  async _fetchVariables(start, count, filter) {
     const process = this.process;
-    invariant(process);
-    try {
-      const response: DebugProtocol.VariablesResponse = await process.session.variables(
-        {
-          variablesReference: this.reference,
-          start,
-          count,
-          filter,
-        },
-      );
-      const variables = distinct(
-        response.body.variables.filter(v => v != null && v.name),
-        v => v.name,
-      );
-      return variables.map(
-        v =>
-          new Variable(
-            this.process,
-            this,
-            v.variablesReference,
-            v.name,
-            v.evaluateName,
-            v.value,
-            v.namedVariables,
-            v.indexedVariables,
-            v.presentationHint,
-            v.type,
-          ),
-      );
-    } catch (e) {
-      return [
-        new Variable(
-          this.process,
-          this,
-          0,
-          null,
-          e.message,
-          '',
-          0,
-          0,
-          {kind: 'virtual'},
-          null,
-          false,
-        ),
-      ];
-    }
-  }
 
-  // The adapter explicitly sents the children count of an expression only if there are lots of children which should be chunked.
-  get getChildrenInChunks(): boolean {
+    if (!process) {
+      throw new Error("Invariant violation: \"process\"");
+    }
+
+    try {
+      const response = await process.session.variables({
+        variablesReference: this.reference,
+        start,
+        count,
+        filter
+      });
+      const variables = (0, _collection().distinct)(response.body.variables.filter(v => v != null && v.name), v => v.name);
+      return variables.map(v => new Variable(this.process, this, v.variablesReference, v.name, v.evaluateName, v.value, v.namedVariables, v.indexedVariables, v.presentationHint, v.type));
+    } catch (e) {
+      return [new Variable(this.process, this, 0, null, e.message, '', 0, 0, {
+        kind: 'virtual'
+      }, null, false)];
+    }
+  } // The adapter explicitly sents the children count of an expression only if there are lots of children which should be chunked.
+
+
+  get getChildrenInChunks() {
     return Boolean(this._indexedVariables);
   }
 
-  setValue(value: string) {
+  setValue(value) {
     this._value = value;
     ExpressionContainer.allValues.set(this.getId(), value);
   }
 
-  toString(): string {
+  toString() {
     return this._value;
   }
+
 }
 
-export class Expression extends ExpressionContainer
-  implements IEvaluatableExpression {
-  static DEFAULT_VALUE = 'not available';
+ExpressionContainer.allValues = new Map();
+ExpressionContainer.BASE_CHUNK_SIZE = 100;
 
-  available: boolean;
-  _type: ?string;
-  name: string;
-
-  constructor(name: string, id?: string = uuid.v4()) {
+class Expression extends ExpressionContainer {
+  constructor(name, id = _uuid().default.v4()) {
     super(null, 0, id);
     this.name = name;
     this.available = false;
-    this._type = null;
-    // name is not set if the expression is just being added
+    this._type = null; // name is not set if the expression is just being added
     // in that case do not set default value to prevent flashing #14499
+
     if (name) {
       this._value = Expression.DEFAULT_VALUE;
     }
   }
 
-  get type(): ?string {
+  get type() {
     return this._type;
   }
 
-  async evaluate(
-    process: ?IProcess,
-    stackFrame: ?IStackFrame,
-    context: string,
-  ): Promise<void> {
-    if (process == null || (stackFrame == null && context !== 'repl')) {
-      this._value =
-        context === 'repl'
-          ? 'Please start a debug session to evaluate'
-          : Expression.DEFAULT_VALUE;
+  async evaluate(process, stackFrame, context) {
+    if (process == null || stackFrame == null && context !== 'repl') {
+      this._value = context === 'repl' ? 'Please start a debug session to evaluate' : Expression.DEFAULT_VALUE;
       this.available = false;
       this.reference = 0;
       return;
     }
 
     this.process = process;
-    try {
-      const response: DebugProtocol.EvaluateResponse = await process.session.evaluate(
-        {
-          expression: this.name,
-          frameId: stackFrame ? stackFrame.frameId : undefined,
-          context,
-        },
-      );
 
+    try {
+      const response = await process.session.evaluate({
+        expression: this.name,
+        frameId: stackFrame ? stackFrame.frameId : undefined,
+        context
+      });
       this.available = response != null && response.body != null;
+
       if (response && response.body) {
         this._value = response.body.result;
         this.reference = response.body.variablesReference || 0;
@@ -397,44 +373,20 @@ export class Expression extends ExpressionContainer
     }
   }
 
-  toString(): string {
+  toString() {
     return `${this.name}\n${this._value}`;
   }
+
 }
 
-export class Variable extends ExpressionContainer implements IExpression {
-  // Used to show the error message coming from the adapter when setting the value #7807
-  errorMessage: ?string;
-  parent: ExpressionContainer;
-  name: string;
-  evaluateName: ?string;
-  presentationHint: ?DebugProtocol.VariablePresentationHint;
-  _type: ?string;
-  available: boolean;
+exports.Expression = Expression;
+Expression.DEFAULT_VALUE = 'not available';
 
-  constructor(
-    process: ?IProcess,
-    parent: ExpressionContainer,
-    reference: number,
-    name: ?string,
-    evaluateName: ?string,
-    value: string,
-    namedVariables: ?number,
-    indexedVariables: ?number,
-    presentationHint: ?DebugProtocol.VariablePresentationHint,
-    type: ?string,
-    available?: boolean = true,
-    _startOfVariables: ?number,
-  ) {
-    super(
-      process,
-      reference,
-      // flowlint-next-line sketchy-null-string:off
-      `variable:${parent.getId()}:${name || 'no_name'}`,
-      namedVariables,
-      indexedVariables,
-      _startOfVariables,
-    );
+class Variable extends ExpressionContainer {
+  // Used to show the error message coming from the adapter when setting the value #7807
+  constructor(process, parent, reference, name, evaluateName, value, namedVariables, indexedVariables, presentationHint, type, available = true, _startOfVariables) {
+    super(process, reference, // flowlint-next-line sketchy-null-string:off
+    `variable:${parent.getId()}:${name || 'no_name'}`, namedVariables, indexedVariables, _startOfVariables);
     this.parent = parent;
     this.name = name == null ? 'no_name' : name;
     this.evaluateName = evaluateName;
@@ -444,25 +396,26 @@ export class Variable extends ExpressionContainer implements IExpression {
     this._value = value;
   }
 
-  get type(): ?string {
+  get type() {
     return this._type;
   }
 
-  async setVariable(value: string): Promise<void> {
-    const process = nullthrows(this.process);
-    track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
-      language: process.configuration.adapterType,
+  async setVariable(value) {
+    const process = (0, _nullthrows().default)(this.process);
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
+      language: process.configuration.adapterType
     });
+
     try {
       const response = await process.session.setVariable({
-        name: nullthrows(this.name),
+        name: (0, _nullthrows().default)(this.name),
         value,
-        variablesReference: this.parent.reference,
+        variablesReference: this.parent.reference
       });
+
       if (response && response.body) {
         this._value = response.body.value;
-        this._type =
-          response.body.type == null ? this._type : response.body.type;
+        this._type = response.body.type == null ? this._type : response.body.type;
         this.reference = response.body.variablesReference || 0;
         this._namedVariables = response.body.namedVariables || 0;
         this._indexedVariables = response.body.indexedVariables || 0;
@@ -472,58 +425,28 @@ export class Variable extends ExpressionContainer implements IExpression {
     }
   }
 
-  toString(): string {
+  toString() {
     return `${this.name}: ${this._value}`;
   }
+
 }
 
-export class Scope extends ExpressionContainer implements IScope {
-  +name: string;
-  +expensive: boolean;
-  +range: ?atom$Range;
+exports.Variable = Variable;
 
-  constructor(
-    stackFrame: IStackFrame,
-    index: number,
-    name: string,
-    reference: number,
-    expensive: boolean,
-    namedVariables: ?number,
-    indexedVariables: ?number,
-    range: ?atom$Range,
-  ) {
-    super(
-      stackFrame.thread.process,
-      reference,
-      `scope:${stackFrame.getId()}:${name}:${index}`,
-      namedVariables,
-      indexedVariables,
-    );
+class Scope extends ExpressionContainer {
+  constructor(stackFrame, index, name, reference, expensive, namedVariables, indexedVariables, range) {
+    super(stackFrame.thread.process, reference, `scope:${stackFrame.getId()}:${name}:${index}`, namedVariables, indexedVariables);
     this.name = name;
     this.expensive = expensive;
     this.range = range;
   }
+
 }
 
-export class StackFrame implements IStackFrame {
-  scopes: ?Promise<Scope[]>;
-  thread: IThread;
-  frameId: number;
-  source: ISource;
-  name: string;
-  presentationHint: ?string;
-  range: atom$Range;
-  index: number;
+exports.Scope = Scope;
 
-  constructor(
-    thread: IThread,
-    frameId: number,
-    source: ISource,
-    name: string,
-    presentationHint: ?string,
-    range: atom$Range,
-    index: number,
-  ) {
+class StackFrame {
+  constructor(thread, frameId, source, name, presentationHint, range, index) {
     this.thread = thread;
     this.frameId = frameId;
     this.source = source;
@@ -534,108 +457,74 @@ export class StackFrame implements IStackFrame {
     this.scopes = null;
   }
 
-  getId(): string {
+  getId() {
     return `stackframe:${this.thread.getId()}:${this.frameId}:${this.index}`;
   }
 
-  async getScopes(): Promise<IScope[]> {
+  async getScopes() {
     if (this.scopes == null) {
       this.scopes = this._getScopesImpl();
     }
-    return (this.scopes: any);
+
+    return this.scopes;
   }
 
-  async _getScopesImpl(): Promise<Scope[]> {
+  async _getScopesImpl() {
     try {
       const {
-        body: {scopes},
+        body: {
+          scopes
+        }
       } = await this.thread.process.session.scopes({
-        frameId: this.frameId,
+        frameId: this.frameId
       });
-      return scopes.map(
-        (rs, index) =>
-          new Scope(
-            this,
-            index,
-            rs.name,
-            rs.variablesReference,
-            rs.expensive,
-            rs.namedVariables,
-            rs.indexedVariables,
-            rs.line != null
-              ? new Range(
-                  [rs.line - 1, (rs.column != null ? rs.column : 1) - 1],
-                  [
-                    (rs.endLine != null ? rs.endLine : rs.line) - 1,
-                    (rs.endColumn != null ? rs.endColumn : 1) - 1,
-                  ],
-                )
-              : null,
-          ),
-      );
+      return scopes.map((rs, index) => new Scope(this, index, rs.name, rs.variablesReference, rs.expensive, rs.namedVariables, rs.indexedVariables, rs.line != null ? new _atom.Range([rs.line - 1, (rs.column != null ? rs.column : 1) - 1], [(rs.endLine != null ? rs.endLine : rs.line) - 1, (rs.endColumn != null ? rs.endColumn : 1) - 1]) : null));
     } catch (err) {
       return [];
     }
   }
 
-  async getMostSpecificScopes(range: atom$Range): Promise<IScope[]> {
-    const scopes: Array<IScope> = (await this.getScopes()).filter(
-      s => !s.expensive,
-    );
+  async getMostSpecificScopes(range) {
+    const scopes = (await this.getScopes()).filter(s => !s.expensive);
     const haveRangeInfo = scopes.some(s => s.range != null);
+
     if (!haveRangeInfo) {
       return scopes;
     }
 
-    const scopesContainingRange = scopes
-      .filter(scope => scope.range != null && scope.range.containsRange(range))
-      .sort((first, second) => {
-        const firstRange = nullthrows(first.range);
-        const secondRange = nullthrows(second.range);
-        // prettier-ignore
-        return (firstRange.end.row - firstRange.start.row) -
-          (secondRange.end.row - secondRange.end.row);
-      });
+    const scopesContainingRange = scopes.filter(scope => scope.range != null && scope.range.containsRange(range)).sort((first, second) => {
+      const firstRange = (0, _nullthrows().default)(first.range);
+      const secondRange = (0, _nullthrows().default)(second.range); // prettier-ignore
+
+      return firstRange.end.row - firstRange.start.row - (secondRange.end.row - secondRange.end.row);
+    });
     return scopesContainingRange.length ? scopesContainingRange : scopes;
   }
 
-  async restart(): Promise<void> {
-    await this.thread.process.session.restartFrame(
-      {frameId: this.frameId},
-      this.thread.threadId,
-    );
+  async restart() {
+    await this.thread.process.session.restartFrame({
+      frameId: this.frameId
+    }, this.thread.threadId);
   }
 
-  toString(): string {
-    return `${this.name} (${
-      this.source.inMemory ? nullthrows(this.source.name) : this.source.uri
-    }:${this.range.start.row})`;
+  toString() {
+    return `${this.name} (${this.source.inMemory ? (0, _nullthrows().default)(this.source.name) : this.source.uri}:${this.range.start.row})`;
   }
 
-  async openInEditor(): Promise<?atom$TextEditor> {
+  async openInEditor() {
     if (this.source.available) {
-      return openSourceLocation(this.source.uri, this.range.start.row);
+      return (0, _utils().openSourceLocation)(this.source.uri, this.range.start.row);
     } else {
       return null;
     }
   }
+
 }
 
-type CallStack = {|
-  valid: boolean,
-  callFrames: IStackFrame[],
-|};
+exports.StackFrame = StackFrame;
 
-export class Thread implements IThread {
-  _callStack: CallStack;
-  _refreshInProgress: boolean;
-  stoppedDetails: ?IRawStoppedDetails;
-  stopped: boolean;
-  +process: IProcess;
-  +threadId: number;
-  name: string;
-
-  constructor(process: IProcess, name: string, threadId: number) {
+class Thread {
+  constructor(process, name, threadId) {
     this.process = process;
     this.name = name;
     this.threadId = threadId;
@@ -645,85 +534,61 @@ export class Thread implements IThread {
     this._refreshInProgress = false;
   }
 
-  _getEmptyCallstackState(): CallStack {
+  _getEmptyCallstackState() {
     return {
       valid: false,
-      callFrames: [],
+      callFrames: []
     };
   }
 
-  _isCallstackLoaded(): boolean {
+  _isCallstackLoaded() {
     return this._callStack.valid;
   }
 
-  _isCallstackFullyLoaded(): boolean {
-    return (
-      this._isCallstackLoaded() &&
-      this.stoppedDetails != null &&
-      this.stoppedDetails.totalFrames != null &&
-      !Number.isNaN(this.stoppedDetails.totalFrames) &&
-      this.stoppedDetails.totalFrames >= 0 &&
-      this._callStack.callFrames.length >= this.stoppedDetails.totalFrames
-    );
+  _isCallstackFullyLoaded() {
+    return this._isCallstackLoaded() && this.stoppedDetails != null && this.stoppedDetails.totalFrames != null && !Number.isNaN(this.stoppedDetails.totalFrames) && this.stoppedDetails.totalFrames >= 0 && this._callStack.callFrames.length >= this.stoppedDetails.totalFrames;
   }
 
-  getId(): string {
+  getId() {
     return `thread:${this.process.getId()}:${this.threadId}`;
   }
 
-  additionalFramesAvailable(currentFrameCount: number): boolean {
+  additionalFramesAvailable(currentFrameCount) {
     if (this._callStack.callFrames.length > currentFrameCount) {
       return true;
     }
-    const supportsDelayLoading =
-      nullthrows(this.process).session.capabilities
-        .supportsDelayedStackTraceLoading === true;
-    if (
-      supportsDelayLoading &&
-      this.stoppedDetails != null &&
-      this.stoppedDetails.totalFrames != null &&
-      this.stoppedDetails.totalFrames > currentFrameCount
-    ) {
+
+    const supportsDelayLoading = (0, _nullthrows().default)(this.process).session.capabilities.supportsDelayedStackTraceLoading === true;
+
+    if (supportsDelayLoading && this.stoppedDetails != null && this.stoppedDetails.totalFrames != null && this.stoppedDetails.totalFrames > currentFrameCount) {
       return true;
     }
 
     return false;
   }
 
-  clearCallStack(): void {
+  clearCallStack() {
     this._callStack = this._getEmptyCallstackState();
   }
 
-  getCallStackTopFrame(): ?IStackFrame {
+  getCallStackTopFrame() {
     return this._isCallstackLoaded() ? this._callStack.callFrames[0] : null;
   }
 
-  getFullCallStack(levels?: number): Observable<Expected<IStackFrame[]>> {
-    if (
-      this._refreshInProgress ||
-      this._isCallstackFullyLoaded() ||
-      (levels != null &&
-        this._isCallstackLoaded() &&
-        this._callStack.callFrames.length >= levels)
-    ) {
+  getFullCallStack(levels) {
+    if (this._refreshInProgress || this._isCallstackFullyLoaded() || levels != null && this._isCallstackLoaded() && this._callStack.callFrames.length >= levels) {
       // We have a sufficent call stack already loaded, just return it.
-      return Observable.of(Expect.value(this._callStack.callFrames));
-    }
-
-    // Return a pending value and kick off the fetch. When the fetch
+      return _RxMin.Observable.of(_expected().Expect.value(this._callStack.callFrames));
+    } // Return a pending value and kick off the fetch. When the fetch
     // is done, emit the new call frames.
-    return Observable.concat(
-      Observable.of(Expect.pending()),
-      Observable.fromPromise(this.refreshCallStack(levels)).switchMap(() =>
-        Observable.of(Expect.value(this._callStack.callFrames)),
-      ),
-    );
+
+
+    return _RxMin.Observable.concat(_RxMin.Observable.of(_expected().Expect.pending()), _RxMin.Observable.fromPromise(this.refreshCallStack(levels)).switchMap(() => _RxMin.Observable.of(_expected().Expect.value(this._callStack.callFrames))));
   }
 
-  getCachedCallStack(): IStackFrame[] {
+  getCachedCallStack() {
     return this._callStack.callFrames;
   }
-
   /**
    * Queries the debug adapter for the callstack and returns a promise
    * which completes once the call stack has been retrieved.
@@ -731,36 +596,32 @@ export class Thread implements IThread {
    *
    * If specified, levels indicates the maximum depth of call frames to fetch.
    */
-  async refreshCallStack(levels: ?number): Promise<void> {
+
+
+  async refreshCallStack(levels) {
     if (!this.stopped) {
       return;
     }
 
-    const supportsDelayLoading =
-      nullthrows(this.process).session.capabilities
-        .supportsDelayedStackTraceLoading === true;
-
+    const supportsDelayLoading = (0, _nullthrows().default)(this.process).session.capabilities.supportsDelayedStackTraceLoading === true;
     this._refreshInProgress = true;
+
     try {
       if (supportsDelayLoading) {
         const start = this._callStack.callFrames.length;
         const callStack = await this._getCallStackImpl(start, levels);
+
         if (start < this._callStack.callFrames.length) {
           // Set the stack frames for exact position we requested.
           // To make sure no concurrent requests create duplicate stack frames #30660
-          this._callStack.callFrames.splice(
-            start,
-            this._callStack.callFrames.length - start,
-          );
+          this._callStack.callFrames.splice(start, this._callStack.callFrames.length - start);
         }
-        this._callStack.callFrames = this._callStack.callFrames.concat(
-          callStack || [],
-        );
+
+        this._callStack.callFrames = this._callStack.callFrames.concat(callStack || []);
       } else {
         // Must load the entire call stack, the debugger backend doesn't support
         // delayed call stack loading.
-        this._callStack.callFrames =
-          (await this._getCallStackImpl(0, null)) || [];
+        this._callStack.callFrames = (await this._getCallStackImpl(0, null)) || [];
       }
 
       this._callStack.valid = true;
@@ -769,51 +630,32 @@ export class Thread implements IThread {
     }
   }
 
-  async _getCallStackImpl(
-    startFrame: number,
-    levels: ?number,
-  ): Promise<IStackFrame[]> {
+  async _getCallStackImpl(startFrame, levels) {
     try {
-      const stackTraceArgs: DebugProtocol.StackTraceArguments = {
+      const stackTraceArgs = {
         threadId: this.threadId,
-        startFrame,
-      };
-
-      // Only include levels if specified and supported. If levels is omitted,
+        startFrame
+      }; // Only include levels if specified and supported. If levels is omitted,
       // the debug adapter is to return all stack frames, per the protocol.
+
       if (levels != null) {
         stackTraceArgs.levels = levels;
       }
 
-      const response: DebugProtocol.StackTraceResponse = await this.process.session.stackTrace(
-        stackTraceArgs,
-      );
+      const response = await this.process.session.stackTrace(stackTraceArgs);
+
       if (response == null || response.body == null) {
         return [];
       }
+
       if (this.stoppedDetails != null) {
         this.stoppedDetails.totalFrames = response.body.totalFrames;
       }
 
       return response.body.stackFrames.map((rsf, index) => {
         const source = this.process.getSource(rsf.source);
-
-        return new StackFrame(
-          this,
-          rsf.id,
-          source,
-          rsf.name,
-          rsf.presentationHint,
-          // The UI is 0-based while VSP is 1-based.
-          new Range(
-            [rsf.line - 1, (rsf.column || 1) - 1],
-            [
-              (rsf.endLine != null ? rsf.endLine : rsf.line) - 1,
-              (rsf.endColumn != null ? rsf.endColumn : 1) - 1,
-            ],
-          ),
-          startFrame + index,
-        );
+        return new StackFrame(this, rsf.id, source, rsf.name, rsf.presentationHint, // The UI is 0-based while VSP is 1-based.
+        new _atom.Range([rsf.line - 1, (rsf.column || 1) - 1], [(rsf.endLine != null ? rsf.endLine : rsf.line) - 1, (rsf.endColumn != null ? rsf.endColumn : 1) - 1]), startFrame + index);
       });
     } catch (err) {
       if (this.stoppedDetails != null) {
@@ -823,31 +665,33 @@ export class Thread implements IThread {
       return [];
     }
   }
-
   /**
    * Returns exception info promise if the exception was thrown, otherwise null
    */
-  async exceptionInfo(): Promise<?IExceptionInfo> {
+
+
+  async exceptionInfo() {
     const session = this.process.session;
-    if (
-      this.stoppedDetails == null ||
-      this.stoppedDetails.reason !== 'exception'
-    ) {
+
+    if (this.stoppedDetails == null || this.stoppedDetails.reason !== 'exception') {
       return null;
     }
+
     const stoppedDetails = this.stoppedDetails;
+
     if (!session.capabilities.supportsExceptionInfoRequest) {
       return {
         id: null,
         details: null,
         description: stoppedDetails.description,
-        breakMode: null,
+        breakMode: null
       };
     }
 
-    const exception: DebugProtocol.ExceptionInfoResponse = await session.exceptionInfo(
-      {threadId: this.threadId},
-    );
+    const exception = await session.exceptionInfo({
+      threadId: this.threadId
+    });
+
     if (exception == null) {
       return null;
     }
@@ -856,54 +700,64 @@ export class Thread implements IThread {
       id: exception.body.exceptionId,
       description: exception.body.description,
       breakMode: exception.body.breakMode,
-      details: exception.body.details,
+      details: exception.body.details
     };
   }
 
-  async next(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_OVER);
-    await this.process.session.next({threadId: this.threadId});
+  async next() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_OVER);
+    await this.process.session.next({
+      threadId: this.threadId
+    });
   }
 
-  async stepIn(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_INTO);
-    await this.process.session.stepIn({threadId: this.threadId});
+  async stepIn() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_INTO);
+    await this.process.session.stepIn({
+      threadId: this.threadId
+    });
   }
 
-  async stepOut(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_OUT);
-    await this.process.session.stepOut({threadId: this.threadId});
+  async stepOut() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_OUT);
+    await this.process.session.stepOut({
+      threadId: this.threadId
+    });
   }
 
-  async stepBack(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_BACK);
-    await this.process.session.stepBack({threadId: this.threadId});
+  async stepBack() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_BACK);
+    await this.process.session.stepBack({
+      threadId: this.threadId
+    });
   }
 
-  async continue(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
-    await this.process.session.continue({threadId: this.threadId});
+  async continue() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
+    await this.process.session.continue({
+      threadId: this.threadId
+    });
   }
 
-  async pause(): Promise<void> {
-    track(AnalyticsEvents.DEBUGGER_STEP_PAUSE);
-    await this.process.session.pause({threadId: this.threadId});
+  async pause() {
+    (0, _analytics().track)(_constants().AnalyticsEvents.DEBUGGER_STEP_PAUSE);
+    await this.process.session.pause({
+      threadId: this.threadId
+    });
   }
 
-  async reverseContinue(): Promise<void> {
-    await this.process.session.reverseContinue({threadId: this.threadId});
+  async reverseContinue() {
+    await this.process.session.reverseContinue({
+      threadId: this.threadId
+    });
   }
+
 }
 
-export class Process implements IProcess {
-  _sources: Map<string, ISource>;
-  _threads: Map<number, Thread>;
-  _session: ISession & ITreeElement;
-  _configuration: IProcessConfig;
-  _pendingStart: boolean;
-  _pendingStop: boolean;
+exports.Thread = Thread;
 
-  constructor(configuration: IProcessConfig, session: ISession & ITreeElement) {
+class Process {
+  constructor(configuration, session) {
     this._configuration = configuration;
     this._session = session;
     this._threads = new Map();
@@ -912,49 +766,50 @@ export class Process implements IProcess {
     this._pendingStop = false;
   }
 
-  get sources(): Map<string, ISource> {
+  get sources() {
     return this._sources;
   }
 
-  get session(): ISession & ITreeElement {
+  get session() {
     return this._session;
   }
 
-  get configuration(): IProcessConfig {
+  get configuration() {
     return this._configuration;
   }
 
-  get debuggerMode(): DebuggerModeType {
+  get debuggerMode() {
     if (this._pendingStart) {
-      return DebuggerMode.STARTING;
+      return _constants().DebuggerMode.STARTING;
     }
 
     if (this._pendingStop) {
-      return DebuggerMode.STOPPING;
+      return _constants().DebuggerMode.STOPPING;
     }
 
     if (this.getAllThreads().some(t => t.stopped)) {
       // TOOD: Currently our UX controls support resume and async-break
       // on a per-process basis only. This needs to be modified here if
       // we add support for freezing and resuming individual threads.
-      return DebuggerMode.PAUSED;
+      return _constants().DebuggerMode.PAUSED;
     }
 
-    return DebuggerMode.RUNNING;
+    return _constants().DebuggerMode.RUNNING;
   }
 
-  clearProcessStartingFlag(): void {
+  clearProcessStartingFlag() {
     this._pendingStart = false;
   }
 
-  setStopPending(): void {
+  setStopPending() {
     this._pendingStop = true;
   }
 
-  getSource(raw: ?DebugProtocol.Source): ISource {
+  getSource(raw) {
     let source = new Source(raw, this.getId());
+
     if (this._sources.has(source.uri)) {
-      source = nullthrows(this._sources.get(source.uri));
+      source = (0, _nullthrows().default)(this._sources.get(source.uri));
     } else {
       this._sources.set(source.uri, source);
     }
@@ -962,51 +817,54 @@ export class Process implements IProcess {
     return source;
   }
 
-  getThread(threadId: number): ?Thread {
+  getThread(threadId) {
     return this._threads.get(threadId);
   }
 
-  getAllThreads(): IThread[] {
+  getAllThreads() {
     return Array.from(this._threads.values());
   }
 
-  getId(): string {
+  getId() {
     return this._session.getId();
   }
 
-  rawStoppedUpdate(data: IRawStopppedUpdate): void {
-    const {threadId, stoppedDetails} = data;
-
+  rawStoppedUpdate(data) {
+    const {
+      threadId,
+      stoppedDetails
+    } = data;
     this.clearProcessStartingFlag();
 
     if (threadId != null && !this._threads.has(threadId)) {
       // We're being asked to update a thread we haven't seen yet, so
       // create it
       const thread = new Thread(this, `Thread ${threadId}`, threadId);
-      this._threads.set(threadId, thread);
-    }
 
-    // Set the availability of the threads' callstacks depending on
+      this._threads.set(threadId, thread);
+    } // Set the availability of the threads' callstacks depending on
     // whether the thread is stopped or not
+
+
     if (stoppedDetails.allThreadsStopped) {
       this._threads.forEach(thread => {
-        thread.stoppedDetails =
-          thread.threadId === threadId ? stoppedDetails : thread.stoppedDetails;
+        thread.stoppedDetails = thread.threadId === threadId ? stoppedDetails : thread.stoppedDetails;
         thread.stopped = true;
         thread.clearCallStack();
       });
     } else if (threadId != null) {
       // One thread is stopped, only update that thread.
-      const thread = nullthrows(this._threads.get(threadId));
+      const thread = (0, _nullthrows().default)(this._threads.get(threadId));
       thread.stoppedDetails = stoppedDetails;
       thread.clearCallStack();
       thread.stopped = true;
     }
   }
 
-  rawThreadUpdate(data: IRawThreadUpdate): void {
-    const {thread} = data;
-
+  rawThreadUpdate(data) {
+    const {
+      thread
+    } = data;
     this.clearProcessStartingFlag();
 
     if (!this._threads.has(thread.id)) {
@@ -1014,14 +872,14 @@ export class Process implements IProcess {
       this._threads.set(thread.id, new Thread(this, thread.name, thread.id));
     } else if (thread.name) {
       // Just the thread name got updated #18244
-      nullthrows(this._threads.get(thread.id)).name = thread.name;
+      (0, _nullthrows().default)(this._threads.get(thread.id)).name = thread.name;
     }
   }
 
-  clearThreads(removeThreads: boolean, reference?: number): void {
+  clearThreads(removeThreads, reference) {
     if (reference != null) {
       if (this._threads.has(reference)) {
-        const thread = nullthrows(this._threads.get(reference));
+        const thread = (0, _nullthrows().default)(this._threads.get(reference));
         thread.clearCallStack();
         thread.stoppedDetails = null;
         thread.stopped = false;
@@ -1039,27 +897,25 @@ export class Process implements IProcess {
 
       if (removeThreads) {
         this._threads.clear();
+
         ExpressionContainer.allValues.clear();
       }
     }
   }
 
-  async completions(
-    frameId: number,
-    text: string,
-    position: atom$Point,
-    overwriteBefore: number,
-  ): Promise<Array<DebugProtocol.CompletionItem>> {
+  async completions(frameId, text, position, overwriteBefore) {
     if (!this._session.capabilities.supportsCompletionsRequest) {
       return [];
     }
+
     try {
       const response = await this._session.completions({
         frameId,
         text,
         column: position.column,
-        line: position.row,
+        line: position.row
       });
+
       if (response && response.body && response.body.targets) {
         return response.body.targets;
       } else {
@@ -1069,32 +925,13 @@ export class Process implements IProcess {
       return [];
     }
   }
+
 }
 
-export class Breakpoint implements IBreakpoint {
-  verified: boolean;
-  idFromAdapter: ?number;
-  message: ?string;
-  endLine: ?number;
-  endColumn: ?number;
-  id: string;
-  uri: string;
-  line: number;
-  column: number;
-  enabled: boolean;
-  condition: ?string;
-  hitCondition: ?string;
-  adapterData: any;
+exports.Process = Process;
 
-  constructor(
-    uri: string,
-    line: number,
-    column: ?number,
-    enabled: ?boolean,
-    condition: ?string,
-    hitCondition: ?string,
-    adapterData?: any,
-  ) {
+class Breakpoint {
+  constructor(uri, line, column, enabled, condition, hitCondition, adapterData) {
     this.uri = uri;
     this.line = line;
     this.column = column == null ? 1 : column;
@@ -1103,109 +940,88 @@ export class Breakpoint implements IBreakpoint {
     this.hitCondition = hitCondition;
     this.adapterData = adapterData;
     this.verified = false;
-    this.id = uuid.v4();
+    this.id = _uuid().default.v4();
     this.endLine = null;
   }
 
-  getId(): string {
+  getId() {
     return this.id;
   }
+
 }
 
-export class FunctionBreakpoint implements IFunctionBreakpoint {
-  id: string;
-  verified: boolean;
-  idFromAdapter: ?number;
-  name: string;
-  enabled: boolean;
-  hitCondition: ?string;
-  condition: ?string;
+exports.Breakpoint = Breakpoint;
 
-  constructor(name: string, enabled: boolean, hitCondition: ?string) {
+class FunctionBreakpoint {
+  constructor(name, enabled, hitCondition) {
     this.name = name;
     this.enabled = enabled;
     this.hitCondition = hitCondition;
     this.condition = null;
     this.verified = false;
     this.idFromAdapter = null;
-    this.id = uuid.v4();
+    this.id = _uuid().default.v4();
   }
 
-  getId(): string {
+  getId() {
     return this.id;
   }
+
 }
 
-export class ExceptionBreakpoint implements IExceptionBreakpoint {
-  _id: string;
-  +filter: string;
-  +label: string;
-  enabled: boolean;
+exports.FunctionBreakpoint = FunctionBreakpoint;
 
-  constructor(filter: string, label: string, enabled: ?boolean) {
+class ExceptionBreakpoint {
+  constructor(filter, label, enabled) {
     this.filter = filter;
     this.label = label;
     this.enabled = enabled == null ? false : enabled;
-    this._id = uuid.v4();
+    this._id = _uuid().default.v4();
   }
 
-  getId(): string {
+  getId() {
     return this._id;
   }
+
 }
 
+exports.ExceptionBreakpoint = ExceptionBreakpoint;
 const BREAKPOINTS_CHANGED = 'BREAKPOINTS_CHANGED';
 const WATCH_EXPRESSIONS_CHANGED = 'WATCH_EXPRESSIONS_CHANGED';
-
 const CALLSTACK_CHANGED = 'CALLSTACK_CHANGED';
 const PROCESSES_CHANGED = 'PROCESSES_CHANGED';
 
-export class Model implements IModel {
-  _processes: Process[];
-  _breakpoints: Breakpoint[];
-  _breakpointsActivated: boolean;
-  _functionBreakpoints: FunctionBreakpoint[];
-  _exceptionBreakpoints: ExceptionBreakpoint[];
-  _watchExpressions: Expression[];
-  _disposables: UniversalDisposable;
-  _emitter: Emitter;
-
-  constructor(
-    breakpoints: Breakpoint[],
-    breakpointsActivated: boolean,
-    functionBreakpoints: FunctionBreakpoint[],
-    exceptionBreakpoints: ExceptionBreakpoint[],
-    watchExpressions: Expression[],
-  ) {
+class Model {
+  constructor(breakpoints, breakpointsActivated, functionBreakpoints, exceptionBreakpoints, watchExpressions) {
     this._processes = [];
     this._breakpoints = breakpoints;
     this._breakpointsActivated = breakpointsActivated;
     this._functionBreakpoints = functionBreakpoints;
     this._exceptionBreakpoints = exceptionBreakpoints;
     this._watchExpressions = watchExpressions;
-    this._emitter = new Emitter();
-    this._disposables = new UniversalDisposable(this._emitter);
+    this._emitter = new _atom.Emitter();
+    this._disposables = new (_UniversalDisposable().default)(this._emitter);
   }
 
-  getId(): string {
+  getId() {
     return 'root';
   }
 
-  getProcesses(): IProcess[] {
-    return (this._processes: any);
+  getProcesses() {
+    return this._processes;
   }
 
-  addProcess(
-    configuration: IProcessConfig,
-    session: ISession & ITreeElement,
-  ): Process {
+  addProcess(configuration, session) {
     const process = new Process(configuration, session);
+
     this._processes.push(process);
+
     this._emitter.emit(PROCESSES_CHANGED);
+
     return process;
   }
 
-  removeProcess(id: string): Array<Process> {
+  removeProcess(id) {
     const removedProcesses = [];
     this._processes = this._processes.filter(p => {
       if (p.getId() === id) {
@@ -1215,172 +1031,148 @@ export class Model implements IModel {
         return true;
       }
     });
+
     this._emitter.emit(PROCESSES_CHANGED);
+
     return removedProcesses;
   }
 
-  onDidChangeBreakpoints(
-    callback: (event: IBreakpointsChangeEvent) => mixed,
-  ): IDisposable {
+  onDidChangeBreakpoints(callback) {
     return this._emitter.on(BREAKPOINTS_CHANGED, callback);
-  }
-
-  // TODO: Scope this so that only the tree nodes for the process that
+  } // TODO: Scope this so that only the tree nodes for the process that
   // had a call stack change need to re-render
-  onDidChangeCallStack(callback: () => mixed): IDisposable {
+
+
+  onDidChangeCallStack(callback) {
     return this._emitter.on(CALLSTACK_CHANGED, callback);
   }
 
-  onDidChangeProcesses(callback: () => mixed): IDisposable {
+  onDidChangeProcesses(callback) {
     return this._emitter.on(PROCESSES_CHANGED, callback);
   }
 
-  onDidChangeWatchExpressions(
-    callback: (expression: ?IExpression) => mixed,
-  ): IDisposable {
+  onDidChangeWatchExpressions(callback) {
     return this._emitter.on(WATCH_EXPRESSIONS_CHANGED, callback);
   }
 
-  rawUpdate(data: IRawModelUpdate): void {
-    const process = this._processes
-      .filter(p => p.getId() === data.sessionId)
-      .pop();
+  rawUpdate(data) {
+    const process = this._processes.filter(p => p.getId() === data.sessionId).pop();
+
     if (process == null) {
       return;
     }
+
     if (data.stoppedDetails != null) {
-      process.rawStoppedUpdate((data: any));
+      process.rawStoppedUpdate(data);
     } else {
-      process.rawThreadUpdate((data: any));
+      process.rawThreadUpdate(data);
     }
 
     this._emitter.emit(CALLSTACK_CHANGED);
   }
 
-  clearThreads(id: string, removeThreads: boolean, reference?: number): void {
+  clearThreads(id, removeThreads, reference) {
     const process = this._processes.filter(p => p.getId() === id).pop();
 
     if (process != null) {
       process.clearThreads(removeThreads, reference);
+
       this._emitter.emit(CALLSTACK_CHANGED);
     }
   }
 
-  async refreshCallStack(
-    threadI: IThread,
-    fetchAllFrames: boolean,
-  ): Promise<void> {
-    const thread: Thread = (threadI: any);
-
-    // If the debugger supports delayed stack trace loading, load only
+  async refreshCallStack(threadI, fetchAllFrames) {
+    const thread = threadI; // If the debugger supports delayed stack trace loading, load only
     // the first call stack frame, which is needed to display in the threads
     // view. We will lazily load the remaining frames only for threads that
     // are visible in the UI, allowing us to skip loading frames we don't
     // need right now.
-    const framesToLoad =
-      nullthrows(thread.process).session.capabilities
-        .supportsDelayedStackTraceLoading && !fetchAllFrames
-        ? 1
-        : null;
 
+    const framesToLoad = (0, _nullthrows().default)(thread.process).session.capabilities.supportsDelayedStackTraceLoading && !fetchAllFrames ? 1 : null;
     thread.clearCallStack();
     await thread.refreshCallStack(framesToLoad);
+
     this._emitter.emit(CALLSTACK_CHANGED);
   }
 
-  getBreakpoints(): IBreakpoint[] {
-    return (this._breakpoints: any);
+  getBreakpoints() {
+    return this._breakpoints;
   }
 
-  getBreakpointAtLine(uri: string, line: number): ?IBreakpoint {
+  getBreakpointAtLine(uri, line) {
     // Since we show calibrated breakpoints at their end line, prefer an end line
     // match. If there is no such breakpoint, try a start line match.
-    let breakpoint = this._breakpoints.find(
-      bp => bp.uri === uri && bp.endLine === line,
-    );
+    let breakpoint = this._breakpoints.find(bp => bp.uri === uri && bp.endLine === line);
+
     if (breakpoint == null) {
-      breakpoint = this._breakpoints.find(
-        bp => bp.uri === uri && bp.line === line,
-      );
+      breakpoint = this._breakpoints.find(bp => bp.uri === uri && bp.line === line);
     }
+
     return breakpoint;
   }
 
-  getBreakpointById(id: string): ?IBreakpoint {
+  getBreakpointById(id) {
     return this._breakpoints.find(bp => bp.getId() === id);
   }
 
-  getFunctionBreakpoints(): IFunctionBreakpoint[] {
-    return (this._functionBreakpoints: any);
+  getFunctionBreakpoints() {
+    return this._functionBreakpoints;
   }
 
-  getExceptionBreakpoints(): IExceptionBreakpoint[] {
-    return (this._exceptionBreakpoints: any);
+  getExceptionBreakpoints() {
+    return this._exceptionBreakpoints;
   }
 
-  setExceptionBreakpoints(
-    data: DebugProtocol.ExceptionBreakpointsFilter[],
-  ): void {
+  setExceptionBreakpoints(data) {
     this._exceptionBreakpoints = data.map(d => {
-      const ebp = this._exceptionBreakpoints
-        .filter(bp => bp.filter === d.filter)
-        .pop();
-      return new ExceptionBreakpoint(
-        d.filter,
-        d.label,
-        ebp ? ebp.enabled : d.default,
-      );
+      const ebp = this._exceptionBreakpoints.filter(bp => bp.filter === d.filter).pop();
+
+      return new ExceptionBreakpoint(d.filter, d.label, ebp ? ebp.enabled : d.default);
     });
+
     this._emitter.emit(BREAKPOINTS_CHANGED);
   }
 
-  areBreakpointsActivated(): boolean {
+  areBreakpointsActivated() {
     return this._breakpointsActivated;
   }
 
-  setBreakpointsActivated(activated: boolean): void {
+  setBreakpointsActivated(activated) {
     this._breakpointsActivated = activated;
+
     this._emitter.emit(BREAKPOINTS_CHANGED);
   }
 
-  addBreakpoints(
-    uri: string,
-    rawData: IRawBreakpoint[],
-    fireEvent?: boolean = true,
-  ): Breakpoint[] {
-    const newBreakpoints = rawData.map(
-      rawBp =>
-        new Breakpoint(
-          uri,
-          rawBp.line,
-          rawBp.column,
-          rawBp.enabled,
-          rawBp.condition,
-          rawBp.hitCondition,
-        ),
-    );
+  addBreakpoints(uri, rawData, fireEvent = true) {
+    const newBreakpoints = rawData.map(rawBp => new Breakpoint(uri, rawBp.line, rawBp.column, rawBp.enabled, rawBp.condition, rawBp.hitCondition));
     this._breakpoints = this._breakpoints.concat(newBreakpoints);
     this._breakpointsActivated = true;
+
     this._sortAndDeDup();
 
     if (fireEvent) {
-      this._emitter.emit(BREAKPOINTS_CHANGED, {added: newBreakpoints});
+      this._emitter.emit(BREAKPOINTS_CHANGED, {
+        added: newBreakpoints
+      });
     }
 
     return newBreakpoints;
   }
 
-  removeBreakpoints(toRemove: IBreakpoint[]): void {
-    this._breakpoints = this._breakpoints.filter(
-      bp => !toRemove.some(r => r.getId() === bp.getId()),
-    );
-    this._emitter.emit(BREAKPOINTS_CHANGED, {removed: toRemove});
+  removeBreakpoints(toRemove) {
+    this._breakpoints = this._breakpoints.filter(bp => !toRemove.some(r => r.getId() === bp.getId()));
+
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      removed: toRemove
+    });
   }
 
-  updateBreakpoints(data: {[id: string]: DebugProtocol.Breakpoint}): void {
-    const updated: IBreakpoint[] = [];
+  updateBreakpoints(data) {
+    const updated = [];
+
     this._breakpoints.forEach(bp => {
       const bpData = data[bp.getId()];
+
       if (bpData != null) {
         bp.line = bpData.line != null ? bpData.line : bp.line;
         bp.endLine = bpData.endLine != null ? bpData.endLine : bp.endLine;
@@ -1389,156 +1181,169 @@ export class Model implements IModel {
         bp.verified = bpData.verified != null ? bpData.verified : bp.verified;
         bp.idFromAdapter = bpData.id;
         bp.message = bpData.message;
-        bp.adapterData = bpData.source
-          ? bpData.source.adapterData
-          : bp.adapterData;
+        bp.adapterData = bpData.source ? bpData.source.adapterData : bp.adapterData;
         updated.push(bp);
       }
     });
+
     this._sortAndDeDup();
-    this._emitter.emit(BREAKPOINTS_CHANGED, {changed: updated});
+
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      changed: updated
+    });
   }
 
-  _sortAndDeDup(): void {
+  _sortAndDeDup() {
     this._breakpoints = this._breakpoints.sort((first, second) => {
       if (first.uri !== second.uri) {
         return first.uri.localeCompare(second.uri);
       }
+
       if (first.line === second.line) {
         return first.column - second.column;
       }
 
       return first.line - second.line;
     });
-    this._breakpoints = distinct(
-      this._breakpoints,
-      bp =>
-        `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`,
-    );
+    this._breakpoints = (0, _collection().distinct)(this._breakpoints, bp => `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`);
   }
 
-  setEnablement(element: IEnableable, enable: boolean): void {
-    const changed: Array<IBreakpoint | IFunctionBreakpoint> = [];
-    if (
-      element.enabled !== enable &&
-      (element instanceof Breakpoint || element instanceof FunctionBreakpoint)
-    ) {
+  setEnablement(element, enable) {
+    const changed = [];
+
+    if (element.enabled !== enable && (element instanceof Breakpoint || element instanceof FunctionBreakpoint)) {
       changed.push(element);
     }
 
     element.enabled = enable;
+
     if (element instanceof Breakpoint && !element.enabled) {
       element.verified = false;
     }
 
-    this._emitter.emit(BREAKPOINTS_CHANGED, {changed});
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      changed
+    });
   }
 
-  enableOrDisableAllBreakpoints(enable: boolean): void {
-    const changed: (IBreakpoint | IFunctionBreakpoint)[] = [];
+  enableOrDisableAllBreakpoints(enable) {
+    const changed = [];
+
     this._breakpoints.forEach(bp => {
       if (bp.enabled !== enable) {
         changed.push(bp);
       }
+
       bp.enabled = enable;
+
       if (!enable) {
         bp.verified = false;
       }
     });
+
     this._functionBreakpoints.forEach(fbp => {
       if (fbp.enabled !== enable) {
         changed.push(fbp);
       }
+
       fbp.enabled = enable;
     });
 
-    this._emitter.emit(BREAKPOINTS_CHANGED, {changed});
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      changed
+    });
   }
 
-  addFunctionBreakpoint(functionName: string): FunctionBreakpoint {
-    const newFunctionBreakpoint = new FunctionBreakpoint(
-      functionName,
-      true,
-      null,
-    );
+  addFunctionBreakpoint(functionName) {
+    const newFunctionBreakpoint = new FunctionBreakpoint(functionName, true, null);
+
     this._functionBreakpoints.push(newFunctionBreakpoint);
-    this._emitter.emit(BREAKPOINTS_CHANGED, {added: [newFunctionBreakpoint]});
+
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      added: [newFunctionBreakpoint]
+    });
+
     return newFunctionBreakpoint;
   }
 
-  updateFunctionBreakpoints(data: {
-    [id: string]: {
-      name?: string,
-      verified?: boolean,
-      id?: number,
-      hitCondition?: string,
-    },
-  }): void {
-    const changed: IFunctionBreakpoint[] = [];
+  updateFunctionBreakpoints(data) {
+    const changed = [];
 
     this._functionBreakpoints.forEach(fbp => {
       const fbpData = data[fbp.getId()];
+
       if (fbpData != null) {
         fbp.name = fbpData.name != null ? fbpData.name : fbp.name;
         fbp.verified = fbpData.verified || fbp.verified;
         fbp.idFromAdapter = fbpData.id;
         fbp.hitCondition = fbpData.hitCondition;
-
         changed.push(fbp);
       }
     });
 
-    this._emitter.emit(BREAKPOINTS_CHANGED, {changed});
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      changed
+    });
   }
 
-  removeFunctionBreakpoints(id?: string): void {
-    let removed: FunctionBreakpoint[];
+  removeFunctionBreakpoints(id) {
+    let removed;
+
     if (id != null) {
       removed = this._functionBreakpoints.filter(fbp => fbp.getId() === id);
-      this._functionBreakpoints = this._functionBreakpoints.filter(
-        fbp => fbp.getId() !== id,
-      );
+      this._functionBreakpoints = this._functionBreakpoints.filter(fbp => fbp.getId() !== id);
     } else {
       removed = this._functionBreakpoints;
       this._functionBreakpoints = [];
     }
-    this._emitter.emit(BREAKPOINTS_CHANGED, {removed});
+
+    this._emitter.emit(BREAKPOINTS_CHANGED, {
+      removed
+    });
   }
 
-  getWatchExpressions(): IEvaluatableExpression[] {
-    return (this._watchExpressions: any);
+  getWatchExpressions() {
+    return this._watchExpressions;
   }
 
-  addWatchExpression(name: string): void {
+  addWatchExpression(name) {
     const we = new Expression(name);
+
     this._watchExpressions.push(we);
+
     this._emitter.emit(WATCH_EXPRESSIONS_CHANGED, we);
   }
 
-  renameWatchExpression(id: string, newName: string): void {
+  renameWatchExpression(id, newName) {
     const filtered = this._watchExpressions.filter(we => we.getId() === id);
+
     if (filtered.length === 1) {
       filtered[0].name = newName;
+
       this._emitter.emit(WATCH_EXPRESSIONS_CHANGED, filtered[0]);
     }
   }
 
-  removeWatchExpressions(id: ?string): void {
-    this._watchExpressions =
-      id != null ? this._watchExpressions.filter(we => we.getId() !== id) : [];
+  removeWatchExpressions(id) {
+    this._watchExpressions = id != null ? this._watchExpressions.filter(we => we.getId() !== id) : [];
+
     this._emitter.emit(WATCH_EXPRESSIONS_CHANGED);
   }
 
-  sourceIsNotAvailable(uri: string): void {
+  sourceIsNotAvailable(uri) {
     this._processes.forEach(p => {
       if (p.sources.has(uri)) {
-        nullthrows(p.sources.get(uri)).available = false;
+        (0, _nullthrows().default)(p.sources.get(uri)).available = false;
       }
     });
+
     this._emitter.emit(CALLSTACK_CHANGED);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
+
 }
+
+exports.Model = Model;

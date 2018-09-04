@@ -1,3 +1,65 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getStore = getStore;
+exports.getErrors = getErrors;
+
+function _reduxMin() {
+  const data = require("redux/dist/redux.min.js");
+
+  _reduxMin = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _reduxObservable() {
+  const data = require("../../../../nuclide-commons/redux-observable");
+
+  _reduxObservable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _refactorReducers() {
+  const data = _interopRequireDefault(require("./refactorReducers"));
+
+  _refactorReducers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _refactorEpics() {
+  const data = require("./refactorEpics");
+
+  _refactorEpics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +68,26 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {RefactorProvider} from './types';
-import type {Observable} from 'rxjs';
-
-import type {Store} from './types';
-
 // $FlowFixMe - Redux is currently untyped!!
-import {createStore, applyMiddleware} from 'redux';
-import {Subject} from 'rxjs';
-
-import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {
-  createEpicMiddleware,
-  combineEpics,
-} from 'nuclide-commons/redux-observable';
-import {getLogger} from 'log4js';
-
-import refactorReducers from './refactorReducers';
-import {getEpics} from './refactorEpics';
-
 // TODO create this lazily
-const errors: Subject<mixed> = new Subject();
+const errors = new _RxMin.Subject();
 
-function handleError(error: mixed): void {
-  getLogger('nuclide-refactorizer').error(
-    'Uncaught exception in refactoring:',
-    error,
-  );
+function handleError(error) {
+  (0, _log4js().getLogger)('nuclide-refactorizer').error('Uncaught exception in refactoring:', error);
   errors.next(error);
 }
 
-export function getStore(providers: ProviderRegistry<RefactorProvider>): Store {
+function getStore(providers) {
   const rootEpic = (actions, store) => {
-    return combineEpics(...getEpics(providers))(actions, store).catch(
-      (error, stream) => {
-        handleError(error);
-        return stream;
-      },
-    );
+    return (0, _reduxObservable().combineEpics)(...(0, _refactorEpics().getEpics)(providers))(actions, store).catch((error, stream) => {
+      handleError(error);
+      return stream;
+    });
   };
+
   const exceptionHandler = store => next => action => {
     try {
       return next(action);
@@ -56,12 +95,10 @@ export function getStore(providers: ProviderRegistry<RefactorProvider>): Store {
       handleError(e);
     }
   };
-  return createStore(
-    refactorReducers,
-    applyMiddleware(exceptionHandler, createEpicMiddleware(rootEpic)),
-  );
+
+  return (0, _reduxMin().createStore)(_refactorReducers().default, (0, _reduxMin().applyMiddleware)(exceptionHandler, (0, _reduxObservable().createEpicMiddleware)(rootEpic)));
 }
 
-export function getErrors(): Observable<mixed> {
+function getErrors() {
   return errors.asObservable();
 }

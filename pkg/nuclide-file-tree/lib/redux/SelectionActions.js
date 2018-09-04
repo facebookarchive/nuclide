@@ -1,3 +1,16 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.select = select;
+exports.unselect = unselect;
+exports.focus = focus;
+exports.unfocus = unfocus;
+exports.clearSelected = clearSelected;
+exports.clearFocused = clearFocused;
+exports.CLEAR_FOCUSED = exports.CLEAR_SELECTED = exports.UNFOCUS = exports.FOCUS = exports.UNSELECT = exports.SELECT = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +18,58 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const SELECT = 'SELECTION:SELECT';
+exports.SELECT = SELECT;
+const UNSELECT = 'SELECTION:UNSELECT';
+exports.UNSELECT = UNSELECT;
+const FOCUS = 'SELECTION:FOCUS';
+exports.FOCUS = FOCUS;
+const UNFOCUS = 'SELECTION:UNFOCUS';
+exports.UNFOCUS = UNFOCUS;
+const CLEAR_SELECTED = 'SELECTION:CLEAR_SELECTED';
+exports.CLEAR_SELECTED = CLEAR_SELECTED;
+const CLEAR_FOCUSED = 'SELECTION:CLEAR_FOCUSED';
+exports.CLEAR_FOCUSED = CLEAR_FOCUSED;
 
-import type {SelectionAction} from '../types';
-import type {FileTreeNode} from '../FileTreeNode';
-
-export const SELECT = 'SELECTION:SELECT';
-export const UNSELECT = 'SELECTION:UNSELECT';
-export const FOCUS = 'SELECTION:FOCUS';
-export const UNFOCUS = 'SELECTION:UNFOCUS';
-export const CLEAR_SELECTED = 'SELECTION:CLEAR_SELECTED';
-export const CLEAR_FOCUSED = 'SELECTION:CLEAR_FOCUSED';
-
-export function select(node: FileTreeNode): SelectionAction {
+function select(node) {
   return {
     type: SELECT,
-    node,
+    node
   };
 }
 
-export function unselect(node: FileTreeNode): SelectionAction {
+function unselect(node) {
   return {
     type: UNSELECT,
-    node,
+    node
   };
 }
 
-export function focus(node: FileTreeNode): SelectionAction {
+function focus(node) {
   return {
     type: FOCUS,
-    node,
+    node
   };
 }
 
-export function unfocus(node: FileTreeNode): SelectionAction {
+function unfocus(node) {
   return {
     type: UNFOCUS,
-    node,
+    node
   };
 }
 
-export function clearSelected(): SelectionAction {
-  return {type: CLEAR_SELECTED};
+function clearSelected() {
+  return {
+    type: CLEAR_SELECTED
+  };
 }
 
-export function clearFocused(): SelectionAction {
-  return {type: CLEAR_FOCUSED};
+function clearFocused() {
+  return {
+    type: CLEAR_FOCUSED
+  };
 }
