@@ -815,31 +815,25 @@ export default class DebugService implements IDebugService {
         }));
 
       let lastEntryToken: ?RecordToken = null;
-      const shouldUpdateLastEntry = level => {
-        return (
-          lastEntryToken != null &&
-          lastEntryToken.getCurrentLevel() === level &&
-          !lastEntryToken.getCurrentText().endsWith('\n')
-        );
-      };
       const handleMessage = (line, level) => {
-        const incomplete = !line.endsWith('\n');
-        let newToken;
-        if (!incomplete) {
-          newToken = consoleApi.append({text: line, level, incomplete: false});
-          invariant(newToken == null);
+        const complete = line.endsWith('\n');
+        const sameLevel =
+          lastEntryToken != null && lastEntryToken.getCurrentLevel() === level;
+        if (sameLevel) {
+          lastEntryToken = nullthrows(lastEntryToken).appendText(line);
+          if (complete) {
+            lastEntryToken.setComplete();
+            lastEntryToken = null;
+          }
         } else {
-          newToken =
-            lastEntryToken != null && shouldUpdateLastEntry(level)
-              ? lastEntryToken.appendText(line)
-              : consoleApi.append({text: line, level, incomplete});
-        }
-
-        if (newToken !== lastEntryToken) {
           if (lastEntryToken != null) {
             lastEntryToken.setComplete();
           }
-          lastEntryToken = newToken;
+          lastEntryToken = consoleApi.append({
+            text: line,
+            level,
+            incomplete: !complete,
+          });
         }
       };
       this._sessionEndDisposables.add(
