@@ -20,6 +20,8 @@ import {shell} from 'electron';
 import escapeHtml from 'escape-html';
 import child_process from 'child_process';
 
+const NUCLIDE_CANT_CONNECT_URL = 'http://fburl.com/nuclidecantconnect';
+
 export function notifySshHandshakeError(
   errorType: SshHandshakeErrorType,
   error: Error,
@@ -128,13 +130,17 @@ export function notifySshHandshakeError(
         `  1. Make sure the command "${remoteServerCommand}" is correct.\n` +
         '  2. The server might take longer to start up than expected, try to connect again.\n' +
         `  3. If none of above works, ssh to ${host} and kill existing nuclide-server` +
-        ' by running "killall node", and reconnect.\n\n\n' +
+        ' by running "killall node", and reconnect.\n' +
+        // @fb-only: '  4. If that still fails, you can try the remediation steps at' +
+        // @fb-only: ` ${NUCLIDE_CANT_CONNECT_URL}\n\n\n` +
         originalErrorDetail;
       break;
     case 'SERVER_CANNOT_CONNECT':
       message = 'Unable to connect to server';
       detail =
-        'The server successfully started, but we were unable to connect.\n\n' +
+        'The server successfully started, but we were unable to connect.\n' +
+        // @fb-only: 'Troubleshooting: \n' +
+        // @fb-only: `  1. Try the remediation steps at ${NUCLIDE_CANT_CONNECT_URL}\n\n\n` +
         originalErrorDetail;
       break;
     case 'CERT_NOT_YET_VALID':
