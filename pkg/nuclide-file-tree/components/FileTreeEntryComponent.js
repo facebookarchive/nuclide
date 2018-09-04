@@ -501,13 +501,6 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       this.props.selectedNodes.size === 1
         ? this.props.selectedNodes.first()
         : null;
-    if (dragNode != null && dragNode.isRoot) {
-      this.props.reorderRoots();
-    } else {
-      // Reset the dragEventCount for the currently dragged node upon dropping.
-      this.dragEventCount = 0;
-      this.props.moveToNode();
-    }
 
     const files = event.dataTransfer?.files;
     if (files && files.length && this.props.canTransferFiles) {
@@ -516,7 +509,13 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       } else {
         // TODO: Show warning
       }
+    } else if (dragNode != null && dragNode.isRoot) {
+      this.props.reorderRoots();
+    } else {
+      this.props.moveToNode();
     }
+    // Reset the dragEventCount for the currently dragged node upon dropping.
+    this.dragEventCount = 0;
   };
 
   _toggleNodeExpanded(deep: boolean): void {
