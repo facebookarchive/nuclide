@@ -53,7 +53,7 @@ export default class TabbableContainer extends React.Component<Props> {
     if (!rootNode.contains(document.activeElement)) {
       const tabbableElements = tabbable(rootNode);
       const firstTabbableElement = tabbableElements[0];
-      if (firstTabbableElement != null) {
+      if (firstTabbableElement instanceof HTMLElement) {
         firstTabbableElement.focus();
       }
     }
