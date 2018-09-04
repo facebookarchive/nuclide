@@ -331,7 +331,7 @@ export class Console {
           enableRegExpFilter: localState.enableRegExpFilter,
           displayableRecords: filteredRecords,
           filteredRecordCount:
-            globalState.records.size - filteredRecords.length,
+            Selectors.getAllRecords(globalState).size - filteredRecords.length,
           history: globalState.history,
           sources: this._getSources(),
           selectedSourceIds,
