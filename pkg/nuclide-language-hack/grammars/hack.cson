@@ -912,7 +912,7 @@
       }
       {
         'begin': '''(?x)
-          \\s*((?:(?:final|abstract|public|private|protected|static)\\s+)*)
+          \\s*((?:(?:final|abstract|async|public|private|protected|static)\\s+)*)
           (function)
           (?:\\s+|(\\s*&\\s*))
           (?:
@@ -925,7 +925,7 @@
           '1':
             'patterns': [
               {
-                'match': 'final|abstract|public|private|protected|static'
+                'match': 'final|abstract|async|public|private|protected|static'
                 'name': 'storage.modifier.php'
               }
             ]
