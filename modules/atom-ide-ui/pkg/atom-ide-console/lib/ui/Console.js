@@ -39,8 +39,8 @@ import {toggle} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
-import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
+import * as Selectors from '../redux/Selectors';
 import ConsoleView from './ConsoleView';
 import {List} from 'immutable';
 import * as React from 'react';
@@ -311,7 +311,7 @@ export class Console {
           filteredRecords,
         } = this._getFilterInfo();
 
-        const currentExecutorId = getCurrentExecutorId(globalState);
+        const currentExecutorId = Selectors.getCurrentExecutorId(globalState);
         const currentExecutor =
           currentExecutorId != null
             ? globalState.executors.get(currentExecutorId)
@@ -412,32 +412,31 @@ export class Console {
     newHeight: number,
     callback: () => void,
   ): void => {
-    const {records, incompleteRecords} = this._store.getState();
-    const nextDisplayableRecords = Array(records.size + incompleteRecords.size);
-    records.concat(incompleteRecords).forEach((record, i) => {
-      let displayableRecord = this._toDisplayableRecord(record);
-      if (displayableRecord.id === recordId) {
-        // Update the record with the new height.
-        displayableRecord = {
-          ...displayableRecord,
-          height: newHeight,
-        };
-        this._displayableRecords.set(record, displayableRecord);
-      }
-      nextDisplayableRecords[i] = displayableRecord;
-    });
+    const nextDisplayableRecords = Selectors.getAllRecords(
+      this._store.getState(),
+    )
+      .map((record, i) => {
+        let displayableRecord = this._toDisplayableRecord(record);
+        if (displayableRecord.id === recordId) {
+          // Update the record with the new height.
+          displayableRecord = {
+            ...displayableRecord,
+            height: newHeight,
+          };
+          this._displayableRecords.set(record, displayableRecord);
+        }
+        return displayableRecord;
+      })
+      .toArray();
 
     this._model.setState({displayableRecords: nextDisplayableRecords});
     requestAnimationFrame(callback);
   };
 
   _getDisplayableRecords(): Array<DisplayableRecord> {
-    const {records, incompleteRecords} = this._store.getState();
-    const displayableRecords = Array(records.size + incompleteRecords.size);
-    records.concat(incompleteRecords).forEach((record, i) => {
-      displayableRecords[i] = this._toDisplayableRecord(record);
-    });
-    return displayableRecords;
+    return Selectors.getAllRecords(this._store.getState())
+      .map(record => this._toDisplayableRecord(record))
+      .toArray();
   }
 
   /**

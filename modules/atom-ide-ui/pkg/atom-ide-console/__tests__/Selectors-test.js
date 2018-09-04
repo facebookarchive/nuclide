@@ -12,7 +12,7 @@
  */
 import {Observable} from 'rxjs';
 import type {Executor} from '../lib/types';
-import getCurrentExecutorId from '../lib/getCurrentExecutorId';
+import * as Selectors from '../lib/redux/Selectors';
 import * as Immutable from 'immutable';
 
 export function createDummyExecutor(id: string): Executor {
@@ -39,7 +39,7 @@ const baseAppState = {
 
 describe('getCurrentExecutorId', () => {
   it('gets the current executor', () => {
-    expect(getCurrentExecutorId(baseAppState)).toBe('a');
+    expect(Selectors.getCurrentExecutorId(baseAppState)).toBe('a');
   });
 
   it('returns an executor even if the current id is null', () => {
@@ -47,6 +47,6 @@ describe('getCurrentExecutorId', () => {
       ...baseAppState,
       currentExecutorId: null,
     };
-    expect(getCurrentExecutorId(appState)).toBe('a');
+    expect(Selectors.getCurrentExecutorId(appState)).toBe('a');
   });
 });

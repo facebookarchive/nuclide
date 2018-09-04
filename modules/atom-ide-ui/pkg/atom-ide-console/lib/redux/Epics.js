@@ -15,7 +15,7 @@ import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as Actions from './Actions';
-import getCurrentExecutorId from '../getCurrentExecutorId';
+import * as Selectors from './Selectors';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import analytics from 'nuclide-commons/analytics';
@@ -56,7 +56,7 @@ export function executeEpic(
   return actions.ofType(Actions.EXECUTE).flatMap(action => {
     invariant(action.type === Actions.EXECUTE);
     const {code} = action.payload;
-    const currentExecutorId = getCurrentExecutorId(store.getState());
+    const currentExecutorId = Selectors.getCurrentExecutorId(store.getState());
     // flowlint-next-line sketchy-null-string:off
     invariant(currentExecutorId);
 
