@@ -681,9 +681,6 @@ export type Action =
       destination: FileTreeNode,
       files: FileList,
     |}
-  | SelectionAction;
-
-export type SelectionAction =
   | {|
       type: 'SELECTION:SELECT',
       node: FileTreeNode,

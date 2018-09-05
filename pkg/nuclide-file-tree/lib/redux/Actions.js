@@ -127,6 +127,13 @@ export const UPDATE_ROOT_DIRECTORIES = 'UPDATE_ROOT_DIRECTORIES';
 export const GOT_REMOTE_TRANSFER_SERVICE = 'GOT_REMOTE_TRANSFER_SERVICE';
 export const UPLOAD_DROPPED_FILES = 'UPLOAD_DROPPED_FILES';
 
+export const SELECT = 'SELECTION:SELECT';
+export const UNSELECT = 'SELECTION:UNSELECT';
+export const FOCUS = 'SELECTION:FOCUS';
+export const UNFOCUS = 'SELECTION:UNFOCUS';
+export const CLEAR_SELECTED = 'SELECTION:CLEAR_SELECTED';
+export const CLEAR_FOCUSED = 'SELECTION:CLEAR_FOCUSED';
+
 export function setCwd(rootKey: ?string): Action {
   return {
     type: SET_CWD,
@@ -831,4 +838,40 @@ export function uploadDroppedFiles(
   files: FileList,
 ): Action {
   return {type: UPLOAD_DROPPED_FILES, destination, files};
+}
+
+export function select(node: FileTreeNode): Action {
+  return {
+    type: SELECT,
+    node,
+  };
+}
+
+export function unselect(node: FileTreeNode): Action {
+  return {
+    type: UNSELECT,
+    node,
+  };
+}
+
+export function focus(node: FileTreeNode): Action {
+  return {
+    type: FOCUS,
+    node,
+  };
+}
+
+export function unfocus(node: FileTreeNode): Action {
+  return {
+    type: UNFOCUS,
+    node,
+  };
+}
+
+export function clearSelected(): Action {
+  return {type: CLEAR_SELECTED};
+}
+
+export function clearFocused(): Action {
+  return {type: CLEAR_FOCUSED};
 }

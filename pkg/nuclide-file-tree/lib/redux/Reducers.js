@@ -30,7 +30,6 @@ import {HistogramTracker} from '../../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange} from '../FileTreeSelectionRange';
-import * as SelectionActions from '../redux/SelectionActions';
 import * as Actions from '../redux/Actions';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -241,29 +240,29 @@ function reduceState(state_: AppState, action: Action): AppState {
       };
     case Actions.GOT_REMOTE_TRANSFER_SERVICE:
       return {...state, remoteTransferService: action.remoteTransferService};
-    case SelectionActions.SELECT:
+    case Actions.SELECT:
       return {
         ...state,
         _selectedUris: addNodes(state._selectedUris, [action.node]),
       };
-    case SelectionActions.UNSELECT:
+    case Actions.UNSELECT:
       return {
         ...state,
         _selectedUris: deleteNodes(state._selectedUris, [action.node]),
       };
-    case SelectionActions.CLEAR_SELECTED:
+    case Actions.CLEAR_SELECTED:
       return clearSelected(state);
-    case SelectionActions.FOCUS:
+    case Actions.FOCUS:
       return {
         ...state,
         _focusedUris: addNodes(state._focusedUris, [action.node]),
       };
-    case SelectionActions.UNFOCUS:
+    case Actions.UNFOCUS:
       return {
         ...state,
         _focusedUris: deleteNodes(state._focusedUris, [action.node]),
       };
-    case SelectionActions.CLEAR_FOCUSED:
+    case Actions.CLEAR_FOCUSED:
       return clearFocused(state);
     default:
       break;

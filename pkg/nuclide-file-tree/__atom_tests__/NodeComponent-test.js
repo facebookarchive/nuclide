@@ -23,7 +23,6 @@ import TestUtils from 'react-dom/test-utils';
 import createStore from '../lib/redux/createStore';
 import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
-import * as SelectionActions from '../lib/redux/SelectionActions';
 
 function renderEntryComponentIntoDocument(
   Component: Object,
@@ -56,7 +55,7 @@ function renderEntryComponentIntoDocument(
 
   const node = new FileTreeNode(nodeProps, nodeConf);
 
-  store.dispatch(SelectionActions.focus(node));
+  store.dispatch(Actions.focus(node));
   const selectedNodes = Selectors.getSelectedNodes(store.getState()).toSet();
 
   return TestUtils.renderIntoDocument(
