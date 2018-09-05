@@ -312,14 +312,19 @@ export function getOutputStream(
   const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
   const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
   return Observable.defer(() => {
-    const stdoutEvents = chunk(
-      limitBufferSize(observeStream(proc.stdout), maxBuffer, 'stdout'),
-    ).map(data => ({kind: 'stdout', data}));
-    const stderrEvents = chunk(
-      limitBufferSize(observeStream(proc.stderr), maxBuffer, 'stderr'),
-    )
-      .map(data => ({kind: 'stderr', data}))
-      .share();
+    const {stdout, stderr} = proc;
+    const stdoutEvents =
+      stdout == null
+        ? Observable.empty()
+        : chunk(
+            limitBufferSize(observeStream(stdout), maxBuffer, 'stdout'),
+          ).map(data => ({kind: 'stdout', data}));
+    const stderrEvents =
+      stderr == null
+        ? Observable.empty()
+        : chunk(limitBufferSize(observeStream(stderr), maxBuffer, 'stderr'))
+            .map(data => ({kind: 'stderr', data}))
+            .share();
 
     // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback about
     // about exit errors (then stop so we don't fill up memory with it).
@@ -347,13 +352,13 @@ export function getOutputStream(
       .filter(isRealExit)
       .take(1)
       .withLatestFrom(accumulatedStderr)
-      .map(([event, stderr]) => {
+      .map(([event, stderrContent]) => {
         if (isExitError(event)) {
           throw new ProcessExitError(
             event.exitCode,
             event.signal,
             proc,
-            stderr,
+            stderrContent,
           );
         }
         return event;
