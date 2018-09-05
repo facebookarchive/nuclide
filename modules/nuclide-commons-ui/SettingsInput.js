@@ -66,8 +66,7 @@ export default class SettingsInput extends React.Component<Props> {
   _onBlur = () => {
     const keyPath = this.props.keyPath;
     const input = this._input;
-    invariant(input != null);
-    if (isDefaultConfigValue(keyPath, input.getText())) {
+    if (input != null && isDefaultConfigValue(keyPath, input.getText())) {
       this._updateInput(input, '');
     }
   };
