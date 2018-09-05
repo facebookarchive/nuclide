@@ -22,14 +22,16 @@ import child_process from 'child_process';
 
 // @fb-only: const NUCLIDE_CANT_CONNECT_URL = 'http://fburl.com/nuclidecantconnect';
 
-export function notifySshHandshakeError(
+type HumanizedErrorMessage = {
+  title?: string,
+  body: string,
+};
+
+export function humanizeErrorMessage(
   errorType: SshHandshakeErrorType,
   error: Error,
   config: SshConnectionConfiguration,
-): void {
-  let message = '';
-  let detail = '';
-  let buttons = [];
+): HumanizedErrorMessage {
   const originalErrorDetail = `Original error message:\n ${error.message}`;
 
   // This comes from people and people can't be trusted. Escape it before dumping it into the DOM.
@@ -49,125 +51,156 @@ export function notifySshHandshakeError(
 
   switch (errorType) {
     case 'HOST_NOT_FOUND':
-      message = `Can't resolve IP address for host ${host}.`;
-      detail =
-        'Troubleshooting:\n' +
-        '  1. Check your network connection.\n' +
-        `  2. Make sure the hostname ${host} is valid.\n`;
-      break;
+      return {
+        title: `Can't resolve IP address for host ${host}.`,
+        body:
+          'Troubleshooting:\n' +
+          '  1. Check your network connection.\n' +
+          `  2. Make sure the hostname ${host} is valid.\n`,
+      };
     case 'CANT_READ_PRIVATE_KEY':
-      message = `Can't read content of private key path ${pathToPrivateKey}.`;
-      detail =
-        'Make sure the private key path is properly configured.\n' +
-        'You may need to convert your private key from PKCS to RSA.\n' +
-        originalErrorDetail;
-      break;
+      return {
+        title: `Can't read content of private key path ${pathToPrivateKey}.`,
+        body:
+          'Make sure the private key path is properly configured.\n' +
+          'You may need to convert your private key from PKCS to RSA.\n' +
+          originalErrorDetail,
+      };
     case 'SSH_CONNECT_TIMEOUT':
-      message = `Timeout while connecting to ${host}.`;
-      detail =
-        'Troubleshooting:\n' +
-        '  1. Check your network connection.\n' +
-        '  2. Input correct 2Fac passcode when prompted.';
-      break;
+      return {
+        title: `Timeout while connecting to ${host}.`,
+        body:
+          'Troubleshooting:\n' +
+          '  1. Check your network connection.\n' +
+          '  2. Input correct 2Fac passcode when prompted.',
+      };
     case 'SFTP_TIMEOUT':
-      message = `Timeout while connecting to ${host}.`;
-      detail = createTimeoutDetail();
-      break;
+      return {
+        title: `Timeout while connecting to ${host}.`,
+        body: createTimeoutDetail(),
+      };
     case 'USER_CANCELLED':
-      message = `User cancelled while connecting to ${host}.`;
-      detail = createTimeoutDetail();
-      break;
+      return {
+        title: `User cancelled while connecting to ${host}.`,
+        body: createTimeoutDetail(),
+      };
     case 'SSH_CONNECT_FAILED':
-      message = `Failed to connect to ${host}:${sshPort}.`;
-      detail =
-        'Troubleshooting:\n' +
-        '  1. Check your network connection.\n' +
-        `  2. Make sure the host ${host} is running and has` +
-        ` ssh server running on ${sshPort}.\n\n` +
-        originalErrorDetail;
-      break;
+      return {
+        title: `Failed to connect to ${host}:${sshPort}.`,
+        body:
+          'Troubleshooting:\n' +
+          '  1. Check your network connection.\n' +
+          `  2. Make sure the host ${host} is running and has` +
+          ` ssh server running on ${sshPort}.\n\n` +
+          originalErrorDetail,
+      };
+
     case 'SSH_AUTHENTICATION':
       switch (config.authMethod) {
         case SshHandshake.SupportedMethods.PASSWORD:
-          message = 'Password Authentication failed';
-          detail =
-            'Troubleshooting:\n' +
-            '  1. Did you mean to choose password authentication?\n' +
-            '  2. Make sure you provided the correct username and password.';
-          break;
+          return {
+            title: 'Password Authentication failed',
+            body:
+              'Troubleshooting:\n' +
+              '  1. Did you mean to choose password authentication?\n' +
+              '  2. Make sure you provided the correct username and password.',
+          };
         case SshHandshake.SupportedMethods.PRIVATE_KEY:
-          message = 'Private Key Authentication failed';
-          detail =
-            'Troubleshooting:\n' +
-            '  1. Did you mean to choose private key authentication?\n' +
-            '  2. Make sure your SSH private key is properly configured.';
-          break;
+          return {
+            title: 'Private Key Authentication failed',
+            body:
+              'Troubleshooting:\n' +
+              '  1. Did you mean to choose private key authentication?\n' +
+              '  2. Make sure your SSH private key is properly configured.',
+          };
         case SshHandshake.SupportedMethods.SSL_AGENT:
-          message = 'SSL Agent Authentication failed';
-          detail =
-            'Troubleshooting:\n' +
-            '  1. Did you mean to choose SSL agent authentication?\n' +
-            '  2. Make sure your SSH connection is properly configured.';
-          break;
+          return {
+            title: 'SSL Agent Authentication failed',
+            body:
+              'Troubleshooting:\n' +
+              '  1. Did you mean to choose SSL agent authentication?\n' +
+              '  2. Make sure your SSH connection is properly configured.',
+          };
         default:
-          message = 'Unknown SSH Authentication Method failed';
-          detail =
-            `Unknown authentication method '${authMethod}' provided. Make sure your` +
-            ' SSH connection is properly configured.';
-          break;
+          return {
+            title: 'Unknown SSH Authentication Method failed',
+            body:
+              `Unknown authentication method '${authMethod}' provided. Make sure your` +
+              ' SSH connection is properly configured.',
+          };
       }
-      break;
     case 'DIRECTORY_NOT_FOUND':
-      message = `There is no such directory ${cwd} on ${host}.`;
-      detail = `Make sure ${cwd} exists on ${host}.`;
-      break;
+      return {
+        title: `There is no such directory ${cwd} on ${host}.`,
+        body: `Make sure ${cwd} exists on ${host}.`,
+      };
     case 'SERVER_START_FAILED':
-      message =
-        `Failed to start nuclide-server on ${host} using  ` +
-        `${remoteServerCommand}`;
-      detail =
-        'Troubleshooting: \n' +
-        `  1. Make sure the command "${remoteServerCommand}" is correct.\n` +
-        '  2. The server might take longer to start up than expected, try to connect again.\n' +
-        `  3. If none of above works, ssh to ${host} and kill existing nuclide-server` +
-        ' by running "killall node", and reconnect.\n' +
-        // @fb-only: '  4. If that still fails, you can try the remediation steps at' +
-        // @fb-only: ` ${NUCLIDE_CANT_CONNECT_URL}\n\n\n` +
-        originalErrorDetail;
-      break;
+      return {
+        title:
+          `Failed to start nuclide-server on ${host} using  ` +
+          `${remoteServerCommand}`,
+        body: [
+          'Troubleshooting:',
+          `  1. Make sure the command "${remoteServerCommand}" is correct.`,
+          '  2. The server might take longer to start up than expected, try to connect again.',
+          `  3. If none of above works, ssh to ${host} and kill existing nuclide-server` +
+            ' by running "killall node", and reconnect.',
+          // @fb-only: '  4. If that still fails, you can try the remediation steps at' +
+            // @fb-only: ` ${NUCLIDE_CANT_CONNECT_URL}`,
+        ].join('\n'),
+        originalErrorDetail,
+      };
     case 'SERVER_CANNOT_CONNECT':
-      message = 'Unable to connect to server';
-      detail =
-        'The server successfully started, but we were unable to connect.\n' +
-        // @fb-only: 'Troubleshooting: \n' +
-        // @fb-only: `  1. Try the remediation steps at ${NUCLIDE_CANT_CONNECT_URL}\n\n\n` +
-        originalErrorDetail;
-      break;
+      return {
+        title: 'Unable to connect to server',
+        body: [
+          'The server successfully started, but we were unable to connect.',
+          // @fb-only: 'Troubleshooting:',
+          // @fb-only: `  1. Try the remediation steps at ${NUCLIDE_CANT_CONNECT_URL}`,
+        ].join('\n'),
+        originalErrorDetail,
+      };
     case 'CERT_NOT_YET_VALID':
-      message = 'Your clock is behind';
-      detail =
-        'Your system clock is behind - unable to authenticate.\n' +
-        'Please check your date and time settings to continue.\n\n' +
-        originalErrorDetail;
-      buttons = [
-        {
-          className: 'icon icon-watch',
-          text: 'Sync System Clock with Time Server',
-          onDidClick: () => handleSyncDateTime(notification),
-        },
-      ];
-      break;
+      return {
+        title: 'Your clock is behind',
+        body:
+          'Your system clock is behind - unable to authenticate.\n' +
+          'Please check your date and time settings to continue.\n\n' +
+          originalErrorDetail,
+      };
     case 'UNKNOWN':
-      message = `Unexpected error occurred: ${error.message}.`;
-      detail = originalErrorDetail;
-      break;
+      return {
+        title: `Unexpected error occurred: ${error.message}.`,
+        body: originalErrorDetail,
+      };
     default:
-      (errorType: empty);
-      detail = originalErrorDetail;
+      return {body: originalErrorDetail};
+  }
+}
+
+export function notifySshHandshakeError(
+  errorType: SshHandshakeErrorType,
+  error: Error,
+  config: SshConnectionConfiguration,
+): void {
+  const {title, body} = humanizeErrorMessage(errorType, error, config);
+
+  let buttons = [];
+  if (
+    errorType === 'SSH_AUTHENTICATION' &&
+    config.authMethod === 'CERT_NOT_YET_VALID'
+  ) {
+    buttons = [
+      {
+        className: 'icon icon-watch',
+        text: 'Sync System Clock with Time Server',
+        onDidClick: () => handleSyncDateTime(notification),
+      },
+    ];
   }
 
-  const notification = atom.notifications.addError(message, {
-    detail,
+  const notification = atom.notifications.addError(title || '', {
+    detail: body,
     dismissable: true,
     buttons,
   });
