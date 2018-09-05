@@ -90,6 +90,13 @@ current location in the ouput. Otherwise, listing will begin at the given line n
     await this._printSourceLines(ref);
   }
 
+  onStopped(): void {
+    // Default behavior if list is re-run is to show more source.
+    // When we stop at a breakpoint, reset that state so the first 'list'
+    // always shows source around the stop location
+    this._source.path = '';
+  }
+
   _previousSource(): DebugProtocol.Source {
     if (this._sourceIsEmpty()) {
       throw new Error('There is no current source file to list.');
@@ -199,7 +206,7 @@ current location in the ouput. Otherwise, listing will begin at the given line n
 
   _sourceIsEmpty(): boolean {
     return (
-      this._source.path == null &&
+      (this._source.path == null || this._source.path === '') &&
       (this._source.sourceReference == null ||
         this._source.sourceReference === 0)
     );

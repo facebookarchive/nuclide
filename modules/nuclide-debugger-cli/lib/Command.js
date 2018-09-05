@@ -15,4 +15,5 @@ export interface Command {
   +helpText: string;
   +detailedHelpText?: string;
   execute(args: string[]): Promise<void>;
+  +onStopped?: () => void;
 }

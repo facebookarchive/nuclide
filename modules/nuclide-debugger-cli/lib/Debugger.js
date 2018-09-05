@@ -68,6 +68,7 @@ export default class Debugger implements DebuggerInterface {
   _capabilities: Capabilities = {};
   _console: ConsoleIO;
   _debugSession: ?VsDebugSession;
+  _dispatcher: ?CommandDispatcher;
   _logger: log4js$Logger;
   _activeThread: ?number;
   _threads: ThreadCollection = new ThreadCollection();
@@ -99,6 +100,7 @@ export default class Debugger implements DebuggerInterface {
   }
 
   registerCommands(dispatcher: CommandDispatcher): void {
+    this._dispatcher = dispatcher;
     dispatcher.registerCommand(new BackTraceCommand(this._console, this));
     dispatcher.registerCommand(new ThreadsCommand(this._console, this));
     dispatcher.registerCommand(new StepCommand(this));
@@ -1061,6 +1063,15 @@ export default class Debugger implements DebuggerInterface {
           this._console.outputLine(
             `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
           );
+        }
+
+        const dispatcher = this._dispatcher;
+        if (dispatcher != null) {
+          for (const cmd of dispatcher.getCommands()) {
+            if (cmd.onStopped != null) {
+              cmd.onStopped();
+            }
+          }
         }
       } catch (err) {
         this._console.outputLine(
