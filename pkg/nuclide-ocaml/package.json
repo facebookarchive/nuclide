@@ -58,6 +58,11 @@
         "title": "Enable copy-on-click for code lenses.",
         "type": "boolean",
         "default": true
+      },
+      "codeLensMultiLine": {
+        "title": "Allow code lenses to display on multiple lines.",
+        "type": "boolean",
+        "default": false
       }
     },
     "packageType": "AtomPackage"

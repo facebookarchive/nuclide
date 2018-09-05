@@ -23,15 +23,15 @@ import {microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import createDOMPurify from 'dompurify';
-
-const domPurify = createDOMPurify();
 
 const RETRIES = 3;
+const MAX_LENS_LENGTH = 500;
+const TRUNCATION_MESSAGE = '...\n(truncated, click to copy)';
 
 type ResolvableLens = {
   lens: CodeLensData,
   element: HTMLElement,
+  fullText: ?string,
   resolved: boolean,
   retries: number,
 };
@@ -50,6 +50,14 @@ function makeResolvableLens(
 ): ResolvableLens {
   const marker = markerLayer.markBufferPosition(lens.range.start);
   const element = document.createElement('span');
+  const lensInfo = {
+    lens,
+    element,
+    fullText: null,
+    marker,
+    resolved: false,
+    retries: 0,
+  };
 
   element.classList.add('code-lens-content');
 
@@ -59,10 +67,10 @@ function makeResolvableLens(
   element.innerHTML = '\xa0';
   const listener = () => {
     if (
-      element.innerText != null &&
+      lensInfo.fullText != null &&
       featureConfig.get('nuclide-ocaml.codeLensCopy')
     ) {
-      atom.clipboard.write(element.innerText);
+      atom.clipboard.write(lensInfo.fullText);
       const tooltipDispose = atom.tooltips.add(element, {
         title: 'Copied code lens to clipboard.',
         placement: 'auto',
@@ -91,7 +99,7 @@ function makeResolvableLens(
     item: containingElement,
   });
 
-  return {lens, element, marker, resolved: false, retries: 0};
+  return lensInfo;
 }
 
 function getCodeLensPositions(
@@ -199,10 +207,19 @@ function resolveVisible(resolveInfo: ResolveInfo): Observable<?CodeLensData> {
       }
 
       if (lens != null && lens.command != null) {
-        const text = domPurify.sanitize(lens.command.title, {
-          ALLOWED_TAGS: [],
-        });
-        lensInfo.element.innerHTML = text;
+        lensInfo.fullText = lens.command.title;
+        let text = lensInfo.fullText;
+        if (text.length > MAX_LENS_LENGTH) {
+          text =
+            text.substr(0, MAX_LENS_LENGTH - TRUNCATION_MESSAGE.length) +
+            TRUNCATION_MESSAGE;
+        }
+
+        if (!featureConfig.get('nuclide-ocaml.codeLensMultiLine')) {
+          text = text.replace(/\s/gm, ' ');
+        }
+
+        lensInfo.element.innerText = text;
       } else if (lensInfo.retries < RETRIES) {
         lensInfo.resolved = false;
         lensInfo.retries++;
