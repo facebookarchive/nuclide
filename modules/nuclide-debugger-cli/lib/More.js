@@ -105,6 +105,7 @@ export default class More {
     if (this._dispose != null) {
       this._dispose.dispose();
       this._dispose = null;
+      this._cursorControl.gotoXY(1, this._size.rows);
       this._cli.startInput();
       this._done();
     }
@@ -223,12 +224,30 @@ export default class More {
       this._cursorControl.clearEOL();
     }
 
+    let percent = 0;
+    let status = 'TOP';
+
+    if (this._topLine !== 0) {
+      if (index < this._formatted.length) {
+        status = 'MORE';
+        percent = Math.trunc((100 * index) / this._formatted.length);
+      } else {
+        status = 'BOTTOM';
+        percent = 100;
+      }
+    }
+
+    this._cursorControl.gotoXY(1, this._size.rows);
+    this._cursorControl.boldVideo();
+    this._cli.write(' '.repeat(this._size.cols));
     this._cursorControl.gotoXY(1, this._size.rows);
     this._cursorControl.clearEOL();
-    if (index < this._formatted.length) {
-      this._cli.write('---MORE---');
-    } else {
-      this._cli.write('---END---');
-    }
+    this._cli.write(`---${status}---`);
+    this._cursorControl.gotoXY(20, this._size.rows);
+    this._cli.write(`${percent}%`);
+    this._cursorControl.gotoXY(30, this._size.rows);
+    this._cli.write("'q' to quit, SPACE for next, PGUP/PGDOWN to page");
+    this._cursorControl.normalVideo();
+    this._cursorControl.gotoXY(1, 1);
   }
 }

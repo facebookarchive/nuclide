@@ -40,4 +40,12 @@ export class ANSIStreamOutput implements CursorControl {
   clearEOL(): void {
     this._output('\x1b[K');
   }
+
+  boldVideo(): void {
+    this._output('\x1b[1m');
+  }
+
+  normalVideo(): void {
+    this._output('\x1b[0m');
+  }
 }

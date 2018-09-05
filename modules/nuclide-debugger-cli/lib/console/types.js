@@ -16,4 +16,6 @@ export interface CursorControl {
   cursorLeft(cols: ?number): void;
   cursorRight(cols: ?number): void;
   clearEOL(): void;
+  boldVideo(): void;
+  normalVideo(): void;
 }

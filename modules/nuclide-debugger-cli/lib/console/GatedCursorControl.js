@@ -54,4 +54,16 @@ export default class GatedCursorControl implements CursorControl {
       this._inner.clearEOL();
     }
   }
+
+  boldVideo(): void {
+    if (this._inner) {
+      this._inner.boldVideo();
+    }
+  }
+
+  normalVideo(): void {
+    if (this._inner) {
+      this._inner.normalVideo();
+    }
+  }
 }
