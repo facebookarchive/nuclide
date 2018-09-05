@@ -22,7 +22,7 @@ import child_process from 'child_process';
 
 // @fb-only: const NUCLIDE_CANT_CONNECT_URL = 'http://fburl.com/nuclidecantconnect';
 
-type HumanizedErrorMessage = {
+export type HumanizedErrorMessage = {
   title?: string,
   body?: string,
   originalErrorDetail?: string,

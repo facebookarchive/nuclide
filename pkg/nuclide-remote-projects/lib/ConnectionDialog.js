@@ -15,6 +15,7 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {HumanizedErrorMessage} from './notification';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -30,6 +31,7 @@ const {remote} = electron;
 invariant(remote != null);
 
 type Props = {|
+  error: ?HumanizedErrorMessage,
   dirty: boolean,
   setDirty: boolean => void,
 
@@ -165,6 +167,7 @@ export default class ConnectionDialog extends React.Component<Props> {
     if (mode === ConnectionDialogModes.REQUEST_CONNECTION_DETAILS) {
       content = (
         <ConnectionDetailsPrompt
+          error={this.props.error}
           connectionProfiles={this.props.connectionProfiles}
           selectedProfileIndex={this.props.selectedProfileIndex}
           onAddProfileClicked={this.props.onAddProfileClicked}

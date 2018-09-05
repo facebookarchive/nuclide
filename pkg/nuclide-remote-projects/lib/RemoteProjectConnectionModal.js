@@ -18,6 +18,7 @@ import type {
 } from './connection-types';
 import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/lib/SshHandshake';
 import type {ConnectionDialogMode} from './ConnectionDialog';
+import type {HumanizedErrorMessage} from './notification';
 
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import ConnectionDialog from './ConnectionDialog';
@@ -28,6 +29,7 @@ import ReactDOM from 'react-dom';
 export type Screen = 'connect' | 'create-connection';
 
 export type Props = {|
+  connectionError: ?HumanizedErrorMessage,
   connectionFormDirty: boolean,
   setConnectionFormDirty: boolean => void,
 
@@ -99,6 +101,7 @@ export default class RemoteProjectConnectionModal extends React.Component<
       case 'connect':
         return (
           <ConnectionDialog
+            error={this.props.connectionError}
             dirty={this.props.connectionFormDirty}
             setDirty={this.props.setConnectionFormDirty}
             confirmConnectionPrompt={this.props.confirmConnectionPrompt}

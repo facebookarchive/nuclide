@@ -10,6 +10,7 @@
  */
 
 import type {NuclideRemoteConnectionProfile} from './connection-types';
+import type {HumanizedErrorMessage} from './notification';
 import type {Screen} from './RemoteProjectConnectionModal';
 import type {
   SshHandshakeErrorType,
@@ -41,7 +42,7 @@ import {
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
 import connectBigDigSshHandshake from './connectBigDigSshHandshake';
-import {notifySshHandshakeError} from './notification';
+import {notifySshHandshakeError, humanizeErrorMessage} from './notification';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export type StartConnectFlowOptions = {
@@ -100,6 +101,7 @@ export default function startConnectFlow(
 }
 
 type State = {|
+  connectionError: ?HumanizedErrorMessage,
   connectionFormDirty: boolean,
   confirmConnectionPrompt: () => void,
   connectionPromptInstructions: string,
@@ -130,6 +132,7 @@ class ConnectFlow {
     ];
 
     this._model = new Model({
+      connectionError: null,
       connectionFormDirty: false,
       confirmConnectionPrompt: () => {},
       connectionPromptInstructions: '',
@@ -165,6 +168,7 @@ class ConnectFlow {
   //
 
   getInitialFormFields = () => this._defaultConnectionProfile.params;
+  getConnectionError = () => this._model.state.connectionError;
   getConnectionFormDirty = () => this._model.state.connectionFormDirty;
   getConfirmConnectionPrompt = () => this._model.state.confirmConnectionPrompt;
   getConnectionPromptInstructions = () =>
@@ -299,9 +303,9 @@ class ConnectFlow {
   // Utilities
   //
 
-  _updateState(nextState: Object, saveProfiles: boolean = true): void {
+  _updateState(nextState_: Object, saveProfiles: boolean = true): void {
     const prevState = this._model.state;
-    this._model.setState(nextState);
+    const nextState = {...prevState, ...nextState_};
 
     // If the connection profiles changed, save them to the config. The `saveProfiles` option allows
     // us to opt out because this is a bi-directional sync and we don't want to cause an infinite
@@ -314,6 +318,19 @@ class ConnectFlow {
       // Don't include the first profile when saving since that's the default.
       saveConnectionProfiles(nextState.connectionProfiles.slice(1));
     }
+
+    // Reset the connection error when the screen changes.
+    if (
+      (nextState.screen !== prevState.screen &&
+        nextState.screen !== 'connect') ||
+      (nextState.connectionDialogMode !== prevState.connectionDialogMode &&
+        nextState.mode !== ConnectionDialogModes.REQUEST_CONNECTION_DETAILS) ||
+      nextState.selectedProfileIndex !== prevState.selectedProfileIndex
+    ) {
+      nextState.connectionError = null;
+    }
+
+    this._model.setState(nextState);
   }
 
   _createRemoteConnectionDelegate() {
@@ -347,10 +364,22 @@ class ConnectFlow {
         error: Error,
         config: SshConnectionConfiguration,
       ) => {
-        this._complete(/* connection */ null);
-        notifySshHandshakeError(errorType, error, config);
+        // Give the user a chance to correct the issue, if possible.
+        if (getCanUserFixError(errorType)) {
+          this._model.setState({
+            connectionError: humanizeErrorMessage(errorType, error, config),
+            confirmConnectionPrompt: () => {},
+            connectionPromptInstructions: '',
+            screen: 'connect',
+            connectionDialogMode:
+              ConnectionDialogModes.REQUEST_CONNECTION_DETAILS,
+          });
+        } else {
+          this._complete(/* connection */ null);
+          notifySshHandshakeError(errorType, error, config);
+          saveConnectionConfig(config, getOfficialRemoteServerCommand());
+        }
         logger.debug(error);
-        saveConnectionConfig(config, getOfficialRemoteServerCommand());
       },
     });
   }
@@ -417,6 +446,7 @@ function getModalComponent(flow: ConnectFlow): React.ComponentType<*> {
   const flowStates = observableFromSubscribeFunction(cb =>
     flow.onDidChange(cb),
   ).map(() => ({
+    connectionError: flow.getConnectionError(),
     connectionFormDirty: flow.getConnectionFormDirty(),
     confirmConnectionPrompt: flow.getConfirmConnectionPrompt(),
     connectionPromptInstructions: flow.getConnectionPromptInstructions(),
@@ -429,4 +459,19 @@ function getModalComponent(flow: ConnectFlow): React.ComponentType<*> {
   const props = flowStates.map(state => ({...state, ...staticProps}));
 
   return bindObservableAsProps(props, RemoteProjectConnectionModal);
+}
+
+/**
+ * Is this an error that the user can fix by tweaking their connection profile?
+ */
+function getCanUserFixError(errorType: SshHandshakeErrorType): boolean {
+  switch (errorType) {
+    case 'HOST_NOT_FOUND':
+    case 'CANT_READ_PRIVATE_KEY':
+    case 'SSH_AUTHENTICATION':
+    case 'DIRECTORY_NOT_FOUND':
+      return true;
+    default:
+      return false;
+  }
 }
