@@ -1,6 +1,6 @@
 {
   "name": "atom-ide-debugger-react-native",
-  "version": "0.7.2-dev",
+  "version": "0.7.3-dev",
   "main": "./main.js",
   "description": "React Native Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
@@ -38,15 +38,15 @@
     }
   },
   "dependencies": {
-    "atom-ide-debugger-node": "0.7.2-dev",
+    "atom-ide-debugger-node": "0.7.3-dev",
     "chalk": "1.1.3",
     "flatten-source-map": "0.0.2",
     "lodash": "4.17.10",
     "mkdirp": "0.5.1",
-    "nuclide-commons": "0.7.2-dev",
-    "nuclide-commons-atom": "0.7.2-dev",
-    "nuclide-commons-ui": "0.7.2-dev",
-    "nuclide-debugger-common": "0.7.2-dev",
+    "nuclide-commons": "0.7.3-dev",
+    "nuclide-commons-atom": "0.7.3-dev",
+    "nuclide-commons-ui": "0.7.3-dev",
+    "nuclide-debugger-common": "0.7.3-dev",
     "plist": "2.0.1",
     "q": "1.4.1",
     "react": "16.4.1",

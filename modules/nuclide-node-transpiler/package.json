@@ -1,6 +1,6 @@
 {
   "name": "nuclide-node-transpiler",
-  "version": "0.7.2-dev",
+  "version": "0.7.3-dev",
   "description": "Transpiles JavaScript files",
   "author": "NEEDS OWNER",
   "main": "./lib/main.js",
