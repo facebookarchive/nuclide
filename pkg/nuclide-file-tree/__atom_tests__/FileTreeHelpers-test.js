@@ -10,7 +10,7 @@
  * @emails oncall+nuclide
  */
 import {Directory, File} from 'atom';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 
 describe('FileTreeHelpers', () => {
   it('should convert key to path', () => {

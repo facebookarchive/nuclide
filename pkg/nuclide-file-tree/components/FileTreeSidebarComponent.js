@@ -24,7 +24,7 @@ import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable, Subject} from 'rxjs';
 import {ShowUncommittedChangesKind, PREFERRED_WIDTH} from '../lib/Constants';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
 import {Provider} from 'react-redux';
 

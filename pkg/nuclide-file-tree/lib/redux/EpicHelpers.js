@@ -17,14 +17,12 @@ import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import * as Immutable from 'immutable';
 import * as Actions from './Actions';
 import {getLogger} from 'log4js';
-import FileTreeHelpers from '../FileTreeHelpers';
+import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
 const logger = getLogger('nuclide-file-tree');
-
-const {replaceNode, updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
 
 //
 //
@@ -68,7 +66,7 @@ export function fetchChildKeys(
         // user can retry expanding it.
         store.dispatch(
           Actions.setRoots(
-            updateNodeAtAllRoots(
+            FileTreeHelpers.updateNodeAtAllRoots(
               Selectors.getRoots(store.getState()),
               nodeKey,
               node => {
@@ -114,7 +112,7 @@ async function setGeneratedChildren(
   );
   store.dispatch(
     Actions.setRoots(
-      updateNodeAtAllRoots(
+      FileTreeHelpers.updateNodeAtAllRoots(
         Selectors.getRoots(store.getState()),
         nodeKey,
         node => {
@@ -146,7 +144,7 @@ function setFetchedKeys(
   // The node with URI === nodeKey might be present at several roots - update them all
   store.dispatch(
     Actions.setRoots(
-      updateNodeAtAllRoots(
+      FileTreeHelpers.updateNodeAtAllRoots(
         Selectors.getRoots(store.getState()),
         nodeKey,
         node => {
@@ -250,7 +248,7 @@ export function expandNode(
 
   store.dispatch(
     Actions.setRoots(
-      updateNodeAtRoot(
+      FileTreeHelpers.updateNodeAtRoot(
         Selectors.getRoots(store.getState()),
         rootKey,
         nodeKey,
@@ -489,7 +487,7 @@ export function ensureChildNode(
     }
 
     if (deepest.uri === nodeKey) {
-      return replaceNode(deepest, deepest, expandNode_);
+      return FileTreeHelpers.replaceNode(deepest, deepest, expandNode_);
     }
 
     const parents = [];
@@ -527,7 +525,7 @@ export function ensureChildNode(
     });
 
     fetchChildKeys(store, deepest.uri);
-    return replaceNode(
+    return FileTreeHelpers.replaceNode(
       deepest,
       deepest.set({
         isLoading: true,

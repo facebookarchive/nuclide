@@ -14,7 +14,7 @@ import type Immutable from 'immutable';
 import type {AppState} from '../lib/types';
 
 import {connect} from 'react-redux';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as React from 'react';
@@ -26,7 +26,7 @@ import nullthrows from 'nullthrows';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
+import * as FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import invariant from 'assert';

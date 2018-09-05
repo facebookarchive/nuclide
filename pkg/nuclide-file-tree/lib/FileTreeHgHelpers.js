@@ -17,14 +17,16 @@ import invariant from 'assert';
 import {shell} from 'electron';
 import * as Immutable from 'immutable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import FileTreeHelpers from './FileTreeHelpers';
+import * as FileTreeHelpers from './FileTreeHelpers';
 import nullthrows from 'nullthrows';
 import {triggerAfterWait} from 'nuclide-commons/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const MOVE_TIMEOUT = 10000;
 
-function getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
+export function getHgRepositoryForNode(
+  node: FileTreeNode,
+): ?HgRepositoryClient {
   const repository = node.repo;
   if (repository != null && repository.getType() === 'hg') {
     return ((repository: any): HgRepositoryClient);
@@ -36,7 +38,10 @@ function getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
  * Determines whether renaming the given node to the specified destPath is an
  * acceptable rename.
  */
-function isValidRename(node: FileTreeNode, destPath_: NuclideUri): boolean {
+export function isValidRename(
+  node: FileTreeNode,
+  destPath_: NuclideUri,
+): boolean {
   let destPath = destPath_;
   const path = FileTreeHelpers.keyToPath(node.uri);
   const rootPath = FileTreeHelpers.keyToPath(node.rootUri);
@@ -61,7 +66,7 @@ function isValidRename(node: FileTreeNode, destPath_: NuclideUri): boolean {
 /**
  * Renames a single node to the new path.
  */
-async function renameNode(
+export async function renameNode(
   node: FileTreeNode,
   destPath: NuclideUri,
 ): Promise<void> {
@@ -103,7 +108,7 @@ function resetIsMoving() {
  * Moves an array of nodes into the destPath, ignoring nodes that cannot be moved.
  * This wrapper prevents concurrent move operations.
  */
-async function moveNodes(
+export async function moveNodes(
   nodes: Array<FileTreeNode>,
   destPath: NuclideUri,
 ): Promise<void> {
@@ -168,7 +173,7 @@ async function _moveNodesUnprotected(
 /**
  * Deletes an array of nodes.
  */
-async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
+export async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
   // Filter out children nodes to avoid ENOENTs that happen when parents are
   // deleted before its children. Convert to List so we can use groupBy.
   const paths = Immutable.List(
@@ -213,11 +218,3 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
     }),
   );
 }
-
-export default {
-  getHgRepositoryForNode,
-  isValidRename,
-  renameNode,
-  moveNodes,
-  deleteNodes,
-};

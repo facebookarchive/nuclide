@@ -15,7 +15,7 @@ import type React from 'react';
 import type {InitialData, Roots} from '../types';
 
 import invariant from 'assert';
-import FileTreeHelpers from '../FileTreeHelpers';
+import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
 import * as Immutable from 'immutable';

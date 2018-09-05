@@ -11,7 +11,7 @@
  */
 import {Directory} from 'atom';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import createStore from '../lib/redux/createStore';
 import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';

@@ -22,7 +22,7 @@ import {
   OPEN_FILES_MENU_SELECTOR,
   COMMANDS_SELECTOR,
 } from './FileTreeConstants';
-import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
+import * as FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import * as Selectors from './redux/Selectors';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
