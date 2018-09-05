@@ -499,6 +499,11 @@ function endsWithSeparator(uri: NuclideUri): boolean {
   return uri.endsWith(uriPathModule.sep);
 }
 
+function endsWithEdenDir(uri: NuclideUri): boolean {
+  _testForIllegalUri(uri);
+  return uri.endsWith('.eden');
+}
+
 function isAbsolute(uri: NuclideUri): boolean {
   _testForIllegalUri(uri);
   if (isRemote(uri)) {
@@ -868,6 +873,7 @@ export default {
   ensureTrailingSeparator,
   trimTrailingSeparator,
   endsWithSeparator,
+  endsWithEdenDir,
   isAbsolute,
   resolve,
   expandHomeDir,

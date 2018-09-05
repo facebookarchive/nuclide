@@ -20,10 +20,32 @@ import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Emitter} from 'event-kit';
 import {getLogger} from 'log4js';
+import {trackTimingSampled} from '../../nuclide-analytics';
+import {memoize} from 'lodash';
 
 const logger = getLogger('nuclide-remote-connection');
 
 const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
+export const EDEN_PERFORMANCE_SAMPLE_RATE = 10;
+
+/**
+ * This is a global function because RemoteDirectory's are not re-used. Cached
+ * results must be global since they cannot be attached to an instance.
+ */
+const _isEden = memoize(
+  async (
+    uri: NuclideUri,
+    fileSystemService: FileSystemService,
+  ): Promise<boolean> => {
+    if (nuclideUri.endsWithEdenDir(uri)) {
+      // this is needed to avoid checking for .eden/.eden/root, which results in
+      // ELOOP: too many symbolic links encountered
+      return true;
+    }
+    const edenDir = nuclideUri.join(uri, '.eden/root');
+    return fileSystemService.exists(edenDir);
+  },
+);
 
 /* Mostly implements https://atom.io/docs/api/latest/Directory */
 export class RemoteDirectory {
@@ -45,7 +67,6 @@ export class RemoteDirectory {
   _symlink: boolean;
   _deleted: boolean;
   _isArchive: boolean;
-
   /**
    * @param uri should be of the form "nuclide://example.com/path/to/directory".
    */
@@ -306,11 +327,25 @@ export class RemoteDirectory {
       entries: ?Array<RemoteDirectory | RemoteFile>,
     ) => any,
   ): Promise<void> {
-    let entries;
-    try {
-      entries = await this._getFileSystemService().readdirSorted(this._uri);
-    } catch (e) {
-      callback(e, null);
+    let entries = [];
+    const readDirError = await trackTimingSampled(
+      'eden-filesystem-metrics:readdirSorted',
+      async () => {
+        try {
+          entries = await this._getFileSystemService().readdirSorted(this._uri);
+          return false;
+        } catch (e) {
+          callback(e, null);
+          return true;
+        }
+      },
+      EDEN_PERFORMANCE_SAMPLE_RATE,
+      {
+        isEden: await _isEden(this._uri, this._getFileSystemService()),
+        uri: this._uri,
+      },
+    );
+    if (readDirError) {
       return;
     }
 
