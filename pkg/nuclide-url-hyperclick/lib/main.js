@@ -17,7 +17,7 @@ export function getHyperclickProvider(): HyperclickProvider {
   return {
     providerName: 'url-hyperclick',
     // Allow all language-specific providers to take priority.
-    priority: 5,
+    priority: 99,
     wordRegExp: /[^\s]+/g,
     getSuggestionForWord(textEditor, text, range) {
       return HyperclickProviderHelpers.getSuggestionForWord(
