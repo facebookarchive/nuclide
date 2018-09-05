@@ -24,7 +24,8 @@ import child_process from 'child_process';
 
 type HumanizedErrorMessage = {
   title?: string,
-  body: string,
+  body?: string,
+  originalErrorDetail?: string,
 };
 
 export function humanizeErrorMessage(
@@ -63,8 +64,8 @@ export function humanizeErrorMessage(
         title: `Can't read content of private key path ${pathToPrivateKey}.`,
         body:
           'Make sure the private key path is properly configured.\n' +
-          'You may need to convert your private key from PKCS to RSA.\n' +
-          originalErrorDetail,
+          'You may need to convert your private key from PKCS to RSA.',
+        originalErrorDetail,
       };
     case 'SSH_CONNECT_TIMEOUT':
       return {
@@ -91,8 +92,8 @@ export function humanizeErrorMessage(
           'Troubleshooting:\n' +
           '  1. Check your network connection.\n' +
           `  2. Make sure the host ${host} is running and has` +
-          ` ssh server running on ${sshPort}.\n\n` +
-          originalErrorDetail,
+          ` ssh server running on ${sshPort}.`,
+        originalErrorDetail,
       };
 
     case 'SSH_AUTHENTICATION':
@@ -165,16 +166,16 @@ export function humanizeErrorMessage(
         title: 'Your clock is behind',
         body:
           'Your system clock is behind - unable to authenticate.\n' +
-          'Please check your date and time settings to continue.\n\n' +
-          originalErrorDetail,
+          'Please check your date and time settings to continue.',
+        originalErrorDetail,
       };
     case 'UNKNOWN':
       return {
         title: `Unexpected error occurred: ${error.message}.`,
-        body: originalErrorDetail,
+        originalErrorDetail,
       };
     default:
-      return {body: originalErrorDetail};
+      return {originalErrorDetail};
   }
 }
 
@@ -183,7 +184,11 @@ export function notifySshHandshakeError(
   error: Error,
   config: SshConnectionConfiguration,
 ): void {
-  const {title, body} = humanizeErrorMessage(errorType, error, config);
+  const {title, body, originalErrorDetail} = humanizeErrorMessage(
+    errorType,
+    error,
+    config,
+  );
 
   let buttons = [];
   if (
@@ -200,7 +205,7 @@ export function notifySshHandshakeError(
   }
 
   const notification = atom.notifications.addError(title || '', {
-    detail: body,
+    detail: [body, originalErrorDetail].filter(Boolean).join('\n\n'),
     dismissable: true,
     buttons,
   });
