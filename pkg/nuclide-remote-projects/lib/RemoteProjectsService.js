@@ -42,8 +42,27 @@ export default class RemoteProjectsService {
     return new UniversalDisposable(this._subject.subscribe(callback));
   }
 
-  async createRemoteConnection(
+  createRemoteConnection = (
+    config: SerializableRemoteConnectionConfiguration,
+  ): Promise<?RemoteConnection> => {
+    return this._connect(config, false);
+  };
+
+  /**
+   * This function intentially returns `void` and handles errors because it's intended to
+   * encapsulate the entire workflow.
+   */
+  connect(config: SerializableRemoteConnectionConfiguration): void {
+    this._connect(config, true).catch(() => {
+      atom.notifications.addError(
+        "hey matthew don't commit this without moving the error handling from openProjectModal you idiot",
+      );
+    });
+  }
+
+  async _connect(
     remoteProjectConfig: SerializableRemoteConnectionConfiguration,
+    attemptImmediateConnection: boolean,
   ): Promise<?RemoteConnection> {
     const {
       host,
@@ -67,6 +86,7 @@ export default class RemoteProjectsService {
     return startConnectFlow({
       initialServer: host,
       initialCwd: path,
+      attemptImmediateConnection,
     });
   }
 

@@ -54,6 +54,7 @@ export type StartConnectFlowOptions = {
     path: string,
     originPath?: string,
   |},
+  attemptImmediateConnection?: boolean,
 };
 
 type ConnectFlowOptions = StartConnectFlowOptions & {
@@ -80,6 +81,10 @@ export default function startConnectFlow(
       nullthrows(resolveConnectionPromise)(connection);
     },
   });
+
+  if (options.attemptImmediateConnection ?? false) {
+    flow.connect();
+  }
 
   showModal(
     ({dismiss: dismiss_}) => {
@@ -254,7 +259,32 @@ class ConnectFlow {
     this._updateState({selectedProfileIndex});
   };
 
-  connect = (config: SshConnectionConfiguration): void => {
+  connect = (config_: ?SshConnectionConfiguration): void => {
+    let config = config_;
+
+    if (config == null) {
+      const connectionParams = this._defaultConnectionProfile.params;
+
+      if (connectionParams.authMethod === 'PASSWORD') {
+        // We need user input and the only way to do that currently is to go through the huge form.
+        return;
+      }
+
+      // There are some slight differences between the connection profile params type and the
+      // SshConnectionConfiguration so we need to convert.
+      config = {
+        host: connectionParams.server,
+        sshPort: parseInt(connectionParams.sshPort, 10),
+        username: connectionParams.username,
+        pathToPrivateKey: connectionParams.pathToPrivateKey,
+        remoteServerCommand: connectionParams.remoteServerCommand,
+        cwd: connectionParams.cwd,
+        authMethod: connectionParams.authMethod,
+        password: '', // This needs to be provided. ¯\_(ツ)_/¯
+        displayTitle: connectionParams.displayTitle,
+      };
+    }
+
     this._updateState({
       connectionFormDirty: false,
       connectionDialogMode: ConnectionDialogModes.WAITING_FOR_CONNECTION,

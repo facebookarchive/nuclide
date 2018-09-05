@@ -71,6 +71,12 @@ export type RemoteProjectsService = {
   ): Promise<?RemoteConnection>,
 
   /**
+   * Like `createRemoteConnection`, but will try to establish a new connection (e.g. by prompting
+   * for a yubikey).
+   */
+  connect(config: SerializableRemoteConnectionConfiguration): void,
+
+  /**
    * Start the flow to open a remote connection by opening a connection dialog, regardless of
    * the previously cached connections.
    */
