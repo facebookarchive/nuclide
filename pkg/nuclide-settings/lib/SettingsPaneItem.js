@@ -13,7 +13,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import * as React from 'react';
-import {Observable, Scheduler} from 'rxjs';
+import {Scheduler} from 'rxjs';
 import SettingsCategory from './SettingsCategory';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -154,11 +154,6 @@ export default class SettingsPaneItem extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const settingsKeyPaths = this._getSettingsKeyPaths();
-    const changedSettings = settingsKeyPaths.map(keyPath =>
-      featureConfig.observeAsStream(keyPath),
-    );
-
     this._disposables = new UniversalDisposable(
       observePaneItemVisibility(this)
         .filter(Boolean)
@@ -167,13 +162,6 @@ export default class SettingsPaneItem extends React.Component<Props, State> {
           if (this._filterInput != null) {
             this._filterInput.focus();
           }
-        }),
-      Observable.merge(...changedSettings)
-        // throttle to prevent rerendering for each change if changes occur in
-        // rapid succession
-        .throttleTime(50)
-        .subscribe(() => {
-          this.setState(this._getConfigData());
         }),
     );
   }
