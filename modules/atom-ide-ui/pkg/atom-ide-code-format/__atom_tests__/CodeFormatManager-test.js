@@ -11,6 +11,9 @@
  * @emails oncall+nuclide
  */
 import {Range} from 'atom';
+import {observeTextEditors} from 'nuclide-commons-atom/FileEventHandlers';
+import {SAVE_TIMEOUT} from '../lib/CodeFormatManager';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import temp from 'temp';
 import * as config from '../lib/config';
 import CodeFormatManager from '../lib/CodeFormatManager';
@@ -20,14 +23,22 @@ const sleep = n => new Promise(r => setTimeout(r, n));
 
 describe('CodeFormatManager', () => {
   let textEditor;
+  let manager;
+  let disposables;
   beforeEach(async () => {
+    manager = new CodeFormatManager();
+    disposables = new UniversalDisposable(observeTextEditors());
     temp.track();
     const file = temp.openSync();
     textEditor = await atom.workspace.open(file.path);
   });
 
+  afterEach(async () => {
+    manager.dispose();
+    disposables.dispose();
+  });
+
   it('formats an editor on request', async () => {
-    const manager = new CodeFormatManager();
     manager.addRangeProvider({
       grammarScopes: ['text.plain.null-grammar'],
       priority: 1,
@@ -50,7 +61,6 @@ describe('CodeFormatManager', () => {
   });
 
   it('format an editor using formatEntireFile', async () => {
-    const manager = new CodeFormatManager();
     manager.addFileProvider({
       grammarScopes: ['text.plain.null-grammar'],
       priority: 1,
@@ -67,7 +77,6 @@ describe('CodeFormatManager', () => {
 
   it('formats an editor on type', async () => {
     jest.spyOn(config, 'getFormatOnType').mockReturnValue(true);
-    const manager = new CodeFormatManager();
     const provider = {
       grammarScopes: ['text.plain.null-grammar'],
       priority: 1,
@@ -96,7 +105,6 @@ describe('CodeFormatManager', () => {
 
   it('formats an editor on save', async () => {
     jest.spyOn(config, 'getFormatOnSave').mockReturnValue(true);
-    const manager = new CodeFormatManager();
     manager.addOnSaveProvider({
       grammarScopes: ['text.plain.null-grammar'],
       priority: 1,
@@ -117,29 +125,21 @@ describe('CodeFormatManager', () => {
 
   it('should still save on timeout', async () => {
     jest.spyOn(config, 'getFormatOnSave').mockReturnValue(true);
-    const manager = new CodeFormatManager();
     manager.addRangeProvider({
       grammarScopes: ['text.plain.null-grammar'],
       priority: 1,
-      formatCode: () => new Promise(() => {}),
+      formatCode: async () => {
+        await sleep(SAVE_TIMEOUT + 1000);
+        return [];
+      },
     });
 
     const spy = jest.spyOn(textEditor.getBuffer(), 'save');
     textEditor.save();
-    const savePromise = Promise.resolve(textEditor.save());
 
-    // The first save should be pushed through after the 2nd.
-    await waitsFor(() => spy.mock.calls.length === 1);
-
-    await sleep(3000);
-
-    // Hitting the timeout will force the 2nd save through.
-    await waitsFor(() => spy.mock.calls.length === 2);
-
-    // The real save should still go through.
-    await (() => savePromise)();
-
-    // Sanity check.
-    expect(spy.mock.calls.length).toBe(2);
+    // Wait until the buffer has been saved and verify it has been saved exactly
+    // once.
+    await waitsFor(() => spy.mock.calls.length > 0);
+    expect(spy.mock.calls.length).toBe(1);
   });
 });

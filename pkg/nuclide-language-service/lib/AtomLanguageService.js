@@ -29,11 +29,11 @@ import type {
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
 import type {SignatureHelpConfig} from './SignatureHelpProvider';
 import type {SyntacticSelectionConfig} from './SyntacticSelectionProvider';
-import type {FileEventHandlersConfig} from './FileEventHandlers';
+import type {FileEventHandlersConfig} from 'nuclide-commons-atom/FileEventHandlers';
 import type {BusySignalService} from 'atom-ide-ui';
 
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {registerOnWillSave} from './FileEventHandlers';
+import {registerOnWillSave} from 'nuclide-commons-atom/FileEventHandlers';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

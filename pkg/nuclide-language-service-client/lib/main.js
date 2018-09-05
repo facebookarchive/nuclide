@@ -11,10 +11,8 @@
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeTextEditors} from '../../nuclide-language-service/lib/FileEventHandlers';
+import {observeTextEditors} from 'nuclide-commons-atom/FileEventHandlers';
 
-// A dummy Atom package necessary for calling observeTextEditors() since
-// nuclide-language-service is a Node package.
 class Activation {
   _disposables: IDisposable;
 
