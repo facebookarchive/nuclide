@@ -352,19 +352,19 @@ export class RemoteDirectory {
     const directories: Array<RemoteDirectory> = [];
     const files = [];
     entries.forEach(entry => {
-      const [name, isFile, symlink] = entry;
+      const [name, isFile, isSymlink] = entry;
       const uri = nuclideUri.createRemoteUri(
         this._host,
         this._joinLocalPath(name),
       );
-      if (isFile) {
-        files.push(this._server.createFile(uri, symlink));
+      if (isFile || isSymlink) {
+        files.push(this._server.createFile(uri, isSymlink));
       } else {
         directories.push(
           this._server.createDirectory(
             uri,
             this._hgRepositoryDescription,
-            symlink,
+            isSymlink,
           ),
         );
       }

@@ -266,12 +266,29 @@ export class ThriftFileSystemServiceHandler {
   async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
     try {
       const files: Array<string> = await fsPromise.readdir(uri);
-      // Promise.all either resolves with an array of all resolved promises, or
-      // it rejects with a single error
       return Promise.all(
         files.map(async file => {
-          const statData = await this.stat(path.join(uri, file));
-          return convertToThriftFileEntry(file, statData);
+          const fullpath = path.join(uri, file);
+          // lstat is the same as stat, but if path is a symbolic link, then
+          // the link itself is stat-ed, not the file that it refers to
+          const lstats = await this.lstat(fullpath);
+          if (lstats.ftype !== filesystem_types.FileType.SYMLINK) {
+            return convertToThriftFileEntry(file, lstats);
+          }
+
+          try {
+            // try to return what the symlink points to (stat data)
+            const stats = await this.stat(fullpath);
+            return convertToThriftFileEntry(file, stats);
+          } catch (error) {
+            if (error.code === filesystem_types.ErrorCode.ENOENT) {
+              // symlink points to non-existent file/dir.
+              // return lstat data about the symlink
+              return convertToThriftFileEntry(file, lstats);
+            } else {
+              throw error;
+            }
+          }
         }),
       );
     } catch (err) {
