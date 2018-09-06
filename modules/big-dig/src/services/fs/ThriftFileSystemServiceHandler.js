@@ -40,19 +40,18 @@ const commonWatchIgnoredExpressions = [
   ['not', ['match', '_build-junk*', 'wholename']],
 ];
 
+const logger = getLogger('fs-thrift-server-handler');
 /**
  * Create a service handler class to manage server methods
  */
 export class ThriftFileSystemServiceHandler {
   _fileChangeEvents: Array<filesystem_types.FileChangeEvent>;
-  _logger: log4js$Logger;
   _watcher: WatchmanClient;
   _watchIdToChangeList: Map<string, Array<filesystem_types.FileChangeEvent>>;
 
   constructor(watcher: WatchmanClient) {
     this._fileChangeEvents = [];
     this._watcher = watcher;
-    this._logger = getLogger('fs-thrift-server-handler');
     this._watchIdToChangeList = new Map();
   }
 
@@ -71,7 +70,7 @@ export class ThriftFileSystemServiceHandler {
       expression: ['allof', ...commonWatchIgnoredExpressions, ...excludeExpr],
     };
 
-    this._logger.info(`Watching ${uri} ${JSON.stringify(opts)}`);
+    logger.info(`Watching ${uri} ${JSON.stringify(opts)}`);
     const watchId = `big-dig-thrift-filewatcher-${uuid.v4()}`;
     try {
       const sub = await this._watcher.watchDirectoryRecursive(
@@ -81,10 +80,10 @@ export class ThriftFileSystemServiceHandler {
       );
 
       sub.on('error', error => {
-        this._logger.error(
+        logger.error(
           `Watchman Subscription Error: big-dig-thrift-filewatcher-${uri}`,
         );
-        this._logger.error(error);
+        logger.error(error);
       });
       sub.on('change', entries => {
         const changes = entries.map(
@@ -113,10 +112,10 @@ export class ThriftFileSystemServiceHandler {
         this._watchIdToChangeList.set(watchId, fileChangeList);
       });
     } catch (err) {
-      this._logger.error(
+      logger.error(
         'BigDig Thrift FS Server Watchman Subscription Creation Error',
       );
-      this._logger.error(err);
+      logger.error(err);
     }
     return watchId;
   }
