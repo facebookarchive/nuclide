@@ -146,8 +146,7 @@ export function humanizeErrorMessage(
           '  2. The server might take longer to start up than expected, try to connect again.',
           `  3. If none of above works, ssh to ${host} and kill existing nuclide-server` +
             ' by running "killall node", and reconnect.',
-          // @fb-only: '  4. If that still fails, you can try the remediation steps at' +
-            // @fb-only: ` ${NUCLIDE_CANT_CONNECT_URL}`,
+          // @fb-only: `  4. If that still fails, you can try the remediation steps at ${NUCLIDE_CANT_CONNECT_URL}`,
         ].join('\n'),
         originalErrorDetail,
       };
