@@ -16,6 +16,7 @@ import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
+import passesGK from '../../commons-node/passesGK';
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import LinkTreeLinter from './LinkTreeLinter';
 import LintHelpers from './LintHelpers';
@@ -117,19 +118,27 @@ function resetServices(): void {
 }
 
 class Activation {
-  _pythonLanguageService: AtomLanguageService<LanguageService>;
   _linkTreeLinter: LinkTreeLinter;
   _subscriptions: UniversalDisposable;
 
-  constructor(rawState: ?Object) {
-    this._pythonLanguageService = new AtomLanguageService(
+  constructor() {
+    this._subscriptions = new UniversalDisposable();
+    this._linkTreeLinter = new LinkTreeLinter();
+
+    this._initLanguageServer();
+  }
+
+  async _initLanguageServer(): Promise<void> {
+    if (await passesGK('nuclide_fb_pyls_vscode_ext')) {
+      return;
+    }
+    const pythonLanguageService = new AtomLanguageService(
       connectionToPythonService,
       getAtomConfig(),
     );
-    this._pythonLanguageService.activate();
-    this._linkTreeLinter = new LinkTreeLinter();
-    this._subscriptions = new UniversalDisposable(
-      this._pythonLanguageService,
+    pythonLanguageService.activate();
+    this._subscriptions.add(
+      pythonLanguageService,
       atom.commands.add(
         'atom-workspace',
         'nuclide-python:reset-language-services',
