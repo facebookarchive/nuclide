@@ -69,6 +69,7 @@ export default class BoundSettingsControl extends React.Component<
     return (
       <SettingsControl
         keyPath={this.props.keyPath}
+        title={schema.title}
         value={this.state.value}
         onChange={this._onChange}
         schema={schema}
