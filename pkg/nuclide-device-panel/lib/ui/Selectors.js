@@ -13,14 +13,12 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 import type {DeviceTypeComponent} from 'nuclide-debugger-common/types';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
-
-const FB_HOST_SUFFIX = '.facebook.com';
+import {shortenHostname} from '../../../commons-node/hostnames';
 
 type Props = {|
   setHost: (host: NuclideUri) => void,
@@ -40,14 +38,8 @@ export class Selectors extends React.Component<Props> {
     }
   }
 
-  _getLabelForHost(host: string): string {
-    if (host === '') {
-      return 'local';
-    }
-    const hostName = nuclideUri.getHostname(host);
-    return hostName.endsWith(FB_HOST_SUFFIX)
-      ? hostName.substring(0, hostName.length - FB_HOST_SUFFIX.length)
-      : hostName;
+  _getLabelForHost(host: NuclideUri): string {
+    return host === '' ? 'localhost' : shortenHostname(host);
   }
 
   _getHostOptions(): Array<Option> {
