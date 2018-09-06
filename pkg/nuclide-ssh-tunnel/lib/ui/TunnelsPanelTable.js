@@ -11,7 +11,7 @@
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {ActiveTunnel} from '../types';
 
-import {shortenHostname} from '../../../nuclide-socket-rpc/lib/Tunnel';
+import {shortenHostname} from '../../../commons-node/hostnames';
 import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';

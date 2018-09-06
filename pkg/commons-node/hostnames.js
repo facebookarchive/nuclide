@@ -5,25 +5,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  */
 
-export function shortenHostname(hostname: string): string {
-  let ret = hostname;
-  if (ret.endsWith('.facebook.com')) {
-    ret = ret.slice(0, -13);
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import nuclideUri from 'nuclide-commons/nuclideUri';
+
+export function shortenHostname(hostOrUri: string | NuclideUri): string {
+  let result = hostOrUri;
+  if (nuclideUri.isRemote(result)) {
+    result = nuclideUri.getHostname(result);
   }
-  if (ret.startsWith('our.')) {
-    ret = ret.slice(4);
+  if (result.endsWith('.facebook.com')) {
+    result = result.slice(0, -13);
   }
-  if (ret.startsWith('svcscm.')) {
-    ret = ret.slice(7);
+  if (result.startsWith('our.')) {
+    result = result.slice(4);
   }
-  if (ret.startsWith('twsvcscm.')) {
-    ret = ret.slice(9);
+  if (result.startsWith('svcscm.')) {
+    result = result.slice(7);
   }
-  return ret;
+  if (result.startsWith('twsvcscm.')) {
+    result = result.slice(9);
+  }
+  return result;
 }
 
 export function isOnDemandHostname(hostname: string): boolean {

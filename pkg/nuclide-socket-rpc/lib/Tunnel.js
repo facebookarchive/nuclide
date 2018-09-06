@@ -12,10 +12,9 @@
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {Connection, ConnectionFactory} from './Connection';
 import type {SocketEvent, IRemoteSocket} from './types.js';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {shortenHostname} from '../../commons-node/hostnames';
 
 import {getLogger} from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ConnectableObservable, Observable} from 'rxjs';
 
 import net from 'net';
@@ -156,23 +155,6 @@ export function tunnelDescription(tunnel: ResolvedTunnel) {
   return `${shortenHostname(tunnel.from.host)}:${
     tunnel.from.port
   }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
-}
-
-export function shortenHostname(host: NuclideUri): string {
-  let result = host;
-  if (nuclideUri.isRemote(result)) {
-    result = nuclideUri.getHostname(result);
-  }
-  if (result.endsWith('.facebook.com')) {
-    result = result.slice(0, result.length - '.facebook.com'.length);
-  }
-  if (result.startsWith('our.')) {
-    result = result.slice('our.'.length, result.length);
-  }
-  if (result.startsWith('twsvcscm.')) {
-    result = result.slice('twsvcscm.'.length, result.length);
-  }
-  return result;
 }
 
 class LocalSocket {
