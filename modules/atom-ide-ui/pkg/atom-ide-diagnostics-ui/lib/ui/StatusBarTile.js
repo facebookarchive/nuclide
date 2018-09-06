@@ -60,7 +60,7 @@ export default class StatusBarTile {
 
   consumeDiagnosticUpdates(
     diagnosticUpdater: DiagnosticUpdater,
-    isStaleMessageEnabledSteam: Observable<boolean>,
+    isStaleMessageEnabledStream: Observable<boolean>,
   ): void {
     if (this._diagnosticUpdaters.has(diagnosticUpdater)) {
       return;
@@ -76,7 +76,7 @@ export default class StatusBarTile {
     this._subscriptions.add(
       observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
         .let(fastDebounce(RENDER_DEBOUNCE_TIME))
-        .combineLatest(isStaleMessageEnabledSteam)
+        .combineLatest(isStaleMessageEnabledStream)
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.map(diagnostic => {
             if (!isStaleMessageEnabled) {

@@ -127,7 +127,7 @@ class Activation {
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
     this._getStatusBarTile().consumeDiagnosticUpdates(
       diagnosticUpdater,
-      this._getIsStaleMessageEnabledSteam(),
+      this._getIsStaleMessageEnabledStream(),
     );
 
     this._subscriptions.add(
@@ -153,7 +153,7 @@ class Activation {
         const subscription = getEditorDiagnosticUpdates(
           editor,
           diagnosticUpdater,
-          this._getIsStaleMessageEnabledSteam(),
+          this._getIsStaleMessageEnabledStream(),
         )
           .finally(() => {
             this._subscriptions.remove(subscription);
@@ -308,7 +308,7 @@ class Activation {
     });
   };
 
-  _getIsStaleMessageEnabledSteam(): Observable<boolean> {
+  _getIsStaleMessageEnabledStream(): Observable<boolean> {
     return this._gatekeeperServices
       .switchMap(gkService => {
         if (gkService != null) {
@@ -342,7 +342,7 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
-        .combineLatest(this._getIsStaleMessageEnabledSteam())
+        .combineLatest(this._getIsStaleMessageEnabledStream())
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
             if (!isStaleMessageEnabled) {
@@ -546,7 +546,7 @@ class Activation {
           getEditorDiagnosticUpdates(
             editor,
             diagnosticUpdater,
-            this._getIsStaleMessageEnabledSteam(),
+            this._getIsStaleMessageEnabledStream(),
           ),
         )
           .finally(() => {
@@ -680,7 +680,7 @@ function getActiveEditorPaths(): Observable<?NuclideUri> {
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
-  isStaleMessageEnabledSteam: Observable<boolean>,
+  isStaleMessageEnabledStream: Observable<boolean>,
 ): Observable<DiagnosticMessages> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
@@ -692,7 +692,7 @@ function getEditorDiagnosticUpdates(
             )
           : Observable.empty(),
     )
-    .combineLatest(isStaleMessageEnabledSteam)
+    .combineLatest(isStaleMessageEnabledStream)
     .map(([diagnosticMessages, isStaleMessageEnabled]) => {
       return {
         ...diagnosticMessages,
