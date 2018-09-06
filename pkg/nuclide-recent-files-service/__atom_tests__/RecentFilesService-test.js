@@ -32,7 +32,7 @@ describe('RecentFilesService', () => {
   });
 
   afterEach(async () => {
-    recentFilesService.dispose();
+    await recentFilesService.dispose();
     await AsyncStorage.clear();
   });
 
@@ -108,7 +108,7 @@ describe('RecentFilesService', () => {
       await recentFilesService.touchFile(filePath3);
       await recentFilesService.touchFile(filePath2);
       await recentFilesService.touchFile(filePath1);
-      recentFilesService.dispose();
+      await recentFilesService.dispose();
 
       const restoredRecentFilesService = new RecentFilesService();
       const mostRecentFiles = await restoredRecentFilesService.getRecentFiles();
@@ -122,9 +122,9 @@ describe('RecentFilesService', () => {
       await recentFilesService.touchFile(filePath3);
       await recentFilesService.touchFile(filePath2);
       await recentFilesService.touchFile(filePath1);
-      recentFilesService.dispose();
+      await recentFilesService.dispose();
       await recentFilesService.getRecentFiles();
-      recentFilesService.dispose();
+      await recentFilesService.dispose();
 
       const restoredRecentFilesService = new RecentFilesService();
       const mostRecentFiles = await restoredRecentFilesService.getRecentFiles();

@@ -10,12 +10,17 @@
  */
 import type {FilePath, TimeStamp} from '..';
 
+import {memoize} from 'lodash';
+import {getLogger} from 'log4js';
 import LRUCache from 'lru-cache';
 import AsyncStorage from 'idb-keyval';
+import debounce from 'nuclide-commons/debounce';
 
 const MAX_RECENT_FILES = 100;
-const CLEAN_CACHE_TIMEOUT = 1000 * 15;
+const SYNC_CACHE_DEBOUNCE = 1000 * 15;
 const RECENT_FILES_DB_NAME = 'nuclide-recent-files';
+
+const logger = getLogger('RecentFilesDB');
 
 /**
  * We don't want to keep making IDB calls for performance reasons, and we only
@@ -23,25 +28,21 @@ const RECENT_FILES_DB_NAME = 'nuclide-recent-files';
  * locally and load from the database the first time we need to access it, and
  * save back to the database (only the top 100) periodically.
  */
-let cachedLRU: LRUCache<FilePath, TimeStamp>;
-/**
- * Keep a timeout to prevent too many repeated saves to the database.
- */
-let dbUpdateTimeout: ?TimeoutID;
-
-/**
- * Load in cachedLRU if it isn't there already.
- */
-async function ensureCache(): Promise<LRUCache<FilePath, TimeStamp>> {
-  if (!cachedLRU) {
-    const dbEntries = await AsyncStorage.get(RECENT_FILES_DB_NAME);
-    cachedLRU = LRUCache({max: MAX_RECENT_FILES});
+const ensureCache = memoize(
+  async (): Promise<LRUCache<FilePath, TimeStamp>> => {
+    const dbEntries = await AsyncStorage.get(RECENT_FILES_DB_NAME).catch(
+      err => {
+        logger.warn('Error retrieving recent files from IndexedDB', err);
+        return null;
+      },
+    );
+    const cachedLRU = LRUCache({max: MAX_RECENT_FILES});
     if (dbEntries && dbEntries.length > 0) {
       cachedLRU.load(dbEntries);
     }
-  }
-  return cachedLRU;
-}
+    return cachedLRU;
+  },
+);
 
 /**
  * Update the timestamp for a file in the list of LRU files that is backed by
@@ -52,12 +53,7 @@ export async function touchFileDB(
   time: TimeStamp,
 ): Promise<void> {
   (await ensureCache()).set(path, time);
-  if (!dbUpdateTimeout) {
-    dbUpdateTimeout = setTimeout(() => {
-      dbUpdateTimeout = null;
-      syncCache();
-    }, CLEAN_CACHE_TIMEOUT);
-  }
+  debouncedSyncCache();
 }
 
 /**
@@ -72,12 +68,15 @@ export async function getAllRecents(): Promise<LRUCache<FilePath, TimeStamp>> {
  * With clearCache = true, clears the local cache.
  */
 export async function syncCache(clearCache: boolean = false): Promise<void> {
-  if (cachedLRU) {
-    // This technically saves the "value" as a serialized json, but it will only
-    // be up to MAX_RECENT_FILES long.
-    await AsyncStorage.set(RECENT_FILES_DB_NAME, cachedLRU.dump());
-    if (clearCache) {
-      cachedLRU = null;
-    }
+  const cachedLRU = await ensureCache();
+  // This technically saves the "value" as a serialized json, but it will only
+  // be up to MAX_RECENT_FILES long.
+  await AsyncStorage.set(RECENT_FILES_DB_NAME, cachedLRU.dump()).catch(err =>
+    logger.warn('Error in syncCache', err),
+  );
+  if (clearCache) {
+    ensureCache.cache.clear();
   }
 }
+
+const debouncedSyncCache = debounce(syncCache, SYNC_CACHE_DEBOUNCE);
