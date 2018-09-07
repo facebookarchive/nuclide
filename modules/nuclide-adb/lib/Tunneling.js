@@ -182,19 +182,21 @@ const changes: Subject<void> = new Subject();
 
 function checkInToAdbmux(host: NuclideUri): Observable<?number> {
   return Observable.defer(async () => {
+    const getService: Promise<SshTunnelService> = consumeFirstProvider(
+      'nuclide.ssh-tunnel',
+    );
     const [service, avoidPrecreatingExopackageTunnel] = await Promise.all([
-      consumeFirstProvider('nuclide.ssh-tunnel'),
+      getService,
       passesGK('nuclide_adb_exopackage_tunnel'),
     ]);
     invariant(service);
-    const port = await service.getAvailableServerPort(host);
-    return {service, port, avoidPrecreatingExopackageTunnel};
+    return {service, avoidPrecreatingExopackageTunnel};
   })
-    .switchMap(({service, port, avoidPrecreatingExopackageTunnel}) => {
+    .switchMap(({service, avoidPrecreatingExopackageTunnel}) => {
       const tunnels = [
         {
           description: 'adbmux',
-          from: {host, port, family: 4},
+          from: {host, port: 'any_available', family: 4},
           to: {host: 'localhost', port: 5037, family: 4},
         },
       ];
@@ -205,7 +207,9 @@ function checkInToAdbmux(host: NuclideUri): Observable<?number> {
           to: {host: 'localhost', port: 2829, family: 4},
         });
       }
-      return service.openTunnels(tunnels).mapTo(port);
+      return service
+        .openTunnels(tunnels)
+        .map(resolved => resolved[0].from.port);
     })
     .switchMap(async port => {
       const service = getAdbServiceByNuclideUri(host);
