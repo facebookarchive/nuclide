@@ -651,6 +651,25 @@ export class DefaultMap<K, V> extends Map<K, V> {
   }
 }
 
+export class DefaultWeakMap<K, V> extends WeakMap<K, V> {
+  _factory: () => V;
+
+  constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {
+    super(iterable);
+    this._factory = factory;
+  }
+
+  get(key: K): V {
+    if (!this.has(key)) {
+      const value = this._factory();
+      this.set(key, value);
+      return value;
+    }
+    // If the key is present we must have a value of type V.
+    return (super.get(key): any);
+  }
+}
+
 /**
  * Return the highest ranked item in a list, according to the provided ranking function. A max rank
  * may optionally be provided so the whole list doesn't have to be iterated. Items with ranks of

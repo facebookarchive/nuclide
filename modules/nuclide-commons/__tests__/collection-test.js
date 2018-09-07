@@ -27,6 +27,7 @@ import {
   setUnion,
   collect,
   DefaultMap,
+  DefaultWeakMap,
   MultiMap,
   objectEntries,
   objectFromPairs,
@@ -345,6 +346,34 @@ describe('DefaultMap', () => {
     map.get('c');
     expect([...map.entries()]).toEqual([['a', 1], ['b', 2], ['c', 0]]);
     expect(map.size).toBe(3);
+  });
+});
+
+describe('DefaultWeakMap', () => {
+  const a = {};
+  const b = {};
+  const c = {};
+  it('calls the factory each time you get a nonexistant key', () => {
+    const spy = jest.fn().mockReturnValue('default');
+    const map = new DefaultWeakMap(spy);
+    expect(map.get(a)).toBe('default');
+    expect(map.get(b)).toBe('default');
+    expect(spy.mock.calls).toHaveLength(2);
+  });
+
+  it('can update default values', () => {
+    const map = new DefaultWeakMap(() => 'default');
+    expect(map.get(a)).toBe('default');
+    map.set(a, 'custom');
+    expect(map.get(a)).toBe('custom');
+  });
+
+  it('takes initial values', () => {
+    const map = new DefaultWeakMap(() => 0, [[a, 1], [b, 2]]);
+    map.get(c);
+    expect(map.get(a)).toBe(1);
+    expect(map.get(b)).toBe(2);
+    expect(map.get(c)).toBe(0);
   });
 });
 
