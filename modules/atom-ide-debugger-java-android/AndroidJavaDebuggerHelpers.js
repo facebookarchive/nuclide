@@ -160,22 +160,19 @@ export async function getAdbAttachPortTargetInfo(
         return;
       }
       invariant(tunnelService);
-      const debuggerPort = await tunnelService.getAvailableServerPort(
-        targetUri,
-      );
       const tunnel = {
         description: 'Java debugger',
         from: {
           host: nuclideUri.getHostname(targetUri),
-          port: debuggerPort,
+          port: 'any_available',
           family: 4,
         },
         to: {host: 'localhost', port: adbPort, family: 4},
       };
       const openTunnel = tunnelService.openTunnels([tunnel]).share();
       subscriptions.add(openTunnel.subscribe());
-      await openTunnel.take(1).toPromise();
-      resolve(debuggerPort);
+      const tunnels = await openTunnel.take(1).toPromise();
+      resolve(tunnels[0].from.port);
     } catch (e) {
       reject(e);
     }
