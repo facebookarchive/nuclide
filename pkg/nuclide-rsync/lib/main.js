@@ -19,6 +19,10 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {getRsyncServiceByNuclideUri} from '../../nuclide-remote-connection';
 
+interface RsyncTransport {
+  downloadFolder: (remoteSource: NuclideUri) => Observable<ProgressEvent>;
+}
+
 /**
  * Set up an Rsync transport from a remote host to the local host. The daemon
  * will be spawned locally with localRoot as the module directory.
@@ -26,7 +30,7 @@ import {getRsyncServiceByNuclideUri} from '../../nuclide-remote-connection';
 export function setUpRsyncTransport<A>(
   remoteRoot: NuclideUri,
   localRoot: NuclideUri,
-  rsyncActions: (rsyncService: RsyncService, port: number) => Observable<A>,
+  rsyncActions: (rsync: RsyncTransport) => Observable<A>,
 ): Observable<A> {
   const remoteRsyncService = getRsyncServiceByNuclideUri(remoteRoot);
   const localRsyncService = getRsyncServiceByNuclideUri('');
@@ -55,10 +59,14 @@ export function setUpRsyncTransport<A>(
                 },
               ])
               .switchMap(resolved =>
-                rsyncActions(
-                  remoteRsyncService,
-                  resolved[0].from.port,
-                ).materialize(),
+                rsyncActions({
+                  downloadFolder: (remoteSource: NuclideUri) =>
+                    downloadFolder(
+                      remoteRsyncService,
+                      resolved[0].from.port,
+                      remoteSource,
+                    ),
+                }).materialize(),
               ),
           );
       })
@@ -70,7 +78,7 @@ export function setUpRsyncTransport<A>(
 /**
  * Download a remote folder to the current local root.
  */
-export function downloadFolder(
+function downloadFolder(
   rsyncService: RsyncService,
   port: number,
   remoteSource: NuclideUri,
