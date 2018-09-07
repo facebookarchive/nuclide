@@ -56,20 +56,25 @@ export type ResolvedTunnel = {
   to: TunnelHost,
 };
 
-export type Host = {
-  host: 'localhost' | NuclideUri,
-  port: number,
-  family?: 4 | 6,
-};
-
 export type Tunnel = {
   description: string,
-  from: Host,
-  to: Host,
+  from: {
+    host: 'localhost' | NuclideUri,
+    // If you choose any_available, you can get the allocated port from the returned ResolvedTunnel
+    port: number | 'any_available',
+    // defaults to 6 if not provided
+    family?: 4 | 6,
+  },
+  to: {
+    host: 'localhost' | NuclideUri,
+    port: number,
+    // defaults to 6 if not provided
+    family?: 4 | 6,
+  },
 };
 
 export type SshTunnelService = {
-  openTunnels(tunnels: Array<Tunnel>): Observable<'ready'>,
+  openTunnels(tunnels: Array<Tunnel>): Observable<Array<ResolvedTunnel>>,
   getOpenTunnels(): Immutable.Set<ResolvedTunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Tunnel} from 'nuclide-adb/lib/types';
+import type {ResolvedTunnel, Tunnel} from 'nuclide-adb/lib/types';
 import type {Store} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -21,47 +21,47 @@ import * as Actions from './redux/Actions';
 export function createObservableForTunnels(
   tunnels: Array<Tunnel>,
   store: Store,
-): Observable<'ready'> {
+): Observable<Array<ResolvedTunnel>> {
   const observables = tunnels.map(t => createObservableForTunnel(t, store));
   const highOrder = Observable.from(observables);
-  // $FlowFixMe combineAll
-  return highOrder.combineAll().mapTo('ready');
+  return highOrder.combineAll();
 }
 
 export function createObservableForTunnel(
   tunnel: Tunnel,
   store: Store,
-): Observable<'ready'> {
-  const resolved = resolveTunnel(tunnel);
-  if (shallowEqual(resolved.from, resolved.to)) {
-    // Identical source/destination tunnels are always immediately ready, never close.
-    // Makes it easy for users to call this function without branching on whether they need to.
-    return Observable.of('ready').concat(Observable.never());
-  }
+): Observable<ResolvedTunnel> {
+  return Observable.defer(() => resolveTunnel(tunnel)).concatMap(resolved => {
+    if (shallowEqual(resolved.from, resolved.to)) {
+      // Identical source/destination tunnels are always immediately ready, never close.
+      // Makes it easy for users to call this function without branching on whether they need to.
+      return Observable.of(resolved).concat(Observable.never());
+    }
 
-  return Observable.create(observer => {
-    const subscription = {
-      description: tunnel.description,
-      onTunnelClose: error => {
-        if (error == null) {
-          observer.complete();
-        } else {
-          observer.error(error);
-        }
-      },
-    };
-    store.dispatch(
-      Actions.subscribeToTunnel(subscription, resolved, error => {
-        if (error == null) {
-          observer.next('ready');
-        } else {
-          observer.error(error);
-        }
-      }),
-    );
+    return Observable.create(observer => {
+      const subscription = {
+        description: tunnel.description,
+        onTunnelClose: error => {
+          if (error == null) {
+            observer.complete();
+          } else {
+            observer.error(error);
+          }
+        },
+      };
+      store.dispatch(
+        Actions.subscribeToTunnel(subscription, resolved, error => {
+          if (error == null) {
+            observer.next(resolved);
+          } else {
+            observer.error(error);
+          }
+        }),
+      );
 
-    return new UniversalDisposable(() =>
-      store.dispatch(Actions.unsubscribeFromTunnel(subscription, resolved)),
-    );
+      return new UniversalDisposable(() =>
+        store.dispatch(Actions.unsubscribeFromTunnel(subscription, resolved)),
+      );
+    });
   });
 }

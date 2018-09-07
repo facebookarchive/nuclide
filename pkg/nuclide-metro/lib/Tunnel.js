@@ -54,6 +54,7 @@ export function openTunnel(
         return service.openTunnels([desired]);
       }
     })
+    .mapTo('ready')
     .share();
 }
 
@@ -90,7 +91,7 @@ function _askToRequestTunnel(
       }
       notification.dismiss();
     };
-  });
+  }).mapTo('ready');
 }
 
 function _desiredTunnelTo(uri: NuclideUri, port: number): Tunnel {
