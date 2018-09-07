@@ -63,7 +63,6 @@ export default class VsDebugSession extends V8Protocol {
 
   capabilities: DebugProtocol.Capabilities;
   _adapterExecutable: VSAdapterExecutableInfo;
-  _logger: log4js$Logger;
   _spawner: IVsAdapterSpawner;
   _adapterAnalyticsExtras: AdapterAnalyticsExtras;
   _adapterErrorOutput: string;
@@ -97,7 +96,6 @@ export default class VsDebugSession extends V8Protocol {
   ) {
     super(id, logger, sendPreprocessors, receivePreprocessors);
     this._adapterExecutable = adapterExecutable;
-    this._logger = logger;
     this._readyForBreakpoints = false;
     this._spawner = spawner == null ? new VsAdapterSpawner() : spawner;
     this._isReadOnly = isReadOnly;
@@ -191,7 +189,6 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   send(command: string, args: any): Promise<any> {
-    this._logger.info('Send request:', command, args);
     this._initServer();
 
     const operation = (): Promise<any> => {
@@ -199,7 +196,6 @@ export default class VsDebugSession extends V8Protocol {
       return super.send(command, args).then(
         (response: DebugProtocol.Response) => {
           const sanitizedResponse = this._sanitizeResponse(response);
-          this._logger.info('Received response:', sanitizedResponse);
           track('vs-debug-session:transaction', {
             ...this._adapterAnalyticsExtras,
             request: {command, arguments: args},

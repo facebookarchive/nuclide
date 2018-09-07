@@ -123,7 +123,11 @@ export default class V8Protocol {
     const json = JSON.stringify(message);
     const length = Buffer.byteLength(json, 'utf8');
 
-    this._output('Content-Length: ' + length.toString() + TWO_CRLF + json);
+    const packet = `Content-Length: ${length.toString()}${TWO_CRLF}${json}`;
+
+    this._logger.info(`Sending: ${packet}`);
+
+    this._output(packet);
   }
 
   handleData(data: Buffer): void {
@@ -139,6 +143,7 @@ export default class V8Protocol {
           this._rawData = this._rawData.slice(this._contentLength);
           this._contentLength = -1;
           if (message.length > 0) {
+            this._logger.info(`Received message: ${message}`);
             this._dispatch(message);
           }
           continue; // there may be more complete messages to process
