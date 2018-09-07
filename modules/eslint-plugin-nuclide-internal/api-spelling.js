@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const REPLACEMENTS = new Map([
   ['cancellable', 'cancelable'],
@@ -47,7 +44,7 @@ module.exports = function(context) {
           fix(fixer) {
             return fixer.replaceText(
               node,
-              node.name.split(toReplace).join(replacement)
+              node.name.split(toReplace).join(replacement),
             );
           },
         });

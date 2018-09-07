@@ -8,19 +8,17 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const rule = require('../jsx-simple-callback-refs');
 const RuleTester = require('eslint').RuleTester;
 
-const ERROR_MESSAGE = 'Callback refs must be either methods or arrow functions with simple assignments.';
+const ERROR_MESSAGE =
+  'Callback refs must be either methods or arrow functions with simple assignments.';
 
 const ruleTester = new RuleTester({
   parser: 'babel-eslint',

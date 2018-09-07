@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /* eslint-disable no-console */
 
@@ -57,23 +54,32 @@ const NON_LAZY_MODULES = new Set([
 const BABEL_OPTIONS = {
   plugins: [
     [require.resolve('./inline-invariant-tr')],
-    [require.resolve('babel-plugin-module-resolver'), {
-      alias: MODULE_ALIASES,
-      cwd: NUCLIDE_ROOT,
-    }],
+    [
+      require.resolve('babel-plugin-module-resolver'),
+      {
+        alias: MODULE_ALIASES,
+        cwd: NUCLIDE_ROOT,
+      },
+    ],
     [require.resolve('babel-plugin-idx')],
-    [require.resolve('babel-plugin-lodash'), {
-      // The babel plugin looks for lodash relative to the CWD.
-      // This must be the path to the root package.json.
-      cwd: NUCLIDE_ROOT,
-    }],
+    [
+      require.resolve('babel-plugin-lodash'),
+      {
+        // The babel plugin looks for lodash relative to the CWD.
+        // This must be the path to the root package.json.
+        cwd: NUCLIDE_ROOT,
+      },
+    ],
 
     // Note: @babel/plugin-proposal-class-properties doesn't work for us.
     [require.resolve('babel-plugin-transform-class-properties')],
-    [require.resolve('@babel/plugin-proposal-object-rest-spread'), {
-      loose: true,
-      useBuiltIns: true,
-    }],
+    [
+      require.resolve('@babel/plugin-proposal-object-rest-spread'),
+      {
+        loose: true,
+        useBuiltIns: true,
+      },
+    ],
 
     // babel-preset-react:
     [require.resolve('@babel/plugin-transform-react-jsx'), {useBuiltIns: true}],
@@ -82,15 +88,18 @@ const BABEL_OPTIONS = {
 
     [require.resolve('babel-plugin-relay')],
 
-    [require.resolve('@babel/plugin-transform-modules-commonjs'), {
-      // Determines which imports to lazy-require.
-      lazy(moduleName) {
-        if (NON_LAZY_MODULES.has(moduleName)) {
-          return false;
-        }
-        return !isBuiltinModule(moduleName);
+    [
+      require.resolve('@babel/plugin-transform-modules-commonjs'),
+      {
+        // Determines which imports to lazy-require.
+        lazy(moduleName) {
+          if (NON_LAZY_MODULES.has(moduleName)) {
+            return false;
+          }
+          return !isBuiltinModule(moduleName);
+        },
       },
-    }],
+    ],
     // The modules-commonjs transform only inserts 'use strict' for files with an ES6 import/export.
     [require.resolve('@babel/plugin-transform-strict-mode')],
 
@@ -102,9 +111,7 @@ const BABEL_OPTIONS = {
 
 const {COVERAGE_DIR, NUCLIDE_TRANSPILE_ENV} = process.env;
 if (COVERAGE_DIR) {
-  BABEL_OPTIONS.plugins.push(
-    [require.resolve('babel-plugin-istanbul')]
-  );
+  BABEL_OPTIONS.plugins.push([require.resolve('babel-plugin-istanbul')]);
 }
 switch (NUCLIDE_TRANSPILE_ENV) {
   case 'production':
@@ -131,7 +138,7 @@ switch (NUCLIDE_TRANSPILE_ENV) {
 function addYarnWorkspacesCompat() {
   try {
     const rootPkgJson = JSON.parse(
-      fs.readFileSync(path.join(NUCLIDE_ROOT, 'package.json'))
+      fs.readFileSync(path.join(NUCLIDE_ROOT, 'package.json')),
     );
     if (Array.isArray(rootPkgJson.workspaces)) {
       const glob = require('glob');
@@ -172,7 +179,10 @@ class NodeTranspiler {
   static shouldCompile(bufferOrString) {
     const src = bufferOrString.toString();
     const directives = docblock.parseAsObject(docblock.extract(src));
-    return directives.hasOwnProperty('flow') || directives.hasOwnProperty('transpile');
+    return (
+      directives.hasOwnProperty('flow') ||
+      directives.hasOwnProperty('transpile')
+    );
   }
 
   constructor() {
@@ -186,7 +196,7 @@ class NodeTranspiler {
   getConfigDigest() {
     if (!this._configDigest) {
       // Keep the digest consistent regardless of what directory we're in.
-      const optsOnly = Object.assign({}, BABEL_OPTIONS, {plugins: null});
+      const optsOnly = {...BABEL_OPTIONS, plugins: null};
       const hash = crypto
         .createHash('sha1')
         .update('@babel/core', 'utf8')
@@ -233,7 +243,7 @@ class NodeTranspiler {
     }
     try {
       const input = Buffer.isBuffer(src) ? src.toString() : src;
-      const opts = Object.assign({filename}, BABEL_OPTIONS);
+      const opts = {filename, ...BABEL_OPTIONS};
       const output = this._babel.transform(input, opts).code;
       return output;
     } catch (err) {
@@ -263,10 +273,7 @@ class NodeTranspiler {
       // so debuggers can find the sourcemaps there.
       this._cacheDir = process.env.NUCLIDE_TRANSPILER_CACHE_DIR;
       if (this._cacheDir == null) {
-        this._cacheDir = path.join(
-          os.tmpdir(),
-          'nuclide-node-transpiler'
-        );
+        this._cacheDir = path.join(os.tmpdir(), 'nuclide-node-transpiler');
       }
 
       const digest = this.getConfigDigest();
@@ -300,7 +307,9 @@ class NodeTranspiler {
       fs.renameSync(tmpName, cacheFilename);
     } catch (err) {
       console.error(`Cache write failed. ${err}`);
-      try { fs.unlinkSync(tmpName); } catch (err_) {}
+      try {
+        fs.unlinkSync(tmpName);
+      } catch (err_) {}
     }
   }
 }

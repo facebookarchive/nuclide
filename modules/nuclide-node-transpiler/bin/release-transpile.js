@@ -8,14 +8,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 /* eslint-disable no-console */
 
 // This file is both the main and worker process.
@@ -32,8 +29,7 @@ function runParent() {
       describe: 'Overwrite original files with transpile output.',
       type: 'boolean',
     })
-    .help('help')
-    .argv;
+    .help('help').argv;
 
   const assert = require('assert');
   const child_process = require('child_process');
@@ -71,11 +67,12 @@ function runParent() {
       incomplete: ' ',
       width: 20,
       total: jsFiles.length,
-    }
+    },
   );
 
   for (let i = 0; i < numWorkers; i++) {
-    child_process.fork(__filename)
+    child_process
+      .fork(__filename)
       .on('message', function(m) {
         if (m.transpiled === true) {
           count.transpiled++;
@@ -99,7 +96,9 @@ function runParent() {
   }
 
   process.once('exit', code => {
-    if (code !== 0) { return; }
+    if (code !== 0) {
+      return;
+    }
     if (argv.overwrite && !directory && fs.existsSync(developmentFilePath)) {
       fs.unlinkSync(developmentFilePath);
     }
@@ -107,7 +106,7 @@ function runParent() {
       'transpiled: %s | skipped: %s | %ds',
       count.transpiled,
       count.skipped,
-      process.uptime().toFixed(2)
+      process.uptime().toFixed(2),
     );
   });
 }

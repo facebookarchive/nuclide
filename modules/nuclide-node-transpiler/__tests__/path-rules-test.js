@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 const glob = require('glob');
@@ -37,7 +34,9 @@ describe('path-rules', () => {
   describe('pathRules.isIncluded', () => {
     it('matches what getIncludedFiles finds', () => {
       const expectedFiles = pathRules.getIncludedFiles().sort();
-      const allFiles = glob.sync(path.join(__dirname, '../../../**/*.js')).sort();
+      const allFiles = glob
+        .sync(path.join(__dirname, '../../../**/*.js'))
+        .sort();
 
       expect(expectedFiles).not.toEqual(allFiles);
 

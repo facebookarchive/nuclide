@@ -8,32 +8,29 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const babel = require('@babel/core');
 const dedent = require('dedent');
 
 function transform(source) {
   return babel.transform(source, {
-    plugins: [
-      require('../lib/inline-invariant-tr'),
-    ],
+    plugins: [require('../lib/inline-invariant-tr')],
   }).code;
 }
 
 describe('inline-invariant transform', () => {
   it('works 1', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from '';
       invariant(false);
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!false) {
         throw new Error("Invariant violation: \"false\"");
       }
@@ -41,10 +38,12 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 2', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from '';
       invariant(false != true);
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!(false != true)) {
         throw new Error("Invariant violation: \"false != true\"");
       }
@@ -52,10 +51,12 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 3', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from '';
       invariant(foo() ? !!bar : baz.qux());
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!(foo() ? !!bar : baz.qux())) {
         throw new Error("Invariant violation: \"foo() ? !!bar : baz.qux()\"");
       }
@@ -63,10 +64,12 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 4', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from '';
       invariant(true, 'it is true');
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!true) {
         throw new Error('it is true');
       }
@@ -74,10 +77,12 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 5', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import {invariant} from '';
       invariant(true, 'it is true');
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!true) {
         throw new Error('it is true');
       }
@@ -85,11 +90,13 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 6', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from '';
       invariant(true, 'it is true');
       invariant.ok();
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       import invariant from '';
 
       if (!true) {
@@ -101,18 +108,22 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 7', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       export { invariant } from ''
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       export { invariant } from '';
     `);
   });
 
   it('works 8', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import {default as invariant} from ''
       invariant(true);
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       if (!true) {
         throw new Error("Invariant violation: \"true\"");
       }
@@ -120,26 +131,32 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 9', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       invariant;
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       invariant;
     `);
   });
 
   it('works 10', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       var invariant = require('invariant');
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       var invariant = require('invariant');
     `);
   });
 
   it('works 11', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       var invariant = require('invariant');
       invariant(true);
-    `)).toEqual(dedent`
+    `),
+    ).toEqual(dedent`
       var invariant = require('invariant');
 
       invariant(true);
@@ -147,10 +164,12 @@ describe('inline-invariant transform', () => {
   });
 
   it('works 12', () => {
-    expect(transform(dedent`
+    expect(
+      transform(dedent`
       import invariant from 'invariant';
       foo;
-    `)).toEqual('foo;');
+    `),
+    ).toEqual('foo;');
   });
 
   it('works 13', () => {
@@ -160,7 +179,7 @@ describe('inline-invariant transform', () => {
         if (invariant(true)) {}
       `);
     }).toThrow(
-      'undefined: `invariant()` must be used as an expression statement.'
+      'undefined: `invariant()` must be used as an expression statement.',
     );
   });
 
@@ -170,8 +189,6 @@ describe('inline-invariant transform', () => {
         import invariant from 'invariant';
         invariant();
       `);
-    }).toThrow(
-      'undefined: `invariant()` must at least one argument.'
-    );
+    }).toThrow('undefined: `invariant()` must at least one argument.');
   });
 });

@@ -6,14 +6,11 @@
  * the root directory of this source tree.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 /* eslint-disable max-len */
 
 module.exports = {
@@ -275,7 +272,7 @@ module.exports = {
     'spaced-comment': [
       1,
       'always',
-      {line: {exceptions: ['-']}, block: {balanced: true}},
+      {line: {exceptions: ['-']}, block: {balanced: true, markers: [':']}},
     ],
     'template-tag-spacing': 1,
     'unicode-bom': [1, 'never'],

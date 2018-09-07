@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const rule = require('../react-virtualized-import');
 const RuleTester = require('eslint').RuleTester;
@@ -35,33 +32,41 @@ ruleTester.run('react-virtualized-import', rule, {
   invalid: [
     {
       code: 'import {AutoSizer} from "react-virtualized";',
-      errors: [{
-        message: "Do not import from 'react-virtualized' for performance" +
-          " reasons. Import 'react-virtualized/dist/commonjs/AutoSizer'" +
-          ' instead.',
-        type: 'ImportDeclaration',
-      }],
+      errors: [
+        {
+          message:
+            "Do not import from 'react-virtualized' for performance" +
+            " reasons. Import 'react-virtualized/dist/commonjs/AutoSizer'" +
+            ' instead.',
+          type: 'ImportDeclaration',
+        },
+      ],
     },
     {
       code: 'import {List} from "react-virtualized";',
-      errors: [{
-        message: "Do not import from 'react-virtualized' for performance" +
-          " reasons. Import 'react-virtualized/dist/commonjs/List'" +
-          ' instead.',
-        type: 'ImportDeclaration',
-      }],
+      errors: [
+        {
+          message:
+            "Do not import from 'react-virtualized' for performance" +
+            " reasons. Import 'react-virtualized/dist/commonjs/List'" +
+            ' instead.',
+          type: 'ImportDeclaration',
+        },
+      ],
     },
     {
       code: 'import {AutoSizer, List} from "react-virtualized";',
       errors: [
         {
-          message: "Do not import from 'react-virtualized' for performance" +
+          message:
+            "Do not import from 'react-virtualized' for performance" +
             " reasons. Import 'react-virtualized/dist/commonjs/AutoSizer'" +
             ' instead.',
           type: 'ImportDeclaration',
         },
         {
-          message: "Do not import from 'react-virtualized' for performance" +
+          message:
+            "Do not import from 'react-virtualized' for performance" +
             " reasons. Import 'react-virtualized/dist/commonjs/List'" +
             ' instead.',
           type: 'ImportDeclaration',

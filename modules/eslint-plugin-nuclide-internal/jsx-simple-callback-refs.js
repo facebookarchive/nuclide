@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * There's a potentially big footgun that can come from using arrow functions for callback refs. It
@@ -59,7 +56,8 @@ module.exports = function(context) {
 
       context.report({
         node,
-        message: 'Callback refs must be either methods or arrow functions with simple assignments.',
+        message:
+          'Callback refs must be either methods or arrow functions with simple assignments.',
       });
     },
   };
@@ -91,7 +89,9 @@ function isAssignmentExpression(expression) {
       expression.body.body[0].type === 'ExpressionStatement'
         ? expression.body.body[0].expression
         : null;
-    return bodyExpression != null && bodyExpression.type === 'AssignmentExpression';
+    return (
+      bodyExpression != null && bodyExpression.type === 'AssignmentExpression'
+    );
   }
   return false;
 }

@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const rule = require('../consistent-import-name');
 const RuleTester = require('eslint').RuleTester;
@@ -44,61 +41,76 @@ ruleTester.run('consistent-import-name', rule, {
   invalid: [
     {
       code: 'var pathUtils = require("path")',
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'Identifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'Identifier',
+        },
+      ],
     },
     {
       code: 'var {path} = require("path")',
       parserOptions: {ecmaVersion: 7},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ObjectPattern',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ObjectPattern',
+        },
+      ],
     },
     {
       code: 'import pathUtils from "path"',
       parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportDefaultSpecifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportDefaultSpecifier',
+        },
+      ],
     },
     {
       code: 'import * as pathUtils from "path"',
       parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportNamespaceSpecifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportNamespaceSpecifier',
+        },
+      ],
     },
     {
       code: 'import {path} from "path"',
       parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportSpecifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportSpecifier',
+        },
+      ],
     },
     {
       code: 'import pathModule, {path} from "path"',
       parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportSpecifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportSpecifier',
+        },
+      ],
     },
     {
       code: 'import pathUtils, {path} from "path"',
       parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportDefaultSpecifier',
-      }, {
-        message: 'path should be named "path" or "pathModule"',
-        type: 'ImportSpecifier',
-      }],
+      errors: [
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportDefaultSpecifier',
+        },
+        {
+          message: 'path should be named "path" or "pathModule"',
+          type: 'ImportSpecifier',
+        },
+      ],
     },
   ],
 });

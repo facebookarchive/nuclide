@@ -7,14 +7,11 @@
  * the root directory of this source tree.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const webfontsGenerator = require('webfonts-generator');
 const glob = require('glob');
@@ -57,5 +54,5 @@ webfontsGenerator(
       // config. Just delete it.
       fs.unlinkSync(path.join(stylesDir, 'nuclicons.svg'));
     }
-  }
+  },
 );

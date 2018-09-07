@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 /* eslint-disable no-console */
 
 require('../..');
@@ -38,12 +35,12 @@ assert.equal(VanillaSyntax.Foo.bar(), 'qux');
 // this test.
 assert.equal(
   VanillaSyntax.Foo.toString(),
-  "class Foo {\n  static bar() {\n    return 'qux';\n  }\n}"
+  "class Foo {\n  static bar() {\n    return 'qux';\n  }\n}",
 );
 // The transpiled version of "Foo" would've looked like this:
 assert.notEqual(
   VanillaSyntax.Foo.toString(),
-  'function Foo() {\n    _classCallCheck(this, Foo);\n  }'
+  'function Foo() {\n    _classCallCheck(this, Foo);\n  }',
 );
 
 console.log('OK');

@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const DISALLOWED_MODULES = new Map([
   ['invariant', '"assert"'],
@@ -31,8 +28,7 @@ module.exports = function(context) {
       if (descriptionOfAlternative != null) {
         context.report({
           node,
-          message:
-            `Use ${descriptionOfAlternative} instead of "${name}"`,
+          message: `Use ${descriptionOfAlternative} instead of "${name}"`,
         });
       }
     },

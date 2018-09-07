@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const rule = require('../no-unnecessary-disposable-wrapping');
 const RuleTester = require('eslint').RuleTester;
@@ -24,9 +21,7 @@ const ruleTester = new RuleTester();
 const ERROR = 'Unnecessary Disposable wrapping';
 
 ruleTester.run('no-unnecessary-disposable-wrapping', rule, {
-  valid: [
-    {code: 'new UniversalDisposable(x)'},
-  ],
+  valid: [{code: 'new UniversalDisposable(x)'}],
   invalid: [
     {
       code: 'new UniversalDisposable(x, new UniversalDisposable(y))',

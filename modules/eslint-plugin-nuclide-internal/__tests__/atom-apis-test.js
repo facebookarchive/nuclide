@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 const rule = require('../atom-apis');
@@ -31,7 +28,6 @@ const ruleTester = new RuleTester({
     sourceType: 'module',
   },
 });
-
 
 ruleTester.run('atom-commands', rule, {
   valid: [
@@ -70,10 +66,12 @@ ruleTester.run('atom-commands', rule, {
   invalid: [
     {
       code: 'atom.commands.add("atom-workspace", "command", cb)',
-      errors: [{
-        message: rule.MISSING_MENU_ITEM_ERROR + ' (command)',
-        type: 'Literal',
-      }],
+      errors: [
+        {
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (command)',
+          type: 'Literal',
+        },
+      ],
     },
     {
       code: 'atom.commands.add("atom-workspace", {"a": cb, "b": cb})',
@@ -90,54 +88,68 @@ ruleTester.run('atom-commands', rule, {
     },
     {
       code: 'var x = "command"; atom.commands.add("atom-workspace", x, cb)',
-      errors: [{
-        message: rule.COMMAND_LITERAL_ERROR,
-        type: 'Identifier',
-      }],
+      errors: [
+        {
+          message: rule.COMMAND_LITERAL_ERROR,
+          type: 'Identifier',
+        },
+      ],
     },
     {
       code: 'atom.commands.add("atom-workspace", "bad_command", null)',
       filename: getFullPath('test.js'),
-      errors: [{
-        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
-        type: 'Literal',
-      }],
+      errors: [
+        {
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
+          type: 'Literal',
+        },
+      ],
     },
     {
       code: 'atom.commands.add("atom-workspace", "bad_command2", null)',
       filename: getFullPath('test.js'),
-      errors: [{
-        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
-        type: 'Literal',
-      }],
+      errors: [
+        {
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
+          type: 'Literal',
+        },
+      ],
     },
     {
       code: 'api.registerFactory({toggleCommand: "bad_command"})',
       filename: getFullPath('test.js'),
-      errors: [{
-        message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
-        type: 'Literal',
-      }],
+      errors: [
+        {
+          message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
+          type: 'Literal',
+        },
+      ],
     },
     {
       code: 'atom.commands.add(atom.views.getView(atom.workspace), f(), cb)',
-      errors: [{
-        message: rule.WORKSPACE_VIEW_LOOKUP_ERROR,
-      }],
+      errors: [
+        {
+          message: rule.WORKSPACE_VIEW_LOOKUP_ERROR,
+        },
+      ],
     },
     {
       code: 'atom.workspace.open()',
       filename: 'not-a-test.js',
-      errors: [{
-        message: rule.DISALLOWED_WORKSPACE_METHODS.open,
-      }],
+      errors: [
+        {
+          message: rule.DISALLOWED_WORKSPACE_METHODS.open,
+        },
+      ],
     },
     {
       code: 'atom.workspace.open()',
       filename: 'in/a/nonspec/folder.js',
-      errors: [{
-        message: rule.DISALLOWED_WORKSPACE_METHODS.open,
-      }],
+      errors: [
+        {
+          message: rule.DISALLOWED_WORKSPACE_METHODS.open,
+        },
+      ],
     },
   ],
 });

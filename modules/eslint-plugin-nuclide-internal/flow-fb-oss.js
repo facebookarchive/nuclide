@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 const resolveFrom = require('resolve-from');
@@ -44,13 +41,16 @@ module.exports = function(context) {
     }
     const startLine = node.loc.start.line;
     const hasFlowFbCommentBefore =
-      context.getSourceCode().getAllComments().find(comment => {
-        return (
-          comment.type === 'Line' &&
-          comment.loc.end.line === startLine - 1 &&
-          comment.value.indexOf(' $FlowFB') !== -1
-        );
-      }) != null;
+      context
+        .getSourceCode()
+        .getAllComments()
+        .find(comment => {
+          return (
+            comment.type === 'Line' &&
+            comment.loc.end.line === startLine - 1 &&
+            comment.value.indexOf(' $FlowFB') !== -1
+          );
+        }) != null;
     return !hasFlowFbCommentBefore;
   }
 

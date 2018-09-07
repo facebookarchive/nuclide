@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 
@@ -30,7 +27,15 @@ const ruleTester = new RuleTester({
 });
 
 // This actually ends up checking the root package.json, but that's OK.
-const TEST_PATH = path.join(__dirname, '..', '..', '..', 'modules', 'test', 'index.js');
+const TEST_PATH = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'modules',
+  'test',
+  'index.js',
+);
 // eslint-disable-next-line nuclide-internal/modules-dependencies
 const PKG_NAME = require('../../../package.json').name;
 

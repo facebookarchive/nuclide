@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * This rule prevents instantiation of the Disposable or CompositeDisposable classes.
@@ -32,7 +29,9 @@ const reportIncorrectDisposable = (context, node) => {
 module.exports = context => {
   return {
     NewExpression(node) {
-      const isDisallowedDisposable = DISALLOWED_DISPOSABLES.includes(node.callee.name);
+      const isDisallowedDisposable = DISALLOWED_DISPOSABLES.includes(
+        node.callee.name,
+      );
       if (isDisallowedDisposable) {
         reportIncorrectDisposable(context, node);
       }

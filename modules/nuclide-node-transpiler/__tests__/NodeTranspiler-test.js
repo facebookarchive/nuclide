@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const fs = require('fs');
 const vm = require('vm');
@@ -83,13 +80,18 @@ describe('NodeTranspiler', () => {
 
       const fakeBabel = {
         version: realBabel.version,
-        transform() { throw new Error('This should not have been called.'); },
+        transform() {
+          throw new Error('This should not have been called.');
+        },
       };
-      const nodeTranspilerFake =
-        new NodeTranspiler(fakeBabel.version, () => fakeBabel);
+      const nodeTranspilerFake = new NodeTranspiler(
+        fakeBabel.version,
+        () => fakeBabel,
+      );
 
-      expect(nodeTranspilerReal.getConfigDigest())
-        .toBe(nodeTranspilerFake.getConfigDigest());
+      expect(nodeTranspilerReal.getConfigDigest()).toBe(
+        nodeTranspilerFake.getConfigDigest(),
+      );
     });
   });
 
@@ -133,10 +135,14 @@ describe('NodeTranspiler', () => {
       const bufferSrc = fs.readFileSync(filename);
       expect(Buffer.isBuffer(bufferSrc)).toBe(true);
 
-      const cacheFilename1 =
-        nodeTranspiler._getCacheFilename(bufferSrc, filename);
-      const cacheFilename2 =
-        nodeTranspiler._getCacheFilename(bufferSrc.toString(), filename);
+      const cacheFilename1 = nodeTranspiler._getCacheFilename(
+        bufferSrc,
+        filename,
+      );
+      const cacheFilename2 = nodeTranspiler._getCacheFilename(
+        bufferSrc.toString(),
+        filename,
+      );
 
       expect(cacheFilename1).toEqual(cacheFilename2);
     });

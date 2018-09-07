@@ -8,14 +8,11 @@
  *
  * @noflow
  * @emails oncall+nuclide
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const fs = require('fs');
 const path = require('path');
@@ -23,7 +20,9 @@ const path = require('path');
 describe('env', () => {
   it('has correct __DEV__', () => {
     // This should exist if we're running a test.
-    expect(fs.existsSync(path.join(__dirname, '../../../DEVELOPMENT'))).toBe(true);
+    expect(fs.existsSync(path.join(__dirname, '../../../DEVELOPMENT'))).toBe(
+      true,
+    );
     expect(require('../lib/env').__DEV__).toBe(true);
   });
 });

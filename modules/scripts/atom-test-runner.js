@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * A simple test runner with some additional features:
@@ -34,28 +31,27 @@ const patchAtomConsole = require('nuclide-commons/patch-atom-console');
 patchAtomConsole();
 
 module.exports = function(params) {
-  return params.legacyTestRunner(params)
-    .then(statusCode => {
-      return new Promise(resolve => {
-        const temp = require('temp');
-        if (statusCode === 0) {
-          // eslint-disable-next-line nuclide-internal/modules-dependencies
-          const {writeCoverage} = require('../nuclide-commons/test-helpers');
-          writeCoverage();
+  return params.legacyTestRunner(params).then(statusCode => {
+    return new Promise(resolve => {
+      const temp = require('temp');
+      if (statusCode === 0) {
+        // eslint-disable-next-line nuclide-internal/modules-dependencies
+        const {writeCoverage} = require('../nuclide-commons/test-helpers');
+        writeCoverage();
 
-          // Atom intercepts "process.exit" so we have to do our own manual cleanup.
-          temp.cleanup((err, stats) => {
-            resolve(statusCode);
-            if (err && err.message !== 'not tracking') {
-              // eslint-disable-next-line no-console
-              console.log('temp.cleanup() failed.', err);
-            }
-          });
-        } else {
-          // When the test fails, we keep the temp contents for debugging.
-          temp.track(false);
+        // Atom intercepts "process.exit" so we have to do our own manual cleanup.
+        temp.cleanup((err, stats) => {
           resolve(statusCode);
-        }
-      });
+          if (err && err.message !== 'not tracking') {
+            // eslint-disable-next-line no-console
+            console.log('temp.cleanup() failed.', err);
+          }
+        });
+      } else {
+        // When the test fails, we keep the temp contents for debugging.
+        temp.track(false);
+        resolve(statusCode);
+      }
     });
+  });
 };

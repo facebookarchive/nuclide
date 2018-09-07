@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const idx = require('idx');
 
@@ -44,14 +41,11 @@ const NO_FLOW_AND_NO_TRANSPILE = `\
  * the root directory of this source tree.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 `;
 
 const BSD_FLOW_FORMAT_AND_TRANSPILE = `\
@@ -78,14 +72,11 @@ const BSD_NO_FLOW_AND_NO_TRANSPILE = `\
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 `;
 
 module.exports = function(context) {
@@ -120,12 +111,7 @@ module.exports = function(context) {
       const noFlowHeader = useBSDLicense
         ? BSD_NO_FLOW_AND_NO_TRANSPILE
         : NO_FLOW_AND_NO_TRANSPILE;
-      if (
-        source.replace(SHEBANG_RE, '')
-          // May want to format even if not flow checked.
-          .replace(/^.*@format\n/gm, '')
-          .startsWith(noFlowHeader)
-        ) {
+      if (source.replace(SHEBANG_RE, '').startsWith(noFlowHeader)) {
         return;
       }
 
