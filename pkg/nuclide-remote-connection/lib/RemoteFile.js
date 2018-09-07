@@ -372,30 +372,18 @@ export class RemoteFile {
         writeLength += chunk.length;
         next();
       },
+      final: callback => {
+        loadingNotification(
+          this._getFileSystemService().writeFileBuffer(
+            this._path,
+            Buffer.concat(writeData, writeLength),
+          ),
+          `File ${nuclideUri.nuclideUriToDisplayString(this._path)} ` +
+            'is taking an unexpectedly long time to save, please be patient...',
+          LONG_FILE_WRITE_MS,
+        ).then(callback, callback);
+      },
     });
-    const originalEnd = stream.end;
-    // TODO: (hansonw) T20364274 Override final() in Node 8 and above.
-    // For now, we'll overwrite the end function manually.
-    // $FlowIgnore
-    stream.end = cb => {
-      invariant(cb instanceof Function, 'end() called without a callback');
-      loadingNotification(
-        this._getFileSystemService().writeFileBuffer(
-          this._path,
-          Buffer.concat(writeData, writeLength),
-        ),
-        `File ${nuclideUri.nuclideUriToDisplayString(this._path)} ` +
-          'is taking an unexpectedly long time to save, please be patient...',
-        LONG_FILE_WRITE_MS,
-      ).then(
-        () => cb(),
-        err => {
-          stream.emit('error', err);
-          cb();
-        },
-      );
-      originalEnd.call(stream);
-    };
     return stream;
   }
 }
