@@ -81,19 +81,13 @@ const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
 
 class FileTreeEntryComponent extends React.Component<Props, State> {
-  // Keep track of the # of dragenter/dragleave events in order to properly decide
-  // when an entry is truly hovered/unhovered, since these fire many times over
-  // the duration of one user interaction.
   _arrowContainer: ?HTMLElement;
-  dragEventCount: number;
   _loadingTimeout: ?TimeoutID;
   _disposables: ?UniversalDisposable;
   _pathContainer: ?HTMLElement;
 
   constructor(props: Props) {
     super(props);
-    this.dragEventCount = 0;
-
     this.state = {
       isLoading: props.node.isLoading,
     };
@@ -404,6 +398,10 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 
   _onDragEnter = (event: DragEvent) => {
     event.stopPropagation();
+    // $FlowFixMe Flow does not know that currentTarget is a full DOM node.
+    if (event.currentTarget.contains(event.relatedTarget)) {
+      return;
+    }
 
     const nodes = this.props.selectedNodes;
     if (
@@ -428,24 +426,16 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     if (!this.props.node.isContainer || nothingToMove) {
       return;
     }
-    if (this.dragEventCount <= 0) {
-      this.dragEventCount = 0;
-      this.props.setDragHoveredNode();
-    }
-    this.dragEventCount++;
+    this.props.setDragHoveredNode();
   };
 
   _onDragLeave = (event: DragEvent) => {
     event.stopPropagation();
-    // Avoid calling an unhoverNode action if dragEventCount is already 0.
-    if (this.dragEventCount === 0) {
+    // $FlowFixMe Flow does not know that currentTarget is a full DOM node.
+    if (event.currentTarget.contains(event.relatedTarget)) {
       return;
     }
-    this.dragEventCount--;
-    if (this.dragEventCount <= 0) {
-      this.dragEventCount = 0;
-      this.props.unhoverNode();
-    }
+    this.props.unhoverNode();
   };
 
   _onDragStart = (event: DragEvent) => {
@@ -514,8 +504,6 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     } else {
       this.props.moveToNode();
     }
-    // Reset the dragEventCount for the currently dragged node upon dropping.
-    this.dragEventCount = 0;
   };
 
   _toggleNodeExpanded(deep: boolean): void {
