@@ -31,17 +31,9 @@ export function setUpRsyncTransport<A>(
   const remoteRsyncService = getRsyncServiceByNuclideUri(remoteRoot);
   const localRsyncService = getRsyncServiceByNuclideUri('');
 
-  const sshTunnelService: Observable<SshTunnelService> = Observable.defer(() =>
-    consumeFirstProvider('nuclide.ssh-tunnel'),
-  ).share();
-
-  const getRemotePort = sshTunnelService.switchMap(tunnelService =>
-    tunnelService.getAvailableServerPort(remoteRoot),
-  );
-
   return (
-    Observable.combineLatest(sshTunnelService, getRemotePort)
-      .switchMap(([tunnelService, remotePort]) => {
+    Observable.defer(() => consumeFirstProvider('nuclide.ssh-tunnel'))
+      .switchMap((tunnelService: SshTunnelService) => {
         return localRsyncService
           .startDaemon(localRoot)
           .refCount()
@@ -53,7 +45,7 @@ export function setUpRsyncTransport<A>(
                   from: {
                     host: remoteRoot,
                     family: 4,
-                    port: remotePort,
+                    port: 'any_available',
                   },
                   to: {
                     host: 'localhost',
@@ -62,8 +54,11 @@ export function setUpRsyncTransport<A>(
                   },
                 },
               ])
-              .switchMap(() =>
-                rsyncActions(remoteRsyncService, remotePort).materialize(),
+              .switchMap(resolved =>
+                rsyncActions(
+                  remoteRsyncService,
+                  resolved[0].from.port,
+                ).materialize(),
               ),
           );
       })
