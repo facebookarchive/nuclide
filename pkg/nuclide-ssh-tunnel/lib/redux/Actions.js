@@ -10,6 +10,7 @@
  */
 
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   CloseTunnelAction,
   DeleteTunnelAction,
@@ -81,7 +82,7 @@ export function setTunnelState(
   };
 }
 
-export function setCurrentWorkingDirectory(directory: ?string) {
+export function setCurrentWorkingDirectory(directory: ?NuclideUri) {
   return {
     type: SET_CURRENT_WORKING_DIRECTORY,
     payload: {directory},

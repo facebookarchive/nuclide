@@ -22,7 +22,7 @@ import {List} from 'immutable';
 export type Props = {
   tunnels: List<ActiveTunnel>,
   closeTunnel: ResolvedTunnel => void,
-  workingDirectoryHost: 'localhost' | ?NuclideUri,
+  workingDirectory: ?NuclideUri,
   openTunnel(tunnel: Tunnel): void,
 };
 
@@ -48,7 +48,7 @@ export class TunnelsPanelContents extends React.Component<Props, State> {
         />
         {this.state.allowManualTunnels && (
           <ManualTunnelSection
-            workingDirectoryHost={this.props.workingDirectoryHost}
+            workingDirectory={this.props.workingDirectory}
             openTunnel={this.props.openTunnel}
           />
         )}

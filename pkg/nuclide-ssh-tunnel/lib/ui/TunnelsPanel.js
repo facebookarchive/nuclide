@@ -13,7 +13,6 @@ import type {AppState, Store} from '../types';
 import type {Props} from './TunnelsPanelContents';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createObservableForTunnel} from '../CreateObservables';
 import * as Actions from '../redux/Actions';
 import {Observable} from 'rxjs';
@@ -25,7 +24,6 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/ssh-tunnels';
 
 export class TunnelsPanel {
   _store: Store;
-  _wat: any;
 
   constructor(store: Store) {
     this._store = store;
@@ -56,17 +54,6 @@ export class TunnelsPanel {
     const states: Observable<AppState> = Observable.from(this._store);
 
     const props: Observable<Props> = states.map((state: AppState) => {
-      let workingDirectoryHost;
-      if (state.currentWorkingDirectory == null) {
-        workingDirectoryHost = null;
-      } else {
-        const path = state.currentWorkingDirectory;
-        if (nuclideUri.isLocal(path)) {
-          workingDirectoryHost = 'localhost';
-        } else {
-          workingDirectoryHost = nuclideUri.getHostname(path);
-        }
-      }
       return {
         tunnels: state.tunnels.toList(),
         openTunnel: tunnel => {
@@ -88,7 +75,7 @@ export class TunnelsPanel {
           this._store.dispatch(
             Actions.closeTunnel(tunnel, new Error('Closed from panel')),
           ),
-        workingDirectoryHost,
+        workingDirectory: state.currentWorkingDirectory,
       };
     });
 

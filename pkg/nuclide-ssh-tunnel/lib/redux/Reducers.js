@@ -10,8 +10,8 @@
  */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Action} from '../types';
-import type {Directory} from '../../../nuclide-remote-connection';
 
 import {ActiveTunnels} from '../ActiveTunnels';
 import * as Actions from './Actions';
@@ -76,7 +76,7 @@ export function tunnels(
 }
 
 export function currentWorkingDirectory(
-  state: ?Directory = null,
+  state: ?NuclideUri = null,
   action: Action,
 ) {
   switch (action.type) {

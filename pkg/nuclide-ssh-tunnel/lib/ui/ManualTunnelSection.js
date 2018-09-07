@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -22,7 +23,7 @@ import {shortenHostname} from '../../../commons-node/hostnames';
 
 type Props = {
   openTunnel(tunnel: Tunnel): void,
-  workingDirectoryHost: 'localhost' | ?NuclideUri,
+  workingDirectory: ?NuclideUri,
 };
 type State = {
   description: string,
@@ -50,15 +51,13 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
 
   render(): React.Element<any> {
     let boxContents;
+    const {workingDirectory} = this.props;
 
-    if (
-      this.props.workingDirectoryHost == null ||
-      this.props.workingDirectoryHost === 'localhost'
-    ) {
+    if (workingDirectory == null || !nuclideUri.isRemote(workingDirectory)) {
       boxContents =
         'Set a remote Current Working Root to open tunnels to that host.';
     } else {
-      boxContents = this._getManualEntryForm(this.props.workingDirectoryHost);
+      boxContents = this._getManualEntryForm(workingDirectory);
     }
 
     return (
@@ -70,10 +69,10 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
     );
   }
 
-  _getManualEntryForm(hostname: NuclideUri): Array<React.Element<any>> {
+  _getManualEntryForm(uri: NuclideUri): Array<React.Element<any>> {
     const workingRootLabel = (
       <code className="nuclide-ssh-tunnels-manual-tunnel-section-host-field">
-        {shortenHostname(hostname)}:
+        {shortenHostname(uri)}:
       </code>
     );
     const localhostLabel = (
@@ -155,17 +154,17 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
 
   _openTunnel(): void {
     invariant(
-      this.props.workingDirectoryHost != null &&
-        this.props.workingDirectoryHost !== 'localhost' &&
+      this.props.workingDirectory != null &&
+        nuclideUri.isRemote(this.props.workingDirectory) &&
         this.state.fromPort != null &&
         this.state.toPort != null,
     );
     const fromHost = this.state.fromCurrentWorkingRoot
-      ? this.props.workingDirectoryHost
+      ? this.props.workingDirectory
       : 'localhost';
     const toHost = this.state.fromCurrentWorkingRoot
       ? 'localhost'
-      : this.props.workingDirectoryHost;
+      : this.props.workingDirectory;
     const tunnel = {
       from: {
         host: fromHost,
@@ -185,8 +184,8 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
 
   _openButtonEnabled(): boolean {
     return (
-      this.props.workingDirectoryHost != null &&
-      this.props.workingDirectoryHost !== 'localhost' &&
+      this.props.workingDirectory != null &&
+      nuclideUri.isRemote(this.props.workingDirectory) &&
       this.state.fromPort != null &&
       this.state.toPort != null
     );

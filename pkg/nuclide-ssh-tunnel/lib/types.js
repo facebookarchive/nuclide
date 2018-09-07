@@ -10,6 +10,7 @@
  */
 
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
 import type {ActiveTunnels} from './ActiveTunnels';
@@ -24,7 +25,7 @@ export type Store = {
 export type AppState = {
   openTunnels: Map<ResolvedTunnel, OpenTunnel>,
   tunnels: ActiveTunnels,
-  currentWorkingDirectory: ?string,
+  currentWorkingDirectory: ?NuclideUri,
   consoleOutput: Subject<ConsoleMessage>,
 };
 
