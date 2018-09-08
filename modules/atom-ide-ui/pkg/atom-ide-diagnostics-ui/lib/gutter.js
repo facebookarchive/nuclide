@@ -363,7 +363,11 @@ function addOpenMessageId(
       newOpenedMessageIds.add(message.id);
     }
   });
-  setOpenMessageIds(newOpenedMessageIds);
+  // Closing block decoration is handled by editor destroy or close button
+  // Only fire a set if there are new opened messages.
+  if (newOpenedMessageIds.size > 0) {
+    setOpenMessageIds(newOpenedMessageIds);
+  }
 }
 
 function removeOpenMessageId(
