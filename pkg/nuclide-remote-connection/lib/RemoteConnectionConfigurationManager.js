@@ -19,7 +19,7 @@ import type {
 import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
-import keytarWrapper from 'nuclide-commons/keytarWrapper';
+import * as keytar from 'nuclide-prebuilt-libs/keytar';
 import electron from 'electron';
 
 const CONFIG_DIR = 'nuclide-connections';
@@ -180,11 +180,7 @@ async function encryptConfig(
   invariant(clientKey);
   const realClientKey = clientKey.toString(); // Convert from Buffer to string.
   const {salt, password, encryptedString} = encryptString(realClientKey);
-  await keytarWrapper.replacePassword(
-    'nuclide.remoteProjectConfig',
-    sha1sum,
-    password,
-  );
+  await keytar.setPassword('nuclide.remoteProjectConfig', sha1sum, password);
 
   const clientKeyWithSalt = encryptedString + '.' + salt;
 
@@ -214,7 +210,7 @@ async function decryptConfig(
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
 
-  const password = await keytarWrapper.getPassword(
+  const password = await keytar.getPassword(
     'nuclide.remoteProjectConfig',
     sha1sum,
   );
