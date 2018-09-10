@@ -55,7 +55,7 @@ import {onceGkInitializedAsync} from '../../commons-node/passesGK';
 import {
   getOrCreateRfsClientAdapter,
   SUPPORTED_THRIFT_RFS_FUNCTIONS,
-} from './thrift-service-adapters/createRfsClientAdapter';
+} from './thrift-service-adapters/ThriftRfsClientAdapter';
 
 import electron from 'electron';
 

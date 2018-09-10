@@ -23,7 +23,7 @@ import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
 import {convertToFsFileStat, convertToFsDirectoryEntries} from './util';
 import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
 
-export const BUFFER_ENCODING = 'utf-8';
+const BUFFER_ENCODING = 'utf-8';
 const logger = getLogger('thrift-rfs-adapters');
 
 // including all supported remote file system function names
@@ -48,7 +48,7 @@ export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
   'copyDir',
 ]);
 
-export class ThriftRfsClientAdapter {
+class ThriftRfsClientAdapter {
   _client: RemoteFileSystemClient;
 
   constructor(client: RemoteFileSystemClient) {
@@ -305,18 +305,18 @@ export class ThriftRfsClientAdapter {
 export async function getOrCreateRfsClientAdapter(
   bigDigClient: BigDigClient,
 ): Promise<ThriftRfsClientAdapter> {
-  const clientWrapper = await getOrCreateThriftClient(bigDigClient);
-  return getOrCreateAdapter(clientWrapper);
+  const thriftClient = await getOrCreateThriftClient(bigDigClient);
+  return getOrCreateAdapter(thriftClient);
 }
 
 const getOrCreateThriftClient = memoize(
   (bigDigClient: BigDigClient): Promise<ThriftClient> => {
     return bigDigClient.getOrCreateThriftClient(FS_SERVICE_CONFIG).then(
-      clientWrapper => {
-        clientWrapper.onUnexpectedClientFailure(() => {
+      thriftClient => {
+        thriftClient.onUnexpectedClientFailure(() => {
           getOrCreateThriftClient.cache.delete(bigDigClient);
         });
-        return clientWrapper;
+        return thriftClient;
       },
       error => {
         getOrCreateThriftClient.cache.delete(bigDigClient);
@@ -327,10 +327,10 @@ const getOrCreateThriftClient = memoize(
 );
 
 const getOrCreateAdapter = memoize(
-  (clientWrapper: ThriftClient): ThriftRfsClientAdapter => {
-    clientWrapper.onUnexpectedClientFailure(() => {
-      getOrCreateAdapter.cache.delete(clientWrapper);
+  (thriftClient: ThriftClient): ThriftRfsClientAdapter => {
+    thriftClient.onUnexpectedClientFailure(() => {
+      getOrCreateAdapter.cache.delete(thriftClient);
     });
-    return new ThriftRfsClientAdapter(clientWrapper.getClient());
+    return new ThriftRfsClientAdapter(thriftClient.getClient());
   },
 );

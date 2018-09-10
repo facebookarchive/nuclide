@@ -10,7 +10,7 @@
  * @emails oncall+nuclide
  */
 import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
-import {getOrCreateRfsClientAdapter} from '../createRfsClientAdapter';
+import {getOrCreateRfsClientAdapter} from '../ThriftRfsClientAdapter';
 import EventEmitter from 'events';
 import {BigDigClient} from 'big-dig/src/client/BigDigClient';
 
