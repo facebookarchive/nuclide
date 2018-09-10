@@ -14,6 +14,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import watchman from 'fb-watchman';
 import {serializeAsyncCall, sleep} from 'nuclide-commons/promise';
 import {maybeToString} from 'nuclide-commons/string';
+import {Observable} from 'rxjs';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from 'log4js';
@@ -21,7 +22,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-watchman-helpers');
 const WATCHMAN_SETTLE_TIME_MS = 2500;
 export const DEFAULT_WATCHMAN_RECONNECT_DELAY_MS = 100;
-const MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS = 30 * 1000;
+const MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS = 60 * 1000;
 
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
@@ -51,19 +52,32 @@ export default class WatchmanClient {
   constructor() {
     this._initWatchmanClient();
     this._serializedReconnect = serializeAsyncCall(async () => {
-      logger.info(
-        'Calling _reconnectClient from _serializedReconnect in %dms',
-        this._reconnectDelayMs,
-      );
+      let tries = 0;
+      return Observable.defer(() =>
+        Observable.fromPromise(this._reconnectClient()).catch(error => {
+          logger.warn(
+            `_reconnectClient failed (try #${tries}):`,
+            error.message,
+          );
+          tries++;
+          return Observable.throw(error);
+        }),
+      )
+        .retryWhen(errors =>
+          errors.flatMap(() => {
+            this._reconnectDelayMs *= 2; // exponential backoff
+            if (this._reconnectDelayMs > MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS) {
+              this._reconnectDelayMs = MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS;
+            }
 
-      await sleep(this._reconnectDelayMs);
-      this._reconnectDelayMs *= 2; // exponential backoff
-      if (this._reconnectDelayMs > MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS) {
-        this._reconnectDelayMs = MAXIMUM_WATCHMAN_RECONNECT_DELAY_MS;
-      }
-      return this._reconnectClient().catch(error => {
-        logger.error('_reconnectClient failed', error);
-      });
+            logger.info(
+              'Calling _reconnectClient from _serializedReconnect in %dms',
+              this._reconnectDelayMs,
+            );
+            return Observable.timer(this._reconnectDelayMs);
+          }),
+        )
+        .toPromise();
     });
     this._subscriptions = new Map();
   }
