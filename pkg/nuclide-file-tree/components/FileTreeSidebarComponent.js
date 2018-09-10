@@ -53,7 +53,12 @@ import {LockableHeight} from './LockableHeightComponent';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
-import {toggle, compact, nextAnimationFrame} from 'nuclide-commons/observable';
+import {
+  toggle,
+  compact,
+  nextAnimationFrame,
+  throttle,
+} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
@@ -173,8 +178,7 @@ export default class FileTreeSidebarComponent extends React.Component<
       observableFromSubscribeFunction(
         cb => new UniversalDisposable(this.props.store.subscribe(cb)),
       )
-        // $FlowFixMe
-        .throttle(() => nextAnimationFrame)
+        .let(throttle(() => nextAnimationFrame))
         .subscribe(() => {
           this._processExternalUpdate();
         }),
