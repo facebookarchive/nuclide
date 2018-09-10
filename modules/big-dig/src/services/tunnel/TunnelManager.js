@@ -248,11 +248,22 @@ export class TunnelManager extends EventEmitter {
         // We already responded with proxyError, nothing else to do
       }
     } else if (msg.event === 'closeProxy') {
-      invariant(tunnelComponent);
-      tunnelComponent.close();
+      if (tunnelComponent == null) {
+        // TODO T33725076: Shouldn't have message to closed tunnels
+        this._logger.error(
+          'Receiving a closeProxy message to a closed tunnel',
+          msg,
+        );
+      } else {
+        tunnelComponent.close();
+      }
     } else {
-      invariant(tunnelComponent);
-      tunnelComponent.receive(msg);
+      if (tunnelComponent == null) {
+        // TODO T33725076: Shouldn't have message to closed tunnels
+        this._logger.error('Receiving a message to a closed tunnel', msg);
+      } else {
+        tunnelComponent.receive(msg);
+      }
     }
   }
 }

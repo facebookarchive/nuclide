@@ -1,9 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TunnelManager should throw an error if either port is already bound 1`] = `"there already exists a tunnel connecting to localPort 8091"`;
+exports[`throws an error if tunnel manager is closed 1`] = `"trying to create a tunnel with a closed tunnel manager"`;
 
-exports[`TunnelManager should throw an error if either port is already bound 2`] = `"there already exists a tunnel connecting to remotePort 8092"`;
-
-exports[`TunnelManager should throw an error if either port is already bound 3`] = `"there is already a tunnel with those ports, but it's in the wrong direction"`;
-
-exports[`TunnelManager should throw an error if either port is already bound 4`] = `"there already exists a tunnel connecting to localPort 8091"`;
+exports[`throws an error if tunnel manager is closed 2`] = `"trying to create a reverse tunnel with a closed tunnel manager"`;

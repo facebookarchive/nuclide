@@ -10,167 +10,279 @@
  * @format
  * @emails oncall+nuclide
  */
+import type {Observable} from 'rxjs';
+
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
+import {Subject} from 'rxjs';
 import {TunnelManager} from '../TunnelManager';
-import {TestTransportFactory} from '../__mocks__/util';
+import net from 'net';
 
-const TEST_PORT_1 = 8091;
-const TEST_PORT_2 = 8092;
-const TEST_PORT_3 = 8093;
-const TEST_PORT_4 = 8094;
+/**
+ * Returns a client and server transports connected, which can be used to
+ * simulate a BigDig connection.
+ */
+function createTransport() {
+  const clientStream = new Subject();
+  const serverStream = new Subject();
+  return {
+    client: {
+      send(message: string) {
+        serverStream.next(message);
+      },
+      onMessage(): Observable<string> {
+        return clientStream;
+      },
+    },
+    server: {
+      send(message: string) {
+        clientStream.next(message);
+      },
+      onMessage(): Observable<string> {
+        return serverStream;
+      },
+    },
+  };
+}
 
-describe('TunnelManager', () => {
-  let tunnelManager;
-  let testTransport;
+/**
+ * Returns a server listening in `port`, which echo back received messages
+ */
+function createEchoServer(port: number): Promise<net$Server> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer(connection => {
+      connection.on('end', () => {});
+      connection.pipe(connection);
+    });
+    server.on('error', err => {
+      throw err;
+    });
+    server.listen(String(port), () => {
+      resolve(server);
+    });
+  });
+}
 
-  beforeEach(() => {
-    testTransport = TestTransportFactory();
-    tunnelManager = new TunnelManager(testTransport);
+/**
+ * Sends a message `value` to the server in `port` and returns its response.
+ */
+function echo(port: number, value: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let hasReceivedEcho = false;
+    const client = net.createConnection({port}, () => {
+      client.write(value);
+    });
+    client.on('data', data => {
+      hasReceivedEcho = true;
+      resolve(data.toString());
+      client.end();
+    });
+    client.on('error', err => {
+      reject(err);
+    });
+    client.on('end', () => {
+      if (!hasReceivedEcho) {
+        reject(new Error('Connection closed before receive response'));
+      }
+    });
+  });
+}
+
+test('creates a tunnel', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
+
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
+
+  const server = await createEchoServer(remotePort);
+  const tunnel = await clientTunnelManager.createTunnel(localPort, remotePort);
+
+  expect(await echo(localPort, 'message1')).toBe('message1');
+  expect(await echo(localPort, 'message2')).toBe('message2');
+
+  server.close();
+  tunnel.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
+
+test('creates a reverse tunnel', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
+
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
+
+  const server = await createEchoServer(localPort);
+  const tunnel = await clientTunnelManager.createReverseTunnel(
+    localPort,
+    remotePort,
+  );
+
+  expect(await echo(remotePort, 'message1')).toBe('message1');
+  expect(await echo(remotePort, 'message2')).toBe('message2');
+
+  server.close();
+  tunnel.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
+
+test('creates multiple tunnels', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
+
+  const localPort1 = await getAvailableServerPort();
+  const remotePort1 = await getAvailableServerPort();
+  const server1 = await createEchoServer(remotePort1);
+  const tunnel1 = await clientTunnelManager.createTunnel(
+    localPort1,
+    remotePort1,
+  );
+  expect(await echo(localPort1, 'message1')).toBe('message1');
+  expect(await echo(localPort1, 'message2')).toBe('message2');
+
+  const localPort2 = await getAvailableServerPort();
+  const remotePort2 = await getAvailableServerPort();
+  const server2 = await createEchoServer(remotePort2);
+  const tunnel2 = await clientTunnelManager.createTunnel(
+    localPort2,
+    remotePort2,
+  );
+  expect(await echo(localPort2, 'message3')).toBe('message3');
+  expect(await echo(localPort2, 'message4')).toBe('message4');
+
+  server1.close();
+  tunnel1.close();
+  server2.close();
+  tunnel2.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
+
+test('throws an error if tunnel manager is closed', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
+
+  clientTunnelManager.close();
+
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
+  const server = await createEchoServer(localPort);
+
+  await expect(
+    clientTunnelManager.createTunnel(localPort, remotePort),
+  ).rejects.toThrowErrorMatchingSnapshot();
+
+  await expect(
+    clientTunnelManager.createReverseTunnel(remotePort, localPort),
+  ).rejects.toThrowErrorMatchingSnapshot();
+
+  server.close();
+  serverTunnelManager.close();
+});
+
+test('throws an error if either port is already bound', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
+
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
+
+  const localServer = await createEchoServer(localPort);
+  await expect(
+    clientTunnelManager.createTunnel(localPort, remotePort),
+  ).rejects.toThrow('listen EADDRINUSE :::' + localPort);
+  await new Promise((res, rej) => localServer.close(() => res()));
+
+  // TODO: cvreateReverseTunnel should throw an instance of error
+  const remoteServer = await createEchoServer(remotePort);
+  await expect(
+    clientTunnelManager.createReverseTunnel(localPort, remotePort),
+  ).rejects.toEqual({
+    code: 'EADDRINUSE',
+    errno: 'EADDRINUSE',
+    syscall: 'listen',
+    address: '::',
+    port: remotePort,
   });
 
-  afterEach(() => {
-    tunnelManager.close();
-  });
+  localServer.close();
+  remoteServer.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
 
-  it('should allow for multiple tunnels to be created', async () => {
-    await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_1);
-    await tunnelManager.createTunnel(TEST_PORT_2, TEST_PORT_2);
+test('should return an the existing tunnel if it already exists', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
 
-    expect(testTransport.send.mock.calls.length).toBe(2);
-    const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));
-    expect(messages[0].tunnelId).not.toEqual(messages[1].tunnelId);
-    tunnelManager.close();
-  });
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
 
-  it.skip('should throw an error if either port is already bound', async () => {
-    const tunnel = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    await expect(
-      tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_3),
-    ).rejects.toThrowErrorMatchingSnapshot();
+  const server = await createEchoServer(remotePort);
+  const tunnel1 = await clientTunnelManager.createTunnel(localPort, remotePort);
+  const tunnel2 = await clientTunnelManager.createTunnel(localPort, remotePort);
 
-    await expect(
-      tunnelManager.createTunnel(TEST_PORT_3, TEST_PORT_2),
-    ).rejects.toThrowErrorMatchingSnapshot();
+  expect(tunnel1).toEqual(tunnel2);
 
-    await expect(
-      tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2),
-    ).rejects.toThrowErrorMatchingSnapshot();
+  server.close();
+  tunnel1.close();
+  tunnel2.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
 
-    await expect(
-      tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_3),
-    ).rejects.toThrowErrorMatchingSnapshot();
+test('should not close a tunnel until all references are removed', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
 
-    tunnel.close();
-    tunnelManager.close();
-  });
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
 
-  it.skip('should return an the existing tunnel if it already exists', async () => {
-    const tunnelA = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelB = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
-    const tunnelC = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelD = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+  const server = await createEchoServer(remotePort);
+  const tunnel1 = await clientTunnelManager.createTunnel(localPort, remotePort);
+  const tunnel2 = await clientTunnelManager.createTunnel(localPort, remotePort);
 
-    expect(tunnelA).toBe(tunnelC);
-    expect(tunnelB).toBe(tunnelD);
+  expect(tunnel1).toEqual(tunnel2);
+  expect(await echo(localPort, 'message1')).toBe('message1');
+  tunnel1.close();
+  expect(await echo(localPort, 'message2')).toBe('message2');
+  tunnel2.close();
+  await expect(echo(localPort, 'message3')).rejects.toThrow(
+    new RegExp(`connect ECONNREFUSED .*:${localPort}`),
+  );
 
-    tunnelManager.close();
-  });
+  server.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
+});
 
-  it.skip('should not close a tunnel until all references are removed', async () => {
-    const tunnelA = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelB = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
-    const tunnelC = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
-    const tunnelD = await tunnelManager.createReverseTunnel(
-      TEST_PORT_3,
-      TEST_PORT_4,
-    );
+test('should correctly close tunnels when the tunnel manager is closed', async () => {
+  const tunnelTransport = createTransport();
+  const serverTunnelManager = new TunnelManager(tunnelTransport.server);
+  const clientTunnelManager = new TunnelManager(tunnelTransport.client);
 
-    expect(tunnelManager.tunnels.length).toBe(2);
-    tunnelA.close();
-    expect(tunnelManager.tunnels.length).toBe(2);
-    tunnelC.close();
-    expect(tunnelManager.tunnels.length).toBe(1);
-    tunnelB.close();
-    expect(tunnelManager.tunnels.length).toBe(1);
-    tunnelD.close();
-    expect(tunnelManager.tunnels.length).toBe(0);
-    tunnelManager.close();
-  });
+  const localPort = await getAvailableServerPort();
+  const remotePort = await getAvailableServerPort();
 
-  it('should close all tunnels when closed', async () => {
-    await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_1);
-    await tunnelManager.createTunnel(TEST_PORT_2, TEST_PORT_2);
-    tunnelManager.close();
+  const server = await createEchoServer(remotePort);
+  const tunnel = await clientTunnelManager.createTunnel(localPort, remotePort);
 
-    expect(testTransport.send.mock.calls.length).toBe(4);
-    const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));
-    expect(messages.filter(msg => msg.event === 'proxyClosed').length).toBe(2);
-  });
+  clientTunnelManager.close();
+  await expect(echo(localPort, 'message3')).rejects.toThrow(
+    new RegExp(`connect ECONNREFUSED .*:${localPort}`),
+  );
 
-  it.skip('should send a createProxy message when creating a reverse tunnel', async () => {
-    await tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2);
-    expect(testTransport.send.mock.calls.length).toBe(1);
-    const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));
-    expect(messages.filter(msg => msg.event === 'createProxy').length).toBe(1);
-  });
-
-  it.skip('should have the correct localPort in the createProxy message when creating a reverse tunnel', async () => {
-    const tunnel = await tunnelManager.createReverseTunnel(
-      TEST_PORT_1,
-      TEST_PORT_2,
-    );
-    expect(testTransport.send.mock.calls.length).toBe(1);
-    const messages = testTransport.send.mock.calls
-      .map(msg => JSON.parse(msg))
-      .filter(msg => msg.event === 'createProxy');
-
-    expect(messages.length).toBe(1);
-    expect(messages[0].localPort).toBe(TEST_PORT_2);
-    tunnel.close();
-  });
-
-  it.skip('should send a closeProxy message when closing a reverse tunnel', async () => {
-    const tunnel = await tunnelManager.createReverseTunnel(
-      TEST_PORT_1,
-      TEST_PORT_2,
-    );
-    tunnel.close();
-    expect(testTransport.send.mock.calls.length).toBe(2);
-    const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));
-    expect(messages.filter(msg => msg.event === 'closeProxy').length).toBe(1);
-    tunnel.close();
-  });
-
-  it.skip('should correctly close tunnels when the tunnel manager is closed', async () => {
-    await tunnelManager.createTunnel(9872, 9871);
-    await tunnelManager.createTunnel(9874, 9873);
-    await tunnelManager.createReverseTunnel(9876, 9875);
-
-    expect(tunnelManager.tunnels.length).toBe(3);
-    tunnelManager.close();
-    expect(tunnelManager.tunnels.length).toBe(0);
-  });
-
-  it.skip('should correctly close tunnels and remove them from the tunnel manager', async () => {
-    const tunnelA = await tunnelManager.createTunnel(9872, 9871);
-    const tunnelB = await tunnelManager.createTunnel(9874, 9873);
-    const tunnelC = await tunnelManager.createReverseTunnel(9876, 9875);
-
-    expect(tunnelManager.tunnels.length).toBe(3);
-    tunnelA.close();
-    expect(tunnelManager.tunnels.length).toBe(2);
-    tunnelB.close();
-    expect(tunnelManager.tunnels.length).toBe(1);
-    tunnelC.close();
-    expect(tunnelManager.tunnels.length).toBe(0);
-    tunnelManager.close();
-  });
+  server.close();
+  tunnel.close();
+  serverTunnelManager.close();
+  clientTunnelManager.close();
 });
