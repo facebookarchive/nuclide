@@ -6415,10 +6415,10 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-devtools-core@3.3.2:
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-3.3.2.tgz#a8acc19a14cd465734dcc8d4821743b71320560e"
-  integrity sha512-e6CX94GZKF9qBgoK8tj/cCrPBL6quZeJGBSuvaDlOVYTT9tnH1KOWuCpB9V5ct1u5T/hfqBTy+cShIJ1qZdl1g==
+react-devtools-core@3.3.4:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-3.3.4.tgz#9e497a94b73413b91774bf3e3197e539d5f9a21d"
+  integrity sha512-6lsBDRInT9jU8Ya8bnKWJSsnaGg/xk1ZSfvhc/dHc3n2CUTMfGlqm2tGeZQ9WEoe0Y2K7Lg90Kvb1E8anLePaQ==
   dependencies:
     shell-quote "^1.6.1"
     ws "^3.3.1"
