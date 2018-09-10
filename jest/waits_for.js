@@ -13,7 +13,7 @@
  * Async implementation of Jasmine's waitsFor()
  */
 export default (async function waitsFor(
-  fn: () => boolean,
+  fn: () => boolean | Promise<boolean>,
   message?: string,
   timeout: number = 4500,
 ) {
@@ -23,7 +23,8 @@ export default (async function waitsFor(
       : 'Expected the function to start returning "true" but it never did.',
   );
   const startTime = Date.now();
-  while (!Boolean(fn())) {
+  // eslint-disable-next-line no-await-in-loop
+  while (!Boolean(await fn())) {
     if (Date.now() - startTime > timeout) {
       throw error;
     }

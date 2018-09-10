@@ -26,3 +26,20 @@ it("can't wait anymore", async () => {
 it('gives a message', async () => {
   await expect(waitsFor(() => false, 'lol', 1)).rejects.toThrow('lol');
 });
+
+it('waits an async predicate', async () => {
+  const fn = jest
+    .fn()
+    .mockImplementationOnce(
+      () => new Promise(res => setTimeout(() => res(false))),
+    )
+    .mockImplementationOnce(
+      () => new Promise(res => setTimeout(() => res(true))),
+    )
+    .mockImplementationOnce(
+      () => new Promise(res => setTimeout(() => res(false))),
+    );
+
+  await waitsFor(() => fn());
+  expect(fn).toHaveBeenCalledTimes(2);
+});
