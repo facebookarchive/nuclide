@@ -195,10 +195,15 @@ public class EvaluationManager {
     IJavaStackFrame currentStackFrame = getStackFrameProxy(frame);
     IJavaReferenceType receivingType = currentStackFrame.getReferenceType();
 
+    // From now on out, we want trimmedExpression to be wrapped in parens
+    // This is because adding parens makes this method from the
+    // org.eclipse.jdt.internal.debug.eval.ast.engine.EvaluationSourceGenerator
+    // return true: https://fburl.com/qfbqfobo
+    trimmedExpression = "(" + trimmedExpression + ")";
     // Gather the types and names of the variables that are in-scope and visible at the eval site.
     // These will be used by the context of the Interpreter to obtain referenced values from the
     // target VM.
-    EvaluationScope scope = new EvaluationScope(frame, expression);
+    EvaluationScope scope = new EvaluationScope(frame, trimmedExpression);
     String[] referencedTypes = scope.getReferencedTypeNames();
     String[] referencedVariables = scope.getVariableNames();
 
@@ -217,7 +222,8 @@ public class EvaluationManager {
               }));
       // Prepare evaluation source context.
       generator =
-          new EvaluationSourceGenerator(referencedTypes, referencedVariables, expression, _project);
+          new EvaluationSourceGenerator(
+              referencedTypes, referencedVariables, trimmedExpression, _project);
       // Reset System.err back to normal.
       System.err.flush();
       System.setErr(oldErr);
@@ -239,7 +245,7 @@ public class EvaluationManager {
 
       // Compile the AST into an instruction sequence.
       int start = generator.getSnippetStart();
-      ASTInstructionCompiler compiler = new ASTInstructionCompiler(start, expression);
+      ASTInstructionCompiler compiler = new ASTInstructionCompiler(start, trimmedExpression);
       try {
         unit.accept(compiler);
       } catch (Throwable ex) {
