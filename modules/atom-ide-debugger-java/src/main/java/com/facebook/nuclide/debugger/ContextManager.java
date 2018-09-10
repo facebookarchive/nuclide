@@ -58,7 +58,7 @@ public class ContextManager {
     _domainHandlerMap.put("Bootstrap", _bootstrapDomain);
     _domainHandlerMap.put("Debugger", _debuggerDomain);
     _domainHandlerMap.put("Runtime", new RuntimeDomain(this));
-    _stopReason = DebuggerStopReason.NONE;
+    setStopReason(DebuggerStopReason.NONE);
     _stopThread = null;
   }
 
@@ -230,7 +230,7 @@ public class ContextManager {
 
   public synchronized void resumeVm(boolean needsResponse) {
     // Resume the VM.
-    _stopReason = DebuggerStopReason.NONE;
+    setStopReason(DebuggerStopReason.NONE);
     getRemoteObjectManager().clearObjects();
     getVirtualMachine().resume();
 
@@ -262,7 +262,7 @@ public class ContextManager {
 
   public synchronized void setVmPaused(
       DebuggerStopReason stopReason, ThreadReference pauseThread, boolean needsResponse) {
-    _stopReason = stopReason;
+    setStopReason(stopReason);
 
     // NOTE: _stopThread is the thread (if any) responsible for causing the VM to suspend (due to
     // a breakpoint, exception, etc.). _currentThread is the currently selected thread. The two
@@ -373,6 +373,15 @@ public class ContextManager {
           this,
           new JSONObject().put("method", "Inspector.detached").put("reason", "Target detached"));
     }
+  }
+
+  public synchronized DebuggerStopReason getStopReason() {
+    return _stopReason;
+  }
+
+  public synchronized ContextManager setStopReason(DebuggerStopReason stopReason) {
+    _stopReason = stopReason;
+    return this;
   }
 
   public synchronized boolean isDebuggerPaused() {

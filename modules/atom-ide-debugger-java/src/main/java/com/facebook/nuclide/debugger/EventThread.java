@@ -144,6 +144,10 @@ public class EventThread extends Thread {
       return true;
     }
 
+    DebuggerStopReason stopReason = _contextManager.getStopReason();
+    // In order to evaluate the condition, the evaluation manager must believe that the
+    // debugee is paused, which it is, but the context manager doesn't as of yet know that
+    _contextManager.setStopReason(DebuggerStopReason.BREAKPOINT);
     try {
       ThreadReference thread = _contextManager.getCurrentThread();
       String frameId = Utils.getFrameName(thread.frames().get(0));
@@ -179,6 +183,8 @@ public class EventThread extends Thread {
           true);
 
       return true;
+    } finally {
+      _contextManager.setStopReason(stopReason);
     }
 
     return false;

@@ -201,18 +201,23 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
       registeredBreakpointsByFileName.put(path, new ArrayList<BreakpointSpec>());
     }
 
-    Set<Integer> linesToAdd =
+    Set<String> hashOfBreakpointsToAdd =
         arguments
             .breakpoints
             .stream()
-            .map(newSourceBreakpoint -> newSourceBreakpoint.line)
+            .map(
+                sourceBreakpoint ->
+                    String.valueOf(sourceBreakpoint.line) + sourceBreakpoint.condition)
             .collect(Collectors.toSet());
     ArrayList<BreakpointSpec> registeredBreakpointsForCurrentPath =
         registeredBreakpointsByFileName.get(path);
     Set<BreakpointSpec> breakpointSpecsToRemove =
         registeredBreakpointsForCurrentPath
             .stream()
-            .filter(breakpointSpec -> !linesToAdd.contains(breakpointSpec.getLine()))
+            .filter(
+                breakpointSpec ->
+                    !hashOfBreakpointsToAdd.contains(
+                        String.valueOf(breakpointSpec.getLine()) + breakpointSpec.getCondition()))
             .collect(Collectors.toSet());
 
     List<JSONObject> responseBreakpointsList =
