@@ -22,11 +22,14 @@ import type {
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import {throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import * as Selectors from '../redux/Selectors';
 import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
+
+const THROTTLE_FILE_MESSAGE_MS = 100;
 
 export default class DiagnosticUpdater {
   _store: Store;
@@ -66,6 +69,7 @@ export default class DiagnosticUpdater {
       // Whether that's worth it depends on how often this is actually called with the same path.
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
+        .let(throttle(THROTTLE_FILE_MESSAGE_MS))
         .map(state => Selectors.getFileMessageUpdates(state, filePath))
         .distinctUntilChanged(
           (a, b) =>
