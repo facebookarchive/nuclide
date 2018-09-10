@@ -22,7 +22,7 @@ import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {SplitButtonDropdown} from 'nuclide-commons-ui/SplitButtonDropdown';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-import FullWidthProgressBar from '../../../nuclide-ui/FullWidthProgressBar';
+import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
 import classnames from 'classnames';
 import * as React from 'react';
 import invariant from 'assert';

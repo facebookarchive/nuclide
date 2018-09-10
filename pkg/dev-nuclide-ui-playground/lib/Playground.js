@@ -18,7 +18,7 @@ import {ProgressIndicatorExamples} from 'nuclide-commons-ui/ProgressIndicators.e
 import {CheckboxExamples} from 'nuclide-commons-ui/Checkbox.example';
 import {ModalExamples} from 'nuclide-commons-ui/showModal.example';
 import {DropdownExamples} from 'nuclide-commons-ui/Dropdown.example';
-import {FullWidthProgressBarExamples} from '../../nuclide-ui/FullWidthProgressBar.example';
+import {FullWidthProgressBarExamples} from 'nuclide-commons-ui/FullWidthProgressBar.example';
 import {TabbableContainerExamples} from 'nuclide-commons-ui/TabbableContainer.example';
 import {TabExamples} from 'nuclide-commons-ui/Tabs.example';
 import {RadioGroupExamples} from 'nuclide-commons-ui/RadioGroup.example';
