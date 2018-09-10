@@ -67,7 +67,11 @@ export default class DiagnosticUpdater {
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
         .map(state => Selectors.getFileMessageUpdates(state, filePath))
-        .distinctUntilChanged((a, b) => arrayEqual(a.messages, b.messages))
+        .distinctUntilChanged(
+          (a, b) =>
+            a.totalMessages === b.totalMessages &&
+            arrayEqual(a.messages, b.messages),
+        )
         .subscribe(callback),
     );
   };

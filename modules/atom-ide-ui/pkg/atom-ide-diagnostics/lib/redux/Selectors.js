@@ -21,6 +21,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {createSelector} from 'reselect';
 
+const MAX_MESSAGE_COUNT = 1000;
+
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
 
@@ -47,9 +49,15 @@ export function getFileMessageUpdates(
   state: AppState,
   filePath: NuclideUri,
 ): DiagnosticMessages {
+  const fileMessages = getFileMessages(state, filePath);
+
   return {
     filePath,
-    messages: getFileMessages(state, filePath),
+    // Excessive numbers of items cause performance issues in the gutter, table, and decorations.
+    // Truncate the number of items MAX_RESULTS_COUNT.
+    messages: fileMessages.slice(0, MAX_MESSAGE_COUNT),
+    // Include the total number of messages without truncation
+    totalMessages: fileMessages.length,
   };
 }
 

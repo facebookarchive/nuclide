@@ -111,10 +111,13 @@ export type DiagnosticMessage = {|
   getBlockComponent?: ?() => React.ComponentType<any>,
 |};
 
-export type DiagnosticMessages = {
+export type DiagnosticMessages = {|
   filePath: NuclideUri,
+  // Note: This list of messages can be incomplete. A simple comparison of
+  // `messages.length === totalMessages` can be used to determine if it is complete.
   messages: Array<DiagnosticMessage>,
-};
+  totalMessages: number,
+|};
 
 export type {default as DiagnosticUpdater} from './services/DiagnosticUpdater';
 

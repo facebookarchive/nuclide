@@ -123,7 +123,7 @@ describe('createStore', () => {
 
     expect(spy_fileA.mock.calls.length).toBe(2);
     expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
-      {filePath: 'fileA', messages: [fileMessageA]},
+      {filePath: 'fileA', messages: [fileMessageA], totalMessages: 1},
     ]);
     expect(spy_allMessages.mock.calls.length).toBe(2);
     expect(
@@ -152,9 +152,14 @@ describe('createStore', () => {
       expect(spy_fileA).toHaveBeenCalledWith({
         filePath: 'fileA',
         messages: [fileMessageA],
+        totalMessages: 1,
       });
       expect(spy_fileB.mock.calls.length).toBe(1);
-      expect(spy_fileB).toHaveBeenCalledWith({filePath: 'fileB', messages: []});
+      expect(spy_fileB).toHaveBeenCalledWith({
+        filePath: 'fileB',
+        messages: [],
+        totalMessages: 0,
+      });
       expect(spy_allMessages.mock.calls.length).toBe(1);
       expect(
         spy_allMessages.mock.calls[spy_allMessages.mock.calls.length - 1][0],
@@ -170,7 +175,7 @@ describe('createStore', () => {
       // spy_fileB is called from updateB.
       expect(spy_fileB.mock.calls.length).toBe(2);
       expect(spy_fileB.mock.calls[spy_fileB.mock.calls.length - 1]).toEqual([
-        {filePath: 'fileB', messages: [fileMessageB]},
+        {filePath: 'fileB', messages: [fileMessageB], totalMessages: 1},
       ]);
 
       // spy_allMessages is called from data from the initial state and from updateB.
@@ -215,7 +220,7 @@ describe('createStore', () => {
       // initial state and updateA2.
       expect(spy_fileA.mock.calls.length).toBe(2);
       expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
-        {filePath: 'fileA', messages: [fileMessageA2]},
+        {filePath: 'fileA', messages: [fileMessageA2], totalMessages: 1},
       ]);
       expect(spy_allMessages.mock.calls.length).toBe(2);
       expect(
@@ -261,7 +266,7 @@ describe('createStore', () => {
 
         expect(spy_fileA.mock.calls.length).toBe(2);
         expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
-          {filePath: 'fileA', messages: []},
+          {filePath: 'fileA', messages: [], totalMessages: 0},
         ]);
         expect(spy_allMessages.mock.calls.length).toBe(2);
         expect(
