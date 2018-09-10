@@ -325,8 +325,7 @@ export default class LineEditor extends EventEmitter {
     if (this._tty) {
       const cursorPos = await this._getCursorPosition();
       this._fieldRow = cursorPos.row;
-      this._cursor = 0;
-      this._leftEdge = 0;
+      this._repaint();
     }
   }
 
