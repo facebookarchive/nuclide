@@ -163,7 +163,7 @@ class ThriftRfsClientAdapter {
    */
   async unlink(uri: NuclideUri): Promise<void> {
     try {
-      await this._client.deletePath(nuclideUri.getPath(uri));
+      await this._client.deletePath(nuclideUri.getPath(uri), {});
     } catch (error) {
       if (error.code !== filesystem_types.ErrorCode.ENOENT) {
         throw error;

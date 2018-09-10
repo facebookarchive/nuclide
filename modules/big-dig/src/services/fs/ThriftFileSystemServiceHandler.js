@@ -240,7 +240,7 @@ export class ThriftFileSystemServiceHandler {
     options: filesystem_types.DeleteOpt,
   ): Promise<void> {
     try {
-      if (options.recursive) {
+      if (options?.recursive) {
         return new Promise((resolve, reject) => {
           rimraf(uri, {disableGlobs: true}, (err, result) => {
             if (err == null) {
