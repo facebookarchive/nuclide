@@ -34,6 +34,7 @@ type WatchmanSubscriptionResponse = {
   'state-leave'?: string,
   metadata?: Object,
   canceled?: boolean,
+  clock?: string,
 };
 
 export type FileChange = {
@@ -48,6 +49,7 @@ export default class WatchmanClient {
   _clientPromise: Promise<watchman.Client>;
   _serializedReconnect: () => Promise<void>;
   _reconnectDelayMs: number = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
+  _lastKnownClockTimes: Map<string, string>;
 
   constructor() {
     this._initWatchmanClient();
@@ -80,6 +82,7 @@ export default class WatchmanClient {
         .toPromise();
     });
     this._subscriptions = new Map();
+    this._lastKnownClockTimes = new Map();
   }
 
   async dispose(): Promise<void> {
@@ -148,7 +151,12 @@ export default class WatchmanClient {
 
           // Register the subscriptions after the filesystem settles.
           const {name, options, root} = subscription;
-          subscription.options.since = await this._clock(root);
+
+          // Assuming we had previously connected and gotten an event, we can
+          // reconnect `since` that time, so that we get any events we missed.
+          subscription.options.since =
+            this._lastKnownClockTimes.get(root) ?? (await this._clock(root));
+
           logger.info(
             `Subscribing to ${name}: (${index + 1}/${numSubscriptions})`,
           );
@@ -183,6 +191,11 @@ export default class WatchmanClient {
     if (subscription == null) {
       logger.error('Subscription not found for response:!', response);
       return;
+    }
+
+    // save the clock time of this event in case we disconnect in the future
+    if (response != null && response.root != null && response.clock != null) {
+      this._lastKnownClockTimes.set(response.root, response.clock);
     }
 
     if (Array.isArray(response.files)) {
