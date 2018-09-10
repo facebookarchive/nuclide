@@ -405,7 +405,7 @@ describe('nuclide-commons/observable', () => {
     it('emits the leading item immeditately by default', () => {
       const source = Observable.of(1, 2).merge(Observable.never());
       const spy = jest.fn();
-      source.let(throttle(Observable.never())).subscribe(spy);
+      source.let(throttle(() => Observable.never())).subscribe(spy);
       expect(spy).toHaveBeenCalledWith(1);
     });
 
@@ -413,35 +413,14 @@ describe('nuclide-commons/observable', () => {
       const source = Observable.of(1).merge(Observable.never());
       const notifier = Observable.of(null); // emits immediately on subscription.
       const spy = jest.fn();
-      source.let(throttle(notifier)).subscribe(spy);
-      expect(spy.mock.calls.length).toBe(1);
-    });
-
-    it('throttles', () => {
-      const source = new Subject();
-      const notifier = new Subject();
-      const spy = jest.fn();
-      source.let(throttle(notifier)).subscribe(spy);
-      source.next(1);
-      spy.mockClear();
-      source.next(2);
-      expect(spy).not.toHaveBeenCalled();
-      notifier.next();
-      expect(spy).toHaveBeenCalledWith(2);
-      spy.mockClear();
-      source.next(3);
-      expect(spy).not.toHaveBeenCalled();
-      source.next(4);
-      expect(spy).not.toHaveBeenCalled();
-      notifier.next();
-      expect(spy).toHaveBeenCalledWith(4);
+      source.let(throttle(() => notifier)).subscribe(spy);
       expect(spy.mock.calls.length).toBe(1);
     });
 
     it('subscribes to the source once per subscription', () => {
       const spy = jest.fn();
       const source = Observable.create(spy);
-      source.let(throttle(Observable.of(null))).subscribe();
+      source.let(throttle(() => Observable.of(null))).subscribe();
       expect(spy.mock.calls.length).toBe(1);
     });
   });

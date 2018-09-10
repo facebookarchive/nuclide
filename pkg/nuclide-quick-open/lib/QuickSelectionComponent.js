@@ -49,7 +49,7 @@ import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from 'nuclide-commons/humanizeKeystroke';
-import {fastDebounce, throttle, microtask} from 'nuclide-commons/observable';
+import {fastDebounce, microtask} from 'nuclide-commons/observable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -258,7 +258,7 @@ export default class QuickSelectionComponent extends React.PureComponent<
         nullthrows(this._queryInput).onDidChange(cb),
       )
         .startWith(null)
-        .let(throttle(microtask, {leading: false}))
+        .audit(() => microtask)
         .subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(cb =>
         this.props.searchResultManager.onProvidersChanged(cb),

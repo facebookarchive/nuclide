@@ -290,51 +290,39 @@ export function concatLatest<T>(
     .map(accumulator => [].concat(...accumulator));
 }
 
-type ThrottleOptions = {
+type ThrottleOptions = {|
   // Should the first element be emitted immeditately? Defaults to true.
   leading?: boolean,
-};
+  trailing?: boolean,
+|};
 
 /**
- * A more sensible alternative to RxJS's throttle/audit/sample operators.
+ * A wrapper around RxJS's `throttle` and `throttleTime` functions, which
+ * uses the default scheduler for time-based durations and defaults both leading
+ * and trailing options to `true`.
  */
 export function throttle<T>(
-  duration:
-    | number
-    | Observable<any>
-    | ((value: T) => Observable<any> | Promise<any>),
+  duration: number | ((value: T) => Observable<any> | Promise<any>),
   options_: ?ThrottleOptions,
-): (Observable<T>) => Observable<T> {
+): (observable: Observable<T>) => Observable<T> {
   return (source: Observable<T>) => {
     const options = options_ || {};
-    const leading = options.leading !== false;
-    let audit;
-    switch (typeof duration) {
-      case 'number':
-        audit = obs => obs.auditTime(duration);
-        break;
-      case 'function':
-        audit = obs => obs.audit(duration);
-        break;
-      default:
-        audit = obs => obs.audit(() => duration);
+    const leading = options.leading ?? true;
+    const trailing = options.trailing ?? true;
+
+    if (typeof duration === 'number') {
+      // Just use RxJS's built-in throttleTime for number durations,
+      // and continue to use the default scheduler. This makes for a nicer
+      // API than awkwardly passing `undefined` when using it directly.
+      // $FlowFixMe typings don't current reflect these options
+      return source.throttleTime(duration, undefined /* default scheduler */, {
+        leading,
+        trailing,
+      });
     }
 
-    if (!leading) {
-      return audit(source);
-    }
-
-    return Observable.create(observer => {
-      const connectableSource = source.publish();
-      const throttled = Observable.merge(
-        connectableSource.take(1),
-        audit(connectableSource.skip(1)),
-      );
-      return new UniversalDisposable(
-        throttled.subscribe(observer),
-        connectableSource.connect(),
-      );
-    });
+    // $FlowFixMe typings don't include `throttle`
+    return source.throttle(duration, {leading, trailing});
   };
 }
 
