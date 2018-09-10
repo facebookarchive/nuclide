@@ -1228,7 +1228,6 @@ function _commitCode(
     const execArgs = argumentsWithCommitFile;
     const execOptions: HgExecOptions = {
       cwd: workingDirectory,
-      stdio: 'ignore',
     };
     if (editMergeConfigs != null) {
       execArgs.push(...editMergeConfigs.args);
@@ -1336,7 +1335,6 @@ async function _runSimpleInWorkingDirectory(
 ): Promise<void> {
   const options = {
     cwd: workingDirectory,
-    stdio: 'ignore',
   };
   const cmd = [action].concat(args);
   try {
@@ -1371,7 +1369,6 @@ export function checkout(
   }
   const executionOptions = {
     cwd: workingDirectory,
-    stdio: 'ignore',
   };
   return hgObserveExecution(args, executionOptions).publish();
 }
@@ -1767,7 +1764,6 @@ export function pull(
   const args = ['pull', ...options];
   const execOptions = {
     cwd: workingDirectory,
-    stdio: 'ignore',
   };
 
   return hgObserveExecution(args, execOptions).publish();
