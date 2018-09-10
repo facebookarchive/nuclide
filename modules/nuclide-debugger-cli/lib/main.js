@@ -138,9 +138,10 @@ async function main(): Promise<void> {
       process.exit(0);
     }
 
+    const logger = buildLogger();
     const aliases = configFile.resolveAliasesForPreset(preset);
     const dispatcher = new CommandDispatcher(aliases);
-    const cli = new CommandLine(dispatcher, args.plain);
+    const cli = new CommandLine(dispatcher, args.plain, logger);
 
     dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
     dispatcher.registerCommand(new QuitCommand(() => cli.close()));
@@ -161,7 +162,6 @@ async function main(): Promise<void> {
         ? new Set()
         : adapter.adapter.muteOutputCategories;
 
-    const logger = buildLogger();
     const debuggerInstance = new Debugger(
       logger,
       cli,

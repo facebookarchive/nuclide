@@ -59,7 +59,7 @@ export default class LineEditor extends EventEmitter {
   _cursorPromises: Set<CursorCompletion>;
   _screenRows: number = 0;
   _screenColumns: number = 0;
-  _fieldRow: number = 0;
+  _fieldRow: ?number;
   _keyHandlers: Map<string, () => void>;
   _history: History;
   _historyTextSave: string;
@@ -71,6 +71,7 @@ export default class LineEditor extends EventEmitter {
   _writeQueue: ?string;
   _firstOut: boolean; // true if write is first one since entered command
   _closePending: boolean;
+  _logger: log4js$Logger;
 
   // NB cursor is always an index into _buffer (or one past the end)
   // even if the line is scrolled to the right. _repaint is responsible
@@ -78,8 +79,9 @@ export default class LineEditor extends EventEmitter {
   _cursor: number = 0;
   _leftEdge: number = 0;
 
-  constructor(options: LineEditorOptions) {
+  constructor(options: LineEditorOptions, logger: log4js$Logger) {
     super();
+    this._logger = logger;
     this._parser = new ANSIInputStreamParser();
     this._input = options.input != null ? options.input : process.stdin;
     this._output = options.output != null ? options.output : process.stdout;
@@ -222,7 +224,7 @@ export default class LineEditor extends EventEmitter {
       this._fieldRow = here.row;
 
       let col = this._lastOutputColumn;
-      let row = this._fieldRow;
+      let row = here.row;
 
       // if this is the first write after the user hit 'enter' on a command,
       // we don't want to back up a line - this would put us over the prompt
@@ -523,8 +525,10 @@ export default class LineEditor extends EventEmitter {
 
     const fieldStartCol = 1 + this._parsedPrompt.displayLength;
 
-    outputANSI.gotoXY(fieldStartCol, this._fieldRow);
-    outputANSI.clearEOL();
+    if (this._fieldRow != null) {
+      outputANSI.gotoXY(fieldStartCol, this._fieldRow);
+      outputANSI.clearEOL();
+    }
 
     let hwcursor: number = fieldStartCol + this._cursor - this._leftEdge;
     if (hwcursor < fieldStartCol) {
@@ -536,10 +540,13 @@ export default class LineEditor extends EventEmitter {
 
     const textColumns = this._screenColumns - fieldStartCol;
     this._output.write(this._buffer.substr(this._leftEdge, textColumns));
-    outputANSI.gotoXY(hwcursor, this._fieldRow);
+    if (this._fieldRow != null) {
+      outputANSI.gotoXY(hwcursor, this._fieldRow);
+    }
   }
 
   async _getCursorPosition(): Promise<ParsedANSICursorPosition> {
+    this._logger.info('console: _getCursorPosition');
     return new Promise((resolve, reject) => {
       if (!this._tty) {
         reject(new Error('_getCursorPosition called and not a TTY'));
@@ -571,6 +578,8 @@ export default class LineEditor extends EventEmitter {
 
   _onCursorPosition(pos: ParsedANSICursorPosition): void {
     for (const completion of this._cursorPromises) {
+      invariant(completion.timeout != null);
+      clearTimeout(completion.timeout);
       completion.resolve(pos);
     }
     this._cursorPromises.clear();

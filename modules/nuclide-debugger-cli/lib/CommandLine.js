@@ -37,7 +37,11 @@ export default class CommandLine implements ConsoleIO {
 
   _subscriptions: Array<rxjs$ISubscription> = [];
 
-  constructor(dispatcher: CommandDispatcher, plain: boolean) {
+  constructor(
+    dispatcher: CommandDispatcher,
+    plain: boolean,
+    logger: log4js$Logger,
+  ) {
     this._dispatcher = dispatcher;
 
     let lineEditorArgs = {
@@ -50,7 +54,7 @@ export default class CommandLine implements ConsoleIO {
         tty: false,
       };
     }
-    this._cli = new LineEditor(lineEditorArgs);
+    this._cli = new LineEditor(lineEditorArgs, logger);
 
     this.setPrompt();
 
