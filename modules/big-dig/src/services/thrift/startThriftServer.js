@@ -39,9 +39,9 @@ export function startThriftServer(
           if (!validationResult.valid) {
             return Observable.throw(new Error(validationResult.error));
           }
-          return mayKillOldServerProcess(originalConfig)
-            .switchMap(_ =>
-              Observable.defer(() => replacePlaceholders(originalConfig)),
+          return Observable.defer(() => replacePlaceholders(originalConfig))
+            .switchMap(config =>
+              mayKillOldServerProcess(config).map(_ => config),
             )
             .switchMap(config =>
               Observable.merge(
@@ -137,6 +137,7 @@ function observeServerProcess(
   return observeProcess(config.remoteCommand, config.remoteCommandArgs, {
     isExitError: () => true,
     detached: false,
+    killTreeWhenDone: true,
     env: {
       ...process.env,
     },
