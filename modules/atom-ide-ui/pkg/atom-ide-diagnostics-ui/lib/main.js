@@ -49,6 +49,7 @@ import showActionsMenu from './showActionsMenu';
 import showAtomLinterWarning from './showAtomLinterWarning';
 import StatusBarTile from './ui/StatusBarTile';
 import ReactDOM from 'react-dom';
+import {STALE_MESSAGE_UPDATE_THROTTLE_TIME} from './utils';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -343,6 +344,14 @@ class Activation {
               : observableFromSubscribeFunction(updater.observeMessages),
         )
         .combineLatest(this._getIsStaleMessageEnabledStream())
+        // $FlowFixMe
+        .throttle(
+          ([_, isStaleMessageEnabled]) =>
+            Observable.interval(
+              isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
+            ),
+          {leading: true, trailing: true},
+        )
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
             if (!isStaleMessageEnabled) {
@@ -682,37 +691,47 @@ function getEditorDiagnosticUpdates(
   diagnosticUpdater: DiagnosticUpdater,
   isStaleMessageEnabledStream: Observable<boolean>,
 ): Observable<DiagnosticMessages> {
-  return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
-    .startWith(editor.getPath())
-    .switchMap(
-      filePath =>
-        filePath != null
-          ? observableFromSubscribeFunction(cb =>
-              diagnosticUpdater.observeFileMessages(filePath, cb),
-            )
-          : Observable.empty(),
-    )
-    .combineLatest(isStaleMessageEnabledStream)
-    .map(([diagnosticMessages, isStaleMessageEnabled]) => {
-      return {
-        ...diagnosticMessages,
-        messages: diagnosticMessages.messages
-          .filter(diagnostic => diagnostic.type !== 'Hint')
-          .map(message => {
-            if (!isStaleMessageEnabled) {
-              // Note: reason of doing this is currently Flow is sending message
-              // marked as stale sometimes(on user type or immediately on save).
-              // Until we turn on the gk, we don't want user to see the Stale
-              // style/behavior just yet. so here we mark them as not stale.
-              message.stale = false;
-            }
-            return message;
-          }),
-      };
-    })
-    .takeUntil(
-      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-    );
+  return (
+    observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
+      .startWith(editor.getPath())
+      .switchMap(
+        filePath =>
+          filePath != null
+            ? observableFromSubscribeFunction(cb =>
+                diagnosticUpdater.observeFileMessages(filePath, cb),
+              )
+            : Observable.empty(),
+      )
+      .combineLatest(isStaleMessageEnabledStream)
+      // $FlowFixMe
+      .throttle(
+        ([_, isStaleMessageEnabled]) =>
+          Observable.interval(
+            isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
+          ),
+        {leading: true, trailing: true},
+      )
+      .map(([diagnosticMessages, isStaleMessageEnabled]) => {
+        return {
+          ...diagnosticMessages,
+          messages: diagnosticMessages.messages
+            .filter(diagnostic => diagnostic.type !== 'Hint')
+            .map(message => {
+              if (!isStaleMessageEnabled) {
+                // Note: reason of doing this is currently Flow is sending message
+                // marked as stale sometimes(on user type or immediately on save).
+                // Until we turn on the gk, we don't want user to see the Stale
+                // style/behavior just yet. so here we mark them as not stale.
+                message.stale = false;
+              }
+              return message;
+            }),
+        };
+      })
+      .takeUntil(
+        observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
+      )
+  );
 }
 
 createPackage(module.exports, Activation);

@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {Observable} from 'rxjs';
 import type {
   DiagnosticUpdater,
   DiagnosticMessage,
@@ -22,11 +21,13 @@ import classnames from 'classnames';
 import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
+import {Observable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons/analytics';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {STALE_MESSAGE_UPDATE_THROTTLE_TIME} from '../utils';
 
 type DiagnosticCount = {
   errorCount: number,
@@ -77,6 +78,14 @@ export default class StatusBarTile {
       observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
         .let(fastDebounce(RENDER_DEBOUNCE_TIME))
         .combineLatest(isStaleMessageEnabledStream)
+        // $FlowFixMe
+        .throttle(
+          ([_, isStaleMessageEnabled]) =>
+            Observable.interval(
+              isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
+            ),
+          {leading: true, trailing: true},
+        )
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.map(diagnostic => {
             if (!isStaleMessageEnabled) {
