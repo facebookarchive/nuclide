@@ -19,7 +19,6 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
@@ -27,9 +26,6 @@ import org.json.JSONObject;
 /** Source line breakpoint spec. Threading: access from both request and event threads. */
 public class FileLineBreakpointSpec extends BreakpointSpec {
   private final FileLineBreakpointRequestInfo _requestInfo;
-  private static final ConcurrentHashMap<String, HashSet<FileLineBreakpointSpec>>
-      _classNameToFileLineBreakpointSpecs =
-          new ConcurrentHashMap<String, HashSet<FileLineBreakpointSpec>>();
   private static final ConcurrentHashMap<String, ClassPrepareRequest>
       _classNameToClassPrepareRequest = new ConcurrentHashMap<String, ClassPrepareRequest>();
   private String _className;
@@ -43,11 +39,6 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
     String filePath = locationInfo.getFilePath();
     _requestInfo = locationInfo;
     _className = getClassNameForBreakpoint(filePath);
-
-    HashSet<FileLineBreakpointSpec> currentSpecs =
-        _classNameToFileLineBreakpointSpecs.getOrDefault(_className, new HashSet<>());
-    currentSpecs.add(this);
-    _classNameToFileLineBreakpointSpecs.put(_className, currentSpecs);
   }
 
   private String getClassNameForBreakpoint(String filePath) {
@@ -104,23 +95,6 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
 
   @Override
   protected void handleBreakpointResolved() {
-    // No need to watch future class prepare after breakpoint resolved.
-    ClassPrepareRequest classPrepareRequest = _classNameToClassPrepareRequest.get(_className);
-    boolean allBreakpointsForClassNameResolved =
-        _classNameToFileLineBreakpointSpecs
-            .get(_className)
-            .stream()
-            .allMatch(FileLineBreakpointSpec::isResolved);
-
-    if (allBreakpointsForClassNameResolved && classPrepareRequest != null) {
-      classPrepareRequest.disable();
-      getContextManager()
-          .getVirtualMachine()
-          .eventRequestManager()
-          .deleteEventRequest(classPrepareRequest);
-      _classNameToClassPrepareRequest.remove(_className);
-    }
-
     // Now that this is resolved, we should have a bound location. Tell the
     // breakpoint manager.
     Optional<Location> location = getBoundLocation();
