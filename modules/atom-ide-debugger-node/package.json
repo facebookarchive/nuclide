@@ -27,7 +27,7 @@
   "dependencies": {
     "nuclide-commons-atom": "0.7.3-dev",
     "nuclide-debugger-common": "0.7.3-dev",
-    "react": "16.4.1",
+    "react": "16.5.0",
     "vscode-chrome-debug-core": "3.17.10",
     "vscode-debugadapter": "1.24.0",
     "vscode-nls": "2.0.2"
