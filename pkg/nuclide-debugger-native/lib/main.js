@@ -220,7 +220,13 @@ class Activation {
         : ` with arguments "${runArguments.join(' ')}"`;
 
     const debugBuckTarget = Observable.defer(() =>
-      this._debugBuckTarget(buckService, buckRoot, targetString, runArguments),
+      this._debugBuckTarget(
+        buckService,
+        buckRoot,
+        targetString,
+        taskSettings.buildArguments || [],
+        runArguments,
+      ),
     )
       .ignoreElements()
       .catch(err => {
@@ -297,9 +303,14 @@ class Activation {
     buckService: BuckService,
     buckRoot: string,
     buildTarget: string,
+    buildArguments: Array<string>,
     runArguments: Array<string>,
   ): Promise<string> {
-    const output = await buckService.showOutput(buckRoot, buildTarget);
+    const output = await buckService.showOutput(
+      buckRoot,
+      buildTarget,
+      buildArguments,
+    );
     if (output.length === 0) {
       throw new Error(
         `Could not find build output path for target ${buildTarget}`,
