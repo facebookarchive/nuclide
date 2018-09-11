@@ -119,7 +119,6 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.PYTHON,
-      threads: true,
       properties: [
         program,
         pythonPath,

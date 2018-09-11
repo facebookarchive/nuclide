@@ -93,7 +93,6 @@ export function getNativeAutoGenConfig(
   const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType,
-    threads: true,
     properties: [program, cwd, args, env, sourcePath, corePath],
     scriptPropertyName: 'program',
     cwdPropertyName: 'working directory',
@@ -119,7 +118,6 @@ export function getNativeAutoGenConfig(
   const autoGenAttachConfig: AutoGenAttachConfig = {
     launch: false,
     vsAdapterType,
-    threads: true,
     properties: [pid, sourcePath],
     header: <p>Attach to a running native process {debugTypeMessage}</p>,
     getProcessName(values) {

@@ -123,7 +123,6 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
   const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.PREPACK,
-    threads: false,
     properties: [filesToPrepack, prepackRuntimePath, argumentsProperty],
     scriptPropertyName: 'filesToPrepack',
     scriptExtension: '.js',

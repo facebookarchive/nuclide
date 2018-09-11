@@ -88,7 +88,6 @@ export function getJavaAndroidConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
-      threads: true,
       properties: [deviceAndPackage, activity, service, intent, selectSources],
       cwdPropertyName: 'cwd',
       header: null,
@@ -100,7 +99,6 @@ export function getJavaAndroidConfig(): AutoGenConfig {
     attach: {
       launch: false,
       vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
-      threads: true,
       properties: [deviceAndProcess, selectSources],
       header: null,
       // Value will be replaced in the return value of resolveConfiguration().

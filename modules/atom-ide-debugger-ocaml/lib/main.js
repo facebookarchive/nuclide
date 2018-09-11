@@ -110,7 +110,6 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
   const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.OCAML,
-    threads: false,
     properties: [
       debugExecutable,
       executablePath,

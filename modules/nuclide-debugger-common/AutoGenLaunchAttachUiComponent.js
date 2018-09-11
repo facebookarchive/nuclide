@@ -511,7 +511,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       deviceAndProcessValues,
       selectSourcesValues,
     } = this.state;
-    const {launch, vsAdapterType, threads, getProcessName} = config;
+    const {launch, vsAdapterType, getProcessName} = config;
 
     const stringValues = new Map();
     const stringArrayValues = new Map();
@@ -623,9 +623,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       debugMode: launch ? 'launch' : 'attach',
       adapterType: vsAdapterType,
       config: values,
-      showThreads: threads,
       customControlButtons: [],
-      threadsComponentTitle: 'Threads',
       processName: getProcessName(values),
       isRestartable: true,
     });

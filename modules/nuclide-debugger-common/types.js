@@ -77,8 +77,6 @@ export type IProcessConfig = {|
   +adapterPreprocessor?: ?MessageProcessor,
   +processName?: string,
   +customControlButtons?: Array<ControlButtonSpecification>,
-  +threadsComponentTitle?: string,
-  +showThreads?: boolean,
   +servicedFileExtensions?: Array<string>,
 
   // The Atom language grammar to use for this debugger.
@@ -152,7 +150,6 @@ export type ResolveConfig = (config: Object) => Promise<void>;
 type AutoGenLaunchOrAttachConfigBase = {
   // General Properties
   properties: AutoGenProperty[],
-  threads: boolean,
   vsAdapterType: VsAdapterType,
   cwdPropertyName?: ?string,
   scriptExtension?: string,

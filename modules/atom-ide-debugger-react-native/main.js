@@ -158,7 +158,6 @@ function getReactNativeConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.REACT_NATIVE,
-      threads: false,
       properties: launchProperties,
       scriptPropertyName: null,
       cwdPropertyName: 'workspace',
@@ -171,7 +170,6 @@ function getReactNativeConfig(): AutoGenConfig {
     attach: {
       launch: false,
       vsAdapterType: VsAdapterTypes.REACT_NATIVE,
-      threads: false,
       properties: attachProperties,
       cwdPropertyName: 'workspace',
       scriptExtension: '.js',

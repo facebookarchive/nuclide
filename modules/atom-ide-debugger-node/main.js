@@ -120,7 +120,6 @@ function getNodeConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.NODE,
-      threads: false,
       properties: [
         program,
         cwd,
@@ -152,7 +151,6 @@ function getNodeConfig(): AutoGenConfig {
     attach: {
       launch: false,
       vsAdapterType: VsAdapterTypes.NODE,
-      threads: false,
       properties: [port],
       scriptExtension: '.js',
       header: <p>Attach to a running node.js process</p>,

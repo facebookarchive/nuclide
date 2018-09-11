@@ -243,7 +243,6 @@ export async function startAttachProcessConfig(
       grammarName: 'source.hackfragment',
     },
     customControlButtons: getCustomControlButtons(),
-    threadsComponentTitle: 'Requests',
     servicedFileExtensions: ['php', 'hh'],
     isRestartable: true,
     onDebugStartingCallback: (instance: IVspInstance) => {
