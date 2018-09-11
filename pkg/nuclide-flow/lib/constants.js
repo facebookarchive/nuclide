@@ -9,4 +9,8 @@
  * @format
  */
 
-export const JS_GRAMMARS = Object.freeze(['source.js', 'source.js.jsx', 'source.flow']);
+export const JS_GRAMMARS = Object.freeze([
+  'source.js',
+  'source.js.jsx',
+  'source.flow',
+]);
