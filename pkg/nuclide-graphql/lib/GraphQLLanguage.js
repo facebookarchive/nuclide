@@ -78,7 +78,7 @@ async function createLanguageService(): Promise<
 
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'GraphQL',
-    grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
+    grammars: ['source.graphql', 'source.js.jsx', 'source.js', 'source.flow'],
     diagnostics: diagnosticsConfig,
     definition: definitionConfig,
     autocomplete: autocompleteConfig,
