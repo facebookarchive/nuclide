@@ -99,7 +99,7 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
 
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'JSAutoImports',
-    grammars: ['source.js.jsx', 'source.js'],
+    grammars: ['source.js.jsx', 'source.js', 'source.flow'],
     diagnostics: diagnosticsConfig,
     autocomplete: autocompleteConfig,
     codeAction: codeActionConfig,
