@@ -99,15 +99,14 @@ class Activation {
       })
       .filter(Boolean)
       .switchMap(() => {
-        // return observableFromSubscribeFunction(cb =>
         return observableFromSubscribeFunction(
           atom.workspace.observeActivePaneItem.bind(atom.workspace),
         )
           .map(editor => (isValidTextEditor(editor) ? editor : null))
           .filter(Boolean)
-          .mergeMap(editor => {
+          .switchMap(editor => {
             return observableFromSubscribeFunction(
-              editor.onDidChange.bind(editor),
+              editor.onDidStopChanging.bind(editor),
             ).map(() => editor.getPath());
           });
       })
