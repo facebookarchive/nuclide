@@ -422,12 +422,15 @@ export function lspSymbolKind_atomIcon(kind: number): string {
     case SymbolKind.Package:
       return 'type-package';
     case SymbolKind.Class:
+    case SymbolKind.Struct:
       return 'type-class';
     case SymbolKind.Method:
       return 'type-method';
     case SymbolKind.Property:
+    case SymbolKind.Key:
       return 'type-property';
     case SymbolKind.Field:
+    case SymbolKind.EnumMember:
       return 'type-field';
     case SymbolKind.Constructor:
       return 'type-constructor';
@@ -436,8 +439,10 @@ export function lspSymbolKind_atomIcon(kind: number): string {
     case SymbolKind.Interface:
       return 'type-interface';
     case SymbolKind.Function:
+    case SymbolKind.Operator:
       return 'type-function';
     case SymbolKind.Variable:
+    case SymbolKind.Object:
       return 'type-variable';
     case SymbolKind.Constant:
       return 'type-constant';
@@ -449,6 +454,13 @@ export function lspSymbolKind_atomIcon(kind: number): string {
       return 'type-boolean';
     case SymbolKind.Array:
       return 'type-array';
+    case SymbolKind.Null:
+      // Empty string to display no icon.
+      return '';
+    case SymbolKind.Event:
+      return 'octicon-pulse';
+    case SymbolKind.TypeParameter:
+      return 'octicon-code';
     default:
       return 'question';
   }

@@ -685,6 +685,14 @@ export const SymbolKind = {
   Number: 16,
   Boolean: 17,
   Array: 18,
+  Object: 19,
+  Key: 20,
+  Null: 21,
+  EnumMember: 22,
+  Struct: 23,
+  Event: 24,
+  Operator: 25,
+  TypeParameter: 26,
 };
 
 // The parameters of a Workspace Symbol Request.
