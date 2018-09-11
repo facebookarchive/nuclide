@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _fs = _interopRequireDefault(require("fs"));
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _rimraf() {
+  const data = _interopRequireDefault(require("rimraf"));
+
+  _rimraf = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +37,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import fs from 'fs';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import rimraf from 'rimraf';
 
 /**
  * Searches upward through the filesystem from startDir to find a file with the
@@ -23,19 +49,16 @@ import rimraf from 'rimraf';
  * @param stopDir (optional) Directory where we stop the search
  * @return path to the nearest file, or null if none exists
  */
-function findNearestFile(
-  fileName: string,
-  startDir: string,
-  stopDir: ?string = null,
-): Promise<?string> {
+function findNearestFile(fileName, startDir, stopDir = null) {
   const matcher = async path => {
-    const candidate = nuclideUri.join(path, fileName);
+    const candidate = _nuclideUri().default.join(path, fileName);
+
     const result = await isFile(candidate);
     return result ? candidate : null;
   };
+
   return findNearest(matcher, startDir, stopDir);
 }
-
 /**
  * Searches upward through the filesystem from pathToDirectory to find a
  * directory with the given name.
@@ -44,19 +67,18 @@ function findNearestFile(
  * @param stopDir (optional) Directory where we stop the search
  * @return path to the nearest directory, or null if none exists
  */
-function findNearestDir(
-  dirName: string,
-  startDir: string,
-  stopDir: ?string = null,
-): Promise<?string> {
+
+
+function findNearestDir(dirName, startDir, stopDir = null) {
   const matcher = async path => {
-    const candidate = nuclideUri.join(path, dirName);
+    const candidate = _nuclideUri().default.join(path, dirName);
+
     const stats = await stat(candidate);
     return stats && stats.isDirectory() ? candidate : null;
   };
+
   return findNearest(matcher, startDir, stopDir);
 }
-
 /**
  * Simultaneously looks at directories between `startDir` and `stopDir` (or root dir),
  * passing them to the provided `matcher` function and returning the string returned
@@ -66,16 +88,17 @@ function findNearestDir(
  * @param stopDir: Where to stop the search (e.g., repository root), or null for filesystem root
  * @return the nearest matched path to startDir if a match is found; otherwise null
  */
-async function findNearest(
-  matcher: (candidate: string) => Promise<?string>,
-  startDir: string,
-  stopDir: ?string,
-): Promise<?string> {
+
+
+async function findNearest(matcher, startDir, stopDir) {
   const candidates = [];
   let candidateDir = startDir;
+
   while (candidateDir !== stopDir) {
     candidates.push(candidateDir);
-    const parentDir = nuclideUri.dirname(candidateDir);
+
+    const parentDir = _nuclideUri().default.dirname(candidateDir);
+
     if (parentDir === candidateDir) {
       // filesystem root reached
       break;
@@ -83,114 +106,120 @@ async function findNearest(
       candidateDir = parentDir;
     }
   }
+
   const results = await Promise.all(candidates.map(matcher));
+
   for (const result of results) {
     if (result != null) {
       return result;
     }
   }
+
   return null;
 }
-
 /**
  * @return whether path corresponds to an ordinary file.
  */
-async function isFile(path: string): Promise<boolean> {
+
+
+async function isFile(path) {
   const stats = await stat(path);
   return stats != null && stats.isFile();
 }
-
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_stat_path_callback.
  * @return null if there is no such file or directory for path; otherwise, fs.Stats for path.
  */
-async function stat(path: string): Promise<?fs.Stats> {
+
+
+async function stat(path) {
   try {
-    const [stats] = await toPromise(fs.stat)(path);
+    const [stats] = await toPromise(_fs.default.stat)(path);
     return stats;
   } catch (error) {
     if (error.code === 'ENOENT') {
       return null;
     }
+
     throw error;
   }
 }
-
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_writefile_file_data_options_callback.
  */
-function writeFile(
-  file: string,
-  data: string | Buffer,
-  options?: Object | string,
-): Promise<void> {
-  return toPromise(fs.writeFile)(file, data, options);
-}
 
+
+function writeFile(file, data, options) {
+  return toPromise(_fs.default.writeFile)(file, data, options);
+}
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_readfile_file_options_callback.
  */
-async function readFile(
-  file: string,
-  options: Object = {},
-): Promise<string | Buffer> {
-  const [data] = await toPromise(fs.readFile)(file, options);
+
+
+async function readFile(file, options = {}) {
+  const [data] = await toPromise(_fs.default.readFile)(file, options);
   return data;
 }
 
-async function readFileAsString(
-  file: string,
-  encoding: string = 'utf8',
-): Promise<string> {
-  const out = await readFile(file, {encoding});
-  invariant(typeof out === 'string');
+async function readFileAsString(file, encoding = 'utf8') {
+  const out = await readFile(file, {
+    encoding
+  });
+
+  if (!(typeof out === 'string')) {
+    throw new Error("Invariant violation: \"typeof out === 'string'\"");
+  }
+
   return out;
 }
 
-async function readFileAsBuffer(file: string): Promise<Buffer> {
+async function readFileAsBuffer(file) {
   const out = await readFile(file);
-  invariant(out instanceof Buffer);
+
+  if (!(out instanceof Buffer)) {
+    throw new Error("Invariant violation: \"out instanceof Buffer\"");
+  }
+
   return out;
 }
-
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_mkdir_path_mode_callback.
  * @param path directory to create.
  * @param mode defaults to 0o777.
  */
-function mkdir(path: string, mode?: number): Promise<void> {
-  return toPromise(fs.mkdir)(path, mode);
-}
 
+
+function mkdir(path, mode) {
+  return toPromise(_fs.default.mkdir)(path, mode);
+}
 /**
  * @param prefix six random characters will be added to the end of this prefix.
  * @param options can be a string specifying an encoding or an object with an `encoding` property.
  */
-function mkdtemp(prefix: string, options?: string | Object): Promise<string> {
-  return toPromise(fs.mkdtemp)(prefix, options).then(([tempDir]) => tempDir);
-}
 
+
+function mkdtemp(prefix, options) {
+  return toPromise(_fs.default.mkdtemp)(prefix, options).then(([tempDir]) => tempDir);
+}
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_mkdir_path_mode_callback.
  * @param path directory to remove.
  */
-function rmdir(path: string): Promise<void> {
-  return toPromise(fs.rmdir)(path);
-}
 
+
+function rmdir(path) {
+  return toPromise(_fs.default.rmdir)(path);
+}
 /**
  * async version of https://nodejs.org/api/fs.html#fs_fs_mkdir_path_mode_callback.
  * @param path file to remove.
  */
-function unlink(path: string): Promise<void> {
-  return toPromise(fs.unlink)(path);
-}
 
-type RemoveOptions = {
-  maxBusyTries?: number, // 3
-  emfileWait?: number, // 1000
-  glob?: boolean | Object, // true
-};
+
+function unlink(path) {
+  return toPromise(_fs.default.unlink)(path);
+}
 
 /**
  * async version of rimraf https://github.com/isaacs/rimraf#api
@@ -198,13 +227,9 @@ type RemoveOptions = {
  * @param path directory or file to delete
  * @param options
  */
-async function remove(
-  path: string,
-  options: RemoveOptions = {},
-): Promise<void> {
-  await toPromise(rimraf)(path, options);
+async function remove(path, options = {}) {
+  await toPromise(_rimraf().default)(path, options);
 }
-
 /**
  * Transforms any function that accepts callback as last parameter into
  * a function that returns a Promise.
@@ -219,13 +244,16 @@ async function remove(
  * but I think the code readability and brevity is more important for now. We can always
  * optimize idividual functions when we see a bottleneck.
  */
-function toPromise(func: any) {
-  return (...args: any) => {
+
+
+function toPromise(func) {
+  return (...args) => {
     return new Promise((resolve, reject) => {
       args.push((err, ...results) => {
         if (err != null) {
           return reject(err);
         }
+
         resolve(results);
       });
       func(...args);
@@ -233,7 +261,7 @@ function toPromise(func: any) {
   };
 }
 
-export default {
+var _default = {
   findNearestDir,
   findNearestFile,
   isFile,
@@ -246,5 +274,6 @@ export default {
   rmdir,
   stat,
   unlink,
-  writeFile,
+  writeFile
 };
+exports.default = _default;

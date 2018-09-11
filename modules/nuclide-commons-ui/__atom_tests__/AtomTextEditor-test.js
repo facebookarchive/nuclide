@@ -1,3 +1,45 @@
+"use strict";
+
+function _promise() {
+  const data = require("../../nuclide-commons/promise");
+
+  _promise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AtomTextEditor() {
+  const data = require("../AtomTextEditor");
+
+  _AtomTextEditor = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+function _testUtils() {
+  const data = _interopRequireDefault(require("react-dom/test-utils"));
+
+  _testUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _path = _interopRequireDefault(require("path"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,120 +48,117 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  * @emails oncall+nuclide
  */
-import {sleep} from 'nuclide-commons/promise';
-import {AtomTextEditor} from '../AtomTextEditor';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import TestUtils from 'react-dom/test-utils';
-import invariant from 'assert';
-import path from 'path';
-
 describe('nuclide-ui-atom-text-editor', () => {
   describe('when its `path` is set', () => {
     let grammar;
-
     beforeEach(() => {
       // Path is relative to the root of this package (where "package.json" lives).
-      grammar = atom.grammars.loadGrammarSync(
-        path.resolve(__dirname, '../__mocks__/grammars/test1.cson'),
-      );
+      grammar = atom.grammars.loadGrammarSync(_path.default.resolve(__dirname, '../__mocks__/grammars/test1.cson'));
     });
-
     afterEach(() => {
       if (grammar) {
         atom.grammars.removeGrammarForScopeName(grammar.scopeName);
       }
     });
-
     it('loads the desired `Grammar`', () => {
       // $FlowIgnore
-      const element: AtomTextEditor = TestUtils.renderIntoDocument(
-        <AtomTextEditor path=".test" />,
-      );
+      const element = _testUtils().default.renderIntoDocument(React.createElement(_AtomTextEditor().AtomTextEditor, {
+        path: ".test"
+      }));
+
       expect(element.getModel().getGrammar().scopeName).toEqual('text.test');
     });
   });
-
   describe('providing a grammar', () => {
     let grammar1;
     let grammar2;
-
     beforeEach(() => {
-      grammar1 = atom.grammars.loadGrammarSync(
-        path.resolve(__dirname, '../__mocks__/grammars/test1.cson'),
-      );
-      grammar2 = atom.grammars.loadGrammarSync(
-        path.resolve(__dirname, '../__mocks__/grammars/test2.cson'),
-      );
+      grammar1 = atom.grammars.loadGrammarSync(_path.default.resolve(__dirname, '../__mocks__/grammars/test1.cson'));
+      grammar2 = atom.grammars.loadGrammarSync(_path.default.resolve(__dirname, '../__mocks__/grammars/test2.cson'));
     });
-
     afterEach(() => {
-      invariant(grammar1 != null);
+      if (!(grammar1 != null)) {
+        throw new Error("Invariant violation: \"grammar1 != null\"");
+      }
+
       atom.grammars.removeGrammarForScopeName(grammar1.scopeName);
-      invariant(grammar2 != null);
+
+      if (!(grammar2 != null)) {
+        throw new Error("Invariant violation: \"grammar2 != null\"");
+      }
+
       atom.grammars.removeGrammarForScopeName(grammar2.scopeName);
     });
-
     it('updates the underlying models grammar', () => {
       // $FlowIgnore
-      const element: AtomTextEditor = TestUtils.renderIntoDocument(
-        <AtomTextEditor path=".test" grammar={grammar2} />,
-      );
+      const element = _testUtils().default.renderIntoDocument(React.createElement(_AtomTextEditor().AtomTextEditor, {
+        path: ".test",
+        grammar: grammar2
+      }));
+
       expect(element.getModel().getGrammar().scopeName).toEqual('text.test2');
     });
   });
-
   describe('when `readOnly`', () => {
-    let element: AtomTextEditor;
-
+    let element;
     describe('is true', () => {
       beforeEach(() => {
         // $FlowIgnore
-        element = TestUtils.renderIntoDocument(
-          <AtomTextEditor readOnly={true} />,
-        );
+        element = _testUtils().default.renderIntoDocument(React.createElement(_AtomTextEditor().AtomTextEditor, {
+          readOnly: true
+        }));
       });
-
       it('allows copying', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
         model.copySelectedText();
         expect(atom.clipboard.read()).toEqual('fraggle');
       });
-
       it('disallows inserting', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
         expect(model.getText()).toEqual('foobar');
       });
-
       it('disallows pasting', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
         expect(model.getText()).toEqual('');
       });
-
       it('disallows deleting text', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('balloon');
         model.selectAll();
         model.delete();
         expect(model.getText()).toEqual('balloon');
       });
-
       it('disallows backspace', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();
@@ -127,49 +166,58 @@ describe('nuclide-ui-atom-text-editor', () => {
         expect(model.getText()).toEqual('foobar');
       });
     });
-
     describe('is undefined', () => {
       beforeEach(() => {
         // $FlowIgnore
-        element = TestUtils.renderIntoDocument(<AtomTextEditor />);
+        element = _testUtils().default.renderIntoDocument(React.createElement(_AtomTextEditor().AtomTextEditor, null));
       });
-
       it('allows copying', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
         model.copySelectedText();
         expect(atom.clipboard.read()).toEqual('fraggle');
       });
-
       it('allows inserting', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
         expect(model.getText()).toEqual('foobar\n');
       });
-
       it('allows pasting', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
         expect(model.getText()).toEqual('foo bar baz');
       });
-
       it('allows deleting text', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('balloon');
         model.selectAll();
         model.delete();
         expect(model.getText()).toEqual('');
       });
-
       it('allows backspace', () => {
-        invariant(element);
+        if (!element) {
+          throw new Error("Invariant violation: \"element\"");
+        }
+
         const model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();
@@ -178,16 +226,18 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
     });
   });
-
   it('does not leak TextEditorComponent', async () => {
     const hostEl = document.createElement('div');
-    const component = ReactDOM.render(<AtomTextEditor />, hostEl);
+
+    const component = _reactDom.default.render(React.createElement(_AtomTextEditor().AtomTextEditor, null), hostEl);
+
     const textEditor = component.getModel();
     const element = textEditor.getElement();
-    ReactDOM.unmountComponentAtNode(hostEl);
 
-    // Cleanup occurs during the next tick.
-    await sleep(0);
+    _reactDom.default.unmountComponentAtNode(hostEl); // Cleanup occurs during the next tick.
+
+
+    await (0, _promise().sleep)(0);
     expect(element.component).toBe(null);
   });
 });

@@ -1,3 +1,25 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.lspPositionToAtomPoint = lspPositionToAtomPoint;
+exports.atomPointToLSPPosition = atomPointToLSPPosition;
+exports.lspRangeToAtomRange = lspRangeToAtomRange;
+exports.atomRangeToLSPRange = atomRangeToLSPRange;
+exports.compareLspPosition = compareLspPosition;
+exports.compareLspRange = compareLspRange;
+
+function _simpleTextBuffer() {
+  const data = require("simple-text-buffer");
+
+  _simpleTextBuffer = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,46 +27,39 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
 // flowlint-next-line untyped-type-import:off
-import type {Position, IPosition, IRange} from 'vscode-languageserver-types';
-
-import {Point} from 'simple-text-buffer';
-
-export function lspPositionToAtomPoint(lspPosition: IPosition): atom$Point {
-  return new Point(lspPosition.line, lspPosition.character);
+function lspPositionToAtomPoint(lspPosition) {
+  return new (_simpleTextBuffer().Point)(lspPosition.line, lspPosition.character);
 }
 
-export function atomPointToLSPPosition(atomPoint: atom$PointObject): IPosition {
+function atomPointToLSPPosition(atomPoint) {
   return {
     line: atomPoint.row,
-    character: atomPoint.column,
+    character: atomPoint.column
   };
 }
 
-export function lspRangeToAtomRange(lspRange: IRange): atom$RangeObject {
+function lspRangeToAtomRange(lspRange) {
   return {
     start: lspPositionToAtomPoint(lspRange.start),
-    end: lspPositionToAtomPoint(lspRange.end),
+    end: lspPositionToAtomPoint(lspRange.end)
   };
 }
 
-export function atomRangeToLSPRange(atomRange: atom$Range): IRange {
+function atomRangeToLSPRange(atomRange) {
   return {
     start: atomPointToLSPPosition(atomRange.start),
-    end: atomPointToLSPPosition(atomRange.end),
+    end: atomPointToLSPPosition(atomRange.end)
   };
 }
 
-export function compareLspPosition(a: Position, b: Position): number {
+function compareLspPosition(a, b) {
   return a.line - b.line || a.character - b.character;
 }
 
-export function compareLspRange(a: IRange, b: IRange): number {
-  return (
-    compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end)
-  );
+function compareLspRange(a, b) {
+  return compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end);
 }

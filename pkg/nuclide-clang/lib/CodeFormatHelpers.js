@@ -1,3 +1,42 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _nuclideAnalytics() {
+  const data = require("../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _libclang() {
+  const data = _interopRequireDefault(require("./libclang"));
+
+  _libclang = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +44,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {trackTiming} from '../../nuclide-analytics';
-import {getLogger} from 'log4js';
-
-import libclang from './libclang';
-
-export default class CodeFormatHelpers {
-  static formatEntireFile(
-    editor: atom$TextEditor,
-    range: atom$Range,
-  ): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return trackTiming('nuclide-clang-format.formatCode', async () => {
+class CodeFormatHelpers {
+  static formatEntireFile(editor, range) {
+    return (0, _nuclideAnalytics().trackTiming)('nuclide-clang-format.formatCode', async () => {
       try {
-        return await libclang.formatCode(editor, range);
+        return await _libclang().default.formatCode(editor, range);
       } catch (e) {
-        getLogger('nuclide-clang').error('Could not run clang-format:', e);
-        throw new Error(
-          'Could not run clang-format.<br>Ensure it is installed and in your $PATH.',
-        );
+        (0, _log4js().getLogger)('nuclide-clang').error('Could not run clang-format:', e);
+        throw new Error('Could not run clang-format.<br>Ensure it is installed and in your $PATH.');
       }
     });
   }
+
 }
+
+exports.default = CodeFormatHelpers;

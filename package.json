@@ -207,7 +207,6 @@
     "atom": ">=1.27.0",
     "node": ">=7.9.0"
   },
-  "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
     "file-icons",

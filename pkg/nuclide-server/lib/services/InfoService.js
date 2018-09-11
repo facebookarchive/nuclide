@@ -1,3 +1,45 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getServerVersion = getServerVersion;
+exports.getServerPlatform = getServerPlatform;
+exports.getOriginalEnvironment = getOriginalEnvironment;
+exports.closeConnection = closeConnection;
+
+function _process() {
+  const data = require("../../../../modules/nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideVersion() {
+  const data = require("../../../nuclide-version");
+
+  _nuclideVersion = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _NuclideServer() {
+  const data = _interopRequireDefault(require("../NuclideServer"));
+
+  _NuclideServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,40 +47,34 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {QueuedAckTransport} from 'big-dig/src/socket/QueuedAckTransport';
-import type {RpcConnection} from '../../../nuclide-rpc';
-
-import {getOriginalEnvironmentArray} from 'nuclide-commons/process';
-import {getVersion} from '../../../nuclide-version';
-import NuclideServer from '../NuclideServer';
-
-export function getServerVersion(): Promise<string> {
-  return Promise.resolve(getVersion());
+function getServerVersion() {
+  return Promise.resolve((0, _nuclideVersion().getVersion)());
 }
 
-export async function getServerPlatform(): Promise<string> {
+async function getServerPlatform() {
   return process.platform;
 }
 
-export async function getOriginalEnvironment(): Promise<Array<string>> {
-  return getOriginalEnvironmentArray();
-}
-
-// Mark this as async so the client can wait for an acknowledgement.
+async function getOriginalEnvironment() {
+  return (0, _process().getOriginalEnvironmentArray)();
+} // Mark this as async so the client can wait for an acknowledgement.
 // However, we can't close the connection right away, as otherwise the response never gets sent!
 // Add a small delay to allow the return message to go through.
-export function closeConnection(shutdownServer: boolean): Promise<void> {
-  const client: RpcConnection<QueuedAckTransport> = (this: any);
+
+
+function closeConnection(shutdownServer) {
+  const client = this;
   setTimeout(() => {
     // TODO(T29368542): Remove references to NuclideServer here.
-    NuclideServer.closeConnection(client);
+    _NuclideServer().default.closeConnection(client);
+
     client.dispose();
+
     if (shutdownServer) {
-      NuclideServer.shutdown();
+      _NuclideServer().default.shutdown();
     }
   }, 1000);
   return Promise.resolve();

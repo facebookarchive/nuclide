@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parsePsTableOutput = parsePsTableOutput;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +13,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-export function parsePsTableOutput(
-  output: string,
-  desiredFields: Array<string>,
-): Array<Object> {
+function parsePsTableOutput(output, desiredFields) {
   const lines = output.split(/\n/);
   const header = lines[0];
   const cols = header.split(/\s+/);
@@ -21,6 +24,7 @@ export function parsePsTableOutput(
 
   for (let i = 0; i < cols.length; i++) {
     const columnName = cols[i].toLowerCase();
+
     if (desiredFields.includes(columnName)) {
       colMapping[i] = columnName;
     }
@@ -32,8 +36,10 @@ export function parsePsTableOutput(
   data.filter(row => row.trim() !== '').forEach(row => {
     const rowData = row.split(/\s+/);
     const rowObj = {};
+
     for (let i = 0; i < rowData.length; i++) {
       const effectiveColumn = i;
+
       if (ignoreSColumn) {
         // Android's ps output has an extra column "S" (versions prior to API 26)
         // in the data that doesn't appear in the header. Skip that column's value.
@@ -49,6 +55,5 @@ export function parsePsTableOutput(
 
     formattedData.push(rowObj);
   });
-
   return formattedData;
 }

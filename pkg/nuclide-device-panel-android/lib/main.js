@@ -1,3 +1,37 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Registration() {
+  const data = require("./Registration");
+
+  _Registration = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +39,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {registerDevicePanelProviders} from './Registration';
-
 class Activation {
-  _disposables: UniversalDisposable;
-
   constructor() {
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(registerDevicePanelProviders(api));
+  consumeDevicePanelServiceApi(api) {
+    this._disposables.add((0, _Registration().registerDevicePanelProviders)(api));
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

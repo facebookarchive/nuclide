@@ -5,25 +5,30 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
 'use strict';
 
-export const mockFunction = <TArgs: $ReadOnlyArray<any>, TReturn>(
-  obj: Object,
-  propName: string,
-  mockImplementation?: (...TArgs) => TReturn,
-) => {
-  const mock: JestMockFn<TArgs, TReturn> = jest.fn(mockImplementation);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getMock = exports.mockFunction = void 0;
+
+const mockFunction = (obj, propName, mockImplementation) => {
+  const mock = jest.fn(mockImplementation);
   obj[propName] = mock;
   return mock;
 };
 
-export const getMock = (fn: Function): JestMockFn<any, any> => {
+exports.mockFunction = mockFunction;
+
+const getMock = fn => {
   if (!fn._isMockFunction) {
     throw new Error('Passed function is not a mock');
   }
+
   return fn;
 };
+
+exports.getMock = getMock;

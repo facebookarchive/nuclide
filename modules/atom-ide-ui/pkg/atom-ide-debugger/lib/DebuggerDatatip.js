@@ -1,3 +1,62 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.debuggerDatatip = debuggerDatatip;
+
+function _bindObservableAsProps() {
+  const data = require("../../../../nuclide-commons-ui/bindObservableAsProps");
+
+  _bindObservableAsProps = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _evaluationExpression() {
+  const data = require("./evaluationExpression");
+
+  _evaluationExpression = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerDatatipComponent() {
+  const data = _interopRequireDefault(require("./ui/DebuggerDatatipComponent"));
+
+  _DebuggerDatatipComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("./utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,56 +65,47 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Datatip} from 'atom-ide-ui';
-import type {IDebugService} from './types';
-
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getDefaultEvaluationExpression} from './evaluationExpression';
-import {DebuggerMode} from './constants';
-import DebuggerDatatipComponent from './ui/DebuggerDatatipComponent';
-import {expressionAsEvaluationResultStream} from './utils';
-
-export async function debuggerDatatip(
-  service: IDebugService,
-  editor: TextEditor,
-  position: atom$Point,
-): Promise<?Datatip> {
-  if (
-    service.viewModel.focusedProcess == null ||
-    service.viewModel.focusedProcess.debuggerMode !== DebuggerMode.PAUSED
-  ) {
+async function debuggerDatatip(service, editor, position) {
+  if (service.viewModel.focusedProcess == null || service.viewModel.focusedProcess.debuggerMode !== _constants().DebuggerMode.PAUSED) {
     return null;
   }
+
   const activeEditor = atom.workspace.getActiveTextEditor();
+
   if (activeEditor == null) {
     return null;
   }
-  const evaluationExpression = getDefaultEvaluationExpression(editor, position);
+
+  const evaluationExpression = (0, _evaluationExpression().getDefaultEvaluationExpression)(editor, position);
+
   if (evaluationExpression == null) {
     return null;
   }
-  const {expression, range} = evaluationExpression;
-  const {focusedProcess, focusedStackFrame} = service.viewModel;
+
+  const {
+    expression,
+    range
+  } = evaluationExpression;
+  const {
+    focusedProcess,
+    focusedStackFrame
+  } = service.viewModel;
+
   if (expression == null || focusedProcess == null) {
     // TODO respect session.capabilities.supportsEvaluateForHovers
     // and fallback to scopes variables resolution.
     return null;
   }
-  const propStream = expressionAsEvaluationResultStream(
-    service.createExpression(expression),
-    focusedProcess,
-    focusedStackFrame,
-    'hover',
-  ).map(evaluationResult => ({
+
+  const propStream = (0, _utils().expressionAsEvaluationResultStream)(service.createExpression(expression), focusedProcess, focusedStackFrame, 'hover').map(evaluationResult => ({
     expression,
-    evaluationResult,
+    evaluationResult
   }));
   return {
-    component: bindObservableAsProps(propStream, DebuggerDatatipComponent),
-    range,
+    component: (0, _bindObservableAsProps().bindObservableAsProps)(propStream, _DebuggerDatatipComponent().default),
+    range
   };
 }

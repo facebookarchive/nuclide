@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TreeExamples = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _Block() {
+  const data = require("./Block");
+
+  _Block = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Icon() {
+  const data = require("./Icon");
+
+  _Icon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Tree() {
+  const data = require("./Tree");
+
+  _Tree = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,96 +47,73 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+const BasicTreeExample = () => React.createElement("div", null, "Trees", React.createElement(_Block().Block, null, React.createElement(_Tree().TreeList, null, React.createElement(_Tree().TreeItem, null, "TreeItem 1"), React.createElement(_Tree().TreeItem, null, "TreeItem 2"), React.createElement(_Tree().NestedTreeItem, {
+  title: React.createElement("span", null, "NestedTreeItem 1 -- click me!"),
+  onSelect: handleSelect,
+  onConfirm: handleConfirm,
+  onTripleClick: handleTripleClick,
+  selected: true
+}, React.createElement(_Tree().TreeItem, null, "TreeItem 3"), React.createElement(_Tree().TreeItem, null, "TreeItem 4")), React.createElement(_Tree().NestedTreeItem, {
+  title: React.createElement("span", null, "NestedTreeItem 2"),
+  collapsed: true
+}))));
 
-import * as React from 'react';
-import {Block} from './Block';
-import {Icon} from './Icon';
-import {TreeList, TreeItem, NestedTreeItem} from './Tree';
+const AtomStyleguideTreeExample = () => React.createElement(_Block().Block, null, React.createElement(_Tree().TreeList, {
+  showArrows: true
+}, React.createElement(_Tree().NestedTreeItem, {
+  title: React.createElement(_Icon().Icon, {
+    icon: "file-directory"
+  }, "A Directory")
+}, React.createElement(_Tree().NestedTreeItem, {
+  collapsed: false,
+  title: React.createElement(_Icon().Icon, {
+    icon: "file-directory"
+  }, "Nested Directory")
+}, React.createElement(_Tree().TreeItem, null, React.createElement(_Icon().Icon, {
+  icon: "file-text"
+}, "File one"))), React.createElement(_Tree().NestedTreeItem, {
+  collapsed: true,
+  title: React.createElement(_Icon().Icon, {
+    icon: "file-directory"
+  }, "Collapsed Nested Directory")
+}, React.createElement(_Tree().TreeItem, null, React.createElement(_Icon().Icon, {
+  icon: "file-text"
+}, "File one"))), React.createElement(_Tree().TreeItem, null, React.createElement(_Icon().Icon, {
+  icon: "file-text"
+}, "File one")), React.createElement(_Tree().TreeItem, {
+  selected: true
+}, React.createElement(_Icon().Icon, {
+  icon: "file-text"
+}, "File three .selected!"))), React.createElement(_Tree().TreeItem, null, React.createElement(_Icon().Icon, {
+  icon: "file-text"
+}, ".icon-file-text")), React.createElement(_Tree().TreeItem, null, React.createElement(_Icon().Icon, {
+  icon: "file-symlink-file"
+}, ".icon-file-symlink-file"))));
 
-const BasicTreeExample = (): React.Element<any> => (
-  <div>
-    Trees
-    <Block>
-      <TreeList>
-        <TreeItem>TreeItem 1</TreeItem>
-        <TreeItem>TreeItem 2</TreeItem>
-        <NestedTreeItem
-          title={<span>NestedTreeItem 1 -- click me!</span>}
-          onSelect={handleSelect}
-          onConfirm={handleConfirm}
-          onTripleClick={handleTripleClick}
-          selected={true}>
-          <TreeItem>TreeItem 3</TreeItem>
-          <TreeItem>TreeItem 4</TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem
-          title={<span>NestedTreeItem 2</span>}
-          collapsed={true}
-        />
-      </TreeList>
-    </Block>
-  </div>
-);
-
-const AtomStyleguideTreeExample = (): React.Element<any> => (
-  <Block>
-    <TreeList showArrows={true}>
-      <NestedTreeItem title={<Icon icon="file-directory">A Directory</Icon>}>
-        <NestedTreeItem
-          collapsed={false}
-          title={<Icon icon="file-directory">Nested Directory</Icon>}>
-          <TreeItem>
-            <Icon icon="file-text">File one</Icon>
-          </TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem
-          collapsed={true}
-          title={<Icon icon="file-directory">Collapsed Nested Directory</Icon>}>
-          <TreeItem>
-            <Icon icon="file-text">File one</Icon>
-          </TreeItem>
-        </NestedTreeItem>
-        <TreeItem>
-          <Icon icon="file-text">File one</Icon>
-        </TreeItem>
-        <TreeItem selected={true}>
-          <Icon icon="file-text">File three .selected!</Icon>
-        </TreeItem>
-      </NestedTreeItem>
-      <TreeItem>
-        <Icon icon="file-text">.icon-file-text</Icon>
-      </TreeItem>
-      <TreeItem>
-        <Icon icon="file-symlink-file">.icon-file-symlink-file</Icon>
-      </TreeItem>
-    </TreeList>
-  </Block>
-);
-
-export const TreeExamples = {
+const TreeExamples = {
   sectionName: 'Trees',
   description: 'Expandable, hierarchical lists.',
-  examples: [
-    {
-      title: 'Basic Tree',
-      component: BasicTreeExample,
-    },
-    {
-      title: 'Reproducing the Atom style guide example:',
-      component: AtomStyleguideTreeExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic Tree',
+    component: BasicTreeExample
+  }, {
+    title: 'Reproducing the Atom style guide example:',
+    component: AtomStyleguideTreeExample
+  }]
 };
+exports.TreeExamples = TreeExamples;
 
 function handleSelect() {
   atom.notifications.addInfo('selected!');
 }
+
 function handleConfirm() {
   atom.notifications.addInfo('confirmed!');
 }
+
 function handleTripleClick() {
   atom.notifications.addInfo('triple clicked!');
 }

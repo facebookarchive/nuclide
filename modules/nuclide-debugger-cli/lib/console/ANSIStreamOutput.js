@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ANSIStreamOutput = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,46 +13,44 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import type {CursorControl} from './types';
-
-export class ANSIStreamOutput implements CursorControl {
-  _output: (s: string) => void;
-
-  constructor(output: string => void) {
+class ANSIStreamOutput {
+  constructor(output) {
     this._output = output;
-  }
-
-  // NB as with the ANSI sequences themselves, all cursor positions are
+  } // NB as with the ANSI sequences themselves, all cursor positions are
   // 1-based, not zero based
-  queryCursorPosition(): void {
+
+
+  queryCursorPosition() {
     this._output('\x1b[6n');
   }
 
-  gotoXY(col: number, row: number): void {
+  gotoXY(col, row) {
     this._output(`\x1b[${row};${col}H`);
   }
 
-  cursorLeft(cols: ?number): void {
+  cursorLeft(cols) {
     this._output(`\x1b[${cols == null ? '' : cols}G`);
   }
 
-  cursorRight(cols: ?number): void {
+  cursorRight(cols) {
     this._output(`\x1b[${cols == null ? '' : cols}C`);
   }
 
-  clearEOL(): void {
+  clearEOL() {
     this._output('\x1b[K');
   }
 
-  boldVideo(): void {
+  boldVideo() {
     this._output('\x1b[1m');
   }
 
-  normalVideo(): void {
+  normalVideo() {
     this._output('\x1b[0m');
   }
+
 }
+
+exports.ANSIStreamOutput = ANSIStreamOutput;
