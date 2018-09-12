@@ -387,6 +387,42 @@ function close(fd: number): Promise<void> {
   });
 }
 
+function fstat(fd: number): Promise<fs.Stats> {
+  return new Promise((resolve, reject) => {
+    fs.fstat(fd, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+async function fsync(fd: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.fsync(fd, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function ftruncate(fd: number, len: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.ftruncate(fd, len, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 function lstat(path: string): Promise<fs.Stats> {
   return new Promise((resolve, reject) => {
     fs.lstat(path, (err, result) => {
@@ -713,6 +749,9 @@ export default {
   chmod,
   chown,
   close,
+  fstat,
+  fsync,
+  ftruncate,
   lstat,
   mkdir,
   mv,
