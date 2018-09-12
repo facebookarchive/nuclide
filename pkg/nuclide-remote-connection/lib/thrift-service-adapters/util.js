@@ -12,7 +12,7 @@
 import type {DirectoryEntry} from '../../../nuclide-fs';
 
 import fs from 'fs';
-import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
+import filesystem_types from 'big-dig/src/thrift-services/fs/gen-nodejs/filesystem_types';
 
 export function convertToFsFileStat(stat: filesystem_types.FileStat): fs.Stats {
   const fileStat = new fs.Stats();

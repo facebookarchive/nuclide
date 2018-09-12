@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {ThriftServiceConfig} from '../thrift/types';
+import type {ThriftServiceConfig} from '../../services/thrift/types';
 
 import ThriftFileSystemService from './gen-nodejs/ThriftFileSystemService';
 
@@ -19,7 +19,7 @@ export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   remoteUri: '',
   remoteCommand: 'node',
   remoteCommandArgs: [
-    '{BIG_DIG_SERVICES_PATH}/src/services/fs/launchServer-entry.js',
+    '{BIG_DIG_SERVICES_PATH}/src/thrift-services/fs/launchServer-entry.js',
     '{PORT}',
   ],
   remotePort: 0,

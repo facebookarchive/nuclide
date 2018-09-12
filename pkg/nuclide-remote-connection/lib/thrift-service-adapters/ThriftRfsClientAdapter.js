@@ -14,14 +14,14 @@ import type {BigDigClient} from 'big-dig/src/client';
 import type {ThriftClient} from 'big-dig/src/services/thrift/types';
 import type {DirectoryEntry, WriteOptions} from '../../../nuclide-fs';
 
-import {FS_SERVICE_CONFIG} from 'big-dig/src/services/fs/service-config';
+import {FS_SERVICE_CONFIG} from 'big-dig/src/thrift-services/fs/service-config';
 import fs from 'fs';
 import {getLogger} from 'log4js';
 import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {RemoteFileSystemClient} from 'big-dig/src/services/fs/types';
+import {RemoteFileSystemClient} from 'big-dig/src/thrift-services/fs/types';
 import {convertToFsFileStat, convertToFsDirectoryEntries} from './util';
-import filesystem_types from 'big-dig/src/services/fs/gen-nodejs/filesystem_types';
+import filesystem_types from 'big-dig/src/thrift-services/fs/gen-nodejs/filesystem_types';
 
 const BUFFER_ENCODING = 'utf-8';
 const logger = getLogger('thrift-rfs-adapters');

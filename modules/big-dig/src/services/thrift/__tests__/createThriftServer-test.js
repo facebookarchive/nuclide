@@ -21,9 +21,12 @@ const ThriftFileSystemServiceHandler = jest.fn(function(root, watchman) {
 });
 const mockPort = 9090;
 
-jest.mock(require.resolve('../../fs/ThriftFileSystemServiceHandler'), () => ({
-  ThriftFileSystemServiceHandler,
-}));
+jest.mock(
+  require.resolve('../../../thrift-services/fs/ThriftFileSystemServiceHandler'),
+  () => ({
+    ThriftFileSystemServiceHandler,
+  }),
+);
 
 jest
   .spyOn(portHelper, 'scanPortsToListen')
