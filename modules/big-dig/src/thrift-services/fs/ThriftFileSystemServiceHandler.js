@@ -151,6 +151,15 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
+  async fstat(fd: number): Promise<number> {
+    try {
+      const statData = await fsPromise.fstat(fd);
+      return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
   async lstat(uri: string): Promise<filesystem_types.FileStat> {
     try {
       const statData = await fsPromise.lstat(uri);
@@ -301,5 +310,66 @@ export class ThriftFileSystemServiceHandler {
       this._watcher.unwatch(watchId);
     }
     this._watchIdToChangeList.clear();
+  }
+
+  async open(
+    uri: string,
+    permissionFlags: number,
+    mode: number,
+  ): Promise<number> {
+    try {
+      const fd = await fsPromise.open(uri, permissionFlags, mode);
+      return fd;
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async close(fd: number): Promise<number> {
+    try {
+      return await fsPromise.close(fd);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async fsync(fd: number): Promise<number> {
+    try {
+      return await fsPromise.fsync(fd);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async ftruncate(fd: number, len: number): Promise<number> {
+    try {
+      return await fsPromise.ftruncate(fd, len);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async utimes(uri: string, atime: number, mtime: number): Promise<number> {
+    try {
+      return await fsPromise.utimes(uri, atime, mtime);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async chmod(uri: string, mode: number): Promise<number> {
+    try {
+      return await fsPromise.chmod(uri, mode);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async chown(uri: string, uid: number, gid: number): Promise<number> {
+    try {
+      return await fsPromise.chown(uri, uid, gid);
+    } catch (err) {
+      throw createThriftError(err);
+    }
   }
 }

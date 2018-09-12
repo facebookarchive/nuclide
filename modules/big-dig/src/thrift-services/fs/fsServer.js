@@ -52,6 +52,9 @@ export class RemoteFileSystemServer {
       createDirectory: uri => {
         return this._serviceHandler.createDirectory(uri);
       },
+      fstat: uri => {
+        return this._serviceHandler.fstat(uri);
+      },
       stat: uri => {
         return this._serviceHandler.stat(uri);
       },
@@ -72,6 +75,27 @@ export class RemoteFileSystemServer {
       },
       readDirectory: uri => {
         return this._serviceHandler.readDirectory(uri);
+      },
+      open: (uri: string, permissionFlags: number, mode: number) => {
+        return this._serviceHandler.open(uri, permissionFlags, mode);
+      },
+      close: (fd: number) => {
+        return this._serviceHandler.close(fd);
+      },
+      fsync: (fd: number) => {
+        return this._serviceHandler.fsync(fd);
+      },
+      ftruncate: (fd: number, len: number) => {
+        return this._serviceHandler.ftruncate(fd, len);
+      },
+      utimes: (path: string, atime: number, mtime: number) => {
+        return this._serviceHandler.utimes(path, atime, mtime);
+      },
+      chmod: (uri: string, mode: number) => {
+        return this._serviceHandler.chmod(uri, mode);
+      },
+      chown: (uri: string, uid: number, gid: number) => {
+        return this._serviceHandler.chown(uri, uid, gid);
       },
     });
     this._server.on('error', error => {
