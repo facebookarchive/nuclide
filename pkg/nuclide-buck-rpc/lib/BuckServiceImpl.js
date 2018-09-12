@@ -24,11 +24,9 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
 import {trackTiming} from '../../nuclide-analytics';
 import {Observable} from 'rxjs';
+import {CLIENT_ID_ARGS} from './types';
 
 const logger = getLogger('nuclide-buck-rpc');
-
-// Tag these Buck calls as coming from Nuclide for analytics purposes.
-const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
 
 type FullBuckBuildOptions = {
   baseOptions: BaseBuckBuildOptions,

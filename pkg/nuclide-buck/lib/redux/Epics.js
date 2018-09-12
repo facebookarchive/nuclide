@@ -18,7 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {getBuckProjectRoot, getBuckService} from '../../../nuclide-buck-base';
-import observeBuildCommands from '../observeBuildCommands';
+import {observeBuildCommands} from '../observeBuildCommands';
 import * as Actions from './Actions';
 import {
   getFileSystemServiceByNuclideUri,
@@ -71,7 +71,7 @@ export function setBuckRootEpic(
         )
         .switchMap(() => readBuckversionFile(buckRoot))
         .map(fileContents => Actions.setBuckversionFileContents(fileContents)),
-      observeBuildCommands(buckRoot),
+      observeBuildCommands(buckRoot, () => store.getState().taskSettings),
     );
   });
 }

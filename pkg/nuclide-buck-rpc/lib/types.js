@@ -11,6 +11,9 @@
 
 import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 
+// Tag Buck calls as coming from Nuclide for analytics purposes.
+export const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
+
 export type BaseBuckBuildOptions = {
   install?: boolean,
   run?: boolean,
