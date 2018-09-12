@@ -72,6 +72,7 @@
     "dotenv": "5.0.1",
     "double-ended-queue": "2.1.0-0",
     "electron-default-menu": "1.0.1",
+    "electron-settings": "3.2.0",
     "electron-window-state": "^4.1.1",
     "escape-carriage": "1.2.0",
     "escape-html": "1.0.3",
