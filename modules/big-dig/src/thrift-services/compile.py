@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import subprocess
 import textwrap
+from typing import List
 from distutils.spawn import find_executable as which
 
 CODE_FOLDER_NAME_MAP = {
@@ -62,22 +63,23 @@ class ThriftError(Exception):
     pass
 
 
-def run_thrift(language: str) -> None:
-    source_file = "filesystem.thrift"
-    logging.info(f"Compiling {source_file} into {language}")
-    source_dir = Path(os.path.dirname(os.path.realpath(__file__)))
-    if subprocess.run(
-        ["thrift", "--gen", language, "-r", source_file],
-        cwd=source_dir
-    ).returncode != 0:
-        raise ThriftError
-    folder_name = CODE_FOLDER_NAME_MAP[language]
-    add_copyright_headers_to_code_files(source_dir / folder_name)
+def run_thrift(language: str, source_files: List[Path]) -> None:
+    for source_file in source_files:
+        logging.info(f"\nCompiling {source_file} into {language}")
+        source_dir = source_file.parent
+        if subprocess.run(
+            ["thrift", "--gen", language, "-r", source_file], cwd=source_dir
+        ).returncode != 0:
+            raise ThriftError
+        folder_name = CODE_FOLDER_NAME_MAP[language]
+        generated_dir = source_dir / folder_name
+        print(f"Generated output to {generated_dir}")
+        add_copyright_headers_to_code_files(generated_dir)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate thrift code for remote file system service"
+        description="Generate thrift code for all .thrift files in subdirectories"
     )
 
     parser.add_argument(
@@ -98,7 +100,9 @@ def main():
         exit(1)
 
     try:
-        run_thrift(args.language)
+        start_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+        thrift_files = list(start_dir.glob('**/*.thrift'))
+        run_thrift(args.language, thrift_files)
     except ThriftError:
         print("There was an error running thrift")
         exit(1)
