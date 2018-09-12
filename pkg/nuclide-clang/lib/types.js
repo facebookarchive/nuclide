@@ -9,6 +9,9 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Observable} from 'rxjs';
+import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {
   ClangRequestSettings,
   ClangCursor,
@@ -19,6 +22,10 @@ export type ClangConfigurationProvider = {
   reset: (host: string) => void,
   resetForSource: (src: string) => void,
   supportsSource: (src: string) => Promise<boolean>,
+  observeClangParams: () => Observable<{
+    root: ?NuclideUri,
+    params: CompilationDatabaseParams,
+  }>,
   priority: number,
 };
 

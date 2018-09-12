@@ -240,7 +240,11 @@ describe('BuckService (buck-query-project)', () => {
 
   describe('getBuildFile()', () => {
     it('gets the build file', async () => {
-      const file = await BuckService.getBuildFile(buckRoot, '//examples:one');
+      const file = await BuckService.getBuildFile(
+        buckRoot,
+        '//examples:one',
+        [],
+      );
       expect(file).toBe(nuclideUri.join(buckRoot, 'examples', 'BUCK'));
     });
   });

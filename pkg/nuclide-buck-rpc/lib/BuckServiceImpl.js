@@ -204,11 +204,13 @@ export function build(
 export async function getDefaultPlatform(
   rootPath: NuclideUri,
   target: string,
+  extraArguments: Array<string>,
 ): Promise<?string> {
-  const result = await query(rootPath, target, [
-    '--output-attributes',
-    'defaults',
-  ]).toPromise();
+  const result = await query(
+    rootPath,
+    target,
+    ['--output-attributes', 'defaults'].concat(extraArguments),
+  ).toPromise();
   if (
     result[target] != null &&
     result[target].defaults != null &&
@@ -278,7 +280,7 @@ export function query(
   queryString: string,
   extraArguments: Array<string>,
 ): Observable<any> {
-  return Observable.fromPromise(_getFbRepoSpecificArgs(rootPath)).switchMap(
+  return Observable.fromPromise(_getPreferredArgsForRepo(rootPath)).switchMap(
     fbRepoSpecificArgs => {
       const args = [
         'query',
@@ -293,7 +295,7 @@ export function query(
   );
 }
 
-export async function _getFbRepoSpecificArgs(
+export async function _getPreferredArgsForRepo(
   buckRoot: NuclideUri,
 ): Promise<Array<string>> {
   try {
@@ -308,12 +310,13 @@ export async function _getFbRepoSpecificArgs(
 export async function getBuildFile(
   rootPath: NuclideUri,
   targetName: string,
+  extraArguments: Array<string>,
 ): Promise<?string> {
   try {
     const result = await query(
       rootPath,
       `buildfile(${targetName})`,
-      [],
+      extraArguments,
     ).toPromise();
     if (result.length === 0) {
       return null;

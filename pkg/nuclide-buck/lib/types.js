@@ -36,6 +36,7 @@ export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
 export type TaskSettings = {|
   buildArguments?: Array<string>,
   runArguments?: Array<string>,
+  compileDbArguments?: Array<string>,
 |};
 
 export type AppState = {

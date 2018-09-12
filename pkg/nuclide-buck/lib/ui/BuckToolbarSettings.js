@@ -33,15 +33,18 @@ type Props = {
 type State = {
   buildArguments: string,
   runArguments: string,
+  compileDbArguments: string,
 };
 
 export default class BuckToolbarSettings extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    const {buildArguments, runArguments} = props.settings;
+    const {buildArguments, runArguments, compileDbArguments} = props.settings;
     this.state = {
       buildArguments: buildArguments == null ? '' : shellQuote(buildArguments),
       runArguments: runArguments == null ? '' : shellQuote(runArguments),
+      compileDbArguments:
+        compileDbArguments == null ? '' : shellQuote(compileDbArguments),
     };
   }
 
@@ -68,7 +71,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
               tabIndex="0"
               initialValue={this.state.buildArguments}
               placeholderText="Extra arguments to Buck itself (e.g. --num-threads 4)"
-              onDidChange={this._onBuildArgsChange.bind(this)}
+              onDidChange={this._onBuildArgsChange}
               onConfirm={this._onSave.bind(this)}
             />
             <label>Run Arguments:</label>
@@ -76,7 +79,15 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
               tabIndex="0"
               initialValue={this.state.runArguments}
               placeholderText="Custom command-line arguments to pass to the app/binary"
-              onDidChange={this._onRunArgsChange.bind(this)}
+              onDidChange={this._onRunArgsChange}
+              onConfirm={this._onSave.bind(this)}
+            />
+            <label>Compilation Database Arguments:</label>
+            <AtomInput
+              tabIndex="0"
+              initialValue={this.state.compileDbArguments}
+              placeholderText="Extra arguments when building for language support (e.g. @mode/dev)"
+              onDidChange={this._onCompileDbArgsChange}
               onConfirm={this._onSave.bind(this)}
             />
             {extraSettingsUi}
@@ -135,19 +146,24 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
     }
   }
 
-  _onBuildArgsChange(args: string) {
+  _onBuildArgsChange = (args: string) => {
     this.setState({buildArguments: args});
-  }
+  };
 
-  _onRunArgsChange(args: string) {
+  _onRunArgsChange = (args: string) => {
     this.setState({runArguments: args});
-  }
+  };
+
+  _onCompileDbArgsChange = (args: string) => {
+    this.setState({compileDbArguments: args});
+  };
 
   _onSave() {
     try {
       this.props.onSave({
         buildArguments: shellParse(this.state.buildArguments),
         runArguments: shellParse(this.state.runArguments),
+        compileDbArguments: shellParse(this.state.compileDbArguments),
       });
     } catch (err) {
       atom.notifications.addError('Could not parse arguments', {

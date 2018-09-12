@@ -9,12 +9,18 @@
  * @format
  */
 
+import {arrayEqual} from 'nuclide-commons/collection';
+import {Observable} from 'rxjs';
 import type {BuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
 import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CompilationDatabaseParams, ConsolePrinter} from './types';
+import type {
+  CompilationDatabaseParams,
+  ConsolePrinter,
+  AppState,
+} from './types';
 
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {convertBuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
@@ -255,6 +261,27 @@ export function getClangProvider(
           buckCompilationDatabase,
         ),
       };
+    },
+    observeClangParams(): Observable<{
+      root: ?NuclideUri,
+      params: CompilationDatabaseParams,
+    }> {
+      // $FlowFixMe: type symbol-observable
+      return Observable.from(taskRunner._getStore())
+        .startWith(taskRunner._getStore().getState())
+        .map(({projectRoot}: AppState) => ({
+          root: projectRoot,
+          params: taskRunner.getCompilationDatabaseParamsForCurrentContext(),
+        }))
+        .distinctUntilChanged(
+          (prev, next) =>
+            prev.root === next.root &&
+            arrayEqual(prev.params.args, next.params.args) &&
+            arrayEqual(
+              prev.params.flavorsForTarget,
+              next.params.flavorsForTarget,
+            ),
+        );
     },
     resetForSource(src: string): void {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();

@@ -136,8 +136,9 @@ export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
 export function getBuildFile(
   rootPath: NuclideUri,
   targetName: string,
+  extraArgs: Array<string>,
 ): Promise<?string> {
-  return BuckServiceImpl.getBuildFile(rootPath, targetName);
+  return BuckServiceImpl.getBuildFile(rootPath, targetName, extraArgs);
 }
 
 /**

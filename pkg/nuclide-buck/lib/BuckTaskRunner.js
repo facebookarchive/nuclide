@@ -311,8 +311,12 @@ export class BuckTaskRunner {
   }
 
   getCompilationDatabaseParamsForCurrentContext(): CompilationDatabaseParams {
-    const {selectedDeploymentTarget} = this._getStore().getState();
-    const empty = {flavorsForTarget: [], args: [], useDefaultPlatform: true};
+    const {
+      selectedDeploymentTarget,
+      taskSettings,
+    } = this._getStore().getState();
+    const args = taskSettings.compileDbArguments || [];
+    const empty = {flavorsForTarget: [], args, useDefaultPlatform: true};
     if (selectedDeploymentTarget == null) {
       return empty;
     }

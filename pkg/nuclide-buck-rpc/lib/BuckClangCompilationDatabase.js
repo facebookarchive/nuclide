@@ -116,11 +116,15 @@ class BuckClangCompilationDatabaseHandler {
     }
 
     let queryTarget = null;
+    const extraArgs =
+      this._params.args.length === 0
+        ? await BuckService._getPreferredArgsForRepo(buckRoot)
+        : this._params.args;
     try {
       const owners = (await BuckService.getOwners(
         buckRoot,
         src,
-        [],
+        extraArgs,
         TARGET_KIND_REGEX,
       )).filter(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
       // Deprioritize Android-related targets because they build with gcc and
@@ -161,17 +165,18 @@ class BuckClangCompilationDatabaseHandler {
 
     this._sourceToTargetKey.set(
       src,
-      this._targetCache.keyForArgs([buckRoot, target]),
+      this._targetCache.keyForArgs([buckRoot, target, extraArgs]),
     );
 
-    return this._targetCache.getOrCreate([buckRoot, target], () =>
-      this._loadCompilationDatabaseForBuckTarget(buckRoot, target),
+    return this._targetCache.getOrCreate([buckRoot, target, extraArgs], () =>
+      this._loadCompilationDatabaseForBuckTarget(buckRoot, target, extraArgs),
     );
   }
 
   async _loadCompilationDatabaseForBuckTarget(
     buckProjectRoot: string,
     target: string,
+    extraArgs: Array<string>,
   ): Promise<BuckClangCompilationDatabase> {
     const allFlavors = [
       'compilation-database',
@@ -181,15 +186,12 @@ class BuckClangCompilationDatabaseHandler {
       const platform = await BuckService.getDefaultPlatform(
         buckProjectRoot,
         target,
+        extraArgs,
       );
       if (platform != null) {
         allFlavors.push(platform);
       }
     }
-    const allArgs =
-      this._params.args.length === 0
-        ? await BuckService._getFbRepoSpecificArgs(buckProjectRoot)
-        : this._params.args;
     const buildTarget = target + '#' + allFlavors.join(',');
     const buildReport = await BuckService.build(
       buckProjectRoot,
@@ -202,7 +204,7 @@ class BuckClangCompilationDatabaseHandler {
         'client.skip-action-graph-cache=true',
 
         buildTarget,
-        ...allArgs,
+        ...extraArgs,
         // TODO(hansonw): Any alternative to doing this?
         // '-L',
         // String(os.cpus().length / 2),
@@ -221,14 +223,22 @@ class BuckClangCompilationDatabaseHandler {
       pathToCompilationDatabase,
     );
 
-    const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
+    const buildFile = await BuckService.getBuildFile(
+      buckProjectRoot,
+      target,
+      extraArgs,
+    );
     const compilationDB = {
       file: pathToCompilationDatabase,
       flagsFile: buildFile,
       libclangPath: null,
       warnings: [],
     };
-    return this._processCompilationDb(compilationDB, buckProjectRoot, allArgs);
+    return this._processCompilationDb(
+      compilationDB,
+      buckProjectRoot,
+      extraArgs,
+    );
   }
 
   async _processCompilationDb(
