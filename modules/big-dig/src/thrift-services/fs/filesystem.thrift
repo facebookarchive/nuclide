@@ -255,4 +255,28 @@ service ThriftFileSystemService {
    */
   void copy(1: string source, 2: string destination, 3: CopyOpt options)
     throws(1: Error error);
+
+  i32 open(1: string path, 2: i32 permissionFlags, 3: i32 mode)
+    throws(1: Error error);
+
+  void close(1: i32 fd)
+    throws(1: Error error);
+
+  void fsync(1: i32 fd)
+    throws(1: Error error);
+
+  FileStat fstat(1: i32 fd)
+    throws(1: Error error);
+
+  void ftruncate(1: i32 fd, 2: i32 len)
+    throws(1: Error error);
+
+  void chmod(1: string path, 2: i32 mode)
+    throws(1: Error error);
+
+  void chown(1: string path, 2: i32 uid, 3: i32 gid)
+    throws(1: Error error);
+
+  void utimes(1: string path, 2: i32 atime, 3: i32 mtime)
+    throws(1: Error error);
 }
