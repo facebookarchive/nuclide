@@ -21,7 +21,6 @@ import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import BlameToggle from './BlameToggle';
 
 const PACKAGES_MISSING_MESSAGE =
   'Could not open blame. Missing at least one blame provider.';
@@ -30,8 +29,6 @@ const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
 class Activation {
   _packageDisposables: UniversalDisposable;
   _registeredProviders: Set<BlameProvider>;
-  // Map of a TextEditor to its BlameToggle, if it exists.
-  _textEditorToBlameToggle: Map<atom$TextEditor, BlameToggle>;
   // Map of a TextEditor to its BlameGutter, if it exists.
   _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
   // Map of a TextEditor to the subscription on its ::onDidDestroy.
@@ -40,7 +37,6 @@ class Activation {
   constructor() {
     this._registeredProviders = new Set();
     this._textEditorToBlameGutter = new Map();
-    this._textEditorToBlameToggle = new Map();
     this._textEditorToDestroySubscription = new Map();
     this._packageDisposables = new UniversalDisposable();
     this._packageDisposables.add(
@@ -79,18 +75,9 @@ class Activation {
 
     this._packageDisposables.add(
       atom.workspace.observeTextEditors(editor => {
-        const button = new BlameToggle(
-          editor,
-          this._hasProviderForEditor.bind(this),
-        );
-        const disposeButton = () => button.destroy();
-        this._packageDisposables.add(disposeButton);
-
-        this._textEditorToBlameToggle.set(editor, button);
         this._textEditorToDestroySubscription.set(
           editor,
           editor.onDidDestroy(() => {
-            this._packageDisposables.remove(disposeButton);
             this._editorWasDestroyed(editor);
           }),
         );
@@ -102,7 +89,6 @@ class Activation {
     this._packageDisposables.dispose();
     this._registeredProviders.clear();
     this._textEditorToBlameGutter.clear();
-    this._textEditorToBlameToggle.clear();
     for (const disposable of this._textEditorToDestroySubscription.values()) {
       disposable.dispose();
     }
@@ -165,12 +151,6 @@ class Activation {
     if (blameGutter) {
       blameGutter.destroy();
       this._textEditorToBlameGutter.delete(editor);
-    }
-
-    const blameToggle = this._textEditorToBlameToggle.get(editor);
-    if (blameToggle != null) {
-      blameToggle.destroy();
-      this._textEditorToBlameToggle.delete(editor);
     }
 
     const subscription = this._textEditorToDestroySubscription.get(editor);
