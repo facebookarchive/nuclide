@@ -15,13 +15,14 @@ import type {ConnectableObservable} from 'rxjs';
 import type {
   BaseBuckBuildOptions,
   ResolvedRuleType,
+  CommandInfo,
   BuckClangCompilationDatabase,
 } from './types';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
+import {runCommand, observeProcess} from 'nuclide-commons/process';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import createBuckWebSocket from './createBuckWebSocket';
@@ -645,6 +646,42 @@ export function getWebSocketStream(
   httpPort: number,
 ): ConnectableObservable<Object> {
   return createBuckWebSocket(httpPort).publish();
+}
+
+const LOG_PATH = 'buck-out/log/last_buildcommand/buck-machine-log';
+const INVOCATIONINFO_REGEX = /InvocationInfo ({.+})/;
+
+export async function getLastBuildCommandInfo(
+  rootPath: NuclideUri,
+): Promise<?CommandInfo> {
+  // Buck machine log has the format < Event type >< space >< JSON >, one per line.
+  // https://buckbuild.com/concept/buckconfig.html#log.machine_readable_logger_enabled
+  const logFile = nuclideUri.join(rootPath, LOG_PATH);
+  if (await fsPromise.exists(logFile)) {
+    let line;
+    try {
+      line = await runCommand('head', ['-n', '1', logFile]).toPromise();
+    } catch (err) {
+      return null;
+    }
+    const matches = INVOCATIONINFO_REGEX.exec(line);
+    if (matches == null || matches.length < 2) {
+      return null;
+    }
+    try {
+      const invocationParams = JSON.parse(matches[1]);
+      // Invocation fields defined in buck/log/AbstractInvocationInfo.java
+      return {
+        timestamp: invocationParams.timestampMillis,
+        command: 'build',
+        args: invocationParams.unexpandedCommandArgs.slice(1),
+      };
+    } catch (err) {
+      // If it doesn't parse then just give up.
+      return null;
+    }
+  }
+  return null;
 }
 
 export async function resetCompilationDatabaseForSource(

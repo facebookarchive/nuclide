@@ -18,6 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {getBuckProjectRoot, getBuckService} from '../../../nuclide-buck-base';
+import observeBuildCommands from '../observeBuildCommands';
 import * as Actions from './Actions';
 import {
   getFileSystemServiceByNuclideUri,
@@ -58,15 +59,20 @@ export function setBuckRootEpic(
       return Observable.empty();
     }
     const watcherService = getFileWatcherServiceByNuclideUri(buckRoot);
-    return Observable.of(undefined)
-      .concat(
-        watcherService
-          .watchWithNode(buckRoot, true)
-          .refCount()
-          .filter(event => nuclideUri.basename(event.path) === '.buckversion'),
-      )
-      .switchMap(() => readBuckversionFile(buckRoot))
-      .map(fileContents => Actions.setBuckversionFileContents(fileContents));
+    return Observable.merge(
+      Observable.of(undefined)
+        .concat(
+          watcherService
+            .watchWithNode(buckRoot, true)
+            .refCount()
+            .filter(
+              event => nuclideUri.basename(event.path) === '.buckversion',
+            ),
+        )
+        .switchMap(() => readBuckversionFile(buckRoot))
+        .map(fileContents => Actions.setBuckversionFileContents(fileContents)),
+      observeBuildCommands(buckRoot),
+    );
   });
 }
 

@@ -22,6 +22,12 @@ export type BaseBuckBuildOptions = {
   extraArguments?: Array<string>,
 };
 
+export type CommandInfo = {
+  timestamp: number,
+  command: string,
+  args: Array<string>,
+};
+
 export type ResolvedBuildTarget = {
   qualifiedName: string,
   flavors: Array<string>,
