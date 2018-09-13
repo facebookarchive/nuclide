@@ -119,7 +119,7 @@ class Activation {
                 ),
               )
               .filter(isVisible => isVisible)
-              .first()
+              .take(1)
               .flatMap(() => {
                 const bufferPath = nullthrows(textEditor.getPath());
                 // TODO (tjfryan): do something to handle generated files
