@@ -14,7 +14,11 @@ import type {ConnectableObservable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
-import {observeProcess, observeProcessRaw} from 'nuclide-commons/process';
+import {
+  observeProcess,
+  observeProcessRaw,
+  runCommand,
+} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 
@@ -105,6 +109,28 @@ read only = no`;
       );
     })
     .publish();
+}
+
+export type RsyncVersionInfo = {
+  rsyncVersion: string,
+  protocolVersion: number,
+};
+
+export function getVersion(): Promise<RsyncVersionInfo> {
+  return runCommand('rsync', ['--version'])
+    .flatMap(stdout => Observable.from(stdout.split('\n')))
+    .first()
+    .concatMap(line => {
+      const VERSION_PATTERN = /rsync\s+version\s+([\d.]+)\s+protocol\s+version\s+(\d+)/g;
+      const match = VERSION_PATTERN.exec(line);
+      return match
+        ? Observable.of({
+            rsyncVersion: match[1],
+            protocolVersion: parseInt(match[2], 10),
+          })
+        : Observable.throw('Failed to parse Rsync version.');
+    })
+    .toPromise();
 }
 
 export function syncFolder(

@@ -30,6 +30,15 @@ describe('RsyncService', () => {
     });
   });
 
+  describe('getVersion', () => {
+    it('Returns the CLI and protocol version.', async () => {
+      const version = await RsyncService.getVersion();
+
+      expect(typeof version.rsyncVersion === 'string').toBe(true);
+      expect(typeof version.protocolVersion === 'number').toBe(true);
+    });
+  });
+
   describe('syncFolder', () => {
     it('Syncs a folder using the rsync daemon.', async () => {
       const targetDir = await fsPromise.tempdir();
