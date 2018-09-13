@@ -21,6 +21,7 @@ import {
 } from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
+import compareVersions from '../../commons-node/compareVersions';
 
 export type DaemonReadyMessage = {
   version: string,
@@ -137,25 +138,29 @@ export function syncFolder(
   from: string,
   to: string,
 ): ConnectableObservable<number> {
-  return splitStream(
-    observeProcessRaw('rsync', [
-      '-rtvuc',
-      '--delete',
-      '--progress',
-      '--info=progress2',
-      from,
-      to,
-    ])
-      .concatMap(
-        msg =>
-          msg.kind === 'stdout' ? Observable.of(msg.data) : Observable.empty(),
-      )
-      .map(data => data.replace(/\r/g, '\n')),
-  )
-    .concatMap(line => {
-      const PROGRESS_PATTERN = /(\d+)%/g;
-      const match = PROGRESS_PATTERN.exec(line);
-      return match ? Observable.of(parseInt(match[1], 10)) : Observable.empty();
+  return Observable.defer(() => getVersion())
+    .switchMap(version => {
+      const args = ['-rtvuc', '--delete', '--progress', from, to];
+      if (compareVersions(version.rsyncVersion, '3.1.0') >= 0) {
+        args.push('--info=progress2');
+      }
+
+      return splitStream(
+        observeProcessRaw('rsync', args)
+          .concatMap(
+            msg =>
+              msg.kind === 'stdout'
+                ? Observable.of(msg.data)
+                : Observable.empty(),
+          )
+          .map(data => data.replace(/\r/g, '\n')),
+      ).concatMap(line => {
+        const PROGRESS_PATTERN = /(\d+)%/g;
+        const match = PROGRESS_PATTERN.exec(line);
+        return match
+          ? Observable.of(parseInt(match[1], 10))
+          : Observable.empty();
+      });
     })
     .publish();
 }
