@@ -33,13 +33,6 @@ export function shortenHostname(hostOrUri: string | NuclideUri): string {
   return result;
 }
 
-export function isOnDemandHostname(hostname: string): boolean {
-  return (
-    hostname.match(/sandcastle[0-9]+(.+).facebook.com/) != null ||
-    hostname.match(/od[0-9]+(.+).facebook.com/) != null
-  );
-}
-
 export function convertToSandcastleHost(
   fbHost: string,
   scHost: string,
