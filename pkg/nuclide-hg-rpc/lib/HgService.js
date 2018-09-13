@@ -94,6 +94,8 @@ const IGNORABLE_ERROR_SUFFIXES = [
   'does not exist!',
 ];
 
+const DEFAULT_HG_COMMIT_TITLE_REGEX = /^<Replace this line with a title. Use 1 line only, 67 chars or less>/;
+
 /**
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.
@@ -1552,7 +1554,7 @@ export async function getTemplateCommitMessage(
 
   try {
     const {stdout} = await hgAsyncExecute(args, execOptions);
-    return stdout;
+    return stdout.replace(DEFAULT_HG_COMMIT_TITLE_REGEX, '');
   } catch (e) {
     getLogger('nuclide-hg-rpc').error(
       'Failed when trying to get template commit message',
