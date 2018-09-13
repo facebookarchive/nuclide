@@ -568,11 +568,12 @@ module.exports = {
 
   overrides: [
     {
-      files: '**/__{atom_,}tests__/**/*',
+      files: ['**/__{atom_,e2e_,}tests__/**/*', 'jest/**/*'],
       rules: {
         'nuclide-internal/prefer-nuclide-uri': 0,
         'nuclide-internal/modules-dependencies': 0,
         'nuclide-internal/atom-apis': 0,
+        'no-implicit-coercion': 0,
       },
     },
   ],
