@@ -106,5 +106,16 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
       ...options,
     }),
   );
+  // Patch into xterm Linkifier to catch errors on out of bounds line fetching.
+  // Track issue at https://github.com/xtermjs/xterm.js/issues/1669
+  const linkifier = terminal._core.linkifier;
+  const doLinkifyRow = linkifier._doLinkifyRow;
+  linkifier._doLinkifyRow = (row, text, matcher, offset) => {
+    try {
+      doLinkifyRow.call(linkifier, row, text, matcher, offset);
+    } catch (e) {
+      // swallow errors to avoid red box because the linkifier runs on a timer.
+    }
+  };
   return terminal;
 }
