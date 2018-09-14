@@ -23,7 +23,7 @@ import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import compareVersions from '../../commons-node/compareVersions';
 
-export type DaemonReadyMessage = {
+export type RsyncDaemonReadyMessage = {
   version: string,
   port: number,
 };
@@ -37,7 +37,7 @@ export type DaemonReadyMessage = {
  */
 export function startDaemon(
   root: NuclideUri,
-): ConnectableObservable<DaemonReadyMessage> {
+): ConnectableObservable<RsyncDaemonReadyMessage> {
   return Observable.combineLatest(
     Observable.defer(() => fsPromise.tempdir()),
     Observable.defer(() => getAvailableServerPort()),
