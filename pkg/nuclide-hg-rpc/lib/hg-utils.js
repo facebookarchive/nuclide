@@ -135,7 +135,14 @@ async function getHgExecParams(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
-  let args = [...args_, '--noninteractive'];
+  let args = [
+    ...args_,
+    '--noninteractive',
+    // Prevent user-specified merge tools from attempting to
+    // open interactive editors.
+    '--config',
+    'ui.merge=:merge',
+  ];
   let sshCommand;
   // expandHomeDir is not supported on windows
   if (process.platform !== 'win32') {
@@ -163,10 +170,6 @@ async function getHgExecParams(
       // Never show progress bar in stdout since we use the progressfile
       '--config',
       'progress.renderer=none',
-      // Prevent user-specified merge tools from attempting to
-      // open interactive editors.
-      '--config',
-      'ui.merge=:merge',
       // Prevent scary error message on amend in the middle of a stack
       '--config',
       'fbamend.education=',
