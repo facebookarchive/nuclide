@@ -10,6 +10,7 @@
  */
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   DevicePanelWorkspaceView,
@@ -17,10 +18,7 @@ import {
 } from './DevicePanelWorkspaceView';
 import invariant from 'assert';
 import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {applyMiddleware, createStore} from 'redux';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';
@@ -39,13 +37,14 @@ class Activation {
   _store: Store;
 
   constructor(state: ?Object) {
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
     this._store = createStore(
       Reducers.app,
       createEmptyAppState(),
-      applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
+      applyMiddleware(
+        createEpicMiddleware(
+          combineEpicsFromImports(Epics, 'nuclide-device-panel'),
+        ),
+      ),
     );
     this._disposables = new UniversalDisposable(
       ServerConnection.observeRemoteConnections().subscribe(conns => {

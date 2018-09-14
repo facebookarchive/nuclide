@@ -30,11 +30,9 @@ import type {CreatePasteFunction} from './types';
 import {List} from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import {Observable} from 'rxjs';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -104,10 +102,7 @@ class Activation {
   _getStore(): Store {
     if (this._store == null) {
       const initialState = deserializeAppState(this._rawState);
-      const epics = Object.keys(Epics)
-        .map(k => Epics[k])
-        .filter(epic => typeof epic === 'function');
-      const rootEpic = combineEpics(...epics);
+      const rootEpic = combineEpicsFromImports(Epics, 'atom-ide-ui');
       this._store = createStore(
         Reducers,
         initialState,

@@ -12,6 +12,7 @@
 import type {Store, BoundActionCreators, PartialAppState} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -20,10 +21,7 @@ import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import * as Actions from './Actions';
 import * as Epics from './Epics';
 import * as Reducers from './Reducers';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {track} from '../../nuclide-analytics';
@@ -48,10 +46,10 @@ class Activation {
       body: null,
       parameters: [{key: '', value: ''}],
     };
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
-    const rootEpic = combineEpics(...epics);
+    const rootEpic = combineEpicsFromImports(
+      Epics,
+      'nuclide-http-request-sender',
+    );
     this._store = createStore(
       Reducers.app,
       initialState,

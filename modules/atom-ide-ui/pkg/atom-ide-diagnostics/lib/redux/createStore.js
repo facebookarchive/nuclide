@@ -13,15 +13,12 @@
 import type {AppState, DiagnosticMessage, Store} from '../types';
 import type MessageRangeTracker from '../MessageRangeTracker';
 
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {arrayFlatten, setFilter} from 'nuclide-commons/collection';
 import {diffSets} from 'nuclide-commons/observable';
 import * as Reducers from './Reducers';
 import * as Epics from './Epics';
-import {getLogger} from 'log4js';
 import {
   applyMiddleware,
   combineReducers,
@@ -33,16 +30,10 @@ export default function createStore(
   messageRangeTracker: MessageRangeTracker,
   initialState: AppState = INITIAL_STATE,
 ): Store {
-  const epics = Object.keys(Epics)
-    .map(k => Epics[k])
-    .filter(epic => typeof epic === 'function');
   const rootEpic = (actions, store) =>
-    combineEpics(...epics)(actions, store, {messageRangeTracker})
-      // Log errors and continue.
-      .catch((err, stream) => {
-        getLogger('atom-ide-diagnostics').error(err);
-        return stream;
-      });
+    combineEpicsFromImports(Epics, 'atom-ide-diagnostics')(actions, store, {
+      messageRangeTracker,
+    });
   const store = _createStore(
     combineReducers(Reducers),
     initialState,

@@ -22,6 +22,7 @@ import type {
   TaskInfo,
   TaskType,
 } from './types';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import {
   formatDeploymentTarget,
   selectValidDeploymentTarget,
@@ -35,13 +36,9 @@ import {createMessage, taskFromObservable} from '../../commons-node/tasks';
 import {NuclideArtilleryTrace} from '../../nuclide-artillery';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getLogger} from 'log4js';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -291,16 +288,7 @@ export class BuckTaskRunner {
           .selectedDeviceGroupName,
         lastSessionDeviceName: this._serializedState.selectedDeviceName,
       };
-      const epics = Object.keys(Epics)
-        .map(k => Epics[k])
-        .filter(epic => typeof epic === 'function');
-      const rootEpic = (actions, store) =>
-        combineEpics(...epics)(actions, store)
-          // Log errors and continue.
-          .catch((err, stream) => {
-            getLogger('nuclide-buck').error(err);
-            return stream;
-          });
+      const rootEpic = combineEpicsFromImports(Epics, 'nuclide-buck');
       this._store = createStore(
         Reducers,
         initialState,

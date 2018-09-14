@@ -16,6 +16,7 @@ import type {Store} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createObservableForTunnels} from './CreateObservables';
 import {getSharedHostUri, getSocketServiceByHost} from './Normalization';
@@ -24,22 +25,20 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
 import {applyMiddleware, combineReducers, createStore} from 'redux';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 
 class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
 
   constructor(rawState: ?Object) {
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
     this._store = createStore(
       combineReducers(Reducers),
-      applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
+      applyMiddleware(
+        createEpicMiddleware(
+          combineEpicsFromImports(Epics, 'nuclide-ssh-tunnel'),
+        ),
+      ),
     );
 
     this._disposables = new UniversalDisposable(

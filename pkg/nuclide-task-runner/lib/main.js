@@ -25,6 +25,7 @@ import type {ConsoleService} from 'atom-ide-ui';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
+import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {track} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -32,10 +33,7 @@ import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {memoize} from 'lodash';
 import {arrayEqual} from 'nuclide-commons/collection';
-import {
-  combineEpics,
-  createEpicMiddleware,
-} from 'nuclide-commons/redux-observable';
+import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -98,12 +96,13 @@ class Activation {
       visible: initialVisibility,
     });
 
-    const epics = Object.keys(Epics)
-      .map(k => Epics[k])
-      .filter(epic => typeof epic === 'function');
     const epicOptions = {preferencesForWorkingRoots};
     const rootEpic = (actions, store) =>
-      combineEpics(...epics)(actions, store, epicOptions);
+      combineEpicsFromImports(Epics, 'nuclide-task-runner')(
+        actions,
+        store,
+        epicOptions,
+      );
     this._store = createStore(
       combineReducers(Reducers),
       {visible: initialVisibility},
