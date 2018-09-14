@@ -14,7 +14,7 @@ import type {ServerConnectionConfiguration} from './ServerConnection';
 import type {Transport} from '../../nuclide-rpc';
 
 import {createBigDigClient} from 'big-dig/src/client';
-import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
+import {getClientSideMarshalers} from '../../nuclide-marshalers-client';
 import {RpcConnection} from '../../nuclide-rpc';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
@@ -50,7 +50,7 @@ export default (async function createBigDigRpcClient(
     bigDigClient,
     rpcConnection: RpcConnection.createRemote(
       bigDigTransport,
-      getAtomSideMarshalers(config.host),
+      getClientSideMarshalers(config.host),
       servicesConfig,
       {trackSampleRate: 10},
       SERVICE_FRAMEWORK3_PROTOCOL,

@@ -1,8 +1,8 @@
 {
-  "name": "nuclide-marshalers-atom",
+  "name": "nuclide-marshalers-client",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Marshalers for Nuclide in the Atom process",
+  "description": "Marshalers for Nuclide on the client process",
   "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "AtomLibrary"

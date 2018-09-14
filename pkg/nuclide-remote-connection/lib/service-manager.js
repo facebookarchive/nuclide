@@ -24,7 +24,7 @@ import {__DEV__} from '../../commons-node/runtime-info';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
-import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';
+import {getClientSideLoopbackMarshalers} from '../../nuclide-marshalers-client';
 
 // This code may be executed before the config has been loaded!
 // getWithDefaults is necessary to make sure that the default is 'true'.
@@ -84,7 +84,7 @@ function createLocalRpcClient(): RpcConnection<Transport> {
   const transport = new IpcClientTransport(localServerProcess);
   return RpcConnection.createLocal(
     transport,
-    getAtomSideLoopbackMarshalers,
+    getClientSideLoopbackMarshalers,
     servicesConfig,
   );
 }

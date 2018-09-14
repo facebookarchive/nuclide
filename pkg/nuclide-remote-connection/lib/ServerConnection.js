@@ -35,7 +35,7 @@ import {
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
-import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
+import {getClientSideMarshalers} from '../../nuclide-marshalers-client';
 import {trackTimingSampled} from '../../nuclide-analytics';
 
 import {Emitter} from 'event-kit';
@@ -391,7 +391,7 @@ export class ServerConnection {
     );
     const client = RpcConnection.createRemote(
       (socket: Transport),
-      getAtomSideMarshalers(this.getRemoteHostname()),
+      getClientSideMarshalers(this.getRemoteHostname()),
       servicesConfig,
       // Track calls with a sampling rate of 1/10.
       {trackSampleRate: 10},
