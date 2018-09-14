@@ -26,7 +26,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {track} from '../../nuclide-analytics';
-import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from '../../nuclide-js-imports-server/src/utils/constantsForClient';
+import * as convert from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {
   AtomLanguageService,
   getHostServices,
@@ -204,44 +204,45 @@ class Activation {
           if (editor == null) {
             return;
           }
+          const editorPath = editor.getPath();
           const fileVersion = await getFileVersionOfEditor(editor);
-          if (fileVersion == null) {
+          if (fileVersion == null || editorPath == null) {
             return;
           }
           const buffer = editor.getBuffer();
-          const range = buffer.getRange();
-          const languageService = await this._languageService.getLanguageServiceForUri(
-            editor.getPath(),
+          const languageService: ?LanguageService = await this._languageService.getLanguageServiceForUri(
+            editorPath,
           );
           if (languageService == null) {
             return;
           }
-          const triggerOptions = {
-            // secret code
-            tabSize: TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING,
-            // just for typechecking to pass
-            insertSpaces: true,
-          };
-          const result = await languageService.formatSource(
-            fileVersion,
-            range,
-            triggerOptions,
-          );
+
           const beforeEditsCheckpoint = buffer.createCheckpoint();
-          // First add all new imports naively
-          if (result != null) {
-            if (!applyTextEditsToBuffer(buffer, result)) {
-              // TODO(T24077432): Show the error to the user
-              throw new Error('Could not apply edits to text buffer.');
-            }
+          const {
+            edits,
+            addedRequires,
+            missingExports,
+          } = (await languageService.sendLspRequest(
+            editorPath,
+            'workspace/executeCommand',
+            {
+              command: 'getAllImports',
+              arguments: [editorPath],
+            },
+          ): any);
+          if (
+            !applyTextEditsToBuffer(
+              buffer,
+              convert.lspTextEdits_atomTextEdits(edits || []),
+            )
+          ) {
+            // TODO(T24077432): Show the error to the user
+            throw new Error('Could not apply edits to text buffer.');
           }
           // Then use nuclide-format-js to properly format the imports
-          const successfulEdits = (result || []).filter(
-            edit => edit.newText !== '',
-          );
           organizeRequires({
-            addedRequires: successfulEdits.length > 0,
-            missingExports: successfulEdits.length !== (result || []).length,
+            addedRequires,
+            missingExports,
           });
           buffer.groupChangesSinceCheckpoint(beforeEditsCheckpoint);
         },

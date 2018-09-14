@@ -28,7 +28,6 @@ import {CommandExecutor} from './CommandExecutor';
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintGlobals, getConfigFromFlow} from './Config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from './utils/constantsForClient';
 import {WorkspaceSymbols} from './WorkspaceSymbols';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -118,10 +117,9 @@ connection.onInitialize(
           triggerCharacters: getAllTriggerCharacters(),
         },
         codeActionProvider: true,
-        documentFormattingProvider: true,
-        executeCommandProvider: Array.from(
-          Object.keys(CommandExecutor.COMMANDS),
-        ),
+        executeCommandProvider: {
+          commands: Array.from(Object.keys(CommandExecutor.COMMANDS)),
+        },
         workspaceSymbolProvider: true,
         hoverProvider: true,
       },
@@ -209,7 +207,7 @@ connection.onExecuteCommand(
   (params: ExecuteCommandParams): any => {
     const {command, arguments: args} = params;
     logger.debug('Executing command', command, 'with args', args);
-    commandExecuter.executeCommand((command: any), args);
+    return commandExecuter.executeCommand((command: any), args);
   },
 );
 
@@ -218,16 +216,6 @@ connection.onWorkspaceSymbol(
     return WorkspaceSymbols.getWorkspaceSymbols(autoImportsManager, params);
   },
 );
-
-connection.onDocumentFormatting(params => {
-  const fileUri = nuclideUri.uriToNuclideUri(params.textDocument.uri);
-  return Promise.resolve(
-    params.options.tabSize !== TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING ||
-    fileUri == null
-      ? []
-      : commandExecuter.getEditsForFixingAllImports(fileUri),
-  );
-});
 
 documents.listen(connection);
 connection.listen();

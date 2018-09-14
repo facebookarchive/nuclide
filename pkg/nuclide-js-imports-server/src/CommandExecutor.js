@@ -67,6 +67,8 @@ export class CommandExecutor {
     switch (command) {
       case 'addImport':
         return this._addImport((args: AddImportCommandParams));
+      case 'getAllImports':
+        return this._getAllImports(args[0]);
       default:
         (command: empty);
         throw new Error(`Unexpected command ${command}`);
@@ -94,7 +96,16 @@ export class CommandExecutor {
       body,
     );
 
-    const lspUri = nuclideUri.nuclideUriToUri(fileMissingImport);
+    this.connection.workspace.applyEdit(
+      this._toWorkspaceEdit(fileMissingImport, edits),
+    );
+  }
+
+  _toWorkspaceEdit(
+    filePath: NuclideUri,
+    edits: Array<TextEdit>,
+  ): WorkspaceEdit {
+    const lspUri = nuclideUri.nuclideUriToUri(filePath);
     // Version 2.0 LSP
     const changes = {};
     changes[lspUri] = edits;
@@ -110,12 +121,20 @@ export class CommandExecutor {
       },
     ];
 
-    this.connection.workspace.applyEdit(
-      ({changes, documentChanges}: WorkspaceEdit),
-    );
+    return ({changes, documentChanges}: WorkspaceEdit);
   }
 
-  getEditsForFixingAllImports(fileMissingImport: NuclideUri): Array<TextEdit> {
+  _getAllImports(filePath: NuclideUri) {
+    const edits = this._getEditsForFixingAllImports(filePath);
+    const successfulEdits = edits.filter(edit => edit.newText !== '');
+    return {
+      edits,
+      addedRequires: successfulEdits.length > 0,
+      missingExports: successfulEdits.length !== edits.length,
+    };
+  }
+
+  _getEditsForFixingAllImports(fileMissingImport: NuclideUri): Array<TextEdit> {
     const fileMissingImportUri = nuclideUri.nuclideUriToUri(fileMissingImport);
     const ast = parseFile(this.documents.get(fileMissingImportUri).getText());
     if (ast == null || ast.program == null || ast.program.body == null) {
