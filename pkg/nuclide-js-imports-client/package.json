@@ -72,5 +72,8 @@
         "^0.0.1": "consumeOrganizeRequiresService"
       }
     }
-  }
+  },
+  "activationHooks": [
+    "!nuclide_fb_js_imports_vscode_ext:gk:nuclide"
+  ]
 }
