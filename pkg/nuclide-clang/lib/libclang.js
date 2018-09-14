@@ -25,6 +25,7 @@ import type {ClangConfigurationProvider} from './types';
 import {arrayCompact} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {checkCqueryOverride} from '../../nuclide-clang-base';
 import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {getClangServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -36,21 +37,6 @@ type NuclideClangConfig = {
 };
 
 const clangProviders: Set<ClangConfigurationProvider> = new Set();
-// Matches string defined in fb-cquery/lib/main.js.
-const USE_CQUERY_CONFIG = 'fb-cquery.use-cquery';
-
-// If true, skip calling to clang service for given path.
-async function checkCqueryOverride(path: string): Promise<boolean> {
-  let cqueryBlacklist = async _ => false;
-  try {
-    // $FlowFB
-    cqueryBlacklist = require('./fb-cquery-blacklist').default;
-  } catch (exc) {}
-  return (
-    featureConfig.get(USE_CQUERY_CONFIG) === true &&
-    !(await cqueryBlacklist(path))
-  );
-}
 
 function getServerSettings(): ClangServerSettings {
   const config: NuclideClangConfig = (featureConfig.get('nuclide-clang'): any);
@@ -99,7 +85,7 @@ async function getClangRequestSettings(
   src: string,
 ): Promise<?ClangRequestSettings> {
   const provider = (await getClangProvidersForSource(src))[0];
-  if (provider != null) {
+  if (provider != null && !(await checkCqueryOverride(src))) {
     return provider.getSettings(src);
   }
 }
@@ -114,6 +100,9 @@ module.exports = {
   },
 
   async getRelatedSourceOrHeader(src: string): Promise<?string> {
+    if (await checkCqueryOverride(src)) {
+      return null;
+    }
     return getClangServiceByNuclideUri(src).getRelatedSourceOrHeader(
       src,
       await getClangRequestSettings(src),
