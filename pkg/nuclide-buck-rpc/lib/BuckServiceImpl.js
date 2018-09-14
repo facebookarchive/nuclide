@@ -203,11 +203,13 @@ export async function getDefaultPlatform(
   rootPath: NuclideUri,
   target: string,
   extraArguments: Array<string>,
+  appendPreferredArgs: boolean = true,
 ): Promise<?string> {
   const result = await query(
     rootPath,
     target,
     ['--output-attributes', 'defaults'].concat(extraArguments),
+    appendPreferredArgs,
   ).toPromise();
   if (
     result[target] != null &&
@@ -224,12 +226,18 @@ export async function getOwners(
   filePath: NuclideUri,
   extraArguments: Array<string>,
   kindFilter?: string,
+  appendPreferredArgs: boolean = true,
 ): Promise<Array<string>> {
   let queryString = `owner("${shellQuote([filePath])}")`;
   if (kindFilter != null) {
     queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
   }
-  return query(rootPath, queryString, extraArguments).toPromise();
+  return query(
+    rootPath,
+    queryString,
+    extraArguments,
+    appendPreferredArgs,
+  ).toPromise();
 }
 
 export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
@@ -277,6 +285,7 @@ export function query(
   rootPath: NuclideUri,
   queryString: string,
   extraArguments: Array<string>,
+  appendPreferredArgs: boolean = true,
 ): Observable<any> {
   return Observable.fromPromise(_getPreferredArgsForRepo(rootPath)).switchMap(
     fbRepoSpecificArgs => {
@@ -285,7 +294,7 @@ export function query(
         ...extraArguments,
         '--json',
         queryString,
-        ...fbRepoSpecificArgs,
+        ...(appendPreferredArgs ? fbRepoSpecificArgs : []),
       ];
 
       return runBuckCommandFromProjectRoot(rootPath, args).map(JSON.parse);

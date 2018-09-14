@@ -126,6 +126,7 @@ class BuckClangCompilationDatabaseHandler {
         src,
         extraArgs,
         TARGET_KIND_REGEX,
+        false,
       )).filter(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
       // Deprioritize Android-related targets because they build with gcc and
       // require gcc intrinsics that cause libclang to throw bad diagnostics.
@@ -187,6 +188,7 @@ class BuckClangCompilationDatabaseHandler {
         buckProjectRoot,
         target,
         extraArgs,
+        false,
       );
       if (platform != null) {
         allFlavors.push(platform);
