@@ -25,7 +25,6 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
-import passesGK from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
 import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from '../../nuclide-js-imports-server/src/utils/constantsForClient';
 import {
@@ -39,7 +38,6 @@ import {
 } from '../../nuclide-open-files';
 import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {UI_COMPONENT_TOOLS_INDEXING_GK} from '../../nuclide-ui-component-tools-common';
 import QuickOpenProvider from './QuickOpenProvider';
 import JSSymbolSearchProvider from './JSSymbolSearchProvider';
 import DashProjectSymbolProvider from './DashProjectSymbolProvider';
@@ -64,7 +62,7 @@ async function connectToJSImportsService(
       logLevel: (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
       projectFileNames: ['.flowconfig'],
       fileExtensions: ['.js', '.jsx'],
-      initializationOptions: await getAutoImportSettings(),
+      initializationOptions: getAutoImportSettings(),
       fork: true,
     },
   );
@@ -143,7 +141,7 @@ function onDidInsertSuggestion({
   });
 }
 
-async function getAutoImportSettings() {
+function getAutoImportSettings() {
   // Currently, we will get the settings when the package is initialized. This
   // means that the user would need to restart Nuclide for a change in their
   // settings to take effect. In the future, we would most likely want to observe
@@ -158,9 +156,6 @@ async function getAutoImportSettings() {
     ),
     requiresWhitelist: featureConfig.get(
       'nuclide-js-imports-client.requiresWhitelist',
-    ),
-    uiComponentToolsIndexingGkEnabled: await passesGK(
-      UI_COMPONENT_TOOLS_INDEXING_GK,
     ),
   };
 }

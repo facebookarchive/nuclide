@@ -92,8 +92,6 @@ connection.onInitialize(
         ? {
             componentModulePathFilter:
               params.initializationOptions.componentModulePathFilter,
-            uiComponentToolsIndexingGkEnabled:
-              params.initializationOptions.uiComponentToolsIndexingGkEnabled,
           }
         : undefined,
     );

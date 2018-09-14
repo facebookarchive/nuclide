@@ -361,12 +361,11 @@ export async function getExportsForFile(
 
     const updateObj: ExportUpdateForFile = {...update, exports};
     const settings = process.env.JS_IMPORTS_INITIALIZATION_SETTINGS;
-    const {componentModulePathFilter, uiComponentToolsIndexingGkEnabled} =
+    const {componentModulePathFilter} =
       settings != null ? JSON.parse(settings) : {};
     if (
-      Boolean(uiComponentToolsIndexingGkEnabled) &&
-      (componentModulePathFilter == null ||
-        file.includes(componentModulePathFilter))
+      componentModulePathFilter == null ||
+      file.includes(componentModulePathFilter)
     ) {
       const definition = getComponentDefinitionFromAst(file, ast);
       if (definition != null) {

@@ -9,7 +9,4 @@
  * @format
  */
 
-export const UI_COMPONENT_TOOLS_INDEXING_GK: string =
-  'nuclide_fb_ui_component_tools_lsp';
-
 export const LEADING_COMMENT_LIMIT: number = 240;

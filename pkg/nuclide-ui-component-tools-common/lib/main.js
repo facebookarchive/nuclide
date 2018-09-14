@@ -44,5 +44,3 @@ export function getComponentDefinitionFromAst(
     leadingComment,
   };
 }
-
-export {UI_COMPONENT_TOOLS_INDEXING_GK} from './constants';

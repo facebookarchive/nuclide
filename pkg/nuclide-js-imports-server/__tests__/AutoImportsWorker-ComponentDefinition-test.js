@@ -20,7 +20,6 @@ describe('getExportsForFile component definitions', () => {
   beforeEach(() => {
     process.env.JS_IMPORTS_INITIALIZATION_SETTINGS = JSON.stringify({
       componentModulePathFilter: null,
-      uiComponentToolsIndexingGkEnabled: true,
     });
   });
 

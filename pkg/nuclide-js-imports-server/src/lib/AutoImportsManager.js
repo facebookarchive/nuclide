@@ -52,7 +52,6 @@ const MAX_CRASHES = 3;
 
 type InitializationSettings = {|
   componentModulePathFilter: ?string,
-  uiComponentToolsIndexingGkEnabled: ?boolean,
 |};
 
 export class AutoImportsManager {
@@ -69,7 +68,6 @@ export class AutoImportsManager {
     globals: Array<string>,
     initializationSettings: InitializationSettings = {
       componentModulePathFilter: null,
-      uiComponentToolsIndexingGkEnabled: null,
     },
   ) {
     this.initializationSettings = initializationSettings;
