@@ -91,12 +91,5 @@
         "0.0.0": "consumeCwdApi"
       }
     }
-  },
-  "providedServices": {
-    "linter": {
-      "versions": {
-        "1.0.0": "provideLint"
-      }
-    }
   }
 }

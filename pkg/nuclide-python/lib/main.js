@@ -138,6 +138,7 @@ class Activation {
     );
     pythonLanguageService.activate();
     this._subscriptions.add(
+      this._provideLint(),
       pythonLanguageService,
       atom.commands.add(
         'atom-workspace',
@@ -147,13 +148,15 @@ class Activation {
     );
   }
 
-  provideLint(): LinterProvider {
-    return {
+  _provideLint(): IDisposable {
+    const lintProvier: LinterProvider = {
       grammarScopes: Array.from(GRAMMAR_SET),
       scope: 'file',
       name: 'flake8',
       lint: editor => LintHelpers.lint(editor),
     };
+
+    return atom.packages.serviceHub.provide('linter', '1.0.0', lintProvier);
   }
 
   consumeLinterIndie(register: RegisterIndieLinter): IDisposable {
