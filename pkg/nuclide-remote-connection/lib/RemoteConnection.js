@@ -94,7 +94,7 @@ export class RemoteConnection {
           serverConnection.getUriOfRemotePath(expandedPath),
         );
         // $FlowFixMe: Upstream this and add to our type defs
-        roots = atom.project.getSpecification().paths;
+        roots = atom.project.getSpecification().paths.map(nuclideUri.getPath);
       } else {
         const realPath = await fsService.resolveRealPath(path);
         // Now that we know the real path, it's possible this collides with an existing connection.
