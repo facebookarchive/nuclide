@@ -371,6 +371,12 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.isAbsolute('abc\\def')).toBe(false);
   });
 
+  it('isHomeRelative', () => {
+    expect(nuclideUri.isHomeRelative('~/a/b/c')).toBe(true);
+    expect(nuclideUri.isHomeRelative('/a/b/c')).toBe(false);
+    expect(nuclideUri.isHomeRelative('nuclide://host/a/b/c')).toBe(false);
+  });
+
   it('resolve', () => {
     expect(nuclideUri.resolve('/abc')).toBe('/abc');
     expect(nuclideUri.resolve('/abc', '..')).toBe('/');

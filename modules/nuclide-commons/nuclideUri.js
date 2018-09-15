@@ -535,6 +535,11 @@ function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
   }
 }
 
+function isHomeRelative(uri: NuclideUri): boolean {
+  _testForIllegalUri(uri);
+  return uri.startsWith('~');
+}
+
 function expandHomeDir(uri: NuclideUri): NuclideUri {
   _testForIllegalUri(uri);
 
@@ -875,6 +880,7 @@ export default {
   endsWithSeparator,
   endsWithEdenDir,
   isAbsolute,
+  isHomeRelative,
   resolve,
   expandHomeDir,
   splitPathList,
