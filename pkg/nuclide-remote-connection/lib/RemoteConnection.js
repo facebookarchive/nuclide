@@ -90,7 +90,7 @@ export class RemoteConnection {
           );
         }
         const expandedPath = await fsService.expandHomeDir(path);
-        await projectManager.open(
+        await projectManager.load(
           serverConnection.getUriOfRemotePath(expandedPath),
         );
         // $FlowFixMe: Upstream this and add to our type defs
