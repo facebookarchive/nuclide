@@ -55,18 +55,22 @@ ttypes.FileType = {
 var Error = module.exports.Error = function(args) {
   Thrift.TException.call(this, "Error");
   this.name = "Error";
-  this.code = null;
+  this.numericErrorCode = null;
   this.message = null;
   this.details = null;
+  this.code = null;
   if (args) {
-    if (args.code !== undefined && args.code !== null) {
-      this.code = args.code;
+    if (args.numericErrorCode !== undefined && args.numericErrorCode !== null) {
+      this.numericErrorCode = args.numericErrorCode;
     }
     if (args.message !== undefined && args.message !== null) {
       this.message = args.message;
     }
     if (args.details !== undefined && args.details !== null) {
       this.details = args.details;
+    }
+    if (args.code !== undefined && args.code !== null) {
+      this.code = args.code;
     }
   }
 };
@@ -87,7 +91,7 @@ Error.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.I32) {
-        this.code = input.readI32();
+        this.numericErrorCode = input.readI32();
       } else {
         input.skip(ftype);
       }
@@ -106,6 +110,13 @@ Error.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 4:
+      if (ftype == Thrift.Type.STRING) {
+        this.code = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -117,9 +128,9 @@ Error.prototype.read = function(input) {
 
 Error.prototype.write = function(output) {
   output.writeStructBegin('Error');
-  if (this.code !== null && this.code !== undefined) {
-    output.writeFieldBegin('code', Thrift.Type.I32, 1);
-    output.writeI32(this.code);
+  if (this.numericErrorCode !== null && this.numericErrorCode !== undefined) {
+    output.writeFieldBegin('numericErrorCode', Thrift.Type.I32, 1);
+    output.writeI32(this.numericErrorCode);
     output.writeFieldEnd();
   }
   if (this.message !== null && this.message !== undefined) {
@@ -130,6 +141,11 @@ Error.prototype.write = function(output) {
   if (this.details !== null && this.details !== undefined) {
     output.writeFieldBegin('details', Thrift.Type.STRING, 3);
     output.writeString(this.details);
+    output.writeFieldEnd();
+  }
+  if (this.code !== null && this.code !== undefined) {
+    output.writeFieldBegin('code', Thrift.Type.STRING, 4);
+    output.writeString(this.code);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

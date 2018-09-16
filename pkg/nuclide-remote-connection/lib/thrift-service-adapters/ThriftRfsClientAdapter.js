@@ -82,7 +82,7 @@ class ThriftRfsClientAdapter {
       await this._statPath(nuclideUri.getPath(uri));
       return true;
     } catch (error) {
-      if (error.code === filesystem_types.ErrorCode.ENOENT) {
+      if (error.code === 'ENOENT') {
         return false;
       } else {
         throw error;
@@ -262,7 +262,7 @@ class ThriftRfsClientAdapter {
         },
       );
     } catch (err) {
-      if (err.code === filesystem_types.ErrorCode.EEXIST) {
+      if (err.code === 'EEXIST') {
         // expected if the targetPath already exists
         return false;
       }

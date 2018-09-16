@@ -233,10 +233,14 @@ export class ThriftFileSystemServiceHandler {
     try {
       const {overwrite} = options;
       if (!overwrite && (await fsPromise.exists(destination))) {
-        throw createThriftErrorWithCode(filesystem_types.ErrorCode.EEXIST, {
-          source,
-          destination,
-        });
+        throw createThriftErrorWithCode(
+          'EEXIST',
+          filesystem_types.ErrorCode.EEXIST,
+          {
+            source,
+            destination,
+          },
+        );
       }
       await fsPromise.copy(source, destination);
     } catch (err) {
@@ -290,7 +294,7 @@ export class ThriftFileSystemServiceHandler {
             const stats = await this.stat(fullpath);
             return convertToThriftFileEntry(file, stats);
           } catch (error) {
-            if (error.code === filesystem_types.ErrorCode.ENOENT) {
+            if (error.code === 'ENOENT') {
               // symlink points to non-existent file/dir.
               // return lstat data about the symlink
               return convertToThriftFileEntry(file, lstats);

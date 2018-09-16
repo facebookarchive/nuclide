@@ -78,11 +78,13 @@ export function createThriftError(
   const thriftErrorCode = filesystem_types.ErrorCode[rawErrorCode];
   error.details = JSON.stringify(details);
   if (rawErrorCode != null && thriftErrorCode != null) {
-    error.code = thriftErrorCode;
+    error.code = rawErrorCode;
+    error.numericErrorCode = thriftErrorCode;
     error.message = filesystem_types.ERROR_MAP[thriftErrorCode];
     return error;
   }
-  error.code = filesystem_types.ErrorCode.EUNKNOWN;
+  error.numericErrorCode = filesystem_types.ErrorCode.EUNKNOWN;
+  error.code = 'EUNKNOWN';
   error.message = err.message || 'Unknow error type';
   return error;
 }
@@ -91,11 +93,13 @@ export function createThriftError(
  * Create Thrift Error based on given known Thrift ErrorCode and details
  */
 export function createThriftErrorWithCode(
+  rawErrorCode: string,
   errorCode: filesystem_types.ErrorCode,
   details: Object = {},
 ): filesystem_types.Error {
   const error = new filesystem_types.Error();
-  error.code = errorCode;
+  error.numericErrorCode = errorCode;
+  error.code = rawErrorCode;
   error.message = filesystem_types.ERROR_MAP[errorCode];
   error.details = JSON.stringify(details);
   return error;
