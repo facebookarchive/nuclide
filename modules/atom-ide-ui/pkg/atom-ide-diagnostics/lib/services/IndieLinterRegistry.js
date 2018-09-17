@@ -20,7 +20,7 @@ import type {
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {linterMessagesToDiagnosticUpdate} from '../services/LinterAdapter';
+import {linterMessagesToDiagnosticUpdate} from './LinterAdapter';
 
 export class IndieLinterDelegate {
   _name: string;
