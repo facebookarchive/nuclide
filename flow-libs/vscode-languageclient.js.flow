@@ -156,6 +156,7 @@ declare module 'vscode-languageclient' {
   };
 
   declare export class LanguageClient {
+    get clientOptions(): LanguageClientOptions;
     constructor(
       name: string,
       serverOptions: ServerOptions,
@@ -180,5 +181,6 @@ declare module 'vscode-languageclient' {
     start(): IDisposable;
     stop(): Thenable<void>;
     registerFeature(feature: StaticFeature): void;
+    sendRequest<R>(method: string, param: any): Thenable<R>;
   }
 }

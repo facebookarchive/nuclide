@@ -107,7 +107,7 @@ declare module 'vscode-languageserver-protocol' {
     arguments?: any[],
   };
 
-  declare type TextEdit = {
+  declare export type TextEdit = {
     // The range of the text document to be manipulated. To insert
     // text into a document create a range where start === end.
     range: Range,
@@ -979,4 +979,12 @@ declare module 'vscode-languageserver-protocol' {
     write(msg: Message): void;
     dispose(): void;
   }
+
+  /**
+   * A request send from the client to the server to execute a command. The request might return
+   * a workspace edit which the client will apply to the workspace.
+   */
+  declare export var ExecuteCommandRequest: {
+    type: 'workspace/executeCommand',
+  };
 }
