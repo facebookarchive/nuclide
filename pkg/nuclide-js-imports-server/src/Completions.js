@@ -148,15 +148,17 @@ export function provideFullImportCompletions(
       .sort(compareForSuggestion);
     return results.concat(
       importPaths.slice(0, needed).map(importPath => {
+        const textEdit = createLineEdit(
+          lineNum,
+          line,
+          createImportStatement(id, importPath, importType),
+        );
         return {
           label: id,
+          filterText: textEdit.newText,
           kind: CompletionItemKind.Module,
           inlineDetail: importsFormatter.stripLeadingDots(importPath),
-          textEdit: createLineEdit(
-            lineNum,
-            line,
-            createImportStatement(id, importPath, importType),
-          ),
+          textEdit,
         };
       }),
     );
@@ -188,17 +190,19 @@ export function provideImportFileCompletions(
     .sort(compareForSuggestion)
     .slice(0, MAX_RESULTS)
     .map(importPath => {
+      const textEdit = createLineEdit(
+        lineNum,
+        line,
+        createImportStatement(ids.join(', '), importPath, importType),
+      );
       return {
         label:
           importType === 'requireImport' || importType === 'requireDestructured'
             ? `= require('${importPath}');`
             : `from '${importPath}';`,
         kind: CompletionItemKind.Module,
-        textEdit: createLineEdit(
-          lineNum,
-          line,
-          createImportStatement(ids.join(', '), importPath, importType),
-        ),
+        filterText: textEdit.newText,
+        textEdit,
       };
     });
 }

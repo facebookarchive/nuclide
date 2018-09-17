@@ -113,7 +113,7 @@ connection.onInitialize(
       capabilities: {
         textDocumentSync: documents.syncKind,
         completionProvider: {
-          resolveProvider: true,
+          resolveProvider: false,
           triggerCharacters: getAllTriggerCharacters(),
         },
         codeActionProvider: true,

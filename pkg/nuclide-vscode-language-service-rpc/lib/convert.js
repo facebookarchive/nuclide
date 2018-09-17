@@ -207,7 +207,9 @@ export function atom_lspPositionParams(
   };
 }
 
-function lspCompletionItemKind_atomCompletionType(kind: ?number): ?string {
+export function lspCompletionItemKind_atomCompletionType(
+  kind: ?number,
+): ?string {
   switch (kind) {
     case CompletionItemKind.Text:
       return '';
@@ -250,7 +252,7 @@ function lspCompletionItemKind_atomCompletionType(kind: ?number): ?string {
   }
 }
 
-function lspCompletionItemKind_atomIcon(kind: ?number): ?string {
+export function lspCompletionItemKind_atomIcon(kind: ?number): ?string {
   // returns null if there should be no icon
   // returns 'DEFAULT' for the default icon provided by AutocompletePlus
   // returns anything else for an Atom icon
