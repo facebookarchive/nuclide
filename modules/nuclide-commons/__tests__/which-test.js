@@ -36,10 +36,12 @@ describe('which', () => {
     const real_eol = os.EOL;
     beforeEach(() => {
       Object.defineProperty(process, 'platform', {value: 'win32'});
+      // $FlowFixMe overwriting for test
       os.EOL = eol;
     });
     afterEach(() => {
       Object.defineProperty(process, 'platform', {value: real_platform});
+      // $FlowFixMe overwriting for test
       os.EOL = real_eol;
     });
 
@@ -63,10 +65,12 @@ describe('which', () => {
     const real_eol = os.EOL;
     beforeEach(() => {
       Object.defineProperty(process, 'platform', {value: 'linux'});
+      // $FlowFixMe overwriting for test
       os.EOL = eol;
     });
     afterEach(() => {
       Object.defineProperty(process, 'platform', {value: real_platform});
+      // $FlowFixMe overwriting for test
       os.EOL = real_eol;
     });
 
