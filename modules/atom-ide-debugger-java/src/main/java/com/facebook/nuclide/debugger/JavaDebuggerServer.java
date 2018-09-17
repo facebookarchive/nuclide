@@ -158,6 +158,8 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     try {
       port = arguments.getInt("javaJdwpPort");
     } catch (Exception ex) {
+      // We used to use port in the config but now we use javaJdwpPort.
+      // This line is here just in case we missed a spot when switching to using javaJdwpPort.
       port = arguments.getInt("port");
     }
     try {

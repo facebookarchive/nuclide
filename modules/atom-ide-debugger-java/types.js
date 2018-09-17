@@ -39,9 +39,9 @@ export type IJavaLaunchProcessConfig = {|
   |},
 |};
 
-export type IJavaAttachProcessConfig = {
+export type IJavaAttachProcessConfig = {|
   ...IProcessConfig,
   +config: {|
     javaJdwpPort: number,
   |},
-};
+|};

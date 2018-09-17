@@ -19,6 +19,7 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
+import type {IJavaAttachProcessConfig} from './types';
 
 import typeof * as JavaDebuggerHelpersService from './JavaDebuggerHelpersService';
 
@@ -272,4 +273,24 @@ export function getJavaDebuggerHelpersServiceByNuclideUri(
     'JavaDebuggerHelpersService',
     uri,
   );
+}
+
+export function createJavaAttachConfig(
+  targetUri: NuclideUri,
+  attachPort: number,
+  processName?: string,
+): IJavaAttachProcessConfig {
+  const debuggerConfig = {
+    javaJdwpPort: attachPort,
+  };
+  const processConfig = {
+    targetUri,
+    debugMode: 'attach',
+    adapterType: VsAdapterTypes.JAVA,
+    config: debuggerConfig,
+    processName:
+      processName != null ? processName : 'JDWP: ' + attachPort + ' (Java)',
+    isRestartable: false,
+  };
+  return processConfig;
 }
