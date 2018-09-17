@@ -64,16 +64,24 @@ export class DiagnosticsViewModel {
     // Memoize `_filterDiagnostics()`
     (this: any)._filterDiagnostics = memoizeUntilChanged(
       this._filterDiagnostics,
-      (diagnostics, pattern, hiddenGroups, filterPath) => ({
+      (
         diagnostics,
         pattern,
         hiddenGroups,
+        filterByActiveTextEditor,
+        filterPath,
+      ) => ({
+        diagnostics,
+        pattern,
+        hiddenGroups,
+        filterByActiveTextEditor,
         filterPath,
       }),
       (a, b) =>
         patternsAreEqual(a.pattern, b.pattern) &&
         areSetsEqual(a.hiddenGroups, b.hiddenGroups) &&
         arrayEqual(a.diagnostics, b.diagnostics) &&
+        a.filterByActiveTextEditor === b.filterByActiveTextEditor &&
         a.filterPath === b.filterPath,
     );
 
@@ -137,9 +145,8 @@ export class DiagnosticsViewModel {
           globalState.diagnostics,
           instanceState.textFilter.pattern,
           instanceState.hiddenGroups,
-          globalState.filterByActiveTextEditor
-            ? globalState.pathToActiveTextEditor
-            : null,
+          globalState.filterByActiveTextEditor,
+          globalState.pathToActiveTextEditor,
         ),
         onTypeFilterChange: this._handleTypeFilterChange,
         onTextFilterChange: this._handleTextFilterChange,
@@ -264,13 +271,14 @@ export class DiagnosticsViewModel {
     diagnostics: Array<DiagnosticMessage>,
     pattern: ?RegExp,
     hiddenGroups: Set<DiagnosticGroup>,
+    filterByActiveTextEditor: boolean,
     filterByPath: ?string,
   ): Array<DiagnosticMessage> {
     return diagnostics.filter(message => {
       if (hiddenGroups.has(GroupUtils.getGroup(message))) {
         return false;
       }
-      if (filterByPath != null && message.filePath !== filterByPath) {
+      if (filterByActiveTextEditor && message.filePath !== filterByPath) {
         return false;
       }
       if (pattern == null) {
