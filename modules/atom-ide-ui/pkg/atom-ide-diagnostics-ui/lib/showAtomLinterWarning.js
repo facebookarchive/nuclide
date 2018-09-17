@@ -38,7 +38,7 @@ function disableLinter(): void {
 }
 
 function disableDiagnostics(): void {
-  featureConfig.set('use.atom-ide-diagnostics-ui', false);
+  featureConfig.set('use.atom-ide-diagnostics-ui', 'never');
 }
 
 export default function showAtomLinterWarning(): IDisposable {
