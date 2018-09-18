@@ -78,6 +78,7 @@ export const OPEN_AND_REVEAL_DIRECTORY_PATH = 'OPEN_AND_REVEAL_DIRECTORY_PATH';
 export const REORDER_DRAG_INTO = 'REORDER_DRAG_INTO';
 export const REORDER_ROOTS = 'REORDER_ROOTS';
 export const MOVE_TO_NODE = 'MOVE_TO_NODE';
+export const MOVE_PATH_TO_NODE = 'MOVE_PATH_TO_NODE';
 export const SET_INITIAL_DATA = 'SET_INITIAL_DATA';
 export const SET_USE_PREVIEW_TABS = 'SET_USE_PREVIEW_TABS';
 export const SET_USE_PREFIX_NAV = 'SET_USE_PREFIX_NAV';
@@ -290,6 +291,13 @@ export function moveToNode(rootKey: string, nodeKey: string): Action {
     nodeKey,
     rootKey,
   };
+}
+
+export function movePathToNode(
+  uri: NuclideUri,
+  destination: FileTreeNode,
+): Action {
+  return {type: MOVE_PATH_TO_NODE, uri, destination};
 }
 
 export function setUsePreviewTabs(usePreviewTabs: boolean): Action {

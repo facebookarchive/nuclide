@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
 import type {AppState} from '../lib/types';
@@ -70,6 +71,7 @@ type Props = {|
   moveToNode: () => void,
   uploadDroppedFiles: (files: FileList) => void,
   canTransferFiles: boolean,
+  movePathToNode: NuclideUri => void,
 |};
 
 type State = {|
@@ -79,6 +81,7 @@ type State = {|
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
+const FILE_TREE_DRAG_SOURCE = 'file-tree';
 
 class FileTreeEntryComponent extends React.Component<Props, State> {
   _arrowContainer: ?HTMLElement;
@@ -402,31 +405,40 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     if (event.currentTarget.contains(event.relatedTarget)) {
       return;
     }
-
-    const nodes = this.props.selectedNodes;
-    if (
-      !this.props.isPreview &&
-      nodes.size === 1 &&
-      nullthrows(nodes.first()).isRoot
-    ) {
-      this.props.reorderDragInto();
+    if (!this.props.node.isContainer) {
       return;
     }
-    const movableNodes = nodes.filter(node =>
+
+    const {selectedNodes} = this.props;
+    const singleRootNodeIsSelected =
+      !this.props.isPreview &&
+      selectedNodes.size === 1 &&
+      nullthrows(selectedNodes.first()).isRoot;
+
+    const movableNodes = selectedNodes.filter(node =>
       FileTreeHgHelpers.isValidRename(node.uri, this.props.node.uri),
     );
 
-    const haveMovableNodes = movableNodes.size > 0;
     const haveUploadableOSFiles =
       this.props.canTransferFiles &&
       event.dataTransfer &&
       event.dataTransfer.types.includes('Files');
-    const nothingToMove = !(haveMovableNodes || haveUploadableOSFiles);
-    // Ignores hover over invalid targets.
-    if (!this.props.node.isContainer || nothingToMove) {
-      return;
+
+    const externalDragPath = getExternalDragPath(event);
+
+    if (externalDragPath != null) {
+      if (
+        FileTreeHgHelpers.isValidRename(externalDragPath, this.props.node.uri)
+      ) {
+        this.props.setDragHoveredNode();
+      }
+    } else if (haveUploadableOSFiles) {
+      this.props.setDragHoveredNode();
+    } else if (singleRootNodeIsSelected) {
+      this.props.reorderDragInto();
+    } else if (movableNodes.size > 0) {
+      this.props.setDragHoveredNode();
     }
-    this.props.setDragHoveredNode();
   };
 
   _onDragLeave = (event: DragEvent) => {
@@ -461,6 +473,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       dataTransfer.effectAllowed = 'move';
       dataTransfer.setDragImage(fileIcon, -8, -4);
       dataTransfer.setData('initialPath', this.props.node.uri);
+      dataTransfer.setData('nuclideSource', FILE_TREE_DRAG_SOURCE);
     }
     nextAnimationFrame.subscribe(() => {
       invariant(document.body != null);
@@ -487,13 +500,18 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     event.preventDefault();
     event.stopPropagation();
 
+    const externalDragPath = getExternalDragPath(event);
+
     const dragNode =
       this.props.selectedNodes.size === 1
         ? this.props.selectedNodes.first()
         : null;
 
     const files = event.dataTransfer?.files;
-    if (files && files.length && this.props.canTransferFiles) {
+
+    if (externalDragPath != null) {
+      this.props.movePathToNode(externalDragPath);
+    } else if (files && files.length && this.props.canTransferFiles) {
       if (this.props.node.isContainer) {
         this.props.uploadDroppedFiles(files);
       } else {
@@ -621,7 +639,31 @@ const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
   uploadDroppedFiles: (files: FileList) => {
     dispatch(Actions.uploadDroppedFiles(ownProps.node, files));
   },
+  movePathToNode: (uri: NuclideUri) => {
+    dispatch(Actions.movePathToNode(uri, ownProps.node));
+  },
 });
+
+function getExternalDragPath(event: DragEvent): ?NuclideUri {
+  const {dataTransfer} = event;
+  if (dataTransfer == null) {
+    return null;
+  }
+  const nuclideSource = dataTransfer.getData('nuclideSource');
+  // For drag events within File Tree we use the selected nodes not `dataTransfer`.
+  // Ignore these events.
+  if (nuclideSource === FILE_TREE_DRAG_SOURCE) {
+    return null;
+  }
+
+  // This is what <DraggableFile> uses.
+  const initialPath = dataTransfer.getData('initialPath');
+  // This is what https://github.com/atom/tabs uses.
+  const textPlain = dataTransfer.getData('text/plain');
+
+  // `dataTransfer.getData()` returns empty string if the value has not been set.
+  return initialPath || textPlain || null;
+}
 
 export default connect(
   mapStateToProps,

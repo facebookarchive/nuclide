@@ -1104,6 +1104,26 @@ export function moveToNodeEpic(
   });
 }
 
+export function movePathToNodeEpic(
+  actions: ActionsObservable<Action>,
+  store: MiddlewareStore,
+): Observable<Action> {
+  return actions.ofType(Actions.MOVE_PATH_TO_NODE).mergeMap(action => {
+    invariant(action.type === Actions.MOVE_PATH_TO_NODE);
+    const {uri, destination} = action;
+    if (!destination.isContainer) {
+      return Observable.empty();
+    }
+    track('file-tree-move-dropped-external-file', {
+      source: uri,
+      destination: destination.uri,
+    });
+    // This is async but we don't care.
+    FileTreeHgHelpers.movePaths([uri], destination.uri);
+    return Observable.of(Actions.clearDragHover(), Actions.clearSelection());
+  });
+}
+
 export function expandNodeEpic(
   actions: ActionsObservable<Action>,
   store: MiddlewareStore,

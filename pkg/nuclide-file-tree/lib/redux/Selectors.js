@@ -322,6 +322,14 @@ export const getRootForPath = (
   return rootNode || null;
 };
 
+export const getNodeForPath = (
+  state: AppState,
+  uri: NuclideUri,
+): ?FileTreeNode => {
+  const rootNode = getRootForPath(state, uri);
+  return rootNode && rootNode.find(uri);
+};
+
 export const isEditedWorkingSetEmpty = createSelector([getRoots], roots =>
   roots.every(root => root.checkedStatus === 'clear'),
 );

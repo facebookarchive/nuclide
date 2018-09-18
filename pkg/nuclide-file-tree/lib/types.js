@@ -209,6 +209,11 @@ export type Action =
       nodeKey: NuclideUri,
     }
   | {
+      type: 'MOVE_PATH_TO_NODE',
+      uri: NuclideUri,
+      destination: FileTreeNode,
+    }
+  | {
       type: 'SET_USE_PREVIEW_TABS',
       usePreviewTabs: boolean,
     }
