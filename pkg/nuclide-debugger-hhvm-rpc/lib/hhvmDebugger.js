@@ -370,7 +370,7 @@ class HHVMDebuggerWrapper {
               supportsRestartRequest: false,
               supportsConditionalBreakpoints: true,
               supportsStepBack: false,
-              supportsCompletionsRequest: true,
+              supportsCompletionsRequest: false,
               supportsRestartFrame: false,
               supportsStepInTargetsRequest: false,
               supportsFunctionBreakpoints: true,
@@ -417,6 +417,9 @@ class HHVMDebuggerWrapper {
         case 'pause': {
           this._asyncBreakPending = true;
           return false;
+        }
+        case 'completions': {
+          return true;
         }
         default:
           break;
