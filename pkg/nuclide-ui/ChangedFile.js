@@ -343,6 +343,10 @@ export default class ChangedFile extends React.Component<Props> {
         err,
       );
     }
+    const draggable = !(
+      fileStatus === FileChangeStatus.MISSING ||
+      fileStatus === FileChangeStatus.REMOVED
+    );
     return (
       <li
         data-name={displayPath}
@@ -357,6 +361,7 @@ export default class ChangedFile extends React.Component<Props> {
         key={filePath}>
         {checkbox}
         <DraggableFile
+          draggable={draggable}
           uri={filePath}
           className="nuclide-changed-file-name"
           onClick={handleFileChosen}>

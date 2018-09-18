@@ -20,6 +20,7 @@ const MAGIC_DATA_TRANSFER_KEY = 'nuclide-draggable-file';
 
 export default class DraggableFile extends React.Component<{
   uri: NuclideUri,
+  draggable?: boolean,
 }> {
   _disposables: UniversalDisposable;
 
@@ -55,10 +56,10 @@ export default class DraggableFile extends React.Component<{
   };
 
   render() {
-    const {uri, ...restProps} = this.props;
+    const {uri, draggable = true, ...restProps} = this.props;
     // https://discuss.atom.io/t/drag-drop/21262/14
     const tabIndex = -1;
-    return <div draggable="true" tabIndex={tabIndex} {...restProps} />;
+    return <div draggable={draggable} tabIndex={tabIndex} {...restProps} />;
   }
 }
 
