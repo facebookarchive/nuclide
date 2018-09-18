@@ -17,6 +17,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import {getLogger} from 'log4js';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
+import DraggableFile from 'nuclide-commons-ui/DraggableFile';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -355,7 +356,10 @@ export default class ChangedFile extends React.Component<Props> {
         className={this._getFileClassname()}
         key={filePath}>
         {checkbox}
-        <span className="nuclide-changed-file-name" onClick={handleFileChosen}>
+        <DraggableFile
+          uri={filePath}
+          className="nuclide-changed-file-name"
+          onClick={handleFileChosen}>
           <Icon
             className="nuclide-changed-file-name-icon"
             icon={FileChangeStatusToIcon[fileStatus]}
@@ -364,7 +368,7 @@ export default class ChangedFile extends React.Component<Props> {
             path={displayPath}
             title={`${statusName}:${LF}${relativePath}${LF}(Click to open)`}
           />
-        </span>
+        </DraggableFile>
         {actions}
       </li>
     );
