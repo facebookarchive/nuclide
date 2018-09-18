@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _BreakpointCommandUtils() {
+  const data = require("./BreakpointCommandUtils");
+
+  _BreakpointCommandUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,22 +23,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type Breakpoint from './Breakpoint';
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-import {breakpointFromArgList} from './BreakpointCommandUtils';
-
-export default class BreakpointToggleCommand implements Command {
-  name = 'toggle';
-  helpText =
-    "[index | 'all']: toggles a breakpoint, or all breakpoints. With no arguments, toggles the current breakpoint.";
-  detailedHelpText = `
+class BreakpointToggleCommand {
+  constructor(con, debug) {
+    this.name = 'toggle';
+    this.helpText = "[index | 'all']: toggles a breakpoint, or all breakpoints. With no arguments, toggles the current breakpoint.";
+    this.detailedHelpText = `
     [index | 'all']: toggles a breakpoint, or all breakpoints. With no arguments,
     toggles the current breakpoint.
 
@@ -41,29 +50,26 @@ export default class BreakpointToggleCommand implements Command {
 
     breakpoint once main()
   `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const bpt: ?Breakpoint = breakpointFromArgList(
-      this._debugger,
-      args,
-      this.name,
-    );
+  async execute(args) {
+    const bpt = (0, _BreakpointCommandUtils().breakpointFromArgList)(this._debugger, args, this.name);
 
     if (bpt == null) {
       await this._debugger.toggleAllBreakpoints();
+
       this._console.outputLine('All breakpoins toggled.');
+
       return;
     }
 
     await this._debugger.toggleBreakpoint(bpt);
+
     this._console.outputLine(`Breakpoint #${bpt.index} toggled.`);
   }
+
 }
+
+exports.default = BreakpointToggleCommand;

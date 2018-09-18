@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _BreakpointCommandUtils() {
+  const data = require("./BreakpointCommandUtils");
+
+  _BreakpointCommandUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +23,33 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type Breakpoint from './Breakpoint';
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-import {breakpointFromArgList} from './BreakpointCommandUtils';
-
-export default class BreakpointDisableCommand implements Command {
-  name = 'disable';
-  helpText =
-    "[index | 'all']: temporarily disables a breakpoint, or all breakpoints. With no arguments, disables the current breakpoint.";
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
+class BreakpointDisableCommand {
+  constructor(con, debug) {
+    this.name = 'disable';
+    this.helpText = "[index | 'all']: temporarily disables a breakpoint, or all breakpoints. With no arguments, disables the current breakpoint.";
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const bpt: ?Breakpoint = breakpointFromArgList(
-      this._debugger,
-      args,
-      this.name,
-    );
+  async execute(args) {
+    const bpt = (0, _BreakpointCommandUtils().breakpointFromArgList)(this._debugger, args, this.name);
 
     if (bpt == null) {
       await this._debugger.setAllBreakpointsEnabled(false);
+
       this._console.outputLine('All breakpoins disabled.');
+
       return;
     }
 
     await this._debugger.setBreakpointEnabled(bpt, false);
+
     this._console.outputLine(`Breakpoint #${bpt.index} disabled.`);
   }
+
 }
+
+exports.default = BreakpointDisableCommand;

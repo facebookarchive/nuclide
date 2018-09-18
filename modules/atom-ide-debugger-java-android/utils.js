@@ -1,3 +1,107 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getJavaAndroidConfig = getJavaAndroidConfig;
+exports.getCustomControlButtonsForJavaSourcePaths = getCustomControlButtonsForJavaSourcePaths;
+exports.resolveConfiguration = resolveConfiguration;
+exports.NUCLIDE_DEBUGGER_DEV_GK = void 0;
+
+function _constants() {
+  const data = require("../atom-ide-ui/pkg/atom-ide-debugger/lib/constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAdb() {
+  const data = require("../nuclide-adb");
+
+  _nuclideAdb = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants2() {
+  const data = require("../nuclide-debugger-common/constants");
+
+  _constants2 = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("../atom-ide-debugger-java/utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _analytics() {
+  const data = require("../nuclide-commons/analytics");
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AndroidJavaDebuggerHelpers() {
+  const data = require("./AndroidJavaDebuggerHelpers");
+
+  _AndroidJavaDebuggerHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,283 +110,198 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  AutoGenConfig,
-  IProcessConfig,
-  ControlButtonSpecification,
-  DebuggerConfigAction,
-} from 'nuclide-debugger-common/types';
-
-import {AnalyticsEvents} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/constants';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Subject} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 // eslint-disable-next-line nuclide-internal/modules-dependencies
-import {
-  getJavaDebuggerHelpersServiceByNuclideUri,
-  getSourcePathClickSubscriptions,
-} from 'atom-ide-debugger-java/utils';
-import nullthrows from 'nullthrows';
-import {track} from 'nuclide-commons/analytics';
-import {
-  getAdbAttachPortTargetInfo,
-  launchAndroidServiceOrActivity,
-  getPidFromPackageName,
-} from './AndroidJavaDebuggerHelpers';
+const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
+exports.NUCLIDE_DEBUGGER_DEV_GK = NUCLIDE_DEBUGGER_DEV_GK;
 
-export const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
-
-export function getJavaAndroidConfig(): AutoGenConfig {
+function getJavaAndroidConfig() {
   const deviceAndPackage = {
     name: 'deviceAndPackage',
     type: 'deviceAndPackage',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
   const activity = {
     name: 'activity',
     type: 'string',
     description: 'com.example.app.main.MainActivity',
     required: false,
-    visible: true,
+    visible: true
   };
   const service = {
     name: 'service',
     type: 'string',
     description: '.example.package.path.MyServiceClass',
     required: false,
-    visible: true,
+    visible: true
   };
   const intent = {
     name: 'intent',
     type: 'string',
     description: 'android.intent.action.MAIN',
     required: false,
-    visible: true,
+    visible: true
   };
-
   const deviceAndProcess = {
     name: 'deviceAndProcess',
     type: 'deviceAndProcess',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
   const selectSources = {
     name: 'selectSources',
     type: 'selectSources',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
-
   return {
     launch: {
       launch: true,
-      vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
+      vsAdapterType: _constants2().VsAdapterTypes.JAVA_ANDROID,
       properties: [deviceAndPackage, activity, service, intent, selectSources],
       cwdPropertyName: 'cwd',
       header: null,
+
       // Value will be replaced in the return value of resolveConfiguration().
       getProcessName(values) {
         return 'Android';
-      },
+      }
+
     },
     attach: {
       launch: false,
-      vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
+      vsAdapterType: _constants2().VsAdapterTypes.JAVA_ANDROID,
       properties: [deviceAndProcess, selectSources],
       header: null,
+
       // Value will be replaced in the return value of resolveConfiguration().
       getProcessName(values) {
         return 'Android';
-      },
-    },
+      }
+
+    }
   };
 }
 
-export function getCustomControlButtonsForJavaSourcePaths(
-  clickEvents: rxjs$Subject<void>,
-): ControlButtonSpecification[] {
-  return [
-    {
-      icon: 'file-code',
-      title: 'Set Source Path',
-      onClick: () => clickEvents.next(),
-    },
-  ];
+function getCustomControlButtonsForJavaSourcePaths(clickEvents) {
+  return [{
+    icon: 'file-code',
+    title: 'Set Source Path',
+    onClick: () => clickEvents.next()
+  }];
 }
 
-function _getPackageName(debugMode: DebuggerConfigAction, config): string {
-  return debugMode === 'launch'
-    ? config.deviceAndPackage.selectedPackage
-    : config.deviceAndProcess.selectedProcess.name;
+function _getPackageName(debugMode, config) {
+  return debugMode === 'launch' ? config.deviceAndPackage.selectedPackage : config.deviceAndProcess.selectedProcess.name;
 }
 
-function _getDeviceSerial(debugMode: DebuggerConfigAction, config): string {
-  return nullthrows(
-    debugMode === 'launch'
-      ? config.deviceAndPackage.deviceSerial
-      : config.deviceAndProcess.deviceSerial,
-  );
+function _getDeviceSerial(debugMode, config) {
+  return (0, _nullthrows().default)(debugMode === 'launch' ? config.deviceAndPackage.deviceSerial : config.deviceAndProcess.deviceSerial);
 }
 
-async function _getPid(
-  debugMode: DebuggerConfigAction,
-  config,
-  adbServiceUri: string,
-  deviceSerial: string,
-  packageName: string,
-): Promise<number> {
-  const selectedProcessPidString =
-    config.deviceAndProcess?.selectedProcess?.pid;
-  const pid =
-    debugMode === 'attach' && selectedProcessPidString != null
-      ? parseInt(selectedProcessPidString, 10)
-      : await getPidFromPackageName(adbServiceUri, deviceSerial, packageName);
+async function _getPid(debugMode, config, adbServiceUri, deviceSerial, packageName) {
+  var _config$deviceAndProc, _config$deviceAndProc2;
+
+  const selectedProcessPidString = (_config$deviceAndProc = config.deviceAndProcess) === null || _config$deviceAndProc === void 0 ? void 0 : (_config$deviceAndProc2 = _config$deviceAndProc.selectedProcess) === null || _config$deviceAndProc2 === void 0 ? void 0 : _config$deviceAndProc2.pid;
+  const pid = debugMode === 'attach' && selectedProcessPidString != null ? parseInt(selectedProcessPidString, 10) : await (0, _AndroidJavaDebuggerHelpers().getPidFromPackageName)(adbServiceUri, deviceSerial, packageName);
+
   if (isNaN(pid)) {
-    throw new Error(
-      'Selected process pid is not a number: ' +
-        JSON.stringify(selectedProcessPidString),
-    );
+    throw new Error('Selected process pid is not a number: ' + JSON.stringify(selectedProcessPidString));
   }
+
   return pid;
 }
 
-function _getResolvedTargetUri(targetUri: NuclideUri, config) {
+function _getResolvedTargetUri(targetUri, config) {
   const selectSources = config.selectSources;
   return selectSources != null ? selectSources : targetUri;
 }
 
-function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
+function _getAdbServiceUri(unresolvedTargetUri, config) {
   const adbServiceUri = config.adbServiceUri;
   return adbServiceUri != null ? adbServiceUri : unresolvedTargetUri;
 }
 
-async function _getAndroidSdkSourcePaths(
-  targetUri: NuclideUri,
-  adbServiceUri: NuclideUri,
-  deviceSerial: string,
-): Promise<Array<string>> {
-  const sdkVersion = await getAdbServiceByNuclideUri(
-    adbServiceUri,
-  ).getAPIVersion(deviceSerial);
-  const sdkSourcePath =
-    sdkVersion !== ''
-      ? await getJavaDebuggerHelpersServiceByNuclideUri(
-          targetUri,
-        ).getSdkVersionSourcePath(sdkVersion)
-      : null;
+async function _getAndroidSdkSourcePaths(targetUri, adbServiceUri, deviceSerial) {
+  const sdkVersion = await (0, _nuclideAdb().getAdbServiceByNuclideUri)(adbServiceUri).getAPIVersion(deviceSerial);
+  const sdkSourcePath = sdkVersion !== '' ? await (0, _utils().getJavaDebuggerHelpersServiceByNuclideUri)(targetUri).getSdkVersionSourcePath(sdkVersion) : null;
+
   if (sdkSourcePath == null) {
-    atom.notifications.addInfo(
-      'Unable to find Android Sdk Sources for version: ' +
-        sdkVersion +
-        '. Check if they are installed. Nuclide can still debug your application, but source code for frames inside Android library routines will not be available.',
-    );
+    atom.notifications.addInfo('Unable to find Android Sdk Sources for version: ' + sdkVersion + '. Check if they are installed. Nuclide can still debug your application, but source code for frames inside Android library routines will not be available.');
   }
-  track(AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
+
+  (0, _analytics().track)(_constants().AnalyticsEvents.ANDROID_DEBUGGER_SDK_SOURCES, {
     deviceSerial,
     sdkVersion,
     sdkSourcePathExists: sdkSourcePath != null,
-    sdkSourcePath,
+    sdkSourcePath
   });
-  const sdkSourcePathResolved =
-    sdkSourcePath != null ? nuclideUri.getPath(sdkSourcePath) : null;
+  const sdkSourcePathResolved = sdkSourcePath != null ? _nuclideUri().default.getPath(sdkSourcePath) : null;
   return sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
 }
 
-export async function resolveConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
+async function resolveConfiguration(configuration) {
   // adapterType === VsAdapterTypes.JAVA_ANDROID
-  const {config, debugMode, targetUri} = configuration;
+  const {
+    config,
+    debugMode,
+    targetUri
+  } = configuration;
+
   const adbServiceUri = _getAdbServiceUri(targetUri, config);
+
   const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
+
   const packageName = _getPackageName(debugMode, config);
+
   const deviceSerial = _getDeviceSerial(debugMode, config);
+
   if (debugMode === 'launch') {
-    const {service, intent, activity} = config;
-    await launchAndroidServiceOrActivity(
-      adbServiceUri,
-      (service: ?string),
-      (activity: ?string),
-      (intent: ?string) /* intent and action are the same */,
-      deviceSerial,
-      packageName,
-    );
+    const {
+      service,
+      intent,
+      activity
+    } = config;
+    await (0, _AndroidJavaDebuggerHelpers().launchAndroidServiceOrActivity)(adbServiceUri, service, activity, intent,
+    /* intent and action are the same */
+    deviceSerial, packageName);
   }
 
-  const pid = await _getPid(
-    debugMode,
-    config,
-    adbServiceUri,
-    deviceSerial,
-    packageName,
-  );
+  const pid = await _getPid(debugMode, config, adbServiceUri, deviceSerial, packageName);
+  const subscriptions = new (_UniversalDisposable().default)();
+  const attachPortTargetConfig = await (0, _AndroidJavaDebuggerHelpers().getAdbAttachPortTargetInfo)(deviceSerial, adbServiceUri, resolvedTargetUri, pid, subscriptions, packageName);
+  const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(resolvedTargetUri, adbServiceUri, deviceSerial);
+  const clickEvents = new _RxMin.Subject();
+  const adapterExecutable = await (0, _utils().getJavaDebuggerHelpersServiceByNuclideUri)(resolvedTargetUri).getJavaVSAdapterExecutableInfo(false);
+  let processName = packageName; // Gets rid of path to package.
 
-  const subscriptions = new UniversalDisposable();
-  const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
-    deviceSerial,
-    adbServiceUri,
-    resolvedTargetUri,
-    pid,
-    subscriptions,
-    packageName,
-  );
-
-  const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(
-    resolvedTargetUri,
-    adbServiceUri,
-    deviceSerial,
-  );
-
-  const clickEvents = new Subject();
-  const adapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
-    resolvedTargetUri,
-  ).getJavaVSAdapterExecutableInfo(false);
-
-  let processName = packageName;
-
-  // Gets rid of path to package.
   const lastPeriod = processName.lastIndexOf('.');
+
   if (lastPeriod >= 0) {
     processName = processName.substring(lastPeriod + 1, processName.length);
   }
 
-  return {
-    ...configuration,
+  return Object.assign({}, configuration, {
     targetUri: resolvedTargetUri,
     debugMode: 'attach',
     adapterExecutable,
-    customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-      clickEvents,
-    ),
+    customControlButtons: getCustomControlButtonsForJavaSourcePaths(clickEvents),
     servicedFileExtensions: ['java'],
-    config: {
-      ...attachPortTargetConfig,
+    config: Object.assign({}, attachPortTargetConfig, {
       deviceSerial,
       packageName,
-      grammarName: 'source.java',
-    },
+      grammarName: 'source.java'
+    }),
     onDebugStartingCallback: instance => {
-      subscriptions.add(
-        ...getSourcePathClickSubscriptions(
-          resolvedTargetUri,
-          instance,
-          clickEvents,
-          androidSdkSourcePaths,
-        ),
-      );
+      subscriptions.add(...(0, _utils().getSourcePathClickSubscriptions)(resolvedTargetUri, instance, clickEvents, androidSdkSourcePaths));
       return subscriptions;
     },
-    processName,
-  };
+    processName
+  });
 }

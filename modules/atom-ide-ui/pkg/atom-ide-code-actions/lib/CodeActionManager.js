@@ -1,3 +1,74 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeActionManager = void 0;
+
+function _debounced() {
+  const data = require("../../../../nuclide-commons-atom/debounced");
+
+  _debounced = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ProviderRegistry() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/ProviderRegistry"));
+
+  _ProviderRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,201 +77,156 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
-import {Observable} from 'rxjs';
-import {getLogger} from 'log4js';
-
-import type {
-  RegisterIndieLinter,
-  IndieLinterDelegate,
-  LinterMessageV2,
-} from '../../../index';
-import type {
-  DiagnosticMessage,
-  DiagnosticUpdater,
-} from '../../atom-ide-diagnostics/lib/types';
-import type {CodeAction, CodeActionProvider, CodeActionFetcher} from './types';
-
 const TIP_DELAY_MS = 500;
 
-async function actionsToMessage(
-  location: {file: string, position: atom$RangeLike},
-  actions: Array<CodeAction>,
-): Promise<LinterMessageV2> {
+async function actionsToMessage(location, actions) {
   const titles = await Promise.all(actions.map(r => r.getTitle()));
   const solutions = titles.map((title, i) => ({
     title,
     position: location.position,
-    apply: actions[i].apply.bind(actions[i]),
+    apply: actions[i].apply.bind(actions[i])
   }));
   return {
     location,
     solutions,
     excerpt: 'Select an action',
     severity: 'info',
-    kind: 'action',
+    kind: 'action'
   };
 }
 
-export class CodeActionManager {
-  _providerRegistry: ProviderRegistry<CodeActionProvider>;
-  _disposables: UniversalDisposable;
-  _linterDelegate: ?IndieLinterDelegate;
-  _diagnosticUpdater: ?DiagnosticUpdater;
-
+class CodeActionManager {
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
-    this._disposables = new UniversalDisposable(this._selectionSubscriber());
+    this._providerRegistry = new (_ProviderRegistry().default)();
+    this._disposables = new (_UniversalDisposable().default)(this._selectionSubscriber());
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  addProvider(provider: CodeActionProvider): IDisposable {
+  addProvider(provider) {
     const disposable = this._providerRegistry.addProvider(provider);
+
     this._disposables.add(disposable);
+
     return disposable;
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
+  consumeDiagnosticUpdates(diagnosticUpdater) {
     this._diagnosticUpdater = diagnosticUpdater;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable().default)(() => {
       this._diagnosticUpdater = null;
     });
   }
 
-  consumeIndie(register: RegisterIndieLinter): IDisposable {
+  consumeIndie(register) {
     const linterDelegate = register({
       name: 'Code Actions',
-      supportedMessageKinds: ['action'],
+      supportedMessageKinds: ['action']
     });
+
     this._disposables.add(linterDelegate);
+
     this._linterDelegate = linterDelegate;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable().default)(() => {
       this._disposables.remove(linterDelegate);
+
       this._linterDelegate = null;
     });
   }
 
-  async _genAllCodeActions(
-    editor: atom$TextEditor,
-    range: atom$Range,
-    diagnostics: Array<DiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
+  async _genAllCodeActions(editor, range, diagnostics) {
     const codeActionRequests = [];
-    for (const provider of this._providerRegistry.getAllProvidersForEditor(
-      editor,
-    )) {
-      codeActionRequests.push(
-        provider.getCodeActions(editor, range, diagnostics),
-      );
+
+    for (const provider of this._providerRegistry.getAllProvidersForEditor(editor)) {
+      codeActionRequests.push(provider.getCodeActions(editor, range, diagnostics));
     }
-    return arrayFlatten(arrayCompact(await Promise.all(codeActionRequests)));
+
+    return (0, _collection().arrayFlatten)((0, _collection().arrayCompact)((await Promise.all(codeActionRequests))));
   }
 
-  createCodeActionFetcher(): CodeActionFetcher {
+  createCodeActionFetcher() {
     return {
       getCodeActionForDiagnostic: (diagnostic, editor) => {
         if (diagnostic.range) {
-          const {range} = diagnostic;
+          const {
+            range
+          } = diagnostic;
           return this._genAllCodeActions(editor, range, [diagnostic]);
         }
-        return Promise.resolve([]);
-      },
-    };
-  }
 
-  // Listen to buffer range selection changes and trigger code action providers
+        return Promise.resolve([]);
+      }
+    };
+  } // Listen to buffer range selection changes and trigger code action providers
   // when ranges change.
-  _selectionSubscriber(): rxjs$Subscription {
+
+
+  _selectionSubscriber() {
     // Patterned after highlightEditors of CodeHighlightManager.
-    return observeActiveEditorsDebounced(0)
-      .switchMap(
-        // Get selections for the active editor.
-        editor => {
-          if (editor == null) {
-            return Observable.empty();
-          }
-          const destroyEvents = observableFromSubscribeFunction(
-            editor.onDidDestroy.bind(editor),
-          );
-          const selections = observableFromSubscribeFunction(
-            editor.onDidChangeSelectionRange.bind(editor),
-          )
-            .switchMap(
-              event =>
-                // Remove 0-character selections since it's just cursor movement.
-                event.newBufferRange.isEmpty()
-                  ? Observable.of(null)
-                  : Observable.of(event.newBufferRange)
-                      .delay(TIP_DELAY_MS) // Delay the emission of the range.
-                      .startWith(null), // null the range immediately when selection changes.
-            )
-            .distinctUntilChanged()
-            .takeUntil(destroyEvents);
-          return selections.map(
-            range => (range == null ? null : {editor, range}),
-          );
-        },
-      )
-      .switchMap(
-        // Get a message for the provided selection.
-        (selection: ?{editor: atom$TextEditor, range: atom$Range}) => {
-          if (selection == null) {
-            return Observable.of(null);
-          }
-          const {editor, range} = selection;
-          const file = editor.getBuffer().getPath();
-          if (file == null) {
-            return Observable.empty();
-          }
-          const diagnostics =
-            this._diagnosticUpdater == null
-              ? []
-              : this._diagnosticUpdater
-                  .getFileMessageUpdates(file)
-                  .messages.filter(
-                    message =>
-                      message.range && message.range.intersectsWith(range),
-                  );
-          return Observable.fromPromise(
-            this._genAllCodeActions(editor, range, diagnostics),
-          ).switchMap(actions => {
-            // Only produce a message if we have actions to display.
-            if (actions.length > 0) {
-              return actionsToMessage({file, position: range}, actions);
-            } else {
-              return Observable.empty();
-            }
-          });
-        },
-      )
-      .distinctUntilChanged()
-      .catch((e, caught) => {
-        getLogger('code-actions').error(
-          'Error getting code actions on selection',
-          e,
-        );
-        return caught;
-      })
-      .subscribe(message => {
-        if (this._linterDelegate == null) {
-          return;
-        }
-        if (message == null) {
-          this._linterDelegate.clearMessages();
+    return (0, _debounced().observeActiveEditorsDebounced)(0).switchMap( // Get selections for the active editor.
+    editor => {
+      if (editor == null) {
+        return _RxMin.Observable.empty();
+      }
+
+      const destroyEvents = (0, _event().observableFromSubscribeFunction)(editor.onDidDestroy.bind(editor));
+      const selections = (0, _event().observableFromSubscribeFunction)(editor.onDidChangeSelectionRange.bind(editor)).switchMap(event => // Remove 0-character selections since it's just cursor movement.
+      event.newBufferRange.isEmpty() ? _RxMin.Observable.of(null) : _RxMin.Observable.of(event.newBufferRange).delay(TIP_DELAY_MS) // Delay the emission of the range.
+      .startWith(null) // null the range immediately when selection changes.
+      ).distinctUntilChanged().takeUntil(destroyEvents);
+      return selections.map(range => range == null ? null : {
+        editor,
+        range
+      });
+    }).switchMap( // Get a message for the provided selection.
+    selection => {
+      if (selection == null) {
+        return _RxMin.Observable.of(null);
+      }
+
+      const {
+        editor,
+        range
+      } = selection;
+      const file = editor.getBuffer().getPath();
+
+      if (file == null) {
+        return _RxMin.Observable.empty();
+      }
+
+      const diagnostics = this._diagnosticUpdater == null ? [] : this._diagnosticUpdater.getFileMessageUpdates(file).messages.filter(message => message.range && message.range.intersectsWith(range));
+      return _RxMin.Observable.fromPromise(this._genAllCodeActions(editor, range, diagnostics)).switchMap(actions => {
+        // Only produce a message if we have actions to display.
+        if (actions.length > 0) {
+          return actionsToMessage({
+            file,
+            position: range
+          }, actions);
         } else {
-          this._linterDelegate.setAllMessages([message]);
+          return _RxMin.Observable.empty();
         }
       });
+    }).distinctUntilChanged().catch((e, caught) => {
+      (0, _log4js().getLogger)('code-actions').error('Error getting code actions on selection', e);
+      return caught;
+    }).subscribe(message => {
+      if (this._linterDelegate == null) {
+        return;
+      }
+
+      if (message == null) {
+        this._linterDelegate.clearMessages();
+      } else {
+        this._linterDelegate.setAllMessages([message]);
+      }
+    });
   }
+
 }
+
+exports.CodeActionManager = CodeActionManager;

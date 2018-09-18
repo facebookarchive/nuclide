@@ -1,3 +1,55 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerOnWillSave = registerOnWillSave;
+exports.observeTextEditors = observeTextEditors;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _analytics() {
+  const data = require("../nuclide-commons/analytics");
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ProviderRegistry() {
+  const data = _interopRequireDefault(require("./ProviderRegistry"));
+
+  _ProviderRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _textEdit() {
+  const data = require("./text-edit");
+
+  _textEdit = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,105 +58,68 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Provider} from './ProviderRegistry';
-import type {TextEdit} from './text-edit';
-
-import {Observable} from 'rxjs';
-import {track} from 'nuclide-commons/analytics';
-import ProviderRegistry from './ProviderRegistry';
-import {applyTextEditsToBuffer} from './text-edit';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export type FileEventHandlersConfig = {|
-  supportsOnWillSave: boolean,
-  onWillSaveTimeout?: number,
-  onWillSavePriority?: number,
-|};
-
-type OnWillSaveProvider = Provider & {
-  timeout: number,
-  callback: (e: atom$TextEditor) => Observable<TextEdit>,
-};
-
 // Timeouts if providers don't all finish in 5 seconds.
 const GLOBAL_SAVE_TIMEOUT_MS = 5000;
-const onWillSaveProviders: ProviderRegistry<
-  OnWillSaveProvider,
-> = new ProviderRegistry();
-
-// Returns an observable of booleans, each of which indicates whether the
+const onWillSaveProviders = new (_ProviderRegistry().default)(); // Returns an observable of booleans, each of which indicates whether the
 // formatting text edits from a given provider was successfully applied or not.
-function onWillSave(editor: atom$TextEditor): Observable<boolean> {
+
+function onWillSave(editor) {
   if (editor.getPath() == null) {
-    return Observable.empty();
+    return _RxMin.Observable.empty();
   }
 
-  const providers = Array.from(
-    onWillSaveProviders.getAllProvidersForEditor(editor),
-  );
-  // NOTE: concat() is used here to subscribe to providers sequentially and
+  const providers = Array.from(onWillSaveProviders.getAllProvidersForEditor(editor)); // NOTE: concat() is used here to subscribe to providers sequentially and
   // apply their text edits in order.
-  return Observable.concat(
-    ...providers.map((provider: OnWillSaveProvider) =>
-      provider
-        .callback(editor)
-        .toArray()
-        .race(Observable.of([]).delay(provider.timeout))
-        .map(edits => {
-          const success = applyTextEditsToBuffer(editor.getBuffer(), edits);
-          return success;
-        }),
-    ),
-  );
-}
 
-// HACK: intercept the real TextEditor.save and handle it ourselves.
+  return _RxMin.Observable.concat(...providers.map(provider => provider.callback(editor).toArray().race(_RxMin.Observable.of([]).delay(provider.timeout)).map(edits => {
+    const success = (0, _textEdit().applyTextEditsToBuffer)(editor.getBuffer(), edits);
+    return success;
+  })));
+} // HACK: intercept the real TextEditor.save and handle it ourselves.
 // Atom has no way of injecting content into the buffer asynchronously
 // before a save operation.
 // If we try to format after the save, and then save again,
 // it's a poor user experience (and also races the text buffer's reload).
-function patchEditorSave(editor: atom$TextEditor): IDisposable {
+
+
+function patchEditorSave(editor) {
   const realSave = editor.save;
-  const editor_ = (editor: any);
+  const editor_ = editor;
+
   editor_.save = async () => {
     const timeout = new Date();
     timeout.setTime(timeout.getTime() + GLOBAL_SAVE_TIMEOUT_MS);
+
     try {
-      await onWillSave(editor_)
-        .timeout(timeout)
-        .toPromise();
+      await onWillSave(editor_).timeout(timeout).toPromise();
     } catch (e) {
-      const providers = Array.from(
-        onWillSaveProviders.getAllProvidersForEditor(editor_),
-      );
-      track('timeout-on-save', {
+      const providers = Array.from(onWillSaveProviders.getAllProvidersForEditor(editor_));
+      (0, _analytics().track)('timeout-on-save', {
         uri: editor.getPath(),
-        providers,
+        providers
       });
     } finally {
       await editor_.getBuffer().save();
       await realSave.call(editor);
     }
   };
-  return new UniversalDisposable(() => {
+
+  return new (_UniversalDisposable().default)(() => {
     editor_.save = realSave;
   });
 }
 
-export function registerOnWillSave(provider: OnWillSaveProvider): IDisposable {
+function registerOnWillSave(provider) {
   return onWillSaveProviders.addProvider(provider);
 }
 
-export function observeTextEditors(): IDisposable {
-  const disposables = new UniversalDisposable();
-  disposables.add(
-    atom.workspace.observeTextEditors(editor => {
-      disposables.add(patchEditorSave(editor));
-    }),
-  );
+function observeTextEditors() {
+  const disposables = new (_UniversalDisposable().default)();
+  disposables.add(atom.workspace.observeTextEditors(editor => {
+    disposables.add(patchEditorSave(editor));
+  }));
   return disposables;
 }

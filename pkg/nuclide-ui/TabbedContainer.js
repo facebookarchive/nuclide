@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _Tabs() {
+  const data = _interopRequireDefault(require("../../modules/nuclide-commons-ui/Tabs"));
+
+  _Tabs = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,101 +48,93 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import Tabs from 'nuclide-commons-ui/Tabs';
-import {arrayCompact} from 'nuclide-commons/collection';
-import * as React from 'react';
-import classnames from 'classnames';
-
-type Props = {
-  // An array of possible tab names
-  tabNames: Array<string>,
-  // Any children rendered as null will have their tab name hidden
-  children: Array<React.Node>,
-
-  className?: ?string,
-};
-
-type State = {
-  activeTabName: string,
-};
-
 // Tabbed Container which renders all of its children, but applies
 // `display: none` to inactive ones. This allows tab changes to be very fast and
 // not lose state on expensive-to-mount components
-export default class TabbedContainer extends React.Component<Props, State> {
-  constructor(props: Props) {
+class TabbedContainer extends React.Component {
+  constructor(props) {
     super(props);
-    const {children, tabNames} = props;
+    const {
+      children,
+      tabNames
+    } = props;
     const firstRealTabIndex = children.findIndex(val => val != null);
     this.state = {
-      activeTabName: tabNames[Math.max(0, firstRealTabIndex)],
+      activeTabName: tabNames[Math.max(0, firstRealTabIndex)]
     };
   }
 
-  static getDerivedStateFromProps(nextProps: Props, prevState: State): ?State {
-    const {activeTabName} = prevState;
-    const {tabNames, children} = nextProps;
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const {
+      activeTabName
+    } = prevState;
+    const {
+      tabNames,
+      children
+    } = nextProps;
     const activeTabIndex = tabNames.findIndex(name => name === activeTabName);
+
     if (children[activeTabIndex] == null) {
-      return {
-        ...prevState,
-        activeTabName: tabNames[0],
-      };
+      return Object.assign({}, prevState, {
+        activeTabName: tabNames[0]
+      });
     }
+
     return null;
   }
 
-  render(): React.Node {
-    const {children, tabNames, className} = this.props;
+  render() {
+    const {
+      children,
+      tabNames,
+      className
+    } = this.props;
+    const visibleTabs = (0, _collection().arrayCompact)(tabNames.slice(0, children.length).map((name, tabIndex) => {
+      if (children[tabIndex] == null) {
+        return null;
+      }
 
-    const visibleTabs = arrayCompact(
-      tabNames.slice(0, children.length).map((name, tabIndex) => {
-        if (children[tabIndex] == null) {
-          return null;
-        }
-        return {name, tabContent: <div>{name}</div>};
-      }),
-    );
+      return {
+        name,
+        tabContent: React.createElement("div", null, name)
+      };
+    }));
 
     if (visibleTabs.length === 0) {
       return null;
     }
 
-    const {activeTabName} = this.state;
+    const {
+      activeTabName
+    } = this.state;
     const activeTabIndex = tabNames.findIndex(name => name === activeTabName);
-    const wrappedChildren = arrayCompact(
-      children.map((child, childIndex) => {
-        if (child == null) {
-          return null;
-        }
-        return (
-          <div
-            key={childIndex}
-            className={classnames({
-              hidden: childIndex !== activeTabIndex,
-            })}>
-            {child}
-          </div>
-        );
-      }),
-    );
+    const wrappedChildren = (0, _collection().arrayCompact)(children.map((child, childIndex) => {
+      if (child == null) {
+        return null;
+      }
 
-    return (
-      <div className={className}>
-        <Tabs
-          tabs={visibleTabs}
-          activeTabName={this.state.activeTabName}
-          triggeringEvent="onClick"
-          onActiveTabChange={newTabName =>
-            this.setState({activeTabName: newTabName.name})
-          }
-        />
-        {wrappedChildren}
-      </div>
-    );
+      return React.createElement("div", {
+        key: childIndex,
+        className: (0, _classnames().default)({
+          hidden: childIndex !== activeTabIndex
+        })
+      }, child);
+    }));
+    return React.createElement("div", {
+      className: className
+    }, React.createElement(_Tabs().default, {
+      tabs: visibleTabs,
+      activeTabName: this.state.activeTabName,
+      triggeringEvent: "onClick",
+      onActiveTabChange: newTabName => this.setState({
+        activeTabName: newTabName.name
+      })
+    }), wrappedChildren);
   }
+
 }
+
+exports.default = TabbedContainer;

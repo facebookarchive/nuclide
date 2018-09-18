@@ -1,3 +1,58 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _LoadingSpinner() {
+  const data = require("../../../../../nuclide-commons-ui/LoadingSpinner");
+
+  _LoadingSpinner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,63 +61,44 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {IDebugService} from '../types';
-
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import * as React from 'react';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
-import {DebuggerMode} from '../constants';
-
-type Props = {
-  service: IDebugService,
-};
-
-export default class DebuggerControllerView extends React.Component<Props> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+class DebuggerControllerView extends React.Component {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
   componentDidMount() {
-    const {service} = this.props;
-    this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
-        ),
-        observableFromSubscribeFunction(
-          service.onDidChangeProcessMode.bind(service),
-        ),
-      ).subscribe(mode => this.forceUpdate()),
-    );
+    const {
+      service
+    } = this.props;
+
+    this._disposables.add(_RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel)), (0, _event().observableFromSubscribeFunction)(service.onDidChangeProcessMode.bind(service))).subscribe(mode => this.forceUpdate()));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    if (
-      this.props.service.viewModel.focusedProcess?.debuggerMode ===
-      DebuggerMode.STARTING
-    ) {
-      return (
-        <div className="debugger-starting-message">
-          <div>
-            <span className="inline-block">Starting Debugger...</span>
-            <LoadingSpinner className="inline-block" size="EXTRA_SMALL" />
-          </div>
-        </div>
-      );
+  render() {
+    var _this$props$service$v;
+
+    if (((_this$props$service$v = this.props.service.viewModel.focusedProcess) === null || _this$props$service$v === void 0 ? void 0 : _this$props$service$v.debuggerMode) === _constants().DebuggerMode.STARTING) {
+      return React.createElement("div", {
+        className: "debugger-starting-message"
+      }, React.createElement("div", null, React.createElement("span", {
+        className: "inline-block"
+      }, "Starting Debugger..."), React.createElement(_LoadingSpinner().LoadingSpinner, {
+        className: "inline-block",
+        size: "EXTRA_SMALL"
+      })));
     }
+
     return null;
   }
+
 }
+
+exports.default = DebuggerControllerView;

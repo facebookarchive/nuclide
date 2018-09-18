@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getAllPanes = exports.openFileTree = exports.closeAllTabs = exports.waitsFor = exports.sleep = exports.writeFiles = exports.openLocalDirectory = exports.makeTempDir = exports.invariant = void 0;
+
+function _fsExtra() {
+  const data = _interopRequireDefault(require("fs-extra"));
+
+  _fsExtra = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _os = _interopRequireDefault(require("os"));
+
+var _path = _interopRequireDefault(require("path"));
+
+function _v() {
+  const data = _interopRequireDefault(require("uuid/v4"));
+
+  _v = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _waits_for() {
+  const data = _interopRequireDefault(require("../waits_for"));
+
+  _waits_for = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,51 +48,55 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import fs from 'fs-extra';
-import os from 'os';
-import path from 'path';
-import uuid4 from 'uuid/v4';
-
-import _waitsFor from '../waits_for';
-
-export const invariant = (condition: any, message: string) => {
+const invariant = (condition, message) => {
   if (!condition) {
     throw new Error('message');
   }
 };
-export const makeTempDir = (name: string = 'nuclide_temp_dir') => {
-  const dirPath = path.resolve(os.tmpdir(), `${name}-${uuid4()}`);
-  fs.mkdirpSync(dirPath);
+
+exports.invariant = invariant;
+
+const makeTempDir = (name = 'nuclide_temp_dir') => {
+  const dirPath = _path.default.resolve(_os.default.tmpdir(), `${name}-${(0, _v().default)()}`);
+
+  _fsExtra().default.mkdirpSync(dirPath);
+
   return dirPath;
 };
 
-export const openLocalDirectory = (dir: string) => atom.project.addPath(dir);
+exports.makeTempDir = makeTempDir;
 
-export const writeFiles = (dir: string, files: {[path: string]: string}) => {
+const openLocalDirectory = dir => atom.project.addPath(dir);
+
+exports.openLocalDirectory = openLocalDirectory;
+
+const writeFiles = (dir, files) => {
   for (const [filePath, content] of Object.entries(files)) {
-    fs.writeFileSync(path.resolve(dir, filePath), content);
+    _fsExtra().default.writeFileSync(_path.default.resolve(dir, filePath), content);
   }
 };
 
-export const sleep = (n: number): Promise<void> =>
-  new Promise(r => setTimeout(r, n));
+exports.writeFiles = writeFiles;
 
-export const waitsFor = _waitsFor;
+const sleep = n => new Promise(r => setTimeout(r, n));
 
-export const closeAllTabs = async () => {
-  await atom.commands.dispatch(
-    atom.workspace.getElement(),
-    'tabs:close-all-tabs',
-  );
+exports.sleep = sleep;
+
+const waitsFor = _waits_for().default;
+
+exports.waitsFor = waitsFor;
+
+const closeAllTabs = async () => {
+  await atom.commands.dispatch(atom.workspace.getElement(), 'tabs:close-all-tabs');
 };
 
-const FILE_TREE_SELECTOR =
-  '.atom-dock-open .nuclide-file-tree-toolbar-container';
-export const openFileTree = async () => {
+exports.closeAllTabs = closeAllTabs;
+const FILE_TREE_SELECTOR = '.atom-dock-open .nuclide-file-tree-toolbar-container';
+
+const openFileTree = async () => {
   atom.commands.dispatch(atom.workspace.getElement(), 'tree-view:toggle');
   await waitsFor(() => !!document.querySelector(FILE_TREE_SELECTOR));
   const element = document.querySelector(FILE_TREE_SELECTOR);
@@ -58,47 +105,44 @@ export const openFileTree = async () => {
   return fileTree;
 };
 
-export const getAllPanes = () => {
+exports.openFileTree = openFileTree;
+
+const getAllPanes = () => {
   // $FlowFixMe
   return new Panes(document.body);
 };
 
+exports.getAllPanes = getAllPanes;
 const TEXT_FILE_SELECTOR = '.nuclide-file-tree-path.icon-file-text';
 
 class FileTree {
-  element: Element;
-  constructor(element: Element) {
+  constructor(element) {
     this.element = element;
   }
 
-  findTextFilesWithNameMatching(pattern: string): Array<Element> {
+  findTextFilesWithNameMatching(pattern) {
     return [...this.element.querySelectorAll(TEXT_FILE_SELECTOR)].filter(el => {
       const name = el.getAttribute('data-name');
       return name != null && name.indexOf(pattern) !== -1;
     });
   }
 
-  async previewFile(name: string) {
+  async previewFile(name) {
     const files = this.findTextFilesWithNameMatching(name);
     expect(files).toHaveLength(1);
     const file = files[0];
     expect(file).toBeDefined();
     expect(file.getAttribute('data-name')).toBe(name);
-    (file: any).click();
-    await waitsFor(
-      () => !!document.querySelector(`[is=tabs-tab] div[data-name="${name}"]`),
-    );
+    file.click();
+    await waitsFor(() => !!document.querySelector(`[is=tabs-tab] div[data-name="${name}"]`));
   }
+
 }
 
 class Panes {
-  element: Element;
-  panes: Array<Pane>;
-  constructor(element: Element) {
+  constructor(element) {
     this.element = element;
-    this.panes = [...this.element.querySelectorAll('.pane')].map(
-      el => new Pane(el),
-    );
+    this.panes = [...this.element.querySelectorAll('.pane')].map(el => new Pane(el));
   }
 
   getAllTabNames() {
@@ -107,27 +151,23 @@ class Panes {
       return [...(tabNames || []), ...(names || [])];
     }, []);
   }
+
 }
 
 class Pane {
-  element: Element;
-  tabs: Array<Tab>;
-
-  constructor(element: Element) {
+  constructor(element) {
     this.element = element;
-    this.tabs = [...this.element.querySelectorAll('[is=tabs-tab]')].map(
-      el => new Tab(el),
-    );
+    this.tabs = [...this.element.querySelectorAll('[is=tabs-tab]')].map(el => new Tab(el));
   }
 
   getTabNames() {
     return this.tabs.map(tab => tab.getName());
   }
+
 }
 
 class Tab {
-  element: Element;
-  constructor(element: Element) {
+  constructor(element) {
     this.element = element;
   }
 
@@ -136,4 +176,5 @@ class Tab {
     invariant(div);
     return div.getAttribute('data-name');
   }
+
 }

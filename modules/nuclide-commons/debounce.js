@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = debounce;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,42 +13,32 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import invariant from 'assert';
-
-export default function debounce<
-  T,
-  TArgs: Array<T>,
-  TReturn,
-  TFunc: (...TArgs) => TReturn, // eslint-disable-line space-before-function-paren
->(
-  func: TFunc,
-  wait: number,
-  immediate?: boolean = false,
-): {
-  (...TArgs): TReturn | void,
-  dispose(): void,
-} {
+function debounce(func, wait, immediate = false) {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout: ?TimeoutID;
-  let args: ?TArgs;
-  let context: any;
+  let timeout;
+  let args;
+  let context;
   let timestamp = 0;
-  let result: TReturn | void;
+  let result;
 
-  const later = function() {
+  const later = function () {
     const last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
       timeout = setTimeout(later, wait - last);
     } else {
       timeout = null;
+
       if (!immediate) {
-        invariant(args != null);
+        if (!(args != null)) {
+          throw new Error("Invariant violation: \"args != null\"");
+        }
+
         result = func.apply(context, args);
+
         if (!timeout) {
           context = args = null;
         }
@@ -49,14 +46,16 @@ export default function debounce<
     }
   };
 
-  const debounced = function(...args_: TArgs): TReturn | void {
+  const debounced = function (...args_) {
     context = this;
     args = args_;
     timestamp = Date.now();
     const callNow = immediate && !timeout;
+
     if (!timeout) {
       timeout = setTimeout(later, wait);
     }
+
     if (callNow) {
       result = func.apply(context, args);
       context = args = null;

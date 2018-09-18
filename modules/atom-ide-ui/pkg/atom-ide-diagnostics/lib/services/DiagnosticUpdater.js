@@ -1,3 +1,66 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _observable() {
+  const data = require("../../../../../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Actions() {
+  const data = _interopRequireWildcard(require("../redux/Actions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Selectors() {
+  const data = _interopRequireWildcard(require("../redux/Selectors"));
+
+  Selectors = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,132 +69,69 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {
-  AppState,
-  CodeActionsState,
-  DescriptionsState,
-  DiagnosticMessage,
-  DiagnosticMessages,
-  Store,
-  DiagnosticMessageKind,
-  UiConfig,
-} from '../types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {throttle} from 'nuclide-commons/observable';
-import * as Actions from '../redux/Actions';
-import * as Selectors from '../redux/Selectors';
-import {arrayEqual} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
-
 const THROTTLE_FILE_MESSAGE_MS = 100;
 
-export default class DiagnosticUpdater {
-  _store: Store;
-  _states: Observable<AppState>;
-  _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
+class DiagnosticUpdater {
+  constructor(store) {
+    this.getMessages = () => {
+      return Selectors().getMessages(this._store.getState());
+    };
 
-  constructor(store: Store) {
-    this._store = store;
-    // $FlowIgnore: Flow doesn't know about Symbol.observable
-    this._states = Observable.from(store);
+    this.getFileMessageUpdates = filePath => {
+      return Selectors().getFileMessageUpdates(this._store.getState(), filePath);
+    };
 
-    this._allMessageUpdates = this._states
-      .map(Selectors.getMessages)
-      .distinctUntilChanged();
+    this.observeMessages = callback => {
+      return new (_UniversalDisposable().default)(this._allMessageUpdates.subscribe(callback));
+    };
+
+    this.observeFileMessages = (filePath, callback) => {
+      return new (_UniversalDisposable().default)( // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
+      // Whether that's worth it depends on how often this is actually called with the same path.
+      this._states.distinctUntilChanged((a, b) => a.messages === b.messages).let((0, _observable().throttle)(THROTTLE_FILE_MESSAGE_MS)).map(state => Selectors().getFileMessageUpdates(state, filePath)).distinctUntilChanged((a, b) => a.totalMessages === b.totalMessages && (0, _collection().arrayEqual)(a.messages, b.messages)).subscribe(callback));
+    };
+
+    this.observeCodeActionsForMessage = callback => {
+      return new (_UniversalDisposable().default)(this._states.map(state => state.codeActionsForMessage).distinctUntilChanged().subscribe(callback));
+    };
+
+    this.observeDescriptions = callback => {
+      return new (_UniversalDisposable().default)(this._states.map(state => state.descriptions).distinctUntilChanged().subscribe(callback));
+    };
+
+    this.observeSupportedMessageKinds = callback => {
+      return new (_UniversalDisposable().default)(this._states.map(Selectors().getSupportedMessageKinds).subscribe(callback));
+    };
+
+    this.observeUiConfig = callback => {
+      return new (_UniversalDisposable().default)(this._states.map(Selectors().getUiConfig).subscribe(callback));
+    };
+
+    this.applyFix = message => {
+      this._store.dispatch(Actions().applyFix(message));
+    };
+
+    this.applyFixesForFile = file => {
+      this._store.dispatch(Actions().applyFixesForFile(file));
+    };
+
+    this.fetchCodeActions = (editor, messages) => {
+      this._store.dispatch(Actions().fetchCodeActions(editor, messages));
+    };
+
+    this.fetchDescriptions = messages => {
+      this._store.dispatch(Actions().fetchDescriptions(messages));
+    };
+
+    this._store = store; // $FlowIgnore: Flow doesn't know about Symbol.observable
+
+    this._states = _RxMin.Observable.from(store);
+    this._allMessageUpdates = this._states.map(Selectors().getMessages).distinctUntilChanged();
   }
 
-  getMessages = (): Array<DiagnosticMessage> => {
-    return Selectors.getMessages(this._store.getState());
-  };
-
-  getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
-    return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
-  };
-
-  observeMessages = (
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
-  };
-
-  observeFileMessages = (
-    filePath: NuclideUri,
-    callback: (update: DiagnosticMessages) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
-      // Whether that's worth it depends on how often this is actually called with the same path.
-      this._states
-        .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .let(throttle(THROTTLE_FILE_MESSAGE_MS))
-        .map(state => Selectors.getFileMessageUpdates(state, filePath))
-        .distinctUntilChanged(
-          (a, b) =>
-            a.totalMessages === b.totalMessages &&
-            arrayEqual(a.messages, b.messages),
-        )
-        .subscribe(callback),
-    );
-  };
-
-  observeCodeActionsForMessage = (
-    callback: (update: CodeActionsState) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._states
-        .map(state => state.codeActionsForMessage)
-        .distinctUntilChanged()
-        .subscribe(callback),
-    );
-  };
-
-  observeDescriptions = (
-    callback: (update: DescriptionsState) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._states
-        .map(state => state.descriptions)
-        .distinctUntilChanged()
-        .subscribe(callback),
-    );
-  };
-
-  observeSupportedMessageKinds = (
-    callback: (kinds: Set<DiagnosticMessageKind>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._states.map(Selectors.getSupportedMessageKinds).subscribe(callback),
-    );
-  };
-
-  observeUiConfig = (callback: (config: UiConfig) => mixed): IDisposable => {
-    return new UniversalDisposable(
-      this._states.map(Selectors.getUiConfig).subscribe(callback),
-    );
-  };
-
-  applyFix = (message: DiagnosticMessage): void => {
-    this._store.dispatch(Actions.applyFix(message));
-  };
-
-  applyFixesForFile = (file: NuclideUri): void => {
-    this._store.dispatch(Actions.applyFixesForFile(file));
-  };
-
-  fetchCodeActions = (
-    editor: atom$TextEditor,
-    messages: Array<DiagnosticMessage>,
-  ): void => {
-    this._store.dispatch(Actions.fetchCodeActions(editor, messages));
-  };
-
-  fetchDescriptions = (messages: Array<DiagnosticMessage>): void => {
-    this._store.dispatch(Actions.fetchDescriptions(messages));
-  };
 }
+
+exports.default = DiagnosticUpdater;

@@ -1,3 +1,57 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setRpcService = setRpcService;
+exports.setGkService = setGkService;
+exports.getGkService = getGkService;
+exports.getPtyServiceByNuclideUri = getPtyServiceByNuclideUri;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function PtyServiceLocal() {
+  const data = _interopRequireWildcard(require("./pty-service/PtyService"));
+
+  PtyServiceLocal = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,48 +60,36 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+let _rpcService = null;
+let _gkService = null;
 
-import type {GatekeeperService} from 'nuclide-commons-atom/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import typeof * as PtyService from './pty-service/PtyService';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as PtyServiceLocal from './pty-service/PtyService';
-import nullthrows from 'nullthrows';
-
-let _rpcService: ?nuclide$RpcService = null;
-let _gkService: ?GatekeeperService = null;
-
-export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
+function setRpcService(rpcService) {
   _rpcService = rpcService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _rpcService = null;
   });
 }
 
-export function setGkService(gkService: GatekeeperService): IDisposable {
+function setGkService(gkService) {
   _gkService = gkService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable().default)(() => {
     _gkService = null;
   });
 }
 
-export function getGkService(): ?GatekeeperService {
+function getGkService() {
   return _gkService;
 }
 
-export function getPtyServiceByNuclideUri(uri: ?NuclideUri): PtyService {
+function getPtyServiceByNuclideUri(uri) {
   const serviceUri = uri || '';
-  if (_rpcService == null && !nuclideUri.isRemote(serviceUri)) {
-    return PtyServiceLocal;
+
+  if (_rpcService == null && !_nuclideUri().default.isRemote(serviceUri)) {
+    return PtyServiceLocal();
   }
 
-  return nullthrows(_rpcService).getServiceByNuclideUri(
-    'PtyService',
-    serviceUri,
-  );
+  return (0, _nullthrows().default)(_rpcService).getServiceByNuclideUri('PtyService', serviceUri);
 }

@@ -1,3 +1,52 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _TextDocument() {
+  const data = _interopRequireDefault(require("./TextDocument"));
+
+  _TextDocument = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _eventKit() {
+  const data = require("event-kit");
+
+  _eventKit = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _vscodeLanguageserver() {
+  const data = require("vscode-languageserver");
+
+  _vscodeLanguageserver = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,134 +54,129 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  DidChangeTextDocumentParams,
-  DidCloseTextDocumentParams,
-  DidOpenTextDocumentParams,
-  DidSaveTextDocumentParams,
-  TextDocumentItem,
-} from '../nuclide-vscode-language-service-rpc/lib/protocol';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 // flowlint-next-line untyped-type-import:off
-import type {IConnection} from 'vscode-languageserver';
-
-import invariant from 'assert';
-import TextDocument from './TextDocument';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Emitter} from 'event-kit';
-import {TextDocumentSyncKind} from 'vscode-languageserver';
-
-function textDocumentFromLSPTextDocument(textDocument: TextDocumentItem) {
-  return new TextDocument(
-    textDocument.uri,
-    textDocument.languageId,
-    textDocument.version,
-    textDocument.text,
-  );
+function textDocumentFromLSPTextDocument(textDocument) {
+  return new (_TextDocument().default)(textDocument.uri, textDocument.languageId, textDocument.version, textDocument.text);
 }
 
-export default class TextDocuments {
-  _disposables = new UniversalDisposable();
-  _documents: Map<string, TextDocument> = new Map();
-  _emitter: Emitter = new Emitter();
-
+class TextDocuments {
   constructor() {
+    this._disposables = new (_UniversalDisposable().default)();
+    this._documents = new Map();
+    this._emitter = new (_eventKit().Emitter)();
+
+    this._handleDidStopChanging = textDocument => {
+      this._emitter.emit('didChangeContent', {
+        textDocument
+      });
+    };
+
+    this._handleDidSave = textDocument => {
+      this._emitter.emit('didSave', {
+        textDocument
+      });
+    };
+
     this._disposables.add(this._emitter);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  get disposed(): boolean {
+  get disposed() {
     return this._disposables.disposed;
   }
 
-  get syncKind(): TextDocumentSyncKind {
-    return TextDocumentSyncKind.Incremental;
+  get syncKind() {
+    return _vscodeLanguageserver().TextDocumentSyncKind.Incremental;
   }
 
-  get(uri: string): TextDocument {
+  get(uri) {
     const document = this._documents.get(uri);
 
-    invariant(
-      document != null,
-      `TextDocuments: asked for document with uri ${uri}, but no buffer was loaded`,
-    );
+    if (!(document != null)) {
+      throw new Error(`TextDocuments: asked for document with uri ${uri}, but no buffer was loaded`);
+    }
+
     return document;
   }
 
-  listen(connection: IConnection): void {
-    connection.onDidOpenTextDocument((e: DidOpenTextDocumentParams) => {
-      const {textDocument} = e;
+  listen(connection) {
+    connection.onDidOpenTextDocument(e => {
+      const {
+        textDocument
+      } = e;
       const document = textDocumentFromLSPTextDocument(textDocument);
       this.addDocument(textDocument.uri, document);
     });
-
-    connection.onDidChangeTextDocument((e: DidChangeTextDocumentParams) => {
-      const {contentChanges, textDocument} = e;
+    connection.onDidChangeTextDocument(e => {
+      const {
+        contentChanges,
+        textDocument
+      } = e;
       const document = this.get(textDocument.uri);
       document.updateMany(contentChanges, textDocument.version);
     });
-
-    connection.onDidCloseTextDocument((e: DidCloseTextDocumentParams) => {
+    connection.onDidCloseTextDocument(e => {
       this.removeDocument(e.textDocument.uri);
     });
-
-    connection.onDidSaveTextDocument((e: DidSaveTextDocumentParams) => {
+    connection.onDidSaveTextDocument(e => {
       const document = this.get(e.textDocument.uri);
       document.save(e.text);
     });
   }
 
-  addDocument(uri: NuclideUri, document: TextDocument) {
+  addDocument(uri, document) {
     this._documents.set(uri, document);
+
     this._disposables.add(document);
-    this._emitter.emit('didOpenTextDocument', {textDocument: document});
+
+    this._emitter.emit('didOpenTextDocument', {
+      textDocument: document
+    });
+
     document.onDidStopChanging(this._handleDidStopChanging);
     document.onDidSave(this._handleDidSave);
   }
 
-  removeDocument(uri: NuclideUri) {
+  removeDocument(uri) {
     const document = this.get(uri);
-    this._emitter.emit('didClose', {textDocument: document});
+
+    this._emitter.emit('didClose', {
+      textDocument: document
+    });
+
     this._disposables.remove(document);
+
     this._documents.delete(uri);
+
     document.dispose();
   }
 
-  all(): Array<TextDocument> {
+  all() {
     return Array.from(this._documents.values());
   }
 
-  onDidChangeContent(handler: (e: {textDocument: TextDocument}) => void): void {
+  onDidChangeContent(handler) {
     this._emitter.on('didChangeContent', handler);
   }
 
-  onDidSave(handler: (e: {textDocument: TextDocument}) => void): void {
+  onDidSave(handler) {
     this._emitter.on('didSave', handler);
   }
 
-  onDidOpenTextDocument(
-    handler: (e: {textDocument: TextDocument}) => void,
-  ): void {
+  onDidOpenTextDocument(handler) {
     this._emitter.on('didOpenTextDocument', handler);
   }
 
-  onDidClose(handler: (e: {textDocument: TextDocument}) => void): void {
+  onDidClose(handler) {
     this._emitter.on('didClose', handler);
   }
 
-  _handleDidStopChanging = (textDocument: TextDocument) => {
-    this._emitter.emit('didChangeContent', {textDocument});
-  };
-
-  _handleDidSave = (textDocument: TextDocument) => {
-    this._emitter.emit('didSave', {textDocument});
-  };
 }
+
+exports.default = TextDocuments;
