@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {Store} from '../lib/types';
 
+import DraggableFile from 'nuclide-commons-ui/DraggableFile';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import classnames from 'classnames';
@@ -218,15 +219,17 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                       name={e.name}
                       // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
                       ref={e.isSelected ? this._handleSelectedRow : null}>
-                      <span
-                        className={classnames('icon', {
-                          'icon-primitive-dot': e.isModified && !isHoveredUri,
-                          'icon-x': isHoveredUri || !e.isModified,
-                          'text-info': e.isModified,
-                        })}
-                        onClick={this._onCloseClick.bind(this, e)}
-                      />
-                      <PathWithFileIcon path={e.name} />
+                      <DraggableFile uri={e.uri}>
+                        <span
+                          className={classnames('icon', {
+                            'icon-primitive-dot': e.isModified && !isHoveredUri,
+                            'icon-x': isHoveredUri || !e.isModified,
+                            'text-info': e.isModified,
+                          })}
+                          onClick={this._onCloseClick.bind(this, e)}
+                        />
+                        <PathWithFileIcon path={e.name} />
+                      </DraggableFile>
                     </TreeItem>
                   );
                 })}
