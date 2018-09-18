@@ -143,6 +143,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
     onPythonProcessLoaded(pyThread) {
         if (this.entryResponse) {
             this.sendResponse(this.entryResponse);
+            this.entryResponse = undefined;
         }
         this.debuggerLoadedPromiseResolve();
         if (this.launchArgs && !this.launchArgs.console) {
@@ -299,17 +300,12 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         let isDjangoFile = false;
         if (this.launchArgs &&
             Array.isArray(this.launchArgs.debugOptions) &&
-            this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0) {
+            (this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0 || this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0)) {
             isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
         }
-        if (this.attachArgs != null &&
+        if (this.attachArgs &&
             Array.isArray(this.attachArgs.debugOptions) &&
-            this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0) {
-            isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
-        }
-        if (this.attachArgs != null &&
-            Array.isArray(this.attachArgs.debugOptions) &&
-            this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0) {
+            (this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0 || this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0)) {
             isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
         }
         condition = typeof condition === "string" ? condition : "";
