@@ -332,7 +332,7 @@ export class Adb {
 
   getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
     const jdwpProcesses = new Set();
-    return this.runShortCommand('shell', 'ps')
+    return this.runPsCommand()
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
@@ -376,12 +376,25 @@ export class Adb {
   }
 
   getProcesses(): Observable<Array<SimpleProcess>> {
-    return this.runShortCommand('shell', 'ps').map(stdout =>
+    return this.runPsCommand().map(stdout =>
       stdout.split(/\n/).map(line => {
         const info = line.trim().split(/\s+/);
         return {user: info[0], pid: info[1], name: info[info.length - 1]};
       }),
     );
+  }
+
+  runPsCommand(...additionalCommands: string[]): Observable<string> {
+    return this.getAPIVersion().switchMap(apiVersion => {
+      let commands = ['shell', 'ps'];
+      // Starting with Android 8.0 Oreo (API 26) ps only returns all processes
+      // with -A
+      if (parseInt(apiVersion, 10) >= 26) {
+        commands.push('-A');
+      }
+      commands = commands.concat(additionalCommands);
+      return this.runShortCommand(...commands);
+    });
   }
 
   runShortCommand(...command: string[]): Observable<string> {

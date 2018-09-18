@@ -161,7 +161,7 @@ export class Processes {
     let pidLines: string;
     try {
       pidLines = await this._adb
-        .runShortCommand('shell', 'ps', '|', 'grep', '-i', packageName)
+        .runPsCommand('|', 'grep', '-i', packageName)
         .toPromise();
     } catch (e) {
       pidLines = '';
