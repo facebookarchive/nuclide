@@ -219,7 +219,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                       name={e.name}
                       // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
                       ref={e.isSelected ? this._handleSelectedRow : null}>
-                      <DraggableFile uri={e.uri}>
+                      <DraggableFile uri={e.uri} trackingSource="open-files">
                         <span
                           className={classnames('icon', {
                             'icon-primitive-dot': e.isModified && !isHoveredUri,

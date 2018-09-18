@@ -1098,6 +1098,7 @@ export function moveToNodeEpic(
       return Observable.empty();
     }
     const selectedNodes = Selectors.getSelectedNodes(store.getState());
+
     // This is async but we don't care.
     FileTreeHgHelpers.moveNodes(selectedNodes.toArray(), targetNode.uri);
     return Observable.of(Actions.clearDragHover(), Actions.clearSelection());
@@ -1111,20 +1112,36 @@ export function movePathToNodeEpic(
   return actions.ofType(Actions.MOVE_PATH_TO_NODE).mergeMap(action => {
     invariant(action.type === Actions.MOVE_PATH_TO_NODE);
     const {uri, destination} = action;
-    if (!destination.isContainer) {
-      return Observable.empty();
-    }
-    track('file-tree-move-dropped-external-file', {
+    track('file-tree-move-dropped-external-file:started', {
       source: uri,
       destination: destination.uri,
     });
-    if (!FileTreeHgHelpers.isValidRename(uri, destination.uri)) {
-      atom.notifications.addError('File move failed', {
-        detail: `Unable to move \`${uri}\` to \`${destination.uri}\`.`,
+    if (!destination.isContainer) {
+      track('file-tree-move-dropped-external-file:failed', {
+        reason: 'Destination is not a container',
       });
+      return Observable.empty();
     }
-    // This is async but we don't care.
-    FileTreeHgHelpers.movePaths([uri], destination.uri);
+    if (!FileTreeHgHelpers.isValidRename(uri, destination.uri)) {
+      const detail = `Unable to move \`${uri}\` to \`${destination.uri}\`.`;
+      track('file-tree-move-dropped-external-file:failed', {
+        reason: detail,
+      });
+      atom.notifications.addError('File move failed', {detail});
+      return Observable.empty();
+    }
+
+    const newPath = nuclideUri.join(destination.uri, nuclideUri.basename(uri));
+    FileTreeHgHelpers.movePaths([uri], destination.uri).then(() => {
+      // Note: While the move is "complete" FileTreeHgHelpers will silently skip
+      // files that it does not think it can move, and will noop if another move
+      // is already in progress.
+      track('file-tree-move-dropped-external-file:completed', {
+        source: uri,
+        destination: destination.uri,
+      });
+      EpicHelpers.ensureChildNode(store, newPath);
+    });
     return Observable.of(Actions.clearDragHover(), Actions.clearSelection());
   });
 }

@@ -15,11 +15,13 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
+import {track} from 'nuclide-commons/analytics';
 
 const MAGIC_DATA_TRANSFER_KEY = 'nuclide-draggable-file';
 
 export default class DraggableFile extends React.Component<{
   uri: NuclideUri,
+  trackingSource: string,
   draggable?: boolean,
 }> {
   _disposables: UniversalDisposable;
@@ -52,11 +54,15 @@ export default class DraggableFile extends React.Component<{
       dataTransfer.setData('text/plain', this.props.uri);
       dataTransfer.setData('atom-event', 'true');
       dataTransfer.setData('allow-all-locations', 'true');
+      track('draggable-file:drag-start', {
+        source: this.props.trackingSource,
+        uri: this.props.uri,
+      });
     }
   };
 
   render() {
-    const {uri, draggable = true, ...restProps} = this.props;
+    const {uri, trackingSource, draggable = true, ...restProps} = this.props;
     // https://discuss.atom.io/t/drag-drop/21262/14
     const tabIndex = -1;
     return <div draggable={draggable} tabIndex={tabIndex} {...restProps} />;

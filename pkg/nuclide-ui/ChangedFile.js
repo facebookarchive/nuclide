@@ -362,6 +362,7 @@ export default class ChangedFile extends React.Component<Props> {
         {checkbox}
         <DraggableFile
           draggable={draggable}
+          trackingSource={'changed-file'}
           uri={filePath}
           className="nuclide-changed-file-name"
           onClick={handleFileChosen}>
