@@ -1118,6 +1118,11 @@ export function movePathToNodeEpic(
       source: uri,
       destination: destination.uri,
     });
+    if (!FileTreeHgHelpers.isValidRename(uri, destination.uri)) {
+      atom.notifications.addError('File move failed', {
+        detail: `Unable to move \`${uri}\` to \`${destination.uri}\`.`,
+      });
+    }
     // This is async but we don't care.
     FileTreeHgHelpers.movePaths([uri], destination.uri);
     return Observable.of(Actions.clearDragHover(), Actions.clearSelection());
