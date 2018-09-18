@@ -23,6 +23,7 @@ import net from 'net';
 import {genConfigId} from './config-utils';
 import which from 'nuclide-commons/which';
 import path from 'path';
+// @fb-only: import {getEnv} from './fb-env';
 
 const logger = getLogger('thrift-service-server');
 const cache: Map<string, Observable<number>> = new Map();
@@ -138,9 +139,8 @@ function observeServerProcess(
     isExitError: () => true,
     detached: false,
     killTreeWhenDone: true,
-    env: {
-      ...process.env,
-    },
+    // @fb-only: env: getEnv(),
+    env: process.env, // @oss-only
   });
 }
 
