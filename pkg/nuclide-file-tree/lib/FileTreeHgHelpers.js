@@ -18,38 +18,49 @@ import {shell} from 'electron';
 import * as Immutable from 'immutable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as FileTreeHelpers from './FileTreeHelpers';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import nullthrows from 'nullthrows';
 import {triggerAfterWait} from 'nuclide-commons/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const MOVE_TIMEOUT = 10000;
 
-export function getHgRepositoryForNode(
-  node: FileTreeNode,
+function getHgRepositoryForAtomRepo(
+  repository: ?atom$Repository,
 ): ?HgRepositoryClient {
-  const repository = node.repo;
   if (repository != null && repository.getType() === 'hg') {
     return ((repository: any): HgRepositoryClient);
   }
   return null;
 }
 
+export function getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
+  const repository = repositoryForPath(filePath);
+  if (repository == null) {
+    return getHgRepositoryForAtomRepo(repository);
+  }
+}
+
+export function getHgRepositoryForNode(
+  node: FileTreeNode,
+): ?HgRepositoryClient {
+  return getHgRepositoryForAtomRepo(node.repo);
+}
+
 /**
  * Determines whether renaming the given node to the specified destPath is an
  * acceptable rename.
  */
-export function isValidRename(
-  node: FileTreeNode,
-  destPath_: NuclideUri,
-): boolean {
+export function isValidRename(uri: NuclideUri, destPath_: NuclideUri): boolean {
   let destPath = destPath_;
-  const path = FileTreeHelpers.keyToPath(node.uri);
-  const rootPath = FileTreeHelpers.keyToPath(node.rootUri);
+  const path = FileTreeHelpers.keyToPath(uri);
+  const [rootPath] = atom.project.relativizePath(uri);
 
   destPath = FileTreeHelpers.keyToPath(destPath);
 
   return (
-    FileTreeHelpers.getEntryByKey(node.uri) != null &&
+    rootPath != null &&
+    FileTreeHelpers.getEntryByKey(uri) != null &&
     // This will only detect exact equalities, mostly preventing moves of a
     // directory into itself from causing an error. If a case-changing rename
     // should be a noop for the current OS's file system, this is handled by the
@@ -70,7 +81,7 @@ export async function renameNode(
   node: FileTreeNode,
   destPath: NuclideUri,
 ): Promise<void> {
-  if (!isValidRename(node, destPath)) {
+  if (!isValidRename(node.uri, destPath)) {
     return;
   }
   const filePath = FileTreeHelpers.keyToPath(node.uri);
@@ -112,6 +123,20 @@ export async function moveNodes(
   nodes: Array<FileTreeNode>,
   destPath: NuclideUri,
 ): Promise<void> {
+  return movePaths(
+    nodes.map(node => FileTreeHelpers.keyToPath(node.uri)),
+    destPath,
+  );
+}
+
+/**
+ * Moves an array of paths into the destPath, ignoring paths that cannot be moved.
+ * This wrapper prevents concurrent move operations.
+ */
+export async function movePaths(
+  paths: Array<NuclideUri>,
+  destPath: NuclideUri,
+): Promise<void> {
   if (isMoving) {
     return;
   }
@@ -119,26 +144,26 @@ export async function moveNodes(
 
   // Reset isMoving to false whenever move operation completes, errors, or times out.
   await triggerAfterWait(
-    _moveNodesUnprotected(nodes, destPath),
+    _movePathsUnprotected(paths, destPath),
     MOVE_TIMEOUT,
     resetIsMoving /* timeoutFn */,
     resetIsMoving /* cleanupFn */,
   );
 }
 
-async function _moveNodesUnprotected(
-  nodes: Array<FileTreeNode>,
+async function _movePathsUnprotected(
+  sourcePaths: Array<NuclideUri>,
   destPath: NuclideUri,
 ): Promise<void> {
   let paths = [];
 
   try {
-    const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
-    // Collapse paths that are in the same subtree, keeping only the subtree root.
-    paths = nuclideUri.collapse(
-      filteredNodes.map(node => FileTreeHelpers.keyToPath(node.uri)),
+    const filteredPaths = sourcePaths.filter(path =>
+      isValidRename(path, destPath),
     );
 
+    // Collapse paths that are in the same subtree, keeping only the subtree root.
+    paths = nuclideUri.collapse(filteredPaths);
     if (paths.length === 0) {
       return;
     }
@@ -155,7 +180,7 @@ async function _moveNodesUnprotected(
 
     // All filtered nodes should have the same rootUri, so we simply attempt to
     // retrieve the hg repository using the first node.
-    const hgRepository = getHgRepositoryForNode(filteredNodes[0]);
+    const hgRepository = getHgRepositoryForPath(paths[0]);
     if (hgRepository == null) {
       return;
     }

@@ -1500,7 +1500,9 @@ async function copy(
   onDidConfirm(successfulPaths);
 
   if (successfulPaths.length !== 0) {
-    const hgRepository = getHgRepositoryForPath(successfulPaths[0]);
+    const hgRepository = FileTreeHgHelpers.getHgRepositoryForPath(
+      successfulPaths[0],
+    );
     if (hgRepository != null && addToVCS) {
       try {
         // We are not recording the copy in mercurial on purpose, because most of the time
@@ -1517,15 +1519,6 @@ async function copy(
     }
   }
 }
-
-function getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
-  const repository = repositoryForPath(filePath);
-  if (repository != null && repository.getType() === 'hg') {
-    return ((repository: any): HgRepositoryClient);
-  }
-  return null;
-}
-
 async function paste(
   newPath: string,
   addToVCS: boolean,

@@ -413,7 +413,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       return;
     }
     const movableNodes = nodes.filter(node =>
-      FileTreeHgHelpers.isValidRename(node, this.props.node.uri),
+      FileTreeHgHelpers.isValidRename(node.uri, this.props.node.uri),
     );
 
     const haveMovableNodes = movableNodes.size > 0;
