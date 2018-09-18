@@ -18,6 +18,8 @@ import {
   EXIT_CODE_INVALID_ARGUMENTS,
   EXIT_CODE_SUCCESS,
   FailedConnectionError,
+  trackError,
+  trackSuccess,
 } from './errors';
 
 /**
@@ -39,6 +41,7 @@ async function main(argv): Promise<number> {
   try {
     commands = await getCommands(argv, /* rejectIfZeroConnections */ true);
   } catch (error) {
+    await trackError('notify', argv, error);
     if (error instanceof FailedConnectionError) {
       // Note this does not throw: reportConnectionErrorAndExit()
       // does not return. However, we use throw to convince Flow
@@ -75,6 +78,7 @@ async function main(argv): Promise<number> {
   };
   await commands.addNotification(notification);
 
+  await trackSuccess('notify', argv);
   return EXIT_CODE_SUCCESS;
 }
 

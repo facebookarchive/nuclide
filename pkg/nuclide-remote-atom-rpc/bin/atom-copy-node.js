@@ -17,6 +17,8 @@ import {
   setupLogging,
   EXIT_CODE_SUCCESS,
   FailedConnectionError,
+  trackError,
+  trackSuccess,
 } from './errors';
 import readStdin from 'get-stdin';
 
@@ -34,6 +36,7 @@ async function main(argv): Promise<number> {
   try {
     commands = await getCommands(argv, /* rejectIfZeroConnections */ true);
   } catch (error) {
+    await trackError('copy', argv, error);
     if (error instanceof FailedConnectionError) {
       // Note this does not throw: explainNuclideIsNeededAndExit()
       // does not return. However, we use throw to convince Flow
@@ -54,6 +57,7 @@ async function main(argv): Promise<number> {
     process.stderr.write(yargs.help());
   }
 
+  await trackSuccess('copy', argv._);
   return EXIT_CODE_SUCCESS;
 }
 

@@ -17,6 +17,8 @@ import {
   setupLogging,
   EXIT_CODE_SUCCESS,
   FailedConnectionError,
+  trackError,
+  trackSuccess,
 } from './errors';
 
 /**
@@ -33,6 +35,7 @@ async function main(argv): Promise<number> {
   try {
     commands = await getCommands(argv, /* rejectIfZeroConnections */ true);
   } catch (error) {
+    await trackError('paste', argv, error);
     if (error instanceof FailedConnectionError) {
       // Note this does not throw: explainNuclideIsNeededAndExit()
       // does not return. However, we use throw to convince Flow
@@ -49,6 +52,7 @@ async function main(argv): Promise<number> {
   }
   process.stdout.write(contents);
 
+  await trackSuccess('paste', argv);
   return EXIT_CODE_SUCCESS;
 }
 

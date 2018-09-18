@@ -22,6 +22,8 @@ import {
   EXIT_CODE_APPLICATION_ERROR,
   EXIT_CODE_INVALID_ARGUMENTS,
   FailedConnectionError,
+  trackSuccess,
+  trackError,
 } from './errors';
 import {getLogger} from 'log4js';
 import yargs from 'yargs';
@@ -84,6 +86,7 @@ async function main(argv): Promise<number> {
     try {
       commands = await getCommands(argv, /* rejectIfZeroConnections */ true);
     } catch (error) {
+      await trackError('atom', argv, error);
       if (error instanceof FailedConnectionError) {
         // Note this does not throw: reportConnectionErrorAndExit()
         // does not return. However, we use throw to convince Flow
@@ -152,10 +155,13 @@ async function main(argv): Promise<number> {
           }
         }
       } catch (e) {
+        // eslint-disable-next-line no-await-in-loop
+        await trackError('atom', argv, e);
         reportErrorAndExit(e, EXIT_CODE_APPLICATION_ERROR);
       }
     }
   }
+  await trackSuccess('atom', argv);
   return EXIT_CODE_SUCCESS;
 }
 

@@ -20,6 +20,8 @@ import {
   EXIT_CODE_CONNECTION_ERROR,
   EXIT_CODE_SUCCESS,
   FailedConnectionError,
+  trackError,
+  trackSuccess,
 } from './errors';
 
 /*
@@ -37,9 +39,10 @@ async function main(argv): Promise<number> {
   let commands = null;
   try {
     commands = await getCommands(argv, /* rejectIfZeroConnections */ false);
-  } catch (e) {
+  } catch (error) {
     // Only a FailedConnectionError is expected.
-    if (!(e instanceof FailedConnectionError)) {
+    if (!(error instanceof FailedConnectionError)) {
+      await trackError('connections', argv, error);
       return EXIT_CODE_CONNECTION_ERROR;
     }
   }
@@ -80,8 +83,9 @@ async function main(argv): Promise<number> {
   }
 
   foldersArray.sort();
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(foldersArray, null, 2));
+  process.stdout.write(JSON.stringify(foldersArray, null, 2));
+  process.stdout.write('\n');
+  await trackSuccess('connections', argv);
   return EXIT_CODE_SUCCESS;
 }
 
