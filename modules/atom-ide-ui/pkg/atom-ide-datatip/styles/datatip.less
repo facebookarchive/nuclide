@@ -82,7 +82,10 @@
 atom-text-editor {
 
   .datatip-highlight-region > .region {
-    background: @syntax-selection-color;
+    // Use a faded version of the cursor color so as to have a distinction when
+    // overlapping with a selection (`@syntax-selection-color`). This element is
+    // on top of the selection element, so that will show through.
+    background: fade(@syntax-cursor-color, 10%);
   }
 
   .datatip-highlight-region-active > .region {
