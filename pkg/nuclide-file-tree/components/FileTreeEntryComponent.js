@@ -14,6 +14,7 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
 import type {AppState} from '../lib/types';
 
+import {dragEventCameFromDraggableFile} from 'nuclide-commons-ui/DraggableFile';
 import {connect} from 'react-redux';
 import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Selectors from '../lib/redux/Selectors';
@@ -424,14 +425,9 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       event.dataTransfer &&
       event.dataTransfer.types.includes('Files');
 
-    const externalDragPath = getExternalDragPath(event);
-
-    if (externalDragPath != null) {
-      if (
-        FileTreeHgHelpers.isValidRename(externalDragPath, this.props.node.uri)
-      ) {
-        this.props.setDragHoveredNode();
-      }
+    if (dragEventCameFromDraggableFile(event)) {
+      // Ideally we would check to see if the rename was valid, but we don't have permission to peek inside the dataTransfer data.
+      this.props.setDragHoveredNode();
     } else if (haveUploadableOSFiles) {
       this.props.setDragHoveredNode();
     } else if (singleRootNodeIsSelected) {
