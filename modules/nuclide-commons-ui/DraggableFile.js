@@ -46,6 +46,11 @@ export default class DraggableFile extends React.Component<{
       // `dataTransfer`, just the keys. So, we use a unique key to enable other
       // components to infer if a drag event contains a draggable file.
       dataTransfer.setData(MAGIC_DATA_TRANSFER_KEY, '');
+
+      // Allow draggable files to be dragged into the tab bar.
+      dataTransfer.setData('text/plain', this.props.uri);
+      dataTransfer.setData('atom-event', 'true');
+      dataTransfer.setData('allow-all-locations', 'true');
     }
   };
 
