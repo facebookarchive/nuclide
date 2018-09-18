@@ -86,6 +86,7 @@
     "fs-extra": "4.0.3",
     "fs-plus": "2.9.3",
     "fuzzaldrin-plus": "0.4.1",
+    "get-stdin": "^4.0.1",
     "getmac": "1.4.1",
     "getos": "3.1.0",
     "glob": "7.1.1",

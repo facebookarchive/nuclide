@@ -107,5 +107,23 @@ export class RoutingAtomCommands implements MultiConnectionAtomCommands {
     await Promise.all(promises);
   }
 
+  getClipboardContents(): Promise<string> {
+    const commands = this._server.getDefaultAtomCommands();
+    if (commands != null) {
+      return commands.getClipboardContents();
+    } else {
+      throw new Error('No connected Atom windows');
+    }
+  }
+
+  setClipboardContents(text: string): Promise<void> {
+    const commands = this._server.getDefaultAtomCommands();
+    if (commands != null) {
+      return commands.setClipboardContents(text);
+    } else {
+      throw new Error('No connected Atom windows');
+    }
+  }
+
   dispose() {}
 }

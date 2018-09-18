@@ -20,6 +20,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
+import {clipboard} from 'electron';
 
 import invariant from 'assert';
 import querystring from 'querystring';
@@ -107,6 +108,18 @@ class Activation {
         const {description, detail, icon, dismissable} = notification;
         const options = {description, detail, icon, dismissable};
         atom.notifications.add(type, message, options);
+        return Promise.resolve();
+      },
+
+      getClipboardContents(): Promise<string> {
+        // $FlowFixMe missing flow def
+        const contents: string = clipboard.readText();
+        return Promise.resolve(contents.substring(0, 100 * 1024));
+      },
+
+      setClipboardContents(text: string): Promise<void> {
+        // $FlowFixMe missing flow def
+        clipboard.writeText(text);
         return Promise.resolve();
       },
 

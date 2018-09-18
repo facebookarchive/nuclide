@@ -75,6 +75,16 @@ export interface AtomCommands {
 
   addNotification(notification: AtomNotification): Promise<void>;
 
+  /**
+   * Returns contents of clipboard.
+   */
+  getClipboardContents(): Promise<string>;
+
+  /**
+   * Sets contents of clipboard.
+   */
+  setClipboardContents(text: string): Promise<void>;
+
   dispose(): void;
 }
 
@@ -132,6 +142,16 @@ export interface MultiConnectionAtomCommands {
    * Sends the specified notification to all connected windows.
    */
   addNotification(notification: AtomNotification): Promise<void>;
+
+  /**
+   * Returns contents of clipboard.
+   */
+  getClipboardContents(): Promise<string>;
+
+  /**
+   * Sets contents of clipboard.
+   */
+  setClipboardContents(text: string): Promise<void>;
 
   dispose(): void;
 }

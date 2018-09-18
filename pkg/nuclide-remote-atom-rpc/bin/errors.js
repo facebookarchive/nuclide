@@ -12,6 +12,7 @@
 import log4js from 'log4js';
 import os from 'os';
 
+import {trackImmediate} from '../../nuclide-analytics';
 import {initializeLogging} from '../../nuclide-logging';
 
 const logger = log4js.getLogger('nuclide-remote-atom-rpc');
@@ -43,6 +44,25 @@ export function setupLogging() {
   initializeLogging();
 }
 
+export async function trackSuccess(
+  command: string,
+  args: mixed,
+): Promise<void> {
+  await trackImmediate('nuclide-remote-atom-rpc:success', {command, args});
+}
+
+export async function trackError(
+  command: string,
+  args: mixed,
+  error: Error,
+): Promise<void> {
+  await trackImmediate('nuclide-remote-atom-rpc:error', {
+    command,
+    args,
+    error,
+  });
+}
+
 export function reportConnectionErrorAndExit(
   error: FailedConnectionError,
 ): void {
@@ -64,6 +84,14 @@ export function reportConnectionErrorAndExit(
   process.stderr.write('Callstack:\n');
   process.stderr.write(new Error().stack);
   process.stderr.write('\n');
+  process.exit(EXIT_CODE_CONNECTION_ERROR);
+}
+
+export function explainNuclideIsNeededAndExit(): void {
+  process.stderr.write(
+    'You need to have a Nuclide connection active. ' +
+      "This command doesn't normally exist on Linux and is powered by Nuclide magic.\n",
+  );
   process.exit(EXIT_CODE_CONNECTION_ERROR);
 }
 
