@@ -104,8 +104,8 @@ export function getDefaultSourceSearchPaths(
   const searchPaths: Array<string> = [];
   const remote = nuclideUri.isRemote(targetUri);
 
-  // Add all the project root paths as potential source locations the Java debugger server should
-  // check for resolving source.
+  // Add all the project root paths as potential source locations the Java
+  // debugger server should check for resolving source.
   // NOTE: the Java debug server will just ignore any directory path that doesn't exist.
   atom.project.getPaths().forEach(path => {
     if (

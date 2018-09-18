@@ -24,7 +24,8 @@ import java.util.stream.Stream;
 
 /** Responsible for locating source file using class/source file paths. */
 public class SourceLocator {
-  public static final String DEFAULT_ANDROID_SDK = "/opt/android_sdk";
+  private static final String DEFAULT_ANDROID_SDK = "/opt/android_sdk";
+  private static final String JS_DIR = "/js/";
   // TODO: use ReadWriteLock if perf is an issue.
   private final Object _sourceSearchPathsLock = new Object();
   private final Set<String> _sourceSearchPaths = new HashSet<>();
@@ -247,6 +248,27 @@ public class SourceLocator {
 
   /** Search source file for input originalSourceFilePath. */
   public Optional<File> findSourceFile(String originalSourceFilePath) {
+    Optional<File> sourceFile = findSourceFileH(originalSourceFilePath);
+    if (sourceFile.isPresent()) {
+      return sourceFile;
+    }
+    int indexOfJs = originalSourceFilePath.indexOf(JS_DIR);
+    if (indexOfJs >= 0) {
+      String transposedSourceFilePath =
+          originalSourceFilePath.substring(indexOfJs + JS_DIR.length());
+      sourceFile = findSourceFileH(transposedSourceFilePath);
+      if (sourceFile.isPresent()) {
+        return sourceFile;
+      }
+    }
+    // TODO: It would be GREAT if I could pass some telemetry data back to Nuclide that includes the
+    // originalSourceFilePath and because it is a relative path I should be able to query the
+    // telemetry data and figure out what is the most accessed stack frame sources that we do not
+    // currently have sources for
+    return Optional.empty();
+  }
+
+  private Optional<File> findSourceFileH(String originalSourceFilePath) {
     synchronized (_sourceSearchPathsLock) {
       return _sourceSearchPaths
           .stream()
