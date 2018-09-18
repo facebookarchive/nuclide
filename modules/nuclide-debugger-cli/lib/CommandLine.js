@@ -154,13 +154,14 @@ export default class CommandLine implements ConsoleIO {
     this._cli.write(data);
   }
 
-  more(text: string): void {
+  async more(text: string): Promise<void> {
     invariant(this._more == null);
-    const cursorControl: ?CursorControl = this._cli.borrowTTY();
-    if (cursorControl == null) {
+    if (!this._cli.isTTY()) {
       this.output(text);
       return;
     }
+
+    const cursorControl: CursorControl = await this._cli.borrowTTY();
 
     const more: More = new More(text, this, cursorControl, () => {
       this._cli.returnTTY();

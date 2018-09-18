@@ -17,7 +17,7 @@ export interface ConsoleIO {
   output(text: string): void;
   outputLine(line?: string): void;
   write(data: string): void;
-  more(text: string): void;
+  more(text: string): Promise<void>;
   setPrompt(prompt: ?string): void;
   prompt(): void;
   stopInput(keepPromptWhenStopped?: boolean): void;
