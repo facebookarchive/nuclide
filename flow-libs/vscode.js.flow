@@ -4399,7 +4399,7 @@ declare module 'vscode' {
      * @param token A cancellation token.
      * @return The resolved task
      */
-    resolveTask(task: Task, token?: CancellationToken): ProviderResult<Task>;
+    resolveTask(task: Task, token?: CancellationToken): ProviderResult<Task> | void;
   }
 
   /**
