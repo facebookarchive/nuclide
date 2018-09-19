@@ -95,6 +95,7 @@ export type TaskRunnerState = {
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
+  subscribe(listener: () => void): () => void,
   replaceReducer(reducer: () => mixed): void,
 };
 
