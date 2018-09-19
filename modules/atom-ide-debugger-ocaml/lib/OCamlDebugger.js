@@ -170,7 +170,7 @@ class OCamlDebugSession extends LoggingDebugSession {
 
   threadsRequest(response: DebugProtocol.ThreadsResponse): void {
     response.body = {
-      threads: [new Thread(THREAD_ID, 'Please, this is OCaml')],
+      threads: [new Thread(THREAD_ID, '')],
     };
     this.sendResponse(response);
   }
