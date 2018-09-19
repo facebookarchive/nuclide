@@ -477,9 +477,12 @@ export default class DebugService implements IDebugService {
           return Observable.fromPromise(stackFrame.openInEditor()).switchMap(
             editor => {
               if (editor == null) {
-                atom.notifications.addError(
-                  'Failed to open source file for stack frame!',
-                );
+                const uri = stackFrame.source.uri;
+                const errorMsg =
+                  uri == null || uri === ''
+                    ? 'The selected stack frame has no known source location'
+                    : `Nuclide could not open ${uri}`;
+                atom.notifications.addError(errorMsg);
                 return Observable.empty();
               }
               return Observable.of({editor, explicit, stackFrame});
