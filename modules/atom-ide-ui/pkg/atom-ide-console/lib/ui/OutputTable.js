@@ -18,6 +18,7 @@ import type {
   RecordHeightChangeHandler,
 } from '../types';
 
+import {DefaultWeakMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullThrows from 'nullthrows';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
@@ -69,6 +70,7 @@ type OnScrollParams = {
 
 // The number of extra rows to render beyond what is visible
 const OVERSCAN_COUNT = 5;
+const INITIAL_RECORD_HEIGHT = 21;
 
 export default class OutputTable extends React.Component<Props, State> {
   _disposable: UniversalDisposable;
@@ -82,6 +84,10 @@ export default class OutputTable extends React.Component<Props, State> {
   _startIndex: number;
   _stopIndex: number;
   _refs: Subject<?HTMLElement>;
+  _heights: DefaultWeakMap<DisplayableRecord, number> = new DefaultWeakMap(
+    () => INITIAL_RECORD_HEIGHT,
+  );
+  _heightChanges: Subject<null> = new Subject();
 
   constructor(props: Props) {
     super(props);
@@ -96,6 +102,12 @@ export default class OutputTable extends React.Component<Props, State> {
     this._stopIndex = 0;
     this._refs = new Subject();
     this._disposable.add(
+      this._heightChanges.subscribe(() => {
+        // Theoretically we should be able to (trailing) throttle this to once
+        // per render/paint using microtask, but I haven't been able to get it
+        // to work without seeing visible flashes of collapsed output.
+        this._recomputeRowHeights();
+      }),
       this._refs
         .filter(Boolean)
         .switchMap(node => new ResizeObservable(nullThrows(node)).mapTo(node))
@@ -156,6 +168,27 @@ export default class OutputTable extends React.Component<Props, State> {
     );
   }
 
+  _recomputeRowHeights = () => {
+    // The react-virtualized List component is provided the row heights
+    // through a function, so it has no way of knowing that a row's height
+    // has changed unless we explicitly notify it to recompute the heights.
+    if (this._list == null) {
+      return;
+    }
+    // $FlowIgnore Untyped react-virtualized List component method
+    this._list.recomputeRowHeights();
+
+    // If we are already scrolled to the bottom, scroll to ensure that the scrollbar remains at
+    // the bottom. This is important not just for if the last record changes height through user
+    // interaction (e.g. expanding a debugger variable), but also because this is the mechanism
+    // through which the record's true initial height is reported. Therefore, we may have scrolled
+    // to the bottom, and only afterwards received its true height. In this case, it's important
+    // that we then scroll to the new bottom.
+    if (this.props.shouldScrollToBottom()) {
+      this.scrollToBottom();
+    }
+  };
+
   _handleListRender = (opts: {startIndex: number, stopIndex: number}): void => {
     this._startIndex = opts.startIndex;
     this._stopIndex = opts.stopIndex;
@@ -209,7 +242,7 @@ export default class OutputTable extends React.Component<Props, State> {
   }
 
   _getRowHeight = ({index}: RowHeightParams): number => {
-    return this.props.displayableRecords[index].height;
+    return this._heights.get(this.props.displayableRecords[index]);
   };
 
   _handleTableWrapper = (tableWrapper: HTMLElement): void => {
@@ -237,27 +270,15 @@ export default class OutputTable extends React.Component<Props, State> {
     );
   };
 
-  _handleRecordHeightChange = (recordId: number, newHeight: number): void => {
-    this.props.onDisplayableRecordHeightChange(recordId, newHeight, () => {
-      // The react-virtualized List component is provided the row heights
-      // through a function, so it has no way of knowing that a row's height
-      // has changed unless we explicitly notify it to recompute the heights.
-      if (this._list == null) {
-        return;
-      }
-      // $FlowIgnore Untyped react-virtualized List component method
-      this._list.recomputeRowHeights();
-
-      // If we are already scrolled to the bottom, scroll to ensure that the scrollbar remains at
-      // the bottom. This is important not just for if the last record changes height through user
-      // interaction (e.g. expanding a debugger variable), but also because this is the mechanism
-      // through which the record's true initial height is reported. Therefore, we may have scrolled
-      // to the bottom, and only afterwards received its true height. In this case, it's important
-      // that we then scroll to the new bottom.
-      if (this.props.shouldScrollToBottom()) {
-        this.scrollToBottom();
-      }
-    });
+  _handleRecordHeightChange = (
+    displayableRecord: DisplayableRecord,
+    newHeight: number,
+  ): void => {
+    const oldHeight = this._heights.get(displayableRecord);
+    if (oldHeight !== newHeight) {
+      this._heights.set(displayableRecord, newHeight);
+      this._heightChanges.next(null);
+    }
   };
 
   _onScroll = ({

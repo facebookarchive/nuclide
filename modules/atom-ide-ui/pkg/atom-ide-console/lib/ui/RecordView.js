@@ -29,7 +29,6 @@ import shallowEqual from 'shallowequal';
 import Ansi from 'nuclide-commons-ui/Ansi';
 import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
 import debounce from 'nuclide-commons/debounce';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
 import parseText from '../parseText';
 
 type Props = {
@@ -37,7 +36,10 @@ type Props = {
   showSourceLabel: boolean,
   getExecutor: (id: string) => ?Executor,
   getProvider: (id: string) => ?OutputProvider,
-  onHeightChange: (recordId: number, newHeight: number) => void,
+  onHeightChange: (
+    displayableRecord: DisplayableRecord,
+    newHeight: number,
+  ) => void,
 };
 
 const AnsiRenderSegment = ({key, style, content}: RenderSegmentProps) => (
@@ -50,7 +52,6 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
 export default class RecordView extends React.Component<Props> {
   _wrapper: ?HTMLElement;
   _debouncedMeasureAndNotifyHeight: () => void;
-  _rafDisposable: ?rxjs$Subscription;
 
   constructor(props: Props) {
     super(props);
@@ -71,9 +72,7 @@ export default class RecordView extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    if (this._rafDisposable != null) {
-      this._rafDisposable.unsubscribe();
-    }
+    this._debouncedMeasureAndNotifyHeight.dispose();
   }
 
   _renderContent(displayableRecord: DisplayableRecord): React.Element<any> {
@@ -155,9 +154,13 @@ export default class RecordView extends React.Component<Props> {
         <div className="console-record-timestamp">{timestampLabel}</div>
       );
     }
+    /*
     return (
       <MeasuredComponent
         onMeasurementsChanged={this._debouncedMeasureAndNotifyHeight}>
+        */
+    return (
+      <MeasuredComponent onMeasurementsChanged={() => {}}>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <div ref={this._handleRecordWrapper} className={classNames}>
           {icon}
@@ -179,24 +182,11 @@ export default class RecordView extends React.Component<Props> {
   }
 
   measureAndNotifyHeight = () => {
-    // This method is called after the necessary DOM mutations have
-    // already occurred, however it is possible that the updates have
-    // not been flushed to the screen. So the height change update
-    // is deferred until the rendering is complete so that
-    // this._wrapper.offsetHeight gives us the correct final height
-    if (this._rafDisposable != null) {
-      this._rafDisposable.unsubscribe();
+    if (this._wrapper == null) {
+      return;
     }
-    this._rafDisposable = nextAnimationFrame.subscribe(() => {
-      if (this._wrapper == null) {
-        return;
-      }
-      const {offsetHeight} = this._wrapper;
-      const {displayableRecord, onHeightChange} = this.props;
-      if (offsetHeight !== displayableRecord.height) {
-        onHeightChange(displayableRecord.id, offsetHeight);
-      }
-    });
+    const {offsetHeight} = this._wrapper;
+    this.props.onHeightChange(this.props.displayableRecord, offsetHeight);
   };
 
   _handleRecordWrapper = (wrapper: HTMLElement) => {

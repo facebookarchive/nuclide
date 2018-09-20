@@ -77,7 +77,6 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
 
 const ERROR_TRANSCRIBING_MESSAGE =
   "// Nuclide couldn't find the right text to display";
-const INITIAL_RECORD_HEIGHT = 21;
 
 const ALL_SEVERITIES = new Set(['error', 'warning', 'info']);
 
@@ -339,8 +338,6 @@ export class Console {
           executors: globalState.executors,
           getProvider: id => globalState.providers.get(id),
           updateFilter: this._updateFilter,
-          onDisplayableRecordHeightChange: this
-            ._handleDisplayableRecordHeightChange,
           resetAllFilters: this._resetAllFilters,
           fontSize: globalState.fontSize,
           selectedSeverities,
@@ -407,32 +404,6 @@ export class Console {
     this._model.setState({selectedSeverities: nextSelectedSeverities});
   };
 
-  _handleDisplayableRecordHeightChange = (
-    recordId: number,
-    newHeight: number,
-    callback: () => void,
-  ): void => {
-    const nextDisplayableRecords = Selectors.getAllRecords(
-      this._store.getState(),
-    )
-      .map((record, i) => {
-        let displayableRecord = this._toDisplayableRecord(record);
-        if (displayableRecord.id === recordId) {
-          // Update the record with the new height.
-          displayableRecord = {
-            ...displayableRecord,
-            height: newHeight,
-          };
-          this._displayableRecords.set(record, displayableRecord);
-        }
-        return displayableRecord;
-      })
-      .toArray();
-
-    this._model.setState({displayableRecords: nextDisplayableRecords});
-    requestAnimationFrame(callback);
-  };
-
   _getDisplayableRecords(): Array<DisplayableRecord> {
     return Selectors.getAllRecords(this._store.getState())
       .map(record => this._toDisplayableRecord(record))
@@ -452,7 +423,6 @@ export class Console {
     const newDisplayableRecord = {
       id: this._nextRecordId++,
       record,
-      height: INITIAL_RECORD_HEIGHT,
       expansionStateId: {},
     };
     this._displayableRecords.set(record, newDisplayableRecord);
