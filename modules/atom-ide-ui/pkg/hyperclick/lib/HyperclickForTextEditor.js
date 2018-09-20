@@ -41,10 +41,6 @@ export default class HyperclickForTextEditor {
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
   _lastWordRange: ?atom$Range;
-  _onMouseMove: (event: Event) => void;
-  _onMouseDown: (event: Event) => void;
-  _onKeyDown: (event: Event) => void;
-  _onKeyUp: (event: Event) => void;
   _subscriptions: UniversalDisposable;
   _isDestroyed: boolean;
   _loadingTimer: ?number;
@@ -70,15 +66,10 @@ export default class HyperclickForTextEditor {
     this._lastWordRange = null;
     this._subscriptions = new UniversalDisposable();
 
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onMouseDown = this._onMouseDown.bind(this);
     this._setupMouseListeners();
 
-    this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
-    this._onKeyUp = this._onKeyUp.bind(this);
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
-    (this: any)._onContextMenu = this._onContextMenu.bind(this);
     this._textEditorView.addEventListener('contextmenu', this._onContextMenu);
 
     this._subscriptions.add(
@@ -150,7 +141,7 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onContextMenu(event: Event): void {
+  _onContextMenu = (event: Event): void => {
     const mouseEvent: MouseEvent = (event: any);
     // If the key trigger happens to cause the context menu to show up, then
     // cancel it. By this point, it's too late to know if you're at a suggestion
@@ -159,9 +150,9 @@ export default class HyperclickForTextEditor {
     if (this._isHyperclickEvent(mouseEvent)) {
       event.stopPropagation();
     }
-  }
+  };
 
-  _onMouseMove(event: Event): void {
+  _onMouseMove = (event: Event): void => {
     const mouseEvent: MouseEvent = (event: any);
 
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
@@ -177,9 +168,9 @@ export default class HyperclickForTextEditor {
     } else {
       this._clearSuggestion();
     }
-  }
+  };
 
-  _onMouseDown(event: Event): void {
+  _onMouseDown = (event: Event): void => {
     const mouseEvent: MouseEvent = (event: any);
     if (!this._isHyperclickEvent(mouseEvent)) {
       return;
@@ -215,22 +206,22 @@ export default class HyperclickForTextEditor {
     }
 
     this._clearSuggestion();
-  }
+  };
 
-  _onKeyDown(event: Event): void {
+  _onKeyDown = (event: Event): void => {
     const mouseEvent: MouseEvent = (event: any);
     // Show the suggestion at the last known mouse position.
     if (this._isHyperclickEvent(mouseEvent) && this._lastMouseEvent != null) {
       this._fetchSuggestion(this._lastMouseEvent);
     }
-  }
+  };
 
-  _onKeyUp(event: Event): void {
+  _onKeyUp = (event: Event): void => {
     const mouseEvent: MouseEvent = (event: any);
     if (!this._isHyperclickEvent(mouseEvent)) {
       this._clearSuggestion();
     }
-  }
+  };
 
   /**
    * Returns a `Promise` that's resolved when the latest suggestion's available.
