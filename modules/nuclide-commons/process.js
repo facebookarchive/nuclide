@@ -499,6 +499,13 @@ export async function getOriginalEnvironmentArray(): Promise<Array<string>> {
   return [];
 }
 
+export async function getEnvironment(): Promise<Object> {
+  await new Promise(resolve => {
+    whenShellEnvironmentLoaded(resolve);
+  });
+  return process.env;
+}
+
 /**
  * Returns a string suitable for including in displayed error messages.
  */

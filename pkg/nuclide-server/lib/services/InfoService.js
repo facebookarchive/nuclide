@@ -12,7 +12,10 @@
 import type {QueuedAckTransport} from 'big-dig/src/socket/QueuedAckTransport';
 import type {RpcConnection} from '../../../nuclide-rpc';
 
-import {getOriginalEnvironmentArray} from 'nuclide-commons/process';
+import {
+  getEnvironment,
+  getOriginalEnvironmentArray,
+} from 'nuclide-commons/process';
 import {getVersion} from '../../../nuclide-version';
 import NuclideServer from '../NuclideServer';
 
@@ -26,6 +29,10 @@ export async function getServerPlatform(): Promise<string> {
 
 export async function getOriginalEnvironment(): Promise<Array<string>> {
   return getOriginalEnvironmentArray();
+}
+
+export async function getServerEnvironment(): Promise<Object> {
+  return getEnvironment();
 }
 
 // Mark this as async so the client can wait for an acknowledgement.
