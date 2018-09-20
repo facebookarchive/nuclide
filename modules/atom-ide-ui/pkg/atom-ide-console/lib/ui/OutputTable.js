@@ -214,11 +214,13 @@ export default class OutputTable extends React.Component<Props, State> {
   _renderRow = (rowMetadata: RowRendererParams): React.Element<any> => {
     const {index, style} = rowMetadata;
     const record = this.props.records[index];
+    const key =
+      record.messageId != null
+        ? `messageId:${record.messageId}`
+        : `recordHash:${this._hasher.getHash(record)}`;
+
     return (
-      <div
-        key={this._hasher.getHash(record)}
-        className="console-table-row-wrapper"
-        style={style}>
+      <div key={key} className="console-table-row-wrapper" style={style}>
         <RecordView
           // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={(view: ?RecordView) => {

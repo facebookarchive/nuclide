@@ -19,6 +19,7 @@ import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import * as React from 'react';
 import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
+import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
 import shallowEqual from 'shallowequal';
 import Ansi from 'nuclide-commons-ui/Ansi';
 import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
@@ -61,6 +62,14 @@ export default class RecordView extends React.Component<Props> {
     // We initially assume a height for the record. After it is actually
     // rendered we need it to measure its actual height and report it
     this.measureAndNotifyHeight();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    // Record is an immutable object, so any change that would affect a height
+    // change should result in us getting a new object.
+    if (this.props.record !== prevProps.record) {
+      this.measureAndNotifyHeight();
+    }
   }
 
   componentWillUnmount() {
@@ -166,6 +175,7 @@ export default class RecordView extends React.Component<Props> {
           </div>
           {sourceLabel}
           {renderedTimestamp}
+          {<FullWidthProgressBar progress={null} visible={record.incomplete} />}
         </div>
       </MeasuredComponent>
     );
