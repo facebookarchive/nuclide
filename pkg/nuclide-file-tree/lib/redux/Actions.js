@@ -16,7 +16,7 @@ import type {RemoteTransferService} from '../../../nuclide-remote-transfer';
 import type {Action} from '../types';
 import type {FileTreeNode} from '../FileTreeNode';
 import type CwdApi from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
+import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
 import type {RemoteProjectsService} from '../../../nuclide-remote-projects';
 import type {WorkingSet} from '../../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionInfo, RevisionSuccessorInfo} from './HgService';
+import type {RevisionInfo, RevisionSuccessorInfo} from './types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {hgAsyncExecute, hgRunCommand} from './hg-utils';

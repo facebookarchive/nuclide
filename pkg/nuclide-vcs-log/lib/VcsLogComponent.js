@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
+import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/types';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';

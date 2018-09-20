@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/types';
 
 export type BlameForEditor = Array<?RevisionInfo>;
 

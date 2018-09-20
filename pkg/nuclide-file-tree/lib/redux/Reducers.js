@@ -34,7 +34,7 @@ import * as Actions from '../redux/Actions';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/HgService';
+import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
 import type {StoreConfigData, AppState, Action} from '../types';
 
 export const DEFAULT_CONF = {

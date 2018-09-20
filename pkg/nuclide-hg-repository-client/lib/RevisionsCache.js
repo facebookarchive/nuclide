@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/HgService';
+import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/types';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from 'nuclide-commons/collection';

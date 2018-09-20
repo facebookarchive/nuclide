@@ -15,7 +15,7 @@ import * as Immutable from 'immutable';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NodeCheckedStatus, StoreConfigData} from './types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
 export type FileTreeNodeOptions = {

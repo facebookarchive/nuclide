@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionInfo} from '../lib/HgService';
+import type {RevisionInfo} from '../lib/types';
 
 export function createMockRevisionInfo(customValues: Object): RevisionInfo {
   const blankRevisionInfo: RevisionInfo = {

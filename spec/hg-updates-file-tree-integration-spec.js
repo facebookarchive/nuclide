@@ -10,7 +10,7 @@
  */
 
 import type {HgRepositoryClient} from '../pkg/nuclide-hg-repository-client';
-import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
+import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/types';
 import type {TestContext} from './utils/remotable-tests';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';

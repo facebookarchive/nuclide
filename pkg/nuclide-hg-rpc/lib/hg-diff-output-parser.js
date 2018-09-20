@@ -20,7 +20,7 @@ const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
 import {lastFromArray} from 'nuclide-commons/collection';
 import os from 'os';
-import type {DiffInfo} from './HgService';
+import type {DiffInfo} from './types';
 
 /**
  * Parses the output of `hg diff --unified 0`.

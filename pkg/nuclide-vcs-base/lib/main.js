@@ -14,7 +14,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {
   MergeConflictStatusValue,
   StatusCodeNumberValue,
-} from '../../nuclide-hg-rpc/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {arrayCompact} from 'nuclide-commons/collection';

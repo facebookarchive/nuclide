@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as FileTreeHelpers from './FileTreeHelpers';

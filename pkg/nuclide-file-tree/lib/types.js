@@ -13,7 +13,7 @@ import type Immutable from 'immutable';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteTransferService} from '../../nuclide-remote-transfer';
 import type {FileTreeNode} from './FileTreeNode';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 import * as React from 'react';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';

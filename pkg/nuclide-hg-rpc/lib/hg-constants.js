@@ -18,7 +18,7 @@ import type {
   StatusCodeNumberValue,
   SuccessorTypeValue,
   HisteditActionsValue,
-} from './HgService';
+} from './types';
 
 const StatusCodeId = Object.freeze({
   ADDED: 'A',

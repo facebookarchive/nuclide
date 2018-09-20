@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionFileChanges} from './HgService';
+import type {RevisionFileChanges} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 

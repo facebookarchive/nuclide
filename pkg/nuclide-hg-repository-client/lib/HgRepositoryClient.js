@@ -15,7 +15,6 @@ import type {
   AmendModeValue,
   BookmarkInfo,
   CheckoutOptions,
-  HgRepositorySubscriptions,
   DiffInfo,
   LineDiff,
   OperationProgress,
@@ -27,7 +26,8 @@ import type {
   StatusCodeIdValue,
   VcsLogResponse,
   RevisionInfoFetched,
-} from '../../nuclide-hg-rpc/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/types';
+import {HgRepositorySubscriptions} from '../../nuclide-hg-rpc/lib/HgService';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';

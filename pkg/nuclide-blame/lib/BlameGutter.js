@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/types';
 import type {BlameForEditor, BlameProvider} from './types';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';

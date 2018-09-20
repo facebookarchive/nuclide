@@ -10,7 +10,7 @@
  */
 
 import {ConnectableObservable, Observable, Subject} from 'rxjs';
-import type {DiffInfo, StatusCodeIdValue, BookmarkInfo} from '../lib/HgService';
+import type {DiffInfo, StatusCodeIdValue, BookmarkInfo} from '../lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 class MockHgRepositorySubscriptions {

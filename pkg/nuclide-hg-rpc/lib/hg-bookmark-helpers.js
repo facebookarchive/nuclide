@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {BookmarkInfo} from './HgService';
+import type {BookmarkInfo} from './types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
