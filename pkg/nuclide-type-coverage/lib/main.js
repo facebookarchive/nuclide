@@ -84,7 +84,9 @@ class Activation {
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const item = document.createElement('span');
+    const item = document.createElement('div');
+    item.classList.add('inline-block');
+    item.style.height = '100%';
 
     const statusBarTile = statusBar.addLeftTile({
       item,

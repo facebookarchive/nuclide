@@ -67,6 +67,7 @@ export class StatusBarTileComponent extends React.Component<Props> {
         formattedPercentage,
         result.providerName,
       );
+
       return (
         <UnstyledButton
           onClick={this.props.onClick}

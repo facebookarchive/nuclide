@@ -1,6 +1,12 @@
-.nuclide-ui-unstyled-button {
+.nuclide-ui-unstyled-button.nuclide-ui-unstyled-button {
+  -webkit-appearance: none;
   background: none;
   border: 0;
   padding: 0;
-  cursor: auto;
+  cursor: pointer;
+  text-align: inherit;
+
+  &:active, &:hover {
+    background: none;
+  }
 }
