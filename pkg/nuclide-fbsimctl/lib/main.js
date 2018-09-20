@@ -50,6 +50,13 @@ function createPoller(): Observable<Expected<Array<FbsimctlDevice>>> {
           ) {
             message =
               "Xcode path is invalid, use 'xcode-select' in a terminal to select path to an Xcode installation.";
+          } else if (
+            // RPC call timed out
+            error.name === 'RpcTimeoutError' ||
+            // RPC call succeeded, but the fbsimctl call itself timed out
+            error.startsWith('Remote Error: Timeout has occurred')
+          ) {
+            message = 'Request timed out, retrying...';
           } else {
             message = error.message;
           }

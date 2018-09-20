@@ -43,10 +43,19 @@ export function observeAndroidDevices(
         return Observable.fromPromise(service.getDeviceList())
           .map(devices => Expect.value(devices))
           .catch(error => {
-            const message =
-              error.code !== 'ENOENT'
-                ? error.message
-                : "'adb' not found in $PATH.";
+            let message;
+            if (error.code === 'ENOENT') {
+              message = "'adb' not found in $PATH.";
+            } else if (
+              // RPC call timed out
+              error.name === 'RpcTimeoutError' ||
+              // RPC call succeeded, but the adb call itself timed out
+              error.startsWith('Remote Error: Timeout has occurred')
+            ) {
+              message = 'Request timed out, retrying...';
+            } else {
+              message = error.message;
+            }
             const newError = new Error(
               "Can't fetch Android devices. " + message,
             );

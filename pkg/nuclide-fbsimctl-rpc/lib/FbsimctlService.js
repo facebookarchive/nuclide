@@ -25,7 +25,9 @@ export async function getDevices(): Promise<Array<FbsimctlDevice>> {
     '--json',
     '--format=%n%u%s%o%a',
     'list',
-  ]).toPromise();
+  ])
+    .timeout(5000)
+    .toPromise();
   return parseFbsimctlJsonOutput(output);
 }
 
