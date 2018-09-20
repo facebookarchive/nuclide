@@ -10,6 +10,7 @@
  */
 
 import type {Expected} from 'nuclide-commons/expected';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FbsimctlDevice} from '../../nuclide-fbsimctl-rpc/lib/types';
 
 import {Expect, expectedEqual} from 'nuclide-commons/expected';
@@ -19,7 +20,10 @@ import {arrayEqual} from 'nuclide-commons/collection';
 import shallowEqual from 'shallowequal';
 import {getLogger} from 'log4js';
 import {track} from '../../nuclide-analytics';
-import {getFbsimctlServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFbsimctlServiceByNuclideUri,
+  getInfoServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 
 const poller = createPoller();
 
@@ -29,11 +33,13 @@ export function observeIosDevices(): Observable<
   return poller;
 }
 
-function createPoller(): Observable<Expected<Array<FbsimctlDevice>>> {
+function createPoller(
+  serviceUri: NuclideUri = '',
+): Observable<Expected<Array<FbsimctlDevice>>> {
   return Observable.interval(2000)
     .startWith(0)
     .exhaustMap(() => {
-      const service = getFbsimctlServiceByNuclideUri('');
+      const service = getFbsimctlServiceByNuclideUri(serviceUri);
       if (service == null) {
         // Gracefully handle a lost remote connection
         return Observable.of(Expect.pending());
@@ -74,12 +80,27 @@ function createPoller(): Observable<Expected<Array<FbsimctlDevice>>> {
         (e1, e2) => e1.message === e2.message,
       ),
     )
-    .do(value => {
+    .do(async value => {
       if (value.isError) {
         const {error} = value;
         const logger = getLogger('nuclide-fbsimctl');
-        logger.warn(value.error.message);
-        track('nuclide-fbsimctl:device-poller:error', {error});
+        let extras = {error};
+        try {
+          if (
+            // $FlowIgnore
+            (error: any).originalError != null &&
+            // $FlowIgnore
+            (error: any).originalError.code === 'ENOENT'
+          ) {
+            const serverEnv = await getInfoServiceByNuclideUri(
+              serviceUri,
+            ).getServerEnvironment();
+            extras = {...extras, pathEnv: serverEnv.PATH};
+          }
+        } finally {
+          logger.warn(value.error.message);
+          track('nuclide-fbsimctl:device-poller:error', extras);
+        }
       }
     })
     .publishReplay(1)
