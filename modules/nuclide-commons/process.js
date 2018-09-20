@@ -448,8 +448,12 @@ export function killPid(pid: number): void {
   }
 }
 
-// If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.
-// This should contain the base64-encoded output of `env -0`.
+// Inside FB, Nuclide's RPC process doesn't inherit its parent environment and sets up its own instead.
+// It does this to prevent difficult-to-diagnose issues caused by unexpected code in users' dotfiles.
+// Before overwriting it, the original environment is base64-encoded in NUCLIDE_ORIGINAL_ENV.
+// WARNING: This function returns the environment that would have been inherited under normal conditions.
+// You can use it with a child process to let the user set its environment variables. By doing so, you are creating
+// an even more complicated mess of inheritance and non-inheritance in the process tree.
 let cachedOriginalEnvironment = null;
 export async function getOriginalEnvironment(): Promise<Object> {
   await new Promise(resolve => {
@@ -482,6 +486,7 @@ export async function getOriginalEnvironment(): Promise<Object> {
   return cachedOriginalEnvironment;
 }
 
+// See getOriginalEnvironment above.
 export async function getOriginalEnvironmentArray(): Promise<Array<string>> {
   await new Promise(resolve => {
     whenShellEnvironmentLoaded(resolve);
