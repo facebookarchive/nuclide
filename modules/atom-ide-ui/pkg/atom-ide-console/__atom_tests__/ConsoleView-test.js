@@ -23,7 +23,7 @@ describe('ConsoleView', () => {
         clearRecords={() => {}}
         createPaste={null}
         currentExecutor={null}
-        displayableRecords={[]}
+        records={[]}
         enableRegExpFilter={true}
         execute={() => {}}
         executors={new Map()}

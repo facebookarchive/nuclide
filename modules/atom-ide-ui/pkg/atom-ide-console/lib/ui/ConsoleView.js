@@ -11,12 +11,12 @@
  */
 
 import type {
-  DisplayableRecord,
   Executor,
   OutputProvider,
   RecordHeightChangeHandler,
   Source,
   Severity,
+  Record,
 } from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
@@ -37,7 +37,7 @@ import recordsChanged from '../recordsChanged';
 import StyleSheet from 'nuclide-commons-ui/StyleSheet';
 
 type Props = {|
-  displayableRecords: Array<DisplayableRecord>,
+  records: Array<Record>,
   history: Array<string>,
   clearRecords: () => void,
   createPaste: ?() => Promise<void>,
@@ -148,10 +148,7 @@ export default class ConsoleView extends React.Component<Props, State> {
     // automatically scroll.
     if (
       this._isScrolledNearBottom &&
-      recordsChanged(
-        prevProps.displayableRecords,
-        this.props.displayableRecords,
-      )
+      recordsChanged(prevProps.records, this.props.records)
     ) {
       this._startScrollToBottom();
     }
@@ -190,17 +187,14 @@ export default class ConsoleView extends React.Component<Props, State> {
 
   UNSAFE_componentWillReceiveProps(nextProps: Props): void {
     // If the messages were cleared, hide the notification.
-    if (nextProps.displayableRecords.length === 0) {
+    if (nextProps.records.length === 0) {
       this._isScrolledNearBottom = true;
       this.setState({unseenMessages: false});
     } else if (
       // If we receive new messages after we've scrolled away from the bottom, show the "new
       // messages" notification.
       !this._isScrolledNearBottom &&
-      recordsChanged(
-        this.props.displayableRecords,
-        nextProps.displayableRecords,
-      )
+      recordsChanged(this.props.records, nextProps.records)
     ) {
       this.setState({unseenMessages: true});
     }
@@ -281,7 +275,7 @@ export default class ConsoleView extends React.Component<Props, State> {
             <OutputTable
               // $FlowFixMe(>=0.53.0) Flow suppress
               ref={this._handleOutputTable}
-              displayableRecords={this.props.displayableRecords}
+              records={this.props.records}
               showSourceLabels={this.props.selectedSourceIds.length > 1}
               fontSize={this.props.fontSize}
               getExecutor={this._getExecutor}

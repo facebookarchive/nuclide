@@ -173,16 +173,6 @@ export type AppState = {|
   watchEditor?: ?atom$AutocompleteWatchEditor,
 |};
 
-// A special type used internally by the Console component to represent each record that is
-// displayed with its expansionState. This is stored at the component level since the expansion state of any
-// record (which affects its height) is unique to each Console pane (whereas the records themselves
-// are shared between all Console panes). The height is needed for partial rendering.
-export type DisplayableRecord = {
-  id: number,
-  record: Record,
-  expansionStateId: Object,
-};
-
 export type RecordHeightChangeHandler = (
   recordId: number,
   newHeight: number,

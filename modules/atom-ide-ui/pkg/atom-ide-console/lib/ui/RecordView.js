@@ -10,13 +10,7 @@
  * @format
  */
 
-import type {
-  Level,
-  Record,
-  DisplayableRecord,
-  Executor,
-  OutputProvider,
-} from '../types';
+import type {Level, Record, Executor, OutputProvider} from '../types';
 
 import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
 
@@ -32,14 +26,12 @@ import debounce from 'nuclide-commons/debounce';
 import parseText from '../parseText';
 
 type Props = {
-  displayableRecord: DisplayableRecord,
+  record: Record,
   showSourceLabel: boolean,
   getExecutor: (id: string) => ?Executor,
   getProvider: (id: string) => ?OutputProvider,
-  onHeightChange: (
-    displayableRecord: DisplayableRecord,
-    newHeight: number,
-  ) => void,
+  onHeightChange: (record: Record, newHeight: number) => void,
+  expansionStateId: Object,
 };
 
 const AnsiRenderSegment = ({key, style, content}: RenderSegmentProps) => (
@@ -75,8 +67,8 @@ export default class RecordView extends React.Component<Props> {
     this._debouncedMeasureAndNotifyHeight.dispose();
   }
 
-  _renderContent(displayableRecord: DisplayableRecord): React.Element<any> {
-    const {record} = displayableRecord;
+  _renderContent(): React.Element<any> {
+    const {record} = this.props;
     if (record.kind === 'request') {
       // TODO: We really want to use a text editor to render this so that we can get syntax
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
@@ -84,10 +76,10 @@ export default class RecordView extends React.Component<Props> {
       return <pre>{record.text || ' '}</pre>;
     } else if (record.kind === 'response') {
       const executor = this.props.getExecutor(record.sourceId);
-      return this._renderNestedValueComponent(displayableRecord, executor);
+      return this._renderNestedValueComponent(executor);
     } else if (record.data != null) {
       const provider = this.props.getProvider(record.sourceId);
-      return this._renderNestedValueComponent(displayableRecord, provider);
+      return this._renderNestedValueComponent(provider);
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
@@ -104,10 +96,9 @@ export default class RecordView extends React.Component<Props> {
   }
 
   _renderNestedValueComponent(
-    displayableRecord: DisplayableRecord,
     provider: ?OutputProvider | ?Executor,
   ): React.Element<any> {
-    const {record, expansionStateId} = displayableRecord;
+    const {record, expansionStateId} = this.props;
     const getProperties = provider == null ? null : provider.getProperties;
     const type = record.data == null ? null : record.data.type;
     const simpleValueComponent = getComponent(type);
@@ -124,8 +115,7 @@ export default class RecordView extends React.Component<Props> {
   }
 
   render(): React.Node {
-    const {displayableRecord} = this.props;
-    const {record} = displayableRecord;
+    const {record} = this.props;
     const {level, kind, timestamp, sourceId} = record;
 
     const classNames = classnames('console-record', `level-${level || 'log'}`, {
@@ -165,13 +155,13 @@ export default class RecordView extends React.Component<Props> {
         <div ref={this._handleRecordWrapper} className={classNames}>
           {icon}
           <div className="console-record-content-wrapper">
-            {displayableRecord.record.repeatCount > 1 && (
+            {record.repeatCount > 1 && (
               <div className="console-record-duplicate-number">
-                {displayableRecord.record.repeatCount}
+                {record.repeatCount}
               </div>
             )}
             <div className="console-record-content">
-              {this._renderContent(displayableRecord)}
+              {this._renderContent()}
             </div>
           </div>
           {sourceLabel}
@@ -186,7 +176,7 @@ export default class RecordView extends React.Component<Props> {
       return;
     }
     const {offsetHeight} = this._wrapper;
-    this.props.onHeightChange(this.props.displayableRecord, offsetHeight);
+    this.props.onHeightChange(this.props.record, offsetHeight);
   };
 
   _handleRecordWrapper = (wrapper: HTMLElement) => {

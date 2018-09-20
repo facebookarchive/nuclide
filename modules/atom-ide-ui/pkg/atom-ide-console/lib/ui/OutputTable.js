@@ -11,7 +11,6 @@
  */
 
 import type {
-  DisplayableRecord,
   Executor,
   OutputProvider,
   Record,
@@ -30,7 +29,7 @@ import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
 
 type Props = {
-  displayableRecords: Array<DisplayableRecord>,
+  records: Array<Record>,
   showSourceLabels: boolean,
   fontSize: number,
   getExecutor: (id: string) => ?Executor,
@@ -78,14 +77,21 @@ export default class OutputTable extends React.Component<Props, State> {
   // This is a <List> from react-virtualized (untyped library)
   _list: ?React.Element<any>;
   _wrapper: ?HTMLElement;
-  _renderedRecords: Map<Record, RecordView>;
+  _renderedRecords: Map<Record, RecordView> = new Map();
 
   // The currently rendered range.
   _startIndex: number;
   _stopIndex: number;
   _refs: Subject<?HTMLElement>;
-  _heights: DefaultWeakMap<DisplayableRecord, number> = new DefaultWeakMap(
+  _heights: DefaultWeakMap<Record, number> = new DefaultWeakMap(
     () => INITIAL_RECORD_HEIGHT,
+  );
+  // LazyNestedValueComponent expects an expansionStateId which is a stable
+  // object instance across renders, but is unique across consoles. We
+  // technically support multiple consoles in the UI, so here we ensure these
+  // references are local to the OutputTable instance.
+  _expansionStateIds: DefaultWeakMap<Record, Object> = new DefaultWeakMap(
+    () => ({}),
   );
   _heightChanges: Subject<null> = new Subject();
 
@@ -93,7 +99,6 @@ export default class OutputTable extends React.Component<Props, State> {
     super(props);
     this._disposable = new UniversalDisposable();
     this._hasher = new Hasher();
-    this._renderedRecords = new Map();
     this.state = {
       width: 0,
       height: 0,
@@ -121,10 +126,7 @@ export default class OutputTable extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props, prevState: State): void {
     if (
       this._list != null &&
-      recordsChanged(
-        prevProps.displayableRecords,
-        this.props.displayableRecords,
-      )
+      recordsChanged(prevProps.records, this.props.records)
     ) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.recomputeRowHeights();
@@ -156,7 +158,7 @@ export default class OutputTable extends React.Component<Props, State> {
             ref={this._handleListRef}
             height={this.state.height}
             width={this.state.width}
-            rowCount={this.props.displayableRecords.length}
+            rowCount={this.props.records.length}
             rowHeight={this._getRowHeight}
             rowRenderer={this._renderRow}
             overscanRowCount={OVERSCAN_COUNT}
@@ -197,7 +199,7 @@ export default class OutputTable extends React.Component<Props, State> {
   scrollToBottom(): void {
     if (this._list != null) {
       // $FlowIgnore Untyped react-virtualized List method
-      this._list.scrollToRow(this.props.displayableRecords.length - 1);
+      this._list.scrollToRow(this.props.records.length - 1);
     }
   }
 
@@ -211,11 +213,10 @@ export default class OutputTable extends React.Component<Props, State> {
 
   _renderRow = (rowMetadata: RowRendererParams): React.Element<any> => {
     const {index, style} = rowMetadata;
-    const displayableRecord = this.props.displayableRecords[index];
-    const {record} = displayableRecord;
+    const record = this.props.records[index];
     return (
       <div
-        key={this._hasher.getHash(displayableRecord.record)}
+        key={this._hasher.getHash(record)}
         className="console-table-row-wrapper"
         style={style}>
         <RecordView
@@ -229,7 +230,8 @@ export default class OutputTable extends React.Component<Props, State> {
           }}
           getExecutor={this._getExecutor}
           getProvider={this._getProvider}
-          displayableRecord={displayableRecord}
+          record={record}
+          expansionStateId={this._expansionStateIds.get(record)}
           showSourceLabel={this.props.showSourceLabels}
           onHeightChange={this._handleRecordHeightChange}
         />
@@ -242,7 +244,7 @@ export default class OutputTable extends React.Component<Props, State> {
   }
 
   _getRowHeight = ({index}: RowHeightParams): number => {
-    return this._heights.get(this.props.displayableRecords[index]);
+    return this._heights.get(this.props.records[index]);
   };
 
   _handleTableWrapper = (tableWrapper: HTMLElement): void => {
@@ -270,13 +272,10 @@ export default class OutputTable extends React.Component<Props, State> {
     );
   };
 
-  _handleRecordHeightChange = (
-    displayableRecord: DisplayableRecord,
-    newHeight: number,
-  ): void => {
-    const oldHeight = this._heights.get(displayableRecord);
+  _handleRecordHeightChange = (record: Record, newHeight: number): void => {
+    const oldHeight = this._heights.get(record);
     if (oldHeight !== newHeight) {
-      this._heights.set(displayableRecord, newHeight);
+      this._heights.set(record, newHeight);
       this._heightChanges.next(null);
     }
   };
