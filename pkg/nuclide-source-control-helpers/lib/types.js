@@ -5,10 +5,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow strict
  * @format
  */
 
-import findHgRepository from './hg-repository';
-
-export {findHgRepository};
+export type HgRepositoryDescription = {
+  repoPath: string,
+  originURL: ?string,
+  workingDirectoryPath: string,
+};

@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers/lib/types';
 // $FlowFB
 import type ProjectManager from '../../fb-atomprojects/lib/ProjectManager';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

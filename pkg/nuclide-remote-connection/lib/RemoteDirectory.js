@@ -12,7 +12,7 @@
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {ServerConnection} from './ServerConnection';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers/lib/types';
 import type {RemoteFile} from './RemoteFile';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

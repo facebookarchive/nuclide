@@ -15,7 +15,7 @@ import type {BigDigClient} from 'big-dig/src/client';
 import type {Transport} from '../../nuclide-rpc';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers/lib/types';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
