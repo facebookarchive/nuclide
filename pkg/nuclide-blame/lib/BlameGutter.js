@@ -37,7 +37,7 @@ try {
 let getEmployeeIdentifierFromAuthorString: string => string;
 try {
   // $FlowFB
-  getEmployeeIdentifierFromAuthorString = require('../../commons-node/fb-vcs-utils')
+  getEmployeeIdentifierFromAuthorString = require('fb-vcs-common')
     .getEmployeeIdentifierFromAuthorString;
 } catch (err) {
   getEmployeeIdentifierFromAuthorString = shortNameForAuthor;
