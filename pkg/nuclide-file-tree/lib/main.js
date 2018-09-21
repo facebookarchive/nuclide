@@ -443,21 +443,23 @@ class Activation {
             // eslint-disable-next-line nuclide-internal/atom-apis
             atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
           } else {
-            observableFromSubscribeFunction(
-              atom.project.onDidChangePaths.bind(atom.project),
-            )
-              .startWith(null)
-              .map(() => atom.project.getPaths().length)
-              .pairwise()
-              .take(1)
-              .subscribe(([oldLength, newLength]) => {
-                if (oldLength === 0 && newLength === 1) {
-                  // eslint-disable-next-line nuclide-internal/atom-apis
-                  atom.workspace.open(WORKSPACE_VIEW_URI, {
-                    searchAllPanes: true,
-                  });
-                }
-              });
+            disposable.add(
+              observableFromSubscribeFunction(
+                atom.project.onDidChangePaths.bind(atom.project),
+              )
+                .startWith(null)
+                .map(() => atom.project.getPaths().length)
+                .pairwise()
+                .take(1)
+                .subscribe(([oldLength, newLength]) => {
+                  if (oldLength === 0 && newLength === 1) {
+                    // eslint-disable-next-line nuclide-internal/atom-apis
+                    atom.workspace.open(WORKSPACE_VIEW_URI, {
+                      searchAllPanes: true,
+                    });
+                  }
+                }),
+            );
           }
         }
       },
