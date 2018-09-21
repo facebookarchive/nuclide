@@ -13,7 +13,7 @@
 /* eslint-env browser */
 
 import invariant from 'assert';
-import {Emitter} from 'atom';
+import {Emitter, Directory} from 'atom';
 import {shell, clipboard} from 'electron';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {
@@ -574,6 +574,14 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   getURI(): string {
     return 'atom://nuclide-terminal-view';
+  }
+
+  // Breadcrumbs uses this to determine what path to show.
+  getFileOrDirectory(): ?atom$Directory {
+    if (this._path == null) {
+      return null;
+    }
+    return new Directory(this._path);
   }
 
   getTerminalKey(): string {
