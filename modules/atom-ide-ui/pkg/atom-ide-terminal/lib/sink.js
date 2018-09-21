@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Terminal} from './createTerminal';
+import type {Terminal} from './types';
 
 import invariant from 'assert';
 

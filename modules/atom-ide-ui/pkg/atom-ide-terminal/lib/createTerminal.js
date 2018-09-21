@@ -11,6 +11,7 @@
  */
 
 import type {TerminalOptions} from 'xterm';
+import type {Terminal} from './types';
 
 import {
   boolean,
@@ -38,19 +39,6 @@ import {
   getFontSize,
   RENDERER_TYPE_CONFIG,
 } from './config';
-
-export type Terminal = TerminalClass;
-declare class TerminalClass extends XTerminal {
-  proposeGeometry: () => {rows: number, cols: number};
-  fit: () => void;
-  webLinksInit: (handler?: (event: Event, link: string) => void) => void;
-
-  // TODO: Update xterm types?
-  linkifier: any;
-  buffer: any;
-  selectionManager: any;
-  dispose: () => void;
-}
 
 const assertTerminalOptionsInFeatureConfig = guard(
   object({

@@ -52,8 +52,7 @@ import {
 import {infoFromUri} from './nuclide-terminal-uri';
 import {createOutputSink} from './sink';
 
-import type {Terminal} from './createTerminal';
-import type {TerminalInstance} from './types';
+import type {TerminalInstance, Terminal} from './types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';

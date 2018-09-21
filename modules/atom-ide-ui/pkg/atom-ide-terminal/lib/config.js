@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Terminal} from './createTerminal';
+import type {Terminal} from './types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
