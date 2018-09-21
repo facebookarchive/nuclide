@@ -1074,12 +1074,10 @@ export class Process implements IProcess {
 export class Breakpoint implements IBreakpoint {
   verified: boolean;
   idFromAdapter: ?number;
-  message: ?string;
-  endLine: ?number;
-  endColumn: ?number;
   id: string;
   uri: string;
   line: number;
+  originalLine: number;
   column: number;
   enabled: boolean;
   condition: ?string;
@@ -1097,6 +1095,7 @@ export class Breakpoint implements IBreakpoint {
   ) {
     this.uri = uri;
     this.line = line;
+    this.originalLine = line;
     this.column = column == null ? 1 : column;
     this.enabled = enabled == null ? true : enabled;
     this.condition = condition;
@@ -1104,7 +1103,6 @@ export class Breakpoint implements IBreakpoint {
     this.adapterData = adapterData;
     this.verified = false;
     this.id = uuid.v4();
-    this.endLine = null;
   }
 
   getId(): string {
@@ -1293,14 +1291,12 @@ export class Model implements IModel {
   }
 
   getBreakpointAtLine(uri: string, line: number): ?IBreakpoint {
-    // Since we show calibrated breakpoints at their end line, prefer an end line
-    // match. If there is no such breakpoint, try a start line match.
     let breakpoint = this._breakpoints.find(
-      bp => bp.uri === uri && bp.endLine === line,
+      bp => bp.uri === uri && bp.line === line,
     );
     if (breakpoint == null) {
       breakpoint = this._breakpoints.find(
-        bp => bp.uri === uri && bp.line === line,
+        bp => bp.uri === uri && bp.originalLine === line,
       );
     }
     return breakpoint;
@@ -1382,13 +1378,19 @@ export class Model implements IModel {
     this._breakpoints.forEach(bp => {
       const bpData = data[bp.getId()];
       if (bpData != null) {
-        bp.line = bpData.line != null ? bpData.line : bp.line;
-        bp.endLine = bpData.endLine != null ? bpData.endLine : bp.endLine;
+        // The breakpoint's calibrated location can be different from its
+        // initial location. Since we don't display ranges in the UX, a bp
+        // has only one line location. We prefer the endLine if the bp instruction
+        // matches a range of lines. Otherwise fall back to the (start) line.
+        bp.line =
+          bpData.endLine != null
+            ? bpData.endLine
+            : bpData.line != null
+              ? bpData.line
+              : bp.line;
         bp.column = bpData.column != null ? bpData.column : bp.column;
-        bp.endColumn = bpData.endColumn;
         bp.verified = bpData.verified != null ? bpData.verified : bp.verified;
         bp.idFromAdapter = bpData.id;
-        bp.message = bpData.message;
         bp.adapterData = bpData.source
           ? bpData.source.adapterData
           : bp.adapterData;
@@ -1412,8 +1414,7 @@ export class Model implements IModel {
     });
     this._breakpoints = distinct(
       this._breakpoints,
-      bp =>
-        `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`,
+      bp => `${bp.uri}:${bp.line}:${bp.column}`,
     );
   }
 

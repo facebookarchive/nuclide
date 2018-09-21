@@ -175,26 +175,15 @@ export default class BreakpointListComponent extends React.Component<
           if (fileA !== fileB) {
             return fileA.localeCompare(fileB);
           }
-
-          const lineA =
-            breakpointA.endLine != null
-              ? breakpointA.endLine
-              : breakpointA.line;
-          const lineB =
-            breakpointB.endLine != null
-              ? breakpointB.endLine
-              : breakpointB.line;
-          return lineA - lineB;
+          return breakpointA.line - breakpointB.line;
         })
         .map((breakpoint, i) => {
           const host = this._getHostnameTranslated(breakpoint.uri) || 'local';
           const basename = nuclideUri.basename(breakpoint.uri);
-          const {line, endLine, verified, uri: path} = breakpoint;
+          const {line, verified, uri: path} = breakpoint;
           const enabled = breakpoint.enabled && available;
-          const dataLine =
-            endLine != null && !Number.isNaN(endLine) ? endLine : line;
           const bpId = breakpoint.getId();
-          const label = `${basename}:${dataLine}`;
+          const label = `${basename}:${line}`;
           const title =
             (!enabled
               ? 'Disabled breakpoint'

@@ -1720,11 +1720,8 @@ export default class DebugService implements IDebugService {
     } = {};
     this._model.getBreakpoints().forEach(bp => {
       data[bp.getId()] = {
-        line: bp.line,
+        line: bp.originalLine,
         verified: false,
-        column: bp.column,
-        endLine: bp.endLine == null ? undefined : bp.endLine,
-        endColumn: bp.endColumn == null ? undefined : bp.endColumn,
       };
     });
     this._model.updateBreakpoints(data);

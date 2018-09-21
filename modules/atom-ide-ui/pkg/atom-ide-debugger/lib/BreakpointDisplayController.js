@@ -228,10 +228,7 @@ export default class BreakpointDisplayController {
 
   _getLineForBp(bp: IBreakpoint): number {
     // Zero-based breakpoints line map (to match UI markers).
-    return (
-      (bp.endLine != null && !Number.isNaN(bp.endLine) ? bp.endLine : bp.line) -
-      1
-    );
+    return bp.line - 1;
   }
 
   /**

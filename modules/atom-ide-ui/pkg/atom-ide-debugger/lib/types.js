@@ -475,16 +475,14 @@ export interface IStackFrame extends ITreeElement {
 }
 
 export interface IBreakpoint extends IEnableable {
-  uri: string;
+  +uri: string;
+  +originalLine: number;
   line: number;
-  endLine: ?number;
   column: number;
-  endColumn: ?number;
   condition: ?string;
   hitCondition: ?string;
   verified: boolean;
   idFromAdapter: ?number;
-  message: ?string;
   adapterData?: any;
 }
 

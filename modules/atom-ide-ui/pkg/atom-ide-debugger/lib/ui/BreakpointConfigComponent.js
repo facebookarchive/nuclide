@@ -133,9 +133,7 @@ export default class BreakpointConfigComponent extends React.Component<
             <label>
               Breakpoint at {nuclideUri.basename(this.props.breakpoint.uri)}
               :
-              {this.props.breakpoint.endLine != null
-                ? this.props.breakpoint.endLine
-                : this.props.breakpoint.line}
+              {this.props.breakpoint.line}
             </label>
           </div>
           <div className="block">
