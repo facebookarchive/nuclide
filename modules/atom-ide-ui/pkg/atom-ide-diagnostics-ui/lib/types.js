@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
+  DiagnosticMessageType,
   UiConfig,
 } from '../../atom-ide-diagnostics/lib/types';
 
@@ -39,4 +40,29 @@ export type GlobalViewState = {
   onShowTracesChange: (isChecked: boolean) => mixed,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
   uiConfig: UiConfig,
+};
+
+export type Location = {|
+  fullPath: NuclideUri,
+  locationInFile: ?{|
+    basename: string,
+    line: number,
+  |},
+|};
+
+export type DisplayDiagnostic = {
+  +classification: {
+    kind: DiagnosticMessageKind,
+    severity: DiagnosticMessageType,
+  },
+  +providerName: string,
+  +description: {
+    showTraces: boolean,
+    diagnostic: DiagnosticMessage,
+    text: string,
+    isPlainText: boolean,
+  },
+  +dir: string,
+  +location: ?Location,
+  +line: ?number,
 };

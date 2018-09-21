@@ -15,7 +15,7 @@ import type {
   DiagnosticMessageKind,
   DiagnosticMessageType,
 } from '../../../atom-ide-diagnostics/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Location, DisplayDiagnostic} from '../types';
 import type {Column, Row} from 'nuclide-commons-ui/Table';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
@@ -44,31 +44,6 @@ type DescriptionField = {
   text: string,
   isPlainText: boolean,
   description: string,
-};
-
-type Location = {|
-  fullPath: NuclideUri,
-  locationInFile: ?{|
-    basename: string,
-    line: number,
-  |},
-|};
-
-export type DisplayDiagnostic = {
-  +classification: {
-    kind: DiagnosticMessageKind,
-    severity: DiagnosticMessageType,
-  },
-  +providerName: string,
-  +description: {
-    showTraces: boolean,
-    diagnostic: DiagnosticMessage,
-    text: string,
-    isPlainText: boolean,
-  },
-  +dir: string,
-  +location: ?Location,
-  +line: ?number,
 };
 
 type ColumnName = $Keys<DisplayDiagnostic>;
