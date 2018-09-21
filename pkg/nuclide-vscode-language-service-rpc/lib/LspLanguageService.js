@@ -1512,21 +1512,22 @@ export class LspLanguageService {
       subscriptionOptions,
     );
 
-    Observable.fromEvent(subscription, 'change').subscribe(fileChanges => {
-      const fileEvents = fileChanges
-        .map(fileChange =>
-          convert.watchmanFileChange_lspFileEvent(
-            fileChange,
-            subscription.path,
-          ),
-        )
-        .filter(fileEvent => subscriptionTypes.has(fileEvent.type));
-      this._lspConnection.didChangeWatchedFiles({
-        changes: fileEvents,
-      });
-    });
-
-    return subscription;
+    return new UniversalDisposable(
+      subscription,
+      Observable.fromEvent(subscription, 'change').subscribe(fileChanges => {
+        const fileEvents = fileChanges
+          .map(fileChange =>
+            convert.watchmanFileChange_lspFileEvent(
+              fileChange,
+              subscription.path,
+            ),
+          )
+          .filter(fileEvent => subscriptionTypes.has(fileEvent.type));
+        this._lspConnection.didChangeWatchedFiles({
+          changes: fileEvents,
+        });
+      }),
+    );
   }
 
   _handleUnregisterCapability(params: UnregistrationParams): void {
