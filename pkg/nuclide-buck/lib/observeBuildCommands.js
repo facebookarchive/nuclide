@@ -59,7 +59,7 @@ function promptConfigChange(
           ' ',
         )}]\` from the command line.<br />` +
           'Would you like Nuclide to automatically use the most recent config' +
-          'for compilation database calls for language services? (to avoid resetting the Buck cache)',
+          ' for compilation database calls for language services? (to avoid resetting the Buck cache)',
         {
           dismissable: true,
           icon: 'nuclicon-buck',
