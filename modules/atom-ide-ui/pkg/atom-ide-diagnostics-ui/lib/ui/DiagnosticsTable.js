@@ -57,7 +57,7 @@ type Props = {
   selectedMessage: ?DiagnosticMessage,
   gotoMessageLocation: (
     message: DiagnosticMessage,
-    options: {|focusEditor: boolean|},
+    options: {|focusEditor: boolean, pendingPane: boolean|},
   ) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   showFileName: ?boolean,
@@ -121,11 +121,17 @@ export default class DiagnosticsTable extends React.PureComponent<
     ) {
       return;
     }
-    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: false});
+    this.props.gotoMessageLocation(item.diagnostic, {
+      focusEditor: false,
+      pendingPane: event.type !== 'click',
+    });
   };
 
   _handleConfirmTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
-    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: true});
+    this.props.gotoMessageLocation(item.diagnostic, {
+      focusEditor: true,
+      pendingPane: false,
+    });
   };
 
   _getColumns(): Array<Column<DisplayDiagnostic>> {

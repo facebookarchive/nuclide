@@ -48,7 +48,7 @@ export type Props = {
   onShowTracesChange: (isChecked: boolean) => mixed,
   gotoMessageLocation: (
     message: DiagnosticMessage,
-    options: {|focusEditor: boolean|},
+    options: {|focusEditor: boolean, pendingPane: boolean|},
   ) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   selectedMessage: ?DiagnosticMessage,

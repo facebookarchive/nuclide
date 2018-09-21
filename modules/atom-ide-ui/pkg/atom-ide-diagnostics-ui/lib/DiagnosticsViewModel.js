@@ -300,7 +300,7 @@ export class DiagnosticsViewModel {
 
 function goToDiagnosticLocation(
   message: DiagnosticMessage,
-  options: {|focusEditor: boolean|},
+  options: {|focusEditor: boolean, pendingPane: boolean|},
 ): void {
   // TODO: what should we do for project-path diagnostics?
   if (nuclideUri.endsWithSeparator(message.filePath)) {
@@ -318,7 +318,7 @@ function goToDiagnosticLocation(
     line,
     column,
     activatePane: options.focusEditor,
-    pending: true,
+    pending: options.pendingPane,
   });
 }
 
