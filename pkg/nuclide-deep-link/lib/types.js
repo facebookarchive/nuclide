@@ -10,6 +10,7 @@
  */
 
 import type {DeepLinkParams} from '../../commons-atom/deep-link';
+import type {BrowserWindow} from 'nuclide-commons/electron-remote';
 
 export type {DeepLinkParams};
 
@@ -28,7 +29,7 @@ export type DeepLinkService = {
    * Manually send a deep link to another Atom window.
    */
   sendDeepLink(
-    browserWindow: electron$BrowserWindow,
+    browserWindow: BrowserWindow,
     path: string,
     params: DeepLinkParams,
   ): void,

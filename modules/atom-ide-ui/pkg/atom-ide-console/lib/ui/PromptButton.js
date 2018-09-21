@@ -13,6 +13,7 @@
 import invariant from 'assert';
 import * as React from 'react';
 import electron from 'electron';
+import {Menu} from 'nuclide-commons/electron-remote';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -30,7 +31,7 @@ type Props = {
 };
 
 export default class PromptButton extends React.Component<Props> {
-  _menu: ?electron$Menu;
+  _menu: ?Menu;
 
   componentWillUnmount() {
     if (this._menu != null) {
