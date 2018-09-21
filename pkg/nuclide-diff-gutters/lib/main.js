@@ -24,6 +24,7 @@ import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-
 import {getHgServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import nullthrows from 'nullthrows';
+import {NuclideDiffGuttersView} from './nuclide-diff-gutters-view';
 
 // A limit on size of buffer to diff
 // Value based on the constant of the same name from atom's git-diff package
@@ -40,8 +41,26 @@ const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 class Activation {
   _localService = getHgServiceByNuclideUri('');
   _disposed: ReplaySubject<void> = new ReplaySubject(1);
+  _watchedEditors = new WeakSet();
 
   constructor() {
+    atom.packages.disablePackage('git-diff');
+
+    observableFromSubscribeFunction(
+      atom.workspace.observeTextEditors.bind(atom.workspace),
+    )
+      .do(textEditor => {
+        if (!this._watchedEditors.has(textEditor)) {
+          /* eslint-disable-next-line */
+          new NuclideDiffGuttersView(textEditor);
+          this._watchedEditors.add(textEditor);
+        }
+        // Remove editor from set when it is destroyed.
+        textEditor.onDidDestroy(() => this._watchedEditors.delete(textEditor));
+      })
+      .takeUntil(this._disposed)
+      .subscribe();
+
     (featureConfig.observeAsStream(
       'nuclide-hg-repository.enableDiffStats',
     ): Observable<any>)

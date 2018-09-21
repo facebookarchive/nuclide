@@ -792,6 +792,9 @@ type DecorateMarkerParams = {
   type: 'block',
   item: HTMLElement,
   position?: 'before' | 'after', // Defaults to 'before' when unspecified.
+} | {
+  type: 'line-number',
+  class?: string,
 };
 
 type ChangeCursorPositionEvent = {
@@ -1875,6 +1878,7 @@ declare class atom$TextBuffer {
   getLastRow(): number,
   getRange(): atom$Range,
   rangeForRow(row: number, includeNewLine?: boolean): atom$Range,
+  getLength(): number,
 
   // Position/Index mapping
   characterIndexForPosition(position: atom$PointLike): number,
