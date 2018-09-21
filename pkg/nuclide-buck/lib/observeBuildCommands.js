@@ -46,7 +46,7 @@ function promptConfigChange(
   const watchSetting = readWatchConfig();
   if (
     nextConfigArgs.findIndex(arg => arg.startsWith('client.id')) !== -1 ||
-    (prevConfigArgs != null && arrayEqual(prevConfigArgs, nextConfigArgs)) ||
+    arrayEqual(prevConfigArgs || [], nextConfigArgs) ||
     watchSetting === 'Never'
   ) {
     return Promise.resolve(false);
@@ -163,7 +163,7 @@ export function observeBuildCommands(
         // Attempt to extract only @args files and --config arguments from the command.
         const configArgs = args.filter(
           (arg, index) =>
-            arg.startsWith('@') ||
+            arg.startsWith('@mode/') ||
             arg.startsWith(configFlag) ||
             args[index - 1] === configFlag,
         );
