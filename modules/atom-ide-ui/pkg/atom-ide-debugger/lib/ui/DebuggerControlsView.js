@@ -92,15 +92,17 @@ export default class DebuggerControlsView extends React.PureComponent<
         </div>
       );
 
+    const running = mode === DebuggerMode.RUNNING;
+    const paused = mode === DebuggerMode.PAUSED;
     const debuggerRunningNotice =
-      mode !== DebuggerMode.RUNNING ? null : (
+      !running && !paused ? null : (
         <div className="debugger-pane-content">
           <div className="debugger-state-notice">
             {(service.viewModel.focusedProcess == null ||
             service.viewModel.focusedProcess.configuration.processName == null
               ? 'The debug target'
               : service.viewModel.focusedProcess.configuration.processName) +
-              ' is currently running.'}
+              ` is ${running ? 'running' : 'paused'}.`}
           </div>
         </div>
       );
