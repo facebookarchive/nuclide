@@ -317,6 +317,11 @@ export default class BreakpointListComponent extends React.Component<
           selectable={true}>
           {availableBreakpoints}
         </ListView>
+        {breakpoints.length === 0 ? (
+          <span className="debugger-breakpoint">
+            You currently have no source breakpoints set.
+          </span>
+        ) : null}
         {exceptionBreakpoints.length > 0 ? (
           <Section
             className="debugger-breakpoint-section"

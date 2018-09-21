@@ -40,6 +40,7 @@ export type MenuItem = {
   icon?: IconName,
   iconset?: string,
   disabled?: boolean,
+  hidden?: boolean,
 };
 
 type SubMenuItem = {
@@ -177,7 +178,7 @@ export class Dropdown extends React.Component<Props> {
             submenu: this._menuFromOptions(submenu),
           }),
         );
-      } else {
+      } else if (!Boolean(option.hidden)) {
         menu.append(
           new remote.MenuItem({
             type: 'checkbox',
