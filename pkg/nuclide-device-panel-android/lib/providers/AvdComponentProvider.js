@@ -172,6 +172,7 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
   _startAvd = (avd: Avd): void => {
     track('nuclide-device-panel-android.start-emulator');
     invariant(this._emulator != null);
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     runCommand(this._emulator, ['@' + avd.name]).subscribe(
       stdout => {},
       err => {

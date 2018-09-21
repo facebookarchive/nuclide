@@ -471,6 +471,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       dataTransfer.setData('initialPath', this.props.node.uri);
       dataTransfer.setData('nuclideSource', FILE_TREE_DRAG_SOURCE);
     }
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     nextAnimationFrame.subscribe(() => {
       invariant(document.body != null);
       document.body.removeChild(fileIcon);

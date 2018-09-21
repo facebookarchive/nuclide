@@ -147,6 +147,7 @@ export class LogTailer {
       .publish();
 
     // Whenever the status becomes "running," invoke all of the registered running callbacks.
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._statuses
       .distinctUntilChanged()
       .filter(status => status === 'running')

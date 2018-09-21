@@ -86,6 +86,7 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
   async canDebugFile(file: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {
+        // eslint-disable-next-line nuclide-internal/unused-subscription
         runCommand('file', ['-b', '--mime-type', file], {
           dontLogInNuclide: true,
         })

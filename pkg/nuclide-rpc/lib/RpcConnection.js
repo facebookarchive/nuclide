@@ -221,6 +221,7 @@ export class RpcConnection<TransportType: Transport> {
       this._serviceRegistry,
       this,
     );
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._transport.onMessage().subscribe(message => {
       this._handleMessage(message);
     });
@@ -568,6 +569,7 @@ export class RpcConnection<TransportType: Transport> {
       result = returnVal;
     }
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     result
       // Marshal in a map() so that errors are caught below.
       .map(data => this.marshal(data, elementType))

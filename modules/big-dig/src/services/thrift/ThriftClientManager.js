@@ -77,6 +77,7 @@ export class ThriftClientManager {
     this._tunnelByServiceConfigId = new Map();
 
     const observable = this._transport.onMessage();
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     observable.subscribe({
       // TODO(terryltang): Temporarily use json format for readability, later
       // consider to use the new tunnel/Encoder to encode/decode message

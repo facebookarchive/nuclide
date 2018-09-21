@@ -119,6 +119,7 @@ export class QueuedAckTransport {
 
     this._transport = transport;
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     transport.onMessage().subscribe(this._handleMessage.bind(this));
     transport.onClose(() => this._handleTransportClose(transport));
   }

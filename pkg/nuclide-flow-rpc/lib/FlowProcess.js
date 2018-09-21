@@ -109,16 +109,19 @@ export class FlowProcess {
     this._optionalIDEConnections = new BehaviorSubject(null);
     this._ideConnections = this._createIDEConnectionStream();
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus.subscribe(status => {
       logger.info(`[${status}]: Flow server in ${this._root}`);
     });
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus
       .filter(x => x === ServerStatus.NOT_RUNNING)
       .subscribe(() => {
         this._startFlowServer();
       });
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus
       .scan(
         ({previousState}, nextState) => {
@@ -138,6 +141,7 @@ export class FlowProcess {
         this._pingServer();
       });
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus
       .filter(status => status === ServerStatus.FAILED)
       .subscribe(() => {
@@ -151,6 +155,7 @@ export class FlowProcess {
       }
       return execInfo.flowVersion;
     });
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus
       .filter(state => state === 'not running')
       .subscribe(() => this._version.invalidateVersion());
@@ -516,6 +521,7 @@ export class FlowProcess {
   /** Ping the server until it reaches a steady state */
   async _pingServer(): Promise<void> {
     let hasReachedSteadyState = false;
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._serverStatus
       .filter(state => !TEMP_SERVER_STATES.includes(state))
       .take(1)

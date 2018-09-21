@@ -187,6 +187,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       enabledProviders: [],
     });
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     Observable.merge(
       ...(this.props.providers.get(key) || []).map(provider =>
         Observable.fromPromise(this._getProviderIfEnabled(provider)),

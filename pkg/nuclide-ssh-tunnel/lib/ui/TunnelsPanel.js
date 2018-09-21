@@ -58,6 +58,7 @@ export class TunnelsPanel {
         tunnels: state.tunnels.toList(),
         openTunnel: tunnel => {
           let noMoreNotifications = false;
+          // eslint-disable-next-line nuclide-internal/unused-subscription
           createObservableForTunnel(tunnel, this._store)
             .do(() => (noMoreNotifications = true))
             .subscribe({

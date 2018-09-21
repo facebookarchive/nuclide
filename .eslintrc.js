@@ -379,7 +379,7 @@ module.exports = {
     'nuclide-internal/require-universal-disposable': 1,
     'nuclide-internal/use-nuclide-ui-components': 1,
     'nuclide-internal/no-commonjs': 1,
-    'nuclide-internal/unused-subscription': 0,
+    'nuclide-internal/unused-subscription': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,

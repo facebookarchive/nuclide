@@ -80,6 +80,7 @@ async function main() {
   const index = await getFileIndex(root, configFromFlow);
   const newCache = new ExportCache({root, configFromFlow});
 
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   Observable.merge(
     indexDirectory(index, hasteSettings),
     indexNodeModules(index),
@@ -132,6 +133,7 @@ function watchDirectoryRecursively(
   root: NuclideUri,
   hasteSettings: HasteSettings,
 ) {
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   watchDirectory(root)
     .mergeMap(
       (fileChange: FileChange) =>
@@ -559,6 +561,7 @@ function runChild() {
   const {hasteSettings} = getConfigFromFlow(root);
   process.on('message', message => {
     const {files} = message;
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     Observable.from(files)
       .concatMap((file, index) => {
         // Note that we explicitly skip the main check here.

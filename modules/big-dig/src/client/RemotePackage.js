@@ -233,6 +233,7 @@ async function runPackage(
   const {stdout, result} = await ssh.exec(cmd, options);
   // Collect any stdout in case there is an error.
   let output = '';
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   stdout.subscribe(data => (output += data));
   // Wait for the bootstrapper to finish
   const {code} = await result;
@@ -516,6 +517,7 @@ class ManagedPackage implements RemotePackage {
     const extractCmd = extract.fromStdinCommand(pkg.installationPath);
     const {stdout, stdio, result} = await ssh.exec(extractCmd);
     let output = '';
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     stdout.subscribe(data => (output += data));
     const [, {code}] = await Promise.all([
       this._transferViaStream(archive, stdio),
@@ -545,6 +547,7 @@ class ManagedPackage implements RemotePackage {
     );
     const {stdout, result} = await ssh.exec(extractCmd);
     let output = '';
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     stdout.subscribe(data => (output += data));
     const {code} = await result;
     if (code !== 0) {

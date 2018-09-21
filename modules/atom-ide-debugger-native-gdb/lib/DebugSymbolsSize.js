@@ -44,6 +44,7 @@ export async function debugSymSizeByBinary(binary: string): Promise<?number> {
   const SIZE_COLUMN = 5;
   return new Promise((resolve, reject) => {
     try {
+      // eslint-disable-next-line nuclide-internal/unused-subscription
       runCommand('readelf', ['-WS', binary])
         .catch(_ => Observable.of(''))
         .map(stdout =>

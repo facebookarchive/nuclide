@@ -74,6 +74,7 @@ async function main() {
   console.log('Began indexing all files');
 
   // Check all files for missing imports
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   Observable.merge(indexModulesStream, indexDirStream)
     .concat(
       // Don't bother checking non-Flow files.

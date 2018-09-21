@@ -62,6 +62,7 @@ export class BigDigClient {
     );
 
     const observable = reliableSocketTransport.onMessage();
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     observable.subscribe({
       // Must use arrow function so that `this` is bound correctly.
       next: message => {

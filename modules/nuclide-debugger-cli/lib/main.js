@@ -175,10 +175,12 @@ async function main(): Promise<void> {
 
     debuggerInstance.registerCommands(dispatcher);
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     cli.observeInterrupts().subscribe(_ => {
       debuggerInstance.breakInto();
     });
 
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     cli.observeLines().subscribe(
       _ => {},
       _ => {},

@@ -49,6 +49,7 @@ export class TypeCoverageProvider<T: LanguageService> {
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
     this._onToggleValue = false;
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     this._connectionToLanguageService
       .observeValues()
       .subscribe(async languageService => {

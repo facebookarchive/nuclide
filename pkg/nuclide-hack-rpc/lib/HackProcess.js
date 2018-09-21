@@ -242,7 +242,9 @@ const processes: Cache<
 // TODO: Is there any situation where these can be disposed before the
 //       remote connection is terminated?
 // Remove fileCache when the remote connection shuts down
+// eslint-disable-next-line nuclide-internal/unused-subscription
 processes.observeKeys().subscribe(fileCache => {
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   fileCache
     .observeFileEvents()
     .ignoreElements()
@@ -364,6 +366,7 @@ async function createHackProcess(
 
   // If the process exits unexpectedly, create a new one immediately.
   const startTime = Date.now();
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   hackProcess.observeExitMessage().subscribe(message => {
     // Dispose the process by removing it from the cache.
     if (processes.has(fileCache)) {

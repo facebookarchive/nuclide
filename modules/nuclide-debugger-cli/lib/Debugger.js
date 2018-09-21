@@ -913,6 +913,7 @@ export default class Debugger implements DebuggerInterface {
 
   _initializeObservers(): void {
     const session = this._ensureDebugSession(true);
+    /* eslint-disable nuclide-internal/unused-subscription */
 
     session.observeInitializeEvents().subscribe(() => {
       try {
@@ -960,6 +961,7 @@ export default class Debugger implements DebuggerInterface {
         this._onReadyForEvaluations();
       }
     });
+    /* eslint-enable nuclide-internal/unused-subscription */
   }
 
   async closeSession(): Promise<void> {

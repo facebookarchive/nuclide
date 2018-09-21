@@ -601,6 +601,7 @@ function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): IDisposable {
 
   const openAllFilesWithErrors = () => {
     analytics.track('diagnostics-panel-open-all-files-with-errors');
+    // eslint-disable-next-line nuclide-internal/unused-subscription
     observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
       .first()
       .subscribe((messages: Array<DiagnosticMessage>) => {

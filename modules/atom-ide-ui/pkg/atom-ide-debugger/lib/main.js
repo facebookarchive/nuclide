@@ -855,6 +855,7 @@ class Activation {
     const {focusedThread} = this._service.viewModel;
     if (focusedThread != null) {
       let callstackText = '';
+      // eslint-disable-next-line nuclide-internal/unused-subscription
       focusedThread
         .getFullCallStack()
         .filter(expectedStack => !expectedStack.isPending)

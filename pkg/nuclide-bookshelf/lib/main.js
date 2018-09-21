@@ -42,6 +42,7 @@ function createStateStream(
   initialState: BookShelfState,
 ): BehaviorSubject<BookShelfState> {
   const states = new BehaviorSubject(initialState);
+  // eslint-disable-next-line nuclide-internal/unused-subscription
   actions
     .scan(accumulateState, initialState)
     .catch(error => {

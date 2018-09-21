@@ -264,6 +264,7 @@ class BuckClangCompilationDatabaseHandler {
       return;
     }
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line nuclide-internal/unused-subscription
       ClangService.loadFilesFromCompilationDatabaseAndCacheThem(
         file,
         db.flagsFile,
