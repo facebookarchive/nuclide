@@ -15,7 +15,7 @@
 export default (async function waitsFor(
   fn: () => boolean | Promise<boolean>,
   message?: string,
-  timeout: number = 4500,
+  timeout: number = global[Symbol.for('WAITS_FOR_TIMEOUT')] || 4500,
 ) {
   const error = new Error(
     message != null
