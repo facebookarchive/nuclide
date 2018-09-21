@@ -106,7 +106,7 @@ class Activation {
           .filter(Boolean)
           .switchMap(editor => {
             return observableFromSubscribeFunction(
-              editor.onDidStopChanging.bind(editor),
+              editor.getBuffer().onDidChange.bind(editor.getBuffer()),
             ).map(() => editor.getPath());
           });
       })
