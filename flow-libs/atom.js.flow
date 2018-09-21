@@ -2029,11 +2029,21 @@ type AtomGlobal = {
   getCurrentWindow: void,
 
   // Messaging the User
-  confirm(options: {
-    buttons?: Array<string> | {[buttonName: string]: () => mixed},
-    detailedMessage?: string,
-    message: string,
-  }): ?number,
+  +confirm:
+    & ((
+      {
+        message: string,
+        detail?: string,
+        buttons?: Array<string>,
+      },
+      (number) => void,
+    ) => void)
+    // The synchronous form. You really shouldn't use this.
+    & (({
+        message: string,
+        detailedMessage?: string,
+        buttons?: Array<string> | {[buttonName: string]: () => mixed},
+      }) => ?number),
 
   open(params: {
     pathsToOpen?: Array<string>,
