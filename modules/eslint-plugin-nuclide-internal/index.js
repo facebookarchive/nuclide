@@ -34,6 +34,7 @@ module.exports = {
     'react-virtualized-import': require('./react-virtualized-import'),
     'require-universal-disposable': require('./require-universal-disposable'),
     'use-nuclide-ui-components': require('./use-nuclide-ui-components'),
+    'unused-subscription': require('./unused-subscription'),
   },
   rulesConfig: {
     'api-spelling': 0,
@@ -54,5 +55,6 @@ module.exports = {
     'react-virtualized-import': 0,
     'require-universal-disposable': 0,
     'use-nuclide-ui-components': 0,
+    'unused-subscription': 0,
   },
 };
