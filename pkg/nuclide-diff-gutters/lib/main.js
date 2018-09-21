@@ -113,148 +113,141 @@ class Activation {
   _watchBufferDiffChanges(
     repository: HgRepositoryClient,
   ): Observable<DiffPushNotification> {
-    return repository
-      .observeHeadRevision()
-      .do(() => repository.clearAllDiffInfo())
-      .switchMap(() => {
-        // by defining the cache in this scope, it is automatically "cleared"
-        // when headRevision changes
-        const fileContentsAtHead = new Map();
+    return repository.observeHeadRevision().switchMap(() => {
+      // by defining the cache in this scope, it is automatically "cleared"
+      // when headRevision changes
+      const fileContentsAtHead = new Map();
 
-        // batch hg cat calls using this array
-        const bufferedFilesToCat = [];
+      // batch hg cat calls using this array
+      const bufferedFilesToCat = [];
 
-        // fetchFileContentsAtHead is the observable responsible for buffering
-        // up textEditor paths as they become visible, and then running them
-        // through `hg cat` to get content at head
-        const fetchFileContentsAtHead = observeTextEditorsInRepo(repository)
-          .flatMap(textEditor => {
-            return observePaneItemVisibility(textEditor)
-              .takeUntil(
-                observableFromSubscribeFunction(
-                  textEditor.onDidDestroy.bind(textEditor),
-                ),
-              )
-              .filter(isVisible => isVisible)
-              .take(1)
-              .flatMap(() => {
-                const bufferPath = nullthrows(textEditor.getPath());
-                // TODO (tjfryan): do something to handle generated files
-                if (fileContentsAtHead.has(bufferPath)) {
-                  return Observable.empty();
-                }
-
-                bufferedFilesToCat.push(repository.relativize(bufferPath));
-                if (bufferedFilesToCat.length > 1) {
-                  return Observable.empty();
-                }
-
-                // use nextTick to buffer many files being requested at once
-                // (maybe should use timeout instead?)
-                return Observable.fromPromise(nextTick()).switchMap(() => {
-                  const filesToCat = [...bufferedFilesToCat];
-                  bufferedFilesToCat.length = 0;
-                  return repository
-                    .fetchMultipleFilesContentAtRevision(
-                      filesToCat,
-                      hgConstants.HEAD_REVISION_EXPRESSION,
-                    )
-                    .catch(() =>
-                      // hg uses errorCode 1 as "nothing went wrong but nothing was found"
-                      Observable.empty(),
-                    );
-                });
-              });
-          })
-          .do(fileContents =>
-            fileContents.forEach(({abspath, data}) => {
-              fileContentsAtHead.set(
-                nuclideUri.join(repository.getWorkingDirectory(), abspath),
-                data,
-              );
-            }),
-          )
-          .share();
-
-        const buffers = new Set();
-        // calculateDiffForBuffers is the observable responsible for watching
-        // buffer changes and updating the diff info
-        const calculateDiffForBuffers = observeTextEditorsInRepo(
-          repository,
-        ).flatMap(textEditor => {
-          const buffer = textEditor.getBuffer();
-          if (buffers.has(buffer)) {
-            return Observable.empty();
-          }
-          buffers.add(buffer);
-
-          const bufferPath = nullthrows(buffer.getPath());
-
-          const bufferReloads = observableFromSubscribeFunction(
-            buffer.onDidReload.bind(buffer),
-          );
-          const bufferChanges = observableFromSubscribeFunction(
-            buffer.onDidChangeText.bind(buffer),
-          );
-
-          // TODO (tjfryan): handle renames `onDidChangePath`
-
-          // This is in a flatMap, so we need to make sure this terminates
-          // We can terminate, `takeUntil`, buffer is destroyed
-          // And make sure to clear the cached diff for the buffer once we no
-          // longer care about it
-          const bufferDestroyed = observableFromSubscribeFunction(
-            buffer.onDidDestroy.bind(buffer),
-          ).do(() => {
-            buffers.delete(buffer);
-            repository.deleteDiffInfo(bufferPath);
-            fileContentsAtHead.delete(bufferPath);
-          });
-
-          // recalculate on bufferReload, bufferChanges, and when we get
-          // this file's data from hg cat
-          return Observable.merge(
-            bufferReloads,
-            bufferChanges,
-            fetchFileContentsAtHead.filter(fileContentsList =>
-              fileContentsList.some(
-                fileInfo =>
-                  nuclideUri.join(
-                    repository.getWorkingDirectory(),
-                    fileInfo.abspath,
-                  ) === bufferPath,
+      // fetchFileContentsAtHead is the observable responsible for buffering
+      // up textEditor paths as they become visible, and then running them
+      // through `hg cat` to get content at head
+      const fetchFileContentsAtHead = observeTextEditorsInRepo(repository)
+        .flatMap(textEditor => {
+          return observePaneItemVisibility(textEditor)
+            .takeUntil(
+              observableFromSubscribeFunction(
+                textEditor.onDidDestroy.bind(textEditor),
               ),
-            ),
-          )
-            .let(fastDebounce(200))
-            .switchMap(() => {
-              const oldContents = fileContentsAtHead.get(bufferPath);
-              if (oldContents == null) {
+            )
+            .filter(isVisible => isVisible)
+            .take(1)
+            .flatMap(() => {
+              const bufferPath = nullthrows(textEditor.getPath());
+              // TODO (tjfryan): do something to handle generated files
+              if (fileContentsAtHead.has(bufferPath)) {
                 return Observable.empty();
               }
-              const newContents = buffer.getText();
-              if (newContents.length > MAX_BUFFER_LENGTH_TO_DIFF) {
+
+              bufferedFilesToCat.push(repository.relativize(bufferPath));
+              if (bufferedFilesToCat.length > 1) {
                 return Observable.empty();
               }
-              return this._localService
-                .gitDiffStrings(oldContents, newContents)
-                .refCount()
-                .map(diffOutput => {
-                  const diffResult = parseHgDiffUnifiedOutput(diffOutput);
-                  return {
-                    textEditor,
-                    diffInfo: diffResult,
-                  };
-                })
-                .do(result => {
-                  repository.setDiffInfo(bufferPath, result.diffInfo);
-                });
-            })
-            .takeUntil(bufferDestroyed);
+
+              // use nextTick to buffer many files being requested at once
+              // (maybe should use timeout instead?)
+              return Observable.fromPromise(nextTick()).switchMap(() => {
+                const filesToCat = [...bufferedFilesToCat];
+                bufferedFilesToCat.length = 0;
+                return repository
+                  .fetchMultipleFilesContentAtRevision(
+                    filesToCat,
+                    hgConstants.HEAD_REVISION_EXPRESSION,
+                  )
+                  .catch(() =>
+                    // hg uses errorCode 1 as "nothing went wrong but nothing was found"
+                    Observable.empty(),
+                  );
+              });
+            });
+        })
+        .do(fileContents =>
+          fileContents.forEach(({abspath, data}) => {
+            fileContentsAtHead.set(
+              nuclideUri.join(repository.getWorkingDirectory(), abspath),
+              data,
+            );
+          }),
+        )
+        .share();
+
+      const buffers = new Set();
+      // calculateDiffForBuffers is the observable responsible for watching
+      // buffer changes and updating the diff info
+      const calculateDiffForBuffers = observeTextEditorsInRepo(
+        repository,
+      ).flatMap(textEditor => {
+        const buffer = textEditor.getBuffer();
+        if (buffers.has(buffer)) {
+          return Observable.empty();
+        }
+        buffers.add(buffer);
+
+        const bufferPath = nullthrows(buffer.getPath());
+
+        const bufferReloads = observableFromSubscribeFunction(
+          buffer.onDidReload.bind(buffer),
+        );
+        const bufferChanges = observableFromSubscribeFunction(
+          buffer.onDidChangeText.bind(buffer),
+        );
+
+        // TODO (tjfryan): handle renames `onDidChangePath`
+
+        // This is in a flatMap, so we need to make sure this terminates
+        // We can terminate, `takeUntil`, buffer is destroyed
+        // And make sure to clear the cached diff for the buffer once we no
+        // longer care about it
+        const bufferDestroyed = observableFromSubscribeFunction(
+          buffer.onDidDestroy.bind(buffer),
+        ).do(() => {
+          buffers.delete(buffer);
+          fileContentsAtHead.delete(bufferPath);
         });
 
-        return calculateDiffForBuffers;
+        // recalculate on bufferReload, bufferChanges, and when we get
+        // this file's data from hg cat
+        return Observable.merge(
+          bufferReloads,
+          bufferChanges,
+          fetchFileContentsAtHead.filter(fileContentsList =>
+            fileContentsList.some(
+              fileInfo =>
+                nuclideUri.join(
+                  repository.getWorkingDirectory(),
+                  fileInfo.abspath,
+                ) === bufferPath,
+            ),
+          ),
+        )
+          .let(fastDebounce(200))
+          .switchMap(() => {
+            const oldContents = fileContentsAtHead.get(bufferPath);
+            if (oldContents == null) {
+              return Observable.empty();
+            }
+            const newContents = buffer.getText();
+            if (newContents.length > MAX_BUFFER_LENGTH_TO_DIFF) {
+              return Observable.empty();
+            }
+            return this._localService
+              .gitDiffStrings(oldContents, newContents)
+              .refCount()
+              .map(diffOutput => {
+                const diffResult = parseHgDiffUnifiedOutput(diffOutput);
+                return {
+                  textEditor,
+                  diffInfo: diffResult,
+                };
+              });
+          })
+          .takeUntil(bufferDestroyed);
       });
+
+      return calculateDiffForBuffers;
+    });
   }
 
   dispose(): void {

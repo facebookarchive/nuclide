@@ -15,7 +15,6 @@ import type {
   AmendModeValue,
   BookmarkInfo,
   CheckoutOptions,
-  DiffInfo,
   LineDiff,
   OperationProgress,
   RevisionInfo,
@@ -182,9 +181,6 @@ export class HgRepositoryClient {
     isFetchingPathStatuses: Subject<boolean>,
     manualStatusRefreshRequests: Subject<void>,
     refreshLocksFilesObserver: Subject<Map<string, boolean>>,
-
-    // absolute path of file to DiffInfo
-    bufferDiffsFromHeadCache: Map<NuclideUri, DiffInfo>,
   };
 
   constructor(
@@ -226,8 +222,6 @@ export class HgRepositoryClient {
       isLoading: true,
       bookmarks: [],
     });
-
-    this._sharedMembers.bufferDiffsFromHeadCache = new Map();
 
     this._sharedMembers.repoSubscriptions = this._sharedMembers.service
       .createRepositorySubscriptions(this._sharedMembers.workingDirectoryPath)
@@ -822,27 +816,11 @@ export class HgRepositoryClient {
    *
    */
 
-  setDiffInfo(filePath: NuclideUri, diffInfo: DiffInfo): void {
-    if (this.isPathRelevantToRepository(filePath)) {
-      this._sharedMembers.bufferDiffsFromHeadCache.set(filePath, diffInfo);
-    }
-  }
-
-  deleteDiffInfo(filePath: NuclideUri): void {
-    this._sharedMembers.bufferDiffsFromHeadCache.delete(filePath);
-  }
-
-  clearAllDiffInfo(): void {
-    this._sharedMembers.bufferDiffsFromHeadCache.clear();
-  }
-
   getDiffStats(filePath: NuclideUri): {added: number, deleted: number} {
-    return (
-      this._sharedMembers.bufferDiffsFromHeadCache.get(filePath) || {
-        added: 0,
-        deleted: 0,
-      }
-    );
+    return {
+      added: 0,
+      deleted: 0,
+    };
   }
 
   /**
@@ -856,8 +834,7 @@ export class HgRepositoryClient {
   // push-based way. This can lead to some cases like committing changes
   // sometimes won't clear gutters until changes are made to the buffer
   getLineDiffs(filePath: NuclideUri, text: ?string): Array<LineDiff> {
-    const diffInfo = this._sharedMembers.bufferDiffsFromHeadCache.get(filePath);
-    return diffInfo != null ? diffInfo.lineDiffs : [];
+    return [];
   }
 
   /**
