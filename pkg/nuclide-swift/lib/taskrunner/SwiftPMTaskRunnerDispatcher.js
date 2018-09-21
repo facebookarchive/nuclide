@@ -30,7 +30,7 @@ type SwiftPMTaskRunnerAction =
     }
   | {
       actionType: 'UPDATE_COMPILE_COMMANDS',
-      compileCommands: Map<string, string>,
+      compileCommands: Map<string, Array<string>>,
     };
 
 export const ActionTypes = Object.freeze({

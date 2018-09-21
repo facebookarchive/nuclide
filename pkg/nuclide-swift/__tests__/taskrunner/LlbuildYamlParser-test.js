@@ -141,41 +141,81 @@ describe('readCompileCommands', () => {
     });
 
     it('returns a mapping of sources to "other-args"', async () => {
+      const mainPackageArgs = [
+        '-module-name',
+        'MyPackage',
+        '-Onone',
+        '-enable-batch-mode',
+        '-enforce-exclusivity=checked',
+        '-DSWIFT_PACKAGE',
+        '-DDEBUG',
+        '-DXcode',
+        '-Xcc',
+        '-I',
+        '-Xcc',
+        '/path/to/MyPackage/.build/debug',
+        '-I',
+        '/path/to/MyPackage/.build/debug',
+        '-Xcc',
+        '-F',
+        '-Xcc',
+        '/path/to/MyPackage/.build/debug',
+        '-F',
+        '/path/to/MyPackage/.build/debug',
+        '-D',
+        'SWIFT_PACKAGE',
+        '-g',
+        '/path/to/MyPackage/Sources/AnotherSource.swift',
+        '/path/to/MyPackage/Sources/MyPackage.swift',
+      ];
+      const testPackageArgs = [
+        '-module-name',
+        'MyPackageTestSuite',
+        '-Onone',
+        '-enable-batch-mode',
+        '-enforce-exclusivity=checked',
+        '-DSWIFT_PACKAGE',
+        '-DDEBUG',
+        '-DXcode',
+        '-Xcc',
+        '-I',
+        '-Xcc',
+        '/path/to/MyPackage/.build/debug',
+        '-I',
+        '/path/to/MyPackage/.build/debug',
+        '-Xcc',
+        '-F',
+        '-Xcc',
+        '/path/to/MyPackage/.build/debug',
+        '-F',
+        '/path/to/MyPackage/.build/debug',
+        '-D',
+        'SWIFT_PACKAGE',
+        '-g',
+        '/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift',
+      ];
       const commands = await readCompileCommands(path);
       expect(commands.size).toBe(4);
-      expect(commands.get('/path/to/MyPackage/Sources/MyPackage.swift')).toBe(
-        [
-          '-D',
-          'SWIFT_PACKAGE',
-          '-g',
-          '/path/to/MyPackage/Sources/AnotherSource.swift',
-          '/path/to/MyPackage/Sources/MyPackage.swift',
-        ].join(' '),
-      );
+      expect(
+        commands.get('/path/to/MyPackage/Sources/MyPackage.swift'),
+      ).toEqual(mainPackageArgs);
       expect(
         commands.get('/path/to/MyPackage/Sources/AnotherSource.swift'),
-      ).toBe(
-        [
-          '-D',
-          'SWIFT_PACKAGE',
-          '-g',
-          '/path/to/MyPackage/Sources/AnotherSource.swift',
-          '/path/to/MyPackage/Sources/MyPackage.swift',
-        ].join(' '),
-      );
+      ).toEqual(mainPackageArgs);
       expect(
         commands.get('/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift'),
-      ).toBe(
-        [
-          '-D',
-          'SWIFT_PACKAGE',
-          '-g',
-          '/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift',
-        ].join(' '),
-      );
-      expect(commands.get('/path/to/YetAnotherFile.swift')).toBe(
+      ).toEqual(testPackageArgs);
+      expect(commands.get('/path/to/YetAnotherFile.swift')).toEqual([
+        '-module-name',
+        '',
+        '-Onone',
+        '-enable-batch-mode',
+        '-enforce-exclusivity=checked',
+        '-DSWIFT_PACKAGE',
+        '-DDEBUG',
+        '-DXcode',
         '/path/to/YetAnotherFile.swift',
-      );
+      ]);
     });
   });
 });
