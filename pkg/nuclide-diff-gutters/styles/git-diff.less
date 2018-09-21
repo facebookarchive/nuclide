@@ -3,6 +3,21 @@
 @import "octicon-mixins";
 
 atom-text-editor {
+
+  .gutter:not(.nuclide-diff-gutters-icon) .line-number.nuclide-line-removed.nuclide-line-removed::before {
+    bottom: -3px;
+  }
+
+  .gutter:not(.nuclide-diff-gutters-icon) .line-number.nuclide-line-removed::after {
+    content: "";
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 25px;
+    border-bottom: 1px dotted rgba(224, 82, 82, 0.5);
+    pointer-events: none;
+  }
+
   .gutter .line-number {
     &.nuclide-line-modified {
       border-left: 2px solid @syntax-color-modified;
@@ -36,7 +51,7 @@ atom-text-editor {
     }
   }
 
-  .nuclide-diff-gutters-icon .line-number {
+  .gutter.nuclide-diff-gutters-icon .line-number {
     width: 100%;
     border-left: none;
     padding-left: 0.4em;

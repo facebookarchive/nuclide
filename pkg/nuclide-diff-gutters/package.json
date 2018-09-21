@@ -5,6 +5,15 @@
   "author": "Nuclide Code Lifecycle",
   "description": "Handles rendering UI in editor gutters to show changes. A push-based alternate to the git-diff package",
   "nuclide": {
-    "packageType": "AtomPackage"
+    "packageType": "AtomPackage",
+    "config": {
+      "showIconsInNuclideDiffGutter": {
+        "title": "Display Icons in Nuclide Diff Gutter",
+        "type": "boolean",
+        "default": false,
+        "order": 1,
+        "description": "When enabled, highlights diffs in the diff gutter using icons instead of lines"
+      }
+    }
   }
 }

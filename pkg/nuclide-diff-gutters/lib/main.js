@@ -24,7 +24,8 @@ import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-
 import {getHgServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import nullthrows from 'nullthrows';
-import {NuclideDiffGuttersView} from './nuclide-diff-gutters-view';
+import {initializeDiffGutters, updateDiffs} from './nuclide-diff-gutters-util';
+import type {DiffInfo} from '../../nuclide-hg-rpc/lib/types';
 
 // A limit on size of buffer to diff
 // Value based on the constant of the same name from atom's git-diff package
@@ -38,6 +39,11 @@ const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 // for changes on buffer updates, so if you commit and all previous changes are
 // now part of head, highlights won't update until you type
 
+type DiffPushNotification = {
+  textEditor: atom$TextEditor,
+  diffInfo: DiffInfo,
+};
+
 class Activation {
   _localService = getHgServiceByNuclideUri('');
   _disposed: ReplaySubject<void> = new ReplaySubject(1);
@@ -45,21 +51,6 @@ class Activation {
 
   constructor() {
     atom.packages.disablePackage('git-diff');
-
-    observableFromSubscribeFunction(
-      atom.workspace.observeTextEditors.bind(atom.workspace),
-    )
-      .do(textEditor => {
-        if (!this._watchedEditors.has(textEditor)) {
-          /* eslint-disable-next-line */
-          new NuclideDiffGuttersView(textEditor);
-          this._watchedEditors.add(textEditor);
-        }
-        // Remove editor from set when it is destroyed.
-        textEditor.onDidDestroy(() => this._watchedEditors.delete(textEditor));
-      })
-      .takeUntil(this._disposed)
-      .subscribe();
 
     (featureConfig.observeAsStream(
       'nuclide-hg-repository.enableDiffStats',
@@ -74,6 +65,7 @@ class Activation {
         return observableFromSubscribeFunction(
           atom.workspace.observeTextEditors.bind(atom.workspace),
         ).flatMap(textEditor => {
+          initializeDiffGutters(textEditor);
           const editorPath = textEditor.getPath();
           if (editorPath == null) {
             return Observable.empty();
@@ -108,13 +100,19 @@ class Activation {
         });
       })
       .takeUntil(this._disposed)
-      .subscribe();
+      .subscribe((diff: DiffPushNotification) => {
+        if (diff.textEditor != null) {
+          updateDiffs(diff.textEditor, diff.diffInfo.lineDiffs);
+        }
+      });
   }
 
   // Responsible for calculating the diff of a file by 1. fetching the content
   // at head for each buffer once it becomes visible and 2. diffing it against
   // current buffer contents once the buffer changes
-  _watchBufferDiffChanges(repository: HgRepositoryClient): Observable<any> {
+  _watchBufferDiffChanges(
+    repository: HgRepositoryClient,
+  ): Observable<DiffPushNotification> {
     return repository
       .observeHeadRevision()
       .do(() => repository.clearAllDiffInfo())
@@ -241,18 +239,21 @@ class Activation {
               return this._localService
                 .gitDiffStrings(oldContents, newContents)
                 .refCount()
-                .map(diffOutput => parseHgDiffUnifiedOutput(diffOutput))
-                .do(diffInfo => {
-                  repository.setDiffInfo(bufferPath, diffInfo);
+                .map(diffOutput => {
+                  const diffResult = parseHgDiffUnifiedOutput(diffOutput);
+                  return {
+                    textEditor,
+                    diffInfo: diffResult,
+                  };
+                })
+                .do(result => {
+                  repository.setDiffInfo(bufferPath, result.diffInfo);
                 });
             })
             .takeUntil(bufferDestroyed);
         });
 
-        return Observable.merge(
-          fetchFileContentsAtHead,
-          calculateDiffForBuffers,
-        );
+        return calculateDiffForBuffers;
       });
   }
 
