@@ -37,34 +37,26 @@ export default class HyperclickForTextEditor {
   _textEditor: atom$TextEditor;
   _textEditorView: atom$TextEditorElement;
   _hyperclick: Hyperclick;
-  _lastMouseEvent: ?MouseEvent;
-  _lastSuggestionAtMouse: ?HyperclickSuggestion;
-  _navigationMarkers: ?Array<atom$Marker>;
-  _lastWordRange: ?atom$Range;
-  _subscriptions: UniversalDisposable;
-  _isDestroyed: boolean;
+  _lastMouseEvent: ?MouseEvent = null;
+  // Cache the most recent suggestion so we can avoid unnecessary fetching.
+  _lastSuggestionAtMouse: ?HyperclickSuggestion = null;
+  _navigationMarkers: ?Array<atom$Marker> = null;
+  _lastWordRange: ?atom$Range = null;
+  _subscriptions: UniversalDisposable = new UniversalDisposable();
+  _isDestroyed: boolean = false;
   _loadingTimer: ?number;
   _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
 
   // A central "event bus" for all fetch events.
   // TODO: Rx-ify all incoming events to avoid using a subject.
-  _fetchStream: Subject<?MouseEvent>;
+  _fetchStream: Subject<?MouseEvent> = new Subject();
   // Stored for testing.
   _suggestionStream: Observable<?HyperclickSuggestion>;
 
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(textEditor);
-
     this._hyperclick = hyperclick;
-
-    this._lastMouseEvent = null;
-    // Cache the most recent suggestion so we can avoid unnecessary fetching.
-    this._lastSuggestionAtMouse = null;
-    this._navigationMarkers = null;
-
-    this._lastWordRange = null;
-    this._subscriptions = new UniversalDisposable();
 
     this._setupMouseListeners();
 
@@ -78,8 +70,6 @@ export default class HyperclickForTextEditor {
       }),
     );
 
-    this._isDestroyed = false;
-    this._fetchStream = new Subject();
     this._suggestionStream = this._observeSuggestions().share();
 
     this._subscriptions.add(
