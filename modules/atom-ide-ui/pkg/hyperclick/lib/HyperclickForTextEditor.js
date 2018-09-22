@@ -154,7 +154,7 @@ export default class HyperclickForTextEditor {
     }: any);
 
     if (this._isHyperclickEvent(mouseEvent)) {
-      this._fetchSuggestion(mouseEvent);
+      this._fetchStream.next(mouseEvent);
     } else {
       this._clearSuggestion();
     }
@@ -202,7 +202,7 @@ export default class HyperclickForTextEditor {
     const mouseEvent: MouseEvent = (event: any);
     // Show the suggestion at the last known mouse position.
     if (this._isHyperclickEvent(mouseEvent) && this._lastMouseEvent != null) {
-      this._fetchSuggestion(this._lastMouseEvent);
+      this._fetchStream.next(this._lastMouseEvent);
     }
   };
 
@@ -219,10 +219,6 @@ export default class HyperclickForTextEditor {
    */
   getSuggestionAtMouse(): Promise<?HyperclickSuggestion> {
     return this._suggestionStream.take(1).toPromise();
-  }
-
-  _fetchSuggestion(mouseEvent: MouseEvent): void {
-    this._fetchStream.next(mouseEvent);
   }
 
   _observeSuggestions(): Observable<?HyperclickSuggestion> {
