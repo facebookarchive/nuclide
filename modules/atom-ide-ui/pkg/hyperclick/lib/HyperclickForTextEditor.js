@@ -131,20 +131,17 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onContextMenu = (event: Event): void => {
-    const mouseEvent: MouseEvent = (event: any);
+  _onContextMenu = (mouseEvent: MouseEvent): void => {
     // If the key trigger happens to cause the context menu to show up, then
     // cancel it. By this point, it's too late to know if you're at a suggestion
     // position to be more fine grained. So if your trigger keys are "ctrl+cmd",
     // then you can't use that combination to bring up the context menu.
     if (this._isHyperclickEvent(mouseEvent)) {
-      event.stopPropagation();
+      mouseEvent.stopPropagation();
     }
   };
 
-  _onMouseMove = (event: Event): void => {
-    const mouseEvent: MouseEvent = (event: any);
-
+  _onMouseMove = (mouseEvent: MouseEvent): void => {
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
@@ -160,8 +157,7 @@ export default class HyperclickForTextEditor {
     }
   };
 
-  _onMouseDown = (event: Event): void => {
-    const mouseEvent: MouseEvent = (event: any);
+  _onMouseDown = (mouseEvent: MouseEvent): void => {
     if (!this._isHyperclickEvent(mouseEvent)) {
       return;
     }
@@ -192,23 +188,21 @@ export default class HyperclickForTextEditor {
 
       this._confirmSuggestion(lastSuggestionAtMouse);
       // Prevent the <meta-click> event from adding another cursor.
-      event.stopPropagation();
+      mouseEvent.stopPropagation();
     }
 
     this._clearSuggestion();
   };
 
-  _onKeyDown = (event: Event): void => {
-    const mouseEvent: MouseEvent = (event: any);
+  _onKeyDown = (event: KeyboardEvent): void => {
     // Show the suggestion at the last known mouse position.
-    if (this._isHyperclickEvent(mouseEvent) && this._lastMouseEvent != null) {
+    if (this._isHyperclickEvent(event) && this._lastMouseEvent != null) {
       this._fetchStream.next(this._lastMouseEvent);
     }
   };
 
-  _onKeyUp = (event: Event): void => {
-    const mouseEvent: MouseEvent = (event: any);
-    if (!this._isHyperclickEvent(mouseEvent)) {
+  _onKeyUp = (event: KeyboardEvent): void => {
+    if (!this._isHyperclickEvent(event)) {
       this._clearSuggestion();
     }
   };
@@ -393,7 +387,7 @@ export default class HyperclickForTextEditor {
   /**
    * Returns whether an event should be handled by hyperclick or not.
    */
-  _isHyperclickEvent(event: SyntheticKeyboardEvent<> | MouseEvent): boolean {
+  _isHyperclickEvent(event: KeyboardEvent | MouseEvent): boolean {
     return (
       event.shiftKey === this._triggerKeys.has('shiftKey') &&
       event.ctrlKey === this._triggerKeys.has('ctrlKey') &&
