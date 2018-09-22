@@ -49,9 +49,7 @@ async function connectionToGraphQLService(
   return lspService || new NullLanguageService();
 }
 
-async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>,
-> {
+function createLanguageService(): AtomLanguageService<LanguageService> {
   const diagnosticsConfig = {
     version: '0.2.0',
     analyticsEventName: 'graphql.observe-diagnostics',
@@ -86,11 +84,11 @@ async function createLanguageService(): Promise<
   return new AtomLanguageService(connectionToGraphQLService, atomConfig);
 }
 
-export let graphqlLanguageService: Promise<
-  AtomLanguageService<LanguageService>,
+export let graphqlLanguageService: AtomLanguageService<
+  LanguageService,
 > = createLanguageService();
 
 export function resetGraphQLLanguageService(): void {
-  graphqlLanguageService.then(value => value.dispose());
+  graphqlLanguageService.dispose();
   graphqlLanguageService = createLanguageService();
 }

@@ -13,10 +13,14 @@ import {
   graphqlLanguageService,
   resetGraphQLLanguageService,
 } from './GraphQLLanguage';
+import passesGK from '../../commons-node/passesGK';
 
-export function activate() {
-  if (process.platform !== 'win32') {
-    graphqlLanguageService.then(value => value.activate());
+export async function activate() {
+  if (
+    process.platform !== 'win32' &&
+    !(await passesGK('nuclide_fb_graphql_vscode_ext'))
+  ) {
+    graphqlLanguageService.activate();
   }
 }
 
