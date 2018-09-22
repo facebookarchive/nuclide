@@ -2246,6 +2246,7 @@
         },
         "patterns": [
           { "include": "#xhp-tag-termination" },
+          { "include": "#xhp-html-comments"},
           { "include": "#xhp-tag-attributes" }
         ]
       }
@@ -2256,7 +2257,7 @@
       {
         "comment": "this matches the end > of an opening tag when in the form <tag> </tag>",
         "comment": "uses non consuming search for </ in </tag>",
-        "begin": "(>)",
+        "begin": "(?<!--)(>)",
         "end": "(</)",
         "beginCaptures": {
           "0": { "name": "punctuation.definition.tag.xhp" },

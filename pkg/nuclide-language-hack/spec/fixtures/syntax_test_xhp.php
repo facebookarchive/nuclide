@@ -53,3 +53,15 @@ function exampleXHPBracketHighlighting() {
     </Test>
   )
 }
+
+function exampleXHPComments() {
+  return (
+    <ui:foo
+      <!--attr={'test'}-->
+//    ^ comment.block.html punctuation.definition.comment.html
+    />
+    if (true) {
+//            ^ punctuation.section.scope.begin.php
+    }
+  )
+}
