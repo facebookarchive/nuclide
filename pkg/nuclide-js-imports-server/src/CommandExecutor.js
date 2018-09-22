@@ -20,6 +20,7 @@ import type {
 
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {IConnection} from 'vscode-languageserver';
+import {ADD_IMPORT_COMMAND_ID} from './constants';
 import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {parseFile} from './lib/AutoImportsManager';
@@ -43,7 +44,7 @@ type EditParams = {
 
 export class CommandExecutor {
   static COMMANDS = {
-    addImport: true,
+    [ADD_IMPORT_COMMAND_ID]: true,
   };
 
   connection: IConnection;
@@ -65,7 +66,7 @@ export class CommandExecutor {
 
   executeCommand(command: $Keys<typeof CommandExecutor.COMMANDS>, args: any) {
     switch (command) {
-      case 'addImport':
+      case ADD_IMPORT_COMMAND_ID:
         return this._addImport((args: AddImportCommandParams));
       case 'getAllImports':
         return this._getAllImports(args[0]);

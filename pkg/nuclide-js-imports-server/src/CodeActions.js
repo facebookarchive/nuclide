@@ -13,6 +13,7 @@ import {Command, Diagnostic} from 'vscode-languageserver';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AddImportCommandParams} from './CommandExecutor';
 
+import {ADD_IMPORT_COMMAND_ID} from './constants';
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
 import {arrayFlatten} from 'nuclide-commons/collection';
@@ -114,7 +115,7 @@ function diagnosticToCommands(
         }
         return {
           title: `${verb} from ${importPath}`,
-          command: 'addImport',
+          command: ADD_IMPORT_COMMAND_ID,
           arguments: addImportArgs,
         };
       });
