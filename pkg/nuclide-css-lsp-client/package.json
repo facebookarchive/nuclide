@@ -28,12 +28,5 @@
   },
   "nuclide": {
     "packageType": "AtomPackage"
-  },
-  "providedServices": {
-    "nuclide-project-symbol-search-service": {
-      "versions": {
-        "0.0.0": "provideProjectSymbolSearch"
-      }
-    }
   }
 }

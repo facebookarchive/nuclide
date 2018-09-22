@@ -9,13 +9,13 @@
  * @format
  */
 
-// $FlowFB
-import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import passesGK from '../../commons-node/passesGK';
 import {
   AtomLanguageService,
   getHostServices,
@@ -107,19 +107,30 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
 }
 
 class Activation {
-  _languageService: AtomLanguageService<LanguageService>;
+  _disposables: UniversalDisposable = new UniversalDisposable();
 
   constructor() {
-    this._languageService = createLanguageService();
-    this._languageService.activate();
+    this._init();
   }
 
-  provideProjectSymbolSearch(): ProjectSymbolSearchProvider {
-    return new DashProjectSymbolProvider(this._languageService);
+  async _init() {
+    if (await passesGK('nuclide_fb_css_vscode_ext')) {
+      return;
+    }
+    const languageService = createLanguageService();
+    languageService.activate();
+    this._disposables.add(
+      languageService,
+      atom.packages.serviceHub.provide(
+        'nuclide-project-symbol-search-service',
+        '0.0.0',
+        new DashProjectSymbolProvider(languageService),
+      ),
+    );
   }
 
   dispose() {
-    this._languageService.dispose();
+    this._disposables.dispose();
   }
 }
 
