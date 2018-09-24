@@ -261,7 +261,9 @@ export function DropdownButton(props: DropdownButtonProps) {
   });
 
   const label =
-    props.children == null ? null : (
+    props.children == null ? (
+      <span className="sr-only">Open Dropdown</span>
+    ) : (
       <span className="nuclide-dropdown-label-text-wrapper">
         {props.children}
       </span>
