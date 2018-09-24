@@ -153,13 +153,10 @@ async function activateLsp(): Promise<UniversalDisposable> {
       analyticsEventName: 'flow.coverage',
       icon: 'nuclicon-flow',
     },
-    findReferences: (await shouldEnableFindRefs())
-      ? {
-          version: '0.1.0',
-          analyticsEventName: 'flow.find-references',
-          // TODO(nmote): support indirect-find-refs here
-        }
-      : undefined,
+    findReferences: {
+      version: '0.1.0',
+      analyticsEventName: 'flow.find-references',
+    },
     status: {
       version: '0.1.0',
       priority: 99,
@@ -250,6 +247,13 @@ function getConnectionCache(): ConnectionCache<FlowLanguageServiceType> {
 async function activateLegacy(): Promise<UniversalDisposable> {
   connectionCache = new ConnectionCache(connectionToFlowService);
 
+  const lsConfig = getLanguageServiceConfig();
+  const flowLanguageService = new AtomLanguageService(
+    connection => getConnectionCache().get(connection),
+    lsConfig,
+  );
+  flowLanguageService.activate();
+
   const disposables = new UniversalDisposable(
     connectionCache,
     () => {
@@ -261,17 +265,7 @@ async function activateLegacy(): Promise<UniversalDisposable> {
       'nuclide-flow:restart-flow-server',
       allowFlowServerRestart,
     ),
-    Observable.fromPromise(getLanguageServiceConfig()).subscribe(lsConfig => {
-      const flowLanguageService = new AtomLanguageService(
-        connection => getConnectionCache().get(connection),
-        lsConfig,
-      );
-      flowLanguageService.activate();
-      // `disposables` is always disposed before it is set to null. If it has been disposed,
-      // this subscription will have been disposed as well and we will not enter this callback.
-      invariant(disposables != null);
-      disposables.add(flowLanguageService);
-    }),
+    flowLanguageService,
     atom.packages.serviceHub.consume(
       'atom-ide-busy-signal',
       '0.1.0',
@@ -386,94 +380,82 @@ function consumeBusySignal(service: BusySignalService): IDisposable {
 function consumeFindReferencesView(
   service: FindReferencesViewService,
 ): IDisposable {
-  const promise: Promise<IDisposable> = registerMultiHopFindReferencesCommand(
-    service,
-  );
-  return new UniversalDisposable(() => {
-    promise.then(disposable => disposable.dispose());
-  });
-}
-
-async function registerMultiHopFindReferencesCommand(
-  service: FindReferencesViewService,
-): Promise<IDisposable> {
-  if (!(await shouldEnableFindRefs())) {
-    return new UniversalDisposable();
-  }
   let lastMouseEvent = null;
-  atom.contextMenu.add({
-    'atom-text-editor[data-grammar="source js jsx"]': [
-      {
-        label: 'Find Indirect References (slower)',
-        command: 'nuclide-flow:find-indirect-references',
-        created: event => {
-          lastMouseEvent = event;
+  return new UniversalDisposable(
+    atom.contextMenu.add({
+      'atom-text-editor[data-grammar="source js jsx"]': [
+        {
+          label: 'Find Indirect References (slower)',
+          command: 'nuclide-flow:find-indirect-references',
+          created: event => {
+            lastMouseEvent = event;
+          },
         },
+      ],
+    }),
+    atom.commands.add(
+      'atom-text-editor',
+      'nuclide-flow:find-indirect-references',
+      async () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        return trackTiming('flow.find-indirect-references', async () => {
+          const path = editor.getPath();
+          if (path == null) {
+            return;
+          }
+          const cursors = editor.getCursors();
+          if (cursors.length !== 1) {
+            return;
+          }
+          const cursor = cursors[0];
+          const position =
+            lastMouseEvent != null
+              ? bufferPositionForMouseEvent(lastMouseEvent, editor)
+              : cursor.getBufferPosition();
+          lastMouseEvent = null;
+          const fileVersion = await getFileVersionOfEditor(editor);
+          const flowLS = await getConnectionCache().getForUri(path);
+          if (flowLS == null) {
+            return;
+          }
+          if (fileVersion == null) {
+            return;
+          }
+          const getReferences = () =>
+            flowLS
+              .customFindReferences(fileVersion, position, true, true)
+              .refCount()
+              .toPromise();
+          let result;
+          if (busySignalService == null) {
+            result = await getReferences();
+          } else {
+            result = await busySignalService.reportBusyWhile(
+              'Running Flow find-indirect-references (this may take a while)',
+              getReferences,
+              {
+                revealTooltip: true,
+                waitingFor: 'computer',
+              },
+            );
+          }
+          if (result == null) {
+            atom.notifications.addInfo('No find references results available');
+          } else if (result.type === 'data') {
+            service.viewResults(result);
+          } else {
+            atom.notifications.addWarning(
+              `Flow find-indirect-references issued an error: "${
+                result.message
+              }"`,
+            );
+          }
+        });
       },
-    ],
-  });
-  return atom.commands.add(
-    'atom-text-editor',
-    'nuclide-flow:find-indirect-references',
-    async () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor == null) {
-        return;
-      }
-      return trackTiming('flow.find-indirect-references', async () => {
-        const path = editor.getPath();
-        if (path == null) {
-          return;
-        }
-        const cursors = editor.getCursors();
-        if (cursors.length !== 1) {
-          return;
-        }
-        const cursor = cursors[0];
-        const position =
-          lastMouseEvent != null
-            ? bufferPositionForMouseEvent(lastMouseEvent, editor)
-            : cursor.getBufferPosition();
-        lastMouseEvent = null;
-        const fileVersion = await getFileVersionOfEditor(editor);
-        const flowLS = await getConnectionCache().getForUri(path);
-        if (flowLS == null) {
-          return;
-        }
-        if (fileVersion == null) {
-          return;
-        }
-        const getReferences = () =>
-          flowLS
-            .customFindReferences(fileVersion, position, true, true)
-            .refCount()
-            .toPromise();
-        let result;
-        if (busySignalService == null) {
-          result = await getReferences();
-        } else {
-          result = await busySignalService.reportBusyWhile(
-            'Running Flow find-indirect-references (this may take a while)',
-            getReferences,
-            {
-              revealTooltip: true,
-              waitingFor: 'computer',
-            },
-          );
-        }
-        if (result == null) {
-          atom.notifications.addInfo('No find references results available');
-        } else if (result.type === 'data') {
-          service.viewResults(result);
-        } else {
-          atom.notifications.addWarning(
-            `Flow find-indirect-references issued an error: "${
-              result.message
-            }"`,
-          );
-        }
-      });
-    },
+    ),
   );
 }
 
@@ -484,14 +466,13 @@ async function allowFlowServerRestart(): Promise<void> {
   }
 }
 
-async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
+function getLanguageServiceConfig(): AtomLanguageServiceConfig {
   const excludeLowerPriority = Boolean(
     featureConfig.get('nuclide-flow.excludeOtherAutocomplete'),
   );
   const flowResultsFirst = Boolean(
     featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'),
   );
-  const enableFindRefs = await shouldEnableFindRefs();
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -543,24 +524,14 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       priority: 1,
       analyticsEventName: 'nuclide-flow.typeHint',
     },
-    findReferences: enableFindRefs
-      ? {
-          version: '0.1.0',
-          analyticsEventName: 'flow.find-references',
-        }
-      : undefined,
+    findReferences: {
+      version: '0.1.0',
+      analyticsEventName: 'flow.find-references',
+    },
   };
 }
 
-async function shouldEnableFindRefs(): Promise<boolean> {
-  return passesGK(
-    'nuclide_flow_find_refs',
-    // Wait 15 seconds for the gk check
-    15 * 1000,
-  );
-}
-
-async function shouldEnableRename(): Promise<boolean> {
+function shouldEnableRename(): Promise<boolean> {
   return passesGK(
     'nuclide_flow_rename',
     // Wait 15 seconds for the gk check
