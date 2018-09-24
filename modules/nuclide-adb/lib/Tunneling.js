@@ -10,10 +10,6 @@
  * @format
  */
 
-/* eslint
- no-console: 0,
-*/
-
 import type {SshTunnelService} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
@@ -108,34 +104,30 @@ export function startTunnelingAdb(
         error: e => {
           getLogger('nuclide-adb:tunneling').error(e);
           track('nuclide-adb:tunneling:error', {host: uri, error: e});
+          if (e.name === MISSING_ADB_ERROR) {
+            return;
+          }
           let detail;
           const buttons = [];
-          if (e.name === MISSING_ADB_ERROR) {
-            // We shouldn't be prompting the user with error message for not
-            // having adb installed.
-            // TODO: log to the nuclide console. console.log in the meanwhile.
-            console.log(e);
-          } else {
-            if (e.name === VERSION_MISMATCH_ERROR) {
-              detail = e.message;
-              const {adbUpgradeLink} = options;
-              if (e.name === VERSION_MISMATCH_ERROR && adbUpgradeLink != null) {
-                buttons.push({
-                  text: 'View upgrade instructions',
-                  onDidClick: () => shell.openExternal(adbUpgradeLink),
-                });
-              }
-            } else {
-              detail =
-                "Your local devices won't be available on this host." +
-                (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
+          if (e.name === VERSION_MISMATCH_ERROR) {
+            detail = e.message;
+            const {adbUpgradeLink} = options;
+            if (e.name === VERSION_MISMATCH_ERROR && adbUpgradeLink != null) {
+              buttons.push({
+                text: 'View upgrade instructions',
+                onDidClick: () => shell.openExternal(adbUpgradeLink),
+              });
             }
-            atom.notifications.addError('Failed to tunnel Android devices', {
-              dismissable: true,
-              detail,
-              buttons,
-            });
+          } else {
+            detail =
+              "Your local devices won't be available on this host." +
+              (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
           }
+          atom.notifications.addError('Failed to tunnel Android devices', {
+            dismissable: true,
+            detail,
+            buttons,
+          });
         },
       })
       .add(() => {
