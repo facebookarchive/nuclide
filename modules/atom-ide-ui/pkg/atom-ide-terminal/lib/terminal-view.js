@@ -685,10 +685,13 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
         if (replacedUrl !== '') {
           const commandClicked =
             process.platform === 'win32' ? event.ctrlKey : event.metaKey;
-          if (commandClicked && tryOpenInAtom(replacedUrl, cwd)) {
-            return;
+          if (shouldOpenInAtom(replacedUrl)) {
+            if (commandClicked) {
+              tryOpenInAtom(replacedUrl, cwd);
+            }
+          } else {
+            shell.openExternal(replacedUrl);
           }
-          shell.openExternal(replacedUrl);
         }
       },
       {matchIndex},
@@ -696,32 +699,31 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
   }
 }
 
-function tryOpenInAtom(link: string, cwd: ?NuclideUri): boolean {
+function shouldOpenInAtom(link: string): boolean {
   const parsed = url.parse(link);
+  return parsed.protocol === 'open-file-object:';
+}
 
-  if (parsed.protocol === 'open-file-object:') {
-    const path = parsed.path;
-    if (path != null) {
-      const fileLine = path.split(':');
-      let filePath = fileLine[0];
-      let line = 0;
-      if (fileLine.length > 1 && parseInt(fileLine[1], 10) > 0) {
-        line = parseInt(fileLine[1], 10) - 1;
-      }
-      if (cwd != null && nuclideUri.isRemote(cwd)) {
-        const terminalLocation = nuclideUri.parseRemoteUri(cwd);
-        filePath = nuclideUri.createRemoteUri(
-          terminalLocation.hostname,
-          filePath,
-        );
-      }
-
-      goToLocation(filePath, {line});
+function tryOpenInAtom(link: string, cwd: ?NuclideUri): void {
+  const parsed = url.parse(link);
+  const path = parsed.path;
+  if (path != null) {
+    const fileLine = path.split(':');
+    let filePath = fileLine[0];
+    let line = 0;
+    if (fileLine.length > 1 && parseInt(fileLine[1], 10) > 0) {
+      line = parseInt(fileLine[1], 10) - 1;
     }
-    return true;
-  }
+    if (cwd != null && nuclideUri.isRemote(cwd)) {
+      const terminalLocation = nuclideUri.parseRemoteUri(cwd);
+      filePath = nuclideUri.createRemoteUri(
+        terminalLocation.hostname,
+        filePath,
+      );
+    }
 
-  return false;
+    goToLocation(filePath, {line});
+  }
 }
 
 function openLink(event: Event, link: string): void {
