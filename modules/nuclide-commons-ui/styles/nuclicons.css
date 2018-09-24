@@ -172,3 +172,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-haskell::before {
   content: "\f130";
 }
+.icon-nuclicon-on-demand::before {
+  content: "\f131";
+}

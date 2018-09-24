@@ -61,7 +61,8 @@ export type Nuclicon =
   | 'nuclicon-desktop'
   | 'nuclicon-mobile'
   | 'nuclicon-lightning'
-  | 'nuclicon-haskell';
+  | 'nuclicon-haskell'
+  | 'nuclicon-on-demand';
 
 export type IconName = Nuclicon | atom$Octicon;
 
