@@ -92,14 +92,14 @@ const GENERATED_TYPE_PRIORITY: Array<GeneratedFileType> = [
 type Props = {
   rootPath: NuclideUri,
   shouldShowFolderName: boolean,
-  selectedFile: ?NuclideUri,
+  selectedFile?: ?NuclideUri,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   generatedTypes?: Map<NuclideUri, GeneratedFileType>,
 
   // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
-  checkedFiles: ?Set<NuclideUri>,
+  checkedFiles?: ?Set<NuclideUri>,
   // Callback when a file's checkbox is toggled
-  onFileChecked: (filePath: NuclideUri) => void,
+  onFileChecked?: ?(filePath: NuclideUri) => void,
 
   onFileChosen(filePath: NuclideUri): void,
   // Callbacks controlling what happens when certain icons are clicked
