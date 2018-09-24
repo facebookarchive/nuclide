@@ -22,6 +22,7 @@ import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
@@ -227,7 +228,7 @@ class Activation {
             'workspace/executeCommand',
             {
               command: 'getAllImports',
-              arguments: [editorPath],
+              arguments: [nuclideUri.getPath(editorPath)],
             },
           ): any);
           if (
