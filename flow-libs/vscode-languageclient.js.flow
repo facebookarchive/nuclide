@@ -122,7 +122,7 @@ declare module 'vscode-languageclient' {
      * to 'utf8' if ommitted.
      */
     stdioEncoding?: string;
-    // initializationOptions?: any | (() => any);
+    initializationOptions?: any | (() => any);
     initializationFailedHandler?: (error: any) => boolean;
     // errorHandler?: ErrorHandler;
     // middleware?: Middleware;
