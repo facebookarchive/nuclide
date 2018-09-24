@@ -241,32 +241,36 @@ const noop = () => {};
  * Just the button part. This is useful for when you want to customize the dropdown behavior (e.g.)
  * show it asynchronously.
  */
-export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
-  const ButtonComponent = props.buttonComponent || Button;
-  const className = classnames('nuclide-ui-dropdown', props.className, {
-    'nuclide-ui-dropdown-flat': props.isFlat === true,
-  });
+// $FlowFixMe forwardRef is missing from React libdefs
+export const DropdownButton = React.forwardRef(
+  (props: DropdownButtonProps, ref) => {
+    const ButtonComponent = props.buttonComponent || Button;
+    const className = classnames('nuclide-ui-dropdown', props.className, {
+      'nuclide-ui-dropdown-flat': props.isFlat === true,
+    });
 
-  const label =
-    props.children == null ? null : (
-      <span className="nuclide-dropdown-label-text-wrapper">
-        {props.children}
-      </span>
+    const label =
+      props.children == null ? null : (
+        <span className="nuclide-dropdown-label-text-wrapper">
+          {props.children}
+        </span>
+      );
+
+    return (
+      <ButtonComponent
+        buttonType={props.buttonType}
+        innerRef={ref}
+        tooltip={props.tooltip}
+        size={getButtonSize(props.size)}
+        className={className}
+        disabled={props.disabled === true}
+        onClick={props.onExpand || noop}>
+        {label}
+        <Icon icon="triangle-down" className="nuclide-ui-dropdown-icon" />
+      </ButtonComponent>
     );
-
-  return (
-    <ButtonComponent
-      buttonType={props.buttonType}
-      tooltip={props.tooltip}
-      size={getButtonSize(props.size)}
-      className={className}
-      disabled={props.disabled === true}
-      onClick={props.onExpand || noop}>
-      {label}
-      <Icon icon="triangle-down" className="nuclide-ui-dropdown-icon" />
-    </ButtonComponent>
-  );
-}
+  },
+);
 
 function getButtonSize(size: ?ShortButtonSize): ButtonSize {
   switch (size) {
