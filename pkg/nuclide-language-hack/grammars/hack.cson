@@ -376,6 +376,9 @@
           {
             'include': '#type-annotation'
           }
+          {
+            'include': '#strings'
+          }
         ]
       }
       {
@@ -389,6 +392,9 @@
       }
       {
         'include': '#class-name'
+      }
+      {
+        'include': '#comments'
       }
     ]
   'function-arguments':
@@ -639,6 +645,9 @@
           {
             'match': '(=)',
             'name': 'keyword.operator.assignment.php'
+          }
+          {
+            'include': '#type-annotation'
           }
         ]
       }
