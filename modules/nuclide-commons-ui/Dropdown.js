@@ -19,6 +19,7 @@ import classnames from 'classnames';
 import invariant from 'assert';
 import electron from 'electron';
 import * as React from 'react';
+import nullthrows from 'nullthrows';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -90,7 +91,8 @@ export class Dropdown extends React.Component<Props> {
   };
 
   // Make sure that menus don't outlive the dropdown.
-  _menu: ?electron$Menu;
+  _menu: ?remote.Menu;
+  _button: ?HTMLButtonElement;
 
   componentWillUnmount() {
     this._closeMenu();
@@ -106,6 +108,10 @@ export class Dropdown extends React.Component<Props> {
       this._menu = null;
     }
   }
+
+  _updateButtonRef = (button: ?HTMLButtonElement) => {
+    this._button = button;
+  };
 
   render(): React.Node {
     const {label: providedLabel, options, placeholder} = this.props;
@@ -131,6 +137,7 @@ export class Dropdown extends React.Component<Props> {
         buttonType={this.props.buttonType}
         className={this.props.className}
         disabled={this.props.disabled}
+        onButtonDOMNodeChange={this._updateButtonRef}
         isFlat={this.props.isFlat}
         buttonComponent={this.props.buttonComponent}
         onExpand={this._handleDropdownClick}
@@ -158,8 +165,13 @@ export class Dropdown extends React.Component<Props> {
   }
 
   _handleDropdownClick = (event: SyntheticMouseEvent<>): void => {
+    const buttonRect = nullthrows(this._button).getBoundingClientRect();
     this._menu = this._menuFromOptions(this.props.options);
-    this._menu.popup({x: event.clientX, y: event.clientY, async: true});
+    this._menu.popup({
+      x: Math.floor(buttonRect.left),
+      y: Math.floor(buttonRect.bottom),
+      async: true,
+    });
     event.stopPropagation();
   };
 
@@ -233,6 +245,7 @@ type DropdownButtonProps = {
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
   onExpand?: (event: SyntheticMouseEvent<>) => void,
+  onButtonDOMNodeChange?: (?HTMLButtonElement) => mixed,
 };
 
 const noop = () => {};
@@ -241,36 +254,33 @@ const noop = () => {};
  * Just the button part. This is useful for when you want to customize the dropdown behavior (e.g.)
  * show it asynchronously.
  */
-// $FlowFixMe forwardRef is missing from React libdefs
-export const DropdownButton = React.forwardRef(
-  (props: DropdownButtonProps, ref) => {
-    const ButtonComponent = props.buttonComponent || Button;
-    const className = classnames('nuclide-ui-dropdown', props.className, {
-      'nuclide-ui-dropdown-flat': props.isFlat === true,
-    });
+export function DropdownButton(props: DropdownButtonProps) {
+  const ButtonComponent = props.buttonComponent || Button;
+  const className = classnames('nuclide-ui-dropdown', props.className, {
+    'nuclide-ui-dropdown-flat': props.isFlat === true,
+  });
 
-    const label =
-      props.children == null ? null : (
-        <span className="nuclide-dropdown-label-text-wrapper">
-          {props.children}
-        </span>
-      );
-
-    return (
-      <ButtonComponent
-        buttonType={props.buttonType}
-        innerRef={ref}
-        tooltip={props.tooltip}
-        size={getButtonSize(props.size)}
-        className={className}
-        disabled={props.disabled === true}
-        onClick={props.onExpand || noop}>
-        {label}
-        <Icon icon="triangle-down" className="nuclide-ui-dropdown-icon" />
-      </ButtonComponent>
+  const label =
+    props.children == null ? null : (
+      <span className="nuclide-dropdown-label-text-wrapper">
+        {props.children}
+      </span>
     );
-  },
-);
+
+  return (
+    <ButtonComponent
+      buttonType={props.buttonType}
+      onButtonDOMNodeChange={props.onButtonDOMNodeChange}
+      tooltip={props.tooltip}
+      size={getButtonSize(props.size)}
+      className={className}
+      disabled={props.disabled === true}
+      onClick={props.onExpand || noop}>
+      {label}
+      <Icon icon="triangle-down" className="nuclide-ui-dropdown-icon" />
+    </ButtonComponent>
+  );
+}
 
 function getButtonSize(size: ?ShortButtonSize): ButtonSize {
   switch (size) {
