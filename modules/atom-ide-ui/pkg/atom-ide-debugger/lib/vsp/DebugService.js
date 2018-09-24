@@ -51,7 +51,7 @@ import type {
   IThread,
   IEnableable,
   IEvaluatableExpression,
-  IRawBreakpoint,
+  IUIBreakpoint,
   IStackFrame,
   SerializedState,
 } from '../types';
@@ -310,6 +310,7 @@ export default class DebugService implements IDebugService {
       this._loadFunctionBreakpoints(state),
       this._loadExceptionBreakpoints(state),
       this._loadWatchExpressions(state),
+      () => this._viewModel.focusedProcess,
     );
     this._disposables.add(this._model);
     this._registerListeners();
@@ -915,23 +916,21 @@ export default class DebugService implements IDebugService {
         .subscribe(
           ({reason, breakpoint, sourceBreakpoint, functionBreakpoint}) => {
             if (reason === BreakpointEventReasons.NEW && breakpoint.source) {
+              // The debug adapter is adding a new (unexpected) breakpoint to the UI.
+              // TODO: Consider adding this to the current process only.
               const source = process.getSource(breakpoint.source);
-              const bps = this._model.addBreakpoints(
-                source.uri,
+              this._model.addUIBreakpoints(
                 [
                   {
                     column: breakpoint.column || 0,
                     enabled: true,
                     line: breakpoint.line == null ? -1 : breakpoint.line,
+                    uri: source.uri,
+                    id: uuid.v4(),
                   },
                 ],
                 false,
               );
-              if (bps.length === 1) {
-                this._model.updateBreakpoints({
-                  [bps[0].getId()]: breakpoint,
-                });
-              }
             } else if (reason === BreakpointEventReasons.REMOVED) {
               if (sourceBreakpoint != null) {
                 this._model.removeBreakpoints([sourceBreakpoint]);
@@ -946,7 +945,7 @@ export default class DebugService implements IDebugService {
                 if (!sourceBreakpoint.column) {
                   breakpoint.column = undefined;
                 }
-                this._model.updateBreakpoints({
+                this._model.updateProcessBreakpoints(process, {
                   [sourceBreakpoint.getId()]: breakpoint,
                 });
               }
@@ -1023,22 +1022,21 @@ export default class DebugService implements IDebugService {
     return this._emitter.on(CHANGE_DEBUG_MODE, callback);
   }
 
-  _loadBreakpoints(state: ?SerializedState): Breakpoint[] {
-    let result: Breakpoint[] = [];
+  _loadBreakpoints(state: ?SerializedState): IUIBreakpoint[] {
+    let result: IUIBreakpoint[] = [];
     if (state == null || state.sourceBreakpoints == null) {
       return result;
     }
     try {
       result = state.sourceBreakpoints.map(breakpoint => {
-        return new Breakpoint(
-          breakpoint.uri,
-          breakpoint.line,
-          breakpoint.column,
-          breakpoint.enabled,
-          breakpoint.condition,
-          breakpoint.hitCondition,
-          breakpoint.adapterData,
-        );
+        return {
+          uri: breakpoint.uri,
+          line: breakpoint.originalLine,
+          column: breakpoint.column,
+          enabled: breakpoint.enabled,
+          condition: breakpoint.condition || '',
+          id: uuid.v4(),
+        };
       });
     } catch (e) {}
 
@@ -1118,17 +1116,30 @@ export default class DebugService implements IDebugService {
     return this._sendAllBreakpoints();
   }
 
-  addBreakpoints(uri: string, rawBreakpoints: IRawBreakpoint[]): Promise<void> {
+  async addUIBreakpoints(uiBreakpoints: IUIBreakpoint[]): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_ADD);
-    this._model.addBreakpoints(uri, rawBreakpoints);
-    return this._sendBreakpoints(uri);
+    this._model.addUIBreakpoints(uiBreakpoints);
+
+    const uris = new Set();
+    for (const bp of uiBreakpoints) {
+      uris.add(bp.uri);
+    }
+
+    const promises = [];
+    for (const uri of uris) {
+      promises.push(this._sendBreakpoints(uri));
+    }
+
+    await Promise.all(promises);
   }
 
   addSourceBreakpoint(uri: string, line: number): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_SINGLE_ADD);
     const existing = this._model.getBreakpointAtLine(uri, line);
     if (existing == null) {
-      return this.addBreakpoints(uri, [{line}]);
+      return this.addUIBreakpoints([
+        {line, column: 0, enabled: true, id: uuid.v4(), uri},
+      ]);
     }
     return Promise.resolve(undefined);
   }
@@ -1137,18 +1148,21 @@ export default class DebugService implements IDebugService {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE);
     const existing = this._model.getBreakpointAtLine(uri, line);
     if (existing == null) {
-      return this.addBreakpoints(uri, [{line}]);
+      return this.addUIBreakpoints([
+        {line, column: 0, enabled: true, id: uuid.v4(), uri},
+      ]);
     } else {
       return this.removeBreakpoints(existing.getId(), true);
     }
   }
 
-  updateBreakpoints(
-    uri: string,
-    data: {[id: string]: DebugProtocol.Breakpoint},
-  ) {
-    this._model.updateBreakpoints(data);
-    this._breakpointsToSendOnSave.add(uri);
+  updateBreakpoints(uiBreakpoints: IUIBreakpoint[]) {
+    this._model.updateBreakpoints(uiBreakpoints);
+
+    const urisToSend = new Set(uiBreakpoints.map(bp => bp.uri));
+    for (const uri of urisToSend) {
+      this._breakpointsToSendOnSave.add(uri);
+    }
   }
 
   async removeBreakpoints(
@@ -1224,7 +1238,9 @@ export default class DebugService implements IDebugService {
     }
     const existing = this._model.getBreakpointAtLine(uri, line);
     if (existing == null) {
-      await this.addBreakpoints(uri, [{line}]);
+      await this.addUIBreakpoints([
+        {line, column: 0, enabled: true, id: uuid.v4(), uri},
+      ]);
       const runToLocationBreakpoint = this._model.getBreakpointAtLine(
         uri,
         line,
@@ -1713,18 +1729,6 @@ export default class DebugService implements IDebugService {
       this._timer.onSuccess();
       this._timer = null;
     }
-
-    // set breakpoints back to unverified since the session ended.
-    const data: {
-      [id: string]: DebugProtocol.Breakpoint,
-    } = {};
-    this._model.getBreakpoints().forEach(bp => {
-      data[bp.getId()] = {
-        line: bp.originalLine,
-        verified: false,
-      };
-    });
-    this._model.updateBreakpoints(data);
   };
 
   getModel(): IModel {
@@ -1780,7 +1784,6 @@ export default class DebugService implements IDebugService {
         line: bp.line,
         column: bp.column,
         condition: bp.condition,
-        hitCondition: bp.hitCondition,
       })),
       sourceModified,
     });
@@ -1797,7 +1800,7 @@ export default class DebugService implements IDebugService {
       }
     }
 
-    this._model.updateBreakpoints(data);
+    this._model.updateProcessBreakpoints(process, data);
   }
 
   _getCurrentSession(): ?VsDebugSession {

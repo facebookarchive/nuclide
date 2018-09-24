@@ -256,12 +256,13 @@ export interface IEnableable extends ITreeElement {
   enabled: boolean;
 }
 
-export interface IRawBreakpoint {
-  line: number;
-  column?: number;
-  enabled?: boolean;
+export interface IUIBreakpoint {
+  +id: string;
+  +uri: string;
+  +line: number;
+  +column: number;
+  enabled: boolean;
   condition?: string;
-  hitCondition?: string;
 }
 
 export interface IExceptionBreakpoint extends IEnableable {
@@ -316,20 +317,12 @@ export interface IModel extends ITreeElement {
   getExceptionBreakpoints(): IExceptionBreakpoint[];
   getWatchExpressions(): IEvaluatableExpression[];
 
-  onDidChangeBreakpoints(
-    callback: (event: ?IBreakpointsChangeEvent) => mixed,
-  ): IDisposable;
+  onDidChangeBreakpoints(callback: () => mixed): IDisposable;
   onDidChangeCallStack(callback: () => mixed): IDisposable;
   onDidChangeWatchExpressions(
     callback: (expression: ?IExpression) => mixed,
   ): IDisposable;
   onDidChangeProcesses(callback: () => mixed): IDisposable;
-}
-
-export interface IBreakpointsChangeEvent {
-  added?: (IBreakpoint | IFunctionBreakpoint)[];
-  removed?: (IBreakpoint | IFunctionBreakpoint)[];
-  changed?: (IBreakpoint | IFunctionBreakpoint)[];
 }
 
 /* Debugger mode */
@@ -360,17 +353,14 @@ export interface IDebugService {
   ): IDisposable;
 
   /**
-   * Adds new breakpoints to the model for the file specified with the uri. Notifies debug adapter of breakpoint changes.
+   * Adds new breakpoints to the model. Notifies debug adapter of breakpoint changes.
    */
-  addBreakpoints(uri: string, rawBreakpoints: IRawBreakpoint[]): Promise<void>;
+  addUIBreakpoints(uiBreakpoints: IUIBreakpoint[]): Promise<void>;
 
   /**
-   * Updates the breakpoints.
+   * Updates breakpoints from the UI.
    */
-  updateBreakpoints(
-    uri: string,
-    data: {[id: string]: DebugProtocol.Breakpoint},
-  ): void;
+  updateBreakpoints(uiBreakpoints: IUIBreakpoint[]): void;
 
   /**
    * Enables or disables all breakpoints. If breakpoint is passed only enables or disables the passed breakpoint.
@@ -477,13 +467,16 @@ export interface IStackFrame extends ITreeElement {
 export interface IBreakpoint extends IEnableable {
   +uri: string;
   +originalLine: number;
-  line: number;
-  column: number;
-  condition: ?string;
-  hitCondition: ?string;
-  verified: boolean;
-  idFromAdapter: ?number;
-  adapterData?: any;
+  +line: number;
+  +column: number;
+  +condition: ?string;
+  +verified: boolean;
+  +idFromAdapter: ?number;
+  +adapterData?: any;
+  // The following fields are used by the protocol but not by Nuclide.
+  // endLine: ?number;
+  // endColumn: ?number;
+  // hitCondition: ?string;
 }
 
 export interface IFunctionBreakpoint extends IEnableable {

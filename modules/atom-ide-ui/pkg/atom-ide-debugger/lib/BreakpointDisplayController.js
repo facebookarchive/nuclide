@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {IBreakpoint, IDebugService} from './types';
+import type {IBreakpoint, IDebugService, IUIBreakpoint} from './types';
 
 import invariant from 'assert';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
@@ -19,6 +19,7 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {showMenuForEvent} from 'nuclide-commons-atom/ContextMenu';
 import classnames from 'classnames';
+import {Observable} from 'rxjs';
 import {DebuggerMode} from './constants';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 
@@ -87,8 +88,15 @@ export default class BreakpointDisplayController {
       editor,
       gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
       editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
-      observableFromSubscribeFunction(
-        debuggerModel.onDidChangeBreakpoints.bind(debuggerModel),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          debuggerModel.onDidChangeBreakpoints.bind(debuggerModel),
+        ),
+        observableFromSubscribeFunction(
+          this._service.viewModel.onDidChangeDebuggerFocus.bind(
+            this._service.viewModel,
+          ),
+        ),
       )
         // Debounce to account for bulk updates and not block the UI
         .let(fastDebounce(10))
@@ -326,13 +334,20 @@ export default class BreakpointDisplayController {
     } else if (
       event.oldHeadBufferPosition.row !== event.newHeadBufferPosition.row
     ) {
-      this._service.updateBreakpoints(breakpoint.uri, {
-        [breakpoint.getId()]: {
-          ...breakpoint,
-          // VSP is 1-based line numbers.
-          line: event.newHeadBufferPosition.row + 1,
-        },
-      });
+      const newBp: IUIBreakpoint = {
+        // VSP is 1-based line numbers.
+        line: event.newHeadBufferPosition.row + 1,
+        id: breakpoint.getId(),
+        uri: breakpoint.uri,
+        column: 0,
+        enabled: breakpoint.enabled,
+      };
+
+      if (breakpoint.condition != null) {
+        newBp.condition = breakpoint.condition;
+      }
+
+      this._service.updateBreakpoints([newBp]);
     }
   }
 
