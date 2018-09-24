@@ -18,6 +18,7 @@ invariant(remote != null);
 export default {
   getCookies(domain: string): Promise<{[key: string]: string}> {
     return new Promise((resolve, reject) => {
+      // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.get(
         {
           domain,
@@ -44,6 +45,7 @@ export default {
     value: string,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
+      // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.set(
         {
           url,

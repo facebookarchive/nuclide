@@ -19,10 +19,7 @@ class WebViewPane extends HTMLElement {
   _title: string;
   _subscriptions: UniversalDisposable;
   _emitter: Emitter;
-
-  // NB: electron-flowtype-definitions doesn't have a way to define
-  // WebViewElement yet, we just have to `any` it :-/
-  _webview: any;
+  _webview: WebviewElement;
 
   // When it comes to ES6 classes and HTML5 custom elements, "constructors don't really work yet":
   //
@@ -50,7 +47,7 @@ class WebViewPane extends HTMLElement {
     // running in Atom by default (which is important for security). If you want to communicate
     // between Atom and the webview, you can use webview's API.
 
-    const webview: any = document.createElement('webview');
+    const webview = ((document.createElement('webview'): any): WebviewElement);
 
     this._webview = webview;
 

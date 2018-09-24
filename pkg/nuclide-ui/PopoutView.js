@@ -17,7 +17,6 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import type {BrowserWindow} from 'nuclide-commons/electron-remote';
 
 type Props = {
   children: React.Element<any>,
@@ -40,7 +39,7 @@ let popoutWindowId = 1;
 export class PopoutView extends React.Component<Props, State> {
   props: Props;
   state: State;
-  _popoutPane: ?BrowserWindow;
+  _popoutPane: ?electron$BrowserWindow;
   _disposables: UniversalDisposable;
   _prepared: boolean;
   _popoutWindowId: string;

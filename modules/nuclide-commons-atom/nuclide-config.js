@@ -12,16 +12,12 @@
 
 import invariant from 'assert';
 import {remote, ipcRenderer} from 'electron';
-
+invariant(remote != null && remote.ipcMain != null && ipcRenderer != null);
 import fs from 'fs';
 import nullthrows from 'nullthrows';
 import CSON from 'season';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ConfigManager from './ConfigManager';
-
-import type {BrowserWindow, WebContents} from 'nuclide-commons/electron-remote';
-
-invariant(remote != null && remote.ipcMain != null && ipcRenderer != null);
 
 /**
  * This module provides a wrapper around an atom$Config to be used for storing
@@ -146,15 +142,9 @@ remote.ipcMain.on(
   __updateConfigSettingsListener,
 );
 
-// NB: This isn't described correctly in electron-flowtype-definitions, so we'll
-// fake it out
-type SenderGetBrowserWindow = {|
-  getOwnerBrowserWindow: () => BrowserWindow,
-|};
-
 // export for testing
 export function __updateConfigSettingsListener(
-  event: {returnValue: mixed, sender: WebContents & SenderGetBrowserWindow},
+  event: {returnValue: mixed, sender: electron$webContents},
   {settings, options}: NuclideConfigSetArgs,
 ) {
   if (

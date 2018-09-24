@@ -20,7 +20,6 @@ import type {
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {remote} from 'electron';
-import {BrowserWindow} from 'nuclide-commons/electron-remote';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
@@ -102,7 +101,7 @@ export default function connectClient(
 // An object that abstracts away the asynchronous nature of window creation/initialization. We could
 // also do this (probably more elegantly) with Rx, but that's a heavy dep.
 class WindowManager {
-  _initPromise: Promise<?BrowserWindow>;
+  _initPromise: Promise<?electron$BrowserWindow>;
   _destroyed: boolean = false;
   _windowId: number;
   _onDestroy: () => mixed;
@@ -121,7 +120,8 @@ class WindowManager {
   async _init(
     windowId: number,
     params: OpenParams<*>,
-  ): Promise<?BrowserWindow> {
+  ): Promise<?electron$BrowserWindow> {
+    const {BrowserWindow} = remote;
     const win = new BrowserWindow({
       width: params.width,
       height: params.height,

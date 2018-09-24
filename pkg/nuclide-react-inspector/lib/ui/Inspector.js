@@ -52,9 +52,7 @@ export default class Inspector extends React.Component<Props> {
       theme = themes[1];
     }
 
-    // NB: electron-flowtype-definitions doesn't yet generate a Type for WebView
-    // so we'll type it as `any` and get the WebContents out
-    const element = (event.target: any);
+    const element = ((event.target: any): WebviewElement);
     const requirePaths = require.cache[__filename].paths;
     const inspectorDevTools = require.resolve('react-devtools-core/standalone');
     element.executeJavaScript(
@@ -63,7 +61,6 @@ export default class Inspector extends React.Component<Props> {
         ${JSON.stringify(requirePaths)},
         ${JSON.stringify(theme)}
       );`,
-      true,
     );
   };
 }

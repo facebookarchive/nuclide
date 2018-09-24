@@ -17,11 +17,10 @@ import {Button, ButtonSizes} from './Button';
 import {Icon} from './Icon';
 import classnames from 'classnames';
 import invariant from 'assert';
+import electron from 'electron';
 import * as React from 'react';
 
-import * as remote from 'nuclide-commons/electron-remote';
-import {Menu} from 'nuclide-commons/electron-remote';
-
+const {remote} = electron;
 invariant(remote != null);
 
 // For backwards compat, we have to do some conversion here.
@@ -91,7 +90,7 @@ export class Dropdown extends React.Component<Props> {
   };
 
   // Make sure that menus don't outlive the dropdown.
-  _menu: ?Menu;
+  _menu: ?electron$Menu;
 
   componentWillUnmount() {
     this._closeMenu();
