@@ -15,7 +15,7 @@ import type {Props} from './Toolbar';
 import {nextAnimationFrame, throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import * as React from 'react';
-import {Observable} from 'rxjs';
+import {Observable, Scheduler} from 'rxjs';
 import shallowequal from 'shallowequal';
 
 export default function getToolbarProps(store: Store): Observable<Props> {
@@ -75,7 +75,11 @@ export default function getToolbarProps(store: Store): Observable<Props> {
       ...a,
       ...b,
     }),
-  ).let(throttle(() => nextAnimationFrame));
+  )
+    // Force events to be omitted in the next microtask rather than synchronously
+    // TODO(T34166602) Fix the underlying issue which has been relying on this behavior
+    .observeOn(Scheduler.asap)
+    .let(throttle(() => nextAnimationFrame));
 
   return props;
 }
