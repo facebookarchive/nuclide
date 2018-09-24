@@ -123,6 +123,15 @@ export default class WatchmanClient {
   }
 
   async _reconnectClient(): Promise<void> {
+    // If we got an error after making a subscription, the reconnect needs to
+    // remove that subscription to try again, so it doesn't keep leaking subscriptions.
+    if (this._clientPromise != null) {
+      const client = await this._clientPromise;
+      if (client != null) {
+        logger.info('Ending existing watchman client to reconnect a new one');
+        client.end();
+      }
+    }
     logger.error('Watchman client disconnected, reconnecting a new client!');
     await this._initWatchmanClient();
     logger.info('Watchman client re-initialized, restoring subscriptions');
