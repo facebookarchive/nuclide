@@ -70,6 +70,7 @@ export interface DebuggerInterface {
   relaunch(): Promise<void>;
   evaluateExpression(
     expression: string,
+    isBlockOfCode: boolean,
   ): Promise<DebugProtocol.EvaluateResponse>;
   supportsCodeBlocks(): boolean;
 }

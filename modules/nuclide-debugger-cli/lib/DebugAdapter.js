@@ -50,4 +50,7 @@ export interface DebugAdapter {
   // returns true OR the extension is in the `extensions` set.
   canDebugFile(file: string): Promise<boolean>;
   parseArguments(args: Arguments): Map<string, any>;
+  // transform an argument for evaluation. this is applied for printing
+  // expressions but not for code entry.
+  transformExpression(exp: string, isCodeBlock: boolean): string;
 }

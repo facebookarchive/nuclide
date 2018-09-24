@@ -83,6 +83,10 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
     return args || {};
   }
 
+  transformExpression(exp: string, isCodeBlock: boolean): string {
+    return exp;
+  }
+
   async canDebugFile(file: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {

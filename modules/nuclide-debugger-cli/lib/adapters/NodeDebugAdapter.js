@@ -95,6 +95,10 @@ export default class NodeDebugAdapter implements DebugAdapter {
     return args || {};
   }
 
+  transformExpression(exp: string, isCodeBlock: boolean): string {
+    return exp;
+  }
+
   async canDebugFile(file: string): Promise<boolean> {
     // no special cases, just use file extension
     return false;

@@ -751,10 +751,20 @@ export default class Debugger implements DebuggerInterface {
 
   async evaluateExpression(
     expression: string,
+    isBlockOfCode: boolean,
   ): Promise<DebugProtocol.EvaluateResponse> {
     const session = this._ensureDebugSession(true);
 
-    let args = {expression, context: 'repl'};
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    let args = {
+      expression: adapter.adapter.transformExpression(
+        expression,
+        isBlockOfCode,
+      ),
+      context: 'repl',
+    };
 
     if (this._state === 'RUNNING') {
       const frame = await this.getCurrentStackFrame();

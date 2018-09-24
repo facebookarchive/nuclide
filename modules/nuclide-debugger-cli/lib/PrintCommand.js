@@ -52,7 +52,7 @@ in complex ways.
     try {
       const {
         body: {result, variablesReference, namedVariables, indexedVariables},
-      } = await this._debugger.evaluateExpression(expr);
+      } = await this._debugger.evaluateExpression(expr, false);
       if (variablesReference > 0) {
         this._console.more(
           await this.formatVariable(

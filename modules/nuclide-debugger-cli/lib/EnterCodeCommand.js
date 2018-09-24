@@ -96,7 +96,7 @@ export default class EnterCode implements Command {
     try {
       const {
         body: {result},
-      } = await this._debugger.evaluateExpression(this._pendingText);
+      } = await this._debugger.evaluateExpression(this._pendingText, true);
       this._console.outputLine(result);
     } catch (err) {
       this._console.outputLine(err.message);
