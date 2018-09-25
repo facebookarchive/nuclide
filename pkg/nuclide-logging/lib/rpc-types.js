@@ -30,7 +30,13 @@ export type AdditionalLogFilesProvider = {|
 
 export type AdditionalLogFile = {
   title: string, // usually a filepath
-  data: string,
+  // The data to upload should be stored in either data or dataBuffer.
+  // Two fields are necessary since a union field `data: string | Buffer` is
+  // not RPC-able.
+  // If both fields are present, dataBuffer gets precedence.
+  // If neither field is present, no log is submitted.
+  data?: string,
+  dataBuffer?: Buffer,
 };
 
 export function parseLogLevel(s: mixed, _default: LogLevel): LogLevel {

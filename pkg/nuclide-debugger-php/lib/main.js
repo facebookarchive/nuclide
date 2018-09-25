@@ -45,22 +45,24 @@ async function getAdditionalLogFiles(
 
   return Promise.all(
     hostnames
-      .map(async hostname => {
-        const service = getHhvmDebuggerServiceByNuclideUri(
-          nuclideUri.createRemoteUri(hostname, '/'),
-        );
-        if (service != null) {
+      .map(
+        async (hostname): Promise<AdditionalLogFile> => {
+          const service = getHhvmDebuggerServiceByNuclideUri(
+            nuclideUri.createRemoteUri(hostname, '/'),
+          );
+          if (service != null) {
+            return {
+              title: `HHVM Debugger log for ${hostname}`,
+              data: await service.getDebugServerLog(),
+            };
+          }
+
           return {
             title: `HHVM Debugger log for ${hostname}`,
-            data: await service.getDebugServerLog(),
+            data: '<service unavailable>',
           };
-        }
-
-        return {
-          title: `HHVM Debugger log for ${hostname}`,
-          data: '<service unavailable>',
-        };
-      })
+        },
+      )
       .filter(file => file != null),
   );
 }
