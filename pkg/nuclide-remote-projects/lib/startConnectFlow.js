@@ -69,7 +69,7 @@ const logger = getLogger('nuclide-remote-projects');
  * asking for additional (e.g. 2-fac) authentication.
  */
 export default function startConnectFlow(
-  options: StartConnectFlowOptions,
+  options?: StartConnectFlowOptions,
 ): Promise<?RemoteConnection> {
   let resolveConnectionPromise;
   let dismiss;
@@ -82,7 +82,7 @@ export default function startConnectFlow(
     },
   });
 
-  if (options.attemptImmediateConnection ?? false) {
+  if (options?.attemptImmediateConnection) {
     flow.connect();
   }
 

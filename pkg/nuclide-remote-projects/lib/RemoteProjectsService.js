@@ -95,7 +95,7 @@ export default class RemoteProjectsService {
   }
 
   openConnectionDialog(
-    options: StartConnectFlowOptions,
+    options?: StartConnectFlowOptions,
   ): Promise<?RemoteConnection> {
     return startConnectFlow(options);
   }
