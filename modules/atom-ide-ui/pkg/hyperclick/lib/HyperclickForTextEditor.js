@@ -13,7 +13,6 @@
 /* global localStorage */
 
 import type {HyperclickSuggestion} from './types';
-import type Hyperclick from './Hyperclick';
 
 import {Point} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -36,7 +35,14 @@ const LOADING_DELAY = 250;
 export default class HyperclickForTextEditor {
   _textEditor: atom$TextEditor;
   _textEditorView: atom$TextEditorElement;
-  _hyperclick: Hyperclick;
+  _getSuggestion: (
+    textEditor: TextEditor,
+    position: atom$Point,
+  ) => Promise<?HyperclickSuggestion>;
+  _showSuggestionList: (
+    textEditor: TextEditor,
+    suggestion: HyperclickSuggestion,
+  ) => void;
   _lastMouseEvent: ?MouseEvent = null;
   // Cache the most recent suggestion so we can avoid unnecessary fetching.
   _lastSuggestionAtMouse: ?HyperclickSuggestion = null;
@@ -53,11 +59,21 @@ export default class HyperclickForTextEditor {
   // Stored for testing.
   _suggestionStream: Observable<?HyperclickSuggestion>;
 
-  constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
+  constructor(
+    textEditor: atom$TextEditor,
+    getSuggestion: (
+      textEditor: TextEditor,
+      position: atom$Point,
+    ) => Promise<?HyperclickSuggestion>,
+    showSuggestionList: (
+      textEditor: TextEditor,
+      suggestion: HyperclickSuggestion,
+    ) => void,
+  ) {
     this._textEditor = textEditor;
+    this._getSuggestion = getSuggestion;
+    this._showSuggestionList = showSuggestionList;
     this._textEditorView = atom.views.getView(textEditor);
-    this._hyperclick = hyperclick;
-
     this._setupMouseListeners();
 
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
@@ -124,7 +140,7 @@ export default class HyperclickForTextEditor {
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
     if (Array.isArray(suggestion.callback) && suggestion.callback.length > 0) {
-      this._hyperclick.showSuggestionList(this._textEditor, suggestion);
+      this._showSuggestionList(this._textEditor, suggestion);
     } else {
       invariant(typeof suggestion.callback === 'function');
       suggestion.callback();
@@ -273,7 +289,7 @@ export default class HyperclickForTextEditor {
           () => this._showLoading(),
           () =>
             Observable.defer(() =>
-              this._hyperclick.getSuggestion(this._textEditor, position),
+              this._getSuggestion(this._textEditor, position),
             )
               .startWith(null) // Clear the previous suggestion immediately.
               .catch(e => {
@@ -346,7 +362,7 @@ export default class HyperclickForTextEditor {
   }
 
   async _confirmSuggestionAtCursor(): Promise<void> {
-    const suggestion = await this._hyperclick.getSuggestion(
+    const suggestion = await this._getSuggestion(
       this._textEditor,
       this._textEditor.getCursorBufferPosition(),
     );

@@ -43,7 +43,8 @@ export default class Hyperclick {
   observeTextEditor(textEditor: TextEditor): IDisposable {
     const hyperclickForTextEditor = new HyperclickForTextEditor(
       textEditor,
-      this,
+      this.getSuggestion,
+      this.showSuggestionList,
     );
     this._hyperclickForTextEditors.add(hyperclickForTextEditor);
     const disposable = new UniversalDisposable(() => {
@@ -77,10 +78,10 @@ export default class Hyperclick {
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  async getSuggestion(
+  getSuggestion = async (
     textEditor: TextEditor,
     position: atom$Point,
-  ): Promise<?HyperclickSuggestion> {
+  ): Promise<?HyperclickSuggestion> => {
     for (const provider of this._providers.getAllProvidersForEditor(
       textEditor,
     )) {
@@ -110,12 +111,12 @@ export default class Hyperclick {
         return result;
       }
     }
-  }
+  };
 
-  showSuggestionList(
+  showSuggestionList = (
     textEditor: TextEditor,
     suggestion: HyperclickSuggestion,
-  ): void {
+  ): void => {
     this._suggestionList.show(textEditor, suggestion);
-  }
+  };
 }
