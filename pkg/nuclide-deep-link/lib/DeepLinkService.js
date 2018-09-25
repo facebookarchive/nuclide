@@ -12,6 +12,8 @@
 import type {DeepLinkParams} from './types';
 
 import electron from 'electron';
+import type {BrowserWindow} from 'nuclide-commons/electron-remote';
+
 import invariant from 'assert';
 import url from 'url';
 import {Observable} from 'rxjs';
@@ -44,14 +46,14 @@ export function _openInNewWindow(uri: string): void {
 
   // We'll assume the highest ID is new. (Electron IDs are auto-incrementing.)
   // (This is also non-null because the invariant above guarantees > 0).
-  const newWindow: electron$BrowserWindow = maxBy(newWindows, w => w.id);
+  const newWindow = maxBy(newWindows, w => w.id);
   // Atom's definition of 'window:loaded' waits for all packages to load.
   // Thus, it's safe to send the URI after this point.
   // https://github.com/atom/atom/blob/910fbeee31d67eb711ec0771e7c26fa408c091eb/static/index.js#L106
   newWindow.once(('window:loaded': any), () => {
     // Needs to match sendURIMessage:
     // https://github.com/atom/atom/blob/d2d3ad9fb8a4aadb2fe0e53edf7d95bd109fc0f7/src/main-process/atom-window.js#L286
-    newWindow.send('uri-message', uri);
+    newWindow.webContents.send('uri-message', uri);
   });
 }
 
@@ -132,7 +134,7 @@ export default class DeepLinkService {
   }
 
   sendDeepLink(
-    browserWindow: electron$BrowserWindow,
+    browserWindow: BrowserWindow,
     path: string,
     params: DeepLinkParams,
   ): void {

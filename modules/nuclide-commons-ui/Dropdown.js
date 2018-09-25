@@ -15,14 +15,14 @@ import type {ButtonType} from './Button';
 
 import classnames from 'classnames';
 import invariant from 'assert';
-import electron from 'electron';
 import * as React from 'react';
 import nullthrows from 'nullthrows';
 
 import {Button, ButtonSizes} from './Button';
 import {Icon} from './Icon';
 
-const {remote} = electron;
+import remote from 'nuclide-commons/electron-remote';
+
 invariant(remote != null);
 
 // For backwards compat, we have to do some conversion here.

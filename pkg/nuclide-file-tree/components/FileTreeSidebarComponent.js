@@ -68,6 +68,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
+import type {Menu} from 'nuclide-commons/electron-remote';
 import {showMenuForEvent} from 'nuclide-commons-atom/ContextMenu';
 import Immutable from 'immutable';
 import {createSelector} from 'reselect';
@@ -114,7 +115,7 @@ export default class FileTreeSidebarComponent extends React.Component<
   _scrollerElements: Subject<?HTMLElement>;
   // $FlowFixMe flow does not recognize VirtualizedFileTree as React component
   _scrollerRef: ?React.ElementRef<VirtualizedFileTree>;
-  _menu: ?electron$Menu;
+  _menu: ?Menu;
 
   constructor(props: Props) {
     super(props);

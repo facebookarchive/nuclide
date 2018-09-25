@@ -13,6 +13,8 @@ import invariant from 'assert';
 import electron from 'electron';
 import {Observable} from 'rxjs';
 
+import type {BrowserWindow} from 'nuclide-commons/electron-remote';
+
 const {ipcRenderer, remote} = electron;
 invariant(ipcRenderer != null, 'must be in renderer process');
 invariant(remote != null);
@@ -33,7 +35,7 @@ export function observeDeepLinks(): Observable<DeepLinkMessage> {
 }
 
 export function sendDeepLink(
-  browserWindow: electron$BrowserWindow,
+  browserWindow: BrowserWindow,
   path: string,
   params: Object,
 ): void {

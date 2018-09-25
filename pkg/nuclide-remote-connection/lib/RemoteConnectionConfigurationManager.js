@@ -107,7 +107,7 @@ async function getConnectionConfigViaIPC(
       // NOTE: I tried using sendTo here but it wasn't working well
       // (seemed like it was flaky). It might be worth trying it
       // again after we upgrade electron
-      window.send(SERVER_CONFIG_REQUEST_EVENT, host, thisWindowsId);
+      window.webContents.send(SERVER_CONFIG_REQUEST_EVENT, host, thisWindowsId);
     });
   });
 }

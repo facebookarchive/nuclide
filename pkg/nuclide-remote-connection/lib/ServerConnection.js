@@ -178,11 +178,11 @@ export class ServerConnection {
         response = this._config;
       }
 
-      const window = remote.BrowserWindow.getAllWindows().filter(
+      const theWindow = remote.BrowserWindow.getAllWindows().filter(
         win => win.id === id,
       )[0];
-      invariant(window);
-      window.send(SERVER_CONFIG_RESPONSE_EVENT, response);
+      invariant(theWindow);
+      theWindow.webContents.send(SERVER_CONFIG_RESPONSE_EVENT, response);
     });
   }
 
