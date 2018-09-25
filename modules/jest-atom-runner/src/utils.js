@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.buildFailureTestResult = exports.parseMessage = exports.makeMessage = exports.parseJSON = exports.MESSAGE_TYPES = exports.extractIPCIDsFromFilePath = exports.parseIPCIDs = exports.mergeIPCIDs = exports.makeUniqWorkerId = exports.makeUniqServerId = exports.rand = void 0;
+
+var _path = _interopRequireDefault(require("path"));
+
+function _jestMessageUtil() {
+  const data = require("jest-message-util");
+
+  _jestMessageUtil = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,69 +27,75 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* eslint-disable nuclide-internal/prefer-nuclide-uri */
-
-import type {TestResult, ProjectConfig, GlobalConfig} from './types';
-export opaque type IPCID = string; // server id and worker id merged into one string
-export opaque type WorkerID = string;
-export opaque type ServerID = string;
-
-import path from 'path';
-import {formatExecError} from 'jest-message-util';
-
+// server id and worker id merged into one string
 const IPC_IDS_SEPARATOR = '_';
 
-export const rand = () => Math.floor(Math.random() * 10000000);
+const rand = () => Math.floor(Math.random() * 10000000);
 
-export const makeUniqServerId = (): ServerID =>
-  `jest-atom-runner-ipc-server-${Date.now() + rand()}`;
+exports.rand = rand;
 
-export const makeUniqWorkerId = (): WorkerID =>
-  `jest-atom-runner-ipc-worker-${Date.now() + rand()}`;
+const makeUniqServerId = () => `jest-atom-runner-ipc-server-${Date.now() + rand()}`;
 
-export const mergeIPCIDs = ({
+exports.makeUniqServerId = makeUniqServerId;
+
+const makeUniqWorkerId = () => `jest-atom-runner-ipc-worker-${Date.now() + rand()}`;
+
+exports.makeUniqWorkerId = makeUniqWorkerId;
+
+const mergeIPCIDs = ({
   serverID,
-  workerID,
-}: {
-  serverID: ServerID,
-  workerID: WorkerID,
+  workerID
 }) => `${serverID}${IPC_IDS_SEPARATOR}${workerID}`;
 
-export const parseIPCIDs = (mergedIDs: IPCID) => {
-  const [serverID, workerID] = mergedIDs.split(IPC_IDS_SEPARATOR);
-  return {serverID, workerID};
-};
+exports.mergeIPCIDs = mergeIPCIDs;
 
-// The only way atom allows us to pass data to it is in the form of a file path.
+const parseIPCIDs = mergedIDs => {
+  const [serverID, workerID] = mergedIDs.split(IPC_IDS_SEPARATOR);
+  return {
+    serverID,
+    workerID
+  };
+}; // The only way atom allows us to pass data to it is in the form of a file path.
 // So we pass a non-existing file path to it that encodes server and worker IDs,
 // that we later parse and use to communicate back with the parent process.
-export const extractIPCIDsFromFilePath = (
-  passedFilePath: string,
-): {serverID: ServerID, workerID: WorkerID} => {
-  const {serverID, workerID} = parseIPCIDs(path.basename(passedFilePath));
-  return {serverID, workerID};
+
+
+exports.parseIPCIDs = parseIPCIDs;
+
+const extractIPCIDsFromFilePath = passedFilePath => {
+  const {
+    serverID,
+    workerID
+  } = parseIPCIDs(_path.default.basename(passedFilePath));
+  return {
+    serverID,
+    workerID
+  };
 };
 
-export const MESSAGE_TYPES = Object.freeze({
+exports.extractIPCIDsFromFilePath = extractIPCIDsFromFilePath;
+const MESSAGE_TYPES = Object.freeze({
   INITIALIZE: 'INITIALIZE',
   DATA: 'DATA',
   RUN_TEST: 'RUN_TEST',
   TEST_RESULT: 'TEST_RESULT',
   TEST_FAILURE: 'TEST_FAILURE',
-  SHUT_DOWN: 'SHUT_DOWN',
+  SHUT_DOWN: 'SHUT_DOWN'
 });
+exports.MESSAGE_TYPES = MESSAGE_TYPES;
 
-export type MessageType = $Values<typeof MESSAGE_TYPES>;
-
-export const parseJSON = (str: ?string): Object => {
+const parseJSON = str => {
   if (str == null) {
     throw new Error('String needs to be passed when parsing JSON');
   }
+
   let data;
+
   try {
     data = JSON.parse(str);
   } catch (error) {
@@ -78,33 +105,33 @@ export const parseJSON = (str: ?string): Object => {
   return data;
 };
 
-export const makeMessage = ({
+exports.parseJSON = parseJSON;
+
+const makeMessage = ({
   messageType,
-  data,
-}: {
-  messageType: MessageType,
-  data?: string,
+  data
 }) => `${messageType}-${data || ''}`;
 
-export const parseMessage = (message: string) => {
-  const messageType: messageType = Object.values(MESSAGE_TYPES).find(msgType =>
-    message.startsWith((msgType: any)),
-  );
+exports.makeMessage = makeMessage;
+
+const parseMessage = message => {
+  const messageType = Object.values(MESSAGE_TYPES).find(msgType => message.startsWith(msgType));
+
   if (!messageType) {
     throw new Error(`IPC message of unknown type. Message must start from one of the following strings representing types followed by "-'.
          known types: ${JSON.stringify(MESSAGE_TYPES)}`);
   }
 
-  return {messageType, data: message.slice(messageType.length + 1)};
+  return {
+    messageType,
+    data: message.slice(messageType.length + 1)
+  };
 };
 
-export const buildFailureTestResult = (
-  testPath: string,
-  err: Error,
-  config: ProjectConfig,
-  globalConfig: GlobalConfig,
-): TestResult => {
-  const failureMessage = formatExecError(err, config, globalConfig);
+exports.parseMessage = parseMessage;
+
+const buildFailureTestResult = (testPath, err, config, globalConfig) => {
+  const failureMessage = (0, _jestMessageUtil().formatExecError)(err, config, globalConfig);
   return {
     console: null,
     displayName: '',
@@ -115,7 +142,7 @@ export const buildFailureTestResult = (
     numPendingTests: 0,
     perfStats: {
       end: 0,
-      start: 0,
+      start: 0
     },
     skipped: false,
     snapshot: {
@@ -125,16 +152,17 @@ export const buildFailureTestResult = (
       unchecked: 0,
       uncheckedKeys: [],
       unmatched: 0,
-      updated: 0,
+      updated: 0
     },
     sourceMaps: {},
     testExecError: failureMessage,
     testFilePath: testPath,
-    testResults: [],
+    testResults: []
   };
 };
 
-export default {
+exports.buildFailureTestResult = buildFailureTestResult;
+var _default = {
   rand,
   makeUniqServerId,
   makeUniqWorkerId,
@@ -144,5 +172,6 @@ export default {
   makeMessage,
   MESSAGE_TYPES,
   parseJSON,
-  buildFailureTestResult,
+  buildFailureTestResult
 };
+exports.default = _default;

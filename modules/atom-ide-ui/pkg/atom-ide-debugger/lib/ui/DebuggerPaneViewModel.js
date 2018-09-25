@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,35 +27,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {DebuggerPaneConfig} from './DebuggerLayoutManager';
-import * as React from 'react';
-import {
-  DEBUGGER_PANELS_DEFAULT_WIDTH_PX,
-  DEBUGGER_PANELS_DEFAULT_LOCATION,
-} from '../constants';
-
 // A model that will serve as the view model for all debugger panes. We must provide
 // a unique instance of a view model for each pane, which Atom can destroy when the
 // pane that contains it is destroyed. We therefore cannot give it the actual debugger
 // model directly, since there is only one and its lifetime is tied to the lifetime
 // of the debugging session.
-export default class DebuggerPaneViewModel {
-  _config: DebuggerPaneConfig;
-  _isLifetimeView: boolean;
-  _paneDestroyed: (pane: DebuggerPaneConfig) => void;
-  _removedFromLayout: boolean;
-  _preferredWidth: ?number;
-
-  constructor(
-    config: DebuggerPaneConfig,
-    isLifetimeView: boolean,
-    paneDestroyed: (pane: DebuggerPaneConfig) => void,
-    preferredWidth: ?number,
-  ) {
+class DebuggerPaneViewModel {
+  constructor(config, isLifetimeView, paneDestroyed, preferredWidth) {
     this._config = config;
     this._isLifetimeView = isLifetimeView;
     this._paneDestroyed = paneDestroyed;
@@ -42,57 +44,59 @@ export default class DebuggerPaneViewModel {
     this._preferredWidth = preferredWidth;
   }
 
-  dispose(): void {}
+  dispose() {}
 
-  destroy(): void {
+  destroy() {
     if (!this._removedFromLayout) {
       this._paneDestroyed(this._config);
     }
   }
 
-  getTitle(): string {
+  getTitle() {
     return this._config.title();
   }
 
-  getDefaultLocation(): string {
-    return DEBUGGER_PANELS_DEFAULT_LOCATION;
+  getDefaultLocation() {
+    return _constants().DEBUGGER_PANELS_DEFAULT_LOCATION;
   }
 
-  getURI(): string {
+  getURI() {
     return this._config.uri;
   }
 
-  getPreferredWidth(): number {
-    return this._preferredWidth == null
-      ? DEBUGGER_PANELS_DEFAULT_WIDTH_PX
-      : this._preferredWidth;
+  getPreferredWidth() {
+    return this._preferredWidth == null ? _constants().DEBUGGER_PANELS_DEFAULT_WIDTH_PX : this._preferredWidth;
   }
 
-  createView(): React.Element<any> {
+  createView() {
     if (this._config.previousLocation != null) {
       this._config.previousLocation.userHidden = false;
     }
+
     return this._config.createView();
   }
 
-  getConfig(): DebuggerPaneConfig {
+  getConfig() {
     return this._config;
   }
 
-  isLifetimeView(): boolean {
+  isLifetimeView() {
     return this._isLifetimeView;
   }
 
-  setRemovedFromLayout(removed: boolean): void {
+  setRemovedFromLayout(removed) {
     this._removedFromLayout = removed;
-  }
+  } // Atom view needs to provide this, otherwise Atom throws an exception splitting panes for the view.
 
-  // Atom view needs to provide this, otherwise Atom throws an exception splitting panes for the view.
-  serialize(): Object {
+
+  serialize() {
     return {};
   }
 
-  copy(): boolean {
+  copy() {
     return false;
   }
+
 }
+
+exports.default = DebuggerPaneViewModel;

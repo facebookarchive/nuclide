@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.namedBuiltinTypes = exports.fsStatsType = exports.bufferType = exports.regExpType = exports.dateType = exports.objectType = exports.numberType = exports.booleanType = exports.stringType = exports.mixedType = exports.anyType = exports.voidType = exports.builtinLocation = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,78 +12,61 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import type {
-  BuiltinLocation,
-  StringType,
-  NumberType,
-  BooleanType,
-  AnyType,
-  MixedType,
-  NamedType,
-  VoidType,
-} from './types';
-
-export const builtinLocation: BuiltinLocation = {
-  type: 'builtin',
+const builtinLocation = {
+  type: 'builtin'
 };
-
-export const voidType: VoidType = {
-  kind: 'void',
+exports.builtinLocation = builtinLocation;
+const voidType = {
+  kind: 'void'
 };
-
-export const anyType: AnyType = {
-  kind: 'any',
+exports.voidType = voidType;
+const anyType = {
+  kind: 'any'
 };
-
-export const mixedType: MixedType = {
-  kind: 'mixed',
+exports.anyType = anyType;
+const mixedType = {
+  kind: 'mixed'
 };
-
-export const stringType: StringType = {
-  kind: 'string',
+exports.mixedType = mixedType;
+const stringType = {
+  kind: 'string'
 };
-
-export const booleanType: BooleanType = {
-  kind: 'boolean',
+exports.stringType = stringType;
+const booleanType = {
+  kind: 'boolean'
 };
-
-export const numberType: NumberType = {
-  kind: 'number',
+exports.booleanType = booleanType;
+const numberType = {
+  kind: 'number'
 };
-
-export const objectType: NamedType = {
+exports.numberType = numberType;
+const objectType = {
   kind: 'named',
-  name: 'Object',
+  name: 'Object'
 };
-
-export const dateType: NamedType = {
+exports.objectType = objectType;
+const dateType = {
   kind: 'named',
-  name: 'Date',
+  name: 'Date'
 };
-
-export const regExpType: NamedType = {
+exports.dateType = dateType;
+const regExpType = {
   kind: 'named',
-  name: 'RegExp',
+  name: 'RegExp'
 };
-
-export const bufferType: NamedType = {
+exports.regExpType = regExpType;
+const bufferType = {
   kind: 'named',
-  name: 'Buffer',
+  name: 'Buffer'
 };
-
-export const fsStatsType: NamedType = {
+exports.bufferType = bufferType;
+const fsStatsType = {
   kind: 'named',
-  name: 'fs.Stats',
+  name: 'fs.Stats'
 };
-
-export const namedBuiltinTypes: Array<string> = [
-  objectType.name,
-  dateType.name,
-  regExpType.name,
-  bufferType.name,
-  fsStatsType.name,
-];
+exports.fsStatsType = fsStatsType;
+const namedBuiltinTypes = [objectType.name, dateType.name, regExpType.name, bufferType.name, fsStatsType.name];
+exports.namedBuiltinTypes = namedBuiltinTypes;

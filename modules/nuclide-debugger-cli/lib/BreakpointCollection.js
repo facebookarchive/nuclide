@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _collection() {
+  const data = require("../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Breakpoint() {
+  const data = _interopRequireWildcard(require("./Breakpoint"));
+
+  _Breakpoint = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +47,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+class BreakpointCollection {
+  constructor() {
+    this._breakpoints = new Map();
+    this._nextIndex = 1;
+    this._allowOnceState = false;
+  }
 
-import {arrayCompact} from 'nuclide-commons/collection';
-
-import Breakpoint, {BreakpointState} from './Breakpoint';
-import nullthrows from 'nullthrows';
-
-export type SourceBreakpoint = {
-  index: number,
-  id: ?number,
-  verified: boolean,
-  enabled: boolean,
-  path: string,
-  line: number,
-};
-
-export type FunctionBreakpoint = {
-  index: number,
-  id: ?number,
-  verified: boolean,
-  enabled: boolean,
-  path: ?string,
-  line: ?number,
-  func: string,
-};
-
-export default class BreakpointCollection {
-  _breakpoints: Map<number, Breakpoint> = new Map();
-  _nextIndex: number = 1;
-  _allowOnceState: boolean = false;
-
-  enableOnceState(): void {
+  enableOnceState() {
     this._allowOnceState = true;
+
     this._breakpoints.forEach(breakpoint => breakpoint.enableSupportsOnce());
   }
 
-  supportsOnceState(): boolean {
+  supportsOnceState() {
     return this._allowOnceState;
   }
 
-  addSourceBreakpoint(path: string, line: number, once: boolean): number {
+  addSourceBreakpoint(path, line, once) {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.path === path && breakpoint.line === line) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -56,18 +75,21 @@ export default class BreakpointCollection {
     });
 
     const index = this._allocateIndex();
-    const breakpoint = new Breakpoint(index, this._allowOnceState);
+
+    const breakpoint = new (_Breakpoint().default)(index, this._allowOnceState);
     breakpoint.setPath(path);
     breakpoint.setLine(line);
+
     if (once) {
-      breakpoint.setState(BreakpointState.ONCE);
+      breakpoint.setState(_Breakpoint().BreakpointState.ONCE);
     }
 
     this._breakpoints.set(index, breakpoint);
+
     return index;
   }
 
-  addFunctionBreakpoint(func: string, once: boolean): number {
+  addFunctionBreakpoint(func, once) {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.func === func) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -75,71 +97,56 @@ export default class BreakpointCollection {
     });
 
     const index = this._allocateIndex();
-    const breakpoint = new Breakpoint(index, this._allowOnceState);
+
+    const breakpoint = new (_Breakpoint().default)(index, this._allowOnceState);
     breakpoint.setFunc(func);
+
     if (once) {
-      breakpoint.setState(BreakpointState.ONCE);
+      breakpoint.setState(_Breakpoint().BreakpointState.ONCE);
     }
+
     this._breakpoints.set(index, breakpoint);
+
     return index;
   }
 
-  getAllEnabledBreakpointsForSource(path: string): Array<SourceBreakpoint> {
+  getAllEnabledBreakpointsForSource(path) {
     try {
-      return Array.from(this._breakpoints.values())
-        .filter(
-          x =>
-            x.path === path &&
-            x.line != null &&
-            x.func == null &&
-            x.isEnabled(),
-        )
-        .map(_ => ({
-          index: _.index,
-          id: _.id,
-          verified: _.verified,
-          enabled: true,
-          path: nullthrows(_.path),
-          line: nullthrows(_.line),
-        }));
+      return Array.from(this._breakpoints.values()).filter(x => x.path === path && x.line != null && x.func == null && x.isEnabled()).map(_ => ({
+        index: _.index,
+        id: _.id,
+        verified: _.verified,
+        enabled: true,
+        path: (0, _nullthrows().default)(_.path),
+        line: (0, _nullthrows().default)(_.line)
+      }));
     } catch (_) {
-      throw new Error(
-        'Path or line missing in getAllEnabledBreakpointsForSource',
-      );
+      throw new Error('Path or line missing in getAllEnabledBreakpointsForSource');
     }
   }
 
-  getAllEnabledBreakpointsByPath(): Map<string, Array<SourceBreakpoint>> {
-    const sources = new Set(
-      arrayCompact(Array.from(this._breakpoints.values()).map(_ => _.path)),
-    );
-    return new Map(
-      Array.from(sources).map(src => [
-        src,
-        this.getAllEnabledBreakpointsForSource(src),
-      ]),
-    );
+  getAllEnabledBreakpointsByPath() {
+    const sources = new Set((0, _collection().arrayCompact)(Array.from(this._breakpoints.values()).map(_ => _.path)));
+    return new Map(Array.from(sources).map(src => [src, this.getAllEnabledBreakpointsForSource(src)]));
   }
 
-  getAllEnabledFunctionBreakpoints(): Array<FunctionBreakpoint> {
+  getAllEnabledFunctionBreakpoints() {
     try {
-      return Array.from(this._breakpoints.values())
-        .filter(x => x.func != null && x.isEnabled())
-        .map(x => ({
-          index: x.index,
-          id: x.id,
-          verified: x.verified,
-          enabled: true,
-          path: x.path,
-          line: x.line,
-          func: nullthrows(x.func),
-        }));
+      return Array.from(this._breakpoints.values()).filter(x => x.func != null && x.isEnabled()).map(x => ({
+        index: x.index,
+        id: x.id,
+        verified: x.verified,
+        enabled: true,
+        path: x.path,
+        line: x.line,
+        func: (0, _nullthrows().default)(x.func)
+      }));
     } catch (_) {
       throw new Error('Missing function in function breakpoint');
     }
   }
 
-  getBreakpointByIndex(index: number): Breakpoint {
+  getBreakpointByIndex(index) {
     const breakpoint = this._breakpoints.get(index);
 
     if (breakpoint == null) {
@@ -149,10 +156,8 @@ export default class BreakpointCollection {
     return breakpoint;
   }
 
-  getBreakpointById(id: number): Breakpoint {
-    const breakpoint: ?Breakpoint = Array.from(this._breakpoints.values()).find(
-      _ => _.id === id,
-    );
+  getBreakpointById(id) {
+    const breakpoint = Array.from(this._breakpoints.values()).find(_ => _.id === id);
 
     if (breakpoint == null) {
       throw new Error(`There is no breakpoint with id ${id}`);
@@ -161,55 +166,55 @@ export default class BreakpointCollection {
     return breakpoint;
   }
 
-  getAllBreakpoints(): Breakpoint[] {
+  getAllBreakpoints() {
     return Array.from(this._breakpoints.values());
   }
 
-  getAllBreakpointPaths(): string[] {
+  getAllBreakpointPaths() {
     try {
-      return Array.from(
-        new Set(
-          Array.from(this._breakpoints.values())
-            .filter(bp => bp.path != null)
-            .map(bp => nullthrows(bp.path)),
-        ),
-      );
+      return Array.from(new Set(Array.from(this._breakpoints.values()).filter(bp => bp.path != null).map(bp => (0, _nullthrows().default)(bp.path))));
     } catch (_) {
       throw new Error('Missing breakpoint path in getAllBreakpointPaths');
     }
   }
 
-  deleteBreakpoint(index: number): void {
+  deleteBreakpoint(index) {
     this._breakpoints.delete(index);
   }
 
-  deleteAllBreakpoints(): void {
+  deleteAllBreakpoints() {
     this._breakpoints = new Map();
   }
 
-  setBreakpointId(index: number, id: number): void {
+  setBreakpointId(index, id) {
     const bpt = this._breakpoints.get(index);
+
     if (bpt != null) {
       bpt.setId(id);
     }
   }
 
-  setBreakpointVerified(index: number, verified: boolean): void {
+  setBreakpointVerified(index, verified) {
     const bpt = this._breakpoints.get(index);
+
     if (bpt != null) {
       bpt.setVerified(verified);
     }
   }
 
-  setPathAndFile(index: number, path: string, line: number): void {
+  setPathAndFile(index, path, line) {
     const bpt = this._breakpoints.get(index);
+
     if (bpt != null) {
       bpt.setPath(path);
       bpt.setLine(line);
     }
   }
 
-  _allocateIndex(): number {
+  _allocateIndex() {
     return this._nextIndex++;
   }
+
 }
+
+exports.default = BreakpointCollection;

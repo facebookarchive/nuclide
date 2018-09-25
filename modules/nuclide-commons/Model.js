@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("./UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +27,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Observable} from 'rxjs';
-
-import {BehaviorSubject} from 'rxjs';
-import UniversalDisposable from './UniversalDisposable';
 
 /**
  * Exposes a simple API for a stateful model. This is similar to React's `state`/`setState()` API
@@ -52,27 +68,31 @@ import UniversalDisposable from './UniversalDisposable';
  * action creators. That's awesome! It means that, should the state grow and require new
  * capabilities, we can always switch to full-blown Redux without having to refactor a ton of stuff.
  */
-export default class Model<State: {}> {
-  _states: BehaviorSubject<State>;
-
-  constructor(initialState: State) {
-    this._states = new BehaviorSubject(initialState);
+class Model {
+  constructor(initialState) {
+    this._states = new _RxMin.BehaviorSubject(initialState);
   }
 
-  setState(newState: $Shape<State>): void {
-    const nextState = {...this.state, ...newState};
+  setState(newState) {
+    const nextState = Object.assign({}, this.state, newState);
+
     this._states.next(nextState);
   }
 
-  get state(): State {
+  get state() {
     return this._states.getValue();
   }
 
-  subscribe(cb: (state: State) => mixed): IDisposable {
-    return new UniversalDisposable(this.toObservable().subscribe({next: cb}));
+  subscribe(cb) {
+    return new (_UniversalDisposable().default)(this.toObservable().subscribe({
+      next: cb
+    }));
   }
 
-  toObservable(): Observable<State> {
+  toObservable() {
     return this._states.distinctUntilChanged();
   }
+
 }
+
+exports.default = Model;

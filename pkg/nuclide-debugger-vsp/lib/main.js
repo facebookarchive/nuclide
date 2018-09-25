@@ -1,3 +1,67 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideDebuggerCommon() {
+  const data = require("../../../modules/nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _autogenUtils() {
+  const data = require("../../../modules/nuclide-debugger-common/autogen-utils");
+
+  _autogenUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AutoGenLaunchAttachProvider() {
+  const data = require("../../../modules/nuclide-debugger-common/AutoGenLaunchAttachProvider");
+
+  _AutoGenLaunchAttachProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HhvmLaunchAttachProvider() {
+  const data = _interopRequireDefault(require("./HhvmLaunchAttachProvider"));
+
+  _HhvmLaunchAttachProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,81 +69,65 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
-import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
-import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import type {GatekeeperService} from 'nuclide-commons-atom/types';
-
 class Activation {
-  _subscriptions: UniversalDisposable;
-
   constructor() {
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable().default)();
+
     this._registerLLDBProvider();
+
     this._registerHHVMDebugProvider();
   }
 
-  _javaCheck(_gkService: GatekeeperService) {
+  _javaCheck(_gkService) {
     if (_gkService != null) {
       _gkService.passesGK('nuclide_extrafeatures_debugging').then(passes => {
         if (passes) {
           try {
-            this._subscriptions.add(
-              // $FlowFB
-              require('./fb-JavaCheck').javaCheck(),
-            );
+            this._subscriptions.add( // $FlowFB
+            require("./fb-JavaCheck").javaCheck());
           } catch (_) {}
         }
       });
     }
   }
 
-  _registerDebugProvider(provider: NuclideDebuggerProvider): void {
-    this._subscriptions.add(
-      atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider),
-    );
+  _registerDebugProvider(provider) {
+    this._subscriptions.add(atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider));
   }
 
   _registerLLDBProvider() {
     this._registerDebugProvider({
-      type: VsAdapterTypes.NATIVE_LLDB,
+      type: _nuclideDebuggerCommon().VsAdapterTypes.NATIVE_LLDB,
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          VsAdapterNames.NATIVE_LLDB,
-          connection,
-          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_LLDB),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider().AutoGenLaunchAttachProvider)(_nuclideDebuggerCommon().VsAdapterNames.NATIVE_LLDB, connection, (0, _autogenUtils().getNativeAutoGenConfig)(_nuclideDebuggerCommon().VsAdapterTypes.NATIVE_LLDB));
+      }
     });
   }
 
-  _registerHHVMDebugProvider(): void {
+  _registerHHVMDebugProvider() {
     this._registerDebugProvider({
-      type: VsAdapterTypes.HHVM,
+      type: _nuclideDebuggerCommon().VsAdapterTypes.HHVM,
       getLaunchAttachProvider: connection => {
-        return new HhvmLaunchAttachProvider(VsAdapterNames.HHVM, connection);
-      },
+        return new (_HhvmLaunchAttachProvider().default)(_nuclideDebuggerCommon().VsAdapterNames.HHVM, connection);
+      }
     });
   }
 
-  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+  consumeGatekeeperService(service) {
     let _gkService = service;
+
     this._javaCheck(_gkService);
-    return new UniversalDisposable(() => (_gkService = null));
+
+    return new (_UniversalDisposable().default)(() => _gkService = null);
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

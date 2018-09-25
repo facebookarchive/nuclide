@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,41 +13,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {IDebugService, RemoteDebuggerService} from './types';
-import type {IProcessConfig} from 'nuclide-debugger-common';
-
-export default class RemoteControlService implements RemoteDebuggerService {
-  _service: IDebugService;
-
-  constructor(service: IDebugService) {
+class RemoteControlService {
+  constructor(service) {
     this._service = service;
   }
 
-  startVspDebugging(config: IProcessConfig): Promise<void> {
+  startVspDebugging(config) {
     return this._service.startDebugging(config);
   }
 
-  onDidChangeDebuggerSessions(
-    callback: (sessionConfigs: IProcessConfig[]) => mixed,
-  ): IDisposable {
+  onDidChangeDebuggerSessions(callback) {
     return this._service.getModel().onDidChangeProcesses(() => {
-      callback(
-        this._service
-          .getModel()
-          .getProcesses()
-          .map(p => p.configuration),
-      );
+      callback(this._service.getModel().getProcesses().map(p => p.configuration));
     });
   }
 
-  getDebugSessions(): IProcessConfig[] {
-    return this._service
-      .getModel()
-      .getProcesses()
-      .map(p => p.configuration);
+  getDebugSessions() {
+    return this._service.getModel().getProcesses().map(p => p.configuration);
   }
+
 }
+
+exports.default = RemoteControlService;

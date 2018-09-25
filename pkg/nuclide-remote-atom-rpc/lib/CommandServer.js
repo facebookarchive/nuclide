@@ -1,3 +1,92 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CommandServer = void 0;
+
+function _CommandServerConnection() {
+  const data = require("./CommandServerConnection");
+
+  _CommandServerConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RoutingAtomCommands() {
+  const data = require("./RoutingAtomCommands");
+
+  _RoutingAtomCommands = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRpc() {
+  const data = require("../../nuclide-rpc");
+
+  _nuclideRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConfigDirectory() {
+  const data = require("../shared/ConfigDirectory");
+
+  _ConfigDirectory = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideMarshalersCommon() {
+  const data = require("../../nuclide-marshalers-common");
+
+  _nuclideMarshalersCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,31 +94,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {
-  AtomCommands,
-  ConnectionDetails,
-  MultiConnectionAtomCommands,
-} from './rpc-types';
-import type {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {CommandServerConnection} from './CommandServerConnection';
-import {RoutingAtomCommands} from './RoutingAtomCommands';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import invariant from 'assert';
-import {
-  loadServicesConfig,
-  ServiceRegistry,
-  SocketServer,
-} from '../../nuclide-rpc';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {createNewEntry, RPC_PROTOCOL} from '../shared/ConfigDirectory';
-import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
-import {firstOfIterable, concatIterators} from 'nuclide-commons/collection';
 
 /**
  * A singleton instance of this class should exist in a Nuclide server.
@@ -43,98 +110,93 @@ import {firstOfIterable, concatIterators} from 'nuclide-commons/collection';
  * it can check the hasOpenPath() for each CommandServerConnection until
  * it finds the appropriate connection, if any.
  */
-export class CommandServer {
+class CommandServer {
   // The list of connected AtomCommands, most recent connection last.
   // We have no way of detecting a traumatic termination of an Atom
   // process, so the most recent connection is likely the healthiest
   // connection.
-  _connections: Array<CommandServerConnection> = [];
-  _server: ?SocketServer = null;
-  _multiConnectionAtomCommands: MultiConnectionAtomCommands;
 
   /**
    * In general, this constructor should not be invoked directly.
    * Prefer getCommandServer() in ./command-server-singleton.js.
    */
   constructor() {
-    this._multiConnectionAtomCommands = new RoutingAtomCommands(this);
+    this._connections = [];
+    this._server = null;
+    this._multiConnectionAtomCommands = new (_RoutingAtomCommands().RoutingAtomCommands)(this);
   }
 
-  getConnectionCount(): number {
+  getConnectionCount() {
     return this._connections.length;
   }
 
-  getConnections(): Iterable<CommandServerConnection> {
+  getConnections() {
     return this._connections;
   }
 
-  async _ensureServer(): Promise<SocketServer> {
+  async _ensureServer() {
     if (this._server != null) {
       return this._server;
     }
 
-    const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
-    const registry = new ServiceRegistry(
-      [localNuclideUriMarshalers],
-      services,
-      RPC_PROTOCOL,
-    );
-    const result = new SocketServer(registry);
+    const services = (0, _nuclideRpc().loadServicesConfig)(_nuclideUri().default.join(__dirname, '..'));
+    const registry = new (_nuclideRpc().ServiceRegistry)([_nuclideMarshalersCommon().localNuclideUriMarshalers], services, _ConfigDirectory().RPC_PROTOCOL);
+    const result = new (_nuclideRpc().SocketServer)(registry);
     this._server = result;
     const address = await result.getAddress();
-    await createNewEntry(address.port, address.family);
+    await (0, _ConfigDirectory().createNewEntry)(address.port, address.family);
     return result;
   }
 
-  async getConnectionDetails(): Promise<?ConnectionDetails> {
+  async getConnectionDetails() {
     const server = this.getCurrentServer();
     return server == null ? null : (await this._ensureServer()).getAddress();
   }
 
-  async register(
-    fileCache: FileCache,
-    atomCommands: AtomCommands,
-  ): Promise<IDisposable> {
+  async register(fileCache, atomCommands) {
     await this._ensureServer();
-    const connection = new CommandServerConnection(fileCache, atomCommands);
+    const connection = new (_CommandServerConnection().CommandServerConnection)(fileCache, atomCommands);
+
     this._connections.push(connection);
-    return new UniversalDisposable(() => this._removeConnection(connection));
+
+    return new (_UniversalDisposable().default)(() => this._removeConnection(connection));
   }
 
-  _removeConnection(connection: CommandServerConnection) {
-    invariant(this._connections.includes(connection));
+  _removeConnection(connection) {
+    if (!this._connections.includes(connection)) {
+      throw new Error("Invariant violation: \"this._connections.includes(connection)\"");
+    }
+
     this._connections.splice(this._connections.indexOf(connection), 1);
   }
 
-  getCurrentServer(): ?CommandServerConnection {
+  getCurrentServer() {
     if (this._connections.length === 0) {
       return null;
     }
+
     return this._connections[this._connections.length - 1];
   }
 
-  getDefaultAtomCommands(): ?AtomCommands {
+  getDefaultAtomCommands() {
     const server = this.getCurrentServer();
     return server == null ? null : server.getAtomCommands();
   }
 
-  _getConnectionByPath(filePath: NuclideUri): ?CommandServerConnection {
-    return firstOfIterable(
-      concatIterators(
-        this._connections.filter(connection =>
-          connection.hasOpenPath(filePath),
-        ),
-        [this.getCurrentServer()].filter(server => server != null),
-      ),
-    );
+  _getConnectionByPath(filePath) {
+    return (0, _collection().firstOfIterable)((0, _collection().concatIterators)(this._connections.filter(connection => connection.hasOpenPath(filePath)), [this.getCurrentServer()].filter(server => server != null)));
   }
 
-  getAtomCommandsByPath(filePath: NuclideUri): ?AtomCommands {
+  getAtomCommandsByPath(filePath) {
     const server = this._getConnectionByPath(filePath);
+
     return server == null ? null : server.getAtomCommands();
   }
 
-  getMultiConnectionAtomCommands(): MultiConnectionAtomCommands {
+  getMultiConnectionAtomCommands() {
     return this._multiConnectionAtomCommands;
   }
+
 }
+
+exports.CommandServer = CommandServer;

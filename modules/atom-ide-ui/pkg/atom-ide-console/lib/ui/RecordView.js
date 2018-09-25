@@ -1,3 +1,116 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _MeasuredComponent() {
+  const data = require("../../../../../nuclide-commons-ui/MeasuredComponent");
+
+  _MeasuredComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _LazyNestedValueComponent() {
+  const data = require("../../../../../nuclide-commons-ui/LazyNestedValueComponent");
+
+  _LazyNestedValueComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _SimpleValueComponent() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/SimpleValueComponent"));
+
+  _SimpleValueComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FullWidthProgressBar() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/FullWidthProgressBar"));
+
+  _FullWidthProgressBar = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _shallowequal() {
+  const data = _interopRequireDefault(require("shallowequal"));
+
+  _shallowequal = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Ansi() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons-ui/Ansi"));
+
+  _Ansi = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TextRenderer() {
+  const data = require("../../../../../nuclide-commons-ui/TextRenderer");
+
+  _TextRenderer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _debounce() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/debounce"));
+
+  _debounce = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _parseText() {
+  const data = _interopRequireDefault(require("../parseText"));
+
+  _parseText = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,56 +119,43 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Level, Record, Executor, OutputProvider} from '../types';
-
-import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
-
-import classnames from 'classnames';
-import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
-import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
-import shallowEqual from 'shallowequal';
-import Ansi from 'nuclide-commons-ui/Ansi';
-import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
-import debounce from 'nuclide-commons/debounce';
-import parseText from '../parseText';
-
-type Props = {
-  record: Record,
-  showSourceLabel: boolean,
-  getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
-  onHeightChange: (record: Record, newHeight: number) => void,
-  expansionStateId: Object,
-};
-
-const AnsiRenderSegment = ({key, style, content}: RenderSegmentProps) => (
-  <span key={key} style={style} className="nuclide-console-default-text-colors">
-    {parseText(content)}
-  </span>
-);
+const AnsiRenderSegment = ({
+  key,
+  style,
+  content
+}) => React.createElement("span", {
+  key: key,
+  style: style,
+  className: "nuclide-console-default-text-colors"
+}, (0, _parseText().default)(content));
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
-export default class RecordView extends React.Component<Props> {
-  _wrapper: ?HTMLElement;
-  _debouncedMeasureAndNotifyHeight: () => void;
 
-  constructor(props: Props) {
-    super(props);
-
-    // The MeasuredComponent can call this many times in quick succession as the
+class RecordView extends React.Component {
+  constructor(props) {
+    super(props); // The MeasuredComponent can call this many times in quick succession as the
     // child components render, so we debounce it since we only want to know about
     // the height change once everything has settled down
-    (this: any)._debouncedMeasureAndNotifyHeight = debounce(
-      this.measureAndNotifyHeight,
-      10,
-    );
+
+    this.measureAndNotifyHeight = () => {
+      if (this._wrapper == null) {
+        return;
+      }
+
+      const {
+        offsetHeight
+      } = this._wrapper;
+      this.props.onHeightChange(this.props.record, offsetHeight);
+    };
+
+    this._handleRecordWrapper = wrapper => {
+      this._wrapper = wrapper;
+    };
+
+    this._debouncedMeasureAndNotifyHeight = (0, _debounce().default)(this.measureAndNotifyHeight, 10);
   }
 
   componentDidMount() {
@@ -64,7 +164,7 @@ export default class RecordView extends React.Component<Props> {
     this.measureAndNotifyHeight();
   }
 
-  componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps) {
     // Record is an immutable object, so any change that would affect a height
     // change should result in us getting a new object.
     if (this.props.record !== prevProps.record) {
@@ -76,13 +176,16 @@ export default class RecordView extends React.Component<Props> {
     this._debouncedMeasureAndNotifyHeight.dispose();
   }
 
-  _renderContent(): React.Element<any> {
-    const {record} = this.props;
+  _renderContent() {
+    const {
+      record
+    } = this.props;
+
     if (record.kind === 'request') {
       // TODO: We really want to use a text editor to render this so that we can get syntax
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
       // highlighting.
-      return <pre>{record.text || ' '}</pre>;
+      return React.createElement("pre", null, record.text || ' ');
     } else if (record.kind === 'response') {
       const executor = this.props.getExecutor(record.sourceId);
       return this._renderNestedValueComponent(executor);
@@ -94,148 +197,147 @@ export default class RecordView extends React.Component<Props> {
       const text = record.text || ' ';
 
       if (record.format === 'ansi') {
-        return <Ansi renderSegment={AnsiRenderSegment}>{text}</Ansi>;
+        return React.createElement(_Ansi().default, {
+          renderSegment: AnsiRenderSegment
+        }, text);
       }
-      return <pre>{parseText(text)}</pre>;
+
+      return React.createElement("pre", null, (0, _parseText().default)(text));
     }
   }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
-    return !shallowEqual(this.props, nextProps);
+  shouldComponentUpdate(nextProps) {
+    return !(0, _shallowequal().default)(this.props, nextProps);
   }
 
-  _renderNestedValueComponent(
-    provider: ?OutputProvider | ?Executor,
-  ): React.Element<any> {
-    const {record, expansionStateId} = this.props;
+  _renderNestedValueComponent(provider) {
+    const {
+      record,
+      expansionStateId
+    } = this.props;
     const getProperties = provider == null ? null : provider.getProperties;
     const type = record.data == null ? null : record.data.type;
     const simpleValueComponent = getComponent(type);
-    return (
-      <LazyNestedValueComponent
-        className="console-lazy-nested-value"
-        evaluationResult={record.data}
-        fetchChildren={getProperties}
-        simpleValueComponent={simpleValueComponent}
-        shouldCacheChildren={true}
-        expansionStateId={expansionStateId}
-      />
-    );
+    return React.createElement(_LazyNestedValueComponent().LazyNestedValueComponent, {
+      className: "console-lazy-nested-value",
+      evaluationResult: record.data,
+      fetchChildren: getProperties,
+      simpleValueComponent: simpleValueComponent,
+      shouldCacheChildren: true,
+      expansionStateId: expansionStateId
+    });
   }
 
-  render(): React.Node {
-    const {record} = this.props;
-    const {level, kind, timestamp, sourceId} = record;
-
-    const classNames = classnames('console-record', `level-${level || 'log'}`, {
+  render() {
+    const {
+      record
+    } = this.props;
+    const {
+      level,
+      kind,
+      timestamp,
+      sourceId
+    } = record;
+    const classNames = (0, _classnames().default)('console-record', `level-${level || 'log'}`, {
       request: kind === 'request',
-      response: kind === 'response',
+      response: kind === 'response'
     });
+    const iconName = getIconName(record); // flowlint-next-line sketchy-null-string:off
 
-    const iconName = getIconName(record);
-    // flowlint-next-line sketchy-null-string:off
-    const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
-    const sourceLabel = this.props.showSourceLabel ? (
-      <span
-        className={`console-record-source-label ${getHighlightClassName(
-          level,
-        )}`}>
-        {sourceId}
-      </span>
-    ) : null;
+    const icon = iconName ? React.createElement("span", {
+      className: `icon icon-${iconName}`
+    }) : null;
+    const sourceLabel = this.props.showSourceLabel ? React.createElement("span", {
+      className: `console-record-source-label ${getHighlightClassName(level)}`
+    }, sourceId) : null;
     let renderedTimestamp;
+
     if (timestamp != null) {
-      const timestampLabel =
-        Date.now() - timestamp > ONE_DAY
-          ? timestamp.toLocaleString()
-          : timestamp.toLocaleTimeString();
-      renderedTimestamp = (
-        <div className="console-record-timestamp">{timestampLabel}</div>
-      );
+      const timestampLabel = Date.now() - timestamp > ONE_DAY ? timestamp.toLocaleString() : timestamp.toLocaleTimeString();
+      renderedTimestamp = React.createElement("div", {
+        className: "console-record-timestamp"
+      }, timestampLabel);
     }
     /*
     return (
       <MeasuredComponent
         onMeasurementsChanged={this._debouncedMeasureAndNotifyHeight}>
         */
-    return (
-      <MeasuredComponent onMeasurementsChanged={() => {}}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-        <div ref={this._handleRecordWrapper} className={classNames}>
-          {icon}
-          <div className="console-record-content-wrapper">
-            {record.repeatCount > 1 && (
-              <div className="console-record-duplicate-number">
-                {record.repeatCount}
-              </div>
-            )}
-            <div className="console-record-content">
-              {this._renderContent()}
-            </div>
-          </div>
-          {sourceLabel}
-          {renderedTimestamp}
-          {<FullWidthProgressBar progress={null} visible={record.incomplete} />}
-        </div>
-      </MeasuredComponent>
-    );
+
+
+    return React.createElement(_MeasuredComponent().MeasuredComponent, {
+      onMeasurementsChanged: () => {}
+    }, React.createElement("div", {
+      ref: this._handleRecordWrapper,
+      className: classNames
+    }, icon, React.createElement("div", {
+      className: "console-record-content-wrapper"
+    }, record.repeatCount > 1 && React.createElement("div", {
+      className: "console-record-duplicate-number"
+    }, record.repeatCount), React.createElement("div", {
+      className: "console-record-content"
+    }, this._renderContent())), sourceLabel, renderedTimestamp, React.createElement(_FullWidthProgressBar().default, {
+      progress: null,
+      visible: record.incomplete
+    })));
   }
 
-  measureAndNotifyHeight = () => {
-    if (this._wrapper == null) {
-      return;
-    }
-    const {offsetHeight} = this._wrapper;
-    this.props.onHeightChange(this.props.record, offsetHeight);
-  };
-
-  _handleRecordWrapper = (wrapper: HTMLElement) => {
-    this._wrapper = wrapper;
-  };
 }
 
-function getComponent(type: ?string): React.ComponentType<any> {
+exports.default = RecordView;
+
+function getComponent(type) {
   switch (type) {
     case 'text':
-      return props => TextRenderer(props.evaluationResult);
+      return props => (0, _TextRenderer().TextRenderer)(props.evaluationResult);
+
     case 'boolean':
     case 'string':
     case 'number':
     case 'object':
     default:
-      return SimpleValueComponent;
+      return _SimpleValueComponent().default;
   }
 }
 
-function getHighlightClassName(level: Level): string {
+function getHighlightClassName(level) {
   switch (level) {
     case 'info':
       return 'highlight-info';
+
     case 'success':
       return 'highlight-success';
+
     case 'warning':
       return 'highlight-warning';
+
     case 'error':
       return 'highlight-error';
+
     default:
       return 'highlight';
   }
 }
 
-function getIconName(record: Record): ?string {
+function getIconName(record) {
   switch (record.kind) {
     case 'request':
       return 'chevron-right';
+
     case 'response':
       return 'arrow-small-left';
   }
+
   switch (record.level) {
     case 'info':
       return 'info';
+
     case 'success':
       return 'check';
+
     case 'warning':
       return 'alert';
+
     case 'error':
       return 'stop';
   }

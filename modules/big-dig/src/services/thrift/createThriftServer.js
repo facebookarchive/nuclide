@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createThriftServer = createThriftServer;
+
+function _startThriftServer() {
+  const data = require("./startThriftServer");
+
+  _startThriftServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +23,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {ThriftServerConfig, ThriftServer} from './types';
-
-import {startThriftServer} from './startThriftServer';
-
-export async function createThriftServer(
-  serverConfig: ThriftServerConfig,
-): Promise<ThriftServer> {
-  const thriftServerStream = startThriftServer(serverConfig);
+async function createThriftServer(serverConfig) {
+  const thriftServerStream = (0, _startThriftServer().startThriftServer)(serverConfig);
   const thriftServerPromise = thriftServerStream.take(1).toPromise();
   const subscription = thriftServerStream.connect();
-
   const thriftServerPort = await thriftServerPromise;
   return {
     getPort: () => thriftServerPort,
-    close: () => subscription.unsubscribe(),
+    close: () => subscription.unsubscribe()
   };
 }

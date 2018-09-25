@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getFragmentGrammar;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -14,18 +21,16 @@
  * Some grammars should use a specialized grammar for code fragments
  * (namely PHP, since it's wildly different depending on the presence of a <?php opening).
  */
-
 const FRAGMENT_GRAMMARS = Object.freeze({
   'text.html.hack': 'source.hackfragment',
-  'text.html.php': 'source.hackfragment',
+  'text.html.php': 'source.hackfragment'
 });
 
-export default function getFragmentGrammar(
-  grammar: atom$Grammar,
-): atom$Grammar {
+function getFragmentGrammar(grammar) {
   if (FRAGMENT_GRAMMARS.hasOwnProperty(grammar.scopeName)) {
     const fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
     return atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
   }
+
   return grammar;
 }

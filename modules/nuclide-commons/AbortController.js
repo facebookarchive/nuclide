@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.AbortSignal = void 0;
+
+function _eventTargetShim() {
+  const data = require("event-target-shim");
+
+  _eventTargetShim = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +23,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -15,45 +32,51 @@
  * from the whatwg spec: https://dom.spec.whatwg.org/#aborting-ongoing-activities
  * These will become available in Chrome 66.
  */
-
 // Shim of EventTarget usable in Node.
 // Note that even in Chrome, EventTarget also isn't instantiable until version 64.
-import {
-  EventTarget as EventTargetShim,
-  defineEventAttribute,
-} from 'event-target-shim';
+class AbortSignal extends _eventTargetShim().EventTarget {
+  constructor(...args) {
+    var _temp;
 
-export class AbortSignal extends (EventTargetShim: typeof EventTarget) {
-  aborted: boolean = false;
-  // Defined via defineEventAttribute below.
-  onabort: ?(event: Event) => mixed;
+    return _temp = super(...args), this.aborted = false, _temp;
+  }
 
   // $FlowIssue: Computed properties are not supported
   get [Symbol.toStringTag]() {
     return 'AbortSignal';
   }
+
 }
 
-defineEventAttribute(AbortSignal.prototype, 'abort');
+exports.AbortSignal = AbortSignal;
+(0, _eventTargetShim().defineEventAttribute)(AbortSignal.prototype, 'abort');
 
-export default class AbortController {
-  signal = new AbortSignal();
+class AbortController {
+  constructor() {
+    this.signal = new AbortSignal();
+  }
 
   abort() {
     // From whatwg spec, section 3.2:
     // If signal’s aborted flag is set, then return.
     if (this.signal.aborted) {
       return;
-    }
-    // Set signal’s aborted flag.
-    this.signal.aborted = true;
-    // Fire an event named abort at signal.
-    // Note: event-target-shim converts objects to Events.
-    this.signal.dispatchEvent(({type: 'abort'}: any));
-  }
+    } // Set signal’s aborted flag.
 
-  // $FlowIssue: Computed properties are not supported
+
+    this.signal.aborted = true; // Fire an event named abort at signal.
+    // Note: event-target-shim converts objects to Events.
+
+    this.signal.dispatchEvent({
+      type: 'abort'
+    });
+  } // $FlowIssue: Computed properties are not supported
+
+
   get [Symbol.toStringTag]() {
     return 'AbortController';
   }
+
 }
+
+exports.default = AbortController;

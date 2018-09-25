@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +12,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -22,61 +29,52 @@
  * are 49ms available for me to do work". It was can take multiple loops around
  * `requestIdleCallback` for so much time to become available.
  */
+var _default = typeof requestIdleCallback !== 'undefined' ? // Using Browser API
+// Is guaranteed to resolve after `timeout` milliseconds.
+function scheduleIdleCallback(callback_, options = {}) {
+  const afterRemainingTime = options.afterRemainingTime || 49; // flowlint-next-line sketchy-null-number:off
 
-import invariant from 'assert';
+  const timeout = options.timeout || 500;
+  let callback = callback_;
+  let id;
+  const startTime = Date.now();
 
-type CallbackT = () => void;
-type OptionsT = {
-  afterRemainingTime?: 30 | 40 | 49,
-  timeout?: number,
+  function fn(deadline) {
+    if (deadline.timeRemaining() >= afterRemainingTime || Date.now() - startTime >= timeout) {
+      if (!(callback != null)) {
+        throw new Error("Invariant violation: \"callback != null\"");
+      }
+
+      callback();
+      id = callback = null;
+    } else {
+      id = requestIdleCallback(fn, {
+        timeout: timeout - (Date.now() - startTime)
+      });
+    }
+  }
+
+  id = requestIdleCallback(fn, {
+    timeout
+  });
+  return {
+    dispose() {
+      if (id != null) {
+        cancelIdleCallback(id);
+        id = callback = null;
+      }
+    }
+
+  };
+} : // Using Node API
+function scheduleIdleCallback(callback, options) {
+  const id = setImmediate(callback);
+  return {
+    dispose() {
+      clearImmediate(id);
+    }
+
+  };
 };
 
-export default (typeof requestIdleCallback !== 'undefined'
-  ? // Using Browser API
-    // Is guaranteed to resolve after `timeout` milliseconds.
-    function scheduleIdleCallback(
-      callback_: CallbackT,
-      options?: OptionsT = {},
-    ): IDisposable {
-      const afterRemainingTime = options.afterRemainingTime || 49;
-      // flowlint-next-line sketchy-null-number:off
-      const timeout = options.timeout || 500;
-      let callback = callback_;
-      let id;
-      const startTime = Date.now();
-      function fn(deadline) {
-        if (
-          deadline.timeRemaining() >= afterRemainingTime ||
-          Date.now() - startTime >= timeout
-        ) {
-          invariant(callback != null);
-          callback();
-          id = callback = null;
-        } else {
-          id = requestIdleCallback(fn, {
-            timeout: timeout - (Date.now() - startTime),
-          });
-        }
-      }
-      id = requestIdleCallback(fn, {timeout});
-      return {
-        dispose() {
-          if (id != null) {
-            cancelIdleCallback(id);
-            id = callback = null;
-          }
-        },
-      };
-    }
-  : // Using Node API
-    function scheduleIdleCallback(
-      callback: CallbackT,
-      options?: OptionsT,
-    ): IDisposable {
-      const id = setImmediate(callback);
-      return {
-        dispose() {
-          clearImmediate(id);
-        },
-      };
-    });
+exports.default = _default;

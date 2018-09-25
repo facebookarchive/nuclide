@@ -1,3 +1,84 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _debounced() {
+  const data = require("./debounced");
+
+  _debounced = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _observable() {
+  const data = require("../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _paneItem() {
+  const data = require("./pane-item");
+
+  _paneItem = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ProviderRegistry() {
+  const data = _interopRequireDefault(require("./ProviderRegistry"));
+
+  _ProviderRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +87,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -14,205 +95,115 @@
  * ActiveEditorRegistry provides abstractions for creating services that operate
  * on text editor contents.
  */
-
-import {Observable, Subject} from 'rxjs';
-import {observeActiveEditorsDebounced} from './debounced';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {cacheWhileSubscribed} from 'nuclide-commons/observable';
-
-import {getLogger} from 'log4js';
-
-import {isPending, observePendingStateEnd} from './pane-item';
-import ProviderRegistry from './ProviderRegistry';
-
-export type Provider = {
-  priority: number,
-  grammarScopes: Array<string>,
-};
-
-export type Result<T, V> =
-  | {
-      kind: 'not-text-editor',
-    }
-  | {
-      kind: 'no-provider',
-      grammar: atom$Grammar,
-    }
-  | {
-      kind: 'provider-error',
-      provider: T,
-    }
-  | {
-      // Since providers can be slow, the pane-change and edit events are emitted immediately in case
-      // the UI needs to clear outdated results.
-      kind: 'pane-change',
-      editor: atom$TextEditor,
-    }
-  | {
-      kind: 'save',
-      editor: atom$TextEditor,
-    }
-  | {
-      kind: 'result',
-      result: V,
-      // The editor that the result was computed from
-      editor: atom$TextEditor,
-      // The provider that computed the result
-      // TODO Use a type parameter for this type
-      provider: T,
-    };
-
-export type ResultFunction<T, V> = (
-  provider: T,
-  editor: atom$TextEditor,
-) => Promise<V>;
-
-type PartialEventSources = {
-  +activeEditors?: Observable<?atom$TextEditor>,
-  +savesForEditor?: (editor: atom$TextEditor) => Observable<void>,
-};
-
-export type EventSources = {
-  activeEditors: Observable<?atom$TextEditor>,
-  savesForEditor: (editor: atom$TextEditor) => Observable<void>,
-};
-
-export default class ActiveEditorRegistry<T: Provider, V> {
-  _resultFunction: ResultFunction<T, V>;
-  _providerRegistry: ProviderRegistry<T>;
-  _newProviderEvents: Subject<void>;
-  _resultsStream: Observable<Result<T, V>>;
-
-  constructor(
-    resultFunction: ResultFunction<T, V>,
-    eventSources: PartialEventSources = {},
-  ) {
+class ActiveEditorRegistry {
+  constructor(resultFunction, eventSources = {}) {
     this._resultFunction = resultFunction;
-    this._providerRegistry = new ProviderRegistry();
-    this._newProviderEvents = new Subject();
+    this._providerRegistry = new (_ProviderRegistry().default)();
+    this._newProviderEvents = new _RxMin.Subject();
     this._resultsStream = this._createResultsStream({
-      activeEditors:
-        eventSources.activeEditors || observeActiveEditorsDebounced(),
-      savesForEditor:
-        eventSources.savesForEditor ||
-        (editor => {
-          return observableFromSubscribeFunction(callback =>
-            editor.onDidSave(callback),
-          ).mapTo(undefined);
-        }),
+      activeEditors: eventSources.activeEditors || (0, _debounced().observeActiveEditorsDebounced)(),
+      savesForEditor: eventSources.savesForEditor || (editor => {
+        return (0, _event().observableFromSubscribeFunction)(callback => editor.onDidSave(callback)).mapTo(undefined);
+      })
     });
   }
 
-  consumeProvider(provider: T): IDisposable {
+  consumeProvider(provider) {
     this._providerRegistry.addProvider(provider);
+
     this._newProviderEvents.next();
-    return new UniversalDisposable(() => {
+
+    return new (_UniversalDisposable().default)(() => {
       this._providerRegistry.removeProvider(provider);
     });
   }
 
-  getResultsStream(): Observable<Result<T, V>> {
+  getResultsStream() {
     return this._resultsStream;
   }
 
-  _createResultsStream(eventSources: EventSources): Observable<Result<T, V>> {
+  _createResultsStream(eventSources) {
     const repeatedEditors = eventSources.activeEditors.switchMap(editor => {
       if (editor == null) {
-        return Observable.of(editor);
+        return _RxMin.Observable.of(editor);
       }
-      return Observable.concat(
-        Observable.of(editor),
-        this._newProviderEvents.mapTo(editor),
-      );
+
+      return _RxMin.Observable.concat(_RxMin.Observable.of(editor), this._newProviderEvents.mapTo(editor));
     });
     const results = repeatedEditors.switchMap(editorArg => {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
+
       if (editor == null) {
-        return Observable.of({kind: 'not-text-editor'});
+        return _RxMin.Observable.of({
+          kind: 'not-text-editor'
+        });
       }
 
-      return Observable.concat(
-        // Emit a pane change event first, so that clients can do something while waiting for a
-        // provider to give a result.
-        Observable.of({
-          kind: 'pane-change',
-          editor,
-        }),
-        // wait for pending panes to no longer be pending, or if they're not,
-        // get the result right away.
-        (isPending(editor)
-          ? observePendingStateEnd(editor).take(1)
-          : Observable.of(null)
-        ).ignoreElements(),
-        Observable.fromPromise(
-          this._getResultForEditor(this._getProvidersForEditor(editor), editor),
-        ),
-        this._resultsForEditor(editor, eventSources),
-      );
+      return _RxMin.Observable.concat( // Emit a pane change event first, so that clients can do something while waiting for a
+      // provider to give a result.
+      _RxMin.Observable.of({
+        kind: 'pane-change',
+        editor
+      }), // wait for pending panes to no longer be pending, or if they're not,
+      // get the result right away.
+      ((0, _paneItem().isPending)(editor) ? (0, _paneItem().observePendingStateEnd)(editor).take(1) : _RxMin.Observable.of(null)).ignoreElements(), _RxMin.Observable.fromPromise(this._getResultForEditor(this._getProvidersForEditor(editor), editor)), this._resultsForEditor(editor, eventSources));
     });
-    return cacheWhileSubscribed(results);
+    return (0, _observable().cacheWhileSubscribed)(results);
   }
 
-  _resultsForEditor(
-    editor: atom$TextEditor,
-    eventSources: EventSources,
-  ): Observable<Result<T, V>> {
+  _resultsForEditor(editor, eventSources) {
     // It's possible that the active provider for an editor changes over time.
     // Thus, we have to subscribe to both edits and saves.
-    return Observable.merge(
-      eventSources.savesForEditor(editor).map(() => 'save'),
-    ).flatMap(event => {
+    return _RxMin.Observable.merge(eventSources.savesForEditor(editor).map(() => 'save')).flatMap(event => {
       const providers = this._getProvidersForEditor(editor);
-      return Observable.concat(
-        // $FlowIssue: {kind: save}
-        Observable.of({kind: event, editor}),
-        Observable.fromPromise(this._getResultForEditor(providers, editor)),
-      );
+
+      return _RxMin.Observable.concat( // $FlowIssue: {kind: save}
+      _RxMin.Observable.of({
+        kind: event,
+        editor
+      }), _RxMin.Observable.fromPromise(this._getResultForEditor(providers, editor)));
     });
   }
 
-  _getProvidersForEditor(editor: atom$TextEditor): Array<T> {
+  _getProvidersForEditor(editor) {
     return [...this._providerRegistry.getAllProvidersForEditor(editor)];
   }
 
-  async _getResultForEditor(
-    providers: Array<T>,
-    editor: atom$TextEditor,
-  ): Promise<Result<T, V>> {
+  async _getResultForEditor(providers, editor) {
     if (providers.length === 0) {
       return {
         kind: 'no-provider',
-        grammar: editor.getGrammar(),
+        grammar: editor.getGrammar()
       };
     }
+
     let errorResult;
-    const results = await Promise.all(
-      providers.map(async provider => {
-        try {
-          return await this._resultFunction(provider, editor);
-        } catch (error) {
-          getLogger(this.constructor.name).error(
-            `Error from provider for ${editor.getGrammar().scopeName}`,
-            error,
-          );
-          errorResult = {
-            provider,
-            kind: 'provider-error',
-          };
-        }
-      }),
-    );
+    const results = await Promise.all(providers.map(async provider => {
+      try {
+        return await this._resultFunction(provider, editor);
+      } catch (error) {
+        (0, _log4js().getLogger)(this.constructor.name).error(`Error from provider for ${editor.getGrammar().scopeName}`, error);
+        errorResult = {
+          provider,
+          kind: 'provider-error'
+        };
+      }
+    }));
+
     if (errorResult != null) {
       return errorResult;
     }
+
     const resultIndex = results.findIndex(r => r != null);
     return {
       kind: 'result',
-      result: (results[resultIndex]: any),
+      result: results[resultIndex],
       provider: providers[resultIndex] || providers[0],
-      editor,
+      editor
     };
   }
+
 }
+
+exports.default = ActiveEditorRegistry;

@@ -1,3 +1,98 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getLaunchProcessConfig = getLaunchProcessConfig;
+exports.startAttachProcessConfig = startAttachProcessConfig;
+exports.default = void 0;
+
+function _debugger() {
+  const data = require("../../../modules/nuclide-commons-atom/debugger");
+
+  _debugger = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _string() {
+  const data = require("../../../modules/nuclide-commons/string");
+
+  _string = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideDebuggerCommon() {
+  const data = require("../../../modules/nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _HhvmLaunchUiComponent() {
+  const data = require("./HhvmLaunchUiComponent");
+
+  _HhvmLaunchUiComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HhvmAttachUiComponent() {
+  const data = require("./HhvmAttachUiComponent");
+
+  _HhvmAttachUiComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,146 +100,85 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  DebuggerConfigAction,
-  ControlButtonSpecification,
-  IProcessConfig,
-  IVspInstance,
-} from 'nuclide-debugger-common';
-import type {
-  HHVMLaunchConfig,
-  HHVMAttachConfig,
-} from '../../nuclide-debugger-hhvm-rpc';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {shellParse} from 'nuclide-commons/string';
-import {
-  DebuggerLaunchAttachProvider,
-  VsAdapterTypes,
-} from 'nuclide-debugger-common';
-import * as React from 'react';
-import {LaunchUiComponent} from './HhvmLaunchUiComponent';
-import {AttachUiComponent} from './HhvmAttachUiComponent';
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-type PhpDebuggerSessionConfig = {
-  hhvmRuntimeArgs: string,
-  hhvmRuntimePath: string,
-  hhvmServerAttachPort: number,
-};
-
-function getCustomControlButtons(): Array<ControlButtonSpecification> {
-  const customControlButtons = [
-    {
-      icon: 'link-external',
-      title: 'Toggle HTTP Request Sender',
-      onClick: () =>
-        atom.commands.dispatch(
-          atom.views.getView(atom.workspace),
-          'nuclide-http-request-sender:toggle-http-request-edit-dialog',
-        ),
-    },
-  ];
+function getCustomControlButtons() {
+  const customControlButtons = [{
+    icon: 'link-external',
+    title: 'Toggle HTTP Request Sender',
+    onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-http-request-sender:toggle-http-request-edit-dialog')
+  }];
 
   try {
-    return customControlButtons.concat(
-      // $FlowFB
-      require('./fb-HhvmServices').customControlButtons,
-    );
+    return customControlButtons.concat( // $FlowFB
+    require("./fb-HhvmServices").customControlButtons);
   } catch (_) {
     return customControlButtons;
   }
 }
 
-export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+class HhvmLaunchAttachProvider extends _nuclideDebuggerCommon().DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getCallbacksForAction(action: DebuggerConfigAction) {
+  getCallbacksForAction(action) {
     return {
       /**
        * Whether this provider is enabled or not.
        */
-      isEnabled: (): Promise<boolean> => {
-        return Promise.resolve(
-          nuclideUri.isRemote(this.getTargetUri()) ||
-            process.platform !== 'win32',
-        );
+      isEnabled: () => {
+        return Promise.resolve(_nuclideUri().default.isRemote(this.getTargetUri()) || process.platform !== 'win32');
       },
 
       /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
-      getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      getComponent: (debuggerTypeName, configIsValidChanged) => {
         if (action === 'launch') {
-          return (
-            <LaunchUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-              getLaunchProcessConfig={getLaunchProcessConfig}
-            />
-          );
+          return React.createElement(_HhvmLaunchUiComponent().LaunchUiComponent, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged,
+            getLaunchProcessConfig: getLaunchProcessConfig
+          });
         } else if (action === 'attach') {
-          return (
-            <AttachUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-              startAttachProcessConfig={startAttachProcessConfig}
-            />
-          );
+          return React.createElement(_HhvmAttachUiComponent().AttachUiComponent, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged,
+            startAttachProcessConfig: startAttachProcessConfig
+          });
         } else {
-          invariant(false, 'Unrecognized action for component.');
+          if (!false) {
+            throw new Error('Unrecognized action for component.');
+          }
         }
-      },
+      }
     };
   }
+
 }
 
-function getConfig(): PhpDebuggerSessionConfig {
-  return (featureConfig.get('nuclide-debugger-php'): any);
-}
+exports.default = HhvmLaunchAttachProvider;
 
-// Determines the debug configuration for launching the HHVM debugger
-function _getHHVMLaunchConfig(
-  targetUri: NuclideUri,
-  scriptPath: string,
-  scriptArgs: string,
-  scriptWrapperCommand: ?string,
-  runInTerminal: boolean,
-  cwdPath: string,
-): HHVMLaunchConfig {
+function getConfig() {
+  return _featureConfig().default.get('nuclide-debugger-php');
+} // Determines the debug configuration for launching the HHVM debugger
+
+
+function _getHHVMLaunchConfig(targetUri, scriptPath, scriptArgs, scriptWrapperCommand, runInTerminal, cwdPath) {
   const userConfig = getConfig();
-  const deferLaunch = runInTerminal;
+  const deferLaunch = runInTerminal; // Honor any PHP configuration the user has in Nuclide settings.
 
-  // Honor any PHP configuration the user has in Nuclide settings.
-  const phpRuntimePath =
-    userConfig.hhvmRuntimePath != null
-      ? String(userConfig.hhvmRuntimePath)
-      : null;
-  const hhvmRuntimeArgs = shellParse(
-    userConfig.hhvmRuntimeArgs != null
-      ? String(userConfig.hhvmRuntimeArgs)
-      : '',
-  );
-
-  const config: HHVMLaunchConfig = {
-    targetUri: nuclideUri.getPath(targetUri),
+  const phpRuntimePath = userConfig.hhvmRuntimePath != null ? String(userConfig.hhvmRuntimePath) : null;
+  const hhvmRuntimeArgs = (0, _string().shellParse)(userConfig.hhvmRuntimeArgs != null ? String(userConfig.hhvmRuntimeArgs) : '');
+  const config = {
+    targetUri: _nuclideUri().default.getPath(targetUri),
     action: 'launch',
     launchScriptPath: scriptPath,
-    scriptArgs: shellParse(scriptArgs),
+    scriptArgs: (0, _string().shellParse)(scriptArgs),
     hhvmRuntimeArgs,
-    deferLaunch,
+    deferLaunch
   };
 
   if (cwdPath != null && cwdPath !== '') {
@@ -162,54 +196,37 @@ function _getHHVMLaunchConfig(
   return config;
 }
 
-export function getLaunchProcessConfig(
-  targetUri: NuclideUri,
-  scriptPath: string,
-  scriptArgs: string,
-  scriptWrapperCommand: ?string,
-  runInTerminal: boolean,
-  cwdPath: string,
-): IProcessConfig {
-  const config = _getHHVMLaunchConfig(
-    targetUri,
-    scriptPath,
-    scriptArgs,
-    scriptWrapperCommand,
-    runInTerminal,
-    cwdPath,
-  );
+function getLaunchProcessConfig(targetUri, scriptPath, scriptArgs, scriptWrapperCommand, runInTerminal, cwdPath) {
+  const config = _getHHVMLaunchConfig(targetUri, scriptPath, scriptArgs, scriptWrapperCommand, runInTerminal, cwdPath);
+
   return {
     targetUri,
     debugMode: 'launch',
     isRestartable: true,
-    adapterType: VsAdapterTypes.HHVM,
-    config: {
-      ...config,
-      grammarName: 'source.hackfragment',
-    },
-    processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
-    servicedFileExtensions: ['php', 'hh'],
+    adapterType: _nuclideDebuggerCommon().VsAdapterTypes.HHVM,
+    config: Object.assign({}, config, {
+      grammarName: 'source.hackfragment'
+    }),
+    processName: `HHVM (${_nuclideUri().default.basename(scriptPath)})`,
+    servicedFileExtensions: ['php', 'hh']
   };
 }
 
-function _getHHVMAttachConfig(
-  targetUri: NuclideUri,
-  attachPort: ?number,
-): HHVMAttachConfig {
+function _getHHVMAttachConfig(targetUri, attachPort) {
   // Note: not specifying startup document or debug port here, the backend
   // will use the default parameters. We can surface these options in the
-  // Attach Dialog if users need to be able to customize them in the future.
-  const config: HHVMAttachConfig = {
-    targetUri: nuclideUri.getPath(targetUri),
-    action: 'attach',
-  };
-
-  // If attach port is not specified by the caller, see if one is specified
+  const config = {
+    targetUri: _nuclideUri().default.getPath(targetUri),
+    action: 'attach'
+  }; // If attach port is not specified by the caller, see if one is specified
   // in Nuclide configuration.
+
   if (attachPort == null) {
     const userConfig = getConfig();
+
     if (userConfig.hhvmServerAttachPort !== '') {
       const userPort = parseInt(userConfig.hhvmServerAttachPort, 10);
+
       if (!Number.isNaN(userPort)) {
         config.debugPort = userPort;
       }
@@ -221,37 +238,28 @@ function _getHHVMAttachConfig(
   return config;
 }
 
-export async function startAttachProcessConfig(
-  targetUri: NuclideUri,
-  attachPort: ?number,
-  serverAttach: boolean,
-): Promise<void> {
+async function startAttachProcessConfig(targetUri, attachPort, serverAttach) {
   const config = _getHHVMAttachConfig(targetUri, attachPort);
+
   const processConfig = {
     targetUri,
     debugMode: 'attach',
-    adapterType: VsAdapterTypes.HHVM,
-    processName: `HHVM (${
-      serverAttach
-        ? nuclideUri.isRemote(targetUri)
-          ? nuclideUri.getHostname(targetUri)
-          : 'localhost'
-        : 'Attached to script on port ' + (attachPort || 0)
-    })`,
-    config: {
-      ...config,
-      grammarName: 'source.hackfragment',
-    },
+    adapterType: _nuclideDebuggerCommon().VsAdapterTypes.HHVM,
+    processName: `HHVM (${serverAttach ? _nuclideUri().default.isRemote(targetUri) ? _nuclideUri().default.getHostname(targetUri) : 'localhost' : 'Attached to script on port ' + (attachPort || 0)})`,
+    config: Object.assign({}, config, {
+      grammarName: 'source.hackfragment'
+    }),
     customControlButtons: getCustomControlButtons(),
     servicedFileExtensions: ['php', 'hh'],
     isRestartable: true,
-    onDebugStartingCallback: (instance: IVspInstance) => {
+    onDebugStartingCallback: instance => {
       // This IDisposable will be disposed when the debugging session ends.
       // The debug service will ensure it is called on our behalf.
-      const disposables = new UniversalDisposable();
+      const disposables = new (_UniversalDisposable().default)();
+
       try {
         // $FlowFB
-        const services = require('./fb-HhvmServices');
+        const services = require("./fb-HhvmServices");
 
         services.startSlog();
         disposables.add(() => {
@@ -259,12 +267,7 @@ export async function startAttachProcessConfig(
         });
 
         if (serverAttach) {
-          services.startCrashHandler(
-            targetUri,
-            processConfig,
-            startAttachProcessConfig,
-            instance,
-          );
+          services.startCrashHandler(targetUri, processConfig, startAttachProcessConfig, instance);
           disposables.add(() => {
             services.stopCrashHandler(processConfig);
           });
@@ -272,9 +275,8 @@ export async function startAttachProcessConfig(
       } catch (_) {}
 
       return disposables;
-    },
+    }
   };
-
-  const debugService = await getDebuggerService();
+  const debugService = await (0, _debugger().getDebuggerService)();
   debugService.startVspDebugging(processConfig);
 }

@@ -1,3 +1,45 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getNPMHyperclickProvider = getNPMHyperclickProvider;
+exports.getPackageUrlForRange = getPackageUrlForRange;
+
+function _semver() {
+  const data = _interopRequireDefault(require("semver"));
+
+  _semver = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _electron = require("electron");
+
+function _parsing() {
+  const data = require("./parsing");
+
+  _parsing = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +47,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const DEPENDENCY_PROPERTIES = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
 
-import type {HyperclickProvider, HyperclickSuggestion} from 'atom-ide-ui';
-
-import semver from 'semver';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {shell} from 'electron';
-
-import {parseJSON, babelLocToRange} from './parsing';
-
-const DEPENDENCY_PROPERTIES = new Set([
-  'dependencies',
-  'devDependencies',
-  'optionalDependencies',
-]);
-
-export function getNPMHyperclickProvider(): HyperclickProvider {
+function getNPMHyperclickProvider() {
   return npmHyperclickProvider;
 }
 
@@ -32,14 +61,10 @@ const npmHyperclickProvider = {
   providerName: 'npm-package-json',
   getSuggestionForWord,
   // Capture just text in quotes
-  wordRegExp: /"[^"]*"/g,
+  wordRegExp: /"[^"]*"/g
 };
 
-function getSuggestionForWord(
-  textEditor: atom$TextEditor,
-  text: string,
-  range: atom$Range,
-): Promise<?HyperclickSuggestion> {
+function getSuggestionForWord(textEditor, text, range) {
   if (text === '' || !isPackageJson(textEditor)) {
     return Promise.resolve(null);
   }
@@ -50,49 +75,39 @@ function getSuggestionForWord(
     return Promise.resolve(null);
   }
 
-  const suggestion: HyperclickSuggestion = {
+  const suggestion = {
     range,
     callback: () => {
-      shell.openExternal(packageUrl);
-    },
+      _electron.shell.openExternal(packageUrl);
+    }
   };
   return Promise.resolve(suggestion);
-}
-
-// Exported for testing. We could derive the token from the json text and the range, but since
+} // Exported for testing. We could derive the token from the json text and the range, but since
 // hyperclick provides it we may as well use it.
-export function getPackageUrlForRange(
-  json: string,
-  token: string,
-  range: atom$Range,
-): ?string {
+
+
+function getPackageUrlForRange(json, token, range) {
   const version = getDependencyVersion(json, range);
+
   if (version == null) {
     return null;
-  }
+  } // Strip off the quotes
 
-  // Strip off the quotes
+
   const packageName = token.substring(1, token.length - 1);
-
   return getPackageUrl(packageName, version);
 }
 
-function isPackageJson(textEditor: atom$TextEditor): boolean {
+function isPackageJson(textEditor) {
   const scopeName = textEditor.getGrammar().scopeName;
   const filePath = textEditor.getPath();
-  return (
-    scopeName === 'source.json' &&
-    filePath != null &&
-    nuclideUri.basename(filePath) === 'package.json'
-  );
+  return scopeName === 'source.json' && filePath != null && _nuclideUri().default.basename(filePath) === 'package.json';
 }
 
-function getPackageUrl(packageName: string, version: string): ?string {
-  if (semver.valid(version)) {
+function getPackageUrl(packageName, version) {
+  if (_semver().default.valid(version)) {
     return `https://www.npmjs.com/package/${packageName}/`;
-  }
-
-  // - optionally prefixed with 'github:' (but don't capture that)
+  } // - optionally prefixed with 'github:' (but don't capture that)
   // - all captured together:
   //   - username: alphanumeric characters, plus underscores and dashes
   //   - slash
@@ -100,8 +115,11 @@ function getPackageUrl(packageName: string, version: string): ?string {
   // - optionally followed by a revision:
   //   - starts with a hash (not captured)
   //   - then alphanumeric characters, underscores, dashes, periods (captured)
+
+
   const githubRegex = /^(?:github:)?([\w-]+\/[\w-]+)(?:#([\w-.]+))?$/;
   const githubMatch = version.match(githubRegex);
+
   if (githubMatch != null) {
     const commit = githubMatch[2];
     const commitSuffix = commit == null ? '' : `/tree/${commit}`;
@@ -109,60 +127,64 @@ function getPackageUrl(packageName: string, version: string): ?string {
   }
 
   return null;
-}
+} // Return the version string, if it exists
 
-// Return the version string, if it exists
-function getDependencyVersion(json: string, range: atom$Range): ?string {
-  const ast = parseJSON(json);
+
+function getDependencyVersion(json, range) {
+  const ast = (0, _parsing().parseJSON)(json);
+
   if (ast == null) {
     // parse error
     return null;
   }
+
   const pathToNode = getPathToNodeForRange(ast, range);
 
-  if (
-    pathToNode != null &&
-    pathToNode.length === 2 &&
-    DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) &&
-    isValidVersion(pathToNode[1].value)
-  ) {
+  if (pathToNode != null && pathToNode.length === 2 && DEPENDENCY_PROPERTIES.has(pathToNode[0].key.value) && isValidVersion(pathToNode[1].value)) {
     const valueNode = pathToNode[1].value;
+
     if (isValidVersion(valueNode)) {
       return valueNode.value;
     } else {
       return null;
     }
   }
+
   return null;
 }
 
-function isValidVersion(valueASTNode: Object): boolean {
+function isValidVersion(valueASTNode) {
   return valueASTNode.type === 'StringLiteral';
-}
+} // return an array of property AST nodes
 
-// return an array of property AST nodes
-function getPathToNodeForRange(
-  objectExpression: Object,
-  range: atom$Range,
-): ?Array<Object> {
+
+function getPathToNodeForRange(objectExpression, range) {
   const properties = objectExpression.properties;
+
   if (properties == null) {
     return null;
   }
+
   for (const property of properties) {
-    const propertyRange = babelLocToRange(property.loc);
+    const propertyRange = (0, _parsing().babelLocToRange)(property.loc);
+
     if (propertyRange.containsRange(range)) {
-      const keyRange = babelLocToRange(property.key.loc);
+      const keyRange = (0, _parsing().babelLocToRange)(property.key.loc);
+
       if (keyRange.isEqual(range)) {
         return [property];
       }
+
       const subPath = getPathToNodeForRange(property.value, range);
+
       if (subPath == null) {
         return null;
       }
+
       subPath.unshift(property);
       return subPath;
     }
   }
+
   return null;
 }
