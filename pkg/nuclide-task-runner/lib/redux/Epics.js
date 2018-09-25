@@ -31,7 +31,7 @@ import * as Actions from './Actions';
 import * as Immutable from 'immutable';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
-import {Observable} from 'rxjs';
+import {Observable, Scheduler} from 'rxjs';
 
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
@@ -895,6 +895,10 @@ function getTaskRunnerState(
           }),
         ),
     )
+      // Process task runner updates on the next tick rather than immediately.
+      // Otherwise if active task runner changes, the new task runner could synchronously send
+      // a state update before epics are fully processed.
+      .observeOn(Scheduler.asap)
       // We need the initial state to return within reasonable time, otherwise the toolbar hangs.
       // We don't want to start with all runners disabled because it causes UI jumps
       // when a preferred runner gets enabled after a non-preferred one.

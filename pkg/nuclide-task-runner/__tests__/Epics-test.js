@@ -328,16 +328,13 @@ describe('Epics', () => {
             initialPackagesActivated: true,
             taskRunners: Immutable.List([]),
           };
-          const output = await runActions(
+          const [addConsoleAction, setStateAction] = await runActions(
             [Actions.registerTaskRunner(mockTaskRunner)],
             state,
           )
             .take(2)
             .toArray()
             .toPromise();
-
-          const setStateAction = output[0];
-          const addConsoleAction = output[1];
           invariant(
             addConsoleAction.type === Actions.ADD_CONSOLE_FOR_TASK_RUNNER,
           );
