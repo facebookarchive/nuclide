@@ -1053,7 +1053,6 @@ function _commitCode(
   args: Array<string>,
 ): Observable<LegacyProcessMessage> {
   // TODO(T17463635)
-  let editMergeConfigs;
   return Observable.fromPromise(
     (async () => {
       if (message == null) {
@@ -1067,10 +1066,6 @@ function _commitCode(
     const execOptions: HgExecOptions = {
       cwd: workingDirectory,
     };
-    if (editMergeConfigs != null) {
-      execArgs.push(...editMergeConfigs.args);
-      execOptions.HGEDITOR = editMergeConfigs.hgEditor;
-    }
     return hgObserveExecution(execArgs, execOptions);
   });
 }
