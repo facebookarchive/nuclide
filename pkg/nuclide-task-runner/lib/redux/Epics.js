@@ -227,25 +227,22 @@ export function combineTaskRunnerStatesEpic(
         getTaskRunnerState(taskRunner, projectRoot),
       );
 
-      return (
-        Observable.from(runnersAndStates)
-          // $FlowFixMe: type combineAll
-          .combineAll()
-          .map(tuples => {
-            const statesForTaskRunners = new Map();
-            tuples.forEach(result => {
-              if (store.getState().taskRunners.includes(result.taskRunner)) {
-                statesForTaskRunners.set(
-                  result.taskRunner,
-                  result.taskRunnerState,
-                );
-              }
-            });
-            return Actions.setStatesForTaskRunners(
-              Immutable.Map(statesForTaskRunners),
-            );
-          })
-      );
+      return Observable.from(runnersAndStates)
+        .combineAll()
+        .map(tuples => {
+          const statesForTaskRunners = new Map();
+          tuples.forEach(result => {
+            if (store.getState().taskRunners.includes(result.taskRunner)) {
+              statesForTaskRunners.set(
+                result.taskRunner,
+                result.taskRunnerState,
+              );
+            }
+          });
+          return Actions.setStatesForTaskRunners(
+            Immutable.Map(statesForTaskRunners),
+          );
+        });
     });
 }
 

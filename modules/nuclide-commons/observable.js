@@ -30,7 +30,7 @@ import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 // Note: DOMException is usable in Chrome but not in Node.
 import DOMException from 'domexception';
-import {Observable, ReplaySubject, Subject} from 'rxjs';
+import {Observable, ReplaySubject, Subject, Subscription} from 'rxjs';
 import AbortController from './AbortController';
 import {setDifference} from './collection';
 import debounce from './debounce';
@@ -290,39 +290,89 @@ export function concatLatest<T>(
     .map(accumulator => [].concat(...accumulator));
 }
 
-type ThrottleOptions = {|
-  // Should the first element be emitted immeditately? Defaults to true.
-  leading?: boolean,
-  trailing?: boolean,
-|};
+// Use a sentinel so we can distinguish between when `null` is emitted and when
+// nothing is.
+const NONE = {};
 
-/**
- * A wrapper around RxJS's `throttle` and `throttleTime` functions, which
- * uses the default scheduler for time-based durations and defaults both leading
- * and trailing options to `true`.
- */
 export function throttle<T>(
-  duration: number | ((value: T) => Observable<any> | Promise<any>),
-  options_: ?ThrottleOptions,
+  delay:
+    | number
+    | ((value: T) => Observable<any> | Promise<any>)
+    | Observable<any>
+    | Promise<any>,
 ): (observable: Observable<T>) => Observable<T> {
-  return (source: Observable<T>) => {
-    const options = options_ || {};
-    const leading = options.leading ?? true;
-    const trailing = options.trailing ?? true;
+  let getDelay: (value: T) => Observable<any> | Promise<any>;
+  switch (typeof delay) {
+    case 'number':
+      getDelay = () => Observable.timer(delay);
+      break;
+    case 'function':
+      getDelay = delay;
+      break;
+    case 'object':
+      getDelay = () => delay;
+      break;
+    default:
+      throw new Error(`Invalid delay: ${delay}`);
+  }
 
-    if (typeof duration === 'number') {
-      // Just use RxJS's built-in throttleTime for number durations,
-      // and continue to use the default scheduler. This makes for a nicer
-      // API than awkwardly passing `undefined` when using it directly.
-      // $FlowFixMe typings don't current reflect these options
-      return source.throttleTime(duration, undefined /* default scheduler */, {
-        leading,
-        trailing,
-      });
-    }
+  return function doThrottle(source: Observable<T>): Observable<T> {
+    return Observable.create(observer => {
+      // The elements that are actually emitted. We use this to know when to
+      // start ignoring elements.
+      const emittedElements = new Subject();
+      let latestValue = NONE;
+      let shouldIgnore = false;
 
-    // $FlowFixMe typings don't include `throttle`
-    return source.throttle(duration, {leading, trailing});
+      const checkShouldNext = () => {
+        if (!shouldIgnore && latestValue !== NONE) {
+          // At this point, latestValue must be of type T
+          latestValue = ((latestValue: any): T);
+
+          const valueToDispatch = latestValue;
+          latestValue = NONE;
+          shouldIgnore = true;
+
+          observer.next(valueToDispatch);
+          emittedElements.next(valueToDispatch);
+        }
+      };
+
+      const sub = new Subscription();
+      sub.add(
+        emittedElements
+          .switchMap(x => {
+            const timer = getDelay(x);
+            if (timer instanceof Observable) {
+              return timer.take(1);
+            } else {
+              return timer;
+            }
+          })
+          .subscribe(() => {
+            shouldIgnore = false;
+            checkShouldNext();
+          }),
+      );
+      sub.add(
+        source.subscribe({
+          next: x => {
+            latestValue = x;
+            checkShouldNext();
+          },
+          error: err => {
+            observer.error(err);
+          },
+          complete: () => {
+            shouldIgnore = false;
+            checkShouldNext();
+            observer.complete();
+          },
+        }),
+      );
+
+      return sub;
+    });
   };
 }
 
