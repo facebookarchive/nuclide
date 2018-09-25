@@ -766,7 +766,7 @@ export default class Debugger implements DebuggerInterface {
       context: 'repl',
     };
 
-    if (this._state === 'RUNNING') {
+    if (this._state === 'STOPPED') {
       const frame = await this.getCurrentStackFrame();
       if (frame != null) {
         args = {...args, frameId: frame.id};
