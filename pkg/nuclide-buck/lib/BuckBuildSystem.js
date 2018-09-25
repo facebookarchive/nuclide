@@ -37,7 +37,6 @@ import {
   createResult,
   taskFromObservable,
 } from '../../commons-node/tasks';
-import {getLogger} from 'log4js';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -105,13 +104,6 @@ export class BuckBuildSystem {
     const runArguments = taskSettings.runArguments || [];
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
-      .catch(err => {
-        getLogger('nuclide-buck').warn(
-          `Failed to get httpPort for ${nuclideUri.getPath(buckRoot)}`,
-          err,
-        );
-        return Observable.of(-1);
-      })
       .switchMap(httpPort => {
         let socketEvents = null;
         let buildId: ?string = null;

@@ -533,6 +533,7 @@ function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
 
 const _cachedPorts = new Map();
 
+// Returns -1 if the port can't be obtained (e.g. calling `buck server` fails)
 export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
   let port = _cachedPorts.get(rootPath);
   if (port != null) {
@@ -555,14 +556,22 @@ export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
   }
 
   const args = ['server', 'status', '--json', '--http-port'];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    args,
-  ).toPromise();
-  const json: Object = JSON.parse(result);
-  port = json['http.port'];
-  _cachedPorts.set(rootPath, port);
-  return port;
+  try {
+    const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
+      rootPath,
+      args,
+    ).toPromise();
+    const json: Object = JSON.parse(result);
+    port = json['http.port'];
+    _cachedPorts.set(rootPath, port);
+    return port;
+  } catch (error) {
+    getLogger('nuclide-buck-rpc').warn(
+      `Failed to get httpPort for ${nuclideUri.getPath(rootPath)}`,
+      error,
+    );
+    return -1;
+  }
 }
 
 /** Runs `buck query --json` with the specified query. */
