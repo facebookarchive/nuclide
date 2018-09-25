@@ -26,27 +26,18 @@ interface TerminalClass extends XTerminalType {
   dispose: () => void;
 }
 
-// Fields that are legal from untrusted sources.
-type TerminalInfoUntrustedFields = {
+export type TerminalInfo = {
   title?: string,
   key?: string,
   remainOnCleanExit?: boolean,
   defaultLocation?: atom$PaneLocation | 'pane',
   icon?: string,
-  trustToken?: string,
-};
-
-// Fields that are only legal from trusted sources.
-type TerminalInfoTrustedFields = {
   command?: Command,
-  cwd?: string,
+  cwd?: ?string,
   environmentVariables?: Map<string, string>,
   preservedCommands?: Array<string>,
   initialInput?: string,
 };
-
-export type TerminalInfo = TerminalInfoUntrustedFields &
-  TerminalInfoTrustedFields;
 
 export interface TerminalInstance {
   setProcessExitCallback(callback: () => mixed): void;

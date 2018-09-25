@@ -49,18 +49,15 @@ import {
   syncTerminalFont,
   RENDERER_TYPE_CONFIG,
 } from './config';
-import {infoFromUri} from './nuclide-terminal-uri';
 import {createOutputSink} from './sink';
 
 import type {TerminalInstance, Terminal} from './types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';
-import type {InstantiatedTerminalInfo} from './nuclide-terminal-uri';
+import type {InstantiatedTerminalInfo} from './nuclide-terminal-info';
 
 import type {Sink} from './sink';
-
-export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
 export interface TerminalViewState {
   deserializer: 'TerminalView';
@@ -251,7 +248,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
           // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
           // commands are not working correctly with terminal selection.
           if (terminal.hasSelection()) {
-            // $FlowFixMe: add types for clipboard
+            // $FlowFixMe clipboard typings missing `writeText`
             clipboard.writeText(terminal.getSelection());
           } else {
             document.execCommand('paste');
@@ -628,10 +625,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
 export function deserializeTerminalView(
   state: TerminalViewState,
 ): TerminalView {
-  if (state.initialInfo != null) {
-    return new TerminalView(state.initialInfo);
-  }
-  return new TerminalView(infoFromUri(URI_PREFIX));
+  return new TerminalView(state.initialInfo);
 }
 
 function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {

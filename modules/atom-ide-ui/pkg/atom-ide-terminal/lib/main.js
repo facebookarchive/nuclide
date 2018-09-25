@@ -18,7 +18,6 @@ import {Observable} from 'rxjs';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AsyncStorage from 'idb-keyval';
@@ -26,7 +25,7 @@ import invariant from 'assert';
 
 import {setRpcService, setGkService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
+import {TERMINAL_DEFAULT_INFO, TERMINAL_URI} from './nuclide-terminal-info';
 import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
@@ -44,16 +43,16 @@ class Activation {
     this._subscriptions = new UniversalDisposable(
       focusManager,
       atom.workspace.addOpener((uri, options) => {
-        if (uri.startsWith(URI_PREFIX)) {
-          const info = infoFromUri(uri);
-          if (info.cwd === '') {
-            // $FlowFixMe we're threading cwd through options; it's not part of its type
-            const cwd = options.cwd || (this._cwd && this._cwd.getCwd());
+        if (uri === TERMINAL_URI) {
+          // $FlowFixMe this has the merged terminalInfo inside it
+          const info = options.terminalInfo || {};
+          if (info.cwd == null || info.cwd === '') {
+            const cwd = this._cwd && this._cwd.getCwd();
             if (cwd != null) {
               info.cwd = cwd;
             }
           }
-          return new TerminalView(info);
+          return new TerminalView({...TERMINAL_DEFAULT_INFO, ...info});
         }
       }),
       atom.commands.add('atom-workspace', 'atom-ide-terminal:toggle', () => {
@@ -61,7 +60,7 @@ class Activation {
         if (
           activePane &&
           activePane.getURI &&
-          activePane.getURI() === URI_PREFIX
+          activePane.getURI() === TERMINAL_URI
         ) {
           const container = atom.workspace.getActivePaneContainer();
           if (container === atom.workspace.getCenter()) {
@@ -75,10 +74,9 @@ class Activation {
                 cancelId: 0,
                 type: 'warning',
               },
-              // $FlowFixMe Flow can't handle multiple definitions for confirm(). This is the newer async version.
               response => {
                 if (response === 1) {
-                  atom.workspace.toggle(URI_PREFIX);
+                  atom.workspace.toggle(TERMINAL_URI);
                 }
               },
             );
@@ -86,7 +84,7 @@ class Activation {
             return;
           }
         }
-        atom.workspace.toggle(URI_PREFIX);
+        atom.workspace.toggle(TERMINAL_URI);
       }),
       atom.commands.add(
         'atom-workspace',
@@ -95,8 +93,10 @@ class Activation {
           // HACK: we pass along the cwd in the opener's options to be able to
           // read from it above.
           // eslint-disable-next-line nuclide-internal/atom-apis
-          openInNewPaneItem(URI_PREFIX, {
-            cwd: this._getPathOrCwd(event),
+          openTerminalInNewPaneItem({
+            terminalInfo: {
+              cwd: this._getPathOrCwd(event),
+            },
             searchAllPanes: false,
           });
         },
@@ -108,7 +108,9 @@ class Activation {
           // HACK: we pass along the cwd in the opener's options to be able to
           // read from it above.
           // eslint-disable-next-line nuclide-internal/atom-apis
-          openInNewPaneItem(URI_PREFIX, {cwd: os.homedir()});
+          openTerminalInNewPaneItem({
+            terminalInfo: {cwd: os.homedir()},
+          });
         },
       ),
       atom.commands.add(
@@ -122,7 +124,9 @@ class Activation {
   provideTerminal(): TerminalApi {
     return {
       open: (info: TerminalInfo): Promise<TerminalInstance> => {
-        const terminalView: any = goToLocation(uriFromInfo(info));
+        const terminalView: any = openTerminalInNewPaneItem({
+          terminalInfo: info,
+        });
         return terminalView;
       },
       close: (key: string) => {
@@ -252,20 +256,21 @@ module.exports = {
 
 createPackage(module.exports, Activation);
 
-async function openInNewPaneItem(
-  uri: string,
-  options: atom$WorkspaceOpenOptions,
+async function openTerminalInNewPaneItem(
+  options: atom$WorkspaceOpenOptions & {
+    terminalInfo: TerminalInfo,
+  },
 ): Promise<atom$PaneItem> {
-  const existingPane = atom.workspace.paneForURI(uri);
+  const existingPane = atom.workspace.paneForURI(TERMINAL_URI);
 
   // TODO: The flow types are wrong. paneForURI returns a nullable pane
   if (!existingPane) {
     // eslint-disable-next-line nuclide-internal/atom-apis
-    return atom.workspace.open(uri, options);
+    return atom.workspace.open(TERMINAL_URI, options);
   }
 
   const [item, hasShownNux] = await Promise.all([
-    atom.workspace.createItemForURI(uri, options),
+    atom.workspace.createItemForURI(TERMINAL_URI, options),
     AsyncStorage.get(MOVED_TERMINAL_NUX_SHOWN_KEY),
   ]);
   existingPane.activateItem(item);
