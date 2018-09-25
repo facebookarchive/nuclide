@@ -174,10 +174,17 @@ export default class WatchmanClient {
           logger.info(
             `Subscribed to ${name}: (${numRestored}/${numSubscriptions}) complete.`,
           );
-          this._reconnectDelayMs = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
         },
       ),
     );
+    if (numRestored === numSubscriptions) {
+      logger.info(
+        'Successfully reconnected all %d subscriptions.',
+        numRestored,
+      );
+      // if everything got restored, reset the reconnect backoff time
+      this._reconnectDelayMs = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
+    }
   }
 
   _getSubscription(entryPath: string): ?WatchmanSubscription {
