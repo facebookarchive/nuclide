@@ -131,6 +131,7 @@ export class Button extends React.Component<Props> {
         className={newClassName}
         // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={this._onRefChange}
+        disabled={disabled}
         {...buttonProps}
         title={titleToolTip}>
         {children}
