@@ -9,7 +9,8 @@
  * @format
  */
 
-import type {ConfigEntry, Transport} from '../lib/index';
+import type {Transport} from '../lib/index';
+import type {ConfigEntry} from '../lib/types';
 
 import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {RpcConnection} from '../lib/RpcConnection';

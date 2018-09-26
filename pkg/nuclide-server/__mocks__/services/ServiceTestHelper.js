@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ConfigEntry} from '../../../nuclide-rpc';
+import type {ConfigEntry} from '../../../nuclide-rpc/lib/types';
 
 import NuclideServer from '../../lib/NuclideServer';
 import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';

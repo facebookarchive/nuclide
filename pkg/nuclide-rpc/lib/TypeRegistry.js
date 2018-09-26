@@ -20,6 +20,10 @@ import type {
   UnionType,
   Location,
   Parameter,
+  Transformer,
+  NamedTransformer,
+  PredefinedTransformer,
+  ObjectRegistryInterface,
 } from './types';
 import {
   builtinLocation,
@@ -29,22 +33,7 @@ import {
   bufferType,
   fsStatsType,
 } from './builtin-types';
-import type {ObjectRegistry} from './ObjectRegistry';
 import {locationsEqual, locationToString} from './location';
-import type {NamedTransformer, PredefinedTransformer} from './index';
-
-/*
- * This type represents a Transformer function, which takes in a value, and either serializes
- * or deserializes it. Transformer's are added to a registry and indexed by the name of
- * the type they handle (eg: 'Date'). The second argument is the actual type object that represent
- * the value. Parameterized types like Array, or Object can use this to recursively call other
- * transformers.
- */
-export type Transformer = (
-  value: any,
-  type: Type,
-  context: ObjectRegistry,
-) => any;
 
 function canBeUndefined(type: Type): boolean {
   return (
@@ -147,14 +136,14 @@ export class TypeRegistry {
     // Register NullableType and NamedType
     this._registerKind(
       'nullable',
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         invariant(type.kind === 'nullable');
         if (value == null) {
           return value;
         }
         return this._marshal(context, value, type.type);
       },
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         invariant(type.kind === 'nullable');
         if (value == null) {
           return value;
@@ -165,7 +154,7 @@ export class TypeRegistry {
 
     this._registerKind(
       'named',
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         invariant(type.kind === 'named');
         const namedMarshaller = this._namedMarshallers.get(type.name);
         if (namedMarshaller == null) {
@@ -173,7 +162,7 @@ export class TypeRegistry {
         }
         return namedMarshaller.marshaller(value, context);
       },
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         invariant(type.kind === 'named');
         const namedMarshaller = this._namedMarshallers.get(type.name);
         if (namedMarshaller == null) {
@@ -273,11 +262,11 @@ export class TypeRegistry {
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
-  marshal(context: ObjectRegistry, value: any, type: Type): any {
+  marshal(context: ObjectRegistryInterface, value: any, type: Type): any {
     return this._marshal(context, value, type);
   }
 
-  _marshal(context: ObjectRegistry, value: any, type: Type): any {
+  _marshal(context: ObjectRegistryInterface, value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No marshaller found for type kind ${type.kind}.`);
@@ -286,7 +275,7 @@ export class TypeRegistry {
   }
 
   marshalArguments(
-    context: ObjectRegistry,
+    context: ObjectRegistryInterface,
     args: Array<any>,
     argTypes: Array<Parameter>,
   ): Object {
@@ -312,12 +301,12 @@ export class TypeRegistry {
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
-  unmarshal(context: ObjectRegistry, value: any, type: Type): any {
+  unmarshal(context: ObjectRegistryInterface, value: any, type: Type): any {
     return this._unmarshal(context, value, type);
   }
 
   unmarshalArguments(
-    context: ObjectRegistry,
+    context: ObjectRegistryInterface,
     args: Object,
     argTypes: Array<Parameter>,
   ): Array<any> {
@@ -330,7 +319,7 @@ export class TypeRegistry {
     });
   }
 
-  _unmarshal(context: ObjectRegistry, value: any, type: Type): any {
+  _unmarshal(context: ObjectRegistryInterface, value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
@@ -599,13 +588,13 @@ export class TypeRegistry {
     // Serialize / Deserialize Arrays.
     this._registerKind(
       'array',
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         assert(value instanceof Array, 'Expected an object of type Array.');
         invariant(type.kind === 'array');
         const elemType = type.type;
         return value.map(elem => this._marshal(context, elem, elemType));
       },
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         assert(value instanceof Array, 'Expected an object of type Array.');
         invariant(type.kind === 'array');
         const elemType = type.type;
@@ -616,7 +605,7 @@ export class TypeRegistry {
     // Serialize and Deserialize Objects.
     this._registerKind(
       'object',
-      (obj: any, type: Type, context: ObjectRegistry) => {
+      (obj: any, type: Type, context: ObjectRegistryInterface) => {
         assert(typeof obj === 'object', 'Expected an argument of type object.');
         invariant(type.kind === 'object');
         const newObj = {}; // Create a new object so we don't mutate the original one.
@@ -652,7 +641,7 @@ export class TypeRegistry {
         });
         return newObj;
       },
-      (obj: any, type: Type, context: ObjectRegistry) => {
+      (obj: any, type: Type, context: ObjectRegistryInterface) => {
         assert(typeof obj === 'object', 'Expected an argument of type object.');
         invariant(type.kind === 'object');
         const newObj = {}; // Create a new object so we don't mutate the original one.
@@ -687,14 +676,14 @@ export class TypeRegistry {
     // Serialize / Deserialize Sets.
     this._registerKind(
       'set',
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         invariant(type.kind === 'set');
         assert(value instanceof Set, 'Expected an object of type Set.');
         return Array.from(value).map(elem =>
           this._marshal(context, elem, type.type),
         );
       },
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         assert(value instanceof Array, 'Expected an object of type Array.');
         invariant(type.kind === 'set');
         const elemType = type.type;
@@ -707,7 +696,7 @@ export class TypeRegistry {
     // Serialize / Deserialize Maps.
     this._registerKind(
       'map',
-      (map: Map<any, any>, type: Type, context: ObjectRegistry) => {
+      (map: Map<any, any>, type: Type, context: ObjectRegistryInterface) => {
         assert(map instanceof Map, 'Expected an object of type Set.');
         invariant(type.kind === 'map');
         return Array.from(map).map(([key, value]) => [
@@ -715,7 +704,7 @@ export class TypeRegistry {
           this._marshal(context, value, type.valueType),
         ]);
       },
-      (serialized: any, type: Type, context: ObjectRegistry) => {
+      (serialized: any, type: Type, context: ObjectRegistryInterface) => {
         assert(
           serialized instanceof Array,
           'Expected an object of type Array.',
@@ -735,7 +724,7 @@ export class TypeRegistry {
     // Serialize / Deserialize Tuples.
     this._registerKind(
       'tuple',
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         // Assert the length of the array.
         assert(Array.isArray(value), 'Expected an object of type Array.');
         invariant(type.kind === 'tuple');
@@ -748,7 +737,7 @@ export class TypeRegistry {
         // Convert all of the elements through the correct marshaller.
         return value.map((elem, i) => this._marshal(context, elem, types[i]));
       },
-      (value: any, type: Type, context: ObjectRegistry) => {
+      (value: any, type: Type, context: ObjectRegistryInterface) => {
         // Assert the length of the array.
         assert(Array.isArray(value), 'Expected an object of type Array.');
         invariant(type.kind === 'tuple');
@@ -820,7 +809,7 @@ function makeKindMarshaller(
   kind: string,
   transformer: Transformer,
 ): Transformer {
-  return (value: any, type: Type, context: ObjectRegistry) => {
+  return (value: any, type: Type, context: ObjectRegistryInterface) => {
     try {
       return transformer(value, type, context);
     } catch (e) {
@@ -834,7 +823,7 @@ function makeNamedMarshaller(
   typeName: string,
   transformer: NamedTransformer,
 ): NamedTransformer {
-  return (value: any, context: ObjectRegistry) => {
+  return (value: any, context: ObjectRegistryInterface) => {
     try {
       return transformer(value, context);
     } catch (e) {

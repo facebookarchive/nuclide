@@ -14,6 +14,7 @@ import {getLogger} from 'log4js';
 import {Emitter} from 'event-kit';
 import type {ServiceRegistry} from './ServiceRegistry';
 import type {RpcContext} from './main';
+import type {RemoteObject, ObjectRegistryInterface} from './types';
 
 const logger = getLogger('nuclide-rpc');
 
@@ -23,13 +24,6 @@ type ObjectRegistration = {
   object: RemoteObject,
 };
 
-// All remotable objects have some set of named functions,
-// and they also have a dispose method.
-export type RemoteObject = {
-  [id: string]: Function,
-  dispose: () => void,
-};
-
 type RegistryKind = 'server' | 'client';
 
 // Handles lifetimes of marshalling wrappers remote objects.
@@ -37,7 +31,7 @@ type RegistryKind = 'server' | 'client';
 // Object passed by reference over RPC are assigned an ID.
 // Positive IDs represent objects which live on the server,
 // negative IDs represent objects which live on the client.
-export class ObjectRegistry {
+export class ObjectRegistry implements ObjectRegistryInterface {
   // These members handle local objects which have been marshalled remotely.
   _registrationsById: Map<number, ObjectRegistration>;
   _registrationsByObject: Map<RemoteObject, ObjectRegistration>;

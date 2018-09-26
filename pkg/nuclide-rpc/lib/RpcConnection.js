@@ -9,8 +9,14 @@
  * @format
  */
 
-import type {ConfigEntry, Transport} from './index';
-import type {ReturnType, Type, Parameter} from './types';
+import type {Transport} from './index';
+import type {
+  ReturnType,
+  Type,
+  Parameter,
+  ConfigEntry,
+  PredefinedTransformer,
+} from './types';
 import type {TypeRegistry} from './TypeRegistry';
 import type {
   ResponseMessage,
@@ -19,7 +25,6 @@ import type {
   CallObjectMessage,
 } from './messages';
 import type {ClassDefinition, FunctionImplementation} from './ServiceRegistry';
-import type {PredefinedTransformer} from './index';
 import type {MemoryLogger} from '../../commons-node/memoryLogger';
 
 import invariant from 'assert';

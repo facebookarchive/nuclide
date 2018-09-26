@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ConfigEntry} from '../../nuclide-rpc';
+import type {ConfigEntry} from '../../nuclide-rpc/lib/types';
 
 import invariant from 'assert';
 import os from 'os';

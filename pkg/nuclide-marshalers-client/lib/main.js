@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {PredefinedTransformer} from '../../nuclide-rpc';
+import type {PredefinedTransformer} from '../../nuclide-rpc/lib/types';
 
 import {
   getRemoteNuclideUriMarshalers,

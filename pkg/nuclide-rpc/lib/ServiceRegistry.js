@@ -9,15 +9,18 @@
  * @format
  */
 
-import type {PredefinedTransformer} from './index';
-
 import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
-import type {FunctionType, Definitions, InterfaceDefinition} from './types';
+import type {
+  FunctionType,
+  Definitions,
+  InterfaceDefinition,
+  PredefinedTransformer,
+  ConfigEntry,
+  ObjectRegistryInterface,
+} from './types';
 import type {ProxyFactory} from './main';
 import invariant from 'assert';
-import type {ConfigEntry} from './index';
-import type {ObjectRegistry} from './ObjectRegistry';
 import {getLogger} from 'log4js';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
@@ -142,9 +145,9 @@ export class ServiceRegistry {
             this._typeRegistry.registerType(
               name,
               definition.location,
-              (object, context: ObjectRegistry) =>
+              (object, context: ObjectRegistryInterface) =>
                 context.marshal(name, object),
-              (objectId, context: ObjectRegistry) =>
+              (objectId, context: ObjectRegistryInterface) =>
                 context.unmarshal(
                   objectId,
                   name,
