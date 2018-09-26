@@ -276,6 +276,14 @@
   dependencies:
     "@babel/helper-plugin-utils" "7.0.0-beta.48"
 
+"@babel/runtime-corejs2@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.0.0.tgz#786711ee099c2c2af7875638866c1259eff30a8c"
+  integrity sha512-Yww0jXgolNtkhcK+Txo5JN+DjBpNmmAtD7G99HOebhEjBzjnACG09Tip9C8lSOF6PrhA56OeJWeOZduNJaKxBA==
+  dependencies:
+    core-js "^2.5.7"
+    regenerator-runtime "^0.12.0"
+
 "@babel/template@7.0.0-beta.44":
   version "7.0.0-beta.44"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.0.0-beta.44.tgz#f8832f4fdcee5d59bf515e595fc5106c529b394f"
@@ -431,6 +439,21 @@
 "@nodelib/fs.stat@^1.0.1":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.0.2.tgz#d056b68999769728a1cff8d643bc59eb6f0be436"
+
+"@nteract/plotly@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@nteract/plotly/-/plotly-1.0.0.tgz#1ce454ab1baa67dc26e72ff5a917c2065eed9146"
+  integrity sha1-HORUqxuqZ9wm5y/1qRfCBl7tkUY=
+
+"@nteract/transform-plotly@3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@nteract/transform-plotly/-/transform-plotly-3.2.3.tgz#c2029cb470d9c7606af152f56025b239c021bdae"
+  integrity sha512-JPBwW39glHcBF6swMIGWERw8+kcVIonoADPhrnseQcyScjx69Kd7tkAy58iCnVrV4fFvOUT1W0lGXSNTkMAh0Q==
+  dependencies:
+    "@babel/runtime-corejs2" "^7.0.0"
+    "@nteract/plotly" "^1.0.0"
+    babel-runtime "^6.26.0"
+    lodash "^4.17.4"
 
 "@phosphor/algorithm@^1.1.2":
   version "1.1.2"
@@ -2505,6 +2528,11 @@ core-js@2.5.1, core-js@^2.4.0, core-js@^2.5.0:
 core-js@^1.0.0:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
+
+core-js@^2.5.7:
+  version "2.5.7"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.7.tgz#f972608ff0cead68b841a16a932d0b183791814e"
+  integrity sha512-RszJCAxg/PP6uzXVXL6BsxSXx/B05oJAQ2vkJRjyjrEcNVycaqOmNb5OTxZPE3xa5gwZduqza6L9JOCenh/Ecw==
 
 core-util-is@~1.0.0:
   version "1.0.2"
@@ -7274,6 +7302,11 @@ regenerator-runtime@^0.10.5:
 regenerator-runtime@^0.11.0:
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.0.tgz#7e54fe5b5ccd5d6624ea6255c3473be090b802e1"
+
+regenerator-runtime@^0.12.0:
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.12.1.tgz#fa1a71544764c036f8c49b13a08b2594c9f8a0de"
+  integrity sha512-odxIc1/vDlo4iZcfXqRYFj0vpXFNoGdKMAUieAlFYO6m/nl5e9KR/beGf41z4a1FI+aQgtjhuaSlDxQ0hmkrHg==
 
 regenerator-runtime@^0.9.5:
   version "0.9.6"
