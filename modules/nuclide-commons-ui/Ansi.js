@@ -14,20 +14,46 @@ import * as React from 'react';
 import Anser from 'anser';
 import escapeCarriageReturn from 'escape-carriage';
 
-function ansiToJSON(input) {
+type Props = {
+  useClasses?: boolean,
+  colorStyle?: {[color: string]: string},
+  children?: string,
+  renderSegment?: RenderSegmentProps => React.Node,
+};
+
+export type RenderSegmentProps = {
+  key: string,
+  style: Object,
+  content: string,
+};
+
+function ansiToJSON(input, useClasses) {
+  const classes = useClasses == null || !useClasses ? false : useClasses;
   return Anser.ansiToJson(escapeCarriageReturn(input), {
+    use_classes: classes,
     json: true,
     remove_empty: true,
   });
 }
 
-function ansiJSONtoStyleBundle(ansiBundle) {
+// make sure
+function ansiJSONtoStyleBundle(ansiBundle, colorStyle) {
   const style = {};
   if (ansiBundle.bg) {
-    style.backgroundColor = `rgb(${ansiBundle.bg})`;
+    style.backgroundColor =
+      colorStyle != null
+        ? `rgb(${colorStyle[ansiBundle.bg]})`
+        : `rgb(${ansiBundle.bg})`;
   }
   if (ansiBundle.fg) {
-    style.color = `rgb(${ansiBundle.fg})`;
+    style.color =
+      colorStyle != null
+        ? `rgb(${colorStyle[ansiBundle.fg]})`
+        : `rgb(${ansiBundle.fg})`;
+  } else {
+    if (colorStyle != null) {
+      style.color = `rgb(${colorStyle.default})`;
+    }
   }
   return {
     content: ansiBundle.content,
@@ -35,16 +61,11 @@ function ansiJSONtoStyleBundle(ansiBundle) {
   };
 }
 
-function ansiToInlineStyle(text) {
-  return ansiToJSON(text).map(ansiJSONtoStyleBundle);
+function ansiToInlineStyle(text, useClasses, colorStyle) {
+  return ansiToJSON(text, useClasses).map(input =>
+    ansiJSONtoStyleBundle(input, colorStyle),
+  );
 }
-
-type Props = {
-  children?: string,
-  renderSegment?: RenderSegmentProps => React.Node,
-};
-
-export type RenderSegmentProps = {key: string, style: Object, content: string};
 
 function defaultRenderSegment({key, style, content}: RenderSegmentProps) {
   return (
@@ -57,14 +78,17 @@ function defaultRenderSegment({key, style, content}: RenderSegmentProps) {
 export default class Ansi extends React.PureComponent<Props> {
   render() {
     const {
+      useClasses,
+      colorStyle,
       children,
       renderSegment = defaultRenderSegment,
       ...passThroughProps
     } = this.props;
     return (
       <code {...passThroughProps}>
-        {ansiToInlineStyle(children).map(({style, content}, key) =>
-          renderSegment({key: String(key), style, content}),
+        {ansiToInlineStyle(children, useClasses, colorStyle).map(
+          ({style, content}, key) =>
+            renderSegment({key: String(key), style, content}),
         )}
       </code>
     );
