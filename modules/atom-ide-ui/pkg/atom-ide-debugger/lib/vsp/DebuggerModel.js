@@ -910,6 +910,7 @@ export class Process implements IProcess {
     this._sources = new Map();
     this._pendingStart = true;
     this._pendingStop = false;
+    this.breakpoints = [];
   }
 
   get sources(): Map<string, ISource> {
@@ -1323,13 +1324,18 @@ export class Model implements IModel {
     // Otherwise, return the UI breakpoints. Since there is no debug process,
     // the breakpoints have their original line location and no notion of
     // verified vs not.
-    return this._uiBreakpoints.map(bp => ({
-      ...bp,
-      verified: true,
-      originalLine: bp.line,
-      getId: () => bp.id,
-      idFromAdapter: null,
-    }));
+    return this._uiBreakpoints.map(uiBp => {
+      const bp = new Breakpoint(
+        uiBp.id,
+        uiBp.uri,
+        uiBp.line,
+        uiBp.column,
+        uiBp.enabled,
+        uiBp.condition,
+      );
+      bp.verified = true;
+      return bp;
+    });
   }
 
   getBreakpointAtLine(uri: string, line: number): ?IBreakpoint {
@@ -1511,6 +1517,10 @@ export class Model implements IModel {
 
   setEnablement(element: IEnableable, enable: boolean): void {
     element.enabled = enable;
+    const uiBp = this._uiBreakpoints.find(bp => bp.id === element.getId());
+    if (uiBp != null) {
+      uiBp.enabled = enable;
+    }
     this._sortSyncAndDeDup();
   }
 

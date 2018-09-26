@@ -1029,14 +1029,20 @@ export default class DebugService implements IDebugService {
     }
     try {
       result = state.sourceBreakpoints.map(breakpoint => {
-        return {
+        const bp: IUIBreakpoint = {
           uri: breakpoint.uri,
           line: breakpoint.originalLine,
           column: breakpoint.column,
           enabled: breakpoint.enabled,
-          condition: breakpoint.condition || '',
           id: uuid.v4(),
         };
+        if (
+          breakpoint.condition != null &&
+          breakpoint.condition.trim() !== ''
+        ) {
+          bp.condition = breakpoint.condition;
+        }
+        return bp;
       });
     } catch (e) {}
 
