@@ -129,6 +129,7 @@ export default class WatchmanClient {
       const client = await this._clientPromise;
       if (client != null) {
         logger.info('Ending existing watchman client to reconnect a new one');
+        client.removeAllListeners();
         client.end();
       }
     }
