@@ -16,6 +16,8 @@ import type {JavaAttachPortTargetConfig} from 'atom-ide-debugger-java/JavaDebugg
 
 import nullthrows from 'nullthrows';
 import invariant from 'assert';
+import {track} from 'nuclide-commons/analytics';
+import {sleep} from 'nuclide-commons/promise';
 // eslint-disable-next-line nuclide-internal/modules-dependencies
 import {getJavaDebuggerHelpersServiceByNuclideUri} from 'atom-ide-debugger-java/utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -93,13 +95,26 @@ export async function getPidFromPackageName(
   packageName: string,
 ): Promise<number> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  const pid = await adbService.getPidFromPackageName(deviceSerial, packageName);
-  if (!Number.isInteger(pid)) {
+  let pid = await adbService.getPidFromPackageName(deviceSerial, packageName);
+  const firstTryFails = !Number.isInteger(pid);
+  if (firstTryFails) {
+    // Try twice after a short delay because sometimes it works.
+    await sleep(300);
+    pid = await adbService.getPidFromPackageName(deviceSerial, packageName);
+  }
+  const success = Number.isInteger(pid);
+  track('atom-ide-debugger-java-android-getPidFromPackageName', {
+    triedTwice: firstTryFails,
+    success,
+    pid,
+  });
+  if (success) {
+    return pid;
+  } else {
     throw new Error(
       `Fail to get pid for package: ${packageName}. Instead got: ${pid}`,
     );
   }
-  return pid;
 }
 
 export async function getAdbAttachPortTargetInfo(
