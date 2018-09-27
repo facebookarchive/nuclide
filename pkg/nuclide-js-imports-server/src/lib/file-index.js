@@ -24,7 +24,13 @@ import {Observable} from 'rxjs';
 import {WatchmanClient} from 'nuclide-watchman-helpers';
 import ExportCache from './ExportCache';
 
-const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];
+// prettier-ignore
+const TO_IGNORE = [
+  '**/node_modules/**',
+  '**/VendorLib/**',
+  '**/flow-typed/**',
+  // @fb-only: '**/*react.proton.js',
+];
 
 export type FileWithHash = {
   // All files in the index will be relative to the given root.
