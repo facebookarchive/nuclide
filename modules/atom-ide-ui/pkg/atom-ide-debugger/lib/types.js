@@ -477,6 +477,7 @@ export interface IBreakpoint extends IEnableable {
   // endLine: ?number;
   // endColumn: ?number;
   // hitCondition: ?string;
+  +hitCount: ?number;
 }
 
 export interface IFunctionBreakpoint extends IEnableable {

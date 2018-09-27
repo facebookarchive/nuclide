@@ -212,6 +212,12 @@ export default class BreakpointListComponent extends React.Component<
               </div>
             ) : null;
 
+          const hitcountElement =
+            breakpoint.hitCount != null ? (
+              <div className="debugger-breakpoint-hitcount">
+                Hit count: {breakpoint.hitCount}
+              </div>
+            ) : null;
           const content = (
             <div className="inline-block">
               <div
@@ -279,6 +285,7 @@ export default class BreakpointListComponent extends React.Component<
                   {label}
                 </span>
                 {conditionElement}
+                {hitcountElement}
               </div>
             </div>
           );

@@ -1083,6 +1083,7 @@ export class Breakpoint implements IBreakpoint {
   enabled: boolean;
   condition: ?string;
   adapterData: any;
+  hitCount: ?number;
 
   constructor(
     uiBreakpointId: string,
@@ -1102,6 +1103,13 @@ export class Breakpoint implements IBreakpoint {
     this.adapterData = adapterData;
     this.verified = false;
     this.uiBreakpointId = uiBreakpointId;
+    this.hitCount = null;
+
+    if (condition != null && condition.trim() !== '') {
+      this.condition = condition;
+    } else {
+      this.condition = null;
+    }
   }
 
   getId(): string {
@@ -1445,6 +1453,7 @@ export class Model implements IModel {
         bp.adapterData = bpData.source
           ? bpData.source.adapterData
           : bp.adapterData;
+        bp.hitCount = bpData.nuclide_hitCount;
       }
     });
     this._sortSyncAndDeDup();
