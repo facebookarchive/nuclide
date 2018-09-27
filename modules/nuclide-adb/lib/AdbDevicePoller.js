@@ -50,7 +50,7 @@ export function observeAndroidDevices(
               // RPC call timed out
               error.name === 'RpcTimeoutError' ||
               // RPC call succeeded, but the adb call itself timed out
-              error.startsWith('Remote Error: Timeout has occurred')
+              error.message.startsWith('Remote Error: Timeout has occurred')
             ) {
               message = 'Request timed out, retrying...';
             } else {
