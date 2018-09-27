@@ -433,13 +433,12 @@ class Activation {
     // Only keep the lines up to and including the buffer position row.
     text = lines.slice(0, row + 1).join('\n');
     const {focusedStackFrame, focusedProcess} = this._service.viewModel;
-    if (focusedProcess == null || focusedStackFrame == null) {
-      return [];
-    } else if (
+    if (
+      focusedProcess == null ||
+      focusedStackFrame == null ||
       !Boolean(focusedProcess.session.capabilities.supportsCompletionsRequest)
     ) {
-      const scopes = await focusedStackFrame.getScopes();
-      return scopes.map(scope => ({text: scope.name, type: 'variable'}));
+      return [];
     } else {
       const completions = await focusedProcess.completions(
         focusedStackFrame.frameId,
