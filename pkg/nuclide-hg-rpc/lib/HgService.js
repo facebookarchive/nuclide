@@ -190,6 +190,7 @@ export class HgRepositorySubscriptions {
   _filesDidChangeObserver: Subject<any>;
   _hgActiveBookmarkDidChangeObserver: Subject<any>;
   _lockFilesDidChange: Observable<Map<string, boolean>>;
+  _watchmanHealth: Observable<boolean>;
   _hgBookmarksDidChangeObserver: Subject<any>;
   _hgRepoStateDidChangeObserver: Subject<any>;
   _hgRepoCommitsDidChangeObserver: Subject<void>;
@@ -213,6 +214,7 @@ export class HgRepositorySubscriptions {
     this._filesDidChangeObserver = new Subject();
     this._hgActiveBookmarkDidChangeObserver = new Subject();
     this._lockFilesDidChange = Observable.empty();
+    this._watchmanHealth = Observable.empty();
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
@@ -367,6 +369,8 @@ export class HgRepositorySubscriptions {
       .publish()
       .refCount();
 
+    this._watchmanHealth = watchmanClient.observeHealth();
+
     // Those files' changes indicate a commit-changing action has been applied to the repository,
     // Watchman currently (v4.7) ignores `.hg/store` file updates.
     // Hence, we here use node's filesystem watchers instead.
@@ -472,6 +476,10 @@ export class HgRepositorySubscriptions {
 
   _hgOperationProgressDidChange(): void {
     this._hgOperationProgressDidChangeObserver.next();
+  }
+
+  observeWatchmanHealth(): ConnectableObservable<boolean> {
+    return this._watchmanHealth.takeUntil(this._disposeObserver).publish();
   }
 
   /**

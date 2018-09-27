@@ -12,9 +12,10 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import watchman from 'fb-watchman';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {serializeAsyncCall, sleep} from 'nuclide-commons/promise';
 import {maybeToString} from 'nuclide-commons/string';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from 'log4js';
@@ -50,6 +51,7 @@ export default class WatchmanClient {
   _serializedReconnect: () => Promise<void>;
   _reconnectDelayMs: number = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
   _lastKnownClockTimes: Map<string, string>;
+  _healthSubject: Subject<boolean>;
 
   constructor() {
     this._initWatchmanClient();
@@ -83,12 +85,14 @@ export default class WatchmanClient {
     });
     this._subscriptions = new Map();
     this._lastKnownClockTimes = new Map();
+    this._healthSubject = new Subject();
   }
 
   async dispose(): Promise<void> {
     const client = await this._clientPromise;
     client.removeAllListeners(); // disable reconnection
     client.end();
+    this._healthSubject.complete();
   }
 
   async _initWatchmanClient(): Promise<void> {
@@ -123,6 +127,9 @@ export default class WatchmanClient {
   }
 
   async _reconnectClient(): Promise<void> {
+    // we must be unhealthy if we have to reconnect
+    this._healthSubject.next(false);
+
     // If we got an error after making a subscription, the reconnect needs to
     // remove that subscription to try again, so it doesn't keep leaking subscriptions.
     if (this._clientPromise != null) {
@@ -185,6 +192,7 @@ export default class WatchmanClient {
       );
       // if everything got restored, reset the reconnect backoff time
       this._reconnectDelayMs = DEFAULT_WATCHMAN_RECONNECT_DELAY_MS;
+      this._healthSubject.next(true);
     }
   }
 
@@ -243,6 +251,8 @@ export default class WatchmanClient {
     const existingSubscription = this._getSubscription(subscriptionName);
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
+      this._healthSubject.next(true);
+
       return existingSubscription;
     } else {
       const {
@@ -273,6 +283,8 @@ export default class WatchmanClient {
       );
       this._setSubscription(subscriptionName, subscription);
       await this._subscribe(watchRoot, subscriptionName, options);
+
+      this._healthSubject.next(true);
       return subscription;
     }
   }
@@ -382,5 +394,16 @@ export default class WatchmanClient {
         })
         .catch(reject);
     });
+  }
+
+  observeHealth(): Observable<boolean> {
+    return this._healthSubject
+      .asObservable()
+      .distinctUntilChanged()
+      .let(fastDebounce(200))
+      .distinctUntilChanged()
+      .do(health => {
+        logger.info('is watchman healthy?', health);
+      });
   }
 }
