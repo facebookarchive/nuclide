@@ -9,8 +9,6 @@
  * @format
  */
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-
 const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 const NUCLIDE_GUTTER_NAME = 'nuclide-diff-gutter';
 const DIFF_GUTTER_OPTIONS = {
@@ -25,23 +23,6 @@ export function initializeDiffGutters(editor: atom$TextEditor) {
   if (!markerMap.has(editor)) {
     markerMap.set(editor, []);
     editor.onDidDestroy(() => _cleanupDiffGutters(editor));
-  }
-  _addIconClass(editor);
-}
-
-function _addIconClass(editor: atom$TextEditor) {
-  const gutterContainerDOMElement = atom.views
-    .getView(editor)
-    .querySelector('.gutter-container');
-  if (gutterContainerDOMElement != null) {
-    const iconSetting = featureConfig.get(
-      'nuclide-diff-gutters.showIconsInNuclideDiffGutter',
-    );
-    if (iconSetting === true) {
-      gutterContainerDOMElement.classList.add('nuclide-diff-gutters-icon');
-    } else {
-      gutterContainerDOMElement.classList.remove('nuclide-diff-gutters-icon');
-    }
   }
 }
 
@@ -80,7 +61,7 @@ function _addDecorations(
       if (startRow < 0) {
         _markRange(editor, 0, 0, 'nuclide-previous-line-removed');
       } else {
-        _markRange(editor, startRow, startRow + 1, 'nuclide-line-removed');
+        _markRange(editor, startRow, startRow, 'nuclide-line-removed');
       }
     } else {
       _markRange(editor, startRow, endRow, 'nuclide-line-modified');
@@ -105,22 +86,19 @@ function _markRange(
   endRow: number,
   klass: string,
 ) {
-  // A marker is created for each line to ensure icons mark every affected line
-  for (let i = startRow; i < endRow; i++) {
-    const marker = editor.markBufferRange([[i, 0], [i, 0]], {
-      invalidate: 'never',
-    });
-    const markerParams = {
-      type: 'gutter',
-      class: klass,
-    };
-    const gutter: ?atom$Gutter = editor.gutterWithName(NUCLIDE_GUTTER_NAME);
-    if (gutter != null) {
-      gutter.decorateMarker(marker, markerParams);
-      const markerArray: ?Array<atom$Marker> = markerMap.get(editor);
-      if (markerArray != null) {
-        markerArray.push(marker);
-      }
+  const marker = editor.markBufferRange([[startRow, 0], [endRow - 1, 0]], {
+    invalidate: 'never',
+  });
+  const markerParams = {
+    type: 'gutter',
+    class: klass,
+  };
+  const gutter: ?atom$Gutter = editor.gutterWithName(NUCLIDE_GUTTER_NAME);
+  if (gutter != null) {
+    gutter.decorateMarker(marker, markerParams);
+    const markerArray: ?Array<atom$Marker> = markerMap.get(editor);
+    if (markerArray != null) {
+      markerArray.push(marker);
     }
   }
 }
