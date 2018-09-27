@@ -48,6 +48,8 @@ export default class VsAdapterSpawner implements IVsAdapterSpawner {
         };
         if (adapter.command === 'node') {
           adapter.command = process.execPath;
+        } else if (adapter.command === 'sudo' && adapter.args[0] === 'node') {
+          adapter.args[0] = process.execPath;
         }
         return observeProcessRaw(adapter.command, adapter.args, options);
       })
