@@ -1,3 +1,18 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,25 +21,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import ReactDOM from 'react-dom';
-import * as React from 'react';
-
-type BlockDecorationProps = {
-  range: atom$Range,
-  editor: atom$TextEditor,
-  children?: React.Node,
-};
-
-export default class BlockDecoration extends React.Component<
-  BlockDecorationProps,
-> {
-  _marker: atom$Marker;
-  _item: HTMLElement;
-  constructor(props: BlockDecorationProps) {
+class BlockDecoration extends React.Component {
+  constructor(props) {
     super(props);
     this._item = document.createElement('div');
   }
@@ -37,7 +38,7 @@ export default class BlockDecoration extends React.Component<
     this._marker.destroy();
   }
 
-  componentDidUpdate(prevProps: BlockDecorationProps) {
+  componentDidUpdate(prevProps) {
     if (prevProps.editor !== this.props.editor) {
       this._createMarker();
     } else if (!prevProps.range.isEqual(this.props.range)) {
@@ -49,17 +50,23 @@ export default class BlockDecoration extends React.Component<
     if (this._marker) {
       this._marker.destroy();
     }
-    const {range, editor} = this.props;
-    this._marker = editor.markBufferRange(range);
 
+    const {
+      range,
+      editor
+    } = this.props;
+    this._marker = editor.markBufferRange(range);
     editor.decorateMarker(this._marker, {
       type: 'block',
       position: 'after',
-      item: this._item,
+      item: this._item
     });
   }
 
   render() {
-    return ReactDOM.createPortal(this.props.children, this._item);
+    return _reactDom.default.createPortal(this.props.children, this._item);
   }
+
 }
+
+exports.default = BlockDecoration;

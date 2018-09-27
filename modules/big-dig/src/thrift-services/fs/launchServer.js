@@ -1,3 +1,39 @@
+"use strict";
+
+function _log4js() {
+  const data = _interopRequireDefault(require("log4js"));
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _os = _interopRequireDefault(require("os"));
+
+function _fsServer() {
+  const data = require("./fsServer");
+
+  _fsServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,15 +42,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import log4js from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import os from 'os';
-import {RemoteFileSystemServer} from './fsServer';
-
 async function main() {
   if (process.argv.length !== 3) {
     // eslint-disable-next-line no-console
@@ -23,31 +53,30 @@ async function main() {
   }
 
   const port = parseInt(process.argv[2], 10);
-  log4js.getLogger().info('Initializing server on port', port);
-  const server = new RemoteFileSystemServer(port);
+
+  _log4js().default.getLogger().info('Initializing server on port', port);
+
+  const server = new (_fsServer().RemoteFileSystemServer)(port);
   await server.initialize();
-  log4js.getLogger().info('Server listening on port', port);
+
+  _log4js().default.getLogger().info('Server listening on port', port);
 }
 
-log4js.configure({
-  appenders: [
-    {
-      type: 'file',
-      filename: nuclideUri.join(os.tmpdir(), 'big-dig-service-fs.log'),
-    },
-    {
-      type: 'stderr',
-    },
-  ],
+_log4js().default.configure({
+  appenders: [{
+    type: 'file',
+    filename: _nuclideUri().default.join(_os.default.tmpdir(), 'big-dig-service-fs.log')
+  }, {
+    type: 'stderr'
+  }]
 });
 
 process.on('unhandledRejection', error => {
-  log4js.getLogger().error('Unhandled rejection:', error);
+  _log4js().default.getLogger().error('Unhandled rejection:', error);
 });
-
 process.on('uncaughtException', error => {
-  log4js.getLogger().fatal('Uncaught exception:', error);
-  log4js.shutdown(() => process.abort());
-});
+  _log4js().default.getLogger().fatal('Uncaught exception:', error);
 
+  _log4js().default.shutdown(() => process.abort());
+});
 main();

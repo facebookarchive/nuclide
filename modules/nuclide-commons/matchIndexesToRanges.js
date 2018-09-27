@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = matchIndexesToRanges;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,21 +13,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-type MatchRange = [/* start */ number, /* end */ number];
-
-export default function matchIndexesToRanges(
-  matchIndexes: Array<number>,
-): Array<MatchRange> {
+function matchIndexesToRanges(matchIndexes) {
   let streakOngoing = false;
   let start = 0;
-  const ranges = [];
-
-  // Collapse consecutive values for consecutive indexes into range pairs.
+  const ranges = []; // Collapse consecutive values for consecutive indexes into range pairs.
   // Do this in O(n) where n is the number of matchIndexes (ie. less than the length of the path).
+
   matchIndexes.forEach((i, n) => {
     if (matchIndexes[n + 1] === i + 1) {
       if (!streakOngoing) {
@@ -34,6 +35,7 @@ export default function matchIndexesToRanges(
       } else {
         ranges.push([i, i + 1]);
       }
+
       start = i + 1;
     }
   });

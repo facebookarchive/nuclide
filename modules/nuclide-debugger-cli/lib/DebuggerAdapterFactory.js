@@ -1,3 +1,92 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _debuggerRegistry() {
+  const data = require("../../nuclide-debugger-common/debugger-registry");
+
+  _debuggerRegistry = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _VSPOptionsParser() {
+  const data = _interopRequireDefault(require("./VSPOptionsParser"));
+
+  _VSPOptionsParser = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HHVMDebugAdapter() {
+  const data = _interopRequireDefault(require("./adapters/HHVMDebugAdapter"));
+
+  _HHVMDebugAdapter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _NativeGdbDebugAdapter() {
+  const data = _interopRequireDefault(require("./adapters/NativeGdbDebugAdapter"));
+
+  _NativeGdbDebugAdapter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _NodeDebugAdapter() {
+  const data = _interopRequireDefault(require("./adapters/NodeDebugAdapter"));
+
+  _NodeDebugAdapter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _PythonDebugAdapter() {
+  const data = _interopRequireDefault(require("./adapters/PythonDebugAdapter"));
+
+  _PythonDebugAdapter = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,62 +95,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+class DebuggerAdapterFactory {
+  constructor() {
+    this._debugAdapters = [new (_HHVMDebugAdapter().default)(), new (_NativeGdbDebugAdapter().default)(), new (_NodeDebugAdapter().default)(), new (_PythonDebugAdapter().default)()];
+  }
 
-import type {DebugAdapter} from './DebugAdapter';
-import type {
-  LaunchRequestArguments,
-  AttachRequestArguments,
-} from 'vscode-debugprotocol';
-import type {
-  DebuggerConfigAction,
-  VSAdapterExecutableInfo,
-  VsAdapterType,
-} from 'nuclide-debugger-common';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {objectFromMap} from 'nuclide-commons/collection';
-import {
-  getAdapterExecutable,
-  getAdapterPackageRoot,
-} from 'nuclide-debugger-common/debugger-registry';
-import VSPOptionsParser from './VSPOptionsParser';
-
-import HHVMDebugAdapter from './adapters/HHVMDebugAdapter';
-import NativeGdbDebugAdapter from './adapters/NativeGdbDebugAdapter';
-import NodeDebugAdapter from './adapters/NodeDebugAdapter';
-import PythonDebugAdapter from './adapters/PythonDebugAdapter';
-
-export type ParsedVSAdapter = {
-  action: DebuggerConfigAction,
-  type: VsAdapterType,
-  adapterInfo: VSAdapterExecutableInfo,
-  launchArgs?: LaunchRequestArguments,
-  attachArgs?: AttachRequestArguments,
-  adapter: DebugAdapter,
-};
-
-export type Arguments = {
-  _: string[],
-  type?: string,
-  attach: boolean,
-};
-
-export default class DebuggerAdapterFactory {
-  _debugAdapters: Array<DebugAdapter> = [
-    new HHVMDebugAdapter(),
-    new NativeGdbDebugAdapter(),
-    new NodeDebugAdapter(),
-    new PythonDebugAdapter(),
-  ];
-
-  allAdapterKeys(): string[] {
+  allAdapterKeys() {
     return this._debugAdapters.map(adapt => adapt.key);
   }
 
-  adapterFromArguments(args: Arguments): Promise<?ParsedVSAdapter> {
+  adapterFromArguments(args) {
     let adapter;
 
     if (args.attach) {
@@ -73,85 +119,70 @@ export default class DebuggerAdapterFactory {
     return adapter;
   }
 
-  contextSensitiveHelp(args: Arguments): Array<string> {
+  contextSensitiveHelp(args) {
     const adapter = this._adapterFromCommandLine(args);
+
     if (adapter == null) {
       return [];
     }
 
-    const root = getAdapterPackageRoot(adapter.key);
-    const optionsParser = new VSPOptionsParser(root);
-    const action: DebuggerConfigAction = args.attach ? 'attach' : 'launch';
-
-    return optionsParser.commandLineHelp(
-      adapter.type,
-      action,
-      adapter.excludedOptions,
-      adapter.customArguments,
-    );
+    const root = (0, _debuggerRegistry().getAdapterPackageRoot)(adapter.key);
+    const optionsParser = new (_VSPOptionsParser().default)(root);
+    const action = args.attach ? 'attach' : 'launch';
+    return optionsParser.commandLineHelp(adapter.type, action, adapter.excludedOptions, adapter.customArguments);
   }
 
-  async _parseAttachArguments(args: Arguments): Promise<?ParsedVSAdapter> {
+  async _parseAttachArguments(args) {
     const adapter = await this._adapterFromCommandLine(args);
 
     if (adapter == null) {
-      throw new Error(
-        'Debugger type not specified; please use "--type" to specify it.',
-      );
+      throw new Error('Debugger type not specified; please use "--type" to specify it.');
     }
 
     const commandLineArgs = adapter.parseArguments(args);
-
     return {
       action: 'attach',
       type: adapter.key,
-      adapterInfo: getAdapterExecutable(adapter.key),
-      attachArgs: objectFromMap(commandLineArgs),
-      adapter,
+      adapterInfo: (0, _debuggerRegistry().getAdapterExecutable)(adapter.key),
+      attachArgs: (0, _collection().objectFromMap)(commandLineArgs),
+      adapter
     };
   }
 
-  async _parseLaunchArguments(args: Arguments): Promise<?ParsedVSAdapter> {
+  async _parseLaunchArguments(args) {
     const launchArgs = args._;
     const program = launchArgs[0];
 
     if (program == null) {
-      throw new Error(
-        '--attach not specified and no program to debug specified on the command line.',
-      );
+      throw new Error('--attach not specified and no program to debug specified on the command line.');
     }
 
-    const adapter =
-      this._adapterFromCommandLine(args) ||
-      (await this._adapterFromProgramName(program));
+    const adapter = this._adapterFromCommandLine(args) || (await this._adapterFromProgramName(program));
 
     if (adapter == null) {
-      throw new Error(
-        'Could not determine the type of program being debugged. Please specifiy with the "--type" option.',
-      );
+      throw new Error('Could not determine the type of program being debugged. Please specifiy with the "--type" option.');
     }
 
     const commandLineArgs = adapter.parseArguments(args);
-
     return {
       action: 'launch',
       type: adapter.key,
-      adapterInfo: getAdapterExecutable(adapter.key),
-      launchArgs: objectFromMap(commandLineArgs),
-      adapter,
+      adapterInfo: (0, _debuggerRegistry().getAdapterExecutable)(adapter.key),
+      launchArgs: (0, _collection().objectFromMap)(commandLineArgs),
+      adapter
     };
   }
 
-  _adapterFromCommandLine(args: Arguments): ?DebugAdapter {
+  _adapterFromCommandLine(args) {
     const type = args.type;
+
     if (type != null) {
       const adapter = this._debugAdapters.find(a => a.key === type);
 
       if (adapter == null) {
         const validAdapters = this._debugAdapters.map(a => a.key).join('", "');
-        throw new Error(
-          `Invalid target type "${type}"; valid types are "${validAdapters}".`,
-        );
+
+        throw new Error(`Invalid target type "${type}"; valid types are "${validAdapters}".`);
       }
 
       return adapter;
@@ -160,24 +191,21 @@ export default class DebuggerAdapterFactory {
     return null;
   }
 
-  async _adapterFromProgramName(program: string): Promise<DebugAdapter> {
-    const programUri = nuclideUri.parsePath(program);
+  async _adapterFromProgramName(program) {
+    const programUri = _nuclideUri().default.parsePath(program);
+
     const ext = programUri.ext;
+    const canDebug = await Promise.all(this._debugAdapters.map(a => a.canDebugFile(program)));
 
-    const canDebug: Array<boolean> = await Promise.all(
-      this._debugAdapters.map(a => a.canDebugFile(program)),
-    );
-
-    const adapters = this._debugAdapters.filter(
-      (a, idx) => a.extensions.has(ext) || canDebug[idx],
-    );
+    const adapters = this._debugAdapters.filter((a, idx) => a.extensions.has(ext) || canDebug[idx]);
 
     if (adapters.length > 1) {
-      throw new Error(
-        `Multiple debuggers can debug programs with extension ${ext}. Please explicitly specify one with '--type'`,
-      );
+      throw new Error(`Multiple debuggers can debug programs with extension ${ext}. Please explicitly specify one with '--type'`);
     }
 
     return adapters[0];
   }
+
 }
+
+exports.default = DebuggerAdapterFactory;

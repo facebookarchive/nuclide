@@ -1,3 +1,43 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getHomeFragments = getHomeFragments;
+exports.createAdditionalLogFilesProvider = createAdditionalLogFilesProvider;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,69 +45,43 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {
-  AdditionalLogFilesProvider,
-  AdditionalLogFile,
-} from '../../nuclide-logging/lib/rpc-types';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getHhvmDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {arrayUnique} from 'nuclide-commons/collection';
-
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'Hack/PHP Debugger',
       icon: 'nuclicon-debugger',
-      description:
-        'Connect to an HHVM server process and debug Hack/PHP code from within Nuclide.',
-      command: 'debugger:show-attach-dialog',
+      description: 'Connect to an HHVM server process and debug Hack/PHP code from within Nuclide.',
+      command: 'debugger:show-attach-dialog'
     },
-    priority: 6,
+    priority: 6
   };
 }
 
-async function getAdditionalLogFiles(
-  deadline: DeadlineRequest,
-): Promise<Array<AdditionalLogFile>> {
-  const hostnames = arrayUnique(
-    atom.project
-      .getPaths()
-      .filter(nuclideUri.isRemote)
-      .map(nuclideUri.getHostname),
-  );
+async function getAdditionalLogFiles(deadline) {
+  const hostnames = (0, _collection().arrayUnique)(atom.project.getPaths().filter(_nuclideUri().default.isRemote).map(_nuclideUri().default.getHostname));
+  return Promise.all(hostnames.map(async hostname => {
+    const service = (0, _nuclideRemoteConnection().getHhvmDebuggerServiceByNuclideUri)(_nuclideUri().default.createRemoteUri(hostname, '/'));
 
-  return Promise.all(
-    hostnames
-      .map(async hostname => {
-        const service = getHhvmDebuggerServiceByNuclideUri(
-          nuclideUri.createRemoteUri(hostname, '/'),
-        );
-        if (service != null) {
-          return {
-            title: `HHVM Debugger log for ${hostname}`,
-            data: await service.getDebugServerLog(),
-          };
-        }
+    if (service != null) {
+      return {
+        title: `HHVM Debugger log for ${hostname}`,
+        data: await service.getDebugServerLog()
+      };
+    }
 
-        return {
-          title: `HHVM Debugger log for ${hostname}`,
-          data: '<service unavailable>',
-        };
-      })
-      .filter(file => file != null),
-  );
+    return {
+      title: `HHVM Debugger log for ${hostname}`,
+      data: '<service unavailable>'
+    };
+  }).filter(file => file != null));
 }
 
-export function createAdditionalLogFilesProvider(): AdditionalLogFilesProvider {
+function createAdditionalLogFilesProvider() {
   return {
     id: 'hhvm-debugger',
-    getAdditionalLogFiles,
+    getAdditionalLogFiles
   };
 }

@@ -1,3 +1,49 @@
+"use strict";
+
+function _Connection() {
+  const data = require("../lib/Connection");
+
+  _Connection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _net = _interopRequireDefault(require("net"));
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _Tunnel() {
+  const data = require("../lib/Tunnel");
+
+  _Tunnel = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _waits_for() {
+  const data = _interopRequireDefault(require("../../../jest/waits_for"));
+
+  _waits_for = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,135 +51,115 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  * @emails oncall+nuclide
  */
-import {Connection, ConnectionFactory} from '../lib/Connection';
-import net from 'net';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import {RemoteSocket} from '../lib/Tunnel';
-import waitsFor from '../../../jest/waits_for';
-
 const TEST_PORT = 5004;
 const TEST_TUNNEL_HOST = {
   host: 'localhost',
   port: TEST_PORT,
-  family: 6,
+  family: 6
 };
-
 describe.skip('Connection', () => {
-  const connectionFactory = new ConnectionFactory();
-  let remoteSocket: RemoteSocket;
+  const connectionFactory = new (_Connection().ConnectionFactory)();
+  let remoteSocket;
   let remoteServer;
-
   beforeEach(async () => {
-    getLogger('SocketService-spec').debug('--SPEC START--');
+    (0, _log4js().getLogger)('SocketService-spec').debug('--SPEC START--');
     remoteServer = await createServer(TEST_PORT + 1);
     remoteSocket = await createRemoteSocket(TEST_PORT + 1);
   });
-
   afterEach(async () => {
     await closeRemoteSocket(remoteSocket, remoteServer.server);
     await closeServer(remoteServer.server);
-    getLogger('SocketService-spec').debug('--SPEC END--');
+    (0, _log4js().getLogger)('SocketService-spec').debug('--SPEC END--');
   });
-
   it('should create a connection to an already listening server', async () => {
     const connectionSpy = jest.fn();
     let localServer;
-
     const port = TEST_PORT;
-
     await new Promise(resolve => {
-      localServer = net.createServer(connectionSpy);
-      localServer.listen({port}, resolve);
+      localServer = _net.default.createServer(connectionSpy);
+      localServer.listen({
+        port
+      }, resolve);
     });
-
-    const connection: Connection = await connectionFactory.createConnection(
-      TEST_TUNNEL_HOST,
-      remoteSocket,
-    );
-
-    await waitsFor(() => connectionSpy.mock.calls.length > 0);
-
+    const connection = await connectionFactory.createConnection(TEST_TUNNEL_HOST, remoteSocket);
+    await (0, _waits_for().default)(() => connectionSpy.mock.calls.length > 0);
     expect(connectionSpy).toHaveBeenCalled();
     connection.dispose();
     await new Promise(r => {
-      ((localServer: any): net.Server).close(r);
+      localServer.close(r);
     });
   });
-
   it.skip('should write to the remote server when the local server responds', async done => {
     const remoteServerWriteSpy = jest.fn();
     const connectionSpy = jest.fn();
-    let localServer: net.Server;
-
+    let localServer;
     remoteServer.socket.on('data', remoteServerWriteSpy);
-
     const port = TEST_PORT;
-
     await new Promise(resolve => {
       // echo server
-      localServer = net.createServer(socket => {
+      localServer = _net.default.createServer(socket => {
         connectionSpy();
         socket.pipe(socket);
       });
-      localServer.listen({port}, resolve);
+      localServer.listen({
+        port
+      }, resolve);
     });
-
-    const connection: Connection = await connectionFactory.createConnection(
-      TEST_TUNNEL_HOST,
-      remoteSocket,
-    );
-
-    await waitsFor(() => connectionSpy.mock.calls.length > 0);
-
+    const connection = await connectionFactory.createConnection(TEST_TUNNEL_HOST, remoteSocket);
+    await (0, _waits_for().default)(() => connectionSpy.mock.calls.length > 0);
     expect(connectionSpy).toHaveBeenCalled();
     connection.write(new Buffer('hello world'));
-
-    await waitsFor(() => remoteServerWriteSpy.mock.calls.length > 0);
-
+    await (0, _waits_for().default)(() => remoteServerWriteSpy.mock.calls.length > 0);
     expect(remoteServerWriteSpy).toHaveBeenCalled();
-    connection.dispose();
-    // $FlowFixMe
+    connection.dispose(); // $FlowFixMe
+
     localServer.close(done);
   });
 });
 
-async function createRemoteSocket(port: number): Promise<RemoteSocket> {
+async function createRemoteSocket(port) {
   return new Promise(resolve => {
-    const socket = net.createConnection({port, family: 6}, () => {
-      resolve(new RemoteSocket(socket));
+    const socket = _net.default.createConnection({
+      port,
+      family: 6
+    }, () => {
+      resolve(new (_Tunnel().RemoteSocket)(socket));
     });
   });
 }
 
-async function closeRemoteSocket(
-  remoteSocket: RemoteSocket,
-  remoteServer: net.Server,
-): Promise<void> {
+async function closeRemoteSocket(remoteSocket, remoteServer) {
   remoteSocket.dispose();
   await closeServer(remoteServer);
 }
 
-async function createServer(port: number): Promise<Object> {
+async function createServer(port) {
   const result = {};
   return new Promise(resolve => {
-    const server: net.Server = net.createServer(socket => {
+    const server = _net.default.createServer(socket => {
       result.socket = socket;
     });
 
     result.server = server;
-    invariant(server);
-    server.listen({host: '::', port}, () => {
+
+    if (!server) {
+      throw new Error("Invariant violation: \"server\"");
+    }
+
+    server.listen({
+      host: '::',
+      port
+    }, () => {
       resolve(result);
     });
   });
 }
 
-async function closeServer(server: net.Server): Promise<void> {
+async function closeServer(server) {
   return new Promise(resolve => {
     server.close(resolve);
   });

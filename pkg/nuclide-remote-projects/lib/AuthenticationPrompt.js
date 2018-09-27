@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _AtomNotifications() {
+  const data = require("./AtomNotifications");
+
+  _AtomNotifications = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,110 +48,84 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nullthrows from 'nullthrows';
-import * as React from 'react';
-import {getNotificationService} from './AtomNotifications';
-
-type Props = {
-  instructions: string,
-  onConfirm: () => mixed,
-  onCancel: () => mixed,
-};
-
 /** Component to prompt the user for authentication information. */
-export default class AuthenticationPrompt extends React.Component<Props, void> {
-  props: Props;
-
-  _disposables: UniversalDisposable;
-  _password: ?HTMLInputElement;
-  _root: ?HTMLElement;
-
-  constructor(props: Props) {
+class AuthenticationPrompt extends React.Component {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+
+    this._onKeyUp = e => {
+      if (e.key === 'Enter') {
+        this.props.onConfirm();
+      }
+
+      if (e.key === 'Escape') {
+        this.props.onCancel();
+      }
+    };
+
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     // Hitting enter when this panel has focus should confirm the dialog.
-    this._disposables.add(
-      atom.commands.add(nullthrows(this._root), 'core:confirm', event =>
-        this.props.onConfirm(),
-      ),
-    );
+    this._disposables.add(atom.commands.add((0, _nullthrows().default)(this._root), 'core:confirm', event => this.props.onConfirm())); // Hitting escape should cancel the dialog.
 
-    // Hitting escape should cancel the dialog.
-    this._disposables.add(
-      atom.commands.add('atom-workspace', 'core:cancel', event =>
-        this.props.onCancel(),
-      ),
-    );
 
-    nullthrows(this._password).focus();
+    this._disposables.add(atom.commands.add('atom-workspace', 'core:cancel', event => this.props.onCancel()));
 
-    const raiseNativeNotification = getNotificationService();
+    (0, _nullthrows().default)(this._password).focus();
+    const raiseNativeNotification = (0, _AtomNotifications().getNotificationService)();
+
     if (raiseNativeNotification != null) {
-      const pendingNotification = raiseNativeNotification(
-        'Nuclide Remote Connection',
-        'Nuclide requires additional action to authenticate your remote connection',
-        2000,
-        false,
-      );
+      const pendingNotification = raiseNativeNotification('Nuclide Remote Connection', 'Nuclide requires additional action to authenticate your remote connection', 2000, false);
+
       if (pendingNotification != null) {
         this._disposables.add(pendingNotification);
       }
     }
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  focus(): void {
-    nullthrows(this._password).focus();
+  focus() {
+    (0, _nullthrows().default)(this._password).focus();
   }
 
-  getPassword(): string {
-    return nullthrows(this._password).value;
+  getPassword() {
+    return (0, _nullthrows().default)(this._password).value;
   }
 
-  _onKeyUp = (e: SyntheticKeyboardEvent<>): void => {
-    if (e.key === 'Enter') {
-      this.props.onConfirm();
-    }
-
-    if (e.key === 'Escape') {
-      this.props.onCancel();
-    }
-  };
-
-  render(): React.Node {
+  render() {
     // * Need native-key-bindings so that delete works and we need `_onKeyUp` so that escape and
     //   enter work
     // * `instructions` are pre-formatted, so apply `whiteSpace: pre` to maintain formatting coming
     //   from the server.
-    return (
-      <div
-        ref={el => {
-          this._root = el;
-        }}>
-        <div className="block" style={{whiteSpace: 'pre'}}>
-          {this.props.instructions}
-        </div>
-        <input
-          tabIndex="0"
-          type="password"
-          className="nuclide-password native-key-bindings"
-          ref={el => {
-            this._password = el;
-          }}
-          onKeyPress={this._onKeyUp}
-        />
-      </div>
-    );
+    return React.createElement("div", {
+      ref: el => {
+        this._root = el;
+      }
+    }, React.createElement("div", {
+      className: "block",
+      style: {
+        whiteSpace: 'pre'
+      }
+    }, this.props.instructions), React.createElement("input", {
+      tabIndex: "0",
+      type: "password",
+      className: "nuclide-password native-key-bindings",
+      ref: el => {
+        this._password = el;
+      },
+      onKeyPress: this._onKeyUp
+    }));
   }
+
 }
+
+exports.default = AuthenticationPrompt;

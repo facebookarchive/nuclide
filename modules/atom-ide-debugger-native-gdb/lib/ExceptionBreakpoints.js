@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _MIProxy() {
+  const data = _interopRequireDefault(require("./MIProxy"));
+
+  _MIProxy = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _MITypes() {
+  const data = require("./MITypes");
+
+  _MITypes = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,66 +35,55 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {MIStoppedEventResult, StopReason} from './MITypes';
-
-import invariant from 'assert';
-import MIProxy from './MIProxy';
-import {breakInsertResult, toCommandError} from './MITypes';
-
-export default class ExceptionBreakpoints {
-  _throwHelper = '__cxa_throw';
-  _client: MIProxy;
-  _throwBreakpoint: ?number;
-  _stopOnSignals: boolean;
-
-  constructor(client: MIProxy) {
+class ExceptionBreakpoints {
+  constructor(client) {
+    this._throwHelper = '__cxa_throw';
     this._client = client;
     this._stopOnSignals = false;
   }
 
-  shouldIgnoreBreakpoint(result: MIStoppedEventResult): boolean {
+  shouldIgnoreBreakpoint(result) {
     if (this._isSignal(result) && !this._stopOnSignals) {
       return true;
-    }
-
-    // it's impossible to get a thrown exception stop if they are disabled,
+    } // it's impossible to get a thrown exception stop if they are disabled,
     // so we don't need to check.
+
 
     return false;
   }
 
-  stopEventReason(result: MIStoppedEventResult): ?StopReason {
+  stopEventReason(result) {
     if (this._isSignal(result)) {
       return {
         reason: 'exception',
-        description: 'Uncaught exception',
+        description: 'Uncaught exception'
       };
     }
 
     if (this._isOurBreakpoint(result)) {
       return {
         reason: 'exception',
-        description: 'Thrown exception',
+        description: 'Thrown exception'
       };
     }
 
     return null;
   }
 
-  _isSignal(result: MIStoppedEventResult): boolean {
+  _isSignal(result) {
     return result.reason === 'signal-received';
   }
 
-  _isOurBreakpoint(result: MIStoppedEventResult): boolean {
+  _isOurBreakpoint(result) {
     if (result.reason !== 'breakpoint-hit') {
       return false;
     }
 
     const bpt = result.bkptno;
+
     if (bpt == null) {
       return false;
     }
@@ -73,7 +91,7 @@ export default class ExceptionBreakpoints {
     return parseInt(bpt, 10) === this._throwBreakpoint;
   }
 
-  async setExceptionBreakpointFilters(filters: Array<string>): Promise<void> {
+  async setExceptionBreakpointFilters(filters) {
     this._stopOnSignals = filters.includes('uncaught');
     const enableThrown = filters.includes('thrown');
 
@@ -84,36 +102,31 @@ export default class ExceptionBreakpoints {
     }
   }
 
-  async _setBreakpoint(): Promise<void> {
-    const result = await this._client.sendCommand(
-      `break-insert -f ${this._throwHelper}`,
-    );
+  async _setBreakpoint() {
+    const result = await this._client.sendCommand(`break-insert -f ${this._throwHelper}`);
+
     if (result.error) {
-      throw new Error(
-        `Error setting thrown exception breakpoint ${
-          toCommandError(result).msg
-        }`,
-      );
+      throw new Error(`Error setting thrown exception breakpoint ${(0, _MITypes().toCommandError)(result).msg}`);
     }
 
-    const bt = breakInsertResult(result);
+    const bt = (0, _MITypes().breakInsertResult)(result);
     this._throwBreakpoint = parseInt(bt.bkpt[0].number, 10);
   }
 
-  async _clearBreakpoint(): Promise<void> {
+  async _clearBreakpoint() {
     const breakpointId = this._throwBreakpoint;
-    invariant(breakpointId != null);
 
-    const result = await this._client.sendCommand(
-      `break-delete ${breakpointId}`,
-    );
+    if (!(breakpointId != null)) {
+      throw new Error("Invariant violation: \"breakpointId != null\"");
+    }
+
+    const result = await this._client.sendCommand(`break-delete ${breakpointId}`);
 
     if (result.error) {
-      throw new Error(
-        `Error clearing thrown exception breakpoint ${
-          toCommandError(result).msg
-        }`,
-      );
+      throw new Error(`Error clearing thrown exception breakpoint ${(0, _MITypes().toCommandError)(result).msg}`);
     }
   }
+
 }
+
+exports.default = ExceptionBreakpoints;

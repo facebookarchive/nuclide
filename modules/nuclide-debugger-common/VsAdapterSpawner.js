@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _process() {
+  const data = require("../nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,59 +25,48 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {ConnectableObservable} from 'rxjs';
-import type {ProcessMessage} from 'nuclide-commons/process';
-import type {VSAdapterExecutableInfo, IVsAdapterSpawner} from './types';
-
-import {
-  observeProcessRaw,
-  getOriginalEnvironment,
-} from 'nuclide-commons/process';
-import {Observable, Subject} from 'rxjs';
-
-export default class VsAdapterSpawner implements IVsAdapterSpawner {
-  _stdin: Subject<string>;
-
+class VsAdapterSpawner {
   constructor() {
-    this._stdin = new Subject();
+    this._stdin = new _RxMin.Subject();
   }
 
-  spawnAdapter(
-    adapter: VSAdapterExecutableInfo,
-  ): ConnectableObservable<ProcessMessage> {
-    const environment = Observable.fromPromise(getOriginalEnvironment());
-    return Observable.forkJoin(this._stdin.buffer(environment), environment)
-      .switchMap(([stdinBuffer, env]) => {
-        const options = {
-          stdio: [
-            'pipe', // stdin
-            'pipe', // stdout
-            'pipe', // stderr
-          ],
-          env: {...env, ELECTRON_RUN_AS_NODE: 1, ...adapter.env},
-          input: Observable.from(stdinBuffer).concat(this._stdin),
-          killTreeWhenDone: true,
-          killTreeSignal: 'SIGKILL',
-          isExitError: () => false,
-          cwd: adapter.cwd == null ? undefined : adapter.cwd,
-        };
-        if (adapter.command === 'node') {
-          adapter.command = process.execPath;
-        }
-        return observeProcessRaw(adapter.command, adapter.args, options);
-      })
-      .publish();
+  spawnAdapter(adapter) {
+    const environment = _RxMin.Observable.fromPromise((0, _process().getOriginalEnvironment)());
+
+    return _RxMin.Observable.forkJoin(this._stdin.buffer(environment), environment).switchMap(([stdinBuffer, env]) => {
+      const options = {
+        stdio: ['pipe', // stdin
+        'pipe', // stdout
+        'pipe'],
+        env: Object.assign({}, env, {
+          ELECTRON_RUN_AS_NODE: 1
+        }, adapter.env),
+        input: _RxMin.Observable.from(stdinBuffer).concat(this._stdin),
+        killTreeWhenDone: true,
+        killTreeSignal: 'SIGKILL',
+        isExitError: () => false,
+        cwd: adapter.cwd == null ? undefined : adapter.cwd
+      };
+
+      if (adapter.command === 'node') {
+        adapter.command = process.execPath;
+      }
+
+      return (0, _process().observeProcessRaw)(adapter.command, adapter.args, options);
+    }).publish();
   }
 
-  async write(input: string): Promise<void> {
+  async write(input) {
     this._stdin.next(input);
   }
 
-  async dispose(): Promise<void> {
+  async dispose() {
     this._stdin.complete();
   }
+
 }
+
+exports.default = VsAdapterSpawner;

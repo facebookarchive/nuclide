@@ -1,3 +1,82 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NotifiersByConnection = void 0;
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideOpenFilesRpc() {
+  const data = require("../../nuclide-open-files-rpc");
+
+  _nuclideOpenFilesRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../modules/nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,145 +84,108 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-
-import {
-  getServiceByConnection,
-  ServerConnection,
-  ConnectionCache,
-} from '../../nuclide-remote-connection';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
-import {getLogger} from 'log4js';
-import {FileEventKind} from '../../nuclide-open-files-rpc';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {areSetsEqual} from 'nuclide-commons/collection';
-
-const logger = getLogger('nuclide-open-files');
-
+const logger = (0, _log4js().getLogger)('nuclide-open-files');
 const RESYNC_TIMEOUT_MS = 2000;
 
-function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
-  return getServiceByConnection(OPEN_FILES_SERVICE, connection);
+function getOpenFilesService(connection) {
+  return (0, _nuclideRemoteConnection().getServiceByConnection)(_nuclideOpenFilesRpc().OPEN_FILES_SERVICE, connection);
 }
 
-function uriMatchesConnection(
-  uri: NuclideUri,
-  connection: ?ServerConnection,
-): boolean {
+function uriMatchesConnection(uri, connection) {
   if (connection == null) {
-    return nuclideUri.isLocal(uri);
+    return _nuclideUri().default.isLocal(uri);
   } else {
-    return connection.getRemoteHostname() === nuclideUri.getHostnameOpt(uri);
+    return connection.getRemoteHostname() === _nuclideUri().default.getHostnameOpt(uri);
   }
-}
-
-// Keeps a FileNotifier around per ServerConnection.
+} // Keeps a FileNotifier around per ServerConnection.
 //
 // Also handles sending 'close' events to the FileNotifier so that
 // the per-Buffer BufferSubscription does not need to live past
 // the buffer being destroyed.
-export class NotifiersByConnection {
-  _notifiers: ConnectionCache<FileNotifier>;
-  _subscriptions: ConnectionCache<IDisposable>;
-  _getService: (connection: ?ServerConnection) => OpenFilesService;
 
-  constructor(
-    getService: (
-      connection: ?ServerConnection,
-    ) => OpenFilesService = getOpenFilesService,
-  ) {
+
+class NotifiersByConnection {
+  constructor(getService = getOpenFilesService) {
     this._getService = getService;
-    const filterByConnection = (connection, dirs) =>
-      new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
-    this._notifiers = new ConnectionCache(connection => {
-      const result = this._getService(connection).initialize();
-      // NOTE: It's important to use `await` here rather than .then.
+
+    const filterByConnection = (connection, dirs) => new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
+
+    this._notifiers = new (_nuclideRemoteConnection().ConnectionCache)(connection => {
+      const result = this._getService(connection).initialize(); // NOTE: It's important to use `await` here rather than .then.
       // v8's native async/await implementation treats .then and await differently.
       // See: https://stackoverflow.com/questions/46254408/promise-resolution-order-and-await
+
+
       async function onDirectoriesChanged() {
         const notifier = await result;
         const dirs = filterByConnection(connection, atom.project.getPaths());
         notifier.onDirectoriesChanged(dirs);
       }
+
       onDirectoriesChanged();
       return result;
     });
-    this._subscriptions = new ConnectionCache(connection => {
-      const subscription = observableFromSubscribeFunction(cb =>
-        atom.project.onDidChangePaths(cb),
-      )
-        .map(dirs => filterByConnection(connection, dirs))
-        .distinctUntilChanged(areSetsEqual)
-        .subscribe(async dirs => {
-          const notifier = await this._notifiers.get(connection);
-          notifier.onDirectoriesChanged(dirs);
-        });
-      return Promise.resolve(
-        new UniversalDisposable(() => subscription.unsubscribe()),
-      );
+    this._subscriptions = new (_nuclideRemoteConnection().ConnectionCache)(connection => {
+      const subscription = (0, _event().observableFromSubscribeFunction)(cb => atom.project.onDidChangePaths(cb)).map(dirs => filterByConnection(connection, dirs)).distinctUntilChanged(_collection().areSetsEqual).subscribe(async dirs => {
+        const notifier = await this._notifiers.get(connection);
+        notifier.onDirectoriesChanged(dirs);
+      });
+      return Promise.resolve(new (_UniversalDisposable().default)(() => subscription.unsubscribe()));
     });
   }
 
   dispose() {
     this._notifiers.dispose();
-    this._subscriptions.dispose();
-  }
 
-  // Returns null for a buffer to a file on a closed remote connection
+    this._subscriptions.dispose();
+  } // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  get(buffer: atom$TextBuffer): ?Promise<FileNotifier> {
+
+
+  get(buffer) {
     return this.getForUri(buffer.getPath());
   }
 
-  getForConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+  getForConnection(connection) {
     return this._notifiers.get(connection);
-  }
-
-  // Returns null for a buffer to a file on a closed remote connection
+  } // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  getForUri(path: ?NuclideUri): ?Promise<FileNotifier> {
-    return this._notifiers.getForUri(path);
-  }
 
-  // Sends the close message to the appropriate FileNotifier.
+
+  getForUri(path) {
+    return this._notifiers.getForUri(path);
+  } // Sends the close message to the appropriate FileNotifier.
   // Will keep trying to send until the send succeeds or
   // the corresponding ServerConnection is closed.
-  sendClose(filePath: NuclideUri, version: number): void {
+
+
+  sendClose(filePath, version) {
     if (filePath === '') {
       return;
-    }
-
-    // Keep trying until either the close completes, or
+    } // Keep trying until either the close completes, or
     // the remote connection goes away
+
+
     const sendMessage = async () => {
       const notifier = this.getForUri(filePath);
+
       if (notifier != null) {
         try {
           const n = await notifier;
           const message = {
-            kind: FileEventKind.CLOSE,
+            kind: _nuclideOpenFilesRpc().FileEventKind.CLOSE,
             fileVersion: {
               notifier: n,
               filePath,
-              version,
-            },
+              version
+            }
           };
-
           await message.fileVersion.notifier.onFileEvent(message);
         } catch (e) {
-          logger.error(
-            `Error sending file close event: ${filePath} ${version}`,
-            e,
-          );
+          logger.error(`Error sending file close event: ${filePath} ${version}`, e);
           setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
         }
       }
@@ -151,4 +193,7 @@ export class NotifiersByConnection {
 
     sendMessage();
   }
+
 }
+
+exports.NotifiersByConnection = NotifiersByConnection;

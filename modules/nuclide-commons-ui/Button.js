@@ -1,87 +1,95 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import type {IconName} from './Icon';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Button = exports.ButtonTypes = exports.ButtonSizes = void 0;
 
-import classnames from 'classnames';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import {maybeToString} from 'nuclide-commons/string';
-import addTooltip from './addTooltip';
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
 
-export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
-export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
-type ButtonNodeName = 'button' | 'a';
+  _classnames = function () {
+    return data;
+  };
 
-type Props = {
-  /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: IconName,
-  /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
-  buttonType?: ?ButtonType,
-  selected?: boolean,
-  /**  */
-  size?: ButtonSize,
-  className?: string,
-  /** The button's content; generally a string. */
-  children?: mixed,
-  /** Allows specifying an element other than `button` to be used as the wrapper node. */
-  wrapperElement?: ButtonNodeName,
-  tooltip?: atom$TooltipsAddOptions,
-  disabled?: boolean,
-};
+  return data;
+}
 
-export const ButtonSizes = Object.freeze({
+var React = _interopRequireWildcard(require("react"));
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+function _string() {
+  const data = require("../nuclide-commons/string");
+
+  _string = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _addTooltip() {
+  const data = _interopRequireDefault(require("./addTooltip"));
+
+  _addTooltip = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+const ButtonSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
-
-export const ButtonTypes = Object.freeze({
+exports.ButtonSizes = ButtonSizes;
+const ButtonTypes = Object.freeze({
   PRIMARY: 'PRIMARY',
   INFO: 'INFO',
   SUCCESS: 'SUCCESS',
   WARNING: 'WARNING',
-  ERROR: 'ERROR',
+  ERROR: 'ERROR'
 });
-
+exports.ButtonTypes = ButtonTypes;
 const ButtonSizeClassnames = Object.freeze({
   EXTRA_SMALL: 'btn-xs',
   SMALL: 'btn-sm',
-  LARGE: 'btn-lg',
+  LARGE: 'btn-lg'
 });
-
 const ButtonTypeClassnames = Object.freeze({
   PRIMARY: 'btn-primary',
   INFO: 'btn-info',
   SUCCESS: 'btn-success',
   WARNING: 'btn-warning',
-  ERROR: 'btn-error',
+  ERROR: 'btn-error'
 });
-
 /**
  * Generic Button wrapper.
  */
-export class Button extends React.Component<Props> {
-  focus(): void {
-    const node = ReactDOM.findDOMNode(this);
+
+class Button extends React.Component {
+  focus() {
+    const node = _reactDom.default.findDOMNode(this);
+
     if (node == null) {
       return;
-    }
-    // $FlowFixMe
+    } // $FlowFixMe
+
+
     node.focus();
   }
 
-  render(): React.Node {
-    const {
+  render() {
+    const _this$props = this.props,
+          {
       icon,
       buttonType,
       selected,
@@ -89,31 +97,32 @@ export class Button extends React.Component<Props> {
       children,
       className,
       wrapperElement,
-      tooltip,
-      ...remainingProps
-    } = this.props;
+      tooltip
+    } = _this$props,
+          remainingProps = _objectWithoutProperties(_this$props, ["icon", "buttonType", "selected", "size", "children", "className", "wrapperElement", "tooltip"]);
+
     const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
-    const buttonTypeClassname =
-      buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
-    const ref = tooltip && !this.props.disabled ? addTooltip(tooltip) : null;
+    const buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
+    const ref = tooltip && !this.props.disabled ? (0, _addTooltip().default)(tooltip) : null;
     const titleToolTip = tooltip && this.props.disabled ? tooltip.title : null;
-    const newClassName = classnames(className, 'btn', {
-      [`icon icon-${maybeToString(icon)}`]: icon != null,
+    const newClassName = (0, _classnames().default)(className, 'btn', {
+      [`icon icon-${(0, _string().maybeToString)(icon)}`]: icon != null,
       [sizeClassname]: size != null,
       selected,
-      [buttonTypeClassname]: buttonType != null,
+      [buttonTypeClassname]: buttonType != null
     });
     const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
-    return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
-      <Wrapper
-        className={newClassName}
-        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-        ref={ref}
-        {...remainingProps}
-        title={titleToolTip}>
-        {children}
-      </Wrapper>
+    return (// $FlowFixMe(>=0.53.0) Flow suppress
+      React.createElement(Wrapper, Object.assign({
+        className: newClassName // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+        ,
+        ref: ref
+      }, remainingProps, {
+        title: titleToolTip
+      }), children)
     );
   }
+
 }
+
+exports.Button = Button;

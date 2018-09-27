@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.VENDOR_PYTHONPATH = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _process() {
+  const data = require("../../../modules/nuclide-commons/process");
+
+  _process = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,56 +34,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const VENDOR_PYTHONPATH = _nuclideUri().default.join(__dirname, '../VendorLib');
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+exports.VENDOR_PYTHONPATH = VENDOR_PYTHONPATH;
+let fbFindClangServerArgs;
 
-import {runCommand} from 'nuclide-commons/process';
-
-export const VENDOR_PYTHONPATH = nuclideUri.join(__dirname, '../VendorLib');
-
-let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
-
-export type PartialClangServerArgs = {
-  libClangLibraryFile?: string,
-  pythonExecutable?: string,
-  pythonPathEnv?: string,
-};
-
-export type ClangServerArgs = {
-  libClangLibraryFile: ?string,
-  pythonExecutable: string,
-  pythonPathEnv: ?string,
-};
-
-export default (async function findClangServerArgs(
-  src: ?string,
-  libclangPath: ?string = null,
-  configLibclangPath: ?string,
-): Promise<ClangServerArgs> {
+var findClangServerArgs = async function findClangServerArgs(src, libclangPath = null, configLibclangPath) {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
+
     try {
       // $FlowFB
-      fbFindClangServerArgs = require('./fb/find-clang-server-args').default;
-    } catch (e) {
-      // Ignore.
+      fbFindClangServerArgs = require("./fb/find-clang-server-args").default;
+    } catch (e) {// Ignore.
     }
   }
 
   let libClangLibraryFile;
+
   if (process.platform === 'darwin') {
     try {
-      const stdout = await runCommand('xcode-select', [
-        '--print-path',
-      ]).toPromise();
-      libClangLibraryFile = stdout.trim();
-      // If the user only has Xcode Command Line Tools installed, the path is different.
-      if (nuclideUri.basename(libClangLibraryFile) !== 'CommandLineTools') {
+      const stdout = await (0, _process().runCommand)('xcode-select', ['--print-path']).toPromise();
+      libClangLibraryFile = stdout.trim(); // If the user only has Xcode Command Line Tools installed, the path is different.
+
+      if (_nuclideUri().default.basename(libClangLibraryFile) !== 'CommandLineTools') {
         libClangLibraryFile += '/Toolchains/XcodeDefault.xctoolchain';
       }
+
       libClangLibraryFile += '/usr/lib/libclang.dylib';
     } catch (err) {}
   }
@@ -66,19 +75,19 @@ export default (async function findClangServerArgs(
   let clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python2.7',
-    pythonPathEnv: VENDOR_PYTHONPATH,
+    pythonPathEnv: VENDOR_PYTHONPATH
   };
 
   if (typeof fbFindClangServerArgs === 'function') {
     const clangServerArgsOverrides = await fbFindClangServerArgs(src);
-    clangServerArgs = {
-      ...clangServerArgs,
-      ...clangServerArgsOverrides,
-    };
+    clangServerArgs = Object.assign({}, clangServerArgs, clangServerArgsOverrides);
   }
 
   if (libclangPath != null) {
     clangServerArgs.libClangLibraryFile = libclangPath;
   }
+
   return clangServerArgs;
-});
+};
+
+exports.default = findClangServerArgs;

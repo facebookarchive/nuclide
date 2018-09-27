@@ -1,3 +1,27 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _LanguageStatusManager() {
+  const data = require("./LanguageStatusManager");
+
+  _LanguageStatusManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,34 +29,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {LanguageStatusProvider} from './types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {LanguageStatusManager} from './LanguageStatusManager';
-
 class Activation {
-  _languageStatusManager: LanguageStatusManager;
-
-  constructor(state: any) {
-    this._languageStatusManager = new LanguageStatusManager();
+  constructor(state) {
+    this._languageStatusManager = new (_LanguageStatusManager().LanguageStatusManager)();
   }
 
   dispose() {
     this._languageStatusManager.dispose();
   }
 
-  consumeLanguageStatusProvider(provider: LanguageStatusProvider): IDisposable {
+  consumeLanguageStatusProvider(provider) {
     return this._languageStatusManager.addProvider(provider);
-  }
+  } // FOR TESTING
 
-  // FOR TESTING
-  triggerProviderChange(): void {
+
+  triggerProviderChange() {
     this._languageStatusManager._providersChanged.next();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

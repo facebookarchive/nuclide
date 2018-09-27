@@ -1,3 +1,52 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.track = track;
+exports.isTrackSupported = isTrackSupported;
+exports.trackImmediate = trackImmediate;
+exports.trackEvent = trackEvent;
+exports.trackEvents = trackEvents;
+exports.trackSampled = trackSampled;
+exports.startTracking = startTracking;
+exports.trackTiming = trackTiming;
+exports.trackTimingSampled = trackTimingSampled;
+exports.setRawAnalyticsService = setRawAnalyticsService;
+exports.default = exports.TimingTracker = void 0;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("./UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _promise() {
+  const data = require("./promise");
+
+  _promise = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _performanceNow() {
+  const data = _interopRequireDefault(require("./performanceNow"));
+
+  _performanceNow = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,38 +55,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+let rawAnalyticsService = {
+  track() {},
 
-import type {Observable} from 'rxjs';
-
-import UniversalDisposable from './UniversalDisposable';
-import {isPromise} from './promise';
-import performanceNow from './performanceNow';
-
-export type RawAnalyticsService = {
-  track(
-    eventName: string,
-    values?: {[key: string]: mixed},
-    immediate?: boolean,
-  ): ?Promise<mixed>,
-  isTrackSupported: () => boolean,
-};
-
-let rawAnalyticsService: RawAnalyticsService = {
-  track(): ?Promise<mixed> {},
-  isTrackSupported: () => false,
-};
-
-export type TrackingEvent = {
-  type: string,
-  data?: Object,
-};
-
-export type TrackEvent = {
-  key: string,
-  values: {[key: string]: mixed},
+  isTrackSupported: () => false
 };
 
 /**
@@ -47,121 +71,107 @@ export type TrackEvent = {
  * @param eventName Name of the event to be tracked.
  * @param values The object containing the data to track.
  */
-export function track(
-  eventName: string,
-  values?: {[key: string]: mixed},
-): void {
+function track(eventName, values) {
   rawAnalyticsService.track(eventName, values || {});
 }
 
-export function isTrackSupported(): boolean {
+function isTrackSupported() {
   return rawAnalyticsService.isTrackSupported();
 }
-
 /**
  * Same as `track`, except this is guaranteed to send immediately.
  * The returned promise will resolve when the request completes (or reject on failure).
  */
-export function trackImmediate(
-  eventName: string,
-  values?: {[key: string]: mixed},
-): Promise<mixed> {
-  return (
-    rawAnalyticsService.track(eventName, values || {}, true) ||
-    Promise.resolve()
-  );
-}
 
+
+function trackImmediate(eventName, values) {
+  return rawAnalyticsService.track(eventName, values || {}, true) || Promise.resolve();
+}
 /**
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
-export function trackEvent(event: TrackingEvent): void {
+
+
+function trackEvent(event) {
   track(event.type, event.data);
 }
-
 /**
  * Track each event in a stream of TrackingEvents.
  */
-export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
-  return new UniversalDisposable(events.subscribe(trackEvent));
-}
 
+
+function trackEvents(events) {
+  return new (_UniversalDisposable().default)(events.subscribe(trackEvent));
+}
 /**
  * A sampled version of track that only tracks every 1/sampleRate calls.
  */
-export function trackSampled(
-  eventName: string,
-  sampleRate: number,
-  values?: {[key: string]: mixed},
-): void {
+
+
+function trackSampled(eventName, sampleRate, values) {
   if (Math.random() * sampleRate <= 1) {
-    rawAnalyticsService.track(eventName, {
-      ...values,
-      sample_rate: sampleRate,
-    });
+    rawAnalyticsService.track(eventName, Object.assign({}, values, {
+      sample_rate: sampleRate
+    }));
   }
 }
 
 const PERFORMANCE_EVENT = 'performance';
 const canMeasure = typeof performance !== 'undefined';
-export class TimingTracker {
-  static eventCount = 0;
 
-  _eventName: string;
-  _startTime: number;
-  _startMark: string;
-  _values: {[key: string]: mixed};
-
-  constructor(eventName: string, values: {[key: string]: mixed}) {
+class TimingTracker {
+  constructor(eventName, values) {
     this._eventName = eventName;
     this._startMark = `${this._eventName}_${TimingTracker.eventCount++}_start`;
-    this._startTime = performanceNow();
+    this._startTime = (0, _performanceNow().default)();
     this._values = values;
+
     if (canMeasure) {
       // eslint-disable-next-line no-undef
       performance.mark(this._startMark);
     }
   }
 
-  onError(error: Error): void {
+  onError(error) {
     this._trackTimingEvent(error);
   }
 
-  onSuccess(): void {
-    this._trackTimingEvent(/* error */ null);
+  onSuccess() {
+    this._trackTimingEvent(
+    /* error */
+    null);
   }
 
-  _trackTimingEvent(exception: ?Error): void {
+  _trackTimingEvent(exception) {
     if (canMeasure) {
       /* eslint-disable no-undef */
       // call measure to add this information to the devtools timeline in the
       // case the profiler is running.
-      performance.measure(this._eventName, this._startMark);
-      // then clear all the marks and measurements to avoid growing the
+      performance.measure(this._eventName, this._startMark); // then clear all the marks and measurements to avoid growing the
       // performance entry buffer
+
       performance.clearMarks(this._startMark);
       performance.clearMeasures(this._eventName);
       /* eslint-enable no-undef */
     }
 
-    track(PERFORMANCE_EVENT, {
-      ...this._values,
-      duration: Math.round(performanceNow() - this._startTime).toString(),
+    track(PERFORMANCE_EVENT, Object.assign({}, this._values, {
+      duration: Math.round((0, _performanceNow().default)() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
-      exception: exception ? exception.toString() : '',
-    });
+      exception: exception ? exception.toString() : ''
+    }));
   }
+
 }
 
-export function startTracking(
-  eventName: string,
-  values?: {[key: string]: any} = {},
-): TimingTracker {
+exports.TimingTracker = TimingTracker;
+TimingTracker.eventCount = 0;
+
+function startTracking(eventName, values = {}) {
   return new TimingTracker(eventName, values);
 }
-
 /**
  * Reports analytics including timing for a single operation.
  *
@@ -171,31 +181,25 @@ export function startTracking(
  *
  * Returns (or throws) the result of the operation.
  */
-export function trackTiming<T>(
-  eventName: string,
-  operation: () => T,
-  values?: {[key: string]: any} = {},
-): T {
+
+
+function trackTiming(eventName, operation, values = {}) {
   const tracker = startTracking(eventName, values);
 
   try {
     const result = operation();
 
-    if (isPromise(result)) {
+    if ((0, _promise().isPromise)(result)) {
       // Atom uses a different Promise implementation than Nuclide, so the following is not true:
       // invariant(result instanceof Promise);
-
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return (result: any).then(
-        value => {
-          tracker.onSuccess();
-          return value;
-        },
-        reason => {
-          tracker.onError(reason instanceof Error ? reason : new Error(reason));
-          return Promise.reject(reason);
-        },
-      );
+      return result.then(value => {
+        tracker.onSuccess();
+        return value;
+      }, reason => {
+        tracker.onError(reason instanceof Error ? reason : new Error(reason));
+        return Promise.reject(reason);
+      });
     } else {
       tracker.onSuccess();
       return result;
@@ -205,37 +209,32 @@ export function trackTiming<T>(
     throw error;
   }
 }
-
 /**
  * A sampled version of trackTiming that only tracks every 1/sampleRate calls.
  */
-export function trackTimingSampled<T>(
-  eventName: string,
-  operation: () => T,
-  sampleRate: number,
-  values?: {[key: string]: any} = {},
-): T {
+
+
+function trackTimingSampled(eventName, operation, sampleRate, values = {}) {
   if (Math.random() * sampleRate <= 1) {
-    return trackTiming(eventName, operation, {
-      ...values,
-      sample_rate: sampleRate,
-    });
+    return trackTiming(eventName, operation, Object.assign({}, values, {
+      sample_rate: sampleRate
+    }));
   }
+
   return operation();
 }
 
-export function setRawAnalyticsService(
-  analyticsService: RawAnalyticsService,
-): void {
+function setRawAnalyticsService(analyticsService) {
   rawAnalyticsService = analyticsService;
 }
 
-export default {
+var _default = {
   track,
   trackSampled,
   trackEvent,
   trackTiming,
   trackTimingSampled,
   startTracking,
-  TimingTracker,
+  TimingTracker
 };
+exports.default = _default;

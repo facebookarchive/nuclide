@@ -1,3 +1,134 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.HEARTBEAT_CHANNEL = void 0;
+
+var _os = _interopRequireDefault(require("os"));
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ws() {
+  const data = _interopRequireDefault(require("ws"));
+
+  _ws = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _blocked() {
+  const data = _interopRequireDefault(require("./blocked"));
+
+  _blocked = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _QueuedAckTransport() {
+  const data = require("../../../modules/big-dig/src/socket/QueuedAckTransport");
+
+  _QueuedAckTransport = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("./utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideAnalytics() {
+  const data = require("../../nuclide-analytics");
+
+  _nuclideAnalytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideVersion() {
+  const data = require("../../nuclide-version");
+
+  _nuclideVersion = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLogging() {
+  const data = require("../../nuclide-logging");
+
+  _nuclideLogging = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRpc() {
+  const data = require("../../nuclide-rpc");
+
+  _nuclideRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _WebSocketTransport() {
+  const data = require("../../../modules/big-dig/src/socket/WebSocketTransport");
+
+  _WebSocketTransport = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideMarshalersCommon() {
+  const data = require("../../nuclide-marshalers-common");
+
+  _nuclideMarshalersCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,122 +136,85 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const HEARTBEAT_CHANNEL = 'heartbeat'; // eslint-disable-next-line nuclide-internal/no-commonjs
 
-import type {ConfigEntry} from '../../nuclide-rpc';
+exports.HEARTBEAT_CHANNEL = HEARTBEAT_CHANNEL;
 
-import invariant from 'assert';
-import os from 'os';
-import {getLogger} from 'log4js';
-import WS from 'ws';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+const connect = require('connect'); // eslint-disable-next-line nuclide-internal/no-commonjs
 
-import blocked from './blocked';
-import {QueuedAckTransport} from 'big-dig/src/socket/QueuedAckTransport';
-import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
-import {HistogramTracker} from '../../nuclide-analytics';
-import {getVersion} from '../../nuclide-version';
-import {flushLogsAndExit} from '../../nuclide-logging';
-import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
-import {WebSocketTransport} from 'big-dig/src/socket/WebSocketTransport';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-import {protocolLogger} from './utils';
-import {track} from '../../nuclide-analytics';
 
-export const HEARTBEAT_CHANNEL = 'heartbeat';
+const http = require('http'); // eslint-disable-next-line nuclide-internal/no-commonjs
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
-const connect: connect$module = require('connect');
-// eslint-disable-next-line nuclide-internal/no-commonjs
-const http: http$fixed = (require('http'): any);
-// eslint-disable-next-line nuclide-internal/no-commonjs
-const https: https$fixed = (require('https'): any);
 
-const logger = getLogger('nuclide-server');
+const https = require('https');
 
-type NuclideServerOptions = {
-  port: number,
-  serverKey?: Buffer,
-  serverCertificate?: Buffer,
-  certificateAuthorityCertificate?: Buffer,
-  trackEventLoop?: boolean,
-};
+const logger = (0, _log4js().getLogger)('nuclide-server');
 
-export default class NuclideServer {
-  static _theServer: ?NuclideServer;
-  static _shutdownCallbacks: Set<() => void> = new Set();
+class NuclideServer {
+  constructor(options, services) {
+    this._disposables = new (_UniversalDisposable().default)();
 
-  _webServer: http$fixed$Server;
-  _webSocketServer: WS.Server;
-  _clients: Map<string, RpcConnection<QueuedAckTransport>>;
-  _port: number;
-  _app: connect$Server;
-  _xhrServiceRegistry: {[serviceName: string]: () => any};
-  _version: string;
-  _rpcServiceRegistry: ServiceRegistry;
-  _disposables: UniversalDisposable = new UniversalDisposable();
+    if (!(NuclideServer._theServer == null)) {
+      throw new Error("Invariant violation: \"NuclideServer._theServer == null\"");
+    }
 
-  constructor(options: NuclideServerOptions, services: Array<ConfigEntry>) {
-    invariant(NuclideServer._theServer == null);
     NuclideServer._theServer = this;
-
     const {
       serverKey,
       serverCertificate,
       port,
       certificateAuthorityCertificate,
-      trackEventLoop,
+      trackEventLoop
     } = options;
-
-    this._version = getVersion().toString();
+    this._version = (0, _nuclideVersion().getVersion)().toString();
     this._app = connect();
+
     this._attachUtilHandlers();
-    const isHttps = Boolean(
-      serverKey && serverCertificate && certificateAuthorityCertificate,
-    );
+
+    const isHttps = Boolean(serverKey && serverCertificate && certificateAuthorityCertificate);
+
     if (isHttps) {
       const webServerOptions = {
         key: serverKey,
         cert: serverCertificate,
         ca: certificateAuthorityCertificate,
         requestCert: true,
-        rejectUnauthorized: true,
+        rejectUnauthorized: true
       };
-
       this._webServer = https.createServer(webServerOptions, this._app);
     } else {
       this._webServer = http.createServer(this._app);
     }
-    this._port = port;
 
+    this._port = port;
     this._webSocketServer = this._createWebSocketServer();
     this._clients = new Map();
 
     this._setupServices(); // Setup 1.0 and 2.0 services.
 
+
     if (trackEventLoop) {
-      const stallTracker = new HistogramTracker(
-        'server-event-loop-blocked',
-        /* max */ 1000,
-        /* buckets */ 10,
-      );
-      this._disposables.add(
-        stallTracker,
-        blocked((ms: number) => {
-          stallTracker.track(ms);
-          logger.info('NuclideServer event loop blocked for ' + ms + 'ms');
-        }),
-      );
+      const stallTracker = new (_nuclideAnalytics().HistogramTracker)('server-event-loop-blocked',
+      /* max */
+      1000,
+      /* buckets */
+      10);
+
+      this._disposables.add(stallTracker, (0, _blocked().default)(ms => {
+        stallTracker.track(ms);
+        logger.info('NuclideServer event loop blocked for ' + ms + 'ms');
+      }));
     }
 
-    this._rpcServiceRegistry = new ServiceRegistry(
-      getServerSideMarshalers,
-      services,
-    );
-
-    track('server-created', {port, isHttps, host: os.hostname()});
+    this._rpcServiceRegistry = new (_nuclideRpc().ServiceRegistry)(_nuclideMarshalersCommon().getServerSideMarshalers, services);
+    (0, _nuclideAnalytics().track)('server-created', {
+      port,
+      isHttps,
+      host: _os.default.hostname()
+    });
   }
 
   _attachUtilHandlers() {
@@ -140,17 +234,13 @@ export default class NuclideServer {
     });
   }
 
-  _createWebSocketServer(): WS.Server {
-    const webSocketServer = new WS.Server({
+  _createWebSocketServer() {
+    const webSocketServer = new (_ws().default.Server)({
       server: this._webServer,
-      perMessageDeflate: true,
+      perMessageDeflate: true
     });
-    webSocketServer.on('connection', (socket, req) =>
-      this._onConnection(socket, req),
-    );
-    webSocketServer.on('error', error =>
-      logger.error('WebSocketServer Error:', error),
-    );
+    webSocketServer.on('connection', (socket, req) => this._onConnection(socket, req));
+    webSocketServer.on('error', error => logger.error('WebSocketServer Error:', error));
     return webSocketServer;
   }
 
@@ -158,40 +248,29 @@ export default class NuclideServer {
     // Lazy require these functions so that we could spyOn them while testing in
     // ServiceIntegrationTestHelper.
     this._xhrServiceRegistry = {};
-    this._setupHeartbeatHandler();
 
-    // Setup error handler.
-    this._app.use(
-      (
-        error: ?connect$Error,
-        request: http$fixed$IncomingMessage,
-        response: http$fixed$ServerResponse,
-        next: Function,
-      ) => {
-        if (error != null) {
-          sendJsonResponse(
-            response,
-            {code: error.code, message: error.message},
-            500,
-          );
-        } else {
-          next();
-        }
-      },
-    );
+    this._setupHeartbeatHandler(); // Setup error handler.
+
+
+    this._app.use((error, request, response, next) => {
+      if (error != null) {
+        (0, _utils().sendJsonResponse)(response, {
+          code: error.code,
+          message: error.message
+        }, 500);
+      } else {
+        next();
+      }
+    });
   }
 
   _setupHeartbeatHandler() {
-    this._registerService(
-      '/' + HEARTBEAT_CHANNEL,
-      async () => this._version,
-      'post',
-      true,
-    );
+    this._registerService('/' + HEARTBEAT_CHANNEL, async () => this._version, 'post', true);
   }
 
-  static shutdown(): void {
+  static shutdown() {
     logger.info('Shutting down the server');
+
     for (const callback of NuclideServer._shutdownCallbacks) {
       try {
         callback();
@@ -199,6 +278,7 @@ export default class NuclideServer {
         logger.error('Error when executing shutdown callback:', e);
       }
     }
+
     try {
       if (NuclideServer._theServer != null) {
         NuclideServer._theServer.close();
@@ -206,135 +286,137 @@ export default class NuclideServer {
     } catch (e) {
       logger.error('Error while shutting down, but proceeding anyway:', e);
     } finally {
-      flushLogsAndExit(0);
+      (0, _nuclideLogging().flushLogsAndExit)(0);
     }
   }
 
-  static registerShutdownCallback(callback: () => void): IDisposable {
+  static registerShutdownCallback(callback) {
     NuclideServer._shutdownCallbacks.add(callback);
-    return {dispose: () => NuclideServer._shutdownCallbacks.delete(callback)};
+
+    return {
+      dispose: () => NuclideServer._shutdownCallbacks.delete(callback)
+    };
   }
 
-  static closeConnection(client: RpcConnection<QueuedAckTransport>): void {
+  static closeConnection(client) {
     logger.info(`Closing client: #${client.getTransport().id}`);
+
     if (NuclideServer._theServer != null) {
       NuclideServer._theServer._closeConnection(client);
     }
   }
 
-  _closeConnection(client: RpcConnection<QueuedAckTransport>): void {
+  _closeConnection(client) {
     if (this._clients.get(client.getTransport().id) === client) {
       this._clients.delete(client.getTransport().id);
     }
   }
 
-  connect(): Promise<void> {
+  connect() {
     return new Promise((resolve, reject) => {
       this._webServer.on('listening', () => {
         resolve();
       });
+
       this._webServer.on('error', e => {
         this._webServer.removeAllListeners();
+
         reject(e);
       });
+
       this._webServer.listen(this._port);
     });
   }
-
   /**
    * Calls a registered service with a name and arguments.
    */
-  callService(serviceName: string, args: Array<any>): Promise<any> {
+
+
+  callService(serviceName, args) {
     const serviceFunction = this._xhrServiceRegistry[serviceName];
+
     if (!serviceFunction) {
       throw new Error('No service registered with name: ' + serviceName);
     }
+
     return serviceFunction.apply(this, args);
   }
-
   /**
    * Registers a service function to a service name.
    * This allows simple future calls of the service by name and arguments or http-triggered
    * endpoint calls with arguments serialized over http.
    */
-  _registerService(
-    serviceName: string,
-    serviceFunction: () => Promise<any>,
-    method: string,
-    isTextResponse: boolean,
-  ) {
+
+
+  _registerService(serviceName, serviceFunction, method, isTextResponse) {
     if (this._xhrServiceRegistry[serviceName]) {
-      throw new Error(
-        'A service with this name is already registered: ' + serviceName,
-      );
+      throw new Error('A service with this name is already registered: ' + serviceName);
     }
+
     this._xhrServiceRegistry[serviceName] = serviceFunction;
+
     this._registerHttpService(serviceName, method, isTextResponse);
   }
 
-  _registerHttpService(
-    serviceName: string,
-    method: string,
-    isTextResponse: ?boolean,
-  ) {
-    const loweredCaseMethod = method.toLowerCase();
-    // $FlowFixMe - Use map instead of computed property.
-    this._app[loweredCaseMethod](
-      serviceName,
-      async (request, response, next) => {
-        try {
-          const result = await this.callService(
-            serviceName,
-            deserializeArgs(request.url),
-          );
-          if (isTextResponse) {
-            sendTextResponse(response, result || '');
-          } else {
-            sendJsonResponse(response, result);
-          }
-        } catch (e) {
-          // Delegate to the registered connect error handler.
-          next(e);
+  _registerHttpService(serviceName, method, isTextResponse) {
+    const loweredCaseMethod = method.toLowerCase(); // $FlowFixMe - Use map instead of computed property.
+
+    this._app[loweredCaseMethod](serviceName, async (request, response, next) => {
+      try {
+        const result = await this.callService(serviceName, (0, _utils().deserializeArgs)(request.url));
+
+        if (isTextResponse) {
+          (0, _utils().sendTextResponse)(response, result || '');
+        } else {
+          (0, _utils().sendJsonResponse)(response, result);
         }
-      },
-    );
+      } catch (e) {
+        // Delegate to the registered connect error handler.
+        next(e);
+      }
+    });
   }
 
-  _onConnection(socket: WS, req: http$IncomingMessage): void {
+  _onConnection(socket, req) {
     logger.debug('WebSocket connecting');
-
     const clientId = req.headers.client_id;
     logger.info(`received client_id in header ${clientId}`);
-
-    let client: ?RpcConnection<QueuedAckTransport> = null;
-
+    let client = null;
     client = this._clients.get(clientId);
-    const transport = new WebSocketTransport(clientId, socket);
+    const transport = new (_WebSocketTransport().WebSocketTransport)(clientId, socket);
+
     if (client == null) {
-      client = RpcConnection.createServer(
-        this._rpcServiceRegistry,
-        new QueuedAckTransport(clientId, transport, protocolLogger),
-        {},
-        clientId,
-        protocolLogger,
-      );
+      client = _nuclideRpc().RpcConnection.createServer(this._rpcServiceRegistry, new (_QueuedAckTransport().QueuedAckTransport)(clientId, transport, _utils().protocolLogger), {}, clientId, _utils().protocolLogger);
+
       this._clients.set(clientId, client);
     } else {
-      invariant(clientId === client.getTransport().id);
+      if (!(clientId === client.getTransport().id)) {
+        throw new Error("Invariant violation: \"clientId === client.getTransport().id\"");
+      }
+
       client.getTransport().reconnect(transport);
     }
   }
 
-  close(): Promise<void> {
+  close() {
     return new Promise(resolve => {
-      invariant(NuclideServer._theServer === this);
+      if (!(NuclideServer._theServer === this)) {
+        throw new Error("Invariant violation: \"NuclideServer._theServer === this\"");
+      }
+
       NuclideServer._theServer = null;
 
       this._disposables.dispose();
+
       this._webSocketServer.close();
+
       this._webServer.close(() => {
         resolve();
       });
     });
   }
+
 }
+
+exports.default = NuclideServer;
+NuclideServer._shutdownCallbacks = new Set();
