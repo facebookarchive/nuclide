@@ -306,7 +306,7 @@ declare class atom$Gutter {
   destroy(): void,
   decorateMarker(
     marker: atom$Marker,
-    options?: {'class'?: string, item?: Object | HTMLElement},
+    options?: {type?: string, 'class'?: string, item?: Object | HTMLElement},
   ): atom$Decoration,
   show(): void,
   hide(): void,
