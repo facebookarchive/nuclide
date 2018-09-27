@@ -46,6 +46,7 @@ export type BuckClangCompilationDatabase = {|
   flagsFile: ?string,
   libclangPath: ?string,
   warnings: Array<string>,
+  target?: string,
 |};
 
 // Remove the warnings field from the buck value.

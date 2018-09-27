@@ -234,6 +234,7 @@ class BuckClangCompilationDatabaseHandler {
       file: pathToCompilationDatabase,
       flagsFile: buildFile,
       libclangPath: null,
+      target,
       warnings: [],
     };
     return this._processCompilationDb(
