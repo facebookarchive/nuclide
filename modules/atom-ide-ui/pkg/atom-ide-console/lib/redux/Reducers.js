@@ -224,9 +224,13 @@ export default function accumulateState(
     }
     case Actions.EXECUTE: {
       const command = action.payload.code;
+      const newHistory =
+        state.history[state.history.length - 1] === command
+          ? state.history
+          : state.history.concat(command);
       return {
         ...state,
-        history: state.history.concat(command).slice(-1000),
+        history: newHistory.slice(-1000),
       };
     }
     case Actions.SET_CREATE_PASTE_FUNCTION: {
