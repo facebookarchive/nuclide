@@ -180,7 +180,6 @@ export default function accumulateState(
       return {
         ...state,
         records: List(),
-        incompleteRecords: List(),
       };
     }
     case Actions.REGISTER_EXECUTOR: {
