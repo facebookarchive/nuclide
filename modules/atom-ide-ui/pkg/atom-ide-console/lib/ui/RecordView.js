@@ -153,13 +153,9 @@ export default class RecordView extends React.Component<Props> {
         <div className="console-record-timestamp">{timestampLabel}</div>
       );
     }
-    /*
     return (
       <MeasuredComponent
         onMeasurementsChanged={this._debouncedMeasureAndNotifyHeight}>
-        */
-    return (
-      <MeasuredComponent onMeasurementsChanged={() => {}}>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <div ref={this._handleRecordWrapper} className={classNames}>
           {icon}
