@@ -57,6 +57,8 @@ export type Diagnostic = {
   message: string,
   // Any related locations.
   relatedLocations?: Array<RelatedLocation>,
+  // FB extension: whether this diagnostic should be considered "stale".
+  stale?: boolean,
 };
 
 export type RelatedLocation = {

@@ -621,6 +621,9 @@ function lspDiagnostic_atomDiagnostic(
     atomDiagnostic.providerName += ': ' + String(diagnostic.code);
     atomDiagnostic.code = parseInt(String(diagnostic.code), 10);
   }
+  if (diagnostic.stale != null) {
+    atomDiagnostic.stale = diagnostic.stale;
+  }
   return atomDiagnostic;
 }
 
@@ -657,6 +660,9 @@ export function atomDiagnostic_lspDiagnostic(
     };
     if (diagnostic.code != null) {
       lspDiagnostic.code = diagnostic.code;
+    }
+    if (diagnostic.stale != null) {
+      lspDiagnostic.stale = diagnostic.stale;
     }
     return lspDiagnostic;
   }
