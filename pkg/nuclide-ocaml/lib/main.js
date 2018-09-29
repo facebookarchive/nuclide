@@ -11,6 +11,7 @@
 
 import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import passesGK from '../../commons-node/passesGK';
 import {observeForCodeLens} from './CodeLensListener';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createLanguageService} from './OCamlLanguage';
@@ -18,6 +19,9 @@ import {createLanguageService} from './OCamlLanguage';
 let disposables: UniversalDisposable = new UniversalDisposable();
 
 export async function activate(): Promise<void> {
+  if (await passesGK('nuclide_fb_ocaml_vscode_ext')) {
+    return;
+  }
   const ocamlLspLanguageService = createLanguageService();
   ocamlLspLanguageService.activate();
   disposables.add(ocamlLspLanguageService);
