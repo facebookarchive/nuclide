@@ -34,7 +34,7 @@ export default function initializeLogging(connection: IConnection) {
     appenders: [
       {
         type: 'logLevelFilter',
-        level: 'DEBUG',
+        level: 'WARN',
         appender: {
           connection,
           type: require.resolve(

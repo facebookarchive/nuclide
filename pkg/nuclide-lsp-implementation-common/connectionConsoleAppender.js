@@ -36,7 +36,7 @@ function appender(config: {connection: IConnection}) {
   return (loggingEvent: any): void => {
     // $FlowFixMe: type log4js.layouts
     const message = log4js.layouts.basicLayout(loggingEvent);
-    if (loggingEvent.level.level >= log4js.levels.INFO.level) {
+    if (loggingEvent.level.level >= log4js.levels.WARN.level) {
       connection.console.log(message);
     }
     connection.telemetry.logEvent(
