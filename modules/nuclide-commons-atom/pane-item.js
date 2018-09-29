@@ -28,3 +28,18 @@ export function observePendingStateEnd(paneItem: atom$PaneItem) {
     paneItem.onDidTerminatePendingState.bind(paneItem),
   );
 }
+
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
+export function isConsoleVisible(): boolean {
+  const consolePane = atom.workspace.paneForURI(CONSOLE_VIEW_URI);
+  const consoleItem = consolePane && consolePane.getActiveItem();
+  const paneContainer = atom.workspace.paneContainerForItem(consoleItem);
+  // This visibility check has been taken from
+  // https://github.com/atom/atom/blob/v1.28.2/src/workspace.js#L1084
+  return (
+    (paneContainer === atom.workspace.getCenter() ||
+      (paneContainer != null && paneContainer.isVisible())) &&
+    consoleItem === consolePane.getActiveItem()
+  );
+}

@@ -21,6 +21,7 @@ import type {
 } from '../types';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
+import {isConsoleVisible} from 'nuclide-commons-atom/pane-item';
 import {compact} from 'nuclide-commons/observable';
 import {ProcessExitError} from 'nuclide-commons/process';
 import {observableFromTask} from '../../../commons-node/tasks';
@@ -32,8 +33,6 @@ import * as Immutable from 'immutable';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {Observable, Scheduler} from 'rxjs';
-
-const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 export function setProjectRootForNewTaskRunnerEpic(
   actions: ActionsObservable<Action>,
@@ -666,19 +665,6 @@ export function printTaskErroredEpic(
       },
     });
   });
-}
-
-function isConsoleVisible(): boolean {
-  const consolePane = atom.workspace.paneForURI(CONSOLE_VIEW_URI);
-  const consoleItem = consolePane && consolePane.getActiveItem();
-  const paneContainer = atom.workspace.paneContainerForItem(consoleItem);
-  // This visibility check has been taken from
-  // https://github.com/atom/atom/blob/v1.28.2/src/workspace.js#L1084
-  return (
-    (paneContainer === atom.workspace.getCenter() ||
-      (paneContainer != null && paneContainer.isVisible())) &&
-    consoleItem === consolePane.getActiveItem()
-  );
 }
 
 let taskFailedNotification;
