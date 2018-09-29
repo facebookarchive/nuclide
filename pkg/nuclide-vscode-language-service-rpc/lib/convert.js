@@ -27,6 +27,7 @@ import type {
   CodeLens,
   FileEvent,
   LocationWithTitle,
+  ShowStatusParams,
 } from './protocol';
 import type {
   Completion,
@@ -34,6 +35,7 @@ import type {
   FileDiagnosticMessage,
   SymbolResult,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileChange} from 'nuclide-watchman-helpers';
 import type {ShowNotificationLevel} from '../../nuclide-language-service-rpc/lib/rpc-types';
@@ -752,4 +754,33 @@ export function watchmanFileChange_lspFileEvent(
         ? FileChangeType.Deleted
         : FileChangeType.Changed,
   };
+}
+
+export function lspStatus_atomStatus(params: ShowStatusParams): ?StatusData {
+  const actions = params.actions || [];
+  switch (params.type) {
+    case LspMessageType.Error:
+      return {
+        kind: 'red',
+        message: params.message == null ? '' : params.message,
+        buttons: actions.map(action => action.title),
+      };
+    case LspMessageType.Warning:
+      return {
+        kind: 'yellow',
+        message: params.message == null ? '' : params.message,
+        shortMessage: params.shortMessage,
+        progress:
+          params.progress == null
+            ? undefined
+            : {
+                numerator: params.progress.numerator,
+                denominator: params.progress.denominator,
+              },
+      };
+    case LspMessageType.Info:
+      return {kind: 'green', message: params.message};
+    default:
+      return null;
+  }
 }

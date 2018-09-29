@@ -304,6 +304,11 @@ declare module 'vscode-languageserver-protocol' {
   |};
 
   declare type WindowClientCapabilities = {|
+    //  Capabilities specific to the `window/showStatus` request.
+    status?: {|
+      //  Status requests supports dynamic registration.
+      dynamicRegistration?: boolean,
+    |},
     //  Capabilities specific to the `window/progress` notification.
     progress?: {|
       //  Progress notification supports dynamic registration.
@@ -978,6 +983,10 @@ declare module 'vscode-languageserver-protocol' {
     +onClose: Event<void>;
     write(msg: Message): void;
     dispose(): void;
+  }
+
+  declare export class RequestType {
+    constructor(type: string): void;
   }
 
   /**

@@ -110,6 +110,85 @@ declare module 'vscode-languageclient' {
     ): void;
   }
 
+  declare export interface RPCMessageType {
+    +method: string;
+    +numberOfParams: number;
+  }
+
+  declare export interface RegistrationData {
+    id: string;
+    registerOptions: any;
+  }
+
+  declare export interface DynamicFeature {
+    /**
+     * The message for which this features support dynamic activation / registration.
+     */
+    +messages: RPCMessageType | RPCMessageType[];
+
+    /**
+     * Called to fill the initialize params.
+     *
+     * @params the initialize params.
+     */
+    fillInitializeParams?: (params: InitializeParams) => void;
+
+    /**
+     * Called to fill in the client capabilities this feature implements.
+     *
+     * @param capabilities The client capabilities to fill.
+     */
+    fillClientCapabilities(capabilities: ClientCapabilities): void;
+
+    /**
+     * Initialize the feature. This method is called on a feature instance
+     * when the client has successfully received the initalize request from
+     * the server and before the client sends the initialized notification
+     * to the server.
+     *
+     * @param capabilities the server capabilities.
+     * @param documentSelector the document selector pass to the client's constuctor.
+     *  May be `undefined` if the client was created without a selector.
+     */
+    initialize(
+      capabilities: ServerCapabilities,
+      documentSelector: ?DocumentSelector,
+    ): void;
+
+    /**
+     * Is called when the server send a register request for the given message.
+     *
+     * @param message the message to register for.
+     * @param data additional registration data as defined in the protocol.
+     */
+    register(message: RPCMessageType, data: RegistrationData): void;
+
+    /**
+     * Is called when the server wants to unregister a feature.
+     *
+     * @param id the id used when registering the feature.
+     */
+    unregister(id: string): void;
+
+    /**
+     * Called when the client is stopped to dispose this feature. Usually a feature
+     * unregisters listeners registerd hooked up with the VS Code extension host.
+     */
+    dispose(): void;
+  }
+
+  declare export interface HandleDiagnosticsSignature {
+    (uri: any, diagnostics: any[]): void;
+  }
+
+  declare export interface Middleware {
+    handleDiagnostics?: (
+      uri: any,
+      diagnostics: any[],
+      next: HandleDiagnosticsSignature,
+    ) => void;
+  }
+
   declare export interface LanguageClientOptions {
     documentSelector?: DocumentSelector | Array<string>;
     synchronize?: any;
@@ -125,7 +204,7 @@ declare module 'vscode-languageclient' {
     initializationOptions?: any | (() => any);
     initializationFailedHandler?: (error: any) => boolean;
     // errorHandler?: ErrorHandler;
-    // middleware?: Middleware;
+    middleware?: Middleware;
     // uriConverters?: {
     //   code2Protocol: c2p.URIConverter,
     //   protocol2Code: p2c.URIConverter,
@@ -155,6 +234,13 @@ declare module 'vscode-languageclient' {
     Restart: 2,
   };
 
+  declare export var RevealOutputChannelOn: {
+    Info: 1,
+    Warn: 2,
+    Error: 3,
+    Never: 4,
+  };
+
   declare export class LanguageClient {
     get clientOptions(): LanguageClientOptions;
     constructor(
@@ -180,6 +266,8 @@ declare module 'vscode-languageclient' {
 
     start(): IDisposable;
     stop(): Thenable<void>;
+    onReady(): Thenable<void>;
+    onRequest(type: any, () => any): void;
     registerFeature(feature: StaticFeature): void;
     sendRequest<R>(method: string, param: any): Thenable<R>;
   }

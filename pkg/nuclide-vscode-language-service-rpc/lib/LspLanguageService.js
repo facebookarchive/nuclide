@@ -1302,37 +1302,10 @@ export class LspLanguageService {
     token: rpc.CancellationToken,
   ): Promise<?MessageActionItem> {
     // CARE! This method may be called before initialization has finished.
-
     const actions = params.actions || [];
-
-    let status;
-    switch (params.type) {
-      case LspMessageType.Error:
-        status = {
-          kind: 'red',
-          message: params.message == null ? '' : params.message,
-          buttons: actions.map(action => action.title),
-        };
-        break;
-      case LspMessageType.Warning:
-        status = {
-          kind: 'yellow',
-          message: params.message == null ? '' : params.message,
-          shortMessage: params.shortMessage,
-          progress:
-            params.progress == null
-              ? undefined
-              : {
-                  numerator: params.progress.numerator,
-                  denominator: params.progress.denominator,
-                },
-        };
-        break;
-      case LspMessageType.Info:
-        status = {kind: 'green', message: params.message};
-        break;
-      default:
-        return null;
+    const status = convert.lspStatus_atomStatus(params);
+    if (status == null) {
+      return null;
     }
 
     const response = await this._showStatus(status);
