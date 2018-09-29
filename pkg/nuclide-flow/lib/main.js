@@ -67,7 +67,7 @@ class Activation {
   }
 
   _onGKInitialized(): void {
-    if (this._disposed) {
+    if (this._disposed || isGkEnabled('nuclide_fb_flow_vscode_ext')) {
       return;
     }
     this._activationPromise = isGkEnabled('nuclide_flow_lsp')
