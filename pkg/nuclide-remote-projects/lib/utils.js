@@ -10,9 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
-import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteTextEditorPlaceholder} from './RemoteTextEditorPlaceholder';
 
@@ -23,9 +21,9 @@ export type OpenFileEditorInstance = {
   filePath: string,
 };
 
-export function* getOpenFileEditorForRemoteProject(
-  connectionConfig: RemoteConnectionConfiguration,
-): Iterator<OpenFileEditorInstance> {
+export function* getOpenFileEditorForRemoteProject(): Iterator<
+  OpenFileEditorInstance,
+> {
   for (const pane of atom.workspace.getPanes()) {
     const paneItems = pane.getItems();
     for (const paneItem of paneItems) {
@@ -33,17 +31,13 @@ export function* getOpenFileEditorForRemoteProject(
         continue;
       }
       const uri = paneItem.getPath();
-      const {hostname: fileHostname, path: filePath} = nuclideUri.parse(uri);
-      if (fileHostname === connectionConfig.host) {
-        // flowlint-next-line sketchy-null-string:off
-        invariant(fileHostname);
-        yield {
-          pane,
-          editor: paneItem,
-          uri,
-          filePath,
-        };
-      }
+      const {path: filePath} = nuclideUri.parse(uri);
+      yield {
+        pane,
+        editor: paneItem,
+        uri,
+        filePath,
+      };
     }
   }
 }

@@ -18,6 +18,7 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import idx from 'idx';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {enforceReadOnlyEditor} from 'nuclide-commons-atom/text-editor';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
   loadBufferForUri,
   bufferForUri,
@@ -133,8 +134,11 @@ class Activation {
     this._subscriptions.add(
       RemoteConnection.onDidAddRemoteConnection(connection => {
         this._subscriptions.add(addRemoteFolderToProject(connection));
-        replaceRemoteEditorPlaceholders(connection);
+        replaceRemoteEditorPlaceholders();
       }),
+      observableFromSubscribeFunction(
+        atom.workspace.onDidAddPaneItem.bind(atom.workspace),
+      ).subscribe(replaceRemoteEditorPlaceholders),
     );
 
     this._subscriptions.add(
@@ -480,8 +484,7 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
 }
 
 function closeOpenFilesForRemoteProject(connection: RemoteConnection): void {
-  const remoteProjectConfig = connection.getConfig();
-  const openInstances = getOpenFileEditorForRemoteProject(remoteProjectConfig);
+  const openInstances = getOpenFileEditorForRemoteProject();
   for (const openInstance of openInstances) {
     const {uri, editor, pane} = openInstance;
     // It's possible to open files outside of the root of the connection.
@@ -671,15 +674,20 @@ function shutdownServersAndRestartNuclide(): void {
   });
 }
 
-function replaceRemoteEditorPlaceholders(connection: RemoteConnection): void {
+function replaceRemoteEditorPlaceholders(): void {
   // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
   // Here, Nuclide reloads the remote project files that have empty text editors open.
-  const config = connection.getConfig();
-  const openInstances = getOpenFileEditorForRemoteProject(config);
+  const openInstances = getOpenFileEditorForRemoteProject();
   for (const openInstance of openInstances) {
     // Keep the original open editor item with a unique name until the remote buffer is loaded,
     // Then, we are ready to replace it with the remote tab in the same pane.
     const {pane, editor, uri, filePath} = openInstance;
+
+    const connection = RemoteConnection.getForUri(uri);
+    if (connection == null) {
+      continue;
+    }
+    const config = connection.getConfig();
 
     // Skip restoring the editor who has remote content loaded.
     if (
