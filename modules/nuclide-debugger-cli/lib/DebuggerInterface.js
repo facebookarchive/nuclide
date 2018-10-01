@@ -74,4 +74,5 @@ export interface DebuggerInterface {
   ): Promise<DebugProtocol.EvaluateResponse>;
   supportsCodeBlocks(): boolean;
   adapterCaps(): DebugProtocol.Capabilities;
+  info(expression: string): Promise<DebugProtocol.InfoResponse>;
 }

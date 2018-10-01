@@ -36,6 +36,7 @@ import EnterCodeCommand from './EnterCodeCommand';
 import FrameCommand from './FrameCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
+import InfoCommand from './InfoCommand';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import OutCommand from './OutCommand';
 import ShowCapsCommand from './ShowCapsCommand';
@@ -112,6 +113,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new DownCommand(this._console, this));
     dispatcher.registerCommand(new OutCommand(this));
     dispatcher.registerCommand(new ShowCapsCommand(this._console, this));
+    dispatcher.registerCommand(new InfoCommand(this._console, this));
   }
 
   // launch is for launching a process from scratch when we need a new
@@ -783,6 +785,21 @@ export default class Debugger implements DebuggerInterface {
   adapterCaps(): DebugProtocol.Capabilities {
     const session = this._ensureDebugSession();
     return session.capabilities;
+  }
+
+  info(object: string): Promise<DebugProtocol.InfoResponse> {
+    const session = this._ensureDebugSession();
+    if (!Boolean(session.capabilities.supportsInfo)) {
+      throw new Error('This debug adapter does not support "info"');
+    }
+
+    let args = {object};
+    const threadId = this._threads.focusThreadId;
+    if (threadId != null) {
+      args = {...args, threadId};
+    }
+
+    return session.info(args);
   }
 
   async createSession(adapter: ParsedVSAdapter): Promise<void> {

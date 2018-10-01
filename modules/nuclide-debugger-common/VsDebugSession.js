@@ -513,6 +513,10 @@ export default class VsDebugSession extends V8Protocol {
     return this.send('exceptionInfo', args);
   }
 
+  info(args: DebugProtocol.InfoArguments): Promise<DebugProtocol.InfoResponse> {
+    return this.send('info', args);
+  }
+
   scopes(
     args: DebugProtocol.ScopesArguments,
   ): Promise<DebugProtocol.ScopesResponse> {

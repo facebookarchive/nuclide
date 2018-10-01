@@ -106,7 +106,7 @@ export default class HHVMDebugAdapter implements DebugAdapter {
     // NB This is the same hack that's done in classic hphpd to get around the
     // fact that evaluating a code block like 'prep(genFoo())' returns the
     // constant '1' rather than the asynchronously computed result of genFoo()
-    return `$_=${exp}; return $_;`;
+    return exp; // `$_=${exp}`;
   }
 
   async canDebugFile(file: string): Promise<boolean> {

@@ -462,6 +462,27 @@ declare module 'vscode-debugprotocol' {
   /** Response to 'nuclide_continueToLocation' request. */
   declare interface nuclide_ContinueToLocationResponse extends base$Response {}
 
+  /** Request type information for a symbol */
+  declare interface InfoRequest extends base$Request {
+    command: 'info';
+    arguments: InfoArguments;
+  }
+
+  declare interface InfoArguments {
+    /** The thread id to evaluate the object on */
+    threadId?: number;
+    /** The object to request type information on */
+    object?: string;
+  }
+
+  /** Response to the 'info' request */
+  declare interface InfoResponse extends base$Response {
+    body: {
+      /** Possibly multiline type information about the queried object */
+      info: string,
+    };
+  }
+
   /** Next request; value of command field is 'next'.
     The request starts the debuggee to run again for one step.
     The debug adapter first sends the NextResponse and then a StoppedEvent (event type 'step') after the step has completed.
@@ -989,6 +1010,7 @@ declare module 'vscode-debugprotocol' {
     | CompletionsRequest
     | ExceptionInfoRequest
     | nuclide_ContinueToLocationRequest
+    | InfoRequest
     | CustomRequest;
   declare type Response =
     | RunInTerminalResponse
@@ -1091,6 +1113,8 @@ declare module 'vscode-debugprotocol' {
     supportsDelayedStackTraceLoading?: boolean,
     /** NUCLIDE: the debug adapter supports sending back the id of the breakpoint that was hit in the stop event, if the stop is due to a breakpoint. */
     supportsBreakpointIdOnStop?: boolean,
+    /** NUCLIDE: the debug adapter supports the info request for examining symbols */
+    supportsInfo?: boolean,
   };
 
   /** An ExceptionBreakpointsFilter is shown in the UI as an option for configuring how exceptions are dealt with. */
