@@ -34,7 +34,9 @@ import BlockDecoration from 'nuclide-commons-ui/BlockDecoration';
 import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
 import {makeDatatipComponent} from './getDiagnosticDatatip.js';
+import {decorateTrackTimingSampled} from 'nuclide-commons/analytics';
 
+const APPLY_UPDATE_TO_EDITOR_SAMPLE_RATE = 40;
 const GUTTER_ID = 'diagnostics-gutter';
 
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
@@ -94,7 +96,13 @@ const SpawnPopupEvents = handleSpawnPopupEvents
   })
   .share();
 
-export function applyUpdateToEditor(
+_applyUpdateToEditor.displayName = 'applyUpdateToEditor';
+export const applyUpdateToEditor = decorateTrackTimingSampled(
+  _applyUpdateToEditor,
+  APPLY_UPDATE_TO_EDITOR_SAMPLE_RATE,
+);
+
+function _applyUpdateToEditor(
   editor: TextEditor,
   update: DiagnosticMessages,
   diagnosticUpdater: DiagnosticUpdater,
