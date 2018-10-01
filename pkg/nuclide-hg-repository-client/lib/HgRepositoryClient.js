@@ -86,33 +86,6 @@ const DID_CHANGE_CONFLICT_STATE = 'did-change-conflict-state';
 
 export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 
-type RevisionStatusCache = {
-  getCachedRevisionStatuses(): Map<number, RevisionStatusDisplay>,
-  observeRevisionStatusesChanges(): Observable<RevisionStatuses>,
-  refresh(): void,
-};
-
-function getRevisionStatusCache(
-  revisionsCache: RevisionsCache,
-  workingDirectoryPath: string,
-): RevisionStatusCache {
-  try {
-    // $FlowFB
-    const FbRevisionStatusCache = require('./fb/RevisionStatusCache').default;
-    return new FbRevisionStatusCache(revisionsCache, workingDirectoryPath);
-  } catch (e) {
-    return {
-      getCachedRevisionStatuses() {
-        return new Map();
-      },
-      observeRevisionStatusesChanges() {
-        return Observable.empty();
-      },
-      refresh() {},
-    };
-  }
-}
-
 /**
  *
  * Section: HgRepositoryClient
@@ -167,7 +140,6 @@ export class HgRepositoryClient {
     hgHeadStatusChanges: HgStatusChanges,
     hgStackStatusChanges: HgStatusChanges,
     revisionsCache: RevisionsCache,
-    revisionStatusCache: RevisionStatusCache,
     revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>,
     fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>,
     currentHeadId: ?string,
@@ -202,10 +174,6 @@ export class HgRepositoryClient {
     this._sharedMembers.revisionsCache = new RevisionsCache(
       this._sharedMembers.workingDirectoryPath,
       hgService,
-    );
-    this._sharedMembers.revisionStatusCache = getRevisionStatusCache(
-      this._sharedMembers.revisionsCache,
-      this._sharedMembers.workingDirectoryPath,
     );
     this._sharedMembers.revisionIdToFileChanges = new LRU({max: 100});
     this._sharedMembers.fileContentsAtRevisionIds = new LRU({max: 20});
@@ -481,10 +449,6 @@ export class HgRepositoryClient {
 
   observeIsFetchingPathStatuses(): Observable<boolean> {
     return this._sharedMembers.isFetchingPathStatuses.asObservable();
-  }
-
-  observeRevisionStatusesChanges(): Observable<RevisionStatuses> {
-    return this._sharedMembers.revisionStatusCache.observeRevisionStatusesChanges();
   }
 
   observeUncommittedStatusChanges(): HgStatusChanges {
@@ -1091,16 +1055,8 @@ export class HgRepositoryClient {
       });
   }
 
-  refreshRevisionsStatuses(): void {
-    this._sharedMembers.revisionStatusCache.refresh();
-  }
-
   getCachedRevisions(): Array<RevisionInfo> {
     return this._sharedMembers.revisionsCache.getCachedRevisions().revisions;
-  }
-
-  getCachedRevisionStatuses(): RevisionStatuses {
-    return this._sharedMembers.revisionStatusCache.getCachedRevisionStatuses();
   }
 
   // See HgService.getBaseRevision.
