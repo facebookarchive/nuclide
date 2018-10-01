@@ -12,6 +12,7 @@
 
 import type {Observable} from 'rxjs';
 
+import nullthrows from 'nullthrows';
 import UniversalDisposable from './UniversalDisposable';
 import {isPromise} from './promise';
 import performanceNow from './performanceNow';
@@ -222,6 +223,20 @@ export function trackTimingSampled<T>(
     });
   }
   return operation();
+}
+
+export function decorateTrackTimingSampled<U: Iterable<*>, T>(
+  fn: (...args: U) => T,
+  sampleRate: number,
+  values?: {[key: string]: any} = {},
+): (...args: U) => T {
+  const name = nullthrows(fn.displayName || fn.name);
+  function decoratedTrackTimingSampled(...args: U) {
+    // $FlowFixMe
+    return trackTimingSampled(name, fn.bind(this, ...args), sampleRate, values);
+  }
+  decoratedTrackTimingSampled.displayName = `trackTimingSampled(${name})`;
+  return decoratedTrackTimingSampled;
 }
 
 export function setRawAnalyticsService(
