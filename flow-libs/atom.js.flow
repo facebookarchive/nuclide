@@ -1592,6 +1592,13 @@ declare class atom$Grammar {
   name: string,
   scopeName: string,
   tokenizeLines(text: string): Array<Array<atom$GrammarToken>>,
+  tokenizeLine(line: string, ruleStack: mixed, firstLine: boolean): {
+    line: string,
+    tags: Array<number>,
+    // Dynamic property: invoking it will incur additional overhead
+    tokens: Array<atom$GrammarToken>,
+    ruleStack: mixed
+  },
 }
 
 type atom$GrammarToken = {
