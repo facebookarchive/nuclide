@@ -357,7 +357,7 @@ export class RemoteDirectory {
         this._host,
         this._joinLocalPath(name),
       );
-      if (isFile || isSymlink) {
+      if (isFile) {
         files.push(this._server.createFile(uri, isSymlink));
       } else {
         directories.push(

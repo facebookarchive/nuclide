@@ -11,6 +11,7 @@
  */
 
 import fs from 'fs';
+import {arrayCompact} from 'nuclide-commons/collection';
 import path from 'path';
 import uuid from 'uuid';
 import rimraf from 'rimraf';
@@ -279,7 +280,7 @@ export class ThriftFileSystemServiceHandler {
   async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
     try {
       const files: Array<string> = await fsPromise.readdir(uri);
-      return Promise.all(
+      const entries = await Promise.all(
         files.map(async file => {
           const fullpath = path.join(uri, file);
           // lstat is the same as stat, but if path is a symbolic link, then
@@ -296,14 +297,14 @@ export class ThriftFileSystemServiceHandler {
           } catch (error) {
             if (error.code === 'ENOENT') {
               // symlink points to non-existent file/dir.
-              // return lstat data about the symlink
-              return convertToThriftFileEntry(file, lstats);
+              return null;
             } else {
               throw error;
             }
           }
         }),
       );
+      return arrayCompact(entries);
     } catch (err) {
       throw createThriftError(err);
     }
