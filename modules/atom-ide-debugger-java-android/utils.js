@@ -179,7 +179,9 @@ async function _getAndroidSdkSourcePaths(
     sdkVersion !== ''
       ? await getJavaDebuggerHelpersServiceByNuclideUri(
           targetUri,
-        ).getSdkVersionSourcePath(sdkVersion)
+        ).getSdkVersionSourcePath(sdkVersion, {
+          useSdkManager: nuclideUri.isLocal(targetUri),
+        })
       : null;
   if (sdkSourcePath == null) {
     atom.notifications.addInfo(

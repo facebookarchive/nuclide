@@ -13,6 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 
+import {track} from 'nuclide-commons/analytics';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -50,10 +51,6 @@ export type TerminalLaunchInfo = {|
 |};
 
 const JAVA = 'java';
-
-function _getAndroidHomeDir(): NuclideUri {
-  return (process.env.ANDROID_HOME: ?string) || '/opt/android_sdk';
-}
 
 export async function getPortForJavaDebugger(): Promise<number> {
   return getAvailableServerPort();
@@ -227,31 +224,115 @@ async function _findJdwpProcess(jvmSuspendArgs: string): Promise<?string> {
 
 export async function getSdkVersionSourcePath(
   sdkVersion: string,
+  options: {useSdkManager: boolean},
 ): Promise<?NuclideUri> {
   if (Number.isNaN(parseInt(sdkVersion, 10))) {
     return null;
   }
 
-  const sourcesDirectory = nuclideUri.join(
-    _getAndroidHomeDir(),
-    'sources',
-    'android-' + sdkVersion,
+  // First try process.env.ANDROID_HOME
+  // Then try /opt/android/sdk_DXXXXXXX which is the remote case.
+  // Then try /opt/android_sdk which is the local case
+
+  let androidHomeDir = (process.env.ANDROID_HOME: ?string);
+  let sourcesDirectory = await _getSdkVersionSourcePath(
+    androidHomeDir,
+    sdkVersion,
+    {useSdkManager: options.useSdkManager},
   );
-  if (await fsPromise.exists(sourcesDirectory)) {
+  if (sourcesDirectory != null) {
     return sourcesDirectory;
   }
 
-  const sdkManagerPath = nuclideUri.join(
-    _getAndroidHomeDir(),
-    'tools/bin/sdkmanager',
-  );
-  if (await fsPromise.exists(sdkManagerPath)) {
-    await runCommand(sdkManagerPath, ['sources;android-' + sdkVersion]);
-    // try again
-    if (await fsPromise.exists(sourcesDirectory)) {
-      return sourcesDirectory;
+  androidHomeDir = null;
+  const remoteAndroidHomeDirDir = '/opt/android/';
+  if (await fsPromise.exists(remoteAndroidHomeDirDir)) {
+    const children = await fsPromise.readdir(remoteAndroidHomeDirDir);
+    const sdkDirs = children.filter(c => c.startsWith('sdk_D'));
+    const sdkDirStats = await Promise.all(
+      sdkDirs.map(d =>
+        fsPromise.stat(nuclideUri.join(remoteAndroidHomeDirDir, d)),
+      ),
+    );
+    const sdkDirTimes = sdkDirStats.map(s => s.mtime.getTime());
+    const sortedSdkDirs = sdkDirs
+      .map((d, i) => [d, sdkDirTimes[i]])
+      .sort((a, b) => a[1] - b[1]);
+    if (sortedSdkDirs.length > 0) {
+      androidHomeDir = nuclideUri.join(
+        remoteAndroidHomeDirDir,
+        sortedSdkDirs[0][0],
+      );
     }
   }
 
+  sourcesDirectory = await _getSdkVersionSourcePath(
+    androidHomeDir,
+    sdkVersion,
+    {useSdkManager: false},
+  );
+  if (sourcesDirectory != null) {
+    return sourcesDirectory;
+  }
+
+  androidHomeDir = '/opt/android_sdk';
+  sourcesDirectory = await _getSdkVersionSourcePath(
+    androidHomeDir,
+    sdkVersion,
+    {useSdkManager: options.useSdkManager},
+  );
+  if (sourcesDirectory != null) {
+    return sourcesDirectory;
+  }
+
+  return null;
+}
+
+async function _getSdkVersionSourcePath(
+  androidHomeDir: ?string,
+  sdkVersion: string,
+  options: {useSdkManager: boolean},
+): Promise<?NuclideUri> {
+  if (androidHomeDir != null && androidHomeDir !== '') {
+    const sourcesDirectory = nuclideUri.join(
+      androidHomeDir,
+      'sources',
+      'android-' + sdkVersion,
+    );
+
+    if (await fsPromise.exists(sourcesDirectory)) {
+      return sourcesDirectory;
+    }
+
+    const sdkManagerPath = nuclideUri.join(
+      androidHomeDir,
+      'tools/bin/sdkmanager',
+    );
+
+    if (options.useSdkManager && (await fsPromise.exists(sdkManagerPath))) {
+      try {
+        await runCommand(sdkManagerPath, [
+          'sources;android-' + sdkVersion,
+        ]).toPromise();
+        // try again
+        const sourcesDirectoryExists = await fsPromise.exists(sourcesDirectory);
+        track('atom-ide-debugger-java-installSdkSourcesUsingSdkManager', {
+          sourcesDirectoryExists,
+          sourcesDirectory,
+          sdkManagerPath,
+        });
+        if (sourcesDirectoryExists) {
+          return sourcesDirectory;
+        }
+      } catch (err) {
+        track('atom-ide-debugger-java-installSdkSourcesUsingSdkManager-error', {
+          sourcesDirectoryExists: false,
+          sourcesDirectory,
+          sdkManagerPath,
+          errMessage: err.toString(),
+        });
+      }
+    }
+  }
   return null;
 }
