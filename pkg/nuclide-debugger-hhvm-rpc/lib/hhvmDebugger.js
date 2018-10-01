@@ -136,13 +136,6 @@ class HHVMDebuggerWrapper {
         this._debuggerWriteCallback = callback;
         this._forwardBufferedMessages();
         this._debugging = true;
-
-        const attachResponse: attachResponse = {
-          request_seq: attachMessage.seq,
-          success: true,
-          command: attachMessage.command,
-        };
-        this._writeResponseMessage(attachResponse);
       })
       .on('error', error => {
         if (retries >= 5) {

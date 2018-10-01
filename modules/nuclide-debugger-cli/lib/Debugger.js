@@ -38,6 +38,7 @@ import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import OutCommand from './OutCommand';
+import ShowCapsCommand from './ShowCapsCommand';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
 import Thread from './Thread';
@@ -52,11 +53,6 @@ import UpCommand from './UpCommand';
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 
-type Capabilities = {
-  ...DebugProtocol.Capabilities,
-  supportsReadyForEvaluationsEvent?: ?boolean,
-};
-
 type SessionState =
   | 'INITIALIZING' // waiting for initialized event from adapter
   | 'CONFIGURING' // waiting for user to issue 'run' command after setting initial breakpoints
@@ -65,7 +61,6 @@ type SessionState =
   | 'TERMINATED'; // program is gone and not coming back
 
 export default class Debugger implements DebuggerInterface {
-  _capabilities: Capabilities = {};
   _console: ConsoleIO;
   _debugSession: ?VsDebugSession;
   _dispatcher: ?CommandDispatcher;
@@ -116,6 +111,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new UpCommand(this._console, this));
     dispatcher.registerCommand(new DownCommand(this._console, this));
     dispatcher.registerCommand(new OutCommand(this));
+    dispatcher.registerCommand(new ShowCapsCommand(this._console, this));
   }
 
   // launch is for launching a process from scratch when we need a new
@@ -197,7 +193,7 @@ export default class Debugger implements DebuggerInterface {
     // this needs to be sent last for adapters that don't support configurationDone
     await session.setExceptionBreakpoints({filters: []});
 
-    if (Boolean(this._capabilities.supportsConfigurationDoneRequest)) {
+    if (Boolean(session.capabilities.supportsConfigurationDoneRequest)) {
       try {
         await session.configurationDone();
       } catch (err) {
@@ -478,7 +474,8 @@ export default class Debugger implements DebuggerInterface {
   }
 
   supportsStoppedAtBreakpoint(): boolean {
-    return this._capabilities.supportsBreakpointIdOnStop === true;
+    const session = this._ensureDebugSession();
+    return Boolean(session.capabilities.supportsBreakpointIdOnStop);
   }
 
   getStoppedAtBreakpoint(): ?Breakpoint {
@@ -548,7 +545,9 @@ export default class Debugger implements DebuggerInterface {
     func: string,
     once: boolean,
   ): Promise<BreakpointSetResult> {
-    if (!Boolean(this._capabilities.supportsFunctionBreakpoints)) {
+    // NB this call is allowed before the program is launched
+    const session = this._ensureDebugSession(true);
+    if (!Boolean(session.capabilities.supportsFunctionBreakpoints)) {
       throw new Error(
         `The ${
           this._adapter == null ? 'current' : this._adapter.type
@@ -564,8 +563,6 @@ export default class Debugger implements DebuggerInterface {
       );
     }
 
-    // NB this call is allowed before the program is launched
-    const session = this._ensureDebugSession(true);
     const index = this._breakpoints.addFunctionBreakpoint(func, once);
 
     let message = 'Breakpoint pending until program starts.';
@@ -783,6 +780,11 @@ export default class Debugger implements DebuggerInterface {
     return this._adapter.adapter.supportsCodeBlocks;
   }
 
+  adapterCaps(): DebugProtocol.Capabilities {
+    const session = this._ensureDebugSession();
+    return session.capabilities;
+  }
+
   async createSession(adapter: ParsedVSAdapter): Promise<void> {
     this._console.stopInput();
 
@@ -806,7 +808,6 @@ export default class Debugger implements DebuggerInterface {
       clientID: 'nuclide-cli',
     });
 
-    this._capabilities = {};
     if (body != null) {
       // $FlowFixMe should be able to just assign here
       this._capabilities = ((body: any): Capabilities);
@@ -862,7 +863,7 @@ export default class Debugger implements DebuggerInterface {
     const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
 
     if (
-      !Boolean(this._capabilities.supportsFunctionBreakpoints) ||
+      !Boolean(session.capabilities.supportsFunctionBreakpoints) ||
       funcBreakpoints.length === 0
     ) {
       return;

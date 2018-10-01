@@ -73,4 +73,5 @@ export interface DebuggerInterface {
     isBlockOfCode: boolean,
   ): Promise<DebugProtocol.EvaluateResponse>;
   supportsCodeBlocks(): boolean;
+  adapterCaps(): DebugProtocol.Capabilities;
 }
