@@ -79,6 +79,7 @@ export default class Debugger implements DebuggerInterface {
   _attached: boolean = false;
   _configured: boolean = false;
   _stoppedAtBreakpoint: ?Breakpoint = null;
+  _disconnecting: boolean = false;
 
   constructor(
     logger: log4js$Logger,
@@ -999,7 +1000,13 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
+    // Note that we will always get the adapter exited event while
+    // in the disconnect call (it's implemented that way in VsDebugSession,
+    // not in the individual adapters.)
+    this._disconnecting = true;
     await this._debugSession.disconnect();
+    this._disconnecting = false;
+
     this._threads = new ThreadCollection();
     this._debugSession = null;
     this._activeThread = null;
@@ -1202,7 +1209,7 @@ export default class Debugger implements DebuggerInterface {
   _onAdapterExited(event: AdapterExitedEvent) {
     // If we're initializing, this is expected - relaunch() is tearing down
     // the adapter to build a new one.
-    if (this._state === 'INITIALIZING') {
+    if (this._state === 'INITIALIZING' && this._disconnecting) {
       return;
     }
 
