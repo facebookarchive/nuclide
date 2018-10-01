@@ -258,6 +258,14 @@ export default class Debugger implements DebuggerInterface {
   }
 
   breakInto(): void {
+    // this is mostly for hhvm. if things are slow and the user is seeing the
+    // 'factsdb is syncing slowly' message, take SIGINT to mean they want to
+    // exit the debugger as opposed to break into the target
+    if (!this._readyForEvaluations) {
+      this._console.close();
+      return;
+    }
+
     if (this._adapter == null) {
       throw new Error('No adapter set up in breakInto()');
     }
