@@ -16,6 +16,7 @@ import invariant from 'assert';
 import * as Actions from '../lib/redux/Actions';
 import Reducers from '../lib/redux/Reducers';
 import * as Immutable from 'immutable';
+import uuid from 'uuid';
 import {Observable} from 'rxjs';
 
 const emptyAppState = {
@@ -83,8 +84,10 @@ describe('createStateStream', () => {
   describe('RECORD_UPDATED', () => {
     let finalState: AppState;
     let initialRecords;
+    let messageIds: Array<string> = [];
 
     beforeEach(() => {
+      messageIds = [];
       initialRecords = Immutable.List();
       const initialState = {
         ...emptyAppState,
@@ -93,6 +96,8 @@ describe('createStateStream', () => {
       };
       const actions = [];
       for (let i = 0; i < 2; i++) {
+        messageIds[i] = uuid.v4();
+
         actions.push({
           type: Actions.RECORD_RECEIVED,
           payload: {
@@ -100,7 +105,7 @@ describe('createStateStream', () => {
               level: 'info',
               text: i.toString(),
               incomplete: true,
-              messageId: i,
+              messageId: messageIds[i],
             },
           },
         });
@@ -111,7 +116,7 @@ describe('createStateStream', () => {
       actions.push({
         type: Actions.RECORD_UPDATED,
         payload: {
-          messageId: 0,
+          messageId: messageIds[0],
           appendText: '!',
           overrideLevel: 'warning',
           setComplete: false,
@@ -122,7 +127,7 @@ describe('createStateStream', () => {
       actions.push({
         type: Actions.RECORD_UPDATED,
         payload: {
-          messageId: 0,
+          messageId: messageIds[0],
           appendText: '!',
           overrideLevel: 'warning',
           setComplete: false,
@@ -140,7 +145,7 @@ describe('createStateStream', () => {
       expect(finalState.incompleteRecords.size).toBe(2);
       const message0 = finalState.incompleteRecords.get(0);
       invariant(message0 != null);
-      expect(message0.messageId).toBe(0);
+      expect(message0.messageId).toBe(messageIds[0]);
       expect(message0.text).toBe('0!!');
       expect(message0.level).toBe('warning');
       expect(message0.incomplete).toBe(true);
@@ -148,7 +153,7 @@ describe('createStateStream', () => {
       // Message 1 was not mutated.
       const message1 = finalState.incompleteRecords.get(1);
       invariant(message1 != null);
-      expect(message1.messageId).toBe(1);
+      expect(message1.messageId).toBe(messageIds[1]);
       expect(message1.text).toBe('1');
       expect(message1.level).toBe('info');
       expect(message1.incomplete).toBe(true);
@@ -159,7 +164,7 @@ describe('createStateStream', () => {
         {
           type: Actions.RECORD_UPDATED,
           payload: {
-            messageId: 0,
+            messageId: messageIds[0],
             appendText: null,
             overrideLevel: null,
             setComplete: true,
@@ -174,13 +179,13 @@ describe('createStateStream', () => {
         expect(newState.incompleteRecords.size).toBe(1);
 
         invariant(message0 != null);
-        expect(message0.messageId).toBe(0);
+        expect(message0.messageId).toBe(messageIds[0]);
         expect(message0.text).toBe('0!!');
         expect(message0.level).toBe('warning');
         expect(message0.incomplete).toBe(false);
 
         invariant(message1 != null);
-        expect(message1.messageId).toBe(1);
+        expect(message1.messageId).toBe(messageIds[1]);
         expect(message1.text).toBe('1');
         expect(message1.level).toBe('info');
         expect(message1.incomplete).toBe(true);
@@ -196,7 +201,7 @@ describe('createStateStream', () => {
           {
             type: Actions.RECORD_UPDATED,
             payload: {
-              messageId: 0,
+              messageId: messageIds[0],
               appendText: '!',
               overrideLevel: null,
               setComplete: true,

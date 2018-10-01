@@ -50,7 +50,7 @@ export function recordReceived(record: Record): Action {
 }
 
 export function recordUpdated(
-  messageId: number,
+  messageId: string,
   appendText: ?string,
   overrideLevel: ?Level,
   setComplete: boolean,

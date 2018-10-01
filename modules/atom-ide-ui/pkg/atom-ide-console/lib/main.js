@@ -43,6 +43,7 @@ import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
 import nullthrows from 'nullthrows';
+import uuid from 'uuid';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
   'atom-ide-console.maximumSerializedMessages';
@@ -213,7 +214,7 @@ class Activation {
 
     // Creates an objet with callbacks to request manipulations on the current
     // console message entry.
-    const createToken = (messageId: number) => {
+    const createToken = (messageId: string) => {
       const findMessage = () => {
         invariant(activation != null);
         return nullthrows(
@@ -249,7 +250,7 @@ class Activation {
     };
 
     const updateMessage = (
-      messageId: number,
+      messageId: string,
       appendText: ?string,
       overrideLevel: ?Level,
       setComplete: boolean,
@@ -312,7 +313,7 @@ class Activation {
           if (incomplete) {
             // An ID is only required for incomplete messages, which need
             // to be looked up for mutations.
-            record.messageId = activation._nextMessageId++;
+            record.messageId = uuid.v4();
             token = createToken(record.messageId);
           }
 
@@ -438,6 +439,9 @@ function deserializeRecord(record: Object): Record {
   return {
     ...record,
     timestamp: parseDate(record.timestamp) || new Date(0),
+    // At one point in the time the messageId was a number, so the user might
+    // have a number serialized.
+    messageId: record == null ? undefined : String(record.messageId),
   };
 }
 

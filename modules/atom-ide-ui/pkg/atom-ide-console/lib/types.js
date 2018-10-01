@@ -131,7 +131,7 @@ type MessageFormat = 'ansi';
 // Messages are transformed into these.
 // Make sure shouldAccumulateRecordCount in Reducers.js is up to date with these fields
 export type Record = {
-  messageId?: number,
+  messageId?: string,
   text: string,
   level: Level,
   incomplete: boolean,
@@ -262,7 +262,7 @@ export type Action =
   | {
       type: 'RECORD_UPDATED',
       payload: {
-        messageId: number,
+        messageId: string,
         appendText: ?string,
         overrideLevel: ?Level,
         setComplete: boolean,
