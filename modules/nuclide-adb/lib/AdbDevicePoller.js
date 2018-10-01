@@ -53,6 +53,10 @@ export function observeAndroidDevices(
               error.message.startsWith('Remote Error: Timeout has occurred')
             ) {
               message = 'Request timed out, retrying...';
+            } else if (
+              error.message.startsWith('Remote Error: Connection Closed')
+            ) {
+              return Observable.of(Expect.pending());
             } else {
               message = error.message;
             }
