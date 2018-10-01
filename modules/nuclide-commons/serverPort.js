@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getAvailableServerPort = getAvailableServerPort;
+
+var _net = _interopRequireDefault(require("net"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,18 +17,18 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import net from 'net';
-
-export async function getAvailableServerPort(): Promise<number> {
+async function getAvailableServerPort() {
   return new Promise((resolve, reject) => {
-    const server = net.createServer();
+    const server = _net.default.createServer();
+
     server.unref();
     server.on('error', reject);
-    server.listen({port: 0}, () => {
+    server.listen({
+      port: 0
+    }, () => {
       const port = server.address().port;
       server.close(() => {
         resolve(port);

@@ -1,3 +1,18 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,50 +21,53 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* eslint-env browser */
 
-import invariant from 'assert';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-
 /**
  * A custom HTMLElement we render React elements into.
  */
 class ReactMountRootElement extends HTMLElement {
-  _reactElement: ?React.Element<any>;
-
-  setReactElement(reactElement: React.Element<any>): void {
+  setReactElement(reactElement) {
     this._reactElement = reactElement;
   }
 
-  connectedCallback(): mixed {
+  connectedCallback() {
     if (this._reactElement == null) {
       return;
     }
-    ReactDOM.render(this._reactElement, this);
+
+    _reactDom.default.render(this._reactElement, this);
   }
 
-  disconnectedCallback(): mixed {
+  disconnectedCallback() {
     if (this._reactElement == null) {
       return;
     }
-    ReactDOM.unmountComponentAtNode(this);
+
+    _reactDom.default.unmountComponentAtNode(this);
   }
+
 }
 
 let reactMountRootElement;
+
 try {
   customElements.define('nuclide-react-mount-root', ReactMountRootElement);
   reactMountRootElement = ReactMountRootElement;
 } catch (e) {
   // Element was already registered. Retrieve its constructor:
   const oldElem = document.createElement('nuclide-react-mount-root');
-  invariant(oldElem.constructor.name === 'ReactMountRootElement');
-  reactMountRootElement = (oldElem.constructor: any);
+
+  if (!(oldElem.constructor.name === 'ReactMountRootElement')) {
+    throw new Error("Invariant violation: \"oldElem.constructor.name === 'ReactMountRootElement'\"");
+  }
+
+  reactMountRootElement = oldElem.constructor;
 }
 
-export default (reactMountRootElement: Class<ReactMountRootElement>);
+var _default = reactMountRootElement;
+exports.default = _default;

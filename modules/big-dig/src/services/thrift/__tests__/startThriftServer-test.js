@@ -1,3 +1,43 @@
+"use strict";
+
+function processModule() {
+  const data = _interopRequireWildcard(require("../../../../../nuclide-commons/process"));
+
+  processModule = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _which() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/which"));
+
+  _which = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _startThriftServer() {
+  const data = require("../startThriftServer");
+
+  _startThriftServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _net = _interopRequireDefault(require("net"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -7,84 +47,64 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @emails oncall+nuclide
- * @flow
+ * 
  * @format
  */
-
-jest.mock(require.resolve('../../../../../nuclide-commons/which'));
-
-import * as processModule from 'nuclide-commons/process';
-import {Observable} from 'rxjs';
-import which from 'nuclide-commons/which';
-import {startThriftServer} from '../startThriftServer';
-import net from 'net';
-
+jest.mock(require.resolve("../../../../../nuclide-commons/which"));
 describe('startThriftServer', () => {
   let serverPort;
-
   beforeEach(() => {
     jest.resetAllMocks();
-    (which: any).mockImplementation(cmd => cmd);
+
+    _which().default.mockImplementation(cmd => cmd);
   });
-
   describe('thrift server runs', () => {
-    let listener: net.Server;
+    let listener;
     let baseConfig;
-
     beforeAll(async () => {
       await new Promise(resolve => {
-        listener = net.createServer(socket => {});
-        listener.listen({port: 0}, () => {
+        listener = _net.default.createServer(socket => {});
+        listener.listen({
+          port: 0
+        }, () => {
           serverPort = listener.address().port;
           baseConfig = {
             name: 'thriftservername',
             remoteCommand: 'test',
             remoteCommandArgs: ['--server-port', String(serverPort)],
             remotePort: serverPort,
-            killOldThriftServerProcess: true,
+            killOldThriftServerProcess: true
           };
           resolve();
         });
       });
     });
-
     afterAll(async () => {
       await new Promise(resolve => {
         listener.close(resolve);
       });
     });
-
     it('ignores old thrift server and try to start a new one', async () => {
       // there is one server running
       const oldProcessInfo = {
         parentPid: 0,
         pid: 1,
         command: 'test',
-        commandWithArgs: `test --server-port ${serverPort}`,
+        commandWithArgs: `test --server-port ${serverPort}`
       };
-      jest
-        .spyOn(processModule, 'psTree')
-        .mockReturnValue(Promise.resolve([oldProcessInfo]));
-      // thrift server's messages
-      jest
-        .spyOn(processModule, 'observeProcess')
-        .mockImplementation(command => {
-          if (command === 'test') {
-            return Observable.empty();
-          }
-          throw new Error('invalid command');
-        });
-      const spy = jest
-        .spyOn(processModule, 'killPid')
-        .mockImplementation(pid => {});
+      jest.spyOn(processModule(), 'psTree').mockReturnValue(Promise.resolve([oldProcessInfo])); // thrift server's messages
 
-      await startThriftServer({
-        ...baseConfig,
-        killOldThriftServerProcess: false,
-      })
-        .refCount()
-        .take(1)
-        .toPromise();
+      jest.spyOn(processModule(), 'observeProcess').mockImplementation(command => {
+        if (command === 'test') {
+          return _RxMin.Observable.empty();
+        }
+
+        throw new Error('invalid command');
+      });
+      const spy = jest.spyOn(processModule(), 'killPid').mockImplementation(pid => {});
+      await (0, _startThriftServer().startThriftServer)(Object.assign({}, baseConfig, {
+        killOldThriftServerProcess: false
+      })).refCount().take(1).toPromise();
       expect(spy).not.toBeCalledWith(oldProcessInfo.pid);
     });
   });

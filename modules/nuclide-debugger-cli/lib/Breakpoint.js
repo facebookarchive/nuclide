@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.BreakpointState = void 0;
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,97 +25,76 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import nullthrows from 'nullthrows';
-
-export const BreakpointState = Object.freeze({
+const BreakpointState = Object.freeze({
   ENABLED: 'enabled',
   ONCE: 'once',
-  DISABLED: 'disabled',
+  DISABLED: 'disabled'
 });
+exports.BreakpointState = BreakpointState;
 
-export type BreakpointStateValues = 'enabled' | 'once' | 'disabled';
-
-export default class Breakpoint {
+class Breakpoint {
   // index is the name of the breakpoint we show externally in the UI
-  _index: number;
-
   // id is the attached breakpoint in the adapter (if the adapter supports it)
-  _id: ?number;
-
   // verified tracks if the breakpoint was successfully set by the adapter.
   // it may not be if the referenced code was not yet loaded
-  _verified: boolean;
-
   // state: enabled, once, or disabled
-  _state: BreakpointStateValues;
-
   // The source file of the breakpoint (which may be undefined if we have an
   // unresolved function breakpoint.)
-  _path: ?string;
-
   // The line number of the breakpoint (which may be undefined if we have an
   // unresolved function breakpoint.)
-  _line: ?number;
-
   // The function name of the breakpoint (only defined if the breakpoint is
   // a function breakpoint.)
-  _func: ?string;
-
   // If the breakpoint should support the 'once' state
-  _allowOnceState: boolean;
-
-  constructor(index: number, allowOnceState: boolean) {
+  constructor(index, allowOnceState) {
     this._index = index;
     this._verified = false;
     this._state = BreakpointState.ENABLED;
     this._allowOnceState = allowOnceState;
   }
 
-  enableSupportsOnce(): void {
+  enableSupportsOnce() {
     this._allowOnceState = true;
   }
 
-  get index(): number {
+  get index() {
     return this._index;
   }
 
-  get id(): ?number {
+  get id() {
     return this._id;
   }
 
-  setId(id: number): void {
+  setId(id) {
     this._id = id;
   }
 
-  setVerified(verified: boolean): void {
+  setVerified(verified) {
     this._verified = verified;
   }
 
-  get verified(): boolean {
+  get verified() {
     return this._verified;
   }
 
-  setState(state: BreakpointStateValues): void {
+  setState(state) {
     if (state === BreakpointState.ONCE && !this._allowOnceState) {
       throw new Error('One-shot breakpoints are not supported.');
     }
+
     this._state = state;
   }
 
-  toggleState(): BreakpointStateValues {
+  toggleState() {
     switch (this._state) {
       case BreakpointState.DISABLED:
         this._state = BreakpointState.ENABLED;
         break;
 
       case BreakpointState.ENABLED:
-        this._state = this._allowOnceState
-          ? BreakpointState.ONCE
-          : BreakpointState.DISABLED;
+        this._state = this._allowOnceState ? BreakpointState.ONCE : BreakpointState.DISABLED;
         break;
 
       case BreakpointState.ONCE:
@@ -107,52 +105,56 @@ export default class Breakpoint {
     return this._state;
   }
 
-  get state(): BreakpointStateValues {
+  get state() {
     return this._state;
   }
 
-  isEnabled(): boolean {
+  isEnabled() {
     return this._state !== BreakpointState.DISABLED;
   }
 
-  setPath(path: string) {
+  setPath(path) {
     this._path = path;
   }
 
-  get path(): ?string {
+  get path() {
     return this._path;
   }
 
-  setLine(line: number) {
+  setLine(line) {
     this._line = line;
   }
 
-  get line(): ?number {
+  get line() {
     return this._line;
   }
 
-  setFunc(func: string) {
+  setFunc(func) {
     this._func = func;
   }
 
-  get func(): ?string {
+  get func() {
     return this._func;
   }
 
-  toString(): string {
+  toString() {
     const func = this._func;
 
     if (func != null) {
       if (this._path == null || this._line == null) {
         return `${func}()`;
       }
+
       return `${func}() [${this._path}:${this._line}]`;
     }
 
     try {
-      return `${nullthrows(this._path)}:${nullthrows(this._line)}`;
+      return `${(0, _nullthrows().default)(this._path)}:${(0, _nullthrows().default)(this._line)}`;
     } catch (_) {
       throw new Error('Missing path or line in breakpoint description');
     }
   }
+
 }
+
+exports.default = Breakpoint;

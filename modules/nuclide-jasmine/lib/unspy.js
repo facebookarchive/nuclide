@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,20 +8,21 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
 // eslint-disable-next-line nuclide-internal/no-commonjs
 require('jasmine-node');
-
 /**
  * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the
  * jasmine spied function on an object to its original value.
  */
-jasmine.unspy = function unspy(object: Object, methodName: string) {
+
+
+jasmine.unspy = function unspy(object, methodName) {
   if (!object[methodName].hasOwnProperty('originalValue')) {
     throw new Error('Not a spy ' + methodName);
   }
+
   object[methodName] = object[methodName].originalValue;
 };

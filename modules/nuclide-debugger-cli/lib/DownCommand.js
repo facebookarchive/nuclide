@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,18 +13,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-export default class UpCommand implements Command {
-  name = 'down';
-  helpText = 'Move to the next lower stack frame.';
-  detailedHelpText = `
+class UpCommand {
+  constructor(con, debug) {
+    this.name = 'down';
+    this.helpText = 'Move to the next lower stack frame.';
+    this.detailedHelpText = `
 down
 
 Moves to the next lower (towards from the current break location) stack frame.
@@ -32,23 +35,20 @@ will use the selected frame for context; for example:
 * The 'print' command will evaluate expression in terms of the variables that are
   in scope in the selected frame.
   `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     const activeThread = this._debugger.getActiveThread();
+
     if (activeThread.selectedStackFrame() === 0) {
       throw new Error('Already at the lowest stack frame.');
     }
-    await this._debugger.setSelectedStackFrame(
-      activeThread,
-      activeThread.selectedStackFrame() - 1,
-    );
+
+    await this._debugger.setSelectedStackFrame(activeThread, activeThread.selectedStackFrame() - 1);
   }
+
 }
+
+exports.default = UpCommand;

@@ -1,3 +1,21 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerProvider = registerProvider;
+exports.consumeRecentFilesService = consumeRecentFilesService;
+
+function _RecentFilesProvider() {
+  const data = require("./RecentFilesProvider");
+
+  _RecentFilesProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,22 +23,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
-import type RecentFilesService from '../../nuclide-recent-files-service/lib/RecentFilesService';
-
-import {
-  RecentFilesProvider,
-  setRecentFilesService,
-} from './RecentFilesProvider';
-
-export function registerProvider(): Provider<FileResult> {
-  return RecentFilesProvider;
+function registerProvider() {
+  return _RecentFilesProvider().RecentFilesProvider;
 }
 
-export function consumeRecentFilesService(service: RecentFilesService): void {
-  setRecentFilesService(service);
+function consumeRecentFilesService(service) {
+  (0, _RecentFilesProvider().setRecentFilesService)(service);
 }

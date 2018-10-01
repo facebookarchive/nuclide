@@ -1,3 +1,41 @@
+"use strict";
+
+var React = _interopRequireWildcard(require("react"));
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AutoGenLaunchAttachProvider() {
+  const data = require("../nuclide-debugger-common/AutoGenLaunchAttachProvider");
+
+  _AutoGenLaunchAttachProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideDebuggerCommon() {
+  const data = require("../nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,53 +44,39 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  AutoGenConfig,
-  NuclideDebuggerProvider,
-} from 'nuclide-debugger-common/types';
-import * as React from 'react';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
-
 class Activation {
   constructor() {}
+
   dispose() {}
 
-  createDebuggerProvider(): NuclideDebuggerProvider {
+  createDebuggerProvider() {
     return {
-      type: VsAdapterTypes.NODE,
+      type: _nuclideDebuggerCommon().VsAdapterTypes.NODE,
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          VsAdapterNames.NODE,
-          connection,
-          getNodeConfig(),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider().AutoGenLaunchAttachProvider)(_nuclideDebuggerCommon().VsAdapterNames.NODE, connection, getNodeConfig());
+      }
     };
   }
+
 }
 
-function getNodeConfig(): AutoGenConfig {
+function getNodeConfig() {
   const program = {
     name: 'program',
     type: 'string',
     description: 'Absolute path to the program.',
     required: true,
-    visible: true,
+    visible: true
   };
   const cwd = {
     name: 'cwd',
     type: 'string',
-    description:
-      'Absolute path to the working directory of the program being debugged.',
+    description: 'Absolute path to the working directory of the program being debugged.',
     required: true,
-    visible: true,
+    visible: true
   };
   const stopOnEntry = {
     name: 'stopOnEntry',
@@ -60,9 +84,8 @@ function getNodeConfig(): AutoGenConfig {
     description: 'Automatically stop program after launch.',
     defaultValue: false,
     required: false,
-    visible: true,
+    visible: true
   };
-
   const args = {
     name: 'args',
     type: 'array',
@@ -70,34 +93,31 @@ function getNodeConfig(): AutoGenConfig {
     description: 'Command line arguments passed to the program.',
     defaultValue: [],
     required: false,
-    visible: true,
+    visible: true
   };
   const runtimeExecutable = {
     name: 'runtimeExecutable',
     type: 'string',
-    description:
-      '(Optional) Runtime to use, an absolute path or the name of a runtime available on PATH',
+    description: '(Optional) Runtime to use, an absolute path or the name of a runtime available on PATH',
     required: false,
-    visible: true,
+    visible: true
   };
   const env = {
     name: 'env',
     type: 'object',
-    description:
-      '(Optional) Environment variables (e.g. SHELL=/bin/bash PATH=/bin)',
+    description: '(Optional) Environment variables (e.g. SHELL=/bin/bash PATH=/bin)',
     defaultValue: {},
     required: false,
-    visible: true,
+    visible: true
   };
   const outFiles = {
     name: 'outFiles',
     type: 'array',
     itemType: 'string',
-    description:
-      '(Optional) When source maps are enabled, these glob patterns specify the generated JavaScript files',
+    description: '(Optional) When source maps are enabled, these glob patterns specify the generated JavaScript files',
     defaultValue: [],
     required: false,
-    visible: true,
+    visible: true
   };
   const protocol = {
     name: 'protocol',
@@ -105,60 +125,50 @@ function getNodeConfig(): AutoGenConfig {
     description: '',
     defaultValue: 'inspector',
     required: false,
-    visible: false,
+    visible: false
   };
-
   const port = {
     name: 'port',
     type: 'number',
     description: 'Port',
     required: true,
-    visible: true,
+    visible: true
   };
-
   return {
     launch: {
       launch: true,
-      vsAdapterType: VsAdapterTypes.NODE,
-      properties: [
-        program,
-        cwd,
-        stopOnEntry,
-        args,
-        runtimeExecutable,
-        env,
-        outFiles,
-        protocol,
-      ],
+      vsAdapterType: _nuclideDebuggerCommon().VsAdapterTypes.NODE,
+      properties: [program, cwd, stopOnEntry, args, runtimeExecutable, env, outFiles, protocol],
       scriptPropertyName: 'program',
       cwdPropertyName: 'cwd',
       scriptExtension: '.js',
-      header: (
-        <p>This is intended to debug node.js files (for node version 6.3+).</p>
-      ),
+      header: React.createElement("p", null, "This is intended to debug node.js files (for node version 6.3+)."),
+
       getProcessName(values) {
         let processName = values.program;
         const lastSlash = processName.lastIndexOf('/');
+
         if (lastSlash >= 0) {
-          processName = processName.substring(
-            lastSlash + 1,
-            processName.length,
-          );
+          processName = processName.substring(lastSlash + 1, processName.length);
         }
+
         return processName + ' (Node)';
-      },
+      }
+
     },
     attach: {
       launch: false,
-      vsAdapterType: VsAdapterTypes.NODE,
+      vsAdapterType: _nuclideDebuggerCommon().VsAdapterTypes.NODE,
       properties: [port],
       scriptExtension: '.js',
-      header: <p>Attach to a running node.js process</p>,
+      header: React.createElement("p", null, "Attach to a running node.js process"),
+
       getProcessName(values) {
         return 'Port: ' + values.port + ' (Node attach)';
-      },
-    },
+      }
+
+    }
   };
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

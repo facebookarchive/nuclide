@@ -1,100 +1,101 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import classnames from 'classnames';
-import * as React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ListView = exports.ListViewItem = void 0;
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
 
-type ListViewItemProps = {
-  index: number,
-  value?: ?Object,
-  children?: ?React.Element<any>,
-  onSelect?: (value: ?Object, index: number) => void,
-};
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _ignoreTextSelectionEvents() {
+  const data = _interopRequireDefault(require("./ignoreTextSelectionEvents"));
+
+  _ignoreTextSelectionEvents = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
 /**
  * Use ListViewItem in conjunction with ListView.
  */
-export class ListViewItem extends React.Component<ListViewItemProps> {
-  _select(value: ?Object, index: number, event: SyntheticMouseEvent<>): void {
+class ListViewItem extends React.Component {
+  _select(value, index, event) {
     if (this.props.onSelect != null) {
       this.props.onSelect(value, index);
     }
   }
 
-  render(): React.Node {
-    const {children, index, value, ...remainingProps} = this.props;
-    return (
-      <div
-        className="nuclide-ui-listview-item"
-        {...remainingProps}
-        onClick={ignoreTextSelectionEvents(
-          this._select.bind(this, value, index),
-        )}>
-        {children}
-      </div>
-    );
+  render() {
+    const _this$props = this.props,
+          {
+      children,
+      index,
+      value
+    } = _this$props,
+          remainingProps = _objectWithoutProperties(_this$props, ["children", "index", "value"]);
+
+    return React.createElement("div", Object.assign({
+      className: "nuclide-ui-listview-item"
+    }, remainingProps, {
+      onClick: (0, _ignoreTextSelectionEvents().default)(this._select.bind(this, value, index))
+    }), children);
   }
+
 }
 
-type ListViewProps = {
-  /**
-   * Whether to shade even and odd items differently.
-   */
-  alternateBackground?: boolean,
-  children?: Array<React.Element<any>>,
-  /**
-   * Whether items can be selected.
-   * If specified, `onSelect` must also be specified.
-   */
-  selectable?: boolean,
-  /**
-   * Handler to be called upon selection. Called iff `selectable` is `true`.
-   */
-  onSelect?: (selectedIndex: number, selectedData: ?Object) => mixed,
-};
+exports.ListViewItem = ListViewItem;
 
-export class ListView extends React.Component<ListViewProps> {
-  _handleSelect = (
-    value: ?Object,
-    index: number,
-    event: SyntheticMouseEvent<>,
-  ): void => {
-    if (this.props.selectable && this.props.onSelect != null) {
-      this.props.onSelect(index, value);
-    }
-  };
+class ListView extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-  render(): React.Node {
-    const {children, alternateBackground, selectable} = this.props;
-    const renderedItems = React.Children.map(
+    return _temp = super(...args), this._handleSelect = (value, index, event) => {
+      if (this.props.selectable && this.props.onSelect != null) {
+        this.props.onSelect(index, value);
+      }
+    }, _temp;
+  }
+
+  render() {
+    const {
       children,
-      (child: React.Element<any>, index: number) =>
-        React.cloneElement(child, {
-          index,
-          onSelect: this._handleSelect,
-        }),
-    );
-    const className = classnames({
+      alternateBackground,
+      selectable
+    } = this.props;
+    const renderedItems = React.Children.map(children, (child, index) => React.cloneElement(child, {
+      index,
+      onSelect: this._handleSelect
+    }));
+    const className = (0, _classnames().default)({
       'native-key-bindings': true,
       'nuclide-ui-listview': true,
       'nuclide-ui-listview-highlight-odd': alternateBackground,
-      'nuclide-ui-listview-selectable': selectable,
+      'nuclide-ui-listview-selectable': selectable
     });
-    return (
-      <div className={className} tabIndex={-1}>
-        {renderedItems}
-      </div>
-    );
+    return React.createElement("div", {
+      className: className,
+      tabIndex: -1
+    }, renderedItems);
   }
+
 }
+
+exports.ListView = ListView;

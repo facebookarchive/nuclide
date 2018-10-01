@@ -1,3 +1,48 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ResizeSensitiveContainer = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
+
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _observable() {
+  const data = require("../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +51,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import * as React from 'react';
-import classnames from 'classnames';
-import nullthrows from 'nullthrows';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
-import {Subject} from 'rxjs';
-
-type SensorProps = {
-  targetHeight: number,
-  targetWidth: number,
-  onDetectedResize: () => void,
-};
-
 const EXPANSION_BUFFER = 50;
-
 /**
  * Hidden set of DOM nodes that are used to detect resizes through onScroll events.
  *
@@ -39,93 +70,79 @@ const EXPANSION_BUFFER = 50;
  *
  * This strategy is derived from https://github.com/wnr/element-resize-detector
  */
-class ResizeSensor extends React.Component<SensorProps> {
-  _expand: ?HTMLElement;
-  _shrink: ?HTMLElement;
 
-  componentDidMount(): void {
+class ResizeSensor extends React.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._handleScroll = () => {
+      this._resetScrollbars();
+
+      this.props.onDetectedResize();
+    }, this._handleExpandRef = el => {
+      this._expand = el;
+    }, this._handleShrinkRef = el => {
+      this._shrink = el;
+    }, _temp;
+  }
+
+  componentDidMount() {
     this._resetScrollbars();
   }
 
-  componentDidUpdate(prevProps: SensorProps): void {
-    const {targetWidth, targetHeight} = this.props;
-    if (
-      prevProps.targetWidth !== targetWidth ||
-      prevProps.targetHeight !== targetHeight
-    ) {
+  componentDidUpdate(prevProps) {
+    const {
+      targetWidth,
+      targetHeight
+    } = this.props;
+
+    if (prevProps.targetWidth !== targetWidth || prevProps.targetHeight !== targetHeight) {
       this._resetScrollbars();
     }
   }
 
-  _resetScrollbars(): void {
+  _resetScrollbars() {
     if (this._expand == null || this._shrink == null) {
       return;
     }
 
     this._expand.scrollLeft = this._expand.scrollWidth;
     this._expand.scrollTop = this._expand.scrollHeight;
-
     this._shrink.scrollLeft = this._shrink.scrollWidth;
     this._shrink.scrollTop = this._shrink.scrollHeight;
   }
 
-  _handleScroll = (): void => {
-    this._resetScrollbars();
-    this.props.onDetectedResize();
-  };
-
-  _handleExpandRef = (el: HTMLElement): void => {
-    this._expand = el;
-  };
-
-  _handleShrinkRef = (el: HTMLElement): void => {
-    this._shrink = el;
-  };
-
-  render(): React.Node {
-    const {targetWidth, targetHeight} = this.props;
+  render() {
+    const {
+      targetWidth,
+      targetHeight
+    } = this.props;
     const expandInnerStyle = {
       width: targetWidth + EXPANSION_BUFFER,
-      height: targetHeight + EXPANSION_BUFFER,
+      height: targetHeight + EXPANSION_BUFFER
     };
-
-    return (
-      <div
-        className="nuclide-resize-sensitive-container-sensor"
-        onAnimationStart={this._handleScroll}>
-        <div
-          // $FlowFixMe(>=0.53.0) Flow suppress
-          ref={this._handleExpandRef}
-          className="nuclide-resize-sensitive-container-expand"
-          onScroll={this._handleScroll}>
-          <div
-            className="nuclide-resize-sensitive-container-expand-inner"
-            style={expandInnerStyle}
-          />
-        </div>
-        <div
-          // $FlowFixMe(>=0.53.0) Flow suppress
-          ref={this._handleShrinkRef}
-          className="nuclide-resize-sensitive-container-shrink"
-          onScroll={this._handleScroll}>
-          <div className="nuclide-resize-sensitive-container-shrink-inner" />
-        </div>
-      </div>
-    );
+    return React.createElement("div", {
+      className: "nuclide-resize-sensitive-container-sensor",
+      onAnimationStart: this._handleScroll
+    }, React.createElement("div", {
+      // $FlowFixMe(>=0.53.0) Flow suppress
+      ref: this._handleExpandRef,
+      className: "nuclide-resize-sensitive-container-expand",
+      onScroll: this._handleScroll
+    }, React.createElement("div", {
+      className: "nuclide-resize-sensitive-container-expand-inner",
+      style: expandInnerStyle
+    })), React.createElement("div", {
+      // $FlowFixMe(>=0.53.0) Flow suppress
+      ref: this._handleShrinkRef,
+      className: "nuclide-resize-sensitive-container-shrink",
+      onScroll: this._handleScroll
+    }, React.createElement("div", {
+      className: "nuclide-resize-sensitive-container-shrink-inner"
+    })));
   }
+
 }
-
-type Props = {
-  className?: string,
-  tabIndex?: string,
-  children?: React.Element<any>,
-  onResize: (height: number, width: number) => void,
-};
-
-type State = {
-  height: number,
-  width: number,
-};
 
 /**
  * Size-sensitive container that provides an onResize callback that
@@ -136,85 +153,90 @@ type State = {
  *       changes as a result of a DOM mutation, use MeasuredComponent
  *       instead.
  */
-export class ResizeSensitiveContainer extends React.Component<Props, State> {
-  _container: ?HTMLElement;
-  _resizeEvents: Subject<void> = new Subject();
-  _resizeSubscription: ?rxjs$Subscription;
-
-  constructor(props: Props) {
+class ResizeSensitiveContainer extends React.Component {
+  constructor(props) {
     super(props);
+    this._resizeEvents = new _RxMin.Subject();
+
+    this._handleContainer = el => {
+      this._container = el;
+
+      this._updateContainerSize();
+    };
+
+    this._updateContainerSize = () => {
+      if (this._container == null) {
+        return;
+      }
+
+      const {
+        offsetHeight,
+        offsetWidth
+      } = this._container;
+      const {
+        height,
+        width
+      } = this.state;
+
+      if (offsetHeight === height && offsetWidth === width) {
+        return;
+      }
+
+      this.setState({
+        height: offsetHeight,
+        width: offsetWidth
+      });
+      this.props.onResize(offsetHeight, offsetWidth);
+    };
+
+    this._handleResize = () => {
+      this._resizeEvents.next();
+    };
+
     this.state = {
       height: -1,
-      width: -1,
+      width: -1
     };
   }
 
-  componentDidMount(): void {
-    this._resizeSubscription = this._resizeEvents
-      .switchMap(() => nextAnimationFrame)
-      .subscribe(() => {
-        this._updateContainerSize();
-      });
+  componentDidMount() {
+    this._resizeSubscription = this._resizeEvents.switchMap(() => _observable().nextAnimationFrame).subscribe(() => {
+      this._updateContainerSize();
+    });
   }
 
-  componentWillUnmount(): void {
-    nullthrows(this._resizeSubscription).unsubscribe();
+  componentWillUnmount() {
+    (0, _nullthrows().default)(this._resizeSubscription).unsubscribe();
   }
 
-  _containerRendered(): boolean {
+  _containerRendered() {
     return this.state.height !== -1 && this.state.width !== -1;
   }
 
-  _handleContainer = (el: ?HTMLElement): void => {
-    this._container = el;
-    this._updateContainerSize();
-  };
-
-  _updateContainerSize = (): void => {
-    if (this._container == null) {
-      return;
-    }
-
-    const {offsetHeight, offsetWidth} = this._container;
-    const {height, width} = this.state;
-    if (offsetHeight === height && offsetWidth === width) {
-      return;
-    }
-
-    this.setState({
-      height: offsetHeight,
-      width: offsetWidth,
-    });
-    this.props.onResize(offsetHeight, offsetWidth);
-  };
-
-  _handleResize = (): void => {
-    this._resizeEvents.next();
-  };
-
-  render(): React.Node {
-    const {children, className, tabIndex} = this.props;
-    const {height, width} = this.state;
-    const containerClasses = classnames(
-      'nuclide-resize-sensitive-container',
+  render() {
+    const {
+      children,
       className,
-    );
-    return (
-      <div className="nuclide-resize-sensitive-container-wrapper">
-        <div
-          ref={this._handleContainer}
-          className={containerClasses}
-          tabIndex={tabIndex}>
-          {children}
-        </div>
-        {this._containerRendered() ? (
-          <ResizeSensor
-            targetHeight={height}
-            targetWidth={width}
-            onDetectedResize={this._handleResize}
-          />
-        ) : null}
-      </div>
-    );
+      tabIndex
+    } = this.props;
+    const {
+      height,
+      width
+    } = this.state;
+    const containerClasses = (0, _classnames().default)('nuclide-resize-sensitive-container', className);
+    return React.createElement("div", {
+      className: "nuclide-resize-sensitive-container-wrapper"
+    }, React.createElement("div", {
+      ref: this._handleContainer,
+      className: containerClasses,
+      tabIndex: tabIndex
+    }, children), this._containerRendered() ? React.createElement(ResizeSensor, {
+      targetHeight: height,
+      targetWidth: width,
+      onDetectedResize: this._handleResize
+    }) : null);
   }
+
 }
+
+exports.ResizeSensitiveContainer = ResizeSensitiveContainer;
