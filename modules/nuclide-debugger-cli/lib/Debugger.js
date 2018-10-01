@@ -987,6 +987,8 @@ export default class Debugger implements DebuggerInterface {
     session.observeCustomEvents().subscribe(e => {
       if (e.event === 'readyForEvaluations') {
         this._onReadyForEvaluations();
+      } else if (e.event === 'hhvmConnectionRefused') {
+        this._console.close();
       }
     });
     /* eslint-enable nuclide-internal/unused-subscription */

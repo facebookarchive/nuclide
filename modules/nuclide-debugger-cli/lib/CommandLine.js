@@ -100,6 +100,10 @@ export default class CommandLine implements ConsoleIO {
         .subscribe(this._keys),
     );
 
+    this._subscriptions.push(
+      Observable.fromEvent(this._cli, 'close').subscribe(() => process.exit(1)),
+    );
+
     this._shouldPrompt = true;
   }
 
