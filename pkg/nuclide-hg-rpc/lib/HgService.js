@@ -1257,7 +1257,7 @@ export function diff(
  * Removes files not tracked by Mercurial.
  */
 export function purge(workingDirectory: NuclideUri): Promise<void> {
-  return _runSimpleInWorkingDirectory(workingDirectory, 'purge', []);
+  return _runSimpleInWorkingDirectory(workingDirectory, 'purge', ['--files']);
 }
 
 /**
