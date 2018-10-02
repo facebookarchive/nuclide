@@ -40,7 +40,7 @@ SOFTWARE.
 */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {RecordToken} from '../../../atom-ide-console/lib/types';
+import type {RecordToken, Level} from '../../../atom-ide-console/lib/types';
 import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
 import type {
   DebuggerModeType,
@@ -60,7 +60,6 @@ import type {
   MessageProcessor,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
-import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from 'nuclide-commons/analytics';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
@@ -101,6 +100,7 @@ import {
   Breakpoint,
   Expression,
   Process,
+  ExpressionContainer,
 } from './DebuggerModel';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Emitter, TextBuffer} from 'atom';
@@ -290,11 +290,12 @@ export default class DebugService implements IDebugService {
   _model: Model;
   _disposables: UniversalDisposable;
   _sessionEndDisposables: UniversalDisposable;
-  _consoleDisposables: IDisposable;
+  _consoleDisposables: UniversalDisposable;
   _emitter: Emitter;
   _viewModel: ViewModel;
   _timer: ?TimingTracker;
   _breakpointsToSendOnSave: Set<string>;
+  _consoleOutput: Subject<ConsoleMessage>;
 
   constructor(state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
@@ -303,6 +304,7 @@ export default class DebugService implements IDebugService {
     this._emitter = new Emitter();
     this._viewModel = new ViewModel();
     this._breakpointsToSendOnSave = new Set();
+    this._consoleOutput = new Subject();
 
     this._model = new Model(
       this._loadBreakpoints(state),
@@ -312,7 +314,7 @@ export default class DebugService implements IDebugService {
       this._loadWatchExpressions(state),
       () => this._viewModel.focusedProcess,
     );
-    this._disposables.add(this._model);
+    this._disposables.add(this._model, this._consoleOutput);
     this._registerListeners();
   }
 
@@ -793,29 +795,31 @@ export default class DebugService implements IDebugService {
           event => event.body != null && typeof event.body.output === 'string',
         )
         .share();
-      const KNOWN_CATEGORIES = new Set([
-        'stderr',
-        'console',
-        'telemetry',
-        'success',
+      const CATEGORIES_MAP = new Map([
+        ['stderr', 'error'],
+        ['console', 'warning'],
+        ['success', 'success'],
       ]);
+      const IGNORED_CATEGORIES = new Set(['telemetry', 'nuclide_notification']);
       const logStream = outputEvents
-        .filter(e => !KNOWN_CATEGORIES.has(e.body.category))
-        .map(e => stripAnsi(e.body.output));
-      const [errorStream, warningsStream, successStream] = [
-        'stderr',
-        'console',
-        'success',
-      ].map(category =>
-        outputEvents
-          .filter(e => category === e.body.category)
-          .map(e => stripAnsi(e.body.output)),
-      );
+        .filter(e => e.body.variablesReference == null)
+        .filter(e => !IGNORED_CATEGORIES.has(e.body.category))
+        .map(e => ({
+          text: stripAnsi(e.body.output),
+          level: CATEGORIES_MAP.get(e.body.category) || 'log',
+        }))
+        .filter(e => e.level != null);
       const notificationStream = outputEvents
         .filter(e => e.body.category === 'nuclide_notification')
         .map(e => ({
           type: nullthrows(e.body.data).type,
           message: e.body.output,
+        }));
+      const objectStream = outputEvents
+        .filter(e => e.body.variablesReference != null)
+        .map(e => ({
+          category: e.body.category,
+          variablesReference: nullthrows(e.body.variablesReference),
         }));
 
       let lastEntryToken: ?RecordToken = null;
@@ -844,14 +848,30 @@ export default class DebugService implements IDebugService {
         () => {
           lastEntryToken = null;
         },
-        errorStream.subscribe(line => handleMessage(line, 'error')),
-        warningsStream.subscribe(line => handleMessage(line, 'warning')),
-        successStream.subscribe(line => handleMessage(line, 'success')),
-        logStream.subscribe(line => handleMessage(line, 'log')),
+        logStream.subscribe(e => handleMessage(e.text, e.level)),
         notificationStream.subscribe(({type, message}) => {
           atom.notifications.add(type, message);
         }),
-        // TODO handle non string output (e.g. files & objects)
+        objectStream.subscribe(({category, variablesReference}) => {
+          const level = CATEGORIES_MAP.get(category) || 'log';
+          const container = new ExpressionContainer(
+            this._viewModel.focusedProcess,
+            variablesReference,
+            uuid.v4(),
+          );
+          container.getChildren().then(children => {
+            const result = {
+              type: 'objects',
+              objects: children.map(variable => ({
+                description: variable.getValue(),
+                type: variable.type,
+                expression: variable,
+              })),
+            };
+            this._consoleOutput.next({text: 'object', data: result, level});
+          });
+        }),
+        // TODO handle non string output (e.g. files)
       );
     }
 
@@ -1377,7 +1397,7 @@ export default class DebugService implements IDebugService {
 
         // If this is the first process, register the console executor.
         if (this._model.getProcesses().length === 0) {
-          this._consoleDisposables = this._registerConsoleExecutor();
+          this._registerConsoleExecutor();
         }
 
         process = this._model.addProcess(config, newSession);
@@ -1867,55 +1887,54 @@ export default class DebugService implements IDebugService {
     });
   }
 
-  _registerConsoleExecutor(): IDisposable {
-    const disposables = new UniversalDisposable();
+  _evaluateExpression(expression: IEvaluatableExpression, level: Level) {
+    const {focusedProcess, focusedStackFrame} = this._viewModel;
+    if (focusedProcess == null) {
+      logger.error('Cannot evaluate while there is no active debug session');
+      return;
+    }
+    const subscription =
+      // We filter here because the first value in the BehaviorSubject is null no matter what, and
+      // we want the console to unsubscribe the stream after the first non-null value.
+      expressionAsEvaluationResultStream(
+        expression,
+        focusedProcess,
+        focusedStackFrame,
+        'repl',
+      )
+        .skip(1) // Skip the first pending null value.
+        .subscribe(result => {
+          // Evaluate all watch expressions and fetch variables again since repl evaluation might have changed some.
+          this._viewModel.setFocusedStackFrame(
+            this._viewModel.focusedStackFrame,
+            false,
+          );
+
+          if (result == null || !expression.available) {
+            const message: ConsoleMessage = {
+              text: expression.getValue(),
+              level: 'error',
+            };
+            this._consoleOutput.next(message);
+          } else {
+            this._consoleOutput.next({text: 'object', data: result, level});
+          }
+          this._consoleDisposables.remove(subscription);
+        });
+    this._consoleDisposables.add(subscription);
+  }
+
+  _registerConsoleExecutor() {
+    this._consoleDisposables = new UniversalDisposable();
     const registerExecutor = getConsoleRegisterExecutor();
     if (registerExecutor == null) {
-      return disposables;
+      return;
     }
-    const output: Subject<
-      ConsoleMessage | {result?: EvaluationResult},
-    > = new Subject();
-    const evaluateExpression = rawExpression => {
-      const expression = new Expression(rawExpression);
-      const {focusedProcess, focusedStackFrame} = this._viewModel;
-      if (focusedProcess == null) {
-        logger.error('Cannot evaluate while there is no active debug session');
-        return;
-      }
-      disposables.add(
-        // We filter here because the first value in the BehaviorSubject is null no matter what, and
-        // we want the console to unsubscribe the stream after the first non-null value.
-        expressionAsEvaluationResultStream(
-          expression,
-          focusedProcess,
-          focusedStackFrame,
-          'repl',
-        )
-          .skip(1) // Skip the first pending null value.
-          .subscribe(result => {
-            // Evaluate all watch expressions and fetch variables again since repl evaluation might have changed some.
-            this._viewModel.setFocusedStackFrame(
-              this._viewModel.focusedStackFrame,
-              false,
-            );
-
-            if (result == null || !expression.available) {
-              const message: ConsoleMessage = {
-                text: expression.getValue(),
-                level: 'error',
-              };
-              output.next(message);
-            } else {
-              output.next({data: result});
-            }
-          }),
-      );
-    };
 
     const emitter = new Emitter();
     const SCOPE_CHANGED = 'SCOPE_CHANGED';
     const viewModel = this._viewModel;
+    const evaluateExpression = this._evaluateExpression.bind(this);
     const executor = {
       id: 'debugger',
       name: 'Debugger',
@@ -1932,20 +1951,19 @@ export default class DebugService implements IDebugService {
         return emitter.on(SCOPE_CHANGED, callback);
       },
       send(expression: string) {
-        evaluateExpression(expression);
+        evaluateExpression(new Expression(expression), 'log');
       },
-      output,
+      output: this._consoleOutput,
       getProperties: (fetchChildrenForLazyComponent: any),
     };
 
-    disposables.add(
+    this._consoleDisposables.add(
       emitter,
       this._viewModel.onDidChangeDebuggerFocus(() => {
         emitter.emit(SCOPE_CHANGED);
       }),
     );
-    disposables.add(registerExecutor(executor));
-    return disposables;
+    this._consoleDisposables.add(registerExecutor(executor));
   }
 
   dispose(): void {

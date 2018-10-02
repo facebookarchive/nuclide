@@ -140,7 +140,7 @@ export class Source implements ISource {
   }
 }
 
-class ExpressionContainer implements IExpressionContainer {
+export class ExpressionContainer implements IExpressionContainer {
   static allValues: Map<string, string> = new Map();
   // Use chunks to support variable paging #9537
   static BASE_CHUNK_SIZE = 100;

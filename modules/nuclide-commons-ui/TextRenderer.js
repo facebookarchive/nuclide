@@ -21,6 +21,12 @@ export type EvaluationResult = {
   description?: string,
   objectId?: string,
   subtype?: string,
+  // Or:
+  objects?: Array<{
+    description: string,
+    type: ?string,
+    expression: Object,
+  }>,
 };
 
 export function TextRenderer(

@@ -11,8 +11,8 @@
  */
 
 import type {Level, Record, Executor, OutputProvider} from '../types';
-
 import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
+import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 
 import classnames from 'classnames';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
@@ -25,6 +25,7 @@ import Ansi from 'nuclide-commons-ui/Ansi';
 import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
 import debounce from 'nuclide-commons/debounce';
 import parseText from '../parseText';
+import nullthrows from 'nullthrows';
 
 type Props = {
   record: Record,
@@ -110,17 +111,64 @@ export default class RecordView extends React.Component<Props> {
     const {record, expansionStateId} = this.props;
     const getProperties = provider == null ? null : provider.getProperties;
     const type = record.data == null ? null : record.data.type;
-    const simpleValueComponent = getComponent(type);
-    return (
-      <LazyNestedValueComponent
-        className="console-lazy-nested-value"
-        evaluationResult={record.data}
-        fetchChildren={getProperties}
-        simpleValueComponent={simpleValueComponent}
-        shouldCacheChildren={true}
-        expansionStateId={expansionStateId}
-      />
-    );
+    if (type === 'objects') {
+      // Render multiple objects.
+      const children = [];
+      for (const [index, object] of nullthrows(
+        record.data?.objects,
+      ).entries()) {
+        const evaluationResult: EvaluationResult = {
+          description: object.description,
+          type: object.type || '',
+          // $FlowFixMe: that isn't an object ID,
+          objectId: object.expression,
+        };
+        const simpleValueComponent = getComponent(object.type);
+
+        // Each child must have it's own expansion state ID.
+        const expansionStateKey = 'child' + index;
+        if (!expansionStateId[expansionStateKey]) {
+          expansionStateId[expansionStateKey] = {};
+        }
+
+        if (object.expression.reference === 0) {
+          children.push(
+            <SimpleValueComponent
+              expression={null}
+              evaluationResult={{
+                type: object.type != null ? object.type : 'text',
+                value: object.expression.getValue(),
+              }}
+            />,
+          );
+        } else {
+          children.push(
+            <LazyNestedValueComponent
+              className="console-lazy-nested-value"
+              evaluationResult={evaluationResult}
+              fetchChildren={getProperties}
+              simpleValueComponent={simpleValueComponent}
+              shouldCacheChildren={true}
+              expansionStateId={expansionStateId[expansionStateKey]}
+            />,
+          );
+        }
+      }
+      return <span className="console-multiple-objects">{children}</span>;
+    } else {
+      // Render single object.
+      const simpleValueComponent = getComponent(type);
+      return (
+        <LazyNestedValueComponent
+          className="console-lazy-nested-value"
+          evaluationResult={record.data}
+          fetchChildren={getProperties}
+          simpleValueComponent={simpleValueComponent}
+          shouldCacheChildren={true}
+          expansionStateId={expansionStateId}
+        />
+      );
+    }
   }
 
   render(): React.Node {
