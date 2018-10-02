@@ -9,10 +9,10 @@
  * @format
  */
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {Connection, ConnectionFactory} from './Connection';
 import type {SocketEvent, IRemoteSocket} from './types.js';
-import {shortenHostname} from '../../commons-node/hostnames';
 
 import {getLogger} from 'log4js';
 import {ConnectableObservable, Observable} from 'rxjs';
@@ -36,7 +36,9 @@ export function createTunnel(
   // does we stop it so this one can take precedence. The onus on managing
   // this (not creating a tunnel if there's already one on this port) should be
   // on the consumer of this service.
-  const tunnelKey = `${shortenHostname(t.from.host)}:${t.from.port}`;
+  const tunnelKey = `${nuclideUri.nuclideUriToDisplayHostname(t.from.host)}:${
+    t.from.port
+  }`;
   const existingTunnel = activeTunnels.get(tunnelKey);
   if (existingTunnel) {
     trace(
@@ -152,9 +154,11 @@ export function createTunnel(
 }
 
 export function tunnelDescription(tunnel: ResolvedTunnel) {
-  return `${shortenHostname(tunnel.from.host)}:${
+  return `${nuclideUri.nuclideUriToDisplayHostname(tunnel.from.host)}:${
     tunnel.from.port
-  }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
+  }->${nuclideUri.nuclideUriToDisplayHostname(tunnel.to.host)}:${
+    tunnel.to.port
+  }`;
 }
 
 class LocalSocket {

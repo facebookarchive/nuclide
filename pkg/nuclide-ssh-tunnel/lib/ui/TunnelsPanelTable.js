@@ -11,7 +11,7 @@
 import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {ActiveTunnel} from '../types';
 
-import {shortenHostname} from '../../../commons-node/hostnames';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';
@@ -58,8 +58,10 @@ export class TunnelsPanelTable extends React.Component<Props> {
           className: 'nuclide-ssh-tunnels-table-row',
           data: {
             description: Array.from(descriptions).join(', '),
-            from: `${shortenHostname(from.host)}:${from.port}`,
-            to: `${shortenHostname(to.host)}:${to.port}`,
+            from: `${nuclideUri.nuclideUriToDisplayHostname(from.host)}:${
+              from.port
+            }`,
+            to: `${nuclideUri.nuclideUriToDisplayHostname(to.host)}:${to.port}`,
             status: active.state,
             close: (
               <TunnelCloseButton

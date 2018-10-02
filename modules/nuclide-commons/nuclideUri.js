@@ -449,11 +449,7 @@ function registerHostnameFormatter(formatter: HostnameFormatter): IDisposable {
   };
 }
 
-/**
- * NuclideUris should never be shown to humans.
- * This function returns a human usable string.
- */
-function nuclideUriToDisplayString(uri: NuclideUri): string {
+function nuclideUriToDisplayHostname(uri: NuclideUri): string {
   _testForIllegalUri(uri);
   if (isRemote(uri)) {
     let hostname = getHostname(uri);
@@ -462,13 +458,23 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
       // flowlint-next-line sketchy-null-string:off
       if (formattedHostname) {
         hostname = formattedHostname;
-        break;
       }
     }
-    return `${hostname}:${getPath(uri)}`;
+    return hostname;
   } else {
     return uri;
   }
+}
+
+/**
+ * NuclideUris should never be shown to humans.
+ * This function returns a human usable string.
+ */
+function nuclideUriToDisplayString(uri: NuclideUri): string {
+  _testForIllegalUri(uri);
+  return isRemote(uri)
+    ? `${nuclideUriToDisplayHostname(uri)}:${getPath(uri)}`
+    : uri;
 }
 
 function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
@@ -874,6 +880,7 @@ export default {
   contains,
   collapse,
   nuclideUriToDisplayString,
+  nuclideUriToDisplayHostname,
   registerHostnameFormatter,
   ensureTrailingSeparator,
   trimTrailingSeparator,

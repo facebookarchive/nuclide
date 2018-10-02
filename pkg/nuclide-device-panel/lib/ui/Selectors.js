@@ -15,10 +15,10 @@ import type {DeviceTypeComponent} from 'nuclide-debugger-common/types';
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
-import {shortenHostname} from '../../../commons-node/hostnames';
 
 type Props = {|
   setHost: (host: NuclideUri) => void,
@@ -39,7 +39,9 @@ export class Selectors extends React.Component<Props> {
   }
 
   _getLabelForHost(host: NuclideUri): string {
-    return host === '' ? 'localhost' : shortenHostname(host);
+    return host === ''
+      ? 'localhost'
+      : nuclideUri.nuclideUriToDisplayHostname(host);
   }
 
   _getHostOptions(): Array<Option> {

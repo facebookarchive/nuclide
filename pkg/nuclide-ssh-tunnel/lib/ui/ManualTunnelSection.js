@@ -19,7 +19,6 @@ import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Section} from 'nuclide-commons-ui/Section';
-import {shortenHostname} from '../../../commons-node/hostnames';
 
 type Props = {
   openTunnel(tunnel: Tunnel): void,
@@ -72,7 +71,7 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
   _getManualEntryForm(uri: NuclideUri): Array<React.Element<any>> {
     const workingRootLabel = (
       <code className="nuclide-ssh-tunnels-manual-tunnel-section-host-field">
-        {shortenHostname(uri)}:
+        {nuclideUri.nuclideUriToDisplayHostname(uri)}:
       </code>
     );
     const localhostLabel = (
