@@ -12,14 +12,23 @@
 import type {CancellationToken, MessageConnection} from 'vscode-jsonrpc';
 
 import * as p from './protocol';
+import {trackSampled} from '../../nuclide-analytics';
 
+const LSP_SAMPLE_RATE = 100;
 // This is a strongly typed encapsulation over an underlying MessageConnection
 // transport, which exposes only the LSP methods.
 export class LspConnection {
   _jsonRpcConnection: MessageConnection;
+  _lspLanguageServerName: string;
+  _totalNumberOfPendingRequests: number = 0;
+  _numberOfPendingRequestsPerRequestType: Map<string, number> = new Map();
 
-  constructor(jsonRpcConnection: MessageConnection) {
+  constructor(
+    jsonRpcConnection: MessageConnection,
+    lspLanguageServerName: string,
+  ) {
     this._jsonRpcConnection = jsonRpcConnection;
+    this._lspLanguageServerName = lspLanguageServerName;
   }
 
   dispose() {
@@ -30,12 +39,63 @@ export class LspConnection {
     this._jsonRpcConnection.onDispose(callback);
   }
 
+  incrementPendingRequests(requestName: string): number {
+    return this._updateNumberOfPendingRequests(requestName, true);
+  }
+
+  decrementPendingRequests(requestName: string): number {
+    return this._updateNumberOfPendingRequests(requestName, false);
+  }
+
+  _updateNumberOfPendingRequests(
+    requestName: string,
+    isIncrease: boolean,
+  ): number {
+    const changedNumber = isIncrease ? 1 : -1;
+    this._totalNumberOfPendingRequests += changedNumber;
+    let numberOfPendingRequest = 0;
+    if (this._numberOfPendingRequestsPerRequestType.has(requestName)) {
+      numberOfPendingRequest = this._numberOfPendingRequestsPerRequestType.get(
+        requestName,
+      );
+    } else if (!isIncrease) {
+      return 0;
+    }
+
+    numberOfPendingRequest += changedNumber;
+    this._numberOfPendingRequestsPerRequestType.set(
+      requestName,
+      numberOfPendingRequest,
+    );
+
+    return numberOfPendingRequest;
+  }
+
+  sendAndTrackRequest<T>(
+    requestName: string,
+    params?: T,
+    token?: CancellationToken,
+  ): Promise<any> {
+    const numberOfPendingRequest = this.incrementPendingRequests(requestName);
+
+    trackSampled('lsp-rpc-connection-send-request', LSP_SAMPLE_RATE, {
+      languageServerName: this._lspLanguageServerName,
+      totalNumOfPendingRequests: this._totalNumberOfPendingRequests,
+      requestName,
+      numberOfPendingRequest,
+    });
+
+    return this._jsonRpcConnection
+      .sendRequest(requestName, params, token)
+      .then(() => this.decrementPendingRequests(requestName));
+  }
+
   initialize(params: p.InitializeParams): Promise<p.InitializeResult> {
-    return this._jsonRpcConnection.sendRequest('initialize', params);
+    return this.sendAndTrackRequest('initialize', params);
   }
 
   shutdown(): Promise<void> {
-    return this._jsonRpcConnection.sendRequest('shutdown');
+    return this.sendAndTrackRequest('shutdown');
   }
 
   exit(): void {
@@ -43,7 +103,7 @@ export class LspConnection {
   }
 
   rage(): Promise<Array<p.RageItem>> {
-    return this._jsonRpcConnection.sendRequest('telemetry/rage');
+    return this.sendAndTrackRequest('telemetry/rage');
   }
 
   showMessageNotification(params: p.ShowMessageParams): void {
@@ -53,10 +113,7 @@ export class LspConnection {
   showMessageRequest(
     params: p.ShowMessageRequestParams,
   ): Promise<p.MessageActionItem> {
-    return this._jsonRpcConnection.sendRequest(
-      'window/showMessageRequest',
-      params,
-    );
+    return this.sendAndTrackRequest('window/showMessageRequest', params);
   }
 
   logMessage(params: p.LogMessageParams): void {
@@ -90,7 +147,7 @@ export class LspConnection {
     params: p.WillSaveWaitUntilTextDocumentParams,
     token: CancellationToken,
   ): Promise<Array<p.TextEdit>> {
-    return this._jsonRpcConnection.sendRequest(
+    return this.sendAndTrackRequest(
       'textDocument/willSaveWaitUntil',
       params,
       token,
@@ -115,65 +172,44 @@ export class LspConnection {
     params: p.TextDocumentPositionParams,
     token: CancellationToken,
   ): Promise<p.CompletionList | Array<p.CompletionItem>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/completion',
-      params,
-      token,
-    );
+    return this.sendAndTrackRequest('textDocument/completion', params, token);
   }
 
   completionItemResolve(params: p.CompletionItem): Promise<p.CompletionItem> {
-    return this._jsonRpcConnection.sendRequest(
-      'completionItem/resolve',
-      params,
-    );
+    return this.sendAndTrackRequest('completionItem/resolve', params);
   }
 
   hover(
     params: p.TextDocumentPositionParams,
     token: CancellationToken,
   ): Promise<p.Hover> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/hover',
-      params,
-      token,
-    );
+    return this.sendAndTrackRequest('textDocument/hover', params, token);
   }
 
   signatureHelp(
     params: p.TextDocumentPositionParams,
   ): Promise<?p.SignatureHelp> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/signatureHelp',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/signatureHelp', params);
   }
 
   gotoDefinition(
     params: p.TextDocumentPositionParams,
     token: CancellationToken,
   ): Promise<p.LocationWithTitle | Array<p.LocationWithTitle>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/definition',
-      params,
-      token,
-    );
+    return this.sendAndTrackRequest('textDocument/definition', params, token);
   }
 
   findReferences(
     params: p.TextDocumentPositionParams,
   ): Promise<Array<p.Location>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/references',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/references', params);
   }
 
   documentHighlight(
     params: p.TextDocumentPositionParams,
     token: CancellationToken,
   ): Promise<Array<p.DocumentHighlight>> {
-    return this._jsonRpcConnection.sendRequest(
+    return this.sendAndTrackRequest(
       'textDocument/documentHighlight',
       params,
       token,
@@ -184,7 +220,7 @@ export class LspConnection {
     params: p.DocumentSymbolParams,
     token: CancellationToken,
   ): Promise<Array<p.SymbolInformation>> {
-    return this._jsonRpcConnection.sendRequest(
+    return this.sendAndTrackRequest(
       'textDocument/documentSymbol',
       params,
       token,
@@ -192,84 +228,63 @@ export class LspConnection {
   }
 
   typeCoverage(params: p.TypeCoverageParams): Promise<p.TypeCoverageResult> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/typeCoverage',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/typeCoverage', params);
   }
 
   toggleTypeCoverage(params: p.ToggleTypeCoverageParams): void {
-    this._jsonRpcConnection.sendRequest('workspace/toggleTypeCoverage', params);
+    this.sendAndTrackRequest('workspace/toggleTypeCoverage', params);
   }
 
   workspaceSymbol(
     params: p.WorkspaceSymbolParams,
   ): Promise<Array<p.SymbolInformation>> {
-    return this._jsonRpcConnection.sendRequest('workspace/symbol', params);
+    return this.sendAndTrackRequest('workspace/symbol', params);
   }
 
   executeCommand(params: p.ExecuteCommandParams): Promise<any> {
-    return this._jsonRpcConnection.sendRequest(
-      'workspace/executeCommand',
-      params,
-    );
+    return this.sendAndTrackRequest('workspace/executeCommand', params);
   }
 
   codeAction(params: p.CodeActionParams): Promise<Array<p.Command>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/codeAction',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/codeAction', params);
   }
 
   codeLens(params: p.CodeLensParams): Promise<Array<p.CodeLens>> {
-    return this._jsonRpcConnection.sendRequest('textDocument/codeLens', params);
+    return this.sendAndTrackRequest('textDocument/codeLens', params);
   }
 
   codeLensResolve(params: p.CodeLens): Promise<p.CodeLens> {
-    return this._jsonRpcConnection.sendRequest('codeLens/resolve', params);
+    return this.sendAndTrackRequest('codeLens/resolve', params);
   }
 
   documentLink(params: p.DocumentLinkParams): Promise<?Array<p.DocumentLink>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/documentLink',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/documentLink', params);
   }
 
   documentLinkResolve(params: p.DocumentLink): Promise<p.DocumentLink> {
-    return this._jsonRpcConnection.sendRequest('documentLink/resolve', params);
+    return this.sendAndTrackRequest('documentLink/resolve', params);
   }
 
   documentFormatting(
     params: p.DocumentFormattingParams,
   ): Promise<Array<p.TextEdit>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/formatting',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/formatting', params);
   }
 
   documentRangeFormatting(
     params: p.DocumentRangeFormattingParams,
   ): Promise<Array<p.TextEdit>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/rangeFormatting',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/rangeFormatting', params);
   }
 
   documentOnTypeFormatting(
     params: p.DocumentOnTypeFormattingParams,
   ): Promise<Array<p.TextEdit>> {
-    return this._jsonRpcConnection.sendRequest(
-      'textDocument/onTypeFormatting',
-      params,
-    );
+    return this.sendAndTrackRequest('textDocument/onTypeFormatting', params);
   }
 
   rename(params: p.RenameParams): Promise<p.WorkspaceEdit> {
-    return this._jsonRpcConnection.sendRequest('textDocument/rename', params);
+    return this.sendAndTrackRequest('textDocument/rename', params);
   }
 
   onDiagnosticsNotification(

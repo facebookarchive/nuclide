@@ -575,7 +575,11 @@ export class LspLanguageService {
       // We assign _lspConnection and wire up the handlers before calling
       // initialize, because any of these events might fire before initialize
       // has even returned.
-      this._lspConnection = new LspConnection(jsonRpcConnection);
+      this._lspConnection = new LspConnection(
+        jsonRpcConnection,
+        this._languageServerName,
+      );
+
       this._lspConnection.onDispose(
         perConnectionDisposables.dispose.bind(perConnectionDisposables),
       );
