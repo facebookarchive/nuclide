@@ -17,12 +17,17 @@ const p = nuclidePath => path.resolve(__dirname, '..', nuclidePath);
 
 module.exports = {
   displayName: 'e2e',
-  reporters: require('./reporters.config'),
+  reporters: [
+    p('jest/fb-e2e/screen_recording_reporter.js'),
+    ...require('./reporters.config'),
+  ],
   rootDir: p(''),
   roots: [p('')],
   runner: '@jest-runner/nuclide-e2e',
-  setupFiles: [p('jest/e2e/setup.js')],
-  setupTestFrameworkScriptFile: p('jest/e2e/setupTestFrameworkScriptFile.js'),
+  setupFiles: [p('jest/fb-e2e/setup.js')],
+  setupTestFrameworkScriptFile: p(
+    'jest/fb-e2e/setupTestFrameworkScriptFile.js',
+  ),
   testMatch: ['**/__e2e_tests__/**/*.js?(x)'],
   testPathIgnorePatterns: ['/node_modules/'],
 };
