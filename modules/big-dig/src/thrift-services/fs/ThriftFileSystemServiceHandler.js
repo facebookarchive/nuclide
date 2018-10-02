@@ -287,20 +287,17 @@ export class ThriftFileSystemServiceHandler {
           // the link itself is stat-ed, not the file that it refers to
           const lstats = await this.lstat(fullpath);
           if (lstats.ftype !== filesystem_types.FileType.SYMLINK) {
-            return convertToThriftFileEntry(file, lstats);
+            return convertToThriftFileEntry(file, lstats, false);
           }
 
           try {
             // try to return what the symlink points to (stat data)
             const stats = await this.stat(fullpath);
-            return convertToThriftFileEntry(file, stats);
+            return convertToThriftFileEntry(file, stats, true);
           } catch (error) {
-            if (error.code === 'ENOENT') {
-              // symlink points to non-existent file/dir.
-              return null;
-            } else {
-              throw error;
-            }
+            // symlink points to non-existent file/dir or cannot be read for
+            // some reason
+            return convertToThriftFileEntry(file, lstats, true);
           }
         }),
       );

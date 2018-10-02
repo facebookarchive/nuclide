@@ -497,6 +497,7 @@ var FileEntry = module.exports.FileEntry = function(args) {
   this.fname = null;
   this.ftype = null;
   this.fstat = null;
+  this.isSymbolicLink = null;
   if (args) {
     if (args.fname !== undefined && args.fname !== null) {
       this.fname = args.fname;
@@ -506,6 +507,9 @@ var FileEntry = module.exports.FileEntry = function(args) {
     }
     if (args.fstat !== undefined && args.fstat !== null) {
       this.fstat = new ttypes.FileStat(args.fstat);
+    }
+    if (args.isSymbolicLink !== undefined && args.isSymbolicLink !== null) {
+      this.isSymbolicLink = args.isSymbolicLink;
     }
   }
 };
@@ -545,6 +549,13 @@ FileEntry.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 4:
+      if (ftype == Thrift.Type.BOOL) {
+        this.isSymbolicLink = input.readBool();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -569,6 +580,11 @@ FileEntry.prototype.write = function(output) {
   if (this.fstat !== null && this.fstat !== undefined) {
     output.writeFieldBegin('fstat', Thrift.Type.STRUCT, 3);
     this.fstat.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.isSymbolicLink !== null && this.isSymbolicLink !== undefined) {
+    output.writeFieldBegin('isSymbolicLink', Thrift.Type.BOOL, 4);
+    output.writeBool(this.isSymbolicLink);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

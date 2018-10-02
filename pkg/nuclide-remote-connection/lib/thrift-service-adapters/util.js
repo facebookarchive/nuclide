@@ -39,8 +39,8 @@ export function convertToFsDirectoryEntries(
 ): Array<DirectoryEntry> {
   return entries.map(entry => {
     const localName = entry.fname;
-    const isFile = entry.ftype === filesystem_types.FileType.FILE;
-    const isSymbolicLink = entry.ftype === filesystem_types.FileType.SYMLINK;
+    const isFile = entry.ftype !== filesystem_types.FileType.DIRECTORY;
+    const isSymbolicLink = entry.isSymbolicLink;
     return [localName, isFile, isSymbolicLink];
   });
 }

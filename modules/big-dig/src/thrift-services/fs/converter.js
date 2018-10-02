@@ -108,10 +108,12 @@ export function createThriftErrorWithCode(
 export function convertToThriftFileEntry(
   fname: string,
   statData: filesystem_types.FileStat,
+  isSymbolicLink: boolean,
 ): filesystem_types.FileEntry {
   return {
     fname,
     ftype: statData.ftype,
     fstat: statData,
+    isSymbolicLink,
   };
 }

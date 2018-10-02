@@ -115,6 +115,9 @@ struct FileEntry {
   1: string fname,
   2: FileType ftype,
   3: FileStat fstat,
+  // ftype/fstat data may represent what symlink points to, so add additional
+  // field
+  4: bool isSymbolicLink,
 }
 
 struct WatchOpt {
