@@ -84,10 +84,18 @@ export class LspConnection {
       requestName,
       numberOfPendingRequest,
     });
+    const args = [requestName];
+    if (params !== undefined) {
+      args.push(params);
+      if (token !== undefined) {
+        args.push(token);
+      }
+    }
 
-    return this._jsonRpcConnection
-      .sendRequest(requestName, params, token)
-      .then(() => this.decrementPendingRequests(requestName));
+    return this._jsonRpcConnection.sendRequest(...args).then(result => {
+      this.decrementPendingRequests(requestName);
+      return result;
+    });
   }
 
   initialize(params: p.InitializeParams): Promise<p.InitializeResult> {
