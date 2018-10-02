@@ -13,6 +13,7 @@
 import type {Observable} from 'rxjs';
 
 import * as React from 'react';
+import getDisplayName from 'nuclide-commons/getDisplayName';
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.
@@ -29,6 +30,10 @@ export function bindObservableAsProps<T: React.ComponentType<any>, U: T>(
 ): U {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component<$FlowFixMeProps, {[key: string]: any}> {
+    static displayName = `bindObservableAsProps(${getDisplayName(
+      ComposedComponent,
+    )})`;
+
     _subscription: ?rxjs$ISubscription;
     _resolved: boolean;
 
