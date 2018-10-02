@@ -83,6 +83,7 @@
     "fb-watchman": "2.0.0",
     "fix-path": "2.1.0",
     "flatten-source-map": "0.0.2",
+    "form-data": "2.3.2",
     "fs-extra": "4.0.3",
     "fs-plus": "2.9.3",
     "fuzzaldrin-plus": "0.4.1",
