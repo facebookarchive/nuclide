@@ -51,6 +51,7 @@ export type HunkProps = {
   /* eslint-enable react/no-unused-prop-types */
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
+  onClickLine?: (lineNum: number) => mixed,
 };
 
 const MAX_GUTTER_WIDTH = 5;
@@ -241,6 +242,9 @@ export class HunkDiff extends React.Component<HunkProps> {
       editor,
       lineNumberGenerator(),
       gutterWidth,
+      {
+        onClick: this.props.onClickLine,
+      },
     );
     this._disposables.add(() => {
       gutter.destroy();
@@ -451,6 +455,11 @@ export default class FileChanges extends React.Component<Props> {
               : atom.grammars.selectGrammar(fileName, '')
           }
           hunk={chunk}
+          onClickLine={(line: number) => {
+            if (fullPath != null) {
+              goToLocation(fullPath, {line});
+            }
+          }}
         />,
       );
       i++;
