@@ -19,6 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import startConnectFlow from './startConnectFlow';
 import {connectToServer} from './SimpleConnect';
+import {getLogger} from 'log4js';
 
 export default class RemoteProjectsService {
   _subject: ReplaySubject<Array<string>>;
@@ -53,10 +54,12 @@ export default class RemoteProjectsService {
    * encapsulate the entire workflow.
    */
   connect(config: SerializableRemoteConnectionConfiguration): void {
-    this._connect(config, true).catch(() => {
+    this._connect(config, true).catch(err => {
       atom.notifications.addError(
-        "hey matthew don't commit this without moving the error handling from openProjectModal you idiot",
+        'There was an error connecting to the remote project.',
+        {detail: err.message},
       );
+      getLogger('nuclide-remote-projects').error(err);
     });
   }
 
