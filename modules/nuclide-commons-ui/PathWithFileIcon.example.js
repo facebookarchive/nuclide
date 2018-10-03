@@ -57,7 +57,7 @@ function BasicExample(): React.Element<any> {
   );
 }
 
-function DecorationIconExample(): React.Element<any> {
+function DecorationIconExample(): React.Node {
   return (
     <div>
       <Block>

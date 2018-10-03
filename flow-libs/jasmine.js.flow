@@ -63,8 +63,8 @@ type JasmineEnvironment = {
     fail(message: string): void,
   },
   defaultTimeoutInterval: number,
-  afterEach: afterEach,
-  beforeEach: beforeEach,
+  afterEach: typeof afterEach,
+  beforeEach: typeof beforeEach,
   describe: any,
   it: any,
 };

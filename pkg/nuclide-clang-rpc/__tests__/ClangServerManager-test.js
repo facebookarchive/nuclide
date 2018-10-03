@@ -142,6 +142,7 @@ describe('ClangServerManager', () => {
         if (command === 'ps') {
           return Observable.of(
             serverManager._servers
+              // $FlowFixMe Missing in typings
               .values()
               .map(server => server.getPID())
               .filter(Boolean)

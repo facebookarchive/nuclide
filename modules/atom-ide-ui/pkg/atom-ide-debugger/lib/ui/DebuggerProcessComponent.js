@@ -41,7 +41,6 @@ export default class DebuggerProcessComponent extends React.PureComponent<
   State,
 > {
   _disposables: UniversalDisposable;
-  _treeView: ?TreeList;
 
   constructor(props: Props) {
     super(props);

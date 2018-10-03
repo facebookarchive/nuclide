@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {LRUCache as LRUCacheType} from 'lru-cache';
 import type {ClangServerFlags} from './ClangServer';
 import type {ClangRequestSettings, ClangServerSettings} from './rpc-types';
 
@@ -50,7 +51,7 @@ async function augmentDefaultFlags(
 
 export default class ClangServerManager {
   _flagsManager: ClangFlagsManager;
-  _servers: LRUCache<string, ClangServer>;
+  _servers: LRUCacheType<string, ClangServer>;
   _checkMemoryUsage: () => Promise<number>;
   _memoryLimit: number = DEFAULT_MEMORY_LIMIT;
 
@@ -176,6 +177,7 @@ export default class ClangServerManager {
 
   async _checkMemoryUsageImpl(): Promise<number> {
     const serverPids = this._servers
+      // $FlowFixMe Missing in typings
       .values()
       .map(server => server.getPID())
       .filter(Boolean);
@@ -191,6 +193,7 @@ export default class ClangServerManager {
     let count = usage.size;
     if (count > 1 && total > this._memoryLimit) {
       const toDispose = [];
+      // $FlowFixMe Missing in typings
       this._servers.rforEach((server, key) => {
         const mem = usage.get(server.getPID());
         if (mem != null && count > 1 && total > this._memoryLimit) {

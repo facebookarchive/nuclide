@@ -12,24 +12,25 @@
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DirectoryEntry, ReadOptions, WriteOptions} from './FileSystem';
+import type AdmZip from 'adm-zip';
 
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
-import AdmZip from 'adm-zip';
 import {FileSystem, READFILE_SIZE_LIMIT} from './FileSystem';
 
+type AdmZipClass = $Call<AdmZip>;
 type ZipUri = string;
 
 // adm-zip assumes '/' as the separator on all platforms
 const ZIP_SEPARATOR = '/';
 
 export class ZipFileSystem implements FileSystem {
-  _zip: AdmZip;
+  _zip: AdmZipClass;
   _outerStat: fs.Stats;
   _outerLStat: fs.Stats;
 
-  constructor(zip: AdmZip, outerStat: fs.Stats, outerLStat: fs.Stats) {
+  constructor(zip: AdmZipClass, outerStat: fs.Stats, outerLStat: fs.Stats) {
     this._zip = zip;
     this._outerStat = outerStat;
     this._outerLStat = outerLStat;

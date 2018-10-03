@@ -14,7 +14,7 @@ import * as React from 'react';
 import {Block} from './Block';
 import {Table} from './Table';
 
-const Highlight42Component = (props: {data: ?number}): ?React.Element<any> => (
+const Highlight42Component = (props: {data: ?number}): React.Node => (
   <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>{props.data}</div>
 );
 

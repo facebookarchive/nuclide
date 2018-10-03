@@ -35,7 +35,7 @@ export default class StyleSheet extends React.PureComponent<Props> {
     this._updateStyleSheet();
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     return null;
   }
 

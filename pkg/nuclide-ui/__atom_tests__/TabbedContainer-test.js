@@ -13,6 +13,7 @@ import TabbedContainer from '../TabbedContainer';
 import TestUtils from 'react-dom/test-utils';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
+import nullthrows from 'nullthrows';
 
 describe('TabbedContainer', () => {
   let containerNode: HTMLElement;
@@ -55,7 +56,7 @@ describe('TabbedContainer', () => {
     expect(containerNode.getElementsByClassName('hidden').length).toBe(1);
 
     // switch to second tab
-    TestUtils.Simulate.click(renderedTabs.item(1));
+    TestUtils.Simulate.click(nullthrows(renderedTabs.item(1)));
     expect(tabbedContainer.state.activeTabName).toBe('tab2');
 
     // now the second tab's content becomes null

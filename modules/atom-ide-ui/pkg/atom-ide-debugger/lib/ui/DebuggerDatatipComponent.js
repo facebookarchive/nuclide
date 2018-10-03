@@ -24,7 +24,7 @@ type Props = {|
 |};
 
 export default class DebuggerDatatipComponent extends React.Component<Props> {
-  render(): ?React.Node {
+  render(): React.Node {
     const {expression, evaluationResult} = this.props;
     let datatipElement;
     if (evaluationResult == null) {

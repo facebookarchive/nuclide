@@ -16,7 +16,7 @@ import * as React from 'react';
 type BlockDecorationProps = {
   range: atom$Range,
   editor: atom$TextEditor,
-  children?: React.Node,
+  children: React.Node,
 };
 
 export default class BlockDecoration extends React.Component<

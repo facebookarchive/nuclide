@@ -70,7 +70,7 @@ function toggleSetHas(
 
 type DefaultProps = {
   // Render will return this component if there are no root nodes.
-  elementToRenderWhenEmpty?: ?(null | React.Element<any>),
+  elementToRenderWhenEmpty: React.Node,
   // A node can be confirmed if it is a selected non-container node and the user is clicks on it
   // or presses <enter>.
   onConfirmSelection: (node: LazyTreeNode) => void,

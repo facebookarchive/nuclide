@@ -17,7 +17,7 @@ import {getLogger} from 'log4js';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Icon} from './Icon';
 
-function WarningIconWithShadow(): React.Element<any> {
+function WarningIconWithShadow(): React.Node {
   return (
     <div>
       <svg
@@ -33,7 +33,7 @@ function WarningIconWithShadow(): React.Element<any> {
   );
 }
 
-function ErrorIconWithShadow(): React.Element<any> {
+function ErrorIconWithShadow(): React.Node {
   return (
     <div>
       <svg
@@ -66,7 +66,7 @@ type Props = {
   children?: React.Node,
   // Optional <Icon /> element. If set, will render a small version of
   // the decorationIcon on top of the file icon.
-  decorationIcon?: WarningIconWithShadow | ErrorIconWithShadow,
+  decorationIcon?: typeof WarningIconWithShadow | typeof ErrorIconWithShadow,
   isFolder?: boolean,
   path: string,
 };

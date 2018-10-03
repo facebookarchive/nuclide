@@ -193,6 +193,7 @@ class OutlineViewComponent extends React.PureComponent<
         );
       default:
         (outline: empty);
+        return null;
     }
   }
 }

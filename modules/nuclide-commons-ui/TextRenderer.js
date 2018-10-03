@@ -29,9 +29,7 @@ export type EvaluationResult = {
   }>,
 };
 
-export function TextRenderer(
-  evaluationResult: EvaluationResult,
-): ?React.Element<any> {
+export function TextRenderer(evaluationResult: EvaluationResult): React.Node {
   const {type, value} = evaluationResult;
   if (type === 'text') {
     return <span>{value}</span>;

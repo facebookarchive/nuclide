@@ -251,7 +251,7 @@ function getTaskRunnerOptions(
   });
 }
 
-function NoTaskRunnersMessage(): ?React.Element<any> {
+function NoTaskRunnersMessage(): React.Node {
   const featureLink = 'https://nuclide.io/docs/features/task-runner/';
   return (
     <span style={{'white-space': 'nowrap'}}>

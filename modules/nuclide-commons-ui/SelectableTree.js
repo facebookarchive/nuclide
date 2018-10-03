@@ -237,7 +237,7 @@ function AbstractTreeItem({
   node: TreeNode,
   path: NodePath,
   selectedPaths: Array<NodePath>,
-}): ?React.Element<*> {
+}): React.Node {
   if (node.hidden) {
     return null;
   }

@@ -9,6 +9,7 @@
  * @format
  */
 import type {FilePath, TimeStamp} from '..';
+import type {LRUCache as LRUCacheType} from 'lru-cache';
 
 import {memoize} from 'lodash';
 import {getLogger} from 'log4js';
@@ -29,7 +30,7 @@ const logger = getLogger('RecentFilesDB');
  * save back to the database (only the top 100) periodically.
  */
 const ensureCache = memoize(
-  async (): Promise<LRUCache<FilePath, TimeStamp>> => {
+  async (): Promise<LRUCacheType<FilePath, TimeStamp>> => {
     const dbEntries = await AsyncStorage.get(RECENT_FILES_DB_NAME).catch(
       err => {
         logger.warn('Error retrieving recent files from IndexedDB', err);
@@ -59,7 +60,9 @@ export async function touchFileDB(
 /**
  * Get the LRU files.
  */
-export async function getAllRecents(): Promise<LRUCache<FilePath, TimeStamp>> {
+export async function getAllRecents(): Promise<
+  LRUCacheType<FilePath, TimeStamp>,
+> {
   return ensureCache();
 }
 

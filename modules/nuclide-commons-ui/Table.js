@@ -42,7 +42,7 @@ export type Column<T: Object> = {
   width?: number,
   // Optional React component for rendering cell contents.
   // The component receives the cell value via `props.data`.
-  component?: React.ComponentType<any>,
+  component?: React.ComponentType<{data: any}>,
   shouldRightAlign?: boolean,
   // A class to add to the cell. This will be added to both the header and body; you can
   // differentiate between them with `.nuclide-ui-table-header-cell` and
