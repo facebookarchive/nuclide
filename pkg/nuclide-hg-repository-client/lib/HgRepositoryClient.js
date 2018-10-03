@@ -488,6 +488,10 @@ export class HgRepositoryClient {
     );
   }
 
+  observeWatchmanHealth(): Observable<boolean> {
+    return this._tryObserve(s => s.observeWatchmanHealth().refCount());
+  }
+
   observeHeadRevision(): Observable<RevisionInfo> {
     return this.observeRevisionChanges()
       .map(revisionInfoFetched =>
