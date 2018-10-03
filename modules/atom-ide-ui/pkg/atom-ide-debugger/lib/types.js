@@ -241,6 +241,7 @@ export interface IProcess extends ITreeElement {
   +session: ISession & ITreeElement;
   +sources: Map<string, ISource>;
   +debuggerMode: DebuggerModeType;
+  exceptionBreakpoints: IExceptionBreakpoint[];
   getThread(threadId: number): ?IThread;
   getAllThreads(): IThread[];
   getSource(raw: ?DebugProtocol.Source): ISource;

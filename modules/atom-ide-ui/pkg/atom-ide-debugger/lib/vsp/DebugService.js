@@ -511,6 +511,7 @@ export default class DebugService implements IDebugService {
           }
 
           this._model.setExceptionBreakpoints(
+            process,
             stackFrame.thread.process.session.capabilities
               .exceptionBreakpointFilters || [],
           );
@@ -1433,6 +1434,7 @@ export default class DebugService implements IDebugService {
         }
 
         this._model.setExceptionBreakpoints(
+          process,
           newSession.getCapabilities().exceptionBreakpointFilters || [],
         );
         return newSession;

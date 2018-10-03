@@ -902,6 +902,7 @@ export class Process implements IProcess {
   _pendingStart: boolean;
   _pendingStop: boolean;
   breakpoints: Breakpoint[];
+  exceptionBreakpoints: IExceptionBreakpoint[];
 
   constructor(configuration: IProcessConfig, session: ISession & ITreeElement) {
     this._configuration = configuration;
@@ -911,6 +912,7 @@ export class Process implements IProcess {
     this._pendingStart = true;
     this._pendingStop = false;
     this.breakpoints = [];
+    this.exceptionBreakpoints = [];
   }
 
   get sources(): Map<string, ISource> {
@@ -1176,11 +1178,17 @@ export class Model implements IModel {
   _uiBreakpoints: IUIBreakpoint[];
   _breakpointsActivated: boolean;
   _functionBreakpoints: FunctionBreakpoint[];
-  _exceptionBreakpoints: ExceptionBreakpoint[];
   _watchExpressions: Expression[];
   _disposables: UniversalDisposable;
   _emitter: Emitter;
   _getFocusedProcess: getFocusedProcessCallback;
+
+  // Exception breakpoint filters are different for each debugger back-end, so they
+  // are process-specific. However, when we're not debugging, ideally we'd want to still
+  // show filters so that a user can set break on exception before starting debugging, to
+  // enable breaking on early exceptions as the target starts. For this reason, we cache
+  // whatever options the most recently focused process offered, and offer those.
+  _mostRecentExceptionBreakpoints: IExceptionBreakpoint[];
 
   constructor(
     uiBreakpoints: IUIBreakpoint[],
@@ -1194,7 +1202,7 @@ export class Model implements IModel {
     this._uiBreakpoints = uiBreakpoints;
     this._breakpointsActivated = breakpointsActivated;
     this._functionBreakpoints = functionBreakpoints;
-    this._exceptionBreakpoints = exceptionBreakpoints;
+    this._mostRecentExceptionBreakpoints = ((exceptionBreakpoints: any): IExceptionBreakpoint[]);
     this._watchExpressions = watchExpressions;
     this._getFocusedProcess = getFocusedProcess;
     this._emitter = new Emitter();
@@ -1246,6 +1254,11 @@ export class Model implements IModel {
       }
     });
     this._emitter.emit(PROCESSES_CHANGED);
+
+    if (removedProcesses.length > 0) {
+      this._mostRecentExceptionBreakpoints =
+        removedProcesses[0].exceptionBreakpoints;
+    }
     return removedProcesses;
   }
 
@@ -1367,14 +1380,19 @@ export class Model implements IModel {
   }
 
   getExceptionBreakpoints(): IExceptionBreakpoint[] {
-    return (this._exceptionBreakpoints: any);
+    const focusedProcess = this._getFocusedProcess();
+    if (focusedProcess != null) {
+      return (focusedProcess.exceptionBreakpoints: any);
+    }
+    return (this._mostRecentExceptionBreakpoints: any);
   }
 
   setExceptionBreakpoints(
+    process: IProcess,
     data: DebugProtocol.ExceptionBreakpointsFilter[],
   ): void {
-    this._exceptionBreakpoints = data.map(d => {
-      const ebp = this._exceptionBreakpoints
+    process.exceptionBreakpoints = data.map(d => {
+      const ebp = process.exceptionBreakpoints
         .filter(bp => bp.filter === d.filter)
         .pop();
       return new ExceptionBreakpoint(
