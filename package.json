@@ -205,6 +205,7 @@
     "prettier": "1.13.6",
     "q-io": "1.13.6",
     "relay-compiler": "1.6.0",
+    "source-map-support": "0.5.9",
     "touch": "1.0.0",
     "v8-inspect-profiler": "0.0.8",
     "webfonts-generator": "0.3.5"

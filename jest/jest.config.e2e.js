@@ -14,11 +14,12 @@
 
 const path = require('path');
 const p = nuclidePath => path.resolve(__dirname, '..', nuclidePath);
+const isSandcastle = !!process.env.SANDCASTLE;
 
 module.exports = {
   displayName: 'e2e',
   reporters: [
-    p('jest/fb-e2e/screen_recording_reporter.js'),
+    ...(isSandcastle ? [p('jest/fb-e2e/screen_recording_reporter.js')] : []),
     ...require('./reporters.config'),
   ],
   rootDir: p(''),
