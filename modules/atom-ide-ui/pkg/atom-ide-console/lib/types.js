@@ -52,6 +52,8 @@ export type SourceInfo = {
   // for more information.
   start?: () => void,
   stop?: () => void,
+  // `getProperties()` can be optionally provided for expandable messages.
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 // Message levels. For use with the `console.append()` API.
