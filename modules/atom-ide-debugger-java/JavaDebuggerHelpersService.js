@@ -257,7 +257,7 @@ export async function getSdkVersionSourcePath(
     const sdkDirTimes = sdkDirStats.map(s => s.mtime.getTime());
     const sortedSdkDirs = sdkDirs
       .map((d, i) => [d, sdkDirTimes[i]])
-      .sort((a, b) => a[1] - b[1]);
+      .sort((a, b) => b[1] - a[1]);
     if (sortedSdkDirs.length > 0) {
       androidHomeDir = nuclideUri.join(
         remoteAndroidHomeDirDir,
