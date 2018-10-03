@@ -37,6 +37,7 @@ import {makeDatatipComponent} from './getDiagnosticDatatip.js';
 import {decorateTrackTimingSampled} from 'nuclide-commons/analytics';
 
 const APPLY_UPDATE_TO_EDITOR_SAMPLE_RATE = 40;
+const DESTROY_DIAGNOSTICS_POPUP_DELAY = 200;
 const GUTTER_ID = 'diagnostics-gutter';
 
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
@@ -72,28 +73,46 @@ const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 const handleSpawnPopupEvents = new Subject();
 
 const SpawnPopupEvents = handleSpawnPopupEvents
-  .switchMap(({messages, diagnosticUpdater, gutter, item, editorElement}) => {
-    return spawnPopup(messages, diagnosticUpdater, gutter, item)
-      .let(
-        completingSwitchMap((popupElement: HTMLElement) => {
-          const innerPopupElement = popupElement.firstChild;
-          invariant(innerPopupElement instanceof HTMLElement);
-          // Events which should cause the popup to close.
-          return Observable.merge(
-            hoveringOrAiming(item, innerPopupElement, editorElement),
-            // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
-            observableFromSubscribeFunction(cb =>
-              atom.workspace.onDidChangeActivePaneItem(cb),
-            ).mapTo(false),
-            Observable.fromEvent(item, 'click')
-              .filter(() => messages.some(message => message.kind === 'review'))
-              .mapTo(false),
-          );
-        }),
-      )
-      .takeUntil(observableFromSubscribeFunction(cb => gutter.onDidDestroy(cb)))
-      .takeWhile(Boolean);
-  })
+  .switchMap(
+    ({
+      messages,
+      diagnosticUpdater,
+      gutter,
+      item,
+      editorElement,
+      gutterMarker,
+    }) => {
+      return spawnPopup(messages, diagnosticUpdater, gutter, item)
+        .let(
+          completingSwitchMap((popupElement: HTMLElement) => {
+            const innerPopupElement = popupElement.firstChild;
+            invariant(innerPopupElement instanceof HTMLElement);
+            // Events which should cause the popup to close.
+            return Observable.merge(
+              hoveringOrAiming(item, innerPopupElement, editorElement),
+              // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
+              observableFromSubscribeFunction(cb =>
+                atom.workspace.onDidChangeActivePaneItem(cb),
+              ).mapTo(false),
+              observableFromSubscribeFunction(cb =>
+                gutterMarker.onDidDestroy(cb),
+              )
+                .delay(DESTROY_DIAGNOSTICS_POPUP_DELAY)
+                .mapTo(false),
+              Observable.fromEvent(item, 'click')
+                .filter(() =>
+                  messages.some(message => message.kind === 'review'),
+                )
+                .mapTo(false),
+            );
+          }),
+        )
+        .takeUntil(
+          observableFromSubscribeFunction(cb => gutter.onDidDestroy(cb)),
+        )
+        .takeWhile(Boolean);
+    },
+  )
   .share();
 
 _applyUpdateToEditor.displayName = 'applyUpdateToEditor';
@@ -226,6 +245,7 @@ function _applyUpdateToEditor(
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
   for (const [row, messages] of rowToMessage.entries()) {
     // This marker adds some UI to the gutter.
+    const gutterMarker = editor.markBufferPosition([row, 0]);
     const {item, dispose} = createGutterItem(
       editor,
       messages,
@@ -233,9 +253,9 @@ function _applyUpdateToEditor(
       gutter,
       openedMessageIds,
       setOpenMessageIds,
+      gutterMarker,
     );
     itemToEditor.set(item, editor);
-    const gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
     gutterMarker.onDidDestroy(dispose);
     markers.add(gutterMarker);
@@ -316,6 +336,7 @@ function createGutterItem(
   gutter: atom$Gutter,
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
+  gutterMarker: atom$Marker,
 ): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
   const messageGroups = new Set();
@@ -345,6 +366,7 @@ function createGutterItem(
         gutter,
         item,
         editorElement,
+        gutterMarker,
       });
     }),
     Observable.fromEvent(item, 'click').subscribe(() => {
