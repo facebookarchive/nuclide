@@ -234,9 +234,7 @@ export async function fetchRevisionInfo(
 export function fetchSmartlogRevisions(
   workingDirectory: string,
 ): ConnectableObservable<Array<RevisionInfo>> {
-  // This will get the `smartlog()` expression revisions
-  // and the head revision commits to the nearest public commit parent.
-  const revisionExpression = 'smartlog() + parents(smartlog())';
+  const revisionExpression = 'smartlog()';
   return fetchRevisionsInfo(revisionExpression, workingDirectory, {
     shouldLimit: false,
   }).publish();
