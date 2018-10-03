@@ -224,6 +224,18 @@ describe('fsPromise test suite', () => {
       );
     });
 
+    it('can write to a file with permissions', async () => {
+      await fsPromise.writeFileAtomic(
+        pathToWriteFile,
+        "I'm a little teapot.\n",
+        {mode: 0o700},
+      );
+      // eslint-disable-next-line no-bitwise
+      expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(
+        0o700, // eslint-disable-line no-bitwise
+      );
+    });
+
     it('calls mkdirp', async () => {
       const subPath = nuclideUri.join(pathToWriteFile, 'test');
       await fsPromise.writeFileAtomic(subPath, 'test1234\n');
