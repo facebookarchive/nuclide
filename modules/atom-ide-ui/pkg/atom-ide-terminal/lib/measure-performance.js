@@ -10,6 +10,7 @@
  * @format
  */
 
+import {remote} from 'electron';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import performanceNow from 'nuclide-commons/performanceNow';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -28,12 +29,20 @@ const FRAME_BUFFER_SIZE = INITIAL_FRAMES_TO_MEASURE;
 
 /**
  * Track the performance of both terminal renderers and offer switching to
- * the DOM-based fallback if we detect slow canvas rendering.
+ * the DOM-based fallback if we detect slow canvas rendering in an environment
+ * that doesn't support it well.
  */
 export default function measurePerformance(terminal: XTerminal): IDisposable {
   const rendererType = terminal.getOption('rendererType');
   const rendererConfig = featureConfig.get(RENDERER_TYPE_CONFIG);
-  let shouldPromptSlow = rendererType === 'canvas' && rendererConfig === 'auto';
+  const supportsAcceleratedCanvas =
+    remote.app.getGPUFeatureStatus()['2d_canvas'] === 'enabled';
+
+  let shouldPromptSlow =
+    !supportsAcceleratedCanvas &&
+    rendererType === 'canvas' &&
+    rendererConfig === 'auto';
+
   // Similar to https://github.com/Microsoft/vscode/commit/84eb4778f18215d00608ccf8fb7649e6f2cd428a
   // However, we'll use a circular buffer to continuously measure performance over time.
   let frameTimeBuffer = new Array(FRAME_BUFFER_SIZE).fill(0);
@@ -48,6 +57,7 @@ export default function measurePerformance(terminal: XTerminal): IDisposable {
     const averageTime = frameTimeSum / frameTimeBuffer.length;
     track('nuclide-terminal.render-performance', {
       averageTime,
+      supportsAcceleratedCanvas,
       type: rendererType,
     });
     if (shouldPromptSlow && averageTime > SLOW_CANVAS_RENDER_THRESHOLD) {
