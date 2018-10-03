@@ -71,7 +71,7 @@
         }
       ]
     },
-    "rendererType": {
+    "renderer": {
       "title": "Terminal renderer implementation",
       "type": "string",
       "default": "auto",
