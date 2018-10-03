@@ -21,6 +21,12 @@ import temp from 'temp';
 import nuclideUri from './nuclideUri';
 import {runCommand} from './process';
 
+type WriteOptions = {
+  encoding?: string,
+  mode?: number,
+  flag?: string,
+};
+
 /**
  * Create a temp directory with given prefix. The caller is responsible for cleaning up the
  *   drectory.
@@ -299,7 +305,7 @@ async function copyFilePermissions(
 function writeFile(
   filename: string,
   data: Buffer | string,
-  options?: Object | string,
+  options?: WriteOptions | string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     fsPlus.writeFile(filename, data, options, (err, result) => {
@@ -315,7 +321,7 @@ function writeFile(
 async function writeFileAtomic(
   path: string,
   data: Buffer | string,
-  options?: Object | string,
+  options?: WriteOptions | string,
 ): Promise<void> {
   const tempFilePath = await tempfile('nuclide');
   try {
