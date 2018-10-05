@@ -65,7 +65,7 @@ export class OutlineViewPanelState {
       }),
       OutlineView,
     );
-    return renderReactRoot(<BoundOutlineView />);
+    return renderReactRoot(<BoundOutlineView />, 'OutlineViewRoot');
   }
 
   serialize(): SerializedOutlineViewPanelState {

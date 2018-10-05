@@ -118,7 +118,7 @@ class Activation {
         getElement: memoize(() => {
           const props = getToolbarProps(this._store);
           const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-          return renderReactRoot(<StatefulToolbar />);
+          return renderReactRoot(<StatefulToolbar />, 'TaskRunnerToolbarRoot');
         }),
       },
       visible: false,

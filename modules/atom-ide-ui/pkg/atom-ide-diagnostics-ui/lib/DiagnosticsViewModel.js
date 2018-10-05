@@ -234,7 +234,7 @@ export class DiagnosticsViewModel {
   getElement(): HTMLElement {
     if (this._element == null) {
       const Component = bindObservableAsProps(this._props, DiagnosticsView);
-      const element = renderReactRoot(<Component />);
+      const element = renderReactRoot(<Component />, 'DiagnosticsRoot');
       element.classList.add('diagnostics-ui');
       this._element = element;
     }

@@ -44,6 +44,7 @@ export default class ViewModel {
           this._component = component;
         }}
       />,
+      'FileTreeRoot',
     );
     this._disposable = new UniversalDisposable(
       observePaneItemVisibility(this)
