@@ -449,21 +449,20 @@ function registerHostnameFormatter(formatter: HostnameFormatter): IDisposable {
   };
 }
 
+function hostnameToDisplayHostname(hostname: string): string {
+  return hostFormatters.reduce((current, formatter) => {
+    const next = formatter(current);
+    if (next != null && next !== '') {
+      return next;
+    } else {
+      return current;
+    }
+  }, hostname);
+}
+
 function nuclideUriToDisplayHostname(uri: NuclideUri): string {
   _testForIllegalUri(uri);
-  if (isRemote(uri)) {
-    let hostname = getHostname(uri);
-    for (const formatter of hostFormatters) {
-      const formattedHostname = formatter(hostname);
-      // flowlint-next-line sketchy-null-string:off
-      if (formattedHostname) {
-        hostname = formattedHostname;
-      }
-    }
-    return hostname;
-  } else {
-    return uri;
-  }
+  return isRemote(uri) ? hostnameToDisplayHostname(getHostname(uri)) : uri;
 }
 
 /**
@@ -881,6 +880,7 @@ export default {
   collapse,
   nuclideUriToDisplayString,
   nuclideUriToDisplayHostname,
+  hostnameToDisplayHostname,
   registerHostnameFormatter,
   ensureTrailingSeparator,
   trimTrailingSeparator,
