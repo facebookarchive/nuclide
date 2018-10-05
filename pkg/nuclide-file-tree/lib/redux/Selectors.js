@@ -16,7 +16,12 @@ import type React from 'react';
 import type {FileTreeNode} from '../FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {AppState, ExportStoreData, Roots} from '../types';
+import type {
+  AppState,
+  ExportStoreData,
+  FileTreeContextMenuNode,
+  Roots,
+} from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
@@ -376,6 +381,28 @@ export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
 
   return `Current Working Directory: '${directory}' on '${host}'`;
 });
+
+// In previous versions, we exposed the FileTreeNodes directly. This was bad as it's really just an
+// implementation detail. So, when we wanted to move `vcsStatus` off of the node, we had an issue.
+// We now expose a limited API instead to avoid this.
+export const getFileTreeContextMenuNode = (state: AppState) => (
+  node: ?FileTreeNode,
+): ?FileTreeContextMenuNode => {
+  if (node == null) {
+    return null;
+  }
+  return {
+    uri: node.uri,
+    isContainer: node.isContainer,
+    isRoot: node.isRoot,
+    isCwd: node.isCwd,
+    vcsStatusCode: node.vcsStatusCode, // TODO: Move this property off the node
+    repo: node.repo,
+    // We don't want to expose the entire tree or allow traversal since then we'd have to
+    // materialize every node. This is for supporting a legacy use case.
+    parentUri: node.parent?.uri,
+  };
+};
 
 //
 //

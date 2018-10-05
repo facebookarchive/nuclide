@@ -37,6 +37,16 @@ export type MiddlewareStore = {
   dispatch(action: Action): void,
 };
 
+export type FileTreeContextMenuNode = {|
+  uri: NuclideUri,
+  parentUri: ?NuclideUri,
+  isContainer: boolean,
+  isRoot: boolean,
+  isCwd: boolean,
+  vcsStatusCode: StatusCodeNumberValue,
+  repo: ?atom$Repository,
+|};
+
 export type ExportStoreData = {
   childKeyMap: {[key: string]: Array<string>},
   expandedKeysByRoot: {[key: string]: Array<string>},

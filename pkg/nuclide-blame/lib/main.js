@@ -11,7 +11,7 @@
 
 import type {BlameProvider} from './types';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
+import type {FileTreeContextMenuNode} from '../../nuclide-file-tree/lib/types';
 
 import invariant from 'assert';
 import BlameGutter from './BlameGutter';
@@ -254,7 +254,7 @@ class Activation {
  */
 function findBlameableNodes(
   contextMenu: FileTreeContextMenu,
-): Array<FileTreeNode> {
+): Array<FileTreeContextMenuNode> {
   const nodes = [];
   for (const node of contextMenu.getSelectedNodes()) {
     if (node == null || !node.uri) {

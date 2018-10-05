@@ -9,9 +9,8 @@
  * @format
  */
 
-import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
-import type {Store} from './types';
+import type {FileTreeContextMenuNode, Store} from './types';
 
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
@@ -126,7 +125,7 @@ const SHOW_IN_MENU_PRIORITY = 7000;
  *       callback() {
  *         Array.from(contextMenu.getSelectedNodes())
  *           .filter(node => !node.isContainer)
- *           .forEach((node: FileTreeNode) => {
+ *           .forEach((node: FileTreeContextMenuNode) => {
  *             const uri = node.uri;
  *             // DO WHAT YOU LIKE WITH THE URI!
  *           });
@@ -579,12 +578,18 @@ export default class FileTreeContextMenu {
     });
   }
 
-  getSelectedNodes(): Immutable.List<FileTreeNode> {
-    return Selectors.getTargetNodes(this._store.getState());
+  getSelectedNodes(): Immutable.List<FileTreeContextMenuNode> {
+    const state = this._store.getState();
+    return Selectors.getTargetNodes(state).map(node =>
+      nullthrows(Selectors.getFileTreeContextMenuNode(state)(node)),
+    );
   }
 
-  getSingleSelectedNode(): ?FileTreeNode {
-    return Selectors.getSingleTargetNode(this._store.getState());
+  getSingleSelectedNode(): ?FileTreeContextMenuNode {
+    const state = this._store.getState();
+    return Selectors.getFileTreeContextMenuNode(state)(
+      Selectors.getSingleTargetNode(state),
+    );
   }
 
   dispose(): void {
