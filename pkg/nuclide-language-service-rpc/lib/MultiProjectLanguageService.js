@@ -43,7 +43,7 @@ import type {ConnectableObservable} from 'rxjs';
 import invariant from 'assert';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
-import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
+import {FileCache} from '../../nuclide-open-files-rpc';
 import {Cache} from 'nuclide-commons/cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -100,18 +100,6 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
 
     this._resources.add(host, this._processes);
 
-    // Observe projects as they are opened
-    const configObserver = new ConfigObserver(
-      fileCache,
-      fileExtensions,
-      filePath => this._configCache.getConfigDir(filePath),
-    );
-    this._resources.add(
-      configObserver,
-      configObserver.observeConfigs().subscribe(configs => {
-        this._ensureProcesses(configs);
-      }),
-    );
     this._resources.add(() => {
       this._closeProcesses();
     });
@@ -180,19 +168,6 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       }
     });
     return process;
-  }
-
-  // Ensures that the only attached LanguageServices are those
-  // for the given configPaths.
-  // Closes all LanguageServices not in configPaths, and starts
-  // new LanguageServices for any paths in configPaths.
-  _ensureProcesses(configPaths: Set<NuclideUri>): void {
-    this._logger.info(
-      `MultiProjectLanguageService ensureProcesses. ${Array.from(
-        configPaths,
-      ).join(', ')}`,
-    );
-    this._processes.setKeys(configPaths);
   }
 
   // Closes all LanguageServices for this fileCache.
