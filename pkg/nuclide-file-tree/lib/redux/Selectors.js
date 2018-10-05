@@ -16,6 +16,7 @@ import type React from 'react';
 import type {FileTreeNode} from '../FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
+import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
 import type {
   AppState,
   ExportStoreData,
@@ -24,6 +25,7 @@ import type {
 } from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
 import * as Immutable from 'immutable';
 import {memoize} from 'lodash';
@@ -124,6 +126,8 @@ export const isEditingWorkingSet = createSelector(
   [getConf],
   conf => conf.isEditingWorkingSet,
 );
+
+const getVcsStatuses = createSelector([getConf], conf => conf.vcsStatuses);
 
 /**
  * Builds the edited working set from the partially-child-derived .checkedStatus property
@@ -382,27 +386,47 @@ export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
   return `Current Working Directory: '${directory}' on '${host}'`;
 });
 
+export const getVcsStatus = createSelector(
+  [getVcsStatuses],
+  (
+    vcsStatuses: Immutable.Map<
+      NuclideUri,
+      Map<NuclideUri, StatusCodeNumberValue>,
+    >,
+  ): ((node: FileTreeNode) => StatusCodeNumberValue) => {
+    return node => {
+      const statusMap = vcsStatuses.get(node.rootUri);
+      return statusMap == null
+        ? StatusCodeNumber.CLEAN
+        : statusMap.get(node.uri) ?? StatusCodeNumber.CLEAN;
+    };
+  },
+);
+
 // In previous versions, we exposed the FileTreeNodes directly. This was bad as it's really just an
 // implementation detail. So, when we wanted to move `vcsStatus` off of the node, we had an issue.
 // We now expose a limited API instead to avoid this.
-export const getFileTreeContextMenuNode = (state: AppState) => (
-  node: ?FileTreeNode,
-): ?FileTreeContextMenuNode => {
-  if (node == null) {
-    return null;
-  }
-  return {
-    uri: node.uri,
-    isContainer: node.isContainer,
-    isRoot: node.isRoot,
-    isCwd: node.isCwd,
-    vcsStatusCode: node.vcsStatusCode, // TODO: Move this property off the node
-    repo: node.repo,
-    // We don't want to expose the entire tree or allow traversal since then we'd have to
-    // materialize every node. This is for supporting a legacy use case.
-    parentUri: node.parent?.uri,
-  };
-};
+export const getFileTreeContextMenuNode = createSelector(
+  [getVcsStatus],
+  getVcsStatusFromNode => {
+    return (node: ?FileTreeNode): ?FileTreeContextMenuNode => {
+      if (node == null) {
+        return null;
+      }
+      return {
+        uri: node.uri,
+        isContainer: node.isContainer,
+        isRoot: node.isRoot,
+        isCwd: node.isCwd,
+        vcsStatusCode: getVcsStatusFromNode(node),
+        repo: node.repo,
+        // We don't want to expose the entire tree or allow traversal since then we'd have to
+        // materialize every node. This is for supporting a legacy use case.
+        parentUri: node.parent?.uri,
+      };
+    };
+  },
+);
 
 //
 //
