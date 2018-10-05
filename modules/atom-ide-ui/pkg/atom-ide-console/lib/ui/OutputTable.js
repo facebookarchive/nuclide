@@ -12,9 +12,9 @@
 
 import type {
   Executor,
-  OutputProvider,
   Record,
   RecordHeightChangeHandler,
+  SourceInfo,
 } from '../types';
 
 import {DefaultWeakMap} from 'nuclide-commons/collection';
@@ -33,7 +33,7 @@ type Props = {
   showSourceLabels: boolean,
   fontSize: number,
   getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
+  getProvider: (id: string) => ?SourceInfo,
   onScroll: (
     offsetHeight: number,
     scrollHeight: number,
@@ -207,7 +207,7 @@ export default class OutputTable extends React.Component<Props, State> {
     return this.props.getExecutor(id);
   };
 
-  _getProvider = (id: string): ?OutputProvider => {
+  _getProvider = (id: string): ?SourceInfo => {
     return this.props.getProvider(id);
   };
 

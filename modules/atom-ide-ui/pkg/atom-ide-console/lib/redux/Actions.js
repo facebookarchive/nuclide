@@ -13,8 +13,7 @@
 import type {
   Action,
   Executor,
-  OutputProvider,
-  OutputProviderStatus,
+  ConsoleSourceStatus,
   Record,
   RecordProvider,
   SourceInfo,
@@ -75,31 +74,6 @@ export function execute(code: string): Action {
   };
 }
 
-export function registerOutputProvider(outputProvider: OutputProvider): Action {
-  // Transform the messages into actions and merge them into the action stream.
-  // TODO: Add enabling/disabling of registered source and only subscribe when enabled. That
-  //       way, we won't trigger cold observer side-effects when we don't need the results.
-  return registerRecordProvider({
-    ...outputProvider,
-    records: outputProvider.messages.map(message => ({
-      // We duplicate the properties here instead of using spread because Flow (currently) has some
-      // issues with spread.
-      text: message.text,
-      level: message.level,
-      data: message.data,
-      tags: message.tags,
-      repeatCount: 1,
-      incomplete: false,
-
-      kind: 'message',
-      sourceId: outputProvider.id,
-      scopeName: null,
-      // Eventually, we'll want to allow providers to specify custom timestamps for records.
-      timestamp: new Date(),
-    })),
-  });
-}
-
 export function registerRecordProvider(recordProvider: RecordProvider): Action {
   return {
     type: REGISTER_RECORD_PROVIDER,
@@ -118,12 +92,6 @@ export function unregisterRecordProvider(
   recordProvider: RecordProvider,
 ): Action {
   return removeSource(recordProvider.id);
-}
-
-export function unregisterOutputProvider(
-  outputProvider: OutputProvider,
-): Action {
-  return removeSource(outputProvider.id);
 }
 
 export function selectExecutor(executorId: string): Action {
@@ -153,7 +121,7 @@ export function unregisterExecutor(executor: Executor): Action {
 
 export function updateStatus(
   providerId: string,
-  status: OutputProviderStatus,
+  status: ConsoleSourceStatus,
 ): Action {
   return {
     type: UPDATE_STATUS,

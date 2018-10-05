@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ConsoleMessage, OutputProviderStatus} from 'atom-ide-ui';
+import type {ConsoleMessage, ConsoleSourceStatus} from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -68,7 +68,7 @@ export class LogTailer {
   _runningCallbacks: Array<(err?: Error) => mixed>;
   _errorHandler: ?(err: Error) => void;
   _startCount: number;
-  _statuses: BehaviorSubject<OutputProviderStatus>;
+  _statuses: BehaviorSubject<ConsoleSourceStatus>;
 
   constructor(options: Options) {
     this._name = options.name;
@@ -178,11 +178,11 @@ export class LogTailer {
     this._start(false);
   }
 
-  observeStatus(cb: (status: OutputProviderStatus) => void): IDisposable {
+  observeStatus(cb: (status: ConsoleSourceStatus) => void): IDisposable {
     return new UniversalDisposable(this._statuses.subscribe(cb));
   }
 
-  getStatus(): OutputProviderStatus {
+  getStatus(): ConsoleSourceStatus {
     return this._statuses.getValue();
   }
 

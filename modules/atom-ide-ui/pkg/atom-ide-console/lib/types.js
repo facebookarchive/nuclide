@@ -36,11 +36,11 @@ export type ConsoleApi = {
   dispose(): void,
 
   // Set the status of the source. See "Stoppable Sources" below.
-  setStatus(status: OutputProviderStatus): void,
+  setStatus(status: ConsoleSourceStatus): void,
 };
 
 // A type representing the possible values for the `console.setStatus()` API.
-export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
+export type ConsoleSourceStatus = 'starting' | 'running' | 'stopped';
 
 // The shape of the argument to the `ConsoleService` function.
 export type SourceInfo = {
@@ -93,35 +93,6 @@ export type Message = {
 
 //
 //
-// The following types are part of deprecated APIs and shouldn't be used outside of this package.
-//
-//
-
-type BasicOutputProvider = {
-  messages: Observable<Message>,
-  // The source can't be part of the message because we want to be able to populate a filter menu
-  // before we even have any messages.
-  id: string,
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
-};
-
-type ControllableOutputProviderProps = {
-  observeStatus(callback: (status: OutputProviderStatus) => mixed): IDisposable,
-  start(): void,
-  stop(): void,
-};
-
-type ControllableOutputProvider = BasicOutputProvider &
-  ControllableOutputProviderProps;
-
-export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
-
-export type OutputService = {
-  registerOutputProvider(outputProvider: OutputProvider): IDisposable,
-};
-
-//
-//
 // The following types aren't part of public API but rather are used within the package.
 //
 //
@@ -170,7 +141,7 @@ export type AppState = {|
   incompleteRecords: List<Record>,
   history: Array<string>,
   providers: Map<string, SourceInfo>,
-  providerStatuses: Map<string, OutputProviderStatus>,
+  providerStatuses: Map<string, ConsoleSourceStatus>,
   fontSize?: number,
   watchEditor?: ?atom$AutocompleteWatchEditor,
 |};
@@ -183,7 +154,7 @@ export type RecordHeightChangeHandler = (
 export type Source = {
   id: string,
   name: string,
-  status: OutputProviderStatus,
+  status: ConsoleSourceStatus,
   start?: () => void,
   stop?: () => void,
 };
@@ -194,8 +165,14 @@ type BasicRecordProvider = {
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
+type ControllableRecordProviderProps = {
+  observeStatus(callback: (status: ConsoleSourceStatus) => mixed): IDisposable,
+  start(): void,
+  stop(): void,
+};
+
 type ControllableRecordProvider = BasicRecordProvider &
-  ControllableOutputProviderProps;
+  ControllableRecordProviderProps;
 
 export type RecordProvider = BasicRecordProvider | ControllableRecordProvider;
 
@@ -316,7 +293,7 @@ export type Action =
       type: 'UPDATE_STATUS',
       payload: {
         providerId: string,
-        status: OutputProviderStatus,
+        status: ConsoleSourceStatus,
       },
     }
   | {

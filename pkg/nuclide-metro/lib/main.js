@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from 'atom-ide-ui';
+import type {ConsoleService} from 'atom-ide-ui';
 import type {MetroAtomService} from './types';
 import type {TunnelBehavior} from './types';
 
@@ -72,22 +72,31 @@ class Activation {
     );
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'Metro',
-        messages: this._metroAtomService._logTailer.getMessages(),
-        observeStatus: cb => this._metroAtomService.observeStatus(cb),
-        start: async () => {
-          try {
-            await this._metroAtomService.start('ask_about_tunnel');
-          } catch (e) {}
-        },
-        stop: () => {
-          this._metroAtomService.stop();
-        },
+  consumeConsole(consoleService: ConsoleService): IDisposable {
+    let consoleApi = consoleService({
+      id: 'Metro',
+      name: 'Metro',
+      start: () => {
+        this._metroAtomService.start('ask_about_tunnel').catch(() => {});
+      },
+      stop: () => this._metroAtomService.stop(),
+    });
+    const disposable = new UniversalDisposable(
+      () => {
+        consoleApi != null && consoleApi.dispose();
+        consoleApi = null;
+      },
+      this._metroAtomService._logTailer
+        .getMessages()
+        .subscribe(message => consoleApi != null && consoleApi.append(message)),
+      this._metroAtomService.observeStatus(status => {
+        if (consoleApi != null) {
+          consoleApi.setStatus(status);
+        }
       }),
     );
+    this._disposables.add(disposable);
+    return disposable;
   }
 }
 

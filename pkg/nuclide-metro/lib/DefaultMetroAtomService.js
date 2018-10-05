@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputProviderStatus} from 'atom-ide-ui';
+import type {ConsoleSourceStatus} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
 import type {TunnelBehavior} from './types';
@@ -123,7 +123,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
     metroService.reloadApp(this._port.getValue());
   };
 
-  observeStatus = (callback: OutputProviderStatus => void): IDisposable => {
+  observeStatus = (callback: ConsoleSourceStatus => void): IDisposable => {
     return this._logTailer.observeStatus(callback);
   };
 

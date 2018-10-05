@@ -113,14 +113,11 @@ export type {
   Level as ConsoleLevel,
   Message as ConsoleMessage,
   SourceInfo as ConsoleSourceInfo,
-  OutputProviderStatus,
+  ConsoleSourceStatus,
 } from './pkg/atom-ide-console/lib/types';
 
 // Deprecated console types. Exported only for legacy users.
-export type {
-  OutputService,
-  RegisterExecutorFunction,
-} from './pkg/atom-ide-console/lib/types';
+export type {RegisterExecutorFunction} from './pkg/atom-ide-console/lib/types';
 
 export {
   RemoteDebuggerService as DebuggerService,

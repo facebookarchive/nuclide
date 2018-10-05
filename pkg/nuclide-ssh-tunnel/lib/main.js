@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputService} from 'atom-ide-ui';
+import type {ConsoleService} from 'atom-ide-ui';
 import type {SshTunnelService} from 'nuclide-adb/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Store} from './types';
@@ -104,13 +104,17 @@ class Activation {
     );
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'Nuclide tunnels',
-        messages: this._store.getState().consoleOutput,
-      }),
-    );
+  consumeConsole(consoleService: ConsoleService): IDisposable {
+    let consoleApi = consoleService({
+      id: 'Nuclide tunnels',
+      name: 'Nuclide tunnels',
+    });
+    const disposable = new UniversalDisposable(() => {
+      consoleApi != null && consoleApi.dispose();
+      consoleApi = null;
+    }, this._store.getState().consoleOutput.subscribe(message => consoleApi != null && consoleApi.append(message)));
+    this._disposables.add(disposable);
+    return disposable;
   }
 }
 

@@ -10,38 +10,41 @@
  * @format
  * @emails oncall+nuclide
  */
-import type {AppState} from '../lib/types';
+import type {AppState, ConsoleSourceStatus} from '../lib/types';
 
 import {ActionsObservable} from 'nuclide-commons/redux-observable';
 import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
 import invariant from 'assert';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 describe('Epics', () => {
-  describe('registerOutputProviderEpic', () => {
+  describe('provideConsole (registerSourceEpic)', () => {
     it('observes the status', () => {
       const mockStore = {
         dispatch: () => {},
         getState: () => (({}: any): AppState),
       };
-      let setStatus;
+      const id = 'test';
       const provider = {
-        id: 'test',
+        id,
+        name: id,
         messages: Observable.never(),
-        observeStatus: cb => {
-          setStatus = cb;
-        },
         start: () => {},
         stop: () => {},
       };
       const actions = new ActionsObservable(
-        Observable.of(Actions.registerOutputProvider(provider)),
+        Observable.of(Actions.registerSource(provider)),
       );
       let results = [];
       Epics.registerRecordProviderEpic(actions, mockStore).subscribe(
         results.push.bind(results),
       );
+      const statusSubject = new Subject();
+      const setStatus = (status: ConsoleSourceStatus): void => {
+        statusSubject.next(Actions.updateStatus(id, status));
+      };
+      statusSubject.subscribe(results.push.bind(results));
       invariant(setStatus != null);
       setStatus('running');
       setStatus('stopped');

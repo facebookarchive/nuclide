@@ -16,9 +16,7 @@ import type {
   ConsoleService,
   SourceInfo,
   Message,
-  OutputProvider,
-  OutputProviderStatus,
-  OutputService,
+  ConsoleSourceStatus,
   Record,
   RecordToken,
   RegisterExecutorFunction,
@@ -320,7 +318,7 @@ class Activation {
           activation._getStore().dispatch(Actions.recordReceived(record));
           return token;
         },
-        setStatus(status: OutputProviderStatus): void {
+        setStatus(status: ConsoleSourceStatus): void {
           invariant(activation != null && !disposed);
           activation
             ._getStore()
@@ -337,31 +335,6 @@ class Activation {
         },
       };
       return console;
-    };
-  }
-
-  provideOutputService(): OutputService {
-    // Create a local, nullable reference so that the service consumers don't keep the Activation
-    // instance in memory.
-    let activation = this;
-    this._disposables.add(() => {
-      activation = null;
-    });
-
-    return {
-      registerOutputProvider(outputProvider: OutputProvider): IDisposable {
-        invariant(activation != null, 'Output service used after deactivation');
-        activation
-          ._getStore()
-          .dispatch(Actions.registerOutputProvider(outputProvider));
-        return new UniversalDisposable(() => {
-          if (activation != null) {
-            activation
-              ._getStore()
-              .dispatch(Actions.unregisterOutputProvider(outputProvider));
-          }
-        });
-      },
     };
   }
 

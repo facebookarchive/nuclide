@@ -24,9 +24,9 @@
         "0.0.0": "consumeCurrentWorkingDirectory"
       }
     },
-    "DEPRECATED-nuclide-output": {
+    "console": {
       "versions": {
-        "0.0.0": "consumeOutputService"
+        "0.1.0": "consumeConsole"
       }
     }
   }

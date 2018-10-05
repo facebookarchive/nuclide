@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputService} from 'atom-ide-ui';
+import type {ConsoleService} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
@@ -60,20 +60,29 @@ export default class Activation {
     );
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'iOS Simulator Logs',
-        messages: this._iosLogTailer.getMessages(),
-        observeStatus: cb => this._iosLogTailer.observeStatus(cb),
-        start: () => {
-          this._iosLogTailer.start();
-        },
-        stop: () => {
-          this._iosLogTailer.stop();
-        },
+  consumeConsole(consoleService: ConsoleService): IDisposable {
+    let consoleApi = consoleService({
+      id: 'iOS Simulator Logs',
+      name: 'iOS Simulator Logs',
+      start: () => this._iosLogTailer.start(),
+      stop: () => this._iosLogTailer.stop(),
+    });
+    const disposable = new UniversalDisposable(
+      () => {
+        consoleApi != null && consoleApi.dispose();
+        consoleApi = null;
+      },
+      this._iosLogTailer
+        .getMessages()
+        .subscribe(message => consoleApi != null && consoleApi.append(message)),
+      this._iosLogTailer.observeStatus(status => {
+        if (consoleApi != null) {
+          consoleApi.setStatus(status);
+        }
       }),
     );
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   dispose() {

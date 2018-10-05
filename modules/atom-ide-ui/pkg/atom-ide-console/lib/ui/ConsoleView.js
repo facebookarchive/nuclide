@@ -12,11 +12,11 @@
 
 import type {
   Executor,
-  OutputProvider,
-  RecordHeightChangeHandler,
-  Source,
   Severity,
   Record,
+  RecordHeightChangeHandler,
+  Source,
+  SourceInfo,
 } from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
@@ -52,7 +52,7 @@ type Props = {|
   selectSources: (sourceIds: Array<string>) => void,
   sources: Array<Source>,
   updateFilter: (change: RegExpFilterChange) => void,
-  getProvider: (id: string) => ?OutputProvider,
+  getProvider: (id: string) => ?SourceInfo,
   onDisplayableRecordHeightChange: RecordHeightChangeHandler,
   filteredRecordCount: number,
   filterText: string,
@@ -226,7 +226,7 @@ export default class ConsoleView extends React.Component<Props, State> {
     return this.props.executors.get(id);
   };
 
-  _getProvider = (id: string): ?OutputProvider => {
+  _getProvider = (id: string): ?SourceInfo => {
     return this.props.getProvider(id);
   };
 

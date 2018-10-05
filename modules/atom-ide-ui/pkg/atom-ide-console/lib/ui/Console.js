@@ -14,7 +14,7 @@
 
 import type {
   ConsolePersistedState,
-  OutputProviderStatus,
+  ConsoleSourceStatus,
   Record,
   Source,
   Store,
@@ -402,7 +402,7 @@ export class Console {
 function getSources(options: {
   records: List<Record>,
   providers: Map<string, SourceInfo>,
-  providerStatuses: Map<string, OutputProviderStatus>,
+  providerStatuses: Map<string, ConsoleSourceStatus>,
 }): Array<Source> {
   const {providers, providerStatuses, records} = options;
 

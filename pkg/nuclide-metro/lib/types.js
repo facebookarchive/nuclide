@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputProviderStatus} from 'atom-ide-ui';
+import type {ConsoleSourceStatus} from 'atom-ide-ui';
 
 export type TunnelBehavior =
   | 'open_tunnel_if_needed'
@@ -23,5 +23,5 @@ export interface MetroAtomService {
   stop(): void;
   reloadApp(): void;
   restart(): void;
-  observeStatus(callback: (OutputProviderStatus) => void): IDisposable;
+  observeStatus(callback: (ConsoleSourceStatus) => void): IDisposable;
 }

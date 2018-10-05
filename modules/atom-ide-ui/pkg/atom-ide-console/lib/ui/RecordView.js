@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Level, Record, Executor, OutputProvider} from '../types';
+import type {Executor, Level, Record, SourceInfo} from '../types';
 import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 
@@ -31,7 +31,7 @@ type Props = {
   record: Record,
   showSourceLabel: boolean,
   getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
+  getProvider: (id: string) => ?SourceInfo,
   onHeightChange: (record: Record, newHeight: number) => void,
   expansionStateId: Object,
 };
@@ -106,7 +106,7 @@ export default class RecordView extends React.Component<Props> {
   }
 
   _renderNestedValueComponent(
-    provider: ?OutputProvider | ?Executor,
+    provider: ?SourceInfo | ?Executor,
   ): React.Element<any> {
     const {record, expansionStateId} = this.props;
     const getProperties = provider == null ? null : provider.getProperties;
