@@ -166,7 +166,7 @@ export default class FileTreeContextMenu {
     this._disposables.add(this._contextMenu);
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
-      const node = Selectors.getSingleSelectedNode(this._store.getState());
+      const node = this.getSingleSelectedNode();
       return (
         node != null &&
         node.isContainer &&
@@ -244,7 +244,7 @@ export default class FileTreeContextMenu {
       shouldDisplay: (e: MouseEvent) => {
         return (
           !this._sourceControlMenu.isEmpty() &&
-          !Selectors.getSelectedNodes(this._store.getState()).isEmpty()
+          !this.getSelectedNodes().isEmpty()
         );
       },
     });
@@ -277,7 +277,7 @@ export default class FileTreeContextMenu {
         label: 'Rename',
         command: 'tree-view:rename-selection',
         shouldDisplay: () => {
-          const node = Selectors.getSingleSelectedNode(this._store.getState());
+          const node = this.getSingleSelectedNode();
           // For now, rename does not apply to root nodes.
           return node != null && !node.isRoot;
         },
