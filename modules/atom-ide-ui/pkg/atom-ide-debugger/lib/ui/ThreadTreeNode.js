@@ -28,6 +28,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
 import classnames from 'classnames';
 import ReactDOM from 'react-dom';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {
   thread: IThread,
@@ -246,6 +247,25 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
       }
       event.stopPropagation();
     };
+
+    const canTerminateThread =
+      Boolean(
+        thread.process.session.capabilities.supportsTerminateThreadsRequest,
+      ) &&
+      thread.threadId > 0 &&
+      thread.stopped;
+
+    const terminateThread = canTerminateThread ? (
+      <Icon
+        className="debugger-terminate-thread-control"
+        icon="x"
+        title="Terminate thread"
+        onClick={() => {
+          service.terminateThreads([this.props.thread.threadId]);
+        }}
+      />
+    ) : null;
+
     const formattedTitle = (
       <span
         onClick={handleTitleClick}
@@ -253,7 +273,7 @@ export default class ThreadTreeNode extends React.Component<Props, State> {
           isFocused ? classnames('debugger-tree-process-thread-selected') : ''
         }
         title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}>
-        {this.props.threadTitle}
+        {this.props.threadTitle} {terminateThread}
       </span>
     );
 

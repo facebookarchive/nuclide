@@ -449,6 +449,11 @@ export interface IDebugService {
    * Gets the current debug model.
    */
   getModel(): IModel;
+
+  /**
+   * Terminates the specified threads in the target.
+   */
+  terminateThreads(threadIds: Array<number>): Promise<void>;
 }
 
 export interface IStackFrame extends ITreeElement {
