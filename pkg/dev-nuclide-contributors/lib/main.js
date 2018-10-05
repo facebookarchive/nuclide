@@ -15,6 +15,7 @@ import type {RegisterProvider} from '../../fb-dash/lib/types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
+import fs from 'fs';
 import Module from 'module';
 import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
@@ -23,6 +24,7 @@ import NuclidePackageReloadDashProvider from './NuclidePackageReloadDashProvider
 class Activation {
   _disposables: UniversalDisposable;
   _reloader: string => Promise<void>;
+  _lastReloadedPackage: ?string = null;
 
   constructor() {
     this._disposables = new UniversalDisposable(
@@ -109,9 +111,13 @@ class Activation {
     await atom.packages.deactivatePackage(name);
     atom.packages.unloadPackage(name);
 
+    // Atom packages are often symlinked into ~/.atom/packages.
+    // However, the require cache always resolves the realpath.
+    const packRealpath = fs.realpathSync(pack.path);
+
     // remove cache
     Object.keys(require.cache)
-      .filter(p => p.indexOf(pack.path + path.sep) === 0)
+      .filter(p => p.indexOf(packRealpath + path.sep) === 0)
       .forEach(p => {
         delete require.cache[p];
       });
@@ -119,7 +125,7 @@ class Activation {
     // For Atom 1.17+
     if (global.snapshotResult && global.snapshotResult.customRequire) {
       Object.keys(global.snapshotResult.customRequire.cache)
-        .filter(p => p.indexOf(pack.path + path.sep) !== -1)
+        .filter(p => p.indexOf(packRealpath + path.sep) !== -1)
         .forEach(p => {
           delete global.snapshotResult.customRequire.cache[p];
         });
@@ -129,11 +135,27 @@ class Activation {
     invariant(pkg != null);
     pkg.activateResources();
     pkg.activateNow();
+
+    this._lastReloadedPackage = name;
   };
 
   consumeDash(registerProvider: RegisterProvider): IDisposable {
     const disposable = new UniversalDisposable(
       registerProvider(new NuclidePackageReloadDashProvider(this._reloader)),
+      atom.commands.add(
+        'atom-workspace',
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'nuclide-contributors:reload-last-package',
+        () => {
+          if (this._lastReloadedPackage != null) {
+            this._reloader(this._lastReloadedPackage);
+          } else {
+            atom.notifications.addWarning(
+              'No previously reloaded package found.',
+            );
+          }
+        },
+      ),
     );
     this._disposables.add(disposable);
     return disposable;
