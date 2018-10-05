@@ -116,19 +116,20 @@ class Activation {
     const disposable = new UniversalDisposable(
       observableFromSubscribeFunction(cb => provider.onUpdate(cb)).subscribe(
         update => {
-          Object.values(scrollbarMarkTypes).forEach(_type => {
-            // Object.values returns mixed, so we have to tell Flow that we
-            // trust the types of these `type`s.
-            const type: ScrollbarIndicatorMarkType = (_type: any);
-            const typeMarks = update.markTypes.get(type) || new Set();
-            const editorLines = this._model.state.editorLines.updateIn(
-              [update.editor, type, provider],
-              marks => typeMarks,
-            );
-            // TODO: We could potentially avoid making a state update for each
-            // type.
-            this._model.setState({editorLines});
-          });
+          const newEditorLines = Object.values(scrollbarMarkTypes).reduce(
+            (editorLines, _type) => {
+              // Object.values returns mixed, so we have to tell Flow that we
+              // trust the types of these `type`s.
+              const type: ScrollbarIndicatorMarkType = (_type: any);
+              const typeMarks = update.markTypes.get(type) || new Set();
+              return editorLines.updateIn(
+                [update.editor, type, provider],
+                marks => typeMarks,
+              );
+            },
+            this._model.state.editorLines,
+          );
+          this._model.setState({editorLines: newEditorLines});
         },
       ),
     );
