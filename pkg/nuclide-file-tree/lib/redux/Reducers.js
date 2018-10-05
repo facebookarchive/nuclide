@@ -50,7 +50,6 @@ export const DEFAULT_CONF = {
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},
-  fileChanges: Immutable.Map(),
 };
 
 const actionTrackers: Map<string, HistogramTracker> = new Map();

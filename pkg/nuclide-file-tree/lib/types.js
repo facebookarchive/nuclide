@@ -65,7 +65,7 @@ export type InitialData = {|
   foldersExpanded: ?boolean,
 |};
 
-export type StoreConfigData = {
+export type StoreConfigData = {|
   vcsStatuses: Immutable.Map<
     NuclideUri,
     Map<NuclideUri, StatusCodeNumberValue>,
@@ -81,11 +81,7 @@ export type StoreConfigData = {
   openFilesWorkingSet: WorkingSet,
   reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
   editedWorkingSet: WorkingSet,
-  fileChanges: Immutable.Map<
-    NuclideUri,
-    Immutable.Map<NuclideUri, FileChangeStatusValue>,
-  >,
-};
+|};
 
 type TargetNodeKeys = {|
   rootKey: NuclideUri,
