@@ -24,6 +24,7 @@ import ReactDOM from 'react-dom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
+import {scrollbarMarkTypes} from './constants';
 import ScrollBar from './ScrollBar';
 
 import {getThemeChangeEvents, getThemeColors} from './themeColors';
@@ -115,7 +116,11 @@ class Activation {
     const disposable = new UniversalDisposable(
       observableFromSubscribeFunction(cb => provider.onUpdate(cb)).subscribe(
         update => {
-          update.markTypes.forEach((typeMarks, type) => {
+          Object.values(scrollbarMarkTypes).forEach(_type => {
+            // Object.values returns mixed, so we have to tell Flow that we
+            // trust the types of these `type`s.
+            const type: ScrollbarIndicatorMarkType = (_type: any);
+            const typeMarks = update.markTypes.get(type) || new Set();
             const editorLines = this._model.state.editorLines.updateIn(
               [update.editor, type, provider],
               marks => typeMarks,
