@@ -13,7 +13,7 @@ import type {Store} from './types';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -37,15 +37,13 @@ export default class ViewModel {
 
   constructor(store: Store) {
     this._store = store;
-    this._element = new ReactMountRootElement();
-    ReactDOM.render(
+    this._element = renderReactRoot(
       <FileTreeSidebarComponent
         store={this._store}
         ref={component => {
           this._component = component;
         }}
       />,
-      this._element,
     );
     this._disposable = new UniversalDisposable(
       observePaneItemVisibility(this)
