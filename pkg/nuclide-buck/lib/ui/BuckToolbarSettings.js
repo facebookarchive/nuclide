@@ -13,7 +13,7 @@ import type {PlatformProviderSettings, TaskSettings} from '../types';
 
 import * as React from 'react';
 
-import {shellParse, shellQuote} from 'nuclide-commons/string';
+import {shellParseWithGlobs, shellQuote} from 'nuclide-commons/string';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -161,9 +161,9 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
   _onSave() {
     try {
       this.props.onSave({
-        buildArguments: shellParse(this.state.buildArguments),
-        runArguments: shellParse(this.state.runArguments),
-        compileDbArguments: shellParse(this.state.compileDbArguments),
+        buildArguments: shellParseWithGlobs(this.state.buildArguments),
+        runArguments: shellParseWithGlobs(this.state.runArguments),
+        compileDbArguments: shellParseWithGlobs(this.state.compileDbArguments),
       });
     } catch (err) {
       atom.notifications.addError('Could not parse arguments', {
