@@ -24,6 +24,7 @@ import {
 import net from 'net';
 import os from 'os';
 import {getDebuggerArgs, getLaunchArgs} from '..';
+import fs from 'fs';
 
 const TWO_CRLF = '\r\n\r\n';
 const CONTENT_LENGTH_PATTERN = new RegExp('Content-Length: (\\d+)');
@@ -85,6 +86,7 @@ class HHVMDebuggerWrapper {
   ): Promise<void> {
     const attachArgs: HHVMAttachConfig = attachMessage.arguments;
     const args = await getDebuggerArgs(attachArgs);
+    const attachDomainSocket = args.domainSocketPath;
     const attachPort =
       args.debugPort != null
         ? parseInt(args.debugPort, 10)
@@ -103,7 +105,15 @@ class HHVMDebuggerWrapper {
       ...args,
     };
 
-    const socket = new net.Socket();
+    let socket;
+    let tcp = false;
+    if (attachDomainSocket != null && fs.existsSync(attachDomainSocket)) {
+      socket = net.createConnection(attachDomainSocket);
+    } else {
+      socket = new net.Socket();
+      tcp = true;
+    }
+
     socket
       .once('connect', () => {
         socket.on('data', chunk => {
@@ -164,7 +174,9 @@ class HHVMDebuggerWrapper {
         }
       });
 
-    socket.connect({port: attachPort, host: 'localhost'});
+    if (tcp) {
+      socket.connect({port: attachPort, host: 'localhost'});
+    }
   }
 
   async _launchTarget(launchMessage: launchRequest): Promise<void> {
