@@ -386,6 +386,7 @@ declare class atom$PackageManager {
   getActivePackage(name: string): ?atom$Package,
   getActivePackages(): Array<atom$Package>,
   isPackageActive(name: string): boolean,
+  hasActivatedInitialPackages(): boolean,
 
   // Activating and deactivating packages
   activatePackage(name: string): Promise<atom$Package>,

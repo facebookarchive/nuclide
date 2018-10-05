@@ -1,0 +1,59 @@
+@import 'ui-variables';
+
+#nuclide-theme-detector-app-background-color {
+  background-color: @app-background-color;
+}
+
+#nuclide-theme-detector-text-color {
+  background-color: @text-color;
+}
+
+#nuclide-theme-detector-syntax-background-clor {
+  background-color: @syntax-background-color;
+}
+
+#nuclide-theme-detector-syntax-selection-color {
+  background-color: @syntax-selection-color;
+}
+
+#nuclide-theme-detector-syntax-cursor-color {
+  background-color: @syntax-cursor-color;
+}
+
+#nuclide-theme-detector-syntax-gutter-background-color-selected {
+  background-color: @syntax-gutter-background-color-selected;
+}
+
+#nuclide-theme-detector-syntax-text-color {
+  background-color: @syntax-text-color;
+}
+
+
+
+.scroll-marker-view {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 13px;
+  z-index: 4;
+  pointer-events: none;
+  border-left: 1px solid @syntax-wrap-guide-color;
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+atom-text-editor /deep/ ::-webkit-scrollbar {
+  width: 12px;
+
+  &-thumb:vertical {
+    background-color: @syntax-cursor-line; // mix(@syntax-background-color, @syntax-cursor-color);
+    z-index: 5;
+  }
+
+  &-corner {
+    background-color: @syntax-background-color;
+  }
+}
