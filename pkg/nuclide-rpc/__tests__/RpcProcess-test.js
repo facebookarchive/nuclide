@@ -112,11 +112,7 @@ describe('RpcProcess', () => {
       await (await getService()).kill();
       invariant(false, 'Fail - expected promise to reject');
     } catch (e) {
-      expect(
-        e.message.startsWith(
-          'Remote Error: Connection Closed processing message',
-        ),
-      ).toBeTruthy();
+      expect(e.message).toEqual('Connection Closed');
     }
     expect((await message).exitCode).toBe(0);
   });
