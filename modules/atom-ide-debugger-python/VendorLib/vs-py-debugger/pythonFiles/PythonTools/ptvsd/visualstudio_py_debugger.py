@@ -2364,7 +2364,14 @@ def attach_process_from_socket(sock, debug_options, report = False, block = Fals
 
     for mod_value in list(sys.modules.values()):
         try:
-            filename = getattr(mod_value, '__file__', None)
+            lazyModule = False
+            try:
+                lazyModule = mod_value.__class__.__name__ == 'LazyImporter'
+            except:
+                lazyModule = False
+            filename = None
+            if not lazyModule:
+                filename = getattr(mod_value, '__file__', None)
             if filename is not None:
                 try:
                     fullpath = path.abspath(filename)
