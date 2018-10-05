@@ -107,7 +107,6 @@
     "nuclide-ctags"
   ],
   "flow": ["nuclide-flow"],
-  "graphql": ["nuclide-graphql"],
   "hack": [
     "nuclide-css-lsp-client",
     "nuclide-debugger-php",

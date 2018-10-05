@@ -93,8 +93,6 @@
     "glob": "7.1.1",
     "globals": "9.18.0",
     "graphql": "0.13.2",
-    "graphql-language-service": "1.1.2",
-    "graphql-language-service-utils": "1.1.0",
     "heap": "0.2.6",
     "idb": "2.1.1",
     "idb-keyval": "2.3.0",
