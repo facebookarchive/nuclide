@@ -15,6 +15,7 @@ export {scrollbarMarkTypes} from './constants';
 import type {ThemeColors} from './themeColors';
 
 import type {ScrollbarIndicatorMarkType} from './constants';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import Model from 'nuclide-commons/Model';
@@ -24,6 +25,7 @@ import ReactDOM from 'react-dom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
+import {Observable} from 'rxjs';
 import {scrollbarMarkTypes} from './constants';
 import ScrollBar from './ScrollBar';
 
@@ -76,21 +78,18 @@ class Activation {
           scrollBarView.nextSibling,
         );
 
-        const props = this._model
-          .toObservable()
-          .map(state => {
-            return {
-              markTypes: state.editorLines.get(editor),
-              colors: state.colors,
-            };
-          })
-          .distinctUntilChanged()
-          .map(({markTypes, markers, colors}) => ({
-            colors,
-            markTypes,
-            editor,
-          }));
-
+        const props = Observable.combineLatest(
+          this._model.toObservable().map(state => ({
+            markTypes: state.editorLines.get(editor),
+            colors: state.colors,
+          })),
+          observePaneItemVisibility(editor),
+        ).map(([{markTypes, markers, colors}, editorIsVisible]) => ({
+          editorIsVisible,
+          colors,
+          markTypes,
+          editor,
+        }));
         const Component = bindObservableAsProps(props, ScrollBar);
 
         ReactDOM.render(<Component />, wrapper);

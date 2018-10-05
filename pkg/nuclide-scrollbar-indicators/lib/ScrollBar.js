@@ -29,6 +29,7 @@ type Props = {
   >,
   colors: ThemeColors,
   editor: atom$TextEditor,
+  editorIsVisible: boolean,
 };
 type State = {
   height: ?number,
@@ -83,6 +84,10 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate() {
+    if (!this.props.editorIsVisible) {
+      // Don't bother painting the canvas if it's not visible.
+      return;
+    }
     const lineCount = this.props.editor.getLineCount();
     const {width, height} = this._context.canvas;
     this._context.clearRect(0, 0, width, height);
