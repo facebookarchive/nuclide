@@ -272,6 +272,7 @@ declare class atom$DisplayMarkerLayer {
   markBufferRange(range: atom$Range | atom$RangeLike, options?: MarkerOptions): atom$Marker,
   findMarkers(options: MarkerOptions): Array<atom$Marker>,
   getMarkers(): Array<atom$Marker>,
+  onDidUpdate(callback: () => mixed): IDisposable
 }
 
 declare class atom$LayerDecoration {
