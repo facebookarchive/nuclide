@@ -66,10 +66,6 @@ export type InitialData = {|
 |};
 
 export type StoreConfigData = {|
-  vcsStatuses: Immutable.Map<
-    NuclideUri,
-    Map<NuclideUri, StatusCodeNumberValue>,
-  >,
   workingSet: WorkingSet,
   hideIgnoredNames: boolean,
   excludeVcsIgnoredPaths: boolean,
@@ -124,6 +120,11 @@ export type AppState = {|
   _selectedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
   _focusedUris: Immutable.Map<NuclideUri, Immutable.Set<NuclideUri>>,
   remoteTransferService: ?RemoteTransferService,
+
+  vcsStatuses: Immutable.Map<
+    NuclideUri,
+    Map<NuclideUri, StatusCodeNumberValue>,
+  >,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';

@@ -127,7 +127,7 @@ export const isEditingWorkingSet = createSelector(
   conf => conf.isEditingWorkingSet,
 );
 
-const getVcsStatuses = createSelector([getConf], conf => conf.vcsStatuses);
+const getVcsStatuses = (state: AppState) => state.vcsStatuses;
 
 /**
  * Builds the edited working set from the partially-child-derived .checkedStatus property
@@ -491,6 +491,7 @@ export const collectDebugState = createSelector(
     getRoots,
     getConf,
     collectSelectionDebugState,
+    getVcsStatuses,
   ],
   (
     currentWorkingRoot,
@@ -507,6 +508,7 @@ export const collectDebugState = createSelector(
     roots,
     conf,
     selectionManager,
+    vcsStatuses,
   ) => {
     return {
       currentWorkingRoot,
@@ -529,7 +531,7 @@ export const collectDebugState = createSelector(
         usePreviewTabs: conf.usePreviewTabs,
         focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
         isEditingWorkingSet: conf.isEditingWorkingSet,
-        vcsStatuses: conf.vcsStatuses.toObject(),
+        vcsStatuses: vcsStatuses.toObject(),
         workingSet: conf.workingSet.getUris(),
         ignoredPatterns: conf.ignoredPatterns
           .toArray()

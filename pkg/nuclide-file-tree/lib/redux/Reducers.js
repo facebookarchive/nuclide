@@ -38,7 +38,6 @@ import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
 import type {StoreConfigData, AppState, Action} from '../types';
 
 export const DEFAULT_CONF = {
-  vcsStatuses: Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
@@ -95,6 +94,8 @@ const DEFAULT_STATE: AppState = {
   _trackedRootKey: null,
   _trackedNodeKey: null,
   remoteTransferService: null,
+
+  vcsStatuses: Immutable.Map(),
 };
 
 function reduceState(state_: AppState, action: Action): AppState {
@@ -742,13 +743,12 @@ function setVcsStatuses(
   rootKey: NuclideUri,
   vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
 ): AppState {
-  let nextState = {...state};
   // We use file changes for populating the uncommitted list, this is different as compared
   // to what is computed in the vcsStatuses in that it does not need the exact path but just
   // the root folder present in atom and the file name and its status. Another difference is
   // in the terms used for status change, while uncommitted changes needs the HgStatusChange
   // codes the file tree doesn't.
-  nextState = setFileChanges(nextState, rootKey, vcsStatuses);
+  const nextState = setFileChanges(state, rootKey, vcsStatuses);
 
   // We can't build on the child-derived properties to maintain vcs statuses in the entire
   // tree, since the reported VCS status may be for a node that is not yet present in the
@@ -788,9 +788,10 @@ function setVcsStatuses(
     }
   });
 
-  return updateConf(nextState, conf => {
-    conf.vcsStatuses = conf.vcsStatuses.set(rootKey, enrichedVcsStatuses);
-  });
+  return {
+    ...nextState,
+    vcsStatuses: nextState.vcsStatuses.set(rootKey, enrichedVcsStatuses),
+  };
 }
 
 function setFileChanges(
