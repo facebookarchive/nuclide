@@ -567,20 +567,6 @@ class HHVMDebuggerWrapper {
               break;
           }
 
-          // Detect HHVM refusing a connection due to another connection
-          // existing and raise an explicit event for that.
-          // TODO: (Ericblue) adding an explicit event in HHVM rather than
-          //   relying on the specific wording of this output event.
-          const attachMsg = 'Could not attach to HHVM';
-          if (message.body.output.includes(attachMsg)) {
-            this._connectionRefused = true;
-            this._writeOutputWithHeader({
-              seq: ++this._sequenceNumber,
-              type: 'event',
-              event: 'hhvmConnectionRefused',
-            });
-          }
-
           break;
         }
         case 'stopped': {

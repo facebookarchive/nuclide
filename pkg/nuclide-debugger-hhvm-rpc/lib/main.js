@@ -310,22 +310,28 @@ export async function getAttachTargetList(): Promise<
     });
 }
 
-export async function terminateHhvmWrapperProcesses(): Promise<void> {
-  // Note: we cannot match the full path to the wrapper reliably due
-  // to V8 caching, which might map to a prior version of Nuclide
-  // if it's available and the source of the hasn't changed between versions.
-  const wrapperPathSuffix =
-    'nuclide/pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js';
-  (await psTree())
-    .filter(p => {
-      const parts = p.commandWithArgs.split(' ');
-      return (
-        parts.length === 2 &&
-        parts[0].endsWith('node') &&
-        parts[1].endsWith(wrapperPathSuffix)
-      );
-    })
-    .forEach(p => {
-      process.kill(p.pid, 'SIGKILL');
-    });
+export async function terminateHhvmWrapperProcesses(
+  pid: number,
+): Promise<void> {
+  if (!Number.isNaN(pid) && pid > 0) {
+    process.kill(pid, 'SIGKILL');
+  } else {
+    // Note: we cannot match the full path to the wrapper reliably due
+    // to V8 caching, which might map to a prior version of Nuclide
+    // if it's available and the source of the hasn't changed between versions.
+    const wrapperPathSuffix =
+      'nuclide/pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js';
+    (await psTree())
+      .filter(p => {
+        const parts = p.commandWithArgs.split(' ');
+        return (
+          parts.length === 2 &&
+          parts[0].endsWith('node') &&
+          parts[1].endsWith(wrapperPathSuffix)
+        );
+      })
+      .forEach(p => {
+        process.kill(p.pid, 'SIGKILL');
+      });
+  }
 }
