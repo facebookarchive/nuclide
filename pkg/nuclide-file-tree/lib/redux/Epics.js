@@ -887,16 +887,16 @@ export function openRenameDialogEpic(
       const nodePath = node.localPath;
       openDialog({
         iconClassName: 'icon-arrow-right',
-        initialValue: nuclideUri.basename(nodePath),
+        initialValue: nodePath,
         message: node.isContainer ? (
           <span>Enter the new path for the directory.</span>
         ) : (
           <span>Enter the new path for the file.</span>
         ),
-        onConfirm: (newBasename: string, options: Object) => {
-          renameNode(node, nodePath, newBasename).catch(error => {
+        onConfirm: (newPath: string, options: Object) => {
+          renameNode(node, nodePath, newPath).catch(error => {
             atom.notifications.addError(
-              `Rename to ${newBasename} failed: ${error.message}`,
+              `Rename to ${newPath} failed: ${error.message}`,
             );
           });
         },
@@ -1474,16 +1474,13 @@ function openAddFileDialogImpl(
 async function renameNode(
   node: FileTreeNode,
   nodePath: string,
-  newBasename: string,
+  destPath: string,
 ): Promise<void> {
   /*
    * Use `resolve` to strip trailing slashes because renaming a file to a name with a
    * trailing slash is an error.
    */
-  let newPath = nuclideUri.resolve(
-    // Trim leading and trailing whitespace to prevent bad filenames.
-    nuclideUri.join(nuclideUri.dirname(nodePath), newBasename.trim()),
-  );
+  let newPath = nuclideUri.resolve(destPath.trim());
 
   // Create a remote nuclide uri when the node being moved is remote.
   if (nuclideUri.isRemote(node.uri)) {
