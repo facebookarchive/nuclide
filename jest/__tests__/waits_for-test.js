@@ -5,11 +5,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ * @flow strict-local
  * @format
  * @emails oncall+nuclide
  */
-import waitsFor from '../waits_for';
+import waitsFor, {waitsForAsync} from '../waits_for';
 
 it('waits', async () => {
   let condition = false;
@@ -42,4 +42,18 @@ it('waits an async predicate', async () => {
 
   await waitsFor(() => fn());
   expect(fn).toHaveBeenCalledTimes(2);
+});
+
+it('returns a value', async () => {
+  let someVar;
+  setTimeout(() => (someVar = 'hello'), 200);
+  const value: string = await waitsFor(() => someVar);
+  expect(value).toBe('hello');
+});
+
+it('returns value from a promise', async () => {
+  let someVar;
+  setTimeout(() => (someVar = 'hello'), 200);
+  const value: string = await waitsForAsync(() => Promise.resolve(someVar));
+  expect(value).toBe('hello');
 });
