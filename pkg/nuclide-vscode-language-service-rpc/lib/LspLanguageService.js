@@ -2882,7 +2882,7 @@ class JsonRpcTraceLogger {
   }
 }
 
-export function createOutlineTreeHierarchy(
+function createOutlineTreeHierarchy(
   list: Array<[SymbolInformation, OutlineTree]>,
   reconstructOutlineStrategy: ?string,
   logger: MemoryLogger,
