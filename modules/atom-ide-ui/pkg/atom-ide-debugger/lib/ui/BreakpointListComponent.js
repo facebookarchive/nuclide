@@ -213,7 +213,7 @@ export default class BreakpointListComponent extends React.Component<
             ) : null;
 
           const hitcountElement =
-            breakpoint.hitCount != null ? (
+            breakpoint.hitCount != null && breakpoint.hitCount > 0 ? (
               <div className="debugger-breakpoint-hitcount">
                 Hit count: {breakpoint.hitCount}
               </div>
