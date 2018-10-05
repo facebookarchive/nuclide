@@ -11,11 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as FileTreeHelpers from './FileTreeHelpers';
-import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 
 /**
  * This is a support class for FileTreeNode.
@@ -52,7 +50,6 @@ export class MemoizedFieldsDeriver {
 
   _getRepo: (conf: StoreConfigData) => ?atom$Repository;
   _getIsIgnored: (conf: StoreConfigData) => boolean;
-  _getVcsStatusCode: (conf: StoreConfigData) => StatusCodeNumberValue;
   _getCheckedStatus: (conf: StoreConfigData) => NodeCheckedStatus;
   _getContainedInWorkingSet: (conf: StoreConfigData) => boolean;
   _getContainedInOpenFilesWorkingSet: (conf: StoreConfigData) => boolean;
@@ -73,7 +70,6 @@ export class MemoizedFieldsDeriver {
     this._splitPath = nuclideUri.split(uri);
 
     this._getRepo = memoize(this._repoGetter.bind(this));
-    this._getVcsStatusCode = memoize(this._vcsStatusCodeGetter.bind(this));
     this._getIsIgnored = memoize(this._isIgnoredGetter.bind(this));
     this._getCheckedStatus = memoize(this._checkedStatusGetter.bind(this));
     this._getContainedInWorkingSet = memoize(
@@ -96,21 +92,6 @@ export class MemoizedFieldsDeriver {
     }
 
     return cache.repo;
-  }
-
-  _vcsStatusCodeGetter(
-    conf: StoreConfigData,
-    cache: Object,
-  ): StatusCodeNumberValue {
-    if (cache.vcsStatuses !== conf.vcsStatuses) {
-      cache.vcsStatuses = conf.vcsStatuses;
-
-      const rootVcsStatuses = cache.vcsStatuses.get(this._rootUri) || new Map();
-      cache.vcsStatusCode =
-        rootVcsStatuses.get(this._uri) || StatusCodeNumber.CLEAN;
-    }
-
-    return cache.vcsStatusCode;
   }
 
   _isIgnoredGetter(conf: StoreConfigData, cache: Object): boolean {
@@ -274,7 +255,6 @@ export class MemoizedFieldsDeriver {
       localPath: this._localPath,
 
       repo: this._getRepo(conf),
-      vcsStatusCode: this._getVcsStatusCode(conf),
       isIgnored: this._getIsIgnored(conf),
       checkedStatus: this._getCheckedStatus(conf),
       shouldBeShown: this._getShouldBeShown(conf),

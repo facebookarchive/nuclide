@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
 import type {AppState} from '../lib/types';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 
 import {dragEventCameFromDraggableFile} from 'nuclide-commons-ui/DraggableFile';
 import {connect} from 'react-redux';
@@ -41,6 +42,7 @@ type Props = {|
   isPreview?: boolean,
   usePreviewTabs: boolean,
   isEditingWorkingSet: boolean,
+  vcsStatusCode: StatusCodeNumberValue,
 
   // TODO: Hoist the logic for responding to drags to VirtualizedFileTree. (This component should
   // just report via props when it's been dragged into, etc.) Then we can remove the
@@ -109,6 +111,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       nextProps.isPreview !== this.props.isPreview ||
       nextProps.usePreviewTabs !== this.props.usePreviewTabs ||
       nextProps.isEditingWorkingSet !== this.props.isEditingWorkingSet ||
+      nextProps.vcsStatusCode !== this.props.vcsStatusCode ||
       nextState.isLoading !== this.state.isLoading
     );
   }
@@ -162,7 +165,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {node, isSelected} = this.props;
+    const {node, isSelected, vcsStatusCode} = this.props;
 
     const outerClassName = classnames('entry', {
       'file list-item': !node.isContainer,
@@ -183,7 +186,6 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 
     let statusClass;
     if (!this.props.isEditingWorkingSet) {
-      const vcsStatusCode = node.vcsStatusCode;
       if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
@@ -562,6 +564,7 @@ const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   usePreviewTabs: Selectors.getConf(state).usePreviewTabs,
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
   canTransferFiles: Selectors.getCanTransferFiles(state),
+  vcsStatusCode: Selectors.getVcsStatus(state)(ownProps.node),
 });
 
 const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({

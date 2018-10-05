@@ -15,7 +15,6 @@ import * as Immutable from 'immutable';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NodeCheckedStatus, StoreConfigData} from './types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
 export type FileTreeNodeOptions = {
@@ -93,7 +92,6 @@ type DerivedFileTreeNode = {
   isContainer: boolean,
   shouldBeShown: boolean,
   shouldBeSoftened: boolean,
-  vcsStatusCode: StatusCodeNumberValue,
   repo: ?atom$Repository,
   isIgnored: boolean,
   checkedStatus: NodeCheckedStatus,
@@ -122,7 +120,6 @@ type DebugState = {
   isContainer: boolean,
   shouldBeShown: boolean,
   shouldBeSoftened: boolean,
-  vcsStatusCode: StatusCodeNumberValue,
   isIgnored: boolean,
   checkedStatus: NodeCheckedStatus,
   containsDragHover: boolean,
@@ -214,7 +211,6 @@ export class FileTreeNode {
   isContainer: boolean;
   shouldBeShown: boolean;
   shouldBeSoftened: boolean;
-  vcsStatusCode: StatusCodeNumberValue;
   repo: ?atom$Repository;
   isIgnored: boolean;
   checkedStatus: NodeCheckedStatus;
@@ -395,7 +391,6 @@ export class FileTreeNode {
     this.isContainer = derived.isContainer;
     this.shouldBeShown = derived.shouldBeShown;
     this.shouldBeSoftened = derived.shouldBeSoftened;
-    this.vcsStatusCode = derived.vcsStatusCode;
     this.repo = derived.repo;
     this.isIgnored = derived.isIgnored;
     this.checkedStatus = derived.checkedStatus;
@@ -816,7 +811,6 @@ export class FileTreeNode {
       isContainer: this.isContainer,
       shouldBeShown: this.shouldBeShown,
       shouldBeSoftened: this.shouldBeSoftened,
-      vcsStatusCode: this.vcsStatusCode,
       isIgnored: this.isIgnored,
       checkedStatus: this.checkedStatus,
       containsDragHover: this.containsDragHover,
