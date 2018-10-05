@@ -22,7 +22,7 @@ import {WatchmanClient} from 'nuclide-watchman-helpers';
  * e.g. initialze(), close() etc.
  */
 export class RemoteFileSystemServer {
-  _serviceHandler: ThriftFileSystemServiceHandler;
+  _thriftFileSystemserviceHandler: ThriftFileSystemServiceHandler;
   _server: thrift.Server;
   _port: number;
   _logger: log4js$Logger;
@@ -32,79 +32,30 @@ export class RemoteFileSystemServer {
     this._port = port;
     this._logger = getLogger('fs-thrift-server');
     this._watcher = new WatchmanClient();
-    this._serviceHandler = new ThriftFileSystemServiceHandler(this._watcher);
+    this._thriftFileSystemserviceHandler = new ThriftFileSystemServiceHandler(
+      this._watcher,
+    );
   }
 
   async initialize(): Promise<void> {
     if (this._server != null) {
       return;
     }
-    this._server = thrift.createServer(ThriftFileSystemService, {
-      watch: (uri, options) => {
-        return this._serviceHandler.watch(uri, options);
-      },
-      unwatch: watchId => {
-        return this._serviceHandler.unwatch(watchId);
-      },
-      pollFileChanges: watchId => {
-        return this._serviceHandler.pollFileChanges(watchId);
-      },
-      createDirectory: uri => {
-        return this._serviceHandler.createDirectory(uri);
-      },
-      fstat: uri => {
-        return this._serviceHandler.fstat(uri);
-      },
-      stat: uri => {
-        return this._serviceHandler.stat(uri);
-      },
-      readFile: uri => {
-        return this._serviceHandler.readFile(uri);
-      },
-      writeFile: (uri, content, options) => {
-        return this._serviceHandler.writeFile(uri, content, options);
-      },
-      rename: (oldUri, newUri, options) => {
-        return this._serviceHandler.rename(oldUri, newUri, options);
-      },
-      copy: (source, destination, options) => {
-        return this._serviceHandler.copy(source, destination, options);
-      },
-      deletePath: (uri, options) => {
-        return this._serviceHandler.deletePath(uri, options);
-      },
-      readDirectory: uri => {
-        return this._serviceHandler.readDirectory(uri);
-      },
-      open: (uri: string, permissionFlags: number, mode: number) => {
-        return this._serviceHandler.open(uri, permissionFlags, mode);
-      },
-      close: (fd: number) => {
-        return this._serviceHandler.close(fd);
-      },
-      fsync: (fd: number) => {
-        return this._serviceHandler.fsync(fd);
-      },
-      ftruncate: (fd: number, len: number) => {
-        return this._serviceHandler.ftruncate(fd, len);
-      },
-      utimes: (path: string, atime: number, mtime: number) => {
-        return this._serviceHandler.utimes(path, atime, mtime);
-      },
-      chmod: (uri: string, mode: number) => {
-        return this._serviceHandler.chmod(uri, mode);
-      },
-      chown: (uri: string, uid: number, gid: number) => {
-        return this._serviceHandler.chown(uri, uid, gid);
-      },
-    });
+
+    this._server = thrift.createServer(
+      ThriftFileSystemService,
+      this._thriftFileSystemserviceHandler,
+    );
+
     this._server.on('error', error => {
       throw error;
     });
+
     const isServerListening = await scanPortsToListen(
       this._server,
       String(this._port),
     );
+
     if (!isServerListening) {
       throw new Error(`All ports in range "${this._port}" are already in use`);
     }
@@ -118,6 +69,6 @@ export class RemoteFileSystemServer {
     this._logger.info('Close remote file system thrift service server...');
     this._server = null;
     this._watcher.dispose();
-    this._serviceHandler.dispose();
+    this._thriftFileSystemserviceHandler.dispose();
   }
 }
