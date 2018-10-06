@@ -36,7 +36,11 @@ import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+import {
+  runCommand,
+  ProcessExitError,
+  getOriginalEnvironment,
+} from 'nuclide-commons/process';
 import {asyncSome} from 'nuclide-commons/promise';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {maybeToString} from 'nuclide-commons/string';
@@ -359,6 +363,7 @@ class PythonSingleFileLanguageService {
       stdout = await runCommand(command, args, {
         cwd: dirName,
         input: contents,
+        env: await getOriginalEnvironment(),
         // At the moment, yapf outputs 3 possible exit codes:
         // 0 - success, no content change.
         // 2 - success, contents changed.
@@ -517,6 +522,7 @@ async function runLinterCommand(src: NuclideUri): Promise<string> {
   invariant(typeof command === 'string');
   return runCommand(command, [src], {
     cwd: dirName,
+    env: await getOriginalEnvironment(),
     // 1 indicates unclean lint result (i.e. has errors/warnings).
     isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
   }).toPromise();
