@@ -200,9 +200,8 @@ async function _getClassPath(): Promise<string> {
     }
   }
   if (!(await fsPromise.exists(toolsJarPath))) {
-    throw new Error(
-      `Could not locate required JDK tools jar: ${toolsJarPath}. Is the JDK installed?`,
-    );
+    // Tools.jar is not expected on Java 10+ and is not required.
+    return serverJarPath;
   }
   return nuclideUri.joinPathList([serverJarPath, toolsJarPath]);
 }
