@@ -210,6 +210,13 @@ export async function resolveConfiguration(
   const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
   const packageName = _getPackageName(debugMode, config);
   const deviceSerial = _getDeviceSerial(debugMode, config);
+
+  track('atom-ide-debugger-java-android-configuration', {
+    packageName,
+    deviceSerial,
+    debugMode,
+  });
+
   if (debugMode === 'launch') {
     const {service, intent, activity} = config;
     await launchAndroidServiceOrActivity(
