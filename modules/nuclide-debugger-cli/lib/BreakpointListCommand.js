@@ -56,7 +56,12 @@ export default class BreakpointListCommand implements Command {
         indexSize + 1,
       );
       const attrs = attributes.length === 0 ? '' : `(${attributes.join(',')})`;
-      this._console.outputLine(`${index} ${bpt.toString()} ${attrs}`);
+      const cond = bpt.condition();
+      this._console.outputLine(
+        `${index} ${bpt.toString()} ${attrs}${
+          cond == null ? '' : ` if ${cond}`
+        }`,
+      );
     });
   }
 }

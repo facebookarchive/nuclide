@@ -497,6 +497,7 @@ export default class Debugger implements DebuggerInterface {
     path: string,
     line: number,
     once: boolean,
+    condition: ?string,
   ): Promise<BreakpointSetResult> {
     if (once && !this._breakpoints.supportsOnceState()) {
       throw new Error(
@@ -506,9 +507,22 @@ export default class Debugger implements DebuggerInterface {
       );
     }
 
+    if (condition != null && !this._breakpoints.supportsConditional()) {
+      throw new Error(
+        `The ${
+          this._adapter == null ? 'current' : this._adapter.type
+        } debugger does not support conditional breakpoints.`,
+      );
+    }
+
     // NB this call is allowed before the program is launched
     const session = this._ensureDebugSession(true);
-    const index = this._breakpoints.addSourceBreakpoint(path, line, once);
+    const index = this._breakpoints.addSourceBreakpoint(
+      path,
+      line,
+      once,
+      condition,
+    );
 
     let message = 'Breakpoint pending until program starts.';
 
@@ -535,7 +549,10 @@ export default class Debugger implements DebuggerInterface {
 
     const request = {
       source: {path},
-      breakpoints: localBreakpoints.map(x => ({line: x.line})),
+      breakpoints: localBreakpoints.map(x => ({
+        line: x.line,
+        condition: x.condition,
+      })),
     };
 
     const {
@@ -555,6 +572,7 @@ export default class Debugger implements DebuggerInterface {
   async setFunctionBreakpoint(
     func: string,
     once: boolean,
+    condition: ?string,
   ): Promise<BreakpointSetResult> {
     // NB this call is allowed before the program is launched
     const session = this._ensureDebugSession(true);
@@ -574,7 +592,19 @@ export default class Debugger implements DebuggerInterface {
       );
     }
 
-    const index = this._breakpoints.addFunctionBreakpoint(func, once);
+    if (condition != null && !this._breakpoints.supportsConditional()) {
+      throw new Error(
+        `The ${
+          this._adapter == null ? 'current' : this._adapter.type
+        } debugger does not support conditional breakpoints.`,
+      );
+    }
+
+    const index = this._breakpoints.addFunctionBreakpoint(
+      func,
+      once,
+      condition,
+    );
 
     let message = 'Breakpoint pending until program starts.';
 
@@ -595,6 +625,7 @@ export default class Debugger implements DebuggerInterface {
     const request = {
       breakpoints: funcBreakpoints.map(bpt => ({
         name: bpt.func,
+        condition: bpt.condition,
       })),
     };
 
@@ -848,6 +879,10 @@ export default class Debugger implements DebuggerInterface {
 
     if (extraBody.supportsBreakpointIdOnStop) {
       this._breakpoints.enableOnceState();
+    }
+
+    if (extraBody.supportsConditionalBreakpoints) {
+      this._breakpoints.enableConditional();
     }
   }
 

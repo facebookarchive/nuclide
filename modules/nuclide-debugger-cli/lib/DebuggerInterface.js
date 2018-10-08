@@ -49,10 +49,12 @@ export interface DebuggerInterface {
     path: string,
     line: number,
     once: boolean,
+    condition: ?string,
   ): Promise<BreakpointSetResult>;
   setFunctionBreakpoint(
     func: string,
     once: boolean,
+    condition: ?string,
   ): Promise<BreakpointSetResult>;
   getAllBreakpoints(): Breakpoint[];
   getBreakpointByIndex(index: number): Breakpoint;

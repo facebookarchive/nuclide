@@ -14,7 +14,10 @@ import type {Command} from './Command';
 import type {DebuggerInterface, BreakpointSetResult} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
+import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import BreakpointClearCommand from './BreakpointClearCommand';
+import BreakpointCommandParser from './BreakpointCommandParser';
 import BreakpointDisableCommand from './BreakpointDisableCommand';
 import BreakpointEnableCommand from './BreakpointEnableCommand';
 import BreakpointListCommand from './BreakpointListCommand';
@@ -82,8 +85,7 @@ The breakpoint command has several subcommands:
   }
 
   async execute(line: TokenizedLine): Promise<void> {
-    const args = line.stringTokens().slice(1);
-    const result = await this._trySettingBreakpoint(args);
+    const result = await this._trySettingBreakpoint(line);
     if (result != null) {
       this._displayBreakpointResult(result);
       return;
@@ -98,38 +100,37 @@ The breakpoint command has several subcommands:
   }
 
   async _trySettingBreakpoint(
-    args: Array<string>,
+    line: TokenizedLine,
   ): Promise<?BreakpointSetResult> {
-    let breakpointSpec = args[0];
-    const once: boolean = 'once'.startsWith(breakpointSpec);
-    if (once) {
-      breakpointSpec = args[1];
+    const parser = new BreakpointCommandParser(line);
+    if (!parser.parse()) {
+      return null;
     }
 
-    if (breakpointSpec == null) {
-      return this._setBreakpointHere(once);
+    if (parser.sourceFile() == null && parser.functionName() == null) {
+      return this._setBreakpointHere(
+        parser.sourceLine(),
+        parser.once(),
+        parser.condition(),
+      );
     }
 
-    const linePattern = /^(\d+)$/;
-    const lineMatch = breakpointSpec.match(linePattern);
-    if (lineMatch != null) {
-      return this._setBreakpointHere(once, parseInt(lineMatch[1], 10));
+    if (parser.sourceFile() != null) {
+      return this._debugger.setSourceBreakpoint(
+        nullthrows(parser.sourceFile()),
+        nullthrows(parser.sourceLine()),
+        parser.once(),
+        parser.condition(),
+      );
     }
 
-    const sourceBreakPattern = /^(.+):(\d+)$/;
-    const sourceMatch = breakpointSpec.match(sourceBreakPattern);
-    if (sourceMatch != null) {
-      const [, path, line] = sourceMatch;
-      return this._debugger.setSourceBreakpoint(path, parseInt(line, 10), once);
-    }
-
-    const functionBreakpointPattern = /^(.+)\(\)/;
-    const functionMatch = breakpointSpec.match(functionBreakpointPattern);
-    if (functionMatch != null) {
-      return this._debugger.setFunctionBreakpoint(functionMatch[1], once);
-    }
-
-    return null;
+    const functionName = parser.functionName();
+    invariant(functionName != null);
+    return this._debugger.setFunctionBreakpoint(
+      functionName,
+      parser.once(),
+      parser.condition(),
+    );
   }
 
   _displayBreakpointResult(result: BreakpointSetResult): void {
@@ -140,8 +141,9 @@ The breakpoint command has several subcommands:
   }
 
   async _setBreakpointHere(
-    once: boolean,
     line: ?number,
+    once: boolean,
+    condition: ?string,
   ): Promise<BreakpointSetResult> {
     const frame = await this._debugger.getCurrentStackFrame();
     if (frame == null) {
@@ -158,6 +160,7 @@ The breakpoint command has several subcommands:
       frame.source.path,
       line == null ? frame.line : line,
       once,
+      condition,
     );
     return result;
   }

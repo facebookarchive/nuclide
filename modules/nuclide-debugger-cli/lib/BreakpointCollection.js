@@ -22,6 +22,7 @@ export type SourceBreakpoint = {
   enabled: boolean,
   path: string,
   line: number,
+  condition: ?string,
 };
 
 export type FunctionBreakpoint = {
@@ -32,23 +33,38 @@ export type FunctionBreakpoint = {
   path: ?string,
   line: ?number,
   func: string,
+  condition: ?string,
 };
 
 export default class BreakpointCollection {
   _breakpoints: Map<number, Breakpoint> = new Map();
   _nextIndex: number = 1;
   _allowOnceState: boolean = false;
+  _allowConditional: boolean = false;
 
   enableOnceState(): void {
     this._allowOnceState = true;
     this._breakpoints.forEach(breakpoint => breakpoint.enableSupportsOnce());
   }
 
+  enableConditional(): void {
+    this._allowConditional = true;
+  }
+
   supportsOnceState(): boolean {
     return this._allowOnceState;
   }
 
-  addSourceBreakpoint(path: string, line: number, once: boolean): number {
+  supportsConditional(): boolean {
+    return this._allowConditional;
+  }
+
+  addSourceBreakpoint(
+    path: string,
+    line: number,
+    once: boolean,
+    condition: ?string,
+  ): number {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.path === path && breakpoint.line === line) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -62,12 +78,17 @@ export default class BreakpointCollection {
     if (once) {
       breakpoint.setState(BreakpointState.ONCE);
     }
+    breakpoint.setCondition(condition);
 
     this._breakpoints.set(index, breakpoint);
     return index;
   }
 
-  addFunctionBreakpoint(func: string, once: boolean): number {
+  addFunctionBreakpoint(
+    func: string,
+    once: boolean,
+    condition: ?string,
+  ): number {
     this._breakpoints.forEach((breakpoint, index) => {
       if (breakpoint.func === func) {
         throw new Error(`There is already a breakpoint (#${index}) here.`);
@@ -80,6 +101,7 @@ export default class BreakpointCollection {
     if (once) {
       breakpoint.setState(BreakpointState.ONCE);
     }
+    breakpoint.setCondition(condition);
     this._breakpoints.set(index, breakpoint);
     return index;
   }
@@ -101,6 +123,7 @@ export default class BreakpointCollection {
           enabled: true,
           path: nullthrows(_.path),
           line: nullthrows(_.line),
+          condition: _.condition(),
         }));
     } catch (_) {
       throw new Error(
@@ -133,6 +156,7 @@ export default class BreakpointCollection {
           path: x.path,
           line: x.line,
           func: nullthrows(x.func),
+          condition: x.condition(),
         }));
     } catch (_) {
       throw new Error('Missing function in function breakpoint');

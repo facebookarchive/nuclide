@@ -34,6 +34,9 @@ export default class Breakpoint {
   // state: enabled, once, or disabled
   _state: BreakpointStateValues;
 
+  // condition: if the breakpoint is conditional, the condition expression
+  _condition: ?string;
+
   // The source file of the breakpoint (which may be undefined if we have an
   // unresolved function breakpoint.)
   _path: ?string;
@@ -109,6 +112,14 @@ export default class Breakpoint {
 
   get state(): BreakpointStateValues {
     return this._state;
+  }
+
+  condition(): ?string {
+    return this._condition;
+  }
+
+  setCondition(cond: ?string) {
+    this._condition = cond;
   }
 
   isEnabled(): boolean {
