@@ -114,6 +114,15 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     required: false,
     visible: true,
   };
+  const consoleEnum = {
+    name: 'console',
+    type: 'enum',
+    enums: ['internalConsole', 'integratedTerminal'],
+    description: '',
+    defaultValue: 'internalConsole',
+    required: true,
+    visible: true,
+  };
 
   return {
     launch: {
@@ -127,6 +136,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
         stopOnEntry,
         debugOptions,
         env,
+        consoleEnum,
       ],
       scriptPropertyName: 'program',
       scriptExtension: '.py',

@@ -23,7 +23,7 @@ import * as React from 'react';
 import idx from 'idx';
 import nullthrows from 'nullthrows';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import RadioGroup from 'nuclide-commons-ui/RadioGroup';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {capitalize, shellParseWithGlobs} from 'nuclide-commons/string';
@@ -359,19 +359,23 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       );
     } else if (type === 'enum' && property.enums != null) {
       const enums = property.enums;
-      const selectedValue = this.state.enumValues.get(name) || '';
+      const selectedValue = this.state.enumValues.get(name) || null;
       return (
         <div>
           {nameLabel}
-          <RadioGroup
-            selectedIndex={enums.indexOf(selectedValue)}
-            optionLabels={enums.map((enumValue, i) => (
-              <label key={i}>{enumValue}</label>
-            ))}
-            onSelectedChange={index => {
-              this.state.enumValues.set(name, enums[index]);
+          <div>
+            <label>{description}</label>
+          </div>
+          <Dropdown
+            options={enums.map(enumValue => ({
+              value: enumValue,
+              label: capitalize(enumValue.replace(/([A-Z])/g, ' $1')),
+            }))}
+            onChange={enumValue => {
+              this.state.enumValues.set(name, enumValue);
               this.props.configIsValidChanged(this._debugButtonShouldEnable());
             }}
+            value={selectedValue}
           />
         </div>
       );
