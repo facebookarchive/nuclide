@@ -13,26 +13,30 @@
  * Async implementation of Jasmine's waitsFor()
  */
 const waitsFor = async <T>(
-  fn: () => T,
-  message?: string,
+  fn: () => ?T,
+  message?: string | (() => string),
   timeout: number = global[Symbol.for('WAITS_FOR_TIMEOUT')] || 4500,
 ): Promise<T> => {
-  const error = new Error(
-    message != null
-      ? message
-      : 'Expected the function to start returning "true" but it never did.',
-  );
   const startTime = Date.now();
   let returnValue;
   // eslint-disable-next-line no-await-in-loop
   while (!Boolean((returnValue = await fn()))) {
     if (Date.now() - startTime > timeout) {
-      throw error;
+      throw new Error(
+        message != null
+          ? typeof message === 'function'
+            ? message()
+            : message
+          : 'Expected the function to start returning "true" but it never did.',
+      );
     }
     // eslint-disable-next-line no-await-in-loop
     await new Promise(resolve => setTimeout(resolve, 40));
   }
 
+  if (returnValue == null) {
+    throw new Error('value must be present');
+  }
   return returnValue;
 };
 

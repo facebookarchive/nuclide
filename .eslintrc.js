@@ -569,6 +569,18 @@ module.exports = {
 
   overrides: [
     {
+      files: ['**/__e2e_fixtures__/**/*'],
+      rules: {
+        'no-implicit-coercion': 0,
+        'nuclide-internal/atom-apis': 0,
+        'nuclide-internal/license-header': 0,
+        'nuclide-internal/modules-dependencies': 0,
+        'nuclide-internal/prefer-nuclide-uri': 0,
+        'nuclide-internal/unused-subscription': 0,
+        'nuclide-internal/no-commonjs': 0,
+      },
+    },
+    {
       files: ['**/__{atom_,e2e_,}tests__/**/*', 'jest/**/*'],
       rules: {
         'nuclide-internal/prefer-nuclide-uri': 0,
