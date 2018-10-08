@@ -153,6 +153,8 @@ export class AtomTextEditor extends React.Component<Props, void> {
       'atom-text-editor',
     ): any));
 
+    textEditorElement.classList.add('nuclide-wrapped-editor');
+
     if (parseInt(this.props.tabIndex, 10) >= 0) {
       // Make tab move to next element instead of inserting a 'tab' character
       this._editorDisposables.add(
