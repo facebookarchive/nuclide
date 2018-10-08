@@ -26,6 +26,7 @@ import {runCommand, observeProcess} from 'nuclide-commons/process';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import createBuckWebSocket from './createBuckWebSocket';
+import invariant from 'assert';
 import ini from 'ini';
 import {getCompilationDatabaseHandler} from './BuckClangCompilationDatabase';
 import * as BuckServiceImpl from './BuckServiceImpl';
@@ -181,6 +182,11 @@ export async function getBuckConfig(
   section: string,
   property: string,
 ): Promise<?string> {
+  // NOTE: This function should really just be a call to `buck audit config`.
+  // Unfortunately, at time of writing, making such a call takes between 800ms
+  // (with buckd warmed and ready to go) to 4 seconds (when restarting buckd),
+  // or potentially even 10 seconds (if we need to download a new version of
+  // buck). In other words, not viable for performance-sensitive code.
   const buckConfig = await _loadBuckConfig(rootPath);
   if (!buckConfig.hasOwnProperty(section)) {
     return null;
@@ -189,7 +195,7 @@ export async function getBuckConfig(
   if (!sectionConfig.hasOwnProperty(property)) {
     return null;
   }
-  return sectionConfig[property];
+  return _resolveValue(sectionConfig[property], buckConfig);
 }
 
 /**
@@ -198,11 +204,59 @@ export async function getBuckConfig(
  */
 async function _loadBuckConfig(rootPath: string): Promise<BuckConfig> {
   const header = 'scope = global\n';
-  const buckConfigContent = await fsPromise.readFile(
-    nuclideUri.join(rootPath, '.buckconfig'),
-    'utf8',
-  );
+  const buckConfigPath = nuclideUri.join(rootPath, '.buckconfig');
+  const buckConfigContent = await _readBuckConfigFile(buckConfigPath);
   return ini.parse(header + buckConfigContent);
+}
+
+/**
+ * Reads a .buckconfig file, resolving any includes which may be contained
+ * within. Returns the full buckconfig contents after resolving includes.
+ */
+async function _readBuckConfigFile(configPath: string): Promise<string> {
+  const contents = await fsPromise.readFile(configPath, 'utf8');
+  const configDir = nuclideUri.dirname(configPath);
+  return _replaceAsync(
+    /<file:(.*)>$/gm,
+    contents,
+    async (match, includeRelpath) => {
+      const includePath = nuclideUri.normalize(
+        nuclideUri.join(configDir, includeRelpath),
+      );
+      return _readBuckConfigFile(includePath);
+    },
+  );
+}
+
+async function _replaceAsync(
+  regexp: RegExp,
+  str: string,
+  callback: (substring: string, ...args: Array<any>) => Promise<string>,
+): Promise<string> {
+  const replacePromises = [];
+
+  str.replace(regexp, (...replaceArgs) => {
+    replacePromises.push(callback(...replaceArgs));
+    return replaceArgs[0];
+  });
+
+  const results = await Promise.all(replacePromises);
+
+  return str.replace(regexp, () => results.shift());
+}
+
+/**
+ * Takes a string `value` pulled from a buckconfig and resolves any
+ * `$(config ...)` macros inside, using the data from config.
+ */
+function _resolveValue(value: string, config: BuckConfig): string {
+  return value.replace(/\$\(config (.*)\)/g, directive => {
+    const requestedConfig = directive.substring(9, directive.length - 1);
+    const pieces = requestedConfig.split('.');
+    // configs should be of the form `foo.bar`
+    invariant(pieces.length === 2);
+    return config[pieces[0]][pieces[1]];
+  });
 }
 
 /**

@@ -12,10 +12,12 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MetroStartCommand} from './types';
 
-import {getRootForPath as getBuckRootForPath} from '../../nuclide-buck-rpc';
+import {
+  getBuckConfig,
+  getRootForPath as getBuckRootForPath,
+} from '../../nuclide-buck-rpc';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import ini from 'ini';
 
 type CommandWithoutProjectRoot = {
   command: string,
@@ -38,18 +40,18 @@ export async function getStartCommandFromBuck(
   if (buckProjectRoot == null) {
     return null;
   }
-  // TODO(matthewwithanm): Move this to BuckUtils?
-  const filePath = nuclideUri.join(buckProjectRoot, '.buckconfig');
-  const content = await fsPromise.readFile(filePath, 'utf8');
-  const parsed = ini.parse(`scope = global\n${content}`);
-  const section = parsed['react-native'];
-  if (section == null || section.server == null) {
+  const serverCommand = await getBuckConfig(
+    buckProjectRoot,
+    'react-native',
+    'server',
+  );
+  if (serverCommand == null) {
     return null;
   }
   return {
     cwd: buckProjectRoot,
     args: ['--disable-global-hotkey'],
-    command: section.server,
+    command: serverCommand,
   };
 }
 
