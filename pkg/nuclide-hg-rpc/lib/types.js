@@ -88,6 +88,7 @@ export type RevisionInfo = {
   tags: Array<string>,
   title: string,
   files: Array<string>,
+  previousHashes?: Array<string>,
 };
 
 export type RevisionShowInfo = {

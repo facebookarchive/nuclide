@@ -492,15 +492,33 @@ export class HgRepositoryClient {
     return this._tryObserve(s => s.observeWatchmanHealth().refCount());
   }
 
-  observeHeadRevision(): Observable<RevisionInfo> {
+  /*
+   * fetchPreviousHashes: setting this would fetch all the hashes that this commit
+   * was represented by, for example a rebase can change the hash from a -> b and
+   * setting this flag will fetch 'a' as well as part of revisionInfo previousHashes
+   */
+  observeHeadRevision(
+    fetchPreviousHashes: boolean = false,
+  ): Observable<RevisionInfo> {
     return this.observeRevisionChanges()
       .map(revisionInfoFetched =>
         revisionInfoFetched.revisions.find(revision => revision.isHead),
       )
       .let(compact)
-      .distinctUntilChanged(
-        (prevRev, nextRev) => prevRev.hash === nextRev.hash,
-      );
+      .distinctUntilChanged((prevRev, nextRev) => prevRev.hash === nextRev.hash)
+      .switchMap(rev => {
+        return fetchPreviousHashes === false
+          ? Observable.of(rev)
+          : this._sharedMembers.service
+              .fetchHeadRevisionInfo(this.getWorkingDirectory())
+              .refCount()
+              .map(previousRevisionInfos => ({
+                ...rev,
+                previousHashes: previousRevisionInfos.map(
+                  previousRevisionInfo => previousRevisionInfo.hash,
+                ),
+              }));
+      });
   }
 
   /**

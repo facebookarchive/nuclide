@@ -231,6 +231,18 @@ export async function fetchRevisionInfo(
   return revisionInfo;
 }
 
+export function fetchHeadRevisionInfo(
+  workingDirectory: string,
+): ConnectableObservable<Array<RevisionInfo>> {
+  return fetchRevisionsInfo(
+    `predecessors(${HEAD_REVISION_EXPRESSION})`,
+    workingDirectory,
+    {
+      hidden: true,
+    },
+  ).publish();
+}
+
 export function fetchSmartlogRevisions(
   workingDirectory: string,
 ): ConnectableObservable<Array<RevisionInfo>> {

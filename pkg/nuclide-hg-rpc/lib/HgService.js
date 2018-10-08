@@ -50,6 +50,7 @@ import {
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
   fetchRevisionInfo,
+  fetchHeadRevisionInfo as fetchHeadRevisionInfoImpl,
   fetchRevisionsInfo,
   fetchSmartlogRevisions as fetchSmartlogRevisionsImpl,
 } from './hg-revision-expression-helpers';
@@ -895,6 +896,12 @@ export async function fetchRevisionInfoBetweenHeadAndBase(
     workingDirectory,
   );
   return revisionsInfo;
+}
+
+export function fetchHeadRevisionInfo(
+  workingDirectory: NuclideUri,
+): ConnectableObservable<Array<RevisionInfo>> {
+  return fetchHeadRevisionInfoImpl(workingDirectory);
 }
 
 export function fetchSmartlogRevisions(
