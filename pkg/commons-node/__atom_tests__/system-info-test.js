@@ -10,7 +10,7 @@
  * @format
  */
 
-import {isRunningInTest} from '../system-info';
+import {isRunningInTest} from 'nuclide-commons/system-info';
 
 test('isRunningInTest', () => {
   expect(isRunningInTest()).toBe(true);

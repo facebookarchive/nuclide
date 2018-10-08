@@ -22,7 +22,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import which from 'nuclide-commons/which';
 import resolveFrom from 'resolve-from';
 import {LspLanguageService} from './LspLanguageService';
-import {getNuclideRealDir} from '../../commons-node/system-info';
+import {getNuclideRealDir} from 'nuclide-commons/system-info';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/main';
 import {
   MultiProjectLanguageService,

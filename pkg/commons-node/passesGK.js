@@ -9,7 +9,7 @@
  * @format
  */
 
-import once from './once';
+import once from 'nuclide-commons/once';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**

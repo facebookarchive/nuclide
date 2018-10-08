@@ -22,7 +22,7 @@ import type {
 import {SshHandshake} from 'big-dig/src/client/index';
 import yargs from 'yargs';
 import fs from 'fs-plus';
-import {getNuclideVersion} from '../../commons-node/system-info';
+import {getNuclideVersion} from 'nuclide-commons/system-info';
 import {
   SshHandshake as NuclideSshHandshake,
   RemoteConnection,

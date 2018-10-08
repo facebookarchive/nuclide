@@ -46,7 +46,7 @@ import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {maybeToString} from 'nuclide-commons/string';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import once from '../../commons-node/once';
+import once from 'nuclide-commons/once';
 import {IDENTIFIER_REGEXP} from './constants';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';

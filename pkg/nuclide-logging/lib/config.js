@@ -9,7 +9,7 @@
  * @format
  */
 
-import {isRunningInTest} from '../../commons-node/system-info';
+import {isRunningInTest} from 'nuclide-commons/system-info';
 
 import os from 'os';
 import {LOG_CATEGORY as PROCESS_LOG_CATEGORY} from 'nuclide-commons/process';

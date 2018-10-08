@@ -25,7 +25,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import {observeRawStream} from 'nuclide-commons/stream';
 import {Observable} from 'rxjs';
-import {getNuclideRealDir} from '../../../commons-node/system-info';
+import {getNuclideRealDir} from 'nuclide-commons/system-info';
 import {ROOT_FS} from '../../../nuclide-fs';
 import {getPathToLogDir} from '../../../nuclide-logging';
 

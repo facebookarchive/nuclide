@@ -14,7 +14,7 @@ import performanceNow from 'nuclide-commons/performanceNow';
 import os from 'os';
 import {spawn} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
-import once from './once';
+import once from 'nuclide-commons/once';
 import passesGK from './passesGK';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;

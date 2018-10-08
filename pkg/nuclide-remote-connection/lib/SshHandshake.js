@@ -23,7 +23,7 @@ import {shellQuote} from 'nuclide-commons/string';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from 'log4js';
 import {readFile as readRemoteFile} from './RemoteCommand';
-import {getNuclideVersion} from '../../commons-node/system-info';
+import {getNuclideVersion} from 'nuclide-commons/system-info';
 
 const logger = getLogger('nuclide-remote-connection');
 

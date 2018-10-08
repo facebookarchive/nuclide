@@ -14,7 +14,7 @@ import {
   getAtomVersion,
   getNuclideVersion,
   isRunningInServer,
-} from './system-info';
+} from 'nuclide-commons/system-info';
 import os from 'os';
 import uuid from 'uuid';
 import {__DEV__} from 'nuclide-node-transpiler/lib/env';

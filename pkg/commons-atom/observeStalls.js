@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 import {PerformanceObservable} from 'nuclide-commons-ui/observable-dom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import once from '../commons-node/once';
+import once from 'nuclide-commons/once';
 
 invariant(remote != null);
 

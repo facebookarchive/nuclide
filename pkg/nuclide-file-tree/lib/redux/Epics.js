@@ -43,7 +43,7 @@ import {track} from '../../../nuclide-analytics';
 import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {hgConstants} from '../../../nuclide-hg-rpc';
-import {isRunningInWindows} from '../../../commons-node/system-info';
+import {isRunningInWindows} from 'nuclide-commons/system-info';
 import os from 'os';
 import removeProjectPath from '../../../commons-atom/removeProjectPath';
 import {openDialog, closeDialog} from '../../../nuclide-ui/FileActionModal';

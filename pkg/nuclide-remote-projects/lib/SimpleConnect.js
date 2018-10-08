@@ -13,7 +13,7 @@ import type {Prompt} from 'big-dig/src/client/SshHandshake';
 
 import {SshHandshake} from 'big-dig/src/client/index';
 import {getLogger} from 'log4js';
-import {getNuclideVersion} from '../../commons-node/system-info';
+import {getNuclideVersion} from 'nuclide-commons/system-info';
 import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 
 let remoteServerCommand = 'nuclide-fetch-and-start-server'; // default for open-source

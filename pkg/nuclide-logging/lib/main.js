@@ -22,7 +22,7 @@ import log4js from 'log4js';
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import * as rawAnalyticsService from '../../nuclide-analytics/lib/track';
 
-import once from '../../commons-node/once';
+import once from 'nuclide-commons/once';
 import {getDefaultConfig, getPathToLogDir, getPathToLogFile} from './config';
 
 export {getDefaultConfig, getPathToLogDir, getPathToLogFile};

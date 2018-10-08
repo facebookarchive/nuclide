@@ -40,7 +40,7 @@
 // The export is typed with `typeof fetch` so flow treats the polyfill as the
 // real `fetch`.
 
-import {isRunningInTest} from './system-info';
+import {isRunningInTest} from 'nuclide-commons/system-info';
 import nodeFetch from 'node-fetch';
 
 const fetchImpl =

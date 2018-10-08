@@ -19,7 +19,7 @@ describe('xfetch', () => {
   beforeEach(() => {
     // Normally we get a stubbed version during tests.
     jest
-      .spyOn(require('../system-info'), 'isRunningInTest')
+      .spyOn(require('nuclide-commons/system-info'), 'isRunningInTest')
       .mockReturnValue(false);
   });
 
