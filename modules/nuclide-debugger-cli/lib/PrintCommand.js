@@ -15,6 +15,7 @@ import type {ConsoleIO} from './ConsoleIO';
 
 import * as DebugProtocol from 'vscode-debugprotocol';
 import {DebuggerInterface} from './DebuggerInterface';
+import TokenizedLine from './TokenizedLine';
 
 export default class PrintCommand implements Command {
   name = 'print';
@@ -47,8 +48,8 @@ in complex ways.
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const expr: string = args.join(' ');
+  async execute(line: TokenizedLine): Promise<void> {
+    const expr = line.rest(1);
     try {
       const {
         body: {result, variablesReference, namedVariables, indexedVariables},

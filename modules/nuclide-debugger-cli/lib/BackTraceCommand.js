@@ -15,6 +15,7 @@ import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
 
 import idx from 'idx';
+import TokenizedLine from './TokenizedLine';
 
 export default class BackTraceCommand implements Command {
   name = 'where [num-frames]';
@@ -40,7 +41,8 @@ default number of frames to display is 100.
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     const activeThread = this._debugger.getActiveThread();
 
     const frameCount =

@@ -13,8 +13,9 @@
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
+import TokenizedLine from './TokenizedLine';
 
-export default class UpCommand implements Command {
+export default class DownCommand implements Command {
   name = 'down';
   helpText = 'Move to the next lower stack frame.';
   detailedHelpText = `
@@ -41,7 +42,7 @@ will use the selected frame for context; for example:
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
     const activeThread = this._debugger.getActiveThread();
     if (activeThread.selectedStackFrame() === 0) {
       throw new Error('Already at the lowest stack frame.');

@@ -10,10 +10,12 @@
  * @format
  */
 
+import TokenizedLine from './TokenizedLine';
+
 export interface Command {
   +name: string;
   +helpText: string;
   +detailedHelpText?: string;
-  execute(args: string[]): Promise<void>;
+  execute(args: TokenizedLine): Promise<void>;
   +onStopped?: () => void;
 }

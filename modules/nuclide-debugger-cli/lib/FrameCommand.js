@@ -13,6 +13,7 @@
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
+import TokenizedLine from './TokenizedLine';
 
 export default class BackTraceCommand implements Command {
   name = 'frame';
@@ -41,8 +42,9 @@ will use the selected frame for context; for example:
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
     const activeThread = this._debugger.getActiveThread();
+    const args = line.stringTokens().slice(1);
 
     if (args.length !== 1) {
       throw new Error("'frame' takes the index of the frame to select");

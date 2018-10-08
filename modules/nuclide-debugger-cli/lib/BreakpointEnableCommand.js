@@ -16,6 +16,7 @@ import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
 
 import {breakpointFromArgList} from './BreakpointCommandUtils';
+import TokenizedLine from './TokenizedLine';
 
 export default class BreakpointEnableCommand implements Command {
   name = 'enable';
@@ -29,10 +30,10 @@ export default class BreakpointEnableCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
     const bpt: ?Breakpoint = breakpointFromArgList(
       this._debugger,
-      args,
+      line.stringTokens().slice(1),
       this.name,
     );
 

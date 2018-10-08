@@ -14,6 +14,7 @@ import type {Command} from './Command';
 import type {DispatcherInterface} from './DispatcherInterface';
 
 import invariant from 'assert';
+import TokenizedLine from './TokenizedLine';
 
 export default class CommandDispatcher implements DispatcherInterface {
   _commands: Command[] = [];
@@ -42,41 +43,20 @@ export default class CommandDispatcher implements DispatcherInterface {
   }
 
   async execute(line: string): Promise<?Error> {
-    let tail = line;
-    const tokens: string[] = [];
-
-    // Here we're looking for quoted arguments.
-    // \1 is the contents of a single-quoted arg that may contain spaces
-    // \2 is a space-delimited arg if there are no quotes
-    // \3 is the rest of the command line
-    const tokenizer: RegExp = /^\s*(?:('([^']*)')|(\S+))\s*(.*)$/;
-
-    while (tail.length > 0) {
-      const match = tail.match(tokenizer);
-      if (match == null) {
-        break;
-      }
-
-      const [, , quoted, unquoted, rest] = match;
-      tokens.push(quoted != null ? quoted : unquoted);
-      tail = rest;
-    }
-
+    const tokens = new TokenizedLine(line);
     return this.executeTokenizedLine(tokens);
   }
 
-  async executeTokenizedLine(tokens: string[]): Promise<?Error> {
-    if (tokens.length === 0 || !tokens[0]) {
-      return;
-    }
-
-    // Get all commands of which the given command is a prefix
-    const cmd = tokens[0];
-
+  async executeTokenizedLine(tokens: TokenizedLine): Promise<?Error> {
     // resolve aliases
     const alias = this.resolveAlias(tokens);
     if (alias != null) {
       return this.execute(alias);
+    }
+
+    const cmd = tokens.stringTokens()[0];
+    if (cmd == null) {
+      return;
     }
 
     const matches = this.getCommandsMatching(cmd);
@@ -91,16 +71,19 @@ export default class CommandDispatcher implements DispatcherInterface {
     }
 
     return new Promise((resolve, reject) => {
-      matches[0]
-        .execute(tokens.slice(1))
-        .then(_ => resolve(null), _ => resolve(_));
+      matches[0].execute(tokens).then(_ => resolve(null), _ => resolve(_));
     });
   }
 
-  resolveAlias(tokens: string[]): ?string {
-    const alias = this._aliases.get(tokens[0]);
+  resolveAlias(tokens: TokenizedLine): ?string {
+    const cmd = tokens.stringTokens()[0];
+    if (cmd == null) {
+      return null;
+    }
+
+    const alias = this._aliases.get(cmd);
     if (alias != null) {
-      return `${alias} ${tokens.splice(1).join(' ')}`;
+      return `${alias} ${tokens.rest(1)}`;
     }
 
     // punctuation aliases are things like '=' for print ala hphpd
@@ -115,7 +98,7 @@ export default class CommandDispatcher implements DispatcherInterface {
         if (puncMatch != null && key.length < puncMatch.length) {
           continue;
         }
-        if (tokens[0].startsWith(key)) {
+        if (cmd.startsWith(key)) {
           puncMatch = key;
         }
       }
@@ -124,8 +107,8 @@ export default class CommandDispatcher implements DispatcherInterface {
     if (puncMatch != null) {
       const puncAlias = this._aliases.get(puncMatch);
       invariant(puncAlias != null);
-      const tok0 = tokens[0].substr(puncMatch.length);
-      return `${puncAlias} ${tok0} ${tokens.splice(1).join(' ')}`;
+      const tok0 = cmd.substr(puncMatch.length);
+      return `${puncAlias} ${tok0} ${tokens.rest(1)}`;
     }
 
     return null;

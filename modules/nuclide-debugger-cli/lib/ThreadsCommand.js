@@ -13,6 +13,7 @@
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
+import TokenizedLine from './TokenizedLine';
 
 export default class ThreadsCommand implements Command {
   name = 'thread';
@@ -34,7 +35,8 @@ thread.
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     if (args.length === 0) {
       this.printCurrentThread();
       return;

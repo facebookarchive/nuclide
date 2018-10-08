@@ -16,6 +16,7 @@ import type {DebuggerInterface} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
 import leftPad from './Format';
+import TokenizedLine from './TokenizedLine';
 
 export default class BreakpointListCommand implements Command {
   name = 'list';
@@ -29,7 +30,7 @@ export default class BreakpointListCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
     const breakpoints = this._debugger
       .getAllBreakpoints()
       .sort((left, right) => left.index - right.index);

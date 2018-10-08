@@ -13,6 +13,7 @@
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 import {DebuggerInterface} from './DebuggerInterface';
+import TokenizedLine from './TokenizedLine';
 
 export default class InfoCommand implements Command {
   name = 'info';
@@ -26,7 +27,8 @@ export default class InfoCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     if (args.length > 1) {
       throw new Error("'info' takes at most one object parameter");
     }

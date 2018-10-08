@@ -13,6 +13,7 @@
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 import type {DispatcherInterface} from './DispatcherInterface';
+import TokenizedLine from './TokenizedLine';
 
 export default class HelpCommand implements Command {
   name = 'help';
@@ -25,7 +26,8 @@ export default class HelpCommand implements Command {
     this._dispatcher = dispatcher;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     const [command] = args;
 
     if (command != null) {

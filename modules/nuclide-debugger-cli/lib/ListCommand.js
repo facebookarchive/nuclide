@@ -16,6 +16,7 @@ import type {Command} from './Command';
 
 import {DebuggerInterface} from './DebuggerInterface';
 import leftPad from './Format';
+import TokenizedLine from './TokenizedLine';
 
 type SourceReference = {
   source: DebugProtocol.Source,
@@ -64,7 +65,8 @@ current location in the ouput. Otherwise, listing will begin at the given line n
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     let ref: SourceReference;
 
     switch (args.length) {

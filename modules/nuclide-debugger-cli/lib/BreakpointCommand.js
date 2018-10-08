@@ -21,6 +21,7 @@ import BreakpointListCommand from './BreakpointListCommand';
 import BreakpointToggleCommand from './BreakpointToggleCommand';
 import CommandDispatcher from './CommandDispatcher';
 import HelpCommand from './HelpCommand';
+import TokenizedLine from './TokenizedLine';
 
 export default class BreakpointCommand implements Command {
   name = 'breakpoint';
@@ -80,14 +81,17 @@ The breakpoint command has several subcommands:
     this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(line: TokenizedLine): Promise<void> {
+    const args = line.stringTokens().slice(1);
     const result = await this._trySettingBreakpoint(args);
     if (result != null) {
       this._displayBreakpointResult(result);
       return;
     }
 
-    const error = await this._dispatcher.executeTokenizedLine(args);
+    const subcommand = new TokenizedLine(line.rest(1));
+
+    const error = await this._dispatcher.executeTokenizedLine(subcommand);
     if (error != null) {
       throw error;
     }
