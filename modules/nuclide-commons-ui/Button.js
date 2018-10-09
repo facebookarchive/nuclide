@@ -75,6 +75,7 @@ const ButtonTypeClassnames = Object.freeze({
  */
 export class Button extends React.Component<Props> {
   _button: ?HTMLButtonElement;
+  _lastTooltipOptions: ?atom$TooltipsAddOptions = null;
 
   focus(): void {
     const node = ReactDOM.findDOMNode(this);
@@ -93,8 +94,17 @@ export class Button extends React.Component<Props> {
       onButtonDOMNodeChange(this._button);
     }
 
-    if (tooltip && !disabled) {
-      addTooltip(tooltip);
+    // If the element goes away (e.g. on unmount), remove the tooltip.
+    if (button == null && this._lastTooltipOptions != null) {
+      addTooltip(this._lastTooltipOptions)(null);
+      this._lastTooltipOptions = null;
+    }
+
+    if (!disabled) {
+      if (tooltip && !disabled) {
+        addTooltip(tooltip)(button);
+        this._lastTooltipOptions = tooltip;
+      }
     }
   };
 
