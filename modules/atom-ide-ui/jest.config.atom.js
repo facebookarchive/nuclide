@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,17 +8,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* eslint-disable nuclide-internal/no-commonjs */
+
 /* eslint-disable nuclide-internal/modules-dependencies */
+const nodeConfig = require("../../jest/jest.config.atom");
 
-const nodeConfig = require('../../jest/jest.config.atom');
-
-module.exports = {
-  ...nodeConfig,
+module.exports = Object.assign({}, nodeConfig, {
   rootDir: './',
-  roots: ['<rootDir>'],
-};
+  roots: ['<rootDir>']
+});

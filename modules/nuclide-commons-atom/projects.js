@@ -1,3 +1,58 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getValidProjectPaths = getValidProjectPaths;
+exports.getAtomProjectRelativePath = getAtomProjectRelativePath;
+exports.getAtomProjectRootPath = getAtomProjectRootPath;
+exports.relativizePathWithDirectory = relativizePathWithDirectory;
+exports.getDirectoryForPath = getDirectoryForPath;
+exports.getFileForPath = getFileForPath;
+exports.observeProjectPaths = observeProjectPaths;
+exports.observeProjectPathsAll = observeProjectPathsAll;
+exports.onDidChangeProjectPath = onDidChangeProjectPath;
+exports.onDidAddProjectPath = onDidAddProjectPath;
+exports.onDidRemoveProjectPath = onDidRemoveProjectPath;
+exports.observeRemovedHostnames = observeRemovedHostnames;
+exports.observeAddedHostnames = observeAddedHostnames;
+
+var _atom = require("atom");
+
+function _event() {
+  const data = require("../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _observable() {
+  const data = require("../nuclide-commons/observable");
+
+  _observable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,48 +61,35 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
+function getValidProjectPaths() {
+  return atom.project.getDirectories().filter(directory => {
+    // If a remote directory path is a local `Directory` instance, the project path
+    // isn't yet ready for consumption.
+    if (_nuclideUri().default.isRemote(directory.getPath()) && directory instanceof _atom.Directory) {
+      return false;
+    }
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {File, Directory} from 'atom';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {diffSets} from 'nuclide-commons/observable';
-import {Observable} from 'rxjs';
-
-export function getValidProjectPaths(): Array<string> {
-  return atom.project
-    .getDirectories()
-    .filter(directory => {
-      // If a remote directory path is a local `Directory` instance, the project path
-      // isn't yet ready for consumption.
-      if (
-        nuclideUri.isRemote(directory.getPath()) &&
-        directory instanceof Directory
-      ) {
-        return false;
-      }
-      return true;
-    })
-    .map(directory => directory.getPath());
+    return true;
+  }).map(directory => directory.getPath());
 }
 
-export function getAtomProjectRelativePath(path: NuclideUri): ?string {
+function getAtomProjectRelativePath(path) {
   const [projectPath, relativePath] = atom.project.relativizePath(path);
+
   if (!projectPath) {
     return null;
   }
+
   return relativePath;
 }
 
-export function getAtomProjectRootPath(path: NuclideUri): ?string {
+function getAtomProjectRootPath(path) {
   const [projectPath] = atom.project.relativizePath(path);
   return projectPath;
 }
-
 /**
  * Like `atom.project.relativizePath`, except it returns the `Directory` rather than the path.
  * It also works for non-children, i.e. this can return `../../x`.
@@ -55,46 +97,47 @@ export function getAtomProjectRootPath(path: NuclideUri): ?string {
  * This is intended to be used as a way to get a File object for any path
  * without worrying about remote vs. local paths.
  */
-export function relativizePathWithDirectory(
-  path: NuclideUri,
-): [?Directory, NuclideUri] {
+
+
+function relativizePathWithDirectory(path) {
   for (const directory of atom.project.getDirectories()) {
     try {
-      const relativePath = nuclideUri.relative(directory.getPath(), path);
+      const relativePath = _nuclideUri().default.relative(directory.getPath(), path);
+
       return [directory, relativePath];
-    } catch (e) {
-      // We have a remote-local mismatch or hostname mismatch.
+    } catch (e) {// We have a remote-local mismatch or hostname mismatch.
     }
   }
+
   return [null, path];
 }
 
-export function getDirectoryForPath(path: NuclideUri): ?Directory {
+function getDirectoryForPath(path) {
   const [directory, relativePath] = relativizePathWithDirectory(path);
+
   if (directory == null) {
     return null;
   }
+
   return directory.getSubdirectory(relativePath);
 }
 
-export function getFileForPath(path: NuclideUri): ?File {
+function getFileForPath(path) {
   const [directory, relativePath] = relativizePathWithDirectory(path);
+
   if (directory == null) {
     return null;
   }
+
   return directory.getFile(relativePath);
 }
 
-export function observeProjectPaths(
-  callback: (projectPath: string, added: boolean) => any,
-): IDisposable {
+function observeProjectPaths(callback) {
   getValidProjectPaths().forEach(existingPath => callback(existingPath, true));
   return onDidChangeProjectPath(callback);
 }
 
-export function observeProjectPathsAll(
-  callback: (projectPaths: Array<string>) => any,
-): IDisposable {
+function observeProjectPathsAll(callback) {
   let projectPaths = getValidProjectPaths();
   let changing = false;
   callback(projectPaths);
@@ -102,6 +145,7 @@ export function observeProjectPathsAll(
     if (changing) {
       throw new Error('Cannot update projects in the middle of an update');
     }
+
     changing = true;
     projectPaths = getValidProjectPaths();
     callback(projectPaths);
@@ -109,36 +153,35 @@ export function observeProjectPathsAll(
   });
 }
 
-export function onDidChangeProjectPath(
-  callback: (projectPath: string, added: boolean) => void,
-): IDisposable {
+function onDidChangeProjectPath(callback) {
   let projectPaths = getValidProjectPaths();
   let changing = false;
   return observeProjectPathsAll(newProjectPaths => {
     if (changing) {
       throw new Error('Cannot update projects in the middle of an update');
     }
-    changing = true;
-    // Check to see if the change was the addition of a project.
+
+    changing = true; // Check to see if the change was the addition of a project.
+
     for (const newProjectPath of newProjectPaths) {
       if (!projectPaths.includes(newProjectPath)) {
         callback(newProjectPath, true);
       }
-    }
-    // Check to see if the change was the deletion of a project.
+    } // Check to see if the change was the deletion of a project.
+
+
     for (const projectPath of projectPaths) {
       if (!newProjectPaths.includes(projectPath)) {
         callback(projectPath, false);
       }
     }
+
     changing = false;
     projectPaths = newProjectPaths;
   });
 }
 
-export function onDidAddProjectPath(
-  callback: (projectPath: string) => void,
-): IDisposable {
+function onDidAddProjectPath(callback) {
   return onDidChangeProjectPath((projectPath, added) => {
     if (added) {
       callback(projectPath);
@@ -146,9 +189,7 @@ export function onDidAddProjectPath(
   });
 }
 
-export function onDidRemoveProjectPath(
-  callback: (projectPath: string) => void,
-): IDisposable {
+function onDidRemoveProjectPath(callback) {
   return onDidChangeProjectPath((projectPath, added) => {
     if (!added) {
       callback(projectPath);
@@ -157,33 +198,13 @@ export function onDidRemoveProjectPath(
 }
 
 function observeHostnames() {
-  return (atom.packages.initialPackagesActivated
-    ? Observable.of(null)
-    : observableFromSubscribeFunction(
-        atom.packages.onDidActivateInitialPackages.bind(atom.packages),
-      )
-  ).switchMap(() =>
-    observableFromSubscribeFunction(
-      atom.project.onDidChangePaths.bind(atom.project),
-    )
-      .startWith(null)
-      .map(
-        () =>
-          new Set(
-            atom.project
-              .getPaths()
-              .filter(nuclideUri.isRemote)
-              .map(nuclideUri.getHostname),
-          ),
-      )
-      .let(diffSets()),
-  );
+  return (atom.packages.initialPackagesActivated ? _RxMin.Observable.of(null) : (0, _event().observableFromSubscribeFunction)(atom.packages.onDidActivateInitialPackages.bind(atom.packages))).switchMap(() => (0, _event().observableFromSubscribeFunction)(atom.project.onDidChangePaths.bind(atom.project)).startWith(null).map(() => new Set(atom.project.getPaths().filter(_nuclideUri().default.isRemote).map(_nuclideUri().default.getHostname))).let((0, _observable().diffSets)()));
 }
 
-export function observeRemovedHostnames(): Observable<string> {
-  return observeHostnames().flatMap(diff => Observable.from(diff.removed));
+function observeRemovedHostnames() {
+  return observeHostnames().flatMap(diff => _RxMin.Observable.from(diff.removed));
 }
 
-export function observeAddedHostnames(): Observable<string> {
-  return observeHostnames().flatMap(diff => Observable.from(diff.added));
+function observeAddedHostnames() {
+  return observeHostnames().flatMap(diff => _RxMin.Observable.from(diff.added));
 }

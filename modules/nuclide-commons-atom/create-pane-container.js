@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createPaneContainer;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,21 +13,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-export default function createPaneContainer(): Object {
-  const instance =
-    typeof atom.workspace.getCenter === 'function'
-      ? atom.workspace.getCenter().paneContainer
-      : (atom.workspace: any).paneContainer;
+function createPaneContainer() {
+  const instance = typeof atom.workspace.getCenter === 'function' ? atom.workspace.getCenter().paneContainer : atom.workspace.paneContainer;
   const PaneContainer = instance.constructor;
   return new PaneContainer({
     viewRegistry: atom.views,
     config: atom.config,
     applicationDelegate: atom.applicationDelegate,
     notificationManager: atom.notifications,
-    deserializerManager: atom.deserializers,
+    deserializerManager: atom.deserializers
   });
 }

@@ -1,3 +1,27 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RecentFilesService() {
+  const data = _interopRequireDefault(require("./RecentFilesService"));
+
+  _RecentFilesService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +29,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import RecentFilesService from './RecentFilesService';
-
-export type FilePath = string;
-export type TimeStamp = number;
-export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
-export type RecentFilesSerializedState = {filelist?: FileList};
-
 class Activation {
-  _service: RecentFilesService;
-
   constructor() {
-    this._service = new RecentFilesService();
+    this._service = new (_RecentFilesService().default)();
   }
 
-  provideRecentFilesService(): RecentFilesService {
+  provideRecentFilesService() {
     return this._service;
   }
 
   dispose() {
     this._service.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

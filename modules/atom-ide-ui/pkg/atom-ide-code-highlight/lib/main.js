@@ -1,3 +1,27 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CodeHighlightManager() {
+  const data = _interopRequireDefault(require("./CodeHighlightManager"));
+
+  _CodeHighlightManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,29 +30,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {CodeHighlightProvider} from './types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import CodeHighlightManager from './CodeHighlightManager';
-
 class Activation {
-  _codeHighlightManager: CodeHighlightManager;
-
   constructor() {
-    this._codeHighlightManager = new CodeHighlightManager();
+    this._codeHighlightManager = new (_CodeHighlightManager().default)();
   }
 
   dispose() {
     this._codeHighlightManager.dispose();
   }
 
-  addProvider(provider: CodeHighlightProvider): IDisposable {
+  addProvider(provider) {
     return this._codeHighlightManager.addProvider(provider);
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

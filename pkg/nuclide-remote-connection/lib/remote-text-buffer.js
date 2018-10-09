@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.loadBufferForUri = loadBufferForUri;
+exports.bufferForUri = bufferForUri;
+exports.existingBufferForUri = existingBufferForUri;
+
+var _atom = require("atom");
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RemoteFile() {
+  const data = require("./RemoteFile");
+
+  _RemoteFile = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ServerConnection() {
+  const data = require("./ServerConnection");
+
+  _ServerConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +48,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import invariant from 'assert';
-import {TextBuffer} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
-
 const TEXT_BUFFER_PARAMS = {
-  shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs'),
+  shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs')
 };
 
-export async function loadBufferForUri(
-  uri: NuclideUri,
-): Promise<atom$TextBuffer> {
+async function loadBufferForUri(uri) {
   const buffer = existingBufferForUri(uri);
+
   if (buffer == null) {
     return loadBufferForUriStatic(uri).then(loadedBuffer => {
       atom.project.addBuffer(loadedBuffer);
       return loadedBuffer;
     });
   }
+
   if (buffer.loaded) {
     return buffer;
   }
+
   try {
     await buffer.load();
     return buffer;
@@ -44,52 +78,66 @@ export async function loadBufferForUri(
   }
 }
 
-function loadBufferForUriStatic(uri: NuclideUri): Promise<atom$TextBuffer> {
-  if (nuclideUri.isLocal(uri)) {
-    return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
+function loadBufferForUriStatic(uri) {
+  if (_nuclideUri().default.isLocal(uri)) {
+    return _atom.TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
   }
-  const connection = ServerConnection.getForUri(uri);
+
+  const connection = _ServerConnection().ServerConnection.getForUri(uri);
+
   if (connection == null) {
     throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
   }
-  return TextBuffer.load(new RemoteFile(connection, uri), TEXT_BUFFER_PARAMS);
-}
 
+  return _atom.TextBuffer.load(new (_RemoteFile().RemoteFile)(connection, uri), TEXT_BUFFER_PARAMS);
+}
 /**
  * Returns an existing buffer for that uri, or create one if not existing.
  */
-export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
+
+
+function bufferForUri(uri) {
   const buffer = existingBufferForUri(uri);
+
   if (buffer != null) {
     return buffer;
   }
+
   return createBufferForUri(uri);
 }
 
-function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
+function createBufferForUri(uri) {
   let buffer;
-  const params = {
-    ...TEXT_BUFFER_PARAMS,
-    filePath: uri,
-  };
-  if (nuclideUri.isLocal(uri)) {
-    buffer = new TextBuffer(params);
+  const params = Object.assign({}, TEXT_BUFFER_PARAMS, {
+    filePath: uri
+  });
+
+  if (_nuclideUri().default.isLocal(uri)) {
+    buffer = new _atom.TextBuffer(params);
   } else {
-    const connection = ServerConnection.getForUri(uri);
+    const connection = _ServerConnection().ServerConnection.getForUri(uri);
+
     if (connection == null) {
       throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
     }
-    buffer = new TextBuffer(params);
-    buffer.setFile(new RemoteFile(connection, uri));
+
+    buffer = new _atom.TextBuffer(params);
+    buffer.setFile(new (_RemoteFile().RemoteFile)(connection, uri));
   }
+
   atom.project.addBuffer(buffer);
-  invariant(buffer);
+
+  if (!buffer) {
+    throw new Error("Invariant violation: \"buffer\"");
+  }
+
   return buffer;
 }
-
 /**
  * Returns an exsting buffer for that uri, or null if not existing.
  */
-export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
+
+
+function existingBufferForUri(uri) {
   return atom.project.findBufferForPath(uri);
 }

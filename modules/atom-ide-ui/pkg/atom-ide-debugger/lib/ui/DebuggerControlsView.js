@@ -1,3 +1,78 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _event() {
+  const data = require("../../../../../nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _DebuggerSteppingComponent() {
+  const data = _interopRequireDefault(require("./DebuggerSteppingComponent"));
+
+  _DebuggerSteppingComponent = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerControllerView() {
+  const data = _interopRequireDefault(require("./DebuggerControllerView"));
+
+  _DebuggerControllerView = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerAddTargetButton() {
+  const data = require("./DebuggerAddTargetButton");
+
+  _DebuggerAddTargetButton = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,118 +81,81 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DebuggerModeType, IDebugService} from '../types';
-
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import {Observable} from 'rxjs';
-import DebuggerSteppingComponent from './DebuggerSteppingComponent';
-import {DebuggerMode} from '../constants';
-import DebuggerControllerView from './DebuggerControllerView';
-import {AddTargetButton} from './DebuggerAddTargetButton';
-
-type Props = {
-  service: IDebugService,
-};
-
-type State = {
-  mode: DebuggerModeType,
-};
-
-export default class DebuggerControlsView extends React.PureComponent<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+class DebuggerControlsView extends React.PureComponent {
+  constructor(props) {
     super(props);
-
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable().default)();
     this.state = {
-      mode: DebuggerMode.STOPPED,
+      mode: _constants().DebuggerMode.STOPPED
     };
   }
 
-  componentDidMount(): void {
-    const {service} = this.props;
-    this._disposables.add(
-      Observable.merge(
-        observableFromSubscribeFunction(
-          service.onDidChangeProcessMode.bind(service),
-        ),
-        observableFromSubscribeFunction(
-          service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel),
-        ),
-      )
-        .startWith(null)
-        .subscribe(() => {
-          const {viewModel} = this.props.service;
-          const {focusedProcess} = viewModel;
-          this.setState({
-            mode:
-              focusedProcess == null
-                ? DebuggerMode.STOPPED
-                : focusedProcess.debuggerMode,
-          });
-        }),
-    );
+  componentDidMount() {
+    const {
+      service
+    } = this.props;
+
+    this._disposables.add(_RxMin.Observable.merge((0, _event().observableFromSubscribeFunction)(service.onDidChangeProcessMode.bind(service)), (0, _event().observableFromSubscribeFunction)(service.viewModel.onDidChangeDebuggerFocus.bind(service.viewModel))).startWith(null).subscribe(() => {
+      const {
+        viewModel
+      } = this.props.service;
+      const {
+        focusedProcess
+      } = viewModel;
+      this.setState({
+        mode: focusedProcess == null ? _constants().DebuggerMode.STOPPED : focusedProcess.debuggerMode
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    const {service} = this.props;
-    const {mode} = this.state;
-    const debuggerStoppedNotice =
-      mode !== DebuggerMode.STOPPED ? null : (
-        <div className="debugger-pane-content">
-          <div className="debugger-state-notice">
-            The debugger is not attached.
-          </div>
-          <div className="debugger-state-notice">
-            {AddTargetButton('debugger-buttongroup-center')}
-          </div>
-        </div>
-      );
+  render() {
+    const {
+      service
+    } = this.props;
+    const {
+      mode
+    } = this.state;
+    const debuggerStoppedNotice = mode !== _constants().DebuggerMode.STOPPED ? null : React.createElement("div", {
+      className: "debugger-pane-content"
+    }, React.createElement("div", {
+      className: "debugger-state-notice"
+    }, "The debugger is not attached."), React.createElement("div", {
+      className: "debugger-state-notice"
+    }, (0, _DebuggerAddTargetButton().AddTargetButton)('debugger-buttongroup-center')));
 
-    const running = mode === DebuggerMode.RUNNING;
-    const paused = mode === DebuggerMode.PAUSED;
-    const debuggerRunningNotice =
-      !running && !paused ? null : (
-        <div className="debugger-pane-content">
-          <div className="debugger-state-notice">
-            {(service.viewModel.focusedProcess == null ||
-            service.viewModel.focusedProcess.configuration.processName == null
-              ? 'The debug target'
-              : service.viewModel.focusedProcess.configuration.processName) +
-              ` is ${running ? 'running' : 'paused'}.`}
-          </div>
-        </div>
-      );
+    const running = mode === _constants().DebuggerMode.RUNNING;
 
-    return (
-      <div className="debugger-container-new">
-        <div className="debugger-section-header">
-          <DebuggerControllerView service={service} />
-        </div>
-        <div className="debugger-section-header debugger-controls-section">
-          <DebuggerSteppingComponent service={service} />
-        </div>
-        {debuggerRunningNotice}
-        {debuggerStoppedNotice}
-      </div>
-    );
+    const paused = mode === _constants().DebuggerMode.PAUSED;
+
+    const debuggerRunningNotice = !running && !paused ? null : React.createElement("div", {
+      className: "debugger-pane-content"
+    }, React.createElement("div", {
+      className: "debugger-state-notice"
+    }, (service.viewModel.focusedProcess == null || service.viewModel.focusedProcess.configuration.processName == null ? 'The debug target' : service.viewModel.focusedProcess.configuration.processName) + ` is ${running ? 'running' : 'paused'}.`));
+    return React.createElement("div", {
+      className: "debugger-container-new"
+    }, React.createElement("div", {
+      className: "debugger-section-header"
+    }, React.createElement(_DebuggerControllerView().default, {
+      service: service
+    })), React.createElement("div", {
+      className: "debugger-section-header debugger-controls-section"
+    }, React.createElement(_DebuggerSteppingComponent().default, {
+      service: service
+    })), debuggerRunningNotice, debuggerStoppedNotice);
   }
+
 }
+
+exports.default = DebuggerControlsView;

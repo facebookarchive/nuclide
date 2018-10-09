@@ -1,3 +1,15 @@
+"use strict";
+
+function _systemInfo() {
+  const data = require("../system-info");
+
+  _systemInfo = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -7,12 +19,9 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @emails oncall+nuclide
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {isRunningInTest} from '../system-info';
-
 test('isRunningInTest', () => {
-  expect(isRunningInTest()).toBe(true);
+  expect((0, _systemInfo().isRunningInTest)()).toBe(true);
 });

@@ -1,3 +1,97 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _passesGK() {
+  const data = _interopRequireDefault(require("../../commons-node/passesGK"));
+
+  _passesGK = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLanguageService() {
+  const data = require("../../nuclide-language-service");
+
+  _nuclideLanguageService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideLanguageServiceRpc() {
+  const data = require("../../nuclide-language-service-rpc");
+
+  _nuclideLanguageServiceRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideOpenFiles() {
+  const data = require("../../nuclide-open-files");
+
+  _nuclideOpenFiles = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DashProjectSymbolProvider() {
+  const data = _interopRequireDefault(require("./DashProjectSymbolProvider"));
+
+  _DashProjectSymbolProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,61 +99,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import passesGK from '../../commons-node/passesGK';
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import DashProjectSymbolProvider from './DashProjectSymbolProvider';
-import {
-  updateAutocompleteResults,
-  updateAutocompleteFirstResults,
-} from '../../nuclide-language-service';
-
-async function connectToService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-
-  const lspService = await getVSCodeLanguageServiceByConnection(
-    connection,
-  ).createMultiLspLanguageService(
-    'css',
-    'vscode-css-languageserver-bin/cssServerMain',
-    ['--stdio'],
-    {
-      fileNotifier,
-      host,
-      projectFileNames: ['.arcconfig', '.flowconfig', '.hg', '.git'],
-      fileExtensions: ['.css', '.less', '.scss'],
-      logCategory: 'nuclide-css-lsp',
-      logLevel: (featureConfig.get('nuclide-css-lsp-client.logLevel'): any),
-      fork: true,
-      waitForDiagnostics: false,
-    },
-  );
-  return lspService || new NullLanguageService();
+async function connectToService(connection) {
+  const [fileNotifier, host] = await Promise.all([(0, _nuclideOpenFiles().getNotifierByConnection)(connection), (0, _nuclideLanguageService().getHostServices)()]);
+  const lspService = await (0, _nuclideRemoteConnection().getVSCodeLanguageServiceByConnection)(connection).createMultiLspLanguageService('css', 'vscode-css-languageserver-bin/cssServerMain', ['--stdio'], {
+    fileNotifier,
+    host,
+    projectFileNames: ['.arcconfig', '.flowconfig', '.hg', '.git'],
+    fileExtensions: ['.css', '.less', '.scss'],
+    logCategory: 'nuclide-css-lsp',
+    logLevel: _featureConfig().default.get('nuclide-css-lsp-client.logLevel'),
+    fork: true,
+    waitForDiagnostics: false
+  });
+  return lspService || new (_nuclideLanguageServiceRpc().NullLanguageService)();
 }
 
-function createLanguageService(): AtomLanguageService<LanguageService> {
-  return new AtomLanguageService(connectToService, {
+function createLanguageService() {
+  return new (_nuclideLanguageService().AtomLanguageService)(connectToService, {
     name: 'CSSLSPService',
     grammars: ['source.css', 'source.css.less', 'source.css.scss'],
     autocomplete: {
@@ -69,69 +128,65 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
       disableForSelector: null,
       excludeLowerPriority: false,
       autocompleteCacherConfig: {
-        updateResults: updateAutocompleteResults,
-        updateFirstResults: updateAutocompleteFirstResults,
+        updateResults: _nuclideLanguageService().updateAutocompleteResults,
+        updateFirstResults: _nuclideLanguageService().updateAutocompleteFirstResults
       },
       analytics: {
         eventName: 'cssLSP.autocomplete',
-        shouldLogInsertedSuggestion: true,
+        shouldLogInsertedSuggestion: true
       },
-      supportsResolve: false,
+      supportsResolve: false
     },
     codeAction: {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'cssLSP.codeAction',
-      applyAnalyticsEventName: 'cssLSP.applyCodeAction',
+      applyAnalyticsEventName: 'cssLSP.applyCodeAction'
     },
     definition: {
       version: '0.1.0',
       priority: 20,
-      definitionEventName: 'cssLSP.get-definition',
+      definitionEventName: 'cssLSP.get-definition'
     },
     findReferences: {
       version: '0.1.0',
-      analyticsEventName: 'cssLSP.findReferences',
+      analyticsEventName: 'cssLSP.findReferences'
     },
     highlight: {
       version: '0.1.0',
       priority: 1,
-      analyticsEventName: 'cssLSP.codehighlight',
+      analyticsEventName: 'cssLSP.codehighlight'
     },
     outline: {
       version: '0.1.0',
       priority: 1,
-      analyticsEventName: 'cssLSP.outline',
-    },
+      analyticsEventName: 'cssLSP.outline'
+    }
   });
 }
 
 class Activation {
-  _disposables: UniversalDisposable = new UniversalDisposable();
-
   constructor() {
+    this._disposables = new (_UniversalDisposable().default)();
+
     this._init();
   }
 
   async _init() {
-    if (await passesGK('nuclide_fb_css_vscode_ext')) {
+    if (await (0, _passesGK().default)('nuclide_fb_css_vscode_ext')) {
       return;
     }
+
     const languageService = createLanguageService();
     languageService.activate();
-    this._disposables.add(
-      languageService,
-      atom.packages.serviceHub.provide(
-        'nuclide-project-symbol-search-service',
-        '0.0.0',
-        new DashProjectSymbolProvider(languageService),
-      ),
-    );
+
+    this._disposables.add(languageService, atom.packages.serviceHub.provide('nuclide-project-symbol-search-service', '0.0.0', new (_DashProjectSymbolProvider().default)(languageService)));
   }
 
   dispose() {
     this._disposables.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

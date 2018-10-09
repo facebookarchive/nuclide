@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var React = _interopRequireWildcard(require("react"));
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _PulseButton() {
+  const data = _interopRequireDefault(require("./PulseButton"));
+
+  _PulseButton = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,102 +49,81 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+class PulseButtonWithTooltip extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import nullthrows from 'nullthrows';
-import PulseButton from './PulseButton';
+    return _temp = super(...args), this.state = {
+      isDismissing: false,
+      dismissed: false
+    }, this._handleDivRef = el => {
+      this._divEl = el;
+    }, this._handleDismiss = () => {
+      this.setState({
+        isDismissing: true
+      });
 
-type Props = {
-  ariaLabel: string,
-  className?: string,
-  isSelected?: boolean,
-  onClick?: (SyntheticMouseEvent<>) => mixed,
-  onDismiss?: () => mixed,
-  size?: number,
-  style?: {[key: string]: string},
-  wrapperStyle?: {[key: string]: string},
-  onMouseOver?: (SyntheticMouseEvent<>) => mixed,
-  onMouseLeave?: (SyntheticMouseEvent<>) => mixed,
-  tooltipText: string,
-};
+      if (this.props.onDismiss != null) {
+        this.props.onDismiss();
+      }
+    }, this._handleButtonClick = e => {
+      const {
+        onClick
+      } = this.props;
 
-type State = {
-  dismissed: boolean,
-  isDismissing: boolean,
-};
+      const tooltip = this._getTooltip();
 
-export default class PulseButtonWithTooltip extends React.Component<
-  Props,
-  State,
-> {
-  _divEl: ?HTMLDivElement;
-  _disposables: ?UniversalDisposable;
-  _tooltipDisposable: IDisposable;
-  state = {
-    isDismissing: false,
-    dismissed: false,
-  };
+      if (tooltip != null) {
+        tooltip.show();
+      }
+
+      if (onClick != null) {
+        onClick(e);
+      }
+    }, _temp;
+  }
 
   componentDidMount() {
     this._tooltipDisposable = this._updateTooltip();
-    nullthrows(this._getTooltip()).hide();
-    this._disposables = new UniversalDisposable(this._tooltipDisposable);
+    (0, _nullthrows().default)(this._getTooltip()).hide();
+    this._disposables = new (_UniversalDisposable().default)(this._tooltipDisposable);
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
+  componentDidUpdate(prevProps, prevState) {
     if (!prevState.isDismissing && this.state.isDismissing) {
       const tooltip = this._getTooltip();
+
       if (tooltip != null) {
         tooltip.hide();
       }
-      this.setState({dismissed: true});
+
+      this.setState({
+        dismissed: true
+      });
     }
 
     if (prevProps.tooltipText !== this.props.tooltipText) {
       this._tooltipDisposable.dispose();
+
       this._tooltipDisposable = this._updateTooltip();
     }
   }
 
   componentWillUnmount() {
-    nullthrows(this._disposables).dispose();
+    (0, _nullthrows().default)(this._disposables).dispose();
   }
 
-  _updateTooltip(): IDisposable {
-    return atom.tooltips.add(nullthrows(this._divEl), {
+  _updateTooltip() {
+    return atom.tooltips.add((0, _nullthrows().default)(this._divEl), {
       item: createTooltipBody(this.props.tooltipText, this._handleDismiss),
-      trigger: 'manual',
+      trigger: 'manual'
     });
   }
 
-  _handleDivRef = (el: ?HTMLDivElement) => {
-    this._divEl = el;
-  };
-
-  _handleDismiss = () => {
-    this.setState({isDismissing: true});
-    if (this.props.onDismiss != null) {
-      this.props.onDismiss();
-    }
-  };
-
-  _handleButtonClick = (e: SyntheticMouseEvent<>) => {
-    const {onClick} = this.props;
-    const tooltip = this._getTooltip();
-    if (tooltip != null) {
-      tooltip.show();
-    }
-
-    if (onClick != null) {
-      onClick(e);
-    }
-  };
-
-  _getTooltip(): ?atom$Tooltip {
+  _getTooltip() {
     if (this._divEl == null) {
       return;
     }
@@ -118,36 +140,37 @@ export default class PulseButtonWithTooltip extends React.Component<
       style,
       onMouseOver,
       onMouseLeave,
-      wrapperStyle,
+      wrapperStyle
     } = this.props;
 
     if (this.state.dismissed) {
       return null;
     }
 
-    return (
-      <div ref={this._handleDivRef} style={wrapperStyle}>
-        <PulseButton
-          ariaLabel={ariaLabel}
-          className={className}
-          isSelected={isSelected}
-          onClick={this._handleButtonClick}
-          size={size}
-          style={style}
-          onMouseOver={onMouseOver}
-          onMouseLeave={onMouseLeave}
-        />
-      </div>
-    );
+    return React.createElement("div", {
+      ref: this._handleDivRef,
+      style: wrapperStyle
+    }, React.createElement(_PulseButton().default, {
+      ariaLabel: ariaLabel,
+      className: className,
+      isSelected: isSelected,
+      onClick: this._handleButtonClick,
+      size: size,
+      style: style,
+      onMouseOver: onMouseOver,
+      onMouseLeave: onMouseLeave
+    }));
   }
+
 }
+
+exports.default = PulseButtonWithTooltip;
 
 function createTooltipBody(title, onDismiss) {
   const div = document.createElement('div');
   const p = document.createElement('p');
   p.innerText = title;
   div.appendChild(p);
-
   const button = document.createElement('button');
   button.classList.add('btn', 'btn-primary');
   button.innerText = 'Got it';
