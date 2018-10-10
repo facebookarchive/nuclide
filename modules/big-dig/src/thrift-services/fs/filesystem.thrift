@@ -148,6 +148,115 @@ struct CopyOpt{
 
 service ThriftFileSystemService {
 
+  void chmod(1: string path, 2: i32 mode)
+    throws(1: Error error);
+
+  void chown(1: string path, 2: i32 uid, 3: i32 gid)
+    throws(1: Error error);
+
+  void close(1: i32 fd)
+    throws(1: Error error);
+
+  /**
+   * Copy files or folders.
+   *
+   * @param source The existing file.
+   * @param destination The destination location.
+   * @param options Defines if existing files should be overwriten.
+   */
+  void copy(1: string source, 2: string destination, 3: CopyOpt options)
+    throws(1: Error error);
+
+  /**
+   * Create a new directory.
+   *
+   * @param uri The uri of the new folder.
+   */
+  void createDirectory(1: string uri) throws(1: Error error);
+
+  /**
+   * Delete a file or a directory.
+   *
+   * @param uri The resource that is to be deleted.
+   * @param options Defines if deletion of folders is recursive.
+   */
+  void deletePath(1: string uri, 2: DeleteOpt options) throws(1: Error error);
+
+
+  void fsync(1: i32 fd) throws(1: Error error);
+
+  FileStat fstat(1: i32 fd) throws(1: Error error);
+
+  void ftruncate(1: i32 fd, 2: i32 len) throws(1: Error error);
+
+  /**
+   * Do not follow symlinks, the link itself is stat-ed, not the file
+   * that it refers to.
+   *
+   * @param uri The uri of the file to retrieve metadata about.
+   * @return The file metadata about the file.
+   */
+  FileStat lstat(1: string uri) throws(1: Error error);
+
+  i32 open(1: string path, 2: i32 permissionFlags, 3: i32 mode)
+    throws(1: Error error);
+
+  /**
+   * Collect and send file change events to client.
+   *
+   * The client will periodically call this function to poll file change Events
+   * in the watched file/directory. The server will keep a list of file change
+   * events and send them all to the client and then clear the list for future
+   * changes.
+   */
+  list<FileChangeEvent> pollFileChanges(1: string watchId) throws(1: Error error);
+
+  /**
+   * Retrieve all entries of a directory.
+   *
+   * @param uri The uri of the folder.
+   * @return An array of file entries
+   */
+  list<FileEntry> readDirectory(1: string uri) throws(1: Error error);
+
+  /**
+   * Read the entire contents of a file.
+   *
+   * @param uri The uri of the file.
+   * @return the content of file, binary byte array
+   */
+  binary readFile(1: string uri) throws(1: Error error);
+
+  /**
+   * Rename a file or folder.
+   *
+   * @param oldUri The existing file.
+   * @param newUri The new location.
+   * @param options Defines if existing files should be overwriten.
+   */
+  void rename(1: string oldUri, 2: string newUri, 3: RenameOpt options)
+    throws(1: Error error);
+
+  /**
+   * Retrieve metadata about a file.
+   *
+   * Follow symlinks to fetch metadata of the files the symlinks refer to.
+   *
+   * @param uri The uri of the file to retrieve metadata about.
+   * @return The file metadata about the file.
+   */
+  FileStat stat(1: string uri) throws(1: Error error);
+
+  /**
+   * Stop watching target file or directory.
+   *
+   * @param watchId unique watch id
+   */
+  void unwatch(1: string watchId) throws(1: Error error);
+
+  void utimes(1: string path, 2: i32 atime, 3: i32 mtime)
+    throws(1: Error error);
+
   /**
    * Initialize watcher for target file or directory.
    *
@@ -163,64 +272,6 @@ service ThriftFileSystemService {
    */
   string watch(1: string uri, 2: WatchOpt options) throws(1: Error error);
 
-  /**
-   * Stop watching target file or directory.
-   *
-   * @param watchId unique watch id
-   */
-  void unwatch(1: string watchId) throws(1: Error error);
-
-  /**
-   * Collect and send file change events to client.
-   *
-   * The client will periodically call this function to poll file change Events
-   * in the watched file/directory. The server will keep a list of file change
-   * events and send them all to the client and then clear the list for future
-   * changes.
-   */
-  list<FileChangeEvent> pollFileChanges(1: string watchId) throws(1: Error error);
-
-  /**
-   * Retrieve metadata about a file.
-   *
-   * Follow symlinks to fetch metadata of the files the symlinks refer to.
-   *
-   * @param uri The uri of the file to retrieve metadata about.
-   * @return The file metadata about the file.
-   */
-  FileStat stat(1: string uri) throws(1: Error error);
-
-  /**
-   * Do not follow symlinks, the link itself is stat-ed, not the file
-   * that it refers to.
-   *
-   * @param uri The uri of the file to retrieve metadata about.
-   * @return The file metadata about the file.
-   */
-  FileStat lstat(1: string uri) throws(1: Error error);
-
-  /**
-   * Retrieve all entries of a directory.
-   *
-   * @param uri The uri of the folder.
-   * @return An array of file entries
-   */
-  list<FileEntry> readDirectory(1: string uri) throws(1: Error error);
-
-  /**
-   * Create a new directory.
-   *
-   * @param uri The uri of the new folder.
-   */
-  void createDirectory(1: string uri) throws(1: Error error);
-
-  /**
-   * Read the entire contents of a file.
-   *
-   * @param uri The uri of the file.
-   * @return the content of file, binary byte array
-   */
-  binary readFile(1: string uri) throws(1: Error error);
 
   /**
    * Write data to a file, replacing its entire contents.
@@ -232,55 +283,4 @@ service ThriftFileSystemService {
   void writeFile(1: string uri, 2: binary content, 3: WriteFileOpt options)
     throws(1: Error error);
 
-  /**
-   * Delete a file or a directory.
-   *
-   * @param uri The resource that is to be deleted.
-   * @param options Defines if deletion of folders is recursive.
-   */
-  void deletePath(1: string uri, 2: DeleteOpt options) throws(1: Error error);
-
-  /**
-   * Rename a file or folder.
-   *
-   * @param oldUri The existing file.
-   * @param newUri The new location.
-   * @param options Defines if existing files should be overwriten.
-   */
-  void rename(1: string oldUri, 2: string newUri, 3: RenameOpt options)
-    throws(1: Error error);
-
-  /**
-   * Copy files or folders.
-   *
-   * @param source The existing file.
-   * @param destination The destination location.
-   * @param options Defines if existing files should be overwriten.
-   */
-  void copy(1: string source, 2: string destination, 3: CopyOpt options)
-    throws(1: Error error);
-
-  i32 open(1: string path, 2: i32 permissionFlags, 3: i32 mode)
-    throws(1: Error error);
-
-  void close(1: i32 fd)
-    throws(1: Error error);
-
-  void fsync(1: i32 fd)
-    throws(1: Error error);
-
-  FileStat fstat(1: i32 fd)
-    throws(1: Error error);
-
-  void ftruncate(1: i32 fd, 2: i32 len)
-    throws(1: Error error);
-
-  void chmod(1: string path, 2: i32 mode)
-    throws(1: Error error);
-
-  void chown(1: string path, 2: i32 uid, 3: i32 gid)
-    throws(1: Error error);
-
-  void utimes(1: string path, 2: i32 atime, 3: i32 mtime)
-    throws(1: Error error);
 }

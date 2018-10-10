@@ -32,195 +32,14 @@ class ThriftRfsClientAdapter {
   constructor(client: RemoteFileSystemClient) {
     this._client = client;
   }
-
-  async _statPath(path: string): Promise<fs.Stats> {
-    const thriftFileStat = await this._client.stat(path);
-    return convertToFsFileStat(thriftFileStat);
+  async chmod(uri: string, mode: number): Promise<void> {
+    return this._client.chmod(uri, mode);
   }
-
-  async stat(uri: NuclideUri): Promise<fs.Stats> {
-    try {
-      return await this._statPath(nuclideUri.getPath(uri));
-    } catch (err) {
-      throw err;
-    }
+  async chown(uri: string, uid: number, gid: number): Promise<void> {
+    return this._client.chown(uri, uid, gid);
   }
-
-  async lstat(uri: NuclideUri): Promise<fs.Stats> {
-    try {
-      const thriftFileStat = await this._client.lstat(nuclideUri.getPath(uri));
-      return convertToFsFileStat(thriftFileStat);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async exists(uri: NuclideUri): Promise<boolean> {
-    try {
-      await this._statPath(nuclideUri.getPath(uri));
-      return true;
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        return false;
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  async readFile(uri: NuclideUri, options?: {flag?: string}): Promise<Buffer> {
-    try {
-      const path = nuclideUri.getPath(uri);
-      return await this._client.readFile(path);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async writeFile(
-    uri: NuclideUri,
-    content: string,
-    options?: WriteOptions,
-  ): Promise<void> {
-    try {
-      const data = new Buffer(content, BUFFER_ENCODING);
-      await this.writeFileBuffer(uri, data, options);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async writeFileBuffer(
-    uri: NuclideUri,
-    data: Buffer,
-    options?: WriteOptions,
-  ): Promise<void> {
-    try {
-      const path = nuclideUri.getPath(uri);
-      const writeOptions = options || {};
-      await this._client.writeFile(path, data, writeOptions);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async mkdir(uri: NuclideUri): Promise<void> {
-    try {
-      await this._client.createDirectory(nuclideUri.getPath(uri));
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async mkdirp(uri: NuclideUri): Promise<boolean> {
-    try {
-      await this._client.createDirectory(nuclideUri.getPath(uri));
-      return true;
-    } catch (err) {
-      logger.error(err);
-      return false;
-    }
-  }
-
-  async newFile(uri: NuclideUri): Promise<boolean> {
-    try {
-      const isExistingFile = await this.exists(uri);
-      if (isExistingFile) {
-        return false;
-      }
-      await this.mkdirp(nuclideUri.dirname(uri));
-      await this.writeFile(uri, '');
-      return true;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  /**
-   * Removes files. Does not fail if the file doesn't exist.
-   */
-  async unlink(uri: NuclideUri): Promise<void> {
-    try {
-      await this._client.deletePath(nuclideUri.getPath(uri), {});
-    } catch (error) {
-      if (error.code !== filesystem_types.ErrorCode.ENOENT) {
-        throw error;
-      }
-    }
-  }
-
-  /**
-   * Removes directories even if they are non-empty. Does not fail if the
-   * directory doesn't exist.
-   */
-  async rmdir(uri: NuclideUri): Promise<void> {
-    try {
-      await this._client.deletePath(nuclideUri.getPath(uri), {
-        recursive: true,
-      });
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async rmdirAll(uris: Array<NuclideUri>): Promise<void> {
-    await Promise.all(uris.map(uri => this.rmdir(uri)));
-  }
-
-  /**
-   * Runs the equivalent of `mv sourceUri destinationUri`.
-   */
-  async rename(
-    sourceUri: NuclideUri,
-    destinationUri: NuclideUri,
-  ): Promise<void> {
-    try {
-      return this._client.rename(
-        nuclideUri.getPath(sourceUri),
-        nuclideUri.getPath(destinationUri),
-        {
-          overwrite: false,
-        },
-      );
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  /**
-   * Moves all sourceUris into the specified destDir, assumed to be a directory name.
-   */
-  async move(
-    sourceUris: Array<NuclideUri>,
-    destDir: NuclideUri,
-  ): Promise<void> {
-    await Promise.all(
-      sourceUris.map(uri => {
-        const destUri = nuclideUri.join(destDir, nuclideUri.basename(uri));
-        return this.rename(uri, destUri);
-      }),
-    );
-  }
-
-  /**
-   * Lists all children of the given directory.
-   */
-  async readdir(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
-    try {
-      const entries = await this._client.readDirectory(nuclideUri.getPath(uri));
-      return convertToFsDirectoryEntries(entries);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  /**
-   * Sorts the result of readdir() by alphabetical order (case-insensitive).
-   */
-  async readdirSorted(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
-    return (await this.readdir(uri)).sort((a, b) => {
-      return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
-    });
+  async close(fd: number): Promise<void> {
+    return this._client.close(fd);
   }
 
   /**
@@ -278,6 +97,89 @@ class ThriftRfsClientAdapter {
       throw err;
     }
   }
+
+  async exists(uri: NuclideUri): Promise<boolean> {
+    try {
+      await this._statPath(nuclideUri.getPath(uri));
+      return true;
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return false;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async fstat(fd: number): Promise<fs.Stats> {
+    const statData = await this._client.fstat(fd);
+    return convertToFsFileStat(statData);
+  }
+
+  async fsync(fd: number): Promise<void> {
+    return this._client.fsync(fd);
+  }
+
+  async ftruncate(fd: number, len: number): Promise<void> {
+    return this._client.ftruncate(fd, len);
+  }
+
+  async lstat(uri: NuclideUri): Promise<fs.Stats> {
+    try {
+      const thriftFileStat = await this._client.lstat(nuclideUri.getPath(uri));
+      return convertToFsFileStat(thriftFileStat);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async mkdir(uri: NuclideUri): Promise<void> {
+    try {
+      await this._client.createDirectory(nuclideUri.getPath(uri));
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async mkdirp(uri: NuclideUri): Promise<boolean> {
+    try {
+      await this._client.createDirectory(nuclideUri.getPath(uri));
+      return true;
+    } catch (err) {
+      logger.error(err);
+      return false;
+    }
+  }
+
+  /**
+   * Moves all sourceUris into the specified destDir, assumed to be a directory name.
+   */
+  async move(
+    sourceUris: Array<NuclideUri>,
+    destDir: NuclideUri,
+  ): Promise<void> {
+    await Promise.all(
+      sourceUris.map(uri => {
+        const destUri = nuclideUri.join(destDir, nuclideUri.basename(uri));
+        return this.rename(uri, destUri);
+      }),
+    );
+  }
+
+  async newFile(uri: NuclideUri): Promise<boolean> {
+    try {
+      const isExistingFile = await this.exists(uri);
+      if (isExistingFile) {
+        return false;
+      }
+      await this.mkdirp(nuclideUri.dirname(uri));
+      await this.writeFile(uri, '');
+      return true;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async open(
     uri: string,
     permissionFlags: number,
@@ -286,30 +188,130 @@ class ThriftRfsClientAdapter {
     const fd = await this._client.open(uri, permissionFlags, mode);
     return fd;
   }
-  async close(fd: number): Promise<void> {
-    return this._client.close(fd);
-  }
-  async fsync(fd: number): Promise<void> {
-    return this._client.fsync(fd);
+
+  /**
+   * Lists all children of the given directory.
+   */
+  async readdir(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
+    try {
+      const entries = await this._client.readDirectory(nuclideUri.getPath(uri));
+      return convertToFsDirectoryEntries(entries);
+    } catch (err) {
+      throw err;
+    }
   }
 
-  async fstat(fd: number): Promise<fs.Stats> {
-    const statData = await this._client.fstat(fd);
-    return convertToFsFileStat(statData);
+  async rmdirAll(uris: Array<NuclideUri>): Promise<void> {
+    await Promise.all(uris.map(uri => this.rmdir(uri)));
   }
 
-  async ftruncate(fd: number, len: number): Promise<void> {
-    return this._client.ftruncate(fd, len);
+  /**
+   * Sorts the result of readdir() by alphabetical order (case-insensitive).
+   */
+  async readdirSorted(uri: NuclideUri): Promise<Array<DirectoryEntry>> {
+    return (await this.readdir(uri)).sort((a, b) => {
+      return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
+    });
+  }
+
+  async readFile(uri: NuclideUri, options?: {flag?: string}): Promise<Buffer> {
+    try {
+      const path = nuclideUri.getPath(uri);
+      return await this._client.readFile(path);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Removes directories even if they are non-empty. Does not fail if the
+   * directory doesn't exist.
+   */
+  async rmdir(uri: NuclideUri): Promise<void> {
+    try {
+      await this._client.deletePath(nuclideUri.getPath(uri), {
+        recursive: true,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Runs the equivalent of `mv sourceUri destinationUri`.
+   */
+  async rename(
+    sourceUri: NuclideUri,
+    destinationUri: NuclideUri,
+  ): Promise<void> {
+    try {
+      return this._client.rename(
+        nuclideUri.getPath(sourceUri),
+        nuclideUri.getPath(destinationUri),
+        {
+          overwrite: false,
+        },
+      );
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async _statPath(path: string): Promise<fs.Stats> {
+    const thriftFileStat = await this._client.stat(path);
+    return convertToFsFileStat(thriftFileStat);
+  }
+
+  async stat(uri: NuclideUri): Promise<fs.Stats> {
+    try {
+      return await this._statPath(nuclideUri.getPath(uri));
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Removes files. Does not fail if the file doesn't exist.
+   */
+  async unlink(uri: NuclideUri): Promise<void> {
+    try {
+      await this._client.deletePath(nuclideUri.getPath(uri), {});
+    } catch (error) {
+      if (error.code !== filesystem_types.ErrorCode.ENOENT) {
+        throw error;
+      }
+    }
   }
 
   async utimes(uri: string, atime: number, mtime: number): Promise<void> {
     return this._client.utimes(uri, atime, mtime);
   }
-  async chmod(uri: string, mode: number): Promise<void> {
-    return this._client.chmod(uri, mode);
+
+  async writeFile(
+    uri: NuclideUri,
+    content: string,
+    options?: WriteOptions,
+  ): Promise<void> {
+    try {
+      const data = new Buffer(content, BUFFER_ENCODING);
+      await this.writeFileBuffer(uri, data, options);
+    } catch (err) {
+      throw err;
+    }
   }
-  async chown(uri: string, uid: number, gid: number): Promise<void> {
-    return this._client.chown(uri, uid, gid);
+
+  async writeFileBuffer(
+    uri: NuclideUri,
+    data: Buffer,
+    options?: WriteOptions,
+  ): Promise<void> {
+    try {
+      const path = nuclideUri.getPath(uri);
+      const writeOptions = options || {};
+      await this._client.writeFile(path, data, writeOptions);
+    } catch (err) {
+      throw err;
+    }
   }
 }
 

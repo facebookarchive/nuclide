@@ -56,6 +56,223 @@ export class ThriftFileSystemServiceHandler {
     this._watchIdToChangeList = new Map();
   }
 
+  async chmod(uri: string, mode: number): Promise<void> {
+    try {
+      return await fsPromise.chmod(uri, mode);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async chown(uri: string, uid: number, gid: number): Promise<void> {
+    try {
+      return await fsPromise.chown(uri, uid, gid);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async close(fd: number): Promise<void> {
+    try {
+      return await fsPromise.close(fd);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async copy(
+    source: string,
+    destination: string,
+    options: filesystem_types.CopyOpt,
+  ): Promise<void> {
+    try {
+      const {overwrite} = options;
+      if (!overwrite && (await fsPromise.exists(destination))) {
+        throw createThriftErrorWithCode(
+          'EEXIST',
+          filesystem_types.ErrorCode.EEXIST,
+          {
+            source,
+            destination,
+          },
+        );
+      }
+      await fsPromise.copy(source, destination);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async createDirectory(uri: string): Promise<void> {
+    try {
+      return await fsPromise.mkdir(uri);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async deletePath(
+    uri: string,
+    options: filesystem_types.DeleteOpt,
+  ): Promise<void> {
+    try {
+      if (options?.recursive) {
+        return new Promise((resolve, reject) => {
+          rimraf(uri, {disableGlobs: true}, (err, result) => {
+            if (err == null) {
+              resolve();
+            } else {
+              reject(createThriftError(err));
+            }
+          });
+        });
+      } else {
+        const stats = await fsPromise.lstat(uri);
+        if (stats.isDirectory()) {
+          await fsPromise.rmdir(uri);
+        } else {
+          await fsPromise.unlink(uri);
+        }
+      }
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  dispose(): void {
+    for (const watchId of this._watchIdToChangeList.keys()) {
+      this._watcher.unwatch(watchId);
+    }
+    this._watchIdToChangeList.clear();
+  }
+
+  async fstat(fd: number): Promise<number> {
+    try {
+      const statData = await fsPromise.fstat(fd);
+      return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+  async fsync(fd: number): Promise<void> {
+    try {
+      return await fsPromise.fsync(fd);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async ftruncate(fd: number, len: number): Promise<void> {
+    try {
+      return await fsPromise.ftruncate(fd, len);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async lstat(uri: string): Promise<filesystem_types.FileStat> {
+    try {
+      const statData = await fsPromise.lstat(uri);
+      return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async open(
+    uri: string,
+    permissionFlags: number,
+    mode: number,
+  ): Promise<number> {
+    try {
+      const fd = await fsPromise.open(uri, permissionFlags, mode);
+      return fd;
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  pollFileChanges(watchId: string): Array<filesystem_types.FileChangeEvent> {
+    const fileChangeList = this._watchIdToChangeList.get(watchId) || [];
+    this._watchIdToChangeList.set(watchId, []);
+    return fileChangeList;
+  }
+
+  async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
+    try {
+      const files: Array<string> = await fsPromise.readdir(uri);
+      const entries = await Promise.all(
+        files.map(async file => {
+          const fullpath = path.join(uri, file);
+          // lstat is the same as stat, but if path is a symbolic link, then
+          // the link itself is stat-ed, not the file that it refers to
+          const lstats = await this.lstat(fullpath);
+          if (lstats.ftype !== filesystem_types.FileType.SYMLINK) {
+            return convertToThriftFileEntry(file, lstats, false);
+          }
+
+          try {
+            // try to return what the symlink points to (stat data)
+            const stats = await this.stat(fullpath);
+            return convertToThriftFileEntry(file, stats, true);
+          } catch (error) {
+            // symlink points to non-existent file/dir or cannot be read for
+            // some reason
+            return convertToThriftFileEntry(file, lstats, true);
+          }
+        }),
+      );
+      return arrayCompact(entries);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  // Always returns a Buffer
+  async readFile(uri: string): Promise<Buffer> {
+    try {
+      const contents = await fsPromise.readFile(uri);
+      return contents;
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async rename(
+    oldUri: string,
+    newUri: string,
+    options: filesystem_types.RenameOpt,
+  ): Promise<void> {
+    try {
+      await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async stat(uri: string): Promise<filesystem_types.FileStat> {
+    try {
+      const statData = await fsPromise.stat(uri);
+      return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+  async unwatch(watchId: string): Promise<void> {
+    try {
+      await this._watcher.unwatch(watchId);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+  async utimes(uri: string, atime: number, mtime: number): Promise<void> {
+    try {
+      return await fsPromise.utimes(uri, atime, mtime);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
   async watch(
     uri: string,
     options: filesystem_types.WatchOpt,
@@ -121,65 +338,6 @@ export class ThriftFileSystemServiceHandler {
     return watchId;
   }
 
-  async unwatch(watchId: string): Promise<void> {
-    try {
-      await this._watcher.unwatch(watchId);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  pollFileChanges(watchId: string): Array<filesystem_types.FileChangeEvent> {
-    const fileChangeList = this._watchIdToChangeList.get(watchId) || [];
-    this._watchIdToChangeList.set(watchId, []);
-    return fileChangeList;
-  }
-
-  async createDirectory(uri: string): Promise<void> {
-    try {
-      return await fsPromise.mkdir(uri);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async stat(uri: string): Promise<filesystem_types.FileStat> {
-    try {
-      const statData = await fsPromise.stat(uri);
-      return convertToThriftFileStat(statData);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async fstat(fd: number): Promise<number> {
-    try {
-      const statData = await fsPromise.fstat(fd);
-      return convertToThriftFileStat(statData);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async lstat(uri: string): Promise<filesystem_types.FileStat> {
-    try {
-      const statData = await fsPromise.lstat(uri);
-      return convertToThriftFileStat(statData);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  // Always returns a Buffer
-  async readFile(uri: string): Promise<Buffer> {
-    try {
-      const contents = await fsPromise.readFile(uri);
-      return contents;
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
   async writeFile(
     uri: string,
     content: Buffer,
@@ -209,167 +367,6 @@ export class ThriftFileSystemServiceHandler {
       }
 
       await fsPromise.writeFile(uri, content, writeOptions);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async rename(
-    oldUri: string,
-    newUri: string,
-    options: filesystem_types.RenameOpt,
-  ): Promise<void> {
-    try {
-      await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async copy(
-    source: string,
-    destination: string,
-    options: filesystem_types.CopyOpt,
-  ): Promise<void> {
-    try {
-      const {overwrite} = options;
-      if (!overwrite && (await fsPromise.exists(destination))) {
-        throw createThriftErrorWithCode(
-          'EEXIST',
-          filesystem_types.ErrorCode.EEXIST,
-          {
-            source,
-            destination,
-          },
-        );
-      }
-      await fsPromise.copy(source, destination);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async deletePath(
-    uri: string,
-    options: filesystem_types.DeleteOpt,
-  ): Promise<void> {
-    try {
-      if (options?.recursive) {
-        return new Promise((resolve, reject) => {
-          rimraf(uri, {disableGlobs: true}, (err, result) => {
-            if (err == null) {
-              resolve();
-            } else {
-              reject(createThriftError(err));
-            }
-          });
-        });
-      } else {
-        const stats = await fsPromise.lstat(uri);
-        if (stats.isDirectory()) {
-          await fsPromise.rmdir(uri);
-        } else {
-          await fsPromise.unlink(uri);
-        }
-      }
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>> {
-    try {
-      const files: Array<string> = await fsPromise.readdir(uri);
-      const entries = await Promise.all(
-        files.map(async file => {
-          const fullpath = path.join(uri, file);
-          // lstat is the same as stat, but if path is a symbolic link, then
-          // the link itself is stat-ed, not the file that it refers to
-          const lstats = await this.lstat(fullpath);
-          if (lstats.ftype !== filesystem_types.FileType.SYMLINK) {
-            return convertToThriftFileEntry(file, lstats, false);
-          }
-
-          try {
-            // try to return what the symlink points to (stat data)
-            const stats = await this.stat(fullpath);
-            return convertToThriftFileEntry(file, stats, true);
-          } catch (error) {
-            // symlink points to non-existent file/dir or cannot be read for
-            // some reason
-            return convertToThriftFileEntry(file, lstats, true);
-          }
-        }),
-      );
-      return arrayCompact(entries);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  dispose(): void {
-    for (const watchId of this._watchIdToChangeList.keys()) {
-      this._watcher.unwatch(watchId);
-    }
-    this._watchIdToChangeList.clear();
-  }
-
-  async open(
-    uri: string,
-    permissionFlags: number,
-    mode: number,
-  ): Promise<number> {
-    try {
-      const fd = await fsPromise.open(uri, permissionFlags, mode);
-      return fd;
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async close(fd: number): Promise<void> {
-    try {
-      return await fsPromise.close(fd);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async fsync(fd: number): Promise<void> {
-    try {
-      return await fsPromise.fsync(fd);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async ftruncate(fd: number, len: number): Promise<void> {
-    try {
-      return await fsPromise.ftruncate(fd, len);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async utimes(uri: string, atime: number, mtime: number): Promise<void> {
-    try {
-      return await fsPromise.utimes(uri, atime, mtime);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async chmod(uri: string, mode: number): Promise<void> {
-    try {
-      return await fsPromise.chmod(uri, mode);
-    } catch (err) {
-      throw createThriftError(err);
-    }
-  }
-
-  async chown(uri: string, uid: number, gid: number): Promise<void> {
-    try {
-      return await fsPromise.chown(uri, uid, gid);
     } catch (err) {
       throw createThriftError(err);
     }
