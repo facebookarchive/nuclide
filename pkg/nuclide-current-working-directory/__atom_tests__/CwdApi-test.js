@@ -13,6 +13,7 @@ import Activation from '../lib/Activation';
 import CwdApi from '../lib/CwdApi';
 import invariant from 'assert';
 import {Directory} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 describe('current-working-directory', () => {
   beforeEach(() => {
@@ -92,6 +93,7 @@ describe('CwdApi event handling', () => {
     let callback;
     const onDidChangePaths = cb => {
       callback = cb;
+      return new UniversalDisposable();
     };
     jest
       .spyOn(atom.project, 'onDidChangePaths')
