@@ -278,6 +278,39 @@ class ThriftRfsClientAdapter {
       throw err;
     }
   }
+  async open(
+    uri: string,
+    permissionFlags: number,
+    mode: number,
+  ): Promise<number> {
+    const fd = await this._client.open(uri, permissionFlags, mode);
+    return fd;
+  }
+  async close(fd: number): Promise<void> {
+    return this._client.close(fd);
+  }
+  async fsync(fd: number): Promise<void> {
+    return this._client.fsync(fd);
+  }
+
+  async fstat(fd: number): Promise<fs.Stats> {
+    const statData = await this._client.fstat(fd);
+    return convertToFsFileStat(statData);
+  }
+
+  async ftruncate(fd: number, len: number): Promise<void> {
+    return this._client.ftruncate(fd, len);
+  }
+
+  async utimes(uri: string, atime: number, mtime: number): Promise<void> {
+    return this._client.utimes(uri, atime, mtime);
+  }
+  async chmod(uri: string, mode: number): Promise<void> {
+    return this._client.chmod(uri, mode);
+  }
+  async chown(uri: string, uid: number, gid: number): Promise<void> {
+    return this._client.chown(uri, uid, gid);
+  }
 }
 
 export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set(
