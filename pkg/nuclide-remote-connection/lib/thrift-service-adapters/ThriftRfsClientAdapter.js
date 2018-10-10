@@ -26,28 +26,6 @@ import filesystem_types from 'big-dig/src/thrift-services/fs/gen-nodejs/filesyst
 const BUFFER_ENCODING = 'utf-8';
 const logger = getLogger('thrift-rfs-adapters');
 
-// including all supported remote file system function names
-export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set([
-  'stat',
-  'lstat',
-  'exists',
-  'readFile',
-  'writeFile',
-  'writeFileBuffer',
-  'mkdir',
-  'mkdirp',
-  'newFile',
-  'unlink',
-  'rmdir',
-  'rmdirAll',
-  'rename',
-  'move',
-  'readdir',
-  'readdirSorted',
-  'copy',
-  'copyDir',
-]);
-
 class ThriftRfsClientAdapter {
   _client: RemoteFileSystemClient;
 
@@ -301,6 +279,12 @@ class ThriftRfsClientAdapter {
     }
   }
 }
+
+export const SUPPORTED_THRIFT_RFS_FUNCTIONS: Set<string> = new Set(
+  Object.getOwnPropertyNames(ThriftRfsClientAdapter.prototype).filter(
+    i => !i.startsWith('_'),
+  ),
+);
 
 export async function getOrCreateRfsClientAdapter(
   bigDigClient: BigDigClient,
