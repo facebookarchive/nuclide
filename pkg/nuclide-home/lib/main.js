@@ -22,7 +22,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 const SHOW_NUCLIDE_ONBOARDING_GATEKEEPER = 'nuclide_onboarding';
 

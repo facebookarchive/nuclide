@@ -15,7 +15,7 @@ import type {LanguageService} from '../../nuclide-language-service/lib/LanguageS
 import createPackage from 'nuclide-commons-atom/createPackage';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import {
   AtomLanguageService,
   getHostServices,

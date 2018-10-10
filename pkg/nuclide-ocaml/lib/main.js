@@ -11,7 +11,7 @@
 
 import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import {observeForCodeLens} from './CodeLensListener';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createLanguageService} from './OCamlLanguage';

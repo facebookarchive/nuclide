@@ -42,7 +42,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {Observable} from 'rxjs';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import registerCommands from './registerCommands';
 import ProjectSelectionManager from './ProjectSelectionManager';
 import createStore from './redux/createStore';

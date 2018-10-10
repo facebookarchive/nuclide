@@ -13,7 +13,7 @@ import {Emitter} from 'atom';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {arrayCompact} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
+import {isGkEnabled, onceGkInitialized} from 'nuclide-commons/passesGK';
 import {maybeToString} from 'nuclide-commons/string';
 
 import {getLogger} from 'log4js';

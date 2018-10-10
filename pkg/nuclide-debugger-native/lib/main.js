@@ -41,7 +41,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 const SUPPORTED_RULE_TYPES = new Set(['cxx_binary', 'cxx_test']);
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;

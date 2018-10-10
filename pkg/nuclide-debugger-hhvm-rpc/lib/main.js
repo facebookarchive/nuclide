@@ -17,7 +17,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
 import fs from 'fs';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import {psTree} from 'nuclide-commons/process';
 
 export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';

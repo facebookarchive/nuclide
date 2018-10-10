@@ -19,7 +19,7 @@ import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import {getBigDigClientByNuclideUri} from '../../../nuclide-remote-connection';
-import passesGK from '../../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 const logger = getLogger('nuclide-ssh-tunnel');
 

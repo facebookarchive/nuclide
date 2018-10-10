@@ -22,7 +22,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
 
 import invariant from 'assert';
-import {isGkEnabled} from '../../../commons-node/passesGK';
+import {isGkEnabled} from 'nuclide-commons/passesGK';
 import * as Immutable from 'immutable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {WORKSPACE_VIEW_URI} from '../Constants';

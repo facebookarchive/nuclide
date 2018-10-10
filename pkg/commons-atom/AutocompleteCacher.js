@@ -9,7 +9,7 @@
  * @format
  */
 
-import passesGK from '../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import {PromiseWithState} from 'nuclide-commons/promise';
 
 export type AutocompleteCacherConfig<T> = {|

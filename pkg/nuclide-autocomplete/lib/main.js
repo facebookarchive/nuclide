@@ -14,7 +14,7 @@ import type {AutocompleteProvider} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Observable} from 'rxjs';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import createAutocompleteProvider from './createAutocompleteProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

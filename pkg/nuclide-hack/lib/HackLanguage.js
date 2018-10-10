@@ -43,7 +43,7 @@ import {
   findHackPrefix,
 } from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 const HACK_SERVICE_NAME = 'HackService';
 

@@ -50,8 +50,8 @@ import {getLogger} from 'log4js';
 import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigRpcClient from './createBigDigRpcClient';
-import {isGkEnabled} from '../../commons-node/passesGK';
-import {onceGkInitializedAsync} from '../../commons-node/passesGK';
+import {isGkEnabled} from 'nuclide-commons/passesGK';
+import {onceGkInitializedAsync} from 'nuclide-commons/passesGK';
 import {
   getOrCreateRfsClientAdapter,
   SUPPORTED_THRIFT_RFS_FUNCTIONS,

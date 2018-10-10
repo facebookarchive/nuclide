@@ -16,7 +16,7 @@ import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
-import passesGK from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import LinkTreeLinter from './LinkTreeLinter';
 import LintHelpers from './LintHelpers';

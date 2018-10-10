@@ -32,7 +32,7 @@ let passesGK = async _ => false;
 try {
   const fbPassesGK =
     // eslint-disable-next-line nuclide-internal/modules-dependencies
-    require('../../../pkg/commons-node/passesGK');
+    require('nuclide-commons/passesGK');
   passesGK = fbPassesGK.default;
 } catch (e) {}
 

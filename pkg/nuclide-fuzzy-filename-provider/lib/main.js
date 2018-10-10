@@ -21,7 +21,7 @@ import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from 'log4js';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
 import {getIgnoredNames} from './utils';
-import {isGkEnabled} from '../../commons-node/passesGK';
+import {isGkEnabled} from 'nuclide-commons/passesGK';
 
 const logger = getLogger('nuclide-fuzzy-filename-provider');
 

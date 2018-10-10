@@ -30,8 +30,8 @@ import {trackTiming} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
-import passesGK from '../../commons-node/passesGK';
-import {onceGkInitialized, isGkEnabled} from '../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
+import {onceGkInitialized, isGkEnabled} from 'nuclide-commons/passesGK';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {
   getNotifierByConnection,

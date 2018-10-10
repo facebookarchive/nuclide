@@ -16,7 +16,7 @@ import type {
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {isGkEnabled} from '../../commons-node/passesGK';
+import {isGkEnabled} from 'nuclide-commons/passesGK';
 import {
   RemoteDirectory,
   getFuzzyFileSearchServiceByNuclideUri,

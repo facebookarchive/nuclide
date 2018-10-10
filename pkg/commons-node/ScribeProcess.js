@@ -15,7 +15,7 @@ import os from 'os';
 import {spawn} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
 import once from 'nuclide-commons/once';
-import passesGK from './passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';

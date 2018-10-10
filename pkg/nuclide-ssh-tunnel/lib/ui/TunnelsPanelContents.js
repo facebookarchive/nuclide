@@ -12,7 +12,7 @@
 import type {ResolvedTunnel, Tunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ActiveTunnel} from '../types';
-import passesGK from '../../../commons-node/passesGK';
+import passesGK from 'nuclide-commons/passesGK';
 
 import * as React from 'react';
 import ManualTunnelSection from './ManualTunnelSection';
