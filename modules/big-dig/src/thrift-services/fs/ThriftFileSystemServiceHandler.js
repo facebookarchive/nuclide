@@ -327,7 +327,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async close(fd: number): Promise<number> {
+  async close(fd: number): Promise<void> {
     try {
       return await fsPromise.close(fd);
     } catch (err) {
@@ -335,7 +335,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async fsync(fd: number): Promise<number> {
+  async fsync(fd: number): Promise<void> {
     try {
       return await fsPromise.fsync(fd);
     } catch (err) {
@@ -343,7 +343,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async ftruncate(fd: number, len: number): Promise<number> {
+  async ftruncate(fd: number, len: number): Promise<void> {
     try {
       return await fsPromise.ftruncate(fd, len);
     } catch (err) {
@@ -351,7 +351,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async utimes(uri: string, atime: number, mtime: number): Promise<number> {
+  async utimes(uri: string, atime: number, mtime: number): Promise<void> {
     try {
       return await fsPromise.utimes(uri, atime, mtime);
     } catch (err) {
@@ -359,7 +359,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async chmod(uri: string, mode: number): Promise<number> {
+  async chmod(uri: string, mode: number): Promise<void> {
     try {
       return await fsPromise.chmod(uri, mode);
     } catch (err) {
@@ -367,7 +367,7 @@ export class ThriftFileSystemServiceHandler {
     }
   }
 
-  async chown(uri: string, uid: number, gid: number): Promise<number> {
+  async chown(uri: string, uid: number, gid: number): Promise<void> {
     try {
       return await fsPromise.chown(uri, uid, gid);
     } catch (err) {
