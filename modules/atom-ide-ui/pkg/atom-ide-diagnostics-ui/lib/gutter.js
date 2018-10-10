@@ -19,6 +19,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 import {Range} from 'atom';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {Button} from 'nuclide-commons-ui/Button';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
@@ -34,10 +35,17 @@ import * as GroupUtils from './GroupUtils';
 import {hoveringOrAiming} from './aim';
 import {makeDatatipComponent} from './getDiagnosticDatatip.js';
 import {decorateTrackTimingSampled} from 'nuclide-commons/analytics';
+import processTimed from 'nuclide-commons/processTimed';
+import AbortController from 'nuclide-commons/AbortController';
+
+/* eslint-env browser */
 
 const APPLY_UPDATE_TO_EDITOR_SAMPLE_RATE = 40;
 const DESTROY_DIAGNOSTICS_POPUP_DELAY = 200;
 const GUTTER_ID = 'diagnostics-gutter';
+const MARKERS_LINE_CHUNK_SIZE = 5;
+const PROCESS_CHUNK_TIME_LIMIT = 10;
+const PROCESS_CHUNK_DELAY = 50;
 
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
 // the child element with the "region" CSS class), we also do a showPopupFor(). This seems to be
@@ -67,10 +75,27 @@ const GUTTER_CSS_GROUPS = {
   hidden: '',
 };
 
-const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
-const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
-const handleSpawnPopupEvents = new Subject();
+type MarkerMap = Map<number, Set<atom$Marker>>;
+type ProcessState = {
+  diagnosticUpdater: DiagnosticUpdater,
+  gutter: atom$Gutter,
+  startingLine: number,
+  messages: Iterable<DiagnosticMessage>,
+  blockDecorationFragments: Array<React.Node>,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
+  rolloverMessage?: ?DiagnosticMessage,
+};
 
+const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
+const editorToAbortController: WeakMap<
+  TextEditor,
+  AbortController,
+> = new WeakMap();
+const editorToMarkers: WeakMap<TextEditor, MarkerMap> = new WeakMap();
+const editorToProcessState: WeakMap<TextEditor, ProcessState> = new WeakMap();
+
+const handleSpawnPopupEvents = new Subject();
 const SpawnPopupEvents = handleSpawnPopupEvents
   .switchMap(
     ({
@@ -114,6 +139,253 @@ const SpawnPopupEvents = handleSpawnPopupEvents
   )
   .share();
 
+/*
+ * Processes (clears old markers and creates new ones) a section of the editorTop
+ * beginning with `startingLine`.
+ *
+ * Returns whether the last chunk was processed
+ */
+function processChunk(editor: atom$TextEditor): boolean {
+  const state = nullthrows(editorToProcessState.get(editor));
+  const {
+    blockDecorationFragments,
+    diagnosticUpdater,
+    gutter,
+    messages,
+    openedMessageIds,
+    setOpenMessageIds,
+    startingLine,
+  } = state;
+  let {rolloverMessage} = state;
+
+  const lastEditorRow = editor.getLastBufferRow();
+  const endingLine = Math.min(
+    startingLine + MARKERS_LINE_CHUNK_SIZE,
+    // ending line is **exclusive**, and we always want to process the last line
+    // of the editor, so use one more than it.
+    lastEditorRow + 1,
+  );
+
+  let markerMap = editorToMarkers.get(editor);
+  if (markerMap == null) {
+    markerMap = new Map();
+    editorToMarkers.set(editor, markerMap);
+  }
+
+  // Remove all prior markers in this range
+  let rangeMarkers = markerMap.get(startingLine);
+  if (rangeMarkers) {
+    for (const marker of rangeMarkers) {
+      marker.destroy();
+    }
+    rangeMarkers.clear();
+  } else {
+    rangeMarkers = new Set();
+    markerMap.set(startingLine, rangeMarkers);
+  }
+
+  let nextRolloverMessage;
+  const rowToMessage: Map<number, Array<DiagnosticMessage>> = new Map();
+  // Using a while loop rather than for...of since for...of closes iterators
+  // when it completes abruptly through a break -- we want this state to be
+  // carried to the next iteration
+  while (true) {
+    let message;
+    // If the last iteration passed along a "rollover" and we haven't processed
+    // it yet, process that first.
+    if (rolloverMessage != null) {
+      message = rolloverMessage;
+      rolloverMessage = null;
+    } else {
+      // Otherwise, pull from the message iterator.
+      // $FlowFixMe Flow doesn't understand Symbol.iterator
+      const {value, done} = messages[Symbol.iterator]().next();
+      if (done) {
+        break;
+      }
+      message = value;
+    }
+
+    const row = message.range?.start?.row;
+    if (row != null && row >= endingLine) {
+      // We've read too far. Since we can't peek at iterators, we have to read
+      // one message "too far" into the next chunk. Store it so it is available
+      // to the next iteration to process. Then leave this iteration.
+      nextRolloverMessage = message;
+      break;
+    }
+
+    const wordRange =
+      message && message.range != null && message.range.isEmpty()
+        ? wordAtPosition(editor, message.range.start)
+        : null;
+    const range = wordRange != null ? wordRange.range : message.range;
+
+    const highlightCssClass = classnames(
+      HIGHLIGHT_CSS,
+      HIGHLIGHT_CSS_LEVELS[message.type],
+      message.stale ? 'diagnostics-gutter-ui-highlight-stale' : '',
+    );
+
+    if (range) {
+      const highlightMarkers = highlightEditorRange(
+        editor,
+        range,
+        highlightCssClass,
+      );
+      for (const marker of highlightMarkers) {
+        rangeMarkers.add(marker);
+      }
+
+      addMessageForRow(rowToMessage, message, range.start.row);
+    } else {
+      addMessageForRow(rowToMessage, message, 0);
+    }
+  }
+
+  const gutterMarkers = combineMarkers({
+    editor,
+    gutter,
+    rowToMessage,
+    diagnosticUpdater,
+    openedMessageIds,
+    setOpenMessageIds,
+  });
+  for (const marker of gutterMarkers) {
+    rangeMarkers.add(marker);
+    marker.onDidDestroy(() => {
+      if (rangeMarkers != null) {
+        rangeMarkers.delete(marker);
+      }
+    });
+  }
+
+  // create diagnostics messages with block decoration and maintain their openness
+  blockDecorationFragments.push(
+    createBlockDecorations({
+      editor,
+      rowToMessage,
+      openedMessageIds,
+      setOpenMessageIds,
+    }),
+  );
+
+  if (endingLine >= lastEditorRow) {
+    // We just finished processing the last line of the editor. Call `markDone` and
+    // don't enqueue another chunk to end iteration
+    return true;
+  }
+
+  Object.assign(state, {
+    startingLine: endingLine,
+    rolloverMessage: nextRolloverMessage,
+    messages,
+  });
+  return false;
+}
+
+function combineMarkers({
+  editor,
+  gutter,
+  rowToMessage,
+  diagnosticUpdater,
+  openedMessageIds,
+  setOpenMessageIds,
+}: {
+  editor: atom$TextEditor,
+  gutter: atom$Gutter,
+  rowToMessage: Map<number, Array<DiagnosticMessage>>,
+  diagnosticUpdater: DiagnosticUpdater,
+  openedMessageIds: Set<string>,
+  setOpenMessageIds: (openedMessageIds: Set<string>) => void,
+}): Array<atom$Marker> {
+  const markers = [];
+  // Find all of the gutter markers for the same row and combine them into one marker/popup.
+  for (const [row, messages] of rowToMessage.entries()) {
+    // This marker adds some UI to the gutter.
+    const gutterMarker = editor.markBufferPosition([row, 0]);
+    invariant(gutter != null);
+
+    const {item, dispose} = createGutterItem({
+      editor,
+      messages,
+      diagnosticUpdater,
+      gutter,
+      openedMessageIds,
+      setOpenMessageIds,
+      gutterMarker,
+    });
+    itemToEditor.set(item, editor);
+    gutter.decorateMarker(gutterMarker, {item});
+    gutterMarker.onDidDestroy(dispose);
+    markers.push(gutterMarker);
+  }
+  return markers;
+}
+
+function addMessageForRow(
+  rowToMessage: Map<number, Array<DiagnosticMessage>>,
+  message: DiagnosticMessage,
+  row: number,
+) {
+  let messages = rowToMessage.get(row);
+  if (!messages) {
+    messages = [];
+    rowToMessage.set(row, messages);
+  }
+  messages.push(message);
+}
+
+function highlightEditorRange(
+  editor: atom$TextEditor,
+  range: atom$Range,
+  highlightCssClass: string,
+): Array<atom$Marker> {
+  // There is no API in Atom to say: I want to put an underline on all the
+  // lines in this range. The closest is "highlight" which splits your range
+  // into three boxes: the part of the first line, all the lines in between
+  // and the part of the last line.
+  //
+  // This means that some lines in the middle are going to be dropped and
+  // they are going to extend all the way to the right of the buffer.
+  //
+  // To fix this, we can manually split it line by line and give to atom
+  // those ranges.
+  const markers = [];
+  for (let line = range.start.row; line <= range.end.row; line++) {
+    let start;
+    let end;
+    const lineText = editor.getTextInBufferRange(
+      new Range([line, 0], [line + 1, 0]),
+    );
+
+    if (line === range.start.row) {
+      start = range.start.column;
+    } else {
+      start = (lineText.match(/^\s*/) || [''])[0].length;
+    }
+
+    if (line === range.end.row) {
+      end = range.end.column;
+    } else {
+      // Note: this is technically off by 1 (\n) or 2 (\r\n) but Atom will
+      // not extend the range past the actual characters displayed on the
+      // line
+      end = lineText.length;
+    }
+
+    const highlightMarker = editor.markBufferRange(
+      new Range([line, start], [line, end]),
+    );
+    editor.decorateMarker(highlightMarker, {
+      type: 'highlight',
+      class: highlightCssClass,
+    });
+    markers.push(highlightMarker);
+  }
+  return markers;
+}
+
 _applyUpdateToEditor.displayName = 'applyUpdateToEditor';
 export const applyUpdateToEditor = decorateTrackTimingSampled(
   _applyUpdateToEditor,
@@ -127,7 +399,7 @@ function _applyUpdateToEditor(
   blockDecorationContainer: HTMLElement,
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
-): void {
+): IDisposable {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
     // TODO(jessicalin): Determine an appropriate priority so that the gutter:
@@ -145,143 +417,101 @@ function _applyUpdateToEditor(
     });
   }
 
-  let marker;
-  let markers = editorToMarkers.get(editor);
-
-  // TODO: Consider a more efficient strategy that does not blindly destroy all of the
-  // existing markers.
-  if (markers) {
-    for (marker of markers) {
-      marker.destroy();
-    }
-    markers.clear();
-  } else {
-    markers = new Set();
+  const priorAbortController = editorToAbortController.get(editor);
+  if (priorAbortController != null) {
+    // Cancel any other processing of diagnostics in this editor.
+    // This has the effect of "debouncing" the creation of markers, which is
+    // useful when diagnostic providers give us new results on keystroke.
+    //
+    // NB: It's possible that with unending results from providers (such as through
+    // constant typing), this process never finishes. Something more ideal would
+    // be to start updating with new results where the last iteration stopped.
+    priorAbortController.abort();
   }
 
-  const rowToMessage: Map<number, Array<DiagnosticMessage>> = new Map();
-  function addMessageForRow(message: DiagnosticMessage, row: number) {
-    let messages = rowToMessage.get(row);
-    if (!messages) {
-      messages = [];
-      rowToMessage.set(row, messages);
-    }
-    messages.push(message);
-  }
-
-  // TODO: Implement chunking and async rendering
-  const allMessages = Array.from(update);
-  for (const message of allMessages) {
-    const wordRange =
-      message.range != null && message.range.isEmpty()
-        ? wordAtPosition(editor, message.range.start)
-        : null;
-    const range = wordRange != null ? wordRange.range : message.range;
-
-    const highlightCssClass = classnames(
-      HIGHLIGHT_CSS,
-      HIGHLIGHT_CSS_LEVELS[message.type],
-      message.stale ? 'diagnostics-gutter-ui-highlight-stale' : '',
-    );
-
-    let highlightMarker;
-    if (range) {
-      addMessageForRow(message, range.start.row);
-
-      // There is no API in Atom to say: I want to put an underline on all the
-      // lines in this range. The closest is "highlight" which splits your range
-      // into three boxes: the part of the first line, all the lines in between
-      // and the part of the last line.
-      //
-      // This means that some lines in the middle are going to be dropped and
-      // they are going to extend all the way to the right of the buffer.
-      //
-      // To fix this, we can manually split it line by line and give to atom
-      // those ranges.
-      for (let line = range.start.row; line <= range.end.row; line++) {
-        let start;
-        let end;
-        const lineText = editor.getTextInBufferRange(
-          new Range([line, 0], [line + 1, 0]),
-        );
-
-        if (line === range.start.row) {
-          start = range.start.column;
-        } else {
-          start = (lineText.match(/^\s*/) || [''])[0].length;
-        }
-
-        if (line === range.end.row) {
-          end = range.end.column;
-        } else {
-          // Note: this is technically off by 1 (\n) or 2 (\r\n) but Atom will
-          // not extend the range past the actual characters displayed on the
-          // line
-          end = lineText.length;
-        }
-
-        highlightMarker = editor.markBufferRange(
-          new Range([line, start], [line, end]),
-        );
-        editor.decorateMarker(highlightMarker, {
-          type: 'highlight',
-          class: highlightCssClass,
-        });
-        markers.add(highlightMarker);
-      }
-    } else {
-      addMessageForRow(message, 0);
-    }
-  }
-
-  // create diagnostics messages with block decoration and maintain their openness
-  createBlockDecorations(
-    editor,
-    rowToMessage,
-    blockDecorationContainer,
+  editorToProcessState.set(editor, {
+    diagnosticUpdater,
+    gutter: nullthrows(gutter),
+    startingLine: 0,
+    // $FlowFixMe
+    messages: update[Symbol.iterator](),
+    blockDecorationFragments: [],
     openedMessageIds,
     setOpenMessageIds,
+  });
+
+  const abortController = new AbortController();
+
+  processTimed(
+    function*() {
+      while (!processChunk(editor)) {
+        yield;
+      }
+
+      const {blockDecorationFragments} = nullthrows(
+        editorToProcessState.get(editor),
+      );
+      ReactDOM.render(
+        <>{blockDecorationFragments}</>,
+        blockDecorationContainer,
+      );
+      // Once the gutter is shown for the first time, it is displayed for the lifetime of the
+      // TextEditor.
+      if (editorHasMarkers(editor)) {
+        nullthrows(gutter).show();
+        analytics.track('diagnostics-show-editor-diagnostics');
+      }
+
+      editorToAbortController.delete(editor);
+    },
+    {
+      signal: abortController.signal,
+      limit: PROCESS_CHUNK_TIME_LIMIT,
+      delay: PROCESS_CHUNK_DELAY,
+    },
   );
 
-  // Find all of the gutter markers for the same row and combine them into one marker/popup.
-  for (const [row, messages] of rowToMessage.entries()) {
-    // This marker adds some UI to the gutter.
-    const gutterMarker = editor.markBufferPosition([row, 0]);
-    const {item, dispose} = createGutterItem(
-      editor,
-      messages,
-      diagnosticUpdater,
-      gutter,
-      openedMessageIds,
-      setOpenMessageIds,
-      gutterMarker,
-    );
-    itemToEditor.set(item, editor);
-    gutter.decorateMarker(gutterMarker, {item});
-    gutterMarker.onDidDestroy(dispose);
-    markers.add(gutterMarker);
-  }
+  editorToAbortController.set(editor, abortController);
 
-  editorToMarkers.set(editor, markers);
-  editor.onDidDestroy(() => {
-    // clean up openned message ids
-    removeOpenMessageId(allMessages, openedMessageIds, setOpenMessageIds);
-  });
-  // Once the gutter is shown for the first time, it is displayed for the lifetime of the
-  // TextEditor.
-  if (allMessages.length > 0) {
-    gutter.show();
-    analytics.track('diagnostics-show-editor-diagnostics');
-  }
+  return new UniversalDisposable(
+    () => abortController.abort(),
+    editor.onDidDestroy(() => {
+      abortController.abort();
+      // clean up openned message ids
+      removeOpenMessageId(
+        Array.from(update),
+        openedMessageIds,
+        setOpenMessageIds,
+      );
+    }),
+  );
 }
 
-function createBlockDecorations(
+function editorHasMarkers(editor: atom$TextEditor): boolean {
+  const editorMarkers = editorToMarkers.get(editor);
+  if (editorMarkers == null) {
+    return false;
+  }
+
+  for (const markers of editorMarkers.values()) {
+    if (markers.size) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function createBlockDecorations({
+  editor,
+  rowToMessage,
+  openedMessageIds,
+  setOpenMessageIds,
+}: {
   editor: TextEditor,
   rowToMessage: Map<number, Array<DiagnosticMessage>>,
-  blockDecorationContainer: HTMLElement,
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
-): void {
+}): React.Node {
   const blockRowToMessages: Map<number, Array<DiagnosticMessage>> = new Map();
   rowToMessage.forEach((messages, row) => {
     if (
@@ -297,7 +527,7 @@ function createBlockDecorations(
     }
   });
 
-  const fragment = (
+  return (
     <>
       {Array.from(blockRowToMessages).map(([row, messages]) => {
         return (
@@ -327,10 +557,17 @@ function createBlockDecorations(
       })}
     </>
   );
-  ReactDOM.render(fragment, blockDecorationContainer);
 }
 
-function createGutterItem(
+function createGutterItem({
+  editor,
+  messages,
+  diagnosticUpdater,
+  gutter,
+  openedMessageIds,
+  setOpenMessageIds,
+  gutterMarker,
+}: {
   editor: TextEditor,
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
@@ -338,7 +575,7 @@ function createGutterItem(
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
   gutterMarker: atom$Marker,
-): {item: HTMLElement, dispose: () => void} {
+}): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
   const messageGroups = new Set();
   messages.forEach(msg => messageGroups.add(GroupUtils.getGroup(msg)));
