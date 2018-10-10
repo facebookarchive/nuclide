@@ -214,6 +214,7 @@ export type CreatePasteFunction = (
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
+  subscribe(() => void): () => void,
 };
 
 export type Action =

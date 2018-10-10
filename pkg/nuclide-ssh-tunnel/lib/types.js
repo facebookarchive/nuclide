@@ -18,6 +18,7 @@ import type {ActiveTunnels} from './ActiveTunnels';
 import {Map, Set} from 'immutable';
 
 export type Store = {
+  subscribe(() => void): () => void,
   getState(): AppState,
   dispatch(action: Action): void,
 };

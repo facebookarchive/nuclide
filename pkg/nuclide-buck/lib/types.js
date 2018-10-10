@@ -72,6 +72,7 @@ export type TaskInfo = {
 export type Store = {
   dispatch(action: Action): void,
   getState(): AppState,
+  subscribe((AppState) => mixed): () => void,
 };
 
 export type SerializedState = {

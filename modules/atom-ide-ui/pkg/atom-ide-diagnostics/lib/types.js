@@ -252,6 +252,7 @@ export type CodeActionsState = Map<DiagnosticMessage, Map<string, CodeAction>>;
 export type DescriptionsState = Map<DiagnosticMessage, string>;
 
 export type Store = {
+  subscribe(() => void): () => void,
   getState(): AppState,
   dispatch(action: Action): void,
 };

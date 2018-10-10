@@ -49,6 +49,7 @@ export type AppState = {|
 |};
 
 export type Store = {
+  subscribe(() => void): () => void,
   getState(): AppState,
   dispatch(action: Action): void,
 };

@@ -22,6 +22,7 @@ describe('Epics', () => {
   describe('provideConsole (registerSourceEpic)', () => {
     it('observes the status', () => {
       const mockStore = {
+        subscribe: () => () => {},
         dispatch: () => {},
         getState: () => (({}: any): AppState),
       };

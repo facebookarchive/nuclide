@@ -28,7 +28,7 @@ export type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
-  subscribe(cb: (AppState) => mixed): () => mixed,
+  subscribe(cb: () => void): () => void,
 };
 
 // Middleware does not get passed the subscribe function
