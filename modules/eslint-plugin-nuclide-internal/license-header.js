@@ -79,6 +79,12 @@ const BSD_NO_FLOW_AND_NO_TRANSPILE = `\
 /* eslint nuclide-internal/no-commonjs: 0 */
 `;
 
+const REGEXP_TO_IGNORE = [
+  /^.*@(?:emails|transpile).*\n/gm,
+  /^.*@gk-enable.*\n/gm,
+  /^.*@gk-disable.*\n/gm,
+];
+
 module.exports = function(context) {
   // "eslint-disable" disables rules after it. Since the directives have to go
   // first, we can't use that mechanism to disable this check.
@@ -92,9 +98,11 @@ module.exports = function(context) {
   return {
     Program(node) {
       const sourceCode = context.getSourceCode();
-      const source = sourceCode.text
-        // May want to transpile even if not flow checked.
-        .replace(/^.*@(?:emails|transpile).*\n/gm, '');
+
+      const source = REGEXP_TO_IGNORE.reduce(
+        (s, regexp) => s.replace(regexp, ''),
+        sourceCode.text,
+      );
       const useBSDLicense = idx(context, _ => _.options[0].useBSDLicense);
 
       const flowHeader = useBSDLicense

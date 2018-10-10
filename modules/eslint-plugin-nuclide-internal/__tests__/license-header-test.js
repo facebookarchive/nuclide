@@ -31,7 +31,7 @@ const USE_BABEL = "'use babel';";
 
 const LICENSE_ERROR = 'Expected a license header';
 
-const codeWithOncall = `/**
+const codeWithDirectives = `/**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
  *
@@ -40,6 +40,8 @@ const codeWithOncall = `/**
  *
  * @flow strict
  * @emails oncall+nuclide
+ * @gk-enable test
+ * @gk-disable test2
  * @format
  */
 
@@ -70,7 +72,7 @@ const ruleTester = new RuleTester({
 
 ruleTester.run('license-header', rule, {
   valid: [
-    {code: codeWithOncall},
+    {code: codeWithDirectives},
     {code: BSDCodeWithOncall, options: [{useBSDLicense: true}]},
     {code: [FLOW_FORMAT_AND_TRANSPILE].join('\n')},
     {code: [FLOW_FORMAT_AND_TRANSPILE, LINE].join('\n')},
