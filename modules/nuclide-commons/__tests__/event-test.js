@@ -69,7 +69,7 @@ describe('observableFromSubscribeFunction', () => {
     expect(await result).toEqual([1, 2]);
   });
 
-  it('should properly unsubscribe and resubscribe', () => {
+  it('should properly unsubscribe and resubscribe from functions that return IDisposable', () => {
     const observable = observableFromSubscribeFunction(subscribeFunction);
     let subscription = observable.subscribe(() => {});
     expect(callback).not.toBeNull();
@@ -88,5 +88,32 @@ describe('observableFromSubscribeFunction', () => {
     expect(disposable.dispose).not.toHaveBeenCalled();
     subscription.unsubscribe();
     expect(disposable.dispose).toHaveBeenCalled();
+  });
+
+  it('should properly unsubscribe and resubscribe from functions that return disposal functions', () => {
+    let spy;
+    const returnsDisposalFunction = (cb: number => mixed) => {
+      callback = cb;
+      spy = jest.fn(() => (callback = null));
+      return spy;
+    };
+
+    const observable = observableFromSubscribeFunction(returnsDisposalFunction);
+    let subscription = observable.subscribe(() => {});
+    expect(callback).not.toBeNull();
+
+    expect(spy).not.toHaveBeenCalled();
+    subscription.unsubscribe();
+    expect(spy).toHaveBeenCalled();
+
+    expect(callback).toBeNull();
+
+    subscription = observable.subscribe(() => {});
+
+    expect(callback).not.toBeNull();
+
+    expect(spy).not.toHaveBeenCalled();
+    subscription.unsubscribe();
+    expect(spy).toHaveBeenCalled();
   });
 });

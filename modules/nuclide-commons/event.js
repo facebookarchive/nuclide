@@ -30,15 +30,14 @@ export function attachEvent(
 }
 
 type SubscribeCallback<T> = (item: T) => any;
-type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
+type SubscribeFunction<T> = (
+  callback: SubscribeCallback<T>,
+) => IDisposable | (() => mixed);
 
 export function observableFromSubscribeFunction<T>(
   fn: SubscribeFunction<T>,
 ): Observable<T> {
-  return Observable.create(observer => {
-    const disposable = fn(observer.next.bind(observer));
-    return () => {
-      disposable.dispose();
-    };
-  });
+  return Observable.create(
+    observer => new UniversalDisposable(fn(observer.next.bind(observer))),
+  );
 }
