@@ -25,6 +25,11 @@ import RadioGroup from 'nuclide-commons-ui/RadioGroup';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {SshHandshake} from '../../nuclide-remote-connection';
+import {Message} from 'nuclide-commons-ui/Message';
+import Link from 'nuclide-commons-ui/Link';
+
+// @fb-only: const PKEY_LINK = 'https://fburl.com/deprecationnotice';
+const PKEY_LINK = null; // @oss-only
 
 const {SupportedMethods} = SshHandshake;
 const authMethods: Array<SshHandshakeAuthMethodsType> = [
@@ -322,6 +327,12 @@ export default class ConnectionDetailsForm extends React.Component<
             onSelectedChange={this._handleAuthMethodChange}
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
+          {PKEY_LINK != null &&
+            this.state.selectedAuthMethodIndex === 2 && (
+              <Message type="warning">
+                Please see <Link href={PKEY_LINK}>this post</Link>.
+              </Message>
+            )}
         </div>
         <div className="form-group">
           <label>Remote Server Command:</label>
