@@ -17,6 +17,7 @@ import * as Actions from '../redux/Actions';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import shallowequal from 'shallowequal';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 
 export default function getToolbarProps(store: Store): Observable<Props> {
   const staticProps = {
@@ -31,8 +32,7 @@ export default function getToolbarProps(store: Store): Observable<Props> {
     },
   };
 
-  // $FlowFixMe: We need to teach Flow about Symbol.observable
-  const states = Observable.from(store).distinctUntilChanged();
+  const states = observableFromReduxStore(store).distinctUntilChanged();
 
   // We don't want to refresh the UI with a "pending" state while we wait for the initial tasks to
   // become ready; that would cause too many updates in quick succession. So we make the parts of

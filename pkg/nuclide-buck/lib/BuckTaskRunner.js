@@ -37,6 +37,7 @@ import {NuclideArtilleryTrace} from '../../nuclide-artillery';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -150,8 +151,7 @@ export class BuckTaskRunner {
           store.dispatch(Actions.setTaskSettings(settings)),
       };
       this._extraUi = bindObservableAsProps(
-        // $FlowFixMe: type symbol-observable
-        Observable.from(store)
+        observableFromReduxStore(store)
           .map(appState => ({appState, ...boundActions}))
           .filter(props => props.appState.buckRoot != null),
         BuckToolbar,
@@ -201,8 +201,9 @@ export class BuckTaskRunner {
     projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
-    // $FlowFixMe: type symbol-observable
-    const storeReady: Observable<AppState> = Observable.from(this._getStore())
+    const storeReady: Observable<AppState> = observableFromReduxStore(
+      this._getStore(),
+    )
       .distinctUntilChanged()
       .filter(
         (state: AppState) =>

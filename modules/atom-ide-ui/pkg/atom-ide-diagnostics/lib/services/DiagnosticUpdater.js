@@ -25,6 +25,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import * as Selectors from '../redux/Selectors';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -38,8 +39,7 @@ export default class DiagnosticUpdater {
 
   constructor(store: Store) {
     this._store = store;
-    // $FlowIgnore: Flow doesn't know about Symbol.observable
-    this._states = Observable.from(store);
+    this._states = observableFromReduxStore(store);
 
     this._allMessageUpdates = this._states
       .map(Selectors.getMessages)

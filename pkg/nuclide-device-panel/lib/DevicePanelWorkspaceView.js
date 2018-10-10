@@ -15,8 +15,8 @@ import type {Store, AppState} from './types';
 import * as React from 'react';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';
-import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import * as Actions from './redux/Actions';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
@@ -89,8 +89,7 @@ export class DevicePanelWorkspaceView {
 
   getElement(): HTMLElement {
     const PreparedDevicePanel = bindObservableAsProps(
-      // $FlowFixMe: Teach flow about Symbol.observable
-      Observable.from(this._store)
+      observableFromReduxStore(this._store)
         .distinctUntilChanged()
         .map(state => this._appStateToProps(state)),
       RootPanel,

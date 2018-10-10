@@ -34,6 +34,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {memoize} from 'lodash';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -108,7 +109,7 @@ class Activation {
       {visible: initialVisibility},
       applyMiddleware(createEpicMiddleware(rootEpic)),
     );
-    const states: Observable<AppState> = Observable.from(this._store)
+    const states: Observable<AppState> = observableFromReduxStore(this._store)
       .filter((state: AppState) => state.initialPackagesActivated)
       .distinctUntilChanged()
       .share();
@@ -305,8 +306,7 @@ class Activation {
     element.className += ' nuclide-task-runner-tool-bar-button';
 
     const buttonUpdatesDisposable = new UniversalDisposable(
-      // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
-      Observable.from(this._store).subscribe((state: AppState) => {
+      observableFromReduxStore(this._store).subscribe((state: AppState) => {
         if (state.taskRunners.count() > 0) {
           element.removeAttribute('hidden');
         } else {

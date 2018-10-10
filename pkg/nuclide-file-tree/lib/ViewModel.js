@@ -16,7 +16,8 @@ import ReactDOM from 'react-dom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {Observable, ReplaySubject} from 'rxjs';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
+import {ReplaySubject} from 'rxjs';
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import * as Selectors from './redux/Selectors';
 import * as Actions from './redux/Actions';
@@ -130,8 +131,7 @@ export default class ViewModel {
 
   onDidChangeTitle(callback: (v: string) => mixed): IDisposable {
     return new UniversalDisposable(
-      // $FlowIgnore: Flow doesn't know about Symbol.observable
-      Observable.from(this._store)
+      observableFromReduxStore(this._store)
         .map(Selectors.getSidebarTitle)
         .distinctUntilChanged()
         .takeUntil(this._disposed)
@@ -141,8 +141,7 @@ export default class ViewModel {
 
   onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
     return new UniversalDisposable(
-      // $FlowIgnore: Flow doesn't know about Symbol.observable
-      Observable.from(this._store)
+      observableFromReduxStore(this._store)
         .map(Selectors.getSidebarPath)
         .distinctUntilChanged()
         .takeUntil(this._disposed)

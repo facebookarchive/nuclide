@@ -17,6 +17,7 @@ import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {arrayFlatten, setFilter} from 'nuclide-commons/collection';
 import {diffSets} from 'nuclide-commons/observable';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import * as Reducers from './Reducers';
 import * as Epics from './Epics';
 import {
@@ -66,8 +67,7 @@ const INITIAL_STATE = {
 };
 
 function getFileMessages(store: Store): Observable<Set<DiagnosticMessage>> {
-  // $FlowFixMe: Flow doesn't understand Symbol.observable.
-  const states: Observable<AppState> = Observable.from(store);
+  const states: Observable<AppState> = observableFromReduxStore(store);
   return states
     .map(state => state.messages)
     .distinctUntilChanged()

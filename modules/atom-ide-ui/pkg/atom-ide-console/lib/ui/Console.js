@@ -37,6 +37,7 @@ import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import {toggle} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
 import * as Actions from '../redux/Actions';
 import * as Selectors from '../redux/Selectors';
@@ -117,8 +118,7 @@ export class Console {
 
     this._titleChanges = Observable.combineLatest(
       this._model.toObservable(),
-      // $FlowIssue: Flow doesn't know about Symbol.observable
-      Observable.from(store),
+      observableFromReduxStore(store),
     )
       .takeUntil(this._destroyed)
       .map(() => this.getTitle())
@@ -286,8 +286,9 @@ export class Console {
     }
 
     const actionCreators = this._getBoundActionCreators();
-    // $FlowIssue: Flow doesn't know about Symbol.observable
-    const globalStates: Observable<AppState> = Observable.from(this._store);
+    const globalStates: Observable<AppState> = observableFromReduxStore(
+      this._store,
+    );
 
     const props = Observable.combineLatest(
       this._model.toObservable(),

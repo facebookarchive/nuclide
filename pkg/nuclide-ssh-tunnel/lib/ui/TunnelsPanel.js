@@ -18,6 +18,7 @@ import * as Actions from '../redux/Actions';
 import {Observable} from 'rxjs';
 import {TunnelsPanelContents} from './TunnelsPanelContents';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import * as React from 'react';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/ssh-tunnels';
@@ -50,8 +51,7 @@ export class TunnelsPanel {
   }
 
   getElement(): HTMLElement {
-    // $FlowFixMe: We need to teach Flow about Symbol.observable
-    const states: Observable<AppState> = Observable.from(this._store);
+    const states: Observable<AppState> = observableFromReduxStore(this._store);
 
     const props: Observable<Props> = states.map((state: AppState) => {
       return {
