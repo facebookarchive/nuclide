@@ -24,7 +24,7 @@ import {createSelector} from 'reselect';
 import {DefaultMap, takeIterable} from 'nuclide-commons/collection';
 import {minBy} from 'lodash';
 
-const MAX_MESSAGE_COUNT = 1000;
+const MAX_MESSAGE_COUNT_PER_FILE = 1000;
 
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
@@ -92,7 +92,7 @@ export function* getBoundedThreadedFileMessages(
 ): Iterable<DiagnosticMessage> {
   yield* takeIterable(
     getThreadedFileMessages(state, filePath),
-    MAX_MESSAGE_COUNT,
+    MAX_MESSAGE_COUNT_PER_FILE,
   );
 }
 
@@ -104,30 +104,20 @@ export function getFileMessages(
   state: AppState,
   filePath: NuclideUri,
 ): Array<DiagnosticMessage> {
-  const messages = [];
-  for (const providerMessages of state.messages.values()) {
-    const messagesForFile = providerMessages.get(filePath);
-    if (messagesForFile == null) {
-      continue;
-    }
-    messages.push(...messagesForFile);
-  }
-  return messages;
+  return Array.from(getThreadedFileMessages(state, filePath));
 }
 
 export function getFileMessageUpdates(
   state: AppState,
   filePath: NuclideUri,
 ): DiagnosticMessages {
-  const fileMessages = getFileMessages(state, filePath);
-
   return {
     filePath,
     // Excessive numbers of items cause performance issues in the gutter, table, and decorations.
-    // Truncate the number of items MAX_RESULTS_COUNT.
-    messages: fileMessages.slice(0, MAX_MESSAGE_COUNT),
+    // Truncate the number of items MAX_MESSAGE_COUNT_PER_FILE.
+    messages: Array.from(getBoundedThreadedFileMessages(state, filePath)),
     // Include the total number of messages without truncation
-    totalMessages: fileMessages.length,
+    totalMessages: getFileMessageCount(state, filePath),
   };
 }
 
@@ -185,3 +175,15 @@ export const getUiConfig = createSelector(
     return config;
   },
 );
+
+function getFileMessageCount(state: AppState, filePath: NuclideUri): number {
+  let messageCount = 0;
+  for (const providerMessages of state.messages.values()) {
+    const messagesForFile = providerMessages.get(filePath);
+    if (messagesForFile == null) {
+      continue;
+    }
+    messageCount += messagesForFile.length;
+  }
+  return messageCount;
+}
