@@ -16,8 +16,9 @@ import type {
   DescriptionsState,
   DiagnosticMessage,
   DiagnosticMessages,
-  Store,
   DiagnosticMessageKind,
+  ObservableDiagnosticProvider,
+  Store,
   UiConfig,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -58,6 +59,25 @@ export default class DiagnosticUpdater {
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
+  };
+
+  observeFileMessagesByProvider = (
+    filePath: NuclideUri,
+    callback: (
+      update: Map<ObservableDiagnosticProvider, Array<DiagnosticMessage>>,
+    ) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      this._states
+        .distinctUntilChanged((a, b) => a.messages === b.messages)
+        .let(throttle(THROTTLE_FILE_MESSAGE_MS))
+        .map(state => Selectors.getFileMessagesByProvider(state, filePath))
+        .distinctUntilChanged((a, b) =>
+          // bounded by the number of providers
+          arrayEqual(Array.from(a.values()), Array.from(b.values())),
+        )
+        .subscribe(callback),
+    );
   };
 
   observeFileMessages = (

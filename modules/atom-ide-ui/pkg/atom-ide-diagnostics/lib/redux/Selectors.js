@@ -15,6 +15,7 @@ import type {
   DiagnosticMessage,
   DiagnosticMessages,
   DiagnosticMessageKind,
+  ObservableDiagnosticProvider,
   UiConfig,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -25,6 +26,17 @@ const MAX_MESSAGE_COUNT = 1000;
 
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
+
+export function getFileMessagesByProvider(
+  state: AppState,
+  filePath: NuclideUri,
+): Map<ObservableDiagnosticProvider, Array<DiagnosticMessage>> {
+  const providerToMessages = new Map();
+  for (const [provider, messages] of state.messages) {
+    providerToMessages.set(provider, messages.get(filePath) ?? []);
+  }
+  return providerToMessages;
+}
 
 /**
  * Gets the current diagnostic messages for the file.
