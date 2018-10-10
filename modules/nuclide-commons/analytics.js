@@ -129,11 +129,15 @@ export class TimingTracker {
     this._trackTimingEvent(error);
   }
 
+  onCancel(): void {
+    this._trackTimingEvent(/* error */ null, true);
+  }
+
   onSuccess(): void {
     this._trackTimingEvent(/* error */ null);
   }
 
-  _trackTimingEvent(exception: ?Error): void {
+  _trackTimingEvent(exception: ?Error, canceled: boolean = false): void {
     if (canMeasure) {
       /* eslint-disable no-undef */
       // call measure to add this information to the devtools timeline in the
@@ -152,6 +156,7 @@ export class TimingTracker {
       eventName: this._eventName,
       error: exception ? '1' : '0',
       exception: exception ? exception.toString() : '',
+      canceled,
     });
   }
 }
