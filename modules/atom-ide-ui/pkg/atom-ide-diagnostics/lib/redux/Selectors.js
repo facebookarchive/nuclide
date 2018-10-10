@@ -21,21 +21,79 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {createSelector} from 'reselect';
+import {DefaultMap, takeIterable} from 'nuclide-commons/collection';
+import {minBy} from 'lodash';
 
 const MAX_MESSAGE_COUNT = 1000;
 
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
 
-export function getFileMessagesByProvider(
+function* getThreadedFileMessages(
   state: AppState,
   filePath: NuclideUri,
-): Map<ObservableDiagnosticProvider, Array<DiagnosticMessage>> {
+): Iterable<DiagnosticMessage> {
   const providerToMessages = new Map();
   for (const [provider, messages] of state.messages) {
-    providerToMessages.set(provider, messages.get(filePath) ?? []);
+    const fileMessages = messages.get(filePath);
+    if (fileMessages != null && fileMessages.length > 0) {
+      providerToMessages.set(provider, fileMessages);
+    }
   }
-  return providerToMessages;
+
+  const providerToCurrentIndex: DefaultMap<
+    ObservableDiagnosticProvider,
+    number,
+  > = new DefaultMap(() => 0);
+
+  while (providerToMessages.size) {
+    // "Peek" at the next message from each provider, and store them so we can
+    // select the best next one.
+    const nextMessageCandidates: Array<
+      [ObservableDiagnosticProvider, DiagnosticMessage],
+    > = Array.from(providerToMessages.entries()).map(([provider, messages]) => [
+      provider,
+      messages[providerToCurrentIndex.get(provider)],
+    ]);
+
+    // Pick the "closest" (lowest row and column pair) of the options we generated
+    const [closestProvider, closestMessage] = minBy(
+      nextMessageCandidates,
+      ([provider, message]) => {
+        const range = message && message.range;
+        return range
+          ? range.start.row + range.start.column / Number.MAX_SAFE_INTEGER
+          : 0;
+      },
+    );
+
+    // Advance this provider's index forward one. First, get "i"
+    const closestProviderIndex = providerToCurrentIndex.get(closestProvider);
+    const closestProviderMessages = providerToMessages.get(closestProvider);
+    if (
+      closestProviderMessages != null &&
+      closestProviderIndex < closestProviderMessages.length - 1
+    ) {
+      // "i++"
+      providerToCurrentIndex.set(closestProvider, closestProviderIndex + 1);
+    } else {
+      // We've exhausted the messages for this provider. Remove it from future
+      // consideration.
+      providerToMessages.delete(closestProvider);
+    }
+
+    yield closestMessage;
+  }
+}
+
+export function* getBoundedThreadedFileMessages(
+  state: AppState,
+  filePath: NuclideUri,
+): Iterable<DiagnosticMessage> {
+  yield* takeIterable(
+    getThreadedFileMessages(state, filePath),
+    MAX_MESSAGE_COUNT,
+  );
 }
 
 /**

@@ -20,13 +20,14 @@ import type {
 } from '../../atom-ide-datatip/lib/types';
 import type {
   DiagnosticMessage,
-  DiagnosticMessages,
   DiagnosticUpdater,
+  ObservableDiagnosticProvider,
 } from '../../atom-ide-diagnostics/lib/types';
 
 import {areSetsEqual} from 'nuclide-commons/collection';
 import {fastDebounce, diffSets} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {throttle} from 'nuclide-commons/observable';
 import analytics from 'nuclide-commons/analytics';
 import AsyncStorage from 'idb-keyval';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -76,7 +77,7 @@ class Activation {
   _subscriptions: UniversalDisposable;
   _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
-  _fileDiagnostics: WeakMap<atom$TextEditor, Array<DiagnosticMessage>>;
+  _fileDiagnostics: WeakMap<atom$TextEditor, Iterable<DiagnosticMessage>>;
   _globalViewStates: ?Observable<GlobalViewState>;
   _gatekeeperServices: BehaviorSubject<?GatekeeperService> = new BehaviorSubject();
 
@@ -160,8 +161,8 @@ class Activation {
             this._subscriptions.remove(subscription);
             this._fileDiagnostics.delete(editor);
           })
-          .subscribe(update => {
-            this._fileDiagnostics.set(editor, update.messages);
+          .subscribe(providerToMessages => {
+            this._fileDiagnostics.set(editor, providerToMessages);
           });
         this._subscriptions.add(subscription);
       }),
@@ -515,13 +516,22 @@ class Activation {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Array<DiagnosticMessage> {
-    const messagesForFile = this._fileDiagnostics.get(editor);
-    if (messagesForFile == null) {
+    const messages = this._fileDiagnostics.get(editor);
+
+    if (messages == null) {
       return [];
     }
-    return messagesForFile.filter(
-      message => message.range != null && message.range.containsPoint(position),
-    );
+
+    const messagesAtPosition = [];
+    for (const message of messages) {
+      if (message.range && message.range.end.row > position.row) {
+        break;
+      }
+      if (message.range != null && message.range.containsPoint(position)) {
+        messagesAtPosition.push(message);
+      }
+    }
+    return messagesAtPosition;
   }
 
   _gutterConsumeDiagnosticUpdates(
@@ -562,7 +572,13 @@ class Activation {
             subscriptions.remove(subscription);
           })
           .subscribe(
-            ([openedMessageIds: Set<string>, update: DiagnosticMessages]) => {
+            ([
+              openedMessageIds: Set<string>,
+              update: Map<
+                ObservableDiagnosticProvider,
+                Array<DiagnosticMessage>,
+              >,
+            ]) => {
               // Although the subscription should be cleaned up on editor destroy,
               // the very act of destroying the editor can trigger diagnostic updates.
               // Thus this callback can still be triggered after the editor is destroyed.
@@ -691,48 +707,44 @@ function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
   isStaleMessageEnabledStream: Observable<boolean>,
-): Observable<DiagnosticMessages> {
-  return (
-    observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
-      .startWith(editor.getPath())
-      .switchMap(
-        filePath =>
-          filePath != null
-            ? observableFromSubscribeFunction(cb =>
-                diagnosticUpdater.observeFileMessages(filePath, cb),
-              )
-            : Observable.empty(),
-      )
-      .combineLatest(isStaleMessageEnabledStream)
-      // $FlowFixMe
-      .throttle(
-        ([_, isStaleMessageEnabled]) =>
-          Observable.interval(
-            isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
-          ),
-        {leading: true, trailing: true},
-      )
-      .map(([diagnosticMessages, isStaleMessageEnabled]) => {
-        return {
-          ...diagnosticMessages,
-          messages: diagnosticMessages.messages
-            .filter(diagnostic => diagnostic.type !== 'Hint')
-            .map(message => {
-              if (!isStaleMessageEnabled) {
-                // Note: reason of doing this is currently Flow is sending message
-                // marked as stale sometimes(on user type or immediately on save).
-                // Until we turn on the gk, we don't want user to see the Stale
-                // style/behavior just yet. so here we mark them as not stale.
-                message.stale = false;
+): Observable<Iterable<DiagnosticMessage>> {
+  return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
+    .startWith(editor.getPath())
+    .switchMap(
+      filePath =>
+        filePath != null
+          ? observableFromSubscribeFunction(cb =>
+              diagnosticUpdater.observeFileMessagesIterator(filePath, cb),
+            )
+          : Observable.empty(),
+    )
+    .combineLatest(isStaleMessageEnabledStream)
+    .let(
+      throttle(([_, isStaleMessageEnabled]) =>
+        Observable.interval(
+          isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
+        ),
+      ),
+    )
+    .map(
+      ([messages, isStaleMessageEnabled]) =>
+        // Flow and other providers have begun sending updates that mark prior
+        // messages as stale. For users outside the stale diagnostics GK,
+        // never show these messages as stale.
+        isStaleMessageEnabled
+          ? messages
+          : (function*() {
+              for (const message of messages) {
+                if (message != null && message.type !== 'Hint') {
+                  message.stale = false;
+                }
+                yield message;
               }
-              return message;
-            }),
-        };
-      })
-      .takeUntil(
-        observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-      )
-  );
+            })(),
+    )
+    .takeUntil(
+      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
+    );
 }
 
 createPackage(module.exports, Activation);

@@ -13,7 +13,6 @@
 import type {
   DiagnosticUpdater,
   DiagnosticMessage,
-  DiagnosticMessages,
 } from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -123,7 +122,7 @@ export const applyUpdateToEditor = decorateTrackTimingSampled(
 
 function _applyUpdateToEditor(
   editor: TextEditor,
-  update: DiagnosticMessages,
+  update: Iterable<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
   blockDecorationContainer: HTMLElement,
   openedMessageIds: Set<string>,
@@ -170,7 +169,9 @@ function _applyUpdateToEditor(
     messages.push(message);
   }
 
-  for (const message of update.messages) {
+  // TODO: Implement chunking and async rendering
+  const allMessages = Array.from(update);
+  for (const message of allMessages) {
     const wordRange =
       message.range != null && message.range.isEmpty()
         ? wordAtPosition(editor, message.range.start)
@@ -264,11 +265,11 @@ function _applyUpdateToEditor(
   editorToMarkers.set(editor, markers);
   editor.onDidDestroy(() => {
     // clean up openned message ids
-    removeOpenMessageId(update.messages, openedMessageIds, setOpenMessageIds);
+    removeOpenMessageId(allMessages, openedMessageIds, setOpenMessageIds);
   });
   // Once the gutter is shown for the first time, it is displayed for the lifetime of the
   // TextEditor.
-  if (update.messages.length > 0) {
+  if (allMessages.length > 0) {
     gutter.show();
     analytics.track('diagnostics-show-editor-diagnostics');
   }
@@ -297,7 +298,7 @@ function createBlockDecorations(
   });
 
   const fragment = (
-    <React.Fragment>
+    <>
       {Array.from(blockRowToMessages).map(([row, messages]) => {
         return (
           <BlockDecoration
@@ -324,7 +325,7 @@ function createBlockDecorations(
           </BlockDecoration>
         );
       })}
-    </React.Fragment>
+    </>
   );
   ReactDOM.render(fragment, blockDecorationContainer);
 }

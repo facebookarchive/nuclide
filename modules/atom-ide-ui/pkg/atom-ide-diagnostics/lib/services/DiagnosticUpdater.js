@@ -17,7 +17,6 @@ import type {
   DiagnosticMessage,
   DiagnosticMessages,
   DiagnosticMessageKind,
-  ObservableDiagnosticProvider,
   Store,
   UiConfig,
 } from '../types';
@@ -61,21 +60,20 @@ export default class DiagnosticUpdater {
     return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
   };
 
-  observeFileMessagesByProvider = (
+  observeFileMessagesIterator = (
     filePath: NuclideUri,
-    callback: (
-      update: Map<ObservableDiagnosticProvider, Array<DiagnosticMessage>>,
-    ) => mixed,
+    callback: (update: Iterable<DiagnosticMessage>) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
         .let(throttle(THROTTLE_FILE_MESSAGE_MS))
-        .map(state => Selectors.getFileMessagesByProvider(state, filePath))
-        .distinctUntilChanged((a, b) =>
-          // bounded by the number of providers
-          arrayEqual(Array.from(a.values()), Array.from(b.values())),
-        )
+        .map(state => ({
+          [Symbol.iterator]() {
+            return Selectors.getBoundedThreadedFileMessages(state, filePath);
+          },
+        }))
+        // $FlowFixMe Flow doesn't know about Symbol.iterator
         .subscribe(callback),
     );
   };
