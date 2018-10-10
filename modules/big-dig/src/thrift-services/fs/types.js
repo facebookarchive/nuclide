@@ -41,4 +41,13 @@ export interface RemoteFileSystemClient {
   ): Promise<void>;
   deletePath(uri: string, options: filesystem_types.DeleteOpt): Promise<void>;
   readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>>;
+
+  open(path: string, permissionFlags: number, mode: number): Promise<number>;
+  close(fd: number): Promise<void>;
+  fsync(fd: number): Promise<void>;
+  fstat(fd: number): Promise<filesystem_types.FileStat>;
+  ftruncate(fd: number, len: number): Promise<void>;
+  chmod(path: string, mode: number): Promise<void>;
+  chown(path: string, uid: number, gid: number): Promise<void>;
+  utimes(path: string, atime: number, mtime: number): Promise<void>;
 }
