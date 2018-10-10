@@ -15,12 +15,15 @@ import type {
   Action,
   CodeActionsState,
   DescriptionsState,
+  DiagnosticProviderUpdate,
   MessagesState,
   ObservableDiagnosticProvider,
 } from '../types';
 import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 
 import * as Actions from './Actions';
+
+const MAX_MESSAGE_COUNT_PER_PROVIDER_PER_FILE = 1000;
 
 export function messages(
   state: MessagesState = new Map(),
@@ -32,11 +35,14 @@ export function messages(
       const nextState = new Map(state);
       // Override the messages we already have for each path.
       const prevMessages = nextState.get(provider) || new Map();
-      // This O(n) map copying means that a series of streaming updates will be O(n^2). However,
+      // This O(nlogn) copying + sorting is potentially expensive. However,
       // we'd like to keep this immutable and we're also accumulating the messages, (and therefore
       // already O(n^2)). So, for now, we'll accept that and revisit if it proves to be a
       // bottleneck.
-      const nextMessages = new Map([...prevMessages, ...update]);
+      const nextMessages = new Map([
+        ...prevMessages,
+        ...sortUpdateMessages(update),
+      ]);
       nextState.set(provider, nextMessages);
       return nextState;
     }
@@ -212,4 +218,31 @@ function markStaleMessages(state: MessagesState, filePath: NuclideUri) {
     nextState.set(provider, newFileToMessages);
   });
   return nextState;
+}
+
+function sortUpdateMessages(
+  update: DiagnosticProviderUpdate,
+): DiagnosticProviderUpdate {
+  const newUpdate = new Map();
+  for (const [filePath, updateMessages] of update) {
+    newUpdate.set(
+      filePath,
+      updateMessages
+        .slice(0, MAX_MESSAGE_COUNT_PER_PROVIDER_PER_FILE)
+        .sort((a, b) => {
+          const aRange = a.range;
+          if (aRange == null) {
+            return -1;
+          }
+
+          const bRange = b.range;
+          if (bRange == null) {
+            return 1;
+          }
+
+          return aRange.compare(bRange);
+        }),
+    );
+  }
+  return newUpdate;
 }
