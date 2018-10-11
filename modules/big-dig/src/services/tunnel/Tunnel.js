@@ -11,10 +11,10 @@
  */
 
 import type {Transport} from './Proxy';
+import type {TunnelMessage} from './types';
+
 import {SocketManager} from './SocketManager';
-
 import {Proxy} from './Proxy';
-
 import invariant from 'assert';
 import EventEmitter from 'events';
 import {getLogger} from 'log4js';
@@ -96,16 +96,18 @@ export class Tunnel extends EventEmitter {
     );
 
     transport.send(
-      JSON.stringify({
-        event: 'createProxy',
-        tunnelId,
-        useIPv4,
-        // NB: on the server, the remote port and local ports are reversed.
-        // We want to start the proxy on the remote port (relative to the
-        // client) and start the socket manager on the local port
-        localPort: remotePort,
-        remotePort: localPort,
-      }),
+      JSON.stringify(
+        ({
+          event: 'createProxy',
+          tunnelId,
+          useIPv4,
+          // NB: on the server, the remote port and local ports are reversed.
+          // We want to start the proxy on the remote port (relative to the
+          // client) and start the socket manager on the local port
+          localPort: remotePort,
+          remotePort: localPort,
+        }: TunnelMessage),
+      ),
     );
 
     return new ReverseTunnel(
@@ -201,10 +203,12 @@ export class ReverseTunnel extends Tunnel {
       invariant(this._socketManager);
       this._socketManager.close();
       this._transport.send(
-        JSON.stringify({
-          event: 'closeProxy',
-          tunnelId: this._id,
-        }),
+        JSON.stringify(
+          ({
+            event: 'closeProxy',
+            tunnelId: this._id,
+          }: TunnelMessage),
+        ),
       );
     }
   }

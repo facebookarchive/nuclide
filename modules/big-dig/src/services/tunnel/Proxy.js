@@ -79,16 +79,42 @@ export class Proxy extends EventEmitter {
         this._sendMessage({
           event: 'connection',
           clientId,
+          tunnelId: this._tunnelId,
         });
 
         // forward events over the transport
-        ['timeout', 'end', 'close', 'data'].forEach(event => {
-          socket.on(event, arg => {
-            this._sendMessage({
-              event,
-              arg,
-              clientId,
-            });
+        // NOTE: Needs to be explicit otherwise Flow will complain about the
+        // type. We prefer this as opposed to using `any` types in such important infra code.
+        socket.on('timeout', arg => {
+          this._sendMessage({
+            event: 'timeout',
+            arg,
+            clientId,
+            tunnelId: this._tunnelId,
+          });
+        });
+        socket.on('end', arg => {
+          this._sendMessage({
+            event: 'end',
+            arg,
+            clientId,
+            tunnelId: this._tunnelId,
+          });
+        });
+        socket.on('close', arg => {
+          this._sendMessage({
+            event: 'close',
+            arg,
+            clientId,
+            tunnelId: this._tunnelId,
+          });
+        });
+        socket.on('data', arg => {
+          this._sendMessage({
+            event: 'data',
+            arg,
+            clientId,
+            tunnelId: this._tunnelId,
           });
         });
 
@@ -97,6 +123,7 @@ export class Proxy extends EventEmitter {
           this._sendMessage({
             event: 'error',
             error,
+            tunnelId: this._tunnelId,
             clientId,
           });
           socket.destroy(error);
@@ -117,6 +144,7 @@ export class Proxy extends EventEmitter {
           useIpv4: this._useIPv4,
           remotePort: this._remotePort,
           error,
+          tunnelId: this._tunnelId,
         });
         reject(error);
       });
@@ -132,6 +160,7 @@ export class Proxy extends EventEmitter {
           port: this._localPort,
           useIPv4: this._useIPv4,
           remotePort: this._remotePort,
+          tunnelId: this._tunnelId,
         });
         resolve();
       });
@@ -143,20 +172,21 @@ export class Proxy extends EventEmitter {
   }
 
   receive(msg: TunnelMessage): void {
-    const {clientId} = msg;
-    invariant(clientId != null);
-
-    if (msg.event === 'data') {
-      invariant(msg.arg != null);
-      this._forwardData(clientId, msg.arg);
-    } else if (msg.event === 'close') {
-      this._ensureSocketClosed(clientId);
-    } else if (msg.event === 'error') {
-      invariant(clientId != null);
-      invariant(msg.error != null);
-      this._destroySocket(clientId, msg.error);
-    } else if (msg.event === 'end') {
-      this._endSocket(clientId);
+    switch (msg.event) {
+      case 'data':
+        this._forwardData(msg.clientId, msg.arg);
+        return;
+      case 'close':
+        this._ensureSocketClosed(msg.clientId);
+        return;
+      case 'error':
+        this._destroySocket(msg.clientId, msg.error);
+        return;
+      case 'end':
+        this._endSocket(msg.clientId);
+        return;
+      default:
+        throw new Error(`Invalid tunnel message: ${msg.event}`);
     }
   }
 
@@ -210,7 +240,7 @@ export class Proxy extends EventEmitter {
   }
 
   _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(Encoder.encode({tunnelId: this._tunnelId, ...msg}));
+    this._transport.send(Encoder.encode(msg));
   }
 
   close(): void {
@@ -222,6 +252,6 @@ export class Proxy extends EventEmitter {
       socket.end();
     });
     this.removeAllListeners();
-    this._sendMessage({event: 'proxyClosed'});
+    this._sendMessage({event: 'proxyClosed', tunnelId: this._tunnelId});
   }
 }

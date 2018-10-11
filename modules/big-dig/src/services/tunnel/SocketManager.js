@@ -47,23 +47,27 @@ export class SocketManager extends EventEmitter {
   }
 
   receive(msg: TunnelMessage): void {
-    const {clientId} = msg;
-    invariant(clientId != null);
-
-    if (msg.event === 'connection') {
-      this._createConnection(clientId);
-    } else if (msg.event === 'data') {
-      invariant(msg.arg != null);
-      this._forwardData(clientId, msg.arg);
-    } else if (msg.event === 'close') {
-      this._ensureSocketClosed(clientId);
-    } else if (msg.event === 'error') {
-      invariant(clientId != null);
-      invariant(msg.error != null);
-      this._destroySocket(clientId, msg.error);
-    } else if (msg.event === 'end') {
-      this._endSocket(clientId);
+    switch (msg.event) {
+      case 'connection':
+        this._createConnection(msg.clientId);
+        return;
+      case 'data':
+        this._forwardData(msg.clientId, msg.arg);
+        return;
+      case 'close':
+        this._ensureSocketClosed(msg.clientId);
+        return;
+      case 'error':
+        this._destroySocket(msg.clientId, msg.error);
+        return;
+      case 'end':
+        this._endSocket(msg.clientId);
+        return;
+      default:
+        throw new Error(`Invalid tunnel message: ${msg.event}`);
     }
+    // const {clientId} = msg;
+    // invariant(msg.clientId != null);
   }
 
   _createConnection(clientId: number) {
@@ -76,13 +80,38 @@ export class SocketManager extends EventEmitter {
     const socket = net.createConnection(connectOptions);
 
     // forward events over the transport
-    ['timeout', 'end', 'close', 'data'].forEach(event => {
-      socket.on(event, arg => {
-        this._sendMessage({
-          event,
-          arg,
-          clientId,
-        });
+    // NOTE: Needs to be explicit otherwise Flow will complain about the
+    // type. We prefer this as opposed to using `any` types in such important infra code.
+    socket.on('timeout', (arg: string) => {
+      this._sendMessage({
+        event: 'timeout',
+        arg,
+        clientId,
+        tunnelId: this._tunnelId,
+      });
+    });
+    socket.on('end', (arg: string) => {
+      this._sendMessage({
+        event: 'end',
+        arg,
+        clientId,
+        tunnelId: this._tunnelId,
+      });
+    });
+    socket.on('close', (arg: string) => {
+      this._sendMessage({
+        event: 'close',
+        arg,
+        clientId,
+        tunnelId: this._tunnelId,
+      });
+    });
+    socket.on('data', (arg: string) => {
+      this._sendMessage({
+        event: 'data',
+        arg,
+        clientId,
+        tunnelId: this._tunnelId,
       });
     });
 
@@ -90,8 +119,9 @@ export class SocketManager extends EventEmitter {
       logger.error('error on socket: ', error);
       this._sendMessage({
         event: 'error',
-        error,
+        tunnelId: this._tunnelId,
         clientId,
+        error,
       });
       socket.destroy(error);
     });
@@ -152,7 +182,7 @@ export class SocketManager extends EventEmitter {
   }
 
   _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(Encoder.encode({tunnelId: this._tunnelId, ...msg}));
+    this._transport.send(Encoder.encode(msg));
   }
 
   close() {

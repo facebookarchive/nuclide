@@ -10,21 +10,48 @@
  * @format
  */
 
-export type TunnelMessage = {
-  event:
-    | 'proxyCreated'
-    | 'proxyClosed'
-    | 'proxyError'
-    | 'data'
-    | 'timeout'
-    | 'error'
-    | 'end'
-    | 'close'
-    | 'connection',
-  tunnelId?: string,
-  clientId?: number,
-  arg?: string,
-  port?: number,
-  remotePort?: number,
-  error?: Error,
-};
+export type TunnelMessage =
+  | {
+      event: 'error',
+      clientId: number,
+      error: Error,
+      tunnelId: string,
+    }
+  | {
+      event: 'data' | 'timeout' | 'end' | 'close',
+      arg: string,
+      clientId: number,
+      tunnelId: string,
+    }
+  | {
+      event: 'proxyCreated',
+      port: number,
+      remotePort: number,
+      tunnelId: string,
+      useIPv4: boolean,
+    }
+  | {event: 'proxyClosed', tunnelId: string}
+  | {
+      event: 'proxyError',
+      error: Error,
+      port: number,
+      remotePort: number,
+      tunnelId: string,
+      useIpv4: boolean,
+    }
+  | {
+      event: 'connection',
+      clientId: number,
+      tunnelId: string,
+    }
+  | {
+      event: 'closeProxy',
+      tunnelId: string,
+    }
+  | {
+      event: 'createProxy',
+      localPort: number,
+      remotePort: number,
+      tunnelId: string,
+      useIPv4: boolean,
+    };
