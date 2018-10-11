@@ -6843,30 +6843,124 @@ declare module 'vscode' {
     pattern: string;
   }
 
+  /**
+   * The parameters of a query for text search.
+   */
   declare export interface TextSearchQuery {
+    /**
+     * The text pattern to search for.
+     */
     pattern: string;
+
+    /**
+     * Whether or not `pattern` should be interpreted as a regular expression.
+     */
     isRegExp?: boolean;
+
+    /**
+     * Whether or not the search should be case-sensitive.
+     */
     isCaseSensitive?: boolean;
+
+    /**
+     * Whether or not to search for whole word matches only.
+     */
     isWordMatch?: boolean;
   }
 
+  /**
+   * Options common to file and text search
+   */
   declare export interface SearchOptions {
+    /**
+     * The root folder to search within.
+     */
     folder: Uri;
+
+    /**
+     * Files that match an `includes` glob pattern should be included in the search.
+     */
     includes: GlobPattern[];
+
+    /**
+     * Files that match an `excludes` glob pattern should be excluded from the search.
+     */
     excludes: GlobPattern[];
-    useIgnoreFiles?: boolean;
-    followSymlinks?: boolean;
+
+    /**
+     * Whether external files that exclude files, like .gitignore, should be respected.
+     * See the vscode setting `"search.useIgnoreFiles"`.
+     */
+    useIgnoreFiles: boolean;
+
+    /**
+     * Whether symlinks should be followed while searching.
+     * See the vscode setting `"search.followSymlinks"`.
+     */
+    followSymlinks: boolean;
+
+    /**
+     * Whether global files that exclude files, like .gitignore, should be respected.
+     * See the vscode setting `"search.useGlobalIgnoreFiles"`.
+     */
+    useGlobalIgnoreFiles: boolean;
   }
 
   declare export interface FileSearchOptions extends SearchOptions {
     maxResults: number;
   }
 
+  declare export type TextSearchPreviewOptions = {
+    /**
+     * The maximum number of lines in the preview.
+     * Only search providers that support multiline search will ever return more than one line in the match.
+     */
+    matchLines: number;
+
+    /**
+     * The maximum number of characters included per line.
+     */
+    charsPerLine: number;
+  }
+
+  /**
+   * Options that apply to text search.
+   */
   declare export interface TextSearchOptions extends SearchOptions {
+    /**
+     * The maximum number of results to be returned.
+     */
     maxResults: number;
-    previewOptions?: any;
+
+    /**
+     * Options to specify the size of the result text preview.
+     */
+    previewOptions?: TextSearchPreviewOptions;
+
+    /**
+     * Exclude files larger than `maxFileSize` in bytes.
+     */
     maxFileSize?: number;
+
+    /**
+     * Interpret files using this encoding.
+     * See the vscode setting `"files.encoding"`
+     */
     encoding?: string;
+  }
+
+  /**
+   * Information collected when text search is complete.
+   */
+  declare export type TextSearchComplete = {
+    /**
+     * Whether the search hit the limit on the maximum number of search results.
+     * `maxResults` on [`TextSearchOptions`](#TextSearchOptions) specifies the max number of results.
+     * - If exactly that number of matches exist, this should be false.
+     * - If `maxResults` matches are returned and more exist, this should be true.
+     * - If search hits an internal limit which is less than `maxResults`, this should be true.
+     */
+    limitHit?: boolean;
   }
 
   declare export type TextSearchResultPreview = {
@@ -6903,11 +6997,11 @@ declare module 'vscode' {
   }
 
   declare export interface FileSearchProvider {
-    +provideFileSearchResults: (query: FileSearchQuery, options: FileSearchOptions, token: CancellationToken) => Thenable<Uri[]>;
+    +provideFileSearchResults: (query: FileSearchQuery, options: FileSearchOptions, token: CancellationToken) => ProviderResult<Uri[]>;
   }
 
   declare export interface TextSearchProvider {
-    +provideTextSearchResults: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => Thenable<void>;
+    +provideTextSearchResults: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => ProviderResult<TextSearchComplete>;
   }
 
   /**
@@ -6944,6 +7038,12 @@ declare module 'vscode' {
      * See the vscode setting `"search.followSymlinks"`.
      */
     followSymlinks?: boolean;
+
+    /**
+     * Whether global files that exclude files, like .gitignore, should be respected.
+     * See the vscode setting `"search.useGlobalIgnoreFiles"`.
+     */
+    useGlobalIgnoreFiles: boolean;
 
     /**
      * Interpret files using this encoding.
