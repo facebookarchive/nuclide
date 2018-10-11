@@ -6869,6 +6869,13 @@ declare module 'vscode' {
   }
 
   /**
+   * A file glob pattern to match file paths against.
+   * TODO@roblou - merge this with the GlobPattern docs/definition in vscode.d.ts.
+   * @see [GlobPattern](#GlobPattern)
+   */
+  declare export type GlobString = string;
+
+  /**
    * Options common to file and text search
    */
   declare export interface SearchOptions {
@@ -6880,12 +6887,12 @@ declare module 'vscode' {
     /**
      * Files that match an `includes` glob pattern should be included in the search.
      */
-    includes: GlobPattern[];
+    includes: GlobString[];
 
     /**
      * Files that match an `excludes` glob pattern should be excluded from the search.
      */
-    excludes: GlobPattern[];
+    excludes: GlobString[];
 
     /**
      * Whether external files that exclude files, like .gitignore, should be respected.
