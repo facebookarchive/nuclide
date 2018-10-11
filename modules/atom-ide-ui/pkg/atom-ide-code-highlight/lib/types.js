@@ -16,5 +16,5 @@ export type CodeHighlightProvider = {
     bufferPosition: atom$Point,
   ): Promise<?Array<atom$Range>>,
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
 };

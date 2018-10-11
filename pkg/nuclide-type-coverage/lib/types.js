@@ -17,7 +17,7 @@ import type {CoverageResult} from './rpc-types';
 export interface CoverageProvider {
   getCoverage(path: NuclideUri): Promise<?CoverageResult>;
   priority: number;
-  grammarScopes: Array<string>;
+  +grammarScopes?: Array<string>;
   displayName: string;
   icon?: IconName;
   onToggle?: (clicked: boolean) => mixed;

@@ -44,7 +44,7 @@ export type DefinitionProvider = {
   // If there are multiple providers for a given grammar,
   // the one with the highest priority will be used.
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
   wordRegExp: ?RegExp,
   // Obtains the definition in an editor at the given point.
   // This should return null if no definition is available.

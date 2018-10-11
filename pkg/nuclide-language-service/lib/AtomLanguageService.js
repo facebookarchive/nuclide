@@ -103,10 +103,6 @@ export class AtomLanguageService<T: LanguageService> {
     this._subscriptions.add(this._connectionToLanguageService);
   }
 
-  _selector(): string {
-    return this._config.grammars.join(', ');
-  }
-
   activate(): void {
     let busySignalService: ?BusySignalService = null;
     const busySignalProvider = {
@@ -163,7 +159,7 @@ export class AtomLanguageService<T: LanguageService> {
       this._subscriptions.add(
         TypeCoverageProvider.register(
           this._config.name,
-          this._selector(),
+          this._config.grammars,
           coverageConfig,
           this._connectionToLanguageService,
         ),

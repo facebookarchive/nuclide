@@ -370,7 +370,7 @@ export type RenameReturn = RenameData | RenameError;
 
 export type RefactorProvider = {
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
 
   refactorings?: (
     editor: atom$TextEditor,

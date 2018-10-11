@@ -28,7 +28,7 @@ export type TypeCoverageConfig = {|
 export class TypeCoverageProvider<T: LanguageService> {
   displayName: string;
   priority: number;
-  grammarScopes: string;
+  grammarScopes: Array<string>;
   icon: IconName | void;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
@@ -36,7 +36,7 @@ export class TypeCoverageProvider<T: LanguageService> {
 
   constructor(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     priority: number,
     analyticsEventName: string,
     icon: IconName | void,
@@ -44,7 +44,7 @@ export class TypeCoverageProvider<T: LanguageService> {
   ) {
     this.displayName = name;
     this.priority = priority;
-    this.grammarScopes = selector;
+    this.grammarScopes = grammarScopes;
     this.icon = icon;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
@@ -60,7 +60,7 @@ export class TypeCoverageProvider<T: LanguageService> {
 
   static register(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     config: TypeCoverageConfig,
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
@@ -69,7 +69,7 @@ export class TypeCoverageProvider<T: LanguageService> {
       config.version,
       new TypeCoverageProvider(
         name,
-        selector,
+        grammarScopes,
         config.priority,
         config.analyticsEventName,
         config.icon,

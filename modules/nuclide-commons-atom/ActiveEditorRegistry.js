@@ -28,7 +28,7 @@ import ProviderRegistry from './ProviderRegistry';
 
 export type Provider = {
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
 };
 
 export type Result<T, V> =

@@ -29,7 +29,7 @@ export type SignatureHelpRegistry = (
  */
 export type SignatureHelpProvider = {
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
 
   // A set of characters that will trigger signature help when typed.
   // If a null/empty set is provided, only manual activation of the command works.

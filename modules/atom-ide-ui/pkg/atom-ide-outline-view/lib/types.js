@@ -19,7 +19,7 @@ export type OutlineProvider = {
   // If there are multiple providers for a given grammar, the one with the highest priority will be
   // used.
   priority: number,
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
   getOutline(editor: TextEditor): Promise<?Outline>,
 };
 

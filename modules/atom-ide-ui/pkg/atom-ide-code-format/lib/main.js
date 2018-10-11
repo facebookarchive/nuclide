@@ -31,8 +31,10 @@ class Activation {
 
   consumeLegacyProvider(provider: CodeFormatProvider): IDisposable {
     // Legacy providers used `selector` / `inclusionPriority`.
+    // $FlowIgnore legacy API compatability.
     provider.grammarScopes =
       provider.grammarScopes ||
+      // $FlowIgnore
       (provider.selector != null ? provider.selector.split(', ') : null);
     provider.priority =
       provider.priority != null
