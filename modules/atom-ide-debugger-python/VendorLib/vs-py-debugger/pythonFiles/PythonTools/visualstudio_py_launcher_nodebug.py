@@ -9,7 +9,7 @@ import traceback
 import time
 import socket
 try:
-    import visualstudio_py_util as _vspu
+    import ptvsd.visualstudio_py_util as _vspu
 except:
     traceback.print_exc()
     print("""Internal error detected. Please copy the above traceback and report at

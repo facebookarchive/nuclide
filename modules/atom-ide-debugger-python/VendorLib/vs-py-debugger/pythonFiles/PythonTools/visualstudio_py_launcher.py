@@ -29,7 +29,7 @@ def launch():
     import sys
     import traceback
     try:
-        import visualstudio_py_debugger as vspd
+        import ptvsd.visualstudio_py_debugger as vspd
     except:
         traceback.print_exc()
         print('''

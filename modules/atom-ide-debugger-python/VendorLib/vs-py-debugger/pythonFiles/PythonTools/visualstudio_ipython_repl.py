@@ -21,8 +21,8 @@ __version__ = "3.0.0.0"
 
 import re
 import sys
-from visualstudio_py_repl import BasicReplBackend, ReplBackend, UnsupportedReplException, _command_line_to_args_list
-from visualstudio_py_util import to_bytes
+from ptvsd.visualstudio_py_repl import BasicReplBackend, ReplBackend, UnsupportedReplException, _command_line_to_args_list
+from ptvsd.visualstudio_py_util import to_bytes
 try:
     import thread
 except:
@@ -401,7 +401,7 @@ exec(compile(%(contents)r, %(filename)r, 'exec'))
 def __visualstudio_debugger_init():    
     import sys
     sys.path.append(''' + repr(path.dirname(__file__)) + ''')
-    import visualstudio_py_debugger
+    import ptvsd.visualstudio_py_debugger as visualstudio_py_debugger
     new_thread = visualstudio_py_debugger.new_thread()
     sys.settrace(new_thread.trace_func)
     visualstudio_py_debugger.intercept_threads(True)
@@ -413,7 +413,7 @@ del __visualstudio_debugger_init
     def attach_process(self, port, debugger_id):
         self.run_command('''
 def __visualstudio_debugger_attach():
-    import visualstudio_py_debugger
+    import ptvsd.visualstudio_py_debugger as visual_studio_py_debugger
 
     def do_detach():
         visualstudio_py_debugger.DETACH_CALLBACKS.remove(do_detach)
