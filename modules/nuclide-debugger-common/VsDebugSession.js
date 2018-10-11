@@ -80,6 +80,7 @@ export default class VsDebugSession extends V8Protocol {
   _onDidLoadSource: Subject<DebugProtocol.LoadedSourceEvent>;
   _onDidCustom: Subject<DebugProtocol.DebugEvent>;
   _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
+  _onDidEvaluate: Subject<DebugProtocol.EvaluateResponse>;
   _runInTerminalHandler: ?RunInTerminalHandler;
   _isReadOnly: boolean;
 
@@ -119,6 +120,7 @@ export default class VsDebugSession extends V8Protocol {
     this._onDidLoadSource = new Subject();
     this._onDidCustom = new Subject();
     this._onDidEvent = new Subject();
+    this._onDidEvaluate = new Subject();
     this.capabilities = {};
     this._runInTerminalHandler = runInTerminalHandler || null;
   }
@@ -169,6 +171,10 @@ export default class VsDebugSession extends V8Protocol {
 
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
     return this._onDidCustom.asObservable();
+  }
+
+  observeEvaluations(): Observable<DebugProtocol.EvaluateResponse> {
+    return this._onDidEvaluate.asObservable();
   }
 
   observeAllEvents(): Observable<DebugProtocol.Event | AdapterExitedEvent> {
@@ -542,7 +548,10 @@ export default class VsDebugSession extends V8Protocol {
   evaluate(
     args: DebugProtocol.EvaluateArguments,
   ): Promise<DebugProtocol.EvaluateResponse> {
-    return this.send('evaluate', args);
+    return this.send('evaluate', args).then(result => {
+      this._onDidEvaluate.next(result);
+      return result;
+    });
   }
 
   stepBack(

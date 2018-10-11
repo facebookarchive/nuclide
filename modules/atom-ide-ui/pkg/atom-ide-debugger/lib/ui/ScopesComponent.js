@@ -76,32 +76,36 @@ export default class ScopesComponent extends React.Component<Props, State> {
       Observable.merge(
         observableFromSubscribeFunction(
           viewModel.onDidChangeDebuggerFocus.bind(viewModel),
-        ),
+        ).map(() => false),
         observableFromSubscribeFunction(
           viewModel.onDidChangeExpressionContext.bind(viewModel),
-        ),
+        ).map(() => true),
       )
         .debounceTime(100)
-        .startWith(null)
-        .switchMap(() => this._getScopes())
+        .startWith(false)
+        .switchMap((forceRefresh: boolean) => this._getScopes(forceRefresh))
         .subscribe(scopes => {
           this.setState({scopes});
         }),
     );
   }
 
-  _getScopes(): Observable<Expected<Array<IScope>>> {
+  _getScopes(forceRefresh: boolean): Observable<Expected<Array<IScope>>> {
     const {focusedStackFrame} = this.props.service.viewModel;
     if (focusedStackFrame == null) {
       return Observable.of(Expect.value([]));
     } else {
-      return Observable.of(Expect.pending()).concat(
-        Observable.fromPromise(
-          focusedStackFrame
-            .getScopes()
-            .then(scopes => Expect.value(scopes), error => Expect.error(error)),
-        ),
+      // If refreshing explicitly, don't start with pending because
+      // there's no reason to show a spinner in an already-populated
+      // scopes tree.
+      const result = Observable.fromPromise(
+        focusedStackFrame
+          .getScopes(forceRefresh)
+          .then(scopes => Expect.value(scopes), error => Expect.error(error)),
       );
+      return forceRefresh
+        ? result
+        : Observable.of(Expect.pending()).concat(result);
     }
   }
 

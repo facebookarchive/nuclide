@@ -463,7 +463,7 @@ export interface IStackFrame extends ITreeElement {
   frameId: number;
   range: atom$Range;
   source: ISource;
-  getScopes(): Promise<IScope[]>;
+  getScopes(forceRefresh: boolean): Promise<IScope[]>;
   getMostSpecificScopes(range: atom$Range): Promise<IScope[]>;
   restart(): Promise<void>;
   toString(): string;

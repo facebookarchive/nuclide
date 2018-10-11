@@ -537,8 +537,8 @@ export class StackFrame implements IStackFrame {
     return `stackframe:${this.thread.getId()}:${this.frameId}:${this.index}`;
   }
 
-  async getScopes(): Promise<IScope[]> {
-    if (this.scopes == null) {
+  async getScopes(forceRefresh: boolean): Promise<IScope[]> {
+    if (this.scopes == null || forceRefresh) {
       this.scopes = this._getScopesImpl();
     }
     return (this.scopes: any);
@@ -578,7 +578,7 @@ export class StackFrame implements IStackFrame {
   }
 
   async getMostSpecificScopes(range: atom$Range): Promise<IScope[]> {
-    const scopes: Array<IScope> = (await this.getScopes()).filter(
+    const scopes: Array<IScope> = (await this.getScopes(false)).filter(
       s => !s.expensive,
     );
     const haveRangeInfo = scopes.some(s => s.range != null);

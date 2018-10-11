@@ -244,6 +244,10 @@ class ViewModel implements IViewModel {
     }
   }
 
+  evaluateContextChanged(): void {
+    this._emitter.emit(CHANGE_EXPRESSION_CONTEXT, {explicit: true});
+  }
+
   setFocusedProcess(process: ?IProcess, explicit: boolean) {
     if (process == null) {
       this._focusedProcess = null;
@@ -664,6 +668,9 @@ export default class DebugService implements IDebugService {
     this._sessionEndDisposables.add(
       session.observeStopEvents().subscribe(() => {
         this._onDebuggerModeChanged(process, DebuggerMode.PAUSED);
+      }),
+      session.observeEvaluations().subscribe(() => {
+        this._viewModel.evaluateContextChanged();
       }),
       session
         .observeStopEvents()
