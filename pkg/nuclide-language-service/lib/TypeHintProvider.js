@@ -24,28 +24,28 @@ export type TypeHintConfig = {|
 
 export class TypeHintProvider<T: LanguageService> {
   providerName: string;
-  selector: string;
-  inclusionPriority: number;
+  grammarScopes: Array<string>;
+  priority: number;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     priority: number,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.providerName = name;
-    this.selector = selector;
-    this.inclusionPriority = priority;
+    this.grammarScopes = grammarScopes;
+    this.priority = priority;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
   static register(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     config: TypeHintConfig,
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
@@ -54,7 +54,7 @@ export class TypeHintProvider<T: LanguageService> {
       config.version,
       new TypeHintProvider(
         name,
-        selector,
+        grammarScopes,
         config.priority,
         config.analyticsEventName,
         connectionToLanguageService,

@@ -16,8 +16,8 @@ export type TypeHintProvider = {
     editor: atom$TextEditor,
     bufferPosition: atom$Point,
   ): Promise<?TypeHint>,
-  inclusionPriority: number,
-  selector: string,
+  priority: number,
+  +grammarScopes?: Array<string>,
   // A unique name for the provider to be used for analytics. It is recommended that it be the name
   // of the provider's package.
   providerName: string,

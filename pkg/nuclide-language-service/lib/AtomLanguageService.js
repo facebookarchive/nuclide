@@ -187,7 +187,7 @@ export class AtomLanguageService<T: LanguageService> {
       this._subscriptions.add(
         TypeHintProvider.register(
           this._config.name,
-          this._selector(),
+          this._config.grammars,
           typeHintConfig,
           this._connectionToLanguageService,
         ),

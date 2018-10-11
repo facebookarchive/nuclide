@@ -91,9 +91,9 @@ export function createAutocompleteProvider(): AtomAutocompleteProvider {
 
 export function createTypeHintProvider(): TypeHintProvider {
   return {
-    inclusionPriority: 1,
+    priority: 1,
     providerName: PACKAGE_NAME,
-    selector: Array.from(GRAMMAR_SET).join(', '),
+    grammarScopes: Array.from(GRAMMAR_SET),
     typeHint(editor, position) {
       return TypeHintHelpers.typeHint(editor, position);
     },
