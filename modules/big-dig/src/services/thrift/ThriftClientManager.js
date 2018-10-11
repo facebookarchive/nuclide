@@ -189,11 +189,11 @@ export class ThriftClientManager {
       const remotePort = await this._createRemoteServer(serverConfig);
       const localPort = await getAvailableServerPort();
       const useIPv4 = false;
-      tunnel = await this._tunnelManager.createTunnel(
+      tunnel = await this._tunnelManager.createTunnel({
         localPort,
         remotePort,
         useIPv4,
-      );
+      });
       this._tunnelByServiceConfigId.set(serviceConfigId, {tunnel, refCount: 1});
     }
     return tunnel;

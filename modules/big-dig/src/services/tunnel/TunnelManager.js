@@ -21,6 +21,12 @@ import EventEmitter from 'events';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 
+type TunnelConfig = {
+  localPort: number,
+  remotePort: number,
+  useIPv4: boolean,
+};
+
 /**
  * A tunnel consists of two components: a Proxy to listen for connections,
  * and a SocketManager to handle TCP socket connections from the proxy.
@@ -63,21 +69,19 @@ export class TunnelManager extends EventEmitter {
       .subscribe(msg => this._handleMessage(msg));
   }
 
-  async createTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: ?boolean,
-  ): Promise<Tunnel> {
+  async createTunnel(tunnelConfig: TunnelConfig): Promise<Tunnel> {
     invariant(
       !this._isClosed,
       'trying to create a tunnel with a closed tunnel manager',
     );
 
-    this._logger.info(`creating tunnel ${localPort}->${remotePort}`);
+    this._logger.info(
+      `creating tunnel ${tunnelConfig.localPort}->${tunnelConfig.remotePort}`,
+    );
     return this._createTunnel(
-      localPort,
-      remotePort,
-      useIPv4 != null ? useIPv4 : false,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       false,
     );
   }

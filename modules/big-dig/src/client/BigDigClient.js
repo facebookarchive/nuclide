@@ -102,11 +102,11 @@ export class BigDigClient {
     } = {},
   ): Promise<Tunnel> {
     if (!options.isReverse) {
-      return this._tunnelManager.createTunnel(
+      return this._tunnelManager.createTunnel({
         localPort,
         remotePort,
-        options.useIPv4,
-      );
+        useIPv4: options.useIPv4 || false,
+      });
     } else {
       return this._tunnelManager.createReverseTunnel(
         localPort,
