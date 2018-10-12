@@ -1681,10 +1681,12 @@ export default class DebugService implements IDebugService {
     await this._doCreateProcess(config, uuid.v4());
 
     if (this._model.getProcesses().length > 1) {
-      const debuggerTypes = [];
-      this._model.getProcesses().forEach(process => {
-        debuggerTypes.push(process.configuration.adapterType);
-      });
+      const debuggerTypes = this._model
+        .getProcesses()
+        .map(
+          ({configuration}) =>
+            `${configuration.adapterType}: ${configuration.processName || ''}`,
+        );
       track(AnalyticsEvents.DEBUGGER_MULTITARGET, {
         processesCount: this._model.getProcesses().length,
         debuggerTypes,
