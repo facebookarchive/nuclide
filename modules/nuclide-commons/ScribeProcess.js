@@ -1,21 +1,22 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow strict-local
  * @format
  */
 
 import {getLogger} from 'log4js';
-import performanceNow from 'nuclide-commons/performanceNow';
+import performanceNow from './performanceNow';
 import os from 'os';
-import {spawn} from 'nuclide-commons/process';
-import which from 'nuclide-commons/which';
-import once from 'nuclide-commons/once';
-import passesGK from 'nuclide-commons/passesGK';
+import {spawn} from './process';
+import which from './which';
+import once from './once';
+import passesGK from './passesGK';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
