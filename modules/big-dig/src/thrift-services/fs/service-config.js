@@ -20,11 +20,11 @@ export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
   remoteCommand: 'node',
   remoteCommandArgs: [
     '{BIG_DIG_SERVICES_PATH}/src/thrift-services/fs/launchServer-entry.js',
-    '{PORT}',
+    '{IPC_PATH}',
   ],
   remoteConnection: {
-    type: 'tcp',
-    port: 0,
+    type: 'ipcSocket',
+    path: '',
   },
   thriftTransport: 'buffered',
   thriftProtocol: 'binary',

@@ -22,11 +22,11 @@ async function main() {
     process.exit(1);
   }
 
-  const port = parseInt(process.argv[2], 10);
-  log4js.getLogger().info('Initializing server on port', port);
-  const server = new RemoteFileSystemServer(port);
+  const portOrPath = process.argv[2];
+  log4js.getLogger().info('Initializing server on ', portOrPath);
+  const server = new RemoteFileSystemServer(portOrPath);
   await server.initialize();
-  log4js.getLogger().info('Server listening on port', port);
+  log4js.getLogger().info('Server listening on ', portOrPath);
 }
 
 log4js.configure({

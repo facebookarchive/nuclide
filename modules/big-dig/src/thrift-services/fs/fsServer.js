@@ -13,7 +13,6 @@
 import thrift from 'thrift';
 import ThriftFileSystemService from './gen-nodejs/ThriftFileSystemService';
 import {ThriftFileSystemServiceHandler} from './ThriftFileSystemServiceHandler';
-import {scanPortsToListen} from '../../common/ports';
 import {getLogger} from 'log4js';
 import {WatchmanClient} from 'nuclide-watchman-helpers';
 
@@ -24,12 +23,12 @@ import {WatchmanClient} from 'nuclide-watchman-helpers';
 export class RemoteFileSystemServer {
   _thriftFileSystemserviceHandler: ThriftFileSystemServiceHandler;
   _server: thrift.Server;
-  _port: number;
+  _portOrPath: number | string;
   _logger: log4js$Logger;
   _watcher: WatchmanClient;
 
-  constructor(port: number) {
-    this._port = port;
+  constructor(portOrPath: number | string) {
+    this._portOrPath = portOrPath;
     this._logger = getLogger('fs-thrift-server');
     this._watcher = new WatchmanClient();
     this._thriftFileSystemserviceHandler = new ThriftFileSystemServiceHandler(
@@ -51,18 +50,7 @@ export class RemoteFileSystemServer {
       throw error;
     });
 
-    const isServerListening = await scanPortsToListen(
-      this._server,
-      String(this._port),
-    );
-
-    if (!isServerListening) {
-      throw new Error(`All ports in range "${this._port}" are already in use`);
-    }
-  }
-
-  getPort(): number {
-    return this._server.address().port;
+    this._server.listen(this._portOrPath);
   }
 
   close() {
