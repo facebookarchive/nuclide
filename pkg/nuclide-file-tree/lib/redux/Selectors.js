@@ -479,73 +479,44 @@ export const collectSelectionDebugState = createSelector(
 export const getCanTransferFiles = (state: AppState) =>
   Boolean(state.remoteTransferService);
 
-export const collectDebugState = createSelector(
-  [
-    getCwdKey,
-    getOpenFilesExpanded,
-    getUncommittedChangesExpanded,
-    getFoldersExpanded,
-    getReorderPreviewStatus,
-    getFilter,
-    getSelectionRange,
-    getTargetNodeKeys,
-    getTrackedRootKey,
-    getTrackedNodeKey,
-    getIsCalculatingChanges,
-    getRoots,
-    getConf,
-    collectSelectionDebugState,
-    getVcsStatuses,
-    getUsePreviewTabs,
-  ],
-  (
-    currentWorkingRoot,
-    openFilesExpanded,
-    uncommittedChangesExpanded,
-    foldersExpanded,
-    reorderPreviewStatus,
-    _filter,
-    _selectionRange,
-    _targetNodeKeys,
-    _trackedRootKey,
-    _trackedNodeKey,
-    _isCalculatingChanges,
-    roots,
-    conf,
-    selectionManager,
-    vcsStatuses,
-    usePreviewTabs,
-  ) => {
-    return {
-      currentWorkingRoot,
-      openFilesExpanded,
-      uncommittedChangesExpanded,
-      foldersExpanded,
-      reorderPreviewStatus,
-      _filter,
-      _selectionRange,
-      _targetNodeKeys,
-      _trackedRootKey,
-      _trackedNodeKey,
-      _isCalculatingChanges,
-      usePreviewTabs,
+// Note: The Flow types for reselect's `createSelector` only support up to 16
+// sub-selectors. Since this selector only gets called when the user reports a
+// bug, it does not need to be optimized for multiple consecutive calls on
+// similar states. Therefore, we've opted to not use createSelector for this
+// selector.
+export const collectDebugState = (state: AppState) => {
+  const conf = getConf(state);
+  return {
+    currentWorkingRoot: getCwdKey(state),
+    openFilesExpanded: getOpenFilesExpanded(state),
+    uncommittedChangesExpanded: getUncommittedChangesExpanded(state),
+    foldersExpanded: getFoldersExpanded(state),
+    reorderPreviewStatus: getReorderPreviewStatus(state),
+    _filter: getFilter(state),
+    _selectionRange: getSelectionRange(state),
+    _targetNodeKeys: getTargetNodeKeys(state),
+    _trackedRootKey: getTrackedRootKey(state),
+    _trackedNodeKey: getTrackedNodeKey(state),
+    _isCalculatingChanges: getIsCalculatingChanges(state),
+    usePreviewTabs: getUsePreviewTabs(state),
 
-      roots: Array.from(roots.values()).map(root => root.collectDebugState()),
-      _conf: {
-        hideIgnoredNames: conf.hideIgnoredNames,
-        excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
-        hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
-        focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
-        isEditingWorkingSet: conf.isEditingWorkingSet,
-        vcsStatuses: vcsStatuses.toObject(),
-        workingSet: conf.workingSet.getUris(),
-        ignoredPatterns: conf.ignoredPatterns
-          .toArray()
-          .map(ignored => ignored.pattern),
-        openFilesWorkingSet: conf.openFilesWorkingSet.getUris(),
-        editedWorkingSet: conf.editedWorkingSet.getUris(),
-      },
-      selectionManager,
-    };
-  },
-);
+    roots: Array.from(getRoots(state).values()).map(root =>
+      root.collectDebugState(),
+    ),
+    _conf: {
+      hideIgnoredNames: conf.hideIgnoredNames,
+      excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
+      hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
+      focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
+      isEditingWorkingSet: conf.isEditingWorkingSet,
+      vcsStatuses: getVcsStatuses(state).toObject(),
+      workingSet: conf.workingSet.getUris(),
+      ignoredPatterns: conf.ignoredPatterns
+        .toArray()
+        .map(ignored => ignored.pattern),
+      openFilesWorkingSet: conf.openFilesWorkingSet.getUris(),
+      editedWorkingSet: conf.editedWorkingSet.getUris(),
+    },
+    selectionManager: collectSelectionDebugState(state),
+  };
+};
