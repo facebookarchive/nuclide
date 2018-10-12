@@ -120,10 +120,11 @@ test('creates a reverse tunnel', async () => {
   const remotePort = await getAvailableServerPort();
 
   const server = await createEchoServer(localPort);
-  const tunnel = await clientTunnelManager.createReverseTunnel(
+  const tunnel = await clientTunnelManager.createReverseTunnel({
     localPort,
     remotePort,
-  );
+    useIPv4: false,
+  });
 
   expect(await echo(remotePort, 'message1')).toBe('message1');
   expect(await echo(remotePort, 'message2')).toBe('message2');
@@ -185,7 +186,11 @@ test('throws an error if tunnel manager is closed', async () => {
   ).rejects.toThrowErrorMatchingSnapshot();
 
   await expect(
-    clientTunnelManager.createReverseTunnel(remotePort, localPort),
+    clientTunnelManager.createReverseTunnel({
+      remotePort,
+      localPort,
+      useIPv4: false,
+    }),
   ).rejects.toThrowErrorMatchingSnapshot();
 
   server.close();
@@ -206,10 +211,14 @@ test('throws an error if either port is already bound', async () => {
   ).rejects.toThrow('listen EADDRINUSE :::' + localPort);
   await new Promise((res, rej) => localServer.close(() => res()));
 
-  // TODO: cvreateReverseTunnel should throw an instance of error
+  // TODO: createReverseTunnel should throw an instance of error
   const remoteServer = await createEchoServer(remotePort);
   await expect(
-    clientTunnelManager.createReverseTunnel(localPort, remotePort),
+    clientTunnelManager.createReverseTunnel({
+      localPort,
+      remotePort,
+      useIPv4: false,
+    }),
   ).rejects.toEqual({
     code: 'EADDRINUSE',
     errno: 'EADDRINUSE',

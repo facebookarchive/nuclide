@@ -86,23 +86,23 @@ export class TunnelManager extends EventEmitter {
     );
   }
 
-  async createReverseTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: ?boolean,
-  ): Promise<Tunnel> {
+  async createReverseTunnel(tunnelConfig: TunnelConfig): Promise<Tunnel> {
     invariant(
       !this._isClosed,
       'trying to create a reverse tunnel with a closed tunnel manager',
     );
 
-    this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
+    this._logger.info(
+      `creating reverse tunnel ${tunnelConfig.localPort}<-${
+        tunnelConfig.remotePort
+      }`,
+    );
 
     return new Promise(async (resolve, reject) => {
       const tunnel = await this._createTunnel(
-        localPort,
-        remotePort,
-        useIPv4 != null ? useIPv4 : false,
+        tunnelConfig.localPort,
+        tunnelConfig.remotePort,
+        tunnelConfig.useIPv4,
         true,
       );
 

@@ -108,11 +108,11 @@ export class BigDigClient {
         useIPv4: options.useIPv4 || false,
       });
     } else {
-      return this._tunnelManager.createReverseTunnel(
+      return this._tunnelManager.createReverseTunnel({
         localPort,
         remotePort,
-        options.useIPv4,
-      );
+        useIPv4: options.useIPv4 || false,
+      });
     }
   }
 
