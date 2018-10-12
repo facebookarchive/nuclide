@@ -11,7 +11,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {TunnelMessage} from './types';
+import type {TunnelMessage, TunnelConfig} from './types';
 
 import net from 'net';
 import Encoder from './Encoder';
@@ -55,16 +55,14 @@ export class Proxy extends EventEmitter {
 
   static async createProxy(
     tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ): Promise<Proxy> {
     const proxy = new Proxy(
       tunnelId,
-      localPort,
-      remotePort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       transport,
     );
     await proxy.startListening();

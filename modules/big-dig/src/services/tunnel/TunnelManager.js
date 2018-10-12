@@ -212,9 +212,7 @@ export class TunnelManager extends EventEmitter {
       try {
         const proxy = await Proxy.createProxy(
           msg.tunnelId,
-          msg.tunnelConfig.localPort,
-          msg.tunnelConfig.remotePort,
-          msg.tunnelConfig.useIPv4,
+          msg.tunnelConfig,
           this._transport,
         );
         this._idToTunnel.set(msg.tunnelId, proxy);

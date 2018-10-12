@@ -26,9 +26,11 @@ describe('Proxy', () => {
     transport = TestTransportFactory();
     testProxy = await Proxy.createProxy(
       'test-tunnel',
-      TEST_PORT,
-      5678,
-      false,
+      {
+        localPort: TEST_PORT,
+        remotePort: 5678,
+        useIPv4: false,
+      },
       transport,
     );
   });
