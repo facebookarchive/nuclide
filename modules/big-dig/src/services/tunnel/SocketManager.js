@@ -11,7 +11,7 @@
  */
 
 import type {Transport} from './Proxy';
-import type {TunnelMessage} from './types';
+import type {TunnelMessage, ProxyConfig} from './types';
 
 import invariant from 'assert';
 import net from 'net';
@@ -22,23 +22,20 @@ import EventEmitter from 'events';
 const logger = getLogger('tunnel-socket-manager');
 
 export class SocketManager extends EventEmitter {
-  _port: number;
   _transport: Transport;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
-  _useIPv4: boolean;
+  _proxyConfig: ProxyConfig;
 
   constructor(
     tunnelId: string,
-    port: number,
-    useIPv4: boolean,
+    proxyConfig: ProxyConfig,
     transport: Transport,
   ) {
     super();
     this._tunnelId = tunnelId;
-    this._port = port;
     this._transport = transport;
-    this._useIPv4 = useIPv4;
+    this._proxyConfig = proxyConfig;
     this._socketByClientId = new Map();
   }
 
@@ -72,8 +69,8 @@ export class SocketManager extends EventEmitter {
 
   _createConnection(clientId: number) {
     const connectOptions = {
-      port: this._port,
-      family: this._useIPv4 ? 4 : 6,
+      port: this._proxyConfig.port,
+      family: this._proxyConfig.useIPv4 ? 4 : 6,
     };
 
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);

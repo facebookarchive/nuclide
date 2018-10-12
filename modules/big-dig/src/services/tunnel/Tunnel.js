@@ -67,8 +67,10 @@ export class Tunnel extends EventEmitter {
 
     const socketManager = new SocketManager(
       tunnelId,
-      tunnelConfig.localPort,
-      tunnelConfig.useIPv4,
+      {
+        port: tunnelConfig.localPort,
+        useIPv4: tunnelConfig.useIPv4,
+      },
       transport,
     );
 

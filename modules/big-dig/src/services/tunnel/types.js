@@ -57,3 +57,8 @@ export type TunnelConfig = {
   remotePort: number,
   useIPv4: boolean,
 };
+
+export type ProxyConfig = {
+  port: number,
+  useIPv4: boolean,
+};
