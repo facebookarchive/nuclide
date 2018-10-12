@@ -15,7 +15,7 @@ import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
+import scheduleIdleCallback from 'nuclide-commons/scheduleIdleCallback';
 import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from 'log4js';
