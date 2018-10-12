@@ -25,38 +25,31 @@ import which from 'nuclide-commons/which';
 import path from 'path';
 // @fb-only: import {getEnv} from './fb-env';
 
+const PORT_PLACEHOLDER = '{PORT}';
+const SERVICES_PATH_PLACEHOLDER = '{BIG_DIG_SERVICES_PATH}';
+
 const logger = getLogger('thrift-service-server');
 const cache: Map<string, Observable<number>> = new Map();
 
 export function startThriftServer(
-  originalConfig: ThriftServerConfig,
+  serverConfig: ThriftServerConfig,
 ): ConnectableObservable<number> {
   return Observable.defer(() => {
-    const configId = genConfigId(originalConfig);
+    const configId = genConfigId(serverConfig);
     let thriftServer = cache.get(configId);
     if (thriftServer == null) {
-      thriftServer = Observable.defer(() => validateConfig(originalConfig))
-        .switchMap(validationResult => {
-          if (!validationResult.valid) {
-            return Observable.throw(new Error(validationResult.error));
-          }
-          return Observable.defer(() => replacePlaceholders(originalConfig))
-            .switchMap(config =>
-              mayKillOldServerProcess(config).map(_ => config),
-            )
-            .switchMap(config =>
-              Observable.merge(
-                observeServerProcess(config)
-                  .do(logProcessMessage(configId))
-                  .ignoreElements(),
-                observeServerStatus(config.remotePort)
-                  .do(() =>
-                    logger.info(`(${config.name}) `, 'Thrift Server is ready'),
-                  )
-                  .map(() => config.remotePort),
-              ),
-            );
-        })
+      thriftServer = Observable.defer(() => replacePlaceholders(serverConfig))
+        .switchMap(config => mayKillOldServerProcess(config).map(_ => config))
+        .switchMap(config =>
+          Observable.merge(
+            observeServerProcess(config)
+              .do(logProcessMessage(configId))
+              .ignoreElements(),
+            observeServerStatus(config).do(() =>
+              logger.info(`(${config.name}) `, 'Thrift Server is ready'),
+            ),
+          ).map(_ => config.remotePort),
+        )
         .finally(() => {
           cache.delete(configId);
           logger.info('Thrift Server has been closed ', configId);
@@ -71,40 +64,45 @@ export function startThriftServer(
 }
 
 async function replacePlaceholders(
-  config: ThriftServerConfig,
+  serverConfig: ThriftServerConfig,
 ): Promise<ThriftServerConfig> {
-  return replaceEnvironmentPlaceholder(
-    await replaceRemotePortPlaceholder(config),
+  const replaceBigDigServicesPath = value =>
+    value.replace(SERVICES_PATH_PLACEHOLDER, path.join(__dirname, '../../../'));
+  const remoteCommand = replaceBigDigServicesPath(serverConfig.remoteCommand);
+  const remoteCommandArgs = serverConfig.remoteCommandArgs.map(
+    replaceBigDigServicesPath,
   );
-}
 
-function replaceEnvironmentPlaceholder(
-  config: ThriftServerConfig,
-): ThriftServerConfig {
-  const replace = value =>
-    value.replace('{BIG_DIG_SERVICES_PATH}', path.join(__dirname, '../../../'));
-  return {
-    ...config,
-    remoteCommand: replace(config.remoteCommand),
-    remoteCommandArgs: config.remoteCommandArgs.map(replace),
-  };
-}
+  const hasValidCommand = (await which(remoteCommand)) != null;
+  if (!hasValidCommand) {
+    throw new Error(`Remote command is invalid: ${remoteCommand}`);
+  }
 
-async function replaceRemotePortPlaceholder(
-  config: ThriftServerConfig,
-): Promise<ThriftServerConfig> {
-  if (config.remotePort === 0) {
+  if (serverConfig.remotePort === 0) {
+    const hasPlaceholderForPort =
+      serverConfig.remoteCommandArgs.find(arg =>
+        arg.includes(PORT_PLACEHOLDER),
+      ) != null;
+    if (!hasPlaceholderForPort) {
+      throw new Error(
+        `Expected placeholder "${PORT_PLACEHOLDER}" for remote port`,
+      );
+    }
     const remotePort = await getAvailableServerPort();
-    const remoteCommandArgs = config.remoteCommandArgs.map(arg =>
-      arg.replace('{PORT}', String(remotePort)),
-    );
     return {
-      ...config,
+      ...serverConfig,
       remotePort,
-      remoteCommandArgs,
+      remoteCommandArgs: remoteCommandArgs.map(arg =>
+        arg.replace('{PORT}', String(remotePort)),
+      ),
     };
   }
-  return config;
+
+  return {
+    ...serverConfig,
+    remoteCommand,
+    remoteCommandArgs,
+  };
 }
 
 function mayKillOldServerProcess(config: ThriftServerConfig): Observable<void> {
@@ -148,12 +146,12 @@ function observeServerProcess(
  * Streams `true` when thrift server is listening in the given port.
  * If server is not ready, it tries to reconnects.
  */
-function observeServerStatus(port: number): Observable<true> {
+function observeServerStatus(config: ThriftServerConfig): Observable<true> {
   const maxAttempts = 10;
   return Observable.create(observer => {
     let ready = false;
     const client = net
-      .connect({port})
+      .connect({port: config.remotePort})
       .on('connect', () => {
         client.destroy();
         ready = true;
@@ -212,29 +210,4 @@ function logProcessMessage(name: string): ProcessMessage => void {
         return;
     }
   };
-}
-
-async function validateConfig(
-  config: ThriftServerConfig,
-): Promise<{valid: true} | {valid: false, error: string}> {
-  if (config.remotePort === 0) {
-    const hasPlaceholderForPort =
-      config.remoteCommandArgs.find(arg => arg.includes('{PORT}')) != null;
-    if (!hasPlaceholderForPort) {
-      return {
-        valid: false,
-        error: 'Expected placeholder "{PORT}" for remote port',
-      };
-    }
-  }
-
-  const hasValidCommand =
-    (await which(replaceEnvironmentPlaceholder(config).remoteCommand)) != null;
-  if (!hasValidCommand) {
-    return {
-      valid: false,
-      error: `Remote command not found: ${config.remoteCommand}`,
-    };
-  }
-  return {valid: true};
 }
