@@ -16,7 +16,7 @@ import type {TunnelConfig} from './types';
 
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
-import {Tunnel, ReverseTunnel} from './Tunnel';
+import {Tunnel} from './Tunnel';
 import Encoder from './Encoder';
 import EventEmitter from 'events';
 import invariant from 'assert';
@@ -150,36 +150,20 @@ export class TunnelManager extends EventEmitter {
     isReverse: boolean,
   ): ?Tunnel {
     for (const tunnel of this._idToTunnel.values()) {
-      if (tunnel instanceof Tunnel) {
-        if (
-          tunnelConfig.localPort === tunnel.getLocalPort() &&
-          tunnelConfig.remotePort === tunnel.getRemotePort() &&
-          tunnelConfig.useIPv4 === tunnel.getUseIPv4()
-        ) {
-          if (
-            (isReverse && tunnel instanceof ReverseTunnel) ||
-            (!isReverse && !(tunnel instanceof ReverseTunnel))
-          ) {
-            return tunnel;
-          } else {
-            throw new Error(
-              "there is already a tunnel with those ports, but it's in the wrong direction",
-            );
-          }
-        } else if (tunnelConfig.localPort === tunnel.getLocalPort()) {
+      if (!(tunnel instanceof Tunnel)) {
+        continue;
+      }
+
+      if (tunnel.isTunnelConfigEqual(tunnelConfig)) {
+        if (isReverse === tunnel.isReverse()) {
+          return tunnel;
+        } else {
           throw new Error(
-            `there already exists a tunnel connecting to localPort ${
-              tunnelConfig.localPort
-            }`,
-          );
-        } else if (tunnelConfig.remotePort === tunnel.getRemotePort()) {
-          throw new Error(
-            `there already exists a tunnel connecting to remotePort ${
-              tunnelConfig.remotePort
-            }`,
+            "there is already a tunnel with those ports, but it's in the wrong direction",
           );
         }
       }
+      tunnel.assertNoOverlap(tunnelConfig);
     }
   }
 

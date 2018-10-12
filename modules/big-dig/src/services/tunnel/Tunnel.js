@@ -89,6 +89,30 @@ export class Tunnel extends EventEmitter {
     this._refCount++;
   }
 
+  isTunnelConfigEqual(tunnelConfig: TunnelConfig): boolean {
+    return (
+      tunnelConfig.localPort === this.getLocalPort() &&
+      tunnelConfig.remotePort === this.getRemotePort() &&
+      tunnelConfig.useIPv4 === this.getUseIPv4()
+    );
+  }
+
+  assertNoOverlap(tunnelConfig: TunnelConfig) {
+    if (tunnelConfig.localPort === this.getLocalPort()) {
+      throw new Error(
+        `there already exists a tunnel connecting to localPort ${
+          tunnelConfig.localPort
+        }`,
+      );
+    } else if (tunnelConfig.remotePort === this.getRemotePort()) {
+      throw new Error(
+        `there already exists a tunnel connecting to remotePort ${
+          tunnelConfig.remotePort
+        }`,
+      );
+    }
+  }
+
   hasReferences(): boolean {
     return this._refCount > 0;
   }
@@ -133,6 +157,10 @@ export class Tunnel extends EventEmitter {
       this._proxy.close();
     }
   }
+
+  isReverse(): boolean {
+    return false;
+  }
 }
 
 export class ReverseTunnel extends Tunnel {
@@ -174,6 +202,10 @@ export class ReverseTunnel extends Tunnel {
         ),
       );
     }
+  }
+
+  isReverse(): boolean {
+    return true;
   }
 }
 
