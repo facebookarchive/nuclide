@@ -50,10 +50,8 @@ export type TunnelMessage =
     }
   | {
       event: 'createProxy',
-      localPort: number,
-      remotePort: number,
+      tunnelConfig: TunnelConfig,
       tunnelId: string,
-      useIPv4: boolean,
     };
 
 export type TunnelConfig = {

@@ -96,12 +96,7 @@ export class Tunnel extends EventEmitter {
         ({
           event: 'createProxy',
           tunnelId,
-          useIPv4: tunnelConfig.useIPv4,
-          // NB: on the server, the remote port and local ports are reversed.
-          // We want to start the proxy on the remote port (relative to the
-          // client) and start the socket manager on the local port
-          localPort: tunnelConfig.remotePort,
-          remotePort: tunnelConfig.localPort,
+          tunnelConfig: reverseTunnelConfig(tunnelConfig),
         }: TunnelMessage),
       ),
     );
@@ -214,4 +209,15 @@ export class ReverseTunnel extends Tunnel {
 let nextId = 1;
 function generateId() {
   return 'tunnel' + nextId++;
+}
+
+function reverseTunnelConfig(tunnelConfig: TunnelConfig): TunnelConfig {
+  return {
+    useIPv4: tunnelConfig.useIPv4,
+    // NB: on the server, the remote port and local ports are reversed.
+    // We want to start the proxy on the remote port (relative to the
+    // client) and start the socket manager on the local port
+    localPort: tunnelConfig.remotePort,
+    remotePort: tunnelConfig.localPort,
+  };
 }
