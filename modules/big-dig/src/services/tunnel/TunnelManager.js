@@ -21,6 +21,7 @@ import Encoder from './Encoder';
 import EventEmitter from 'events';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import {getDescriptor} from './TunnelConfigUtils';
 
 /**
  * A tunnel consists of two components: a Proxy to listen for connections,
@@ -70,9 +71,7 @@ export class TunnelManager extends EventEmitter {
       'trying to create a tunnel with a closed tunnel manager',
     );
 
-    this._logger.info(
-      `creating tunnel ${tunnelConfig.localPort}->${tunnelConfig.remotePort}`,
-    );
+    this._logger.info(`creating tunnel ${getDescriptor(tunnelConfig, false)}`);
     return this._createTunnel(tunnelConfig, false);
   }
 
@@ -83,9 +82,7 @@ export class TunnelManager extends EventEmitter {
     );
 
     this._logger.info(
-      `creating reverse tunnel ${tunnelConfig.localPort}<-${
-        tunnelConfig.remotePort
-      }`,
+      `creating reverse tunnel ${getDescriptor(tunnelConfig, true)}`,
     );
 
     return new Promise(async (resolve, reject) => {
