@@ -93,20 +93,20 @@ export class Tunnel extends EventEmitter {
 
   isTunnelConfigEqual(tunnelConfig: TunnelConfig): boolean {
     return (
-      tunnelConfig.localPort === this.getLocalPort() &&
-      tunnelConfig.remotePort === this.getRemotePort() &&
-      tunnelConfig.useIPv4 === this.getUseIPv4()
+      tunnelConfig.localPort === this.getConfig().localPort &&
+      tunnelConfig.remotePort === this.getConfig().remotePort &&
+      tunnelConfig.useIPv4 === this.getConfig().useIPv4
     );
   }
 
   assertNoOverlap(tunnelConfig: TunnelConfig) {
-    if (tunnelConfig.localPort === this.getLocalPort()) {
+    if (tunnelConfig.localPort === this.getConfig().localPort) {
       throw new Error(
         `there already exists a tunnel connecting to localPort ${
           tunnelConfig.localPort
         }`,
       );
-    } else if (tunnelConfig.remotePort === this.getRemotePort()) {
+    } else if (tunnelConfig.remotePort === this.getConfig().remotePort) {
       throw new Error(
         `there already exists a tunnel connecting to remotePort ${
           tunnelConfig.remotePort
@@ -129,16 +129,8 @@ export class Tunnel extends EventEmitter {
     return this._id;
   }
 
-  getLocalPort(): number {
-    return this._tunnelConfig.localPort;
-  }
-
-  getRemotePort(): number {
-    return this._tunnelConfig.remotePort;
-  }
-
-  getUseIPv4(): boolean {
-    return this._tunnelConfig.useIPv4;
+  getConfig(): TunnelConfig {
+    return this._tunnelConfig;
   }
 
   getRefCount(): number {

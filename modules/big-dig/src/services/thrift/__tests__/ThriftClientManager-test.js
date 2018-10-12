@@ -25,7 +25,7 @@ jest.mock(require.resolve('../createThriftClient'));
 jest.mock(require.resolve('../../tunnel/TunnelManager'), () => {
   class MockTunnelManager {
     createTunnel = jest.fn().mockReturnValue({
-      getLocalPort: jest.fn().mockReturnValue(1),
+      getConfig: jest.fn().mockReturnValue({localPort: 1}),
       close: jest.fn(),
     });
   }
