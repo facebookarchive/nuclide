@@ -78,12 +78,7 @@ export class TunnelManager extends EventEmitter {
     this._logger.info(
       `creating tunnel ${tunnelConfig.localPort}->${tunnelConfig.remotePort}`,
     );
-    return this._createTunnel(
-      tunnelConfig.localPort,
-      tunnelConfig.remotePort,
-      tunnelConfig.useIPv4,
-      false,
-    );
+    return this._createTunnel(tunnelConfig, false);
   }
 
   async createReverseTunnel(tunnelConfig: TunnelConfig): Promise<Tunnel> {
@@ -99,12 +94,7 @@ export class TunnelManager extends EventEmitter {
     );
 
     return new Promise(async (resolve, reject) => {
-      const tunnel = await this._createTunnel(
-        tunnelConfig.localPort,
-        tunnelConfig.remotePort,
-        tunnelConfig.useIPv4,
-        true,
-      );
+      const tunnel = await this._createTunnel(tunnelConfig, true);
 
       // now wait until we get the 'proxyCreated' or 'proxyError' message
       this.once(`proxyMessage:${tunnel.getId()}`, msg => {
@@ -120,32 +110,27 @@ export class TunnelManager extends EventEmitter {
     });
   }
 
-  async _createTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
-    isReverse: boolean,
-  ) {
+  async _createTunnel(tunnelConfig: TunnelConfig, isReverse: boolean) {
     let tunnel = this._checkForExistingTunnel(
-      localPort,
-      remotePort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       isReverse,
     );
 
     if (tunnel == null) {
       if (isReverse) {
         tunnel = await Tunnel.createReverseTunnel(
-          localPort,
-          remotePort,
-          useIPv4,
+          tunnelConfig.localPort,
+          tunnelConfig.remotePort,
+          tunnelConfig.useIPv4,
           this._transport,
         );
       } else {
         tunnel = await Tunnel.createTunnel(
-          localPort,
-          remotePort,
-          useIPv4,
+          tunnelConfig.localPort,
+          tunnelConfig.remotePort,
+          tunnelConfig.useIPv4,
           this._transport,
         );
       }
