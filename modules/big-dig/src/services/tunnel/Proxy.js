@@ -155,9 +155,10 @@ export class Proxy extends EventEmitter {
         // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',
-          port: this._localPort,
-          useIPv4: this._useIPv4,
-          remotePort: this._remotePort,
+          proxyConfig: {
+            port: this._remotePort,
+            useIPv4: this._useIPv4,
+          },
           tunnelId: this._tunnelId,
         });
         resolve();

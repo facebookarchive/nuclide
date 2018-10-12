@@ -25,10 +25,8 @@ export type TunnelMessage =
     }
   | {
       event: 'proxyCreated',
-      port: number,
-      remotePort: number,
+      proxyConfig: {port: number, useIPv4: boolean},
       tunnelId: string,
-      useIPv4: boolean,
     }
   | {event: 'proxyClosed', tunnelId: string}
   | {

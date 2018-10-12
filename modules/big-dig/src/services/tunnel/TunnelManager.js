@@ -173,8 +173,8 @@ export class TunnelManager extends EventEmitter {
       if (tunnelComponent == null) {
         const socketManager = new SocketManager(
           msg.tunnelId,
-          msg.remotePort,
-          msg.useIPv4,
+          msg.proxyConfig.port,
+          msg.proxyConfig.useIPv4,
           this._transport,
         );
 
