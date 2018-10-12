@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow strict-local
  * @format
@@ -14,7 +15,7 @@ import {
   getAtomVersion,
   getNuclideVersion,
   isRunningInServer,
-} from 'nuclide-commons/system-info';
+} from './system-info';
 import os from 'os';
 import uuid from 'uuid';
 import {__DEV__} from 'nuclide-node-transpiler/lib/env';

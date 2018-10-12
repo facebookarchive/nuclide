@@ -13,7 +13,7 @@ import child_process from 'child_process';
 import EventEmitter from 'events';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
-import {__DEV__} from '../../commons-node/runtime-info';
+import {__DEV__} from 'nuclide-commons/runtime-info';
 
 export type InvokeRemoteMethodParams = {
   file: string,

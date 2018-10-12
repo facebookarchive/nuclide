@@ -20,7 +20,7 @@ import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork, spawn, getOriginalEnvironment} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {__DEV__} from '../../commons-node/runtime-info';
+import {__DEV__} from 'nuclide-commons/runtime-info';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
