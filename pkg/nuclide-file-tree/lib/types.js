@@ -71,7 +71,6 @@ export type StoreConfigData = {|
   excludeVcsIgnoredPaths: boolean,
   hideVcsIgnoredPaths: boolean,
   ignoredPatterns: Immutable.Set<any /* Minimatch */>,
-  usePreviewTabs: boolean,
   focusEditorOnFileSelection: boolean,
   isEditingWorkingSet: boolean,
   openFilesWorkingSet: WorkingSet,
@@ -125,6 +124,7 @@ export type AppState = {|
     NuclideUri,
     Map<NuclideUri, StatusCodeNumberValue>,
   >,
+  usePreviewTabs: boolean,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';

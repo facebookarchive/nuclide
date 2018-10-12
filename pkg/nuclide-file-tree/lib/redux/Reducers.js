@@ -44,7 +44,6 @@ export const DEFAULT_CONF = {
   excludeVcsIgnoredPaths: true,
   hideVcsIgnoredPaths: true,
   ignoredPatterns: Immutable.Set(),
-  usePreviewTabs: false,
   focusEditorOnFileSelection: true,
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
@@ -96,6 +95,7 @@ const DEFAULT_STATE: AppState = {
   remoteTransferService: null,
 
   vcsStatuses: Immutable.Map(),
+  usePreviewTabs: false,
 };
 
 function reduceState(state_: AppState, action: Action): AppState {
@@ -627,9 +627,7 @@ function setHideVcsIgnoredPaths(
 }
 
 function setUsePreviewTabs(state: AppState, usePreviewTabs: boolean): AppState {
-  return updateConf(state, conf => {
-    conf.usePreviewTabs = usePreviewTabs;
-  });
+  return {...state, usePreviewTabs};
 }
 
 function setFocusEditorOnFileSelection(

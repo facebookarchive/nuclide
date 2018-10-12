@@ -561,7 +561,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   isSelected: Selectors.getSelectedNodes(state).includes(ownProps.node),
   isFocused: Selectors.getFocusedNodes(state).includes(ownProps.node),
-  usePreviewTabs: Selectors.getConf(state).usePreviewTabs,
+  usePreviewTabs: Selectors.getUsePreviewTabs(state),
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
   canTransferFiles: Selectors.getCanTransferFiles(state),
   vcsStatusCode: Selectors.getVcsStatus(state)(ownProps.node),

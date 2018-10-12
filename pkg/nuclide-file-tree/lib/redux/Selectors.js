@@ -371,6 +371,10 @@ export const getSidebarTitle = createSelector([getCwdKey], cwdKey => {
   return cwdKey == null ? 'File Tree' : nuclideUri.basename(cwdKey);
 });
 
+export const getUsePreviewTabs = (state: AppState): boolean => {
+  return state.usePreviewTabs;
+};
+
 export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
   if (cwdKey == null) {
     return 'No Current Working Directory';
@@ -492,6 +496,7 @@ export const collectDebugState = createSelector(
     getConf,
     collectSelectionDebugState,
     getVcsStatuses,
+    getUsePreviewTabs,
   ],
   (
     currentWorkingRoot,
@@ -509,6 +514,7 @@ export const collectDebugState = createSelector(
     conf,
     selectionManager,
     vcsStatuses,
+    usePreviewTabs,
   ) => {
     return {
       currentWorkingRoot,
@@ -522,13 +528,13 @@ export const collectDebugState = createSelector(
       _trackedRootKey,
       _trackedNodeKey,
       _isCalculatingChanges,
+      usePreviewTabs,
 
       roots: Array.from(roots.values()).map(root => root.collectDebugState()),
       _conf: {
         hideIgnoredNames: conf.hideIgnoredNames,
         excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
         hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
-        usePreviewTabs: conf.usePreviewTabs,
         focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
         isEditingWorkingSet: conf.isEditingWorkingSet,
         vcsStatuses: vcsStatuses.toObject(),
