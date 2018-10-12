@@ -16,6 +16,7 @@ import type {ThriftServerConfig, ConnectionOptions} from './types';
 import escapeRegExp from 'escape-string-regexp';
 import {getLogger} from 'log4js';
 import {track} from 'nuclide-commons/analytics';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {observeProcess, psTree, killPid} from 'nuclide-commons/process';
@@ -25,6 +26,7 @@ import which from 'nuclide-commons/which';
 import path from 'path';
 // @fb-only: import {getEnv} from './fb-env';
 
+const IPC_PATH_PLACEHOLDER = '{IPC_PATH}';
 const PORT_PLACEHOLDER = '{PORT}';
 const SERVICES_PATH_PLACEHOLDER = '{BIG_DIG_SERVICES_PATH}';
 
@@ -104,7 +106,29 @@ async function replacePlaceholders(
       }
       break;
     case 'ipcSocket':
-      throw new Error('TODO: Next diff');
+      if (serverConfig.remoteConnection.path.length === 0) {
+        const hasPlaceholderForIpcPath =
+          serverConfig.remoteCommandArgs.find(arg =>
+            arg.includes(IPC_PATH_PLACEHOLDER),
+          ) != null;
+        if (!hasPlaceholderForIpcPath) {
+          throw new Error(
+            `Expected placeholder "${IPC_PATH_PLACEHOLDER}" for remote IPC socket path`,
+          );
+        }
+        const ipcSocketPath = path.join(await fsPromise.tempdir(), 'socket');
+        return {
+          ...serverConfig,
+          remoteConnection: {
+            type: 'ipcSocket',
+            path: ipcSocketPath,
+          },
+          remoteCommandArgs: remoteCommandArgs.map(arg =>
+            arg.replace(IPC_PATH_PLACEHOLDER, String(ipcSocketPath)),
+          ),
+        };
+      }
+      break;
     default:
       (serverConfig.remoteConnection.type: empty);
       throw new Error('Invalid remote connection type');
@@ -231,7 +255,7 @@ function getConnectionOptions(config: ThriftServerConfig): ConnectionOptions {
     case 'tcp':
       return {port: config.remoteConnection.port, useIPv4: false};
     case 'ipcSocket':
-      throw new Error('TODO: Next diff');
+      return {path: config.remoteConnection.path};
     default:
       (config.remoteConnection.type: empty);
       throw new Error('Invalid remote connection type');

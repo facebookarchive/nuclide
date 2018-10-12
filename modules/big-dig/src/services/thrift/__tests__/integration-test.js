@@ -13,6 +13,7 @@
 
 import type {Observable} from 'rxjs';
 
+import fsPromise from 'nuclide-commons/fsPromise';
 import {psTree} from 'nuclide-commons/process';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import {Subject} from 'rxjs';
@@ -22,6 +23,7 @@ import {TunnelManager} from '../../tunnel/TunnelManager';
 import AddOneService from '../__fixtures__/add-one/gen-nodejs/AddOne';
 import uuid from 'uuid';
 import waitsFor from '../../../../../../jest/waits_for';
+import path from 'path';
 
 const ADD_ONE_SERVER_PATH =
   '{BIG_DIG_SERVICES_PATH}/src/services/thrift/__fixtures__/add-one/AddOneServer.js';
@@ -110,6 +112,37 @@ async function getProcessPidByCommandArgument(
 async function isServerRunning(commandArgument: string): Promise<boolean> {
   return (await getProcessPidByCommandArgument(commandArgument)) != null;
 }
+
+test('creates server in a random ipc socket', async () => {
+  const thriftClientManager = createThriftManager();
+  const thriftClient = await thriftClientManager.createThriftClient({
+    ...CONFIG,
+    remoteCommandArgs: [ADD_ONE_SERVER_PATH, '{IPC_PATH}'],
+    remoteConnection: {
+      type: 'ipcSocket',
+      path: '',
+    },
+  });
+  expect(await thriftClient.getClient().calc(1)).toBe(2);
+  expect(await thriftClient.getClient().calc(2)).toBe(3);
+  thriftClient.close();
+});
+
+test('creates server in a specific socket', async () => {
+  const ipcSocketPath = path.join(await fsPromise.tempdir(), 'socket');
+  const thriftClientManager = createThriftManager();
+  const thriftClient = await thriftClientManager.createThriftClient({
+    ...CONFIG,
+    remoteCommandArgs: [ADD_ONE_SERVER_PATH, ipcSocketPath],
+    remoteConnection: {
+      type: 'ipcSocket',
+      path: ipcSocketPath,
+    },
+  });
+  expect(await thriftClient.getClient().calc(1)).toBe(2);
+  expect(await thriftClient.getClient().calc(2)).toBe(3);
+  thriftClient.close();
+});
 
 test('creates server in a random port', async () => {
   const thriftClientManager = createThriftManager();

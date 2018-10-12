@@ -20,4 +20,5 @@ const server = thrift.createServer(AddOne, {
     return n1 + 1;
   },
 });
+
 server.listen(process.argv[2]);

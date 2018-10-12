@@ -103,7 +103,9 @@ export interface ThriftServer {
   close(): void;
 }
 
-export type ConnectionOptions = {|
-  port: number,
-  useIPv4: boolean,
-|};
+export type ConnectionOptions =
+  | {|
+      port: number,
+      useIPv4: boolean,
+    |}
+  | {|path: string|};
