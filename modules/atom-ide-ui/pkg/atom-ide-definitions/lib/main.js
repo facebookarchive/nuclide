@@ -39,6 +39,7 @@ import analytics from 'nuclide-commons/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import FeatureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
+import {distinct} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import performanceNow from 'nuclide-commons/performanceNow';
@@ -174,15 +175,20 @@ class Activation {
       return `${definition.name} (${filePath})`;
     }
 
-    if (definitions.length === 1) {
+    const distictDefinitions = distinct(
+      definitions,
+      def => `path:${def.path}\nrow:${def.position.row}`,
+    );
+
+    if (distictDefinitions.length === 1) {
       return {
         range: queryRange,
-        callback: createCallback(definitions[0]),
+        callback: createCallback(distictDefinitions[0]),
       };
     } else {
       return {
         range: queryRange,
-        callback: definitions.map(definition => {
+        callback: distictDefinitions.map(definition => {
           return {
             title: createTitle(definition),
             callback: createCallback(definition),
