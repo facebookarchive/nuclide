@@ -667,11 +667,6 @@ export class FileTreeNode {
     return depth;
   }
 
-  /**
-   * Calculate the index of current Node w.r.t the top of the tree.
-   * The index is one based.
-   * If the node is not shown, the index is for the previous shown node.
-   */
   calculateVisualIndex(): number {
     let index = this.shouldBeShown ? 1 : 0;
     let prev = this.findPrevShownSibling();
@@ -682,10 +677,6 @@ export class FileTreeNode {
     return (
       index + (this.parent == null ? 0 : this.parent.calculateVisualIndex())
     );
-  }
-
-  findByIndex(index: number): ?FileTreeNode {
-    return findNodeAtOffset(this, index - 1); // indexes are 1-based.
   }
 
   _propsAreTheSame(props: ImmutableNodeSettableFields): boolean {
@@ -824,40 +815,4 @@ export class FileTreeNode {
       ),
     };
   }
-}
-
-/**
- * Find the node that occurs `offset` after the provided one in the flattened list. `offset` must
- * be a non-negative integer.
- *
- * This function is intentionally implemented with a loop instead of recursion. Previously it was
- * implemented using recursion, which caused the stack size to grow with the number of siblings we
- * had to traverse. That meant we exceeded the max stack size with enough sibling files.
- */
-function findNodeAtOffset(node_: FileTreeNode, offset_: number): ?FileTreeNode {
-  let offset = offset_;
-  let node = node_;
-
-  while (offset > 0) {
-    if (
-      offset < node.shownChildrenCount // `shownChildrenCount` includes the node itself.
-    ) {
-      // It's a descendant of this node!
-      const firstVisibleChild = node.children.find(c => c.shouldBeShown);
-      if (firstVisibleChild == null) {
-        return null;
-      }
-      offset--;
-      node = firstVisibleChild;
-    } else {
-      const nextShownSibling = node.findNextShownSibling();
-      if (nextShownSibling == null) {
-        return null;
-      }
-      offset -= node.shownChildrenCount;
-      node = nextShownSibling;
-    }
-  }
-
-  return node;
 }

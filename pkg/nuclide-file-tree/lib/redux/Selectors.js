@@ -350,7 +350,7 @@ export const getFilterFound = createSelector([getRoots], roots =>
 export const getNodeByIndex = createSelector(getRoots, roots => {
   return memoize(index => {
     const firstRoot = roots.find(r => r.shouldBeShown);
-    return firstRoot == null ? null : firstRoot.findByIndex(index);
+    return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
   });
 });
 
@@ -435,6 +435,46 @@ export const getFileTreeContextMenuNode = createSelector(
     };
   },
 );
+
+/**
+ * Find the node that occurs `offset` after the provided one in the flattened list. `offset` must
+ * be a non-negative integer.
+ *
+ * This function is intentionally implemented with a loop instead of recursion. Previously it was
+ * implemented using recursion, which caused the stack size to grow with the number of siblings we
+ * had to traverse. That meant we exceeded the max stack size with enough sibling files.
+ *
+ * TODO: Increasingly we are going to want to move state which affects a node's
+ * visibility into the state, so eventually this function will need access to
+ * state, which is why we've moved it into the Selectors file.
+ */
+function findNodeAtOffset(node_: FileTreeNode, offset_: number): ?FileTreeNode {
+  let offset = offset_;
+  let node = node_;
+
+  while (offset > 0) {
+    if (
+      offset < node.shownChildrenCount // `shownChildrenCount` includes the node itself.
+    ) {
+      // It's a descendant of this node!
+      const firstVisibleChild = node.children.find(c => c.shouldBeShown);
+      if (firstVisibleChild == null) {
+        return null;
+      }
+      offset--;
+      node = firstVisibleChild;
+    } else {
+      const nextShownSibling = node.findNextShownSibling();
+      if (nextShownSibling == null) {
+        return null;
+      }
+      offset -= node.shownChildrenCount;
+      node = nextShownSibling;
+    }
+  }
+
+  return node;
+}
 
 //
 //
