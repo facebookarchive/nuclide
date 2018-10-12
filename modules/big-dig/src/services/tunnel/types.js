@@ -55,3 +55,9 @@ export type TunnelMessage =
       tunnelId: string,
       useIPv4: boolean,
     };
+
+export type TunnelConfig = {
+  localPort: number,
+  remotePort: number,
+  useIPv4: boolean,
+};

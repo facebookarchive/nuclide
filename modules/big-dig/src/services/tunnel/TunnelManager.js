@@ -12,20 +12,15 @@
 
 import type {Subscription} from 'rxjs';
 import type {Transport} from './Proxy';
+import type {TunnelConfig} from './types';
+
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
 import {Tunnel, ReverseTunnel} from './Tunnel';
 import Encoder from './Encoder';
-
 import EventEmitter from 'events';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
-
-type TunnelConfig = {
-  localPort: number,
-  remotePort: number,
-  useIPv4: boolean,
-};
 
 /**
  * A tunnel consists of two components: a Proxy to listen for connections,
@@ -116,9 +111,7 @@ export class TunnelManager extends EventEmitter {
     if (tunnel == null) {
       if (isReverse) {
         tunnel = await Tunnel.createReverseTunnel(
-          tunnelConfig.localPort,
-          tunnelConfig.remotePort,
-          tunnelConfig.useIPv4,
+          tunnelConfig,
           this._transport,
         );
       } else {

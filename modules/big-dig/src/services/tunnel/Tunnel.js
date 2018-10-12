@@ -11,7 +11,7 @@
  */
 
 import type {Transport} from './Proxy';
-import type {TunnelMessage} from './types';
+import type {TunnelMessage, TunnelConfig} from './types';
 
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
@@ -81,17 +81,15 @@ export class Tunnel extends EventEmitter {
   }
 
   static async createReverseTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ): Promise<Tunnel> {
     const tunnelId = generateId();
 
     const socketManager = new SocketManager(
       tunnelId,
-      localPort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.useIPv4,
       transport,
     );
 
@@ -100,12 +98,12 @@ export class Tunnel extends EventEmitter {
         ({
           event: 'createProxy',
           tunnelId,
-          useIPv4,
+          useIPv4: tunnelConfig.useIPv4,
           // NB: on the server, the remote port and local ports are reversed.
           // We want to start the proxy on the remote port (relative to the
           // client) and start the socket manager on the local port
-          localPort: remotePort,
-          remotePort: localPort,
+          localPort: tunnelConfig.remotePort,
+          remotePort: tunnelConfig.localPort,
         }: TunnelMessage),
       ),
     );
@@ -113,9 +111,9 @@ export class Tunnel extends EventEmitter {
     return new ReverseTunnel(
       tunnelId,
       socketManager,
-      localPort,
-      remotePort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       transport,
     );
   }
