@@ -28,27 +28,21 @@ export type Transport = {
 };
 
 export class Proxy extends EventEmitter {
-  _localPort: number;
-  _remotePort: number;
+  _tunnelConfig: TunnelConfig;
   _transport: Transport;
   _server: ?net.Server;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
-  _useIPv4: boolean;
 
   constructor(
     tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ) {
     super();
     this._tunnelId = tunnelId;
-    this._localPort = localPort;
-    this._remotePort = remotePort;
+    this._tunnelConfig = tunnelConfig;
     this._transport = transport;
-    this._useIPv4 = useIPv4;
     this._server = null;
     this._socketByClientId = new Map();
   }
@@ -58,13 +52,7 @@ export class Proxy extends EventEmitter {
     tunnelConfig: TunnelConfig,
     transport: Transport,
   ): Promise<Proxy> {
-    const proxy = new Proxy(
-      tunnelId,
-      tunnelConfig.localPort,
-      tunnelConfig.remotePort,
-      tunnelConfig.useIPv4,
-      transport,
-    );
+    const proxy = new Proxy(tunnelId, tunnelConfig, transport);
     await proxy.startListening();
 
     return proxy;
@@ -133,14 +121,14 @@ export class Proxy extends EventEmitter {
 
       this._server.on('error', error => {
         logger.error(
-          `error when listening on port ${this._localPort}: `,
+          `error when listening on port ${this._tunnelConfig.localPort}: `,
           error,
         );
         this._sendMessage({
           event: 'proxyError',
-          port: this._localPort,
-          useIpv4: this._useIPv4,
-          remotePort: this._remotePort,
+          port: this._tunnelConfig.localPort,
+          useIpv4: this._tunnelConfig.useIPv4,
+          remotePort: this._tunnelConfig.remotePort,
           error,
           tunnelId: this._tunnelId,
         });
@@ -148,16 +136,18 @@ export class Proxy extends EventEmitter {
       });
 
       invariant(this._server);
-      this._server.listen({port: this._localPort}, () => {
+      this._server.listen({port: this._tunnelConfig.localPort}, () => {
         logger.info(
-          `successfully started listening on port ${this._localPort}`,
+          `successfully started listening on port ${
+            this._tunnelConfig.localPort
+          }`,
         );
         // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',
           proxyConfig: {
-            port: this._remotePort,
-            useIPv4: this._useIPv4,
+            port: this._tunnelConfig.remotePort,
+            useIPv4: this._tunnelConfig.useIPv4,
           },
           tunnelId: this._tunnelId,
         });
