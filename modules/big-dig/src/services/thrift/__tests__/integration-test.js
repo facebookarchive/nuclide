@@ -33,7 +33,10 @@ const CONFIG = {
   remoteUri: '',
   remoteCommand: 'node',
   remoteCommandArgs: [ADD_ONE_SERVER_PATH, '{PORT}'],
-  remotePort: 0,
+  remoteConnection: {
+    type: 'tcp',
+    port: 0,
+  },
   thriftTransport: 'buffered',
   thriftProtocol: 'binary',
   thriftService: AddOneService,
@@ -122,7 +125,10 @@ test('creates server in a specific port', async () => {
   const thriftClient = await thriftClientManager.createThriftClient({
     ...CONFIG,
     remoteCommandArgs: [ADD_ONE_SERVER_PATH, String(remotePort)],
-    remotePort,
+    remoteConnection: {
+      type: 'tcp',
+      port: remotePort,
+    },
   });
   expect(await thriftClient.getClient().calc(1)).toBe(2);
   thriftClient.close();
@@ -139,7 +145,10 @@ test('caches server', async () => {
       String(remotePort),
       commandArgument,
     ],
-    remotePort,
+    remoteConnection: {
+      type: 'tcp',
+      port: remotePort,
+    },
   };
   const thriftClient1 = await thriftClientManager.createThriftClient(config);
   const thriftClient2 = await thriftClientManager.createThriftClient(config);
@@ -185,7 +194,10 @@ test('kills old server process', async () => {
       String(remotePort),
       commandArgument,
     ],
-    remotePort,
+    remoteConnection: {
+      type: 'tcp',
+      port: remotePort,
+    },
   };
 
   const config1 = {
@@ -227,7 +239,6 @@ test('throws if remote port is 0 but "{PORT}" is not part of arguments', async (
     thriftClientManager.createThriftClient({
       ...CONFIG,
       remoteCommandArgs: [ADD_ONE_SERVER_PATH],
-      remotePort: 0,
     }),
   ).rejects.toThrow('Failed to create server');
 });

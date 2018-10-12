@@ -22,7 +22,10 @@ export const FS_SERVICE_CONFIG: ThriftServiceConfig = {
     '{BIG_DIG_SERVICES_PATH}/src/thrift-services/fs/launchServer-entry.js',
     '{PORT}',
   ],
-  remotePort: 0,
+  remoteConnection: {
+    type: 'tcp',
+    port: 0,
+  },
   thriftTransport: 'buffered',
   thriftProtocol: 'binary',
   thriftService: ThriftFileSystemService,

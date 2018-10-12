@@ -40,7 +40,10 @@ describe('startThriftServer', () => {
             name: 'thriftservername',
             remoteCommand: 'test',
             remoteCommandArgs: ['--server-port', String(serverPort)],
-            remotePort: serverPort,
+            remoteConnection: {
+              type: 'tcp',
+              port: serverPort,
+            },
             killOldThriftServerProcess: true,
           };
           resolve();

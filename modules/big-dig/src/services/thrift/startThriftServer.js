@@ -78,26 +78,37 @@ async function replacePlaceholders(
     throw new Error(`Remote command is invalid: ${remoteCommand}`);
   }
 
-  if (serverConfig.remotePort === 0) {
-    const hasPlaceholderForPort =
-      serverConfig.remoteCommandArgs.find(arg =>
-        arg.includes(PORT_PLACEHOLDER),
-      ) != null;
-    if (!hasPlaceholderForPort) {
-      throw new Error(
-        `Expected placeholder "${PORT_PLACEHOLDER}" for remote port`,
-      );
-    }
-    const remotePort = await getAvailableServerPort();
-    return {
-      ...serverConfig,
-      remotePort,
-      remoteCommandArgs: remoteCommandArgs.map(arg =>
-        arg.replace('{PORT}', String(remotePort)),
-      ),
-    };
+  switch (serverConfig.remoteConnection.type) {
+    case 'tcp':
+      if (serverConfig.remoteConnection.port === 0) {
+        const hasPlaceholderForPort =
+          serverConfig.remoteCommandArgs.find(arg =>
+            arg.includes(PORT_PLACEHOLDER),
+          ) != null;
+        if (!hasPlaceholderForPort) {
+          throw new Error(
+            `Expected placeholder "${PORT_PLACEHOLDER}" for remote port`,
+          );
+        }
+        const remotePort = await getAvailableServerPort();
+        return {
+          ...serverConfig,
+          remoteConnection: {
+            type: 'tcp',
+            port: remotePort,
+          },
+          remoteCommandArgs: remoteCommandArgs.map(arg =>
+            arg.replace(PORT_PLACEHOLDER, String(remotePort)),
+          ),
+        };
+      }
+      break;
+    case 'ipcSocket':
+      throw new Error('TODO: Next diff');
+    default:
+      (serverConfig.remoteConnection.type: empty);
+      throw new Error('Invalid remote connection type');
   }
-
   return {
     ...serverConfig,
     remoteCommand,
@@ -216,5 +227,13 @@ function logProcessMessage(name: string): ProcessMessage => void {
 }
 
 function getConnectionOptions(config: ThriftServerConfig): ConnectionOptions {
-  return {port: config.remotePort, useIPv4: false};
+  switch (config.remoteConnection.type) {
+    case 'tcp':
+      return {port: config.remoteConnection.port, useIPv4: false};
+    case 'ipcSocket':
+      throw new Error('TODO: Next diff');
+    default:
+      (config.remoteConnection.type: empty);
+      throw new Error('Invalid remote connection type');
+  }
 }

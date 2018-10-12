@@ -49,7 +49,10 @@ test.skip('remote file system client factory function', async () => {
     name: 'thrift-rfs',
     remoteCommand: '',
     remoteCommandArgs: [],
-    remotePort: mockPort,
+    remoteConnection: {
+      type: 'tcp',
+      port: mockPort,
+    },
     killOldThriftServerProcess: true,
   };
   const server = await createThriftServer(serverConfig);

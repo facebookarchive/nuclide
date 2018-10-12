@@ -47,7 +47,7 @@ export function convertToServerConfig(
     name: serviceConfig.name,
     remoteCommand: serviceConfig.remoteCommand,
     remoteCommandArgs: serviceConfig.remoteCommandArgs,
-    remotePort: serviceConfig.remotePort,
+    remoteConnection: serviceConfig.remoteConnection,
     killOldThriftServerProcess: serviceConfig.killOldThriftServerProcess,
   };
 }
@@ -57,6 +57,9 @@ export function genConfigId(config: ThriftServerConfig): string {
     config.name,
     config.remoteCommand,
     ...config.remoteCommandArgs,
-    config.remotePort,
+    config.remoteConnection.type,
+    config.remoteConnection.type === 'tcp'
+      ? config.remoteConnection.port
+      : config.remoteConnection.path,
   ].join('#');
 }

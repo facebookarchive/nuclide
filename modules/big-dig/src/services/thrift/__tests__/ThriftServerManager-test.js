@@ -32,7 +32,10 @@ describe('ThriftServerManager', () => {
     name: 'thrift-rfs',
     remoteCommand: '',
     remoteCommandArgs: [],
-    remotePort: mockPort,
+    remoteConnection: {
+      type: 'tcp',
+      port: mockPort,
+    },
     killOldThriftServerProcess: true,
   };
   const startServerMessage = {

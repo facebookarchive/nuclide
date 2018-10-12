@@ -83,7 +83,10 @@ describe('ThriftClientManager', () => {
     remoteUri: '',
     remoteCommand: '',
     remoteCommandArgs: [],
-    remotePort: 0,
+    remoteConnection: {
+      type: 'tcp',
+      port: 0,
+    },
     thriftTransport: 'buffered',
     thriftProtocol: 'binary',
     thriftService: {},
@@ -307,7 +310,10 @@ describe('ThriftClientManager', () => {
       remoteUri: '',
       remoteCommand: '',
       remoteCommandArgs: [],
-      remotePort: 0,
+      remoteConnection: {
+        type: 'tcp',
+        port: 0,
+      },
       thriftTransport: 'buffered',
       thriftProtocol: 'binary',
       thriftService: {},

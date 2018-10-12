@@ -23,8 +23,8 @@ export type ThriftServiceConfig = {
   remoteCommand: string,
   // args sent in execution of command above
   remoteCommandArgs: Array<string>,
-  // port number which server is listening
-  remotePort: number,
+  // server connection options
+  remoteConnection: RemoteConnectionType,
   // thrift transport used to communicate
   thriftTransport: 'framed' | 'buffered',
   // thrift protocol used to communicate
@@ -43,11 +43,21 @@ export type ThriftServerConfig = {
   remoteCommand: string,
   // remote command args sent along with the command above
   remoteCommandArgs: Array<string>,
-  // remote server port number
-  remotePort: number,
+  // server connection options
+  remoteConnection: RemoteConnectionType,
   // kill old server process when starting server for the first time.
   killOldThriftServerProcess: boolean,
 };
+
+type RemoteConnectionType =
+  | {
+      type: 'tcp',
+      port: number,
+    }
+  | {
+      type: 'ipcSocket',
+      path: string,
+    };
 
 export type ThriftMessagePayload = Request | SuccessResponse | FailureResponse;
 
