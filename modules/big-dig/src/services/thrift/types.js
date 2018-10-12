@@ -61,7 +61,7 @@ export type ThriftServiceCommand = $PropertyType<Request, 'command'>;
 export type SuccessResponse = {
   type: 'response',
   success: true,
-  port?: string,
+  connectionOptions?: ConnectionOptions,
 };
 
 export type FailureResponse = {
@@ -89,6 +89,11 @@ export interface ThriftClient {
 }
 
 export interface ThriftServer {
-  getPort(): number;
+  getConnectionOptions(): ConnectionOptions;
   close(): void;
 }
+
+export type ConnectionOptions = {|
+  port: number,
+  useIPv4: boolean,
+|};

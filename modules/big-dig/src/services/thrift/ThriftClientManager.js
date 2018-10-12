@@ -17,6 +17,7 @@ import type {
   ThriftServerConfig,
   ThriftServiceConfig,
   ThriftClient,
+  ConnectionOptions,
 } from './types';
 
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
@@ -149,7 +150,7 @@ export class ThriftClientManager {
           clearTimeout(timeoutHandler);
         }
         if (message.payload.success) {
-          resolve(message.payload.port);
+          resolve(message.payload.connectionOptions);
         } else {
           reject(new Error(message.payload.error));
         }
@@ -164,7 +165,9 @@ export class ThriftClientManager {
     return response;
   }
 
-  _createRemoteServer(serverConfig: ThriftServerConfig): Promise<number> {
+  _createRemoteServer(
+    serverConfig: ThriftServerConfig,
+  ): Promise<ConnectionOptions> {
     return this._invokeRemoteMethod('start-server', serverConfig);
   }
 
@@ -186,12 +189,14 @@ export class ThriftClientManager {
     } else {
       this._logger.info(`Creating a new tunnel for ${serviceConfig.name}`);
       const serverConfig = convertToServerConfig(serviceConfig);
-      const remotePort = await this._createRemoteServer(serverConfig);
+      const remoteConnectionOptions = await this._createRemoteServer(
+        serverConfig,
+      );
       const localPort = await getAvailableServerPort();
       const useIPv4 = false;
       tunnel = await this._tunnelManager.createTunnel({
         local: {port: localPort, useIPv4},
-        remote: {port: remotePort, useIPv4},
+        remote: remoteConnectionOptions,
       });
       this._tunnelByServiceConfigId.set(serviceConfigId, {tunnel, refCount: 1});
     }

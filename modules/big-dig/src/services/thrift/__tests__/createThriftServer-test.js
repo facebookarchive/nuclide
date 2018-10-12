@@ -53,5 +53,5 @@ test.skip('remote file system client factory function', async () => {
     killOldThriftServerProcess: true,
   };
   const server = await createThriftServer(serverConfig);
-  expect(server.getPort()).toBe(mockPort);
+  expect(server.getConnectionOptions()).toBe({port: mockPort});
 });

@@ -21,9 +21,9 @@ export async function createThriftServer(
   const thriftServerPromise = thriftServerStream.take(1).toPromise();
   const subscription = thriftServerStream.connect();
 
-  const thriftServerPort = await thriftServerPromise;
+  const connectionOptions = await thriftServerPromise;
   return {
-    getPort: () => thriftServerPort,
+    getConnectionOptions: () => connectionOptions,
     close: () => subscription.unsubscribe(),
   };
 }

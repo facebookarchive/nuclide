@@ -11,7 +11,7 @@
  */
 
 import type {ProcessMessage} from 'nuclide-commons/process';
-import type {ThriftServerConfig} from 'big-dig/src/services/thrift/types';
+import type {ThriftServerConfig, ConnectionOptions} from './types';
 
 import escapeRegExp from 'escape-string-regexp';
 import {getLogger} from 'log4js';
@@ -29,11 +29,11 @@ const PORT_PLACEHOLDER = '{PORT}';
 const SERVICES_PATH_PLACEHOLDER = '{BIG_DIG_SERVICES_PATH}';
 
 const logger = getLogger('thrift-service-server');
-const cache: Map<string, Observable<number>> = new Map();
+const cache: Map<string, Observable<ConnectionOptions>> = new Map();
 
 export function startThriftServer(
   serverConfig: ThriftServerConfig,
-): ConnectableObservable<number> {
+): ConnectableObservable<ConnectionOptions> {
   return Observable.defer(() => {
     const configId = genConfigId(serverConfig);
     let thriftServer = cache.get(configId);
@@ -48,7 +48,7 @@ export function startThriftServer(
             observeServerStatus(config).do(() =>
               logger.info(`(${config.name}) `, 'Thrift Server is ready'),
             ),
-          ).map(_ => config.remotePort),
+          ).map(_ => getConnectionOptions(config)),
         )
         .finally(() => {
           cache.delete(configId);
@@ -151,7 +151,10 @@ function observeServerStatus(config: ThriftServerConfig): Observable<true> {
   return Observable.create(observer => {
     let ready = false;
     const client = net
-      .connect({port: config.remotePort})
+      .connect(
+        // $FlowIgnore
+        getConnectionOptions(config),
+      )
       .on('connect', () => {
         client.destroy();
         ready = true;
@@ -210,4 +213,8 @@ function logProcessMessage(name: string): ProcessMessage => void {
         return;
     }
   };
+}
+
+function getConnectionOptions(config: ThriftServerConfig): ConnectionOptions {
+  return {port: config.remotePort, useIPv4: false};
 }

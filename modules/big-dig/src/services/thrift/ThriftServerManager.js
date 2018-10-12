@@ -17,6 +17,7 @@ import type {
   ThriftMessage,
   ThriftServer,
   ThriftServerConfig,
+  ConnectionOptions,
 } from './types';
 import type {Transport} from '../../server/BigDigServer';
 
@@ -107,12 +108,12 @@ export class ThriftServerManager {
         server,
         refCount: refCount + 1,
       });
-      messagePayload = createSuccessResponse(String(server.getPort()));
+      messagePayload = createSuccessResponse(server.getConnectionOptions());
     } else {
       try {
         const server = await createThriftServer(serverConfig);
         this._configIdToServer.set(configId, {refCount: 1, server});
-        messagePayload = createSuccessResponse(String(server.getPort()));
+        messagePayload = createSuccessResponse(server.getConnectionOptions());
       } catch (error) {
         messagePayload = createFailureResponse('Failed to create server');
         this._logger.error('Failed to create server ', error);
@@ -151,11 +152,13 @@ export class ThriftServerManager {
   }
 }
 
-function createSuccessResponse(port: string): SuccessResponse {
+function createSuccessResponse(
+  connectionOptions: ConnectionOptions,
+): SuccessResponse {
   return {
     type: 'response',
     success: true,
-    port,
+    connectionOptions,
   };
 }
 
