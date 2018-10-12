@@ -13,6 +13,7 @@
 import {trackSampled} from './analytics';
 
 const SAMPLE_RATE = 10;
+const STALL_THRESHOLD_MS = 100;
 
 export default function trackReactProfilerRender(
   id: string,
@@ -22,12 +23,20 @@ export default function trackReactProfilerRender(
   startTime: number,
   commitTime: number,
 ) {
-  trackSampled('react-profiler', SAMPLE_RATE, {
-    id,
-    phase,
-    actualTime,
-    baseTime,
-    startTime,
-    commitTime,
-  });
+  trackSampled(
+    'react-profiler',
+    // We always want to track long renders as their insight is valuable, so set
+    // their sample rate to 1.
+    // In reporting, weight faster renders at SAMPLE_RATE*x their value to
+    // continue to get accurate reporting.
+    actualTime >= STALL_THRESHOLD_MS ? 1 : SAMPLE_RATE,
+    {
+      id,
+      phase,
+      actualTime,
+      baseTime,
+      startTime,
+      commitTime,
+    },
+  );
 }
