@@ -116,7 +116,7 @@ export class ThriftClientManager {
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
     const client = createThriftClient(
       serviceConfig,
-      tunnel.getConfig().localPort,
+      tunnel.getConfig().local.port,
     );
     const clientDispose = () => {
       this._clientByClientId.delete(clientId);
@@ -193,9 +193,8 @@ export class ThriftClientManager {
       const localPort = await getAvailableServerPort();
       const useIPv4 = false;
       tunnel = await this._tunnelManager.createTunnel({
-        localPort,
-        remotePort,
-        useIPv4,
+        local: {port: localPort, useIPv4},
+        remote: {port: remotePort, useIPv4},
       });
       this._tunnelByServiceConfigId.set(serviceConfigId, {tunnel, refCount: 1});
     }

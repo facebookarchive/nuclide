@@ -121,14 +121,12 @@ export class Proxy extends EventEmitter {
 
       this._server.on('error', error => {
         logger.error(
-          `error when listening on port ${this._tunnelConfig.localPort}: `,
+          `error when listening on port ${this._tunnelConfig.local.port}: `,
           error,
         );
         this._sendMessage({
           event: 'proxyError',
-          port: this._tunnelConfig.localPort,
-          useIpv4: this._tunnelConfig.useIPv4,
-          remotePort: this._tunnelConfig.remotePort,
+          tunnelConfig: this._tunnelConfig,
           error,
           tunnelId: this._tunnelId,
         });
@@ -136,19 +134,16 @@ export class Proxy extends EventEmitter {
       });
 
       invariant(this._server);
-      this._server.listen({port: this._tunnelConfig.localPort}, () => {
+      this._server.listen({port: this._tunnelConfig.local.port}, () => {
         logger.info(
           `successfully started listening on port ${
-            this._tunnelConfig.localPort
+            this._tunnelConfig.local.port
           }`,
         );
         // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',
-          proxyConfig: {
-            port: this._tunnelConfig.remotePort,
-            useIPv4: this._tunnelConfig.useIPv4,
-          },
+          proxyConfig: this._tunnelConfig.remote,
           tunnelId: this._tunnelId,
         });
         resolve();

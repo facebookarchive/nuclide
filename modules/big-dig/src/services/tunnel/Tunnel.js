@@ -68,8 +68,8 @@ export class Tunnel extends EventEmitter {
     const socketManager = new SocketManager(
       tunnelId,
       {
-        port: tunnelConfig.localPort,
-        useIPv4: tunnelConfig.useIPv4,
+        port: tunnelConfig.local.port,
+        useIPv4: tunnelConfig.local.useIPv4,
       },
       transport,
     );
@@ -93,23 +93,24 @@ export class Tunnel extends EventEmitter {
 
   isTunnelConfigEqual(tunnelConfig: TunnelConfig): boolean {
     return (
-      tunnelConfig.localPort === this.getConfig().localPort &&
-      tunnelConfig.remotePort === this.getConfig().remotePort &&
-      tunnelConfig.useIPv4 === this.getConfig().useIPv4
+      tunnelConfig.local.port === this.getConfig().local.port &&
+      tunnelConfig.local.useIPv4 === this.getConfig().local.useIPv4 &&
+      tunnelConfig.remote.port === this.getConfig().remote.port &&
+      tunnelConfig.remote.useIPv4 === this.getConfig().remote.useIPv4
     );
   }
 
   assertNoOverlap(tunnelConfig: TunnelConfig) {
-    if (tunnelConfig.localPort === this.getConfig().localPort) {
+    if (tunnelConfig.local.port === this.getConfig().local.port) {
       throw new Error(
         `there already exists a tunnel connecting to localPort ${
-          tunnelConfig.localPort
+          tunnelConfig.local.port
         }`,
       );
-    } else if (tunnelConfig.remotePort === this.getConfig().remotePort) {
+    } else if (tunnelConfig.remote.port === this.getConfig().remote.port) {
       throw new Error(
         `there already exists a tunnel connecting to remotePort ${
-          tunnelConfig.remotePort
+          tunnelConfig.remote.port
         }`,
       );
     }
@@ -211,11 +212,10 @@ function generateId() {
 
 function reverseTunnelConfig(tunnelConfig: TunnelConfig): TunnelConfig {
   return {
-    useIPv4: tunnelConfig.useIPv4,
     // NB: on the server, the remote port and local ports are reversed.
     // We want to start the proxy on the remote port (relative to the
     // client) and start the socket manager on the local port
-    localPort: tunnelConfig.remotePort,
-    remotePort: tunnelConfig.localPort,
+    local: tunnelConfig.remote,
+    remote: tunnelConfig.local,
   };
 }

@@ -16,7 +16,7 @@ export function getDescriptor(
   tunnelConfig: TunnelConfig,
   isReverse: boolean,
 ): string {
-  return `${tunnelConfig.localPort}${isReverse ? '<-' : '->'}${
-    tunnelConfig.remotePort
+  return `${tunnelConfig.local.port}${isReverse ? '<-' : '->'}${
+    tunnelConfig.remote.port
   }`;
 }

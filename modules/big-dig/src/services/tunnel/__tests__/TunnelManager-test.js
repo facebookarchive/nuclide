@@ -97,9 +97,8 @@ test('creates a tunnel', async () => {
 
   const server = await createEchoServer(remotePort);
   const tunnel = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
   });
 
   expect(await echo(localPort, 'message1')).toBe('message1');
@@ -121,9 +120,8 @@ test('creates a reverse tunnel', async () => {
 
   const server = await createEchoServer(localPort);
   const tunnel = await clientTunnelManager.createReverseTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
   });
 
   expect(await echo(remotePort, 'message1')).toBe('message1');
@@ -144,9 +142,8 @@ test('creates multiple tunnels', async () => {
   const remotePort1 = await getAvailableServerPort();
   const server1 = await createEchoServer(remotePort1);
   const tunnel1 = await clientTunnelManager.createTunnel({
-    localPort: localPort1,
-    remotePort: remotePort1,
-    useIPv4: false,
+    local: {port: localPort1, useIPv4: false},
+    remote: {port: remotePort1, useIPv4: false},
   });
   expect(await echo(localPort1, 'message1')).toBe('message1');
   expect(await echo(localPort1, 'message2')).toBe('message2');
@@ -155,9 +152,8 @@ test('creates multiple tunnels', async () => {
   const remotePort2 = await getAvailableServerPort();
   const server2 = await createEchoServer(remotePort2);
   const tunnel2 = await clientTunnelManager.createTunnel({
-    localPort: localPort2,
-    remotePort: remotePort2,
-    useIPv4: false,
+    local: {port: localPort2, useIPv4: false},
+    remote: {port: remotePort2, useIPv4: false},
   });
   expect(await echo(localPort2, 'message3')).toBe('message3');
   expect(await echo(localPort2, 'message4')).toBe('message4');
@@ -180,17 +176,17 @@ test('throws an error if tunnel manager is closed', async () => {
   const localPort = await getAvailableServerPort();
   const remotePort = await getAvailableServerPort();
   const server = await createEchoServer(localPort);
+  const tunnelConfig = {
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
+  };
 
   await expect(
-    clientTunnelManager.createTunnel({localPort, remotePort, useIPv4: false}),
+    clientTunnelManager.createTunnel(tunnelConfig),
   ).rejects.toThrowErrorMatchingSnapshot();
 
   await expect(
-    clientTunnelManager.createReverseTunnel({
-      remotePort,
-      localPort,
-      useIPv4: false,
-    }),
+    clientTunnelManager.createReverseTunnel(tunnelConfig),
   ).rejects.toThrowErrorMatchingSnapshot();
 
   server.close();
@@ -206,19 +202,19 @@ test('throws an error if either port is already bound', async () => {
   const remotePort = await getAvailableServerPort();
 
   const localServer = await createEchoServer(localPort);
-  await expect(
-    clientTunnelManager.createTunnel({localPort, remotePort, useIPv4: false}),
-  ).rejects.toThrow('listen EADDRINUSE :::' + localPort);
+  const tunnelConfig = {
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
+  };
+  await expect(clientTunnelManager.createTunnel(tunnelConfig)).rejects.toThrow(
+    'listen EADDRINUSE :::' + localPort,
+  );
   await new Promise((res, rej) => localServer.close(() => res()));
 
   // TODO: createReverseTunnel should throw an instance of error
   const remoteServer = await createEchoServer(remotePort);
   await expect(
-    clientTunnelManager.createReverseTunnel({
-      localPort,
-      remotePort,
-      useIPv4: false,
-    }),
+    clientTunnelManager.createReverseTunnel(tunnelConfig),
   ).rejects.toEqual({
     code: 'EADDRINUSE',
     errno: 'EADDRINUSE',
@@ -242,16 +238,12 @@ test('should return an the existing tunnel if it already exists', async () => {
   const remotePort = await getAvailableServerPort();
 
   const server = await createEchoServer(remotePort);
-  const tunnel1 = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
-  });
-  const tunnel2 = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
-  });
+  const tunnelConfig = {
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
+  };
+  const tunnel1 = await clientTunnelManager.createTunnel(tunnelConfig);
+  const tunnel2 = await clientTunnelManager.createTunnel(tunnelConfig);
 
   expect(tunnel1).toEqual(tunnel2);
 
@@ -271,16 +263,12 @@ test('should not close a tunnel until all references are removed', async () => {
   const remotePort = await getAvailableServerPort();
 
   const server = await createEchoServer(remotePort);
-  const tunnel1 = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
-  });
-  const tunnel2 = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
-  });
+  const tunnelConfig = {
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
+  };
+  const tunnel1 = await clientTunnelManager.createTunnel(tunnelConfig);
+  const tunnel2 = await clientTunnelManager.createTunnel(tunnelConfig);
 
   expect(tunnel1).toEqual(tunnel2);
   expect(await echo(localPort, 'message1')).toBe('message1');
@@ -306,9 +294,8 @@ test('should correctly close tunnels when the tunnel manager is closed', async (
 
   const server = await createEchoServer(remotePort);
   const tunnel = await clientTunnelManager.createTunnel({
-    localPort,
-    remotePort,
-    useIPv4: false,
+    local: {port: localPort, useIPv4: false},
+    remote: {port: remotePort, useIPv4: false},
   });
 
   clientTunnelManager.close();

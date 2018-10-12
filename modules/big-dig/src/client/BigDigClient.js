@@ -101,18 +101,15 @@ export class BigDigClient {
       useIPv4?: boolean,
     } = {},
   ): Promise<Tunnel> {
-    if (!options.isReverse) {
-      return this._tunnelManager.createTunnel({
-        localPort,
-        remotePort,
-        useIPv4: options.useIPv4 || false,
-      });
+    const useIPv4 = options.useIPv4 || false;
+    const tunnelConfig = {
+      local: {useIPv4, port: localPort},
+      remote: {useIPv4, port: remotePort},
+    };
+    if (options.isReverse) {
+      return this._tunnelManager.createReverseTunnel(tunnelConfig);
     } else {
-      return this._tunnelManager.createReverseTunnel({
-        localPort,
-        remotePort,
-        useIPv4: options.useIPv4 || false,
-      });
+      return this._tunnelManager.createTunnel(tunnelConfig);
     }
   }
 
