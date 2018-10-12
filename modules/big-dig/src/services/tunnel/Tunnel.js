@@ -20,9 +20,7 @@ import EventEmitter from 'events';
 import {getLogger} from 'log4js';
 
 export class Tunnel extends EventEmitter {
-  _localPort: number;
-  _remotePort: number;
-  _useIPv4: boolean;
+  _tunnelConfig: TunnelConfig;
   _transport: Transport;
   _proxy: ?Proxy;
   _id: string;
@@ -33,17 +31,13 @@ export class Tunnel extends EventEmitter {
   constructor(
     id: string,
     proxy: ?Proxy,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ) {
     super();
     this._id = id;
     this._proxy = proxy;
-    this._localPort = localPort;
-    this._remotePort = remotePort;
-    this._useIPv4 = useIPv4;
+    this._tunnelConfig = tunnelConfig;
     this._transport = transport;
     this._isClosed = false;
     this._logger = getLogger('tunnel');
@@ -62,14 +56,7 @@ export class Tunnel extends EventEmitter {
   ): Promise<Tunnel> {
     const tunnelId = generateId();
     const proxy = await Proxy.createProxy(tunnelId, tunnelConfig, transport);
-    return new Tunnel(
-      tunnelId,
-      proxy,
-      tunnelConfig.localPort,
-      tunnelConfig.remotePort,
-      tunnelConfig.useIPv4,
-      transport,
-    );
+    return new Tunnel(tunnelId, proxy, tunnelConfig, transport);
   }
 
   static async createReverseTunnel(
@@ -95,14 +82,7 @@ export class Tunnel extends EventEmitter {
       ),
     );
 
-    return new ReverseTunnel(
-      tunnelId,
-      socketManager,
-      tunnelConfig.localPort,
-      tunnelConfig.remotePort,
-      tunnelConfig.useIPv4,
-      transport,
-    );
+    return new ReverseTunnel(tunnelId, socketManager, tunnelConfig, transport);
   }
 
   incrementRefCount(): void {
@@ -124,15 +104,15 @@ export class Tunnel extends EventEmitter {
   }
 
   getLocalPort(): number {
-    return this._localPort;
+    return this._tunnelConfig.localPort;
   }
 
   getRemotePort(): number {
-    return this._remotePort;
+    return this._tunnelConfig.remotePort;
   }
 
   getUseIPv4(): boolean {
-    return this._useIPv4;
+    return this._tunnelConfig.useIPv4;
   }
 
   getRefCount(): number {
@@ -161,12 +141,10 @@ export class ReverseTunnel extends Tunnel {
   constructor(
     id: string,
     socketManager: SocketManager,
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ) {
-    super(id, null, localPort, remotePort, useIPv4, transport);
+    super(id, null, tunnelConfig, transport);
     this._socketManager = socketManager;
 
     this._socketManager.on('error', error => {
