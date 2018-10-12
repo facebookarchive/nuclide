@@ -18,6 +18,7 @@ import net from 'net';
 import {getLogger} from 'log4js';
 import Encoder from './Encoder';
 import EventEmitter from 'events';
+import {matchProxyConfig} from './ProxyConfigUtils';
 
 const logger = getLogger('tunnel-socket-manager');
 
@@ -68,10 +69,16 @@ export class SocketManager extends EventEmitter {
   }
 
   _createConnection(clientId: number) {
-    const connectOptions = {
-      port: this._proxyConfig.port,
-      family: this._proxyConfig.useIPv4 ? 4 : 6,
-    };
+    const connectOptions = matchProxyConfig(
+      {
+        tcp: c => ({
+          port: c.port,
+          family: c.useIPv4 ? 4 : 6,
+        }),
+        ipcSocket: c => ({path: c.path}),
+      },
+      this._proxyConfig,
+    );
 
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
     const socket = net.createConnection(connectOptions);

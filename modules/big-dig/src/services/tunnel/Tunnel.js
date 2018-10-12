@@ -13,6 +13,11 @@
 import type {Transport} from './Proxy';
 import type {TunnelMessage, TunnelConfig} from './types';
 
+import {
+  getProxyConfigDescriptor,
+  isProxyConfigEqual,
+  isProxyConfigOverlapping,
+} from './ProxyConfigUtils';
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
 import invariant from 'assert';
@@ -67,10 +72,7 @@ export class Tunnel extends EventEmitter {
 
     const socketManager = new SocketManager(
       tunnelId,
-      {
-        port: tunnelConfig.local.port,
-        useIPv4: tunnelConfig.local.useIPv4,
-      },
+      tunnelConfig.local,
       transport,
     );
 
@@ -93,25 +95,26 @@ export class Tunnel extends EventEmitter {
 
   isTunnelConfigEqual(tunnelConfig: TunnelConfig): boolean {
     return (
-      tunnelConfig.local.port === this.getConfig().local.port &&
-      tunnelConfig.local.useIPv4 === this.getConfig().local.useIPv4 &&
-      tunnelConfig.remote.port === this.getConfig().remote.port &&
-      tunnelConfig.remote.useIPv4 === this.getConfig().remote.useIPv4
+      isProxyConfigEqual(tunnelConfig.local, this.getConfig().local) &&
+      isProxyConfigEqual(tunnelConfig.remote, this.getConfig().remote)
     );
   }
 
   assertNoOverlap(tunnelConfig: TunnelConfig) {
-    if (tunnelConfig.local.port === this.getConfig().local.port) {
+    if (isProxyConfigOverlapping(tunnelConfig.local, this.getConfig().local)) {
       throw new Error(
-        `there already exists a tunnel connecting to localPort ${
-          tunnelConfig.local.port
-        }`,
+        `there already exists a tunnel connecting to ${getProxyConfigDescriptor(
+          tunnelConfig.local,
+        )}`,
       );
-    } else if (tunnelConfig.remote.port === this.getConfig().remote.port) {
+    }
+    if (
+      isProxyConfigOverlapping(tunnelConfig.remote, this.getConfig().remote)
+    ) {
       throw new Error(
-        `there already exists a tunnel connecting to remotePort ${
-          tunnelConfig.remote.port
-        }`,
+        `there already exists a tunnel connecting to ${getProxyConfigDescriptor(
+          tunnelConfig.remote,
+        )}`,
       );
     }
   }

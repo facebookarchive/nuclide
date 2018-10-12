@@ -52,7 +52,13 @@ export type TunnelMessage =
 
 export type TunnelConfig = {local: ProxyConfig, remote: ProxyConfig};
 
-export type ProxyConfig = {
+export type ProxyConfig = TcpProxyConfig | IpcProxyConfig;
+
+export type TcpProxyConfig = {
   port: number,
   useIPv4: boolean,
 };
+
+// This intentionally matches the Node specification for TCP/IPC connections:
+// https://nodejs.org/api/net.html#net_socket_connect_options_connectlistener
+export type IpcProxyConfig = {path: string};

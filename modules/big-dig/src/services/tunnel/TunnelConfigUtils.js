@@ -10,13 +10,25 @@
  * @format
  */
 
-import type {TunnelConfig} from './types';
+import type {ProxyConfig, TunnelConfig} from './types';
+
+import {matchProxyConfig} from './ProxyConfigUtils';
 
 export function getDescriptor(
   tunnelConfig: TunnelConfig,
   isReverse: boolean,
 ): string {
-  return `${tunnelConfig.local.port}${isReverse ? '<-' : '->'}${
-    tunnelConfig.remote.port
-  }`;
+  return `${getDescriptorForProxyConfig(tunnelConfig.local)}${
+    isReverse ? '<-' : '->'
+  }${getDescriptorForProxyConfig(tunnelConfig.remote)}`;
+}
+
+function getDescriptorForProxyConfig(proxyConfig: ProxyConfig): string {
+  return matchProxyConfig(
+    {
+      tcp: config => String(config.port),
+      ipcSocket: config => config.path,
+    },
+    proxyConfig,
+  );
 }

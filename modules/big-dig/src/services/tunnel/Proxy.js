@@ -19,6 +19,7 @@ import Encoder from './Encoder';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import EventEmitter from 'events';
+import {getProxyConfigDescriptor} from './ProxyConfigUtils';
 
 const logger = getLogger('tunnel-proxy');
 
@@ -121,7 +122,9 @@ export class Proxy extends EventEmitter {
 
       this._server.on('error', error => {
         logger.error(
-          `error when listening on port ${this._tunnelConfig.local.port}: `,
+          `error when listening on ${getProxyConfigDescriptor(
+            this._tunnelConfig.local,
+          )}: `,
           error,
         );
         this._sendMessage({
@@ -134,11 +137,11 @@ export class Proxy extends EventEmitter {
       });
 
       invariant(this._server);
-      this._server.listen({port: this._tunnelConfig.local.port}, () => {
+      this._server.listen(this._tunnelConfig.local, () => {
         logger.info(
-          `successfully started listening on port ${
-            this._tunnelConfig.local.port
-          }`,
+          `successfully started listening on ${getProxyConfigDescriptor(
+            this._tunnelConfig.local,
+          )}`,
         );
         // send a message to create the SocketManager
         this._sendMessage({

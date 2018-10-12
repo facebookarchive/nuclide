@@ -112,12 +112,9 @@ export class ThriftClientManager {
   ): Promise<ThriftClient> {
     invariant(!this._isClosed, 'big-dig thrift client manager close!');
 
-    const tunnel = await this._getOrCreateTunnel(serviceConfig);
+    const port = await this._getOrCreateTunnel(serviceConfig);
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
-    const client = createThriftClient(
-      serviceConfig,
-      tunnel.getConfig().local.port,
-    );
+    const client = createThriftClient(serviceConfig, port);
     const clientDispose = () => {
       this._clientByClientId.delete(clientId);
       this._closeTunnel(serviceConfig);
@@ -177,7 +174,7 @@ export class ThriftClientManager {
 
   async _getOrCreateTunnel(
     serviceConfig: ThriftServiceConfig,
-  ): Promise<Tunnel> {
+  ): Promise<number> {
     const serviceConfigId = genConfigId(serviceConfig);
     const tunnelCacheEntry = this._tunnelByServiceConfigId.get(serviceConfigId);
     let tunnel = null;
@@ -198,7 +195,13 @@ export class ThriftClientManager {
       });
       this._tunnelByServiceConfigId.set(serviceConfigId, {tunnel, refCount: 1});
     }
-    return tunnel;
+    const localProxyConfig = tunnel.getConfig().local;
+    if (localProxyConfig.path === undefined) {
+      return localProxyConfig.port;
+    }
+    throw new Error(
+      'Big Dig has no IPC Socket support at this time for Thrift clients.',
+    );
   }
 
   async _closeTunnel(serviceConfig: ThriftServiceConfig): Promise<void> {
