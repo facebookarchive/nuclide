@@ -111,6 +111,10 @@ class ThriftRfsClientAdapter {
     }
   }
 
+  async expandHomeDir(uri: string): Promise<string> {
+    return this._client.expandHomeDir(uri);
+  }
+
   async fstat(fd: number): Promise<fs.Stats> {
     const statData = await this._client.fstat(fd);
     return convertToFsFileStat(statData);
@@ -143,7 +147,7 @@ class ThriftRfsClientAdapter {
 
   async mkdirp(uri: NuclideUri): Promise<boolean> {
     try {
-      await this._client.createDirectory(nuclideUri.getPath(uri));
+      await this._client.mkdirp(nuclideUri.getPath(uri));
       return true;
     } catch (err) {
       logger.error(err);
@@ -221,6 +225,14 @@ class ThriftRfsClientAdapter {
     } catch (err) {
       throw err;
     }
+  }
+
+  async realpath(uri: string): Promise<string> {
+    return this._client.realpath(uri);
+  }
+
+  async resolveRealPath(uri: string): Promise<string> {
+    return this._client.resolveRealPath(uri);
   }
 
   /**

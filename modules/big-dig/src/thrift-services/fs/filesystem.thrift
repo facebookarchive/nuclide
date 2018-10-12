@@ -182,6 +182,10 @@ service ThriftFileSystemService {
    */
   void deletePath(1: string uri, 2: DeleteOpt options) throws(1: Error error);
 
+  /**
+   * Returns the specified file path with the home dir ~/ expanded.
+   */
+  string expandHomeDir(1: string uri) throws(1: Error error);
 
   void fsync(1: i32 fd) throws(1: Error error);
 
@@ -197,6 +201,15 @@ service ThriftFileSystemService {
    * @return The file metadata about the file.
    */
   FileStat lstat(1: string uri) throws(1: Error error);
+
+  /**
+   * Runs the equivalent of `mkdir -p` with the given path.
+   *
+   * Like most implementations of mkdirp, if it fails, it is possible that
+   * directories were created for some prefix of the given path.
+   * @return true if the path was created; false if it already existed.
+   */
+  bool mkdirp(1: string path) throws(1: Error error);
 
   i32 open(1: string path, 2: i32 permissionFlags, 3: i32 mode)
     throws(1: Error error);
@@ -226,6 +239,19 @@ service ThriftFileSystemService {
    * @return the content of file, binary byte array
    */
   binary readFile(1: string uri) throws(1: Error error);
+
+  /**
+   * Gets the real path of a file path.
+   * It could be different than the given path if the file is a symlink
+   * or exists in a symlinked directory.
+   */
+  string realpath(1: string uri) throws(1: Error error);
+
+  /**
+   * Gets the real path of a file path, while expanding tilde paths and symlinks
+   * like: ~/abc to its absolute path format.
+   */
+  string resolveRealPath(1: string uri) throws(1: Error error);
 
   /**
    * Rename a file or folder.

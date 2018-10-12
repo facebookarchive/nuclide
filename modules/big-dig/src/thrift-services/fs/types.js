@@ -27,14 +27,18 @@ export interface RemoteFileSystemClient {
   ): Promise<void>;
   createDirectory(path: string): Promise<void>;
   deletePath(uri: string, options: filesystem_types.DeleteOpt): Promise<void>;
+  expandHomeDir(uri: string): Promise<string>;
   fsync(fd: number): Promise<void>;
   fstat(fd: number): Promise<filesystem_types.FileStat>;
   ftruncate(fd: number, len: number): Promise<void>;
   lstat(path: string): Promise<filesystem_types.FileStat>;
+  mkdirp(uri: string): Promise<boolean>;
   open(path: string, permissionFlags: number, mode: number): Promise<number>;
   pollFileChanges(watchId: string): Promise<any>;
   readDirectory(uri: string): Promise<Array<filesystem_types.FileEntry>>;
   readFile(path: string): Promise<Buffer>;
+  realpath(uri: string): Promise<string>;
+  resolveRealPath(uri: string): Promise<string>;
   rename(
     oldUri: string,
     newUri: string,

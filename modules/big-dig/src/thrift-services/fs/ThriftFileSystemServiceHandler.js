@@ -26,6 +26,9 @@ import {
   createThriftErrorWithCode,
   convertToThriftFileEntry,
 } from './converter';
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+import pathModule from 'path';
+import os from 'os';
 
 const commonWatchIgnoredExpressions = [
   ['not', ['dirname', '.hg']],
@@ -146,6 +149,37 @@ export class ThriftFileSystemServiceHandler {
     this._watchIdToChangeList.clear();
   }
 
+  async expandHomeDir(uri: string): Promise<string> {
+    // Do not expand non home relative uris
+    if (!uri.startsWith('~')) {
+      return uri;
+    }
+
+    // "home" on Windows is %UserProfile%. Note that Windows environment variables
+    // are NOT case sensitive, but process.env is a magic object that wraps GetEnvironmentVariableW
+    // on Windows, so asking for any case is expected to work.
+    const {HOME, UserProfile} = process.env;
+
+    const isWindows = os.platform() === 'win32';
+    const homePath = isWindows ? UserProfile : HOME;
+    if (homePath == null) {
+      throw createThriftError({
+        message: 'could not find path to home directory',
+      });
+    }
+
+    if (uri === '~') {
+      return homePath;
+    }
+
+    // Uris like ~abc should not be expanded
+    if (!uri.startsWith('~/') && (!isWindows || !uri.startsWith('~\\'))) {
+      return uri;
+    }
+
+    return pathModule.resolve(homePath, uri.replace('~', '.'));
+  }
+
   async fstat(fd: number): Promise<number> {
     try {
       const statData = await fsPromise.fstat(fd);
@@ -174,6 +208,14 @@ export class ThriftFileSystemServiceHandler {
     try {
       const statData = await fsPromise.lstat(uri);
       return convertToThriftFileStat(statData);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async mkdirp(uri: string): Promise<boolean> {
+    try {
+      return await fsPromise.mkdirp(uri);
     } catch (err) {
       throw createThriftError(err);
     }
@@ -233,6 +275,23 @@ export class ThriftFileSystemServiceHandler {
     try {
       const contents = await fsPromise.readFile(uri);
       return contents;
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async realpath(uri: string): Promise<string> {
+    try {
+      return await fsPromise.realpath(uri);
+    } catch (err) {
+      throw createThriftError(err);
+    }
+  }
+
+  async resolveRealPath(uri: string): Promise<string> {
+    try {
+      const expandedHome = await this.expandHomeDir(uri);
+      return await fsPromise.realpath(expandedHome);
     } catch (err) {
       throw createThriftError(err);
     }
