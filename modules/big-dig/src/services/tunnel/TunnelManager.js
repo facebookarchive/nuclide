@@ -115,12 +115,7 @@ export class TunnelManager extends EventEmitter {
           this._transport,
         );
       } else {
-        tunnel = await Tunnel.createTunnel(
-          tunnelConfig.localPort,
-          tunnelConfig.remotePort,
-          tunnelConfig.useIPv4,
-          this._transport,
-        );
+        tunnel = await Tunnel.createTunnel(tunnelConfig, this._transport);
       }
       this._idToTunnel.set(tunnel.getId(), tunnel);
       tunnel.once('close', () => {

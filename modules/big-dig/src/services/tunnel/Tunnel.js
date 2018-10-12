@@ -57,25 +57,23 @@ export class Tunnel extends EventEmitter {
   }
 
   static async createTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     transport: Transport,
   ): Promise<Tunnel> {
     const tunnelId = generateId();
     const proxy = await Proxy.createProxy(
       tunnelId,
-      localPort,
-      remotePort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       transport,
     );
     return new Tunnel(
       tunnelId,
       proxy,
-      localPort,
-      remotePort,
-      useIPv4,
+      tunnelConfig.localPort,
+      tunnelConfig.remotePort,
+      tunnelConfig.useIPv4,
       transport,
     );
   }
