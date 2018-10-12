@@ -88,12 +88,13 @@ export function confirmNodeEpic(
         }
       } else {
         track('file-tree-open-file', {uri: nodeKey});
-        const conf = Selectors.getConf(store.getState());
         // goToLocation doesn't support pending panes
         // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
           activatePane:
-            (pending && conf.focusEditorOnFileSelection) || !pending,
+            (pending &&
+              Selectors.getFocusEditorOnFileSelection(store.getState())) ||
+            !pending,
           searchAllPanes: true,
           pending,
         });

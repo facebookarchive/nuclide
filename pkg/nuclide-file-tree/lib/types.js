@@ -71,7 +71,6 @@ export type StoreConfigData = {|
   excludeVcsIgnoredPaths: boolean,
   hideVcsIgnoredPaths: boolean,
   ignoredPatterns: Immutable.Set<any /* Minimatch */>,
-  focusEditorOnFileSelection: boolean,
   isEditingWorkingSet: boolean,
   openFilesWorkingSet: WorkingSet,
   reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
@@ -125,6 +124,7 @@ export type AppState = {|
     Map<NuclideUri, StatusCodeNumberValue>,
   >,
   usePreviewTabs: boolean,
+  focusEditorOnFileSelection: boolean,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';

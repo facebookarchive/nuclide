@@ -375,6 +375,10 @@ export const getUsePreviewTabs = (state: AppState): boolean => {
   return state.usePreviewTabs;
 };
 
+export const getFocusEditorOnFileSelection = (state: AppState): boolean => {
+  return state.focusEditorOnFileSelection;
+};
+
 export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
   if (cwdKey == null) {
     return 'No Current Working Directory';
@@ -499,7 +503,7 @@ export const collectDebugState = (state: AppState) => {
     _trackedNodeKey: getTrackedNodeKey(state),
     _isCalculatingChanges: getIsCalculatingChanges(state),
     usePreviewTabs: getUsePreviewTabs(state),
-
+    focusEditorOnFileSelection: getFocusEditorOnFileSelection(state),
     roots: Array.from(getRoots(state).values()).map(root =>
       root.collectDebugState(),
     ),
@@ -507,7 +511,6 @@ export const collectDebugState = (state: AppState) => {
       hideIgnoredNames: conf.hideIgnoredNames,
       excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
       hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
-      focusEditorOnFileSelection: conf.focusEditorOnFileSelection,
       isEditingWorkingSet: conf.isEditingWorkingSet,
       vcsStatuses: getVcsStatuses(state).toObject(),
       workingSet: conf.workingSet.getUris(),

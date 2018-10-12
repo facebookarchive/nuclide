@@ -44,7 +44,6 @@ export const DEFAULT_CONF = {
   excludeVcsIgnoredPaths: true,
   hideVcsIgnoredPaths: true,
   ignoredPatterns: Immutable.Set(),
-  focusEditorOnFileSelection: true,
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},
@@ -96,6 +95,7 @@ const DEFAULT_STATE: AppState = {
 
   vcsStatuses: Immutable.Map(),
   usePreviewTabs: false,
+  focusEditorOnFileSelection: true,
 };
 
 function reduceState(state_: AppState, action: Action): AppState {
@@ -634,9 +634,7 @@ function setFocusEditorOnFileSelection(
   state: AppState,
   focusEditorOnFileSelection: boolean,
 ): AppState {
-  return updateConf(state, conf => {
-    conf.focusEditorOnFileSelection = focusEditorOnFileSelection;
-  });
+  return {...state, focusEditorOnFileSelection};
 }
 
 function setUsePrefixNav(state: AppState, usePrefixNav: boolean): AppState {
