@@ -111,12 +111,7 @@ export class TunnelManager extends EventEmitter {
   }
 
   async _createTunnel(tunnelConfig: TunnelConfig, isReverse: boolean) {
-    let tunnel = this._checkForExistingTunnel(
-      tunnelConfig.localPort,
-      tunnelConfig.remotePort,
-      tunnelConfig.useIPv4,
-      isReverse,
-    );
+    let tunnel = this._checkForExistingTunnel(tunnelConfig, isReverse);
 
     if (tunnel == null) {
       if (isReverse) {
@@ -163,17 +158,15 @@ export class TunnelManager extends EventEmitter {
   }
 
   _checkForExistingTunnel(
-    localPort: number,
-    remotePort: number,
-    useIPv4: boolean,
+    tunnelConfig: TunnelConfig,
     isReverse: boolean,
   ): ?Tunnel {
     for (const tunnel of this._idToTunnel.values()) {
       if (tunnel instanceof Tunnel) {
         if (
-          localPort === tunnel.getLocalPort() &&
-          remotePort === tunnel.getRemotePort() &&
-          useIPv4 === tunnel.getUseIPv4()
+          tunnelConfig.localPort === tunnel.getLocalPort() &&
+          tunnelConfig.remotePort === tunnel.getRemotePort() &&
+          tunnelConfig.useIPv4 === tunnel.getUseIPv4()
         ) {
           if (
             (isReverse && tunnel instanceof ReverseTunnel) ||
@@ -185,13 +178,17 @@ export class TunnelManager extends EventEmitter {
               "there is already a tunnel with those ports, but it's in the wrong direction",
             );
           }
-        } else if (localPort === tunnel.getLocalPort()) {
+        } else if (tunnelConfig.localPort === tunnel.getLocalPort()) {
           throw new Error(
-            `there already exists a tunnel connecting to localPort ${localPort}`,
+            `there already exists a tunnel connecting to localPort ${
+              tunnelConfig.localPort
+            }`,
           );
-        } else if (remotePort === tunnel.getRemotePort()) {
+        } else if (tunnelConfig.remotePort === tunnel.getRemotePort()) {
           throw new Error(
-            `there already exists a tunnel connecting to remotePort ${remotePort}`,
+            `there already exists a tunnel connecting to remotePort ${
+              tunnelConfig.remotePort
+            }`,
           );
         }
       }
