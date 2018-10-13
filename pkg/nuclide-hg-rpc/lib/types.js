@@ -40,6 +40,7 @@ export type LineDiff = {
   oldLines: number,
   newStart: number,
   newLines: number,
+  oldText?: string,
 };
 
 export type BookmarkInfo = {
