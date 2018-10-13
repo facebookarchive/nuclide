@@ -25,9 +25,8 @@ import type {
 } from '../../atom-ide-diagnostics/lib/types';
 
 import {areSetsEqual} from 'nuclide-commons/collection';
-import {fastDebounce, diffSets} from 'nuclide-commons/observable';
+import {diffSets, throttle} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {throttle} from 'nuclide-commons/observable';
 import analytics from 'nuclide-commons/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import idx from 'idx';
@@ -269,13 +268,12 @@ class Activation {
               : observableFromSubscribeFunction(updater.observeMessages),
         )
         .combineLatest(this._getIsStaleMessageEnabledStream())
-        // $FlowFixMe
-        .throttle(
-          ([_, isStaleMessageEnabled]) =>
+        .let(
+          throttle(([, isStaleMessageEnabled]) =>
             Observable.interval(
               isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
             ),
-          {leading: true, trailing: true},
+          ),
         )
         .map(([diagnostics, isStaleMessageEnabled]) =>
           diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
@@ -289,7 +287,7 @@ class Activation {
             return diagnostic;
           }),
         )
-        .let(fastDebounce(100))
+        .let(throttle(300))
         .startWith([]);
 
       const showTracesStream: Observable<
