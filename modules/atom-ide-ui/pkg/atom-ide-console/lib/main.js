@@ -414,7 +414,16 @@ function deserializeRecord(record: Object): Record {
     timestamp: parseDate(record.timestamp) || new Date(0),
     // At one point in the time the messageId was a number, so the user might
     // have a number serialized.
-    messageId: record == null ? undefined : String(record.messageId),
+    messageId:
+      record == null ||
+      record.messageId == null ||
+      // Sigh. We (I, -jeldredge) had a bug at one point where we accidentally
+      // converted serialized values of `undefined` to the string `"undefiend"`.
+      // Those could then have been serialized back to disk. So, for a little
+      // while at least, we should ensure we fix these bad values.
+      record.messageId === 'undefined'
+        ? undefined
+        : String(record.messageId),
   };
 }
 
