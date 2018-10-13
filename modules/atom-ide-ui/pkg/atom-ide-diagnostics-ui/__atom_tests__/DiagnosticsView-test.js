@@ -26,7 +26,6 @@ describe('DiagnosticsView', () => {
         gotoMessageLocation={() => {}}
         hiddenGroups={new Set()}
         onFilterByActiveTextEditorChange={() => {}}
-        onDismissNux={() => {}}
         isVisible={true}
         onShowTracesChange={() => {}}
         onTextFilterChange={() => {}}
@@ -35,7 +34,6 @@ describe('DiagnosticsView', () => {
         selectedMessage={null}
         showDirectoryColumn={false}
         showTraces={true}
-        showNuxContent={false}
         supportedMessageKinds={new Set()}
         textFilter={{text: 'test', isRegExp: true, invalid: false}}
         uiConfig={[]}

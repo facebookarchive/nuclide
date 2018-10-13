@@ -29,7 +29,6 @@ import {fastDebounce, diffSets} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {throttle} from 'nuclide-commons/observable';
 import analytics from 'nuclide-commons/analytics';
-import AsyncStorage from 'idb-keyval';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import idx from 'idx';
 import invariant from 'assert';
@@ -63,14 +62,12 @@ export type DiagnosticsState = {|
   ...ActivationState,
   ...OpenBlockDecorationState,
   diagnosticUpdater: ?DiagnosticUpdater,
-  showNuxContent: boolean,
 |};
 
 type OpenBlockDecorationState = {|
   openedMessageIds: Set<string>,
 |};
 
-const NUX_ASYNC_STORAGE_KEY = 'nuclide_diagnostics_nux_shown';
 const NUCLIDE_DIAGNOSTICS_STALE_GK = 'nuclide_diagnostics_stale';
 
 class Activation {
@@ -83,7 +80,6 @@ class Activation {
 
   constructor(state: ?Object): void {
     this._model = new Model({
-      showNuxContent: false,
       filterByActiveTextEditor:
         idx(state, _ => _.filterByActiveTextEditor) === true,
       diagnosticUpdater: null,
@@ -92,7 +88,6 @@ class Activation {
     this._subscriptions = new UniversalDisposable(
       this.registerOpenerAndCommand(),
       this._registerActionsMenu(),
-      this._observeDiagnosticsAndOfferTable(),
       showAtomLinterWarning(),
     );
     this._fileDiagnostics = new WeakMap();
@@ -238,77 +233,9 @@ class Activation {
     );
   }
 
-  _observeDiagnosticsAndOfferTable(): IDisposable {
-    return new UniversalDisposable(
-      this._gatekeeperServices
-        .switchMap(gatekeeperService => {
-          if (gatekeeperService == null) {
-            return Observable.of(null);
-          }
-
-          return gatekeeperService.passesGK('nuclide_diagnostics_nux');
-        })
-        .filter(Boolean)
-        .take(1)
-        // Don't show it to the user if they've seen it before
-        .switchMap(() => AsyncStorage.get(NUX_ASYNC_STORAGE_KEY))
-        .filter(seen => !seen)
-        .switchMap(() =>
-          // Only display once there are errors originating from multiple files
-          this._getGlobalViewStates()
-            .debounceTime(500)
-            .map(state => state.diagnostics)
-            .filter(diags => {
-              // make sure there are diagnostics from at least two different uris
-              // and that those diagnostics are errors
-              const firstErrorDiagIndex = diags.findIndex(
-                diag => diag.type === 'Error',
-              );
-              if (firstErrorDiagIndex === -1) {
-                return false;
-              }
-
-              const firstUri = diags[firstErrorDiagIndex].filePath;
-              for (let i = firstErrorDiagIndex + 1; i < diags.length; i++) {
-                if (
-                  diags[i].type === 'Error' &&
-                  diags[i].filePath !== firstUri
-                ) {
-                  return true;
-                }
-              }
-              return false;
-            })
-            .take(1),
-        )
-        .subscribe(async () => {
-          // capture the current focus since opening diagnostics will change it
-          const previouslyFocusedElement = document.activeElement;
-          this._model.setState({showNuxContent: true});
-
-          // we need to await this as we must wait for the panel to activate to
-          // change the focus back
-          await goToLocation(WORKSPACE_VIEW_URI);
-          AsyncStorage.set(NUX_ASYNC_STORAGE_KEY, true);
-          analytics.track('diagnostics-table-nux-shown');
-
-          // and then restore the focus if it existed before
-          if (previouslyFocusedElement != null) {
-            previouslyFocusedElement.focus();
-          }
-        }),
-    );
-  }
-
   _createDiagnosticsViewModel(): DiagnosticsViewModel {
     return new DiagnosticsViewModel(this._getGlobalViewStates());
   }
-
-  _dismissNux = () => {
-    this._model.setState({
-      showNuxContent: false,
-    });
-  };
 
   _getIsStaleMessageEnabledStream(): Observable<boolean> {
     return this._gatekeeperServices
@@ -333,9 +260,6 @@ class Activation {
       const updaters = packageStates
         .map(state => state.diagnosticUpdater)
         .distinctUntilChanged();
-      const showNuxContentStream = packageStates.map(
-        state => state.showNuxContent,
-      );
 
       const diagnosticsStream = updaters
         .switchMap(
@@ -424,7 +348,6 @@ class Activation {
         showDirectoryColumnStream,
         autoVisibilityStream,
         supportedMessageKindsStream,
-        showNuxContentStream,
         uiConfigStream,
         // $FlowFixMe
         (
@@ -435,7 +358,6 @@ class Activation {
           showDirectoryColumn,
           autoVisibility,
           supportedMessageKinds,
-          showNuxContent,
           uiConfig,
         ) => ({
           diagnostics,
@@ -446,9 +368,7 @@ class Activation {
           autoVisibility,
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
-          onDismissNux: this._dismissNux,
           supportedMessageKinds,
-          showNuxContent,
           uiConfig,
         }),
       );
