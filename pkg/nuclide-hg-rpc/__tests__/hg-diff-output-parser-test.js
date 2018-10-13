@@ -94,6 +94,7 @@ describe('hg-diff-output-parser', () => {
             oldLines: 11,
             newStart: 150,
             newLines: 2,
+            oldText: '',
           },
         ],
       });
@@ -111,6 +112,7 @@ describe('hg-diff-output-parser', () => {
             oldLines: 1,
             newStart: 150,
             newLines: 1,
+            oldText: '',
           },
         ],
       });
@@ -128,6 +130,7 @@ describe('hg-diff-output-parser', () => {
             oldLines: 1,
             newStart: 150,
             newLines: 2,
+            oldText: '',
           },
         ],
       });
@@ -145,6 +148,7 @@ describe('hg-diff-output-parser', () => {
             oldLines: 11,
             newStart: 150,
             newLines: 1,
+            oldText: '',
           },
         ],
       });
@@ -163,12 +167,14 @@ describe('hg-diff-output-parser', () => {
             oldLines: 0,
             newStart: 2,
             newLines: 2,
+            oldText: '',
           },
           {
             oldStart: 152,
             oldLines: 0,
             newStart: 153,
             newLines: 3,
+            oldText: '',
           },
         ],
       });
@@ -201,6 +207,7 @@ describe('hg-diff-output-parser', () => {
             oldLines: 0,
             newStart: 91,
             newLines: 1,
+            oldText: '',
           },
         ],
       });
@@ -213,18 +220,22 @@ describe('hg-diff-output-parser', () => {
             oldLines: 1,
             newStart: 12,
             newLines: 4,
+            oldText:
+              "const {parseHgDiffUnifiedOutput} = require('../lib/hg-diff-output-parser');\n",
           },
           {
             oldStart: 28,
             oldLines: 0,
             newStart: 32,
             newLines: 4,
+            oldText: '',
           },
           {
             oldStart: 123,
             oldLines: 0,
             newStart: 131,
             newLines: 4,
+            oldText: '',
           },
         ],
       });
@@ -245,6 +256,7 @@ describe('hg-diff-output-parser', () => {
               oldLines: 0,
               newStart: 1,
               newLines: 1,
+              oldText: '',
             },
           ],
         });
@@ -257,6 +269,7 @@ describe('hg-diff-output-parser', () => {
               oldLines: 1,
               newStart: 0,
               newLines: 0,
+              oldText: 'delete\n',
             },
           ],
         });
@@ -269,6 +282,7 @@ describe('hg-diff-output-parser', () => {
               oldLines: 1,
               newStart: 1,
               newLines: 1,
+              oldText: 'delete\n',
             },
           ],
         });
@@ -281,6 +295,7 @@ describe('hg-diff-output-parser', () => {
               oldLines: 1,
               newStart: 1,
               newLines: 1,
+              oldText: 'rename\n',
             },
           ],
         });

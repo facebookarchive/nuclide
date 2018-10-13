@@ -161,6 +161,7 @@ describe('HgService', () => {
           oldLines: 1,
           newStart: 150,
           newLines: 2,
+          oldText: 'hi\n',
         },
       ],
     };

@@ -14,7 +14,8 @@
  * Explained here: http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html
  * and here: http://www.artima.com/weblogs/viewpost.jsp?thread=164293.
  */
-const HUNK_DIFF_REGEX = /@@ .* @@/g;
+const HUNK_REGEX = /@@ .* @@((.|\n)(?!^@@))*/gm;
+const HUNK_DIFF_REGEX = /@@ .* @@/;
 const HUNK_OLD_INFO_REGEX = /-([0-9]+)((?:,[0-9]+)?)/;
 const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
@@ -26,7 +27,7 @@ import type {DiffInfo} from './types';
  * Parses the output of `hg diff --unified 0`.
  */
 export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
-  const diffInfo = {
+  const diffInfo: DiffInfo = {
     added: 0,
     deleted: 0,
     lineDiffs: [],
@@ -34,11 +35,14 @@ export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
   if (!output) {
     return diffInfo;
   }
-  const diffHunks = output.match(HUNK_DIFF_REGEX);
-  // $FlowFixMe diffHunks may be null
+  const diffHunks = output.match(HUNK_REGEX);
+  if (diffHunks == null) {
+    return diffInfo;
+  }
+  // $FlowFixMe regex iterable not recognized
   diffHunks.forEach(hunk => {
     // `hunk` will look like: "@@ -a(,b) +c(,d) @@"
-    const hunkParts = hunk.split(' ');
+    const hunkParts = hunk.match(HUNK_DIFF_REGEX)[0].split(' ');
     const oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
     const newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
 
@@ -52,10 +56,19 @@ export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
     const oldLines = oldInfo[2] ? parseInt(oldInfo[2].substring(1), 10) : 1;
     // $FlowFixMe may be null
     const newLines = newInfo[2] ? parseInt(newInfo[2].substring(1), 10) : 1;
+    // Parse removed lines from the diff hunk.
+    const oldText = hunk
+      .split('\n')
+      // Remove the header for the hunk, as well as lines added
+      .slice(1, oldLines + 1)
+      // Remove the leading '-' character, then append the newline that was stripped
+      .map(line => line.trimLeft().substring(1) + '\n')
+      // Rejoin the lines into a single string
+      .join('');
 
     diffInfo.added += newLines;
     diffInfo.deleted += oldLines;
-    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines});
+    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines, oldText});
   });
 
   return diffInfo;
