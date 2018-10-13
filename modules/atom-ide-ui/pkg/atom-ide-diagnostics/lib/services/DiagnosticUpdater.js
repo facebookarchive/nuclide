@@ -130,7 +130,16 @@ export default class DiagnosticUpdater {
 
   observeUiConfig = (callback: (config: UiConfig) => mixed): IDisposable => {
     return new UniversalDisposable(
-      this._states.map(Selectors.getUiConfig).subscribe(callback),
+      this._states
+        .map(Selectors.getUiConfig)
+        // Being a selector means we'll always get the same ui config for a given
+        // slice of state (in this case `state.providers`). However, other parts
+        // of state may change. Don't emit in those cases, or in the common case
+        // that the config changed from an empty array to a different empty array.
+        .distinctUntilChanged(
+          (a, b) => a === b || (a.length === 0 && b.length === 0),
+        )
+        .subscribe(callback),
     );
   };
 
