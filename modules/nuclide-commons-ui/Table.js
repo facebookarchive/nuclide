@@ -887,7 +887,7 @@ export function _calculatePreferredColumnWidths<T: Object>(options: {
  * checks and assumes that the rows and columns are equal. (They can be checked separatedly iff
  * necessary.)
  */
-function compareCheapProps(a: mixed, b: mixed, key: ?string): ?boolean {
+function compareCheapProps(a: mixed, b: mixed, key: ?string): boolean | void {
   switch (key) {
     case undefined:
       // This is a magic way of telling `shallowEqual()` to use the default comparison for the

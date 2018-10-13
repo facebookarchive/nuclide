@@ -40,7 +40,7 @@
     "reselect": "3.0.1",
     "rxjs": "5.5.5",
     "semver": "5.5.0",
-    "shallowequal": "0.2.2",
+    "shallowequal": "1.1.0",
     "strip-ansi": "3.0.1",
     "uuid": "3.0.1",
     "vscode-debugprotocol": "1.24.0",

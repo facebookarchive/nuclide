@@ -139,7 +139,7 @@
     "rxjs": "5.5.5",
     "season": "6.0.2",
     "semver": "5.5.0",
-    "shallowequal": "0.2.2",
+    "shallowequal": "1.1.0",
     "simple-text-buffer": "9.2.11",
     "smoothscroll-polyfill": "0.3.5",
     "source-map": "0.5.6",
