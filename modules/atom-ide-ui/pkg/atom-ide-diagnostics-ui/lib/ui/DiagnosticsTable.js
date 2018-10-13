@@ -38,13 +38,13 @@ const DIAGNOSTICS_TO_ROWS_TRACES_MAP = new WeakMap();
 const DIAGNOSTICS_TO_ROWS_NO_TRACES_MAP = new WeakMap();
 
 // text is always used for sorting, while we render the element.
-type DescriptionField = {
+type DescriptionField = {|
   diagnostic: DiagnosticMessage,
   showTraces: boolean,
   text: string,
   isPlainText: boolean,
   description: string,
-};
+|};
 
 type ColumnName = $Keys<DisplayDiagnostic>;
 
@@ -52,7 +52,7 @@ type ColumnName = $Keys<DisplayDiagnostic>;
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
-type Props = {
+type Props = {|
   diagnostics: Array<DiagnosticMessage>,
   selectedMessage: ?DiagnosticMessage,
   gotoMessageLocation: (
@@ -63,12 +63,12 @@ type Props = {
   showFileName: ?boolean,
   showDirectoryColumn: boolean,
   showTraces: boolean,
-};
+|};
 
-type State = {
+type State = {|
   sortDescending: boolean,
   sortedColumn: ColumnName,
-};
+|};
 
 export default class DiagnosticsTable extends React.PureComponent<
   Props,

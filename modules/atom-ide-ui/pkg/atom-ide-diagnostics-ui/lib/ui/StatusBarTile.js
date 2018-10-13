@@ -207,12 +207,12 @@ export default class StatusBarTile {
   }
 }
 
-type Props = {
+type Props = {|
   errorCount: number,
   warningCount: number,
   staleErrorCount: number,
   staleWarningCount: number,
-};
+|};
 
 class StatusBarTileComponent extends React.Component<Props> {
   constructor(props: Props) {

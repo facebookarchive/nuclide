@@ -38,7 +38,7 @@ import FilterButton from './FilterButton';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 import SettingsModal from './SettingsModal';
 
-export type Props = {
+export type Props = {|
   diagnostics: Array<DiagnosticMessage>,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
@@ -61,7 +61,7 @@ export type Props = {
   onTypeFilterChange: (type: DiagnosticGroup) => mixed,
   textFilter: RegExpFilterValue,
   onTextFilterChange: (change: RegExpFilterChange) => mixed,
-};
+|};
 
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.

@@ -131,29 +131,37 @@ export class DiagnosticsViewModel {
         ],
       }),
     );
+
     // Combine the state that's shared between instances, the state that's unique to this instance,
     // and unchanging callbacks, to get the props for our component.
     const props = Observable.combineLatest(
       globalStates,
       this._model.toObservable(),
       visibility,
-      (globalState, instanceState, isVisible) => ({
-        ...globalState,
-        ...instanceState,
-        isVisible,
-        diagnostics: this._filterDiagnostics(
-          globalState.diagnostics,
-          instanceState.textFilter.pattern,
-          instanceState.hiddenGroups,
-          globalState.filterByActiveTextEditor,
-          globalState.pathToActiveTextEditor,
-        ),
-        onTypeFilterChange: this._handleTypeFilterChange,
-        onTextFilterChange: this._handleTextFilterChange,
-        selectMessage: this._selectMessage,
-        gotoMessageLocation: goToDiagnosticLocation,
-        supportedMessageKinds: globalState.supportedMessageKinds,
-      }),
+      (globalState, instanceState, isVisible) => {
+        const {
+          pathToActiveTextEditor,
+          ...globalStateWithoutPathToActiveTextEditor
+        } = globalState;
+
+        return {
+          ...globalStateWithoutPathToActiveTextEditor,
+          ...instanceState,
+          isVisible,
+          diagnostics: this._filterDiagnostics(
+            globalState.diagnostics,
+            instanceState.textFilter.pattern,
+            instanceState.hiddenGroups,
+            globalState.filterByActiveTextEditor,
+            pathToActiveTextEditor,
+          ),
+          onTypeFilterChange: this._handleTypeFilterChange,
+          onTextFilterChange: this._handleTextFilterChange,
+          selectMessage: this._selectMessage,
+          gotoMessageLocation: goToDiagnosticLocation,
+          supportedMessageKinds: globalState.supportedMessageKinds,
+        };
+      },
     );
 
     this._props = this._trackVisibility(props);

@@ -15,14 +15,14 @@ import BoundSettingsControl from 'nuclide-commons-ui/BoundSettingsControl';
 import {HR} from 'nuclide-commons-ui/HR';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 
-type Props = {
+type Props = {|
   config: Array<SettingsSectionProps>,
-};
+|};
 
-type SettingsSectionProps = {
+type SettingsSectionProps = {|
   providerName: string,
   settings: Array<string>,
-};
+|};
 
 export default function SettingsModal(props: Props): React.Node {
   const hasProviderSettings = props.config.some(

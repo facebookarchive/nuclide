@@ -20,7 +20,7 @@ import type {
 } from '../../atom-ide-code-actions/lib/types';
 import * as React from 'react';
 
-export type UiConfig = Array<{providerName: string, settings: Array<string>}>;
+export type UiConfig = Array<{|providerName: string, settings: Array<string>|}>;
 
 export type DiagnosticProvider =
   | CallbackDiagnosticProvider
