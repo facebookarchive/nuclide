@@ -31,6 +31,7 @@ import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import * as React from 'react';
+import shallowEqual from 'shallowequal';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import FilterButton from './FilterButton';
@@ -72,7 +73,7 @@ export default class DiagnosticsView extends React.Component<Props> {
   _table: ?DiagnosticsTable;
 
   shouldComponentUpdate(nextProps: Props): boolean {
-    return nextProps.isVisible;
+    return nextProps.isVisible && !shallowEqual(this.props, nextProps);
   }
 
   componentDidMount() {
@@ -89,7 +90,7 @@ export default class DiagnosticsView extends React.Component<Props> {
     nullthrows(this._disposables).dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {diagnostics, showDirectoryColumn, showTraces} = this.props;
 
     const groups = ['errors', 'warnings', 'info'];
