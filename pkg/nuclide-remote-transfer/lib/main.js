@@ -19,7 +19,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {writeToStream} from 'nuclide-commons/stream';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

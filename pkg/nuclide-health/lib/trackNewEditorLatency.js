@@ -13,7 +13,7 @@
 
 import {TextEditor} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {HistogramTracker} from '../../nuclide-analytics';
+import {HistogramTracker} from 'nuclide-analytics';
 
 const HISTOGRAM_MAX = 1000;
 const HISTOGRAM_BUCKETS = 10;

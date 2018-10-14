@@ -4,10 +4,18 @@
   "version": "0.0.0",
   "description": "Provides a standard API for packages to send analytics to arbitrary providers.",
   "author": "NEEDS OWNER",
+  "license": "BSD-3-Clause",
+  "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-analytics",
   "nuclide": {
     "packageType": "NodeLibrary"
   },
   "scripts": {
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  },
+  "dependencies": {
+    "fb-interngraph": "0.7.3-dev",
+    "nuclide-commons": "0.7.3-dev",
+    "log4js": "1.1.1",
+    "rxjs": "5.5.5"
   }
 }

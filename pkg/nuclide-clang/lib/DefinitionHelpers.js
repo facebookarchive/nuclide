@@ -15,7 +15,7 @@ import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 import invariant from 'assert';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {GRAMMAR_SET, IDENTIFIER_REGEXP} from './constants';
 
 export default class DefinitionHelpers {

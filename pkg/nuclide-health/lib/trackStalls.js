@@ -11,7 +11,7 @@
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import observeStalls from '../../commons-atom/observeStalls';
-import {HistogramTracker} from '../../nuclide-analytics';
+import {HistogramTracker} from 'nuclide-analytics';
 
 export default function trackStalls(): IDisposable {
   const histogram = new HistogramTracker(

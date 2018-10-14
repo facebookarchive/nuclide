@@ -13,7 +13,7 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import * as React from 'react';
 import classnames from 'classnames';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {AnalyticsActions} from '../constants';
 
 const MAX_ERROR_LINE_LENGTH = 80;

@@ -25,7 +25,7 @@ import ReactDOM from 'react-dom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import debounce from 'nuclide-commons/debounce';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';

@@ -65,7 +65,7 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Section} from 'nuclide-commons-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
 import type {Menu} from 'nuclide-commons/electron-remote';

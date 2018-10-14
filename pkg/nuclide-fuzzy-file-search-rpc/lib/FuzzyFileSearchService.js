@@ -15,7 +15,7 @@ import type {DirectorySearchConfig, FileSearchResult} from './rpc-types';
 import type {ClientQueryContext} from '../../commons-atom/ClientQueryContext';
 
 import LRU from 'lru-cache';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {
   fileSearchForDirectory,
   getExistingSearchDirectories,

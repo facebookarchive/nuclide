@@ -12,7 +12,7 @@
 import type {BlameForEditor} from '../../nuclide-blame/lib/types';
 
 import {hgRepositoryForEditor} from './common';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-blame-provider-hg');

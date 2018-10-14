@@ -14,7 +14,7 @@ import type {BlameForEditor, BlameProvider} from './types';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {shell} from 'electron';
 import escapeHTML from 'escape-html';

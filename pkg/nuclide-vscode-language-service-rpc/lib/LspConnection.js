@@ -12,7 +12,7 @@
 import type {CancellationToken, MessageConnection} from 'vscode-jsonrpc';
 
 import * as p from './protocol';
-import {trackSampled} from '../../nuclide-analytics';
+import {trackSampled} from 'nuclide-analytics';
 
 const LSP_SAMPLE_RATE = 100;
 // This is a strongly typed encapsulation over an underlying MessageConnection

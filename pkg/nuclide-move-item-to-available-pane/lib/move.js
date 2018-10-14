@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 type MoveOperation = 'up' | 'down' | 'right' | 'left';
 

@@ -12,7 +12,7 @@
 import {levels} from 'log4js';
 import {ProcessLoggingEvent} from 'nuclide-commons/process';
 import {shorten} from 'nuclide-commons/string';
-import {trackSampled} from '../../nuclide-analytics';
+import {trackSampled} from 'nuclide-analytics';
 
 const SAMPLE_RATE = 10;
 

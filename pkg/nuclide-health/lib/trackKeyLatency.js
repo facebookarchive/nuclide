@@ -12,7 +12,7 @@
 /* global performance, requestAnimationFrame */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {HistogramTracker} from '../../nuclide-analytics';
+import {HistogramTracker} from 'nuclide-analytics';
 
 const SAMPLE_RATE = 100; // 1 in 100 keystrokes will be measured.
 export const KEYSTROKES_TO_IGNORE = 10; // exported for testing

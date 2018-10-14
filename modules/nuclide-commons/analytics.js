@@ -17,6 +17,11 @@ import UniversalDisposable from './UniversalDisposable';
 import {isPromise} from './promise';
 import performanceNow from './performanceNow';
 
+export type SessionInfo = {
+  id: string,
+  start: number,
+};
+
 export type RawAnalyticsService = {
   track(
     eventName: string,
@@ -24,11 +29,13 @@ export type RawAnalyticsService = {
     immediate?: boolean,
   ): ?Promise<mixed>,
   isTrackSupported: () => boolean,
+  setApplicationSessionObservable: (Observable<SessionInfo>) => void,
 };
 
 let rawAnalyticsService: RawAnalyticsService = {
   track(): ?Promise<mixed> {},
   isTrackSupported: () => false,
+  setApplicationSessionObservable: (ob: Observable<SessionInfo>) => {},
 };
 
 export type TrackingEvent = {
@@ -246,7 +253,9 @@ export function decorateTrackTimingSampled<U: Iterable<*>, T>(
 
 export function setRawAnalyticsService(
   analyticsService: RawAnalyticsService,
+  ob: Observable<SessionInfo>,
 ): void {
+  analyticsService.setApplicationSessionObservable(ob);
   rawAnalyticsService = analyticsService;
 }
 

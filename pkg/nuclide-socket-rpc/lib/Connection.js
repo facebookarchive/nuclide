@@ -16,7 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import net from 'net';
 import {protocolLogger} from '../../nuclide-server/lib/utils';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 const PROTOCOL_LOGGER_COUNT = 20;
 

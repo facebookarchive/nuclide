@@ -12,7 +12,7 @@
 import type {AppState, Action, WelcomePage} from '../types';
 
 import {getLogger} from 'log4js';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import * as ActionTypes from './ActionTypes';
 
 const log = getLogger('nuclide-welcome-page');

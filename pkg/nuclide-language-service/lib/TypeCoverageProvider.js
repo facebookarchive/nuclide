@@ -15,7 +15,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 export type TypeCoverageConfig = {|
   version: '0.0.0',

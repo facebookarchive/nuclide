@@ -28,7 +28,7 @@ import {Observable} from 'rxjs';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 export function getEmptBookShelfState(): BookShelfState {
   return {

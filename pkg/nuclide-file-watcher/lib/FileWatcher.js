@@ -10,7 +10,7 @@
  */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {trackTiming, track} from '../../nuclide-analytics';
+import {trackTiming, track} from 'nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';

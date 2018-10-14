@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 import querystring from 'querystring';
 import invariant from 'assert';
 import xfetch from '../../commons-node/xfetch';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 function _formatUri(
   method: string,

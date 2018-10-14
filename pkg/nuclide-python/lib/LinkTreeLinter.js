@@ -21,7 +21,7 @@ import {compact} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import shallowEqual from 'shallowequal';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {GRAMMAR_SET} from './constants';
 

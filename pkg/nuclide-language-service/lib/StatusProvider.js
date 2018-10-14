@@ -14,7 +14,7 @@ import type {LanguageService, StatusData} from './LanguageService';
 
 import {Observable} from 'rxjs';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type StatusConfig = {|

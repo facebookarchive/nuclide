@@ -21,7 +21,7 @@ import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import {

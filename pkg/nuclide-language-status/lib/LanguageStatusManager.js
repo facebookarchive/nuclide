@@ -17,7 +17,7 @@ import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import StatusComponent from './StatusComponent';
 
 import * as React from 'react';

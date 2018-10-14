@@ -13,7 +13,7 @@
 
 import {attachWorkspace} from 'nuclide-commons-atom/test-helpers';
 import trackKeyLatency, {KEYSTROKES_TO_IGNORE} from '../lib/trackKeyLatency';
-import {HistogramTracker} from '../../nuclide-analytics';
+import {HistogramTracker} from 'nuclide-analytics';
 import waitsFor from '../../../jest/waits_for';
 
 beforeEach(() => {

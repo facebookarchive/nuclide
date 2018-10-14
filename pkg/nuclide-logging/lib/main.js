@@ -20,7 +20,8 @@
 import log4js from 'log4js';
 
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
-import * as rawAnalyticsService from '../../nuclide-analytics/lib/track';
+import * as rawAnalyticsService from 'nuclide-analytics/lib/track';
+import {observeApplicationSession} from '../../fb-appsession-observer';
 
 import once from 'nuclide-commons/once';
 import {getDefaultConfig, getPathToLogDir, getPathToLogFile} from './config';
@@ -45,5 +46,5 @@ export const initializeLogging = once(() => {
 });
 
 export function setupLoggingService(): void {
-  setRawAnalyticsService(rawAnalyticsService);
+  setRawAnalyticsService(rawAnalyticsService, observeApplicationSession());
 }

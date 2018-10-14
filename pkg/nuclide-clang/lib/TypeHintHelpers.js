@@ -11,7 +11,7 @@
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {typeHintFromSnippet} from '../../nuclide-language-service-rpc';
 import {getDeclaration} from './libclang';
 

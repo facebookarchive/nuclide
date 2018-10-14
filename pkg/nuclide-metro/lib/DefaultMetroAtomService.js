@@ -19,7 +19,7 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getMetroServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {openTunnel} from './Tunnel';
 import {MetroAtomService} from './types';

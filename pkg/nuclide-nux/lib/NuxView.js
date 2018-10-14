@@ -14,7 +14,7 @@
 import invariant from 'assert';
 import debounce from 'nuclide-commons/debounce';
 import {maybeToString} from 'nuclide-commons/string';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

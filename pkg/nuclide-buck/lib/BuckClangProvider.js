@@ -24,7 +24,7 @@ import type {
 
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {convertBuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';

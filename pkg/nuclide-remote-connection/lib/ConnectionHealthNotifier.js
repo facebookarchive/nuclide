@@ -12,7 +12,7 @@
 import type {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 
 import invariant from 'assert';
-import {trackEvent} from '../../nuclide-analytics';
+import {trackEvent} from 'nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 

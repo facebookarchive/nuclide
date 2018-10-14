@@ -13,7 +13,7 @@ import type {LinterMessage} from 'atom-ide-ui';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
 import {getEnableLinting, getLintExtensionBlacklist} from './config';
 

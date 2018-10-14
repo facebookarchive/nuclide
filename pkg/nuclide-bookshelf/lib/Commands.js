@@ -13,7 +13,7 @@ import type {Action, BookShelfState} from './types';
 
 import {ActionType} from './constants';
 import {getRepoPathToEditors} from './utils';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 export class Commands {
   _dispatch: (action: Action) => void;

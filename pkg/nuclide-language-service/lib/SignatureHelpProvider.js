@@ -15,7 +15,7 @@ import type {SignatureHelp, SignatureHelpRegistry} from 'atom-ide-ui';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 export type SignatureHelpConfig = {|
   version: '0.1.0',

@@ -44,7 +44,7 @@ import {
   decodeError,
 } from './messages';
 import {voidType} from './builtin-types';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import {shorten} from 'nuclide-commons/string';
 import {getLogger} from 'log4js';

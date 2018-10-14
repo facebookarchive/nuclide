@@ -11,7 +11,7 @@
 
 import * as React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 type Props = {
   title: string,

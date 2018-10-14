@@ -11,7 +11,7 @@
 
 import {stringifyError} from 'nuclide-commons/string';
 import {isGkEnabled} from 'nuclide-commons/passesGK';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 import type {
   SshConnectionConfiguration,

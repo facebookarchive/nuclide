@@ -17,7 +17,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WorkingSetsStore} from './WorkingSetsStore';
 import {WorkingSetsConfig} from './WorkingSetsConfig';

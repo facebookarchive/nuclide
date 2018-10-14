@@ -36,7 +36,7 @@ import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 import {getClientSideMarshalers} from '../../nuclide-marshalers-client';
-import {trackTimingSampled} from '../../nuclide-analytics';
+import {trackTimingSampled} from 'nuclide-analytics';
 
 import {Emitter} from 'event-kit';
 import nuclideUri from 'nuclide-commons/nuclideUri';

@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {
   RemoteDirectory,
   getHgServiceByNuclideUri,

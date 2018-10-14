@@ -26,7 +26,7 @@ import {repositoryForPath} from '../../../nuclide-vcs-base';
 import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from 'log4js';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
-import {HistogramTracker} from '../../../nuclide-analytics';
+import {HistogramTracker} from 'nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange} from '../FileTreeSelectionRange';

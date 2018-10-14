@@ -12,7 +12,7 @@
 import type {ClangCompileResult} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from 'atom-ide-ui';
 
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {DEFAULT_FLAGS_WARNING, HEADER_DEFAULT_FLAGS_WARNING} from './constants';
 import {getDiagnostics} from './libclang';

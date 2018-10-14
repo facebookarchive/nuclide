@@ -42,7 +42,7 @@ import {
   ServerConnection,
   getCodeSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import {trackImmediate} from '../../nuclide-analytics';
+import {trackImmediate} from 'nuclide-analytics';
 import startConnectFlow from './startConnectFlow';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';

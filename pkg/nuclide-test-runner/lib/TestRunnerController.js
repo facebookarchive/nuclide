@@ -22,7 +22,7 @@ import TestRunModel from './TestRunModel';
 import TestRunnerPanel from './ui/TestRunnerPanel';
 import TestSuiteModel from './TestSuiteModel';
 import os from 'os';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-test-runner');

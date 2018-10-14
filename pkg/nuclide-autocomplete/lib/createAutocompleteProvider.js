@@ -22,7 +22,7 @@ import {
   trackSampled,
   trackTiming,
   trackTimingSampled,
-} from '../../nuclide-analytics';
+} from 'nuclide-analytics';
 
 const E2E_SAMPLE_RATE = 10;
 const ON_GET_SUGGESTIONS_SAMPLE_RATE = 10;

@@ -14,7 +14,7 @@ import {groupBy} from 'lodash';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual, arrayUnique} from 'nuclide-commons/collection';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 

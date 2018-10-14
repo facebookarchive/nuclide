@@ -14,7 +14,7 @@ import {memoize} from 'lodash';
 import {getLogger} from 'log4js';
 import {objectEntries, objectValues} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import * as BuckService from '../../nuclide-buck-rpc';
 
 const BUCK_GEN_PATH = 'buck-out/gen';

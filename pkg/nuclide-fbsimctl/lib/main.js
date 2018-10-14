@@ -19,7 +19,7 @@ import {arrayEqual} from 'nuclide-commons/collection';
 // $FlowIgnore untyped import
 import shallowEqual from 'shallowequal';
 import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {
   getFbsimctlServiceByNuclideUri,
   getInfoServiceByNuclideUri,

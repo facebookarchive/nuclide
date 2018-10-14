@@ -27,7 +27,7 @@ import {getLogger} from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {Observable} from 'rxjs';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {AnalyticsActions} from '../constants';
 import {DevicePanelTask} from '../DevicePanelTask';
 import * as Actions from './Actions';

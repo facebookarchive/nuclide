@@ -35,7 +35,7 @@ import {
   shortHeadChangedNotification,
   getShortHeadChangesFromStateStream,
 } from './utils';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 function createStateStream(
   actions: Observable<Action>,

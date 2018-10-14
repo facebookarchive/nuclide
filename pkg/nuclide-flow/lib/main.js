@@ -26,7 +26,7 @@ import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-refe
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';

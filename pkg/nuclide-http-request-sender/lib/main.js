@@ -24,7 +24,7 @@ import * as Reducers from './Reducers';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 export type HttpRequestSenderApi = {
   updateRequestEditDialogDefaults(defaults: PartialAppState): void,

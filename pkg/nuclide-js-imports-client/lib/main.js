@@ -26,7 +26,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import * as convert from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {
   AtomLanguageService,

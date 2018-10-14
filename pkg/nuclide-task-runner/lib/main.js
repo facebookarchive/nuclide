@@ -27,7 +27,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

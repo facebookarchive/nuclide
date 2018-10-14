@@ -90,7 +90,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {arrayCompact, collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
 import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {
   FileCache,

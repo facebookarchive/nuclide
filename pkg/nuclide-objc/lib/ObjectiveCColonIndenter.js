@@ -11,7 +11,7 @@
 
 import {Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import observeLanguageTextEditors from '../../commons-atom/observe-language-text-editors';
 
 const GRAMMARS = ['source.objc', 'source.objcpp'];

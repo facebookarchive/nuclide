@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
-import {track} from '../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import * as React from 'react';
 import ChangedFilesList from './ChangedFilesList';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';

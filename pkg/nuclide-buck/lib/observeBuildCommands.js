@@ -16,7 +16,7 @@ import type {TaskSettings} from './types';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import * as Actions from './redux/Actions';
 

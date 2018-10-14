@@ -25,7 +25,7 @@ import {isConsoleVisible} from 'nuclide-commons-atom/pane-item';
 import {compact} from 'nuclide-commons/observable';
 import {ProcessExitError} from 'nuclide-commons/process';
 import {observableFromTask} from '../../../commons-node/tasks';
-import {trackEvent} from '../../../nuclide-analytics';
+import {trackEvent} from 'nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import * as Actions from './Actions';

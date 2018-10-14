@@ -17,7 +17,7 @@ import type {
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type RenameConfig = {|

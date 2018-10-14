@@ -22,7 +22,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {shellQuote} from 'nuclide-commons/string';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {Observable} from 'rxjs';
 import {CLIENT_ID_ARGS} from './types';
 

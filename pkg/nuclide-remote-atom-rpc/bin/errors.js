@@ -12,7 +12,7 @@
 import log4js from 'log4js';
 import os from 'os';
 
-import {trackImmediate} from '../../nuclide-analytics';
+import {trackImmediate} from 'nuclide-analytics';
 import {initializeLogging} from '../../nuclide-logging';
 
 const logger = log4js.getLogger('nuclide-remote-atom-rpc');

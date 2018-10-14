@@ -9,7 +9,7 @@
  * @format
  */
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 export default class CodeFormatHelpers {
   static formatEntireFile(

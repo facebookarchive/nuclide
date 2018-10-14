@@ -20,7 +20,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import shallowEqual from 'shallowequal';
-import * as analytics from '../../nuclide-analytics';
+import * as analytics from 'nuclide-analytics';
 
 type Props =
   | {

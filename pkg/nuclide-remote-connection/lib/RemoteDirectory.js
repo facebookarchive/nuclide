@@ -20,7 +20,7 @@ import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Emitter} from 'event-kit';
 import {getLogger} from 'log4js';
-import {trackTimingSampled} from '../../nuclide-analytics';
+import {trackTimingSampled} from 'nuclide-analytics';
 import {memoize} from 'lodash';
 
 const logger = getLogger('nuclide-remote-connection');

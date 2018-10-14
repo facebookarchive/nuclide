@@ -27,7 +27,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {observeTextEditorsPositions} from 'nuclide-commons-atom/debounced';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import ContextViewMessage from './ContextViewMessage';
 import {ContextViewPanel} from './ContextViewPanel';

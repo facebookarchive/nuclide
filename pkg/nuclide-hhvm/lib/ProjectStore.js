@@ -23,7 +23,7 @@ import {BehaviorSubject} from 'rxjs';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';

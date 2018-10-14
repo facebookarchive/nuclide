@@ -25,7 +25,7 @@ import {maybeToString} from 'nuclide-commons/string';
 import querystring from 'querystring';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {shortNameForAuthor as shortNameForAuthorFn} from './util';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import url from 'url';
 import * as React from 'react';

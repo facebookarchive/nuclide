@@ -13,7 +13,7 @@ import type {DefinitionQueryResult} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type DefinitionConfig = {|

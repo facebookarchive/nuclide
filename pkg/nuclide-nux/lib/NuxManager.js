@@ -17,7 +17,7 @@ import {isGkEnabled, onceGkInitialized} from 'nuclide-commons/passesGK';
 import {maybeToString} from 'nuclide-commons/string';
 
 import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 import {NuxStore} from './NuxStore';
 import {NuxTour} from './NuxTour';

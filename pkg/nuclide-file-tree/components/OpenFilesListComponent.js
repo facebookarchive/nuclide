@@ -22,7 +22,7 @@ import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
 import * as Selectors from '../lib/redux/Selectors';

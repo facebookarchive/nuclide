@@ -12,7 +12,7 @@
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

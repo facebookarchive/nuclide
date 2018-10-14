@@ -13,7 +13,7 @@ import type {AppInfoRow} from 'nuclide-debugger-common/types';
 
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {AnalyticsActions} from '../constants';
 import {AppInfoValueCell} from './AppInfoValueCell';
 

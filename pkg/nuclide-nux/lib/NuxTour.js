@@ -11,7 +11,7 @@
 
 import type {NuxTriggerModel, NuxTriggerType} from './NuxModel';
 
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {maybeToString} from 'nuclide-commons/string';
 import {NuxView} from './NuxView';
 

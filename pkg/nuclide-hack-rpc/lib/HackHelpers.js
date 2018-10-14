@@ -17,7 +17,7 @@ import {runCommandDetailed} from 'nuclide-commons/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getHackExecOptions} from './hack-config';
 import {Point, Range} from 'simple-text-buffer';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';

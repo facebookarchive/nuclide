@@ -15,7 +15,7 @@ import {
   flushLogsAndExit,
   initializeLogging,
 } from '../../nuclide-logging';
-import {startTracking} from '../../nuclide-analytics';
+import {startTracking} from 'nuclide-analytics';
 
 import NuclideServer from './NuclideServer';
 import servicesConfig from './servicesConfig';

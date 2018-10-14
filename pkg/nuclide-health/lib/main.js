@@ -19,7 +19,7 @@ import {Observable} from 'rxjs';
 import {getLogger} from 'log4js';
 
 // Imports from other Nuclide packages.
-import {isTrackSupported, track} from '../../nuclide-analytics';
+import {isTrackSupported, track} from 'nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';

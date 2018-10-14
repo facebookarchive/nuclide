@@ -12,7 +12,7 @@
 import type {ClangFlags} from './rpc-types';
 
 import {arrayEqual} from 'nuclide-commons/collection';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 // Currently handles are just indices into the flag pool.
 export type ClangFlagsHandle = number;

@@ -13,7 +13,7 @@ import type {ConsoleMessage, ConsoleSourceStatus} from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 

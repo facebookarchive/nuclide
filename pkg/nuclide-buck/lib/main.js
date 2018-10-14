@@ -27,7 +27,7 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {BuckTaskRunner} from './BuckTaskRunner';
 import {PlatformService} from './PlatformService';
 import {getClangProvider} from './BuckClangProvider';

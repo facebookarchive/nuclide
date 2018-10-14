@@ -12,7 +12,7 @@
 import {getLogger} from 'log4js';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import updateKeymap from './updateKeymap';
 
 /**

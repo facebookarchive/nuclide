@@ -18,7 +18,7 @@ import BlameGutter from './BlameGutter';
 import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track, trackTiming} from 'nuclide-analytics';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

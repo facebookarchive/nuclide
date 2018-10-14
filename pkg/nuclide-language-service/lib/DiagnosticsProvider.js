@@ -26,7 +26,7 @@ import type {BusySignalProvider} from './AtomLanguageService';
 import {Cache} from 'nuclide-commons/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {RequestSerializer} from 'nuclide-commons/promise';
 import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
 import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';

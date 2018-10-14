@@ -39,7 +39,7 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {repositoryForPath} from '../../../nuclide-vcs-base';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {hgConstants} from '../../../nuclide-hg-rpc';

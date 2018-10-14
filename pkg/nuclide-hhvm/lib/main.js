@@ -21,7 +21,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {startAttachProcessConfig} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';

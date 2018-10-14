@@ -9,7 +9,7 @@
  * @format
  */
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 
 import libclang from './libclang';

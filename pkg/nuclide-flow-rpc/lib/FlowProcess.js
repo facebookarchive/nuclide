@@ -20,7 +20,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-flow-rpc');
 
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 import {runCommandDetailed, spawn} from 'nuclide-commons/process';
 import {sleep} from 'nuclide-commons/promise';

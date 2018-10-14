@@ -11,7 +11,7 @@
 
 import child_process from 'child_process';
 import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';

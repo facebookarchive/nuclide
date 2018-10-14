@@ -26,7 +26,7 @@ import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 
 type VcsInfo = {
   vcs: string,

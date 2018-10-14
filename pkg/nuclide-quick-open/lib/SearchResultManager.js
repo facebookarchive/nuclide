@@ -42,7 +42,7 @@ type ResultRenderer<T> = (
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {trackSampled} from '../../nuclide-analytics';
+import {trackSampled} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Subject} from 'rxjs';
