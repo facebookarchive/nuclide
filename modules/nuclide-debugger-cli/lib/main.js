@@ -19,6 +19,9 @@ import HelpCommand from './HelpCommand';
 import log4js from 'log4js';
 import QuitCommand from './QuitCommand';
 import yargs from 'yargs';
+import {setRawAnalyticsService} from 'nuclide-commons/analytics';
+import * as rawAnalyticsService from 'nuclide-analytics/lib/track';
+import {Observable} from 'rxjs';
 
 function buildLogger(): log4js$Logger {
   const args = yargs.argv;
@@ -137,6 +140,8 @@ async function main(): Promise<void> {
       showHelp(configFile, debuggerAdapterFactory.contextSensitiveHelp(args));
       process.exit(0);
     }
+
+    setRawAnalyticsService(rawAnalyticsService, Observable.from([]));
 
     const logger = buildLogger();
     const aliases = configFile.resolveAliasesForPreset(preset);

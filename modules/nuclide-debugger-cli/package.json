@@ -16,6 +16,7 @@
     "idx": "1.2.0",
     "line-by-line": "0.1.5",
     "log4js": "1.1.1",
+    "nuclide-analytics": "0.7.3-dev",
     "nuclide-commons": "0.7.3-dev",
     "nuclide-debugger-common": "0.7.3-dev",
     "nullthrows": "1.0.0",

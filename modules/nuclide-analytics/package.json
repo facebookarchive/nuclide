@@ -1,7 +1,7 @@
 {
   "name": "nuclide-analytics",
   "main": "./lib/main.js",
-  "version": "0.0.0",
+  "version": "0.7.3-dev",
   "description": "Provides a standard API for packages to send analytics to arbitrary providers.",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",

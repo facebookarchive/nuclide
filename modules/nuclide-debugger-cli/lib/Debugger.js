@@ -858,7 +858,7 @@ export default class Debugger implements DebuggerInterface {
 
     invariant(this._debugSession != null);
     const {body} = await this._debugSession.initialize({
-      adapterID: 'fbdbg',
+      adapterID: adapter.type,
       pathFormat: 'path',
       linesStartAt1: true,
       columnsStartAt1: true,
