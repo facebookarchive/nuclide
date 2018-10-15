@@ -99,7 +99,7 @@ public class VsDebugAdapterChannelManager extends NotificationChannel {
   }
 
   public boolean onMessage(String message) {
-    return debuggerServer.handleRequest(message);
+    return debuggerServer.handleMessage(message);
   }
 
   public void send(String message) {

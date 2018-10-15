@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.json.JSONArray;
@@ -58,6 +59,8 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
   private final HashMap<String, BreakpointSpec> registeredBreakpoints =
       new HashMap<String, BreakpointSpec>();
   private final HashMap<String, Source> breakpointIdToSource = new HashMap<String, Source>();
+  private final HashMap<Integer, Consumer<base$Response>> pendingRequests =
+      new HashMap<Integer, Consumer<base$Response>>();
   private final Utils utilsInstance = new Utils();
   private boolean linesStartAt1 = true;
 
@@ -85,6 +88,13 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     VsDebugAdapterChannelManager channelManager =
         (VsDebugAdapterChannelManager) getContextManager().getNotificationChannel();
     channelManager.sendProtocolMessage(message);
+  }
+
+  public void send(base$Request request, Consumer<base$Response> callback) {
+    pendingRequests.put(request.seq, callback);
+    VsDebugAdapterChannelManager channelManager =
+        (VsDebugAdapterChannelManager) getContextManager().getNotificationChannel();
+    channelManager.sendProtocolMessage(request);
   }
 
   private int getNextStackFrameId() {
@@ -174,20 +184,55 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
   }
 
   private void handleLaunchRequest(JSONObject arguments, LaunchResponse response) {
-    JSONArray runArgsNullable = arguments.optJSONArray("runArgs");
-    JSONArray runArgs = runArgsNullable != null ? runArgsNullable : new JSONArray();
     try {
-      getContextManager()
-          .getBootstrapDomain()
-          .launch(
-              arguments.getString("entryPointClass"),
-              arguments.getString("classPath"),
-              runArgs,
-              "" /* sourcePath */);
-      send(response);
-      send(new InitializedEvent());
+      String console = arguments.optString("console");
+      JSONArray runArgsNullable = arguments.optJSONArray("runArgs");
+      JSONArray runArgs = runArgsNullable != null ? runArgsNullable : new JSONArray();
+      String entryPointClass = arguments.getString("entryPointClass");
+      String classPath = arguments.getString("classPath");
+      if (console != null
+          && (console.equals("integratedTerminal") || console.equals("externalConsole"))) {
+        String args = BootstrapDomain.getArgStringFromArgs(runArgs);
+        // set class path to insert class path into process command list
+        getContextManager().setClassPath(classPath);
+        List<String> processCommandList =
+            JVMConnector.getProcessCommandList(getContextManager(), entryPointClass, args);
+        String title = "Java Debug Console - " + entryPointClass;
+        RunInTerminalRequest runInTerminalRequest =
+            (new RunInTerminalRequest(console.equals("integratedTerminal")))
+                .setTitle(title)
+                .setCWD(classPath)
+                .setArgs(processCommandList);
+        send(
+            runInTerminalRequest,
+            runInTerminalResponse -> {
+              if (runInTerminalResponse.success) {
+                getContextManager().receivedVMStartEvent();
+                try {
+                  getContextManager().getBootstrapDomain().attachPort(JVMConnector.TARGET_PORT, "");
+                  send(new InitializedEvent());
+                } catch (DomainHandlerException ex) {
+                  response.setSuccess(false);
+                  response.setMessage(ex.toString());
+                }
+                send(response);
+              } else {
+                response.setSuccess(false);
+                response.setMessage("Run In Terminal Failed.");
+                send(response);
+              }
+            });
+      } else {
+        getContextManager()
+            .getBootstrapDomain()
+            .launch(entryPointClass, classPath, runArgs, "" /* sourcePath */);
+        send(new InitializedEvent());
+        send(response);
+      }
     } catch (JSONException | DomainHandlerException ex) {
-      Utils.logException("Error trying to launch:", ex);
+      response.setSuccess(false);
+      response.setMessage(ex.toString());
+      send(response);
     }
   }
 
@@ -637,20 +682,67 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     return true;
   }
 
-  public boolean handleRequest(String request) {
+  private boolean dispatchResponse(String command, JSONObject requestJSON) {
+    switch (command) {
+      case "runInTerminal":
+        {
+          RunInTerminalResponse response = new RunInTerminalResponse(requestJSON);
+          pendingRequests.get(response.request_seq).accept(response);
+          break;
+        }
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  public boolean handleMessage(String message) {
     try {
-      JSONObject requestJSON = new JSONObject(request);
-      String command = requestJSON.getString("command");
+      JSONObject messageJSON = new JSONObject(message);
+      // private String type;
+      String type = messageJSON.optString("type");
+      if (type != null && type.equals("request")) {
+        return handleRequest(messageJSON);
+      } else if (type != null && type.equals("response")) {
+        return handleResponse(messageJSON);
+      }
+
+    } catch (Exception ex) {
+      return false;
+    }
+    return true;
+  }
+
+  public boolean handleRequest(JSONObject request) {
+    try {
+      String command = request.getString("command");
       // uncomment the following line for easier debugging
       // Utils.logVerbose("COMMAND: " + command + ", REQUEST: " + requestJSON.toString(2));
-      if (!dispatchRequest(command, requestJSON)) {
-        Utils.logException("Request: " + request, new Throwable());
+      if (!dispatchRequest(command, request)) {
+        Utils.logException("Request: " + request.toString(2), new Throwable());
         Utils.logError(
             "If you see this, please file a bug using the bugnub (bottom left in Nuclide).");
       }
       return true;
     } catch (Exception ex) {
-      Utils.logException("Request: " + request, ex);
+      Utils.logException("Request: " + request.toString(2), ex);
+      Utils.logError(
+          "If you see this, please file a bug using the bugnub (bottom left in Nuclide).");
+    }
+    return true;
+  }
+
+  public boolean handleResponse(JSONObject request) {
+    try {
+      String command = request.getString("command");
+      if (!dispatchResponse(command, request)) {
+        Utils.logException("Request: " + request.toString(2), new Throwable());
+        Utils.logError(
+            "If you see this, please file a bug using the bugnub (bottom left in Nuclide).");
+      }
+      return true;
+    } catch (Exception ex) {
+      Utils.logException("Request: " + request.toString(2), ex);
       Utils.logError(
           "If you see this, please file a bug using the bugnub (bottom left in Nuclide).");
     }

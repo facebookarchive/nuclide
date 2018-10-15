@@ -41,7 +41,10 @@ SOFTWARE.
 
 import type {ConsoleMessage} from 'atom-ide-ui';
 import type {RecordToken, Level} from '../../../atom-ide-console/lib/types';
-import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
+import type {
+  TerminalInfo,
+  TerminalInstance,
+} from '../../../atom-ide-terminal/lib/types';
 import type {
   DebuggerModeType,
   IDebugService,
@@ -1636,7 +1639,8 @@ export default class DebugService implements IDebugService {
       icon: 'nuclicon-debugger',
       defaultLocation: 'bottom',
     };
-    const terminal = await terminalService.open(info);
+    const terminal: TerminalInstance = await terminalService.open(info);
+
     terminal.setProcessExitCallback(() => {
       // This callback is invoked if the target process dies first, ensuring
       // we tear down the debugger.
@@ -1650,6 +1654,9 @@ export default class DebugService implements IDebugService {
       terminal.setProcessExitCallback(() => {});
       terminal.terminateProcess();
     });
+
+    const spawn = observableFromSubscribeFunction(cb => terminal.onSpawn(cb));
+    return spawn.take(1).toPromise();
   };
 
   canRestartProcess(): boolean {

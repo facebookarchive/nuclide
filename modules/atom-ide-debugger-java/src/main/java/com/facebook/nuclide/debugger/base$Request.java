@@ -14,8 +14,17 @@ public abstract class base$Request extends base$ProtocolMessage {
   public String command;
   public Object arguments;
 
+  public base$Request(String command) {
+    super("request");
+    this.command = command;
+  }
+
   public base$Request(JSONObject requestJSON) {
     super(requestJSON.getInt("seq"), requestJSON.getString("type"));
     command = requestJSON.getString("command");
+  }
+
+  public JSONObject toJSON() {
+    return super.toJSON().put("command", command);
   }
 }

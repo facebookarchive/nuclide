@@ -56,6 +56,17 @@ export function getJavaConfig(): AutoGenConfig {
     required: true,
     visible: true,
   };
+  const consoleEnum = {
+    name: 'console',
+    type: 'enum',
+    enums: ['internalConsole', 'integratedTerminal'],
+    description:
+      'Integrated Terminal means that it will run in a terminal that can interact with standard input and output.',
+    defaultValue: 'internalConsole',
+    required: true,
+    visible: true,
+  };
+
   const javaJdwpPort = {
     name: 'javaJdwpPort',
     type: 'number',
@@ -67,7 +78,7 @@ export function getJavaConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.JAVA,
-      properties: [entryPointClass, classPath],
+      properties: [entryPointClass, classPath, consoleEnum],
       cwdPropertyName: 'cwd',
       header: null,
       getProcessName(values) {

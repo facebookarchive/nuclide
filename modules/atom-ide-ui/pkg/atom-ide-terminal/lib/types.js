@@ -40,6 +40,7 @@ export type TerminalInfo = {
 };
 
 export interface TerminalInstance {
+  onSpawn(callback: () => mixed): IDisposable;
   setProcessExitCallback(callback: () => mixed): void;
   terminateProcess(): void;
 }

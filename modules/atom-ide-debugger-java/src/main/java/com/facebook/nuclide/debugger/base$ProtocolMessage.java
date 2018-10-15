@@ -20,6 +20,11 @@ public abstract class base$ProtocolMessage {
     this.type = type;
   }
 
+  public base$ProtocolMessage(JSONObject messageJSON) {
+    this.seq = messageJSON.getInt("seq");
+    this.type = messageJSON.getString("type");
+  }
+
   public base$ProtocolMessage(int seq, String type) {
     this.seq = seq;
     this.type = type;

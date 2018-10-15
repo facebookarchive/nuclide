@@ -24,6 +24,21 @@ public class BootstrapDomain extends DomainHandlerBase {
     super("LaunchHook", contextManager);
   }
 
+  public static String getArgStringFromArgs(Object args) {
+    StringBuilder sb = new StringBuilder();
+    if (args != null) {
+      JSONArray arr = (JSONArray) args;
+      for (int i = 0; i < arr.length(); i++) {
+        Object arg = arr.get(i);
+        if (arg != null) {
+          sb.append(" " + arg.toString());
+        }
+      }
+    }
+
+    return sb.toString().trim();
+  }
+
   JSONObject handleMethod(String id, String methodName, JSONObject params)
       throws DomainHandlerException {
     JSONObject response = new JSONObject();
@@ -88,19 +103,8 @@ public class BootstrapDomain extends DomainHandlerBase {
       getContextManager().setSourcePath(sourcePath);
     }
 
-    StringBuilder sb = new StringBuilder();
-    if (args != null) {
-      JSONArray arr = (JSONArray) args;
-      for (int i = 0; i < arr.length(); i++) {
-        Object arg = arr.get(i);
-        if (arg != null) {
-          sb.append(" " + arg.toString());
-        }
-      }
-    }
-
     try {
-      launchDebugger(launchCommandLine, sb.toString().trim());
+      launchDebugger(launchCommandLine, getArgStringFromArgs(args));
     } catch (VMStartException | IOException | IllegalConnectorArgumentsException e) {
       String errorMessage = String.format("Launch failed for '%s'", launchCommandLine);
       throw new DomainHandlerException(errorMessage, e);

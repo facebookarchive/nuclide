@@ -248,7 +248,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
           // Note: Manipulating the clipboard directly because atom's core:copy and core:paste
           // commands are not working correctly with terminal selection.
           if (terminal.hasSelection()) {
-            // $FlowFixMe clipboard typings missing `writeText`
             clipboard.writeText(terminal.getSelection());
           } else {
             document.execCommand('paste');
@@ -339,6 +338,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
     );
     this._syncFontAndFit(terminal);
     this._subscriptions.add(measurePerformance(terminal));
+    this._emitter.emit('spawn', {success: true});
   }
 
   _focused(): void {
@@ -380,6 +380,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
       startDelay: Math.round(performanceNow() - this._startTime),
       error: String(error),
     });
+    this._emitter.emit('spawn', {success: false});
   }
 
   // Since changing the font settings may resize the contents, we have to
@@ -603,6 +604,10 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   onDidChangeTitle(callback: (v: ?string) => mixed): IDisposable {
     return this.on('did-change-title', callback);
+  }
+
+  onSpawn(callback: (v: any) => mixed): IDisposable {
+    return this.on('spawn', callback);
   }
 
   on(name: string, callback: (v: any) => mixed): IDisposable {
