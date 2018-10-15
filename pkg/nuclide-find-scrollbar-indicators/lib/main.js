@@ -14,10 +14,11 @@ import type {
   ScrollbarIndicatorProvider,
 } from '../../nuclide-scrollbar-indicators';
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {MutationObservable} from 'nuclide-commons-ui/observable-dom';
 import {macrotask} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject} from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 
 type FindService = {
   resultsMarkerLayerForTextEditor(atom$TextEditor): atom$DisplayMarkerLayer,
@@ -43,6 +44,22 @@ class Activation {
   }
 
   consumeFind(findService: FindService): IDisposable {
+    // atom/find-and-replace uses the presence of a `find-visible` class on the
+    // workspace to determine if it should show its own highlights.
+    // We will follow that lead.
+    const workspace = atom.views.getView(atom.workspace);
+    const getFindIsVisible = (): boolean =>
+      workspace.classList.contains('find-visible');
+
+    const findVisiblity = new MutationObservable(workspace, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+      .map(getFindIsVisible)
+      .startWith(getFindIsVisible())
+      .distinctUntilChanged()
+      .shareReplay(1);
+
     const disposable = new UniversalDisposable(
       observableFromSubscribeFunction(cb =>
         atom.workspace.observeTextEditors(cb),
@@ -52,9 +69,15 @@ class Activation {
             editor,
           );
 
-          return observableFromSubscribeFunction(cb =>
-            searchMarkerLayer.onDidUpdate(cb),
-          ).switchMap(() => {
+          return Observable.combineLatest(
+            findVisiblity,
+            observableFromSubscribeFunction(cb =>
+              searchMarkerLayer.onDidUpdate(cb),
+            ),
+          ).switchMap(([visible]) => {
+            if (!visible) {
+              return Observable.of({editor, markTypes: new Map()});
+            }
             // TODO: I'm not sure why this macrotask is needed, but calling
             // `getMarkers` without it seems to return no markers.
             return macrotask.first().map(() => {

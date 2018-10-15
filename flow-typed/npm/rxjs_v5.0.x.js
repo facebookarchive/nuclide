@@ -699,6 +699,8 @@ declare class rxjs$Observable<+T> {
 
   share(): rxjs$Observable<T>;
 
+  shareReplay(bufferSize?: number, windowTime?: number, scheduler?: rxjs$SchedulerClass): rxjs$Observable<T>;
+
   skip(count: number): rxjs$Observable<T>;
 
   skipUntil(other: rxjs$Observable<any> | Promise<any>): rxjs$Observable<T>;

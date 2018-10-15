@@ -219,7 +219,6 @@ export class IntersectionObservable extends DOMObserverObservable<
 export class MutationObservable extends DOMObserverObservable<
   Array<MutationRecord>,
   MutationRecord,
-  // $FlowFixMe
   [Node, MutationObserverInit],
 > {
   constructor(target: Node, options?: MutationObserverInit) {
@@ -229,7 +228,7 @@ export class MutationObservable extends DOMObserverObservable<
       'environment must contain MutationObserver',
     );
     // $FlowFixMe(>=0.55.0) Flow suppress
-    super(MutationObserver, target);
+    super(MutationObserver, target, options);
   }
 }
 
