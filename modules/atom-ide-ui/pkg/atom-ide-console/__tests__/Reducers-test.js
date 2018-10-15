@@ -262,7 +262,8 @@ describe('createStateStream', () => {
       initialRecords = Immutable.List([
         {
           kind: 'message',
-          sourceId: 'Test',
+          sourceId: 'test-source',
+          sourceName: 'Test',
           level: 'info',
           text: 'test',
           scopeName: null,

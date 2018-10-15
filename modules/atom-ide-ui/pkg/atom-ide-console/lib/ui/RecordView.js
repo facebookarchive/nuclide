@@ -173,7 +173,7 @@ export default class RecordView extends React.Component<Props> {
 
   render(): React.Node {
     const {record} = this.props;
-    const {level, kind, timestamp, sourceId} = record;
+    const {level, kind, timestamp, sourceId, sourceName} = record;
 
     const classNames = classnames('console-record', `level-${level || 'log'}`, {
       request: kind === 'request',
@@ -188,7 +188,7 @@ export default class RecordView extends React.Component<Props> {
         className={`console-record-source-label ${getHighlightClassName(
           level,
         )}`}>
-        {sourceId}
+        {sourceName ?? sourceId}
       </span>
     ) : null;
     let renderedTimestamp;

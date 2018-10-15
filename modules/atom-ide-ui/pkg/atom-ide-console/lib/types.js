@@ -114,6 +114,7 @@ export type Record = {
 
   kind: MessageKind,
   sourceId: string,
+  sourceName: string,
   scopeName: ?string,
   data?: ?EvaluationResult,
   timestamp: Date,

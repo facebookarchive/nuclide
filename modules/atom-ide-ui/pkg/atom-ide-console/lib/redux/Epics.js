@@ -71,6 +71,7 @@ export function executeEpic(
           // Eventually, we'll want to allow providers to specify custom timestamps for records.
           timestamp: new Date(),
           sourceId: currentExecutorId,
+          sourceName: executor.name,
           kind: 'request',
           level: 'log',
           text: code,
