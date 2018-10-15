@@ -94,6 +94,7 @@ const editorToAbortController: WeakMap<
 > = new WeakMap();
 const editorToMarkers: WeakMap<TextEditor, MarkerMap> = new WeakMap();
 const editorToProcessState: WeakMap<TextEditor, ProcessState> = new WeakMap();
+const editorToGutterOpen: WeakMap<TextEditor, boolean> = new WeakMap();
 
 const handleSpawnPopupEvents = new Subject();
 const SpawnPopupEvents = handleSpawnPopupEvents
@@ -441,13 +442,22 @@ function _applyUpdateToEditor(
   });
 
   const abortController = new AbortController();
-
   processTimed(
     function*() {
       while (!processChunk(editor)) {
+        // Once the gutter is shown for the first time, it is displayed for the lifetime of the
+        // TextEditor.
+        if (!editorToGutterOpen.get(editor) && editorHasMarkers(editor)) {
+          nullthrows(gutter).show();
+          editorToGutterOpen.set(editor, true);
+        }
+
         yield;
       }
 
+      if (editorHasMarkers(editor)) {
+        analytics.track('diagnostics-show-editor-diagnostics');
+      }
       const {blockDecorationFragments} = nullthrows(
         editorToProcessState.get(editor),
       );
@@ -455,12 +465,6 @@ function _applyUpdateToEditor(
         <>{blockDecorationFragments}</>,
         blockDecorationContainer,
       );
-      // Once the gutter is shown for the first time, it is displayed for the lifetime of the
-      // TextEditor.
-      if (editorHasMarkers(editor)) {
-        nullthrows(gutter).show();
-        analytics.track('diagnostics-show-editor-diagnostics');
-      }
 
       editorToAbortController.delete(editor);
     },
