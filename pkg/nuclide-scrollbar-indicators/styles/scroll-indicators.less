@@ -50,7 +50,7 @@ atom-text-editor:not(.nuclide-wrapped-editor) /deep/ ::-webkit-scrollbar {
   width: 12px;
 
   &-thumb:vertical {
-    background-color: hsla(220, 100%,  80%, .04);
+    background-color: fade(@syntax-gutter-background-color-selected, 60%);
     z-index: 5;
   }
 
