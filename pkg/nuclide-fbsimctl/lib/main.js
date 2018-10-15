@@ -52,7 +52,8 @@ function createPoller(
             message = "'fbsimctl' not found in $PATH.";
           } else if (
             typeof error.message === 'string' &&
-            error.message.includes('plist does not exist')
+            (error.message.includes('plist does not exist') ||
+              error.message.includes('No Xcode Directory at'))
           ) {
             message =
               "Xcode path is invalid, use 'xcode-select' in a terminal to select path to an Xcode installation.";
