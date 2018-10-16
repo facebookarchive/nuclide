@@ -14,6 +14,7 @@ import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage, TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {getLogger} from 'log4js';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import passesGK from 'nuclide-commons/passesGK';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
@@ -55,6 +56,17 @@ export class BuckBuildSystem {
   _diagnosticInvalidations: Subject<
     DiagnosticInvalidationMessage,
   > = new Subject();
+  /**
+   * _statusMemory is a memory structure used here to keep state across
+   *  "status" events in order to construct full frame strings due to the
+   *  nature of buck's serial output stream.
+   */
+  _statusMemory = {
+    // we'll only add one "target" to the "Building... " title
+    addedBuildTargetToTitle: false,
+    title: 'No events from buck...',
+    body: '',
+  };
 
   build(opts: BuckBuildOptions): BuckBuildTask {
     const {root, target, args} = opts;
@@ -205,7 +217,112 @@ export class BuckBuildSystem {
       invalidations: this._diagnosticInvalidations,
     };
   }
+  /*
+  * _processStatusEvent recieves an ANSI-stripped line of Buck superconsole
+  *  stdout as input with flags set by the ANSI. This function combines the
+  *  _statusMemory to reconstruct the buck superconsole. State is also used
+  *  for summarized title for the element. The TaskEvent we return contains:
+  *  title: the summarized one-line info based on buck state (max len: 35)
+  *  body: the combined stream inbetween reset flags which constitutes the
+  *         state that the buck superconsole wants to represent.
+  *
+  * TODO refactor this logic into a react scoped class that can construct
+  *  these as react elements.
+  */
+  _processStatusEvent(event: BuckEvent): Observable<TaskEvent> {
+    if (
+      event == null ||
+      event.type !== 'buck-status' ||
+      event.message == null ||
+      event.message === '' ||
+      event.message.length <= 1
+    ) {
+      return Observable.empty();
+    }
 
+    if (event.reset) {
+      this._statusMemory.addedBuildTargetToTitle = false;
+      this._statusMemory.body = '';
+    }
+
+    const PARSING_BUCK_FILES_REGEX = /(Pars.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
+    const CREATING_ACTION_GRAPH_REGEX = /(Creat.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
+    const BUILDING_REGEX = /(Buil.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
+    const BUILD_TARGET_REGEX = /\s-\s.*\/(?!.*\/)(.*)\.\.\.\s([\d:]+\d*\.?\d*)\s(min|sec)/g;
+    const STARTING_BUCK_REGEX = /(Starting.*)/g;
+
+    /* We'll attempt to match the event.message to a few known regex matches,
+    * otherwise we'll ignore it. When we find a match, we'll parse it for
+    * length, markup, and set the title.
+    */
+    let match = PARSING_BUCK_FILES_REGEX.exec(event.message);
+    if (match == null) {
+      match = CREATING_ACTION_GRAPH_REGEX.exec(event.message);
+    }
+    if (match == null) {
+      match = BUILDING_REGEX.exec(event.message);
+    }
+    if (match != null && match.length > 1) {
+      let prefix = match[1];
+      if (prefix.length > 25) {
+        prefix = prefix.slice(0, 25);
+      }
+      // TODO refactor this logic into a react scoped class that can construct
+      // these as react elements.
+      this._statusMemory.title = `${prefix}<span>${match[2]}</span> ${
+        match[3]
+      }`;
+    }
+    /* this block parses the first subsequent Building... line
+    * (i.e. " - fldr/com/facebook/someTarget:someTarget#header-info 2.3 sec")
+    * into: "Building... someTarget:som 2.3 sec". & gates itself with addedBuildTargetToTitle
+    */
+    if (match == null && !this._statusMemory.addedBuildTargetToTitle) {
+      match = BUILD_TARGET_REGEX.exec(event.message);
+      if (match != null) {
+        let target = match[1].split('#')[0];
+        if (target.length > 12) {
+          target = target.slice(0, 12);
+        }
+        this._statusMemory.title = `Building ../${target} <span>${
+          match[2]
+        }</span> ${match[3]}`;
+        this._statusMemory.addedBuildTargetToTitle = true;
+      }
+    }
+
+    if (match == null) {
+      match = STARTING_BUCK_REGEX.exec(event.message);
+      if (match != null) {
+        let target = match[0];
+        if (target.length > 35) {
+          target = target.slice(0, 35);
+        }
+        this._statusMemory.title = target;
+      }
+    }
+
+    // logging lines that don't match our REGEX so we can manually add them later
+    if (match == null) {
+      getLogger('nuclide-buck-superconsole').warn('no match:' + event.message);
+    }
+
+    // body is cleared by event.reset, otherwise we append a newline & message
+    this._statusMemory.body = event.reset
+      ? event.message.trim()
+      : this._statusMemory.body + '<br/>' + event.message.trim();
+
+    return Observable.of({
+      type: 'status',
+      status: {
+        type: 'bulletin',
+        bulletin: {
+          title: this._statusMemory.title,
+          body: this._statusMemory.body,
+        },
+      },
+    });
+  }
   /**
    * Processes side diagnostics, converts relevant events to TaskEvents.
    */
@@ -223,6 +340,8 @@ export class BuckBuildSystem {
       events.flatMap(event => {
         if (event.type === 'progress') {
           return Observable.of(event);
+        } else if (event.type === 'buck-status') {
+          return this._processStatusEvent(event);
         } else if (event.type === 'log') {
           return createMessage(event.message, event.level);
         } else if (event.type === 'build-output') {
