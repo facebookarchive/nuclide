@@ -167,7 +167,7 @@ export class XhrConnectionHeartbeat {
           code = 'INVALID_CERTIFICATE';
           break;
         case 'CERT_SIGNATURE_FAILURE':
-          code = 'INVALID_CERTIFICATE';
+          code = 'CERT_SIGNATURE_FAILURE';
           break;
         default:
           code = originalCode;
