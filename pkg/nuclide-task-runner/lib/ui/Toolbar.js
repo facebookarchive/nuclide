@@ -9,10 +9,11 @@
  * @format
  */
 
-import type {Status} from 'nuclide-commons/process';
+import type {Status, Bulletin} from 'nuclide-commons/process';
 import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 
+import passesGK from 'nuclide-commons/passesGK';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isDebugTask, TASKS} from '../../../nuclide-buck/lib/BuckTaskRunner';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -21,6 +22,8 @@ import nullthrows from 'nullthrows';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {SplitButtonDropdown} from 'nuclide-commons-ui/SplitButtonDropdown';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import TaskRunnerStatusComponent from '../../../nuclide-buck/lib/ui/TaskRunnerStatusComponent';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
@@ -47,7 +50,44 @@ export type Props = {
   runningTaskIsCancelable: boolean | void,
 };
 
-export default class Toolbar extends React.Component<Props> {
+type State = {
+  taskbarStatusComponentGK: boolean,
+  bulletin: Bulletin,
+};
+export default class Toolbar extends React.Component<Props, State> {
+  state: State = {
+    taskbarStatusComponentGK: false,
+    bulletin: {title: '', body: ''},
+  };
+  _buckSuperConsoleGk: string = 'nuclide_buck_superconsole';
+
+  constructor() {
+    super();
+    this._setTaskBarStatusGk();
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (
+      prevProps.status != null &&
+      prevProps.status.type === 'bulletin' &&
+      prevProps.status.bulletin.title !== this.state.bulletin.title
+    ) {
+      this.setState({
+        bulletin: {
+          body: prevProps.status.bulletin.body,
+          title: prevProps.status.bulletin.title,
+        },
+      });
+    }
+  }
+
+  async _setTaskBarStatusGk(): Promise<void> {
+    const passedGk = await passesGK(this._buckSuperConsoleGk);
+    if (passedGk) {
+      this.setState({taskbarStatusComponentGK: true});
+    }
+  }
+
   render(): React.Node {
     const className = classnames('nuclide-task-runner-toolbar', {
       disabled: this.props.toolbarDisabled,
@@ -84,6 +124,25 @@ export default class Toolbar extends React.Component<Props> {
         iconComponent={this.props.iconComponent}
       />
     );
+    let statusComponentContent = null;
+    let fullWidthProgressBar = null;
+    if (this.state.taskbarStatusComponentGK) {
+      statusComponentContent = (
+        <TaskRunnerStatusComponent
+          title={this.state.bulletin.title}
+          body={this.state.bulletin.body}
+          progress={this.props.progress}
+          visible={this.props.taskIsRunning}
+        />
+      );
+    } else {
+      fullWidthProgressBar = (
+        <FullWidthProgressBar
+          progress={this.props.progress}
+          visible={this.props.taskIsRunning}
+        />
+      );
+    }
 
     return (
       <div className={`${className} padded`}>
@@ -100,11 +159,9 @@ export default class Toolbar extends React.Component<Props> {
             />
           </span>
           {taskRunnerSpecificContent}
+          {statusComponentContent}
         </div>
-        <FullWidthProgressBar
-          progress={this.props.progress}
-          visible={this.props.taskIsRunning}
-        />
+        {fullWidthProgressBar}
       </div>
     );
   }
