@@ -254,7 +254,15 @@ export default class OutputTable extends React.Component<Props, State> {
   };
 
   _handleListRef = (listRef: React.Element<any>): void => {
+    const previousValue = this._list;
     this._list = listRef;
+
+    // The child rows render before this ref gets set. So, if we are coming from
+    // a state where the ref was null, we should ensure we notify
+    // react-virtualized that we have measurements.
+    if (previousValue == null && this._list != null) {
+      this._heightChanges.next(null);
+    }
   };
 
   _handleResize = (height: number, width: number): void => {
