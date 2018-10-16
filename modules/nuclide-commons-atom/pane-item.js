@@ -33,7 +33,7 @@ const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 export function isConsoleVisible(): boolean {
   const consolePane = atom.workspace.paneForURI(CONSOLE_VIEW_URI);
-  const consoleItem = consolePane && consolePane.getActiveItem();
+  const consoleItem = consolePane && consolePane.itemForURI(CONSOLE_VIEW_URI);
   const paneContainer = atom.workspace.paneContainerForItem(consoleItem);
   // This visibility check has been taken from
   // https://github.com/atom/atom/blob/v1.28.2/src/workspace.js#L1084
