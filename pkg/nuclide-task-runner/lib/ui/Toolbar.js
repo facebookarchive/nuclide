@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {Status} from 'nuclide-commons/process';
 import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 
@@ -38,6 +39,7 @@ export type Props = {
   iconComponent: ?React.ComponentType<any>,
   extraUiComponent: ?React.ComponentType<any>,
   progress: ?number,
+  status: ?Status,
   runTask: (taskMeta: TaskMetadata & {taskRunner: TaskRunner}) => void,
   selectTaskRunner: (taskRunner: TaskRunner) => void,
   stopRunningTask: () => void,

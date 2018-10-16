@@ -9,7 +9,7 @@
  * @format
  * @emails oncall+nuclide
  */
-import type {Message} from 'nuclide-commons/process';
+import type {Message, Status} from 'nuclide-commons/process';
 
 import {taskFromObservable, observableFromTask} from '../tasks';
 import invariant from 'assert';
@@ -108,10 +108,10 @@ describe('commons-node/tasks', () => {
       const observable = observableFromTask(task);
       const handler = jest.fn();
       observable.subscribe(handler);
-      task._status('fine and dandy');
+      task._status({type: 'string', status: 'fine and dandy'});
       expect(handler).toHaveBeenCalledWith({
         type: 'status',
-        status: 'fine and dandy',
+        status: {type: 'string', status: 'fine and dandy'},
       });
     });
   });
@@ -209,8 +209,14 @@ describe('commons-node/tasks', () => {
       task.onStatusChange(handler);
       task.start();
       expect(handler).not.toHaveBeenCalled();
-      observable.next({type: 'status', status: 'fine and dandy'});
-      expect(handler).toHaveBeenCalledWith('fine and dandy');
+      observable.next({
+        type: 'status',
+        status: {type: 'string', status: 'fine and dandy'},
+      });
+      expect(handler).toHaveBeenCalledWith({
+        type: 'string',
+        status: 'fine and dandy',
+      });
     });
   });
 });
@@ -235,7 +241,7 @@ function createMockTask() {
     onResult: (callback: (result: mixed) => mixed): IDisposable => {
       return emitter.on('result', callback);
     },
-    onStatusChange: (callback: (status: string) => mixed): IDisposable => {
+    onStatusChange: (callback: (status: ?Status) => mixed): IDisposable => {
       return emitter.on('status', callback);
     },
     _complete: (): void => {
@@ -253,7 +259,7 @@ function createMockTask() {
     _result: (result: number): void => {
       emitter.emit('result', result);
     },
-    _status: (status: string): void => {
+    _status: (status: ?Status): void => {
       emitter.emit('status', status);
     },
   };

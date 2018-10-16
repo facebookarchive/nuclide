@@ -462,6 +462,7 @@ describe('Epics', () => {
               metadata: taskMeta,
               task,
               progress: 1,
+              status: null,
               startDate: new Date(),
             },
             taskRunner,

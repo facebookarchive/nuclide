@@ -13,7 +13,7 @@
 // interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
 // two.
 
-import type {TaskEvent, Message, Level} from 'nuclide-commons/process';
+import type {TaskEvent, Message, Level, Status} from 'nuclide-commons/process';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -30,7 +30,7 @@ export type Task = {
   +onMessage?: (callback: (message: Message) => mixed) => IDisposable,
   +onProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
   +onResult?: (callback: (result: mixed) => mixed) => IDisposable,
-  +onStatusChange?: (callback: (status: ?string) => mixed) => IDisposable,
+  +onStatusChange?: (callback: (status: ?Status) => mixed) => IDisposable,
 };
 
 /**
@@ -94,7 +94,7 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
           .subscribe({next: callback, error: () => {}}),
       );
     },
-    onStatusChange(callback: (status: ?string) => mixed): IDisposable {
+    onStatusChange(callback: (status: ?Status) => mixed): IDisposable {
       return new UniversalDisposable(
         events
           .filter(event => event.type === 'status')
@@ -194,7 +194,10 @@ export function createResult(result: mixed): Observable<TaskEvent> {
 }
 
 export function createStatus(status: string): Observable<TaskEvent> {
-  return Observable.of({type: 'status', status});
+  return Observable.of({
+    type: 'status',
+    status: {type: 'string', status},
+  });
 }
 
 export function createStep(
@@ -204,7 +207,13 @@ export function createStep(
   return Observable.concat(
     Observable.of({type: 'progress', progress: null}),
     Boolean(stepName)
-      ? Observable.of({type: 'status', status: stepName})
+      ? Observable.of({
+          type: 'status',
+          status: {
+            type: 'string',
+            status: stepName,
+          },
+        })
       : Observable.empty(),
     Observable.defer(action),
   );

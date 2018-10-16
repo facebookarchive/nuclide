@@ -724,6 +724,7 @@ function createTaskObservable(
       metadata: taskMeta,
       task,
       progress: null,
+      status: null,
       startDate: new Date(),
     };
     const events = observableFromTask(task);
@@ -738,6 +739,11 @@ function createTaskObservable(
             return Observable.of({
               type: Actions.TASK_PROGRESS,
               payload: {progress: event.progress},
+            });
+          } else if (event.type === 'status') {
+            return Observable.of({
+              type: Actions.TASK_STATUS,
+              payload: {status: event.status},
             });
           } else if (event.type === 'message') {
             return Observable.of({

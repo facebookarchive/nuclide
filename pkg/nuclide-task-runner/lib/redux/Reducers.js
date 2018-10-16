@@ -132,6 +132,8 @@ export function runningTask(
       return null;
     case Actions.TASK_PROGRESS:
       return {...state, progress: action.payload.progress};
+    case Actions.TASK_STATUS:
+      return {...state, status: action.payload.status};
     case Actions.TASK_ERRORED:
       return null;
     case Actions.TASK_STARTED:

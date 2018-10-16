@@ -53,6 +53,7 @@ export const STOP_TASK = 'STOP_TASK';
 export const TASKS_READY = 'TASKS_READY';
 export const TASK_COMPLETED = 'TASK_COMPLETED';
 export const TASK_PROGRESS = 'TASK_PROGRESS';
+export const TASK_STATUS = 'TASK_STATUS';
 export const TASK_MESSAGE = 'TASK_MESSAGE';
 export const TASK_STARTED = 'TASK_STARTED';
 export const TASK_STOPPED = 'TASK_STOPPED';

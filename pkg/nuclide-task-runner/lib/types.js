@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Task} from '../../commons-node/tasks';
-import type {Message} from 'nuclide-commons/process';
+import type {Message, Status} from 'nuclide-commons/process';
 import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
 
 import * as Immutable from 'immutable';
@@ -54,6 +54,7 @@ export type TaskStatus = {
   metadata: TaskMetadata,
   task: Task,
   progress: ?number,
+  status: ?Status,
   startDate: Date,
 };
 
@@ -156,6 +157,13 @@ type TaskProgressAction = {
   type: 'TASK_PROGRESS',
   payload: {
     progress: ?number,
+  },
+};
+
+type TaskStatusAction = {
+  type: 'TASK_STATUS',
+  payload: {
+    status: ?Status,
   },
 };
 
@@ -293,6 +301,7 @@ export type Action =
   | StopTaskAction
   | TaskCompletedAction
   | TaskProgressAction
+  | TaskStatusAction
   | TaskMessageAction
   | TaskErroredAction
   | TaskStartedAction
