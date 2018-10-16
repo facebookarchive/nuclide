@@ -1329,6 +1329,10 @@ export class Model implements IModel {
     this._emitter.emit(CALLSTACK_CHANGED);
   }
 
+  getUIBreakpoints(): IUIBreakpoint[] {
+    return this._uiBreakpoints;
+  }
+
   getBreakpoints(): IBreakpoint[] {
     // If we're currently debugging, return the breakpoints as the current
     // debug adapter sees them.
@@ -1526,8 +1530,6 @@ export class Model implements IModel {
             ),
           );
         } else {
-          processBp.line = uiBp.line;
-          processBp.column = uiBp.column;
           processBp.enabled = uiBp.enabled;
           processBp.condition = uiBp.condition;
         }

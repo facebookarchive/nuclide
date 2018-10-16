@@ -1804,19 +1804,20 @@ export default class DebugService implements IDebugService {
       return;
     }
 
-    const breakpointsToSend = this._model
-      .getBreakpoints()
-      .filter(
-        bp =>
-          this._model.areBreakpointsActivated() && bp.enabled && bp.uri === uri,
-      );
+    const breakpointsToSend = ((sourceModified
+      ? this._model.getUIBreakpoints()
+      : this._model.getBreakpoints()
+    ).filter(
+      bp =>
+        this._model.areBreakpointsActivated() && bp.enabled && bp.uri === uri,
+    ): any);
 
     const rawSource = process.getSource({
       path: uri,
       name: nuclideUri.basename(uri),
     }).raw;
 
-    if (breakpointsToSend.length && !rawSource.adapterData) {
+    if (!sourceModified && breakpointsToSend.length && !rawSource.adapterData) {
       rawSource.adapterData = breakpointsToSend[0].adapterData;
     }
 
@@ -1837,10 +1838,19 @@ export default class DebugService implements IDebugService {
 
     const data: {[id: string]: DebugProtocol.Breakpoint} = {};
     for (let i = 0; i < breakpointsToSend.length; i++) {
-      data[breakpointsToSend[i].getId()] = response.body.breakpoints[i];
+      // If sourceModified === true, we're dealing with new UI breakpoints that
+      // represent the new location(s) the breakpoints ended up in due to the
+      // file contents changing. These are of type IUIBreakpoint.  Otherwise,
+      // we have process breakpoints of type IBreakpoint here. These types both have
+      // an ID, but we get it a little differently.
+      const bpId = sourceModified
+        ? breakpointsToSend[i].id
+        : breakpointsToSend[i].getId();
+
+      data[bpId] = response.body.breakpoints[i];
       if (!breakpointsToSend[i].column) {
         // If there was no column sent ignore the breakpoint column response from the adapter
-        data[breakpointsToSend[i].getId()].column = undefined;
+        data[bpId].column = undefined;
       }
     }
 
