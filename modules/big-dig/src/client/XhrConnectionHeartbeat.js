@@ -164,6 +164,8 @@ export class XhrConnectionHeartbeat {
           code = this._checkReconnectErrorType(originalCode);
           break;
         case 'CERT_HAS_EXPIRED':
+          code = 'INVALID_CERTIFICATE';
+          break;
         case 'CERT_SIGNATURE_FAILURE':
           code = 'INVALID_CERTIFICATE';
           break;
