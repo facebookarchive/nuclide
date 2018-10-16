@@ -989,6 +989,10 @@ declare module 'vscode-languageserver-protocol' {
     constructor(type: string): void;
   }
 
+  declare export class NotificationType {
+    constructor(type: string): void;
+  }
+
   /**
    * A request send from the client to the server to execute a command. The request might return
    * a workspace edit which the client will apply to the workspace.

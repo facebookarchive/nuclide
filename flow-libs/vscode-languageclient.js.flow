@@ -18,7 +18,10 @@ declare module 'vscode-languageclient' {
     MessageReader,
     MessageWriter,
     ServerCapabilities,
+    RequestType,
+    NotificationType,
   } from 'vscode-languageserver-protocol';
+  import type {OutputChannel} from 'vscode';
 
   declare type ExecutableOptions = {
     cwd?: string,
@@ -243,6 +246,7 @@ declare module 'vscode-languageclient' {
 
   declare export class LanguageClient {
     get clientOptions(): LanguageClientOptions;
+    get outputChannel(): OutputChannel;
     constructor(
       name: string,
       serverOptions: ServerOptions,
@@ -264,11 +268,16 @@ declare module 'vscode-languageclient' {
       arg5?: boolean,
     ): void;
 
+    info(message: string, data?: any): void;
+    warn(message: string, data?: any): void;
+    error(message: string, data?: any): void;
+
     start(): IDisposable;
     stop(): Thenable<void>;
     onReady(): Thenable<void>;
-    onRequest(type: any, () => any): void;
-    registerFeature(feature: StaticFeature): void;
+    onRequest(type: RequestType, (params: any) => mixed): void;
+    onNotification(type: NotificationType, (params: any) => mixed): void;
+    registerFeature(feature: StaticFeature | DynamicFeature): void;
     sendRequest<R>(method: string, param: any): Thenable<R>;
   }
 }
