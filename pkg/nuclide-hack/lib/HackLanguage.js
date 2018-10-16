@@ -43,25 +43,8 @@ import {
   findHackPrefix,
 } from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import passesGK from 'nuclide-commons/passesGK';
 
 const HACK_SERVICE_NAME = 'HackService';
-
-async function getUseFfpAutocomplete(): Promise<boolean> {
-  return passesGK('nuclide_hack_use_ffp_autocomplete');
-}
-
-async function getUseEnhancedHover(): Promise<boolean> {
-  return passesGK('nuclide_hack_use_enhanced_hover');
-}
-
-async function getUseTextEditAutocomplete(): Promise<boolean> {
-  return passesGK('nuclide_hack_use_textedit_autocomplete');
-}
-
-async function getUseSignatureHelp(): Promise<boolean> {
-  return passesGK('nuclide_hack_signature_help');
-}
 
 async function connectionToHackService(
   connection: ?ServerConnection,
@@ -81,22 +64,16 @@ async function connectionToHackService(
     );
   } else {
     const host = await getHostServices();
-    const autocompleteArg = (await getUseFfpAutocomplete())
-      ? ['--ffp-autocomplete']
-      : [];
-    const enhancedHoverArg = (await getUseEnhancedHover())
-      ? ['--enhanced-hover']
-      : [];
     const lspService = await hackService.initializeLsp(
       config.hhClientPath, // command
-      ['lsp', '--from', 'nuclide', ...autocompleteArg, ...enhancedHoverArg], // arguments
+      ['lsp', '--from', 'nuclide', '--enhanced-hover'], // arguments
       [HACK_CONFIG_FILE_NAME], // project file
       HACK_FILE_EXTENSIONS, // which file-notifications should be sent to LSP
       config.logLevel,
       fileNotifier,
       host,
       {
-        useTextEditAutocomplete: await getUseTextEditAutocomplete(),
+        useTextEditAutocomplete: true,
       },
     );
     return lspService || new NullLanguageService();
@@ -176,15 +153,6 @@ async function createLanguageService(): Promise<
       version: '0.2.0',
       analyticsEventName: 'hack.observe-diagnostics',
     },
-    signatureHelp: (await getUseSignatureHelp())
-      ? {
-          version: '0.1.0',
-          priority: 1,
-          triggerCharacters: new Set(['(', ',']),
-          showDocBlock: false,
-          analyticsEventName: 'hack.signatureHelp',
-        }
-      : undefined,
   };
 
   return new AtomLanguageService(
