@@ -330,7 +330,8 @@ export default class ConnectionDetailsForm extends React.Component<
           {PKEY_LINK != null &&
             this.state.selectedAuthMethodIndex === 2 && (
               <Message type="warning">
-                Please see <Link href={PKEY_LINK}>this post</Link>.
+                Private keys are going away soon. Please see{' '}
+                <Link href={PKEY_LINK}>this post</Link>.
               </Message>
             )}
         </div>
