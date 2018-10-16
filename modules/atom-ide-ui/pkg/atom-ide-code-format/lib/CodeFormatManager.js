@@ -214,55 +214,52 @@ export default class CodeFormatManager {
         ...this._fileProviders.getAllProvidersForEditor(editor),
       ];
       const contents = editor.getText();
-      if (
-        rangeProviders.length > 0 &&
-        // When formatting the entire file, prefer file-based providers.
-        (!formatRange.isEqual(buffer.getRange()) || fileProviders.length === 0)
-      ) {
-        return Observable.defer(() =>
-          this._reportBusy(
-            editor,
-            Promise.all(
-              rangeProviders.map(p => p.formatCode(editor, formatRange)),
-            ),
+      const rangeEdits = Observable.defer(() =>
+        this._reportBusy(
+          editor,
+          Promise.all(
+            rangeProviders.map(p => p.formatCode(editor, formatRange)),
           ),
-        ).switchMap(allEdits => {
-          const firstNonEmpty = allEdits.find(edits => edits.length > 0);
-          if (firstNonEmpty == null) {
+        ),
+      ).switchMap(allEdits => {
+        const firstNonEmpty = allEdits.find(edits => edits.length > 0);
+        if (firstNonEmpty == null) {
+          return Observable.empty();
+        } else {
+          return Observable.of(firstNonEmpty);
+        }
+      });
+      const fileEdits = Observable.defer(() =>
+        this._reportBusy(
+          editor,
+          Promise.all(
+            fileProviders.map(p => p.formatEntireFile(editor, formatRange)),
+          ),
+        ),
+      )
+        .switchMap(allResults => {
+          const firstNonNull = allResults.find(result => result != null);
+          if (firstNonNull == null) {
             return Observable.empty();
           } else {
-            return Observable.of(firstNonEmpty);
+            return Observable.of(firstNonNull);
           }
+        })
+        .map(({_, formatted}) => {
+          return [
+            {
+              oldRange: editor.getBuffer().getRange(),
+              newText: formatted,
+              oldText: contents,
+            },
+          ];
         });
-      } else if (fileProviders.length > 0) {
-        return Observable.defer(() =>
-          this._reportBusy(
-            editor,
-            Promise.all(
-              fileProviders.map(p => p.formatEntireFile(editor, formatRange)),
-            ),
-          ),
-        )
-          .switchMap(allResults => {
-            const firstNonNull = allResults.find(result => result != null);
-            if (firstNonNull == null) {
-              return Observable.empty();
-            } else {
-              return Observable.of(firstNonNull);
-            }
-          })
-          .map(({_, formatted}) => {
-            return [
-              {
-                oldRange: editor.getBuffer().getRange(),
-                newText: formatted,
-                oldText: contents,
-              },
-            ];
-          });
-      } else {
-        return Observable.empty();
-      }
+      // When formatting the entire file, prefer file-based providers.
+      const preferFileEdits = formatRange.isEqual(buffer.getRange());
+      const edits = preferFileEdits
+        ? fileEdits.concat(rangeEdits)
+        : rangeEdits.concat(fileEdits);
+      return edits.first(Boolean, x => x, []);
     });
   }
 
