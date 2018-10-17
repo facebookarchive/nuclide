@@ -97,7 +97,6 @@ describe('FileTreeNode', () => {
         uri: '/abc/def',
         rootUri: '/abc/',
         isExpanded: true,
-        isSelected: false,
         isLoading: false,
         isCwd: true,
         children,

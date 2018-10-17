@@ -1227,7 +1227,6 @@ export function loadDataEpic(
             uri: rootUri,
             rootUri,
             isExpanded: true,
-            isSelected: false,
             isLoading: true,
             children: Immutable.OrderedMap(),
             isCwd: false,

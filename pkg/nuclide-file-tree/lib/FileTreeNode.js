@@ -12,14 +12,18 @@
 import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as Immutable from 'immutable';
+import * as FileTreeHelpers from './FileTreeHelpers';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NodeCheckedStatus, StoreConfigData} from './types';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
-export type FileTreeNodeOptions = {
+export type FileTreeNodeOptions = {|
   uri: NuclideUri,
   rootUri: NuclideUri,
+  name?: string,
+  relativePath?: string,
+  localPath?: string,
   isExpanded?: boolean,
   isDragHovered?: boolean,
   isBeingReordered?: boolean,
@@ -34,7 +38,7 @@ export type FileTreeNodeOptions = {
   matchesFilter?: boolean,
   isPendingLoad?: boolean,
   generatedStatus?: ?GeneratedFileType,
-};
+|};
 
 type DefaultFileTreeNodeOptions = {
   isExpanded: boolean,
@@ -83,19 +87,15 @@ export type ImmutableNodeSettableFields = {
   generatedStatus?: ?GeneratedFileType,
 };
 
-type DerivedFileTreeNode = {
-  isRoot: boolean,
-  name: string,
+type DerivedFileTreeNode = {|
   hashKey: string,
-  relativePath: string,
-  localPath: string,
   isContainer: boolean,
   shouldBeShown: boolean,
   shouldBeSoftened: boolean,
   repo: ?atom$Repository,
   isIgnored: boolean,
   checkedStatus: NodeCheckedStatus,
-};
+|};
 
 type DebugState = {
   uri: NuclideUri,
@@ -188,6 +188,9 @@ export class FileTreeNode {
 
   uri: NuclideUri;
   rootUri: NuclideUri;
+  name: string;
+  isRoot: boolean;
+  isContainer: boolean;
   isExpanded: boolean;
   isDragHovered: boolean;
   isBeingReordered: boolean;
@@ -201,14 +204,11 @@ export class FileTreeNode {
   matchesFilter: boolean;
   isPendingLoad: boolean;
   generatedStatus: ?GeneratedFileType;
-
-  // Derived
-  isRoot: boolean;
-  name: string;
-  hashKey: string;
   relativePath: string;
   localPath: string;
-  isContainer: boolean;
+
+  // Derived
+  hashKey: string;
   shouldBeShown: boolean;
   shouldBeSoftened: boolean;
   repo: ?atom$Repository;
@@ -322,6 +322,17 @@ export class FileTreeNode {
   _assignOptions(options: FileTreeNodeOptions): void {
     this.uri = options.uri;
     this.rootUri = options.rootUri;
+    this.name = options.name ?? FileTreeHelpers.keyToName(this.uri);
+    this.isRoot = this.uri === this.rootUri;
+    this.relativePath =
+      options.relativePath ?? nuclideUri.relative(this.rootUri, this.uri);
+    this.localPath =
+      options.localPath ??
+      FileTreeHelpers.keyToPath(
+        nuclideUri.isRemote(this.uri)
+          ? nuclideUri.parse(this.uri).path
+          : this.uri,
+      );
     this.isExpanded =
       options.isExpanded !== undefined
         ? options.isExpanded
@@ -383,11 +394,7 @@ export class FileTreeNode {
     const derived: DerivedFileTreeNode = this._deriver.buildDerivedFields(
       this._conf,
     );
-    this.isRoot = derived.isRoot;
-    this.name = derived.name;
     this.hashKey = derived.hashKey;
-    this.relativePath = derived.relativePath;
-    this.localPath = derived.localPath;
     this.isContainer = derived.isContainer;
     this.shouldBeShown = derived.shouldBeShown;
     this.shouldBeSoftened = derived.shouldBeSoftened;
@@ -405,6 +412,9 @@ export class FileTreeNode {
     return {
       uri: this.uri,
       rootUri: this.rootUri,
+      name: this.name,
+      relativePath: this.relativePath,
+      localPath: this.localPath,
       isExpanded: this.isExpanded,
       isDragHovered: this.isDragHovered,
       isBeingReordered: this.isBeingReordered,

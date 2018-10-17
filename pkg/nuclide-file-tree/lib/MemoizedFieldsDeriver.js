@@ -41,11 +41,7 @@ export class MemoizedFieldsDeriver {
   _rootUri: NuclideUri;
 
   // These properties do not depend on the conf instance and can be calculated right away.
-  _isRoot: boolean;
-  _name: string;
   _isContainer: boolean;
-  _relativePath: NuclideUri;
-  _localPath: NuclideUri;
   _splitPath: Array<string>;
 
   _getRepo: (conf: StoreConfigData) => ?atom$Repository;
@@ -60,13 +56,7 @@ export class MemoizedFieldsDeriver {
     this._uri = uri;
     this._rootUri = rootUri;
 
-    this._isRoot = uri === rootUri;
-    this._name = FileTreeHelpers.keyToName(uri);
     this._isContainer = FileTreeHelpers.isDirOrArchiveKey(uri);
-    this._relativePath = nuclideUri.relative(rootUri, uri);
-    this._localPath = FileTreeHelpers.keyToPath(
-      nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).path : uri,
-    );
     this._splitPath = nuclideUri.split(uri);
 
     this._getRepo = memoize(this._repoGetter.bind(this));
@@ -248,12 +238,7 @@ export class MemoizedFieldsDeriver {
 
   buildDerivedFields(conf: StoreConfigData): Object {
     return {
-      isRoot: this._isRoot,
-      name: this._name,
       isContainer: this._isContainer,
-      relativePath: this._relativePath,
-      localPath: this._localPath,
-
       repo: this._getRepo(conf),
       isIgnored: this._getIsIgnored(conf),
       checkedStatus: this._getCheckedStatus(conf),
