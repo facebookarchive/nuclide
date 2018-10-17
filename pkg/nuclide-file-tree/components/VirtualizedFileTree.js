@@ -27,7 +27,6 @@ import ProjectSelection from './ProjectSelection';
 
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import * as Selectors from '../lib/redux/Selectors';
 
 type State = {|
@@ -60,7 +59,6 @@ const DEFAULT_FOOTER_HEIGHT = 74;
 
 class VirtualizedFileTree extends React.PureComponent<Props, State> {
   _disposables: UniversalDisposable;
-  _getNodeByIndex: (index: number) => ?FileTreeNode;
 
   _listRef: ?List;
   _rootRef: ?FileTreeEntryComponent;
@@ -73,8 +71,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this._getNodeByIndex = this._buildGetNodeByIndex(props.roots);
-
     this.state = {
       rootHeight: null,
       nodeHeight: null,
@@ -267,48 +263,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     }
   };
 
-  _buildGetNodeByIndex(
-    roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
-  ): (index: number) => ?FileTreeNode {
-    let prevRoots = roots;
-    let prevIndexQuery = -1;
-    let prevNode: ?FileTreeNode = null;
-
-    const fallbackGetByIndex = index => {
-      prevRoots = this.props.roots;
-      prevIndexQuery = index;
-      prevNode = this.props.getNodeByIndex(index + 1);
-      return prevNode;
-    };
-
-    return index => {
-      if (this.props.roots !== prevRoots) {
-        // The tree structure was updated
-        return fallbackGetByIndex(index);
-      }
-
-      if (index === prevIndexQuery) {
-        return prevNode;
-      }
-
-      if (index === prevIndexQuery + 1) {
-        // The likely case when we're moving forward in our scanning - FileTreeNode has
-        // more efficient utility to find the next node - we prefer that to a naive scanning
-        // from the root of the tree
-
-        prevIndexQuery = index;
-        if (prevNode == null) {
-          return null;
-        }
-
-        prevNode = prevNode.findNext();
-        return prevNode;
-      }
-
-      return fallbackGetByIndex(index);
-    };
-  }
-
   _rowRenderer = (args: {
     index: number,
     isScrolling: boolean,
@@ -329,7 +283,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         </div>
       );
     } else {
-      const node = this._getNodeByIndex(index);
+      const node = this.props.getNodeByIndex(index);
       if (node == null) {
         return null;
       }
@@ -378,7 +332,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
       return 'footer';
     }
 
-    const node = this._getNodeByIndex(rowIndex);
+    const node = this.props.getNodeByIndex(rowIndex);
     if (node != null) {
       return node.isRoot ? 'root' : 'node';
     }
@@ -387,12 +341,54 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }
 }
 
+// A version of `Selectors.getNodeByIndex()` that's optimized for sequential access.
+const getNodeByIndex = (() => {
+  let prevRoots;
+  let prevIndexQuery = -1;
+  let prevNode: ?FileTreeNode = null;
+
+  const fallbackGetByIndex = (state: AppState, index: number) => {
+    prevRoots = Selectors.getRoots(state);
+    prevIndexQuery = index;
+    prevNode = Selectors.getNodeByIndex(state)(index + 1);
+    return prevNode;
+  };
+
+  return (state: AppState, index: number) => {
+    const roots = Selectors.getRoots(state);
+    if (roots !== prevRoots) {
+      // The tree structure was updated
+      return fallbackGetByIndex(state, index);
+    }
+
+    if (index === prevIndexQuery) {
+      return prevNode;
+    }
+
+    if (index === prevIndexQuery + 1) {
+      // The likely case when we're moving forward in our scanning - FileTreeNode has
+      // more efficient utility to find the next node - we prefer that to a naive scanning
+      // from the root of the tree
+
+      prevIndexQuery = index;
+      if (prevNode == null) {
+        return null;
+      }
+
+      prevNode = prevNode.findNext();
+      return prevNode;
+    }
+
+    return fallbackGetByIndex(state, index);
+  };
+})();
+
 const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   roots: Selectors.getRoots(state),
   selectedNodes: Selectors.getSelectedNodes(state).toSet(),
   focusedNodes: Selectors.getFocusedNodes(state).toSet(),
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
-  getNodeByIndex: index => Selectors.getNodeByIndex(state)(index),
+  getNodeByIndex: index => getNodeByIndex(state, index),
   shownNodes: Selectors.countShownNodes(state),
   trackedIndex: Selectors.getTrackedIndex(state),
 });
