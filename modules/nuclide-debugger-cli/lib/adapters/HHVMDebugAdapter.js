@@ -67,7 +67,20 @@ export default class HHVMDebugAdapter implements DebugAdapter {
       commandLineArgs.set('cwd', nuclideUri.resolve('.'));
     } else {
       if (!commandLineArgs.has('targetUri')) {
-        commandLineArgs.set('targetUri', nuclideUri.resolve('.'));
+        let targetUri: ?string = null;
+
+        try {
+          // $FlowFB
+          const getDefaultTargetURI = require('./fb-HHVMTargetUri')
+            .getDefaultTargetURI;
+          targetUri = getDefaultTargetURI();
+        } catch (_) {}
+
+        if (targetUri == null) {
+          targetUri = nuclideUri.resolve('.');
+        }
+
+        commandLineArgs.set('targetUri', targetUri);
       }
     }
 
