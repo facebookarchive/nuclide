@@ -677,18 +677,6 @@ export class FileTreeNode {
     return depth;
   }
 
-  calculateVisualIndex(): number {
-    let index = this.shouldBeShown ? 1 : 0;
-    let prev = this.findPrevShownSibling();
-    while (prev != null) {
-      index += prev.shownChildrenCount;
-      prev = prev.findPrevShownSibling();
-    }
-    return (
-      index + (this.parent == null ? 0 : this.parent.calculateVisualIndex())
-    );
-  }
-
   _propsAreTheSame(props: ImmutableNodeSettableFields): boolean {
     if (
       props.isDragHovered !== undefined &&

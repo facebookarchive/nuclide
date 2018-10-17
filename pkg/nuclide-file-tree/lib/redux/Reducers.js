@@ -1122,7 +1122,7 @@ function rangeSelectToNode(
   if (nextRangeNode == null) {
     return nextState;
   }
-  const nextRangeIndex = nextRangeNode.calculateVisualIndex();
+  const nextRangeIndex = Selectors.getVisualIndex(state)(nextRangeNode);
   if (nextRangeIndex === rangeIndex) {
     return nextState;
   }
@@ -1252,8 +1252,8 @@ function refreshSelectionRange(state: AppState): RefreshSelectionRangeResult {
   if (anchorNode == null || rangeNode == null) {
     return invalidate();
   }
-  const anchorIndex = anchorNode.calculateVisualIndex();
-  const rangeIndex = rangeNode.calculateVisualIndex();
+  const anchorIndex = Selectors.getVisualIndex(state)(anchorNode);
+  const rangeIndex = Selectors.getVisualIndex(state)(rangeNode);
   const direction =
     rangeIndex > anchorIndex
       ? 'down'

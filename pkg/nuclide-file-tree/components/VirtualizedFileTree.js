@@ -42,7 +42,8 @@ type Props = {|
   height: number,
   width: number,
   roots: Roots,
-  trackedNode: ?FileTreeNode,
+  trackedIndex: ?number,
+  shownNodes: number,
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   isEditingWorkingSet: boolean,
@@ -96,7 +97,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
     this._remeasureHeights();
-    const shownNodes = this._getShownNodes();
+    const {shownNodes} = this.props;
     if (shownNodes !== this._prevShownNodes) {
       this._prevShownNodes = shownNodes;
       // Some folder was expanded/collaplsed or roots were modified.
@@ -161,13 +162,6 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     }
   }
 
-  // TODO: Memoize
-  _getShownNodes = () => countShownNodes(this.props.roots);
-
-  // TODO: Memoize
-  _getTrackedIndex = () =>
-    findIndexOfTheTrackedNode(this.props.trackedNode, this._getShownNodes());
-
   render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
@@ -176,7 +170,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
       'nuclide-file-tree-editing-working-set': this.props.isEditingWorkingSet,
     };
 
-    const scrollToIndex = this._getTrackedIndex() ?? -1;
+    const scrollToIndex = this.props.trackedIndex ?? -1;
     // If we're moving to an offscreen index, let's center it. Otherwise, we'll maintain the current
     // scroll position. In practice, this means centering only when the user used "Reveal in File
     // Tree" to show an offscreen file.
@@ -200,7 +194,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
           height={this.props.height}
           width={this.props.width}
           ref={this._setListRef}
-          rowCount={this._getShownNodes() + 1}
+          rowCount={this.props.shownNodes + 1}
           rowRenderer={this._rowRenderer}
           rowHeight={this._rowHeight}
           scrollToIndex={scrollToIndex}
@@ -324,7 +318,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }): ?React$Node => {
     const {index, key, style} = args;
 
-    if (index === this._getShownNodes()) {
+    if (index === this.props.shownNodes) {
       // The footer
       return (
         <div key={key} style={style}>
@@ -362,7 +356,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     const {startIndex, stopIndex} = args;
     this._indexOfFirstRowInView = startIndex;
     this._indexOfLastRowInView = stopIndex;
-    const trackedIndex = this._getTrackedIndex();
+    const trackedIndex = this.props.trackedIndex;
 
     // Stop tracking the node once we've rendered it. If it was already visible when we set the
     // List's `scrollToIndex`, this will happen on the next render. That's fine though.
@@ -380,7 +374,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   };
 
   _rowTypeMapper(rowIndex: number): RowType {
-    if (rowIndex === this._getShownNodes()) {
+    if (rowIndex === this.props.shownNodes) {
       return 'footer';
     }
 
@@ -393,36 +387,14 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }
 }
 
-function findIndexOfTheTrackedNode(
-  trackedNode: ?FileTreeNode,
-  shownNodes: number,
-): ?number {
-  if (trackedNode == null) {
-    return null;
-  }
-
-  const inTreeTrackedNode = trackedNode.calculateVisualIndex() - 1;
-  if (inTreeTrackedNode === shownNodes - 1) {
-    // The last node in tree is tracked. Let's show the footer instead
-    return inTreeTrackedNode + 1;
-  }
-
-  return inTreeTrackedNode;
-}
-
-function countShownNodes(
-  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
-): number {
-  return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
-}
-
-const mapStateToProps = (state: AppState): $Shape<Props> => ({
+const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   roots: Selectors.getRoots(state),
-  trackedNode: Selectors.getTrackedNode(state),
   selectedNodes: Selectors.getSelectedNodes(state).toSet(),
   focusedNodes: Selectors.getFocusedNodes(state).toSet(),
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
   getNodeByIndex: index => Selectors.getNodeByIndex(state)(index),
+  shownNodes: Selectors.countShownNodes(state),
+  trackedIndex: Selectors.getTrackedIndex(state),
 });
 
 const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({

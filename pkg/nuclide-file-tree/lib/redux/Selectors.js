@@ -156,6 +156,48 @@ export const getTrackedNode = (state: AppState): ?FileTreeNode => {
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
 };
 
+export const countShownNodes = createSelector([getRoots], roots => {
+  return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
+});
+
+// FIXME: This is under-memoized. We need to use createSelector and only change when the deps do.
+export const getVisualIndex = (
+  state: AppState,
+): ((node: FileTreeNode) => number) => {
+  return (node: FileTreeNode) => {
+    let index = node.shouldBeShown ? 1 : 0;
+    let prev = node.findPrevShownSibling();
+    while (prev != null) {
+      index += prev.shownChildrenCount;
+      prev = prev.findPrevShownSibling();
+    }
+    return (
+      index + (node.parent == null ? 0 : getVisualIndex(state)(node.parent))
+    );
+  };
+};
+
+const getVisualIndexOfTrackedNode = createSelector(
+  [getTrackedNode, getVisualIndex],
+  (trackedNode, getVisualIndex_) =>
+    trackedNode == null ? null : getVisualIndex_(trackedNode),
+);
+
+export const getTrackedIndex = createSelector(
+  [getVisualIndexOfTrackedNode, countShownNodes],
+  (visualIndexOfTrackedNode: ?number, shownNodes: number) => {
+    if (visualIndexOfTrackedNode == null) {
+      return null;
+    }
+    const inTreeTrackedNode = visualIndexOfTrackedNode - 1;
+    if (inTreeTrackedNode === shownNodes - 1) {
+      // The last node in tree is tracked. Let's show the footer instead
+      return inTreeTrackedNode + 1;
+    }
+    return inTreeTrackedNode;
+  },
+);
+
 export const getRootKeys = createSelector(
   [getRoots],
   (roots): Array<NuclideUri> =>
