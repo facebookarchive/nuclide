@@ -122,11 +122,6 @@ type DebugState = {
   shouldBeSoftened: boolean,
   isIgnored: boolean,
   checkedStatus: NodeCheckedStatus,
-  containsDragHover: boolean,
-  containsFilterMatches: boolean,
-  shownChildrenCount: number,
-  containsHidden: boolean,
-  childrenAreLoading: boolean,
   children: Array<DebugState>,
 };
 
@@ -215,13 +210,6 @@ export class FileTreeNode {
   isIgnored: boolean;
   checkedStatus: NodeCheckedStatus;
 
-  // Derived from children
-  containsDragHover: boolean;
-  containsFilterMatches: boolean;
-  shownChildrenCount: number;
-  containsHidden: boolean;
-  childrenAreLoading: boolean;
-
   /**
    * The children property is an OrderedMap instance keyed by child's name property.
    * This convenience function would create such OrderedMap instance from a plain JS Array
@@ -258,15 +246,8 @@ export class FileTreeNode {
   /**
    * Sets the links from the children to this instance (their parent) and the links between the
    * siblings.
-   *   Additionally calculates the properties derived from children and assigns them to this instance
    */
   _handleChildren(): void {
-    let containsDragHover = this.isDragHovered;
-    let containsFilterMatches = this.matchesFilter;
-    let containsHidden = !this.shouldBeShown;
-    let childrenAreLoading = this.childrenAreLoading || this.isLoading;
-    let childCountIfNotPendingLoad = 0;
-
     let prevChild = null;
     this.children.forEach(c => {
       c.parent = this;
@@ -276,42 +257,10 @@ export class FileTreeNode {
         prevChild.nextSibling = c;
       }
       prevChild = c;
-
-      if (c.containsFilterMatches) {
-        containsFilterMatches = true;
-      }
-
-      if (!containsDragHover && c.containsDragHover) {
-        containsDragHover = true;
-      }
-
-      if (this.shouldBeShown && this.isExpanded) {
-        childCountIfNotPendingLoad += c.shownChildrenCount;
-      }
-
-      if (!containsHidden && c.containsHidden) {
-        containsHidden = true;
-      }
-
-      if (!childrenAreLoading && c.childrenAreLoading) {
-        childrenAreLoading = true;
-      }
     });
     if (prevChild != null) {
       prevChild.nextSibling = null;
     }
-
-    this.containsDragHover = containsDragHover;
-    this.containsFilterMatches = containsFilterMatches;
-    this.containsHidden = containsHidden;
-    this.childrenAreLoading = childrenAreLoading;
-
-    this.isPendingLoad = this.isPendingLoad && childrenAreLoading;
-    let shownChildrenCount = this.shouldBeShown ? 1 : 0;
-    if (!this.isPendingLoad) {
-      shownChildrenCount += childCountIfNotPendingLoad;
-    }
-    this.shownChildrenCount = shownChildrenCount;
   }
 
   /**
@@ -375,14 +324,20 @@ export class FileTreeNode {
       options.matchesFilter !== undefined
         ? options.matchesFilter
         : DEFAULT_OPTIONS.matchesFilter;
-    this.isPendingLoad =
-      options.isPendingLoad !== undefined
-        ? options.isPendingLoad
-        : DEFAULT_OPTIONS.isPendingLoad;
     this.generatedStatus =
       options.generatedStatus !== undefined
         ? options.generatedStatus
         : DEFAULT_OPTIONS.generatedStatus;
+
+    // `isPendingLoad` is a special case in that it's sticky. Once a node's not pending load, it can
+    // never be pending load again. When you move from loading -> not loading, a load is no longer
+    // pending.
+    if (!this.isLoading) {
+      this.isPendingLoad = false;
+    } else if (this.isPendingLoad !== false) {
+      this.isPendingLoad =
+        options.isPendingLoad ?? DEFAULT_OPTIONS.isPendingLoad;
+    }
   }
 
   /**
@@ -707,11 +662,6 @@ export class FileTreeNode {
       shouldBeSoftened: this.shouldBeSoftened,
       isIgnored: this.isIgnored,
       checkedStatus: this.checkedStatus,
-      containsDragHover: this.containsDragHover,
-      containsFilterMatches: this.containsFilterMatches,
-      shownChildrenCount: this.shownChildrenCount,
-      containsHidden: this.containsHidden,
-      childrenAreLoading: this.childrenAreLoading,
 
       children: Array.from(this.children.values()).map(child =>
         child.collectDebugState(),

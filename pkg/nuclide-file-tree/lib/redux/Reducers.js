@@ -342,9 +342,10 @@ function clearSelectionRange(state: AppState): AppState {
 }
 
 function clearDragHover(state: AppState): AppState {
+  const getNodeContainsDragHover = Selectors.getNodeContainsDragHover(state);
   return updateRoots(state, root => {
     return root.setRecursive(
-      node => (node.containsDragHover ? null : node),
+      node => (getNodeContainsDragHover(node) ? null : node),
       node => node.setIsDragHovered(false),
     );
   });
@@ -585,6 +586,7 @@ function updateConf(
   state: AppState,
   mutator: (conf: StoreConfigData) => void,
 ): AppState {
+  const getNodeContainsHidden = Selectors.getNodeContainsHidden(state);
   const nextConf = {...state._conf};
   mutator(nextConf);
   const nodesToUnselect = new Set();
@@ -593,7 +595,7 @@ function updateConf(
     // instead of `setRecursive()`
     return root.updateConf(nextConf).setRecursive(
       // Remove selection from hidden nodes under this root
-      node => (node.containsHidden ? null : node),
+      node => (getNodeContainsHidden(node) ? null : node),
       node => {
         if (node.shouldBeShown) {
           return node;
@@ -1113,6 +1115,7 @@ function rangeSelectToNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): AppState {
+  const getShownChildrenCount = Selectors.getShownChildrenCount(state);
   const {updatedState, data} = refreshSelectionRange(state);
   let nextState = updatedState;
   if (data == null) {
@@ -1149,16 +1152,16 @@ function rangeSelectToNode(
           if (!node.shouldBeShown) {
             return node;
           }
-          if (node.shownChildrenCount === 1) {
+          if (getShownChildrenCount(node) === 1) {
             beginIndex++;
             return node;
           }
-          const endIndex = beginIndex + node.shownChildrenCount - 1;
+          const endIndex = beginIndex + getShownChildrenCount(node) - 1;
           if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
             beginIndex++;
             return null;
           }
-          beginIndex += node.shownChildrenCount;
+          beginIndex += getShownChildrenCount(node);
           return node;
         },
         // flip the isSelected flag accordingly, based on previous and current range.
@@ -1166,7 +1169,7 @@ function rangeSelectToNode(
           if (!node.shouldBeShown) {
             return node;
           }
-          const curIndex = beginIndex - node.shownChildrenCount;
+          const curIndex = beginIndex - getShownChildrenCount(node);
           const inOldRange =
             Math.sign(curIndex - anchorIndex) *
               Math.sign(curIndex - rangeIndex) !==
@@ -1527,11 +1530,14 @@ function setTargetNode(
 }
 
 function addFilterLetter(state: AppState, letter: string): AppState {
+  const getNodeContainsFilterMatches = Selectors.getNodeContainsFilterMatches(
+    state,
+  );
   let nextState = {...state};
   nextState._filter = state._filter + letter;
   nextState = updateRoots(nextState, root => {
     return root.setRecursive(
-      node => (node.containsFilterMatches ? null : node),
+      node => (getNodeContainsFilterMatches(node) ? null : node),
       node => {
         return matchesFilter(node.name, nextState._filter)
           ? node.set({

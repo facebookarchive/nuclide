@@ -156,9 +156,98 @@ export const getTrackedNode = (state: AppState): ?FileTreeNode => {
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
 };
 
-export const countShownNodes = createSelector([getRoots], roots => {
-  return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
-});
+// To reduce the number of times we have to iterate over children, we calculate all of these values
+// in a single pass.
+const getChildDerivedValues = createSelector(
+  [(state: AppState) => null],
+  () => {
+    const inner = memoize((node: FileTreeNode) => {
+      let childrenAreLoading = node.isLoading;
+      let containsDragHover = node.isDragHovered;
+      let containsFilterMatches = node.matchesFilter;
+      let containsHidden = !node.shouldBeShown;
+      let potentiallyShownChildrenCount = 0;
+
+      node.children.forEach(child => {
+        const childValues = inner(child);
+
+        if (childValues.childrenAreLoading) {
+          childrenAreLoading = true;
+        }
+
+        if (childValues.containsDragHover) {
+          containsDragHover = true;
+        }
+
+        if (childValues.containsFilterMatches) {
+          containsFilterMatches = true;
+        }
+
+        if (!containsHidden && childValues.containsHidden) {
+          containsHidden = true;
+        }
+
+        if (node.isExpanded) {
+          potentiallyShownChildrenCount += childValues.shownChildrenCount;
+        }
+      });
+
+      let shownChildrenCount;
+      if (!node.shouldBeShown) {
+        shownChildrenCount = 0; // No nodes are shown.
+      } else if (node.isPendingLoad && childrenAreLoading) {
+        shownChildrenCount = 1; // Only this node is shown.
+      } else {
+        shownChildrenCount = potentiallyShownChildrenCount + 1; // This node and its children are shown.
+      }
+
+      return {
+        childrenAreLoading,
+        containsDragHover,
+        containsFilterMatches,
+        containsHidden,
+        shownChildrenCount,
+      };
+    });
+    return inner;
+  },
+);
+
+export const getNodeChildrenAreLoading = createSelector(
+  [getChildDerivedValues],
+  getChildDerivedValues_ => node =>
+    getChildDerivedValues_(node).childrenAreLoading,
+);
+
+export const getNodeContainsDragHover = createSelector(
+  [getChildDerivedValues],
+  getChildDerivedValues_ => node =>
+    getChildDerivedValues_(node).containsDragHover,
+);
+
+export const getNodeContainsFilterMatches = createSelector(
+  [getChildDerivedValues],
+  getChildDerivedValues_ => node =>
+    getChildDerivedValues_(node).containsFilterMatches,
+);
+
+export const getNodeContainsHidden = createSelector(
+  [getChildDerivedValues],
+  getChildDerivedValues_ => node => getChildDerivedValues_(node).containsHidden,
+);
+
+export const getShownChildrenCount = createSelector(
+  [getChildDerivedValues],
+  getChildDerivedValues_ => node =>
+    getChildDerivedValues_(node).shownChildrenCount,
+);
+
+export const countShownNodes = createSelector(
+  [getRoots, getShownChildrenCount],
+  (roots, getShownChildrenCount_) => {
+    return roots.reduce((sum, root) => sum + getShownChildrenCount_(root), 0);
+  },
+);
 
 // FIXME: This is under-memoized. We need to use createSelector and only change when the deps do.
 export const getVisualIndex = (
@@ -168,7 +257,7 @@ export const getVisualIndex = (
     let index = node.shouldBeShown ? 1 : 0;
     let prev = findPrevShownSibling(state)(node);
     while (prev != null) {
-      index += prev.shownChildrenCount;
+      index += getShownChildrenCount(state)(prev);
       prev = findPrevShownSibling(state)(prev);
     }
     return (
@@ -385,8 +474,10 @@ export const isEditedWorkingSetEmpty = createSelector([getRoots], roots =>
   roots.every(root => root.checkedStatus === 'clear'),
 );
 
-export const getFilterFound = createSelector([getRoots], roots =>
-  roots.some(root => root.containsFilterMatches),
+export const getFilterFound = createSelector(
+  [getRoots, getNodeContainsFilterMatches],
+  (roots, getNodeContainsFilterMatches_) =>
+    roots.some(root => getNodeContainsFilterMatches_(root)),
 );
 
 /**
@@ -398,15 +489,15 @@ export const getFilterFound = createSelector([getRoots], roots =>
  * had to traverse. That meant we exceeded the max stack size with enough sibling files.
  */
 const getFindNodeAtOffset = createSelector(
-  [findNextShownSibling],
-  findNextShownSibling_ => {
+  [findNextShownSibling, getShownChildrenCount],
+  (findNextShownSibling_, getShownChildrenCount_) => {
     return function(node_: FileTreeNode, offset_: number): ?FileTreeNode {
       let offset = offset_;
       let node = node_;
 
       while (offset > 0) {
         if (
-          offset < node.shownChildrenCount // `shownChildrenCount` includes the node itself.
+          offset < getShownChildrenCount_(node) // `shownChildrenCount` includes the node itself.
         ) {
           // It's a descendant of this node!
           const firstVisibleChild = node.children.find(c => c.shouldBeShown);
@@ -420,7 +511,7 @@ const getFindNodeAtOffset = createSelector(
           if (nextShownSibling == null) {
             return null;
           }
-          offset -= node.shownChildrenCount;
+          offset -= getShownChildrenCount_(node);
           node = nextShownSibling;
         }
       }
@@ -630,7 +721,7 @@ export function findNext(state: AppState) {
       return null;
     }
 
-    if (node.shownChildrenCount > 1) {
+    if (getShownChildrenCount(state)(node) > 1) {
       return node.children.find(c => c.shouldBeShown);
     }
 
