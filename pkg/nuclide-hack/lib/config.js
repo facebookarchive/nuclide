@@ -16,7 +16,6 @@ import {getLogger} from 'log4js';
 
 type HackConfig = {
   hhClientPath: string,
-  legacyHackIde: boolean,
   logLevel: LogLevel,
 };
 
@@ -27,7 +26,6 @@ export const SHOW_TYPE_COVERAGE_CONFIG_PATH =
 export function getConfig(): HackConfig {
   return featureConfig.getWithDefaults(HACK_CONFIG_PATH, {
     hhClientPath: '',
-    legacyHackIde: false,
     logLevel: 'INFO',
   });
 }
