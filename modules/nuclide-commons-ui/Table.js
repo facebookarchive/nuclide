@@ -490,9 +490,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       alternateBackground,
       collapsable,
       columns,
+      enableKeyboardNavigation,
+      emptyComponent,
       headerElement,
       headerTitle,
       maxBodyHeight,
+      onBodyBlur,
+      onBodyFocus,
       rows,
       selectable,
       selectedIndex,
@@ -502,81 +506,40 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     } = this.props;
 
     const columnWidths = this._calculateColumnWidths();
-
-    let body;
-    if (rows.length === 0) {
-      const EmptyComponent = this.props.emptyComponent || DefaultEmptyComponent;
-      body = <EmptyComponent />;
-    } else {
-      body = (
+    return (
+      <>
+        <TableHeader
+          columns={columns}
+          columnWidths={columnWidths}
+          headerElement={headerElement}
+          headerTitle={headerTitle}
+          onSortByColumn={this._handleSortByColumn}
+          resizeStarts={this._resizeStarts}
+          sortable={sortable}
+          sortedColumn={sortedColumn}
+          sortDescending={sortDescending}
+        />
         <TableBody
+          emptyComponent={emptyComponent}
+          enableKeyboardNavigation={enableKeyboardNavigation}
           rows={rows}
           columns={columns}
           columnWidths={columnWidths}
           selectable={selectable}
           usingKeyboard={this.state.usingKeyboard}
           selectRow={this._selectRow}
+          onBodyBlur={onBodyBlur}
+          onBodyFocus={onBodyFocus}
           alternateBackground={alternateBackground}
           collapsable={collapsable}
           selectedIndex={selectedIndex}
-        />
-      );
-    }
-
-    const scrollableBodyStyle = {};
-    if (maxBodyHeight != null) {
-      scrollableBodyStyle.maxHeight = maxBodyHeight;
-      scrollableBodyStyle.overflowY = 'auto';
-    }
-    const bodyClassNames = classnames(
-      'nuclide-ui-table',
-      'nuclide-ui-table-body',
-      {
-        // Before this class is applied only when `!this.props.selectable`
-        // because (for some reason) `onDoubleClick` isn't being fired when
-        // the element's "user-select" style is "none". Now re-enabling it to
-        // support copy text selection
-        'nuclide-ui-table-body-selectable-text': true,
-        // Using native-key-bindings prevents the up and down arrows from being captured.
-        'native-key-bindings': !this.props.enableKeyboardNavigation,
-      },
-    );
-    return [
-      <TableHeader
-        columns={columns}
-        columnWidths={columnWidths}
-        headerElement={headerElement}
-        headerTitle={headerTitle}
-        key="header"
-        onSortByColumn={this._handleSortByColumn}
-        resizeStarts={this._resizeStarts}
-        sortable={sortable}
-        sortedColumn={sortedColumn}
-        sortDescending={sortDescending}
-      />,
-      <div
-        key="body"
-        style={scrollableBodyStyle}
-        onFocus={event => {
-          if (this.props.onBodyFocus != null) {
-            this.props.onBodyFocus(event);
-          }
-        }}
-        onBlur={event => {
-          if (this.props.onBodyBlur != null) {
-            this.props.onBodyBlur(event);
-          }
-        }}>
-        <div
-          ref={el => {
+          maxBodyHeight={maxBodyHeight}
+          tableRef={el => {
             this._tableBody = el;
           }}
-          className={bodyClassNames}
-          tabIndex="-1">
-          {body}
-        </div>
-      </div>,
-    ];
+        />
+      </>
+    );
   }
 }
 
@@ -585,31 +548,31 @@ function EmptyCellContent(): React.Node {
 }
 
 type TableHeaderProps<T> = {|
+  columns: Array<Column<T>>,
+  columnWidths: PercentageWidthMap<T>,
   headerElement: ?React.Node,
   headerTitle: ?string,
-  columnWidths: PercentageWidthMap<T>,
-  columns: Array<Column<T>>,
-  sortable: ?boolean,
+  onSortByColumn: (sortedBy: $Keys<T>) => void,
   resizeStarts: Subject<{
     event: SyntheticMouseEvent<*>,
     resizerLocation: number,
   }>,
-  onSortByColumn: (sortedBy: $Keys<T>) => void,
-  sortedColumn: ?$Keys<T>,
+  sortable: ?boolean,
   sortDescending: ?boolean,
+  sortedColumn: ?$Keys<T>,
 |};
 class TableHeader<T: Object> extends React.PureComponent<TableHeaderProps<T>> {
   render(): React.Node {
     const {
-      headerElement,
-      headerTitle,
       columns,
       columnWidths,
-      sortable,
-      resizeStarts,
-      sortedColumn,
-      sortDescending,
+      headerElement,
+      headerTitle,
       onSortByColumn,
+      resizeStarts,
+      sortable,
+      sortDescending,
+      sortedColumn,
     } = this.props;
 
     let inner;
@@ -685,114 +648,169 @@ class TableHeader<T: Object> extends React.PureComponent<TableHeaderProps<T>> {
 }
 
 type TableBodyProps<T> = {|
-  columns: Array<Column<T>>,
-  rows: Array<Row<T>>,
-  columnWidths: PercentageWidthMap<T>,
-  selectable: ?(boolean | ((row: T) => boolean)),
-  usingKeyboard: boolean,
   alternateBackground: ?number,
   collapsable: ?boolean,
+  columns: Array<Column<T>>,
+  columnWidths: PercentageWidthMap<T>,
+  emptyComponent: ?React.ComponentType<any>,
+  enableKeyboardNavigation: ?boolean,
+  maxBodyHeight: ?string,
+  onBodyBlur: ?(event: SyntheticEvent<*>) => mixed,
+  onBodyFocus: ?(event: SyntheticEvent<*>) => mixed,
+  rows: Array<Row<T>>,
+  selectable: ?(boolean | ((row: T) => boolean)),
   selectedIndex: ?number,
   selectRow: (options: {|
     index: number,
     event: SelectionEvent,
     confirm?: boolean,
   |}) => void,
+  tableRef: React.Ref<'div'>,
+  usingKeyboard: boolean,
 |};
 class TableBody<T: Object> extends React.PureComponent<TableBodyProps<T>> {
   render(): React.Node {
     const {
-      rows,
-      columns,
-      columnWidths,
-      selectable,
-      usingKeyboard,
       alternateBackground,
       collapsable,
+      columns,
+      columnWidths,
+      emptyComponent,
+      enableKeyboardNavigation,
+      maxBodyHeight,
+      rows,
+      selectable,
       selectedIndex,
       selectRow,
+      tableRef,
+      usingKeyboard,
     } = this.props;
 
-    return rows.map((row, i) => {
-      const {className: rowClassName, data, rowAttributes} = row;
-      const renderedRow = columns.map((column, j) => {
-        const {
-          key,
-          cellClassName,
-          component: Component,
-          shouldRightAlign,
-        } = column;
-        let datum = data[key];
-        if (Component != null) {
-          datum = <Component data={datum} />;
-        } else if (datum == null) {
-          datum = <EmptyCellContent />;
-        }
-        const cellStyle = {};
-        const width = columnWidths[key];
-        if (width != null) {
-          cellStyle.width = `${width * 100}%`;
-        }
+    let body;
+    if (rows.length === 0) {
+      const EmptyComponent = emptyComponent ?? DefaultEmptyComponent;
+      body = <EmptyComponent />;
+    } else {
+      body = rows.map((row, i) => {
+        const {className: rowClassName, data, rowAttributes} = row;
+        const renderedRow = columns.map((column, j) => {
+          const {
+            key,
+            cellClassName,
+            component: Component,
+            shouldRightAlign,
+          } = column;
+          let datum = data[key];
+          if (Component != null) {
+            datum = <Component data={datum} />;
+          } else if (datum == null) {
+            datum = <EmptyCellContent />;
+          }
+          const cellStyle = {};
+          const width = columnWidths[key];
+          if (width != null) {
+            cellStyle.width = `${width * 100}%`;
+          }
+          return (
+            <div
+              className={classnames(cellClassName, {
+                'nuclide-ui-table-body-cell': true,
+                'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+              })}
+              key={j}
+              style={cellStyle}
+              title={typeof datum !== 'object' ? String(datum) : null}
+              {...rowAttributes}>
+              {datum}
+            </div>
+          );
+        });
+
+        const selectableRow =
+          typeof selectable === 'function' ? selectable(row.data) : selectable;
+        const rowProps = selectableRow
+          ? {
+              onClick: event => {
+                switch (event.detail) {
+                  // This (`event.detail === 0`) shouldn't happen normally but does when the click is
+                  // triggered by the integration test.
+                  case 0:
+                  case 1:
+                    selectRow({index: i, event});
+                    return;
+                  case 2:
+                    // We need to check `event.detail` (instead of using `onDoubleClick`) because
+                    // (for some reason) `onDoubleClick` is only firing sporadically.
+                    // TODO: Figure out why. Repros in the diagnostic table with React 16.0.0 and
+                    // Atom 1.22.0-beta1 (Chrome 56.0.2924.87). This may be because we're swapping out
+                    // the component on the click so a different one is receiving the second?
+                    selectRow({index: i, event, confirm: true});
+                    return;
+                }
+              },
+            }
+          : {};
+        const isSelectedRow = selectedIndex != null && i === selectedIndex;
         return (
           <div
-            className={classnames(cellClassName, {
-              'nuclide-ui-table-body-cell': true,
-              'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+            className={classnames(rowClassName, {
+              'nuclide-ui-table-row': true,
+              'nuclide-ui-table-row-selectable': selectableRow,
+              'nuclide-ui-table-row-disabled':
+                typeof selectable === 'function' && !selectableRow,
+              'nuclide-ui-table-row-using-keyboard-nav': usingKeyboard,
+              'nuclide-ui-table-row-selected': isSelectedRow,
+              'nuclide-ui-table-row-alternate':
+                alternateBackground !== false && i % 2 === 1,
+              'nuclide-ui-table-collapsed-row': collapsable && !isSelectedRow,
             })}
-            key={j}
-            style={cellStyle}
-            title={typeof datum !== 'object' ? String(datum) : null}
-            {...rowAttributes}>
-            {datum}
+            data-row-index={i}
+            key={i}
+            {...rowProps}>
+            {renderedRow}
           </div>
         );
       });
+    }
 
-      const selectableRow =
-        typeof selectable === 'function' ? selectable(row.data) : selectable;
-      const rowProps = selectableRow
-        ? {
-            onClick: event => {
-              switch (event.detail) {
-                // This (`event.detail === 0`) shouldn't happen normally but does when the click is
-                // triggered by the integration test.
-                case 0:
-                case 1:
-                  selectRow({index: i, event});
-                  return;
-                case 2:
-                  // We need to check `event.detail` (instead of using `onDoubleClick`) because
-                  // (for some reason) `onDoubleClick` is only firing sporadically.
-                  // TODO: Figure out why. Repros in the diagnostic table with React 16.0.0 and
-                  // Atom 1.22.0-beta1 (Chrome 56.0.2924.87). This may be because we're swapping out
-                  // the component on the click so a different one is receiving the second?
-                  selectRow({index: i, event, confirm: true});
-                  return;
-              }
-            },
+    const bodyClassNames = classnames(
+      'nuclide-ui-table',
+      'nuclide-ui-table-body',
+      {
+        // Before this class is applied only when `!this.props.selectable`
+        // because (for some reason) `onDoubleClick` isn't being fired when
+        // the element's "user-select" style is "none". Now re-enabling it to
+        // support copy text selection
+        'nuclide-ui-table-body-selectable-text': true,
+        // Using native-key-bindings prevents the up and down arrows from being captured.
+        'native-key-bindings': !enableKeyboardNavigation,
+      },
+    );
+
+    const scrollableBodyStyle = {};
+    if (maxBodyHeight != null) {
+      scrollableBodyStyle.maxHeight = maxBodyHeight;
+      scrollableBodyStyle.overflowY = 'auto';
+    }
+    return (
+      <div
+        style={scrollableBodyStyle}
+        onFocus={event => {
+          if (this.props.onBodyFocus != null) {
+            this.props.onBodyFocus(event);
           }
-        : {};
-      const isSelectedRow = selectedIndex != null && i === selectedIndex;
-      return (
-        <div
-          className={classnames(rowClassName, {
-            'nuclide-ui-table-row': true,
-            'nuclide-ui-table-row-selectable': selectableRow,
-            'nuclide-ui-table-row-disabled':
-              typeof selectable === 'function' && !selectableRow,
-            'nuclide-ui-table-row-using-keyboard-nav': usingKeyboard,
-            'nuclide-ui-table-row-selected': isSelectedRow,
-            'nuclide-ui-table-row-alternate':
-              alternateBackground !== false && i % 2 === 1,
-            'nuclide-ui-table-collapsed-row': collapsable && !isSelectedRow,
-          })}
-          data-row-index={i}
-          key={i}
-          {...rowProps}>
-          {renderedRow}
+        }}
+        onBlur={event => {
+          if (this.props.onBodyBlur != null) {
+            this.props.onBodyBlur(event);
+          }
+        }}>
+        {/* eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs */}
+        <div ref={tableRef} className={bodyClassNames} tabIndex="-1">
+          {body}
         </div>
-      );
-    });
+      </div>
+    );
   }
 }
 
