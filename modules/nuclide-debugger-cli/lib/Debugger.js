@@ -1031,7 +1031,11 @@ export default class Debugger implements DebuggerInterface {
     session.observeCustomEvents().subscribe(e => {
       if (e.event === 'readyForEvaluations') {
         this._onReadyForEvaluations();
-      } else if (e.event === 'hhvmConnectionRefused') {
+      } else if (
+        e.event === 'hhvmConnectionRefused' ||
+        e.event === 'hhvmConnectionDied'
+      ) {
+        this._console.outputLine('Connection to debug server lost.');
         this._console.close();
       }
     });
