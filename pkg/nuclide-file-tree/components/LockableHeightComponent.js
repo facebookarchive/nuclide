@@ -22,12 +22,9 @@ type Props = {
 export class LockableHeight extends React.Component<Props, State> {
   _root: HTMLElement;
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      lockedHeight: null,
-    };
-  }
+  state = {
+    lockedHeight: null,
+  };
 
   componentDidMount() {
     if (this.props.isLocked) {
@@ -37,14 +34,10 @@ export class LockableHeight extends React.Component<Props, State> {
 
   UNSAFE_componentWillReceiveProps(nextProps: Props) {
     if (this.props.isLocked !== nextProps.isLocked) {
-      const lockedHeight = nextProps.isLocked ? this._currentHeight() : null;
-      this.setState({lockedHeight});
+      this.setState({
+        lockedHeight: nextProps.isLocked ? this._root.clientHeight : null,
+      });
     }
-  }
-
-  _currentHeight() {
-    const computedStyle = window.getComputedStyle(this._root);
-    return computedStyle.height;
   }
 
   render(): React.Node {
