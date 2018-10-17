@@ -272,7 +272,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
   shouldComponentUpdate(nextProps: Props<T>, nextState: State<T>): boolean {
     // If the state changed, we need to re-render.
-    if (!shallowEqual(nextState, this.state)) {
+    if (!shallowEqual(nextState, this.state, compareState)) {
       return true;
     }
 
@@ -915,6 +915,19 @@ function compareCheapProps(a: mixed, b: mixed, key: ?string): boolean | void {
     case 'rows':
     case 'columns':
       // We'll check these later iff we need to since they're more expensive.
+      return true;
+    default:
+      return a === b;
+  }
+}
+
+function compareState(a: mixed, b: mixed, key: ?string): boolean | void {
+  switch (key) {
+    case undefined:
+      return undefined;
+    case 'lastColumns':
+      // `lastColumns` isn't used to render anything and only exists for
+      // `getDerivedStateFromProps`. Don't count this toward rerendering.
       return true;
     default:
       return a === b;
