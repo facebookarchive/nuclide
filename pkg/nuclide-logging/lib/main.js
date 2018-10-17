@@ -17,14 +17,16 @@
  * to `global` object.
  */
 
+import type {SessionInfo} from 'nuclide-commons/analytics';
+
 import log4js from 'log4js';
 
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import * as rawAnalyticsService from 'nuclide-analytics/lib/track';
-import {observeApplicationSession} from '../../fb-appsession-observer';
 
 import once from 'nuclide-commons/once';
 import {getDefaultConfig, getPathToLogDir, getPathToLogFile} from './config';
+import {Observable} from 'rxjs';
 
 export {getDefaultConfig, getPathToLogDir, getPathToLogFile};
 
@@ -46,5 +48,12 @@ export const initializeLogging = once(() => {
 });
 
 export function setupLoggingService(): void {
-  setRawAnalyticsService(rawAnalyticsService, observeApplicationSession());
+  let obs: Observable<SessionInfo> = Observable.from([]);
+
+  try {
+    // $FlowFB
+    obs = require('../../fb-appsession-observer').observeApplicationSession();
+  } catch (_) {}
+
+  setRawAnalyticsService(rawAnalyticsService, obs);
 }
