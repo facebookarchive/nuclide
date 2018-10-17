@@ -12,13 +12,14 @@
 import * as React from 'react';
 import nullthrows from 'nullthrows';
 
-type State = {
-  lockedHeight: ?number,
-};
-type Props = {
+type Props = {|
   isLocked: boolean,
   children: any,
-};
+|};
+
+type State = {|
+  lockedHeight: ?number,
+|};
 
 export class LockableHeight extends React.Component<Props, State> {
   _root: ReactHTMLElementRef<HTMLDivElement> = React.createRef();
