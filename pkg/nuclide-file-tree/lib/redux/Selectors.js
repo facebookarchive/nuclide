@@ -166,10 +166,10 @@ export const getVisualIndex = (
 ): ((node: FileTreeNode) => number) => {
   return (node: FileTreeNode) => {
     let index = node.shouldBeShown ? 1 : 0;
-    let prev = node.findPrevShownSibling();
+    let prev = findPrevShownSibling(state)(node);
     while (prev != null) {
       index += prev.shownChildrenCount;
-      prev = prev.findPrevShownSibling();
+      prev = findPrevShownSibling(state)(prev);
     }
     return (
       index + (node.parent == null ? 0 : getVisualIndex(state)(node.parent))
@@ -305,14 +305,14 @@ export const getSingleTargetNode = createSelector(
  * Returns the current node if it is shown.
  * Otherwise, returns a nearby node that is shown.
  */
-function findShownNode(node: FileTreeNode): ?FileTreeNode {
+function findShownNode(state: AppState, node: FileTreeNode): ?FileTreeNode {
   if (node.shouldBeShown) {
     return node;
   }
 
   let shown = node;
   while (shown != null) {
-    const next = shown.findNextShownSibling();
+    const next = findNextShownSibling(state)(shown);
     if (next != null) {
       return next;
     }
@@ -321,7 +321,7 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
 
   shown = node;
   while (shown != null) {
-    const next = shown.findPrevShownSibling();
+    const next = findPrevShownSibling(state)(shown);
     if (next != null) {
       return next;
     }
@@ -338,7 +338,7 @@ export const getNearbySelectedNode = (
   state: AppState,
   node: FileTreeNode,
 ): ?FileTreeNode => {
-  const shown = findShownNode(node);
+  const shown = findShownNode(state, node);
   if (shown == null) {
     return shown;
   }
@@ -347,14 +347,14 @@ export const getNearbySelectedNode = (
   }
   let selected = shown;
   while (selected != null && !getNodeIsSelected(state, selected)) {
-    selected = selected.findNext();
+    selected = findNext(state)(selected);
   }
   if (selected != null) {
     return selected;
   }
   selected = shown;
   while (selected != null && !getNodeIsSelected(state, selected)) {
-    selected = selected.findPrevious();
+    selected = findPrevious(state)(selected);
   }
   return selected;
 };
@@ -389,12 +389,56 @@ export const getFilterFound = createSelector([getRoots], roots =>
   roots.some(root => root.containsFilterMatches),
 );
 
-export const getNodeByIndex = createSelector(getRoots, roots => {
-  return memoize(index => {
-    const firstRoot = roots.find(r => r.shouldBeShown);
-    return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
-  });
-});
+/**
+ * Find the node that occurs `offset` after the provided one in the flattened list. `offset` must
+ * be a non-negative integer.
+ *
+ * This function is intentionally implemented with a loop instead of recursion. Previously it was
+ * implemented using recursion, which caused the stack size to grow with the number of siblings we
+ * had to traverse. That meant we exceeded the max stack size with enough sibling files.
+ */
+const getFindNodeAtOffset = createSelector(
+  [findNextShownSibling],
+  findNextShownSibling_ => {
+    return function(node_: FileTreeNode, offset_: number): ?FileTreeNode {
+      let offset = offset_;
+      let node = node_;
+
+      while (offset > 0) {
+        if (
+          offset < node.shownChildrenCount // `shownChildrenCount` includes the node itself.
+        ) {
+          // It's a descendant of this node!
+          const firstVisibleChild = node.children.find(c => c.shouldBeShown);
+          if (firstVisibleChild == null) {
+            return null;
+          }
+          offset--;
+          node = firstVisibleChild;
+        } else {
+          const nextShownSibling = findNextShownSibling_(node);
+          if (nextShownSibling == null) {
+            return null;
+          }
+          offset -= node.shownChildrenCount;
+          node = nextShownSibling;
+        }
+      }
+
+      return node;
+    };
+  },
+);
+
+export const getNodeByIndex = createSelector(
+  [getRoots, getFindNodeAtOffset],
+  (roots, findNodeAtOffset) => {
+    return memoize(index => {
+      const firstRoot = roots.find(r => r.shouldBeShown);
+      return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
+    });
+  },
+);
 
 export const getLoading = (state: AppState, nodeKey: NuclideUri) =>
   state._isLoadingMap.get(nodeKey);
@@ -477,46 +521,6 @@ export const getFileTreeContextMenuNode = createSelector(
     };
   },
 );
-
-/**
- * Find the node that occurs `offset` after the provided one in the flattened list. `offset` must
- * be a non-negative integer.
- *
- * This function is intentionally implemented with a loop instead of recursion. Previously it was
- * implemented using recursion, which caused the stack size to grow with the number of siblings we
- * had to traverse. That meant we exceeded the max stack size with enough sibling files.
- *
- * TODO: Increasingly we are going to want to move state which affects a node's
- * visibility into the state, so eventually this function will need access to
- * state, which is why we've moved it into the Selectors file.
- */
-function findNodeAtOffset(node_: FileTreeNode, offset_: number): ?FileTreeNode {
-  let offset = offset_;
-  let node = node_;
-
-  while (offset > 0) {
-    if (
-      offset < node.shownChildrenCount // `shownChildrenCount` includes the node itself.
-    ) {
-      // It's a descendant of this node!
-      const firstVisibleChild = node.children.find(c => c.shouldBeShown);
-      if (firstVisibleChild == null) {
-        return null;
-      }
-      offset--;
-      node = firstVisibleChild;
-    } else {
-      const nextShownSibling = node.findNextShownSibling();
-      if (nextShownSibling == null) {
-        return null;
-      }
-      offset -= node.shownChildrenCount;
-      node = nextShownSibling;
-    }
-  }
-
-  return node;
-}
 
 //
 //
@@ -605,3 +609,114 @@ export const collectDebugState = (state: AppState) => {
     selectionManager: collectSelectionDebugState(state),
   };
 };
+
+//
+//
+// Traversal utils
+//
+//
+
+/**
+ * Finds the next node in the tree in the natural order - from top to to bottom as is displayed
+ * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
+ */
+export function findNext(state: AppState) {
+  return (node: FileTreeNode): ?FileTreeNode => {
+    if (!node.shouldBeShown) {
+      if (node.parent != null) {
+        return findNext(state)(node.parent);
+      }
+
+      return null;
+    }
+
+    if (node.shownChildrenCount > 1) {
+      return node.children.find(c => c.shouldBeShown);
+    }
+
+    // Not really an alias, but an iterating reference
+    let it = node;
+    while (it != null) {
+      const nextShownSibling = findNextShownSibling(state)(it);
+      if (nextShownSibling != null) {
+        return nextShownSibling;
+      }
+
+      it = it.parent;
+    }
+
+    return null;
+  };
+}
+
+export function findNextShownSibling(state: AppState) {
+  return (node: FileTreeNode): ?FileTreeNode => {
+    let it = node.nextSibling;
+    while (it != null && !it.shouldBeShown) {
+      it = it.nextSibling;
+    }
+
+    return it;
+  };
+}
+
+/**
+ * Finds the previous node in the tree in the natural order - from top to to bottom as is displayed
+ * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
+ */
+export function findPrevious(state: AppState) {
+  return (node: FileTreeNode): ?FileTreeNode => {
+    if (!node.shouldBeShown) {
+      if (node.parent != null) {
+        return findPrevious(state)(node.parent);
+      }
+
+      return null;
+    }
+
+    const prevShownSibling = findPrevShownSibling(state)(node);
+    if (prevShownSibling != null) {
+      return findLastRecursiveChild(state)(prevShownSibling);
+    }
+
+    return node.parent;
+  };
+}
+
+export function findPrevShownSibling(state: AppState) {
+  return (node: FileTreeNode): ?FileTreeNode => {
+    let it = node.prevSibling;
+    while (it != null && !it.shouldBeShown) {
+      it = it.prevSibling;
+    }
+
+    return it;
+  };
+}
+
+/**
+ * Returns the last shown descendant according to the natural tree order as is to be displayed by
+ * the file-tree panel. (Last child of the last child of the last child...)
+ * Or null, if none are found
+ */
+export function findLastRecursiveChild(state: AppState) {
+  return (node: FileTreeNode): ?FileTreeNode => {
+    if (!node.isContainer || !node.isExpanded || node.children.isEmpty()) {
+      return node;
+    }
+
+    let it = node.children.last();
+    while (it != null && !it.shouldBeShown) {
+      it = it.prevSibling;
+    }
+
+    if (it == null) {
+      if (node.shouldBeShown) {
+        return node;
+      }
+      return findPrevious(state)(node);
+    } else {
+      return findLastRecursiveChild(state)(it);
+    }
+  };
+}

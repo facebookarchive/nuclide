@@ -619,8 +619,9 @@ export function expandSelectionEpic(
     invariant(action.type === Actions.EXPAND_SELECTION);
     const {deep} = action;
     const resultActions = [Actions.clearFilter()];
+    const state = store.getState();
 
-    Selectors.getSelectedNodes(store.getState()).forEach(node => {
+    Selectors.getSelectedNodes(state).forEach(node => {
       // Only directories can be expanded. Skip non-directory nodes.
       if (!node.isContainer) {
         return;
@@ -636,7 +637,7 @@ export function expandSelectionEpic(
           // Node is already expanded; move the selection to the first child.
           let firstChild = node.children.first();
           if (firstChild != null && !firstChild.shouldBeShown) {
-            firstChild = firstChild.findNextShownSibling();
+            firstChild = Selectors.findNextShownSibling(state)(firstChild);
           }
 
           if (firstChild != null) {

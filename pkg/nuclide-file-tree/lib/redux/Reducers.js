@@ -512,7 +512,7 @@ function reorderDragInto(state: AppState, targetRootKey: NuclideUri): AppState {
   if (targetIdx <= reorderPreviewStatus.sourceIdx) {
     targetNode = targetRootNode;
   } else {
-    targetNode = targetRootNode.findLastRecursiveChild();
+    targetNode = Selectors.findLastRecursiveChild(state)(targetRootNode);
   }
 
   return {
@@ -1058,14 +1058,16 @@ function moveSelectionUp(state: AppState): AppState {
 
   let nodeToSelect;
   if (selectedNodes.isEmpty()) {
-    nodeToSelect = nullthrows(state._roots.last()).findLastRecursiveChild();
+    nodeToSelect = Selectors.findLastRecursiveChild(state)(
+      nullthrows(state._roots.last()),
+    );
   } else {
     const selectedNode = nullthrows(selectedNodes.first());
-    nodeToSelect = selectedNode.findPrevious();
+    nodeToSelect = Selectors.findPrevious(state)(selectedNode);
   }
 
   while (nodeToSelect != null && !nodeToSelect.matchesFilter) {
-    nodeToSelect = nodeToSelect.findPrevious();
+    nodeToSelect = Selectors.findPrevious(state)(nodeToSelect);
   }
 
   if (nodeToSelect == null) {
@@ -1198,7 +1200,9 @@ function rangeSelectToNode(
 
   // expand the range to merge existing selected nodes.
   const getNextNode = (cur: FileTreeNode) =>
-    nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
+    nextRangeIndex < rangeIndex
+      ? Selectors.findPrevious(state)(cur)
+      : Selectors.findNext(state)(cur);
   let probe = getNextNode(nextRangeNode);
   while (probe != null && Selectors.getNodeIsSelected(nextState, probe)) {
     nextRangeNode = probe;
@@ -1290,7 +1294,9 @@ function rangeSelectMove(state: AppState, move: 'up' | 'down'): AppState {
   }
   const {selectionRange, anchorNode, rangeNode, direction} = data;
   const getNextNode = (cur: FileTreeNode) =>
-    move === 'up' ? cur.findPrevious() : cur.findNext();
+    move === 'up'
+      ? Selectors.findPrevious(state)(cur)
+      : Selectors.findNext(state)(cur);
 
   const isExpanding = direction === move || direction === 'none';
 
@@ -1367,11 +1373,11 @@ function moveSelectionDown(state: AppState): AppState {
     nodeToSelect = state._roots.first();
   } else {
     const selectedNode = nullthrows(selectedNodes.first());
-    nodeToSelect = selectedNode.findNext();
+    nodeToSelect = Selectors.findNext(state)(selectedNode);
   }
 
   while (nodeToSelect != null && !nodeToSelect.matchesFilter) {
-    nodeToSelect = nodeToSelect.findNext();
+    nodeToSelect = Selectors.findNext(state)(nodeToSelect);
   }
 
   if (nodeToSelect == null) {
@@ -1392,7 +1398,7 @@ function moveSelectionToTop(state: AppState): AppState {
 
   let nodeToSelect = state._roots.first();
   if (nodeToSelect != null && !nodeToSelect.shouldBeShown) {
-    nodeToSelect = nodeToSelect.findNext();
+    nodeToSelect = Selectors.findNext(state)(nodeToSelect);
   }
 
   if (nodeToSelect == null) {
@@ -1409,7 +1415,7 @@ function moveSelectionToBottom(state: AppState): AppState {
 
   const lastRoot = state._roots.last();
   invariant(lastRoot != null);
-  const lastChild = lastRoot.findLastRecursiveChild();
+  const lastChild = Selectors.findLastRecursiveChild(state)(lastRoot);
   invariant(lastChild != null);
   return setSelectedAndFocusedNode(state, lastChild.rootUri, lastChild.uri);
 }

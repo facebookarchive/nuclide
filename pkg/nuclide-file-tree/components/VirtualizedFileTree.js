@@ -375,7 +375,7 @@ const getNodeByIndex = (() => {
         return null;
       }
 
-      prevNode = prevNode.findNext();
+      prevNode = Selectors.findNext(state)(prevNode);
       return prevNode;
     }
 
