@@ -182,6 +182,10 @@ type State<T> = {|
   // happens to be over a row. Therefore, we'll keep track of when you use keyboard navigation and
   // will disable the hover state until you move the mouse again.
   usingKeyboard: boolean,
+
+  // Reflects the previous value stored in `this.props.columns`. Used exclusively
+  // by `getDerivedStateFromProps` to determine whether to change column width.
+  lastColumns: ?Array<Column<T>>,
 |};
 
 /**
@@ -222,6 +226,38 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     resizerLocation: number,
   }>;
 
+  static getDerivedStateFromProps(
+    nextProps: Props<T>,
+    prevState: State<T>,
+  ): $Shape<State<T>> {
+    const newState = {};
+    if (nextProps.columns !== prevState.lastColumns) {
+      newState.lastColumns = nextProps.columns;
+    }
+    // Did the columns change? If so, we need to recalculate the widths.
+    const currentColumns = prevState.lastColumns;
+    const nextColumns = nextProps.columns;
+
+    if (currentColumns == null) {
+      return newState;
+    }
+
+    if (
+      nextColumns.length !== currentColumns.length ||
+      // If the columns just changed order, we want to keep their widths.
+      !areSetsEqual(
+        new Set(currentColumns.map(column => column.key)),
+        new Set(nextColumns.map(column => column.key)),
+      )
+    ) {
+      newState.preferredColumnWidths = getInitialPreferredColumnWidths(
+        nextColumns,
+      );
+    }
+
+    return newState;
+  }
+
   constructor(props: Props<T>) {
     super(props);
     this._resizeStarts = new Subject();
@@ -230,6 +266,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       resizeOffset: null,
       tableWidth: 0,
       usingKeyboard: false,
+      lastColumns: null,
     };
   }
 
@@ -373,24 +410,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       el = el.parentNode;
     }
     this._tableBody.focus();
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps: Props<T>): void {
-    // Did the columns change? If so, we need to recalculate the widths.
-    const currentColumns = this.props.columns;
-    const nextColumns = nextProps.columns;
-    if (
-      nextColumns.length !== currentColumns.length ||
-      // If the columns just changed order, we want to keep their widths.
-      !areSetsEqual(
-        new Set(currentColumns.map(column => column.key)),
-        new Set(nextColumns.map(column => column.key)),
-      )
-    ) {
-      this.setState({
-        preferredColumnWidths: getInitialPreferredColumnWidths(nextColumns),
-      });
-    }
   }
 
   _moveSelection(offset: -1 | 1, event: SelectionEvent): void {
