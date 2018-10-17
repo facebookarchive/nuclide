@@ -18,7 +18,7 @@ const path = require('path');
 
 const ATOM_BUILTIN_PACKAGES = new Set(['atom', 'electron', 'remote']);
 
-function getPackage(startPath) {
+function getPackage(startPath, getPath = false) {
   let current = path.resolve(startPath);
   while (true) {
     const filename = path.join(current, 'package.json');
@@ -27,7 +27,7 @@ function getPackage(startPath) {
       const json = JSON.parse(source);
       json.__filename = filename;
       json.__dirname = current;
-      return json;
+      return getPath ? {configPath: filename, json} : json;
     } catch (err) {
       if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
         const next = path.join(current, '..');
