@@ -654,7 +654,7 @@ export async function queryWithArgs(
   rootPath: NuclideUri,
   queryString: string,
   args: Array<string>,
-): Promise<{[aliasOrTarget: string]: Array<string>}> {
+): Promise<any> {
   const completeArgs = ['query', '--json', queryString].concat(args);
   const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
     rootPath,
@@ -687,7 +687,7 @@ export async function queryWithAttributes(
   rootPath: NuclideUri,
   queryString: string,
   attributes: Array<string>,
-): Promise<{[aliasOrTarget: string]: {[attribute: string]: mixed}}> {
+): Promise<any> {
   const completeArgs = [
     'query',
     '--json',
