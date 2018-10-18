@@ -597,7 +597,7 @@ export function printTaskSucceededEpic(
     const {type} = action.payload.taskStatus.metadata;
     const {taskRunner} = action.payload;
     let text;
-    if (type !== 'debug') {
+    if (type !== 'debug' && type !== 'debug-attach') {
       const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
       text = `${capitalizedType} succeeded.`;
     } else {
