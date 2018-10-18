@@ -265,11 +265,6 @@ class ConnectFlow {
     if (config == null) {
       const connectionParams = this._defaultConnectionProfile.params;
 
-      if (connectionParams.authMethod === 'PASSWORD') {
-        // We need user input and the only way to do that currently is to go through the huge form.
-        return;
-      }
-
       // There are some slight differences between the connection profile params type and the
       // SshConnectionConfiguration so we need to convert.
       config = {
