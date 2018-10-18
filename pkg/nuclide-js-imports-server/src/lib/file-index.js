@@ -30,6 +30,8 @@ const TO_IGNORE = [
   '**/VendorLib/**',
   '**/flow-typed/**',
   // @fb-only: '**/*react.proton.js',
+  // @fb-only: '**/html/shared/react/*-dev.js',
+  // @fb-only: '**/html/shared/react/*-prod.js',
 ];
 
 export type FileWithHash = {
