@@ -2606,11 +2606,11 @@ def parse_debug_options(s):
 # Accept current Process id to pass back to debugger
 def debug(file, port_num, debug_id, debug_options, currentPid, run_as = 'script'):
     # remove us from modules so there's no trace of us
-    if sys.modules.has_key('visualstudio_py_debugger'):
+    if dict_contains(sys.modules, 'visualstudio_py_debugger'):
         sys.modules['$visualstudio_py_debugger'] = sys.modules['visualstudio_py_debugger']
         __name__ = '$visualstudio_py_debugger'
         del sys.modules['visualstudio_py_debugger']
-    elif sys.modules.has_key('ptvsd.visualstudio_py_debugger'):
+    elif dict_contains(sys.modules, 'ptvsd.visualstudio_py_debugger'):
         sys.modules['$ptvsd.visualstudio_py_debugger'] = sys.modules['ptvsd.visualstudio_py_debugger']
         __name__ = '$ptvsd.visualstudio_py_debugger'
         del sys.modules['ptvsd.visualstudio_py_debugger']
