@@ -10,16 +10,15 @@
  * @format
  */
 
-import type {FileReferences, Reference, ReferenceGroup} from './types';
+import {FileResults} from 'nuclide-commons/FileResults';
+import type {Reference, ReferenceGroup} from './types';
 
 type FindReferencesOptions = {
   // Lines of context to show around each preview block. Defaults to 1.
   previewContext?: number,
 };
 
-import getFragmentGrammar from 'nuclide-commons-atom/getFragmentGrammar';
 import {getFileForPath} from 'nuclide-commons-atom/projects';
-import {arrayCompact} from 'nuclide-commons/collection';
 import {getLogger} from 'log4js';
 
 function compareReference(x: Reference, y: Reference): number {
@@ -88,16 +87,12 @@ export default class FindReferencesModel {
    * according to the given offset and limit.
    * References in each file are grouped together if they're adjacent.
    */
-  async getFileReferences(
-    offset: number,
-    limit: number,
-  ): Promise<Array<FileReferences>> {
-    const fileReferences: Array<?FileReferences> = await Promise.all(
+  getFileResults(offset: number, limit: number): Promise<Array<FileResults>> {
+    return Promise.all(
       this._references
         .slice(offset, offset + limit)
         .map(this._makeFileReferences.bind(this)),
     );
-    return arrayCompact(fileReferences);
   }
 
   getBasePath(): string {
@@ -179,18 +174,16 @@ export default class FindReferencesModel {
    */
   async _makeFileReferences(
     fileReferences: [string, Array<ReferenceGroup>],
-  ): Promise<?FileReferences> {
+  ): Promise<FileResults> {
     const uri = fileReferences[0];
-    let refGroups = fileReferences[1];
+    const refGroups = fileReferences[1];
     const fileContents = await readFileContents(uri);
     // flowlint-next-line sketchy-null-string:off
     if (!fileContents) {
-      return null;
+      return new FileResults(uri, []);
     }
     const fileLines = fileContents.split('\n');
-    const previewText = [];
-    refGroups = refGroups.map(group => {
-      const {references} = group;
+    const lineGroups = refGroups.map(group => {
       let {startLine, endLine} = group;
       // Expand start/end lines with context.
       startLine = Math.max(startLine - this.getPreviewContext(), 0);
@@ -205,17 +198,13 @@ export default class FindReferencesModel {
       while (startLine < endLine && fileLines[endLine] === '') {
         endLine--;
       }
-
-      previewText.push(fileLines.slice(startLine, endLine + 1).join('\n'));
-      return {references, startLine, endLine};
+      return {
+        // ScrollableResults expects this line to be 1-based.
+        startLine: startLine + 1,
+        lines: fileLines.slice(startLine, endLine + 1),
+        matches: group.references.map(ref => ref.range),
+      };
     });
-    return {
-      uri,
-      grammar: getFragmentGrammar(
-        atom.grammars.selectGrammar(uri, fileContents),
-      ),
-      previewText,
-      refGroups,
-    };
+    return new FileResults(uri, lineGroups);
   }
 }

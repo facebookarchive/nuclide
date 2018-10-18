@@ -51,7 +51,7 @@ describe.skip('FindReferencesModel', () => {
     expect(model.getReferenceCount()).toEqual(3);
     expect(model.getFileCount()).toEqual(2);
 
-    const result = await model.getFileReferences(0, 100);
+    const result = await model.getFileResults(0, 100);
     // Note the 1 line of context in the previews (but make sure it doesn't overflow)
     const expectedResult = [
       {
@@ -73,8 +73,8 @@ describe.skip('FindReferencesModel', () => {
     expect(result).toEqual(expectedResult);
 
     // It should also work if we fetch each one separately.
-    const res1 = await model.getFileReferences(0, 1);
-    const res2 = await model.getFileReferences(1, 1);
+    const res1 = await model.getFileResults(0, 1);
+    const res2 = await model.getFileResults(1, 1);
     expect(res1.concat(res2)).toEqual(expectedResult);
   });
 
@@ -101,7 +101,7 @@ describe.skip('FindReferencesModel', () => {
     expect(model.getReferenceCount()).toEqual(7);
     expect(model.getFileCount()).toEqual(2);
 
-    const result = await model.getFileReferences(0, 100);
+    const result = await model.getFileResults(0, 100);
     expect(result).toEqual([
       {
         uri: TEST1,
@@ -135,7 +135,7 @@ describe.skip('FindReferencesModel', () => {
     expect(model.getReferenceCount()).toEqual(2);
     expect(model.getFileCount()).toEqual(2);
 
-    const result = await model.getFileReferences(0, 100);
+    const result = await model.getFileResults(0, 100);
     // Bad file should be silently hidden.
     expect(result).toEqual([
       {

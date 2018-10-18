@@ -55,10 +55,3 @@ export type ReferenceGroup = {
   startLine: number,
   endLine: number,
 };
-
-export type FileReferences = {
-  uri: string,
-  grammar: Object /* atom$Grammar */,
-  previewText: Array<string>,
-  refGroups: Array<ReferenceGroup>,
-};
