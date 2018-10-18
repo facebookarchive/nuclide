@@ -884,6 +884,9 @@ export default class DebugService implements IDebugService {
         }),
         // TODO handle non string output (e.g. files)
       );
+      // Once set up, isolate debugger console into its own pane to separate
+      // debugger output from other noisy console sources
+      consoleApi.open({isolate: true});
     }
 
     this._sessionEndDisposables.add(

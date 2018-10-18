@@ -22,6 +22,7 @@ import type {
   RegisterExecutorFunction,
   Store,
   Level,
+  OpenEvent,
 } from './types';
 import type {CreatePasteFunction} from './types';
 
@@ -98,6 +99,21 @@ class Activation {
     );
   }
 
+  async _open(event: OpenEvent): Promise<void> {
+    const consoleAlreadyOpen = atom.workspace
+      .getPanes()
+      .some(pane => pane.getItems().some(item => item instanceof Console));
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    const consoleObject = await atom.workspace.open(WORKSPACE_VIEW_URI, {
+      searchAllPanes: true,
+    });
+    invariant(consoleObject instanceof Console);
+    consoleObject.open({
+      ...event,
+      consoleAlreadyOpen,
+    });
+  }
+
   _getStore(): Store {
     if (this._store == null) {
       const initialState = deserializeAppState(this._rawState);
@@ -171,7 +187,9 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return new Console({store: this._getStore()});
+          return new Console({
+            store: this._getStore(),
+          });
         }
       }),
       () => destroyItemWhere(item => item instanceof Console),
@@ -324,6 +342,13 @@ class Activation {
           activation
             ._getStore()
             .dispatch(Actions.updateStatus(sourceInfo.id, status));
+        },
+        open(options?: {isolate: boolean}): Promise<void> {
+          invariant(activation != null && !disposed);
+          return activation._open({
+            id: sourceInfo.id,
+            isolate: options != null ? options.isolate : false,
+          });
         },
         dispose(): void {
           invariant(activation != null);

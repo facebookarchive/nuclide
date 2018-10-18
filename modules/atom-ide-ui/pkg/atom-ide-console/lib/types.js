@@ -18,6 +18,13 @@ import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent'
 // The type of the object passed to your package's `consumeConsole()` function.
 export type ConsoleService = (options: SourceInfo) => ConsoleApi;
 
+// The type of the open source event
+export type OpenEvent = {|
+  +id: string,
+  +isolate: boolean,
+  +consoleAlreadyOpen?: boolean,
+|};
+
 // The console API. An object of this type is returned when you invoke the function provided by the
 // console service.
 export type ConsoleApi = {
@@ -37,6 +44,9 @@ export type ConsoleApi = {
 
   // Set the status of the source. See "Stoppable Sources" below.
   setStatus(status: ConsoleSourceStatus): void,
+
+  // Isolate this Source by putting it in its own Console
+  open(options?: {isolate: boolean}): Promise<void>,
 };
 
 // A type representing the possible values for the `console.setStatus()` API.

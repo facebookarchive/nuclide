@@ -15,7 +15,6 @@ import type {Observable} from 'rxjs';
 import {getLogger} from 'log4js';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
-import idx from 'idx';
 
 export type GoToLocationOptions = {|
   line?: number,
@@ -55,16 +54,13 @@ export async function goToLocation(
   file: string,
   options?: ?GoToLocationOptions,
 ): Promise<atom$TextEditor> {
-  const center_ = idx(options, _ => _.center);
-  const center = center_ == null ? true : center_;
-  const moveCursor_ = idx(options, _ => _.moveCursor);
-  const moveCursor = moveCursor_ == null ? true : moveCursor_;
-  const activatePane_ = idx(options, _ => _.activatePane);
-  const activatePane = activatePane_ == null ? true : activatePane_;
-  const activateItem = idx(options, _ => _.activateItem);
-  const line = idx(options, _ => _.line);
-  const column = idx(options, _ => _.column);
-  const pending = idx(options, _ => _.pending);
+  const center = options?.center ?? true;
+  const moveCursor = options?.moveCursor ?? true;
+  const activatePane = options?.activatePane ?? true;
+  const activateItem = options?.activateItem;
+  const line = options?.line;
+  const column = options?.column;
+  const pending = options?.pending;
 
   // Prefer going to the current editor rather than the leftmost editor.
   const currentEditor = atom.workspace.getActiveTextEditor();

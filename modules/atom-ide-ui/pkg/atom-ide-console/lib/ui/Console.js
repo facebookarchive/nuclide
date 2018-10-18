@@ -22,11 +22,13 @@ import type {
   Severity,
   Level,
   AppState,
+  OpenEvent,
 } from '../types';
 import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 import type {Executor} from '../types';
 
+import invariant from 'assert';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {setDifference, areSetsEqual} from 'nuclide-commons/collection';
 import Model from 'nuclide-commons/Model';
@@ -124,6 +126,50 @@ export class Console {
       .map(() => this.getTitle())
       .distinctUntilChanged()
       .share();
+  }
+
+  open(event: OpenEvent): void {
+    const unselectedSourceIds = new Set(this._model.state.unselectedSourceIds);
+    const currentlySelectedSources = this._getSources()
+      .map(s => s.id)
+      .filter(id => !unselectedSourceIds.has(id));
+
+    if (currentlySelectedSources.length === 0) {
+      this._selectSources([event.id]);
+    } else if (
+      currentlySelectedSources.length === 1 &&
+      currentlySelectedSources[0] === event.id
+    ) {
+      // do nothing because source is already visible and isolated
+    } else if (event.isolate) {
+      const consoleAlreadyOpen = event.consoleAlreadyOpen ?? true;
+      if (consoleAlreadyOpen) {
+        const allPanes = atom.workspace.getPanes();
+        const panes = allPanes.filter(
+          p =>
+            p.getItems().filter(item => item._element === this._element)
+              .length !== 0,
+        );
+        invariant(panes.length === 1);
+        const consolePane = panes[0];
+        const consolePaneAllItems = consolePane.getItems();
+        const consolePaneItems: Array<Console> = consolePaneAllItems.filter(
+          cp => cp === this,
+        );
+        invariant(consolePaneItems.length === 1);
+        this._selectSources(
+          currentlySelectedSources.filter(id => id !== event.id),
+        );
+        const consoleObj = consolePaneItems[0];
+        const newConsoleObj = consoleObj.copy();
+        consolePane.addItem(newConsoleObj);
+      }
+      this._selectSources([event.id]);
+    } else if (currentlySelectedSources.includes(event.id)) {
+      // do nothing because we do not need to isolate and this source is already visible
+    } else {
+      this._selectSources(currentlySelectedSources.concat([event.id]));
+    }
   }
 
   getIconName(): string {
