@@ -9,14 +9,6 @@
  * @format
  */
 
-export type IosDeployable = {
-  name: string,
-  udid: string,
-  arch: string,
-  type: 'simulator' | 'device',
-  buildOnly?: boolean,
-};
-
 export const RUNNABLE_RULE_TYPES: Set<string> = new Set(['apple_bundle']);
 export const SUPPORTED_RULE_TYPES: Set<string> = new Set([
   ...RUNNABLE_RULE_TYPES,

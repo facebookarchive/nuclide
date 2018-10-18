@@ -11,16 +11,12 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {
-  Device,
-  TaskSettings,
-  TaskType,
-} from '../../nuclide-buck/lib/types';
+import type {TaskSettings, TaskType} from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
-import type {IosDeployable} from './types';
+import type {FbsimctlDevice} from '../../nuclide-fbsimctl-rpc/lib/types';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
@@ -34,13 +30,11 @@ import {Observable} from 'rxjs';
 export function getTasks(
   buckRoot: NuclideUri,
   ruleType: string,
-  device: ?Device,
+  buildOnly: boolean,
   debuggerAvailable: boolean,
 ): Set<TaskType> {
-  // $FlowIgnore typecast
-  const iosDeployable: IosDeployable = device;
   const tasks = new Set(['build']);
-  if (iosDeployable.buildOnly !== true) {
+  if (!buildOnly) {
     if (RUNNABLE_RULE_TYPES.has(ruleType)) {
       tasks.add('run');
     }
@@ -60,15 +54,13 @@ export function runTask(
   ruleType: string,
   buildTarget: ResolvedBuildTarget,
   settings: TaskSettings,
-  device: ?Device,
+  device: FbsimctlDevice,
   buckRoot: NuclideUri,
   debuggerCallback: ?(
     processStream: Observable<LegacyProcessMessage>,
   ) => Observable<BuckEvent>,
 ): Observable<TaskEvent> {
-  // $FlowIgnore typecast
-  const iosDeployable: IosDeployable = device;
-  const {arch, udid, type} = iosDeployable;
+  const {arch, udid, type} = device;
   const iosPlatform = type === 'simulator' ? 'iphonesimulator' : 'iphoneos';
   const flavor = `${iosPlatform}-${arch}`;
   const newTarget = {
@@ -89,7 +81,7 @@ export function runTask(
           ruleType,
           buildTarget,
           settings,
-          iosDeployable,
+          device,
           flavor,
         );
       };
@@ -105,7 +97,7 @@ export function runTask(
   } else {
     const subcommand = _getLocalSubcommand(taskType, ruleType);
     if (subcommand === 'install' || subcommand === 'test') {
-      startLogger(iosDeployable);
+      startLogger(device);
     }
 
     const debug = taskType === 'debug';
@@ -137,9 +129,9 @@ function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
   return getBuckSubcommandForTaskType(taskType);
 }
 
-function startLogger(iosDeployable: IosDeployable): Observable<TaskEvent> {
+function startLogger(device: FbsimctlDevice): Observable<TaskEvent> {
   return Observable.create(observer => {
-    if (iosDeployable.type === 'simulator') {
+    if (device.type === 'simulator') {
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
         'nuclide-ios-simulator-logs:start',
