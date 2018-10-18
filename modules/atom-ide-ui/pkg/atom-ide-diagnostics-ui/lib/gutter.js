@@ -25,7 +25,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {completingSwitchMap} from 'nuclide-commons/observable';
+import {completingSwitchMap, takeUntilAbort} from 'nuclide-commons/observable';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons/analytics';
@@ -427,6 +427,11 @@ function _applyUpdateToEditor(
     // NB: It's possible that with unending results from providers (such as through
     // constant typing), this process never finishes. Something more ideal would
     // be to start updating with new results where the last iteration stopped.
+    //
+    // This cancels the prior abortcontroller, triggering cleanup below, **regardless
+    // if the last process has completed**. Even in the case where the last
+    // process completed, we want to clean up listeners for editor destruction,
+    // etc.
     priorAbortController.abort();
   }
 
@@ -465,8 +470,6 @@ function _applyUpdateToEditor(
         <>{blockDecorationFragments}</>,
         blockDecorationContainer,
       );
-
-      editorToAbortController.delete(editor);
     },
     {
       signal: abortController.signal,
@@ -479,15 +482,17 @@ function _applyUpdateToEditor(
 
   return new UniversalDisposable(
     () => abortController.abort(),
-    editor.onDidDestroy(() => {
-      abortController.abort();
-      // clean up openned message ids
-      removeOpenMessageId(
-        Array.from(update),
-        openedMessageIds,
-        setOpenMessageIds,
-      );
-    }),
+    observableFromSubscribeFunction(cb => editor.onDidDestroy(cb))
+      .let(takeUntilAbort(abortController.signal))
+      .subscribe(() => {
+        abortController.abort();
+        // clean up openned message ids
+        removeOpenMessageId(
+          Array.from(update),
+          openedMessageIds,
+          setOpenMessageIds,
+        );
+      }),
   );
 }
 
