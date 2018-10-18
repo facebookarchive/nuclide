@@ -614,7 +614,7 @@ describe('nuclide-commons/observable', () => {
 
         const spy = jest.fn();
         Observable.never()
-          .let(obs => takeUntilAbort(obs, controller.signal))
+          .let(takeUntilAbort(controller.signal))
           .subscribe({complete: spy});
 
         expect(spy).not.toHaveBeenCalled();
@@ -628,7 +628,7 @@ describe('nuclide-commons/observable', () => {
 
         const spy = jest.fn();
         Observable.never()
-          .let(obs => takeUntilAbort(obs, controller.signal))
+          .let(takeUntilAbort(controller.signal))
           .subscribe({complete: spy});
 
         expect(spy).toHaveBeenCalled();

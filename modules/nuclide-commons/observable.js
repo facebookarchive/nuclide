@@ -561,18 +561,18 @@ export function toAbortablePromise<T>(
  * Recommended to use this with let/pipe:
  *
  *   myObservable
- *     .let(obs => takeUntilAbort(obs, signal))
+ *     .let(takeUntilAbort(signal))
  */
 export function takeUntilAbort<T>(
-  observable: Observable<T>,
   signal: AbortSignal,
-): Observable<T> {
-  return Observable.defer(() => {
-    if (signal.aborted) {
-      return Observable.empty();
-    }
-    return observable.takeUntil(Observable.fromEvent(signal, 'abort'));
-  });
+): (Observable<T>) => Observable<T> {
+  return observable =>
+    Observable.defer(() => {
+      if (signal.aborted) {
+        return Observable.empty();
+      }
+      return observable.takeUntil(Observable.fromEvent(signal, 'abort'));
+    });
 }
 
 // Executes tasks. Ensures that at most one task is running at a time.
