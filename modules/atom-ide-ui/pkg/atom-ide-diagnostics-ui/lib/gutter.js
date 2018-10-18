@@ -268,6 +268,7 @@ function processChunk(editor: atom$TextEditor): boolean {
       rowToMessage,
       openedMessageIds,
       setOpenMessageIds,
+      startingLine,
     }),
   );
 
@@ -515,12 +516,14 @@ function createBlockDecorations({
   rowToMessage,
   openedMessageIds,
   setOpenMessageIds,
-}: {
+  startingLine,
+}: {|
   editor: TextEditor,
   rowToMessage: Map<number, Array<DiagnosticMessage>>,
   openedMessageIds: Set<string>,
   setOpenMessageIds: (openedMessageIds: Set<string>) => void,
-}): React.Node {
+  startingLine: number,
+|}): React.Node {
   const blockRowToMessages: Map<number, Array<DiagnosticMessage>> = new Map();
   rowToMessage.forEach((messages, row) => {
     if (
@@ -537,7 +540,7 @@ function createBlockDecorations({
   });
 
   return (
-    <>
+    <React.Fragment key={startingLine}>
       {Array.from(blockRowToMessages).map(([row, messages]) => {
         return (
           <BlockDecoration
@@ -564,7 +567,7 @@ function createBlockDecorations({
           </BlockDecoration>
         );
       })}
-    </>
+    </React.Fragment>
   );
 }
 
