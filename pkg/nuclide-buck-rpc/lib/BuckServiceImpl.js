@@ -291,9 +291,9 @@ export function query(
     fbRepoSpecificArgs => {
       const args = [
         'query',
-        ...extraArguments,
         '--json',
         queryString,
+        ...extraArguments,
         ...(appendPreferredArgs ? fbRepoSpecificArgs : []),
       ];
 

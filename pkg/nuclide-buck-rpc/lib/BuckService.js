@@ -655,21 +655,17 @@ export async function queryWithArgs(
   queryString: string,
   args: Array<string>,
 ): Promise<any> {
-  const completeArgs = ['query', '--json', queryString].concat(args);
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    completeArgs,
-  ).toPromise();
-  const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result);
-
+  const result: {
+    [aliasOrTarget: string]: Array<string>,
+  } = await BuckServiceImpl.query(rootPath, queryString, args).toPromise();
   // `buck query` does not include entries in the JSON for params that did not match anything. We
   // massage the output to ensure that every argument has an entry in the output.
   for (const arg of args) {
-    if (!json.hasOwnProperty(arg)) {
-      json[arg] = [];
+    if (!result.hasOwnProperty(arg)) {
+      result[arg] = [];
     }
   }
-  return json;
+  return result;
 }
 
 /**
@@ -688,18 +684,13 @@ export async function queryWithAttributes(
   queryString: string,
   attributes: Array<string>,
 ): Promise<any> {
-  const completeArgs = [
-    'query',
-    '--json',
-    queryString,
+  const result: {
+    [aliasOrTarget: string]: {[attribute: string]: mixed},
+  } = await BuckServiceImpl.query(rootPath, queryString, [
     '--output-attributes',
     ...attributes,
-  ];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    completeArgs,
-  ).toPromise();
-  return JSON.parse(result);
+  ]).toPromise();
+  return result;
 }
 
 // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover
