@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -141,45 +141,47 @@ export type DesktopPlatform = {|
 
 export type Platform = MobilePlatform | DesktopPlatform;
 
-export type DeviceGroup = {
+export type DeviceGroup = {|
   name: string,
   devices: Array<Device>,
-};
+|};
 
-export type Device = {
+export type Device = {|
   identifier: string,
   name: string,
-};
+|};
 
-export type DeploymentTarget = {
+export type DeploymentTarget = {|
   platformGroup: PlatformGroup,
   platform: Platform,
   deviceGroup: ?DeviceGroup,
   device: ?Device,
-};
+|};
 
-export type PreferredNames = {
+export type PreferredNames = {|
   platformGroupName: ?string,
   platformName: ?string,
   deviceGroupName: ?string,
   deviceName: ?string,
-};
+|};
 
 export type PlatformProviderSettings = {
   onSave: () => mixed,
+  // $FlowFixMe any type
   ui: React.Element<any>,
 };
 
 export type PlatformProviderUi = {
   settings: ?PlatformProviderSettings,
+  // $FlowFixMe any type
   toolbar: ?React.Element<any>,
 };
 
-export type BuckTaskRunnerService = {
+export type BuckTaskRunnerService = {|
   getBuildTarget(): ?string,
   setBuildTarget(buildTarget: string): void,
   setDeploymentTarget(preferredNames: PreferredNames): void,
-  onDidCompleteTask((TaskInfo) => any): IDisposable,
-};
+  onDidCompleteTask((TaskInfo) => mixed): IDisposable,
+|};
 
 export type ConsolePrinter = (message: Message) => void;

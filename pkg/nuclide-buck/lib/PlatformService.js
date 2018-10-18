@@ -59,18 +59,15 @@ export class PlatformService {
           })
           .defaultIfEmpty(null),
       );
-      return (
-        Observable.from(observables)
-          // $FlowFixMe: type combineAll
-          .combineAll()
-          .map(platformGroups => {
-            return platformGroups
-              .filter(p => p != null)
-              .sort((a, b) =>
-                a.name.toUpperCase().localeCompare(b.name.toUpperCase()),
-              );
-          })
-      );
+      return Observable.from(observables)
+        .combineAll()
+        .map((platformGroups: Array<?PlatformGroup>) => {
+          return platformGroups
+            .filter(Boolean)
+            .sort((a, b) =>
+              a.name.toUpperCase().localeCompare(b.name.toUpperCase()),
+            );
+        });
     });
   }
 }
