@@ -70,6 +70,7 @@ function typeFromArch(arch: string): ?DeviceType {
     case 'x86_64':
     case 'i386':
       return 'simulator';
+    case 'arm64e':
     case 'arm64':
     case 'armv7':
     case 'armv7s':

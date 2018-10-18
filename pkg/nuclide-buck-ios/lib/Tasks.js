@@ -60,8 +60,13 @@ export function runTask(
     processStream: Observable<LegacyProcessMessage>,
   ) => Observable<BuckEvent>,
 ): Observable<TaskEvent> {
-  const {arch, udid, type} = device;
+  const {udid, type} = device;
+  let {arch} = device;
   const iosPlatform = type === 'simulator' ? 'iphonesimulator' : 'iphoneos';
+  // iPhone XS returns this as architecture, but we still want to build for arm64
+  if (arch.startsWith('arm64e')) {
+    arch = 'arm64';
+  }
   const flavor = `${iosPlatform}-${arch}`;
   const newTarget = {
     ...buildTarget,
