@@ -15,7 +15,7 @@ import type {Option} from 'nuclide-commons-ui/Dropdown';
 
 import passesGK from 'nuclide-commons/passesGK';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {isDebugTask, TASKS} from '../../../nuclide-buck/lib/BuckTaskRunner';
+import {TASKS} from '../../../nuclide-buck/lib/BuckTaskRunner';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nullthrows from 'nullthrows';
@@ -220,7 +220,7 @@ export default class Toolbar extends React.Component<Props, State> {
       );
     };
 
-    const debugTasks = state.tasks.filter(task => isDebugTask(task.type));
+    const debugTasks = state.tasks.filter(task => task.type.includes('debug'));
     const enabledDebugTasks = debugTasks.filter(t => !t.disabled);
     let debugElement;
     if (debugTasks.length === 0) {
@@ -285,7 +285,7 @@ export default class Toolbar extends React.Component<Props, State> {
     }
 
     return state.tasks
-      .filter(task => !isDebugTask(task.type) && task.hidden !== true)
+      .filter(task => !task.type.includes('debug') && task.hidden !== true)
       .map(task => getTaskButton(task))
       .concat([debugElement]);
   }

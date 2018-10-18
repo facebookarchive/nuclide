@@ -103,9 +103,9 @@ class Activation {
       'build',
       'run',
       'test',
-      'debug',
-      'debug-launch-no-build',
-      'debug-attach',
+      'build-launch-debug',
+      'launch-debug',
+      'attach-debug',
     ]);
     return Observable.of({
       name: 'Native',
@@ -117,7 +117,8 @@ class Activation {
             return availableActions;
           },
           runTask: (builder, taskType, target, settings) => {
-            const subcommand = taskType === 'debug' ? 'build' : taskType;
+            const subcommand =
+              taskType === 'build-launch-debug' ? 'build' : taskType;
             if (isDebugTask(taskType)) {
               return this._runDebugTask(
                 builder,
@@ -189,7 +190,10 @@ class Activation {
     buckRoot: NuclideUri,
     ruleType: string,
   ): Observable<TaskEvent> {
-    if (taskType === 'debug-attach') {
+    if (taskType === 'attach-debug') {
+      // TODO: The implementation below is annoying/wrong
+      // It redirects to the attach dialog, ignores the buildTarget input and asks user to choose what they want to attach to.
+      // Instead it should automatically figure out the process based on buildTarget and attach to it.
       return Observable.defer(async () => {
         const providerType = await this._getBuckNativeDebugAdapterType();
         atom.commands.dispatch(
@@ -256,11 +260,11 @@ class Activation {
         },
       );
 
-    if (taskType === 'debug-launch-no-build') {
+    if (taskType === 'launch-debug') {
       return debugBuckTarget;
     }
 
-    invariant(taskType === 'debug');
+    invariant(taskType === 'build-launch-debug');
     return this._addModeDbgIfNoModeInBuildArguments(
       buckRoot,
       taskSettings,

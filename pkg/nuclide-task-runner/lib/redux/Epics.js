@@ -594,12 +594,15 @@ export function printTaskSucceededEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.TASK_COMPLETED).map(action => {
     invariant(action.type === Actions.TASK_COMPLETED);
-    const {type} = action.payload.taskStatus.metadata;
+    const {type, label} = action.payload.taskStatus.metadata;
     const {taskRunner} = action.payload;
     let text;
-    if (type !== 'debug' && type !== 'debug-attach') {
-      const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
-      text = `${capitalizedType} succeeded.`;
+    if (
+      type !== 'build-launch-debug' &&
+      type !== 'launch-debug' &&
+      type !== 'attach-debug'
+    ) {
+      text = label + ' succeeded.';
     } else {
       // "Debug succeeded." makes no sense here.
       text = 'Debugger started.';

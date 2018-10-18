@@ -42,7 +42,7 @@ export function getTasks(
       tasks.add('test');
     }
     if (debuggerAvailable) {
-      tasks.add('debug');
+      tasks.add('build-launch-debug');
     }
   }
   return tasks;
@@ -105,7 +105,7 @@ export function runTask(
       startLogger(device);
     }
 
-    const debug = taskType === 'debug';
+    const debug = taskType === 'build-launch-debug';
 
     return builder.runSubcommand(
       buckRoot,

@@ -27,9 +27,16 @@ export type TaskType =
   | 'build'
   | 'run'
   | 'test'
-  | 'debug'
-  | 'debug-launch-no-build'
-  | 'debug-attach';
+  // A basic debug action where we produce an artifact and start a debugging session with it.
+  | 'build-launch-debug'
+  // Similar to build-launch-debug, but reuses the last build artifact instead of rebuilding.
+  // Should only be supported if the platform is able to reuse the artifact from a previous build.
+  // It's just a convenient option for advanced users that want to save rebuild time and are sure they have a working artifact.
+  // If nothing changed since last build, build-launch-debug should be equivalent since the build part should be a no-op.
+  | 'launch-debug'
+  // Attaches the debugger to an already running artifact.
+  // Should only be supported if the platform can figure out what to attach to based on a user-selected Buck target.
+  | 'attach-debug';
 
 export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
 

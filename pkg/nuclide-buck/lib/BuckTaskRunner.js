@@ -69,21 +69,22 @@ export const TASKS = [
     icon: 'check',
   },
   {
-    type: 'debug',
-    label: 'Build and launch debugger',
+    type: 'build-launch-debug',
+    label: 'Build, launch && debug',
     description: 'Build, launch and debug the specified Buck target',
     icon: 'nuclicon-debugger',
   },
   {
-    type: 'debug-launch-no-build',
-    label: 'Launch debugger (skip build)',
+    type: 'launch-debug',
+    label: 'Launch && debug (skip build)',
     description: 'Launch and debug the specified Buck target (skip building)',
     icon: 'nuclicon-debugger',
   },
   {
-    type: 'debug-attach',
-    label: 'Attach Debugger',
-    description: 'Attach the debugger to the specified Buck target',
+    type: 'attach-debug',
+    label: 'Attach to running',
+    description:
+      'Attemp to find a running specified Buck target and attach debugger',
     icon: 'nuclicon-debugger',
   },
 ];
@@ -98,21 +99,26 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
       return true;
     case 'run':
       return ruleType.endsWith('binary');
-    case 'debug':
-    case 'debug-attach':
-    case 'debug-launch-no-build':
+    case 'build-launch-debug':
+    case 'attach-debug':
       return ruleType.endsWith('binary') || ruleType.endsWith('test');
+    case 'launch-debug':
+      return false;
     default:
       return false;
   }
 }
 
-export function isDebugTask(taskType: TaskType | string) {
-  return taskType.startsWith('debug');
+export function isDebugTask(taskType: TaskType) {
+  return (
+    taskType === 'build-launch-debug' ||
+    taskType === 'launch-debug' ||
+    taskType === 'attach-debug'
+  );
 }
 
 export function getBuckSubcommandForTaskType(
-  taskType: TaskType | string,
+  taskType: TaskType,
 ): BuckSubcommand {
   invariant(taskType === 'build' || taskType === 'run' || taskType === 'test');
   return taskType;
@@ -316,9 +322,10 @@ export class BuckTaskRunner {
     return empty;
   }
 
-  runTask(taskType: string): Task {
+  runTask(rawTask: string): Task {
     // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
+    const taskType = ((rawTask: any): TaskType);
 
     const state = this._getStore().getState();
     const {
@@ -330,6 +337,7 @@ export class BuckTaskRunner {
     } = state;
     invariant(buckRoot != null);
     invariant(buildRuleType);
+    invariant(taskType);
 
     const deploymentTargetString = formatDeploymentTarget(
       selectedDeploymentTarget,
@@ -353,7 +361,7 @@ export class BuckTaskRunner {
               runTask = () =>
                 platform.runTask(
                   this._buildSystem,
-                  ((taskType: any): TaskType),
+                  taskType,
                   buildRuleType.buildTarget,
                   taskSettings,
                   device,
@@ -362,7 +370,7 @@ export class BuckTaskRunner {
               runTask = () =>
                 platform.runTask(
                   this._buildSystem,
-                  ((taskType: any): TaskType),
+                  taskType,
                   buildRuleType.buildTarget,
                   taskSettings,
                 );
