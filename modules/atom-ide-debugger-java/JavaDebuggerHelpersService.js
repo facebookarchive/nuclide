@@ -16,10 +16,8 @@ import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 import {track} from 'nuclide-commons/analytics';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
-import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 
 export type JavaLaunchTargetConfig = {|
@@ -63,82 +61,6 @@ export async function getJavaVSAdapterExecutableInfo(
     command: JAVA,
     args: await _getJavaArgs(debug),
   };
-}
-
-export async function prepareForTerminalLaunch(
-  config: JavaLaunchTargetConfig,
-): Promise<TerminalLaunchInfo> {
-  const {classPath, entryPointClass} = config;
-  const launchPath = nuclideUri.expandHomeDir(classPath);
-  const attachPort = await getAvailableServerPort();
-
-  // Note: the attach host is passed to the Java debugger engine, which
-  // runs on the RPC side of Nuclide, so it is fine to always pass localhost
-  // as the host name, even if the Nuclide client is on a different machine.
-  const attachHost = '127.0.0.1';
-  return Promise.resolve({
-    attachPort,
-    attachHost,
-    launchCommand: 'java',
-    launchCwd: launchPath,
-    targetExecutable: launchPath,
-    launchArgs: [
-      '-Xdebug',
-      `-Xrunjdwp:transport=dt_socket,address=${attachHost}:${attachPort},server=y,suspend=y`,
-      '-classpath',
-      launchPath,
-      entryPointClass,
-      ...(config.runArgs || []),
-    ],
-  });
-}
-
-export async function javaDebugWaitForJdwpProcessStart(
-  jvmSuspendArgs: string,
-): Promise<void> {
-  return new Promise(resolve => {
-    const disposable = new UniversalDisposable();
-    disposable.add(
-      Observable.interval(1000)
-        .mergeMap(async () => {
-          const line = await _findJdwpProcess(jvmSuspendArgs);
-          if (line != null) {
-            disposable.dispose();
-            resolve();
-          }
-        })
-        .timeout(30000)
-        .subscribe(),
-    );
-  });
-}
-
-export async function javaDebugWaitForJdwpProcessExit(
-  jvmSuspendArgs: string,
-): Promise<void> {
-  return new Promise(resolve => {
-    const disposable = new UniversalDisposable();
-    let pidLine = null;
-    disposable.add(
-      Observable.interval(1000)
-        .mergeMap(async () => {
-          const line = await _findJdwpProcess(jvmSuspendArgs);
-          if (line != null) {
-            if (pidLine != null && pidLine !== line) {
-              // The matching target process line has changed, so the process
-              // we were watching is now gone.
-              disposable.dispose();
-              resolve();
-            }
-            pidLine = line;
-          } else {
-            disposable.dispose();
-            resolve();
-          }
-        })
-        .subscribe(),
-    );
-  });
 }
 
 async function _getJavaArgs(debug: boolean): Promise<Array<string>> {
@@ -204,21 +126,6 @@ async function _getClassPath(): Promise<string> {
     return serverJarPath;
   }
   return nuclideUri.joinPathList([serverJarPath, toolsJarPath]);
-}
-
-async function _findJdwpProcess(jvmSuspendArgs: string): Promise<?string> {
-  const commands = await runCommand(
-    'ps',
-    ['-eww', '-o', 'pid,args'],
-    {},
-  ).toPromise();
-
-  const procs = commands
-    .toString()
-    .split('\n')
-    .filter(line => line.includes(jvmSuspendArgs));
-  const line = procs.length === 1 ? procs[0] : null;
-  return line;
 }
 
 export async function getSdkVersionSourcePath(
@@ -310,9 +217,9 @@ async function _getSdkVersionSourcePath(
 
     if (options.useSdkManager && (await fsPromise.exists(sdkManagerPath))) {
       try {
-        await runCommand(sdkManagerPath, [
-          'sources;android-' + sdkVersion,
-        ]).toPromise();
+        await runCommand(sdkManagerPath, ['sources;android-' + sdkVersion])
+          .timeout(30000)
+          .toPromise();
         // try again
         const sourcesDirectoryExists = await fsPromise.exists(sourcesDirectory);
         track('atom-ide-debugger-java-installSdkSourcesUsingSdkManager', {
