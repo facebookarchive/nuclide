@@ -86,7 +86,6 @@ function patchEditorSave(editor: atom$TextEditor): IDisposable {
         providers,
       });
     } finally {
-      await editor_.getBuffer().save();
       await realSave.call(editor);
     }
   };
