@@ -157,16 +157,6 @@ async function _getPid(
   return pid;
 }
 
-function _getResolvedTargetUri(targetUri: NuclideUri, config) {
-  const selectSources = config.selectSources;
-  return selectSources != null ? selectSources : targetUri;
-}
-
-function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
-  const adbServiceUri = config.adbServiceUri;
-  return adbServiceUri != null ? adbServiceUri : unresolvedTargetUri;
-}
-
 async function _getAndroidSdkSourcePaths(
   targetUri: NuclideUri,
   adbServiceUri: NuclideUri,
@@ -206,12 +196,13 @@ export async function resolveConfiguration(
 ): Promise<IProcessConfig> {
   // adapterType === VsAdapterTypes.JAVA_ANDROID
   const {config, debugMode, targetUri} = configuration;
-  const adbServiceUri = _getAdbServiceUri(targetUri, config);
-  const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
+  const adbServiceUri = config.adbServiceUri ?? targetUri;
+  const resolvedTargetUri = config.selectSources ?? targetUri;
   const packageName = _getPackageName(debugMode, config);
   const deviceSerial = _getDeviceSerial(debugMode, config);
 
   track('atom-ide-debugger-java-android-configuration', {
+    adbServiceUri,
     packageName,
     deviceSerial,
     debugMode,
