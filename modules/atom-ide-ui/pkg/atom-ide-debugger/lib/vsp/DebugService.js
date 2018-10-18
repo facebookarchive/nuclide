@@ -1820,7 +1820,12 @@ export default class DebugService implements IDebugService {
       name: nuclideUri.basename(uri),
     }).raw;
 
-    if (!sourceModified && breakpointsToSend.length && !rawSource.adapterData) {
+    if (
+      !sourceModified &&
+      breakpointsToSend.length > 0 &&
+      !rawSource.adapterData &&
+      breakpointsToSend[0].adapterData
+    ) {
       rawSource.adapterData = breakpointsToSend[0].adapterData;
     }
 
@@ -1828,11 +1833,21 @@ export default class DebugService implements IDebugService {
     const response = await session.setBreakpoints({
       source: (rawSource: any),
       lines: breakpointsToSend.map(bp => bp.line),
-      breakpoints: breakpointsToSend.map(bp => ({
-        line: bp.line,
-        column: bp.column,
-        condition: bp.condition,
-      })),
+      breakpoints: breakpointsToSend.map(bp => {
+        const bpToSend: Object = {
+          line: bp.line,
+        };
+        // Column and condition are optional in the protocol, but should
+        // only be included on the object sent to the debug adapter if
+        // they have values that exist.
+        if (bp.column != null && bp.column >= 0) {
+          bpToSend.column = bp.column;
+        }
+        if (bp.condition != null && bp.condition !== '') {
+          bpToSend.condition = bp.condition;
+        }
+        return bpToSend;
+      }),
       sourceModified,
     });
     if (response == null || response.body == null) {
