@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileChangesExamples = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _diffparser() {
+  const data = _interopRequireDefault(require("diffparser"));
+
+  _diffparser = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _FileChanges() {
+  const data = _interopRequireDefault(require("./FileChanges"));
+
+  _FileChanges = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +39,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import * as React from 'react';
-import parse from 'diffparser';
-import FileChanges from './FileChanges';
-
 const sampleUnifiedDiff = `
 diff --git a/some/folder/filename.js b/some/folder/filename.js
 index abc123..cde456 100644
@@ -66,24 +94,24 @@ index abc123..cde456 100644
    // end of hunk
 `;
 
-class FileChangesExample extends React.Component<{}> {
-  render(): React.Node {
-    const diff = parse(sampleUnifiedDiff);
-    const changes = diff.map(file => (
-      <FileChanges diff={file} key={`${file.from}:${file.to}`} />
-    ));
-    return <div>{changes}</div>;
+class FileChangesExample extends React.Component {
+  render() {
+    const diff = (0, _diffparser().default)(sampleUnifiedDiff);
+    const changes = diff.map(file => React.createElement(_FileChanges().default, {
+      diff: file,
+      key: `${file.from}:${file.to}`
+    }));
+    return React.createElement("div", null, changes);
   }
+
 }
 
-export const FileChangesExamples = {
+const FileChangesExamples = {
   sectionName: 'FileChanges',
-  description:
-    'Displays unified diffs in separate, per-hunk TextEditor instances',
-  examples: [
-    {
-      title: 'Basic example',
-      component: FileChangesExample,
-    },
-  ],
+  description: 'Displays unified diffs in separate, per-hunk TextEditor instances',
+  examples: [{
+    title: 'Basic example',
+    component: FileChangesExample
+  }]
 };
+exports.FileChangesExamples = FileChangesExamples;

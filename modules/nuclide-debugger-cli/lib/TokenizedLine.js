@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,36 +13,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-export type Token = {
-  start: number, // offset of token in line
-  token: string, // token value
-};
-
-export default class TokenizedLine {
-  _line: string;
-  _tokens: Array<Token>;
-
-  constructor(line: string) {
+class TokenizedLine {
+  constructor(line) {
     this._line = line;
+
     this._tokenize(line);
-  }
+  } // return all tokens, with start indices
 
-  // return all tokens, with start indices
-  tokens(): Array<Token> {
+
+  tokens() {
     return this._tokens;
-  }
+  } // return just string tokens
 
-  // return just string tokens
-  stringTokens(): Array<string> {
+
+  stringTokens() {
     return this._tokens.map(t => t.token);
-  }
+  } // return the rest of the line, starting with the indexed token
 
-  // return the rest of the line, starting with the indexed token
-  rest(idx: number): string {
+
+  rest(idx) {
     if (idx >= this._tokens.length) {
       return '';
     }
@@ -44,12 +43,10 @@ export default class TokenizedLine {
   }
 
   str() {
-    return `Line: [${this._line}]\nTokens:\n${this._tokens
-      .map(t => `[${t.token}]@${t.start}`)
-      .join('\n')}`;
+    return `Line: [${this._line}]\nTokens:\n${this._tokens.map(t => `[${t.token}]@${t.start}`).join('\n')}`;
   }
 
-  _tokenize(line: string): void {
+  _tokenize(line) {
     this._tokens = [];
     let token = '';
     let quoted = false;
@@ -57,11 +54,16 @@ export default class TokenizedLine {
 
     for (let i = 0; i < line.length; i++) {
       const c = line.substr(i, 1);
+
       if (c === "'") {
         if (quoted) {
           if (token !== '') {
-            this._tokens.push({start, token});
+            this._tokens.push({
+              start,
+              token
+            });
           }
+
           token = '';
           quoted = false;
           continue;
@@ -79,9 +81,14 @@ export default class TokenizedLine {
 
       if (c === ' ' || c === '\t') {
         if (token !== '') {
-          this._tokens.push({start, token});
+          this._tokens.push({
+            start,
+            token
+          });
+
           token = '';
         }
+
         start = i + 1;
         continue;
       }
@@ -90,7 +97,13 @@ export default class TokenizedLine {
     }
 
     if (token !== '') {
-      this._tokens.push({start, token});
+      this._tokens.push({
+        start,
+        token
+      });
     }
   }
+
 }
+
+exports.default = TokenizedLine;

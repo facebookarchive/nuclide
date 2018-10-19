@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.mapAtomLanguageIdToVsCode = mapAtomLanguageIdToVsCode;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,11 +12,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-const languageIdMap: {[string]: string} = {
+const languageIdMap = {
   'source.c': 'c',
   'source.clojure': 'clojure',
   'source.coffee': 'coffeescript',
@@ -88,9 +94,9 @@ const languageIdMap: {[string]: string} = {
   'source.tsx': 'typescriptreact',
   'text.xml': 'xml',
   'text.xml.xsl': 'xsl',
-  'source.yaml': 'yaml',
+  'source.yaml': 'yaml'
 };
 
-export function mapAtomLanguageIdToVsCode(atomLanguageId: string): ?string {
+function mapAtomLanguageIdToVsCode(atomLanguageId) {
   return languageIdMap[atomLanguageId];
 }

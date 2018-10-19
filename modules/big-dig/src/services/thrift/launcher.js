@@ -1,3 +1,25 @@
+"use strict";
+
+function _ThriftServerManager() {
+  const data = require("./ThriftServerManager");
+
+  _ThriftServerManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +28,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const logger = (0, _log4js().getLogger)('thrift-service'); // eslint-disable-next-line nuclide-internal/no-commonjs
 
-import type {BigDigServer} from '../../server/BigDigServer';
-import type {Transport} from '../../server/BigDigServer';
-
-import {ThriftServerManager} from './ThriftServerManager';
-
-import {getLogger} from 'log4js';
-
-const logger = getLogger('thrift-service');
-
-// eslint-disable-next-line nuclide-internal/no-commonjs
-module.exports = function launch(server: BigDigServer): Promise<void> {
+module.exports = function launch(server) {
   logger.info('adding Thrift Service subscriber!');
-
   server.addSubscriber('thrift-services', {
-    onConnection(transport: Transport) {
-      logger.info('connection made, creating Thrift Service Manager');
-      // eslint-disable-next-line no-unused-vars
-      const thriftServerManager = new ThriftServerManager(transport);
-    },
-  });
+    onConnection(transport) {
+      logger.info('connection made, creating Thrift Service Manager'); // eslint-disable-next-line no-unused-vars
 
+      const thriftServerManager = new (_ThriftServerManager().ThriftServerManager)(transport);
+    }
+
+  });
   return Promise.resolve();
 };

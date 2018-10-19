@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,25 +13,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  SshConnectionConfiguration,
-  SshHandshakeErrorType,
-} from './SshHandshake';
-
 const CONNECTION_EVENT = 'nuclide-remote-connection';
 
-export default class ConnectionTracker {
-  _config: SshConnectionConfiguration;
-  _connectionStartTime: number;
-  _promptYubikeyTime: number;
-  _finishYubikeyTime: number;
-  _expired: boolean;
-
-  constructor(config: SshConnectionConfiguration) {
+class ConnectionTracker {
+  constructor(config) {
     this._config = config;
     this._expired = false;
     this._connectionStartTime = Date.now();
@@ -32,48 +27,34 @@ export default class ConnectionTracker {
     this._finishYubikeyTime = 0;
   }
 
-  trackPromptYubikeyInput(): void {
+  trackPromptYubikeyInput() {
     this._promptYubikeyTime = Date.now();
   }
 
-  trackFinishYubikeyInput(): void {
+  trackFinishYubikeyInput() {
     this._finishYubikeyTime = Date.now();
   }
 
-  trackSuccess(): void {
+  trackSuccess() {
     this._trackConnectionResult(true);
   }
 
-  trackFailure(errorType: SshHandshakeErrorType, e: Error): void {
+  trackFailure(errorType, e) {
     this._trackConnectionResult(false, errorType, e);
   }
 
-  _trackConnectionResult(
-    succeed: boolean,
-    errorType?: SshHandshakeErrorType,
-    e?: Error,
-  ): void {
+  _trackConnectionResult(succeed, errorType, e) {
     if (this._expired) {
       return;
     }
 
-    const preYubikeyDuration =
-      this._promptYubikeyTime > 0
-        ? this._promptYubikeyTime - this._connectionStartTime
-        : 0;
-    const postYubikeyDuration =
-      this._finishYubikeyTime > 0 ? Date.now() - this._finishYubikeyTime : 0;
-    const realDuration =
-      preYubikeyDuration > 0 && postYubikeyDuration > 0
-        ? preYubikeyDuration + postYubikeyDuration
-        : 0;
-
+    const preYubikeyDuration = this._promptYubikeyTime > 0 ? this._promptYubikeyTime - this._connectionStartTime : 0;
+    const postYubikeyDuration = this._finishYubikeyTime > 0 ? Date.now() - this._finishYubikeyTime : 0;
+    const realDuration = preYubikeyDuration > 0 && postYubikeyDuration > 0 ? preYubikeyDuration + postYubikeyDuration : 0;
     track(CONNECTION_EVENT, {
       error: succeed ? '0' : '1',
       errorType: errorType || '',
-      exception: e
-        ? `name: ${e.name}, message: ${e.message}, stack: ${e.stack}.`
-        : '',
+      exception: e ? `name: ${e.name}, message: ${e.message}, stack: ${e.stack}.` : '',
       duration: (Date.now() - this._connectionStartTime).toString(),
       preYubikeyDuration: preYubikeyDuration.toString(),
       postYubikeyDuration: postYubikeyDuration.toString(),
@@ -82,11 +63,13 @@ export default class ConnectionTracker {
       sshPort: this._config.sshPort.toString(),
       username: this._config.username,
       remoteServer: this._config.remoteServer,
-      authMethod: this._config.authMethod,
+      authMethod: this._config.authMethod
     });
-
     this._expired = true;
   }
+
 }
 
-function track(eventName: string, metaData: Object) {}
+exports.default = ConnectionTracker;
+
+function track(eventName, metaData) {}

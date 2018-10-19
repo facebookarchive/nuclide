@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.getLogger = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,11 +12,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-const logger: log4js$Logger = {
+const logger = {
   debug: jest.fn(),
   error: jest.fn(),
   fatal: jest.fn(),
@@ -22,15 +28,16 @@ const logger: log4js$Logger = {
   removeLevel: jest.fn(),
   setLevel: jest.fn(),
   trace: jest.fn(),
-  warn: jest.fn(),
+  warn: jest.fn()
 };
 
-export const getLogger = (name: string): log4js$Logger => logger;
+const getLogger = name => logger;
 
+exports.getLogger = getLogger;
 const log4js = {
   getLogger,
   // $FlowFixMe
-  configure: jest.fn(),
+  configure: jest.fn()
 };
-
-export default log4js;
+var _default = log4js;
+exports.default = _default;

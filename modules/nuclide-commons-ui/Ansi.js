@@ -1,96 +1,105 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import * as React from 'react';
-import Anser from 'anser';
-import escapeCarriageReturn from 'escape-carriage';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-type Props = {
-  useClasses?: boolean,
-  colorStyle?: {[color: string]: string},
-  children?: string,
-  renderSegment?: RenderSegmentProps => React.Node,
-};
+var React = _interopRequireWildcard(require("react"));
 
-export type RenderSegmentProps = {
-  key: string,
-  style: Object,
-  content: string,
-};
+function _anser() {
+  const data = _interopRequireDefault(require("anser"));
+
+  _anser = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _escapeCarriage() {
+  const data = _interopRequireDefault(require("escape-carriage"));
+
+  _escapeCarriage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
 function ansiToJSON(input, useClasses) {
   const classes = useClasses == null || !useClasses ? false : useClasses;
-  return Anser.ansiToJson(escapeCarriageReturn(input), {
+  return _anser().default.ansiToJson((0, _escapeCarriage().default)(input), {
     use_classes: classes,
     json: true,
-    remove_empty: true,
+    remove_empty: true
   });
-}
+} // make sure
 
-// make sure
+
 function ansiJSONtoStyleBundle(ansiBundle, colorStyle) {
   const style = {};
+
   if (ansiBundle.bg) {
-    style.backgroundColor =
-      colorStyle != null
-        ? `rgb(${colorStyle[ansiBundle.bg]})`
-        : `rgb(${ansiBundle.bg})`;
+    style.backgroundColor = colorStyle != null ? `rgb(${colorStyle[ansiBundle.bg]})` : `rgb(${ansiBundle.bg})`;
   }
+
   if (ansiBundle.fg) {
-    style.color =
-      colorStyle != null
-        ? `rgb(${colorStyle[ansiBundle.fg]})`
-        : `rgb(${ansiBundle.fg})`;
+    style.color = colorStyle != null ? `rgb(${colorStyle[ansiBundle.fg]})` : `rgb(${ansiBundle.fg})`;
   } else {
     if (colorStyle != null) {
       style.color = `rgb(${colorStyle.default})`;
     }
   }
+
   return {
     content: ansiBundle.content,
-    style,
+    style
   };
 }
 
 function ansiToInlineStyle(text, useClasses, colorStyle) {
-  return ansiToJSON(text, useClasses).map(input =>
-    ansiJSONtoStyleBundle(input, colorStyle),
-  );
+  return ansiToJSON(text, useClasses).map(input => ansiJSONtoStyleBundle(input, colorStyle));
 }
 
-function defaultRenderSegment({key, style, content}: RenderSegmentProps) {
-  return (
-    <span key={key} style={style}>
-      {content}
-    </span>
-  );
+function defaultRenderSegment({
+  key,
+  style,
+  content
+}) {
+  return React.createElement("span", {
+    key: key,
+    style: style
+  }, content);
 }
 
-export default class Ansi extends React.PureComponent<Props> {
+class Ansi extends React.PureComponent {
   render() {
-    const {
+    const _this$props = this.props,
+          {
       useClasses,
       colorStyle,
       children,
-      renderSegment = defaultRenderSegment,
-      ...passThroughProps
-    } = this.props;
-    return (
-      <code {...passThroughProps}>
-        {ansiToInlineStyle(children, useClasses, colorStyle).map(
-          ({style, content}, key) =>
-            renderSegment({key: String(key), style, content}),
-        )}
-      </code>
-    );
+      renderSegment = defaultRenderSegment
+    } = _this$props,
+          passThroughProps = _objectWithoutProperties(_this$props, ["useClasses", "colorStyle", "children", "renderSegment"]);
+
+    return React.createElement("code", passThroughProps, ansiToInlineStyle(children, useClasses, colorStyle).map(({
+      style,
+      content
+    }, key) => renderSegment({
+      key: String(key),
+      style,
+      content
+    })));
   }
+
 }
+
+exports.default = Ansi;

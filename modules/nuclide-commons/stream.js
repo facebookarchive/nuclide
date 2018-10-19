@@ -1,3 +1,38 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeStream = observeStream;
+exports.observeRawStream = observeRawStream;
+exports.writeToStream = writeToStream;
+
+var _stream = _interopRequireDefault(require("stream"));
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("./UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("./event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,69 +41,50 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import Stream from 'stream';
-import {Observable} from 'rxjs';
-
-import UniversalDisposable from './UniversalDisposable';
-import {attachEvent} from './event';
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): Observable<string> {
+function observeStream(stream) {
   return observeRawStream(stream).map(data => data.toString());
 }
 
-export function observeRawStream(stream: stream$Readable): Observable<Buffer> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
-  return Observable.fromEvent(stream, 'data')
-    .merge(error)
-    .takeUntil(Observable.fromEvent(stream, 'end'));
-}
+function observeRawStream(stream) {
+  const error = _RxMin.Observable.fromEvent(stream, 'error').flatMap(_RxMin.Observable.throw);
 
+  return _RxMin.Observable.fromEvent(stream, 'data').merge(error).takeUntil(_RxMin.Observable.fromEvent(stream, 'end'));
+}
 /**
  * Write an observed readable stream into a writable stream. Effectively a pipe() for observables.
  * Returns an observable accumulating the number of bytes processed.
  */
-export function writeToStream(
-  source: Observable<Buffer>,
-  destStream: stream$Writable,
-): Observable<number> {
-  return Observable.create(observer => {
-    let byteCount = 0;
 
-    const byteCounterStream = new Stream.Transform({
+
+function writeToStream(source, destStream) {
+  return _RxMin.Observable.create(observer => {
+    let byteCount = 0;
+    const byteCounterStream = new _stream.default.Transform({
       transform(chunk, encoding, cb) {
         byteCount += chunk.byteLength;
         observer.next(byteCount);
         cb(null, chunk);
-      },
+      }
+
     });
-
     byteCounterStream.pipe(destStream);
-
-    return new UniversalDisposable(
-      attachEvent(destStream, 'error', err => {
-        observer.error(err);
-      }),
-      attachEvent(destStream, 'close', () => {
-        observer.complete();
-      }),
-      source.subscribe(
-        buffer => {
-          byteCounterStream.write(buffer);
-        },
-        err => {
-          observer.error(err);
-        },
-        () => {
-          byteCounterStream.end();
-        },
-      ),
-    );
+    return new (_UniversalDisposable().default)((0, _event().attachEvent)(destStream, 'error', err => {
+      observer.error(err);
+    }), (0, _event().attachEvent)(destStream, 'close', () => {
+      observer.complete();
+    }), source.subscribe(buffer => {
+      byteCounterStream.write(buffer);
+    }, err => {
+      observer.error(err);
+    }, () => {
+      byteCounterStream.end();
+    }));
   }).share();
 }

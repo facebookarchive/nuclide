@@ -1,149 +1,155 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  DiagnosticMessage,
-  CodeActionsState,
-  DescriptionsState,
-} from '../../../atom-ide-diagnostics/lib/types';
-import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsPopup = void 0;
 
-import * as React from 'react';
-import classnames from 'classnames';
-import analytics from 'nuclide-commons/analytics';
-import {mapUnion} from 'nuclide-commons/collection';
-import {DiagnosticsMessage} from './DiagnosticsMessage';
-import DiagnosticsCodeActions from './DiagnosticsCodeActions';
+var React = _interopRequireWildcard(require("react"));
 
-type DiagnosticsPopupProps = {
-  messages: Array<DiagnosticMessage>,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  fixer: (message: DiagnosticMessage) => void,
-  codeActionsForMessage?: CodeActionsState,
-  descriptions?: DescriptionsState,
-  style: ?Object,
-};
+function _classnames() {
+  const data = _interopRequireDefault(require("classnames"));
 
-function renderMessage(
-  fixer: (message: DiagnosticMessage) => void,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  codeActionsForMessage: ?CodeActionsState,
-  descriptions: ?DescriptionsState,
-  message: DiagnosticMessage,
-  index: number,
-): React.Element<any> {
-  const className = classnames(
-    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
-    'native-key-bindings',
-    'diagnostics-popup-diagnostic',
-    {
-      'diagnostics-popup-error': message.type === 'Error',
-      'diagnostics-popup-warning': message.type === 'Warning',
-      'diagnostics-popup-info': message.type === 'Info',
-    },
-  );
-  const codeActions = getCodeActions(message, codeActionsForMessage);
-  const description = getDescription(message, descriptions);
-  return (
-    <div className={className} key={index} tabIndex={-1}>
-      <DiagnosticsMessage
-        fixer={fixer}
-        goToLocation={goToLocation}
-        message={message}
-        description={description}>
-        {codeActions && codeActions.size ? (
-          <DiagnosticsCodeActions codeActions={codeActions} />
-        ) : null}
-      </DiagnosticsMessage>
-    </div>
-  );
+  _classnames = function () {
+    return data;
+  };
+
+  return data;
 }
 
-function getCodeActions(
-  message: DiagnosticMessage,
-  codeActionsForMessage: ?CodeActionsState,
-): ?Map<string, CodeAction> {
+function _analytics() {
+  const data = _interopRequireDefault(require("../../../../../nuclide-commons/analytics"));
+
+  _analytics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../../../nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DiagnosticsMessage() {
+  const data = require("./DiagnosticsMessage");
+
+  _DiagnosticsMessage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DiagnosticsCodeActions() {
+  const data = _interopRequireDefault(require("./DiagnosticsCodeActions"));
+
+  _DiagnosticsCodeActions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function renderMessage(fixer, goToLocation, codeActionsForMessage, descriptions, message, index) {
+  const className = (0, _classnames().default)( // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
+  'native-key-bindings', 'diagnostics-popup-diagnostic', {
+    'diagnostics-popup-error': message.type === 'Error',
+    'diagnostics-popup-warning': message.type === 'Warning',
+    'diagnostics-popup-info': message.type === 'Info'
+  });
+  const codeActions = getCodeActions(message, codeActionsForMessage);
+  const description = getDescription(message, descriptions);
+  return React.createElement("div", {
+    className: className,
+    key: index,
+    tabIndex: -1
+  }, React.createElement(_DiagnosticsMessage().DiagnosticsMessage, {
+    fixer: fixer,
+    goToLocation: goToLocation,
+    message: message,
+    description: description
+  }, codeActions && codeActions.size ? React.createElement(_DiagnosticsCodeActions().default, {
+    codeActions: codeActions
+  }) : null));
+}
+
+function getCodeActions(message, codeActionsForMessage) {
   const codeActionMaps = [];
+
   if (message.actions != null && message.actions.length > 0) {
-    codeActionMaps.push(
-      new Map(
-        message.actions.map(action => {
-          return [
-            action.title,
-            {
-              async getTitle() {
-                return action.title;
-              },
-              async apply() {
-                action.apply();
-              },
-              dispose() {},
-            },
-          ];
-        }),
-      ),
-    );
+    codeActionMaps.push(new Map(message.actions.map(action => {
+      return [action.title, {
+        async getTitle() {
+          return action.title;
+        },
+
+        async apply() {
+          action.apply();
+        },
+
+        dispose() {}
+
+      }];
+    })));
   }
+
   if (codeActionsForMessage) {
     const actions = codeActionsForMessage.get(message);
+
     if (actions != null) {
       codeActionMaps.push(actions);
     }
   }
-  return codeActionMaps.length > 0 ? mapUnion(...codeActionMaps) : null;
+
+  return codeActionMaps.length > 0 ? (0, _collection().mapUnion)(...codeActionMaps) : null;
 }
 
-function getDescription(
-  message: DiagnosticMessage,
-  descriptions: ?DescriptionsState,
-): string {
+function getDescription(message, descriptions) {
   if (descriptions) {
     return descriptions.get(message) || '';
   }
-  return '';
-}
 
-// TODO move LESS styles to nuclide-ui
-export class DiagnosticsPopup extends React.Component<DiagnosticsPopupProps> {
+  return '';
+} // TODO move LESS styles to nuclide-ui
+
+
+class DiagnosticsPopup extends React.Component {
   componentDidMount() {
-    analytics.track('diagnostics-show-popup', {
+    _analytics().default.track('diagnostics-show-popup', {
       // Note: there could be multiple providers here (but it's less common).
-      providerName: this.props.messages[0].providerName,
+      providerName: this.props.messages[0].providerName
     });
   }
 
   render() {
-    const {
+    const _this$props = this.props,
+          {
       fixer,
       goToLocation,
       codeActionsForMessage,
       descriptions,
-      messages,
-      ...rest
-    } = this.props;
-    return (
-      <div className="diagnostics-popup" {...rest}>
-        {messages.map((msg, index) =>
-          renderMessage(
-            fixer,
-            goToLocation,
-            codeActionsForMessage,
-            descriptions,
-            msg,
-            index,
-          ),
-        )}
-      </div>
-    );
+      messages
+    } = _this$props,
+          rest = _objectWithoutProperties(_this$props, ["fixer", "goToLocation", "codeActionsForMessage", "descriptions", "messages"]);
+
+    return React.createElement("div", Object.assign({
+      className: "diagnostics-popup"
+    }, rest), messages.map((msg, index) => renderMessage(fixer, goToLocation, codeActionsForMessage, descriptions, msg, index)));
   }
+
 }
+
+exports.DiagnosticsPopup = DiagnosticsPopup;

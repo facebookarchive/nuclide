@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = processTimed;
+
+function _performanceNow() {
+  const data = _interopRequireDefault(require("./performanceNow"));
+
+  _performanceNow = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,19 +25,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {AbortSignal} from './AbortController';
-
-import performanceNow from './performanceNow';
-
-type Options = {|
-  limit: number,
-  delay: number,
-  signal?: AbortSignal,
-|};
 
 /**
  * Splits tasks that would normally block for a long time across several tasks
@@ -32,35 +41,42 @@ type Options = {|
  * @param options.delay  - The time (in ms) between processing tasks.
  * @param options.signal - An `AbortSignal` that can be used to cancel processing.
  */
-export default function processTimed(
-  process: () => Iterable<void>,
-  options: Options,
-): void {
-  if (options.signal?.aborted) {
-    return;
-  }
+function processTimed(process, options) {
+  var _options$signal;
 
-  // Kick off the generator once and hand a stateful iterator to
+  if ((_options$signal = options.signal) === null || _options$signal === void 0 ? void 0 : _options$signal.aborted) {
+    return;
+  } // Kick off the generator once and hand a stateful iterator to
   // `processTimedIterator`.
   // $FlowFixMe
+
+
   processTimedIterator(process(), options);
 }
 
-function processTimedIterator(
-  processIterator: Iterator<void>,
-  {limit, delay, signal}: Options,
-): void {
-  if (signal?.aborted) {
+function processTimedIterator(processIterator, {
+  limit,
+  delay,
+  signal
+}) {
+  if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
     return;
   }
 
   let done;
-  const before = performanceNow();
+  const before = (0, _performanceNow().default)();
+
   do {
-    ({done} = processIterator.next());
-  } while (!done && performanceNow() - before < limit);
+    ({
+      done
+    } = processIterator.next());
+  } while (!done && (0, _performanceNow().default)() - before < limit);
 
   setTimeout(() => {
-    processTimedIterator(processIterator, {limit, delay, signal});
+    processTimedIterator(processIterator, {
+      limit,
+      delay,
+      signal
+    });
   }, delay);
 }

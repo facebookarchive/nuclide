@@ -1,3 +1,56 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideOutlines = provideOutlines;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.provideCodeFormat = provideCodeFormat;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _JSONOutlineProvider() {
+  const data = require("./JSONOutlineProvider");
+
+  _JSONOutlineProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _NPMHyperclickProvider() {
+  const data = require("./NPMHyperclickProvider");
+
+  _NPMHyperclickProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CodeFormatHelpers() {
+  const data = _interopRequireDefault(require("./CodeFormatHelpers"));
+
+  _CodeFormatHelpers = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,72 +58,60 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  CodeFormatProvider,
-  HyperclickProvider,
-  Outline,
-  OutlineProvider,
-} from 'atom-ide-ui';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-import {getOutline} from './JSONOutlineProvider';
-import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
-
-import CodeFormatHelpers from './CodeFormatHelpers';
-
 class Activation {
-  _disposables: UniversalDisposable;
-
-  constructor(state: ?Object) {
-    this._disposables = new UniversalDisposable();
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable().default)();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
+
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
     grammarScopes: ['source.json'],
     priority: 1,
     name: 'Nuclide JSON',
-    getOutline(editor: atom$TextEditor): Promise<?Outline> {
-      return Promise.resolve(getOutline(editor.getText()));
-    },
+
+    getOutline(editor) {
+      return Promise.resolve((0, _JSONOutlineProvider().getOutline)(editor.getText()));
+    }
+
   };
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
-  return getNPMHyperclickProvider();
+function getHyperclickProvider() {
+  return (0, _NPMHyperclickProvider().getNPMHyperclickProvider)();
 }
 
-export function provideCodeFormat(): CodeFormatProvider {
+function provideCodeFormat() {
   return {
     grammarScopes: ['source.json'],
     priority: 1,
+
     formatEntireFile(editor, range) {
-      return CodeFormatHelpers.formatEntireFile(editor, range);
-    },
+      return _CodeFormatHelpers().default.formatEntireFile(editor, range);
+    }
+
   };
 }

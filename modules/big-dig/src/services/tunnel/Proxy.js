@@ -1,3 +1,46 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Proxy = void 0;
+
+var _net = _interopRequireDefault(require("net"));
+
+function _Encoder() {
+  const data = _interopRequireDefault(require("./Encoder"));
+
+  _Encoder = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _events = _interopRequireDefault(require("events"));
+
+function _ProxyConfigUtils() {
+  const data = require("./ProxyConfigUtils");
+
+  _ProxyConfigUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,40 +49,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+const logger = (0, _log4js().getLogger)('tunnel-proxy');
 
-import type {Observable} from 'rxjs';
-import type {TunnelMessage, TunnelConfig} from './types';
-
-import net from 'net';
-import Encoder from './Encoder';
-
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-import EventEmitter from 'events';
-import {getProxyConfigDescriptor} from './ProxyConfigUtils';
-
-const logger = getLogger('tunnel-proxy');
-
-export type Transport = {
-  send(string): void,
-  onMessage(): Observable<string>,
-};
-
-export class Proxy extends EventEmitter {
-  _tunnelConfig: TunnelConfig;
-  _transport: Transport;
-  _server: ?net.Server;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
-
-  constructor(
-    tunnelId: string,
-    tunnelConfig: TunnelConfig,
-    transport: Transport,
-  ) {
+class Proxy extends _events.default {
+  constructor(tunnelId, tunnelConfig, transport) {
     super();
     this._tunnelId = tunnelId;
     this._tunnelConfig = tunnelConfig;
@@ -48,36 +64,32 @@ export class Proxy extends EventEmitter {
     this._socketByClientId = new Map();
   }
 
-  static async createProxy(
-    tunnelId: string,
-    tunnelConfig: TunnelConfig,
-    transport: Transport,
-  ): Promise<Proxy> {
+  static async createProxy(tunnelId, tunnelConfig, transport) {
     const proxy = new Proxy(tunnelId, tunnelConfig, transport);
     await proxy.startListening();
-
     return proxy;
   }
 
-  async startListening(): Promise<void> {
+  async startListening() {
     return new Promise((resolve, reject) => {
-      this._server = net.createServer(socket => {
-        const clientId: number = socket.remotePort;
+      this._server = _net.default.createServer(socket => {
+        const clientId = socket.remotePort;
+
         this._sendMessage({
           event: 'connection',
           clientId,
-          tunnelId: this._tunnelId,
-        });
-
-        // forward events over the transport
+          tunnelId: this._tunnelId
+        }); // forward events over the transport
         // NOTE: Needs to be explicit otherwise Flow will complain about the
         // type. We prefer this as opposed to using `any` types in such important infra code.
+
+
         socket.on('timeout', arg => {
           this._sendMessage({
             event: 'timeout',
             arg,
             clientId,
-            tunnelId: this._tunnelId,
+            tunnelId: this._tunnelId
           });
         });
         socket.on('end', arg => {
@@ -85,7 +97,7 @@ export class Proxy extends EventEmitter {
             event: 'end',
             arg,
             clientId,
-            tunnelId: this._tunnelId,
+            tunnelId: this._tunnelId
           });
         });
         socket.on('close', arg => {
@@ -93,7 +105,7 @@ export class Proxy extends EventEmitter {
             event: 'close',
             arg,
             clientId,
-            tunnelId: this._tunnelId,
+            tunnelId: this._tunnelId
           });
         });
         socket.on('data', arg => {
@@ -101,18 +113,19 @@ export class Proxy extends EventEmitter {
             event: 'data',
             arg,
             clientId,
-            tunnelId: this._tunnelId,
+            tunnelId: this._tunnelId
           });
         });
-
         socket.on('error', error => {
           logger.error('error on socket: ', error);
+
           this._sendMessage({
             event: 'error',
             error,
             tunnelId: this._tunnelId,
-            clientId,
+            clientId
           });
+
           socket.destroy(error);
         });
         socket.on('close', () => this._deleteSocket(clientId));
@@ -121,64 +134,70 @@ export class Proxy extends EventEmitter {
       });
 
       this._server.on('error', error => {
-        logger.error(
-          `error when listening on ${getProxyConfigDescriptor(
-            this._tunnelConfig.local,
-          )}: `,
-          error,
-        );
+        logger.error(`error when listening on ${(0, _ProxyConfigUtils().getProxyConfigDescriptor)(this._tunnelConfig.local)}: `, error);
+
         this._sendMessage({
           event: 'proxyError',
           tunnelConfig: this._tunnelConfig,
           error,
-          tunnelId: this._tunnelId,
+          tunnelId: this._tunnelId
         });
+
         reject(error);
       });
 
-      invariant(this._server);
+      if (!this._server) {
+        throw new Error("Invariant violation: \"this._server\"");
+      }
+
       this._server.listen(this._tunnelConfig.local, () => {
-        logger.info(
-          `successfully started listening on ${getProxyConfigDescriptor(
-            this._tunnelConfig.local,
-          )}`,
-        );
-        // send a message to create the SocketManager
+        logger.info(`successfully started listening on ${(0, _ProxyConfigUtils().getProxyConfigDescriptor)(this._tunnelConfig.local)}`); // send a message to create the SocketManager
+
         this._sendMessage({
           event: 'proxyCreated',
           proxyConfig: this._tunnelConfig.remote,
-          tunnelId: this._tunnelId,
+          tunnelId: this._tunnelId
         });
+
         resolve();
       });
     });
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  receive(msg: TunnelMessage): void {
+  receive(msg) {
     switch (msg.event) {
       case 'data':
         this._forwardData(msg.clientId, msg.arg);
+
         return;
+
       case 'close':
         this._ensureSocketClosed(msg.clientId);
+
         return;
+
       case 'error':
         this._destroySocket(msg.clientId, msg.error);
+
         return;
+
       case 'end':
         this._endSocket(msg.clientId);
+
         return;
+
       default:
         throw new Error(`Invalid tunnel message: ${msg.event}`);
     }
   }
 
-  _forwardData(id: number, data: string) {
+  _forwardData(id, data) {
     const socket = this._socketByClientId.get(id);
+
     if (socket != null) {
       socket.write(data);
     } else {
@@ -186,59 +205,72 @@ export class Proxy extends EventEmitter {
     }
   }
 
-  _deleteSocket(id: number) {
+  _deleteSocket(id) {
     logger.info(`socket ${id} closed`);
+
     const socket = this._socketByClientId.get(id);
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error("Invariant violation: \"socket\"");
+    }
+
     socket.removeAllListeners();
+
     this._socketByClientId.delete(id);
   }
 
-  _destroySocket(id: number, error: Error) {
+  _destroySocket(id, error) {
     const socket = this._socketByClientId.get(id);
+
     if (socket != null) {
       socket.destroy(error);
     } else {
-      logger.info(
-        `no socket ${id} found for ${
-          error.message
-        }, this is expected if it was closed recently`,
-      );
+      logger.info(`no socket ${id} found for ${error.message}, this is expected if it was closed recently`);
     }
   }
 
-  _endSocket(id: number) {
+  _endSocket(id) {
     const socket = this._socketByClientId.get(id);
+
     if (socket != null) {
       socket.end();
     } else {
-      logger.info(
-        `no socket ${id} found to be ended, this is expected if it was closed recently`,
-      );
+      logger.info(`no socket ${id} found to be ended, this is expected if it was closed recently`);
     }
   }
 
-  _ensureSocketClosed(id: number) {
+  _ensureSocketClosed(id) {
     const socket = this._socketByClientId.get(id);
+
     if (socket != null) {
       logger.info(`socket ${id} wasn't closed in time, force closing it`);
       socket.destroy();
     }
   }
 
-  _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(Encoder.encode(msg));
+  _sendMessage(msg) {
+    this._transport.send(_Encoder().default.encode(msg));
   }
 
-  close(): void {
+  close() {
     if (this._server != null) {
       this._server.close();
+
       this._server = null;
     }
+
     this._socketByClientId.forEach((socket, id) => {
       socket.end();
     });
+
     this.removeAllListeners();
-    this._sendMessage({event: 'proxyClosed', tunnelId: this._tunnelId});
+
+    this._sendMessage({
+      event: 'proxyClosed',
+      tunnelId: this._tunnelId
+    });
   }
+
 }
+
+exports.Proxy = Proxy;

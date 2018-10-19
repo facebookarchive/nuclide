@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUsername = getUsername;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,17 +13,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import invariant from 'assert';
-
-export function getUsername(): string {
+function getUsername() {
   // It is slightly more robust to get the uid and look it up in /etc/whateveritis.
-  const {env} = process;
-  // flowlint-next-line sketchy-null-string:off
+  const {
+    env
+  } = process; // flowlint-next-line sketchy-null-string:off
+
   const username = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
-  invariant(username != null);
+
+  if (!(username != null)) {
+    throw new Error("Invariant violation: \"username != null\"");
+  }
+
   return username;
 }

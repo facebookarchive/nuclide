@@ -1,3 +1,44 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setUpRsyncTransport = setUpRsyncTransport;
+
+function _consumeFirstProvider() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/consumeFirstProvider"));
+
+  _consumeFirstProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,92 +46,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {SshTunnelService} from 'nuclide-adb/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ProgressEvent} from 'nuclide-commons/process';
-import typeof * as RsyncService from '../../nuclide-rsync-rpc';
-
-import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable} from 'rxjs';
-import {getRsyncServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-interface RsyncTransport {
-  downloadFolder: (remoteSource: NuclideUri) => Observable<ProgressEvent>;
-}
 
 /**
  * Set up an Rsync transport from a remote host to the local host. The daemon
  * will be spawned locally with localRoot as the module directory.
  */
-export function setUpRsyncTransport<A>(
-  remoteRoot: NuclideUri,
-  localRoot: NuclideUri,
-  rsyncActions: (rsync: RsyncTransport) => Observable<A>,
-): Observable<A> {
-  const remoteRsyncService = getRsyncServiceByNuclideUri(remoteRoot);
-  const localRsyncService = getRsyncServiceByNuclideUri('');
-
-  return (
-    Observable.defer(() => consumeFirstProvider('nuclide.ssh-tunnel'))
-      .switchMap((tunnelService: SshTunnelService) => {
-        return localRsyncService
-          .startDaemon(localRoot)
-          .refCount()
-          .switchMap(({port}) =>
-            tunnelService
-              .openTunnels([
-                {
-                  description: 'rsync',
-                  from: {
-                    host: remoteRoot,
-                    family: 4,
-                    port: 'any_available',
-                  },
-                  to: {
-                    host: 'localhost',
-                    family: 4,
-                    port,
-                  },
-                },
-              ])
-              .switchMap(resolved =>
-                rsyncActions({
-                  downloadFolder: (remoteSource: NuclideUri) =>
-                    downloadFolder(
-                      remoteRsyncService,
-                      resolved[0].from.port,
-                      remoteSource,
-                    ),
-                }).materialize(),
-              ),
-          );
-      })
-      // $FlowFixMe dematerialize
-      .dematerialize()
-  );
+function setUpRsyncTransport(remoteRoot, localRoot, rsyncActions) {
+  const remoteRsyncService = (0, _nuclideRemoteConnection().getRsyncServiceByNuclideUri)(remoteRoot);
+  const localRsyncService = (0, _nuclideRemoteConnection().getRsyncServiceByNuclideUri)('');
+  return _RxMin.Observable.defer(() => (0, _consumeFirstProvider().default)('nuclide.ssh-tunnel')).switchMap(tunnelService => {
+    return localRsyncService.startDaemon(localRoot).refCount().switchMap(({
+      port
+    }) => tunnelService.openTunnels([{
+      description: 'rsync',
+      from: {
+        host: remoteRoot,
+        family: 4,
+        port: 'any_available'
+      },
+      to: {
+        host: 'localhost',
+        family: 4,
+        port
+      }
+    }]).switchMap(resolved => rsyncActions({
+      downloadFolder: remoteSource => downloadFolder(remoteRsyncService, resolved[0].from.port, remoteSource)
+    }).materialize()));
+  }) // $FlowFixMe dematerialize
+  .dematerialize();
 }
-
 /**
  * Download a remote folder to the current local root.
  */
-function downloadFolder(
-  rsyncService: RsyncService,
-  port: number,
-  remoteSource: NuclideUri,
-): Observable<ProgressEvent> {
-  return rsyncService
-    .syncFolder(
-      nuclideUri.getPath(remoteSource),
-      `rsync://localhost:${port}/files/`,
-    )
-    .refCount()
-    .map(progress => ({
-      type: 'progress',
-      progress: progress / 100,
-    }));
+
+
+function downloadFolder(rsyncService, port, remoteSource) {
+  return rsyncService.syncFolder(_nuclideUri().default.getPath(remoteSource), `rsync://localhost:${port}/files/`).refCount().map(progress => ({
+    type: 'progress',
+    progress: progress / 100
+  }));
 }

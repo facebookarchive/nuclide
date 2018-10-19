@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HighlightedCodeExamples = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _Button() {
+  const data = require("./Button");
+
+  _Button = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HighlightedCode() {
+  const data = require("./HighlightedCode");
+
+  _HighlightedCode = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,69 +37,60 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 /* global requestAnimationFrame */
+class HighlightedCodeExample extends React.Component {
+  constructor(...args) {
+    var _temp;
 
-import * as React from 'react';
-import {Button} from './Button';
-import {HighlightedCode} from './HighlightedCode';
+    return _temp = super(...args), this.state = {
+      count: 1
+    }, this._addOneMore = () => {
+      // TODO(pelmers): Use react deferred update API when facebook/react/issues/13306 is ready
+      requestAnimationFrame(() => {
+        // TODO: (wbinnssmith) T30771435 this setState depends on current state
+        // and should use an updater function rather than an object
+        // eslint-disable-next-line react/no-access-state-in-setstate
+        this.setState({
+          count: this.state.count + 1
+        });
+      });
+    }, _temp;
+  }
 
-class HighlightedCodeExample extends React.Component<{}, {|count: number|}> {
-  state = {
-    count: 1,
-  };
-
-  _addOneMore = () => {
-    // TODO(pelmers): Use react deferred update API when facebook/react/issues/13306 is ready
-    requestAnimationFrame(() => {
-      // TODO: (wbinnssmith) T30771435 this setState depends on current state
-      // and should use an updater function rather than an object
-      // eslint-disable-next-line react/no-access-state-in-setstate
-      this.setState({count: this.state.count + 1});
-    });
-  };
-
-  render(): React.Node {
+  render() {
     const jsGrammar = atom.grammars.grammarForScopeName('source.js');
+
     if (jsGrammar == null) {
       return null;
-    }
-    // Use our own source code as an example!
-    const code = (HighlightedCodeExample.toString() + '\n').repeat(
-      this.state.count,
-    );
-    // $FlowIgnore: Not an official API yet.
+    } // Use our own source code as an example!
+
+
+    const code = (HighlightedCodeExample.toString() + '\n').repeat(this.state.count); // $FlowIgnore: Not an official API yet.
+
     const AsyncMode = React.unstable_AsyncMode;
-    return (
-      <div>
-        The code below is rendered with async React, so highlighting does not
-        block (no matter how many lines have to be tokenized).
-        <br />
-        <Button onClick={this._addOneMore}>Add more code!</Button>
-        <AsyncMode>
-          <HighlightedCode
-            grammar={jsGrammar}
-            code={code}
-            style={{marginTop: '8px'}}
-          />
-        </AsyncMode>
-      </div>
-    );
+    return React.createElement("div", null, "The code below is rendered with async React, so highlighting does not block (no matter how many lines have to be tokenized).", React.createElement("br", null), React.createElement(_Button().Button, {
+      onClick: this._addOneMore
+    }, "Add more code!"), React.createElement(AsyncMode, null, React.createElement(_HighlightedCode().HighlightedCode, {
+      grammar: jsGrammar,
+      code: code,
+      style: {
+        marginTop: '8px'
+      }
+    })));
   }
+
 }
 
-export const HighlightedCodeExamples = {
+const HighlightedCodeExamples = {
   sectionName: 'HighlightedCode',
-  description:
-    'HighlightedCode provides a lighter-weight syntax highlighter for code.\n' +
-    'It uses the same tokenizer as Atom text editors but ditches the editor.',
-  examples: [
-    {
-      title: 'HighlightedCode',
-      component: HighlightedCodeExample,
-    },
-  ],
+  description: 'HighlightedCode provides a lighter-weight syntax highlighter for code.\n' + 'It uses the same tokenizer as Atom text editors but ditches the editor.',
+  examples: [{
+    title: 'HighlightedCode',
+    component: HighlightedCodeExample
+  }]
 };
+exports.HighlightedCodeExamples = HighlightedCodeExamples;

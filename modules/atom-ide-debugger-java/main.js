@@ -1,3 +1,47 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideDebuggerCommon() {
+  const data = require("../nuclide-debugger-common");
+
+  _nuclideDebuggerCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _AutoGenLaunchAttachProvider() {
+  const data = require("../nuclide-debugger-common/AutoGenLaunchAttachProvider");
+
+  _AutoGenLaunchAttachProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("./utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,59 +50,38 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {
-  NuclideDebuggerProvider,
-  DebuggerConfigurationProvider,
-} from 'nuclide-debugger-common/types';
-import type {DebuggerSourcePathsService} from 'nuclide-debugger-common/types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
-import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import {
-  getJavaConfig,
-  setRpcService,
-  resolveConfiguration,
-  setSourcePathsService,
-} from './utils';
-
 class Activation {
   constructor() {}
+
   dispose() {}
 
-  createDebuggerProvider(): NuclideDebuggerProvider {
+  createDebuggerProvider() {
     return {
-      type: VsAdapterTypes.JAVA,
+      type: _nuclideDebuggerCommon().VsAdapterTypes.JAVA,
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          VsAdapterNames.JAVA,
-          connection,
-          getJavaConfig(),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider().AutoGenLaunchAttachProvider)(_nuclideDebuggerCommon().VsAdapterNames.JAVA, connection, (0, _utils().getJavaConfig)());
+      }
     };
   }
 
-  createDebuggerConfigurator(): Array<DebuggerConfigurationProvider> {
-    return [
-      {
-        resolveConfiguration,
-        adapterType: VsAdapterTypes.JAVA,
-      },
-    ];
+  createDebuggerConfigurator() {
+    return [{
+      resolveConfiguration: _utils().resolveConfiguration,
+      adapterType: _nuclideDebuggerCommon().VsAdapterTypes.JAVA
+    }];
   }
 
-  consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
-    return setRpcService(rpcService);
+  consumeRpcService(rpcService) {
+    return (0, _utils().setRpcService)(rpcService);
   }
 
-  consumeSourcePathsService(sourcePathsService: DebuggerSourcePathsService) {
-    return setSourcePathsService(sourcePathsService);
+  consumeSourcePathsService(sourcePathsService) {
+    return (0, _utils().setSourcePathsService)(sourcePathsService);
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

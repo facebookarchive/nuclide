@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,77 +25,68 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export type Provider = {
-  // Providers with higher priorities will be preferred over lower ones.
-  priority: number,
-  // Omitting grammarScopes implies that the provider applies to all grammars.
-  +grammarScopes?: Array<string>,
-};
-
-export default class ProviderRegistry<T: Provider> {
-  _providers: Array<T>;
-
+class ProviderRegistry {
   constructor() {
     this._providers = [];
   }
 
-  addProvider(provider: T): IDisposable {
-    const index = this._providers.findIndex(
-      p => provider.priority > p.priority,
-    );
+  addProvider(provider) {
+    const index = this._providers.findIndex(p => provider.priority > p.priority);
+
     if (index === -1) {
       this._providers.push(provider);
     } else {
       this._providers.splice(index, 0, provider);
     }
-    return new UniversalDisposable(() => {
+
+    return new (_UniversalDisposable().default)(() => {
       this.removeProvider(provider);
     });
   }
 
-  removeProvider(provider: T): void {
+  removeProvider(provider) {
     const index = this._providers.indexOf(provider);
+
     if (index !== -1) {
       this._providers.splice(index, 1);
     }
-  }
+  } // TODO deprecate since there can be N providers.
 
-  // TODO deprecate since there can be N providers.
-  getProviderForEditor(editor: atom$TextEditor): ?T {
+
+  getProviderForEditor(editor) {
     const grammar = editor.getGrammar().scopeName;
     return this.findProvider(grammar);
-  }
+  } // TODO create an ordering or priority aware util to prefer instead.
 
-  // TODO create an ordering or priority aware util to prefer instead.
-  getAllProvidersForEditor(editor: atom$TextEditor): Iterable<T> {
+
+  getAllProvidersForEditor(editor) {
     const grammar = editor.getGrammar().scopeName;
     return this.findAllProviders(grammar);
   }
 
-  findProvider(grammar: string): ?T {
+  findProvider(grammar) {
     for (const provider of this.findAllProviders(grammar)) {
       return provider;
     }
+
     return null;
   }
-
   /**
    * Iterates over all providers matching the grammar, in priority order.
    */
-  *findAllProviders(grammar: string): Iterable<T> {
+
+
+  *findAllProviders(grammar) {
     for (const provider of this._providers) {
-      if (
-        provider.grammarScopes == null ||
-        provider.grammarScopes.indexOf(grammar) !== -1
-      ) {
+      if (provider.grammarScopes == null || provider.grammarScopes.indexOf(grammar) !== -1) {
         yield provider;
       }
     }
   }
+
 }
+
+exports.default = ProviderRegistry;
