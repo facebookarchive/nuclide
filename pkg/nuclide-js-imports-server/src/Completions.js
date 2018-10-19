@@ -157,7 +157,7 @@ export function provideFullImportCompletions(
           label: id,
           filterText: textEdit.newText,
           kind: CompletionItemKind.Module,
-          inlineDetail: importsFormatter.stripLeadingDots(importPath),
+          detail: importsFormatter.stripLeadingDots(importPath),
           textEdit,
         };
       }),
