@@ -10,15 +10,14 @@
  */
 
 import log4js from 'log4js';
-import {setupLoggingService} from '../../nuclide-logging';
+import {setupLoggingService, getPathToLogDir} from '../../nuclide-logging';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import os from 'os';
 import {IConnection} from 'vscode-languageserver';
 
 const MAX_LOG_SIZE = 16 * 1024;
 const MAX_LOG_BACKUPS = 1;
 const LOG_FILE_PATH = nuclideUri.join(
-  os.tmpdir(),
+  getPathToLogDir(),
   'nuclide-js-imports-server.log',
 );
 

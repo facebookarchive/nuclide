@@ -99,6 +99,7 @@ export class AutoImportsManager {
       [root],
       {
         env: {
+          ...process.env,
           JS_IMPORTS_INITIALIZATION_SETTINGS: JSON.stringify(
             this.initializationSettings,
           ),
