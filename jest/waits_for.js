@@ -42,8 +42,8 @@ const waitsFor = async <T>(
 
 export default waitsFor;
 
-// Same function but flow compatible with returning a promise from
-// the passed fn
+// Same function but flow compatible with returning a promise
+// from the passed fn
 export const waitsForAsync = async <T>(
   fn: () => Promise<T>,
   message?: string,
