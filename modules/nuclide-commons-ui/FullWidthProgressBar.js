@@ -21,9 +21,7 @@ type Props = {
 
 export default class FullWidthProgressBar extends React.Component<Props> {
   render(): React.Node {
-    const className = classnames('nuclide-ui-full-width-progress-bar', {
-      indeterminate: this._isIndeterminate(),
-    });
+    const className = classnames('nuclide-ui-full-width-progress-bar');
     return (
       <div className={className} hidden={!this.props.visible}>
         {this._renderBar()}
@@ -37,7 +35,7 @@ export default class FullWidthProgressBar extends React.Component<Props> {
 
   _renderBar(): ?React.Element<any> {
     if (this._isIndeterminate()) {
-      return null;
+      return <div className="indeterminate" />;
     }
 
     invariant(this.props.progress != null);
