@@ -21,9 +21,11 @@ const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
-const CERT_NOT_YET_VALID_DELAY = 3000;
-const CERT_NOT_YET_VALID_RETRIES = 10;
+const RETRY_DELAY = 3000;
+const MAX_RETRY_COUNT = 4;
 const ECONNRESET_ERRORS_IN_ROW_LIMIT = 4;
+
+const logger = getLogger('XhrConnectionHeartbeat');
 
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
@@ -67,22 +69,47 @@ export class XhrConnectionHeartbeat {
     );
   }
 
+  _restartHeartbeatIfNecessary(): void {
+    if (this._heartbeatInterval == null && this._heartbeatConnectedOnce) {
+      logger.warn('restarting heartbeat interval');
+      this._monitorServerHeartbeat();
+    }
+  }
+
+  _disableHeartbeatIfNecessary(): void {
+    if (this._heartbeatInterval != null) {
+      clearInterval(this._heartbeatInterval);
+      logger.warn('stopped heartbeats while retrying');
+      this._heartbeatInterval = null;
+    }
+  }
+
   // Returns version
   async sendHeartBeat(): Promise<string> {
-    let retries = CERT_NOT_YET_VALID_RETRIES;
+    let retries = MAX_RETRY_COUNT;
     while (true) {
       try {
         // eslint-disable-next-line no-await-in-loop
         const {body} = await asyncRequest(this._options);
+        this._restartHeartbeatIfNecessary();
         return body;
       } catch (err) {
-        if (retries-- > 0 && err.code === 'CERT_NOT_YET_VALID') {
-          getLogger('XhrConnectionHeartbeat').warn(
-            `Certificate not yet valid, retrying after ${CERT_NOT_YET_VALID_DELAY}ms...`,
+        if (
+          retries-- > 0 &&
+          (err.code === 'CERT_NOT_YET_VALID' ||
+            (this._heartbeatConnectedOnce && err.code === 'ECONNREFUSED'))
+        ) {
+          this._disableHeartbeatIfNecessary();
+          logger.warn(
+            `${
+              err.code
+            }, retrying ${retries} more times after ${RETRY_DELAY}ms...`,
           );
+          // TODO: (semmy) exponential backoff would be more effective
           // eslint-disable-next-line no-await-in-loop
-          await sleep(CERT_NOT_YET_VALID_DELAY);
+          await sleep(RETRY_DELAY);
         } else {
+          this._restartHeartbeatIfNecessary();
           throw err;
         }
       }
