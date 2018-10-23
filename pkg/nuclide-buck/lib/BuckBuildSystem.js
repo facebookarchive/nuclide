@@ -252,15 +252,22 @@ export class BuckBuildSystem {
   *  these as react elements.
   */
   _processStatusEvent(event: BuckEvent): Observable<TaskEvent> {
-    if (
-      event == null ||
-      event.type !== 'buck-status' ||
-      event.message == null ||
-      event.message === '' ||
-      event.message.length <= 1
-    ) {
+    if (event == null || event.type !== 'buck-status') {
       return Observable.empty();
     }
+
+    const result = event.reset
+      ? Observable.of({
+          type: 'status',
+          status: {
+            type: 'bulletin',
+            bulletin: {
+              title: this._statusMemory.title.slice(),
+              body: this._statusMemory.body.slice(),
+            },
+          },
+        })
+      : Observable.empty();
 
     if (event.reset) {
       this._statusMemory.addedBuildTargetToTitle = false;
@@ -336,16 +343,7 @@ export class BuckBuildSystem {
       ? event.message.trim()
       : this._statusMemory.body + '<br/>' + event.message.trim();
 
-    return Observable.of({
-      type: 'status',
-      status: {
-        type: 'bulletin',
-        bulletin: {
-          title: this._statusMemory.title,
-          body: this._statusMemory.body,
-        },
-      },
-    });
+    return result;
   }
   /**
    * Processes side diagnostics, converts relevant events to TaskEvents.
