@@ -21,6 +21,7 @@ import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {observeProcess, psTree, killPid} from 'nuclide-commons/process';
 import net from 'net';
+import uuid from 'uuid';
 import {genConfigId} from './config-utils';
 import which from 'nuclide-commons/which';
 import path from 'path';
@@ -40,15 +41,17 @@ export function startThriftServer(
     const configId = genConfigId(serverConfig);
     let thriftServer = cache.get(configId);
     if (thriftServer == null) {
+      const logTag = `${serverConfig.name}-${uuid.v4()}`;
+      logger.info('Starting Thrift Server', logTag, serverConfig);
       thriftServer = Observable.defer(() => replacePlaceholders(serverConfig))
         .switchMap(config => mayKillOldServerProcess(config).map(_ => config))
         .switchMap(config =>
           Observable.merge(
             observeServerProcess(config)
-              .do(logProcessMessage(configId))
+              .do(logProcessMessage(logTag))
               .ignoreElements(),
             observeServerStatus(config).do(() =>
-              logger.info(`(${config.name}) `, 'Thrift Server is ready'),
+              logger.info(logTag, 'Thrift Server is ready', config),
             ),
           ).map(_ => getConnectionOptions(config)),
         )
