@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers/lib/types';
+
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
@@ -21,6 +23,7 @@ export type RemoteTextEditorPlaceholderState = {
     contents: string,
     // If the editor was unsaved, we'll restore the unsaved contents after load.
     isModified: boolean,
+    repositoryDescription: ?HgRepositoryDescription,
   },
 };
 
@@ -28,11 +31,13 @@ export class TextEditor implements atom$PaneItem {
   _uri: string;
   _contents: string;
   _isModified: boolean;
+  _repositoryDescription: ?HgRepositoryDescription;
 
   constructor({data}: RemoteTextEditorPlaceholderState) {
     this._uri = data.uri;
     this._contents = data.contents;
     this._isModified = data.isModified;
+    this._repositoryDescription = data.repositoryDescription;
   }
 
   destroy() {}
@@ -45,6 +50,7 @@ export class TextEditor implements atom$PaneItem {
         contents: this._contents,
         // If the editor was unsaved, we'll restore the unsaved contents after load.
         isModified: this._isModified,
+        repositoryDescription: this._repositoryDescription,
       },
     };
   }
@@ -61,6 +67,10 @@ export class TextEditor implements atom$PaneItem {
 
   getPath(): string {
     return this._uri;
+  }
+
+  getRepositoryDescription(): ?HgRepositoryDescription {
+    return this._repositoryDescription;
   }
 
   getText(): string {

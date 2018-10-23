@@ -570,6 +570,11 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
       if (path == null || !nuclideUri.isRemote(path)) {
         return textEditorSerialize.call(textEditor);
       }
+      const connection = RemoteConnection.getForUri(path);
+      let repositoryDescription;
+      if (connection != null) {
+        repositoryDescription = connection.getHgRepositoryDescription();
+      }
       return {
         deserializer: 'RemoteTextEditorPlaceholder',
         data: {
@@ -577,6 +582,7 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
           contents: textEditor.getText(),
           // If the editor was unsaved, we'll restore the unsaved contents after load.
           isModified: textEditor.isModified(),
+          repositoryDescription,
         },
       };
     };

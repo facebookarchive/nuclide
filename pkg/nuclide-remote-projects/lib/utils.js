@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteTextEditorPlaceholder} from './RemoteTextEditorPlaceholder';
@@ -19,6 +20,7 @@ export type OpenFileEditorInstance = {
   editor: RemoteTextEditorPlaceholder,
   uri: NuclideUri,
   filePath: string,
+  repositoryDescription: ?HgRepositoryDescription,
 };
 
 export function* getOpenFileEditorForRemoteProject(): Iterator<
@@ -31,12 +33,14 @@ export function* getOpenFileEditorForRemoteProject(): Iterator<
         continue;
       }
       const uri = paneItem.getPath();
+      const repositoryDescription = paneItem.getRepositoryDescription();
       const {path: filePath} = nuclideUri.parse(uri);
       yield {
         pane,
         editor: paneItem,
         uri,
         filePath,
+        repositoryDescription,
       };
     }
   }
