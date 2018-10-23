@@ -20,7 +20,7 @@ import utils
 
 MAX_RUN_TIME_IN_SECONDS = 180
 UNIT_TEST_WORKERS = max(1, multiprocessing.cpu_count() - 1)
-INTEGRATION_TEST_WORKERS = 2
+INTEGRATION_TEST_WORKERS = 1
 # Make sure there's enough ports for the number of workers.
 OPEN_PORTS = [9090, 9091]
 
