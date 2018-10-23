@@ -89,12 +89,13 @@ export function getEventsFromSocket(
         case 'ParseFinished':
           return log('Parsing finished. Starting build...');
         case 'ConsoleEvent':
-          const match = message.message.match(BUILD_OUTPUT_REGEX);
+          const strippedMessage = stripAnsi(message.message);
+          const match = strippedMessage.match(BUILD_OUTPUT_REGEX);
           if (match != null && match.length === 4) {
             // The result is also printed to stdout and converted into build-output there.
             return Observable.empty();
-          } else if (message.message !== '') {
-            return log(message.message, convertJavaLevel(message.level.name));
+          } else if (strippedMessage !== '') {
+            return log(strippedMessage, convertJavaLevel(message.level.name));
           } else {
             return Observable.empty();
           }
