@@ -84,19 +84,20 @@ export default class ScribeProcess {
     let child;
     try {
       child = await this._getChildProcess();
+      await new Promise(resolve => {
+        child.stdin.write(`${message}${os.EOL}`, resolve);
+      });
     } catch (err) {
       ScribeProcess._enabled = false;
       // Note: Logging errors is potentially recursive, since they go through Scribe!
       // It's important that we set _enabled before logging errors in this file.
       getLogger('ScribeProcess').error(
-        'Disabling ScribeProcess due to spawn error:',
+        'Disabling ScribeProcess due to error:',
         err,
       );
       return false;
     }
-    await new Promise(resolve => {
-      child.stdin.write(`${message}${os.EOL}`, resolve);
-    });
+
     return true;
   }
 
