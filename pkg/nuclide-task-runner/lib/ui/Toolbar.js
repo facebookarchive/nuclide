@@ -67,10 +67,12 @@ export default class Toolbar extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
+    if (prevProps.status == null || prevProps.status.type !== 'bulletin') {
+      return;
+    }
     if (
-      prevProps.status != null &&
-      prevProps.status.type === 'bulletin' &&
-      prevProps.status.bulletin.title !== this.state.bulletin.title
+      prevProps.status.bulletin.title !== this.state.bulletin.title ||
+      prevProps.status.bulletin.body !== this.state.bulletin.body
     ) {
       this.setState({
         bulletin: {

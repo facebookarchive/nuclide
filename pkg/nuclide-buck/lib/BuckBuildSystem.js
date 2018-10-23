@@ -264,8 +264,8 @@ export class BuckBuildSystem {
     }
     if (match != null && match.length > 1) {
       let prefix = match[1];
-      if (prefix.length > 25) {
-        prefix = prefix.slice(0, 25);
+      if (prefix.length > 24) {
+        prefix = prefix.slice(0, 24);
       }
       // TODO refactor this logic into a react scoped class that can construct
       // these as react elements.
@@ -301,9 +301,11 @@ export class BuckBuildSystem {
         this._statusMemory.title = target;
       }
     }
-
+    if (event.error) {
+      this._statusMemory.title = event.message.slice(0, 35);
+    }
     // logging lines that don't match our REGEX so we can manually add them later
-    if (match == null) {
+    if (match == null && !event.error) {
       getLogger('nuclide-buck-superconsole').warn('no match:' + event.message);
     }
 

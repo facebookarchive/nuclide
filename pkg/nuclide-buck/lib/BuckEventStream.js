@@ -24,7 +24,8 @@ import {exitEventToMessage} from 'nuclide-commons/process';
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 const BUILD_OUTPUT_REGEX = /^OK {3}(.*?) (.*?) (.*?)$/;
-const RESET_ANSI = `${String.fromCharCode(63)}7l`;
+const RESET_ANSI = '?7l';
+const ERROR_ANSI = '?7h[31m';
 
 export type BuckEvent =
   | {
@@ -35,6 +36,7 @@ export type BuckEvent =
       type: 'buck-status',
       message: string,
       reset: boolean,
+      error: boolean,
     }
   | {
       type: 'log',
@@ -181,6 +183,7 @@ export function getEventsFromProcess(
         } else {
           const mdata = message.data;
           const reset = mdata.includes(RESET_ANSI);
+          const error = mdata.includes(ERROR_ANSI);
           const stripped = stripAnsi(message.data);
           if (message.data.indexOf(BUILD_FAILED_MESSAGE) !== -1) {
             return {
@@ -192,6 +195,7 @@ export function getEventsFromProcess(
           return {
             type: 'buck-status',
             message: stripped,
+            error,
             reset,
           };
         }
