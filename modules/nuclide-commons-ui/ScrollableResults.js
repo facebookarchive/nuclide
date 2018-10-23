@@ -264,6 +264,8 @@ export default class ScrollableResults extends React.Component<Props, State> {
     return index < this._shownResults.length;
   };
 
+  // False positive -- `stopIndex` is used here, and this isn't a component.
+  // eslint-disable-next-line react/no-unused-prop-types
   _loadMoreRows = async ({stopIndex}: {stopIndex: number}) => {
     const {grep, grepInvert} = this.state;
     if (grep == null) {

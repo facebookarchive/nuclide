@@ -13,13 +13,17 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-type Props = {
+// These props are all turned into attributes in `updateAttributes`
+/* eslint-disable react/no-unused-prop-types */
+type Props = {|
   className: ?string,
   nodeintegration?: boolean,
   onDidFinishLoad: (event: Event) => mixed,
   src: string,
   style: ?Object,
-};
+  useragent?: string,
+|};
+/* eslint-enable react/no-unused-prop-types */
 
 export class Webview extends React.Component<Props, void> {
   props: Props;
