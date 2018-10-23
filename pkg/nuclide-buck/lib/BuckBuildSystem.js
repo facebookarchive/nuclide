@@ -114,6 +114,8 @@ export class BuckBuildSystem {
     const buckService = getBuckServiceByNuclideUri(buckRoot);
     const buildArguments = taskSettings.buildArguments || [];
     const runArguments = taskSettings.runArguments || [];
+    const keepGoing =
+      taskSettings.keepGoing == null ? true : taskSettings.keepGoing;
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .switchMap(httpPort => {
@@ -140,13 +142,19 @@ export class BuckBuildSystem {
           socketEvents = getEventsFromSocket(socketStream).share();
         }
 
-        const args =
+        let args =
+          keepGoing && subcommand !== 'run'
+            ? buildArguments.concat(['--keep-going'])
+            : buildArguments;
+
+        if (
           runArguments.length > 0 &&
           (subcommand === 'run' ||
             subcommand === 'install' ||
             subcommand === 'test')
-            ? buildArguments.concat(['--']).concat(runArguments)
-            : buildArguments;
+        ) {
+          args = args.concat(['--']).concat(runArguments);
+        }
 
         const processMessages = runBuckCommand(
           buckService,

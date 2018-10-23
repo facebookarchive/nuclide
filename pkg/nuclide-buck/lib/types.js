@@ -44,6 +44,7 @@ export type TaskSettings = {|
   buildArguments?: Array<string>,
   runArguments?: Array<string>,
   compileDbArguments?: Array<string>,
+  keepGoing?: boolean,
 |};
 
 export type AppState = {

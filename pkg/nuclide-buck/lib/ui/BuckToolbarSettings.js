@@ -11,6 +11,7 @@
 
 import type {PlatformProviderSettings, TaskSettings} from '../types';
 
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import * as React from 'react';
 
 import {shellParseWithGlobs, shellQuote} from 'nuclide-commons/string';
@@ -34,17 +35,24 @@ type State = {
   buildArguments: string,
   runArguments: string,
   compileDbArguments: string,
+  keepGoing: boolean,
 };
 
 export default class BuckToolbarSettings extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    const {buildArguments, runArguments, compileDbArguments} = props.settings;
+    const {
+      buildArguments,
+      runArguments,
+      compileDbArguments,
+      keepGoing,
+    } = props.settings;
     this.state = {
       buildArguments: buildArguments == null ? '' : shellQuote(buildArguments),
       runArguments: runArguments == null ? '' : shellQuote(runArguments),
       compileDbArguments:
         compileDbArguments == null ? '' : shellQuote(compileDbArguments),
+      keepGoing: keepGoing == null ? true : keepGoing,
     };
   }
 
@@ -74,6 +82,13 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
               onDidChange={this._onBuildArgsChange}
               onConfirm={this._onSave.bind(this)}
             />
+            <div className="block">
+              <Checkbox
+                checked={this.state.keepGoing}
+                label="Use --keep-going (gathers as many build errors as possible)"
+                onChange={this._onKeepGoingChange}
+              />
+            </div>
             <label>Run Arguments:</label>
             <AtomInput
               tabIndex="0"
@@ -158,12 +173,17 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
     this.setState({compileDbArguments: args});
   };
 
+  _onKeepGoingChange = (checked: boolean) => {
+    this.setState({keepGoing: checked});
+  };
+
   _onSave() {
     try {
       this.props.onSave({
         buildArguments: shellParseWithGlobs(this.state.buildArguments),
         runArguments: shellParseWithGlobs(this.state.runArguments),
         compileDbArguments: shellParseWithGlobs(this.state.compileDbArguments),
+        keepGoing: this.state.keepGoing,
       });
     } catch (err) {
       atom.notifications.addError('Could not parse arguments', {

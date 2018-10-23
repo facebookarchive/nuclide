@@ -118,9 +118,6 @@ export function _translateOptionsToBuckBuildArgs(
   let args = [test ? 'test' : doInstall ? 'install' : run ? 'run' : 'build'];
   args = args.concat(buildTargets, CLIENT_ID_ARGS);
 
-  if (!run) {
-    args.push('--keep-going');
-  }
   // flowlint-next-line sketchy-null-string:off
   if (pathToBuildReport) {
     args = args.concat(['--build-report', pathToBuildReport]);
