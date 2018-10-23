@@ -5,9 +5,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
+
+/* eslint-env browser */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import observeStalls from '../../commons-atom/observeStalls';
@@ -22,6 +24,15 @@ export default function trackStalls(): IDisposable {
 
   return new UniversalDisposable(
     histogram,
-    observeStalls().subscribe(duration => histogram.track(duration)),
+    observeStalls().subscribe(duration => {
+      // Locally mark the occurrence of this stall so it appears in cpu profiles
+      // as an entry in the json (with "cat": "blink.user_timing" for Chrome)
+      // TODO: In the future this can include the duration as a detail following
+      // the User Timing Level 3 Proposal: https://fburl.com/h6zaabap
+      performance.mark('event-loop-blocked');
+
+      // send to analytics
+      histogram.track(duration);
+    }),
   );
 }
