@@ -37,6 +37,16 @@ module.exports = {
     node: true,
   },
 
+  settings: {
+    react: {
+      // TODO: (wbinnssmith) T35336490
+      // Remove this when we update to a version of eslint-plugin-react
+      // that automatically detects the react version:
+      // https://github.com/yannickcr/eslint-plugin-react/commit/dc28d2636b11aaed033454e7ff98c486c08740df
+      version: require('./package.json').dependencies.react,
+    },
+  },
+
   extends: ['plugin:jsx-a11y/recommended'],
 
   globals: {
