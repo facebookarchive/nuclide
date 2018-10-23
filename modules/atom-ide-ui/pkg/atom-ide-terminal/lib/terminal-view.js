@@ -13,7 +13,7 @@
 /* eslint-env browser */
 
 import invariant from 'assert';
-import {Emitter, Directory} from 'atom';
+import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {
@@ -574,14 +574,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
     return 'atom://nuclide-terminal-view';
   }
 
-  // Breadcrumbs uses this to determine what path to show.
-  getFileOrDirectory(): ?atom$Directory {
-    if (this._path == null) {
-      return null;
-    }
-    return new Directory(this._path);
-  }
-
   getTerminalKey(): string {
     return this._key;
   }
@@ -596,6 +588,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
 
   getPath(): ?NuclideUri {
     return this._path;
+  }
+
+  // Breadcrumbs uses this to determine how to show the path.
+  getPathIsDirectory(): boolean {
+    return true;
   }
 
   onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
