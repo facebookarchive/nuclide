@@ -14,6 +14,7 @@ import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connectio
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StartConnectFlowOptions} from './startConnectFlow';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
+import type {OpenFileEditorInstance} from './utils';
 
 import idx from 'idx';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -684,12 +685,30 @@ function replaceRemoteEditorPlaceholders(): void {
   // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
   // Here, Nuclide reloads the remote project files that have empty text editors open.
   const openInstances = getOpenFileEditorForRemoteProject();
+  // Get list of non null connections available currently
+  const remoteConnections = getRemoteRootDirectories()
+    .map(dir => RemoteConnection.getForUri(dir.getPath()))
+    .filter(Boolean);
+
   for (const openInstance of openInstances) {
     // Keep the original open editor item with a unique name until the remote buffer is loaded,
     // Then, we are ready to replace it with the remote tab in the same pane.
-    const {pane, editor, uri, filePath} = openInstance;
+    const {pane, editor, filePath} = openInstance;
+    let uri = openInstance.uri;
+    let connection = RemoteConnection.getForUri(uri);
 
-    const connection = RemoteConnection.getForUri(uri);
+    if (connection == null) {
+      const migratedUri = migrateRemoteEditorToCurrentInstance(
+        openInstance,
+        remoteConnections,
+      );
+      if (migratedUri == null) {
+        continue;
+      }
+      connection = migratedUri.connection;
+      uri = migratedUri.uri;
+    }
+
     if (connection == null) {
       continue;
     }
@@ -735,6 +754,52 @@ function replaceRemoteEditorPlaceholders(): void {
         .then(cleanupBuffer, cleanupBuffer);
     }
   }
+}
+
+/*
+ * This function has a very specific use case, if I serialize an editor on a
+ * remote instance and then want to reopen that serialized editor as is
+ * but on a different remote instance. This function takes in the available
+ * remote connections and filters out remote connections that aren't hosting the
+ * same repo as the one the serialized editor is from. If there is only one server
+ * that fits the criteria go ahead and open the remote file in that new instance.
+ * If there are multiple servers available then there would ideally be a UI that
+ * allowed users to choose any of the valid available servers but for now don't
+ * enter this dangerous zone.
+ */
+function migrateRemoteEditorToCurrentInstance(
+  openInstance: OpenFileEditorInstance,
+  remoteConnections: Array<RemoteConnection>,
+): ?{uri: NuclideUri, connection: RemoteConnection} {
+  const {
+    filePath,
+    repositoryDescription: originalRepositoryDescription,
+  } = openInstance;
+  const filteredRemoteConnections = remoteConnections.filter(
+    remoteConnection => {
+      const repositoryDescription = remoteConnection.getHgRepositoryDescription();
+      return (
+        repositoryDescription?.repoPath ===
+        originalRepositoryDescription?.repoPath
+      );
+    },
+  );
+
+  // If number of eligible connections that can render this file are more than 1
+  // then don't bother.
+  // TODO : Create UI which offers dropdown to select which server they want to
+  // load it on.
+  if (filteredRemoteConnections.length === 1) {
+    const remoteConnection = filteredRemoteConnections[0];
+    invariant(remoteConnection != null);
+    const config = remoteConnection.getConfig();
+    return {
+      uri: `nuclide://${config.host}${filePath}`,
+      connection: remoteConnection,
+    };
+  }
+
+  return null;
 }
 
 function validateRemoteProjectConfig(
