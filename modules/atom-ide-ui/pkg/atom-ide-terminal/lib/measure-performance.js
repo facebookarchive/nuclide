@@ -14,7 +14,7 @@ import {remote} from 'electron';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import performanceNow from 'nuclide-commons/performanceNow';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Terminal as XTerminal} from 'xterm';
+import {Terminal as XTerminal} from 'vscode-xterm';
 import {track} from 'nuclide-commons/analytics';
 import {RENDERER_TYPE_CONFIG} from './config';
 

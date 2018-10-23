@@ -235,7 +235,7 @@
     }
   },
   "styleSheets": [
-    "../../../../../node_modules/xterm/dist/xterm.css",
+    "../../../../../node_modules/vscode-xterm/lib/xterm.css",
     "nuclide-terminal-view.less"
   ],
   "consumedServices": {

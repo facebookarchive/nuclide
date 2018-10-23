@@ -24,9 +24,9 @@ import {
   guard,
 } from 'decoders';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {Terminal as XTerminal} from 'xterm';
-import * as Fit from 'xterm/lib/addons/fit/fit';
-import * as WebLinks from 'xterm/lib/addons/webLinks/webLinks';
+import {Terminal as XTerminal} from 'vscode-xterm';
+import * as Fit from 'vscode-xterm/lib/addons/fit/fit';
+import * as WebLinks from 'vscode-xterm/lib/addons/webLinks/webLinks';
 import {
   CHAR_ATLAS_CONFIG,
   CURSOR_BLINK_CONFIG,
