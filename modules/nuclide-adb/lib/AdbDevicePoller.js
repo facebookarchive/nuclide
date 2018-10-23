@@ -53,7 +53,7 @@ export function observeAndroidDevices(
               error.message === 'Timeout has occurred'
             ) {
               message = 'Request timed out, retrying...';
-            } else if (error.message === ' Connection Closed') {
+            } else if (error.message === 'Connection Closed') {
               return Observable.of(Expect.pending());
             } else {
               message = error.message;
