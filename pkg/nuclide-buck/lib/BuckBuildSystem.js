@@ -112,13 +112,19 @@ export class BuckBuildSystem {
     // Clear Buck diagnostics every time we run a buck command.
     this._diagnosticInvalidations.next({scope: 'all'});
     const buckService = getBuckServiceByNuclideUri(buckRoot);
-    const buildArguments = taskSettings.buildArguments || [];
+    let buildArguments = taskSettings.buildArguments || [];
     const runArguments = taskSettings.runArguments || [];
     const keepGoing =
       taskSettings.keepGoing == null ? true : taskSettings.keepGoing;
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
-    return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
-      .switchMap(httpPort => {
+
+    return Observable.fromPromise(
+      Promise.all([
+        buckService.getHTTPServerPort(buckRoot),
+        passesGK('nuclide_buck_superconsole'),
+      ]),
+    )
+      .switchMap(([httpPort, useSuperconsole]) => {
         let socketEvents = null;
         let buildId: ?string = null;
         const socketStream = buckService
@@ -140,6 +146,14 @@ export class BuckBuildSystem {
           );
         if (httpPort > 0) {
           socketEvents = getEventsFromSocket(socketStream).share();
+        }
+        if (useSuperconsole) {
+          buildArguments = buildArguments.concat([
+            '--config',
+            'ui.superconsole=enabled',
+            '--config',
+            'color.ui=always',
+          ]);
         }
 
         let args =
