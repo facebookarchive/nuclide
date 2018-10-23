@@ -331,10 +331,16 @@ export default class FileTreeSidebarComponent extends React.Component<
           commandPrefix="file-tree-sidebar"
           enableInlineActions={true}
           fileStatuses={this._getFilteredUncommittedFileChanges(this.state)}
-          generatedTypes={this.state.generatedOpenChangedFiles}
+          generatedTypes={
+            ((this.state.generatedOpenChangedFiles: any): Map<
+              NuclideUri,
+              GeneratedFileType,
+            >)
+          }
           selectedFile={this.state.activeUri}
           hideEmptyFolders={true}
           onFileChosen={this._onFileChosen}
+          onFileOpen={this._onFileChosen}
           openInDiffViewOption={true}
           onClickAdd={uri => {
             const repo = repositoryForPath(uri);

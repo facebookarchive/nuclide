@@ -99,17 +99,18 @@ type Props = {
   // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
   checkedFiles?: ?Set<NuclideUri>,
   // Callback when a file's checkbox is toggled
-  onFileChecked?: ?(filePath: NuclideUri) => void,
+  onFileChecked?: ?(filePath: NuclideUri) => mixed,
 
-  onFileChosen(filePath: NuclideUri): void,
+  onFileChosen(filePath: NuclideUri): mixed,
+  onFileOpen?: ?(filePath: NuclideUri) => mixed,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
-  onAddFile?: ?(filePath: NuclideUri) => void,
-  onDeleteFile?: ?(filePath: NuclideUri) => void,
-  onForgetFile?: ?(filePath: NuclideUri) => void,
-  onMarkFileResolved?: ?(filePath: NuclideUri) => void,
-  onOpenFileInDiffView?: ?(filePath: NuclideUri) => void,
-  onRevertFile?: ?(filePath: NuclideUri) => void,
+  onAddFile?: ?(filePath: NuclideUri) => mixed,
+  onDeleteFile?: ?(filePath: NuclideUri) => mixed,
+  onForgetFile?: ?(filePath: NuclideUri) => mixed,
+  onMarkFileResolved?: ?(filePath: NuclideUri) => mixed,
+  onOpenFileInDiffView?: ?(filePath: NuclideUri) => mixed,
+  onRevertFile?: ?(filePath: NuclideUri) => mixed,
 };
 
 type State = {
@@ -137,11 +138,13 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       onFileChosen,
       onForgetFile,
       onMarkFileResolved,
+      onFileOpen,
       onOpenFileInDiffView,
       onRevertFile,
       rootPath,
       selectedFile,
     } = this.props;
+    onFileOpen;
 
     const filesToShow =
       FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
@@ -231,6 +234,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                     }
                     isSelected={selectedFile === filePath}
                     key={filePath}
+                    onFileOpen={onFileOpen}
                     onAddFile={onAddFile}
                     onDeleteFile={onDeleteFile}
                     onFileChecked={onFileChecked}

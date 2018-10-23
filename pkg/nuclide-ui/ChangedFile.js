@@ -49,23 +49,25 @@ type Props = {
   // Determines status of checkbox to left of the component. null -> no checkbox
   isChecked: ?boolean,
   // onFileChecked: What to do when the checkbox is toggled
-  onFileChecked?: ?(filePath: NuclideUri) => void,
+  onFileChecked?: ?(filePath: NuclideUri) => mixed,
 
-  onFileChosen(filePath: NuclideUri): void,
+  onFileChosen(filePath: NuclideUri): mixed,
+  // Controls 'Open file' context menu item, if null or omitted, menu item doesn't appear
+  onFileOpen?: ?(filePath: NuclideUri) => mixed,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
-  onAddFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
-  onDeleteFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
-  onForgetFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onAddFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => mixed,
+  onDeleteFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => mixed,
+  onForgetFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => mixed,
   onMarkFileResolved?: ?(
     filePath: NuclideUri,
     analyticsSourceKey: string,
-  ) => void,
+  ) => mixed,
   onOpenFileInDiffView?: ?(
     filePath: NuclideUri,
     analyticsSourceKey: string,
-  ) => void,
-  onRevertFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => void,
+  ) => mixed,
+  onRevertFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => mixed,
 };
 
 export default class ChangedFile extends React.Component<Props> {
@@ -74,9 +76,11 @@ export default class ChangedFile extends React.Component<Props> {
   componentDidMount(): void {
     const node: HTMLElement = (ReactDOM.findDOMNode(this): any);
     this._disposables = new UniversalDisposable(
-      atom.commands.add(node, `${COMMAND_PREFIX}:goto-file`, event => {
-        const {filePath, onFileChosen} = this.props;
-        onFileChosen(filePath);
+      atom.commands.add(node, `${COMMAND_PREFIX}:open-file`, event => {
+        const {filePath, onFileOpen} = this.props;
+        if (onFileOpen != null) {
+          onFileOpen(filePath);
+        }
       }),
       atom.commands.add(node, `${COMMAND_PREFIX}:copy-full-path`, event => {
         atom.clipboard.write(nuclideUri.getPath(this.props.filePath || ''));
@@ -150,7 +154,7 @@ export default class ChangedFile extends React.Component<Props> {
     key: string,
     icon: IconName,
     tooltipTitle: string,
-    onClick: () => void,
+    onClick: () => mixed,
   ): React.Node {
     return (
       <div
@@ -264,6 +268,7 @@ export default class ChangedFile extends React.Component<Props> {
       fileStatus,
       rootPath,
       onFileChosen,
+      onFileOpen,
       onOpenFileInDiffView,
       onForgetFile,
       onDeleteFile,
@@ -292,6 +297,7 @@ export default class ChangedFile extends React.Component<Props> {
       onMarkFileResolved != null &&
       (fileStatus === FileChangeStatus.CHANGE_DELETE ||
         fileStatus === FileChangeStatus.BOTH_CHANGED);
+    const enableOpen = onFileOpen != null;
 
     const eligibleActions = [];
     if (enableDiffView) {
@@ -357,6 +363,7 @@ export default class ChangedFile extends React.Component<Props> {
         data-enable-delete={enableDelete || null}
         data-enable-add={enableAdd || null}
         data-enable-revert={enableRestore || null}
+        data-enable-open={enableOpen || null}
         className={this._getFileClassname()}
         key={filePath}>
         {checkbox}
@@ -426,8 +433,11 @@ atom.contextMenu.add({
       },
     },
     {
-      label: 'Goto File',
-      command: `${COMMAND_PREFIX}:goto-file`,
+      label: 'Open File',
+      command: `${COMMAND_PREFIX}:open-file`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute('data-enable-open');
+      },
     },
     {
       label: 'Copy File Name',

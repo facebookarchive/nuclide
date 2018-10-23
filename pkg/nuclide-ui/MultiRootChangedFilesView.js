@@ -17,7 +17,6 @@ import {track} from 'nuclide-analytics';
 import * as React from 'react';
 import ChangedFilesList from './ChangedFilesList';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
-import Immutable from 'immutable';
 import classnames from 'classnames';
 
 type Props = {
@@ -26,13 +25,14 @@ type Props = {
   // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
   checkedFiles: ?Map<NuclideUri, Set<NuclideUri>>,
   fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
-  generatedTypes?: Immutable.Map<NuclideUri, GeneratedFileType>,
+  generatedTypes?: Map<NuclideUri, GeneratedFileType>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
   // Callback when a file's checkbox is toggled
   onFileChecked?: (filePath: NuclideUri) => mixed,
   onFileChosen(filePath: NuclideUri): mixed,
+  onFileOpen?: ?(filePath: NuclideUri) => mixed,
   onMarkFileResolved?: (filePath: NuclideUri) => mixed,
   getRevertTargetRevision?: () => ?string,
   onClickAdd(filePath: NuclideUri): mixed,
@@ -139,6 +139,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
       hideEmptyFolders,
       onFileChecked,
       onFileChosen,
+      onFileOpen,
       onMarkFileResolved,
       openInDiffViewOption,
       selectedFile,
@@ -167,7 +168,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
             const checkedFiles =
               checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
             return (
-              // $FlowFixMe(>=0.53.0) Flow suppress
               <ChangedFilesList
                 checkedFiles={checkedFiles}
                 fileStatuses={fileStatuses}
@@ -177,6 +177,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 onDeleteFile={this._handleDeleteFile}
                 onFileChecked={onFileChecked}
                 onFileChosen={onFileChosen}
+                onFileOpen={onFileOpen}
                 onForgetFile={this._handleForgetFile}
                 onMarkFileResolved={onMarkFileResolved}
                 onOpenFileInDiffView={
