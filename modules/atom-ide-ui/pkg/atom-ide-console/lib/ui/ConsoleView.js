@@ -10,14 +10,7 @@
  * @format
  */
 
-import type {
-  Executor,
-  Severity,
-  Record,
-  RecordHeightChangeHandler,
-  Source,
-  SourceInfo,
-} from '../types';
+import type {Executor, Severity, Record, Source, SourceInfo} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {macrotask} from 'nuclide-commons/observable';
@@ -53,7 +46,6 @@ type Props = {|
   sources: Array<Source>,
   updateFilter: (change: RegExpFilterChange) => void,
   getProvider: (id: string) => ?SourceInfo,
-  onDisplayableRecordHeightChange: RecordHeightChangeHandler,
   filteredRecordCount: number,
   filterText: string,
   resetAllFilters: () => void,
@@ -281,9 +273,6 @@ export default class ConsoleView extends React.Component<Props, State> {
               getExecutor={this._getExecutor}
               getProvider={this._getProvider}
               onScroll={this._handleScroll}
-              onDisplayableRecordHeightChange={
-                this.props.onDisplayableRecordHeightChange
-              }
               shouldScrollToBottom={this._shouldScrollToBottom}
             />
             <NewMessagesNotification

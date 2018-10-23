@@ -157,11 +157,6 @@ export type AppState = {|
   watchEditor?: ?atom$AutocompleteWatchEditor,
 |};
 
-export type RecordHeightChangeHandler = (
-  recordId: number,
-  newHeight: number,
-) => void;
-
 export type Source = {
   id: string,
   name: string,

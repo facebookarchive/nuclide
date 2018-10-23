@@ -10,12 +10,7 @@
  * @format
  */
 
-import type {
-  Executor,
-  Record,
-  RecordHeightChangeHandler,
-  SourceInfo,
-} from '../types';
+import type {Executor, Record, SourceInfo} from '../types';
 
 import {DefaultWeakMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -28,7 +23,7 @@ import {Subject} from 'rxjs';
 import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
 
-type Props = {
+type Props = {|
   records: Array<Record>,
   showSourceLabels: boolean,
   fontSize: number,
@@ -39,32 +34,33 @@ type Props = {
     scrollHeight: number,
     scrollTop: number,
   ) => void,
-  onDisplayableRecordHeightChange: RecordHeightChangeHandler,
   shouldScrollToBottom: () => boolean,
-};
+|};
 
-type State = {
+type State = {|
   width: number,
   height: number,
-};
+|};
 
-type RowRendererParams = {
+type RowRendererParams = {|
   index: number,
   key: string,
   style: Object,
   isScrolling: boolean,
-};
+|};
 
-type RowHeightParams = {
+type RowHeightParams = {|
+  // These are not props to a component
+  // eslint-disable-next-line react/no-unused-prop-types
   index: number,
-};
+|};
 
 /* eslint-disable react/no-unused-prop-types */
-type OnScrollParams = {
+type OnScrollParams = {|
   clientHeight: number,
   scrollHeight: number,
   scrollTop: number,
-};
+|};
 /* eslint-enable react/no-unused-prop-types */
 
 // The number of extra rows to render beyond what is visible

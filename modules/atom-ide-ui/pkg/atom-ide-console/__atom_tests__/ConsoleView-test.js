@@ -33,7 +33,6 @@ describe('ConsoleView', () => {
         getProvider={() => {}}
         history={[]}
         invalidFilterInput={false}
-        onDisplayableRecordHeightChange={() => {}}
         resetAllFilters={() => {}}
         selectExecutor={() => {}}
         selectSources={() => {}}
