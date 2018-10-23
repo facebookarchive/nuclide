@@ -37,7 +37,7 @@ const TARGET_KIND_REGEX = [
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
 
 class BuckClangCompilationDatabaseHandler {
-  _targetCache = new SimpleCache();
+  _targetCache = new SimpleCache({keyFactory: JSON.stringify});
   _sourceCache = new SimpleCache();
   // Ensure that we can clear targetCache for a given file.
   _sourceToTargetKey = new Map();
