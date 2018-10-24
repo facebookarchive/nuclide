@@ -755,9 +755,9 @@ export function getCompilationDatabase(
   src: NuclideUri,
   params: CompilationDatabaseParams,
 ): ConnectableObservable<?BuckClangCompilationDatabase> {
-  return Observable.fromPromise(
-    getCompilationDatabaseHandler(params).getCompilationDatabase(src),
-  ).publish();
+  return getCompilationDatabaseHandler(params)
+    .getCompilationDatabase(src)
+    .publish();
 }
 
 export function isNativeExoPackage(

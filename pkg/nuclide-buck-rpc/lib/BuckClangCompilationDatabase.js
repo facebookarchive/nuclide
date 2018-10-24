@@ -12,6 +12,7 @@
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {BuckClangCompilationDatabase} from './types';
 
+import {Observable} from 'rxjs';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import * as ClangService from '../../nuclide-clang-rpc';
 import * as BuckService from './BuckServiceImpl';
@@ -62,186 +63,214 @@ class BuckClangCompilationDatabaseHandler {
     this._sourceToTargetKey.clear();
   }
 
-  getCompilationDatabase(file: string): Promise<?BuckClangCompilationDatabase> {
-    return this._sourceCache.getOrCreate(file, async () => {
+  getCompilationDatabase(
+    file: string,
+  ): Observable<?BuckClangCompilationDatabase> {
+    return this._sourceCache.getOrCreate(file, () => {
       if (isHeaderFile(file)) {
-        const source = await ClangService.getRelatedSourceOrHeader(file);
-        if (source != null) {
-          logger.info(
-            `${file} is a header, thus using ${source} for getting the compilation flags.`,
-          );
-          return this.getCompilationDatabase(source);
-        } else {
-          logger.error(
-            `Couldn't find a corresponding source file for ${file}, thus there are no compilation flags available.`,
-          );
-          return {
-            file: null,
-            flagsFile: await guessBuildFile(file),
-            libclangPath: null,
-            warnings: [
-              `I could not find a corresponding source file for ${file}.`,
-            ],
-          };
-        }
+        return Observable.fromPromise(
+          ClangService.getRelatedSourceOrHeader(file),
+        ).switchMap(source => {
+          if (source != null) {
+            logger.info(
+              `${file} is a header, thus using ${source} for getting the compilation flags.`,
+            );
+            return this.getCompilationDatabase(source);
+          } else {
+            logger.error(
+              `Couldn't find a corresponding source file for ${file}, thus there are no compilation flags available.`,
+            );
+            return Observable.fromPromise(guessBuildFile(file))
+              .map(flagsFile => ({
+                file: null,
+                flagsFile,
+                libclangPath: null,
+                warnings: [
+                  `I could not find a corresponding source file for ${file}.`,
+                ],
+              }))
+              .publishLast()
+              .refCount();
+          }
+        });
       } else {
-        return this._getCompilationDatabase(file);
+        return this._getCompilationDatabase(file)
+          .publishLast()
+          .refCount();
       }
     });
   }
 
-  async _getCompilationDatabase(
+  _getCompilationDatabase(
     file: string,
-  ): Promise<?BuckClangCompilationDatabase> {
-    const buckRoot = await BuckService.getRootForPath(file);
-    return this._loadCompilationDatabaseFromBuck(file, buckRoot)
-      .catch(err => {
-        logger.error('Error getting flags from Buck for file ', file, err);
-        throw err;
-      })
-      .then(db => {
-        if (db != null) {
-          this._cacheFilesToCompilationDB(db);
-        }
-        return db;
-      });
+  ): Observable<?BuckClangCompilationDatabase> {
+    return Observable.fromPromise(BuckService.getRootForPath(file)).switchMap(
+      buckRoot =>
+        this._loadCompilationDatabaseFromBuck(file, buckRoot)
+          .catch(err => {
+            logger.error('Error getting flags from Buck for file ', file, err);
+            throw err;
+          })
+          .do(db => {
+            if (db != null) {
+              this._cacheFilesToCompilationDB(db);
+            }
+          }),
+    );
   }
 
-  async _loadCompilationDatabaseFromBuck(
+  _loadCompilationDatabaseFromBuck(
     src: string,
     buckRoot: ?string,
-  ): Promise<?BuckClangCompilationDatabase> {
+  ): Observable<?BuckClangCompilationDatabase> {
     if (buckRoot == null) {
-      return null;
+      return Observable.of(null);
     }
+    return (this._params.args.length === 0
+      ? Observable.fromPromise(BuckService._getPreferredArgsForRepo(buckRoot))
+      : Observable.of(this._params.args)
+    ).switchMap(extraArgs => {
+      return Observable.fromPromise(
+        BuckService.getOwners(
+          buckRoot,
+          src,
+          extraArgs,
+          TARGET_KIND_REGEX,
+          false,
+        ),
+      )
+        .map(owners =>
+          owners.filter(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1),
+        )
+        .map(owners => {
+          // Deprioritize Android-related targets because they build with gcc and
+          // require gcc intrinsics that cause libclang to throw bad diagnostics.
+          owners.sort((a, b) => {
+            const aAndroid = a.endsWith('Android');
+            const bAndroid = b.endsWith('Android');
+            if (aAndroid && !bAndroid) {
+              return 1;
+            } else if (!aAndroid && bAndroid) {
+              return -1;
+            } else {
+              return 0;
+            }
+          });
+          return owners[0];
+        })
+        .switchMap(target => {
+          if (target == null) {
+            // Even if we can't get flags, return a flagsFile to watch
+            return Observable.fromPromise(guessBuildFile(src)).map(
+              flagsFile =>
+                flagsFile != null
+                  ? {
+                      file: null,
+                      flagsFile,
+                      libclangPath: null,
+                      warnings: [
+                        `I could not find owner target of ${src}`,
+                        `Is there an error in ${flagsFile}?`,
+                      ],
+                    }
+                  : null,
+            );
+          } else {
+            this._sourceToTargetKey.set(
+              src,
+              this._targetCache.keyForArgs([buckRoot, target, extraArgs]),
+            );
 
-    let queryTarget = null;
-    const extraArgs =
-      this._params.args.length === 0
-        ? await BuckService._getPreferredArgsForRepo(buckRoot)
-        : this._params.args;
-    try {
-      const owners = (await BuckService.getOwners(
-        buckRoot,
-        src,
-        extraArgs,
-        TARGET_KIND_REGEX,
-        false,
-      )).filter(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
-      // Deprioritize Android-related targets because they build with gcc and
-      // require gcc intrinsics that cause libclang to throw bad diagnostics.
-      owners.sort((a, b) => {
-        const aAndroid = a.endsWith('Android');
-        const bAndroid = b.endsWith('Android');
-        if (aAndroid && !bAndroid) {
-          return 1;
-        } else if (!aAndroid && bAndroid) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
-      queryTarget = owners[0];
-    } catch (err) {
-      logger.error('Failed getting the target from buck', err);
-    }
-
-    if (queryTarget == null) {
-      // Even if we can't get flags, return a flagsFile to watch
-      const buildFile = await guessBuildFile(src);
-      if (buildFile != null) {
-        return {
-          flagsFile: buildFile,
-          file: null,
-          libclangPath: null,
-          warnings: [
-            `I could not find owner target of ${src}`,
-            `Is there an error in ${buildFile}?`,
-          ],
-        };
-      }
-      return null;
-    }
-    const target = queryTarget;
-
-    this._sourceToTargetKey.set(
-      src,
-      this._targetCache.keyForArgs([buckRoot, target, extraArgs]),
-    );
-
-    return this._targetCache.getOrCreate([buckRoot, target, extraArgs], () =>
-      this._loadCompilationDatabaseForBuckTarget(buckRoot, target, extraArgs),
-    );
+            return this._targetCache.getOrCreate(
+              [buckRoot, target, extraArgs],
+              () =>
+                this._loadCompilationDatabaseForBuckTarget(
+                  buckRoot,
+                  target,
+                  extraArgs,
+                )
+                  .publishLast()
+                  .refCount(),
+            );
+          }
+        })
+        .catch(err => {
+          logger.error('Failed getting the target from buck', err);
+          return Observable.of(null);
+        });
+    });
   }
 
-  async _loadCompilationDatabaseForBuckTarget(
+  _loadCompilationDatabaseForBuckTarget(
     buckProjectRoot: string,
     target: string,
     extraArgs: Array<string>,
-  ): Promise<BuckClangCompilationDatabase> {
-    const allFlavors = [
-      'compilation-database',
-      ...this._params.flavorsForTarget,
-    ];
-    if (this._params.useDefaultPlatform) {
-      const platform = await BuckService.getDefaultPlatform(
-        buckProjectRoot,
-        target,
-        extraArgs,
-        false,
-      );
-      if (platform != null) {
-        allFlavors.push(platform);
-      }
-    }
-    const buildTarget = target + '#' + allFlavors.join(',');
-    const buildReport = await BuckService.build(
-      buckProjectRoot,
-      [
-        // Small builds, like those used for a compilation database, can degrade overall
-        // `buck build` performance by unnecessarily invalidating the Action Graph cache.
-        // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
-        // for details on the importance of using skip-action-graph-cache=true.
-        '--config',
-        'client.skip-action-graph-cache=true',
+  ): Observable<BuckClangCompilationDatabase> {
+    const flavors = ['compilation-database', ...this._params.flavorsForTarget];
+    return (this._params.useDefaultPlatform
+      ? Observable.fromPromise(
+          BuckService.getDefaultPlatform(
+            buckProjectRoot,
+            target,
+            extraArgs,
+            false,
+          ),
+        ).map(platform => flavors.concat([platform]))
+      : Observable.of(flavors)
+    )
+      .map(allFlavors => target + '#' + allFlavors.join(','))
+      .switchMap(buildTarget => {
+        return Observable.fromPromise(
+          BuckService.build(
+            buckProjectRoot,
+            [
+              // Small builds, like those used for a compilation database, can degrade overall
+              // `buck build` performance by unnecessarily invalidating the Action Graph cache.
+              // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
+              // for details on the importance of using skip-action-graph-cache=true.
+              '--config',
+              'client.skip-action-graph-cache=true',
 
-        buildTarget,
-        ...extraArgs,
-        // TODO(hansonw): Any alternative to doing this?
-        // '-L',
-        // String(os.cpus().length / 2),
-      ],
-      {commandOptions: {timeout: BUCK_TIMEOUT}},
-    );
-    if (!buildReport.success) {
-      const error = new Error(`Failed to build ${buildTarget}`);
-      logger.error(error);
-      throw error;
-    }
-    const firstResult = Object.keys(buildReport.results)[0];
-    let pathToCompilationDatabase = buildReport.results[firstResult].output;
-    pathToCompilationDatabase = nuclideUri.join(
-      buckProjectRoot,
-      pathToCompilationDatabase,
-    );
-
-    const buildFile = await BuckService.getBuildFile(
-      buckProjectRoot,
-      target,
-      extraArgs,
-    );
-    const compilationDB = {
-      file: pathToCompilationDatabase,
-      flagsFile: buildFile,
-      libclangPath: null,
-      target,
-      warnings: [],
-    };
-    return this._processCompilationDb(
-      compilationDB,
-      buckProjectRoot,
-      extraArgs,
-    );
+              buildTarget,
+              ...extraArgs,
+              // TODO(hansonw): Any alternative to doing this?
+              // '-L',
+              // String(os.cpus().length / 2),
+            ],
+            {commandOptions: {timeout: BUCK_TIMEOUT}},
+          ),
+        ).switchMap(buildReport => {
+          if (!buildReport.success) {
+            const error = new Error(`Failed to build ${buildTarget}`);
+            logger.error(error);
+            throw error;
+          }
+          const firstResult = Object.keys(buildReport.results)[0];
+          let pathToCompilationDatabase =
+            buildReport.results[firstResult].output;
+          pathToCompilationDatabase = nuclideUri.join(
+            buckProjectRoot,
+            pathToCompilationDatabase,
+          );
+          return Observable.fromPromise(
+            BuckService.getBuildFile(buckProjectRoot, target, extraArgs),
+          ).switchMap(buildFile =>
+            Observable.fromPromise(
+              this._processCompilationDb(
+                {
+                  file: pathToCompilationDatabase,
+                  flagsFile: buildFile,
+                  libclangPath: null,
+                  target,
+                  warnings: [],
+                },
+                buckProjectRoot,
+                extraArgs,
+              ),
+            ),
+          );
+        });
+      });
   }
 
   async _processCompilationDb(
@@ -272,7 +301,7 @@ class BuckClangCompilationDatabaseHandler {
       )
         .refCount()
         .subscribe(
-          path => this._sourceCache.set(path, Promise.resolve(db)),
+          path => this._sourceCache.set(path, Observable.of(db)),
           reject, // on error
           resolve, // on complete
         );
