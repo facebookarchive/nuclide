@@ -10,5 +10,6 @@
 	"VSND2028": "Il tipo di console '{0}' è sconosciuto.",
 	"VSND2002": "Non è possibile avviare il programma '{0}'. Per risolvere il problema, provare a configurare i mapping di origine.",
 	"VSND2003": "Non è possibile avviare il programma '{0}'. Per risolvere il problema, provare a impostare l'attributo '{1}'.",
+	"VSND2009": "Non è possibile avviare il programma '{0}' perché non è stata trovata la versione di JavaScript corrispondente.",
 	"VSND2029": "Non è possibile caricare le variabili di ambiente dal file ({0})."
 }

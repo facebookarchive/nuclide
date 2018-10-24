@@ -10,5 +10,6 @@
 	"VSND2028": "Bilinmeyen konsol türü '{0}'.",
 	"VSND2002": "'{0}' programı başlatılamıyor; kaynak haritalarını yapılandırmak yardımcı olabilir.",
 	"VSND2003": "'{0}' programı başlatılamıyor; '{1}' özniteliğini ayarlamak yardımcı olabilir.",
+	"VSND2009": "İlgili JavaScript bulunamadığı için '{0}' programı başlatılamadı.",
 	"VSND2029": "Dosyadan ortam değişkenleri yüklenemedi ({0})."
 }

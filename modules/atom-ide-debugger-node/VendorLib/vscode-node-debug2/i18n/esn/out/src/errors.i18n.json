@@ -10,5 +10,6 @@
 	"VSND2028": "Tipo de consola desconocido: '{0}'.",
 	"VSND2002": "No se puede iniciar el programa '{0}'. Configurar mapas de origen puede ser útil.",
 	"VSND2003": "No se puede iniciar el programa '{0}'. Establecer el atributo '{1}' puede ayudar.",
+	"VSND2009": "No se puede iniciar el programa '{0}' porque no se puede encontrar el Javascript correspondiente. ",
 	"VSND2029": "No se pueden cargar las variables de entorno desde el archivo ({0})."
 }

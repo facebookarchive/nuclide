@@ -10,5 +10,6 @@
 	"VSND2028": "Type de console inconnu '{0}'.",
 	"VSND2002": "Impossible de lancer le programme '{0}'. Essayez éventuellement de configurer les mappages de sources.",
 	"VSND2003": "Impossible de lancer le programme '{0}' ; essayez de définir l'attribut '{1}'.",
+	"VSND2009": "Impossible de démarrer le programme '{0}' car le JavaScript correspondant est introuvable.",
 	"VSND2029": "Impossible de charger les variables d'environnement à partir du fichier ({0})."
 }

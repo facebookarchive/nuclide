@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExtensionFilesToCopy Include="..\vsix\extension\**\*" />
+  </ItemGroup>
+
+
+  <Target Name="CopyFilesToSign" BeforeTargets="DeleteUnwantedFiles">
+    <Copy SourceFiles="@(ExtensionFilesToCopy)"
+          DestinationFiles="@(ExtensionFilesToCopy->'$(OutDir)\ziproot\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="DeleteUnwantedFiles" DependsOnTargets="CopyFilesToSign" BeforeTargets="GetFilesToSign">
+    <Delete Files="$(OutDir)NodeDebugAdapter.dll;
+                   $(OutDir)NodeDebugAdapter.pdb;
+                   $(OutDir)NodeDebugAdapter.deps.json;"/>
+  </Target>
+
+  <Target Name="GetFilesToSign" DependsOnTargets="DeleteUnwantedFiles" BeforeTargets="SignFiles">
+    <ItemGroup>
+      <FilesToSign Include="$(OutDir)ziproot\**\*.js">
+        <Authenticode>Microsoft400</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="MicroBuild.Core">
+      <Version>0.2.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

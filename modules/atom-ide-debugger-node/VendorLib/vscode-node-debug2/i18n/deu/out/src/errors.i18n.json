@@ -10,5 +10,6 @@
 	"VSND2028": "Unbekannter Konsolentyp \"{0}\".",
 	"VSND2002": "Das Programm \"{0}\" kann nicht gestartet werden. Das Konfigurieren von Quellzuordnungen ist ggf. hilfreich.",
 	"VSND2003": "Das Programm \"{0}\" kann nicht gestartet werden. Das Festlegen des Attributs \"{1}\" ist ggf. hilfreich.",
+	"VSND2009": "Das Programm \"{0}\" konnte nicht gestartet werden, da das entsprechende JavaScript nicht gefunden wurde.",
 	"VSND2029": "Umgebungsvariablen können nicht aus Datei \"{0}\" geladen werden."
 }
