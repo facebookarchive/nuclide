@@ -60,11 +60,16 @@ export default class TokenizedLine {
       if (c === "'") {
         if (quoted) {
           if (token !== '') {
-            this._tokens.push({start, token});
+            this._tokens.push({start: start - 1, token});
           }
           token = '';
           quoted = false;
           continue;
+        }
+
+        if (token !== '') {
+          this._tokens.push({start, token});
+          token = '';
         }
 
         quoted = true;
