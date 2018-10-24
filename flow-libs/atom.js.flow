@@ -875,6 +875,7 @@ declare class atom$TextEditor extends atom$Model {
   getText(): string,
   getTextInBufferRange(range: atom$RangeLike): string,
   getLineCount(): number,
+  getScreenLineCount(): number,
   getLastScreenRow(): number,
 
   // Mutating Text

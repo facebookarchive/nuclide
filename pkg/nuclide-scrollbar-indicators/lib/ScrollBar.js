@@ -88,13 +88,13 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       // Don't bother painting the canvas if it's not visible.
       return;
     }
-    const lineCount = this.props.editor.getLineCount();
     const {width, height} = this._context.canvas;
     this._context.clearRect(0, 0, width, height);
-    const {markTypes, colors} = this.props;
+    const {markTypes, colors, editor} = this.props;
     if (markTypes == null || colors == null) {
       return;
     }
+    const lineCount = editor.getScreenLineCount();
 
     TYPE_ORDER.forEach(type => {
       const typeMarks = markTypes.get(type);
@@ -104,7 +104,18 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       typeMarks.forEach((marks, provider) => {
         this._context.fillStyle = this._getColorForType(type);
         marks.forEach(mark => {
-          const lineHeight = mark.end - mark.start;
+          const screenStart = editor.screenPositionForBufferPosition([
+            mark.start,
+            0,
+          ]).row;
+          const screenEnd =
+            // Often the mark is just one line. In that case, avoid the additional
+            // call to `editor.screenPositionForBufferPosition`
+            mark.end === mark.start
+              ? screenStart
+              : editor.screenPositionForBufferPosition([mark.end, 0]).row;
+
+          const lineHeight = screenEnd - screenStart;
           const rangeHeight = Math.max(
             MIN_PIXEL_HEIGHT,
             Math.round(height * (lineHeight / lineCount)),
@@ -112,7 +123,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
           // Draw single lines as lines rather than ranges.
           const markPixelHeight =
             lineHeight === 1 ? MIN_PIXEL_HEIGHT : rangeHeight;
-          const positionPercent = mark.start / lineCount;
+          const positionPercent = screenStart / lineCount;
           const pixelPosition = Math.floor(height * positionPercent);
           this._context.fillRect(0, pixelPosition, width, markPixelHeight);
         });
