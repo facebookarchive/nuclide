@@ -792,6 +792,31 @@ export default class DebugService implements IDebugService {
       }),
     );
 
+    const outputEvents = session
+      .observeOutputEvents()
+      .filter(
+        event => event.body != null && typeof event.body.output === 'string',
+      )
+      .share();
+
+    const notificationStream = outputEvents
+      .filter(e => e.body.category === 'nuclide_notification')
+      .map(e => ({
+        type: nullthrows(e.body.data).type,
+        message: e.body.output,
+      }));
+    const nuclideTrackStream = outputEvents.filter(
+      e => e.body.category === 'nuclide_track',
+    );
+    this._sessionEndDisposables.add(
+      notificationStream.subscribe(({type, message}) => {
+        atom.notifications.add(type, message);
+      }),
+      nuclideTrackStream.subscribe(e => {
+        track(e.body.output, e.body.data || {});
+      }),
+    );
+
     const createConsole = getConsoleService();
     if (createConsole != null) {
       const name = getDebuggerName(process.configuration.adapterType);
@@ -800,18 +825,16 @@ export default class DebugService implements IDebugService {
         name,
       });
       this._sessionEndDisposables.add(consoleApi);
-      const outputEvents = session
-        .observeOutputEvents()
-        .filter(
-          event => event.body != null && typeof event.body.output === 'string',
-        )
-        .share();
       const CATEGORIES_MAP = new Map([
         ['stderr', 'error'],
         ['console', 'warning'],
         ['success', 'success'],
       ]);
-      const IGNORED_CATEGORIES = new Set(['telemetry', 'nuclide_notification']);
+      const IGNORED_CATEGORIES = new Set([
+        'telemetry',
+        'nuclide_notification',
+        'nuclide_track',
+      ]);
       const logStream = outputEvents
         .filter(e => e.body.variablesReference == null)
         .filter(e => !IGNORED_CATEGORIES.has(e.body.category))
@@ -820,12 +843,6 @@ export default class DebugService implements IDebugService {
           level: CATEGORIES_MAP.get(e.body.category) || 'log',
         }))
         .filter(e => e.level != null);
-      const notificationStream = outputEvents
-        .filter(e => e.body.category === 'nuclide_notification')
-        .map(e => ({
-          type: nullthrows(e.body.data).type,
-          message: e.body.output,
-        }));
       const objectStream = outputEvents
         .filter(e => e.body.variablesReference != null)
         .map(e => ({
