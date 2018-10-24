@@ -29,7 +29,8 @@ export default function trackStalls(): IDisposable {
       // as an entry in the json (with "cat": "blink.user_timing" for Chrome)
       // TODO: In the future this can include the duration as a detail following
       // the User Timing Level 3 Proposal: https://fburl.com/h6zaabap
-      performance.mark('event-loop-blocked');
+      // For now, encode the duration into the mark name.
+      performance.mark(`event-loop-blocked:${duration}`);
 
       // send to analytics
       histogram.track(duration);
