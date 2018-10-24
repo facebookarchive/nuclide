@@ -29,10 +29,12 @@ export default class LineEditor extends EventEmitter {
   _screen: blessed.Screen;
   _outputBox: blessed.Box; // the box containing the scrollback
   _consoleBox: blessed.Box; // the box containing the being edited command line
+  _statusBox: blessed.Box; // status line box
   _scrollback: Array<string>; // the entire scrollback
   _boxTop: number; // the top line of the output
   _boxBottom: boolean; // if the outupt is scrolled all the way to the bottom
   _nextOutputSameLine: boolean; // true if the next output should be on the same line (no ending \n)
+  _more: boolean; // true if there's output the user hasn't seen
 
   _handlers: Map<string, () => void> = new Map();
   _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
@@ -118,7 +120,7 @@ export default class LineEditor extends EventEmitter {
     });
 
     this._consoleBox = blessed.box({
-      top: '100%-1',
+      top: '100%-2',
       left: 0,
       width: '100%',
       height: 1,
@@ -130,8 +132,23 @@ export default class LineEditor extends EventEmitter {
       tags: false,
     });
 
+    this._statusBox = blessed.box({
+      top: '100%-1',
+      left: 0,
+      width: '100%',
+      height: 1,
+      content: '',
+      style: {
+        fg: 'black',
+        bg: 'gray',
+      },
+      align: 'right',
+      tags: false,
+    });
+
     this._screen.append(this._outputBox);
     this._screen.append(this._consoleBox);
+    this._screen.append(this._statusBox);
 
     this._handlers = new Map([
       ['backspace', () => this._backspace()],
@@ -146,6 +163,8 @@ export default class LineEditor extends EventEmitter {
       ['right', () => this._right()],
       ['space', () => this._inputChar(' ')],
       ['up', () => this._historyPrevious()],
+      ['C-home', () => this._topOfOutput()],
+      ['C-end', () => this._bottomOfOutput()],
       ['C-a', () => this._home()],
       ['C-c', () => this._sigint()],
       ['C-d', () => this._deleteRight(true)],
@@ -346,8 +365,7 @@ export default class LineEditor extends EventEmitter {
 
   _pageUp() {
     this._boxTop = Math.max(0, this._boxTop - this._outputBox.height + 1);
-    this._boxBottom =
-      this._scrollback.length - this._boxTop <= this._outputBox.height;
+    this._updateScrollFlags();
     this._repaintOutput();
   }
 
@@ -356,9 +374,31 @@ export default class LineEditor extends EventEmitter {
       this._scrollback.length - this._outputBox.height,
       this._boxTop + this._outputBox.height - 1,
     );
+    this._updateScrollFlags();
+    this._repaintOutput();
+  }
+
+  _topOfOutput() {
+    this._boxTop = 0;
+    this._updateScrollFlags();
+    this._repaintOutput();
+  }
+
+  _bottomOfOutput() {
+    this._boxTop = Math.max(
+      0,
+      this._scrollback.length - this._outputBox.height,
+    );
+    this._updateScrollFlags();
+    this._repaintOutput();
+  }
+
+  _updateScrollFlags(): void {
     this._boxBottom =
       this._scrollback.length - this._boxTop <= this._outputBox.height;
-    this._repaintOutput();
+    if (this._boxBottom) {
+      this._more = false;
+    }
   }
 
   write(s: string): void {
@@ -386,6 +426,10 @@ export default class LineEditor extends EventEmitter {
 
     this._scrollback = this._scrollback.concat(lines).slice(-MAX_SCROLLBACK);
     this._nextOutputSameLine = !trailingNewline;
+
+    if (!this._boxBottom) {
+      this._more = true;
+    }
     this._repaintOutput();
   }
 
@@ -436,6 +480,33 @@ export default class LineEditor extends EventEmitter {
         .join('\n'),
     );
 
+    this._repaintStatus();
+    this._screen.render();
+  }
+
+  _repaintStatus(): void {
+    const statusEmpty = '       ';
+    const statusBottom = 'BOTTOM ';
+    const statusMore = 'MORE...';
+
+    const lpad = (str: string, width: number) =>
+      (str + ' '.repeat(width)).substr(0, width);
+
+    const lastLine = Math.min(
+      this._boxTop + this._outputBox.height,
+      this._scrollback.length,
+    );
+    const scroll = `Lines ${this._boxTop + 1}-${lastLine} of ${
+      this._scrollback.length
+    }`;
+
+    const where = this._more
+      ? statusMore
+      : this._boxBottom
+        ? statusBottom
+        : statusEmpty;
+
+    this._statusBox.setContent(`| ${lpad(scroll, 30)} | ${where}`);
     this._screen.render();
   }
 
