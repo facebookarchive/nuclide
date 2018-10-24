@@ -53,6 +53,7 @@ declare module 'blessed' {
   declare class Screen extends Node {
     title: string,
     render: () => void,
+    realloc: () => void,
     key(name: string | Array<string>, (ch: string, key: string) => void): events$EventEmitter,
   }
 

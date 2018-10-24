@@ -92,10 +92,7 @@ export default class LineEditor extends EventEmitter {
     this._history = new History(maxHistoryItems, removeDups);
     this._historyTextSave = '';
 
-    this._program = blessed.program({
-      log: 'blessed.log',
-      dump: true,
-    });
+    this._program = blessed.program({});
 
     this._screen = blessed.screen({
       smartCSR: true,
@@ -171,6 +168,7 @@ export default class LineEditor extends EventEmitter {
       ['C-e', () => this._end()],
       ['C-h', () => this._backspace()],
       ['C-k', () => this._deleteToEnd()],
+      ['C-l', () => this._repaintScreen()],
       ['C-t', () => this._swapChars()],
       ['C-u', () => this._deleteLine()],
       ['C-w', () => this._deleteToStart()],
@@ -376,6 +374,13 @@ export default class LineEditor extends EventEmitter {
     );
     this._updateScrollFlags();
     this._repaintOutput();
+  }
+
+  _repaintScreen() {
+    this._screen.realloc();
+    this._repaintOutput();
+    this._repaintStatus();
+    this._redrawConsole();
   }
 
   _topOfOutput() {
