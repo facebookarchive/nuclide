@@ -220,25 +220,23 @@ class BuckClangCompilationDatabaseHandler {
     )
       .map(allFlavors => target + '#' + allFlavors.join(','))
       .switchMap(buildTarget => {
-        return Observable.fromPromise(
-          BuckService.build(
-            buckProjectRoot,
-            [
-              // Small builds, like those used for a compilation database, can degrade overall
-              // `buck build` performance by unnecessarily invalidating the Action Graph cache.
-              // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
-              // for details on the importance of using skip-action-graph-cache=true.
-              '--config',
-              'client.skip-action-graph-cache=true',
+        return BuckService.build(
+          buckProjectRoot,
+          [
+            // Small builds, like those used for a compilation database, can degrade overall
+            // `buck build` performance by unnecessarily invalidating the Action Graph cache.
+            // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
+            // for details on the importance of using skip-action-graph-cache=true.
+            '--config',
+            'client.skip-action-graph-cache=true',
 
-              buildTarget,
-              ...extraArgs,
-              // TODO(hansonw): Any alternative to doing this?
-              // '-L',
-              // String(os.cpus().length / 2),
-            ],
-            {commandOptions: {timeout: BUCK_TIMEOUT}},
-          ),
+            buildTarget,
+            ...extraArgs,
+            // TODO(hansonw): Any alternative to doing this?
+            // '-L',
+            // String(os.cpus().length / 2),
+          ],
+          {commandOptions: {timeout: BUCK_TIMEOUT}},
         ).switchMap(buildReport => {
           if (!buildReport.success) {
             const error = new Error(`Failed to build ${buildTarget}`);

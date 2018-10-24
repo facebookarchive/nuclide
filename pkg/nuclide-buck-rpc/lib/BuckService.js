@@ -273,7 +273,7 @@ export function build(
   buildTargets: Array<string>,
   options?: BaseBuckBuildOptions,
 ): Promise<any> {
-  return BuckServiceImpl.build(rootPath, buildTargets, options);
+  return BuckServiceImpl.build(rootPath, buildTargets, options).toPromise();
 }
 
 /**
@@ -299,7 +299,7 @@ export function install(
     simulator,
     run,
     debug,
-  });
+  }).toPromise();
 }
 
 /**

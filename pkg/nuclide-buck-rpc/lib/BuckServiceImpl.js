@@ -146,53 +146,57 @@ export function _translateOptionsToBuckBuildArgs(
   return args;
 }
 
-export async function _build(
+export function _build(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   options: BaseBuckBuildOptions,
-): Promise<any> {
-  const report = await fsPromise.tempfile({suffix: '.json'});
-  const args = _translateOptionsToBuckBuildArgs({
-    baseOptions: {...options},
-    pathToBuildReport: report,
-    buildTargets,
-  });
-
-  try {
-    await runBuckCommandFromProjectRoot(
+): Observable<any> {
+  return Observable.fromPromise(
+    fsPromise.tempfile({suffix: '.json'}),
+  ).switchMap(report => {
+    const args = _translateOptionsToBuckBuildArgs({
+      baseOptions: {...options},
+      pathToBuildReport: report,
+      buildTargets,
+    });
+    return runBuckCommandFromProjectRoot(
       rootPath,
       args,
       options.commandOptions,
       false, // Do not add the client ID, since we already do it in the build args.
       true, // Build commands are blocking.
-    ).toPromise();
-  } catch (e) {
-    // The build failed. However, because --keep-going was specified, the
-    // build report should have still been written unless any of the target
-    // args were invalid. We check the contents of the report file to be sure.
-    const stat = await fsPromise.stat(report).catch(() => null);
-    if (stat == null || stat.size === 0) {
-      throw e;
-    }
-  }
-
-  try {
-    const json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
-    try {
-      return JSON.parse(json);
-    } catch (e) {
-      throw new Error(`Failed to parse:\n${json}`);
-    }
-  } finally {
-    fsPromise.unlink(report);
-  }
+    )
+      .catch(e => {
+        // The build failed. However, because --keep-going was specified, the
+        // build report should have still been written unless any of the target
+        // args were invalid. We check the contents of the report file to be sure.
+        return Observable.fromPromise(fsPromise.stat(report).catch(() => null))
+          .filter(stat => stat == null || stat.size === 0)
+          .switchMapTo(Observable.throw(e));
+      })
+      .ignoreElements()
+      .concat(
+        Observable.defer(() =>
+          Observable.fromPromise(
+            fsPromise.readFile(report, {encoding: 'UTF-8'}),
+          ),
+        ).map(json => {
+          try {
+            return JSON.parse(json);
+          } catch (e) {
+            throw new Error(`Failed to parse:\n${json}`);
+          }
+        }),
+      )
+      .finally(() => fsPromise.unlink(report));
+  });
 }
 
 export function build(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   options?: BaseBuckBuildOptions,
-): Promise<any> {
+): Observable<any> {
   return _build(rootPath, buildTargets, options || {});
 }
 
