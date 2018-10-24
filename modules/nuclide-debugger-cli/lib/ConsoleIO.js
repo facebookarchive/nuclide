@@ -26,5 +26,5 @@ export interface ConsoleIO {
   observeLines(): Observable<string>;
   observeKeys(): Observable<string>;
   isTTY(): boolean;
-  close(): void;
+  close(error: ?string): void;
 }

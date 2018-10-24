@@ -166,8 +166,7 @@ export default class Debugger implements DebuggerInterface {
         _adapter.adapter.transformLaunchArguments(adapter.launchArgs),
       );
     } catch (err) {
-      process.stderr.write(`Failed to debug target: ${err.message}\r\n`);
-      process.exit(0);
+      this._console.close(`Failed to debug target: ${err.message}\r\n`);
     }
   }
 
@@ -200,8 +199,7 @@ export default class Debugger implements DebuggerInterface {
       try {
         await session.configurationDone();
       } catch (err) {
-        process.stderr.write(`Failed to debug target: ${err.message}\r\n`);
-        process.exit(0);
+        this._console.close(`Failed to debug target: ${err.message}\r\n`);
       }
     }
 

@@ -11,15 +11,12 @@
  */
 
 import type {ConsoleIO} from './ConsoleIO';
-import type {CursorControl} from './console/types';
 
 import LineEditor from './console/LineEditor';
-import invariant from 'assert';
 import CommandDispatcher from './CommandDispatcher';
-import More from './More';
 import {Observable, Subject} from 'rxjs';
 
-const PROMPT = '\x1b[32;1mfbdbg>\x1b[0m ';
+const PROMPT = 'fbdbg> ';
 
 export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
@@ -33,7 +30,6 @@ export default class CommandLine implements ConsoleIO {
   _interrupts: Subject<void>;
   _lines: Subject<string>;
   _keys: Subject<string>;
-  _more: ?More;
 
   _subscriptions: Array<rxjs$ISubscription> = [];
 
@@ -143,15 +139,11 @@ export default class CommandLine implements ConsoleIO {
   }
 
   output(text: string): void {
-    if (this._more == null) {
-      this._cli.write(text);
-    }
+    this._cli.write(text);
   }
 
   outputLine(line?: string = ''): void {
-    if (this._more == null) {
-      this._cli.write(`${line}\n`);
-    }
+    this._cli.write(`${line}\n`);
   }
 
   write(data: string): void {
@@ -159,20 +151,7 @@ export default class CommandLine implements ConsoleIO {
   }
 
   async more(text: string): Promise<void> {
-    invariant(this._more == null);
-    if (!this._cli.isTTY()) {
-      this.output(text);
-      return;
-    }
-
-    const cursorControl: CursorControl = await this._cli.borrowTTY();
-
-    const more: More = new More(text, this, cursorControl, () => {
-      this._cli.returnTTY();
-      this._more = null;
-    });
-    this._more = more;
-    this._more.display();
+    this.outputLine(text);
   }
 
   prompt(): void {
@@ -195,7 +174,7 @@ export default class CommandLine implements ConsoleIO {
     }
   }
 
-  close(): void {
-    this._cli.close();
+  close(error: ?string): void {
+    this._cli.close(error);
   }
 }

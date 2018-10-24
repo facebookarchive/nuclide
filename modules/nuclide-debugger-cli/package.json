@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
+    "blessed": "0.1.81",
     "idx": "1.2.0",
     "line-by-line": "0.1.5",
     "log4js": "1.1.1",
