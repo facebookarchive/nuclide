@@ -1840,7 +1840,7 @@ export default class DebugService implements IDebugService {
         // Column and condition are optional in the protocol, but should
         // only be included on the object sent to the debug adapter if
         // they have values that exist.
-        if (bp.column != null && bp.column >= 0) {
+        if (bp.column != null && bp.column > 0) {
           bpToSend.column = bp.column;
         }
         if (bp.condition != null && bp.condition !== '') {
