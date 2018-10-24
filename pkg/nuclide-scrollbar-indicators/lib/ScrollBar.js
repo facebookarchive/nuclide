@@ -139,15 +139,17 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
 
   render(): React.Node {
     return (
-      <MeasuredComponent
-        style={{height: '100%', width: '100%'}}
-        onMeasurementsChanged={this._handleMeasurementsChanged}>
-        <canvas
-          ref={node => (this._canvas = node)}
-          height={this.state.height}
-          width={this.state.width}
-        />
-      </MeasuredComponent>
+      <div className="scroll-marker-view">
+        <MeasuredComponent
+          style={{height: '100%', width: '100%'}}
+          onMeasurementsChanged={this._handleMeasurementsChanged}>
+          <canvas
+            ref={node => (this._canvas = node)}
+            height={this.state.height}
+            width={this.state.width}
+          />
+        </MeasuredComponent>
+      </div>
     );
   }
 }

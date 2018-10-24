@@ -17,11 +17,11 @@ import type {ThemeColors} from './themeColors';
 import type {ScrollbarIndicatorMarkType} from './constants';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import Model from 'nuclide-commons/Model';
 import * as React from 'react';
 import Immutable from 'immutable';
-import ReactDOM from 'react-dom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
@@ -66,18 +66,6 @@ class Activation {
         this._model.setState({colors: getThemeColors()});
       }),
       atom.workspace.observeTextEditors(editor => {
-        const editorView = atom.views.getView(editor);
-        const scrollBarView = editorView.getElementsByClassName(
-          'vertical-scrollbar',
-        )[0];
-
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('scroll-marker-view');
-        nullthrows(scrollBarView.parentNode).insertBefore(
-          wrapper,
-          scrollBarView.nextSibling,
-        );
-
         const props = Observable.combineLatest(
           this._model.toObservable().map(state => ({
             markTypes: state.editorLines.get(editor),
@@ -90,16 +78,23 @@ class Activation {
           markTypes,
           editor,
         }));
-        const Component = bindObservableAsProps(props, ScrollBar);
 
-        ReactDOM.render(<Component />, wrapper);
+        const Component = bindObservableAsProps(props, ScrollBar);
+        const node = renderReactRoot(<Component />);
+
+        const editorView = atom.views.getView(editor);
+
+        const scrollBarView = editorView.getElementsByClassName(
+          'vertical-scrollbar',
+        )[0];
+
+        nullthrows(scrollBarView.parentNode).insertBefore(
+          node,
+          scrollBarView.nextSibling,
+        );
 
         this._disposables.addUntilDestroyed(editor, () => {
-          ReactDOM.unmountComponentAtNode(wrapper);
-          const {parentNode} = scrollBarView;
-          if (parentNode != null) {
-            parentNode.removeChild(wrapper);
-          }
+          node.remove();
         });
       }),
     );
