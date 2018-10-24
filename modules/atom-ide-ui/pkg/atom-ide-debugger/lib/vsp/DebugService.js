@@ -873,9 +873,6 @@ export default class DebugService implements IDebugService {
         }
       };
       this._sessionEndDisposables.add(
-        () => {
-          lastEntryToken = null;
-        },
         logStream.subscribe(e => handleMessage(e.text, e.level)),
         notificationStream.subscribe(({type, message}) => {
           atom.notifications.add(type, message);
@@ -899,6 +896,12 @@ export default class DebugService implements IDebugService {
             this._consoleOutput.next({text: 'object', data: result, level});
           });
         }),
+        () => {
+          if (lastEntryToken != null) {
+            lastEntryToken.setComplete();
+          }
+          lastEntryToken = null;
+        },
         // TODO handle non string output (e.g. files)
       );
       // Once set up, isolate debugger console into its own pane to separate
