@@ -331,6 +331,14 @@ public class ContextManager {
     }
   }
 
+  public void sendTelemetryEvent(String eventName, JSONObject values) {
+    NotificationChannel channel = getNotificationChannel();
+    if (channel instanceof VsDebugAdapterChannelManager) {
+      JavaDebuggerServer javaDebuggerServer = (JavaDebuggerServer) getInterpreter();
+      javaDebuggerServer.sendTelemetryEvent(eventName, values);
+    }
+  }
+
   public void sendBreakpointHitcountNotification(BreakpointSpec breakpointSpec) {
     NotificationChannel channel = getNotificationChannel();
     if (channel instanceof VsDebugAdapterChannelManager) {

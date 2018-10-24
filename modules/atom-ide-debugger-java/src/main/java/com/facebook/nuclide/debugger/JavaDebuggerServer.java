@@ -811,6 +811,10 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     send(new OutputEvent().setCategory(category).setOutput(message + "\n"));
   }
 
+  public void sendTelemetryEvent(String eventName, JSONObject values) {
+    send(new OutputEvent().setCategory("nuclide_track").setOutput(eventName).setData(values));
+  }
+
   public void sendContinuedEvent(long threadId) {
     send(new ContinuedEvent().setThreadId(threadId).setAllThreadsContinued(true));
   }

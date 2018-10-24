@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.json.JSONObject;
 
 /** Responsible for locating source file using class/source file paths. */
 public class SourceLocator {
@@ -261,10 +262,9 @@ public class SourceLocator {
         return sourceFile;
       }
     }
-    // TODO: It would be GREAT if I could pass some telemetry data back to Nuclide that includes the
-    // originalSourceFilePath and because it is a relative path I should be able to query the
-    // telemetry data and figure out what is the most accessed stack frame sources that we do not
-    // currently have sources for
+    JSONObject values = new JSONObject();
+    values.put("originalSourceFilePath", originalSourceFilePath);
+    _contextManager.sendTelemetryEvent("atom-ide-debugger-java-findSourceFile-failed", values);
     return Optional.empty();
   }
 

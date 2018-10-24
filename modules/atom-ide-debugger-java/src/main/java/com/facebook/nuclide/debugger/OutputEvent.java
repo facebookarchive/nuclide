@@ -28,6 +28,11 @@ public class OutputEvent extends base$Event {
     return this;
   }
 
+  public OutputEvent setData(JSONObject data) {
+    body.put("data", data);
+    return this;
+  }
+
   public JSONObject toJSON() {
     return super.toJSON().put("body", body);
   }
