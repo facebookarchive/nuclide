@@ -73,7 +73,7 @@ thread.
     const threads = this._debugger.getThreads();
     const focusThread = threads.focusThreadId;
 
-    this._console.more(
+    this._console.outputLine(
       threads.allThreads
         .sort((left, right) => left.id() - right.id())
         .map(thread => {

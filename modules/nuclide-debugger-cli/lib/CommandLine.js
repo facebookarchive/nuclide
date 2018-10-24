@@ -146,14 +146,6 @@ export default class CommandLine implements ConsoleIO {
     this._cli.write(`${line}\n`);
   }
 
-  write(data: string): void {
-    this._cli.write(data);
-  }
-
-  async more(text: string): Promise<void> {
-    this.outputLine(text);
-  }
-
   prompt(): void {
     this._cli.prompt();
   }

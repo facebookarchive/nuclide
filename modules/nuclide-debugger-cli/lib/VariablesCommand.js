@@ -70,6 +70,6 @@ when the program stops the most recent frame will be selected.
       }
       text += '\n';
     }
-    this._console.more(text);
+    this._console.outputLine(text);
   }
 }

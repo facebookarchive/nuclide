@@ -35,6 +35,6 @@ export default class InfoCommand implements Command {
 
     const response = await this._debugger.info(args[0]);
 
-    this._console.more(response.body.info);
+    this._console.outputLine(response.body.info);
   }
 }

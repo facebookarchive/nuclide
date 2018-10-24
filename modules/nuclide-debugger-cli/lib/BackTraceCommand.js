@@ -59,7 +59,7 @@ default number of frames to display is 100.
       frameCount,
     );
     const selectedFrame = activeThread.selectedStackFrame();
-    this._console.more(
+    this._console.outputLine(
       frames
         .map((frame, index) => {
           const selectedMarker = index === selectedFrame ? '*' : ' ';

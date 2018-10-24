@@ -16,8 +16,6 @@ export interface ConsoleIO {
   // output does not add a newline. outputLine does.
   output(text: string): void;
   outputLine(line?: string): void;
-  write(data: string): void;
-  more(text: string): Promise<void>;
   setPrompt(prompt: ?string): void;
   prompt(): void;
   stopInput(keepPromptWhenStopped?: boolean): void;
