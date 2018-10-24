@@ -33,7 +33,7 @@ export default class LineEditor extends EventEmitter {
   _boxTop: number; // the top line of the output
   _boxBottom: boolean; // if the outupt is scrolled all the way to the bottom
 
-  _handlers: Map<string, () => void>;
+  _handlers: Map<string, () => void> = new Map();
   _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
   _prompt: string;
   _buffer: string; // the string being edited
@@ -41,11 +41,43 @@ export default class LineEditor extends EventEmitter {
   _history: History; // a list of previously entered commands
   _historyTextSave: string; // the string that was being edited before the user starting scrolling through history
   _logger: log4js$Logger; // the logger
+  _tty: boolean;
+  _input: stream$Readable;
+  _output: stream$Writable;
 
   constructor(options: LineEditorOptions, logger: log4js$Logger) {
     super();
     this._logger = logger;
+    this._tty = options.tty !== false;
+    this._input = options.input || process.stdin;
+    this._output = options.output || process.stdout;
 
+    if (this._tty) {
+      this._initializeBlessed(options);
+      return;
+    }
+
+    this._initializeTTY(options);
+  }
+
+  isTTY(): boolean {
+    return this._tty;
+  }
+
+  close(error: ?string) {
+    this._closeError = error;
+    this.emit('close');
+  }
+
+  setPrompt(prompt: string): void {
+    this._prompt = prompt;
+    if (this._tty) {
+      this._redrawConsole();
+    }
+    return;
+  }
+
+  _initializeBlessed(options: LineEditorOptions): void {
     const maxHistoryItems =
       options.maxHistoryItems != null ? options.maxHistoryItems : 50;
     const removeDups =
@@ -64,6 +96,8 @@ export default class LineEditor extends EventEmitter {
     this._screen = blessed.screen({
       smartCSR: true,
       program: this._program,
+      input: this._input,
+      output: this._output,
     });
 
     this._program.showCursor();
@@ -165,19 +199,9 @@ export default class LineEditor extends EventEmitter {
     this._screen.render();
   }
 
-  isTTY(): boolean {
-    return false;
-  }
-
-  close(error: ?string) {
-    this._closeError = error;
-    this.emit('close');
-  }
-
-  setPrompt(prompt: string): void {
-    this._prompt = prompt;
-    this._redrawConsole();
-    return;
+  _initializeTTY(options: LineEditorOptions): void {
+    this._input.on('data', data => this._onRawData(data));
+    this._input.on('end', _ => this.close());
   }
 
   _redrawConsole(): void {
@@ -336,15 +360,23 @@ export default class LineEditor extends EventEmitter {
   }
 
   write(s: string): void {
+    if (!this._tty) {
+      this._output.write(s);
+      return;
+    }
+
     const text = s.trim();
     this._scrollback = this._scrollback
       .concat(text.split('\n'))
       .slice(-MAX_SCROLLBACK);
     this._repaintOutput();
-    return;
   }
 
-  async prompt(): Promise<void> {}
+  async prompt(): Promise<void> {
+    if (!this._tty) {
+      this._output.write(this._prompt);
+    }
+  }
 
   _historyPrevious(): void {
     const item = this._history.previousItem();
@@ -388,5 +420,14 @@ export default class LineEditor extends EventEmitter {
     );
 
     this._screen.render();
+  }
+
+  // non-tty support
+  _onRawData(data: Buffer): void {
+    data
+      .toString('utf8')
+      .trim()
+      .split('\n')
+      .forEach(line => this.emit('line', line));
   }
 }
