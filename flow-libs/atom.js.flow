@@ -1127,6 +1127,7 @@ declare class atom$TextEditorComponent {
 
   setScrollLeft(scrollLeft: number): void,
   getScrollLeft(): number,
+  updateSync(useScheduler?: boolean): void,
 }
 
 /**
