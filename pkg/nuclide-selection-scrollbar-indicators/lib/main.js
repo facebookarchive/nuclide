@@ -12,12 +12,20 @@
 import type {
   ScrollbarIndicatorUpdate,
   ScrollbarIndicatorProvider,
+  ScrollbarIndicatorMark,
 } from '../../nuclide-scrollbar-indicators';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
+
+function marksDiffer(
+  rangeA: ScrollbarIndicatorMark,
+  rangeB: ScrollbarIndicatorMark,
+): boolean {
+  return rangeA.start === rangeB.start && rangeA.end === rangeB.end;
+}
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -34,20 +42,24 @@ class Activation {
           return Observable.combineLatest(
             observableFromSubscribeFunction(cb =>
               editor.onDidChangeCursorPosition(cb),
-            ).map(({newBufferPosition}) => {
-              return {
-                start: newBufferPosition.row,
-                end: newBufferPosition.row,
-              };
-            }),
+            )
+              .map(({newBufferPosition}) => {
+                return {
+                  start: newBufferPosition.row,
+                  end: newBufferPosition.row,
+                };
+              })
+              .distinctUntilChanged(marksDiffer),
             observableFromSubscribeFunction(cb =>
               editor.onDidChangeSelectionRange(cb),
-            ).map(({newBufferRange}) => {
-              return {
-                start: newBufferRange.start.row,
-                end: newBufferRange.end.row,
-              };
-            }),
+            )
+              .map(({newBufferRange}) => {
+                return {
+                  start: newBufferRange.start.row,
+                  end: newBufferRange.end.row,
+                };
+              })
+              .distinctUntilChanged(marksDiffer),
           ).map(([position, selection]) => {
             return {
               editor,
