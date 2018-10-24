@@ -22,6 +22,7 @@ type Props = {
   endLine: ?number,
   onClick: (event: SyntheticMouseEvent<>) => mixed,
   onLineClick: (event: SyntheticMouseEvent<>, line: number) => mixed,
+  onDidChange?: string => mixed,
 };
 
 export class CodeSnippet extends React.Component<Props> {
@@ -98,6 +99,7 @@ export class CodeSnippet extends React.Component<Props> {
           onDidChangeSelectionRange={e => {
             this._ongoingSelection = e.selection;
           }}
+          onDidChange={this.props.onDidChange}
           onClick={e => {
             // If the user selected a range, cancel the `onClick` behavior
             // to enable copying the selection.
