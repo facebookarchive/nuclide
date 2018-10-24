@@ -32,6 +32,7 @@ export default class LineEditor extends EventEmitter {
   _scrollback: Array<string>; // the entire scrollback
   _boxTop: number; // the top line of the output
   _boxBottom: boolean; // if the outupt is scrolled all the way to the bottom
+  _nextOutputSameLine: boolean; // true if the next output should be on the same line (no ending \n)
 
   _handlers: Map<string, () => void> = new Map();
   _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
@@ -51,6 +52,7 @@ export default class LineEditor extends EventEmitter {
     this._tty = options.tty !== false;
     this._input = options.input || process.stdin;
     this._output = options.output || process.stdout;
+    this._nextOutputSameLine = false;
 
     if (this._tty) {
       this._initializeBlessed(options);
@@ -237,7 +239,7 @@ export default class LineEditor extends EventEmitter {
   }
 
   _enter(): void {
-    this.write(this._prompt + this._buffer);
+    this.write(`${this._prompt}${this._buffer}\n`);
     this._history.addItem(this._buffer);
     this.emit('line', this._buffer);
     this._buffer = '';
@@ -360,15 +362,30 @@ export default class LineEditor extends EventEmitter {
   }
 
   write(s: string): void {
+    this._logger.info(`output [${s}]\n`);
     if (!this._tty) {
       this._output.write(s);
       return;
     }
 
-    const text = s.trim();
-    this._scrollback = this._scrollback
-      .concat(text.split('\n'))
-      .slice(-MAX_SCROLLBACK);
+    const trailingNewline = s.endsWith('\n');
+    const lines = s.split('\n');
+
+    if (trailingNewline) {
+      lines.splice(-1);
+    }
+
+    if (lines.length === 0) {
+      return;
+    }
+
+    if (this._nextOutputSameLine && this._scrollback.length !== 0) {
+      this._scrollback[this._scrollback.length - 1] += lines[0];
+      lines.shift();
+    }
+
+    this._scrollback = this._scrollback.concat(lines).slice(-MAX_SCROLLBACK);
+    this._nextOutputSameLine = !trailingNewline;
     this._repaintOutput();
   }
 
