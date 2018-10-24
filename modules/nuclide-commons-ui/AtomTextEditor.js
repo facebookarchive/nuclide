@@ -65,11 +65,6 @@ function setupTextEditor(props: Props): TextEditorSetup {
 
   if (props.readOnly) {
     enforceReadOnlyEditor(textEditor);
-
-    // Remove the cursor line decorations because that's distracting in read-only mode.
-    textEditor.getDecorations({class: 'cursor-line'}).forEach(decoration => {
-      decoration.destroy();
-    });
   }
   return {
     disposables,
