@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Action} from './redux/Actions';
-import type {TaskSettings} from './types';
+import type {TaskSettings, UnsanitizedTaskSettings} from './types';
 
 import {arrayEqual} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
@@ -136,6 +136,7 @@ function promptTaskRunner(args: Array<string>): Promise<boolean> {
 export function observeBuildCommands(
   buckRoot: NuclideUri,
   currentTaskSettings: () => TaskSettings,
+  currentUnsanitizedTaskSettings: () => UnsanitizedTaskSettings,
 ): Observable<Action> {
   // Check the most recent Buck log at a fixed interval to check for
   // Buck command invocations.
@@ -168,15 +169,19 @@ export function observeBuildCommands(
             args[index - 1] === configFlag,
         );
         const currentSettings = currentTaskSettings();
+        const currentUnsanitizedSettings = currentUnsanitizedTaskSettings();
         return Observable.fromPromise(
           promptConfigChange(currentSettings.compileDbArguments, configArgs),
         )
           .filter(shouldUpdate => shouldUpdate === true)
           .map(() =>
-            Actions.setTaskSettings({
-              ...currentSettings,
-              compileDbArguments: configArgs,
-            }),
+            Actions.setTaskSettings(
+              {
+                ...currentSettings,
+                compileDbArguments: configArgs,
+              },
+              currentUnsanitizedSettings,
+            ),
           );
       }
       return Observable.fromPromise(promptTaskRunner(args))

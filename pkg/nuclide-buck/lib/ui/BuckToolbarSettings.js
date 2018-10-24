@@ -9,12 +9,16 @@
  * @format
  */
 
-import type {PlatformProviderSettings, TaskSettings} from '../types';
+import type {
+  PlatformProviderSettings,
+  TaskSettings,
+  UnsanitizedTaskSettings,
+} from '../types';
 
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import * as React from 'react';
 
-import {shellParseWithGlobs, shellQuote} from 'nuclide-commons/string';
+import {shellParseWithGlobs} from 'nuclide-commons/string';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -26,33 +30,36 @@ type Props = {
   buckRoot: string,
   buckversionFileContents: ?(string | Error),
   settings: TaskSettings,
+  unsanitizedSettings: UnsanitizedTaskSettings,
   platformProviderSettings: ?PlatformProviderSettings,
   onDismiss: () => void,
-  onSave: (settings: TaskSettings) => void,
+  onSave: (
+    settings: TaskSettings,
+    unsanitizedSettings: UnsanitizedTaskSettings,
+  ) => void,
 };
 
 type State = {
-  buildArguments: string,
-  runArguments: string,
-  compileDbArguments: string,
   keepGoing: boolean,
+  unsanitizedBuildArguments: ?string,
+  unsanitizedRunArguments: ?string,
+  unsanitizedCompileDbArguments: ?string,
 };
 
 export default class BuckToolbarSettings extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
+    const {keepGoing} = props.settings;
     const {
-      buildArguments,
-      runArguments,
-      compileDbArguments,
-      keepGoing,
-    } = props.settings;
+      unsanitizedBuildArguments,
+      unsanitizedRunArguments,
+      unsanitizedCompileDbArguments,
+    } = props.unsanitizedSettings;
     this.state = {
-      buildArguments: buildArguments == null ? '' : shellQuote(buildArguments),
-      runArguments: runArguments == null ? '' : shellQuote(runArguments),
-      compileDbArguments:
-        compileDbArguments == null ? '' : shellQuote(compileDbArguments),
       keepGoing: keepGoing == null ? true : keepGoing,
+      unsanitizedBuildArguments,
+      unsanitizedRunArguments,
+      unsanitizedCompileDbArguments,
     };
   }
 
@@ -77,7 +84,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
             <label>Build Arguments:</label>
             <AtomInput
               tabIndex="0"
-              initialValue={this.state.buildArguments}
+              initialValue={this.state.unsanitizedBuildArguments || ''}
               placeholderText="Extra arguments to Buck itself (e.g. --num-threads 4)"
               onDidChange={this._onBuildArgsChange}
               onConfirm={this._onSave.bind(this)}
@@ -92,7 +99,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
             <label>Run Arguments:</label>
             <AtomInput
               tabIndex="0"
-              initialValue={this.state.runArguments}
+              initialValue={this.state.unsanitizedRunArguments || ''}
               placeholderText="Custom command-line arguments to pass to the app/binary"
               onDidChange={this._onRunArgsChange}
               onConfirm={this._onSave.bind(this)}
@@ -100,7 +107,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
             <label>Compilation Database Arguments:</label>
             <AtomInput
               tabIndex="0"
-              initialValue={this.state.compileDbArguments}
+              initialValue={this.state.unsanitizedCompileDbArguments || ''}
               placeholderText="Extra arguments when building for language support (e.g. @mode/dev)"
               onDidChange={this._onCompileDbArgsChange}
               onConfirm={this._onSave.bind(this)}
@@ -161,16 +168,16 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
     }
   }
 
-  _onBuildArgsChange = (args: string) => {
-    this.setState({buildArguments: args});
+  _onBuildArgsChange = (unsanitizedBuildArguments: string) => {
+    this.setState({unsanitizedBuildArguments});
   };
 
-  _onRunArgsChange = (args: string) => {
-    this.setState({runArguments: args});
+  _onRunArgsChange = (unsanitizedRunArguments: string) => {
+    this.setState({unsanitizedRunArguments});
   };
 
-  _onCompileDbArgsChange = (args: string) => {
-    this.setState({compileDbArguments: args});
+  _onCompileDbArgsChange = (unsanitizedCompileDbArguments: string) => {
+    this.setState({unsanitizedCompileDbArguments});
   };
 
   _onKeepGoingChange = (checked: boolean) => {
@@ -178,20 +185,46 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
   };
 
   _onSave() {
-    try {
-      this.props.onSave({
-        buildArguments: shellParseWithGlobs(this.state.buildArguments),
-        runArguments: shellParseWithGlobs(this.state.runArguments),
-        compileDbArguments: shellParseWithGlobs(this.state.compileDbArguments),
-        keepGoing: this.state.keepGoing,
-      });
-    } catch (err) {
-      atom.notifications.addError('Could not parse arguments', {
-        detail: err.stack,
-      });
-    }
+    const {
+      unsanitizedBuildArguments,
+      unsanitizedRunArguments,
+      unsanitizedCompileDbArguments,
+      keepGoing,
+    } = this.state;
+
+    const unsanitizedTaskSettings: UnsanitizedTaskSettings = {
+      unsanitizedBuildArguments,
+      unsanitizedRunArguments,
+      unsanitizedCompileDbArguments,
+    };
+    const taskSettings: TaskSettings = {
+      buildArguments: this._parseTaskSetting(unsanitizedBuildArguments),
+      runArguments: this._parseTaskSetting(unsanitizedRunArguments),
+      compileDbArguments: this._parseTaskSetting(unsanitizedCompileDbArguments),
+      keepGoing,
+    };
+
+    this.props.onSave(taskSettings, unsanitizedTaskSettings);
+
     if (this.props.platformProviderSettings != null) {
       this.props.platformProviderSettings.onSave();
     }
   }
+
+  _parseTaskSetting = (setting: ?string): Array<string> => {
+    if (setting == null || setting.length === 0) {
+      return [];
+    }
+
+    let taskSetting;
+    try {
+      taskSetting = shellParseWithGlobs(setting);
+    } catch (error) {
+      atom.notifications.addError(
+        `These arguments could not be parsed and will be ignored:\n${setting}`,
+      );
+      taskSetting = [];
+    }
+    return taskSetting;
+  };
 }

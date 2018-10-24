@@ -71,7 +71,11 @@ export function setBuckRootEpic(
         )
         .switchMap(() => readBuckversionFile(buckRoot))
         .map(fileContents => Actions.setBuckversionFileContents(fileContents)),
-      observeBuildCommands(buckRoot, () => store.getState().taskSettings),
+      observeBuildCommands(
+        buckRoot,
+        () => store.getState().taskSettings,
+        () => store.getState().unsanitizedTaskSettings,
+      ),
     );
   });
 }

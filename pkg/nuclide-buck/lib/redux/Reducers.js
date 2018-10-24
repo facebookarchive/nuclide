@@ -98,6 +98,7 @@ export default function accumulateState(
       return {
         ...state,
         taskSettings: action.settings,
+        unsanitizedTaskSettings: action.unsanitizedSettings,
       };
   }
   return state;

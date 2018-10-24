@@ -10,7 +10,12 @@
  */
 
 import type {ResolvedRuleType} from '../../../nuclide-buck-rpc/lib/types';
-import type {DeploymentTarget, PlatformGroup, TaskSettings} from '../types';
+import type {
+  DeploymentTarget,
+  PlatformGroup,
+  TaskSettings,
+  UnsanitizedTaskSettings,
+} from '../types';
 
 export type Action =
   | {|
@@ -28,6 +33,7 @@ export type Action =
   | {|
       type: 'SET_TASK_SETTINGS',
       settings: TaskSettings,
+      unsanitizedSettings: UnsanitizedTaskSettings,
     |}
   // The actions below are meant to be used in Epics only.
   | {|
@@ -80,6 +86,9 @@ export function setDeploymentTarget(
   return {type: SET_DEPLOYMENT_TARGET, deploymentTarget};
 }
 
-export function setTaskSettings(settings: TaskSettings): Action {
-  return {type: SET_TASK_SETTINGS, settings};
+export function setTaskSettings(
+  settings: TaskSettings,
+  unsanitizedSettings: UnsanitizedTaskSettings,
+): Action {
+  return {type: SET_TASK_SETTINGS, settings, unsanitizedSettings};
 }

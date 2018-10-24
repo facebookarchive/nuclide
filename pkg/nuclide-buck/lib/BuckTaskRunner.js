@@ -153,8 +153,10 @@ export class BuckTaskRunner {
           store.dispatch(Actions.setBuildTarget(buildTarget)),
         setDeploymentTarget: deploymentTarget =>
           store.dispatch(Actions.setDeploymentTarget(deploymentTarget)),
-        setTaskSettings: settings =>
-          store.dispatch(Actions.setTaskSettings(settings)),
+        setTaskSettings: (settings, unsanizitedSettings) =>
+          store.dispatch(
+            Actions.setTaskSettings(settings, unsanizitedSettings),
+          ),
       };
       this._extraUi = bindObservableAsProps(
         observableFromReduxStore(store)
@@ -294,6 +296,8 @@ export class BuckTaskRunner {
         lastSessionDeviceGroupName: this._serializedState
           .selectedDeviceGroupName,
         lastSessionDeviceName: this._serializedState.selectedDeviceName,
+        unsanitizedTaskSettings:
+          this._serializedState.unsanitizedTaskSettings || {},
       };
       const rootEpic = combineEpicsFromImports(Epics, 'nuclide-buck');
       this._store = createStore(
@@ -440,7 +444,7 @@ export class BuckTaskRunner {
       return;
     }
     const state = this._store.getState();
-    const {buildTarget, taskSettings} = state;
+    const {buildTarget, taskSettings, unsanitizedTaskSettings} = state;
     const target = state.selectedDeploymentTarget;
     let selectedPlatformGroupName;
     let selectedPlatformName;
@@ -467,6 +471,7 @@ export class BuckTaskRunner {
       selectedPlatformName,
       selectedDeviceGroupName,
       selectedDeviceName,
+      unsanitizedTaskSettings,
     };
   }
 }

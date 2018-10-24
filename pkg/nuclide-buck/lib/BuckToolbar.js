@@ -16,6 +16,7 @@ import type {
   MobilePlatform,
   PlatformGroup,
   TaskSettings,
+  UnsanitizedTaskSettings,
 } from './types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 
@@ -35,7 +36,10 @@ type Props = {
   appState: AppState,
   setBuildTarget(buildTarget: string): void,
   setDeploymentTarget(deploymentTarget: DeploymentTarget): void,
-  setTaskSettings(settings: TaskSettings): void,
+  setTaskSettings(
+    settings: TaskSettings,
+    unsanitizedSettings: UnsanitizedTaskSettings,
+  ): void,
 };
 
 type State = {
@@ -72,6 +76,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
       platformProviderUi,
       selectedDeploymentTarget,
       taskSettings,
+      unsanitizedTaskSettings,
     } = this.props.appState;
     invariant(buckRoot != null);
     const extraToolbarUi =
@@ -157,9 +162,12 @@ export default class BuckToolbar extends React.Component<Props, State> {
             buckRoot={buckRoot}
             buckversionFileContents={buckversionFileContents}
             settings={taskSettings}
+            unsanitizedSettings={unsanitizedTaskSettings}
             platformProviderSettings={extraSettings}
             onDismiss={() => this._hideSettings()}
-            onSave={settings => this._saveSettings(settings)}
+            onSave={(settings, unsanitizedSettings) =>
+              this._saveSettings(settings, unsanitizedSettings)
+            }
           />
         ) : null}
       </div>
@@ -178,8 +186,11 @@ export default class BuckToolbar extends React.Component<Props, State> {
     this.setState({settingsVisible: false});
   }
 
-  _saveSettings(settings: TaskSettings) {
-    this.props.setTaskSettings(settings);
+  _saveSettings(
+    settings: TaskSettings,
+    unsanitizedSettings: UnsanitizedTaskSettings,
+  ) {
+    this.props.setTaskSettings(settings, unsanitizedSettings);
     this._hideSettings();
   }
 

@@ -47,6 +47,12 @@ export type TaskSettings = {|
   keepGoing?: boolean,
 |};
 
+export type UnsanitizedTaskSettings = {|
+  unsanitizedBuildArguments?: ?string,
+  unsanitizedRunArguments?: ?string,
+  unsanitizedCompileDbArguments?: ?string,
+|};
+
 export type AppState = {
   platformGroups: Array<PlatformGroup>,
   platformService: PlatformService,
@@ -67,6 +73,7 @@ export type AppState = {
   lastSessionPlatformName: ?string,
   lastSessionDeviceGroupName: ?string,
   lastSessionDeviceName: ?string,
+  unsanitizedTaskSettings: UnsanitizedTaskSettings,
 };
 
 export type TaskInfo = {
@@ -90,6 +97,7 @@ export type SerializedState = {
   selectedPlatformName: ?string,
   selectedDeviceGroupName: ?string,
   selectedDeviceName: ?string,
+  unsanitizedTaskSettings: UnsanitizedTaskSettings,
 };
 
 export type BuckBuildOutput = {
