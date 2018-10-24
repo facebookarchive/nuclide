@@ -758,12 +758,13 @@ export function watchmanFileChange_lspFileEvent(
 
 export function lspStatus_atomStatus(params: ShowStatusParams): ?StatusData {
   const actions = params.actions || [];
+  const buttons = actions.map(action => action.title);
   switch (params.type) {
     case LspMessageType.Error:
       return {
         kind: 'red',
         message: params.message == null ? '' : params.message,
-        buttons: actions.map(action => action.title),
+        buttons,
       };
     case LspMessageType.Warning:
       return {
@@ -777,6 +778,7 @@ export function lspStatus_atomStatus(params: ShowStatusParams): ?StatusData {
                 numerator: params.progress.numerator,
                 denominator: params.progress.denominator,
               },
+        buttons,
       };
     case LspMessageType.Info:
       return {kind: 'green', message: params.message};

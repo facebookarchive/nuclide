@@ -368,13 +368,14 @@ export class LspLanguageService {
       this._statusClickPromiseResolver = resolve;
     });
 
-    // red status updates are accompanied by an id to correlate statusClicks
+    // red and yellow status updates are accompanied by an id to correlate statusClicks
     this._statusCounter++;
     const status2 =
-      status.kind !== 'red'
+      status.kind !== 'red' && status.kind !== 'yellow'
         ? status
         : {...status, id: String(this._statusCounter)};
     this._logger.trace(`_setStatus status: ${JSON.stringify(status2)}`);
+    // $FlowIgnore: flow has trouble disambiguating the 'kind: red' and 'kind: yellow' variants
     this._statusUpdates.next(status2);
 
     return this._statusClickPromise;

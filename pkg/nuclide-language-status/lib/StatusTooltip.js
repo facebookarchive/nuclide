@@ -69,15 +69,20 @@ class StatusTooltipComponent extends React.Component<Props> {
 
   _renderButtons = (): ?React.Node => {
     const {provider, data} = this.props.status;
-    if (data.kind !== 'red' || data.buttons.length === 0) {
+    if (
+      (data.kind !== 'red' && data.kind !== 'yellow') ||
+      data.buttons.length === 0
+    ) {
       return null;
     }
+    const buttonType =
+      data.kind === 'red' ? ButtonTypes.ERROR : ButtonTypes.WARNING;
     return (
       <ButtonGroup>
         {data.buttons.map(b => (
           <Button
             key={b}
-            buttonType={ButtonTypes.ERROR}
+            buttonType={buttonType}
             onClick={() => {
               provider.clickStatus(
                 nullthrows(this.props.editor),

@@ -142,6 +142,8 @@ export type StatusData =
   | {|
       kind: 'yellow',
       message: string,
+      buttons: Array<string>,
+      id?: string,
       shortMessage?: string,
       progress?: {|numerator: number, denominator?: number|},
     |}
