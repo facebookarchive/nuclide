@@ -66,6 +66,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       height: rect.height,
       width: rect.width,
     });
+    this._drawToCanvas();
   }
 
   _getColorForType(type: ScrollbarIndicatorMarkType): string {
@@ -88,6 +89,10 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       // Don't bother painting the canvas if it's not visible.
       return;
     }
+    this._drawToCanvas();
+  }
+
+  _drawToCanvas() {
     const {width, height} = this._context.canvas;
     this._context.clearRect(0, 0, width, height);
     const {markTypes, colors, editor} = this.props;
