@@ -299,7 +299,7 @@ function lastRectPerTarget(
 function remeasureContentRect(
   element: HTMLElement,
   contentRect: DOMRectReadOnly,
-): DOMRect {
+): DOMRectReadOnly {
   const {clientHeight, clientWidth} = element;
 
   // Client height/width include padding
@@ -313,7 +313,7 @@ function remeasureContentRect(
   const width =
     clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight);
 
-  return new DOMRect(contentRect.x, contentRect.y, width, height);
+  return new DOMRectReadOnly(contentRect.x, contentRect.y, width, height);
 }
 
 /*

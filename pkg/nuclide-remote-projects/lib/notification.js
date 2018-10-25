@@ -192,6 +192,7 @@ export function notifySshHandshakeError(
   let buttons = [];
   if (
     errorType === 'SSH_AUTHENTICATION' &&
+    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     config.authMethod === 'CERT_NOT_YET_VALID'
   ) {
     buttons = [

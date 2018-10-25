@@ -68,6 +68,7 @@ export class CommandExecutor {
     switch (command) {
       case ADD_IMPORT_COMMAND_ID:
         return this._addImport((args: AddImportCommandParams));
+      // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
       case 'getAllImports':
         return this._getAllImports(args[0]);
       default:
