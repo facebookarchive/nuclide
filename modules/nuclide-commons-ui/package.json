@@ -28,7 +28,7 @@
     "react": "16.5.2",
     "react-dom": "16.5.2",
     "react-virtualized": "9.20.1",
-    "rxjs": "5.5.5",
+    "rxjs-compat": "6.3.3",
     "semver": "5.5.0",
     "shallowequal": "1.1.0",
     "tabbable": "1.1.0"

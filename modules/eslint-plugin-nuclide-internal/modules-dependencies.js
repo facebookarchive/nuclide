@@ -87,7 +87,15 @@ module.exports = function(context) {
     if (
       !Object.hasOwnProperty.call(modulePkg.dependencies || {}, depName) &&
       (!allowDevDependencies ||
-        !Object.hasOwnProperty.call(modulePkg.devDependencies || {}, depName))
+        !Object.hasOwnProperty.call(
+          modulePkg.devDependencies || {},
+          depName,
+        )) &&
+      // We rewrite imports from rxjs to be from rxjs-compat
+      !(
+        depName === 'rxjs' &&
+        Object.hasOwnProperty.call(modulePkg.dependencies || {}, 'rxjs-compat')
+      )
     ) {
       context.report({
         node,

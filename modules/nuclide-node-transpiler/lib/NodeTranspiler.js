@@ -40,7 +40,7 @@ const NUCLIDE_ROOT = path.join(__dirname, '..', '..', '..');
 
 const MODULE_ALIASES = {
   redux: 'redux/dist/redux.min.js',
-  rxjs: 'rxjs/bundles/Rx.min.js',
+  rxjs: 'rxjs-compat/bundles/rxjs-compat.umd.min.js',
 };
 
 const NON_LAZY_MODULES = new Set([
@@ -48,7 +48,7 @@ const NON_LAZY_MODULES = new Set([
   'electron',
   'react',
   'react-dom',
-  'rxjs/bundles/Rx.min.js',
+  'rxjs-compat/bundles/rxjs-compat.umd.min.js',
 ]);
 
 const BABEL_OPTIONS = {

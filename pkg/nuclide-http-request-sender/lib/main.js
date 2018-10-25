@@ -13,6 +13,7 @@ import type {Store, BoundActionCreators, PartialAppState} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -22,7 +23,6 @@ import * as Actions from './Actions';
 import * as Epics from './Epics';
 import * as Reducers from './Reducers';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
-import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {track} from 'nuclide-analytics';
 
@@ -85,8 +85,7 @@ class Activation {
       return this._requestEditDialog;
     }
     const BoundEditDialog = bindObservableAsProps(
-      // $FlowFixMe -- Flow doesn't know about the Observable symbol used by from().
-      Observable.from(this._store),
+      observableFromReduxStore(this._store),
       RequestEditDialog,
     );
     const container = document.createElement('div');

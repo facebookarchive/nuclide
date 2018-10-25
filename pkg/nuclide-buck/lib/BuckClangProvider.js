@@ -10,6 +10,7 @@
  */
 
 import {arrayEqual} from 'nuclide-commons/collection';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import {Observable} from 'rxjs';
 import type {BuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
 import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
@@ -266,8 +267,7 @@ export function getClangProvider(
       root: ?NuclideUri,
       params: CompilationDatabaseParams,
     }> {
-      // $FlowFixMe: type symbol-observable
-      return Observable.from(taskRunner._getStore())
+      return observableFromReduxStore(taskRunner._getStore())
         .startWith(taskRunner._getStore().getState())
         .map(({projectRoot}: AppState) => ({
           root: projectRoot,

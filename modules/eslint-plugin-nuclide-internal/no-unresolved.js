@@ -30,6 +30,8 @@ module.exports = function(context) {
       !id.includes('/') &&
       !ATOM_BUILTIN_PACKAGES.has(id) &&
       !pkgJson.dependencies.hasOwnProperty(id) &&
+      // We rewrite imports from rxjs to be from rxjs-compat
+      !(id === 'rxjs' && pkgJson.dependencies.hasOwnProperty('rxjs-compat')) &&
       !filename.includes('/spec/') &&
       !filename.includes('/scripts/') &&
       !filename.includes('.eslintrc.js') &&

@@ -288,13 +288,14 @@ describe('FileWatcherService', () => {
     watchFile(TEST_FILE)
       .refCount()
       .subscribe({error: errorMock});
-    try {
-      watchWithNode(nodeTestFilePath)
-        .refCount()
-        .subscribe({next: x => x});
-    } catch (err) {
-      errorMockWithNode();
-    }
+    watchWithNode(nodeTestFilePath)
+      .refCount()
+      .subscribe({
+        next: x => x,
+        error() {
+          errorMockWithNode();
+        },
+      });
 
     await waitsFor(
       () =>

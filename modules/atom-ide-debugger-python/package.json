@@ -47,7 +47,7 @@
     "nullthrows": "1.0.0",
     "react": "16.5.2",
     "reflect-metadata": "0.1.12",
-    "rxjs": "5.5.5",
+    "rxjs-compat": "6.3.3",
     "semver": "5.5.0",
     "tmp": "0.0.29",
     "tree-kill": "1.1.0",
