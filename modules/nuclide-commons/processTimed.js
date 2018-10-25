@@ -60,7 +60,10 @@ function processTimedIterator(
     ({done} = processIterator.next());
   } while (!done && performanceNow() - before < limit);
 
-  setTimeout(() => {
-    processTimedIterator(processIterator, {limit, delay, signal});
-  }, delay);
+  // Schedule another batch after `delay` if we're not done yet.
+  if (!done) {
+    setTimeout(() => {
+      processTimedIterator(processIterator, {limit, delay, signal});
+    }, delay);
+  }
 }
