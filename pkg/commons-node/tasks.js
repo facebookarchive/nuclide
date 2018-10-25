@@ -200,6 +200,13 @@ export function createStatus(status: string): Observable<TaskEvent> {
   });
 }
 
+export function createProgress(progress: ?number): Observable<TaskEvent> {
+  return Observable.of({
+    type: 'progress',
+    progress,
+  });
+}
+
 export function createStep(
   stepName: ?string,
   action: () => Observable<TaskEvent> | Promise<TaskEvent>,
