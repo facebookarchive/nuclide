@@ -6,13 +6,13 @@
 @icon-padding-right: .5em;
 
 .nuclide-taskbar-status-container {
-  width: 235px;
-  background-color: #353b45;
-  background-image: linear-gradient(#3a3f4b, #353b45);
+  min-width: 235px;
+  background-color: @button-background-color;
+  background-image: linear-gradient(lighten(@button-background-color, 10%), @button-background-color);
   z-index: 3;
   font-family: @font-family;
   position: relative;
-  border: 1px solid #181a1f;
+  border: @tab-border;
   margin-right: 30px;
   .close-icon {
     top: @icon-padding-top;
@@ -56,7 +56,7 @@
 }
 
 .nuclide-taskbar-status-provider-green {
-  color: #9da5b4;
+  color: @text-color;
   font-size: 0.9em;
   font-style: italic;
   line-height:2;
@@ -64,11 +64,11 @@
 }
 
 div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-arrow {
-  border-bottom-color: #353b45;
+  border-bottom-color: @button-background-color;
 }
 div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
-  background-color: #353b45;
-  background-image: linear-gradient(#3a3f4b, #353b45);
+  background-color: @button-background-color;
+  background-image: linear-gradient(lighten(@button-background-color, 10%), @button-background-color);
 }
 
 .nuclide-taskbar-beta-small {
@@ -122,7 +122,7 @@ div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
   overflow:hidden;
   text-align: left;
   overflow-wrap: break-word;
-  color: #9da5b4;
+  color: @text-color;
   font-family: Menlo, Consolas, DejaVu Sans Mono, monospace;
   font-size: 0.8em;
   font-style: italic;
