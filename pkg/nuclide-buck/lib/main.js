@@ -27,7 +27,6 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
-import {track} from 'nuclide-analytics';
 import {BuckTaskRunner} from './BuckTaskRunner';
 import {PlatformService} from './PlatformService';
 import {getClangProvider} from './BuckClangProvider';
@@ -48,7 +47,6 @@ class Activation {
         'atom-workspace',
         OPEN_NEAREST_BUILD_FILE_COMMAND,
         event => {
-          track(OPEN_NEAREST_BUILD_FILE_COMMAND);
           // Add feature logging.
           const target = ((event.target: any): HTMLElement);
           openNearestBuildFile(target); // Note this returns a Promise.
