@@ -1,3 +1,73 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _passesGK() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/passesGK"));
+
+  _passesGK = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CodeLensListener() {
+  const data = require("./CodeLensListener");
+
+  _CodeLensListener = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _OCamlLanguage() {
+  const data = require("./OCamlLanguage");
+
+  _OCamlLanguage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +75,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+let disposables = new (_UniversalDisposable().default)();
 
-import {getLogger} from 'log4js';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import passesGK from 'nuclide-commons/passesGK';
-import {observeForCodeLens} from './CodeLensListener';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {createLanguageService} from './OCamlLanguage';
-
-let disposables: UniversalDisposable = new UniversalDisposable();
-
-export async function activate(): Promise<void> {
-  if (await passesGK('nuclide_fb_ocaml_vscode_ext')) {
+async function activate() {
+  if (await (0, _passesGK().default)('nuclide_fb_ocaml_vscode_ext')) {
     return;
   }
-  const ocamlLspLanguageService = createLanguageService();
+
+  const ocamlLspLanguageService = (0, _OCamlLanguage().createLanguageService)();
   ocamlLspLanguageService.activate();
   disposables.add(ocamlLspLanguageService);
 
-  if (featureConfig.get('nuclide-ocaml.codeLens')) {
-    disposables.add(
-      observeForCodeLens(ocamlLspLanguageService, getLogger('OcamlService')),
-    );
+  if (_featureConfig().default.get('nuclide-ocaml.codeLens')) {
+    disposables.add((0, _CodeLensListener().observeForCodeLens)(ocamlLspLanguageService, (0, _log4js().getLogger)('OcamlService')));
   }
 }
 
-export async function deactivate(): Promise<void> {
+async function deactivate() {
   disposables.dispose();
-  disposables = new UniversalDisposable();
+  disposables = new (_UniversalDisposable().default)();
 }

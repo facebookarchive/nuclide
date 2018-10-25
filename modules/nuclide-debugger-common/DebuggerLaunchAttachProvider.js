@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,45 +17,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from './types';
-import * as React from 'react';
-
 let uniqueKeySeed = 0;
-
-export type callbacksForAction = {
-  isEnabled: () => Promise<boolean>,
-  getComponent: (
-    debuggerTypeName: string,
-    configIsValidChanged: (valid: boolean) => void,
-    defaultConfig: ?{[string]: mixed},
-  ) => ?React.Element<any>,
-};
 
 /**
  * Base class of all launch/attach providers.
  * It allows each concrete provider to provide customized debugging types, actions and UI.
  */
-export default class DebuggerLaunchAttachProvider {
-  _debuggingTypeName: string;
-  _targetUri: NuclideUri;
-  _uniqueKey: number;
-
-  constructor(debuggingTypeName: string, targetUri: NuclideUri) {
+class DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     this._debuggingTypeName = debuggingTypeName;
     this._targetUri = targetUri;
     this._uniqueKey = uniqueKeySeed++;
   }
 
-  getTabName(): string {
+  getTabName() {
     return this._debuggingTypeName;
   }
 
-  getCallbacksForAction(action: DebuggerConfigAction): callbacksForAction {
+  getCallbacksForAction(action) {
     return {
       /**
        * Whether this provider is enabled or not.
@@ -56,19 +49,20 @@ export default class DebuggerLaunchAttachProvider {
       /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
-      getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      getComponent: (debuggerTypeName, configIsValidChanged) => {
         throw new Error('abstract method');
-      },
+      }
     };
   }
-
   /**
    * Returns target uri for this provider.
    */
-  getTargetUri(): NuclideUri {
+
+
+  getTargetUri() {
     return this._targetUri;
   }
+
 }
+
+exports.default = DebuggerLaunchAttachProvider;

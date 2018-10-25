@@ -1,52 +1,143 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+"use strict";
 
-export type {
-  AtomNotificationType,
-  ControlButtonSpecification,
-  DebuggerConfigAction,
-  DebuggerConfigurationProvider,
-  DebuggerSourcePathsService,
-  Device,
-  DevicePanelServiceApi,
-  IProcessConfig,
-  IVspInstance,
-  MessageProcessor,
-  NuclideDebuggerProvider,
-  VSAdapterExecutableInfo,
-  VsAdapterType,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "getVSCodeDebuggerAdapterServiceByNuclideUri", {
+  enumerable: true,
+  get: function () {
+    return _debugAdapterService().getVSCodeDebuggerAdapterServiceByNuclideUri;
+  }
+});
+Object.defineProperty(exports, "DebuggerLaunchAttachProvider", {
+  enumerable: true,
+  get: function () {
+    return _DebuggerLaunchAttachProvider().default;
+  }
+});
+Object.defineProperty(exports, "VsDebugSession", {
+  enumerable: true,
+  get: function () {
+    return _VsDebugSession().default;
+  }
+});
+Object.defineProperty(exports, "VsAdapterTypes", {
+  enumerable: true,
+  get: function () {
+    return _constants().VsAdapterTypes;
+  }
+});
+Object.defineProperty(exports, "VsAdapterNames", {
+  enumerable: true,
+  get: function () {
+    return _constants().VsAdapterNames;
+  }
+});
+Object.defineProperty(exports, "deserializeDebuggerConfig", {
+  enumerable: true,
+  get: function () {
+    return _DebuggerConfigSerializer().deserializeDebuggerConfig;
+  }
+});
+Object.defineProperty(exports, "serializeDebuggerConfig", {
+  enumerable: true,
+  get: function () {
+    return _DebuggerConfigSerializer().serializeDebuggerConfig;
+  }
+});
+Object.defineProperty(exports, "localToRemoteProcessor", {
+  enumerable: true,
+  get: function () {
+    return _processors().localToRemoteProcessor;
+  }
+});
+Object.defineProperty(exports, "pathProcessor", {
+  enumerable: true,
+  get: function () {
+    return _processors().pathProcessor;
+  }
+});
+Object.defineProperty(exports, "remoteToLocalProcessor", {
+  enumerable: true,
+  get: function () {
+    return _processors().remoteToLocalProcessor;
+  }
+});
+Object.defineProperty(exports, "VsAdapterSpawner", {
+  enumerable: true,
+  get: function () {
+    return _VsAdapterSpawner().default;
+  }
+});
 
-export {
-  getVSCodeDebuggerAdapterServiceByNuclideUri,
-} from './debug-adapter-service';
+function _debugAdapterService() {
+  const data = require("./debug-adapter-service");
 
-export {
-  default as DebuggerLaunchAttachProvider,
-} from './DebuggerLaunchAttachProvider';
+  _debugAdapterService = function () {
+    return data;
+  };
 
-export {default as VsDebugSession} from './VsDebugSession';
+  return data;
+}
 
-export {VsAdapterTypes, VsAdapterNames} from './constants';
+function _DebuggerLaunchAttachProvider() {
+  const data = _interopRequireDefault(require("./DebuggerLaunchAttachProvider"));
 
-export {
-  deserializeDebuggerConfig,
-  serializeDebuggerConfig,
-} from './DebuggerConfigSerializer';
+  _DebuggerLaunchAttachProvider = function () {
+    return data;
+  };
 
-export {
-  localToRemoteProcessor,
-  pathProcessor,
-  remoteToLocalProcessor,
-} from './processors';
+  return data;
+}
 
-export {default as VsAdapterSpawner} from './VsAdapterSpawner';
+function _VsDebugSession() {
+  const data = _interopRequireDefault(require("./VsDebugSession"));
+
+  _VsDebugSession = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("./constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DebuggerConfigSerializer() {
+  const data = require("./DebuggerConfigSerializer");
+
+  _DebuggerConfigSerializer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _processors() {
+  const data = require("./processors");
+
+  _processors = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _VsAdapterSpawner() {
+  const data = _interopRequireDefault(require("./VsAdapterSpawner"));
+
+  _VsAdapterSpawner = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

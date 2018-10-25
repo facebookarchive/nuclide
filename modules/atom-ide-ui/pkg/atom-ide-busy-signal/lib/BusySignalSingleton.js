@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +13,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {BusySignalOptions, BusyMessage} from './types';
-import type {MessageStore} from './MessageStore';
-
-export default class BusySignalSingleton {
-  _messageStore: MessageStore;
-
-  constructor(messageStore: MessageStore) {
+class BusySignalSingleton {
+  constructor(messageStore) {
     this._messageStore = messageStore;
   }
 
   dispose() {}
 
-  reportBusy(title: string, options?: BusySignalOptions): BusyMessage {
+  reportBusy(title, options) {
     return this._messageStore.add(title, options || {});
   }
-
   /**
    * Publishes a 'busy' message with the given string. Marks it as done when the
    * promise returned by the given function is resolved or rejected.
@@ -33,16 +33,18 @@ export default class BusySignalSingleton {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  async reportBusyWhile<T>(
-    title: string,
-    f: () => Promise<T>,
-    options?: BusySignalOptions,
-  ): Promise<T> {
+
+
+  async reportBusyWhile(title, f, options) {
     const busySignal = this.reportBusy(title, options);
+
     try {
       return await f();
     } finally {
       busySignal.dispose();
     }
   }
+
 }
+
+exports.default = BusySignalSingleton;

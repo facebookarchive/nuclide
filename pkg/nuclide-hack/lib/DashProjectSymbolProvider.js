@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _HackLanguage() {
+  const data = require("./HackLanguage");
+
+  _HackLanguage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,40 +36,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  ProjectSymbolSearchProvider,
-  ProjectSymbol,
-  // $FlowFB
-} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
-
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getHackLanguageForUri} from './HackLanguage';
-
-const DashProjectSymbolProvider: ProjectSymbolSearchProvider = {
-  searchSymbolsForDirectory(
-    query: string,
-    directory: atom$Directory,
-    callback: (Array<ProjectSymbol>) => mixed,
-  ): IDisposable {
+const DashProjectSymbolProvider = {
+  searchSymbolsForDirectory(query, directory, callback) {
     const directoryPath = directory.getPath();
 
-    const results = Observable.defer(() => getHackLanguageForUri(directoryPath))
-      .switchMap(
-        service =>
-          service == null
-            ? Observable.of([])
-            : service.symbolSearch(query, [directoryPath]),
-      )
-      .map(searchResults => searchResults || [])
-      .catch(() => Observable.of([]));
+    const results = _RxMin.Observable.defer(() => (0, _HackLanguage().getHackLanguageForUri)(directoryPath)).switchMap(service => service == null ? _RxMin.Observable.of([]) : service.symbolSearch(query, [directoryPath])).map(searchResults => searchResults || []).catch(() => _RxMin.Observable.of([]));
 
-    return new UniversalDisposable(results.subscribe(callback));
-  },
+    return new (_UniversalDisposable().default)(results.subscribe(callback));
+  }
+
 };
-
-export default DashProjectSymbolProvider;
+var _default = DashProjectSymbolProvider;
+exports.default = _default;

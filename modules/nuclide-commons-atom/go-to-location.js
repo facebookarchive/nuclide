@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.goToLocation = goToLocation;
+exports.goToLocationInEditor = goToLocationInEditor;
+exports.observeNavigatingEditors = observeNavigatingEditors;
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,25 +27,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Observable} from 'rxjs';
-
-import {getLogger} from 'log4js';
-import {Subject} from 'rxjs';
-import invariant from 'assert';
-
-export type GoToLocationOptions = {|
-  line?: number,
-  column?: number,
-  center?: boolean,
-  activateItem?: boolean,
-  activatePane?: boolean,
-  pending?: boolean,
-  moveCursor?: boolean,
-|};
 
 /**
  * Opens the given file.
@@ -50,36 +55,43 @@ export type GoToLocationOptions = {|
  * following comment above its use:
  * // eslint-disable-next-line nuclide-internal/atom-apis
  */
-export async function goToLocation(
-  file: string,
-  options?: ?GoToLocationOptions,
-): Promise<atom$TextEditor> {
-  const center = options?.center ?? true;
-  const moveCursor = options?.moveCursor ?? true;
-  const activatePane = options?.activatePane ?? true;
-  const activateItem = options?.activateItem;
-  const line = options?.line;
-  const column = options?.column;
-  const pending = options?.pending;
+async function goToLocation(file, options) {
+  var _ref, _ref2, _ref3;
 
-  // Prefer going to the current editor rather than the leftmost editor.
+  const center = (_ref = options === null || options === void 0 ? void 0 : options.center) !== null && _ref !== void 0 ? _ref : true;
+  const moveCursor = (_ref2 = options === null || options === void 0 ? void 0 : options.moveCursor) !== null && _ref2 !== void 0 ? _ref2 : true;
+  const activatePane = (_ref3 = options === null || options === void 0 ? void 0 : options.activatePane) !== null && _ref3 !== void 0 ? _ref3 : true;
+  const activateItem = options === null || options === void 0 ? void 0 : options.activateItem;
+  const line = options === null || options === void 0 ? void 0 : options.line;
+  const column = options === null || options === void 0 ? void 0 : options.column;
+  const pending = options === null || options === void 0 ? void 0 : options.pending; // Prefer going to the current editor rather than the leftmost editor.
+
   const currentEditor = atom.workspace.getActiveTextEditor();
+
   if (currentEditor != null && currentEditor.getPath() === file) {
     const paneContainer = atom.workspace.paneContainerForItem(currentEditor);
-    invariant(paneContainer != null);
+
+    if (!(paneContainer != null)) {
+      throw new Error("Invariant violation: \"paneContainer != null\"");
+    }
+
     if (activatePane) {
       paneContainer.activate();
     }
+
     if (line != null) {
       goToLocationInEditor(currentEditor, {
         line,
         column: column == null ? 0 : column,
         center,
-        moveCursor,
+        moveCursor
       });
     } else {
-      invariant(column == null, 'goToLocation: Cannot specify just column');
+      if (!(column == null)) {
+        throw new Error('goToLocation: Cannot specify just column');
+      }
     }
+
     return currentEditor;
   } else {
     // Obviously, calling goToLocation isn't a viable alternative here :P
@@ -90,54 +102,53 @@ export async function goToLocation(
       searchAllPanes: true,
       activatePane,
       activateItem,
-      pending,
-    });
-    // TODO(T28305560) Investigate offenders for this error
+      pending
+    }); // TODO(T28305560) Investigate offenders for this error
+
     if (editor == null) {
       const tmp = {};
       Error.captureStackTrace(tmp);
       const error = Error(`atom.workspace.open returned null on ${file}`);
-      getLogger('goToLocation').error(error);
+      (0, _log4js().getLogger)('goToLocation').error(error);
       throw error;
     }
 
     if (center && line != null) {
-      editor.scrollToBufferPosition([line, column], {center: true});
+      editor.scrollToBufferPosition([line, column], {
+        center: true
+      });
     }
+
     return editor;
   }
 }
 
-const goToLocationSubject = new Subject();
-
-type GotoLocationInEditorOptions = {|
-  line: number,
-  column: number,
-  center?: boolean,
-  moveCursor?: boolean,
-|};
+const goToLocationSubject = new _RxMin.Subject();
 
 // Scrolls to the given line/column at the given editor
 // broadcasts the editor instance on an observable (subject) available
 // through the getGoToLocation
-export function goToLocationInEditor(
-  editor: atom$TextEditor,
-  options: GotoLocationInEditorOptions,
-): void {
+function goToLocationInEditor(editor, options) {
   const center = options.center == null ? true : options.center;
   const moveCursor = options.moveCursor == null ? true : options.moveCursor;
-  const {line, column} = options;
+  const {
+    line,
+    column
+  } = options;
 
   if (moveCursor) {
     editor.setCursorBufferPosition([line, column]);
   }
+
   if (center) {
-    editor.scrollToBufferPosition([line, column], {center: true});
+    editor.scrollToBufferPosition([line, column], {
+      center: true
+    });
   }
 
   goToLocationSubject.next(editor);
 }
 
-export function observeNavigatingEditors(): Observable<atom$TextEditor> {
+function observeNavigatingEditors() {
   return goToLocationSubject;
 }

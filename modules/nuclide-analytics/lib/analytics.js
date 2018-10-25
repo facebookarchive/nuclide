@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.track = track;
+exports.isTrackSupported = isTrackSupported;
+exports.setApplicationSessionObservable = setApplicationSessionObservable;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +17,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {SessionInfo} from 'nuclide-commons/analytics';
-import {Observable} from 'rxjs';
-
 // This is a stubbed implementation that other packages use to record analytics data & performance.
-export function track(
-  eventName: string,
-  values?: {[key: string]: mixed},
-  immediate?: boolean,
-): ?Promise<mixed> {}
-
-// Other packages can check this to avoid doing work that will be ignored
+function track(eventName, values, immediate) {} // Other packages can check this to avoid doing work that will be ignored
 // anyway by the stubbed track implementation.
-export function isTrackSupported(): boolean {
+
+
+function isTrackSupported() {
   return false;
 }
 
-export function setApplicationSessionObservable(
-  ob: Observable<SessionInfo>,
-): void {}
+function setApplicationSessionObservable(ob) {}

@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getLabelFromPath = getLabelFromPath;
+exports.getLocalPathsForProjectRepo = getLocalPathsForProjectRepo;
+exports.getRemotePathsForProjectRepo = getRemotePathsForProjectRepo;
+exports.setLocalPathsForProjectRepo = setLocalPathsForProjectRepo;
+exports.setRemotePathsForProjectRepo = setRemotePathsForProjectRepo;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _featureConfig() {
+  const data = _interopRequireDefault(require("./feature-config"));
+
+  _featureConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,116 +39,101 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
+function getLabelFromPath(path) {
+  const basename = _nuclideUri().default.basename(path);
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import featureConfig from './feature-config';
-import invariant from 'assert';
-
-export function getLabelFromPath(path: string): string {
-  const basename = nuclideUri.basename(path);
   const parts = basename.split('.').filter(Boolean);
-  const name =
-    parts.length >= 2
-      ? parts.slice(0, Math.max(1, parts.length - 2)).join(' ')
-      : basename;
+  const name = parts.length >= 2 ? parts.slice(0, Math.max(1, parts.length - 2)).join(' ') : basename;
   return humanizeProjectName(name);
 }
 
-function formatProjectNameWord(word: string): string {
+function formatProjectNameWord(word) {
   switch (word) {
     case 'www':
       return 'WWW';
+
     case 'ios':
       return 'iOS';
+
     default:
       return word[0].toUpperCase() + word.slice(1);
   }
 }
 
-function humanizeProjectName(name: string): string {
+function humanizeProjectName(name) {
   // Special case some projects.
   if (name === 'www' || name.startsWith('fb')) {
     return name;
   }
-  const hasCapitalLetters = /[A-Z]/.test(name);
-  const id = x => x;
-  return name
-    .split(/[-_]+/)
-    .map(hasCapitalLetters ? id : formatProjectNameWord)
-    .join(' ');
-}
 
+  const hasCapitalLetters = /[A-Z]/.test(name);
+
+  const id = x => x;
+
+  return name.split(/[-_]+/).map(hasCapitalLetters ? id : formatProjectNameWord).join(' ');
+}
 /**
  * Gets the array of paths which can be tried on the local machine to find
  * the location of `repo`. For example, if repo := fbsource, then we are getting
  * the paths to fbsource on the user's local machine.
  */
-export function getLocalPathsForProjectRepo(repo: string): Array<string> {
+
+
+function getLocalPathsForProjectRepo(repo) {
   return getPathsForProjectRepoFromLocation(repo, 'localPaths');
 }
-
 /**
  * Gets the array of paths which can be tried on a remote machine to find
  * the location of `repo`. For example, if repo := fbsource, then we are getting
  * the paths to fbsource on the user's remote machine.
  */
-export function getRemotePathsForProjectRepo(repo: string): Array<string> {
+
+
+function getRemotePathsForProjectRepo(repo) {
   return getPathsForProjectRepoFromLocation(repo, 'remotePaths');
 }
 
-function getPathsForProjectRepoFromLocation(
-  repo: string,
-  featureConfigLocation: string,
-): Array<string> {
+function getPathsForProjectRepoFromLocation(repo, featureConfigLocation) {
   if (repo == null) {
     return [];
   }
-  const localPaths = featureConfig.get(
-    `fb-atomprojects.${featureConfigLocation}`,
-  );
 
-  invariant(Array.isArray(localPaths));
-  const repoPaths = localPaths
-    // $FlowIgnore
-    .filter(obj => obj.repo === repo)
-    // $FlowIgnore
-    .map(obj => obj.path);
+  const localPaths = _featureConfig().default.get(`fb-atomprojects.${featureConfigLocation}`);
+
+  if (!Array.isArray(localPaths)) {
+    throw new Error("Invariant violation: \"Array.isArray(localPaths)\"");
+  }
+
+  const repoPaths = localPaths // $FlowIgnore
+  .filter(obj => obj.repo === repo) // $FlowIgnore
+  .map(obj => obj.path);
 
   if (repoPaths.length === 0) {
     repoPaths.push(`~/${repo}`);
   }
+
   return repoPaths;
 }
-
 /**
  * Sets an array of paths which can be tried on the local machine to find
  * the location of <repo>. For example, if repo := fbsource, then we are setting
  * the paths to fbsource on the user's local machine.
  */
-export function setLocalPathsForProjectRepo(
-  paths: Array<{
-    path: NuclideUri,
-    repo: string,
-  }>,
-): void {
-  featureConfig.set('fb-atomprojects.localPaths', paths);
-}
 
+
+function setLocalPathsForProjectRepo(paths) {
+  _featureConfig().default.set('fb-atomprojects.localPaths', paths);
+}
 /**
  * Sets an array of paths which can be tried on a remote machine to find
  * the location of <repo>. For example, if repo := fbsource, then we are setting
  * the paths to fbsource on the user's remote machine.
  */
-export function setRemotePathsForProjectRepo(
-  paths: Array<{
-    path: NuclideUri,
-    repo: string,
-  }>,
-): void {
-  featureConfig.set('fb-atomprojects.remotePaths', paths);
+
+
+function setRemotePathsForProjectRepo(paths) {
+  _featureConfig().default.set('fb-atomprojects.remotePaths', paths);
 }

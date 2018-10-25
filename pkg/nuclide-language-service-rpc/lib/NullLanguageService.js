@@ -1,3 +1,12 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NullLanguageService = void 0;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,233 +14,140 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {
-  DefinitionQueryResult,
-  FindReferencesReturn,
-  RenameReturn,
-  Outline,
-  CodeAction,
-  SignatureHelp,
-} from 'atom-ide-ui';
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  AutocompleteRequest,
-  AutocompleteResult,
-  FileDiagnosticMap,
-  FileDiagnosticMessage,
-  FormatOptions,
-  LanguageService,
-  SymbolResult,
-  Completion,
-  CodeLensData,
-  StatusData,
-} from '../../nuclide-language-service/lib/LanguageService';
-
-import {Observable} from 'rxjs';
-
 // An implementation of LanguageService which always returns no results.
 // Useful for implementing aggregate language services.
-export class NullLanguageService {
-  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
+class NullLanguageService {
+  getDiagnostics(fileVersion) {
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
-    return Observable.empty().publish();
+  observeDiagnostics() {
+    return _RxMin.Observable.empty().publish();
   }
 
-  getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
+  getAutocompleteSuggestions(fileVersion, position, request) {
     return Promise.resolve(null);
   }
 
-  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+  resolveAutocompleteSuggestion(suggestion) {
     return Promise.resolve(null);
   }
 
-  getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
+  getDefinition(fileVersion, position) {
     return Promise.resolve(null);
   }
 
-  onToggleCoverage(set: boolean): Promise<void> {
+  onToggleCoverage(set) {
     return Promise.resolve(undefined);
   }
 
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): ConnectableObservable<?FindReferencesReturn> {
-    return Observable.of(null).publish();
+  findReferences(fileVersion, position) {
+    return _RxMin.Observable.of(null).publish();
   }
 
-  rename(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    newName: string,
-  ): ConnectableObservable<?RenameReturn> {
-    return Observable.of(null).publish();
+  rename(fileVersion, position, newName) {
+    return _RxMin.Observable.of(null).publish();
   }
 
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     return Promise.resolve(null);
   }
 
-  getOutline(fileVersion: FileVersion): Promise<?Outline> {
+  getOutline(fileVersion) {
     return Promise.resolve(null);
   }
 
-  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+  getCodeLens(fileVersion) {
     return Promise.resolve(null);
   }
 
-  resolveCodeLens(
-    filePath: NuclideUri,
-    codeLens: CodeLensData,
-  ): Promise<?CodeLensData> {
+  resolveCodeLens(filePath, codeLens) {
     return Promise.resolve(null);
   }
 
-  getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
+  getAdditionalLogFiles(deadline) {
     return Promise.resolve([]);
   }
 
-  getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
+  getCodeActions(fileVersion, range, diagnostics) {
     return Promise.resolve([]);
   }
 
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
+  typeHint(fileVersion, position) {
     return Promise.resolve(null);
   }
 
-  highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
+  highlight(fileVersion, position) {
     return Promise.resolve(null);
   }
 
-  formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
+  formatSource(fileVersion, range, options) {
     return Promise.resolve(null);
   }
 
-  formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(fileVersion, range, options) {
     return Promise.resolve(null);
   }
 
-  formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
+  formatAtPosition(fileVersion, position, triggerCharacter, options) {
     return Promise.resolve(null);
   }
 
-  signatureHelp(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?SignatureHelp> {
+  signatureHelp(fileVersion, position) {
     return Promise.resolve(null);
   }
 
-  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
+  supportsSymbolSearch(directories) {
     return Promise.resolve(false);
   }
 
-  symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
+  symbolSearch(query, directories) {
     return Promise.resolve(null);
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  getProjectRoot(fileUri) {
     return Promise.resolve(null);
   }
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+  isFileInProject(fileUri) {
     return Promise.resolve(false);
   }
 
-  getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
+  getExpandedSelectionRange(fileVersion, currentSelection) {
     return Promise.resolve(null);
   }
 
-  getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
+  getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition) {
     return Promise.resolve(null);
   }
 
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
-    return Observable.of({kind: 'null'}).publish();
+  observeStatus(fileVersion) {
+    return _RxMin.Observable.of({
+      kind: 'null'
+    }).publish();
   }
 
-  async clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void> {}
+  async clickStatus(fileVersion, id, button) {}
 
-  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
-    return Observable.empty().publish();
+  onWillSave(fileVersion) {
+    return _RxMin.Observable.empty().publish();
   }
 
-  async sendLspRequest(
-    filePath: NuclideUri,
-    method: string,
-    params: mixed,
-  ): Promise<mixed> {}
+  async sendLspRequest(filePath, method, params) {}
 
-  async sendLspNotification(method: string, params: mixed): Promise<void> {}
+  async sendLspNotification(method, params) {}
 
-  observeLspNotifications(
-    notificationMethod: string,
-  ): ConnectableObservable<mixed> {
-    return Observable.empty().publish();
+  observeLspNotifications(notificationMethod) {
+    return _RxMin.Observable.empty().publish();
   }
 
-  dispose(): void {}
-}
+  dispose() {}
 
-// Assert that NullLanguageService satisifes the LanguageService interface:
-(((null: any): NullLanguageService): LanguageService);
+} // Assert that NullLanguageService satisifes the LanguageService interface:
+
+
+exports.NullLanguageService = NullLanguageService;
+null;

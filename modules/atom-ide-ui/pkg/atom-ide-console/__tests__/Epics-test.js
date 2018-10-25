@@ -1,3 +1,39 @@
+"use strict";
+
+function _reduxObservable() {
+  const data = require("../../../../nuclide-commons/redux-observable");
+
+  _reduxObservable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Actions() {
+  const data = _interopRequireWildcard(require("../lib/redux/Actions"));
+
+  Actions = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Epics() {
+  const data = _interopRequireWildcard(require("../lib/redux/Epics"));
+
+  Epics = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,58 +42,53 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  * @emails oncall+nuclide
  */
-import type {AppState, ConsoleSourceStatus} from '../lib/types';
-
-import {ActionsObservable} from 'nuclide-commons/redux-observable';
-import * as Actions from '../lib/redux/Actions';
-import * as Epics from '../lib/redux/Epics';
-import invariant from 'assert';
-import {Observable, Subject} from 'rxjs';
-
 describe('Epics', () => {
   describe('provideConsole (registerSourceEpic)', () => {
     it('observes the status', () => {
       const mockStore = {
         subscribe: () => () => {},
         dispatch: () => {},
-        getState: () => (({}: any): AppState),
+        getState: () => ({})
       };
       const id = 'test';
       const provider = {
         id,
         name: id,
-        messages: Observable.never(),
+        messages: _RxMin.Observable.never(),
         start: () => {},
-        stop: () => {},
+        stop: () => {}
       };
-      const actions = new ActionsObservable(
-        Observable.of(Actions.registerSource(provider)),
-      );
+      const actions = new (_reduxObservable().ActionsObservable)(_RxMin.Observable.of(Actions().registerSource(provider)));
       let results = [];
-      Epics.registerRecordProviderEpic(actions, mockStore).subscribe(
-        results.push.bind(results),
-      );
-      const statusSubject = new Subject();
-      const setStatus = (status: ConsoleSourceStatus): void => {
-        statusSubject.next(Actions.updateStatus(id, status));
+      Epics().registerRecordProviderEpic(actions, mockStore).subscribe(results.push.bind(results));
+      const statusSubject = new _RxMin.Subject();
+
+      const setStatus = status => {
+        statusSubject.next(Actions().updateStatus(id, status));
       };
+
       statusSubject.subscribe(results.push.bind(results));
-      invariant(setStatus != null);
+
+      if (!(setStatus != null)) {
+        throw new Error("Invariant violation: \"setStatus != null\"");
+      }
+
       setStatus('running');
       setStatus('stopped');
       setStatus('running');
-      results = results.filter(action => action.type === Actions.UPDATE_STATUS);
+      results = results.filter(action => action.type === Actions().UPDATE_STATUS);
       expect(results.length).toBe(3);
-      expect(
-        results.map(action => {
-          invariant(action.type === Actions.UPDATE_STATUS);
-          return action.payload.status;
-        }),
-      ).toEqual(['running', 'stopped', 'running']);
+      expect(results.map(action => {
+        if (!(action.type === Actions().UPDATE_STATUS)) {
+          throw new Error("Invariant violation: \"action.type === Actions.UPDATE_STATUS\"");
+        }
+
+        return action.payload.status;
+      })).toEqual(['running', 'stopped', 'running']);
     });
   });
 });

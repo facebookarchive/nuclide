@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HEADER_DEFAULT_FLAGS_WARNING = exports.DEFAULT_FLAGS_WARNING = exports.IDENTIFIER_REGEXP = exports.PACKAGE_NAME = exports.GRAMMAR_SET = exports.GRAMMARS = exports.OBJC_GRAMMARS = exports.CPP_GRAMMARS = void 0;
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +12,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-export const CPP_GRAMMARS = ['source.c', 'source.cpp'];
-export const OBJC_GRAMMARS = ['source.objc', 'source.objcpp'];
-
-export const GRAMMARS = [...CPP_GRAMMARS, ...OBJC_GRAMMARS];
-export const GRAMMAR_SET: Set<string> = new Set(GRAMMARS);
-
-export const PACKAGE_NAME = 'nuclide-clang';
-
-export const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
-
-export const DEFAULT_FLAGS_WARNING =
-  'Diagnostics are disabled due to lack of compilation flags. ' +
-  'Build this file with Buck, create a compile_commands.json file, then try "Clean and Rebuild".';
-
-export const HEADER_DEFAULT_FLAGS_WARNING =
-  'Diagnostics are disabled due to lack of compilation flags. ' +
-  'Note that header files only have compilation flags if a source file nearby has the same name or includes it. ' +
-  'Include this file from a source file built by Buck, or create a compile_commands.json file, then try "Clean and Rebuild".';
+const CPP_GRAMMARS = ['source.c', 'source.cpp'];
+exports.CPP_GRAMMARS = CPP_GRAMMARS;
+const OBJC_GRAMMARS = ['source.objc', 'source.objcpp'];
+exports.OBJC_GRAMMARS = OBJC_GRAMMARS;
+const GRAMMARS = [...CPP_GRAMMARS, ...OBJC_GRAMMARS];
+exports.GRAMMARS = GRAMMARS;
+const GRAMMAR_SET = new Set(GRAMMARS);
+exports.GRAMMAR_SET = GRAMMAR_SET;
+const PACKAGE_NAME = 'nuclide-clang';
+exports.PACKAGE_NAME = PACKAGE_NAME;
+const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
+exports.IDENTIFIER_REGEXP = IDENTIFIER_REGEXP;
+const DEFAULT_FLAGS_WARNING = 'Diagnostics are disabled due to lack of compilation flags. ' + 'Build this file with Buck, create a compile_commands.json file, then try "Clean and Rebuild".';
+exports.DEFAULT_FLAGS_WARNING = DEFAULT_FLAGS_WARNING;
+const HEADER_DEFAULT_FLAGS_WARNING = 'Diagnostics are disabled due to lack of compilation flags. ' + 'Note that header files only have compilation flags if a source file nearby has the same name or includes it. ' + 'Include this file from a source file built by Buck, or create a compile_commands.json file, then try "Clean and Rebuild".';
+exports.HEADER_DEFAULT_FLAGS_WARNING = HEADER_DEFAULT_FLAGS_WARNING;

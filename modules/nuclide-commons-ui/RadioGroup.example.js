@@ -1,3 +1,36 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RadioGroupExamples = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _Block() {
+  const data = require("./Block");
+
+  _Block = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _RadioGroup() {
+  const data = _interopRequireDefault(require("./RadioGroup"));
+
+  _RadioGroup = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,50 +39,42 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import * as React from 'react';
-import {Block} from './Block';
-import RadioGroup from './RadioGroup';
-
 const labels = ['choose', 'from', 'one of', 'several', 'options'];
 
-class RadioGroupExample extends React.Component<any, {selectedIndex: number}> {
-  constructor(props: any) {
+class RadioGroupExample extends React.Component {
+  constructor(props) {
     super(props);
+
+    this.onSelectedChange = selectedIndex => {
+      this.setState({
+        selectedIndex
+      });
+    };
+
     this.state = {
-      selectedIndex: 0,
+      selectedIndex: 0
     };
   }
 
-  onSelectedChange = (selectedIndex: number): void => {
-    this.setState({
-      selectedIndex,
-    });
-  };
-
-  render(): React.Node {
-    return (
-      <Block>
-        <RadioGroup
-          selectedIndex={this.state.selectedIndex}
-          optionLabels={labels}
-          onSelectedChange={this.onSelectedChange}
-        />
-      </Block>
-    );
+  render() {
+    return React.createElement(_Block().Block, null, React.createElement(_RadioGroup().default, {
+      selectedIndex: this.state.selectedIndex,
+      optionLabels: labels,
+      onSelectedChange: this.onSelectedChange
+    }));
   }
+
 }
 
-export const RadioGroupExamples = {
+const RadioGroupExamples = {
   sectionName: 'RadioGroup',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: RadioGroupExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: RadioGroupExample
+  }]
 };
+exports.RadioGroupExamples = RadioGroupExamples;

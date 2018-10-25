@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = recordsChanged;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,21 +13,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Record} from './types';
 
 /**
  * Check to see if the records have changed. This is optimized to take advantage of the knowledge
  * knowledge that record lists are only ever appended.
  */
-
-export default function recordsChanged(
-  a: Array<Record>,
-  b: Array<Record>,
-): boolean {
+function recordsChanged(a, b) {
   return a.length !== b.length || last(a) !== last(b);
 }
 

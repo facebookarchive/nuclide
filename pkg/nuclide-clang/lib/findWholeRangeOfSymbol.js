@@ -1,3 +1,12 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = findWholeRangeOfSymbol;
+
+var _atom = require("atom");
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +14,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import {Range} from 'atom';
-
 // Matches something like: textA: or textA:textB:
 const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
-
 /**
  * libclang doesn't seem to be able to return multiple ranges to define the location
  * of a symbol, which is necessary for Obj-C selectors. (At least, this functionality
@@ -31,22 +36,14 @@ const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
  * @param extent The 'extent' of the symbol, as returned by libclang's Cursor.extent.
  * @return The true range of the symbol, which may extend beyond the `text` word.
  */
-export default function findWholeRangeOfSymbol(
-  textEditor: TextEditor,
-  text: string,
-  textRange: Range,
-  spelling: ?string,
-  extent: atom$Range,
-): Array<atom$Range> {
+
+function findWholeRangeOfSymbol(textEditor, text, textRange, spelling, extent) {
   // flowlint-next-line sketchy-null-string:off
   if (!spelling || text === spelling) {
     return [textRange];
   } else if (text + ':' === spelling) {
     // Quick check for a common case, an Obj-C selector with one argument.
-    const newRange = new Range(textRange.start, [
-      textRange.end.row,
-      textRange.end.column + 1,
-    ]);
+    const newRange = new _atom.Range(textRange.start, [textRange.end.row, textRange.end.column + 1]);
     return [newRange];
   } else if (spelling.match(OBJC_SELECTOR_NAME_REGEX)) {
     // Obj-C selector with multiple arguments, e.g. doFoo:withBar:
@@ -56,32 +53,38 @@ export default function findWholeRangeOfSymbol(
     // `[aThing doFoo:[anotherThing withBar:aBar] withBar:aBar]`.
     // TODO (t8131986) Improve this implementation.
     const ranges = [];
-
     const selectorSegments = spelling.split(':');
-    const iterator = ({match, matchText, range, stop, replace}) => {
+
+    const iterator = ({
+      match,
+      matchText,
+      range,
+      stop,
+      replace
+    }) => {
       if (!matchText) {
         return;
       }
+
       ranges.push(range);
       stop();
     };
+
     for (const selectorSegment of selectorSegments) {
       if (selectorSegment.length === 0) {
         // The last segment broken may be an empty string.
         continue;
-      }
-      // 'split' removes the colon, but we want to underline the colon too.
+      } // 'split' removes the colon, but we want to underline the colon too.
+
+
       const segmentWithColon = selectorSegment + ':';
       const regex = new RegExp(segmentWithColon);
-
       const rangeOfPreviousSegment = ranges[ranges.length - 1];
-      const rangeStart = rangeOfPreviousSegment
-        ? rangeOfPreviousSegment.end
-        : extent.start;
-      const rangeToScan = new Range(rangeStart, extent.end);
-
+      const rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extent.start;
+      const rangeToScan = new _atom.Range(rangeStart, extent.end);
       textEditor.scanInBufferRange(regex, rangeToScan, iterator);
     }
+
     return ranges;
   } else {
     return [textRange];

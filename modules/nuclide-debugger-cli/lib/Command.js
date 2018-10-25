@@ -1,21 +1,13 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+"use strict";
 
-import TokenizedLine from './TokenizedLine';
+function _TokenizedLine() {
+  const data = _interopRequireDefault(require("./TokenizedLine"));
 
-export interface Command {
-  +name: string;
-  +helpText: string;
-  +detailedHelpText?: string;
-  execute(args: TokenizedLine): Promise<void>;
-  +onStopped?: () => void;
+  _TokenizedLine = function () {
+    return data;
+  };
+
+  return data;
 }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

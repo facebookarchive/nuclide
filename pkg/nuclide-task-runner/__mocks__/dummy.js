@@ -1,3 +1,25 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createTask = createTask;
+exports.ToolbarStatePreferences = exports.TaskRunner = void 0;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,72 +27,58 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Task} from '../../commons-node/tasks';
-import type {TaskMetadata, ToolbarStatePreference} from '../lib/types';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-import {Subject} from 'rxjs';
-
-type Entry<T> = {key: string, value: T};
-
-export class TaskRunner {
-  _taskLists: Subject<Array<TaskMetadata>>;
-
-  id: string;
-  name: string;
-
-  constructor(id?: string) {
+class TaskRunner {
+  constructor(id) {
     // flowlint-next-line sketchy-null-string:off
-    this.id = id || 'build-system';
-    // flowlint-next-line sketchy-null-string:off
+    this.id = id || 'build-system'; // flowlint-next-line sketchy-null-string:off
+
     this.name = id || 'Build System';
-    this._taskLists = new Subject();
+    this._taskLists = new _RxMin.Subject();
   }
 
-  getIcon(): React$ComponentType<any> {
-    return ((null: any): React$ComponentType<any>);
+  getIcon() {
+    return null;
   }
 
-  setProjectRoot(
-    projectRoot: ?NuclideUri,
-    callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable();
+  setProjectRoot(projectRoot, callback) {
+    return new (_UniversalDisposable().default)();
   }
 
-  runTask(taskName: string): Task {
-    return ((null: any): Task);
+  runTask(taskName) {
+    return null;
   }
+
 }
 
-export class ToolbarStatePreferences {
-  _db: Array<Entry<?ToolbarStatePreference>>;
+exports.TaskRunner = TaskRunner;
 
-  constructor(db: Array<Entry<?ToolbarStatePreference>>) {
+class ToolbarStatePreferences {
+  constructor(db) {
     this._db = db;
   }
 
-  getItem(key: string): ?ToolbarStatePreference {
+  getItem(key) {
     const entry = this._db[0];
     return entry == null ? null : entry.value;
   }
 
-  getEntries(): Array<Entry<?ToolbarStatePreference>> {
+  getEntries() {
     return this._db;
   }
+
 }
 
-export function createTask(type: string, disabled?: boolean): TaskMetadata {
+exports.ToolbarStatePreferences = ToolbarStatePreferences;
+
+function createTask(type, disabled) {
   return {
     type,
     label: type,
     description: type,
     icon: 'alert',
-    disabled,
+    disabled
   };
 }

@@ -1,3 +1,30 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initializeLsp = initializeLsp;
+
+function _nuclideVscodeLanguageServiceRpc() {
+  const data = require("../../nuclide-vscode-language-service-rpc");
+
+  _nuclideVscodeLanguageServiceRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _hackConfig() {
+  const data = require("./hack-config");
+
+  _hackConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +32,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+async function initializeLsp(command, args, projectFileNames, fileExtensions, logLevel, fileNotifier, host, initializationOptions) {
+  const cmd = command === '' ? await _hackConfig().DEFAULT_HACK_COMMAND : command;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
-import {HACK_LOGGER_CATEGORY, DEFAULT_HACK_COMMAND} from './hack-config';
-
-export async function initializeLsp(
-  command: string,
-  args: Array<string>,
-  projectFileNames: Array<string>,
-  fileExtensions: Array<NuclideUri>,
-  logLevel: LogLevel,
-  fileNotifier: FileNotifier,
-  host: HostServices,
-  initializationOptions: Object,
-): Promise<?LanguageService> {
-  const cmd = command === '' ? await DEFAULT_HACK_COMMAND : command;
   if (cmd === '') {
     return null;
   }
 
-  return createMultiLspLanguageService('hack', cmd, args, {
-    logCategory: HACK_LOGGER_CATEGORY,
+  return (0, _nuclideVscodeLanguageServiceRpc().createMultiLspLanguageService)('hack', cmd, args, {
+    logCategory: _hackConfig().HACK_LOGGER_CATEGORY,
     logLevel,
     fileNotifier,
     host,
     initializationOptions,
     projectFileNames,
     fileExtensions,
-    additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+    additionalLogFilesRetentionPeriod: 5 * 60 * 1000 // 5 minutes
+
   });
 }

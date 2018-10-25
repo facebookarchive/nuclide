@@ -1,3 +1,35 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.consumeTypehintProvider = consumeTypehintProvider;
+exports.consumeDatatipService = consumeDatatipService;
+exports.deactivate = deactivate;
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TypeHintManager() {
+  const data = _interopRequireDefault(require("./TypeHintManager"));
+
+  _TypeHintManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,68 +37,64 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {TypeHintProvider} from './types';
-import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
-
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import TypeHintManager from './TypeHintManager';
-
 const PACKAGE_NAME = 'nuclide-type-hint';
 
 class Activation {
-  _disposables: UniversalDisposable;
-  typeHintManager: TypeHintManager;
-
-  constructor(state: ?any) {
-    this._disposables = new UniversalDisposable();
-    this.typeHintManager = new TypeHintManager();
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable().default)();
+    this.typeHintManager = new (_TypeHintManager().default)();
   }
 
-  consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
+  consumeTypehintProvider(provider) {
     return this.typeHintManager.addProvider(provider);
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
+  consumeDatatipService(service) {
     const datatip = this.typeHintManager.datatip.bind(this.typeHintManager);
-    const datatipProvider: DatatipProvider = {
+    const datatipProvider = {
       providerName: PACKAGE_NAME,
       priority: 1,
-      datatip,
+      datatip
     };
     const disposable = service.addProvider(datatipProvider);
+
     this._disposables.add(disposable);
+
     return disposable;
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
+
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?any): void {
+function activate(state) {
   activation = new Activation(state);
 }
 
-export function consumeTypehintProvider(
-  provider: TypeHintProvider,
-): IDisposable {
-  invariant(activation);
+function consumeTypehintProvider(provider) {
+  if (!activation) {
+    throw new Error("Invariant violation: \"activation\"");
+  }
+
   return activation.consumeTypehintProvider(provider);
 }
 
-export function consumeDatatipService(service: DatatipService): IDisposable {
-  invariant(activation);
+function consumeDatatipService(service) {
+  if (!activation) {
+    throw new Error("Invariant violation: \"activation\"");
+  }
+
   return activation.consumeDatatipService(service);
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;

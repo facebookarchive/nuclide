@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _lineByLine() {
+  const data = _interopRequireDefault(require("line-by-line"));
+
+  _lineByLine = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,68 +25,59 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import LineByLineReader from 'line-by-line';
-
-export default class SourceFileCache {
-  _files: Map<string, string[]> = new Map();
-  _getSourceByReference: (sourceReference: number) => Promise<string>;
-
-  constructor(
-    getSourceByReference: (sourceReference: number) => Promise<string>,
-  ) {
+class SourceFileCache {
+  constructor(getSourceByReference) {
+    this._files = new Map();
     this._getSourceByReference = getSourceByReference;
   }
 
-  async getFileDataBySourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
+  async getFileDataBySourceReference(sourceReference) {
     const path = `sourceref://${sourceReference}`;
+
     let data = this._files.get(path);
 
     if (data == null) {
       data = await this._fillCacheWithSourceReference(sourceReference);
+
       this._files.set(path, data);
     }
 
     return data;
   }
 
-  async getFileDataByPath(path: string): Promise<string[]> {
+  async getFileDataByPath(path) {
     let data = this._files.get(path);
 
     if (data == null) {
       data = await this._fillCacheFromLocalFileSystem(path);
+
       this._files.set(path, data);
     }
 
     return data;
   }
 
-  flush(): void {
+  flush() {
     this._files = new Map();
   }
 
-  async _fillCacheFromLocalFileSystem(path: string): Promise<string[]> {
+  async _fillCacheFromLocalFileSystem(path) {
     return new Promise((resolve, reject) => {
-      const lines: string[] = [];
-
-      // LineByLineReader splits the file on the fly so we don't
+      const lines = []; // LineByLineReader splits the file on the fly so we don't
       // have to read into memory first
-      new LineByLineReader(path)
-        .on('line', line => lines.push(line))
-        .on('end', () => resolve(lines))
-        .on('error', e => reject(e));
+
+      new (_lineByLine().default)(path).on('line', line => lines.push(line)).on('end', () => resolve(lines)).on('error', e => reject(e));
     });
   }
 
-  async _fillCacheWithSourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
+  async _fillCacheWithSourceReference(sourceReference) {
     const data = await this._getSourceByReference(sourceReference);
     return data.split(/\n|\r\n|\r/);
   }
+
 }
+
+exports.default = SourceFileCache;

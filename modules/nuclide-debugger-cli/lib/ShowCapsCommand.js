@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _DebuggerInterface() {
+  const data = require("./DebuggerInterface");
+
+  _DebuggerInterface = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +23,23 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-
-import {DebuggerInterface} from './DebuggerInterface';
-
-export default class ShowCapsCommand implements Command {
-  name = 'adapter';
-  helpText = 'Display inforrmation about the debug adapter.';
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(console: ConsoleIO, debug: DebuggerInterface) {
+class ShowCapsCommand {
+  constructor(console, debug) {
+    this.name = 'adapter';
+    this.helpText = 'Display inforrmation about the debug adapter.';
     this._console = console;
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
+  async execute() {
     const caps = this._debugger.adapterCaps();
-    Object.keys(caps)
-      .sort()
-      .forEach(cap =>
-        this._console.outputLine(`${cap} - ${JSON.stringify(caps[cap])}`),
-      );
+
+    Object.keys(caps).sort().forEach(cap => this._console.outputLine(`${cap} - ${JSON.stringify(caps[cap])}`));
   }
+
 }
+
+exports.default = ShowCapsCommand;

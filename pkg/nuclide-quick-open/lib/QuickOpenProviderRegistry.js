@@ -1,3 +1,24 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _atom = require("atom");
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,110 +26,91 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  Provider,
-  ProviderResult,
-  DirectoryProviderType,
-  GlobalProviderType,
-} from './types';
-
-import {Emitter} from 'atom';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class QuickOpenProviderRegistry {
-  _emitter: Emitter;
-  _subscriptions: UniversalDisposable;
-  _directoryProviders: Map<string, DirectoryProviderType<*>>;
-  _globalProviders: Map<string, GlobalProviderType<*>>;
-
+class QuickOpenProviderRegistry {
   constructor() {
-    this._emitter = new Emitter();
-    this._subscriptions = new UniversalDisposable();
+    this._emitter = new _atom.Emitter();
+    this._subscriptions = new (_UniversalDisposable().default)();
     this._directoryProviders = new Map();
     this._globalProviders = new Map();
   }
 
-  getProviders(): Array<Provider<ProviderResult>> {
-    return [
-      ...this._globalProviders.values(),
-      ...this._directoryProviders.values(),
-    ];
+  getProviders() {
+    return [...this._globalProviders.values(), ...this._directoryProviders.values()];
   }
 
-  getGlobalProviders(): Array<GlobalProviderType<*>> {
+  getGlobalProviders() {
     return [...this._globalProviders.values()];
   }
 
-  getDirectoryProviders(): Array<DirectoryProviderType<*>> {
+  getDirectoryProviders() {
     return [...this._directoryProviders.values()];
   }
 
-  getProviderByName(serviceName: string): ?Provider<ProviderResult> {
-    return (
-      this._globalProviders.get(serviceName) ||
-      this._directoryProviders.get(serviceName)
-    );
+  getProviderByName(serviceName) {
+    return this._globalProviders.get(serviceName) || this._directoryProviders.get(serviceName);
   }
 
-  getGlobalProviderByName(serviceName: string): ?GlobalProviderType<*> {
+  getGlobalProviderByName(serviceName) {
     return this._globalProviders.get(serviceName);
   }
 
-  getDirectoryProviderByName(serviceName: string): ?DirectoryProviderType<*> {
+  getDirectoryProviderByName(serviceName) {
     return this._directoryProviders.get(serviceName);
   }
 
-  isProviderGlobal(serviceName: string): boolean {
+  isProviderGlobal(serviceName) {
     return this._globalProviders.has(serviceName);
   }
 
-  observeProviders(
-    callback: (service: Provider<ProviderResult>) => void,
-  ): IDisposable {
+  observeProviders(callback) {
     for (const provider of this.getProviders()) {
       callback(provider);
     }
+
     return this.onDidAddProvider(callback);
   }
 
-  onDidAddProvider(
-    callback: (service: Provider<ProviderResult>) => void,
-  ): IDisposable {
+  onDidAddProvider(callback) {
     return this._emitter.on('did-add-provider', callback);
   }
 
-  onDidRemoveProvider(
-    callback: (service: Provider<ProviderResult>) => void,
-  ): IDisposable {
+  onDidRemoveProvider(callback) {
     return this._emitter.on('did-remove-provider', callback);
   }
 
-  addProvider(service: Provider<any>): IDisposable {
+  addProvider(service) {
     if (service.providerType === 'GLOBAL') {
       this._globalProviders.set(service.name, service);
     } else {
       this._directoryProviders.set(service.name, service);
     }
-    const disposable = new UniversalDisposable(() => {
+
+    const disposable = new (_UniversalDisposable().default)(() => {
       if (service.providerType === 'GLOBAL') {
         this._globalProviders.delete(service.name);
       } else {
         this._directoryProviders.delete(service.name);
       }
+
       this._emitter.emit('did-remove-provider', service);
     });
+
     this._subscriptions.add(disposable);
+
     this._emitter.emit('did-add-provider', service);
 
     return disposable;
   }
 
-  dispose(): void {
+  dispose() {
     this._emitter.dispose();
+
     this._subscriptions.dispose();
   }
+
 }
+
+exports.default = QuickOpenProviderRegistry;

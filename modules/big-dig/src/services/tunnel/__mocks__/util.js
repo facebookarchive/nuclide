@@ -1,3 +1,12 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TestTransportFactory = TestTransportFactory;
+
+var _RxMin = require("rxjs/bundles/Rx.min.js");
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,22 +15,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-declare var jest;
-
-import type {Transport} from '../Proxy';
-
-import {Observable} from 'rxjs';
-
-export function TestTransportFactory(msgs: ?Array<string>): Transport {
+function TestTransportFactory(msgs) {
   const messages = msgs != null ? msgs : [];
   return {
     send: jest.fn(),
     onMessage: () => {
-      return Observable.from(messages);
-    },
+      return _RxMin.Observable.from(messages);
+    }
   };
 }
