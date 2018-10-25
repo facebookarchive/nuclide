@@ -68,9 +68,18 @@ function isRequireResolve(node) {
   );
 }
 
+function isFbOnlyFile(filePath) {
+  return (
+    filePath
+      .split(path.sep)
+      .find(part => part.startsWith('fb-') || part === 'fb') != null
+  );
+}
+
 module.exports = {
   ATOM_BUILTIN_PACKAGES,
   getPackage,
   isRequire,
   isRequireResolve,
+  isFbOnlyFile,
 };

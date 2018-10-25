@@ -16,15 +16,7 @@
 const path = require('path');
 const resolveFrom = require('resolve-from');
 
-const {isRequire} = require('./utils');
-
-function isFbOnlyFile(filePath) {
-  return (
-    filePath
-      .split(path.sep)
-      .find(part => part.startsWith('fb-') || part === 'fb') != null
-  );
-}
+const {isRequire, isFbOnlyFile} = require('./utils');
 
 module.exports = function(context) {
   const filename = context.getFilename();

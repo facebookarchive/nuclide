@@ -14,9 +14,10 @@
 /* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
-const checkedPackages = new Set();
-const {getPackage} = require('./utils');
+const {getPackage, isFbOnlyFile} = require('./utils');
 const fs = require('fs');
+
+const checkedPackages = new Set();
 
 function createFobidList(dir) {
   const forbid = [];
@@ -34,10 +35,12 @@ module.exports = function(context) {
   const forbidList = new Set(
     createFobidList('../').concat(createFobidList('../../pkg')),
   );
+
+  const file = context.getFilename();
+  const dir = path.dirname(file);
+  const currentFileIsFbOnly = isFbOnlyFile(file);
   return {
     Program(node) {
-      const file = context.getFilename();
-      const dir = path.dirname(file);
       if (checkedPackages.has(dir)) {
         return;
       }
@@ -64,6 +67,38 @@ module.exports = function(context) {
             message: `Can't require fb dependency from non-fb package. This package requires dependency ${key} in ${configPath}`,
           });
         }
+      }
+    },
+    ImportDeclaration(node) {
+      // If the current file is an fb- file, then fb-imports are fine.
+      if (currentFileIsFbOnly) {
+        return;
+      }
+
+      if (forbidList.has(node.source.value)) {
+        // If this is an @fb-only line in a non-fb file, it's still okay.
+        const startLine = node.loc.start.line;
+        if (
+          context
+            .getSourceCode()
+            .getAllComments()
+            .some(
+              comment =>
+                comment.type === 'Line' &&
+                comment.loc.end.line === startLine &&
+                comment.value.indexOf(' @fb-only') !== -1,
+            )
+        ) {
+          return;
+        }
+
+        // Otherwise this is a bad import.
+        context.report({
+          node,
+          message: `Don't import fb-only file ${
+            node.source.value
+          } from a non-fb package/file. This would break on OSS builds!`,
+        });
       }
     },
   };
