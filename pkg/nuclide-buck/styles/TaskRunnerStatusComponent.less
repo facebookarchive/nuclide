@@ -1,5 +1,60 @@
 @import "ui-variables";
 
+@tab-border: 1px solid @tab-border-color;
+@title-padding: .66em;
+@icon-padding-top: .5em; // 2.5 (total) - 1.5 (text) / 2
+@icon-padding-right: .5em;
+
+.nuclide-taskbar-status-container {
+  width: 235px;
+  background-color: #353b45;
+  background-image: linear-gradient(#3a3f4b, #353b45);
+  z-index: 3;
+  font-family: @font-family;
+  position: relative;
+  border: 1px solid #181a1f;
+  margin-right: 30px;
+  .close-icon {
+    top: @icon-padding-top;
+    right: @icon-padding-right;
+    z-index: 2;
+    font-size: 1em;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5;
+    text-align: center;
+    border-radius: @component-border-radius;
+    background-color: inherit;
+    overflow: hidden;
+    transform: scale(0);
+    transition: transform .08s;
+    font-family: 'Octicons Regular';
+    -webkit-font-smoothing: antialiased;
+    margin: 0.2em;
+
+    &:hover {
+      color: @accent-text-color;
+      background-color: @accent-color;
+    }
+    &:active {
+      background-color: fade(@accent-color, 50%);
+    }
+    &::before {
+      z-index: 1;
+      font-size: 1.1em;
+      vertical-align: -.05em; // Adjust center for the 0.1em font-size increase
+      width: auto;
+      height: auto;
+      pointer-events: none;
+      content: "\f081";
+    }
+  }
+  &:hover .close-icon {
+    transform: scale(1);
+    transition-duration: .16s;
+  }
+}
+
 .nuclide-taskbar-status-provider-green {
   color: #9da5b4;
   font-size: 0.9em;
@@ -18,8 +73,9 @@ div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
 
 .nuclide-taskbar-beta-small {
   position: absolute;
-  top: -4px;
-  right: -10px;
+  top: -6px;
+  right: -13px;
+  opacity: 0.65;
 }
 
 .nuclide-taskbar-status-provider:hover {
@@ -35,17 +91,6 @@ div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
     cursor: default;
     width:100%;
     font-family: Menlo, Consolas, DejaVu Sans Mono, monospace;
-}
-
-.nuclide-taskbar-status-container {
-  width: 235px;
-  background-color: #353b45;
-  background-image: linear-gradient(#3a3f4b, #353b45);
-  z-index: 3;
-  font-family: @font-family;
-  position: relative;
-  border: 1px solid #181a1f;
-  margin-right: 30px;
 }
 
 .nuclide-taskbar-status-provider span {

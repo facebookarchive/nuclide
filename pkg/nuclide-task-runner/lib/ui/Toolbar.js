@@ -59,7 +59,6 @@ export default class Toolbar extends React.Component<Props, State> {
     taskbarStatusComponentGK: false,
     bulletin: {title: '', body: ''},
   };
-  _buckSuperConsoleGk: string = 'nuclide_buck_superconsole';
 
   constructor() {
     super();
@@ -84,7 +83,7 @@ export default class Toolbar extends React.Component<Props, State> {
   }
 
   async _setTaskBarStatusGk(): Promise<void> {
-    const passedGk = await passesGK(this._buckSuperConsoleGk);
+    const passedGk = await passesGK('nuclide_buck_superconsole');
     if (passedGk) {
       this.setState({taskbarStatusComponentGK: true});
     }
@@ -99,6 +98,7 @@ export default class Toolbar extends React.Component<Props, State> {
     let taskRunnerOptions = [];
     let taskRunnerSpecificContent = null;
     let dropdownVisibility = {visibility: 'hidden'};
+    let taskbarVisible = false;
     if (taskRunners.count() === 0 && !this.props.toolbarDisabled) {
       dropdownVisibility = {display: 'none'};
       taskRunnerSpecificContent = <NoTaskRunnersMessage />;
@@ -116,6 +116,8 @@ export default class Toolbar extends React.Component<Props, State> {
         const taskButtons = this._renderTaskButtons();
         taskRunnerSpecificContent = [extraUi, taskButtons];
         dropdownVisibility = {};
+
+        taskbarVisible = true;
       }
     }
 
@@ -134,7 +136,8 @@ export default class Toolbar extends React.Component<Props, State> {
           title={this.state.bulletin.title}
           body={this.state.bulletin.body}
           progress={this.props.progress}
-          visible={this.props.taskIsRunning}
+          taskbarVisible={taskbarVisible}
+          taskIsRunning={this.props.taskIsRunning}
         />
       );
     } else {

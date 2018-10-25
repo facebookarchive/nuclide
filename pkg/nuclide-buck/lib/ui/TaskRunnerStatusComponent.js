@@ -20,13 +20,15 @@ type Props = {
   title: ?string,
   header?: ?string,
   body: ?string,
-  visible: ?boolean,
+  taskbarVisible: boolean,
+  taskIsRunning: boolean,
   progress: ?number,
 };
 
 type State = {
   hoveredProviderName: ?string,
   secondsSinceMount: number,
+  visible: boolean,
 };
 
 export default class TaskRunnerStatusComponent extends React.Component<
@@ -38,13 +40,13 @@ export default class TaskRunnerStatusComponent extends React.Component<
   _hoveredProviderName: BehaviorSubject<?string> = new BehaviorSubject(null);
   _disposables: UniversalDisposable = new UniversalDisposable();
   _intervalID: ?IntervalID;
+  _mountTimestamp: number = 0;
 
   state: State = {
     hoveredProviderName: null,
     secondsSinceMount: 0,
+    visible: false,
   };
-  defaultTaskStatus: string = 'Running task...';
-  _mountTimestamp: number = 0;
 
   _tickUpdateSeconds() {
     const timenow = Date.now() - this._mountTimestamp;
@@ -69,26 +71,51 @@ export default class TaskRunnerStatusComponent extends React.Component<
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (this.props.visible && !prevProps.visible) {
-      this._mountTimestamp = Date.now();
-      this._intervalID = setInterval(() => {
-        this._tickUpdateSeconds();
-      }, 100);
+    if (this.state.visible && !prevState.visible) {
+      this._startTimer();
     }
-    if (!this.props.visible && prevProps.visible) {
-      if (this._intervalID != null) {
-        clearInterval(this._intervalID);
-        this._intervalID = null;
+    if (!this.state.visible && prevState.visible) {
+      this._stopTimer();
+    }
+    if (this.props.taskbarVisible) {
+      if (this.props.taskIsRunning && !this.state.visible) {
+        this.setState({visible: true});
+      }
+    } else {
+      if (this.state.visible) {
+        this.setState({visible: false});
       }
     }
   }
 
   componentWillUnmount() {
+    this._stopTimer();
+    this._disposables.dispose();
+  }
+
+  _startTimer(): void {
+    this._stopTimer();
+    this._mountTimestamp = Date.now();
+    this._intervalID = setInterval(() => {
+      this._tickUpdateSeconds();
+    }, 100);
+  }
+
+  _stopTimer(): void {
     if (this._intervalID != null) {
       clearInterval(this._intervalID);
       this._intervalID = null;
     }
-    this._disposables.dispose();
+  }
+
+  _defaultTitle(): React.Node {
+    return (
+      <div>
+        Running task...
+        <span> {this.state.secondsSinceMount.toFixed(1)} </span>
+        sec
+      </div>
+    );
   }
 
   render(): React.Node {
@@ -104,24 +131,28 @@ export default class TaskRunnerStatusComponent extends React.Component<
         priority: 1,
       },
     };
-    const visible =
-      this.props.visible ||
-      (this.props.title != null && this.props.title !== '');
-    if (!visible) {
+    const clearButton = (
+      <div
+        className="close-icon"
+        onClick={() => this.setState({visible: false})}
+      />
+    );
+    if (!this.state.visible) {
       return null;
     }
     return (
-      <div className="nuclide-taskbar-status-container" hidden={!visible}>
+      <div className="nuclide-taskbar-status-container">
         <FullWidthProgressBar
           progress={this.props.progress == null ? 0 : this.props.progress}
-          visible={true}
+          visible={this.props.taskbarVisible}
         />
         <div className="nuclide-taskbar-status-providers-container">
           {this._renderProvider(
             serverStatus,
-            true,
+            this.props.taskbarVisible,
             this.state.hoveredProviderName != null,
           )}
+          {clearButton}
         </div>
       </div>
     );
@@ -133,14 +164,6 @@ export default class TaskRunnerStatusComponent extends React.Component<
     hovered: boolean,
   ): React.Node => {
     const {provider} = status;
-
-    const defaultTitle = (
-      <div>
-        Running task...
-        <span> {this.state.secondsSinceMount.toFixed(1)} </span>
-        sec
-      </div>
-    );
     return (
       <div
         className={classnames(
@@ -154,7 +177,7 @@ export default class TaskRunnerStatusComponent extends React.Component<
         style={{opacity: visible || hovered ? 1 : 0}}
         ref={this._setTooltipRef}>
         {this.props.title == null || this.props.title === '' ? (
-          defaultTitle
+          this._defaultTitle()
         ) : (
           <div
             dangerouslySetInnerHTML={{
