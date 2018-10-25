@@ -180,7 +180,10 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     return (
       <div
         className={classnames(
-          'list-tree has-collapsable-children file-tree-scroller',
+          'list-tree',
+          'has-collapsable-children',
+          'file-tree-scroller',
+          'nuclide-scrollbar-style-fix',
           classes,
         )}
         tabIndex={0}

@@ -29,6 +29,7 @@ export class PanelComponentScroller extends React.Component<Props> {
     const className = classnames(
       this.props.className,
       'nuclide-ui-panel-component-scroller',
+      'nuclide-scrollbar-style-fix',
       {
         'nuclide-ui-panel-component-scroller--column':
           this.props.flexDirection === 'column',

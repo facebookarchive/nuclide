@@ -65,6 +65,7 @@
     "nuclide-quick-open",
     "nuclide-recent-files-provider",
     "nuclide-recent-files-service",
+    "nuclide-scrollbar-style-fix",
     "nuclide-settings",
     "nuclide-ssh-tunnel",
     "nuclide-syntactic-selection",
