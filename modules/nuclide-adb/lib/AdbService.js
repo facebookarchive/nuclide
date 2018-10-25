@@ -11,7 +11,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {
+  LegacyProcessMessage,
+  ProcessMessage,
+} from 'nuclide-commons/process';
 import type {AdbDevice, AndroidJavaProcess, Process} from './types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -56,8 +59,7 @@ export async function getPidFromPackageName(
 export function installPackage(
   serial: string,
   packagePath: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> {
-  // TODO(T17463635)
+): ConnectableObservable<ProcessMessage> {
   return new Adb(serial).installPackage(packagePath).publish();
 }
 
