@@ -16,6 +16,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 class Activation {
   constructor() {}
@@ -30,8 +31,10 @@ class Activation {
           connection,
           getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
           async () => {
-            // GDB not available on Win32.
-            return Promise.resolve(process.platform !== 'win32');
+            // GDB not available locally on Win32.
+            return Promise.resolve(
+              nuclideUri.isRemote(connection) || process.platform !== 'win32',
+            );
           },
         );
       },
