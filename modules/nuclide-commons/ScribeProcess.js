@@ -84,9 +84,7 @@ export default class ScribeProcess {
     let child;
     try {
       child = await this._getChildProcess();
-      await new Promise(resolve => {
-        child.stdin.write(`${message}${os.EOL}`, resolve);
-      });
+      await writeToStream(child.stdin, `${message}${os.EOL}`);
     } catch (err) {
       ScribeProcess._enabled = false;
       // Note: Logging errors is potentially recursive, since they go through Scribe!
@@ -201,3 +199,26 @@ export const __test__ = {
     return originalCommand;
   },
 };
+
+function writeToStream(stream, message): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // According to `stream.write()` [docs][1], "If an error occurs, the
+    // callback may or may not be called with the error as its first argument.
+    // To reliably detect write errors, add a listener for the 'error' event."
+    //
+    // [1]: https://nodejs.org/api/stream.html#stream_writable_write_chunk_encoding_callback
+    const handleError = err => {
+      reject(err);
+      stream.removeListener('error', handleError);
+    };
+    stream.once('error', handleError);
+    stream.write(message, err => {
+      if (err != null) {
+        handleError(err);
+        return;
+      }
+      stream.removeListener('error', handleError);
+      resolve();
+    });
+  });
+}
