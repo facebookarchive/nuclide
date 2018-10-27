@@ -21,7 +21,7 @@ declare module 'vscode-languageclient' {
     RequestType,
     NotificationType,
   } from 'vscode-languageserver-protocol';
-  import type {OutputChannel} from 'vscode';
+  import type {OutputChannel, Event} from 'vscode';
 
   declare type ExecutableOptions = {
     cwd?: string,
@@ -244,6 +244,17 @@ declare module 'vscode-languageclient' {
     Never: 4,
   };
 
+  declare export var State: {
+    Stopped: 1,
+    Starting: 3,
+    Running: 2,
+  };
+
+  declare export interface StateChangeEvent {
+    oldState: number;
+    newState: number;
+  }
+
   declare export class LanguageClient {
     get clientOptions(): LanguageClientOptions;
     get outputChannel(): OutputChannel;
@@ -278,6 +289,7 @@ declare module 'vscode-languageclient' {
     onRequest(type: RequestType, (params: any) => mixed): void;
     onNotification(type: NotificationType, (params: any) => mixed): void;
     registerFeature(feature: StaticFeature | DynamicFeature): void;
+    +onDidChangeState: Event<StateChangeEvent>;
     sendRequest<R>(method: string, param: any): Thenable<R>;
   }
 }
