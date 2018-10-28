@@ -66,12 +66,20 @@ export default class StackFrames {
     }
 
     const depth = parseInt(stackInfoDepthResult(depthResult).depth, 10);
-
     const lowFrame = startFrame == null ? 0 : startFrame;
+
+    if (lowFrame >= depth) {
+      return {
+        totalFrames: depth,
+        stackFrames: [],
+      };
+    }
+
     const highFrame =
       (levels == null ? lowFrame + depth : lowFrame + levels) - 1;
     const command = `stack-list-frames --thread ${threadId} --no-frame-filters ${lowFrame} ${highFrame}`;
     const frameResult = await this._client.sendCommand(command);
+
     if (!frameResult.done) {
       throw new Error(
         `Protocol error retrieving stack frames (${

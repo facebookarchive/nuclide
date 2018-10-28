@@ -107,7 +107,7 @@ export default class CommandDispatcher implements DispatcherInterface {
     if (puncMatch != null) {
       const puncAlias = this._aliases.get(puncMatch);
       invariant(puncAlias != null);
-      return `${puncAlias} ${tokens.rest(0).substr(puncAlias.length)}`;
+      return `${puncAlias} ${tokens.rest(0).substr(puncMatch.length)}`;
     }
 
     return null;

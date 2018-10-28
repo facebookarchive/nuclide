@@ -312,13 +312,18 @@ export default class Debugger implements DebuggerInterface {
       throw new Error(`Thread #${tid} is not stopped.`);
     }
 
-    const {
-      body: {stackFrames},
-    } = await this._ensureDebugSession().stackTrace({
-      threadId: tid,
-      levels,
-    });
-    return stackFrames;
+    if (thread.getStackFrames().length < levels) {
+      const {
+        body: {stackFrames},
+      } = await this._ensureDebugSession().stackTrace({
+        threadId: tid,
+        startFrame: thread.getStackFrames().length,
+        levels: levels - thread.getStackFrames().length,
+      });
+      thread.addStackFrames(stackFrames);
+    }
+
+    return thread.getStackFrames();
   }
 
   async setSelectedStackFrame(

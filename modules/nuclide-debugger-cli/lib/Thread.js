@@ -10,11 +10,14 @@
  * @format
  */
 
+import * as DebugProtocol from 'vscode-debugprotocol';
+
 export default class Thread {
   _id: number;
   _name: string;
   _selectedStackFrame: number;
   _stopped: boolean;
+  _stack: Array<DebugProtocol.StackFrame> = [];
 
   constructor(id: number, name: string) {
     this._id = id;
@@ -52,10 +55,19 @@ export default class Thread {
   }
 
   setRunning(): void {
+    this._stack = [];
     this._stopped = false;
   }
 
   setStopped(): void {
     this._stopped = true;
+  }
+
+  getStackFrames(): Array<DebugProtocol.StackFrame> {
+    return this._stack;
+  }
+
+  addStackFrames(frames: Array<DebugProtocol.StackFrame>): void {
+    this._stack = this._stack.concat(frames);
   }
 }
