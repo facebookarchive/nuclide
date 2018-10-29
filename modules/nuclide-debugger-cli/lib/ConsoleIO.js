@@ -13,6 +13,8 @@
 import {Observable} from 'rxjs';
 
 export interface ConsoleIO {
+  enterFullScreen(): void;
+
   // output does not add a newline. outputLine does.
   output(text: string): void;
   outputLine(line?: string): void;

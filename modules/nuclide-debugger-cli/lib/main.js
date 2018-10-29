@@ -174,11 +174,13 @@ async function main(): Promise<void> {
       muteOutputCategories,
     );
 
+    debuggerInstance.registerCommands(dispatcher);
+
+    cli.enterFullScreen();
+
     if (adapter != null) {
       await debuggerInstance.launch(adapter);
     }
-
-    debuggerInstance.registerCommands(dispatcher);
 
     // eslint-disable-next-line nuclide-internal/unused-subscription
     cli.observeInterrupts().subscribe(_ => {
@@ -197,7 +199,7 @@ async function main(): Promise<void> {
       },
     );
   } catch (x) {
-    process.stderr.write(`${x.message}\n`);
+    process.stderr.write(`oops ${x.message} ${x.stack}\n`);
     process.exit(1);
   }
 }

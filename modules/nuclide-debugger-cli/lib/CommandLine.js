@@ -107,6 +107,10 @@ export default class CommandLine implements ConsoleIO {
     this._subscriptions.forEach(_ => _.unsubscribe());
   }
 
+  enterFullScreen(): void {
+    this._cli.enterFullScreen();
+  }
+
   observeInterrupts(): Observable<void> {
     return this._interrupts;
   }

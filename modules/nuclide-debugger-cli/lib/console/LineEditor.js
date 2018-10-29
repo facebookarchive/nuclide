@@ -25,6 +25,8 @@ type LineEditorOptions = {
 const MAX_SCROLLBACK = 2000;
 
 export default class LineEditor extends EventEmitter {
+  _fullscreen: boolean = false;
+  _options: LineEditorOptions;
   _program: blessed.Program;
   _screen: blessed.Screen;
   _outputBox: blessed.Box; // the box containing the scrollback
@@ -52,16 +54,10 @@ export default class LineEditor extends EventEmitter {
     super();
     this._logger = logger;
     this._tty = options.tty !== false;
+    this._options = options;
     this._input = options.input || process.stdin;
     this._output = options.output || process.stdout;
     this._nextOutputSameLine = false;
-
-    if (this._tty) {
-      this._initializeBlessed(options);
-      return;
-    }
-
-    this._initializeTTY(options);
   }
 
   isTTY(): boolean {
@@ -75,10 +71,25 @@ export default class LineEditor extends EventEmitter {
 
   setPrompt(prompt: string): void {
     this._prompt = prompt;
-    if (this._tty) {
+    if (this._tty && this._fullscreen) {
       this._redrawConsole();
     }
     return;
+  }
+
+  enterFullScreen(): void {
+    if (this._fullscreen) {
+      return;
+    }
+
+    this._fullscreen = true;
+
+    if (this._tty) {
+      this._initializeBlessed(this._options);
+      return;
+    }
+
+    this._initializeTTY(this._options);
   }
 
   _initializeBlessed(options: LineEditorOptions): void {
@@ -408,7 +419,7 @@ export default class LineEditor extends EventEmitter {
 
   write(s: string): void {
     this._logger.info(`output [${s}]\n`);
-    if (!this._tty) {
+    if (!this._tty || !this._fullscreen) {
       this._output.write(s);
       return;
     }
