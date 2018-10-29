@@ -21,7 +21,7 @@ declare module 'vscode-languageclient' {
     RequestType,
     NotificationType,
   } from 'vscode-languageserver-protocol';
-  import type {OutputChannel, Event} from 'vscode';
+  import type {CancellationToken, OutputChannel, Event} from 'vscode';
 
   declare type ExecutableOptions = {
     cwd?: string,
@@ -291,5 +291,10 @@ declare module 'vscode-languageclient' {
     registerFeature(feature: StaticFeature | DynamicFeature): void;
     +onDidChangeState: Event<StateChangeEvent>;
     sendRequest<R>(method: string, param: any): Thenable<R>;
+    sendRequest<R>(
+      type: RequestType,
+      params: any,
+      token?: CancellationToken,
+    ): Thenable<R>;
   }
 }
