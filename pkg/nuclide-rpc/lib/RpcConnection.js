@@ -937,7 +937,7 @@ export class RpcConnection<TransportType: Transport> {
       call.reject(new Error('Connection Closed'));
     });
     this._subscriptions.forEach(subscription => {
-      subscription.error(new Error('Connection Closed'));
+      subscription.complete();
     });
     this._subscriptions.clear();
   }
