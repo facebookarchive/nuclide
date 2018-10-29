@@ -109,6 +109,16 @@ export function getNativeAutoGenConfig(
     visible: true,
   };
 
+  const stopOnEntry = {
+    name: 'pauseProgramOnEntry',
+    type: 'boolean',
+    description:
+      'If true, the debugger will stop the program at entry before starting execution.',
+    required: false,
+    defaultValue: false,
+    visible: true,
+  };
+
   const debugTypeMessage = `using ${
     vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
   }`;
@@ -116,7 +126,7 @@ export function getNativeAutoGenConfig(
   const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType,
-    properties: [program, cwd, args, env, corePath],
+    properties: [program, cwd, args, env, stopOnEntry, corePath],
     scriptPropertyName: 'program',
     scriptExtension: '.c',
     cwdPropertyName: 'working directory',

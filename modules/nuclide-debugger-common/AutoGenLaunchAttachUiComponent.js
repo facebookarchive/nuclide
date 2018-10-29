@@ -324,7 +324,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     const formattedName =
       capitalize(name.replace(/([A-Z])/g, ' $1')) +
       (required ? ' (Required)' : '');
-    const nameLabel = <label>{formattedName}:</label>;
+    const nameLabel = type === 'boolean' ? formattedName : formattedName + ':';
     const itemType = idx(property, _ => _.itemType);
     if (this._atomInputType(type, itemType)) {
       const value = this.state.atomInputValues.get(name) || '';
@@ -345,11 +345,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     } else if (type === 'boolean') {
       const checked = this.state.booleanValues.get(name) || false;
       return (
-        <div>
-          <div>{nameLabel}</div>
+        <div className="inline-block">
           <Checkbox
             checked={checked}
-            label={description}
+            label={nameLabel}
+            title={description}
             onChange={newValue => {
               this.state.booleanValues.set(name, newValue);
               this.props.configIsValidChanged(this._debugButtonShouldEnable());
