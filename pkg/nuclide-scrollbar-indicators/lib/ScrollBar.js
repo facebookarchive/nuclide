@@ -30,6 +30,7 @@ type Props = {
   colors: ThemeColors,
   editor: atom$TextEditor,
   editorIsVisible: boolean,
+  screenLineCount: number,
 };
 type State = {
   height: ?number,
@@ -95,11 +96,10 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
   _drawToCanvas() {
     const {width, height} = this._context.canvas;
     this._context.clearRect(0, 0, width, height);
-    const {markTypes, colors, editor} = this.props;
+    const {markTypes, colors, editor, screenLineCount} = this.props;
     if (markTypes == null || colors == null) {
       return;
     }
-    const lineCount = editor.getScreenLineCount();
 
     TYPE_ORDER.forEach(type => {
       const typeMarks = markTypes.get(type);
@@ -123,12 +123,12 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
           const lineHeight = screenEnd - screenStart;
           const rangeHeight = Math.max(
             MIN_PIXEL_HEIGHT,
-            Math.round(height * (lineHeight / lineCount)),
+            Math.round(height * (lineHeight / screenLineCount)),
           );
           // Draw single lines as lines rather than ranges.
           const markPixelHeight =
             lineHeight === 1 ? MIN_PIXEL_HEIGHT : rangeHeight;
-          const positionPercent = screenStart / lineCount;
+          const positionPercent = screenStart / screenLineCount;
           const pixelPosition = Math.floor(height * positionPercent);
           this._context.fillRect(0, pixelPosition, width, markPixelHeight);
         });

@@ -72,12 +72,30 @@ class Activation {
             colors: state.colors,
           })),
           observePaneItemVisibility(editor),
-        ).map(([{markTypes, markers, colors}, editorIsVisible]) => ({
-          editorIsVisible,
-          colors,
-          markTypes,
-          editor,
-        }));
+          observableFromSubscribeFunction(cb =>
+            // Take note: This is called every time a character is added/removed`.
+            // $FlowFixMe - `editor.displayLayer is not a public API
+            editor.displayLayer.onDidChange(cb),
+          )
+            .startWith(null)
+            // `editor.getScreenLineCount()` should be fast, since the
+            // displayLayer keeps this data cached. However, it does force a
+            // quick check to see if the cache needs to be recomputed.
+            .map(() => editor.getScreenLineCount())
+            .distinctUntilChanged(),
+        ).map(
+          ([
+            {markTypes, markers, colors},
+            editorIsVisible,
+            screenLineCount,
+          ]) => ({
+            editorIsVisible,
+            colors,
+            markTypes,
+            editor,
+            screenLineCount,
+          }),
+        );
 
         const Component = bindObservableAsProps(props, ScrollBar);
         const node = renderReactRoot(<Component />);
