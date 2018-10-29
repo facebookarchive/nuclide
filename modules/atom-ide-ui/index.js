@@ -60,6 +60,7 @@ export type {
   DiagnosticProvider,
   DiagnosticProviderUpdate,
   DiagnosticTrace,
+  DiagnosticUpdater,
   DiagnosticUpdateCallback,
   IndieLinterDelegate,
   LinterMessage,
