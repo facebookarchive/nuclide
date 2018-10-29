@@ -67,10 +67,23 @@ class RefWrapper extends React.Component<RefWrapperProps> {
 
 export class Tooltip extends React.Component<Props> {
   _tooltip: IDisposable;
+  _element: null | Text | Element;
+
+  constructor(props: Props) {
+    super(props);
+
+    this._element = null;
+  }
 
   static defaultProps: DefaultProps = {
     delay: 0,
   };
+
+  componentDidUpdate(prevProps: Props) {
+    if (this._element != null && this.props.title !== prevProps.title) {
+      this._displayTooltip(this._element);
+    }
+  }
 
   _displayTooltip = (element: null | Element | Text): void => {
     if (this._tooltip != null) {
@@ -78,6 +91,7 @@ export class Tooltip extends React.Component<Props> {
     }
 
     if (element != null) {
+      this._element = element;
       // $FlowFixMe - HTMLElement is incompatible with Element
       this._tooltip = atom.tooltips.add(element, {
         title: this.props.title || '',
