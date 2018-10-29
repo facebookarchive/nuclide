@@ -9,6 +9,7 @@
  * @flow
  * @format
  */
+import type {ConsoleIO} from './ConsoleIO';
 
 import CommandLine from './CommandLine';
 import CommandDispatcher from './CommandDispatcher';
@@ -179,6 +180,14 @@ async function main(): Promise<void> {
     cli.enterFullScreen();
 
     if (adapter != null) {
+      if (adapter.type === 'hhvm') {
+        try {
+          // $FlowFB
+          const showBetaBanner: ConsoleIO => void = require('./fb-BetaBanner.js')
+            .showBetaBanner;
+          showBetaBanner(cli);
+        } catch (_) {}
+      }
       await debuggerInstance.launch(adapter);
     }
 
