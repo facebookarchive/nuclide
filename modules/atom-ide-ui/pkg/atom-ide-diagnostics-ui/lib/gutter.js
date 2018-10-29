@@ -462,7 +462,10 @@ function _applyUpdateToEditor(
       }
 
       if (editorHasMarkers(editor)) {
-        analytics.track('diagnostics-show-editor-diagnostics');
+        analytics.track('diagnostics-show-editor-diagnostics', {
+          source: diagnosticUpdater.getLastUpdateSource(),
+          diagnosticsCount: Array.from(update).length,
+        });
       }
       const {blockDecorationFragments} = nullthrows(
         editorToProcessState.get(editor),

@@ -18,6 +18,7 @@ import type {
   DiagnosticProviderUpdate,
   MessagesState,
   ObservableDiagnosticProvider,
+  LastUpdateSource,
 } from '../types';
 import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 
@@ -182,6 +183,21 @@ export function providers(
       const nextState = new Set(state);
       nextState.delete(action.payload.provider);
       return nextState;
+    }
+  }
+  return state;
+}
+
+export function lastUpdateSource(
+  state: LastUpdateSource = 'Provider',
+  action: Action,
+): LastUpdateSource {
+  switch (action.type) {
+    case Actions.UPDATE_MESSAGES: {
+      return 'Provider';
+    }
+    case Actions.MARK_MESSAGES_STALE: {
+      return 'Stale';
     }
   }
   return state;

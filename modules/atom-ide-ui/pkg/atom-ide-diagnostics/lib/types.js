@@ -241,12 +241,15 @@ export type AppState = {
   codeActionsForMessage: CodeActionsState,
   descriptions: DescriptionsState,
   providers: Set<ObservableDiagnosticProvider>,
+  lastUpdateSource: LastUpdateSource,
 };
 
 export type MessagesState = Map<
   ObservableDiagnosticProvider,
   Map<NuclideUri, Array<DiagnosticMessage>>,
 >;
+
+export type LastUpdateSource = 'Provider' | 'Stale';
 
 export type CodeActionsState = Map<DiagnosticMessage, Map<string, CodeAction>>;
 export type DescriptionsState = Map<DiagnosticMessage, string>;

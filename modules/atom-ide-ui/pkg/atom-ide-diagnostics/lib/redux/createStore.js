@@ -64,6 +64,7 @@ const INITIAL_STATE = {
   codeActionsForMessage: new Map(),
   descriptions: new Map(),
   providers: new Set(),
+  lastUpdateSource: 'Provider',
 };
 
 function getFileMessages(store: Store): Observable<Set<DiagnosticMessage>> {

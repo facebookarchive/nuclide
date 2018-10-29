@@ -19,6 +19,7 @@ import type {
   DiagnosticMessageKind,
   Store,
   UiConfig,
+  LastUpdateSource,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -52,6 +53,10 @@ export default class DiagnosticUpdater {
 
   getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
     return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
+  };
+
+  getLastUpdateSource = (): LastUpdateSource => {
+    return this._store.getState().lastUpdateSource;
   };
 
   observeMessages = (
