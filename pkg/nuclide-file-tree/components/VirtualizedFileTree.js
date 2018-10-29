@@ -12,6 +12,7 @@
 
 import type {AppState, Roots} from '../lib/types';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -21,9 +22,11 @@ import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+import {Observable} from 'rxjs';
 import * as Actions from '../lib/redux/Actions';
 import FileTreeEntryComponent from './FileTreeEntryComponent';
 import ProjectSelection from './ProjectSelection';
+import {track} from 'nuclide-analytics';
 
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
@@ -85,9 +88,21 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     this._disposables.add(
       // Remeasure if the theme changes, and on initial theme load, which may
       // happen after this component mounts.
-      atom.themes.onDidChangeActiveThemes(() => {
-        this._remeasureHeights(true);
-      }),
+      observableFromSubscribeFunction(cb =>
+        atom.themes.onDidChangeActiveThemes(cb),
+      )
+        .switchMap(() =>
+          Observable.concat(
+            Observable.of(null),
+            // Atom does not actually wait for the `<style>` tag to be loaded
+            // before triggering `onDidChangeActiveThemes`. For now we will
+            // check again after 100ms and see if that catches the issue.
+            Observable.of(null).delay(100),
+          ),
+        )
+        .subscribe(() => {
+          this._remeasureHeights(true);
+        }),
     );
   }
 
@@ -122,6 +137,11 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         if (rootHeight > 0) {
           newState.rootHeight = rootHeight;
           heightUpdated = true;
+          track('file-tee-remeasure-root-height', {
+            activeThemes: atom.themes.getActiveThemeNames().join(', '),
+            rootHeight,
+            force,
+          });
         }
       }
     }
