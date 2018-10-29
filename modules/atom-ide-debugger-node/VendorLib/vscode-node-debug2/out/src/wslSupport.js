@@ -33,7 +33,7 @@ function createLaunchArg(useSubsytemLinux, useExternalConsole, cwd, executable, 
         const bashPathHost = is64bit ? bashPath64bitApp : bashPath32bitApp;
         const subsystemLinuxPath = useExternalConsole ? bashPath64bitApp : bashPathHost;
         const bashCommand = [executable].concat(args || []).map(element => {
-            if (element === program) { // workaround for issue #35249
+            if (element === program) {
                 element = element.replace(/\\/g, '/');
             }
             return element.indexOf(' ') > 0 ? `'${element}'` : element;

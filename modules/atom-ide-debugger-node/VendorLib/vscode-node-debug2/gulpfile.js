@@ -16,30 +16,25 @@ const del = require('del');
 const fs = require('fs');
 const vsce = require('vsce');
 const es = require('event-stream');
-const minimist = require('minimist');
 
 const transifexApiHostname = 'www.transifex.com'
 const transifexApiName = 'api';
 const transifexApiToken = process.env.TRANSIFEX_API_TOKEN;
 const transifexProjectName = 'vscode-extensions';
 const transifexExtensionName = 'vscode-node-debug2';
-
-const defaultLanguages = [
-	{ id: 'zh-tw', folderName: 'cht', transifexId: 'zh-hant' },
-	{ id: 'zh-cn', folderName: 'chs', transifexId: 'zh-hans' },
-	{ id: 'ja', folderName: 'jpn' },
-	{ id: 'ko', folderName: 'kor' },
-	{ id: 'de', folderName: 'deu' },
-	{ id: 'fr', folderName: 'fra' },
-	{ id: 'es', folderName: 'esn' },
-	{ id: 'ru', folderName: 'rus' },
-    { id: 'it', folderName: 'ita' },
-
-    // These language-pack languages are included for VS but excluded from the vscode package
-    { id: 'cs', folderName: 'csy' },
-    { id: 'tr', folderName: 'trk' },
-    { id: 'pt-br', folderName: 'ptb', transifexId: 'pt_BR' },
-    { id: 'pl', folderName: 'plk' }
+const vscodeLanguages = [
+    'zh-hans',
+    'zh-hant',
+    'ja',
+    'ko',
+    'de',
+    'fr',
+    'es',
+    'ru',
+    'it',
+    'pt-br',
+    'hu',
+    'tr'
 ];
 
 const watchedSources = [
@@ -56,42 +51,22 @@ const lintSources = [
 ].map(function(tsFolder) { return tsFolder + '/**/*.ts'; });
 
 const tsProject = ts.createProject('tsconfig.json', { typescript });
-function doBuild(buildNls, failOnError) {
-    let gotError = false;
-    const tsResult = tsProject.src()
+function doBuild(buildNls) {
+    return tsProject.src()
         .pipe(sourcemaps.init())
-        .pipe(tsProject())
-        .once('error', () => {
-            gotError = true;
-        });
-
-    return tsResult.js
+        .pipe(tsProject()).js
         .pipe(buildNls ? nls.rewriteLocalizeCalls() : es.through())
-        .pipe(buildNls ? nls.createAdditionalLanguageFiles(defaultLanguages, 'i18n', 'out') : es.through())
-		.pipe(buildNls ? nls.bundleMetaDataFiles('ms-vscode.node-debug2', 'out') : es.through())
-		.pipe(buildNls ? nls.bundleLanguageFiles() : es.through())
+        .pipe(buildNls ? nls.createAdditionalLanguageFiles(nls.coreLanguages, 'i18n', 'out') : es.through())
         .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '..' })) // .. to compensate for TS returning paths from 'out'
-        .pipe(gulp.dest('out'))
-        .once('error', () => {
-            gotError = true;
-        })
-        .once('finish', () => {
-            if (failOnError && gotError) {
-                process.exit(1);
-            }
-        });
+        .pipe(gulp.dest('out'));
 }
 
-gulp.task('build', () => {
-    return runSequence('clean', '_build');
+gulp.task('build', ['copy-scripts'], function () {
+    doBuild(true);
 });
 
-gulp.task('_build', ['copy-scripts'], () => {
-    return doBuild(true, true);
-});
-
-gulp.task('_dev-build', ['copy-scripts'], () => {
-    return doBuild(false, false);
+gulp.task('dev-build', ['copy-scripts'], function () {
+    doBuild(false);
 });
 
 gulp.task('copy-scripts', () => {
@@ -99,9 +74,9 @@ gulp.task('copy-scripts', () => {
         .pipe(gulp.dest('out'));
 });
 
-gulp.task('watch', ['clean'], cb => {
+gulp.task('watch', ['dev-build'], function(cb) {
     log('Watching build sources...');
-    return runSequence('_dev-build', () => gulp.watch(watchedSources, ['_dev-build']));
+    return gulp.watch(watchedSources, ['dev-build']);
 });
 
 gulp.task('default', ['build']);
@@ -111,7 +86,7 @@ gulp.task('tslint', function() {
         .pipe(tslint({
             formatter: "verbose"
         }))
-        .pipe(tslint.report());
+        .pipe(tslint.report({ emitError: false }));
 });
 
 gulp.task('clean', function() {
@@ -147,12 +122,7 @@ gulp.task('vsce-publish', function () {
     return vsce.publish();
 });
 gulp.task('vsce-package', function () {
-    const cliOptions = minimist(process.argv.slice(2));
-    const packageOptions = {
-        packagePath: cliOptions.packagePath
-    };
-
-    return vsce.createVSIX(packageOptions);
+    return vsce.createVSIX();
 });
 
 gulp.task('publish', function(callback) {
@@ -164,34 +134,24 @@ gulp.task('package', function(callback) {
 });
 
 gulp.task('add-i18n', function () {
-	return gulp.src(['package.nls.json'])
-		.pipe(nls.createAdditionalLanguageFiles(defaultLanguages, 'i18n'))
-		.pipe(gulp.dest('.'));
+    return gulp.src(['package.nls.json'])
+        .pipe(nls.createAdditionalLanguageFiles(nls.coreLanguages, 'i18n'))
+        .pipe(gulp.dest('.'));
 });
 
-gulp.task('transifex-push', ['build'], function () {
-	return gulp.src(['package.nls.json', 'out/nls.metadata.header.json','out/nls.metadata.json'])
-		.pipe(nls.createXlfFiles(transifexProjectName, transifexExtensionName))
-		.pipe(nls.pushXlfFiles(transifexApiHostname, transifexApiName, transifexApiToken));
-});
-
-gulp.task('transifex-push-test', ['build'], function() {
-	return gulp.src(['package.nls.json', 'out/nls.metadata.header.json','out/nls.metadata.json'])
-		.pipe(nls.createXlfFiles(transifexProjectName, transifexExtensionName))
-		.pipe(gulp.dest(path.join('..', `${transifexExtensionName}-push-test`)));
+gulp.task('transifex-push', function () {
+    return gulp.src('**/*.nls.json')
+        .pipe(nls.prepareXlfFiles(transifexProjectName, transifexExtensionName))
+        .pipe(nls.pushXlfFiles(transifexApiHostname, transifexApiName, transifexApiToken));
 });
 
 gulp.task('transifex-pull', function () {
-	return es.merge(defaultLanguages.map(function(language) {
-		return nls.pullXlfFiles(transifexApiHostname, transifexApiName, transifexApiToken, language, [{ name: transifexExtensionName, project: transifexProjectName }]).
-			pipe(gulp.dest(`../${transifexExtensionName}-localization/${language.folderName}`));
-	}));
+    return nls.pullXlfFiles(transifexApiHostname, transifexApiName, transifexApiToken, vscodeLanguages, [{ name: transifexExtensionName, project: transifexProjectName }])
+        .pipe(gulp.dest(`../${transifexExtensionName}-localization`));
 });
 
-gulp.task('i18n-import', function() {
-	return es.merge(defaultLanguages.map(function(language) {
-		return gulp.src(`../${transifexExtensionName}-localization/${language.folderName}/**/*.xlf`)
-			.pipe(nls.prepareJsonFiles())
-			.pipe(gulp.dest(path.join('./i18n', language.folderName)));
-	}));
+gulp.task('i18n-import', function () {
+    return gulp.src(`../${transifexExtensionName}-localization/**/*.xlf`)
+        .pipe(nls.prepareJsonFiles())
+        .pipe(gulp.dest('./i18n'));
 });

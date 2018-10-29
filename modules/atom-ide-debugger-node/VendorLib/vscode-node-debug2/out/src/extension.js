@@ -8,16 +8,16 @@ const path = require("path");
 const fs = require("fs");
 const initialConfigurations = [
     {
-        name: 'Launch Program',
-        type: 'node2',
-        request: 'launch',
-        program: '${workspaceFolder}/app.js',
-        cwd: '${workspaceFolder}'
+        name: "Launch Program",
+        type: "node2",
+        request: "launch",
+        program: "${workspaceFolder}/app.js",
+        cwd: "${workspaceFolder}"
     },
     {
-        name: 'Attach to Process',
-        type: 'node2',
-        request: 'attach',
+        name: "Attach to Process",
+        type: "node2",
+        request: "attach",
         port: 9229
     }
 ];
@@ -80,10 +80,8 @@ function toggleSkippingFile(path) {
         const activeEditor = vscode.window.activeTextEditor;
         path = activeEditor && activeEditor.document.fileName;
     }
-    if (path && vscode.debug.activeDebugSession) {
-        const args = typeof path === 'string' ? { path } : { sourceReference: path };
-        vscode.debug.activeDebugSession.customRequest('toggleSkipFileStatus', args);
-    }
+    const args = typeof path === 'string' ? { path } : { sourceReference: path };
+    vscode.commands.executeCommand('workbench.customDebugRequest', 'toggleSkipFileStatus', args);
 }
 
 //# sourceMappingURL=extension.js.map

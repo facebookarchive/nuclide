@@ -69,7 +69,7 @@ exports.pathCompare = pathCompare;
  */
 function realPath(path) {
     let dir = Path.dirname(path);
-    if (path === dir) { // end recursion
+    if (path === dir) {
         // is this an upper case drive letter?
         if (/^[A-Z]\:\\$/.test(path)) {
             path = path.toLowerCase();
@@ -90,7 +90,7 @@ function realPath(path) {
         else if (found.length > 1) {
             // must be a case sensitive $filesystem
             const ix = found.indexOf(name);
-            if (ix >= 0) { // case sensitive
+            if (ix >= 0) {
                 let prefix = realPath(dir); // recurse
                 if (prefix) {
                     return Path.join(prefix, found[ix]);
@@ -198,11 +198,10 @@ exports.makeRelative2 = makeRelative2;
 /*
  * Lookup the given program on the PATH and return its absolute path on success and undefined otherwise.
  */
-function findOnPath(program, args_env) {
-    const env = extendObject(extendObject({}, process.env), args_env);
+function findOnPath(program) {
     let locator;
     if (process.platform === 'win32') {
-        const windir = env['WINDIR'] || 'C:\\Windows';
+        const windir = process.env['WINDIR'] || 'C:\\Windows';
         locator = Path.join(windir, 'System32', 'where.exe');
     }
     else {
@@ -210,10 +209,10 @@ function findOnPath(program, args_env) {
     }
     try {
         if (FS.existsSync(locator)) {
-            const lines = CP.execSync(`${locator} ${program}`, { env }).toString().split(/\r?\n/);
+            const lines = CP.execSync(`${locator} ${program}`).toString().split(/\r?\n/);
             if (process.platform === 'win32') {
                 // return the first path that has a executable extension
-                const executableExtensions = env['PATHEXT'].toUpperCase();
+                const executableExtensions = process.env['PATHEXT'].toUpperCase();
                 for (const path of lines) {
                     const ext = Path.extname(path).toUpperCase();
                     if (ext && executableExtensions.indexOf(ext + ';') > 0) {
@@ -241,10 +240,9 @@ function findOnPath(program, args_env) {
     return undefined;
 }
 exports.findOnPath = findOnPath;
-function findExecutable(program, args_env) {
-    const env = extendObject(extendObject({}, process.env), args_env);
+function findExecutable(program) {
     if (process.platform === 'win32' && !Path.extname(program)) {
-        const PATHEXT = env['PATHEXT'];
+        const PATHEXT = process.env['PATHEXT'];
         if (PATHEXT) {
             const executableExtensions = PATHEXT.split(';');
             for (const extension of executableExtensions) {
@@ -261,14 +259,5 @@ function findExecutable(program, args_env) {
     return undefined;
 }
 exports.findExecutable = findExecutable;
-function extendObject(toObject, fromObject) {
-    for (let key in fromObject) {
-        if (fromObject.hasOwnProperty(key)) {
-            toObject[key] = fromObject[key];
-        }
-    }
-    return toObject;
-}
-exports.extendObject = extendObject;
 
 //# sourceMappingURL=pathUtils.js.map

@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_chrome_debug_core_1 = require("vscode-chrome-debug-core");
 const telemetry = vscode_chrome_debug_core_1.telemetry.telemetry;
 const vscode_debugadapter_1 = require("vscode-debugadapter");
-const errors_1 = require("vscode-chrome-debug-core/out/src/errors");
 const path = require("path");
 const fs = require("fs");
 const cp = require("child_process");
@@ -23,7 +22,7 @@ const utils = require("./utils");
 const errors = require("./errors");
 const wsl = require("./wslSupport");
 const nls = require("vscode-nls");
-let localize = nls.loadMessageBundle(__filename);
+const localize = nls.config(process.env.VSCODE_NLS_CONFIG)(__filename);
 const DefaultSourceMapPathOverrides = {
     'webpack:///./~/*': '${cwd}/node_modules/*',
     'webpack:///./*': '${cwd}/*',
@@ -50,62 +49,65 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         this._adapterID = args.adapterID;
         this._promiseRejectExceptionFilterEnabled = this.isExtensionHost();
         this._supportsRunInTerminalRequest = args.supportsRunInTerminalRequest;
-        if (args.locale) {
-            localize = nls.config({ locale: args.locale })(__filename);
-        }
-        const capabilities = super.initialize(args);
-        capabilities.supportsLogPoints = true;
-        capabilities.supportsTerminateRequest = true;
-        return capabilities;
+        return super.initialize(args);
     }
     launch(args) {
         const _super = name => super[name];
         return __awaiter(this, void 0, void 0, function* () {
-            if (args.console && args.console !== 'internalConsole' && typeof args._suppressConsoleOutput === 'undefined') {
-                args._suppressConsoleOutput = true;
-            }
             yield _super("launch").call(this, args);
             if (args.__restart && typeof args.__restart.port === 'number') {
                 return this.doAttach(args.__restart.port, undefined, args.address, args.timeout);
             }
             const port = args.port || utils.random(3000, 50000);
             if (args.useWSL && !wsl.subsystemForLinuxPresent()) {
-                return Promise.reject(new errors_1.ErrorWithMessage({
+                return Promise.reject({
                     id: 2007,
                     format: localize(0, null)
-                }));
+                });
             }
             let runtimeExecutable = args.runtimeExecutable;
             if (args.useWSL) {
                 runtimeExecutable = runtimeExecutable || NodeDebugAdapter.NODE;
             }
             else if (runtimeExecutable) {
-                if (path.isAbsolute(runtimeExecutable)) {
-                    const re = pathUtils.findExecutable(runtimeExecutable, args.env);
-                    if (!re) {
-                        return this.getNotExistErrorResponse('runtimeExecutable', runtimeExecutable);
-                    }
-                    runtimeExecutable = re;
-                }
-                else {
-                    const re = pathUtils.findOnPath(runtimeExecutable, args.env);
+                if (!path.isAbsolute(runtimeExecutable)) {
+                    const re = pathUtils.findOnPath(runtimeExecutable);
                     if (!re) {
                         return this.getRuntimeNotOnPathErrorResponse(runtimeExecutable);
                     }
                     runtimeExecutable = re;
                 }
+                else {
+                    const re = pathUtils.findExecutable(runtimeExecutable);
+                    if (!re) {
+                        return this.getNotExistErrorResponse('runtimeExecutable', runtimeExecutable);
+                    }
+                    runtimeExecutable = re;
+                }
             }
             else {
-                const re = pathUtils.findOnPath(NodeDebugAdapter.NODE, args.env);
-                if (!re) {
+                if (!pathUtils.findOnPath(NodeDebugAdapter.NODE)) {
                     return Promise.reject(errors.runtimeNotFound(NodeDebugAdapter.NODE));
                 }
                 // use node from PATH
-                runtimeExecutable = re;
+                runtimeExecutable = NodeDebugAdapter.NODE;
             }
             this._continueAfterConfigDone = !args.stopOnEntry;
             if (this.isExtensionHost()) {
-                return this.extensionHostLaunch(args, runtimeExecutable, port);
+                // we always launch in 'debug-brk' mode, but we only show the break event if 'stopOnEntry' attribute is true.
+                let launchArgs = [];
+                if (!args.noDebug) {
+                    launchArgs.push(`--debugBrkPluginHost=${port}`);
+                    // pass the debug session ID to the EH so that broadcast events know where they come from
+                    if (args.__sessionId) {
+                        launchArgs.push(`--debugId=${args.__sessionId}`);
+                    }
+                }
+                const runtimeArgs = args.runtimeArgs || [];
+                const programArgs = args.args || [];
+                launchArgs = launchArgs.concat(runtimeArgs, programArgs);
+                const envArgs = this.collectEnvFileArgs(args) || args.env;
+                return this.launchInInternalConsole(runtimeExecutable, launchArgs, envArgs);
             }
             let programPath = args.program;
             if (programPath) {
@@ -126,105 +128,81 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 }
             }
             this._captureFromStd = args.outputCapture === 'std';
-            const resolvedProgramPath = yield this.resolveProgramPath(programPath, args.sourceMaps);
-            let program;
-            let cwd = args.cwd;
-            if (cwd) {
-                if (!path.isAbsolute(cwd)) {
-                    return this.getRelativePathErrorResponse('cwd', cwd);
+            return this.resolveProgramPath(programPath, args.sourceMaps).then(resolvedProgramPath => {
+                let program;
+                let cwd = args.cwd;
+                if (cwd) {
+                    if (!path.isAbsolute(cwd)) {
+                        return this.getRelativePathErrorResponse('cwd', cwd);
+                    }
+                    if (!fs.existsSync(cwd)) {
+                        return this.getNotExistErrorResponse('cwd', cwd);
+                    }
+                    // if working dir is given and if the executable is within that folder, we make the executable path relative to the working dir
+                    if (resolvedProgramPath) {
+                        program = path.relative(cwd, resolvedProgramPath);
+                    }
                 }
-                if (!fs.existsSync(cwd)) {
-                    return this.getNotExistErrorResponse('cwd', cwd);
+                else if (resolvedProgramPath) {
+                    // if no working dir given, we use the direct folder of the executable
+                    cwd = path.dirname(resolvedProgramPath);
+                    program = path.basename(resolvedProgramPath);
                 }
-                // if working dir is given and if the executable is within that folder, we make the executable path relative to the working dir
-                if (resolvedProgramPath) {
-                    program = path.relative(cwd, resolvedProgramPath);
+                const runtimeArgs = args.runtimeArgs || [];
+                const programArgs = args.args || [];
+                const debugArgs = detectSupportedDebugArgsForLaunch(args);
+                let launchArgs = [];
+                if (!args.noDebug && !args.port) {
+                    // Always stop on entry to set breakpoints
+                    if (debugArgs === DebugArgs.Inspect_DebugBrk) {
+                        launchArgs.push(`--inspect=${port}`);
+                        launchArgs.push('--debug-brk');
+                    }
+                    else {
+                        launchArgs.push(`--inspect-brk=${port}`);
+                    }
                 }
-            }
-            else if (resolvedProgramPath) {
-                // if no working dir given, we use the direct folder of the executable
-                cwd = path.dirname(resolvedProgramPath);
-                program = path.basename(resolvedProgramPath);
-            }
-            const runtimeArgs = args.runtimeArgs || [];
-            const programArgs = args.args || [];
-            const debugArgs = detectSupportedDebugArgsForLaunch(args, runtimeExecutable, args.env);
-            let launchArgs = [];
-            if (!args.noDebug && !args.port) {
-                // Always stop on entry to set breakpoints
-                if (debugArgs === DebugArgs.Inspect_DebugBrk) {
-                    launchArgs.push(`--inspect=${port}`);
-                    launchArgs.push('--debug-brk');
+                launchArgs = runtimeArgs.concat(launchArgs, program ? [program] : [], programArgs);
+                const wslLaunchArgs = wsl.createLaunchArg(args.useWSL, args.console === 'externalTerminal', cwd, runtimeExecutable, launchArgs, program);
+                // if using subsystem for linux, we will trick the debugger to map source files
+                if (args.useWSL && !args.localRoot && !args.remoteRoot) {
+                    this._pathTransformer.attach({
+                        remoteRoot: wslLaunchArgs.remoteRoot,
+                        localRoot: wslLaunchArgs.localRoot
+                    });
+                }
+                const envArgs = this.collectEnvFileArgs(args) || args.env;
+                let launchP;
+                if ((args.console === 'integratedTerminal' || args.console === 'externalTerminal') && this._supportsRunInTerminalRequest) {
+                    const termArgs = {
+                        kind: args.console === 'integratedTerminal' ? 'integrated' : 'external',
+                        title: localize(2, null),
+                        cwd,
+                        args: wslLaunchArgs.combined,
+                        env: envArgs
+                    };
+                    launchP = this.launchInTerminal(termArgs);
+                }
+                else if (!args.console || args.console === 'internalConsole') {
+                    launchP = this.launchInInternalConsole(wslLaunchArgs.executable, wslLaunchArgs.args, envArgs, cwd);
                 }
                 else {
-                    launchArgs.push(`--inspect-brk=${port}`);
+                    return Promise.reject(errors.unknownConsoleType(args.console));
                 }
-            }
-            launchArgs = runtimeArgs.concat(launchArgs, program ? [program] : [], programArgs);
-            const wslLaunchArgs = wsl.createLaunchArg(args.useWSL, args.console === 'externalTerminal', cwd, runtimeExecutable, launchArgs, program);
-            // if using subsystem for linux, we will trick the debugger to map source files
-            if (args.useWSL && !args.localRoot && !args.remoteRoot) {
-                this._pathTransformer.attach({
-                    remoteRoot: wslLaunchArgs.remoteRoot,
-                    localRoot: wslLaunchArgs.localRoot
+                return launchP
+                    .then(() => {
+                    return args.noDebug ?
+                        Promise.resolve() :
+                        this.doAttach(port, undefined, args.address, args.timeout, undefined, args.extraCRDPChannelPort);
                 });
-            }
-            const envArgs = this.collectEnvFileArgs(args) || args.env;
-            if ((args.console === 'integratedTerminal' || args.console === 'externalTerminal') && this._supportsRunInTerminalRequest) {
-                const termArgs = {
-                    kind: args.console === 'integratedTerminal' ? 'integrated' : 'external',
-                    title: localize(2, null),
-                    cwd,
-                    args: wslLaunchArgs.combined,
-                    env: envArgs
-                };
-                yield this.launchInTerminal(termArgs);
-                if (args.noDebug) {
-                    this.terminateSession('cannot track process');
-                }
-            }
-            else if (!args.console || args.console === 'internalConsole') {
-                yield this.launchInInternalConsole(wslLaunchArgs.executable, wslLaunchArgs.args, envArgs, cwd);
-            }
-            else {
-                throw errors.unknownConsoleType(args.console);
-            }
-            if (!args.noDebug) {
-                yield this.doAttach(port, undefined, args.address, args.timeout, undefined, args.extraCRDPChannelPort);
-            }
+            });
         });
-    }
-    extensionHostLaunch(args, runtimeExecutable, port) {
-        // we always launch in 'debug-brk' mode, but we only show the break event if 'stopOnEntry' attribute is true.
-        let launchArgs = [];
-        if (!args.noDebug) {
-            launchArgs.push(`--debugBrkPluginHost=${port}`);
-            // pass the debug session ID to the EH so that broadcast events know where they come from
-            if (args.__sessionId) {
-                launchArgs.push(`--debugId=${args.__sessionId}`);
-            }
-        }
-        const runtimeArgs = args.runtimeArgs || [];
-        const programArgs = args.args || [];
-        // if VS Code runs out of sources, add the path to the VS Code workspace as a first argument so that Electron turns into VS Code
-        const electronIdx = args.runtimeExecutable.indexOf(process.platform === 'win32' ? '\\.build\\electron\\' : '/.build/electron/');
-        if (electronIdx > 0 && programArgs.length > 0) {
-            // guess the VS Code workspace path
-            const vscodeWorkspacePath = args.runtimeExecutable.substr(0, electronIdx);
-            // only add path if user hasn't already added path
-            if (!programArgs[0].startsWith(vscodeWorkspacePath)) {
-                programArgs.unshift(vscodeWorkspacePath);
-            }
-        }
-        launchArgs = launchArgs.concat(runtimeArgs, programArgs);
-        const envArgs = this.collectEnvFileArgs(args) || args.env;
-        return this.launchInInternalConsole(runtimeExecutable, launchArgs, envArgs);
     }
     attach(args) {
         const _super = name => super[name];
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return _super("attach").call(this, args);
+                yield _super("attach").call(this, args);
             }
             catch (err) {
                 if (err.format && err.format.indexOf('Cannot connect to runtime process') >= 0) {
@@ -244,7 +222,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
     }
     hookConnectionEvents() {
         super.hookConnectionEvents();
-        this.chrome.Runtime.on('executionContextDestroyed', params => {
+        this.chrome.Runtime.onExecutionContextDestroyed(params => {
             if (params.executionContextId === 1) {
                 this.terminateSession('Program ended');
             }
@@ -256,7 +234,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
             yield _super("doAttach").call(this, port, targetUrl, address, timeout, websocketUrl, extraCRDPChannelPort);
             this.beginWaitingForDebuggerPaused();
             this.getNodeProcessDetailsIfNeeded();
-            this._session.sendEvent(new vscode_debugadapter_1.CapabilitiesEvent({ supportsStepBack: this.supportsStepBack() }));
+            return { supportsStepBack: this.supportsStepBack() };
         });
     }
     supportsStepBack() {
@@ -283,26 +261,6 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         const env = Object.assign({}, process.env, envArgs);
         Object.keys(env).filter(k => env[k] === null).forEach(key => delete env[key]);
         const spawnOpts = { cwd, env };
-        // Workaround for bug Microsoft/vscode#45832
-        if (process.platform === 'win32' && runtimeExecutable.indexOf(' ') > 0) {
-            let foundArgWithSpace = false;
-            // check whether there is one arg with a space
-            const args = [];
-            for (const a of args) {
-                if (a.indexOf(' ') > 0) {
-                    args.push(`"${a}"`);
-                    foundArgWithSpace = true;
-                }
-                else {
-                    args.push(a);
-                }
-            }
-            if (foundArgWithSpace) {
-                launchArgs = args;
-                runtimeExecutable = `"${runtimeExecutable}"`;
-                spawnOpts.shell = true;
-            }
-        }
         this.logLaunchCommand(runtimeExecutable, launchArgs);
         const nodeProcess = cp.spawn(runtimeExecutable, launchArgs, spawnOpts);
         return new Promise((resolve, reject) => {
@@ -316,22 +274,18 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
             nodeProcess.on('exit', () => {
                 const msg = 'Target exited';
                 vscode_chrome_debug_core_1.logger.log(msg);
-                if (!this.isExtensionHost()) {
-                    this.terminateSession(msg);
-                }
+                this.terminateSession(msg);
             });
             nodeProcess.on('close', (code) => {
                 const msg = 'Target closed';
                 vscode_chrome_debug_core_1.logger.log(msg);
-                if (!this.isExtensionHost()) {
-                    this.terminateSession(msg);
-                }
+                this.terminateSession(msg);
             });
             const noDebugMode = this._launchAttachArgs.noDebug;
             this.captureStderr(nodeProcess, noDebugMode);
             // Must attach a listener to stdout or process will hang on Windows
             nodeProcess.stdout.on('data', (data) => {
-                if ((noDebugMode || this._captureFromStd) && !this._launchAttachArgs._suppressConsoleOutput) {
+                if (noDebugMode || this._captureFromStd) {
                     let msg = data.toString();
                     this._session.sendEvent(new vscode_debugadapter_1.OutputEvent(msg, 'stdout'));
                 }
@@ -364,7 +318,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 const helpMsg = /For help see https:\/\/nodejs.org\/en\/docs\/inspector\s*/;
                 msg = msg.replace(helpMsg, '');
             }
-            if ((this._handlingEarlyNodeMsgs || noDebugMode || this._captureFromStd) && !this._launchAttachArgs._suppressConsoleOutput) {
+            if (this._handlingEarlyNodeMsgs || noDebugMode || this._captureFromStd) {
                 this._session.sendEvent(new vscode_debugadapter_1.OutputEvent(msg, 'stderr'));
             }
             if (isLastEarlyNodeMsg) {
@@ -393,7 +347,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                     const r = line.match(/^\s*([\w\.\-]+)\s*=\s*(.*)?\s*$/);
                     if (r !== null) {
                         const key = r[1];
-                        if (!process.env[key]) { // .env variables never overwrite existing variables (see #21169)
+                        if (!process.env[key]) {
                             let value = r[2] || '';
                             if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
                                 value = value.replace(/\\n/gm, '\n');
@@ -413,33 +367,26 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
      * Override so that -core's call on attach will be ignored, and we can wait until the first break when ready to set BPs.
      */
     sendInitializedEvent() {
-        const _super = name => super[name];
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this._waitingForEntryPauseEvent) {
-                return _super("sendInitializedEvent").call(this);
-            }
-        });
+        if (!this._waitingForEntryPauseEvent) {
+            super.sendInitializedEvent();
+        }
     }
     configurationDone() {
-        const _super = name => super[name];
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.chrome) {
-                // It's possible to get this request after we've detached, see #21973
-                return _super("configurationDone").call(this);
-            }
-            // This message means that all breakpoints have been set by the client. We should be paused at this point.
-            // So tell the target to continue, or tell the client that we paused, as needed
-            this._finishedConfig = true;
-            if (this._continueAfterConfigDone) {
-                this._expectingStopReason = undefined;
-                yield this.continue(/*internal=*/ true);
-            }
-            else if (this._entryPauseEvent) {
-                yield this.onPaused(this._entryPauseEvent);
-            }
-            this.events.emit(vscode_chrome_debug_core_1.ChromeDebugSession.FinishedStartingUpEventName, { requestedContentWasDetected: true });
-            yield _super("configurationDone").call(this);
-        });
+        if (!this.chrome) {
+            // It's possible to get this request after we've detached, see #21973
+            return super.configurationDone();
+        }
+        // This message means that all breakpoints have been set by the client. We should be paused at this point.
+        // So tell the target to continue, or tell the client that we paused, as needed
+        this._finishedConfig = true;
+        if (this._continueAfterConfigDone) {
+            this._expectingStopReason = undefined;
+            this.continue(/*internal=*/ true);
+        }
+        else if (this._entryPauseEvent) {
+            this.onPaused(this._entryPauseEvent);
+        }
+        return super.configurationDone();
     }
     killNodeProcess() {
         if (this._nodeProcessId && !this.normalAttachMode) {
@@ -452,13 +399,6 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
             }
             this._nodeProcessId = 0;
         }
-    }
-    terminate(args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.normalAttachMode && !this._launchAttachArgs.useWSL && this._nodeProcessId > 0) {
-                process.kill(this._nodeProcessId, 'SIGINT');
-            }
-        });
     }
     terminateSession(reason, args) {
         const _super = name => super[name];
@@ -484,16 +424,13 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 this._expectingStopReason = 'entry';
                 this._entryPauseEvent = notification;
                 this._waitingForEntryPauseEvent = false;
-                if ((this.normalAttachMode && this._launchAttachArgs.stopOnEntry !== false) ||
-                    (this.isExtensionHost() && this._launchAttachArgs.stopOnEntry)) {
-                    // In attach mode, and we did pause right away, so assume --debug-brk was set and we should show paused.
-                    // In normal attach mode, assume stopOnEntry unless explicitly disabled.
-                    // In extensionhost mode, only when stopOnEntry is explicitly enabled
+                if (this.normalAttachMode) {
+                    // In attach mode, and we did pause right away,
+                    // so assume --debug-brk was set and we should show paused
                     this._continueAfterConfigDone = false;
                 }
-                yield this.getNodeProcessDetailsIfNeeded();
-                yield this.sendInitializedEvent();
-                return { didPause: true };
+                return this.getNodeProcessDetailsIfNeeded()
+                    .then(() => this.sendInitializedEvent());
             }
             else {
                 return _super("onPaused").call(this, notification, expectingStopReason);
@@ -501,8 +438,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         });
     }
     resolveProgramPath(programPath, sourceMaps) {
-        return __awaiter(this, void 0, void 0, function* () {
-            vscode_chrome_debug_core_1.logger.verbose(`Launch: Resolving programPath: ${programPath}`);
+        return Promise.resolve().then(() => {
             if (!programPath) {
                 return programPath;
             }
@@ -514,33 +450,35 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 // programPath is the generated file or whether it is the source (and we need source mapping).
                 // Typically this happens if a tool like 'babel' or 'uglify' is used (because they both transpile js to js).
                 // We use the source maps to find a 'source' file for the given js file.
-                const generatedPath = yield this._sourceMapTransformer.getGeneratedPathFromAuthoredPath(programPath);
-                if (generatedPath && generatedPath !== programPath) {
-                    // programPath must be source because there seems to be a generated file for it
-                    vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the source; launch the generated file '${generatedPath}' instead`);
-                    programPath = generatedPath;
-                }
-                else {
-                    vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the generated file`);
-                }
-                return programPath;
+                return this._sourceMapTransformer.getGeneratedPathFromAuthoredPath(programPath).then(generatedPath => {
+                    if (generatedPath && generatedPath !== programPath) {
+                        // programPath must be source because there seems to be a generated file for it
+                        vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the source; launch the generated file '${generatedPath}' instead`);
+                        programPath = generatedPath;
+                    }
+                    else {
+                        vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the generated file`);
+                    }
+                    return programPath;
+                });
             }
             else {
                 // node cannot execute the program directly
                 if (!sourceMaps) {
                     return Promise.reject(errors.cannotLaunchBecauseSourceMaps(programPath));
                 }
-                const generatedPath = yield this._sourceMapTransformer.getGeneratedPathFromAuthoredPath(programPath);
-                if (!generatedPath) { // cannot find generated file
-                    if (this._launchAttachArgs.outFiles || this._launchAttachArgs.outDir) {
-                        return Promise.reject(errors.cannotLaunchBecauseJsNotFound(programPath));
+                return this._sourceMapTransformer.getGeneratedPathFromAuthoredPath(programPath).then(generatedPath => {
+                    if (!generatedPath) {
+                        if (this._launchAttachArgs.outFiles || this._launchAttachArgs.outDir) {
+                            return Promise.reject(errors.cannotLaunchBecauseJsNotFound(programPath));
+                        }
+                        else {
+                            return Promise.reject(errors.cannotLaunchBecauseOutFiles(programPath));
+                        }
                     }
-                    else {
-                        return Promise.reject(errors.cannotLaunchBecauseOutFiles(programPath));
-                    }
-                }
-                vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the source; launch the generated file '${generatedPath}' instead`);
-                return generatedPath;
+                    vscode_chrome_debug_core_1.logger.log(`Launch: program '${programPath}' seems to be the source; launch the generated file '${generatedPath}' instead`);
+                    return generatedPath;
+                });
             }
         });
     }
@@ -549,14 +487,8 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
      * During attach, we don't know whether it's paused when attaching.
      */
     beginWaitingForDebuggerPaused() {
-        const checkPausedInterval = 50;
-        const timeout = this._launchAttachArgs.timeout;
         // Wait longer in launch mode - it definitely should be paused.
-        let count = this._attachMode ?
-            10 :
-            (typeof timeout === 'number' ?
-                Math.floor(timeout / checkPausedInterval) :
-                100);
+        let count = this._attachMode ? 10 : 100;
         vscode_chrome_debug_core_1.logger.log(Date.now() / 1000 + ': Waiting for initial debugger pause');
         const id = setInterval(() => {
             if (this._entryPauseEvent || this._isTerminated) {
@@ -572,7 +504,7 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 this.getNodeProcessDetailsIfNeeded()
                     .then(() => this.sendInitializedEvent());
             }
-        }, checkPausedInterval);
+        }, 50);
     }
     threadName() {
         return `Node (${this._nodeProcessId})`;
@@ -581,33 +513,20 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
      * Override addBreakpoints, which is called by setBreakpoints to make the actual call to Chrome.
      */
     addBreakpoints(url, breakpoints) {
-        const _super = name => super[name];
-        return __awaiter(this, void 0, void 0, function* () {
-            const responses = yield _super("addBreakpoints").call(this, url, breakpoints);
+        return super.addBreakpoints(url, breakpoints).then(responses => {
             if (this._entryPauseEvent && !this._finishedConfig) {
                 const entryLocation = this._entryPauseEvent.callFrames[0].location;
-                const bpAtEntryLocationIdx = responses.findIndex(response => {
+                const bpAtEntryLocation = responses.some(response => {
                     // Don't compare column location, because you can have a bp at col 0, then break at some other column
                     return response && response.actualLocation && response.actualLocation.lineNumber === entryLocation.lineNumber &&
                         response.actualLocation.scriptId === entryLocation.scriptId;
                 });
-                const bpAtEntryLocation = bpAtEntryLocationIdx >= 0 && breakpoints[bpAtEntryLocationIdx];
                 if (bpAtEntryLocation) {
-                    let conditionPassed = true;
-                    if (bpAtEntryLocation.condition) {
-                        const evalConditionResponse = yield this.evaluateOnCallFrame(bpAtEntryLocation.condition, this._entryPauseEvent.callFrames[0]);
-                        conditionPassed = !evalConditionResponse.exceptionDetails && (!!evalConditionResponse.result.objectId || !!evalConditionResponse.result.value);
-                    }
-                    if (conditionPassed) {
-                        // There is some initial breakpoint being set to the location where we stopped on entry, so need to pause even if
-                        // the stopOnEntry flag is not set
-                        vscode_chrome_debug_core_1.logger.log('Got a breakpoint set in the entry location, so will stop even though stopOnEntry is not set');
-                        this._continueAfterConfigDone = false;
-                        this._expectingStopReason = 'breakpoint';
-                    }
-                    else {
-                        vscode_chrome_debug_core_1.logger.log('Breakpoint condition at entry location did not evaluate to truthy value');
-                    }
+                    // There is some initial breakpoint being set to the location where we stopped on entry, so need to pause even if
+                    // the stopOnEntry flag is not set
+                    vscode_chrome_debug_core_1.logger.log('Got a breakpoint set in the entry location, so will stop even though stopOnEntry is not set');
+                    this._continueAfterConfigDone = false;
+                    this._expectingStopReason = 'breakpoint';
                 }
             }
             return responses;
@@ -624,15 +543,10 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         });
     }
     getNodeProcessDetailsIfNeeded() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this._loggedTargetVersion || !this.chrome) {
-                return Promise.resolve();
-            }
-            const response = yield this.chrome.Runtime.evaluate({ expression: '[process.pid, process.version, process.arch]', returnByValue: true, contextId: 1 })
-                .catch(error => vscode_chrome_debug_core_1.logger.error('Error evaluating `process.pid`: ' + error.message));
-            if (!response) {
-                return;
-            }
+        if (this._loggedTargetVersion || !this.chrome) {
+            return Promise.resolve();
+        }
+        return this.chrome.Runtime.evaluate({ expression: '[process.pid, process.version, process.arch]', returnByValue: true, contextId: 1 }).then(response => {
             if (this._loggedTargetVersion) {
                 // Possible to get two of these requests going simultaneously
                 return;
@@ -657,20 +571,13 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
                 this._loggedTargetVersion = true;
                 vscode_chrome_debug_core_1.logger.log(`Target node version: ${version} ${arch}`);
                 /* __GDPR__
-                    "nodeVersion" : {
-                        "version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" },
-                        "${include}": [ "${DebugCommonProperties}" ]
-                    }
+                   "nodeVersion" : {
+                      "version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+                   }
                  */
                 telemetry.reportEvent('nodeVersion', { version });
-                /* __GDPR__FRAGMENT__
-                    "DebugCommonProperties" : {
-                        "Versions.Target.Version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-                    }
-                */
-                telemetry.addCustomGlobalProperty({ 'Versions.Target.Version': version });
             }
-        });
+        }, error => vscode_chrome_debug_core_1.logger.error('Error evaluating `process.pid`: ' + error.message));
     }
     startPollingForNodeTermination() {
         const intervalId = setInterval(() => {
@@ -714,11 +621,11 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
      * 'Path does not exist' error
      */
     getNotExistErrorResponse(attribute, path) {
-        return Promise.reject(new errors_1.ErrorWithMessage({
+        return Promise.reject({
             id: 2007,
             format: localize(3, null, attribute, '{path}'),
             variables: { path }
-        }));
+        });
     }
     /**
      * 'Path not absolute' error with 'More Information' link.
@@ -728,24 +635,24 @@ class NodeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         return this.getErrorResponseWithInfoLink(2008, format, { path }, 20003);
     }
     getRuntimeNotOnPathErrorResponse(runtime) {
-        return Promise.reject(new errors_1.ErrorWithMessage({
+        return Promise.reject({
             id: 2001,
             format: localize(5, null, '{_runtime}'),
             variables: { _runtime: runtime }
-        }));
+        });
     }
     /**
      * Send error response with 'More Information' link.
      */
     getErrorResponseWithInfoLink(code, format, variables, infoId) {
-        return Promise.reject(new errors_1.ErrorWithMessage({
+        return Promise.reject({
             id: code,
             format,
             variables,
             showUser: true,
             url: 'http://go.microsoft.com/fwlink/?linkID=534832#_' + infoId.toString(),
             urlLabel: localize(6, null)
-        }));
+        });
     }
     getReadonlyOrigin(aPath) {
         return path.isAbsolute(aPath) || aPath.startsWith(vscode_chrome_debug_core_1.ChromeDebugAdapter.EVAL_NAME_PREFIX) ?
@@ -835,13 +742,13 @@ var DebugArgs;
     DebugArgs[DebugArgs["InspectBrk"] = 0] = "InspectBrk";
     DebugArgs[DebugArgs["Inspect_DebugBrk"] = 1] = "Inspect_DebugBrk";
 })(DebugArgs = exports.DebugArgs || (exports.DebugArgs = {}));
-const defaultDebugArgs = DebugArgs.InspectBrk;
-function detectSupportedDebugArgsForLaunch(config, runtimeExecutable, env) {
-    if (config.__nodeVersion || (config.runtimeVersion && config.runtimeVersion !== 'default')) {
-        return getSupportedDebugArgsForVersion(config.__nodeVersion || config.runtimeVersion);
+const defaultDebugArgs = DebugArgs.Inspect_DebugBrk;
+function detectSupportedDebugArgsForLaunch(config) {
+    if (config.__nodeVersion) {
+        return getSupportedDebugArgsForVersion(config.__nodeVersion);
     }
     else if (config.runtimeExecutable) {
-        vscode_chrome_debug_core_1.logger.log('Using --inspect-brk because a runtimeExecutable is set');
+        vscode_chrome_debug_core_1.logger.log('Using --inspect --debug-brk because a runtimeExecutable is set');
         return defaultDebugArgs;
     }
     else {
@@ -849,7 +756,7 @@ function detectSupportedDebugArgsForLaunch(config, runtimeExecutable, env) {
         vscode_chrome_debug_core_1.logger.log('Spawning `node --version` to determine supported debug args');
         let result;
         try {
-            result = cp.spawnSync(runtimeExecutable, ['--version']);
+            result = cp.spawnSync('node', ['--version']);
         }
         catch (e) {
             vscode_chrome_debug_core_1.logger.error('Node version detection failed: ' + (e && e.message));
@@ -859,7 +766,7 @@ function detectSupportedDebugArgsForLaunch(config, runtimeExecutable, env) {
             return getSupportedDebugArgsForVersion(semVerString);
         }
         else {
-            vscode_chrome_debug_core_1.logger.log('Using --inspect-brk because we couldn\'t get a version from node');
+            vscode_chrome_debug_core_1.logger.log('Using --inspect --debug-brk because we couldn\'t get a version from node');
             return defaultDebugArgs;
         }
     }
