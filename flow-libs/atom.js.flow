@@ -223,6 +223,10 @@ declare class atom$Config {
 }
 
 declare class atom$Cursor {
+  // Cursor Marker
+  marker: atom$Marker;
+  editor: atom$TextEditor;
+
   // Event Subscription
   onDidChangePosition(
     callback: (event: {
@@ -242,6 +246,8 @@ declare class atom$Cursor {
 
   // Cursor Position Details
   // Moving the Cursor
+  moveUp(rowCount: number, {moveToEndOfSelection?: boolean}): void,
+  moveDown(rowCount: number, {moveToEndOfSelection?: boolean}): void,
 
   // Local Positions and Ranges
   getCurrentWordBufferRange(options?: {wordRegex: RegExp}): atom$Range,
@@ -337,6 +343,7 @@ declare class atom$Marker {
   isValid(): boolean,
   isDestroyed(): boolean,
   onDidDestroy(callback: () => mixed): IDisposable,
+  getScreenRange(): atom$Range,
   setBufferRange(
     range: atom$RangeLike,
     properties?: {reversed: boolean},
