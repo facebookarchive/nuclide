@@ -17,6 +17,7 @@ import type {
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 
@@ -25,6 +26,16 @@ function marksDiffer(
   rangeB: ScrollbarIndicatorMark,
 ): boolean {
   return rangeA.start === rangeB.start && rangeA.end === rangeB.end;
+}
+
+function getCursorPositions(
+  editor: atom$TextEditor,
+): Observable<Array<atom$Point>> {
+  return Observable.merge(
+    observableFromSubscribeFunction(cb => editor.onDidChangeCursorPosition(cb)),
+    observableFromSubscribeFunction(cb => editor.onDidAddCursor(cb)),
+    observableFromSubscribeFunction(cb => editor.onDidRemoveCursor(cb)),
+  ).map(() => editor.getCursorBufferPositions());
 }
 
 class Activation {
@@ -40,16 +51,12 @@ class Activation {
       )
         .mergeMap(editor => {
           return Observable.combineLatest(
-            observableFromSubscribeFunction(cb =>
-              editor.onDidChangeCursorPosition(cb),
-            )
-              .map(({newBufferPosition}) => {
-                return {
-                  start: newBufferPosition.row,
-                  end: newBufferPosition.row,
-                };
-              })
-              .distinctUntilChanged(marksDiffer),
+            getCursorPositions(editor)
+              .map(cursorPoints => cursorPoints.map(point => point.row))
+              .distinctUntilChanged(arrayEqual)
+              .map(rows => {
+                return new Set(rows.map(row => ({start: row, end: row})));
+              }),
             observableFromSubscribeFunction(cb =>
               editor.onDidChangeSelectionRange(cb),
             )
@@ -60,11 +67,11 @@ class Activation {
                 };
               })
               .distinctUntilChanged(marksDiffer),
-          ).map(([position, selection]) => {
+          ).map(([cursors, selection]) => {
             return {
               editor,
               markTypes: new Map([
-                ['CURSOR', new Set([position])],
+                ['CURSOR', cursors],
                 ['SELECTION', new Set([selection])],
               ]),
             };

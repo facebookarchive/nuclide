@@ -840,6 +840,8 @@ declare class atom$TextEditor extends atom$Model {
   onDidStopChanging(callback: () => mixed): IDisposable,
   onDidChangeCursorPosition(callback: (event: ChangeCursorPositionEvent) => mixed):
     IDisposable,
+  onDidAddCursor(callback: (cursor: atom$Cursor) => mixed): IDisposable;
+  onDidRemoveCursor(callback: (cursor: atom$Cursor) => mixed): IDisposable;
   onDidDestroy(callback: () => mixed): IDisposable,
   onDidSave(callback: (event: {path: string}) => mixed): IDisposable,
   getBuffer(): atom$TextBuffer,
