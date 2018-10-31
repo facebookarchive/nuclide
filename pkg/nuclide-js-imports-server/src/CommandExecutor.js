@@ -64,15 +64,13 @@ export class CommandExecutor {
     this.documents = documents;
   }
 
-  executeCommand(command: $Keys<typeof CommandExecutor.COMMANDS>, args: any) {
+  executeCommand(command: string, args: any) {
     switch (command) {
       case ADD_IMPORT_COMMAND_ID:
         return this._addImport((args: AddImportCommandParams));
-      // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
       case 'getAllImports':
         return this._getAllImports(args[0]);
       default:
-        (command: empty);
         throw new Error(`Unexpected command ${command}`);
     }
   }

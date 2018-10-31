@@ -154,13 +154,13 @@ function findUndefinedValues(
   globals: Set<string>,
 ) {
   const {node, scope} = path;
+  const type: string = path.parent.type;
   if (
     // Type Annotations are considered identifiers, so ignore them
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
-    isTypeIdentifier(path.parent.type) ||
+    isTypeIdentifier(type) ||
     // Other weird cases where we want to ignore identifiers
-    path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
-    (path.parent.type === 'QualifiedTypeIdentifier' &&
+    type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
+    (type === 'QualifiedTypeIdentifier' &&
       path.parentKey !== 'qualification') || // SomeModule.SomeType
     globals.has(node.name) ||
     scope.hasBinding(node.name)
@@ -243,23 +243,15 @@ function saveTypeParameters(path: Object, definedTypes: Set<string>) {
   definedTypes.add(path.node.name);
 }
 
-function isTypeIdentifier(node: Object) {
+function isTypeIdentifier(node: string) {
   return (
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'GenericTypeAnnotation' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'ObjectTypeIndexer' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'TypeAlias' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'FunctionTypeParam' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'ObjectTypeProperty' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'InterfaceDeclaration' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'DeclareClass' ||
-    // $FlowFixMe (>= v0.84.0) When a variable is equality-checked with a literal, the variable's type is refined.
     node === 'InterfaceExtends' ||
     node === 'ClassImplements'
   );
