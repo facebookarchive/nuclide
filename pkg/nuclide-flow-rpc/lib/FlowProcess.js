@@ -561,7 +561,7 @@ export class FlowProcess {
         .race(Observable.of(false).delay(SERVER_READY_TIMEOUT_MS))
         // If the stream is completed timeout will not return its default value and we will see an
         // EmptyError. So, provide a defaultValue here so the promise resolves.
-        .first(null, null, false)
+        .first(null, false)
         .toPromise()
     );
   }

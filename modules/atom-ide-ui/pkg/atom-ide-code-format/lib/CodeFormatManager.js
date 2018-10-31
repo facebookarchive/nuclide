@@ -259,7 +259,7 @@ export default class CodeFormatManager {
       const edits = preferFileEdits
         ? fileEdits.concat(rangeEdits)
         : rangeEdits.concat(fileEdits);
-      return edits.first(Boolean, x => x, []);
+      return edits.first(Boolean, []);
     });
   }
 
