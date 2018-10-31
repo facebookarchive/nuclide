@@ -353,12 +353,7 @@ export function lspCompletionItem_atomCompletion(
     snippet: useSnippet ? item.insertText || item.label : undefined,
     // flowlint-next-line sketchy-null-string:off
     text: useSnippet ? undefined : item.insertText || item.label,
-    // LSP: [nuclide-specific] itemType is return type of function
-    // Atom: it's convention to display return types in the left column
-    leftLabel: item.itemType,
-    // LSP: [nuclide-specific] inlineDetail is to be displayed next to label
-    // Atom: it's convention to display details like parameters to the right
-    rightLabel: item.inlineDetail,
+    rightLabel: item.detail,
     // LSP: kind indicates what icon should be used
     // ATOM: type is to indicate icon and its background color
     // ATOM: iconHTML can be used to override the icon
