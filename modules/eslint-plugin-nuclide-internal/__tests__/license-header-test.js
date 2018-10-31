@@ -42,6 +42,7 @@ const codeWithDirectives = `/**
  * @emails oncall+nuclide
  * @gk-enable test
  * @gk-disable test2
+ * @sitevars {"LOL": {"test": true}}
  * @format
  */
 

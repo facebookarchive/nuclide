@@ -31,4 +31,7 @@ module.exports = {
   ),
   testMatch: ['**/__e2e_tests__/**/*.js?(x)'],
   testPathIgnorePatterns: ['/node_modules/'],
+  // Make sure the process exits on sandcastle. Locally we don't want that,
+  // because we might want to debug nuclide while it's still running.
+  forceExit: isSandcastle ? true : false,
 };

@@ -83,6 +83,7 @@ const REGEXP_TO_IGNORE = [
   /^.*@(?:emails|transpile).*\n/gm,
   /^.*@gk-enable.*\n/gm,
   /^.*@gk-disable.*\n/gm,
+  /^.*@sitevars.*\n/gm,
 ];
 
 module.exports = function(context) {

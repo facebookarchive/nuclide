@@ -18,6 +18,7 @@ import {Observable} from 'rxjs';
 import {StreamTransport} from '../../nuclide-rpc';
 
 const PIPE_FD = 3;
+const NUCLIDE_E2E_TEST = 'NUCLIDE_E2E_TEST';
 
 export class IpcServerTransport {
   _transport: StreamTransport;
@@ -59,6 +60,17 @@ export class IpcClientTransport {
         ),
       )
       .switchMap(process => getOutputStream(process))
+      .do(message => {
+        if (process.env[NUCLIDE_E2E_TEST] != null) {
+          if (
+            message &&
+            (message.kind === 'stdout' || message.kind === 'stderr')
+          ) {
+            // eslint-disable-next-line no-console
+            console.log(`[IPC ${message.kind}]`, message.data);
+          }
+        }
+      })
       .subscribe({
         error: err => {
           this._handleError(err);

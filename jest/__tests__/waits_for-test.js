@@ -57,3 +57,13 @@ it('returns value from a promise', async () => {
   const value: string = await waitsForAsync(() => Promise.resolve(someVar));
   expect(value).toBe('hello');
 });
+
+test('stack trace points to the callsite, not the implementation', async () => {
+  const fail = () => waitsFor(() => false, 'yea', 1);
+  expect.assertions(1);
+  try {
+    await fail();
+  } catch (e) {
+    expect(e.stack).not.toMatch(/waits_for\.js/);
+  }
+});
