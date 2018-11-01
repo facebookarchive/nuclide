@@ -291,8 +291,10 @@ export class SshHandshake {
   _clientCertificate: Buffer;
   _clientKey: Buffer;
   _canceled: boolean;
+  _tunnelIfNotSecure: boolean;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
+    this._tunnelIfNotSecure = false;
     this._canceled = false;
     this._delegate = delegate;
     this._connection = new SshClient(
@@ -865,7 +867,7 @@ export class SshHandshake {
     await this._startRemoteServer(server);
 
     // Use an ssh tunnel if server is not secure
-    if (this._isSecure()) {
+    if (!this._tunnelIfNotSecure || this._isSecure()) {
       invariant(this._remoteHost != null);
       invariant(this._remoteFamily != null);
       return this._didConnect({
