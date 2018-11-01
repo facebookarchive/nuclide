@@ -30,6 +30,7 @@ export type ThemeColors = {
   syntaxCursorColor: string,
   syntaxGutterBackgroundColorSelected: string,
   syntaxTextColor: string,
+  backgroundColorInfo: string,
 };
 
 type ColorName = $Keys<ThemeColors>;
@@ -40,6 +41,7 @@ const COLOR_NAMES: Array<ColorName> = [
   'syntaxCursorColor',
   'syntaxGutterBackgroundColorSelected',
   'syntaxTextColor',
+  'backgroundColorInfo',
 ];
 
 export function getThemeChangeEvents(): Observable<null> {

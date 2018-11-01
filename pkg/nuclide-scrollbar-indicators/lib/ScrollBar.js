@@ -45,6 +45,9 @@ const SEARCH_RESULT_COLOR = '#ffdd00';
 const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
   scrollbarMarkTypes.SELECTION,
   scrollbarMarkTypes.CURSOR,
+  scrollbarMarkTypes.SOURCE_CONTROL_ADDITION,
+  scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL,
+  scrollbarMarkTypes.SOURCE_CONTROL_CHANGE,
   scrollbarMarkTypes.SEARCH_RESULT,
   scrollbarMarkTypes.DIAGNOSTIC_ERROR,
 ];
@@ -80,6 +83,10 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
         return this.props.colors.syntaxTextColor;
       case scrollbarMarkTypes.SEARCH_RESULT:
         return SEARCH_RESULT_COLOR;
+      case scrollbarMarkTypes.SOURCE_CONTROL_ADDITION:
+      case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
+      case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
+        return this.props.colors.backgroundColorInfo;
       default:
         throw new Error(`Invalid scroll indicator mark type: ${type}`);
     }

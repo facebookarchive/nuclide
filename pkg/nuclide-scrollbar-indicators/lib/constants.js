@@ -13,7 +13,10 @@ export type ScrollbarIndicatorMarkType =
   | 'SELECTION'
   | 'CURSOR'
   | 'DIAGNOSTIC_ERROR'
-  | 'SEARCH_RESULT';
+  | 'SEARCH_RESULT'
+  | 'SOURCE_CONTROL_ADDITION'
+  | 'SOURCE_CONTROL_REMOVAL'
+  | 'SOURCE_CONTROL_CHANGE';
 
 export const scrollbarMarkTypes: {
   [ScrollbarIndicatorMarkType]: ScrollbarIndicatorMarkType,
