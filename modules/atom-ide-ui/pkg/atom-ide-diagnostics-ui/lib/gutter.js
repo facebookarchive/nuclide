@@ -37,6 +37,7 @@ import {makeDatatipComponent} from './getDiagnosticDatatip.js';
 import {decorateTrackTimingSampled} from 'nuclide-commons/analytics';
 import processTimed from 'nuclide-commons/processTimed';
 import AbortController from 'nuclide-commons/AbortController';
+import {DefaultMap, DefaultWeakMap} from 'nuclide-commons/collection';
 
 /* eslint-env browser */
 
@@ -75,7 +76,7 @@ const GUTTER_CSS_GROUPS = {
   hidden: '',
 };
 
-type MarkerMap = Map<number, Set<atom$Marker>>;
+type MarkerMap = DefaultMap<number, Set<atom$Marker>>;
 type ProcessState = {
   diagnosticUpdater: DiagnosticUpdater,
   gutter: atom$Gutter,
@@ -92,7 +93,10 @@ const editorToAbortController: WeakMap<
   TextEditor,
   AbortController,
 > = new WeakMap();
-const editorToMarkers: WeakMap<TextEditor, MarkerMap> = new WeakMap();
+const editorToMarkers: DefaultWeakMap<
+  TextEditor,
+  MarkerMap,
+> = new DefaultWeakMap(() => new DefaultMap(() => new Set()));
 const editorToProcessState: WeakMap<TextEditor, ProcessState> = new WeakMap();
 const editorToGutterOpen: WeakMap<TextEditor, boolean> = new WeakMap();
 
@@ -167,23 +171,14 @@ function processChunk(editor: atom$TextEditor): boolean {
     lastEditorRow + 1,
   );
 
-  let markerMap = editorToMarkers.get(editor);
-  if (markerMap == null) {
-    markerMap = new Map();
-    editorToMarkers.set(editor, markerMap);
-  }
+  const markerMap = editorToMarkers.get(editor);
 
   // Remove all prior markers in this range
-  let rangeMarkers = markerMap.get(startingLine);
-  if (rangeMarkers) {
-    for (const marker of rangeMarkers) {
-      marker.destroy();
-    }
-    rangeMarkers.clear();
-  } else {
-    rangeMarkers = new Set();
-    markerMap.set(startingLine, rangeMarkers);
+  const rangeMarkers = markerMap.get(startingLine);
+  for (const marker of rangeMarkers) {
+    marker.destroy();
   }
+  rangeMarkers.clear();
 
   let nextRolloverMessage;
   const rowToMessage: Map<number, Array<DiagnosticMessage>> = new Map();
@@ -255,8 +250,8 @@ function processChunk(editor: atom$TextEditor): boolean {
   for (const marker of gutterMarkers) {
     rangeMarkers.add(marker);
     marker.onDidDestroy(() => {
-      if (rangeMarkers != null) {
-        rangeMarkers.delete(marker);
+      if (markerMap != null) {
+        removeFromMapAndCleanUp(markerMap, startingLine, marker);
       }
     });
   }
@@ -271,6 +266,11 @@ function processChunk(editor: atom$TextEditor): boolean {
       startingLine,
     }),
   );
+
+  // If we never created any markers, delete the set for this chunk from the map
+  if (rangeMarkers.size === 0) {
+    markerMap.delete(startingLine);
+  }
 
   if (endingLine >= lastEditorRow) {
     // We just finished processing the last line of the editor. Call `markDone` and
@@ -778,5 +778,23 @@ function showPopupFor(
         'diagnostics-message': message.text || message.html || '',
       });
     });
+  }
+}
+
+// Given a map whose values are sets, remove a member of that set. If that set
+// is now empty, remove it from the map.
+function removeFromMapAndCleanUp<T, U>(
+  map: Map<T, Set<U>>,
+  mapKey: T,
+  value: U,
+): void {
+  const set = map.get(mapKey);
+  if (set == null) {
+    return;
+  }
+
+  set.delete(value);
+  if (set.size === 0) {
+    map.delete(mapKey);
   }
 }
