@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import passesGK from 'nuclide-commons/passesGK';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -63,6 +64,7 @@ async function connectionToHackService(
 async function createLanguageService(): Promise<
   AtomLanguageService<LanguageService>,
 > {
+  const isStatusEnabled = await passesGK('nuclide_hack_status');
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
@@ -128,6 +130,17 @@ async function createLanguageService(): Promise<
       version: '0.2.0',
       analyticsEventName: 'hack.observe-diagnostics',
     },
+    status: isStatusEnabled
+      ? {
+          version: '0.1.0',
+          priority: 1,
+          observeEventName: 'hack.status.observe',
+          clickEventName: 'hack.status.click',
+          icon: 'nuclicon-hack',
+          description:
+            '__hh_server__ provides provides autocomplete, hyperclick, hover, errors and outline.',
+        }
+      : undefined,
   };
 
   return new AtomLanguageService(
