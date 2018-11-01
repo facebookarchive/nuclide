@@ -364,29 +364,29 @@
     lodash "^4.17.5"
     to-fast-properties "^2.0.0"
 
-"@jest-runner/core@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@jest-runner/core/-/core-0.0.12.tgz#ebae560ec5d91a86e24a181d7ca28beea759405c"
-  integrity sha512-F5ZGIynVedQrh0HEgr8vOHyvRKbj9Wdd2BRSHI308iY2AVV9NIXzUIB1eefQ1rNqYDopQqIgVJG/rrQsHgxaGQ==
+"@jest-runner/core@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@jest-runner/core/-/core-0.0.13.tgz#ee776a55d5682f62ff69aa29d501462353c9ef61"
+  integrity sha512-B7WGBLWyKp10MPLa1fZZCZwYapj9H4xn97uWMMf6h8XBga7o77XkVs8ZD1EzeYYX6R5qTIC2LzBdk3lITHnOlQ==
   dependencies:
     node-ipc "^9.1.1"
 
-"@jest-runner/nuclide-e2e@0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@jest-runner/nuclide-e2e/-/nuclide-e2e-0.0.12.tgz#1b63e919f396249cde47414aff1006939dcf05a7"
-  integrity sha512-kMq4doXL4El+MqLDCerH34yhmq6orQk0tcRqJISsdCn0YBNyL+Ce6xBW8ugoGOwoXIrg7YVw6cCTJYXLsACXBw==
+"@jest-runner/nuclide-e2e@0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@jest-runner/nuclide-e2e/-/nuclide-e2e-0.0.13.tgz#263c3b9119d9ba7e57dd9a4698e203000ea0b297"
+  integrity sha512-zy3qqocDnK6pZ/UzHl8vjYdO5Xe6M9Rvb4aLnPjbc8EOfi1cxvrn5BeOaw3vS4tb2NBki9at4LYagaEz0Vu0Dw==
   dependencies:
-    "@jest-runner/core" "^0.0.12"
-    "@jest-runner/rpc" "^0.0.12"
+    "@jest-runner/core" "^0.0.13"
+    "@jest-runner/rpc" "^0.0.13"
     fs-extra "^7.0.0"
     jest-circus "^23.5.0"
 
-"@jest-runner/rpc@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@jest-runner/rpc/-/rpc-0.0.12.tgz#c4663be4f464fa1c99f2b08b0c18d29f81117c75"
-  integrity sha512-uo8f9D9mbtoCn6QuOpDkTV6qsPOXhOkfXJaotpJp5K/v9UjX1ZYmki+VRdxOgzldkhdfeDQ9sAb32fZxjO+esg==
+"@jest-runner/rpc@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@jest-runner/rpc/-/rpc-0.0.13.tgz#29b4f3dcb0e1248195988af8fa6790878a1cca66"
+  integrity sha512-duPyuKZCaoQ/0spdpe6Nmo31PUVm13WxZChZeA6ZUIbZcHDB9sPBHyPlefArxFFHE4c+Ui3lXDqAv/g36yx44A==
   dependencies:
-    "@jest-runner/core" "^0.0.12"
+    "@jest-runner/core" "^0.0.13"
     glob "^7.1.3"
     jscodeshift "^0.5.1"
     prettier "^1.14.2"
