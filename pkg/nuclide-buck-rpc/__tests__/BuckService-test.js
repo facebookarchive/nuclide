@@ -59,7 +59,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           },
         },
         failures: {
-          '//:bad_rule': jasmine.any(String),
+          '//:bad_rule': expect.any(String),
         },
       };
       expect(report).toEqual(expectedReport);
