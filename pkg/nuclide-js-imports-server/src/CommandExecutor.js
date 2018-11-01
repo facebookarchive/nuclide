@@ -227,7 +227,14 @@ function insertIntoExistingImport(
   }
   for (const node of programBody) {
     const jsImport = getJSImport(node);
-    if (jsImport == null || jsImport.importPath !== importPath) {
+    if (jsImport == null) {
+      continue;
+    }
+    const isTypeImport = jsImport.type === 'importType';
+    if (
+      jsImport.importPath !== importPath ||
+      isTypeImport !== missingImport.isTypeExport
+    ) {
       continue;
     }
     if (jsImport.type === 'require') {
@@ -237,11 +244,8 @@ function insertIntoExistingImport(
         return positionAfterNode(node, properties[properties.length - 1]);
       }
     } else {
-      const isTypeImport = jsImport.type === 'importType';
-      if (isTypeImport === missingImport.isTypeExport) {
-        const {specifiers} = node;
-        return positionAfterNode(node, specifiers[specifiers.length - 1]);
-      }
+      const {specifiers} = node;
+      return positionAfterNode(node, specifiers[specifiers.length - 1]);
     }
   }
 }

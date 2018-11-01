@@ -257,6 +257,7 @@ import type {x} from 'def';
 import {x} from 'abc';
 
 const z = require('xyz');
+const {w} = require('ghi');
 `;
 
     const importFormatter = new ImportFormatter(['node_modules'], true);
@@ -290,6 +291,20 @@ const z = require('xyz');
       {
         range: {start: {line: 4, character: 0}, end: {line: 4, character: 0}},
         newText: "import {test} from 'def';\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', 'node_modules/ghi', true),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 2, character: 0}, end: {line: 2, character: 0}},
+        newText: "import type {test} from 'ghi';\n",
       },
     ]);
   });
