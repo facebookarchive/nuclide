@@ -19,7 +19,7 @@ const isSandcastle = !!process.env.SANDCASTLE;
 module.exports = {
   displayName: 'e2e',
   reporters: [
-    ...(isSandcastle ? [p('jest/fb-e2e/screen_recording_reporter.js')] : []),
+    ...(isSandcastle ? [p('jest/fb-e2e/diagnostics_reporter.js')] : []),
     ...require('./reporters.config'),
   ],
   rootDir: p(''),
