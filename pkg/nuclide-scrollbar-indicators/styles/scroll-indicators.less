@@ -34,7 +34,9 @@
 }
 
 @thumb-color: fadeout(@syntax-gutter-background-color-selected, 0%, 'relative');
-@scrollbar-width: 14px;
+// Note: This should ideally be a multiple of three since we display indicators
+// in three columns.
+@scrollbar-width: 15px;
 
 .scroll-marker-view {
   position: absolute;

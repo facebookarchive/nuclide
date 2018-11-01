@@ -50,12 +50,12 @@ const DIAGNOSTIC_ERROR_COLOR = '#ff0000';
 const SEARCH_RESULT_COLOR = '#ffdd00';
 const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
   scrollbarMarkTypes.SELECTION,
-  scrollbarMarkTypes.CURSOR,
   scrollbarMarkTypes.SOURCE_CONTROL_ADDITION,
   scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL,
   scrollbarMarkTypes.SOURCE_CONTROL_CHANGE,
   scrollbarMarkTypes.SEARCH_RESULT,
   scrollbarMarkTypes.DIAGNOSTIC_ERROR,
+  scrollbarMarkTypes.CURSOR,
 ];
 
 export default class ScrollBar extends React.PureComponent<Props, State> {
@@ -80,20 +80,25 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
   }
 
   _getMarkStyleForType(type: ScrollbarIndicatorMarkType): MarkStyle {
-    const fullWidth = {width: this._context.canvas.width, offset: 0};
+    const canvasWidth = this._context.canvas.width;
+    const oneThird = canvasWidth / 3;
+    const left = {width: canvasWidth, offset: 0};
+    const middle = {width: oneThird, offset: oneThird};
+    const right = {width: oneThird, offset: oneThird * 2};
+    const full = {width: canvasWidth, offset: 0};
     switch (type) {
       case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
-        return {...fullWidth, color: DIAGNOSTIC_ERROR_COLOR};
+        return {...right, color: DIAGNOSTIC_ERROR_COLOR};
       case scrollbarMarkTypes.SELECTION:
-        return {...fullWidth, color: this.props.colors.syntaxSelectionColor};
+        return {...middle, color: this.props.colors.syntaxSelectionColor};
       case scrollbarMarkTypes.CURSOR:
-        return {...fullWidth, color: this.props.colors.syntaxTextColor};
+        return {...full, color: this.props.colors.syntaxTextColor};
       case scrollbarMarkTypes.SEARCH_RESULT:
-        return {...fullWidth, color: SEARCH_RESULT_COLOR};
+        return {...middle, color: SEARCH_RESULT_COLOR};
       case scrollbarMarkTypes.SOURCE_CONTROL_ADDITION:
       case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
       case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
-        return {...fullWidth, color: this.props.colors.backgroundColorInfo};
+        return {...left, color: this.props.colors.backgroundColorInfo};
       default:
         throw new Error(`Invalid scroll indicator mark type: ${type}`);
     }
