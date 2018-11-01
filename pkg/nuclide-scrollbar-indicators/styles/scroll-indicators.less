@@ -29,17 +29,18 @@
   background-color: @syntax-text-color;
 }
 
-
+@thumb-color: fadeout(@syntax-gutter-background-color-selected, 0%, 'relative');
+@scrollbar-width: 14px;
 
 .scroll-marker-view {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 13px;
+  width: @scrollbar-width;
   z-index: 4;
   pointer-events: none;
-  border-left: 1px solid @syntax-wrap-guide-color;
+  background-color: fadeout(@thumb-color, 70%, 'relative');
   canvas {
     width: 100%;
     height: 100%;
@@ -47,10 +48,10 @@
 }
 
 atom-text-editor:not(.nuclide-wrapped-editor) .vertical-scrollbar::-webkit-scrollbar {
-  width: 12px;
+  width: @scrollbar-width;
 
   &-thumb:vertical {
-    background-color: fade(@syntax-gutter-background-color-selected, 60%);
+    background-color: @thumb-color;
     z-index: 5;
   }
 

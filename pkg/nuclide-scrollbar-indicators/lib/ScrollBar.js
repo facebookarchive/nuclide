@@ -75,7 +75,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
         return DIAGNOSTIC_ERROR_COLOR;
       case scrollbarMarkTypes.SELECTION:
-        return this.props.colors.syntaxGutterBackgroundColorSelected;
+        return this.props.colors.syntaxSelectionColor;
       case scrollbarMarkTypes.CURSOR:
         return this.props.colors.syntaxTextColor;
       case scrollbarMarkTypes.SEARCH_RESULT:
