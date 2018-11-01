@@ -36,9 +36,7 @@ function getHgRepositoryForAtomRepo(
 
 export function getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
   const repository = repositoryForPath(filePath);
-  if (repository == null) {
-    return getHgRepositoryForAtomRepo(repository);
-  }
+  return getHgRepositoryForAtomRepo(repository);
 }
 
 export function getHgRepositoryForNode(
