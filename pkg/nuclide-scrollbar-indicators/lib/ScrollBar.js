@@ -37,6 +37,12 @@ type State = {
   width: ?number,
 };
 
+type MarkStyle = {
+  width: number,
+  offset: number,
+  color: string,
+};
+
 const SCALE = window.devicePixelRatio;
 const MIN_PIXEL_HEIGHT = SCALE * 2;
 
@@ -73,20 +79,21 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
     this._drawToCanvas();
   }
 
-  _getColorForType(type: ScrollbarIndicatorMarkType): string {
+  _getMarkStyleForType(type: ScrollbarIndicatorMarkType): MarkStyle {
+    const fullWidth = {width: this._context.canvas.width, offset: 0};
     switch (type) {
       case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
-        return DIAGNOSTIC_ERROR_COLOR;
+        return {...fullWidth, color: DIAGNOSTIC_ERROR_COLOR};
       case scrollbarMarkTypes.SELECTION:
-        return this.props.colors.syntaxSelectionColor;
+        return {...fullWidth, color: this.props.colors.syntaxSelectionColor};
       case scrollbarMarkTypes.CURSOR:
-        return this.props.colors.syntaxTextColor;
+        return {...fullWidth, color: this.props.colors.syntaxTextColor};
       case scrollbarMarkTypes.SEARCH_RESULT:
-        return SEARCH_RESULT_COLOR;
+        return {...fullWidth, color: SEARCH_RESULT_COLOR};
       case scrollbarMarkTypes.SOURCE_CONTROL_ADDITION:
       case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
       case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
-        return this.props.colors.backgroundColorInfo;
+        return {...fullWidth, color: this.props.colors.backgroundColorInfo};
       default:
         throw new Error(`Invalid scroll indicator mark type: ${type}`);
     }
@@ -113,8 +120,9 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       if (typeMarks == null) {
         return;
       }
+      const markStyle = this._getMarkStyleForType(type);
+      this._context.fillStyle = markStyle.color;
       typeMarks.forEach((marks, provider) => {
-        this._context.fillStyle = this._getColorForType(type);
         marks.forEach(mark => {
           const screenStart = editor.screenPositionForBufferPosition([
             mark.start,
@@ -137,7 +145,12 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
             lineHeight === 1 ? MIN_PIXEL_HEIGHT : rangeHeight;
           const positionPercent = screenStart / screenLineCount;
           const pixelPosition = Math.floor(height * positionPercent);
-          this._context.fillRect(0, pixelPosition, width, markPixelHeight);
+          this._context.fillRect(
+            markStyle.offset,
+            pixelPosition,
+            markStyle.width,
+            markPixelHeight,
+          );
         });
       });
     });
