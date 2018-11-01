@@ -31,4 +31,5 @@ module.exports = {
   },
   testPathIgnorePatterns: ['/node_modules/'],
   reporters: require('./reporters.config'),
+  forceExit: true,
 };
