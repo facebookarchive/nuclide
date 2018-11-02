@@ -1,3 +1,27 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _CodeActionManager() {
+  const data = require("./CodeActionManager");
+
+  _CodeActionManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,43 +30,34 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {CodeActionManager} from './CodeActionManager';
-
-import type {RegisterIndieLinter} from '../../../index';
-import type {CodeActionProvider, CodeActionFetcher} from './types';
-import type {DiagnosticUpdater} from '../../atom-ide-diagnostics/lib/types';
-
 class Activation {
-  _codeActionManager: CodeActionManager;
-
   constructor() {
-    this._codeActionManager = new CodeActionManager();
+    this._codeActionManager = new (_CodeActionManager().CodeActionManager)();
   }
 
   dispose() {
     this._codeActionManager.dispose();
   }
 
-  consumeCodeActionProvider(provider: CodeActionProvider) {
+  consumeCodeActionProvider(provider) {
     return this._codeActionManager.addProvider(provider);
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater) {
+  consumeDiagnosticUpdates(diagnosticUpdater) {
     return this._codeActionManager.consumeDiagnosticUpdates(diagnosticUpdater);
   }
 
-  provideCodeActionFetcher(): CodeActionFetcher {
+  provideCodeActionFetcher() {
     return this._codeActionManager.createCodeActionFetcher();
   }
 
-  consumeIndie(register: RegisterIndieLinter) {
+  consumeIndie(register) {
     return this._codeActionManager.consumeIndie(register);
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

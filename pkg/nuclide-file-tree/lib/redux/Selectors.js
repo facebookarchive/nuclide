@@ -1,485 +1,488 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
-import type {FileChangeStatusValue} from '../../../nuclide-vcs-base';
-// $FlowFixMe(>=0.53.0) Flow suppress
-import type React from 'react';
-import type {FileTreeNode} from '../FileTreeNode';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
-import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
-import type {
-  AppState,
-  ExportStoreData,
-  FileTreeContextMenuNode,
-  Roots,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.findNext = findNext;
+exports.findNextShownSibling = findNextShownSibling;
+exports.findPrevious = findPrevious;
+exports.findPrevShownSibling = findPrevShownSibling;
+exports.findLastRecursiveChild = findLastRecursiveChild;
+exports.collectDebugState = exports.getCanTransferFiles = exports.collectSelectionDebugState = exports.serialize = exports.getFileTreeContextMenuNode = exports.getVcsStatus = exports.getSidebarPath = exports.getFocusEditorOnFileSelection = exports.getUsePreviewTabs = exports.getSidebarTitle = exports.getNodeIsFocused = exports.getNodeIsSelected = exports.getLoading = exports.getNodeByIndex = exports.getFilterFound = exports.isEditedWorkingSetEmpty = exports.getNodeForPath = exports.getRootForPath = exports.getNode = exports.getNearbySelectedNode = exports.getSingleTargetNode = exports.getSingleSelectedNode = exports.getTargetNodes = exports.getFocusedNodes = exports.getNodeInRoots = exports.getSelectedNodes = exports.isEmpty = exports.getRootKeys = exports.getTrackedIndex = exports.getVisualIndex = exports.countShownNodes = exports.getShownChildrenCount = exports.getNodeContainsHidden = exports.getNodeContainsFilterMatches = exports.getNodeContainsDragHover = exports.getNodeChildrenAreLoading = exports.getTrackedNode = exports.getOpenFilesWorkingSet = exports.getEditedWorkingSet = exports.isEditingWorkingSet = exports.getWorkingSet = exports.hasCwd = exports.getCwdApi = exports.usePrefixNav = exports.getIsCalculatingChanges = exports.getGeneratedOpenChangedFiles = exports.getFileChanges = exports.getCwdKey = exports.getRepositories = exports.getWorkingSetsStore = exports.getExtraProjectSelectionContent = exports.getFilter = exports.getVersion = exports.getRoots = exports.getOpenFilesExpanded = exports.getUncommittedChangesExpanded = exports.getFoldersExpanded = exports.getConf = exports.getAutoExpandSingleChild = void 0;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
-import {WorkingSet} from '../../../nuclide-working-sets-common';
-import * as Immutable from 'immutable';
-import {memoize} from 'lodash';
-import {createSelector} from 'reselect';
+function _memoize2() {
+  const data = _interopRequireDefault(require("lodash/memoize"));
+
+  _memoize2 = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../../../modules/nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _hgConstants() {
+  const data = require("../../../nuclide-hg-rpc/lib/hg-constants");
+
+  _hgConstants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideWorkingSetsCommon() {
+  const data = require("../../../nuclide-working-sets-common");
+
+  _nuclideWorkingSetsCommon = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function Immutable() {
+  const data = _interopRequireWildcard(require("immutable"));
+
+  Immutable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _reselect() {
+  const data = require("reselect");
+
+  _reselect = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //
 //
 // Simple selectors. These just read directly from state.
 //
 //
+const getAutoExpandSingleChild = state => state._autoExpandSingleChild;
 
-export const getAutoExpandSingleChild = (state: AppState) =>
-  state._autoExpandSingleChild;
+exports.getAutoExpandSingleChild = getAutoExpandSingleChild;
 
-export const getConf = (state: AppState) => state._conf;
+const getConf = state => state._conf;
 
-export const getFoldersExpanded = (state: AppState) => {
+exports.getConf = getConf;
+
+const getFoldersExpanded = state => {
   return state._foldersExpanded;
 };
 
-export const getUncommittedChangesExpanded = (state: AppState) => {
+exports.getFoldersExpanded = getFoldersExpanded;
+
+const getUncommittedChangesExpanded = state => {
   return state._uncommittedChangesExpanded;
 };
 
-export const getOpenFilesExpanded = (state: AppState) => {
+exports.getUncommittedChangesExpanded = getUncommittedChangesExpanded;
+
+const getOpenFilesExpanded = state => {
   return state._openFilesExpanded;
 };
 
-export const getRoots = (state: AppState) => {
+exports.getOpenFilesExpanded = getOpenFilesExpanded;
+
+const getRoots = state => {
   return state._roots;
 };
 
-export const getVersion = (state: AppState) => state.VERSION;
+exports.getRoots = getRoots;
 
-export const getFilter = (state: AppState): string => state._filter;
+const getVersion = state => state.VERSION;
 
-export const getExtraProjectSelectionContent = (
-  state: AppState,
-): Immutable.List<React.Element<any>> => state._extraProjectSelectionContent;
+exports.getVersion = getVersion;
 
-const getReorderPreviewStatus = (state: AppState) =>
-  state._reorderPreviewStatus;
+const getFilter = state => state._filter;
 
-const getSelectionRange = (state: AppState) => state._selectionRange;
+exports.getFilter = getFilter;
 
-const getTrackedRootKey = (state: AppState) => state._trackedRootKey;
+const getExtraProjectSelectionContent = state => state._extraProjectSelectionContent;
 
-const getTrackedNodeKey = (state: AppState) => state._trackedNodeKey;
+exports.getExtraProjectSelectionContent = getExtraProjectSelectionContent;
 
-export const getWorkingSetsStore = (state: AppState): ?WorkingSetsStore =>
-  state._workingSetsStore;
+const getReorderPreviewStatus = state => state._reorderPreviewStatus;
 
-export const getRepositories = (
-  state: AppState,
-): Immutable.Set<atom$Repository> => state._repositories;
+const getSelectionRange = state => state._selectionRange;
 
-export const getCwdKey = (state: AppState): ?NuclideUri => state._cwdKey;
+const getTrackedRootKey = state => state._trackedRootKey;
 
-export const getFileChanges = (
-  state: AppState,
-): Immutable.Map<
-  NuclideUri,
-  Immutable.Map<NuclideUri, FileChangeStatusValue>,
-> => state._fileChanges;
+const getTrackedNodeKey = state => state._trackedNodeKey;
 
-export const getGeneratedOpenChangedFiles = (
-  state: AppState,
-): Immutable.Map<NuclideUri, GeneratedFileType> =>
-  state._generatedOpenChangedFiles;
+const getWorkingSetsStore = state => state._workingSetsStore;
 
-export const getIsCalculatingChanges = (state: AppState): boolean =>
-  state._isCalculatingChanges;
+exports.getWorkingSetsStore = getWorkingSetsStore;
 
-export const usePrefixNav = (state: AppState): boolean => state._usePrefixNav;
+const getRepositories = state => state._repositories;
 
-const getSelectedUris = (state: AppState) => state._selectedUris;
+exports.getRepositories = getRepositories;
 
-const getFocusedUris = (state: AppState) => state._focusedUris;
+const getCwdKey = state => state._cwdKey;
 
-const getTargetNodeKeys = (state: AppState) => state._targetNodeKeys;
+exports.getCwdKey = getCwdKey;
 
-export const getCwdApi = (state: AppState) => state._cwdApi;
+const getFileChanges = state => state._fileChanges;
 
-export const hasCwd = createSelector([getCwdKey], cwdKey => cwdKey != null);
+exports.getFileChanges = getFileChanges;
 
-//
+const getGeneratedOpenChangedFiles = state => state._generatedOpenChangedFiles;
+
+exports.getGeneratedOpenChangedFiles = getGeneratedOpenChangedFiles;
+
+const getIsCalculatingChanges = state => state._isCalculatingChanges;
+
+exports.getIsCalculatingChanges = getIsCalculatingChanges;
+
+const usePrefixNav = state => state._usePrefixNav;
+
+exports.usePrefixNav = usePrefixNav;
+
+const getSelectedUris = state => state._selectedUris;
+
+const getFocusedUris = state => state._focusedUris;
+
+const getTargetNodeKeys = state => state._targetNodeKeys;
+
+const getCwdApi = state => state._cwdApi;
+
+exports.getCwdApi = getCwdApi;
+const hasCwd = (0, _reselect().createSelector)([getCwdKey], cwdKey => cwdKey != null); //
 //
 // Conf selectors
 //
 //
 
-export const getWorkingSet = createSelector(
-  [getConf],
-  (conf): WorkingSet => conf.workingSet,
-);
+exports.hasCwd = hasCwd;
+const getWorkingSet = (0, _reselect().createSelector)([getConf], conf => conf.workingSet);
+exports.getWorkingSet = getWorkingSet;
+const isEditingWorkingSet = (0, _reselect().createSelector)([getConf], conf => conf.isEditingWorkingSet);
+exports.isEditingWorkingSet = isEditingWorkingSet;
 
-export const isEditingWorkingSet = createSelector(
-  [getConf],
-  conf => conf.isEditingWorkingSet,
-);
-
-const getVcsStatuses = (state: AppState) => state.vcsStatuses;
-
+const getVcsStatuses = state => state.vcsStatuses;
 /**
  * Builds the edited working set from the partially-child-derived .checkedStatus property
  */
-export const getEditedWorkingSet = createSelector(
-  [getConf],
-  conf => conf.editedWorkingSet,
-);
 
-export const getOpenFilesWorkingSet = createSelector(
-  [getConf],
-  conf => conf.openFilesWorkingSet,
-);
 
-//
+const getEditedWorkingSet = (0, _reselect().createSelector)([getConf], conf => conf.editedWorkingSet);
+exports.getEditedWorkingSet = getEditedWorkingSet;
+const getOpenFilesWorkingSet = (0, _reselect().createSelector)([getConf], conf => conf.openFilesWorkingSet); //
 //
 // Tree selectors. These tell us about the state of the directory tree.
 //
 //
 
-export const getTrackedNode = (state: AppState): ?FileTreeNode => {
+exports.getOpenFilesWorkingSet = getOpenFilesWorkingSet;
+
+const getTrackedNode = state => {
   if (state._trackedRootKey == null || state._trackedNodeKey == null) {
     return null;
   }
 
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
-};
-
-// To reduce the number of times we have to iterate over children, we calculate all of these values
+}; // To reduce the number of times we have to iterate over children, we calculate all of these values
 // in a single pass.
-const getChildDerivedValues = createSelector(
-  [(state: AppState) => null],
-  () => {
-    const inner = memoize((node: FileTreeNode) => {
-      let childrenAreLoading = node.isLoading;
-      let containsDragHover = node.isDragHovered;
-      let containsFilterMatches = node.matchesFilter;
-      let containsHidden = !node.shouldBeShown;
-      let potentiallyShownChildrenCount = 0;
 
-      node.children.forEach(child => {
-        const childValues = inner(child);
 
-        if (childValues.childrenAreLoading) {
-          childrenAreLoading = true;
-        }
+exports.getTrackedNode = getTrackedNode;
+const getChildDerivedValues = (0, _reselect().createSelector)([state => null], () => {
+  const inner = (0, _memoize2().default)(node => {
+    let childrenAreLoading = node.isLoading;
+    let containsDragHover = node.isDragHovered;
+    let containsFilterMatches = node.matchesFilter;
+    let containsHidden = !node.shouldBeShown;
+    let potentiallyShownChildrenCount = 0;
+    node.children.forEach(child => {
+      const childValues = inner(child);
 
-        if (childValues.containsDragHover) {
-          containsDragHover = true;
-        }
-
-        if (childValues.containsFilterMatches) {
-          containsFilterMatches = true;
-        }
-
-        if (!containsHidden && childValues.containsHidden) {
-          containsHidden = true;
-        }
-
-        if (node.isExpanded) {
-          potentiallyShownChildrenCount += childValues.shownChildrenCount;
-        }
-      });
-
-      let shownChildrenCount;
-      if (!node.shouldBeShown) {
-        shownChildrenCount = 0; // No nodes are shown.
-      } else if (node.isPendingLoad && childrenAreLoading) {
-        shownChildrenCount = 1; // Only this node is shown.
-      } else {
-        shownChildrenCount = potentiallyShownChildrenCount + 1; // This node and its children are shown.
+      if (childValues.childrenAreLoading) {
+        childrenAreLoading = true;
       }
 
-      return {
-        childrenAreLoading,
-        containsDragHover,
-        containsFilterMatches,
-        containsHidden,
-        shownChildrenCount,
-      };
+      if (childValues.containsDragHover) {
+        containsDragHover = true;
+      }
+
+      if (childValues.containsFilterMatches) {
+        containsFilterMatches = true;
+      }
+
+      if (!containsHidden && childValues.containsHidden) {
+        containsHidden = true;
+      }
+
+      if (node.isExpanded) {
+        potentiallyShownChildrenCount += childValues.shownChildrenCount;
+      }
     });
-    return inner;
-  },
-);
+    let shownChildrenCount;
 
-export const getNodeChildrenAreLoading = createSelector(
-  [getChildDerivedValues],
-  getChildDerivedValues_ => node =>
-    getChildDerivedValues_(node).childrenAreLoading,
-);
+    if (!node.shouldBeShown) {
+      shownChildrenCount = 0; // No nodes are shown.
+    } else if (node.isPendingLoad && childrenAreLoading) {
+      shownChildrenCount = 1; // Only this node is shown.
+    } else {
+      shownChildrenCount = potentiallyShownChildrenCount + 1; // This node and its children are shown.
+    }
 
-export const getNodeContainsDragHover = createSelector(
-  [getChildDerivedValues],
-  getChildDerivedValues_ => node =>
-    getChildDerivedValues_(node).containsDragHover,
-);
+    return {
+      childrenAreLoading,
+      containsDragHover,
+      containsFilterMatches,
+      containsHidden,
+      shownChildrenCount
+    };
+  });
+  return inner;
+});
+const getNodeChildrenAreLoading = (0, _reselect().createSelector)([getChildDerivedValues], getChildDerivedValues_ => node => getChildDerivedValues_(node).childrenAreLoading);
+exports.getNodeChildrenAreLoading = getNodeChildrenAreLoading;
+const getNodeContainsDragHover = (0, _reselect().createSelector)([getChildDerivedValues], getChildDerivedValues_ => node => getChildDerivedValues_(node).containsDragHover);
+exports.getNodeContainsDragHover = getNodeContainsDragHover;
+const getNodeContainsFilterMatches = (0, _reselect().createSelector)([getChildDerivedValues], getChildDerivedValues_ => node => getChildDerivedValues_(node).containsFilterMatches);
+exports.getNodeContainsFilterMatches = getNodeContainsFilterMatches;
+const getNodeContainsHidden = (0, _reselect().createSelector)([getChildDerivedValues], getChildDerivedValues_ => node => getChildDerivedValues_(node).containsHidden);
+exports.getNodeContainsHidden = getNodeContainsHidden;
+const getShownChildrenCount = (0, _reselect().createSelector)([getChildDerivedValues], getChildDerivedValues_ => node => getChildDerivedValues_(node).shownChildrenCount);
+exports.getShownChildrenCount = getShownChildrenCount;
+const countShownNodes = (0, _reselect().createSelector)([getRoots, getShownChildrenCount], (roots, getShownChildrenCount_) => {
+  return roots.reduce((sum, root) => sum + getShownChildrenCount_(root), 0);
+}); // FIXME: This is under-memoized. We need to use createSelector and only change when the deps do.
 
-export const getNodeContainsFilterMatches = createSelector(
-  [getChildDerivedValues],
-  getChildDerivedValues_ => node =>
-    getChildDerivedValues_(node).containsFilterMatches,
-);
+exports.countShownNodes = countShownNodes;
 
-export const getNodeContainsHidden = createSelector(
-  [getChildDerivedValues],
-  getChildDerivedValues_ => node => getChildDerivedValues_(node).containsHidden,
-);
-
-export const getShownChildrenCount = createSelector(
-  [getChildDerivedValues],
-  getChildDerivedValues_ => node =>
-    getChildDerivedValues_(node).shownChildrenCount,
-);
-
-export const countShownNodes = createSelector(
-  [getRoots, getShownChildrenCount],
-  (roots, getShownChildrenCount_) => {
-    return roots.reduce((sum, root) => sum + getShownChildrenCount_(root), 0);
-  },
-);
-
-// FIXME: This is under-memoized. We need to use createSelector and only change when the deps do.
-export const getVisualIndex = (
-  state: AppState,
-): ((node: FileTreeNode) => number) => {
-  return (node: FileTreeNode) => {
+const getVisualIndex = state => {
+  return node => {
     let index = node.shouldBeShown ? 1 : 0;
     let prev = findPrevShownSibling(state)(node);
+
     while (prev != null) {
       index += getShownChildrenCount(state)(prev);
       prev = findPrevShownSibling(state)(prev);
     }
-    return (
-      index + (node.parent == null ? 0 : getVisualIndex(state)(node.parent))
-    );
+
+    return index + (node.parent == null ? 0 : getVisualIndex(state)(node.parent));
   };
 };
 
-const getVisualIndexOfTrackedNode = createSelector(
-  [getTrackedNode, getVisualIndex],
-  (trackedNode, getVisualIndex_) =>
-    trackedNode == null ? null : getVisualIndex_(trackedNode),
-);
+exports.getVisualIndex = getVisualIndex;
+const getVisualIndexOfTrackedNode = (0, _reselect().createSelector)([getTrackedNode, getVisualIndex], (trackedNode, getVisualIndex_) => trackedNode == null ? null : getVisualIndex_(trackedNode));
+const getTrackedIndex = (0, _reselect().createSelector)([getVisualIndexOfTrackedNode, countShownNodes], (visualIndexOfTrackedNode, shownNodes) => {
+  if (visualIndexOfTrackedNode == null) {
+    return null;
+  }
 
-export const getTrackedIndex = createSelector(
-  [getVisualIndexOfTrackedNode, countShownNodes],
-  (visualIndexOfTrackedNode: ?number, shownNodes: number) => {
-    if (visualIndexOfTrackedNode == null) {
-      return null;
-    }
-    const inTreeTrackedNode = visualIndexOfTrackedNode - 1;
-    if (inTreeTrackedNode === shownNodes - 1) {
-      // The last node in tree is tracked. Let's show the footer instead
-      return inTreeTrackedNode + 1;
-    }
-    return inTreeTrackedNode;
-  },
-);
+  const inTreeTrackedNode = visualIndexOfTrackedNode - 1;
 
-export const getRootKeys = createSelector(
-  [getRoots],
-  (roots): Array<NuclideUri> =>
-    roots
-      .valueSeq()
-      .toArray()
-      .map(root => root.uri),
-);
+  if (inTreeTrackedNode === shownNodes - 1) {
+    // The last node in tree is tracked. Let's show the footer instead
+    return inTreeTrackedNode + 1;
+  }
 
+  return inTreeTrackedNode;
+});
+exports.getTrackedIndex = getTrackedIndex;
+const getRootKeys = (0, _reselect().createSelector)([getRoots], roots => roots.valueSeq().toArray().map(root => root.uri));
 /**
  * Returns true if the store has no data, i.e. no roots, no children.
  */
-export const isEmpty = createSelector([getRoots], roots => roots.isEmpty());
 
-export const getSelectedNodes = createSelector(
-  [getRoots, getSelectedUris],
-  (roots, selectedUris): Immutable.List<FileTreeNode> => {
-    const nodes = [];
-    selectedUris.forEach((set, rootUri) => {
-      set.forEach(uri => {
-        const node = getNodeInRoots(roots, rootUri, uri);
-        if (node != null) {
-          nodes.push(node);
-        }
-      });
+exports.getRootKeys = getRootKeys;
+const isEmpty = (0, _reselect().createSelector)([getRoots], roots => roots.isEmpty());
+exports.isEmpty = isEmpty;
+const getSelectedNodes = (0, _reselect().createSelector)([getRoots, getSelectedUris], (roots, selectedUris) => {
+  const nodes = [];
+  selectedUris.forEach((set, rootUri) => {
+    set.forEach(uri => {
+      const node = getNodeInRoots(roots, rootUri, uri);
+
+      if (node != null) {
+        nodes.push(node);
+      }
     });
-    return Immutable.List(nodes);
-  },
-);
+  });
+  return Immutable().List(nodes);
+});
+exports.getSelectedNodes = getSelectedNodes;
 
-export const getNodeInRoots = (
-  roots: Roots,
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
+const getNodeInRoots = (roots, rootKey, nodeKey) => {
   const rootNode = roots.get(rootKey);
+
   if (rootNode == null) {
     return null;
   }
+
   return rootNode.find(nodeKey);
 };
 
-export const getFocusedNodes = createSelector(
-  [getRoots, getFocusedUris],
-  (roots, focusedUris) => {
-    const nodes = [];
-    focusedUris.forEach((set, rootUri) => {
-      set.forEach(uri => {
-        const node = getNodeInRoots(roots, rootUri, uri);
-        if (node != null) {
-          nodes.push(node);
-        }
-      });
+exports.getNodeInRoots = getNodeInRoots;
+const getFocusedNodes = (0, _reselect().createSelector)([getRoots, getFocusedUris], (roots, focusedUris) => {
+  const nodes = [];
+  focusedUris.forEach((set, rootUri) => {
+    set.forEach(uri => {
+      const node = getNodeInRoots(roots, rootUri, uri);
+
+      if (node != null) {
+        nodes.push(node);
+      }
     });
-    return Immutable.List(nodes);
-  },
-);
+  });
+  return Immutable().List(nodes);
+});
+exports.getFocusedNodes = getFocusedNodes;
+const getTargetNode = (0, _reselect().createSelector)([getRoots, getTargetNodeKeys], (roots, targetNodeKeys) => {
+  if (targetNodeKeys == null) {
+    return null;
+  }
 
-const getTargetNode = createSelector(
-  [getRoots, getTargetNodeKeys],
-  (roots, targetNodeKeys) => {
-    if (targetNodeKeys == null) {
-      return null;
-    }
-    return getNodeInRoots(
-      roots,
-      targetNodeKeys.rootKey,
-      targetNodeKeys.nodeKey,
-    );
-  },
-);
-
-// Retrieves target node in an immutable list if it's set, or all selected
+  return getNodeInRoots(roots, targetNodeKeys.rootKey, targetNodeKeys.nodeKey);
+}); // Retrieves target node in an immutable list if it's set, or all selected
 // nodes otherwise
-export const getTargetNodes = createSelector(
-  [getRoots, getTargetNode, getSelectedNodes],
-  (roots, targetNode, selectedNodes) => {
-    if (targetNode) {
-      return Immutable.List([targetNode]);
-    }
-    return selectedNodes;
-  },
-);
 
+const getTargetNodes = (0, _reselect().createSelector)([getRoots, getTargetNode, getSelectedNodes], (roots, targetNode, selectedNodes) => {
+  if (targetNode) {
+    return Immutable().List([targetNode]);
+  }
+
+  return selectedNodes;
+});
 /**
  * Returns a node if it is the only one selected, or null otherwise
  */
-export const getSingleSelectedNode = createSelector(
-  [getSelectedNodes],
-  selectedNodes => {
-    if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
-      return null;
-    }
-    return selectedNodes.first();
-  },
-);
 
-// Retrieves the target node, if it's set, or the first selected node otherwise
-export const getSingleTargetNode = createSelector(
-  [getTargetNode, getSingleSelectedNode],
-  (targetNode, singleSelectedNode) => targetNode ?? singleSelectedNode,
-);
+exports.getTargetNodes = getTargetNodes;
+const getSingleSelectedNode = (0, _reselect().createSelector)([getSelectedNodes], selectedNodes => {
+  if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
+    return null;
+  }
 
+  return selectedNodes.first();
+}); // Retrieves the target node, if it's set, or the first selected node otherwise
+
+exports.getSingleSelectedNode = getSingleSelectedNode;
+const getSingleTargetNode = (0, _reselect().createSelector)([getTargetNode, getSingleSelectedNode], (targetNode, singleSelectedNode) => {
+  var _targetNode;
+
+  return (_targetNode = targetNode) !== null && _targetNode !== void 0 ? _targetNode : singleSelectedNode;
+});
 /**
  * Returns the current node if it is shown.
  * Otherwise, returns a nearby node that is shown.
  */
-function findShownNode(state: AppState, node: FileTreeNode): ?FileTreeNode {
+
+exports.getSingleTargetNode = getSingleTargetNode;
+
+function findShownNode(state, node) {
   if (node.shouldBeShown) {
     return node;
   }
 
   let shown = node;
+
   while (shown != null) {
     const next = findNextShownSibling(state)(shown);
+
     if (next != null) {
       return next;
     }
+
     shown = shown.parent;
   }
 
   shown = node;
+
   while (shown != null) {
     const next = findPrevShownSibling(state)(shown);
+
     if (next != null) {
       return next;
     }
+
     shown = shown.parent;
   }
+
   return null;
 }
-
 /**
  * Returns the current node if it is shown and selected
  * Otherwise, returns a nearby selected node.
  */
-export const getNearbySelectedNode = (
-  state: AppState,
-  node: FileTreeNode,
-): ?FileTreeNode => {
+
+
+const getNearbySelectedNode = (state, node) => {
   const shown = findShownNode(state, node);
+
   if (shown == null) {
     return shown;
   }
+
   if (getNodeIsSelected(state, shown)) {
     return shown;
   }
+
   let selected = shown;
+
   while (selected != null && !getNodeIsSelected(state, selected)) {
     selected = findNext(state)(selected);
   }
+
   if (selected != null) {
     return selected;
   }
+
   selected = shown;
+
   while (selected != null && !getNodeIsSelected(state, selected)) {
     selected = findPrevious(state)(selected);
   }
+
   return selected;
 };
 
-export const getNode = (
-  state: AppState,
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => getNodeInRoots(getRoots(state), rootKey, nodeKey);
+exports.getNearbySelectedNode = getNearbySelectedNode;
 
-export const getRootForPath = (
-  state: AppState,
-  nodeKey: NuclideUri,
-): ?FileTreeNode => {
+const getNode = (state, rootKey, nodeKey) => getNodeInRoots(getRoots(state), rootKey, nodeKey);
+
+exports.getNode = getNode;
+
+const getRootForPath = (state, nodeKey) => {
   const rootNode = getRoots(state).find(root => nodeKey.startsWith(root.uri));
   return rootNode || null;
 };
 
-export const getNodeForPath = (
-  state: AppState,
-  uri: NuclideUri,
-): ?FileTreeNode => {
+exports.getRootForPath = getRootForPath;
+
+const getNodeForPath = (state, uri) => {
   const rootNode = getRootForPath(state, uri);
   return rootNode && rootNode.find(uri);
 };
 
-export const isEditedWorkingSetEmpty = createSelector([getRoots], roots =>
-  roots.every(root => root.checkedStatus === 'clear'),
-);
-
-export const getFilterFound = createSelector(
-  [getRoots, getNodeContainsFilterMatches],
-  (roots, getNodeContainsFilterMatches_) =>
-    roots.some(root => getNodeContainsFilterMatches_(root)),
-);
-
+exports.getNodeForPath = getNodeForPath;
+const isEditedWorkingSetEmpty = (0, _reselect().createSelector)([getRoots], roots => roots.every(root => root.checkedStatus === 'clear'));
+exports.isEditedWorkingSetEmpty = isEditedWorkingSetEmpty;
+const getFilterFound = (0, _reselect().createSelector)([getRoots, getNodeContainsFilterMatches], (roots, getNodeContainsFilterMatches_) => roots.some(root => getNodeContainsFilterMatches_(root)));
 /**
  * Find the node that occurs `offset` after the provided one in the flattened list. `offset` must
  * be a non-negative integer.
@@ -488,184 +491,163 @@ export const getFilterFound = createSelector(
  * implemented using recursion, which caused the stack size to grow with the number of siblings we
  * had to traverse. That meant we exceeded the max stack size with enough sibling files.
  */
-const getFindNodeAtOffset = createSelector(
-  [findNextShownSibling, getShownChildrenCount],
-  (findNextShownSibling_, getShownChildrenCount_) => {
-    return function(node_: FileTreeNode, offset_: number): ?FileTreeNode {
-      let offset = offset_;
-      let node = node_;
 
-      while (offset > 0) {
-        if (
-          offset < getShownChildrenCount_(node) // `shownChildrenCount` includes the node itself.
-        ) {
+exports.getFilterFound = getFilterFound;
+const getFindNodeAtOffset = (0, _reselect().createSelector)([findNextShownSibling, getShownChildrenCount], (findNextShownSibling_, getShownChildrenCount_) => {
+  return function (node_, offset_) {
+    let offset = offset_;
+    let node = node_;
+
+    while (offset > 0) {
+      if (offset < getShownChildrenCount_(node) // `shownChildrenCount` includes the node itself.
+      ) {
           // It's a descendant of this node!
           const firstVisibleChild = node.children.find(c => c.shouldBeShown);
+
           if (firstVisibleChild == null) {
             return null;
           }
+
           offset--;
           node = firstVisibleChild;
         } else {
-          const nextShownSibling = findNextShownSibling_(node);
-          if (nextShownSibling == null) {
-            return null;
-          }
-          offset -= getShownChildrenCount_(node);
-          node = nextShownSibling;
+        const nextShownSibling = findNextShownSibling_(node);
+
+        if (nextShownSibling == null) {
+          return null;
         }
+
+        offset -= getShownChildrenCount_(node);
+        node = nextShownSibling;
       }
+    }
 
-      return node;
-    };
-  },
-);
-
-export const getNodeByIndex = createSelector(
-  [getRoots, getFindNodeAtOffset],
-  (roots, findNodeAtOffset) => {
-    return memoize(index => {
-      const firstRoot = roots.find(r => r.shouldBeShown);
-      return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
-    });
-  },
-);
-
-export const getLoading = (state: AppState, nodeKey: NuclideUri) =>
-  state._isLoadingMap.get(nodeKey);
-
-export const getNodeIsSelected = (state: AppState, node: FileTreeNode) =>
-  getSelectedUris(state)
-    .get(node.rootUri, Immutable.Set())
-    .has(node.uri);
-
-export const getNodeIsFocused = (state: AppState, node: FileTreeNode) =>
-  getFocusedUris(state)
-    .get(node.rootUri, Immutable.Set())
-    .has(node.uri);
-
-export const getSidebarTitle = createSelector([getCwdKey], cwdKey => {
-  return cwdKey == null ? 'File Tree' : nuclideUri.basename(cwdKey);
+    return node;
+  };
 });
+const getNodeByIndex = (0, _reselect().createSelector)([getRoots, getFindNodeAtOffset], (roots, findNodeAtOffset) => {
+  return (0, _memoize2().default)(index => {
+    const firstRoot = roots.find(r => r.shouldBeShown);
+    return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
+  });
+});
+exports.getNodeByIndex = getNodeByIndex;
 
-export const getUsePreviewTabs = (state: AppState): boolean => {
+const getLoading = (state, nodeKey) => state._isLoadingMap.get(nodeKey);
+
+exports.getLoading = getLoading;
+
+const getNodeIsSelected = (state, node) => getSelectedUris(state).get(node.rootUri, Immutable().Set()).has(node.uri);
+
+exports.getNodeIsSelected = getNodeIsSelected;
+
+const getNodeIsFocused = (state, node) => getFocusedUris(state).get(node.rootUri, Immutable().Set()).has(node.uri);
+
+exports.getNodeIsFocused = getNodeIsFocused;
+const getSidebarTitle = (0, _reselect().createSelector)([getCwdKey], cwdKey => {
+  return cwdKey == null ? 'File Tree' : _nuclideUri().default.basename(cwdKey);
+});
+exports.getSidebarTitle = getSidebarTitle;
+
+const getUsePreviewTabs = state => {
   return state.usePreviewTabs;
 };
 
-export const getFocusEditorOnFileSelection = (state: AppState): boolean => {
+exports.getUsePreviewTabs = getUsePreviewTabs;
+
+const getFocusEditorOnFileSelection = state => {
   return state.focusEditorOnFileSelection;
 };
 
-export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
+exports.getFocusEditorOnFileSelection = getFocusEditorOnFileSelection;
+const getSidebarPath = (0, _reselect().createSelector)([getCwdKey], cwdKey => {
   if (cwdKey == null) {
     return 'No Current Working Directory';
   }
 
-  const trimmed = nuclideUri.trimTrailingSeparator(cwdKey);
-  const directory = nuclideUri.getPath(trimmed);
-  const host = nuclideUri.getHostnameOpt(trimmed);
+  const trimmed = _nuclideUri().default.trimTrailingSeparator(cwdKey);
+
+  const directory = _nuclideUri().default.getPath(trimmed);
+
+  const host = _nuclideUri().default.getHostnameOpt(trimmed);
+
   if (host == null) {
     return `Current Working Directory: ${directory}`;
   }
 
   return `Current Working Directory: '${directory}' on '${host}'`;
 });
+exports.getSidebarPath = getSidebarPath;
+const getVcsStatus = (0, _reselect().createSelector)([getVcsStatuses], vcsStatuses => {
+  return node => {
+    var _statusMap$get;
 
-export const getVcsStatus = createSelector(
-  [getVcsStatuses],
-  (
-    vcsStatuses: Immutable.Map<
-      NuclideUri,
-      Map<NuclideUri, StatusCodeNumberValue>,
-    >,
-  ): ((node: FileTreeNode) => StatusCodeNumberValue) => {
-    return node => {
-      const statusMap = vcsStatuses.get(node.rootUri);
-      return statusMap == null
-        ? StatusCodeNumber.CLEAN
-        : statusMap.get(node.uri) ?? StatusCodeNumber.CLEAN;
-    };
-  },
-);
-
-// In previous versions, we exposed the FileTreeNodes directly. This was bad as it's really just an
+    const statusMap = vcsStatuses.get(node.rootUri);
+    return statusMap == null ? _hgConstants().StatusCodeNumber.CLEAN : (_statusMap$get = statusMap.get(node.uri)) !== null && _statusMap$get !== void 0 ? _statusMap$get : _hgConstants().StatusCodeNumber.CLEAN;
+  };
+}); // In previous versions, we exposed the FileTreeNodes directly. This was bad as it's really just an
 // implementation detail. So, when we wanted to move `vcsStatus` off of the node, we had an issue.
 // We now expose a limited API instead to avoid this.
-export const getFileTreeContextMenuNode = createSelector(
-  [getVcsStatus],
-  getVcsStatusFromNode => {
-    return (node: ?FileTreeNode): ?FileTreeContextMenuNode => {
-      if (node == null) {
-        return null;
-      }
-      return {
-        uri: node.uri,
-        isContainer: node.isContainer,
-        isRoot: node.isRoot,
-        isCwd: node.isCwd,
-        vcsStatusCode: getVcsStatusFromNode(node),
-        repo: node.repo,
-        // We don't want to expose the entire tree or allow traversal since then we'd have to
-        // materialize every node. This is for supporting a legacy use case.
-        parentUri: node.parent?.uri,
-      };
-    };
-  },
-);
 
-//
+exports.getVcsStatus = getVcsStatus;
+const getFileTreeContextMenuNode = (0, _reselect().createSelector)([getVcsStatus], getVcsStatusFromNode => {
+  return node => {
+    var _node$parent;
+
+    if (node == null) {
+      return null;
+    }
+
+    return {
+      uri: node.uri,
+      isContainer: node.isContainer,
+      isRoot: node.isRoot,
+      isCwd: node.isCwd,
+      vcsStatusCode: getVcsStatusFromNode(node),
+      repo: node.repo,
+      // We don't want to expose the entire tree or allow traversal since then we'd have to
+      // materialize every node. This is for supporting a legacy use case.
+      parentUri: (_node$parent = node.parent) === null || _node$parent === void 0 ? void 0 : _node$parent.uri
+    };
+  };
+}); //
 //
 // Serialization and debugging
 //
 //
 
-export const serialize = createSelector(
-  [
-    getRootKeys,
-    getVersion,
-    getOpenFilesExpanded,
-    getUncommittedChangesExpanded,
-    getFoldersExpanded,
-  ],
-  (
-    rootKeys,
+exports.getFileTreeContextMenuNode = getFileTreeContextMenuNode;
+const serialize = (0, _reselect().createSelector)([getRootKeys, getVersion, getOpenFilesExpanded, getUncommittedChangesExpanded, getFoldersExpanded], (rootKeys, version, openFilesExpanded, uncommittedChangesExpanded, foldersExpanded) => {
+  return {
     version,
+    childKeyMap: {},
+    expandedKeysByRoot: {},
+    rootKeys,
+    selectedKeysByRoot: {},
     openFilesExpanded,
     uncommittedChangesExpanded,
-    foldersExpanded,
-  ): ExportStoreData => {
-    return {
-      version,
-      childKeyMap: {},
-      expandedKeysByRoot: {},
-      rootKeys,
-      selectedKeysByRoot: {},
-      openFilesExpanded,
-      uncommittedChangesExpanded,
-      foldersExpanded,
-    };
-  },
-);
+    foldersExpanded
+  };
+});
+exports.serialize = serialize;
+const collectSelectionDebugState = (0, _reselect().createSelector)([getSelectedNodes, getFocusedNodes], (selectedNodes, focusedNodes) => {
+  return {
+    _selectedNodes: selectedNodes.toArray().map(node => node.uri),
+    _focusedNodes: focusedNodes.toArray().map(node => node.uri)
+  };
+});
+exports.collectSelectionDebugState = collectSelectionDebugState;
 
-export const collectSelectionDebugState = createSelector(
-  [getSelectedNodes, getFocusedNodes],
-  (selectedNodes, focusedNodes) => {
-    return {
-      _selectedNodes: selectedNodes.toArray().map(node => node.uri),
-      _focusedNodes: focusedNodes.toArray().map(node => node.uri),
-    };
-  },
-);
-
-export const getCanTransferFiles = (state: AppState) =>
-  Boolean(state.remoteTransferService);
-
-// Note: The Flow types for reselect's `createSelector` only support up to 16
+const getCanTransferFiles = state => Boolean(state.remoteTransferService); // Note: The Flow types for reselect's `createSelector` only support up to 16
 // sub-selectors. Since this selector only gets called when the user reports a
 // bug, it does not need to be optimized for multiple consecutive calls on
 // similar states. Therefore, we've opted to not use createSelector for this
 // selector.
-export const collectDebugState = (state: AppState) => {
+
+
+exports.getCanTransferFiles = getCanTransferFiles;
+
+const collectDebugState = state => {
   const conf = getConf(state);
   return {
     currentWorkingRoot: getCwdKey(state),
@@ -681,9 +663,7 @@ export const collectDebugState = (state: AppState) => {
     _isCalculatingChanges: getIsCalculatingChanges(state),
     usePreviewTabs: getUsePreviewTabs(state),
     focusEditorOnFileSelection: getFocusEditorOnFileSelection(state),
-    roots: Array.from(getRoots(state).values()).map(root =>
-      root.collectDebugState(),
-    ),
+    roots: Array.from(getRoots(state).values()).map(root => root.collectDebugState()),
     _conf: {
       hideIgnoredNames: conf.hideIgnoredNames,
       excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
@@ -691,17 +671,13 @@ export const collectDebugState = (state: AppState) => {
       isEditingWorkingSet: conf.isEditingWorkingSet,
       vcsStatuses: getVcsStatuses(state).toObject(),
       workingSet: conf.workingSet.getUris(),
-      ignoredPatterns: conf.ignoredPatterns
-        .toArray()
-        .map(ignored => ignored.pattern),
+      ignoredPatterns: conf.ignoredPatterns.toArray().map(ignored => ignored.pattern),
       openFilesWorkingSet: conf.openFilesWorkingSet.getUris(),
-      editedWorkingSet: conf.editedWorkingSet.getUris(),
+      editedWorkingSet: conf.editedWorkingSet.getUris()
     },
-    selectionManager: collectSelectionDebugState(state),
+    selectionManager: collectSelectionDebugState(state)
   };
-};
-
-//
+}; //
 //
 // Traversal utils
 //
@@ -711,8 +687,12 @@ export const collectDebugState = (state: AppState) => {
  * Finds the next node in the tree in the natural order - from top to to bottom as is displayed
  * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
  */
-export function findNext(state: AppState) {
-  return (node: FileTreeNode): ?FileTreeNode => {
+
+
+exports.collectDebugState = collectDebugState;
+
+function findNext(state) {
+  return node => {
     if (!node.shouldBeShown) {
       if (node.parent != null) {
         return findNext(state)(node.parent);
@@ -723,12 +703,14 @@ export function findNext(state: AppState) {
 
     if (getShownChildrenCount(state)(node) > 1) {
       return node.children.find(c => c.shouldBeShown);
-    }
+    } // Not really an alias, but an iterating reference
 
-    // Not really an alias, but an iterating reference
+
     let it = node;
+
     while (it != null) {
       const nextShownSibling = findNextShownSibling(state)(it);
+
       if (nextShownSibling != null) {
         return nextShownSibling;
       }
@@ -740,9 +722,10 @@ export function findNext(state: AppState) {
   };
 }
 
-export function findNextShownSibling(state: AppState) {
-  return (node: FileTreeNode): ?FileTreeNode => {
+function findNextShownSibling(state) {
+  return node => {
     let it = node.nextSibling;
+
     while (it != null && !it.shouldBeShown) {
       it = it.nextSibling;
     }
@@ -750,13 +733,14 @@ export function findNextShownSibling(state: AppState) {
     return it;
   };
 }
-
 /**
  * Finds the previous node in the tree in the natural order - from top to to bottom as is displayed
  * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
  */
-export function findPrevious(state: AppState) {
-  return (node: FileTreeNode): ?FileTreeNode => {
+
+
+function findPrevious(state) {
+  return node => {
     if (!node.shouldBeShown) {
       if (node.parent != null) {
         return findPrevious(state)(node.parent);
@@ -766,6 +750,7 @@ export function findPrevious(state: AppState) {
     }
 
     const prevShownSibling = findPrevShownSibling(state)(node);
+
     if (prevShownSibling != null) {
       return findLastRecursiveChild(state)(prevShownSibling);
     }
@@ -774,9 +759,10 @@ export function findPrevious(state: AppState) {
   };
 }
 
-export function findPrevShownSibling(state: AppState) {
-  return (node: FileTreeNode): ?FileTreeNode => {
+function findPrevShownSibling(state) {
+  return node => {
     let it = node.prevSibling;
+
     while (it != null && !it.shouldBeShown) {
       it = it.prevSibling;
     }
@@ -784,19 +770,21 @@ export function findPrevShownSibling(state: AppState) {
     return it;
   };
 }
-
 /**
  * Returns the last shown descendant according to the natural tree order as is to be displayed by
  * the file-tree panel. (Last child of the last child of the last child...)
  * Or null, if none are found
  */
-export function findLastRecursiveChild(state: AppState) {
-  return (node: FileTreeNode): ?FileTreeNode => {
+
+
+function findLastRecursiveChild(state) {
+  return node => {
     if (!node.isContainer || !node.isExpanded || node.children.isEmpty()) {
       return node;
     }
 
     let it = node.children.last();
+
     while (it != null && !it.shouldBeShown) {
       it = it.prevSibling;
     }
@@ -805,6 +793,7 @@ export function findLastRecursiveChild(state: AppState) {
       if (node.shouldBeShown) {
         return node;
       }
+
       return findPrevious(state)(node);
     } else {
       return findLastRecursiveChild(state)(it);

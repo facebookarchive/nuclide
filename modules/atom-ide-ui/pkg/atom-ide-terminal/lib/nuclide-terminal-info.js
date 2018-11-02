@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TERMINAL_DEFAULT_INFO = exports.TERMINAL_DEFAULT_ICON = exports.TERMINAL_DEFAULT_LOCATION = exports.TERMINAL_URI = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,36 +13,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './pty-service/rpc-types';
-
 // The external interface TerminalInfo leaves everything optional.
 // When we open a terminal we will instantiate missing fields with defaults.
-export type InstantiatedTerminalInfo = {
-  title: string,
-  key: string,
-  remainOnCleanExit: boolean,
-  defaultLocation: atom$PaneLocation | 'pane',
-  icon: string,
-  command?: Command,
-  cwd: string,
-  environmentVariables?: Map<string, string>,
-  preservedCommands: Array<string>,
-  initialInput: string,
-};
-
-export const TERMINAL_URI = 'atom://nuclide-terminal-view';
-export const TERMINAL_DEFAULT_LOCATION = 'bottom';
-export const TERMINAL_DEFAULT_ICON = 'terminal';
-export const TERMINAL_DEFAULT_INFO = {
+const TERMINAL_URI = 'atom://nuclide-terminal-view';
+exports.TERMINAL_URI = TERMINAL_URI;
+const TERMINAL_DEFAULT_LOCATION = 'bottom';
+exports.TERMINAL_DEFAULT_LOCATION = TERMINAL_DEFAULT_LOCATION;
+const TERMINAL_DEFAULT_ICON = 'terminal';
+exports.TERMINAL_DEFAULT_ICON = TERMINAL_DEFAULT_ICON;
+const TERMINAL_DEFAULT_INFO = {
   remainOnCleanExit: false,
   defaultLocation: TERMINAL_DEFAULT_LOCATION,
   icon: TERMINAL_DEFAULT_ICON,
   initialInput: '',
   title: '',
   cwd: '',
-  preservedCommands: [],
+  preservedCommands: []
 };
+exports.TERMINAL_DEFAULT_INFO = TERMINAL_DEFAULT_INFO;

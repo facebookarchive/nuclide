@@ -1,3 +1,27 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../../nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _DatatipManager() {
+  const data = require("./DatatipManager");
+
+  _DatatipManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,29 +30,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DatatipService} from './types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {DatatipManager} from './DatatipManager';
-
 class Activation {
-  _datatipManager: DatatipManager;
-
   constructor() {
-    this._datatipManager = new DatatipManager();
+    this._datatipManager = new (_DatatipManager().DatatipManager)();
   }
 
-  provideDatatipService(): DatatipService {
+  provideDatatipService() {
     return this._datatipManager;
   }
 
   dispose() {
     this._datatipManager.dispose();
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

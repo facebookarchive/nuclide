@@ -1,3 +1,40 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _BigDigServer() {
+  const data = require("../server/BigDigServer");
+
+  _BigDigServer = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _BigDigClient() {
+  const data = require("./BigDigClient");
+
+  _BigDigClient = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ReliableSocket() {
+  const data = require("../socket/ReliableSocket");
+
+  _ReliableSocket = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,35 +43,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {ProtocolLogger} from '../socket/QueuedAckTransport';
-
-import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
-import {BigDigClient} from './BigDigClient';
-import {ReliableSocket} from '../socket/ReliableSocket';
-
-export type BigDigClientConfig = {
-  +host: string,
-  +port: number,
-  +family?: 4 | 6,
-  +certificateAuthorityCertificate?: Buffer | string,
-  +clientCertificate?: Buffer | string,
-  +clientKey?: Buffer | string,
-  +ignoreIntransientErrors: boolean,
-  +protocolLogger?: ProtocolLogger,
-};
 
 /**
  * Creates a Big Dig client that speaks the v1 protocol.
  */
-export default (async function createBigDigClient(
-  config: BigDigClientConfig,
-): Promise<BigDigClient> {
+var createBigDigClient = async function createBigDigClient(config) {
   const reliableSocket = createReliableSocket(config);
-  const client = new BigDigClient(reliableSocket);
+  const client = new (_BigDigClient().BigDigClient)(reliableSocket);
+
   try {
     // Make sure we're able to make the initial connection
     await reliableSocket.testConnection();
@@ -43,24 +62,19 @@ export default (async function createBigDigClient(
     client.close();
     throw error;
   }
-});
+};
 
-function createReliableSocket(config: BigDigClientConfig): ReliableSocket {
+exports.default = createBigDigClient;
+
+function createReliableSocket(config) {
   const options = {
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
     key: config.clientKey,
-    family: config.family,
+    family: config.family
   };
-
   const serverUri = `https://${config.host}:${config.port}/v1`;
-
-  const reliableSocket = new ReliableSocket(
-    serverUri,
-    HEARTBEAT_CHANNEL,
-    options,
-    config.protocolLogger,
-  );
+  const reliableSocket = new (_ReliableSocket().ReliableSocket)(serverUri, _BigDigServer().HEARTBEAT_CHANNEL, options, config.protocolLogger);
 
   if (!config.ignoreIntransientErrors) {
     reliableSocket.onIntransientError(error => reliableSocket.close());

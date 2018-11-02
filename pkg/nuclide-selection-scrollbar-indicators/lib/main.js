@@ -1,3 +1,49 @@
+"use strict";
+
+function _createPackage() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons-atom/createPackage"));
+
+  _createPackage = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _event() {
+  const data = require("../../../modules/nuclide-commons/event");
+
+  _event = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _collection() {
+  const data = require("../../../modules/nuclide-commons/collection");
+
+  _collection = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _UniversalDisposable() {
+  const data = _interopRequireDefault(require("../../../modules/nuclide-commons/UniversalDisposable"));
+
+  _UniversalDisposable = function () {
+    return data;
+  };
+
+  return data;
+}
+
+var _rxjsCompatUmdMin = require("rxjs-compat/bundles/rxjs-compat.umd.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,93 +51,56 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  ScrollbarIndicatorUpdate,
-  ScrollbarIndicatorProvider,
-  ScrollbarIndicatorMark,
-} from '../../nuclide-scrollbar-indicators';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {arrayEqual} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject, Observable} from 'rxjs';
-
-function marksDiffer(
-  rangeA: ScrollbarIndicatorMark,
-  rangeB: ScrollbarIndicatorMark,
-): boolean {
+function marksDiffer(rangeA, rangeB) {
   return rangeA.start === rangeB.start && rangeA.end === rangeB.end;
 }
 
-function getCursorPositions(
-  editor: atom$TextEditor,
-): Observable<Array<atom$Point>> {
-  return Observable.merge(
-    observableFromSubscribeFunction(cb => editor.onDidChangeCursorPosition(cb)),
-    observableFromSubscribeFunction(cb => editor.onDidAddCursor(cb)),
-    observableFromSubscribeFunction(cb => editor.onDidRemoveCursor(cb)),
-  ).map(() => editor.getCursorBufferPositions());
+function getCursorPositions(editor) {
+  return _rxjsCompatUmdMin.Observable.merge((0, _event().observableFromSubscribeFunction)(cb => editor.onDidChangeCursorPosition(cb)), (0, _event().observableFromSubscribeFunction)(cb => editor.onDidAddCursor(cb)), (0, _event().observableFromSubscribeFunction)(cb => editor.onDidRemoveCursor(cb))).map(() => editor.getCursorBufferPositions());
 }
 
 class Activation {
-  _disposables: UniversalDisposable;
-  _updates: Subject<ScrollbarIndicatorUpdate>;
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable().default)();
+    this._updates = new _rxjsCompatUmdMin.Subject();
 
-  constructor(state: ?mixed) {
-    this._disposables = new UniversalDisposable();
-    this._updates = new Subject();
-    this._disposables.add(
-      observableFromSubscribeFunction(cb =>
-        atom.workspace.observeTextEditors(cb),
-      )
-        .mergeMap(editor => {
-          return Observable.combineLatest(
-            getCursorPositions(editor)
-              .map(cursorPoints => cursorPoints.map(point => point.row))
-              .distinctUntilChanged(arrayEqual)
-              .map(rows => {
-                return new Set(rows.map(row => ({start: row, end: row})));
-              }),
-            observableFromSubscribeFunction(cb =>
-              editor.onDidChangeSelectionRange(cb),
-            )
-              .map(({newBufferRange}) => {
-                return {
-                  start: newBufferRange.start.row,
-                  end: newBufferRange.end.row,
-                };
-              })
-              .distinctUntilChanged(marksDiffer),
-          ).map(([cursors, selection]) => {
-            return {
-              editor,
-              markTypes: new Map([
-                ['CURSOR', cursors],
-                ['SELECTION', new Set([selection])],
-              ]),
-            };
-          });
-        })
-        .subscribe((update: ScrollbarIndicatorUpdate) => {
-          this._updates.next(update);
-        }),
-    );
+    this._disposables.add((0, _event().observableFromSubscribeFunction)(cb => atom.workspace.observeTextEditors(cb)).mergeMap(editor => {
+      return _rxjsCompatUmdMin.Observable.combineLatest(getCursorPositions(editor).map(cursorPoints => cursorPoints.map(point => point.row)).distinctUntilChanged(_collection().arrayEqual).map(rows => {
+        return new Set(rows.map(row => ({
+          start: row,
+          end: row
+        })));
+      }), (0, _event().observableFromSubscribeFunction)(cb => editor.onDidChangeSelectionRange(cb)).map(({
+        newBufferRange
+      }) => {
+        return {
+          start: newBufferRange.start.row,
+          end: newBufferRange.end.row
+        };
+      }).distinctUntilChanged(marksDiffer)).map(([cursors, selection]) => {
+        return {
+          editor,
+          markTypes: new Map([['CURSOR', cursors], ['SELECTION', new Set([selection])]])
+        };
+      });
+    }).subscribe(update => {
+      this._updates.next(update);
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  provideScrollbarIndicators(): ScrollbarIndicatorProvider {
+  provideScrollbarIndicators() {
     return {
-      onUpdate: cb => new UniversalDisposable(this._updates.subscribe(cb)),
+      onUpdate: cb => new (_UniversalDisposable().default)(this._updates.subscribe(cb))
     };
   }
+
 }
 
-createPackage(module.exports, Activation);
+(0, _createPackage().default)(module.exports, Activation);

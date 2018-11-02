@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,16 +8,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 /* eslint-disable nuclide-internal/no-commonjs */
-
 // This extra module enables adding spies during testing.
 try {
   // $FlowFB
-  module.exports = require('../fb/analytics');
+  module.exports = require("../fb/analytics");
 } catch (e) {
-  module.exports = require('./analytics');
+  module.exports = require("./analytics");
 }

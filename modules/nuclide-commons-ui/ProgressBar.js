@@ -1,3 +1,14 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProgressBar = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +17,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
-import * as React from 'react';
-
-type Props = {
-  /**
-   * The progress value. If none is provided, the Progressbar will render in `indefinite` mode.
-   * Use `indefinite mode` to indicate an initializing period,
-   * Prefer using the `LoadingSpinner` component for surfacing non-deterministic progress.
-   */
-  value?: number,
-  /** Determines the scaling of `value`. `min` is implicitly set to `0`. */
-  max?: number,
-};
-
 /** A Progressbar for showing deterministic progress. */
-export const ProgressBar = (props: Props) => (
-  <progress value={props.value} max={props.max} {...props} />
-);
+const ProgressBar = props => React.createElement("progress", Object.assign({
+  value: props.value,
+  max: props.max
+}, props));
+
+exports.ProgressBar = ProgressBar;

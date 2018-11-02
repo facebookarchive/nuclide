@@ -6,11 +6,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 'use strict';
-
 /* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
@@ -18,11 +17,15 @@
  * Note: since this is FB-only we can assume that this is inside of Nuclide.
  */
 // eslint-disable-next-line nuclide-internal/modules-dependencies
-const {__DEV__} = require('nuclide-node-transpiler/lib/env');
+
+const {
+  __DEV__
+} = require("../../../../../nuclide-node-transpiler/lib/env");
+
 if (__DEV__) {
   // eslint-disable-next-line nuclide-internal/modules-dependencies
-  require('nuclide-node-transpiler');
-}
+  require("../../../../../nuclide-node-transpiler");
+} // Load the ES6+ client code now that the transpiler is in place.
 
-// Load the ES6+ client code now that the transpiler is in place.
-require('./thriftPtyClient');
+
+require("./thriftPtyClient");

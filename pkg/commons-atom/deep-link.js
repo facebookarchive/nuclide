@@ -1,3 +1,18 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeDeepLinks = observeDeepLinks;
+exports.sendDeepLink = sendDeepLink;
+exports.getHasSentDeepLink = getHasSentDeepLink;
+
+var _electron = _interopRequireDefault(require("electron"));
+
+var _rxjsCompatUmdMin = require("rxjs-compat/bundles/rxjs-compat.umd.min.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,48 +20,41 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
+const {
+  ipcRenderer,
+  remote
+} = _electron.default;
 
-import invariant from 'assert';
-import electron from 'electron';
-import {Observable} from 'rxjs';
-
-import type {BrowserWindow} from 'nuclide-commons/electron-remote';
-
-const {ipcRenderer, remote} = electron;
-invariant(ipcRenderer != null, 'must be in renderer process');
-invariant(remote != null);
-
-const CHANNEL = 'nuclide-url-open';
-
-let hasSentDeepLink = false;
-
-export type DeepLinkMessage = {
-  message: string,
-  params: DeepLinkParams,
-};
-
-export type DeepLinkParams = {[key: string]: string | Array<string>};
-
-export function observeDeepLinks(): Observable<DeepLinkMessage> {
-  return Observable.fromEvent(ipcRenderer, CHANNEL, (event, data) => data);
+if (!(ipcRenderer != null)) {
+  throw new Error('must be in renderer process');
 }
 
-export function sendDeepLink(
-  browserWindow: BrowserWindow,
-  path: string,
-  params: Object,
-): void {
+if (!(remote != null)) {
+  throw new Error("Invariant violation: \"remote != null\"");
+}
+
+const CHANNEL = 'nuclide-url-open';
+let hasSentDeepLink = false;
+
+function observeDeepLinks() {
+  return _rxjsCompatUmdMin.Observable.fromEvent(ipcRenderer, CHANNEL, (event, data) => data);
+}
+
+function sendDeepLink(browserWindow, path, params) {
   if (browserWindow === remote.getCurrentWindow()) {
     hasSentDeepLink = true;
   }
 
-  browserWindow.webContents.send(CHANNEL, {message: path, params});
+  browserWindow.webContents.send(CHANNEL, {
+    message: path,
+    params
+  });
   browserWindow.focus();
 }
 
-export function getHasSentDeepLink(): boolean {
+function getHasSentDeepLink() {
   return hasSentDeepLink;
 }

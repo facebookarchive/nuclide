@@ -1,3 +1,13 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.matchProxyConfig = matchProxyConfig;
+exports.isProxyConfigEqual = isProxyConfigEqual;
+exports.isProxyConfigOverlapping = isProxyConfigOverlapping;
+exports.getProxyConfigDescriptor = getProxyConfigDescriptor;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +16,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {IpcProxyConfig, ProxyConfig, TcpProxyConfig} from './types';
-
-export function matchProxyConfig<R>(
-  matcher: {tcp: TcpProxyConfig => R, ipcSocket: IpcProxyConfig => R},
-  proxyConfig: ProxyConfig,
-): R {
+function matchProxyConfig(matcher, proxyConfig) {
   if (proxyConfig.path === undefined) {
     return matcher.tcp(proxyConfig);
   }
+
   if (proxyConfig.port === undefined) {
     return matcher.ipcSocket(proxyConfig);
   }
+
   throw new Error('unreachable');
 }
 
-export function isProxyConfigEqual(a: ProxyConfig, b: ProxyConfig): boolean {
+function isProxyConfigEqual(a, b) {
   if (a.path === undefined && b.path === undefined) {
     return a.port === b.port && a.useIPv4 === b.useIPv4;
   }
@@ -37,25 +43,21 @@ export function isProxyConfigEqual(a: ProxyConfig, b: ProxyConfig): boolean {
   return false;
 }
 
-export function isProxyConfigOverlapping(
-  a: ProxyConfig,
-  b: ProxyConfig,
-): boolean {
+function isProxyConfigOverlapping(a, b) {
   if (a.port !== undefined && b.port !== undefined && a.port === b.port) {
     return true;
   }
+
   if (a.path !== undefined && b.path !== undefined && a.path === b.path) {
     return true;
   }
+
   return false;
 }
 
-export function getProxyConfigDescriptor(config: ProxyConfig): string {
-  return matchProxyConfig(
-    {
-      tcp: c => `port=${c.port}`,
-      ipcSocket: c => `socket=${c.path}`,
-    },
-    config,
-  );
+function getProxyConfigDescriptor(config) {
+  return matchProxyConfig({
+    tcp: c => `port=${c.port}`,
+    ipcSocket: c => `socket=${c.path}`
+  }, config);
 }

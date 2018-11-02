@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _DebuggerInterface() {
+  const data = require("./DebuggerInterface");
+
+  _DebuggerInterface = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TokenizedLine() {
+  const data = _interopRequireDefault(require("./TokenizedLine"));
+
+  _TokenizedLine = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,20 +35,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import {DebuggerInterface} from './DebuggerInterface';
-import TokenizedLine from './TokenizedLine';
-
-export default class VariablesCommand implements Command {
-  name = 'variables';
-  helpText =
-    '[scope] Display variables of the current stack frame, optionally for a single scope.';
-  detailedHelpText = `
+class VariablesCommand {
+  constructor(con, debug) {
+    this.name = 'variables';
+    this.helpText = '[scope] Display variables of the current stack frame, optionally for a single scope.';
+    this.detailedHelpText = `
 variables [scope]
 
 Each stack frame in a program may have its own local variables, and there there
@@ -36,31 +59,25 @@ type.
 You can use the 'backtrace' command to set the selected stack frame. By default,
 when the program stops the most recent frame will be selected.
   `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(line: TokenizedLine): Promise<void> {
+  async execute(line) {
     const args = line.stringTokens().slice(1);
+
     if (args.length > 1) {
       throw new Error("'variables' takes at most one scope parameter");
     }
 
     let text = '';
     const variables = await this._debugger.getVariablesByScope(args[0]);
+
     for (const scope of variables) {
       const vars = scope.variables;
+
       if (scope.expensive && vars == null) {
-        text += `\nVariables in scope '${
-          scope.scopeName
-        }' have been elided as they are expensive\nto evaluate. Use 'variables ${
-          scope.scopeName
-        }' to see them.\n`;
+        text += `\nVariables in scope '${scope.scopeName}' have been elided as they are expensive\nto evaluate. Use 'variables ${scope.scopeName}' to see them.\n`;
         continue;
       }
 
@@ -68,8 +85,13 @@ when the program stops the most recent frame will be selected.
         text += `\nVariables in scope '${scope.scopeName}':\n`;
         text += vars.map(v => `${v.name} => ${v.value}`).join('\n');
       }
+
       text += '\n';
     }
+
     this._console.outputLine(text);
   }
+
 }
+
+exports.default = VariablesCommand;

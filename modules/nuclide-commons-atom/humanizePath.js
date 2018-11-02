@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = humanizePath;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +25,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import idx from 'idx';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
 /**
  * Format a path for display. After the path is humanized, it should no longer be treated like a
@@ -23,44 +37,41 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
  * Atom. If you have multiple directories open, the result will be prefixed with one of their names.
  * If you only have one, it won't.
  */
-export default function humanizePath(
-  path: NuclideUri,
-  options: ?{
-    isDirectory?: boolean,
-    rootPaths?: Array<NuclideUri>,
-  },
-): string {
-  const isDirectory = idx(options, _ => _.isDirectory);
-  const rootPaths =
-    idx(options, _ => _.rootPaths) ||
-    atom.project.getDirectories().map(dir => dir.getPath());
+function humanizePath(path, options) {
+  var _ref, _ref2;
+
+  const isDirectory = (_ref = options) != null ? _ref.isDirectory : _ref;
+  const rootPaths = ((_ref2 = options) != null ? _ref2.rootPaths : _ref2) || atom.project.getDirectories().map(dir => dir.getPath());
   const normalized = normalizePath(path, isDirectory);
   let resolved;
+
   for (const rootPath of rootPaths) {
-    const normalizedDir = nuclideUri.normalizeDir(rootPath);
-    if (nuclideUri.contains(normalizedDir, normalized)) {
+    const normalizedDir = _nuclideUri().default.normalizeDir(rootPath);
+
+    if (_nuclideUri().default.contains(normalizedDir, normalized)) {
       resolved = normalized.substr(normalizedDir.length);
-      const rootName = nuclideUri.basename(normalizedDir);
-      // If the path is a root or there's more than one root, include the root's name.
+
+      const rootName = _nuclideUri().default.basename(normalizedDir); // If the path is a root or there's more than one root, include the root's name.
+
+
       if (normalized === normalizedDir) {
-        return nuclideUri.normalizeDir(rootName);
+        return _nuclideUri().default.normalizeDir(rootName);
       }
+
       if (rootPaths.length > 1) {
-        return nuclideUri.join(rootName, resolved);
+        return _nuclideUri().default.join(rootName, resolved);
       }
+
       return resolved;
     }
-  }
-
-  // It's not in one of the project directories so return the full (normalized)
+  } // It's not in one of the project directories so return the full (normalized)
   // path run through nuclideUriToDisplayString to remove nuclide:// etc.
-  return nuclideUri.nuclideUriToDisplayString(normalized);
+
+
+  return _nuclideUri().default.nuclideUriToDisplayString(normalized);
 }
 
-function normalizePath(path: NuclideUri, isDirectory_: ?boolean): NuclideUri {
-  const isDirectory =
-    isDirectory_ == null ? nuclideUri.endsWithSeparator(path) : isDirectory_;
-  return isDirectory
-    ? nuclideUri.normalizeDir(path)
-    : nuclideUri.normalize(path);
+function normalizePath(path, isDirectory_) {
+  const isDirectory = isDirectory_ == null ? _nuclideUri().default.endsWithSeparator(path) : isDirectory_;
+  return isDirectory ? _nuclideUri().default.normalizeDir(path) : _nuclideUri().default.normalize(path);
 }

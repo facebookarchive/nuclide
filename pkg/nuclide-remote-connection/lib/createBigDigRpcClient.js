@@ -1,3 +1,82 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _client() {
+  const data = require("../../../modules/big-dig/src/client");
+
+  _client = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideMarshalersClient() {
+  const data = require("../../nuclide-marshalers-client");
+
+  _nuclideMarshalersClient = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideRpc() {
+  const data = require("../../nuclide-rpc");
+
+  _nuclideRpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _config() {
+  const data = require("../../nuclide-rpc/lib/config");
+
+  _config = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _servicesConfig() {
+  const data = _interopRequireDefault(require("../../nuclide-server/lib/servicesConfig"));
+
+  _servicesConfig = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _utils() {
+  const data = require("../../nuclide-server/lib/utils");
+
+  _utils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _constants() {
+  const data = require("../../nuclide-server2/lib/constants");
+
+  _constants = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,57 +84,38 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {BigDigClient} from 'big-dig/src/client';
-import type {ServerConnectionConfiguration} from './ServerConnection';
-import type {Transport} from '../../nuclide-rpc';
-
-import {createBigDigClient} from 'big-dig/src/client';
-import {getClientSideMarshalers} from '../../nuclide-marshalers-client';
-import {RpcConnection} from '../../nuclide-rpc';
-import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
-import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {protocolLogger} from '../../nuclide-server/lib/utils';
-import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
-
-export default (async function createBigDigRpcClient(
-  config: ServerConnectionConfiguration,
-): Promise<{
-  bigDigClient: BigDigClient,
-  rpcConnection: RpcConnection<Transport>,
-}> {
-  const bigDigClient = await createBigDigClient({
-    ...config,
+var createBigDigRpcClient = async function createBigDigRpcClient(config) {
+  const bigDigClient = await (0, _client().createBigDigClient)(Object.assign({}, config, {
     ignoreIntransientErrors: true,
-    protocolLogger,
-  });
-  const bigDigTransport: Transport = {
-    send(message: string) {
-      bigDigClient.sendMessage(NUCLIDE_RPC_TAG, message);
+    protocolLogger: _utils().protocolLogger
+  }));
+  const bigDigTransport = {
+    send(message) {
+      bigDigClient.sendMessage(_constants().NUCLIDE_RPC_TAG, message);
     },
+
     onMessage() {
-      return bigDigClient.onMessage(NUCLIDE_RPC_TAG);
+      return bigDigClient.onMessage(_constants().NUCLIDE_RPC_TAG);
     },
+
     close() {
       bigDigClient.close();
     },
+
     isClosed() {
       return bigDigClient.isClosed();
-    },
+    }
+
   };
   return {
     bigDigClient,
-    rpcConnection: RpcConnection.createRemote(
-      bigDigTransport,
-      getClientSideMarshalers(config.host),
-      servicesConfig,
-      {trackSampleRate: 10},
-      SERVICE_FRAMEWORK3_PROTOCOL,
-      null,
-      protocolLogger,
-    ),
+    rpcConnection: _nuclideRpc().RpcConnection.createRemote(bigDigTransport, (0, _nuclideMarshalersClient().getClientSideMarshalers)(config.host), _servicesConfig().default, {
+      trackSampleRate: 10
+    }, _config().SERVICE_FRAMEWORK3_PROTOCOL, null, _utils().protocolLogger)
   };
-});
+};
+
+exports.default = createBigDigRpcClient;

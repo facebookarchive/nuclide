@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startServer = void 0;
+
+function _nodeIpc() {
+  const data = _interopRequireDefault(require("node-ipc"));
+
+  _nodeIpc = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,43 +25,30 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ServerID, WorkerID} from './utils';
-
-export opaque type Socket = any;
-
-export type IPCServer = {
-  start: () => void,
-  stop: () => void,
-  on: (WorkerID, (message: string, Socket) => void) => void,
-  emit: (Socket, WorkerID, message: string) => void,
-};
-
-import ipc from 'node-ipc';
-
 let started = false;
 
-export const startServer = ({
-  serverID,
-}: {
-  serverID: ServerID,
-}): Promise<IPCServer> => {
+const startServer = ({
+  serverID
+}) => {
   if (started) {
     throw new Error('IPC server can only be started once');
   }
+
   return new Promise(resolve => {
     started = true;
-    ipc.config.id = serverID;
-    ipc.config.retry = 1500;
-    ipc.config.silent = true;
+    _nodeIpc().default.config.id = serverID;
+    _nodeIpc().default.config.retry = 1500;
+    _nodeIpc().default.config.silent = true;
 
-    ipc.serve(() => {
-      resolve(ipc.server);
+    _nodeIpc().default.serve(() => {
+      resolve(_nodeIpc().default.server);
     });
 
-    ipc.server.start();
+    _nodeIpc().default.server.start();
   });
 };
+
+exports.startServer = startServer;

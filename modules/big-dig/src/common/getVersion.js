@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getVersion = getVersion;
+
+function _package() {
+  const data = require("../../../nuclide-commons/package");
+
+  _package = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,21 +23,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
 // eslint-disable-next-line
-import {getPackageMinorVersion} from 'nuclide-commons/package';
-
 let version;
 
-export function getVersion(): string {
+function getVersion() {
   if (!version) {
     // Don't use require() because it may be reading from the module cache.
     // Do use require.resolve so the paths can be codemoded in the future.
-    const packageJsonPath = require.resolve('../../package.json');
-    version = getPackageMinorVersion(packageJsonPath);
+    const packageJsonPath = require.resolve("../../package.json");
+
+    version = (0, _package().getPackageMinorVersion)(packageJsonPath);
   }
+
   return version;
 }

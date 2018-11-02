@@ -1,3 +1,34 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _events = _interopRequireDefault(require("events"));
+
+function _History() {
+  const data = _interopRequireDefault(require("./History"));
+
+  _History = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _blessed() {
+  const data = _interopRequireDefault(require("blessed"));
+
+  _blessed = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,52 +37,31 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-import EventEmitter from 'events';
-import History from './History';
-import blessed from 'blessed';
-
-type LineEditorOptions = {
-  input?: ?stream$Readable,
-  output?: ?stream$Writable,
-  tty?: ?boolean,
-  maxHistoryItems?: number,
-  removeHistoryDuplicates?: boolean,
-};
-
 const MAX_SCROLLBACK = 2000;
 
-export default class LineEditor extends EventEmitter {
-  _fullscreen: boolean = false;
-  _options: LineEditorOptions;
-  _program: blessed.Program;
-  _screen: blessed.Screen;
-  _outputBox: blessed.Box; // the box containing the scrollback
-  _consoleBox: blessed.Box; // the box containing the being edited command line
-  _statusBox: blessed.Box; // status line box
-  _scrollback: Array<string>; // the entire scrollback
-  _boxTop: number; // the top line of the output
-  _boxBottom: boolean; // if the outupt is scrolled all the way to the bottom
-  _nextOutputSameLine: boolean; // true if the next output should be on the same line (no ending \n)
-  _more: boolean; // true if there's output the user hasn't seen
-
-  _handlers: Map<string, () => void> = new Map();
-  _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
-  _prompt: string;
-  _buffer: string; // the string being edited
-  _cursor: number; // the cursor position inside _buffer
-  _history: History; // a list of previously entered commands
-  _historyTextSave: string; // the string that was being edited before the user starting scrolling through history
-  _logger: log4js$Logger; // the logger
-  _tty: boolean;
-  _input: stream$Readable;
-  _output: stream$Writable;
-
-  constructor(options: LineEditorOptions, logger: log4js$Logger) {
+class LineEditor extends _events.default {
+  // the box containing the scrollback
+  // the box containing the being edited command line
+  // status line box
+  // the entire scrollback
+  // the top line of the output
+  // if the outupt is scrolled all the way to the bottom
+  // true if the next output should be on the same line (no ending \n)
+  // true if there's output the user hasn't seen
+  // if we're closing on an error, what to print after console is back to normal
+  // the string being edited
+  // the cursor position inside _buffer
+  // a list of previously entered commands
+  // the string that was being edited before the user starting scrolling through history
+  // the logger
+  constructor(options, logger) {
     super();
+    this._fullscreen = false;
+    this._handlers = new Map();
+    this._closeError = null;
     this._logger = logger;
     this._tty = options.tty !== false;
     this._options = options;
@@ -60,24 +70,26 @@ export default class LineEditor extends EventEmitter {
     this._nextOutputSameLine = false;
   }
 
-  isTTY(): boolean {
+  isTTY() {
     return this._tty;
   }
 
-  close(error: ?string) {
+  close(error) {
     this._closeError = error;
     this.emit('close');
   }
 
-  setPrompt(prompt: string): void {
+  setPrompt(prompt) {
     this._prompt = prompt;
+
     if (this._tty && this._fullscreen) {
       this._redrawConsole();
     }
+
     return;
   }
 
-  enterFullScreen(): void {
+  enterFullScreen() {
     if (this._fullscreen) {
       return;
     }
@@ -86,34 +98,29 @@ export default class LineEditor extends EventEmitter {
 
     if (this._tty) {
       this._initializeBlessed(this._options);
+
       return;
     }
 
     this._initializeTTY(this._options);
   }
 
-  _initializeBlessed(options: LineEditorOptions): void {
-    const maxHistoryItems =
-      options.maxHistoryItems != null ? options.maxHistoryItems : 50;
-    const removeDups =
-      options.removeHistoryDuplicates != null
-        ? options.removeHistoryDuplicates
-        : true;
-
-    this._history = new History(maxHistoryItems, removeDups);
+  _initializeBlessed(options) {
+    const maxHistoryItems = options.maxHistoryItems != null ? options.maxHistoryItems : 50;
+    const removeDups = options.removeHistoryDuplicates != null ? options.removeHistoryDuplicates : true;
+    this._history = new (_History().default)(maxHistoryItems, removeDups);
     this._historyTextSave = '';
-
-    this._program = blessed.program({});
-
-    this._screen = blessed.screen({
+    this._program = _blessed().default.program({});
+    this._screen = _blessed().default.screen({
       smartCSR: true,
       program: this._program,
       input: this._input,
-      output: this._output,
+      output: this._output
     });
 
     this._program.showCursor();
-    this._outputBox = blessed.box({
+
+    this._outputBox = _blessed().default.box({
       top: 0,
       left: 0,
       width: '100%',
@@ -121,13 +128,12 @@ export default class LineEditor extends EventEmitter {
       scrollable: true,
       style: {
         fg: 'white',
-        bg: 'black',
+        bg: 'black'
       },
       wrap: false,
-      valign: 'bottom',
+      valign: 'bottom'
     });
-
-    this._consoleBox = blessed.box({
+    this._consoleBox = _blessed().default.box({
       top: '100%-2',
       left: 0,
       width: '100%',
@@ -135,12 +141,11 @@ export default class LineEditor extends EventEmitter {
       content: '',
       style: {
         fg: 'green',
-        bg: 'black',
+        bg: 'black'
       },
-      tags: false,
+      tags: false
     });
-
-    this._statusBox = blessed.box({
+    this._statusBox = _blessed().default.box({
       top: '100%-1',
       left: 0,
       width: '100%',
@@ -148,43 +153,19 @@ export default class LineEditor extends EventEmitter {
       content: '',
       style: {
         fg: 'black',
-        bg: 'gray',
+        bg: 'gray'
       },
       align: 'right',
-      tags: false,
+      tags: false
     });
 
     this._screen.append(this._outputBox);
+
     this._screen.append(this._consoleBox);
+
     this._screen.append(this._statusBox);
 
-    this._handlers = new Map([
-      ['backspace', () => this._backspace()],
-      ['delete', () => this._deleteRight(false)],
-      ['down', () => this._historyNext()],
-      ['end', () => this._end()],
-      ['enter', () => this._enter()],
-      ['home', () => this._home()],
-      ['left', () => this._left()],
-      ['pageup', () => this._pageUp()],
-      ['pagedown', () => this._pageDown()],
-      ['right', () => this._right()],
-      ['space', () => this._inputChar(' ')],
-      ['up', () => this._historyPrevious()],
-      ['C-home', () => this._topOfOutput()],
-      ['C-end', () => this._bottomOfOutput()],
-      ['C-a', () => this._home()],
-      ['C-c', () => this._sigint()],
-      ['C-d', () => this._deleteRight(true)],
-      ['C-e', () => this._end()],
-      ['C-h', () => this._backspace()],
-      ['C-k', () => this._deleteToEnd()],
-      ['C-l', () => this._repaintScreen()],
-      ['C-t', () => this._swapChars()],
-      ['C-u', () => this._deleteLine()],
-      ['C-w', () => this._deleteToStart()],
-      ['\x7f', () => this._backspace()],
-    ]);
+    this._handlers = new Map([['backspace', () => this._backspace()], ['delete', () => this._deleteRight(false)], ['down', () => this._historyNext()], ['end', () => this._end()], ['enter', () => this._enter()], ['home', () => this._home()], ['left', () => this._left()], ['pageup', () => this._pageUp()], ['pagedown', () => this._pageDown()], ['right', () => this._right()], ['space', () => this._inputChar(' ')], ['up', () => this._historyPrevious()], ['C-home', () => this._topOfOutput()], ['C-end', () => this._bottomOfOutput()], ['C-a', () => this._home()], ['C-c', () => this._sigint()], ['C-d', () => this._deleteRight(true)], ['C-e', () => this._end()], ['C-h', () => this._backspace()], ['C-k', () => this._deleteToEnd()], ['C-l', () => this._repaintScreen()], ['C-t', () => this._swapChars()], ['C-u', () => this._deleteLine()], ['C-w', () => this._deleteToStart()], ['\x7f', () => this._backspace()]]);
 
     this._screen.on('keypress', (ch, key) => {
       // key.name is the base name of a key. For a character with shift/ctrl/etc.,
@@ -195,22 +176,26 @@ export default class LineEditor extends EventEmitter {
       //
       // We don't want to go to the handlers array for normal or shifted
       // characters, but we do want to for control keys.
-      if ((key.name != null && key.name.length > 1) || key.ctrl === true) {
+      if (key.name != null && key.name.length > 1 || key.ctrl === true) {
         const handler = this._handlers.get(key.full);
+
         if (handler != null) {
           handler();
         }
+
         return;
       }
 
       if (ch != null && ch >= ' ') {
         this._inputChar(ch);
+
         return;
       }
     });
 
     this._screen.on('resize', () => {
       this._repaintOutput();
+
       this._redrawConsole();
     });
 
@@ -226,15 +211,17 @@ export default class LineEditor extends EventEmitter {
     this._scrollback = [];
     this._boxTop = 0;
     this._boxBottom = true;
+
     this._screen.render();
   }
 
-  _initializeTTY(options: LineEditorOptions): void {
+  _initializeTTY(options) {
     this._input.on('data', data => this._onRawData(data));
+
     this._input.on('end', _ => this.close());
   }
 
-  _redrawConsole(): void {
+  _redrawConsole() {
     // NB - 5 here gives a little context on the right of the cursor when
     // the user is near the right edge of the screen.
     const available = this._consoleBox.width - this._prompt.length - 5;
@@ -243,116 +230,131 @@ export default class LineEditor extends EventEmitter {
     const text = this._prompt + this._buffer.substr(left);
 
     this._consoleBox.setContent(text);
+
     this._screen.render();
-    this._program.move(
-      this._prompt.length + this._cursor - left,
-      this._consoleBox.top,
-    );
+
+    this._program.move(this._prompt.length + this._cursor - left, this._consoleBox.top);
   }
 
-  _inputChar(ch: string): void {
+  _inputChar(ch) {
     this._logger.info(`Input character ${ch}`);
-    this._buffer =
-      this._buffer.substr(0, this._cursor) +
-      ch +
-      this._buffer.substr(this._cursor);
+
+    this._buffer = this._buffer.substr(0, this._cursor) + ch + this._buffer.substr(this._cursor);
+
     this._logger.info(`Buffer is now ${this._buffer}`);
+
     this._cursor++;
+
     this._textChanged();
+
     this._redrawConsole();
   }
 
-  _sigint(): void {
+  _sigint() {
     this.emit('SIGINT');
   }
 
-  _enter(): void {
+  _enter() {
     this.write(`${this._prompt}${this._buffer}\n`);
+
     this._history.addItem(this._buffer);
+
     this.emit('line', this._buffer);
     this._buffer = '';
     this._cursor = 0;
+
     this._textChanged();
+
     this._redrawConsole();
   }
 
-  _left(): void {
+  _left() {
     if (this._cursor > 0) {
       this._cursor--;
+
       this._redrawConsole();
     }
   }
 
-  _right(): void {
+  _right() {
     if (this._cursor < this._buffer.length) {
       this._cursor++;
+
       this._redrawConsole();
     }
   }
 
-  _home(): void {
+  _home() {
     this._cursor = 0;
+
     this._redrawConsole();
   }
 
-  _end(): void {
+  _end() {
     this._cursor = this._buffer === '' ? 0 : this._buffer.length;
+
     this._redrawConsole();
   }
 
-  _deleteToEnd(): void {
+  _deleteToEnd() {
     if (this._cursor < this._buffer.length) {
       this._buffer = this._buffer.substr(0, this._cursor);
+
       this._textChanged();
+
       this._redrawConsole();
     }
   }
 
-  _deleteToStart(): void {
+  _deleteToStart() {
     if (this._cursor > 0) {
       this._buffer = this._buffer.substr(this._cursor);
       this._cursor = 0;
+
       this._textChanged();
+
       this._redrawConsole();
     }
   }
 
-  _deleteLine(): void {
+  _deleteLine() {
     if (this._buffer !== '') {
       this._buffer = '';
       this._cursor = 0;
+
       this._textChanged();
+
       this._redrawConsole();
     }
   }
 
-  _backspace(): void {
+  _backspace() {
     if (this._cursor > 0) {
-      this._buffer =
-        this._buffer.substr(0, this._cursor - 1) +
-        this._buffer.substr(this._cursor);
+      this._buffer = this._buffer.substr(0, this._cursor - 1) + this._buffer.substr(this._cursor);
       this._cursor--;
+
       this._textChanged();
+
       this._redrawConsole();
     }
   }
 
-  _deleteRight(eofOnEmpty: boolean): void {
+  _deleteRight(eofOnEmpty) {
     if (this._buffer === '' && eofOnEmpty) {
       this.close();
       return;
     }
 
     if (this._cursor < this._buffer.length) {
-      this._buffer =
-        this._buffer.substr(0, this._cursor) +
-        this._buffer.substr(this._cursor + 1);
+      this._buffer = this._buffer.substr(0, this._cursor) + this._buffer.substr(this._cursor + 1);
+
       this._textChanged();
+
       this._redrawConsole();
     }
   }
 
-  _swapChars(): void {
+  _swapChars() {
     if (this._cursor === 0 || this._buffer.length < 2) {
       return;
     }
@@ -361,66 +363,70 @@ export default class LineEditor extends EventEmitter {
       this._cursor--;
     }
 
-    this._buffer =
-      this._buffer.substr(0, this._cursor - 1) +
-      this._buffer.substr(this._cursor, 1) +
-      this._buffer.substr(this._cursor - 1, 1) +
-      this._buffer.substr(this._cursor + 1);
-
+    this._buffer = this._buffer.substr(0, this._cursor - 1) + this._buffer.substr(this._cursor, 1) + this._buffer.substr(this._cursor - 1, 1) + this._buffer.substr(this._cursor + 1);
     this._cursor++;
+
     this._textChanged();
+
     this._redrawConsole();
   }
 
   _pageUp() {
     this._boxTop = Math.max(0, this._boxTop - this._outputBox.height + 1);
+
     this._updateScrollFlags();
+
     this._repaintOutput();
   }
 
   _pageDown() {
-    this._boxTop = Math.min(
-      this._scrollback.length - this._outputBox.height,
-      this._boxTop + this._outputBox.height - 1,
-    );
+    this._boxTop = Math.min(this._scrollback.length - this._outputBox.height, this._boxTop + this._outputBox.height - 1);
+
     this._updateScrollFlags();
+
     this._repaintOutput();
   }
 
   _repaintScreen() {
     this._screen.realloc();
+
     this._repaintOutput();
+
     this._repaintStatus();
+
     this._redrawConsole();
   }
 
   _topOfOutput() {
     this._boxTop = 0;
+
     this._updateScrollFlags();
+
     this._repaintOutput();
   }
 
   _bottomOfOutput() {
-    this._boxTop = Math.max(
-      0,
-      this._scrollback.length - this._outputBox.height,
-    );
+    this._boxTop = Math.max(0, this._scrollback.length - this._outputBox.height);
+
     this._updateScrollFlags();
+
     this._repaintOutput();
   }
 
-  _updateScrollFlags(): void {
-    this._boxBottom =
-      this._scrollback.length - this._boxTop <= this._outputBox.height;
+  _updateScrollFlags() {
+    this._boxBottom = this._scrollback.length - this._boxTop <= this._outputBox.height;
+
     if (this._boxBottom) {
       this._more = false;
     }
   }
 
-  write(s: string): void {
+  write(s) {
     this._logger.info(`output [${s}]\n`);
+
     if (!this._tty || !this._fullscreen) {
       this._output.write(s);
+
       return;
     }
 
@@ -446,26 +452,30 @@ export default class LineEditor extends EventEmitter {
     if (!this._boxBottom) {
       this._more = true;
     }
+
     this._repaintOutput();
   }
 
-  async prompt(): Promise<void> {
+  async prompt() {
     if (!this._tty) {
       this._output.write(this._prompt);
     }
   }
 
-  _historyPrevious(): void {
+  _historyPrevious() {
     const item = this._history.previousItem();
+
     if (item != null) {
       this._buffer = item;
       this._cursor = item.length;
+
       this._redrawConsole();
     }
   }
 
-  _historyNext(): void {
+  _historyNext() {
     const item = this._history.nextItem();
+
     if (item != null) {
       this._buffer = item;
       this._cursor = item.length;
@@ -473,65 +483,50 @@ export default class LineEditor extends EventEmitter {
       this._buffer = this._historyTextSave;
       this._cursor = this._buffer.length;
     }
+
     this._redrawConsole();
   }
 
-  _textChanged(): void {
+  _textChanged() {
     this._historyTextSave = this._buffer;
+
     this._history.resetSearch();
   }
 
-  _repaintOutput(): void {
+  _repaintOutput() {
     // if we're pinned to the bottom, recompute the top
     if (this._boxBottom) {
-      this._boxTop = Math.max(
-        0,
-        this._scrollback.length - this._outputBox.height,
-      );
+      this._boxTop = Math.max(0, this._scrollback.length - this._outputBox.height);
     }
 
-    this._outputBox.setContent(
-      this._scrollback
-        .slice(this._boxTop, this._boxTop + this._outputBox.height)
-        .join('\n'),
-    );
+    this._outputBox.setContent(this._scrollback.slice(this._boxTop, this._boxTop + this._outputBox.height).join('\n'));
 
     this._repaintStatus();
+
     this._screen.render();
   }
 
-  _repaintStatus(): void {
+  _repaintStatus() {
     const statusEmpty = '       ';
     const statusBottom = 'BOTTOM ';
     const statusMore = 'MORE...';
 
-    const lpad = (str: string, width: number) =>
-      (str + ' '.repeat(width)).substr(0, width);
+    const lpad = (str, width) => (str + ' '.repeat(width)).substr(0, width);
 
-    const lastLine = Math.min(
-      this._boxTop + this._outputBox.height,
-      this._scrollback.length,
-    );
-    const scroll = `Lines ${this._boxTop + 1}-${lastLine} of ${
-      this._scrollback.length
-    }`;
-
-    const where = this._more
-      ? statusMore
-      : this._boxBottom
-        ? statusBottom
-        : statusEmpty;
+    const lastLine = Math.min(this._boxTop + this._outputBox.height, this._scrollback.length);
+    const scroll = `Lines ${this._boxTop + 1}-${lastLine} of ${this._scrollback.length}`;
+    const where = this._more ? statusMore : this._boxBottom ? statusBottom : statusEmpty;
 
     this._statusBox.setContent(`| ${lpad(scroll, 30)} | ${where}`);
+
     this._screen.render();
+  } // non-tty support
+
+
+  _onRawData(data) {
+    data.toString('utf8').trim().split('\n').forEach(line => this.emit('line', line));
   }
 
-  // non-tty support
-  _onRawData(data: Buffer): void {
-    data
-      .toString('utf8')
-      .trim()
-      .split('\n')
-      .forEach(line => this.emit('line', line));
-  }
 }
+
+exports.default = LineEditor;

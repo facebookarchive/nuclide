@@ -1,3 +1,32 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _BreakpointCommandUtils() {
+  const data = require("./BreakpointCommandUtils");
+
+  _BreakpointCommandUtils = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _TokenizedLine() {
+  const data = _interopRequireDefault(require("./TokenizedLine"));
+
+  _TokenizedLine = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +35,32 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type Breakpoint from './Breakpoint';
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-
-import {breakpointFromArgList} from './BreakpointCommandUtils';
-import TokenizedLine from './TokenizedLine';
-
-export default class BreakpointEnableCommand implements Command {
-  name = 'enable';
-  helpText =
-    "[index | 'all']: enables a breakpoint, or all breakpoints. With no arguments, enables the current breakpoint.";
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
+class BreakpointEnableCommand {
+  constructor(con, debug) {
+    this.name = 'enable';
+    this.helpText = "[index | 'all']: enables a breakpoint, or all breakpoints. With no arguments, enables the current breakpoint.";
     this._debugger = debug;
   }
 
-  async execute(line: TokenizedLine): Promise<void> {
-    const bpt: ?Breakpoint = breakpointFromArgList(
-      this._debugger,
-      line.stringTokens().slice(1),
-      this.name,
-    );
+  async execute(line) {
+    const bpt = (0, _BreakpointCommandUtils().breakpointFromArgList)(this._debugger, line.stringTokens().slice(1), this.name);
 
     if (bpt == null) {
       await this._debugger.setAllBreakpointsEnabled(true);
+
       this._console.outputLine('All breakpoins enabled.');
+
       return;
     }
 
     await this._debugger.setBreakpointEnabled(bpt, true);
+
     this._console.outputLine(`Breakpoint #${bpt.index} enabled.`);
   }
+
 }
+
+exports.default = BreakpointEnableCommand;

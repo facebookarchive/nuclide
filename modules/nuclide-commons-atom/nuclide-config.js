@@ -1,3 +1,57 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__updateConfigSettingsListener = __updateConfigSettingsListener;
+exports.default = void 0;
+
+var _electron = require("electron");
+
+var _fs = _interopRequireDefault(require("fs"));
+
+function _nullthrows() {
+  const data = _interopRequireDefault(require("nullthrows"));
+
+  _nullthrows = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _season() {
+  const data = _interopRequireDefault(require("season"));
+
+  _season = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ConfigManager() {
+  const data = _interopRequireDefault(require("./ConfigManager"));
+
+  _ConfigManager = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +60,12 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import invariant from 'assert';
-import {remote, ipcRenderer} from 'electron';
-
-import fs from 'fs';
-import nullthrows from 'nullthrows';
-import CSON from 'season';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import ConfigManager from './ConfigManager';
-
-import type {BrowserWindow, WebContents} from 'nuclide-commons/electron-remote';
-
-invariant(remote != null && remote.ipcMain != null && ipcRenderer != null);
-
+if (!(_electron.remote != null && _electron.remote.ipcMain != null && _electron.ipcRenderer != null)) {
+  throw new Error("Invariant violation: \"remote != null && remote.ipcMain != null && ipcRenderer != null\"");
+}
 /**
  * This module provides a wrapper around an atom$Config to be used for storing
  * data not intended to be accessed by Nuclide users (which should be accessed
@@ -31,57 +74,45 @@ invariant(remote != null && remote.ipcMain != null && ipcRenderer != null);
  * NuclideConfig / ConfigManager functions provided by this module's export
  */
 
-type NuclideConfigSetArgs = {
-  settings: Object,
-  options?: {source?: string},
-};
 
 const Config = atom.config.constructor;
 const NUCLIDE_CONFIG_FILE = 'nuclide-config.cson';
 const UPDATE_NUCLIDE_CONFIG_SETTINGS = 'nuclide-config-update-settings';
 
-const nuclideConfigFilePath = nuclideUri.join(
-  nullthrows(process.env.ATOM_HOME),
-  NUCLIDE_CONFIG_FILE,
-);
+const nuclideConfigFilePath = _nuclideUri().default.join((0, _nullthrows().default)(process.env.ATOM_HOME), NUCLIDE_CONFIG_FILE);
 
 function getConfigSettingsFromDisk() {
   let configSettings = {};
 
-  if (fs.existsSync(nuclideConfigFilePath)) {
-    configSettings = CSON.readFileSync(nuclideConfigFilePath);
+  if (_fs.default.existsSync(nuclideConfigFilePath)) {
+    configSettings = _season().default.readFileSync(nuclideConfigFilePath);
   }
+
   return configSettings;
 }
 
 const config = new Config({
   mainSource: nuclideConfigFilePath,
+
   // Reuse applicationDelegate's saveCallback but with nuclideConfig's context.
   // This delegates saving to the config file to atom's main process, which
   // handles saving contention
   saveCallback() {
-    atom.applicationDelegate.setUserSettings(
-      this.settings,
-      this.getUserConfigPath(),
-    );
-  },
-});
+    atom.applicationDelegate.setUserSettings(this.settings, this.getUserConfigPath());
+  }
 
-// Reset the settings to match those stored in NUCLIDE_CONFIG_FILE. This sets
+}); // Reset the settings to match those stored in NUCLIDE_CONFIG_FILE. This sets
 // settingsLoaded to true (allowing config to be saved using the saveCallback)
-config.resetUserSettings(getConfigSettingsFromDisk());
 
+config.resetUserSettings(getConfigSettingsFromDisk());
 /**
  * Emit nuclide-config's settings so that other processes can update their
  * config settings to reflect changes values
  */
-function emitConfigSettings(settings: NuclideConfigSetArgs) {
-  ipcRenderer.send(
-    UPDATE_NUCLIDE_CONFIG_SETTINGS,
-    (settings: NuclideConfigSetArgs),
-  );
-}
 
+function emitConfigSettings(settings) {
+  _electron.ipcRenderer.send(UPDATE_NUCLIDE_CONFIG_SETTINGS, settings);
+}
 /**
  * Extend the ConfigManager to overload the set/unset functionality. This is
  * necessary for interprocess communication so that config changes in one window
@@ -94,46 +125,37 @@ function emitConfigSettings(settings: NuclideConfigSetArgs) {
  * process, we call it for any process that calls nuclideConfig.set/unset and rely
  * on Atom's main process to handle any disk writing contention
  */
-class NuclideConfig extends ConfigManager {
+
+
+class NuclideConfig extends _ConfigManager().default {
   // Set the nuclide-config value and emit event with updated config values to
   // push config changes to other processes
-  set(
-    keyPath: string,
-    value: ?mixed,
-    options?: {
-      scopeSelector?: string,
-      source?: string,
-    },
-  ): boolean {
+  set(keyPath, value, options) {
     const setSuccess = super.set(keyPath, value, options);
+
     if (setSuccess) {
       emitConfigSettings({
         settings: this._config.settings,
-        options,
+        options
       });
     }
-    return setSuccess;
-  }
 
-  // Unset the nuclide-config key and emit event with updated config values to
+    return setSuccess;
+  } // Unset the nuclide-config key and emit event with updated config values to
   // push config changes to other processes
-  unset(
-    keyPath: string,
-    options?: {
-      scopeSelector?: string,
-      source?: string,
-    },
-  ): void {
+
+
+  unset(keyPath, options) {
     super.unset(keyPath, options);
     emitConfigSettings({
       settings: this._config.settings,
-      options,
+      options
     });
   }
+
 }
 
 const nuclideConfig = new NuclideConfig(config);
-
 /**
  * Listen to incoming nuclide-config changes from other processes and reset
  * the current process's config to match that emitted by the emitting process.
@@ -141,28 +163,21 @@ const nuclideConfig = new NuclideConfig(config);
  * instead of setting individual key/vals, which may produce a config of merged
  * values from different sources
  */
-remote.ipcMain.on(
-  UPDATE_NUCLIDE_CONFIG_SETTINGS,
-  __updateConfigSettingsListener,
-);
 
-// NB: This isn't described correctly in electron-flowtype-definitions, so we'll
+_electron.remote.ipcMain.on(UPDATE_NUCLIDE_CONFIG_SETTINGS, __updateConfigSettingsListener); // NB: This isn't described correctly in electron-flowtype-definitions, so we'll
 // fake it out
-type SenderGetBrowserWindow = {|
-  getOwnerBrowserWindow: () => BrowserWindow,
-|};
+
 
 // export for testing
-export function __updateConfigSettingsListener(
-  event: {returnValue: mixed, sender: WebContents & SenderGetBrowserWindow},
-  {settings, options}: NuclideConfigSetArgs,
-) {
-  if (
-    event.sender.getOwnerBrowserWindow().id !== remote.getCurrentWindow().id
-  ) {
+function __updateConfigSettingsListener(event, {
+  settings,
+  options
+}) {
+  if (event.sender.getOwnerBrowserWindow().id !== _electron.remote.getCurrentWindow().id) {
     // Update all settings without saving to disk
     nuclideConfig.getConfig().resetUserSettings(settings, options);
   }
 }
 
-export default nuclideConfig;
+var _default = nuclideConfig;
+exports.default = _default;

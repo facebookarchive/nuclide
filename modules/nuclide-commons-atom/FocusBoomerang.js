@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,40 +13,41 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-type Focus = {
-  node: ?HTMLElement,
-  pane: ?atom$Pane,
-};
-
-export default class FocusBoomerang {
-  _focus: ?Focus;
-
-  recordFocus(): void {
+class FocusBoomerang {
+  recordFocus() {
     if (this._focus != null) {
       return;
     }
 
     this._focus = {
       node: document.activeElement,
-      pane: atom.workspace.getActivePane(),
+      pane: atom.workspace.getActivePane()
     };
   }
 
-  returnFocus(): void {
+  returnFocus() {
     if (this._focus == null) {
       return;
     }
-    const {node, pane} = this._focus;
+
+    const {
+      node,
+      pane
+    } = this._focus;
+
     if (node != null && document.body != null && document.body.contains(node)) {
       node.focus();
       return;
     }
+
     if (pane != null && !pane.isDestroyed()) {
       pane.activate();
     }
   }
+
 }
+
+exports.default = FocusBoomerang;

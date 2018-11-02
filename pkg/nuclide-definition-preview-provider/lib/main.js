@@ -1,3 +1,20 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.provideDefinitionPreview = provideDefinitionPreview;
+
+function _nuclideRemoteConnection() {
+  const data = require("../../nuclide-remote-connection");
+
+  _nuclideRemoteConnection = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,28 +22,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Definition, DefinitionPreviewProvider} from 'atom-ide-ui';
-
-import {getDefinitionPreviewServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-export function provideDefinitionPreview(): DefinitionPreviewProvider {
+function provideDefinitionPreview() {
   return {
-    async getDefinitionPreview(
-      definition: Definition,
-    ): Promise<?{
-      mime: string,
-      contents: string,
-      encoding: string,
-    }> {
-      const service = await getDefinitionPreviewServiceByNuclideUri(
-        definition.path,
-      );
-
+    async getDefinitionPreview(definition) {
+      const service = await (0, _nuclideRemoteConnection().getDefinitionPreviewServiceByNuclideUri)(definition.path);
       return service.getDefinitionPreview(definition);
-    },
+    }
+
   };
 }

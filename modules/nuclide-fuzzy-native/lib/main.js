@@ -1,3 +1,15 @@
+"use strict";
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +18,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import {getLogger} from 'log4js';
-
-const logger = getLogger('nuclide-fuzzy-native');
-
-// Use the pre-built, native module if available.
+const logger = (0, _log4js().getLogger)('nuclide-fuzzy-native'); // Use the pre-built, native module if available.
 // If not, use the fallback JS implementation.
+
 try {
   // eslint-disable-next-line nuclide-internal/no-commonjs
   module.exports = require('nuclide-prebuilt-libs/fuzzy-native');
 } catch (e) {
-  logger.error(
-    'Failed to load native fuzzy matching. Falling back to JS implementation',
-    e,
-  );
-  // eslint-disable-next-line nuclide-internal/no-commonjs
-  module.exports = require('./FallbackMatcher');
+  logger.error('Failed to load native fuzzy matching. Falling back to JS implementation', e); // eslint-disable-next-line nuclide-internal/no-commonjs
+
+  module.exports = require("./FallbackMatcher");
 }

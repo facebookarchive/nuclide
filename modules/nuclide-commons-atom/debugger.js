@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDebuggerService = getDebuggerService;
+
+function _consumeFirstProvider() {
+  const data = _interopRequireDefault(require("./consumeFirstProvider"));
+
+  _consumeFirstProvider = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +25,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {DebuggerService} from 'atom-ide-ui';
-
-import consumeFirstProvider from './consumeFirstProvider';
-
-export function getDebuggerService(): Promise<DebuggerService> {
-  return consumeFirstProvider('debugger.remote');
+function getDebuggerService() {
+  return (0, _consumeFirstProvider().default)('debugger.remote');
 }

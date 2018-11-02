@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.__test__ = void 0;
+
+function _nuclideUri() {
+  const data = _interopRequireDefault(require("../../nuclide-commons/nuclideUri"));
+
+  _nuclideUri = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,37 +25,34 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-import type {QueryScore} from './QueryScore';
-
 const NON_UPPERCASE_CHARS_REGEXP = /[^a-z0-9]/g;
 
-function sanitize(str: string) {
+function sanitize(str) {
   return str.toLowerCase().replace(NON_UPPERCASE_CHARS_REGEXP, '');
 }
-
 /**
  * Returns the score of the common subsequence between `needle` and `haystack` or -1 if there is
  * no common subsequence.
  * A lower number means `needle` is more relevant to `haystack`.
  */
-function scoreCommonSubsequence(needle_: string, haystack_: string): number {
+
+
+function scoreCommonSubsequence(needle_, haystack_) {
   // Sanitize the needle and haystack.
   const needle = sanitize(needle_);
   const haystack = sanitize(haystack_);
+
   if (needle.length === haystack.length) {
     return needle === haystack ? 0 : -1;
   }
 
-  let needleIndex: number = 0;
-  let haystackIndex: number = 0;
-  let score: number = 0;
-  let inGap: boolean = false;
+  let needleIndex = 0;
+  let haystackIndex = 0;
+  let score = 0;
+  let inGap = false;
 
   while (needleIndex < needle.length && haystackIndex < haystack.length) {
     if (needle[needleIndex] === haystack[haystackIndex]) {
@@ -49,9 +65,11 @@ function scoreCommonSubsequence(needle_: string, haystack_: string): number {
       inGap = true;
     }
   }
+
   if (needleIndex >= needle.length) {
     return score + haystack.length + haystackIndex;
   }
+
   return -1;
 }
 
@@ -61,29 +79,30 @@ const NOT_CAPITAL_LETTERS_REGEXP = /[^A-Z]/g;
  * `haystack`.  E.g. 'fbide' matches 'FaceBookIntegratedDevelopmentEnvironment' and
  *                                   'faceBookIntegratedDevelopmentEnvironment'.
  */
-function checkIfMatchesCamelCaseLetters(
-  needle: string,
-  haystack: string,
-): boolean {
-  const uppercase =
-    haystack.substring(0, 1) +
-    haystack.substring(1).replace(NOT_CAPITAL_LETTERS_REGEXP, '');
+
+function checkIfMatchesCamelCaseLetters(needle, haystack) {
+  const uppercase = haystack.substring(0, 1) + haystack.substring(1).replace(NOT_CAPITAL_LETTERS_REGEXP, '');
   return needle.toLowerCase() === uppercase.toLowerCase();
 }
 
 const CAPITAL_LETTERS_REGEXP = /[A-Z]/;
 const IMPORTANT_DELIMITERS_REGEXP = /[_\-.]/;
-function isLetterImportant(index: number, name: string): boolean {
+
+function isLetterImportant(index, name) {
   if (index <= 1) {
     return true;
   }
+
   if (CAPITAL_LETTERS_REGEXP.test(name[index])) {
     return true;
   }
+
   const previousCharacter = name[index - 1];
+
   if (IMPORTANT_DELIMITERS_REGEXP.test(previousCharacter)) {
     return true;
   }
+
   return false;
 }
 /**
@@ -92,37 +111,37 @@ function isLetterImportant(index: number, name: string): boolean {
  * than relying on the index. Once the index is implemented, consumers of this need to be updated.
  */
 // TODO(jxg): replace with "important characters" index.
-function importantCharactersForString(str: string): Set<string> {
+
+
+function importantCharactersForString(str) {
   const importantCharacters = new Set();
+
   for (let index = 0; index < str.length; index++) {
     const char = str[index];
+
     if (!importantCharacters.has(char) && isLetterImportant(index, str)) {
       importantCharacters.add(char);
     }
   }
+
   return importantCharacters;
 }
 
-export const __test__ = {
+const __test__ = {
   checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
-  scoreCommonSubsequence,
+  scoreCommonSubsequence
 };
+exports.__test__ = __test__;
 
-export default class QueryItem {
-  _filepath: string;
-  _filepathLowercase: string;
-  _filename: string;
-  _importantCharacters: Set<string>;
-
-  constructor(filepath: string) {
+class QueryItem {
+  constructor(filepath) {
     this._filepath = filepath;
     this._filepathLowercase = filepath.toLowerCase();
-    this._filename = nuclideUri.basename(this._filepathLowercase);
+    this._filename = _nuclideUri().default.basename(this._filepathLowercase);
     this._importantCharacters = importantCharactersForString(this._filename);
   }
-
   /**
    * Scores this object's string against the query given.
    *
@@ -145,33 +164,39 @@ export default class QueryItem {
    *     - The more cases of the characters that match, the more likely it is to be what you want.
    * f.) Sort the results by the score
    */
-  score(query: string): ?QueryScore {
+
+
+  score(query) {
     const score = this._getScoreFor(query);
-    return score == null
-      ? null
-      : {score, value: this._filepath, matchIndexes: []};
+
+    return score == null ? null : {
+      score,
+      value: this._filepath,
+      matchIndexes: []
+    };
   }
 
-  _getScoreFor(query: string): ?number {
+  _getScoreFor(query) {
     // Everything's an equally decent match for the empty string.
     if (query.length === 0) {
       return 0;
-    }
-    // Check if this a "possible result".
+    } // Check if this a "possible result".
     // TODO consider building a directory-level index from important_character -> QueryItem,
     // akin to FBIDE's implementation.
+
+
     const firstChar = query[0].toLowerCase();
+
     if (!this._importantCharacters.has(firstChar)) {
       return null;
     }
-    if (
-      query.length >= 3 &&
-      checkIfMatchesCamelCaseLetters(query, this._filename)
-    ) {
+
+    if (query.length >= 3 && checkIfMatchesCamelCaseLetters(query, this._filename)) {
       // If we match the uppercase characters of the filename, we should be ranked the highest
       return 0;
     } else {
       const sub = this._filepathLowercase.indexOf(query.toLowerCase());
+
       if (sub !== -1 && query.length < this._filename.length) {
         /**
          * We add the length of the term so we can be ranked alongside the
@@ -188,11 +213,16 @@ export default class QueryItem {
         // TODO(jxg): Investigate extending scoreCommonSubsequence to consider subsequences
         // bidirectionally, or use (some proxy for) edit distance.
         const score = scoreCommonSubsequence(query, this._filename);
+
         if (score !== -1) {
           return score;
         }
       }
     }
+
     return null;
   }
+
 }
+
+exports.default = QueryItem;

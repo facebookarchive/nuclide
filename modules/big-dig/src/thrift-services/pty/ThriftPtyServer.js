@@ -1,3 +1,52 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ThriftPtyServer = void 0;
+
+function _thrift() {
+  const data = _interopRequireDefault(require("thrift"));
+
+  _thrift = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ThriftPtyService() {
+  const data = _interopRequireDefault(require("./gen-nodejs/ThriftPtyService"));
+
+  _ThriftPtyService = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _ThriftPtyServiceHandler() {
+  const data = require("./ThriftPtyServiceHandler");
+
+  _ThriftPtyServiceHandler = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _log4js() {
+  const data = require("log4js");
+
+  _log4js = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,46 +55,44 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
 // $FlowIgnore
-import thrift from 'thrift';
 // $FlowIgnore
-import ThriftPtyService from './gen-nodejs/ThriftPtyService';
-import {ThriftPtyServiceHandler} from './ThriftPtyServiceHandler';
-import {getLogger} from 'log4js';
+const logger = (0, _log4js().getLogger)('thrift-pty-server');
 
-const logger = getLogger('thrift-pty-server');
-
-export class ThriftPtyServer {
-  _handler: ThriftPtyServiceHandler;
-  _server: thrift.Server;
-  _portOrPath: number | string;
-
-  constructor(_portOrPath: number | string) {
+class ThriftPtyServer {
+  constructor(_portOrPath) {
     this._portOrPath = _portOrPath;
     this._server = null;
   }
 
-  async initialize(): Promise<void> {
+  async initialize() {
     logger.info('initializing thrift pty service');
+
     if (this._server != null) {
       return;
     }
-    this._handler = new ThriftPtyServiceHandler();
-    this._server = thrift.createServer(ThriftPtyService, this._handler);
+
+    this._handler = new (_ThriftPtyServiceHandler().ThriftPtyServiceHandler)();
+    this._server = _thrift().default.createServer(_ThriftPtyService().default, this._handler);
+
     this._server.on('error', error => {
       logger.info('got error');
       throw error;
     });
+
     this._server.listen(this._portOrPath);
   }
 
   close() {
     logger.info('Closing Thrift Pty Server');
     this._server = null;
+
     this._handler.dispose();
   }
+
 }
+
+exports.ThriftPtyServer = ThriftPtyServer;

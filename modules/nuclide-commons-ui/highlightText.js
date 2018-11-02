@@ -1,3 +1,10 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = highlightText;
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,31 +13,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
-
-type MatchRange = [/* start */ number, /* end */ number];
-type TextValueWithMatches = {
-  text: string,
-  matchRanges: Array<MatchRange>,
-};
-
 // intended to be used as a tagged template literal, where the interpolated
 // pieces are highlighted in the returned set of matches:
 //
 // e.g. highlightText`not highlighted ${'but this is'} and this is not`;
-export default function highlightText(
-  unhighlightedStrings: Array<string>,
-  ...highlightedStrings: Array<string>
-): TextValueWithMatches {
+function highlightText(unhighlightedStrings, ...highlightedStrings) {
   let concattenated = '';
-  const highlightedRanges: Array<MatchRange> = [];
+  const highlightedRanges = [];
 
   for (let i = 0; i < unhighlightedStrings.length; i++) {
-    concattenated += unhighlightedStrings[i];
+    concattenated += unhighlightedStrings[i]; // the two lists of strings may be uneven by one
 
-    // the two lists of strings may be uneven by one
     if (highlightedStrings[i] != null) {
       const start = concattenated.length;
       concattenated += highlightedStrings[i];
@@ -40,6 +36,6 @@ export default function highlightText(
 
   return {
     text: concattenated,
-    matchRanges: highlightedRanges,
+    matchRanges: highlightedRanges
   };
 }

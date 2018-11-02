@@ -1,3 +1,22 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _TokenizedLine() {
+  const data = _interopRequireDefault(require("./TokenizedLine"));
+
+  _TokenizedLine = function () {
+    return data;
+  };
+
+  return data;
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,19 +25,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-import TokenizedLine from './TokenizedLine';
-
-export default class BackTraceCommand implements Command {
-  name = 'frame';
-  helpText = 'Sets the current stack trace frame.';
-  detailedHelpText = `
+class BackTraceCommand {
+  constructor(con, debug) {
+    this.name = 'frame';
+    this.helpText = 'Sets the current stack trace frame.';
+    this.detailedHelpText = `
 frame frame-index
 
 The frame index must be the index of a frame in the range displayed by 'backtrace'.
@@ -33,17 +47,13 @@ will use the selected frame for context; for example:
 * The 'print' command will evaluate expression in terms of the variables that are
   in scope in the selected frame.
   `;
-
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(line: TokenizedLine): Promise<void> {
+  async execute(line) {
     const activeThread = this._debugger.getActiveThread();
+
     const args = line.stringTokens().slice(1);
 
     if (args.length !== 1) {
@@ -59,4 +69,7 @@ will use the selected frame for context; for example:
     const newSelectedFrame = parseInt(frameArg, 10);
     await this._debugger.setSelectedStackFrame(activeThread, newSelectedFrame);
   }
+
 }
+
+exports.default = BackTraceCommand;
