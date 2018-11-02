@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type Immutable from 'immutable';
-import type {AppState} from '../lib/types';
+import type {AppState, NodeCheckedStatus} from '../lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/types';
 
 import {dragEventCameFromDraggableFile} from 'nuclide-commons-ui/DraggableFile';
@@ -43,6 +43,10 @@ type Props = {|
   usePreviewTabs: boolean,
   isEditingWorkingSet: boolean,
   vcsStatusCode: StatusCodeNumberValue,
+  isContainer: boolean,
+  isIgnored: boolean,
+  checkedStatus: NodeCheckedStatus,
+  shouldBeSoftened: boolean,
 
   // TODO: Hoist the logic for responding to drags to VirtualizedFileTree. (This component should
   // just report via props when it's been dragged into, etc.) Then we can remove the
@@ -165,22 +169,30 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {node, isSelected, vcsStatusCode} = this.props;
+    const {
+      checkedStatus,
+      node,
+      isContainer,
+      isIgnored,
+      isSelected,
+      shouldBeSoftened,
+      vcsStatusCode,
+    } = this.props;
 
     const outerClassName = classnames('entry', {
-      'file list-item': !node.isContainer,
-      'directory list-nested-item': node.isContainer,
+      'file list-item': !isContainer,
+      'directory list-nested-item': isContainer,
       'current-working-directory': node.isCwd,
       collapsed: !node.isLoading && !node.isExpanded,
       expanded: !node.isLoading && node.isExpanded,
       'project-root': node.isRoot,
       selected: isSelected || node.isDragHovered,
-      'nuclide-file-tree-softened': node.shouldBeSoftened,
+      'nuclide-file-tree-softened': shouldBeSoftened,
       'nuclide-file-tree-root-being-reordered': node.isBeingReordered,
       'nuclide-file-tree-entry-item': true,
     });
     const listItemClassName = classnames({
-      'header list-item': node.isContainer,
+      'header list-item': isContainer,
       loading: this.state.isLoading,
     });
 
@@ -190,13 +202,13 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
         statusClass = 'status-modified';
       } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
         statusClass = 'status-added';
-      } else if (node.isIgnored) {
+      } else if (isIgnored) {
         statusClass = 'status-ignored';
       } else {
         statusClass = '';
       }
     } else {
-      switch (node.checkedStatus) {
+      switch (checkedStatus) {
         case 'checked':
           statusClass = 'status-added';
           break;
@@ -219,7 +231,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     }
 
     let tooltip;
-    if (node.isContainer) {
+    if (isContainer) {
       if (node.isCwd) {
         tooltip = addTooltip({title: 'Current Working Root'});
       }
@@ -230,10 +242,10 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
         className={classnames(outerClassName, statusClass, generatedClass, {
           // `atom/find-and-replace` looks for this class to determine if a
           // data-path is a directory or not:
-          directory: node.isContainer,
+          directory: isContainer,
         })}
         style={{
-          paddingLeft: node.isContainer
+          paddingLeft: isContainer
             ? this.props.node.getDepth() * INDENT_LEVEL
             : // Folders typically render a disclosure triangle, making them appear
               // at one depth level more than they actually are. Compensate by
@@ -255,11 +267,10 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
           }}>
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
-              'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
-              'icon-nuclicon-file-directory-starred':
-                node.isContainer && node.isCwd,
+              'icon-nuclicon-file-directory': isContainer && !node.isCwd,
+              'icon-nuclicon-file-directory-starred': isContainer && node.isCwd,
             })}
-            isFolder={node.isContainer}
+            isFolder={isContainer}
             path={node.uri}
             // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
             ref={elem => {
@@ -285,8 +296,8 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 
     return (
       <Checkbox
-        checked={this.props.node.checkedStatus === 'checked'}
-        indeterminate={this.props.node.checkedStatus === 'partial'}
+        checked={this.props.checkedStatus === 'checked'}
+        indeterminate={this.props.checkedStatus === 'partial'}
         onChange={this._checkboxOnChange}
         onClick={this._checkboxOnClick}
         onMouseDown={this._checkboxOnMouseDown}
@@ -315,9 +326,8 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       return;
     }
 
-    const node = this.props.node;
     const shouldToggleExpand =
-      node.isContainer &&
+      this.props.isContainer &&
       // $FlowFixMe
       nullthrows(this._arrowContainer).contains(event.target) &&
       event.clientX <
@@ -349,7 +359,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
 
   _onClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
-    const {node, isSelected, isFocused} = this.props;
+    const {isContainer, isSelected, isFocused} = this.props;
     const deep = event.altKey;
     if (this._isToggleNodeExpand(event)) {
       this._toggleNodeExpanded(deep);
@@ -373,7 +383,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
         return;
       }
     } else {
-      if (node.isContainer) {
+      if (isContainer) {
         if (isFocused || this.props.usePreviewTabs) {
           this._toggleNodeExpanded(deep);
         }
@@ -395,7 +405,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
   _onDoubleClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
 
-    if (this.props.node.isContainer) {
+    if (this.props.isContainer) {
       return;
     }
 
@@ -408,7 +418,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     if (event.currentTarget.contains(event.relatedTarget)) {
       return;
     }
-    if (!this.props.node.isContainer) {
+    if (!this.props.isContainer) {
       return;
     }
 
@@ -511,7 +521,7 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
     if (externalDragPath != null) {
       this.props.movePathToNode(externalDragPath);
     } else if (files && files.length && this.props.canTransferFiles) {
-      if (this.props.node.isContainer) {
+      if (this.props.isContainer) {
         this.props.uploadDroppedFiles(files);
       } else {
         // TODO: Show warning
@@ -565,6 +575,9 @@ const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
   canTransferFiles: Selectors.getCanTransferFiles(state),
   vcsStatusCode: Selectors.getVcsStatus(state)(ownProps.node),
+  isContainer: Selectors.getNodeIsContainer(state)(ownProps.node),
+  isIgnored: Selectors.getNodeIsIgnored(state)(ownProps.node),
+  checkedStatus: Selectors.getNodeCheckedStatus(state)(ownProps.node),
 });
 
 const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({

@@ -169,7 +169,7 @@ function setFetchedKeys(
           if (
             Selectors.getAutoExpandSingleChild(store.getState()) &&
             childrenNodes.length === 1 &&
-            childrenNodes[0].isContainer
+            Selectors.getNodeIsContainer(store.getState())(childrenNodes[0])
           ) {
             nodesToAutoExpand.push(childrenNodes[0]);
           }
@@ -218,7 +218,7 @@ export function expandNode(
   const recursivelyExpandNode = (node: FileTreeNode) => {
     return node.setIsExpanded(true).setRecursive(
       n => {
-        if (!n.isContainer) {
+        if (!Selectors.getNodeIsContainer(store.getState())(n)) {
           return n;
         }
 
@@ -236,7 +236,7 @@ export function expandNode(
         return !n.isExpanded ? n : null;
       },
       n => {
-        if (n.isContainer && n.isExpanded) {
+        if (Selectors.getNodeIsContainer(store.getState())(n) && n.isExpanded) {
           fetchChildKeys(store, n.uri);
           return n.setIsLoading(true);
         }
@@ -430,7 +430,7 @@ async function promiseNodeChildKeys(
     return node.children
       .valueSeq()
       .toArray()
-      .filter(n => n.shouldBeShown)
+      .filter(n => Selectors.getNodeShouldBeShown(store.getState())(n))
       .map(n => n.uri);
   };
 

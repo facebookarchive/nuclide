@@ -77,6 +77,34 @@ export type StoreConfigData = {|
   editedWorkingSet: WorkingSet,
 |};
 
+export type NodeDebugState = {
+  uri: NuclideUri,
+  rootUri: NuclideUri,
+  isExpanded: boolean,
+  isDragHovered: boolean,
+  isBeingReordered: boolean,
+  isLoading: boolean,
+  wasFetched: boolean,
+  isCwd: boolean,
+  children: Immutable.OrderedMap<string, FileTreeNode>,
+  connectionTitle: string,
+  highlightedText: string,
+  matchesFilter: boolean,
+  isPendingLoad: boolean,
+  generatedStatus: ?GeneratedFileType,
+  isRoot: boolean,
+  name: string,
+  hashKey: string,
+  relativePath: string,
+  localPath: string,
+  isContainer: boolean,
+  shouldBeShown: boolean,
+  shouldBeSoftened: boolean,
+  isIgnored: boolean,
+  checkedStatus: NodeCheckedStatus,
+  children: Array<NodeDebugState>,
+};
+
 type TargetNodeKeys = {|
   rootKey: NuclideUri,
   nodeKey: NuclideUri,

@@ -21,6 +21,7 @@ import type {
   AppState,
   ExportStoreData,
   FileTreeContextMenuNode,
+  NodeDebugState,
   Roots,
 } from '../types';
 
@@ -156,16 +157,32 @@ export const getTrackedNode = (state: AppState): ?FileTreeNode => {
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
 };
 
+export const getNodeHashKey = (state: AppState) => (node: FileTreeNode) =>
+  node._hashKey;
+export const getNodeIsContainer = (state: AppState) => (node: FileTreeNode) =>
+  node._isContainer;
+export const getNodeShouldBeShown = (state: AppState) => (node: FileTreeNode) =>
+  node._shouldBeShown;
+export const getNodeShouldBeSoftened = (state: AppState) => (
+  node: FileTreeNode,
+) => node._shouldBeSoftened;
+export const getNodeRepo = (state: AppState) => (node: FileTreeNode) =>
+  node._repo;
+export const getNodeIsIgnored = (state: AppState) => (node: FileTreeNode) =>
+  node._isIgnored;
+export const getNodeCheckedStatus = (state: AppState) => (node: FileTreeNode) =>
+  node._checkedStatus;
+
 // To reduce the number of times we have to iterate over children, we calculate all of these values
 // in a single pass.
 const getChildDerivedValues = createSelector(
-  [(state: AppState) => null],
-  () => {
+  [getNodeShouldBeShown],
+  getNodeShouldBeShown_ => {
     const inner = memoize((node: FileTreeNode) => {
       let childrenAreLoading = node.isLoading;
       let containsDragHover = node.isDragHovered;
       let containsFilterMatches = node.matchesFilter;
-      let containsHidden = !node.shouldBeShown;
+      let containsHidden = !getNodeShouldBeShown_(node);
       let potentiallyShownChildrenCount = 0;
 
       node.children.forEach(child => {
@@ -193,7 +210,7 @@ const getChildDerivedValues = createSelector(
       });
 
       let shownChildrenCount;
-      if (!node.shouldBeShown) {
+      if (!getNodeShouldBeShown_(node)) {
         shownChildrenCount = 0; // No nodes are shown.
       } else if (node.isPendingLoad && childrenAreLoading) {
         shownChildrenCount = 1; // Only this node is shown.
@@ -254,7 +271,7 @@ export const getVisualIndex = (
   state: AppState,
 ): ((node: FileTreeNode) => number) => {
   return (node: FileTreeNode) => {
-    let index = node.shouldBeShown ? 1 : 0;
+    let index = getNodeShouldBeShown(state)(node) ? 1 : 0;
     let prev = findPrevShownSibling(state)(node);
     while (prev != null) {
       index += getShownChildrenCount(state)(prev);
@@ -395,7 +412,7 @@ export const getSingleTargetNode = createSelector(
  * Otherwise, returns a nearby node that is shown.
  */
 function findShownNode(state: AppState, node: FileTreeNode): ?FileTreeNode {
-  if (node.shouldBeShown) {
+  if (getNodeShouldBeShown(state)(node)) {
     return node;
   }
 
@@ -470,8 +487,10 @@ export const getNodeForPath = (
   return rootNode && rootNode.find(uri);
 };
 
-export const isEditedWorkingSetEmpty = createSelector([getRoots], roots =>
-  roots.every(root => root.checkedStatus === 'clear'),
+export const isEditedWorkingSetEmpty = createSelector(
+  [getRoots, getNodeCheckedStatus],
+  (roots, getNodeCheckedStatus_) =>
+    roots.every(root => getNodeCheckedStatus_(root) === 'clear'),
 );
 
 export const getFilterFound = createSelector(
@@ -489,8 +508,8 @@ export const getFilterFound = createSelector(
  * had to traverse. That meant we exceeded the max stack size with enough sibling files.
  */
 const getFindNodeAtOffset = createSelector(
-  [findNextShownSibling, getShownChildrenCount],
-  (findNextShownSibling_, getShownChildrenCount_) => {
+  [findNextShownSibling, getShownChildrenCount, getNodeShouldBeShown],
+  (findNextShownSibling_, getShownChildrenCount_, getNodeShouldBeShown_) => {
     return function(node_: FileTreeNode, offset_: number): ?FileTreeNode {
       let offset = offset_;
       let node = node_;
@@ -500,7 +519,9 @@ const getFindNodeAtOffset = createSelector(
           offset < getShownChildrenCount_(node) // `shownChildrenCount` includes the node itself.
         ) {
           // It's a descendant of this node!
-          const firstVisibleChild = node.children.find(c => c.shouldBeShown);
+          const firstVisibleChild = node.children.find(c =>
+            getNodeShouldBeShown_(c),
+          );
           if (firstVisibleChild == null) {
             return null;
           }
@@ -522,10 +543,10 @@ const getFindNodeAtOffset = createSelector(
 );
 
 export const getNodeByIndex = createSelector(
-  [getRoots, getFindNodeAtOffset],
-  (roots, findNodeAtOffset) => {
+  [getRoots, getFindNodeAtOffset, getNodeShouldBeShown],
+  (roots, findNodeAtOffset, getNodeShouldBeShown_) => {
     return memoize(index => {
-      const firstRoot = roots.find(r => r.shouldBeShown);
+      const firstRoot = roots.find(r => getNodeShouldBeShown_(r));
       return firstRoot == null ? null : findNodeAtOffset(firstRoot, index - 1);
     });
   },
@@ -592,19 +613,19 @@ export const getVcsStatus = createSelector(
 // implementation detail. So, when we wanted to move `vcsStatus` off of the node, we had an issue.
 // We now expose a limited API instead to avoid this.
 export const getFileTreeContextMenuNode = createSelector(
-  [getVcsStatus],
-  getVcsStatusFromNode => {
+  [getVcsStatus, getNodeRepo, getNodeIsContainer],
+  (getVcsStatusFromNode, getNodeRepo_, getNodeIsContainer_) => {
     return (node: ?FileTreeNode): ?FileTreeContextMenuNode => {
       if (node == null) {
         return null;
       }
       return {
         uri: node.uri,
-        isContainer: node.isContainer,
+        isContainer: getNodeIsContainer_(node),
         isRoot: node.isRoot,
         isCwd: node.isCwd,
         vcsStatusCode: getVcsStatusFromNode(node),
-        repo: node.repo,
+        repo: getNodeRepo_(node),
         // We don't want to expose the entire tree or allow traversal since then we'd have to
         // materialize every node. This is for supporting a legacy use case.
         parentUri: node.parent?.uri,
@@ -660,6 +681,40 @@ export const collectSelectionDebugState = createSelector(
 export const getCanTransferFiles = (state: AppState) =>
   Boolean(state.remoteTransferService);
 
+const collectDebugStateForNode = (state: AppState) => (
+  node: FileTreeNode,
+): NodeDebugState => {
+  return {
+    uri: node.uri,
+    rootUri: node.rootUri,
+    isExpanded: node.isExpanded,
+    isDragHovered: node.isDragHovered,
+    isBeingReordered: node.isBeingReordered,
+    isLoading: node.isLoading,
+    wasFetched: node.wasFetched,
+    isCwd: node.isCwd,
+    connectionTitle: node.connectionTitle,
+    highlightedText: node.highlightedText,
+    matchesFilter: node.matchesFilter,
+    isPendingLoad: node.isPendingLoad,
+    generatedStatus: node.generatedStatus,
+    isRoot: node.isRoot,
+    name: node.name,
+    hashKey: node._hashKey,
+    relativePath: node.relativePath,
+    localPath: node.localPath,
+    isContainer: getNodeIsContainer(state)(node),
+    shouldBeShown: getNodeShouldBeShown(state)(node),
+    shouldBeSoftened: getNodeShouldBeSoftened(state)(node),
+    isIgnored: getNodeIsIgnored(state)(node),
+    checkedStatus: getNodeCheckedStatus(state)(node),
+
+    children: Array.from(node.children.values()).map(child =>
+      collectDebugStateForNode(state)(child),
+    ),
+  };
+};
+
 // Note: The Flow types for reselect's `createSelector` only support up to 16
 // sub-selectors. Since this selector only gets called when the user reports a
 // bug, it does not need to be optimized for multiple consecutive calls on
@@ -682,7 +737,7 @@ export const collectDebugState = (state: AppState) => {
     usePreviewTabs: getUsePreviewTabs(state),
     focusEditorOnFileSelection: getFocusEditorOnFileSelection(state),
     roots: Array.from(getRoots(state).values()).map(root =>
-      root.collectDebugState(),
+      collectDebugStateForNode(state)(root),
     ),
     _conf: {
       hideIgnoredNames: conf.hideIgnoredNames,
@@ -713,7 +768,7 @@ export const collectDebugState = (state: AppState) => {
  */
 export function findNext(state: AppState) {
   return (node: FileTreeNode): ?FileTreeNode => {
-    if (!node.shouldBeShown) {
+    if (!getNodeShouldBeShown(state)(node)) {
       if (node.parent != null) {
         return findNext(state)(node.parent);
       }
@@ -722,7 +777,7 @@ export function findNext(state: AppState) {
     }
 
     if (getShownChildrenCount(state)(node) > 1) {
-      return node.children.find(c => c.shouldBeShown);
+      return node.children.find(c => getNodeShouldBeShown(state)(c));
     }
 
     // Not really an alias, but an iterating reference
@@ -743,7 +798,7 @@ export function findNext(state: AppState) {
 export function findNextShownSibling(state: AppState) {
   return (node: FileTreeNode): ?FileTreeNode => {
     let it = node.nextSibling;
-    while (it != null && !it.shouldBeShown) {
+    while (it != null && !getNodeShouldBeShown(state)(it)) {
       it = it.nextSibling;
     }
 
@@ -757,7 +812,7 @@ export function findNextShownSibling(state: AppState) {
  */
 export function findPrevious(state: AppState) {
   return (node: FileTreeNode): ?FileTreeNode => {
-    if (!node.shouldBeShown) {
+    if (!getNodeShouldBeShown(state)(node)) {
       if (node.parent != null) {
         return findPrevious(state)(node.parent);
       }
@@ -777,7 +832,7 @@ export function findPrevious(state: AppState) {
 export function findPrevShownSibling(state: AppState) {
   return (node: FileTreeNode): ?FileTreeNode => {
     let it = node.prevSibling;
-    while (it != null && !it.shouldBeShown) {
+    while (it != null && !getNodeShouldBeShown(state)(it)) {
       it = it.prevSibling;
     }
 
@@ -791,18 +846,23 @@ export function findPrevShownSibling(state: AppState) {
  * Or null, if none are found
  */
 export function findLastRecursiveChild(state: AppState) {
+  // TODO: Convert this to use `createSelector()`
   return (node: FileTreeNode): ?FileTreeNode => {
-    if (!node.isContainer || !node.isExpanded || node.children.isEmpty()) {
+    if (
+      !getNodeIsContainer(state)(node) ||
+      !node.isExpanded ||
+      node.children.isEmpty()
+    ) {
       return node;
     }
 
     let it = node.children.last();
-    while (it != null && !it.shouldBeShown) {
+    while (it != null && !getNodeShouldBeShown(state)(it)) {
       it = it.prevSibling;
     }
 
     if (it == null) {
-      if (node.shouldBeShown) {
+      if (getNodeShouldBeShown(state)(node)) {
         return node;
       }
       return findPrevious(state)(node);

@@ -97,34 +97,6 @@ type DerivedFileTreeNode = {|
   checkedStatus: NodeCheckedStatus,
 |};
 
-type DebugState = {
-  uri: NuclideUri,
-  rootUri: NuclideUri,
-  isExpanded: boolean,
-  isDragHovered: boolean,
-  isBeingReordered: boolean,
-  isLoading: boolean,
-  wasFetched: boolean,
-  isCwd: boolean,
-  children: Immutable.OrderedMap<string, FileTreeNode>,
-  connectionTitle: string,
-  highlightedText: string,
-  matchesFilter: boolean,
-  isPendingLoad: boolean,
-  generatedStatus: ?GeneratedFileType,
-  isRoot: boolean,
-  name: string,
-  hashKey: string,
-  relativePath: string,
-  localPath: string,
-  isContainer: boolean,
-  shouldBeShown: boolean,
-  shouldBeSoftened: boolean,
-  isIgnored: boolean,
-  checkedStatus: NodeCheckedStatus,
-  children: Array<DebugState>,
-};
-
 /**
  * OVERVIEW
  *   The FileTreeNode class is almost entirely immutable. Except for the parent and the sibling
@@ -185,7 +157,7 @@ export class FileTreeNode {
   rootUri: NuclideUri;
   name: string;
   isRoot: boolean;
-  isContainer: boolean;
+  _isContainer: boolean;
   isExpanded: boolean;
   isDragHovered: boolean;
   isBeingReordered: boolean;
@@ -203,12 +175,12 @@ export class FileTreeNode {
   localPath: string;
 
   // Derived
-  hashKey: string;
-  shouldBeShown: boolean;
-  shouldBeSoftened: boolean;
-  repo: ?atom$Repository;
-  isIgnored: boolean;
-  checkedStatus: NodeCheckedStatus;
+  _hashKey: string;
+  _shouldBeShown: boolean;
+  _shouldBeSoftened: boolean;
+  _repo: ?atom$Repository;
+  _isIgnored: boolean;
+  _checkedStatus: NodeCheckedStatus;
 
   /**
    * The children property is an OrderedMap instance keyed by child's name property.
@@ -349,13 +321,13 @@ export class FileTreeNode {
     const derived: DerivedFileTreeNode = this._deriver.buildDerivedFields(
       this._conf,
     );
-    this.hashKey = derived.hashKey;
-    this.isContainer = derived.isContainer;
-    this.shouldBeShown = derived.shouldBeShown;
-    this.shouldBeSoftened = derived.shouldBeSoftened;
-    this.repo = derived.repo;
-    this.isIgnored = derived.isIgnored;
-    this.checkedStatus = derived.checkedStatus;
+    this._hashKey = derived.hashKey;
+    this._isContainer = derived.isContainer;
+    this._shouldBeShown = derived.shouldBeShown;
+    this._shouldBeSoftened = derived.shouldBeSoftened;
+    this._repo = derived.repo;
+    this._isIgnored = derived.isIgnored;
+    this._checkedStatus = derived.checkedStatus;
   }
 
   /**
@@ -392,13 +364,6 @@ export class FileTreeNode {
 
   setIsDragHovered(isDragHovered: boolean): FileTreeNode {
     return this.set({isDragHovered});
-  }
-
-  setIsBeingReordered(isBeingReordered: boolean): FileTreeNode {
-    return this.setRecursive(
-      node => (node.shouldBeShown ? null : node),
-      node => (node.shouldBeShown ? node.set({isBeingReordered}) : node),
-    );
   }
 
   setIsLoading(isLoading: boolean): FileTreeNode {
@@ -635,37 +600,5 @@ export class FileTreeNode {
     }
 
     return child._findLastByNamePath(childNamePath.slice(1));
-  }
-
-  collectDebugState(): DebugState {
-    return {
-      uri: this.uri,
-      rootUri: this.rootUri,
-      isExpanded: this.isExpanded,
-      isDragHovered: this.isDragHovered,
-      isBeingReordered: this.isBeingReordered,
-      isLoading: this.isLoading,
-      wasFetched: this.wasFetched,
-      isCwd: this.isCwd,
-      connectionTitle: this.connectionTitle,
-      highlightedText: this.highlightedText,
-      matchesFilter: this.matchesFilter,
-      isPendingLoad: this.isPendingLoad,
-      generatedStatus: this.generatedStatus,
-      isRoot: this.isRoot,
-      name: this.name,
-      hashKey: this.hashKey,
-      relativePath: this.relativePath,
-      localPath: this.localPath,
-      isContainer: this.isContainer,
-      shouldBeShown: this.shouldBeShown,
-      shouldBeSoftened: this.shouldBeSoftened,
-      isIgnored: this.isIgnored,
-      checkedStatus: this.checkedStatus,
-
-      children: Array.from(this.children.values()).map(child =>
-        child.collectDebugState(),
-      ),
-    };
   }
 }

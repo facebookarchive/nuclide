@@ -39,12 +39,6 @@ export function getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
   return getHgRepositoryForAtomRepo(repository);
 }
 
-export function getHgRepositoryForNode(
-  node: FileTreeNode,
-): ?HgRepositoryClient {
-  return getHgRepositoryForAtomRepo(node.repo);
-}
-
 /**
  * Determines whether renaming the given node to the specified destPath is an
  * acceptable rename.
@@ -92,7 +86,7 @@ export async function renameNode(
     // Throws if the destPath already exists.
     await service.rename(filePath, destPath);
 
-    const hgRepository = getHgRepositoryForNode(node);
+    const hgRepository = getHgRepositoryForPath(node.uri);
     if (hgRepository == null) {
       return;
     }
@@ -227,8 +221,8 @@ export async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
 
   // 3) Batch hg remove nodes that belong to an hg repo, one request per repo.
   const nodesByHgRepository = Immutable.List(nodes)
-    .filter(node => getHgRepositoryForNode(node) != null)
-    .groupBy(node => getHgRepositoryForNode(node))
+    .filter(node => getHgRepositoryForPath(node.uri) != null)
+    .groupBy(node => getHgRepositoryForPath(node.uri))
     .entrySeq();
 
   await Promise.all(

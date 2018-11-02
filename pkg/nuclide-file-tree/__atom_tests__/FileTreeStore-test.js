@@ -9,6 +9,10 @@
  * @format
  * @emails oncall+nuclide
  */
+
+import type {FileTreeNode} from '../lib/FileTreeNode';
+import type {AppState} from '../lib/types';
+
 import {Directory} from 'atom';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import * as FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -16,7 +20,6 @@ import createStore from '../lib/redux/createStore';
 import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as EpicHelpers from '../lib/redux/EpicHelpers';
-import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';
 import fs from 'fs';
@@ -62,10 +65,14 @@ function getNode(rootKey: string, nodeKey: string): FileTreeNode {
   return node;
 }
 
-function shownChildren(rootKey: string, nodeKey: string): Array<FileTreeNode> {
+function shownChildren(
+  state: AppState,
+  rootKey: string,
+  nodeKey: string,
+): Array<FileTreeNode> {
   const node = getNode(rootKey, nodeKey);
   return node.children
-    .filter(n => n.shouldBeShown)
+    .filter(n => Selectors.getNodeShouldBeShown(state)(n))
     .valueSeq()
     .toArray();
 }
@@ -359,7 +366,7 @@ it('omits hidden nodes', async () => {
 
   await loadChildKeys(dir1, dir1);
 
-  expect(shownChildren(dir1, dir1).length).toBe(0);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(0);
 });
 
 it('shows nodes if the pattern changes to no longer match', async () => {
@@ -371,7 +378,7 @@ it('shows nodes if the pattern changes to no longer match', async () => {
 
   store.dispatch(Actions.setIgnoredNames(['bar.*']));
 
-  expect(shownChildren(dir1, dir1).length).toBe(1);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
 });
 
 it('obeys the hideIgnoredNames setting', async () => {
@@ -382,7 +389,7 @@ it('obeys the hideIgnoredNames setting', async () => {
 
   await loadChildKeys(dir1, dir1);
 
-  expect(shownChildren(dir1, dir1).length).toBe(1);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
 });
 
 describe('recovering from failed subscriptions', () => {
@@ -403,14 +410,18 @@ describe('recovering from failed subscriptions', () => {
     await loadChildKeys(dir1, dir1);
 
     // Children should load but the subscription should fail.
-    expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
+    expect(shownChildren(store.getState(), dir1, dir1).map(n => n.uri)).toEqual(
+      [fooTxt],
+    );
 
     // Add a new file, 'bar.baz', for which the store will not get a notification because
     // the subscription failed.
     const barBaz = nuclideUri.join(dir1, 'bar.baz');
     fs.writeFileSync(barBaz, '');
     await loadChildKeys(dir1, dir1);
-    expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
+    expect(shownChildren(store.getState(), dir1, dir1).map(n => n.uri)).toEqual(
+      [fooTxt],
+    );
 
     // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
     // whether a subscription is possible.
@@ -420,7 +431,9 @@ describe('recovering from failed subscriptions', () => {
 
     // The subscription should fail again, but the children should be refetched and match the
     // changed structure (i.e. include the new 'bar.baz' file).
-    expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([barBaz, fooTxt]);
+    expect(shownChildren(store.getState(), dir1, dir1).map(n => n.uri)).toEqual(
+      [barBaz, fooTxt],
+    );
     // $FlowFixMe
     FileTreeHelpers.getDirectoryByKey.mockRestore();
   });
@@ -435,7 +448,7 @@ it('omits vcs-excluded paths', async () => {
   const mockRepo = new MockRepository();
   store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
   await loadChildKeys(dir1, dir1);
-  expect(shownChildren(dir1, dir1).length).toBe(0);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(0);
 });
 
 it('includes vcs-excluded paths when told to', async () => {
@@ -448,7 +461,7 @@ it('includes vcs-excluded paths when told to', async () => {
   store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
 
   await loadChildKeys(dir1, dir1);
-  expect(shownChildren(dir1, dir1).length).toBe(1);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
 });
 
 it('includes vcs-excluded paths when explicitly told to', async () => {
@@ -461,7 +474,7 @@ it('includes vcs-excluded paths when explicitly told to', async () => {
   store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
 
   await loadChildKeys(dir1, dir1);
-  expect(shownChildren(dir1, dir1).length).toBe(1);
+  expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
 });
 
 it('expands deep nested structure of the node', async () => {
@@ -480,7 +493,7 @@ it('expands deep nested structure of the node', async () => {
     // return the promise that can be awaited on
     await EpicHelpers.expandNodeDeep(store, dir3, dir3);
 
-    expect(shownChildren(dir3, dir31).length).toBe(1);
+    expect(shownChildren(store.getState(), dir3, dir31).length).toBe(1);
   })();
 });
 

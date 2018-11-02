@@ -468,7 +468,9 @@ function startReorderDrag(
   const nextState = setRoots(
     state,
     updateNodeAtRoot(state._roots, draggedRootKey, draggedRootKey, node =>
-      node.setIsBeingReordered(true),
+      setNodeIsBeingReordered(node, true, n =>
+        Selectors.getNodeShouldBeShown(state)(n),
+      ),
     ),
   );
   return {
@@ -488,7 +490,9 @@ function endReorderDrag(state: AppState): AppState {
   const nextState = setRoots(
     state,
     updateNodeAtRoot(state._roots, sourceRootKey, sourceRootKey, node =>
-      node.setIsBeingReordered(false),
+      setNodeIsBeingReordered(node, false, n =>
+        Selectors.getNodeShouldBeShown(state)(n),
+      ),
     ),
   );
   return {
@@ -597,7 +601,7 @@ function updateConf(
       // Remove selection from hidden nodes under this root
       node => (getNodeContainsHidden(node) ? null : node),
       node => {
-        if (node.shouldBeShown) {
+        if (Selectors.getNodeShouldBeShown(state)(node)) {
           return node;
         }
 
@@ -892,7 +896,11 @@ function checkNode(
 
   const allChecked = nodeParent => {
     return nodeParent.children.every(c => {
-      return !c.shouldBeShown || c.checkedStatus === 'checked' || c === node;
+      return (
+        !Selectors.getNodeShouldBeShown(state)(c) ||
+        Selectors.getNodeCheckedStatus(state)(c) === 'checked' ||
+        c === node
+      );
     });
   };
 
@@ -923,7 +931,10 @@ function uncheckNode(
   const nodesToAppend = [];
   let uriToRemove = nodeKey;
 
-  while (node.parent != null && node.parent.checkedStatus === 'checked') {
+  while (
+    node.parent != null &&
+    Selectors.getNodeCheckedStatus(state)(node.parent) === 'checked'
+  ) {
     const parent = node.parent; // Workaround flow's (over)aggressive nullability detection
     parent.children.forEach(c => {
       if (c !== node) {
@@ -1149,7 +1160,7 @@ function rangeSelectToNode(
         // keep traversing the sub-tree,
         // - if the node is shown, has children, and in the applicable range.
         (node: FileTreeNode): ?FileTreeNode => {
-          if (!node.shouldBeShown) {
+          if (!Selectors.getNodeShouldBeShown(state)(node)) {
             return node;
           }
           if (getShownChildrenCount(node) === 1) {
@@ -1166,7 +1177,7 @@ function rangeSelectToNode(
         },
         // flip the isSelected flag accordingly, based on previous and current range.
         (node: FileTreeNode): FileTreeNode => {
-          if (!node.shouldBeShown) {
+          if (!Selectors.getNodeShouldBeShown(state)(node)) {
             return node;
           }
           const curIndex = beginIndex - getShownChildrenCount(node);
@@ -1400,7 +1411,10 @@ function moveSelectionToTop(state: AppState): AppState {
   }
 
   let nodeToSelect = state._roots.first();
-  if (nodeToSelect != null && !nodeToSelect.shouldBeShown) {
+  if (
+    nodeToSelect != null &&
+    !Selectors.getNodeShouldBeShown(state)(nodeToSelect)
+  ) {
     nodeToSelect = Selectors.findNext(state)(nodeToSelect);
   }
 
@@ -1620,4 +1634,15 @@ function deleteNodes(
     }
   }
   return map;
+}
+
+function setNodeIsBeingReordered(
+  node: FileTreeNode,
+  isBeingReordered: boolean,
+  getNodeShouldBeShown: FileTreeNode => boolean,
+): FileTreeNode {
+  return node.setRecursive(
+    n => (getNodeShouldBeShown(n) ? null : n),
+    n => (getNodeShouldBeShown(n) ? n.set({isBeingReordered}) : n),
+  );
 }

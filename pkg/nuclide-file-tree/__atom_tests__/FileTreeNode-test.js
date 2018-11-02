@@ -69,10 +69,10 @@ describe('FileTreeNode', () => {
     expect(node.name).toBe('ghi');
     expect(node.relativePath).toBe('def/ghi');
     expect(node.localPath).toBe('/abc/def/ghi');
-    expect(node.isContainer).toBe(false);
-    expect(node.shouldBeShown).toBe(true);
-    expect(node.checkedStatus).toBe('clear');
-    expect(node.shouldBeSoftened).toBe(false);
+    expect(node._isContainer).toBe(false);
+    expect(node._shouldBeShown).toBe(true);
+    expect(node._checkedStatus).toBe('clear');
+    expect(node._shouldBeSoftened).toBe(false);
     expect(node.highlightedText).toEqual('');
     expect(node.matchesFilter).toBeTruthy();
   });

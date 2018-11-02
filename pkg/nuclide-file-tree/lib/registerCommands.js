@@ -219,7 +219,7 @@ function searchInDirectory(event: Event, store: Store): void {
     }
 
     let path = node.uri;
-    if (!node.isContainer) {
+    if (!Selectors.getNodeIsContainer(store.getState())(node)) {
       invariant(node.parent);
       path = node.parent.uri;
     }

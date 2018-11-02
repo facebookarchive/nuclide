@@ -72,7 +72,7 @@ export function confirmNodeEpic(
       if (node == null) {
         return;
       }
-      if (node.isContainer) {
+      if (Selectors.getNodeIsContainer(store.getState())(node)) {
         if (node.isExpanded) {
           store.dispatch({
             type: Actions.COLLAPSE_NODE,
@@ -504,7 +504,10 @@ export function collapseSelectionEpic(
     if (
       selectedNodes.size === 1 &&
       !firstSelectedNode.isRoot &&
-      !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)
+      !(
+        Selectors.getNodeIsContainer(store.getState())(firstSelectedNode) &&
+        firstSelectedNode.isExpanded
+      )
     ) {
       /*
         * Select the parent of the selection if the following criteria are met:
@@ -519,7 +522,7 @@ export function collapseSelectionEpic(
     const collapseActions = selectedNodes
       .map(node => {
         // Only directories can be expanded. Skip non-directory nodes.
-        if (!node.isContainer) {
+        if (!Selectors.getNodeIsContainer(store.getState())(node)) {
           return null;
         }
 
@@ -623,7 +626,7 @@ export function expandSelectionEpic(
 
     Selectors.getSelectedNodes(state).forEach(node => {
       // Only directories can be expanded. Skip non-directory nodes.
-      if (!node.isContainer) {
+      if (!Selectors.getNodeIsContainer(state)(node)) {
         return;
       }
 
@@ -636,7 +639,10 @@ export function expandSelectionEpic(
         if (node.isExpanded) {
           // Node is already expanded; move the selection to the first child.
           let firstChild = node.children.first();
-          if (firstChild != null && !firstChild.shouldBeShown) {
+          if (
+            firstChild != null &&
+            !Selectors.getNodeShouldBeShown(state)(firstChild)
+          ) {
             firstChild = Selectors.findNextShownSibling(state)(firstChild);
           }
 
@@ -688,7 +694,10 @@ export function openSelectedEntrySplitEpic(
         store.getState(),
       );
       // Only perform the default action if a single node is selected.
-      if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
+      if (
+        singleSelectedNode != null &&
+        !Selectors.getNodeIsContainer(store.getState())(singleSelectedNode)
+      ) {
         // for: is this feature used enough to justify uncollapsing?
         track('filetree-split-file', {
           orientation,
@@ -890,7 +899,7 @@ export function openRenameDialogEpic(
       openDialog({
         iconClassName: 'icon-arrow-right',
         initialValue: nodePath,
-        message: node.isContainer ? (
+        message: Selectors.getNodeIsContainer(store.getState())(node) ? (
           <span>Enter the new path for the directory.</span>
         ) : (
           <span>Enter the new path for the file.</span>
@@ -939,7 +948,7 @@ export function openNextDuplicateDialogEpic(
         initialValue.substr(0, initialValue.length - ext.length) +
         '-copy' +
         ext;
-      const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
+      const hgRepository = FileTreeHgHelpers.getHgRepositoryForPath(node.uri);
       const additionalOptions = {};
       // eslint-disable-next-line eqeqeq
       if (hgRepository !== null) {
@@ -1010,7 +1019,7 @@ export function openPasteDialogEpic(
 
       const additionalOptions = {};
       // eslint-disable-next-line eqeqeq
-      if (FileTreeHgHelpers.getHgRepositoryForNode(node) !== null) {
+      if (FileTreeHgHelpers.getHgRepositoryForPath(node.uri) !== null) {
         additionalOptions.addToVCS = 'Add the new file(s) to version control.';
       }
       openDialog({
@@ -1096,7 +1105,10 @@ export function moveToNodeEpic(
     invariant(action.type === Actions.MOVE_TO_NODE);
     const {rootKey, nodeKey} = action;
     const targetNode = Selectors.getNode(store.getState(), rootKey, nodeKey);
-    if (targetNode == null || !targetNode.isContainer) {
+    if (
+      targetNode == null ||
+      !Selectors.getNodeIsContainer(store.getState())(targetNode)
+    ) {
       return Observable.empty();
     }
     const selectedNodes = Selectors.getSelectedNodes(store.getState());
@@ -1118,7 +1130,7 @@ export function movePathToNodeEpic(
       source: uri,
       destination: destination.uri,
     });
-    if (!destination.isContainer) {
+    if (!Selectors.getNodeIsContainer(store.getState())(destination)) {
       track('file-tree-move-dropped-external-file:failed', {
         reason: 'Destination is not a container',
       });
@@ -1307,7 +1319,10 @@ export function uploadDroppedFilesEpic(
     invariant(action.type === 'UPLOAD_DROPPED_FILES');
     const {destination} = action;
     const {remoteTransferService} = store.getState();
-    if (remoteTransferService == null || !destination.isContainer) {
+    if (
+      remoteTransferService == null ||
+      !Selectors.getNodeIsContainer(store.getState())(destination)
+    ) {
       return Observable.empty();
     }
     // > Electron has added a path attribute to the File interface which exposes
@@ -1386,7 +1401,7 @@ function getSelectedContainerNode(state: AppState): ?FileTreeNode {
    */
   const node = Selectors.getSelectedNodes(state).first();
   if (node) {
-    return node.isContainer ? node : node.parent;
+    return Selectors.getNodeIsContainer(state)(node) ? node : node.parent;
   }
 
   return null;
@@ -1418,7 +1433,7 @@ function openAddFileDialogImpl(
   filePath: NuclideUri,
   onDidConfirm: (filePath: ?string) => mixed,
 ): void {
-  const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(rootNode);
+  const hgRepository = FileTreeHgHelpers.getHgRepositoryForPath(rootNode.uri);
   const additionalOptions = {};
   if (hgRepository != null) {
     additionalOptions.addToVCS = 'Add the new file to version control.';
