@@ -65,17 +65,7 @@ export type InitialData = {|
   foldersExpanded: ?boolean,
 |};
 
-export type StoreConfigData = {|
-  workingSet: WorkingSet,
-  hideIgnoredNames: boolean,
-  excludeVcsIgnoredPaths: boolean,
-  hideVcsIgnoredPaths: boolean,
-  ignoredPatterns: Immutable.Set<any /* Minimatch */>,
-  isEditingWorkingSet: boolean,
-  openFilesWorkingSet: WorkingSet,
-  reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
-  editedWorkingSet: WorkingSet,
-|};
+export type StoreConfigData = {||};
 
 export type NodeDebugState = {
   uri: NuclideUri,
@@ -119,6 +109,16 @@ export type AppState = {|
   _reorderPreviewStatus: ReorderPreviewStatus,
 
   _conf: StoreConfigData, // The configuration for the file-tree. Avoid direct writing.
+  excludeVcsIgnoredPaths: boolean,
+  hideIgnoredNames: boolean,
+  hideVcsIgnoredPaths: boolean,
+  ignoredPatterns: Immutable.Set<any /* Minimatch */>,
+  workingSet: WorkingSet,
+  isEditingWorkingSet: boolean,
+  editedWorkingSet: WorkingSet,
+  openFilesWorkingSet: WorkingSet,
+  reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
+
   _workingSetsStore: ?WorkingSetsStore,
   _usePrefixNav: boolean,
   _autoExpandSingleChild: boolean,

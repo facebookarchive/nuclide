@@ -96,20 +96,6 @@ export type ImmutableNodeSettableFields = {
  * is a no-op (such if setting a property to the same value it already has), new instance creation
  * is not skipped and same instance is returned instead.
  *
- *
- * THE CONFIGURATION
- *   Is the object passed to the constructor and conceptually shared among all
- * instances in a tree. Should be used for properties that make no sense to be owned by the tree
- * elements, yet such that affect the tree. Such as the configuration whether to use the prefix
- * navigation, for instance, or the currently configured Working Set.
- * The configuration object should be treated as immutable by its owner. Whenever a change occurs
- * method `updateConf()` has to be called on the root(s) of the tree to notify about the change.
- * This call would trigger complete reconstruction of the tree, to reflect the possibly changed
- * derived properties.
- * This gives another reason to use the configuration object sparingly - it is expensive to rebuild
- * the entire tree.
- *
- *
  * CHILDREN HANDLING
  *   In order for the tree traversal and modifications to be efficient one often
  * needs to find the parent of a node. Parent property, however, can't be one of the node's immutable

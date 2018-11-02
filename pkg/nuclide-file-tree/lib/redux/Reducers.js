@@ -37,18 +37,6 @@ import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
 import type {StoreConfigData, AppState, Action} from '../types';
 
-export const DEFAULT_CONF = {
-  workingSet: new WorkingSet(),
-  editedWorkingSet: new WorkingSet(),
-  hideIgnoredNames: true,
-  excludeVcsIgnoredPaths: true,
-  hideVcsIgnoredPaths: true,
-  ignoredPatterns: Immutable.Set(),
-  isEditingWorkingSet: false,
-  openFilesWorkingSet: new WorkingSet(),
-  reposByRoot: {},
-};
-
 const actionTrackers: Map<string, HistogramTracker> = new Map();
 
 // TODO: Don't `export default` an object.
@@ -71,7 +59,17 @@ const DEFAULT_STATE: AppState = {
   _isLoadingMap: Immutable.Map(),
   _repositories: Immutable.Set(),
 
-  _conf: {...DEFAULT_CONF},
+  _conf: {},
+  excludeVcsIgnoredPaths: true,
+  hideIgnoredNames: true,
+  hideVcsIgnoredPaths: true,
+  ignoredPatterns: Immutable.Set(),
+  workingSet: new WorkingSet(),
+  isEditingWorkingSet: false,
+  editedWorkingSet: new WorkingSet(),
+  openFilesWorkingSet: new WorkingSet(),
+  reposByRoot: {},
+
   _workingSetsStore: null,
   _filter: '',
   _extraProjectSelectionContent: Immutable.List(),
@@ -577,9 +575,7 @@ function setExcludeVcsIgnoredPaths(
   state: AppState,
   excludeVcsIgnoredPaths: boolean,
 ): AppState {
-  return updateConf(state, conf => {
-    conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths;
-  });
+  return {...state, excludeVcsIgnoredPaths};
 }
 
 /**
@@ -627,9 +623,7 @@ function setHideVcsIgnoredPaths(
   state: AppState,
   hideVcsIgnoredPaths: boolean,
 ): AppState {
-  return updateConf(state, conf => {
-    conf.hideVcsIgnoredPaths = hideVcsIgnoredPaths;
-  });
+  return {...state, hideVcsIgnoredPaths};
 }
 
 function setUsePreviewTabs(state: AppState, usePreviewTabs: boolean): AppState {
@@ -696,9 +690,7 @@ function setHideIgnoredNames(
   state: AppState,
   hideIgnoredNames: boolean,
 ): AppState {
-  return updateConf(state, conf => {
-    conf.hideIgnoredNames = hideIgnoredNames;
-  });
+  return {...state, hideIgnoredNames};
 }
 
 function setIsCalculatingChanges(
@@ -735,9 +727,7 @@ function setIgnoredNames(
       }
     })
     .filter(pattern => pattern != null);
-  return updateConf(state, conf => {
-    conf.ignoredPatterns = ignoredPatterns;
-  });
+  return {...state, ignoredPatterns};
 }
 
 function setVcsStatuses(
@@ -819,36 +809,29 @@ function setRepositories(
   state: AppState,
   repositories: Immutable.Set<atom$Repository>,
 ): AppState {
-  const nextState = {...state, _repositories: repositories};
-  return updateConf(nextState, conf => {
-    const reposByRoot = {};
-    state._roots.forEach(root => {
-      reposByRoot[root.uri] = repositoryForPath(root.uri);
-    });
-    conf.reposByRoot = reposByRoot;
+  const reposByRoot = {};
+  Selectors.getRoots(state).forEach(root => {
+    reposByRoot[root.uri] = repositoryForPath(root.uri);
   });
+  return {
+    ...state,
+    _repositories: repositories,
+    reposByRoot,
+  };
 }
 
 function setWorkingSet(state: AppState, workingSet: WorkingSet): AppState {
-  return updateConf(state, conf => {
-    conf.workingSet = workingSet;
-  });
+  return {...state, workingSet};
 }
 
 function setOpenFilesWorkingSet(
   state: AppState,
   openFilesWorkingSet: WorkingSet,
 ): AppState {
-  // Optimization: with an empty working set, we don't need a full tree refresh.
-  if (state._conf.workingSet.isEmpty()) {
-    return {
-      ...state,
-      _conf: {...state._conf, openFilesWorkingSet},
-    };
-  }
-  return updateConf(state, conf => {
-    conf.openFilesWorkingSet = openFilesWorkingSet;
-  });
+  return {
+    ...state,
+    openFilesWorkingSet,
+  };
 }
 
 function setWorkingSetsStore(
@@ -865,17 +848,19 @@ function startEditingWorkingSet(
   state: AppState,
   editedWorkingSet: WorkingSet,
 ): AppState {
-  return updateConf(state, conf => {
-    conf.editedWorkingSet = editedWorkingSet;
-    conf.isEditingWorkingSet = true;
-  });
+  return {
+    ...state,
+    editedWorkingSet,
+    isEditingWorkingSet: true,
+  };
 }
 
 function finishEditingWorkingSet(state: AppState): AppState {
-  return updateConf(state, conf => {
-    conf.isEditingWorkingSet = false;
-    conf.editedWorkingSet = new WorkingSet();
-  });
+  return {
+    ...state,
+    isEditingWorkingSet: false,
+    editedWorkingSet: new WorkingSet(),
+  };
 }
 
 function checkNode(
@@ -883,7 +868,7 @@ function checkNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): AppState {
-  if (!state._conf.isEditingWorkingSet) {
+  if (!Selectors.getIsEditingWorkingSet(state)) {
     return state;
   }
 
@@ -909,9 +894,10 @@ function checkNode(
     uriToAppend = node.uri;
   }
 
-  return updateConf(state, conf => {
-    conf.editedWorkingSet = conf.editedWorkingSet.append(uriToAppend);
-  });
+  return {
+    ...state,
+    editedWorkingSet: Selectors.getEditedWorkingSet(state).append(uriToAppend),
+  };
 }
 
 function uncheckNode(
@@ -919,7 +905,7 @@ function uncheckNode(
   rootKey: NuclideUri,
   nodeKey: NuclideUri,
 ): AppState {
-  if (!state._conf.isEditingWorkingSet) {
+  if (!Selectors.getIsEditingWorkingSet(state)) {
     return state;
   }
 
@@ -946,12 +932,13 @@ function uncheckNode(
     uriToRemove = node.uri;
   }
 
-  return updateConf(state, conf => {
-    const urisToAppend = nodesToAppend.map(n => n.uri);
-    conf.editedWorkingSet = conf.editedWorkingSet
+  const urisToAppend = nodesToAppend.map(n => n.uri);
+  return {
+    ...state,
+    editedWorkingSet: Selectors.getEditedWorkingSet(state)
       .remove(uriToRemove)
-      .append(...urisToAppend);
-  });
+      .append(...urisToAppend),
+  };
 }
 
 function setDragHoveredNode(

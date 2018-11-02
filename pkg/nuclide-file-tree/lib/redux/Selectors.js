@@ -27,7 +27,6 @@ import type {
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
-import {WorkingSet} from '../../../nuclide-working-sets-common';
 import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Immutable from 'immutable';
 import {memoize, once} from 'lodash';
@@ -113,58 +112,28 @@ export const getCwdApi = (state: AppState) => state._cwdApi;
 
 export const hasCwd = createSelector([getCwdKey], cwdKey => cwdKey != null);
 
-//
-//
-// Conf selectors
-//
-//
+export const getWorkingSet = (state: AppState) => state.workingSet;
 
-export const getWorkingSet = createSelector(
-  [getConf],
-  (conf): WorkingSet => conf.workingSet,
-);
-
-export const getIsEditingWorkingSet = createSelector(
-  [getConf],
-  conf => conf.isEditingWorkingSet,
-);
+export const getIsEditingWorkingSet = (state: AppState) =>
+  state.isEditingWorkingSet;
 
 const getVcsStatuses = (state: AppState) => state.vcsStatuses;
 
-const getExcludeVcsIgnoredPaths = createSelector(
-  [getConf],
-  conf => conf.excludeVcsIgnoredPaths,
-);
+const getExcludeVcsIgnoredPaths = (state: AppState) =>
+  state.excludeVcsIgnoredPaths;
 
-const getHideVcsIgnoredPaths = createSelector(
-  [getConf],
-  conf => conf.hideVcsIgnoredPaths,
-);
+const getHideVcsIgnoredPaths = (state: AppState) => state.hideVcsIgnoredPaths;
 
-const getHideIgnoredNames = createSelector(
-  [getConf],
-  conf => conf.hideIgnoredNames,
-);
+const getHideIgnoredNames = (state: AppState) => state.hideIgnoredNames;
 
-const getIgnoredPatterns = createSelector(
-  [getConf],
-  conf => conf.ignoredPatterns,
-);
+const getIgnoredPatterns = (state: AppState) => state.ignoredPatterns;
 
-/**
- * Builds the edited working set from the partially-child-derived .checkedStatus property
- */
-export const getEditedWorkingSet = createSelector(
-  [getConf],
-  conf => conf.editedWorkingSet,
-);
+export const getEditedWorkingSet = (state: AppState) => state.editedWorkingSet;
 
-export const getOpenFilesWorkingSet = createSelector(
-  [getConf],
-  conf => conf.openFilesWorkingSet,
-);
+export const getOpenFilesWorkingSet = (state: AppState) =>
+  state.openFilesWorkingSet;
 
-const getReposByRoot = createSelector([getConf], conf => conf.reposByRoot);
+const getReposByRoot = (state: AppState) => state.reposByRoot;
 
 //
 //
@@ -872,7 +841,6 @@ const collectDebugStateForNode = (state: AppState) => (
 // similar states. Therefore, we've opted to not use createSelector for this
 // selector.
 export const collectDebugState = (state: AppState) => {
-  const conf = getConf(state);
   return {
     currentWorkingRoot: getCwdKey(state),
     openFilesExpanded: getOpenFilesExpanded(state),
@@ -891,17 +859,17 @@ export const collectDebugState = (state: AppState) => {
       collectDebugStateForNode(state)(root),
     ),
     _conf: {
-      hideIgnoredNames: conf.hideIgnoredNames,
-      excludeVcsIgnoredPaths: conf.excludeVcsIgnoredPaths,
-      hideVcsIgnoredPaths: conf.hideVcsIgnoredPaths,
-      isEditingWorkingSet: conf.isEditingWorkingSet,
+      hideIgnoredNames: getHideIgnoredNames(state),
+      excludeVcsIgnoredPaths: getExcludeVcsIgnoredPaths(state),
+      hideVcsIgnoredPaths: getHideVcsIgnoredPaths(state),
+      isEditingWorkingSet: getIsEditingWorkingSet(state),
       vcsStatuses: getVcsStatuses(state).toObject(),
-      workingSet: conf.workingSet.getUris(),
-      ignoredPatterns: conf.ignoredPatterns
+      workingSet: getWorkingSet(state).getUris(),
+      ignoredPatterns: getIgnoredPatterns(state)
         .toArray()
         .map(ignored => ignored.pattern),
-      openFilesWorkingSet: conf.openFilesWorkingSet.getUris(),
-      editedWorkingSet: conf.editedWorkingSet.getUris(),
+      openFilesWorkingSet: getOpenFilesWorkingSet(state).getUris(),
+      editedWorkingSet: getEditedWorkingSet(state).getUris(),
     },
     selectionManager: collectSelectionDebugState(state),
   };

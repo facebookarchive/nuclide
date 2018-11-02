@@ -445,7 +445,7 @@ it('omits vcs-excluded paths', async () => {
   store.dispatch(Actions.setHideVcsIgnoredPaths(true));
 
   const mockRepo = new MockRepository();
-  store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
+  store.getState().reposByRoot[dir1] = (mockRepo: any);
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(0);
 });
@@ -457,7 +457,7 @@ it('includes vcs-excluded paths when told to', async () => {
   store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
   const mockRepo = new MockRepository();
-  store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
+  store.getState().reposByRoot[dir1] = (mockRepo: any);
 
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
@@ -470,7 +470,7 @@ it('includes vcs-excluded paths when explicitly told to', async () => {
   store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
   const mockRepo = new MockRepository();
-  store.getState()._conf.reposByRoot[dir1] = (mockRepo: any);
+  store.getState().reposByRoot[dir1] = (mockRepo: any);
 
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
