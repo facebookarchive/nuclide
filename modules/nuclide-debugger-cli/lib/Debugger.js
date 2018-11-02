@@ -271,10 +271,10 @@ export default class Debugger implements DebuggerInterface {
     // if there is a focus thread from before, stop that one, else pick
     // a thread or use the adapter-specified default
     let threadId: ?number = null;
-    if (this._threads.focusThread != null) {
-      threadId = this._threads.focusThread.id();
-    } else if (adapter.asyncStopThread != null) {
+    if (adapter.asyncStopThread != null) {
       threadId = adapter.asyncStopThread;
+    } else if (this._threads.focusThread != null) {
+      threadId = this._threads.focusThread.id();
     } else if (this._threads.allThreads.length !== 0) {
       threadId = this._threads.allThreads[0].id();
     }
@@ -303,12 +303,15 @@ export default class Debugger implements DebuggerInterface {
     tid: number,
     levels: number,
   ): Promise<DebugProtocol.StackFrame[]> {
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
     const thread = this._threads.getThreadById(tid);
     if (thread == null) {
       throw new Error(`There is no thread #${tid}.`);
     }
 
-    if (!thread.isStopped) {
+    if (!thread.isStopped && tid !== adapter.adapter.asyncStopThread) {
       throw new Error(`Thread #${tid} is not stopped.`);
     }
 
@@ -1129,14 +1132,21 @@ export default class Debugger implements DebuggerInterface {
       this._console.outputLine('stop event with no thread information.');
     }
 
-    // for now, set the focus thread to the first thread that stopped
     if (firstStop) {
-      if (threadId != null) {
-        this._threads.setFocusThread(threadId);
+      const adapter = this._adapter;
+      invariant(adapter != null);
+
+      const defaultThreadId: ?number = adapter.adapter.asyncStopThread;
+      if (this._stoppedAtBreakpoint || defaultThreadId == null) {
+        if (threadId != null) {
+          this._threads.setFocusThread(threadId);
+        } else {
+          const firstStopped = this._threads.firstStoppedThread();
+          invariant(firstStopped != null);
+          this._threads.setFocusThread(firstStopped);
+        }
       } else {
-        const firstStopped = this._threads.firstStoppedThread();
-        invariant(firstStopped != null);
-        this._threads.setFocusThread(firstStopped);
+        this._threads.setFocusThread(defaultThreadId);
       }
 
       try {
@@ -1187,6 +1197,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onThread(event: DebugProtocol.ThreadEvent) {
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
     const {
       body: {reason, threadId},
     } = event;
@@ -1199,7 +1212,9 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
-    if (reason === 'exited') {
+    // for HHVM: ignore claims that the console eval thread has exited.
+    // they aren't real.
+    if (reason === 'exited' && threadId !== adapter.adapter.asyncStopThread) {
       this._threads.removeThread(threadId);
     }
   }
