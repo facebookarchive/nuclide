@@ -60,19 +60,20 @@ describe('FileTreeNode', () => {
   });
 
   it('derives properties', () => {
+    const state = store.getState();
     const node = new FileTreeNode(
       {uri: '/abc/def/ghi', rootUri: '/abc/'},
-      Selectors.getConf(store.getState()),
+      Selectors.getConf(state),
     );
 
     // Derived
     expect(node.name).toBe('ghi');
     expect(node.relativePath).toBe('def/ghi');
     expect(node.localPath).toBe('/abc/def/ghi');
-    expect(node._isContainer).toBe(false);
-    expect(node._shouldBeShown).toBe(true);
-    expect(node._checkedStatus).toBe('clear');
-    expect(node._shouldBeSoftened).toBe(false);
+    expect(Selectors.getNodeIsContainer(state)(node)).toBe(false);
+    expect(Selectors.getNodeShouldBeShown(state)(node)).toBe(true);
+    expect(Selectors.getNodeCheckedStatus(state)(node)).toBe('clear');
+    expect(Selectors.getNodeShouldBeSoftened(state)(node)).toBe(false);
     expect(node.highlightedText).toEqual('');
     expect(node.matchesFilter).toBeTruthy();
   });

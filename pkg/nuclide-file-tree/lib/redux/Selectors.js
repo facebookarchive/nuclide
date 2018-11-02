@@ -28,8 +28,9 @@ import type {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
+import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Immutable from 'immutable';
-import {memoize} from 'lodash';
+import {memoize, once} from 'lodash';
 import {createSelector} from 'reselect';
 
 //
@@ -123,12 +124,32 @@ export const getWorkingSet = createSelector(
   (conf): WorkingSet => conf.workingSet,
 );
 
-export const isEditingWorkingSet = createSelector(
+export const getIsEditingWorkingSet = createSelector(
   [getConf],
   conf => conf.isEditingWorkingSet,
 );
 
 const getVcsStatuses = (state: AppState) => state.vcsStatuses;
+
+const getExcludeVcsIgnoredPaths = createSelector(
+  [getConf],
+  conf => conf.excludeVcsIgnoredPaths,
+);
+
+const getHideVcsIgnoredPaths = createSelector(
+  [getConf],
+  conf => conf.hideVcsIgnoredPaths,
+);
+
+const getHideIgnoredNames = createSelector(
+  [getConf],
+  conf => conf.hideIgnoredNames,
+);
+
+const getIgnoredPatterns = createSelector(
+  [getConf],
+  conf => conf.ignoredPatterns,
+);
 
 /**
  * Builds the edited working set from the partially-child-derived .checkedStatus property
@@ -142,6 +163,8 @@ export const getOpenFilesWorkingSet = createSelector(
   [getConf],
   conf => conf.openFilesWorkingSet,
 );
+
+const getReposByRoot = createSelector([getConf], conf => conf.reposByRoot);
 
 //
 //
@@ -157,21 +180,140 @@ export const getTrackedNode = (state: AppState): ?FileTreeNode => {
   return getNode(state, state._trackedRootKey, state._trackedNodeKey);
 };
 
-export const getNodeHashKey = (state: AppState) => (node: FileTreeNode) =>
-  node._hashKey;
-export const getNodeIsContainer = (state: AppState) => (node: FileTreeNode) =>
-  node._isContainer;
-export const getNodeShouldBeShown = (state: AppState) => (node: FileTreeNode) =>
-  node._shouldBeShown;
-export const getNodeShouldBeSoftened = (state: AppState) => (
-  node: FileTreeNode,
-) => node._shouldBeSoftened;
-export const getNodeRepo = (state: AppState) => (node: FileTreeNode) =>
-  node._repo;
-export const getNodeIsIgnored = (state: AppState) => (node: FileTreeNode) =>
-  node._isIgnored;
-export const getNodeCheckedStatus = (state: AppState) => (node: FileTreeNode) =>
-  node._checkedStatus;
+// This doesn't depend on state, so we use `once()` to make sure we don't create
+// the inner function every time and invalidate dependent selectors.
+export const getNodeIsContainer = once(() => (node: FileTreeNode) =>
+  FileTreeHelpers.isDirOrArchiveKey(node.uri),
+);
+
+const getContainedInWorkingSet = createSelector(
+  [getWorkingSet, getNodeIsContainer],
+  (workingSet, getNodeIsContainer_) => {
+    return node => {
+      const splitPath = nuclideUri.split(node.uri);
+      return getNodeIsContainer_(node)
+        ? workingSet.containsDirBySplitPath(splitPath)
+        : workingSet.containsFileBySplitPath(splitPath);
+    };
+  },
+);
+
+const getContainedInOpenFilesWorkingSet = createSelector(
+  [getOpenFilesWorkingSet, getNodeIsContainer],
+  (openFilesWorkingSet, getNodeIsContainer_) => {
+    return node => {
+      if (openFilesWorkingSet.isEmpty()) {
+        return false;
+      }
+      const splitPath = nuclideUri.split(node.uri);
+      return getNodeIsContainer_(node)
+        ? openFilesWorkingSet.containsDirBySplitPath(splitPath)
+        : openFilesWorkingSet.containsFileBySplitPath(splitPath);
+    };
+  },
+);
+
+export const getNodeShouldBeSoftened = createSelector(
+  [
+    getIsEditingWorkingSet,
+    getContainedInWorkingSet,
+    getContainedInOpenFilesWorkingSet,
+  ],
+  (
+    isEditingWorkingSet,
+    getContainedInWorkingSet_,
+    getContainedInOpenFilesWorkingSet_,
+  ) => {
+    return node => {
+      if (isEditingWorkingSet) {
+        return false;
+      }
+      return (
+        !getContainedInWorkingSet_(node) &&
+        getContainedInOpenFilesWorkingSet_(node)
+      );
+    };
+  },
+);
+
+export const getNodeRepo = createSelector([getReposByRoot], reposByRoot => {
+  return node => reposByRoot[node.rootUri];
+});
+
+export const getNodeIsIgnored = createSelector([getNodeRepo], getNodeRepo_ => {
+  return node => {
+    const repo = getNodeRepo_(node);
+    return (
+      repo != null && repo.isProjectAtRoot() && repo.isPathIgnored(node.uri)
+    );
+  };
+});
+
+export const getNodeCheckedStatus = createSelector(
+  [getEditedWorkingSet, getNodeIsContainer],
+  (editedWorkingSet, getNodeIsContainer_) => {
+    return node => {
+      if (editedWorkingSet.isEmpty()) {
+        return 'clear';
+      }
+      const splitPath = nuclideUri.split(node.uri);
+      if (getNodeIsContainer_(node)) {
+        if (editedWorkingSet.containsFileBySplitPath(splitPath)) {
+          return 'checked';
+        } else if (editedWorkingSet.containsDirBySplitPath(splitPath)) {
+          return 'partial';
+        }
+        return 'clear';
+      }
+      return editedWorkingSet.containsFileBySplitPath(splitPath)
+        ? 'checked'
+        : 'clear';
+    };
+  },
+);
+
+export const getNodeShouldBeShown = createSelector(
+  [
+    getNodeIsIgnored,
+    getExcludeVcsIgnoredPaths,
+    getHideVcsIgnoredPaths,
+    getHideIgnoredNames,
+    getIgnoredPatterns,
+    getIsEditingWorkingSet,
+    getContainedInWorkingSet,
+    getContainedInOpenFilesWorkingSet,
+  ],
+  (
+    getNodeIsIgnored_,
+    excludeVcsIgnoredPaths,
+    hideVcsIgnoredPaths,
+    hideIgnoredNames,
+    ignoredPatterns,
+    isEditingWorkingSet,
+    getContainedInWorkingSet_,
+    getContainedInOpenFilesWorkingSet_,
+  ) => {
+    return node => {
+      if (
+        getNodeIsIgnored_(node) &&
+        excludeVcsIgnoredPaths &&
+        hideVcsIgnoredPaths
+      ) {
+        return false;
+      }
+      if (hideIgnoredNames && ignoredPatterns.some(p => p.match(node.uri))) {
+        return false;
+      }
+      if (isEditingWorkingSet) {
+        return true;
+      }
+      return (
+        getContainedInWorkingSet_(node) ||
+        getContainedInOpenFilesWorkingSet_(node)
+      );
+    };
+  },
+);
 
 // To reduce the number of times we have to iterate over children, we calculate all of these values
 // in a single pass.
@@ -700,7 +842,6 @@ const collectDebugStateForNode = (state: AppState) => (
     generatedStatus: node.generatedStatus,
     isRoot: node.isRoot,
     name: node.name,
-    hashKey: node._hashKey,
     relativePath: node.relativePath,
     localPath: node.localPath,
     isContainer: getNodeIsContainer(state)(node),

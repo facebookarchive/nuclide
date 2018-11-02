@@ -9,7 +9,6 @@
  * @format
  */
 
-import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as Immutable from 'immutable';
 import * as FileTreeHelpers from './FileTreeHelpers';
@@ -87,25 +86,10 @@ export type ImmutableNodeSettableFields = {
   generatedStatus?: ?GeneratedFileType,
 };
 
-type DerivedFileTreeNode = {|
-  hashKey: string,
-  isContainer: boolean,
-  shouldBeShown: boolean,
-  shouldBeSoftened: boolean,
-  repo: ?atom$Repository,
-  isIgnored: boolean,
-  checkedStatus: NodeCheckedStatus,
-|};
-
 /**
  * OVERVIEW
  *   The FileTreeNode class is almost entirely immutable. Except for the parent and the sibling
  * links no properties are to be updated after the creation.
- *
- *   The class contains multiple derived fields. The derived fields are calculated from the options,
- * from the configuration values and even from children's properties. Once calculated the properties
- * are immutable. This calculation is handled by a separate class - `MemoizedFieldsDeriver`. It
- * is optimized to avoid redundant recalculations.
  *
  *   Setting any of the properties (except for the aforementioned links to parent and siblings) will
  * create a new instance of the class, with required properties set. If, however, the set operation
@@ -150,14 +134,12 @@ export class FileTreeNode {
   nextSibling: ?FileTreeNode;
   prevSibling: ?FileTreeNode;
 
-  _deriver: MemoizedFieldsDeriver;
   _conf: StoreConfigData;
 
   uri: NuclideUri;
   rootUri: NuclideUri;
   name: string;
   isRoot: boolean;
-  _isContainer: boolean;
   isExpanded: boolean;
   isDragHovered: boolean;
   isBeingReordered: boolean;
@@ -174,14 +156,6 @@ export class FileTreeNode {
   relativePath: string;
   localPath: string;
 
-  // Derived
-  _hashKey: string;
-  _shouldBeShown: boolean;
-  _shouldBeSoftened: boolean;
-  _repo: ?atom$Repository;
-  _isIgnored: boolean;
-  _checkedStatus: NodeCheckedStatus;
-
   /**
    * The children property is an OrderedMap instance keyed by child's name property.
    * This convenience function would create such OrderedMap instance from a plain JS Array
@@ -193,25 +167,13 @@ export class FileTreeNode {
     return Immutable.OrderedMap(children.map(child => [child.name, child]));
   }
 
-  /**
-   * The _derivedChange param is not for external use.
-   */
-  constructor(
-    options: FileTreeNodeOptions,
-    conf: StoreConfigData,
-    _deriver: ?MemoizedFieldsDeriver = null,
-  ) {
+  constructor(options: FileTreeNodeOptions, conf: StoreConfigData) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
     this._conf = conf;
 
     this._assignOptions(options);
-
-    this._deriver =
-      _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
-    this._assignDerived();
-
     this._handleChildren();
   }
 
@@ -313,24 +275,6 @@ export class FileTreeNode {
   }
 
   /**
-   * Using object.assign() was proven to be less performant than direct named assignment
-   * Since in heavy updates, nodes are created by the thousands we need to keep the creation
-   * flow performant.
-   */
-  _assignDerived(): void {
-    const derived: DerivedFileTreeNode = this._deriver.buildDerivedFields(
-      this._conf,
-    );
-    this._hashKey = derived.hashKey;
-    this._isContainer = derived.isContainer;
-    this._shouldBeShown = derived.shouldBeShown;
-    this._shouldBeSoftened = derived.shouldBeSoftened;
-    this._repo = derived.repo;
-    this._isIgnored = derived.isIgnored;
-    this._checkedStatus = derived.checkedStatus;
-  }
-
-  /**
    * When modifying some of the properties a new instance needs to be created with all of the
    * properties identical except for those being modified. This method creates the baseline options
    * instance
@@ -391,7 +335,7 @@ export class FileTreeNode {
   updateConf(conf: StoreConfigData): FileTreeNode {
     const children = this.children.map(c => c.updateConf(conf));
     const options = this._buildOptions();
-    return new FileTreeNode({...options, children}, conf, this._deriver);
+    return new FileTreeNode({...options, children}, conf);
   }
 
   /**
@@ -585,7 +529,6 @@ export class FileTreeNode {
         ...props,
       },
       this._conf,
-      this._deriver,
     );
   }
 

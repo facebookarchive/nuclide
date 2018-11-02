@@ -34,7 +34,6 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
-import crypto from 'crypto';
 import os from 'os';
 
 export type Directory =
@@ -183,13 +182,6 @@ export function isContextClick(event: SyntheticMouseEvent<>): boolean {
       event.ctrlKey === true &&
       process.platform === 'darwin')
   );
-}
-
-export function buildHashKey(nodeKey: string): string {
-  return crypto
-    .createHash('MD5')
-    .update(nodeKey)
-    .digest('base64');
 }
 
 export function observeUncommittedChangesKindConfigKey(): Observable<

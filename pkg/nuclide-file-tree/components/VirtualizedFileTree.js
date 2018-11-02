@@ -410,7 +410,7 @@ const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   roots: Selectors.getRoots(state),
   selectedNodes: Selectors.getSelectedNodes(state).toSet(),
   focusedNodes: Selectors.getFocusedNodes(state).toSet(),
-  isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
+  isEditingWorkingSet: Selectors.getIsEditingWorkingSet(state),
   getNodeByIndex: index => getNodeByIndex(state, index),
   shownNodes: Selectors.countShownNodes(state),
   trackedIndex: Selectors.getTrackedIndex(state),

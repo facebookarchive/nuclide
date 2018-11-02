@@ -572,7 +572,7 @@ const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   isSelected: Selectors.getSelectedNodes(state).includes(ownProps.node),
   isFocused: Selectors.getFocusedNodes(state).includes(ownProps.node),
   usePreviewTabs: Selectors.getUsePreviewTabs(state),
-  isEditingWorkingSet: Selectors.isEditingWorkingSet(state),
+  isEditingWorkingSet: Selectors.getIsEditingWorkingSet(state),
   canTransferFiles: Selectors.getCanTransferFiles(state),
   vcsStatusCode: Selectors.getVcsStatus(state)(ownProps.node),
   isContainer: Selectors.getNodeIsContainer(state)(ownProps.node),

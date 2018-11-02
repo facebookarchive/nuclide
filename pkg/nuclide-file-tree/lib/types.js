@@ -94,7 +94,6 @@ export type NodeDebugState = {
   generatedStatus: ?GeneratedFileType,
   isRoot: boolean,
   name: string,
-  hashKey: string,
   relativePath: string,
   localPath: string,
   isContainer: boolean,

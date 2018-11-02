@@ -103,7 +103,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
     const editedWorkingSetIsEmpty = Selectors.isEditedWorkingSetEmpty(
       this.props.store.getState(),
     );
-    const isEditingWorkingSet = Selectors.isEditingWorkingSet(
+    const isEditingWorkingSet = Selectors.getIsEditingWorkingSet(
       this.props.store.getState(),
     );
 
@@ -138,7 +138,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
           'nuclide-file-tree-toolbar-fader':
             workingSet.isEmpty() &&
             !this.state.selectionIsActive &&
-            !Selectors.isEditingWorkingSet(this.props.store.getState()),
+            !Selectors.getIsEditingWorkingSet(this.props.store.getState()),
         })}>
         <ButtonGroup className="pull-right" size={ButtonGroupSizes.SMALL}>
           {selectWorkingSetButton}
@@ -201,7 +201,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   }
 
   _toggleWorkingSetEditMode = (): void => {
-    if (Selectors.isEditingWorkingSet(this.props.store.getState())) {
+    if (Selectors.getIsEditingWorkingSet(this.props.store.getState())) {
       this._finishEditingWorkingSet();
     } else {
       this._startEditingWorkingSet(new WorkingSet());
