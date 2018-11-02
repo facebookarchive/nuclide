@@ -116,6 +116,10 @@ class FileTreeEntryComponent extends React.Component<Props, State> {
       nextProps.usePreviewTabs !== this.props.usePreviewTabs ||
       nextProps.isEditingWorkingSet !== this.props.isEditingWorkingSet ||
       nextProps.vcsStatusCode !== this.props.vcsStatusCode ||
+      nextProps.isContainer !== this.props.isContainer ||
+      nextProps.isIgnored !== this.props.isIgnored ||
+      nextProps.checkedStatus !== this.props.checkedStatus ||
+      nextProps.shouldBeSoftened !== this.props.shouldBeSoftened ||
       nextState.isLoading !== this.state.isLoading
     );
   }
