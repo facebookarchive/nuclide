@@ -82,8 +82,7 @@ function isExpanded(rootKey: string, nodeKey: string): boolean {
 }
 
 function isSelected(rootKey: string, nodeKey: string): boolean {
-  return Selectors.getNodeIsSelected(
-    store.getState(),
+  return Selectors.getNodeIsSelected(store.getState())(
     getNode(rootKey, nodeKey),
   );
 }
@@ -152,10 +151,10 @@ it('toggles selected items', () => {
   EpicHelpers.setRootKeys(store, [dir1]);
   store.dispatch(Actions.setSelectedNode(dir1, dir1));
   let node = getNode(dir1, dir1);
-  expect(Selectors.getNodeIsSelected(store.getState(), node)).toBe(true);
+  expect(Selectors.getNodeIsSelected(store.getState())(node)).toBe(true);
   store.dispatch(Actions.unselectNode(dir1, dir1));
   node = getNode(dir1, dir1);
-  expect(Selectors.getNodeIsSelected(store.getState(), node)).toBe(false);
+  expect(Selectors.getNodeIsSelected(store.getState())(node)).toBe(false);
 });
 
 it('deselects items in other roots when a single node is selected', () => {
@@ -165,15 +164,15 @@ it('deselects items in other roots when a single node is selected', () => {
   let node2 = getNode(dir2, dir2);
 
   // Node 1 is selected, node 2 is not selected
-  expect(Selectors.getNodeIsSelected(store.getState(), node1)).toBe(true);
-  expect(Selectors.getNodeIsSelected(store.getState(), node2)).toBe(false);
+  expect(Selectors.getNodeIsSelected(store.getState())(node1)).toBe(true);
+  expect(Selectors.getNodeIsSelected(store.getState())(node2)).toBe(false);
 
   // Selecting a single node, node2, deselects nodes in all other roots
   store.dispatch(Actions.setSelectedNode(dir2, dir2));
   node1 = getNode(dir1, dir1);
   node2 = getNode(dir2, dir2);
-  expect(Selectors.getNodeIsSelected(store.getState(), node1)).toBe(false);
-  expect(Selectors.getNodeIsSelected(store.getState(), node2)).toBe(true);
+  expect(Selectors.getNodeIsSelected(store.getState())(node1)).toBe(false);
+  expect(Selectors.getNodeIsSelected(store.getState())(node2)).toBe(true);
 });
 
 describe('getSelectedNodes', () => {

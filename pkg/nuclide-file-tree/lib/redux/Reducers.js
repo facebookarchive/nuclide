@@ -1218,7 +1218,7 @@ function rangeSelectToNode(
       ? Selectors.findPrevious(state)(cur)
       : Selectors.findNext(state)(cur);
   let probe = getNextNode(nextRangeNode);
-  while (probe != null && Selectors.getNodeIsSelected(nextState, probe)) {
+  while (probe != null && Selectors.getNodeIsSelected(nextState)(probe)) {
     nextRangeNode = probe;
     probe = getNextNode(nextRangeNode);
   }
@@ -1316,7 +1316,7 @@ function rangeSelectMove(state: AppState, move: 'up' | 'down'): AppState {
 
   if (isExpanding) {
     let nextNode = getNextNode(rangeNode);
-    while (nextNode != null && Selectors.getNodeIsSelected(state, nextNode)) {
+    while (nextNode != null && Selectors.getNodeIsSelected(state)(nextNode)) {
       nextNode = getNextNode(nextNode);
     }
     if (nextNode == null) {
@@ -1328,7 +1328,7 @@ function rangeSelectMove(state: AppState, move: 'up' | 'down'): AppState {
       _focusedUris: addNodes(nextState._focusedUris, [nextNode]),
     };
     let probe = getNextNode(nextNode);
-    while (probe != null && Selectors.getNodeIsSelected(nextState, probe)) {
+    while (probe != null && Selectors.getNodeIsSelected(nextState)(probe)) {
       nextNode = probe;
       probe = getNextNode(nextNode);
     }
@@ -1342,7 +1342,7 @@ function rangeSelectMove(state: AppState, move: 'up' | 'down'): AppState {
     while (
       nextNode != null &&
       nextNode !== anchorNode &&
-      Selectors.getNodeIsSelected(nextState, nextNode) === false
+      Selectors.getNodeIsSelected(nextState)(nextNode) === false
     ) {
       nextNode = getNextNode(nextNode);
     }

@@ -592,18 +592,18 @@ export const getNearbySelectedNode = (
   if (shown == null) {
     return shown;
   }
-  if (getNodeIsSelected(state, shown)) {
+  if (getNodeIsSelected(state)(shown)) {
     return shown;
   }
   let selected = shown;
-  while (selected != null && !getNodeIsSelected(state, selected)) {
+  while (selected != null && !getNodeIsSelected(state)(selected)) {
     selected = findNext(state)(selected);
   }
   if (selected != null) {
     return selected;
   }
   selected = shown;
-  while (selected != null && !getNodeIsSelected(state, selected)) {
+  while (selected != null && !getNodeIsSelected(state)(selected)) {
     selected = findPrevious(state)(selected);
   }
   return selected;
@@ -699,15 +699,23 @@ export const getNodeByIndex = createSelector(
 export const getLoading = (state: AppState, nodeKey: NuclideUri) =>
   state._isLoadingMap.get(nodeKey);
 
-export const getNodeIsSelected = (state: AppState, node: FileTreeNode) =>
-  getSelectedUris(state)
-    .get(node.rootUri, Immutable.Set())
-    .has(node.uri);
+export const getNodeIsSelected = createSelector(
+  [getSelectedUris],
+  selectedUris => {
+    return memoizeWithWeakMap(node =>
+      selectedUris.get(node.rootUri, Immutable.Set()).has(node.uri),
+    );
+  },
+);
 
-export const getNodeIsFocused = (state: AppState, node: FileTreeNode) =>
-  getFocusedUris(state)
-    .get(node.rootUri, Immutable.Set())
-    .has(node.uri);
+export const getNodeIsFocused = createSelector(
+  [getFocusedUris],
+  focusedUris => {
+    return memoizeWithWeakMap(node =>
+      focusedUris.get(node.rootUri, Immutable.Set()).has(node.uri),
+    );
+  },
+);
 
 export const getSidebarTitle = createSelector([getCwdKey], cwdKey => {
   return cwdKey == null ? 'File Tree' : nuclideUri.basename(cwdKey);
