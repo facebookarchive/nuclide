@@ -182,26 +182,28 @@ export const getTrackedNode = (state: AppState): ?FileTreeNode => {
 
 // This doesn't depend on state, so we use `once()` to make sure we don't create
 // the inner function every time and invalidate dependent selectors.
-export const getNodeIsContainer = once(() => (node: FileTreeNode) =>
-  FileTreeHelpers.isDirOrArchiveKey(node.uri),
+export const getNodeIsContainer = once(() =>
+  memoizeWithWeakMap((node: FileTreeNode) =>
+    FileTreeHelpers.isDirOrArchiveKey(node.uri),
+  ),
 );
 
 const getContainedInWorkingSet = createSelector(
   [getWorkingSet, getNodeIsContainer],
   (workingSet, getNodeIsContainer_) => {
-    return node => {
+    return memoizeWithWeakMap(node => {
       const splitPath = nuclideUri.split(node.uri);
       return getNodeIsContainer_(node)
         ? workingSet.containsDirBySplitPath(splitPath)
         : workingSet.containsFileBySplitPath(splitPath);
-    };
+    });
   },
 );
 
 const getContainedInOpenFilesWorkingSet = createSelector(
   [getOpenFilesWorkingSet, getNodeIsContainer],
   (openFilesWorkingSet, getNodeIsContainer_) => {
-    return node => {
+    return memoizeWithWeakMap(node => {
       if (openFilesWorkingSet.isEmpty()) {
         return false;
       }
@@ -209,7 +211,7 @@ const getContainedInOpenFilesWorkingSet = createSelector(
       return getNodeIsContainer_(node)
         ? openFilesWorkingSet.containsDirBySplitPath(splitPath)
         : openFilesWorkingSet.containsFileBySplitPath(splitPath);
-    };
+    });
   },
 );
 
@@ -224,7 +226,7 @@ export const getNodeShouldBeSoftened = createSelector(
     getContainedInWorkingSet_,
     getContainedInOpenFilesWorkingSet_,
   ) => {
-    return node => {
+    return memoizeWithWeakMap(node => {
       if (isEditingWorkingSet) {
         return false;
       }
@@ -232,7 +234,7 @@ export const getNodeShouldBeSoftened = createSelector(
         !getContainedInWorkingSet_(node) &&
         getContainedInOpenFilesWorkingSet_(node)
       );
-    };
+    });
   },
 );
 
@@ -241,18 +243,18 @@ export const getNodeRepo = createSelector([getReposByRoot], reposByRoot => {
 });
 
 export const getNodeIsIgnored = createSelector([getNodeRepo], getNodeRepo_ => {
-  return node => {
+  return memoizeWithWeakMap(node => {
     const repo = getNodeRepo_(node);
     return (
       repo != null && repo.isProjectAtRoot() && repo.isPathIgnored(node.uri)
     );
-  };
+  });
 });
 
 export const getNodeCheckedStatus = createSelector(
   [getEditedWorkingSet, getNodeIsContainer],
   (editedWorkingSet, getNodeIsContainer_) => {
-    return node => {
+    return memoizeWithWeakMap(node => {
       if (editedWorkingSet.isEmpty()) {
         return 'clear';
       }
@@ -268,7 +270,7 @@ export const getNodeCheckedStatus = createSelector(
       return editedWorkingSet.containsFileBySplitPath(splitPath)
         ? 'checked'
         : 'clear';
-    };
+    });
   },
 );
 
@@ -293,7 +295,7 @@ export const getNodeShouldBeShown = createSelector(
     getContainedInWorkingSet_,
     getContainedInOpenFilesWorkingSet_,
   ) => {
-    return node => {
+    return memoizeWithWeakMap(node => {
       if (
         getNodeIsIgnored_(node) &&
         excludeVcsIgnoredPaths &&
@@ -311,7 +313,7 @@ export const getNodeShouldBeShown = createSelector(
         getContainedInWorkingSet_(node) ||
         getContainedInOpenFilesWorkingSet_(node)
       );
-    };
+    });
   },
 );
 
@@ -320,7 +322,7 @@ export const getNodeShouldBeShown = createSelector(
 const getChildDerivedValues = createSelector(
   [getNodeShouldBeShown],
   getNodeShouldBeShown_ => {
-    const inner = memoize((node: FileTreeNode) => {
+    const inner = memoizeWithWeakMap((node: FileTreeNode) => {
       let childrenAreLoading = node.isLoading;
       let containsDragHover = node.isDragHovered;
       let containsFilterMatches = node.matchesFilter;
@@ -412,7 +414,7 @@ export const countShownNodes = createSelector(
 export const getVisualIndex = (
   state: AppState,
 ): ((node: FileTreeNode) => number) => {
-  return (node: FileTreeNode) => {
+  return memoizeWithWeakMap((node: FileTreeNode) => {
     let index = getNodeShouldBeShown(state)(node) ? 1 : 0;
     let prev = findPrevShownSibling(state)(node);
     while (prev != null) {
@@ -422,7 +424,7 @@ export const getVisualIndex = (
     return (
       index + (node.parent == null ? 0 : getVisualIndex(state)(node.parent))
     );
-  };
+  });
 };
 
 const getVisualIndexOfTrackedNode = createSelector(
@@ -1011,4 +1013,16 @@ export function findLastRecursiveChild(state: AppState) {
       return findLastRecursiveChild(state)(it);
     }
   };
+}
+
+//
+//
+// Utilities
+//
+//
+
+function memoizeWithWeakMap<T, U>(fn: T => U): T => U {
+  const memoized = memoize(fn);
+  memoized.cache = new WeakMap();
+  return memoized;
 }
