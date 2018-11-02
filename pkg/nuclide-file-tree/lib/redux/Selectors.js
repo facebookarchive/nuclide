@@ -41,8 +41,6 @@ import {createSelector} from 'reselect';
 export const getAutoExpandSingleChild = (state: AppState) =>
   state._autoExpandSingleChild;
 
-export const getConf = (state: AppState) => state._conf;
-
 export const getFoldersExpanded = (state: AppState) => {
   return state._foldersExpanded;
 };

@@ -13,23 +13,13 @@ import {RangeKey, SelectionRange} from '../lib/FileTreeSelectionRange';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {FileTreeNode} from '../lib/FileTreeNode';
-import createStore from '../lib/redux/createStore';
-
-import * as Selectors from '../lib/redux/Selectors';
 import tempModule from 'temp';
+
 tempModule.track();
 
 describe('FileTreeSelectionRange', () => {
-  let store;
-  beforeEach(() => {
-    store = createStore();
-  });
-
   function createNode(rootUri: NuclideUri, uri: NuclideUri): FileTreeNode {
-    return new FileTreeNode(
-      {rootUri, uri},
-      Selectors.getConf(store.getState()),
-    );
+    return new FileTreeNode({rootUri, uri});
   }
 
   describe('RangeKey', () => {

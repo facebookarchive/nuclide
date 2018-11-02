@@ -156,14 +156,11 @@ function setFetchedKeys(
               return prevNode;
             }
 
-            return new FileTreeNode(
-              {
-                uri,
-                rootUri: node.rootUri,
-                isCwd: uri === Selectors.getCwdKey(store.getState()),
-              },
-              Selectors.getConf(store.getState()),
-            );
+            return new FileTreeNode({
+              uri,
+              rootUri: node.rootUri,
+              isCwd: uri === Selectors.getCwdKey(store.getState()),
+            });
           });
 
           if (
@@ -505,21 +502,17 @@ export function ensureChildNode(
       return root;
     }
 
-    const conf = Selectors.getConf(store.getState());
-    let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, conf);
+    let currentChild = new FileTreeNode({uri: nodeKey, rootUri});
 
     parents.forEach(currentUri => {
       fetchChildKeys(store, currentUri);
-      const parent = new FileTreeNode(
-        {
-          uri: currentUri,
-          rootUri,
-          isLoading: true,
-          isExpanded: true,
-          children: FileTreeNode.childrenFromArray([currentChild]),
-        },
-        conf,
-      );
+      const parent = new FileTreeNode({
+        uri: currentUri,
+        rootUri,
+        isLoading: true,
+        isExpanded: true,
+        children: FileTreeNode.childrenFromArray([currentChild]),
+      });
 
       currentChild = parent;
     });
@@ -548,7 +541,6 @@ export function setRootKeys(
   store: MiddlewareStore,
   rootKeys: Array<NuclideUri>,
 ): void {
-  const conf = Selectors.getConf(store.getState());
   const rootNodes = rootKeys.map(rootUri => {
     const root = Selectors.getRoots(store.getState()).get(rootUri);
     if (root != null) {
@@ -556,16 +548,13 @@ export function setRootKeys(
     }
 
     fetchChildKeys(store, rootUri);
-    return new FileTreeNode(
-      {
-        uri: rootUri,
-        rootUri,
-        isLoading: true,
-        isExpanded: true,
-        connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-      },
-      conf,
-    );
+    return new FileTreeNode({
+      uri: rootUri,
+      rootUri,
+      isLoading: true,
+      isExpanded: true,
+      connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
+    });
   });
 
   const roots = Immutable.OrderedMap(rootNodes.map(root => [root.uri, root]));

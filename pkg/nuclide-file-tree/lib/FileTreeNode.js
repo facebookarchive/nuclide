@@ -14,7 +14,7 @@ import * as Immutable from 'immutable';
 import * as FileTreeHelpers from './FileTreeHelpers';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NodeCheckedStatus, StoreConfigData} from './types';
+import type {NodeCheckedStatus} from './types';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
 export type FileTreeNodeOptions = {|
@@ -120,8 +120,6 @@ export class FileTreeNode {
   nextSibling: ?FileTreeNode;
   prevSibling: ?FileTreeNode;
 
-  _conf: StoreConfigData;
-
   uri: NuclideUri;
   rootUri: NuclideUri;
   name: string;
@@ -153,12 +151,10 @@ export class FileTreeNode {
     return Immutable.OrderedMap(children.map(child => [child.name, child]));
   }
 
-  constructor(options: FileTreeNodeOptions, conf: StoreConfigData) {
+  constructor(options: FileTreeNodeOptions) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
-    this._conf = conf;
-
     this._assignOptions(options);
     this._handleChildren();
   }
@@ -312,16 +308,6 @@ export class FileTreeNode {
 
   setGeneratedStatus(generatedStatus: GeneratedFileType): FileTreeNode {
     return this.set({generatedStatus});
-  }
-
-  /**
-   * Notifies the node about the change that happened in the configuration object. Will trigger
-   * the complete reconstruction of the entire tree branch
-   */
-  updateConf(conf: StoreConfigData): FileTreeNode {
-    const children = this.children.map(c => c.updateConf(conf));
-    const options = this._buildOptions();
-    return new FileTreeNode({...options, children}, conf);
   }
 
   /**
@@ -509,13 +495,10 @@ export class FileTreeNode {
 
   _newNode(props: ImmutableNodeSettableFields): FileTreeNode {
     const options = this._buildOptions();
-    return new FileTreeNode(
-      {
-        ...options,
-        ...props,
-      },
-      this._conf,
-    );
+    return new FileTreeNode({
+      ...options,
+      ...props,
+    });
   }
 
   _findLastByNamePath(childNamePath: Array<string>): FileTreeNode {

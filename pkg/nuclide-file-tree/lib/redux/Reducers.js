@@ -35,7 +35,7 @@ import * as Actions from '../redux/Actions';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
-import type {StoreConfigData, AppState, Action} from '../types';
+import type {AppState, Action} from '../types';
 
 const actionTrackers: Map<string, HistogramTracker> = new Map();
 
@@ -59,7 +59,6 @@ const DEFAULT_STATE: AppState = {
   _isLoadingMap: Immutable.Map(),
   _repositories: Immutable.Set(),
 
-  _conf: {},
   excludeVcsIgnoredPaths: true,
   hideIgnoredNames: true,
   hideVcsIgnoredPaths: true,
@@ -576,47 +575,6 @@ function setExcludeVcsIgnoredPaths(
   excludeVcsIgnoredPaths: boolean,
 ): AppState {
   return {...state, excludeVcsIgnoredPaths};
-}
-
-/**
- * Update the configuration for the file-tree. The direct writing to the this._conf should be
- * avoided.
- */
-function updateConf(
-  state: AppState,
-  mutator: (conf: StoreConfigData) => void,
-): AppState {
-  const getNodeContainsHidden = Selectors.getNodeContainsHidden(state);
-  const nextConf = {...state._conf};
-  mutator(nextConf);
-  const nodesToUnselect = new Set();
-  const nextState = updateRoots(state, root => {
-    // TODO: We're no longer changing anything here so we should be using an iteration helper
-    // instead of `setRecursive()`
-    return root.updateConf(nextConf).setRecursive(
-      // Remove selection from hidden nodes under this root
-      node => (getNodeContainsHidden(node) ? null : node),
-      node => {
-        if (Selectors.getNodeShouldBeShown(state)(node)) {
-          return node;
-        }
-
-        // The node is hidden - unselect all nodes under it if there are any
-        return node.setRecursive(
-          subNode => null,
-          subNode => {
-            nodesToUnselect.add(subNode);
-            return subNode;
-          },
-        );
-      },
-    );
-  });
-  return {
-    ...nextState,
-    _conf: nextConf,
-    _selectedUris: deleteNodes(state._selectedUris, nodesToUnselect),
-  };
 }
 
 function setHideVcsIgnoredPaths(

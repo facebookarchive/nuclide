@@ -1235,18 +1235,15 @@ export function loadDataEpic(
       const buildRootNode = (rootUri: string) => {
         EpicHelpers.fetchChildKeys(store, rootUri);
 
-        return new FileTreeNode(
-          {
-            uri: rootUri,
-            rootUri,
-            isExpanded: true,
-            isLoading: true,
-            children: Immutable.OrderedMap(),
-            isCwd: false,
-            connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-          },
-          Selectors.getConf(store.getState()),
-        );
+        return new FileTreeNode({
+          uri: rootUri,
+          rootUri,
+          isExpanded: true,
+          isLoading: true,
+          children: Immutable.OrderedMap(),
+          isCwd: false,
+          connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
+        });
       };
 
       const normalizedAtomPaths = atom.project

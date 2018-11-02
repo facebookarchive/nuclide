@@ -13,10 +13,8 @@
 
 import {Provider} from 'react-redux';
 import {FileTreeNode} from '../lib/FileTreeNode';
-import {WorkingSet} from '../../nuclide-working-sets-common';
 import FileTreeEntryComponent from '../components/FileTreeEntryComponent';
 import invariant from 'assert';
-import * as Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
@@ -37,23 +35,7 @@ function renderEntryComponentIntoDocument(
     ...props,
   };
 
-  const nodeConf = {
-    vcsStatuses: Immutable.Map(),
-    workingSet: new WorkingSet(),
-    editedWorkingSet: new WorkingSet(),
-    hideIgnoredNames: true,
-    excludeVcsIgnoredPaths: true,
-    ignoredPatterns: Immutable.Set(),
-    repositories: Immutable.Set(),
-    usePreviewTabs: true,
-    focusEditorOnFileSelection: false,
-    isEditingWorkingSet: false,
-    openFilesWorkingSet: new WorkingSet(),
-    reposByRoot: {},
-    ...conf,
-  };
-
-  const node = new FileTreeNode(nodeProps, nodeConf);
+  const node = new FileTreeNode(nodeProps);
 
   store.dispatch(Actions.focus(node));
   const selectedNodes = Selectors.getSelectedNodes(store.getState()).toSet();

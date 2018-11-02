@@ -65,8 +65,6 @@ export type InitialData = {|
   foldersExpanded: ?boolean,
 |};
 
-export type StoreConfigData = {||};
-
 export type NodeDebugState = {
   uri: NuclideUri,
   rootUri: NuclideUri,
@@ -108,7 +106,6 @@ export type AppState = {|
   _foldersExpanded: boolean,
   _reorderPreviewStatus: ReorderPreviewStatus,
 
-  _conf: StoreConfigData, // The configuration for the file-tree. Avoid direct writing.
   excludeVcsIgnoredPaths: boolean,
   hideIgnoredNames: boolean,
   hideVcsIgnoredPaths: boolean,
