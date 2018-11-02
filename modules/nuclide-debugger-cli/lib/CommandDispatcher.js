@@ -16,6 +16,11 @@ import type {DispatcherInterface} from './DispatcherInterface';
 import invariant from 'assert';
 import TokenizedLine from './TokenizedLine';
 
+function regexpEscape(str: string): string {
+  // return str with all characters of significance to a regular expression escaped
+  return str.replace(/[.*+?$^(){}[\]|\\]/g, '\\$&');
+}
+
 export default class CommandDispatcher implements DispatcherInterface {
   _commands: Command[] = [];
   _aliases: Map<string, string>;
@@ -33,7 +38,7 @@ export default class CommandDispatcher implements DispatcherInterface {
   }
 
   getCommandsMatching(prefix: string): Command[] {
-    const re = new RegExp(`^${prefix}`);
+    const re = new RegExp(`^${regexpEscape(prefix)}`);
     return this._commands.filter(x => x.name.match(re));
   }
 
