@@ -18,6 +18,7 @@ import Debugger from './Debugger';
 import DebuggerAdapterFactory from './DebuggerAdapterFactory';
 import HelpCommand from './HelpCommand';
 import log4js from 'log4js';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import QuitCommand from './QuitCommand';
 import yargs from 'yargs';
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
@@ -147,7 +148,11 @@ async function main(): Promise<void> {
     const logger = buildLogger();
     const aliases = configFile.resolveAliasesForPreset(preset);
     const dispatcher = new CommandDispatcher(aliases);
-    const cli = new CommandLine(dispatcher, args.plain, logger);
+    const historySave = nuclideUri.join(
+      configFile.ensureConfigRoot(),
+      'history',
+    );
+    const cli = new CommandLine(dispatcher, args.plain, logger, historySave);
 
     dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
     dispatcher.registerCommand(new QuitCommand(() => cli.close()));

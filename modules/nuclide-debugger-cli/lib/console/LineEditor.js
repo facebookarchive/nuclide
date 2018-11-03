@@ -20,6 +20,7 @@ type LineEditorOptions = {
   tty?: ?boolean,
   maxHistoryItems?: number,
   removeHistoryDuplicates?: boolean,
+  historySaveFile?: string,
 };
 
 const MAX_SCROLLBACK = 2000;
@@ -66,6 +67,7 @@ export default class LineEditor extends EventEmitter {
 
   close(error: ?string) {
     this._closeError = error;
+    this._history.save();
     this.emit('close');
   }
 
@@ -100,7 +102,11 @@ export default class LineEditor extends EventEmitter {
         ? options.removeHistoryDuplicates
         : true;
 
-    this._history = new History(maxHistoryItems, removeDups);
+    this._history = new History(
+      maxHistoryItems,
+      removeDups,
+      options.historySaveFile,
+    );
     this._historyTextSave = '';
 
     this._program = blessed.program({});

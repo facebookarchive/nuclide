@@ -56,12 +56,19 @@ export default class CommandDispatcher implements DispatcherInterface {
     // resolve aliases
     const alias = this.resolveAlias(tokens);
     if (alias != null) {
-      return this.execute(alias);
+      for (const cmd of alias) {
+        // eslint-disable-next-line no-await-in-loop
+        const err = await this.execute(cmd);
+        if (err != null) {
+          return err;
+        }
+      }
+      return null;
     }
 
     const cmd = tokens.stringTokens()[0];
     if (cmd == null) {
-      return;
+      return null;
     }
 
     const matches = this.getCommandsMatching(cmd);
@@ -80,7 +87,7 @@ export default class CommandDispatcher implements DispatcherInterface {
     });
   }
 
-  resolveAlias(tokens: TokenizedLine): ?string {
+  resolveAlias(tokens: TokenizedLine): ?Array<string> {
     const cmd = tokens.stringTokens()[0];
     if (cmd == null) {
       return null;
@@ -88,7 +95,7 @@ export default class CommandDispatcher implements DispatcherInterface {
 
     const alias = this._aliases.get(cmd);
     if (alias != null) {
-      return `${alias} ${tokens.rest(1)}`;
+      return this._aliasToArray(alias, tokens.rest(1));
     }
 
     // punctuation aliases are things like '=' for print ala hphpd
@@ -112,9 +119,30 @@ export default class CommandDispatcher implements DispatcherInterface {
     if (puncMatch != null) {
       const puncAlias = this._aliases.get(puncMatch);
       invariant(puncAlias != null);
-      return `${puncAlias} ${tokens.rest(0).substr(puncMatch.length)}`;
+      return this._aliasToArray(
+        puncAlias,
+        tokens.rest(0).substr(puncMatch.length),
+      );
     }
 
     return null;
+  }
+
+  _aliasToArray(alias: ?string, rest: string): ?Array<string> {
+    if (alias == null) {
+      return null;
+    }
+
+    const commands = alias
+      .trim()
+      .split('\n')
+      .map(c => c.trim())
+      .filter(c => c !== '');
+    if (commands.length === 0) {
+      return null;
+    }
+
+    commands[commands.length - 1] += ` ${rest}`;
+    return commands;
   }
 }

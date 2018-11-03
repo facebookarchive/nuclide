@@ -12,8 +12,8 @@
 
 import type {ConsoleIO} from './ConsoleIO';
 
-import LineEditor from './console/LineEditor';
 import CommandDispatcher from './CommandDispatcher';
+import LineEditor from './console/LineEditor';
 import {Observable, Subject} from 'rxjs';
 
 const PROMPT = 'fbdbg> ';
@@ -37,12 +37,14 @@ export default class CommandLine implements ConsoleIO {
     dispatcher: CommandDispatcher,
     plain: boolean,
     logger: log4js$Logger,
+    historySaveFile: string,
   ) {
     this._dispatcher = dispatcher;
 
     let lineEditorArgs = {
       input: process.stdin,
       output: process.stdout,
+      historySaveFile,
     };
     if (plain) {
       lineEditorArgs = {

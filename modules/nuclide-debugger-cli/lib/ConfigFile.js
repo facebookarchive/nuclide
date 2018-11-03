@@ -40,7 +40,7 @@ export default class ConfigFile {
   constructor() {
     const configFiles = [
       '/usr/local/share/fbdbg/config.json',
-      nuclideUri.join(os.homedir(), '.fbdbg', 'config.json'),
+      nuclideUri.join(this.userConfigRoot(), 'config.json'),
     ];
     // $FlowFixMe Flow doesn't understand Object.assign
     this._config = configFiles
@@ -63,6 +63,19 @@ export default class ConfigFile {
           throw new Error(`Invalid JSON in config file ${fname}.`);
         }
       }, {});
+  }
+
+  userConfigRoot(): string {
+    return nuclideUri.join(os.homedir(), '.fbdbg');
+  }
+
+  ensureConfigRoot(): string {
+    const root = this.userConfigRoot();
+    if (!fs.existsSync(root)) {
+      fs.mkdirSync(root);
+    }
+
+    return root;
   }
 
   getPresetFromArguments(): ?Preset {
