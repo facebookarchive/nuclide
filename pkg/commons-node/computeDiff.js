@@ -200,6 +200,7 @@ function _computeDiffChunks(
     chunks.push({added, removed, value, count, offset});
     offset = 0;
   });
+
   if (nextOffset !== 0) {
     // Add a trailing offset block at the end of the shorter file.
     chunks.push({
