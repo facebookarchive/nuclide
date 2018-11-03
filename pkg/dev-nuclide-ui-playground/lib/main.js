@@ -12,7 +12,8 @@
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Playground, WORKSPACE_VIEW_URI} from './Playground';
+import {Playground} from './Playground';
+import {WORKSPACE_VIEW_URI} from './constants';
 import invariant from 'assert';
 import * as React from 'react';
 

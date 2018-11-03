@@ -42,6 +42,7 @@ import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from 'nuclide-commons-ui/FileChanges.example';
 import {HighlightedCodeExamples} from 'nuclide-commons-ui/HighlightedCode.example';
 import {PulseButtonExample} from 'nuclide-commons-ui/PulseButton.example';
+import {WORKSPACE_VIEW_URI} from './constants';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -87,8 +88,6 @@ type ComponentSpec = {
 type State = {
   collapsedSections: Set<string>,
 };
-
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/ui-playground';
 
 export class Playground extends React.Component<any, State> {
   constructor(props: any) {
