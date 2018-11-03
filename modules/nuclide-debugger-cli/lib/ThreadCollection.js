@@ -119,6 +119,10 @@ export default class ThreadCollection {
     this._focusThread = id;
   }
 
+  clearFocusThread(): void {
+    this._focusThread = null;
+  }
+
   get focusThreadId(): ?number {
     return this._focusThread;
   }

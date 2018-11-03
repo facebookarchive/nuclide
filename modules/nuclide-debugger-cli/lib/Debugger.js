@@ -153,6 +153,8 @@ export default class Debugger implements DebuggerInterface {
         throw new Error('Adapter is not set up in relaunch()');
       }
 
+      this._threads.clearFocusThread();
+
       if (this._attachMode) {
         const attachArgs = _adapter.adapter.transformAttachArguments(
           adapter.attachArgs,
@@ -400,15 +402,17 @@ export default class Debugger implements DebuggerInterface {
       // send configuration done.
       if (this._state === 'CONFIGURING') {
         if (this._attachMode) {
+          this._threads.clearFocusThread();
           return this._configurationDone();
         }
         throw new Error('There is not yet a running process to continue.');
       }
 
       if (this._state === 'STOPPED') {
-        await session.continue({
-          threadId: this.getActiveThread().id(),
-        });
+        const threadId = this.getActiveThread().id();
+        this._threads.clearFocusThread();
+
+        await session.continue({threadId});
 
         return;
       }
@@ -1111,6 +1115,7 @@ export default class Debugger implements DebuggerInterface {
     }
 
     await this._disableBreakpointIfOneShot(breakpointId);
+    await this._cacheThreads();
 
     const firstStop = this._threads.allThreadsRunning();
     if (firstStop && description != null) {
@@ -1136,19 +1141,20 @@ export default class Debugger implements DebuggerInterface {
       const adapter = this._adapter;
       invariant(adapter != null);
 
-      const defaultThreadId: ?number = adapter.adapter.asyncStopThread;
-      if (this._stoppedAtBreakpoint || defaultThreadId == null) {
-        if (threadId != null) {
-          this._threads.setFocusThread(threadId);
+      if (this._threads.focusThreadId == null) {
+        const defaultThreadId: ?number = adapter.adapter.asyncStopThread;
+        if (this._stoppedAtBreakpoint || defaultThreadId == null) {
+          if (threadId != null) {
+            this._threads.setFocusThread(threadId);
+          } else {
+            const firstStopped = this._threads.firstStoppedThread();
+            invariant(firstStopped != null);
+            this._threads.setFocusThread(firstStopped);
+          }
         } else {
-          const firstStopped = this._threads.firstStoppedThread();
-          invariant(firstStopped != null);
-          this._threads.setFocusThread(firstStopped);
+          this._threads.setFocusThread(defaultThreadId);
         }
-      } else {
-        this._threads.setFocusThread(defaultThreadId);
       }
-
       try {
         const focusThread = this._threads.focusThreadId;
         if (focusThread == null) {
