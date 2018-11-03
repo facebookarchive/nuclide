@@ -18,11 +18,30 @@ export type LineMapping = {
   oldToNew: LineMapper,
 };
 
+export type ConsolidatedDiff = {
+  textDiff: TextDiff,
+  oldFile: ?string,
+  hunks: Array<ConsolidatedDiffHunk>,
+};
+
+export type DiffOptions = {
+  includeOldText: boolean,
+  ignoreWhitespace: boolean,
+  includeHunks: boolean,
+};
+
 export type TextDiff = LineMapping & {
   addedLines: Array<number>,
   removedLines: Array<number>,
   oldLineOffsets: Array<[number, number]>,
   newLineOffsets: Array<[number, number]>,
+};
+
+export type ConsolidatedDiffHunk = {
+  added: number,
+  removed: number,
+  oldText: string,
+  newStart: number,
 };
 
 type ChunkPiece = {
@@ -37,6 +56,7 @@ type DiffChunk = {
   addedLines: Array<number>,
   removedLines: Array<number>,
   chunks: Array<ChunkPiece>,
+  consolidatedHunks: Array<ConsolidatedDiffHunk>,
 };
 
 export type OffsetMap = Map<number, number>;
@@ -64,6 +84,42 @@ export function computeDiff(
   };
 }
 
+export function computeConsolidatedDiff(
+  oldText: string,
+  newText: string,
+  options: DiffOptions,
+): ConsolidatedDiff {
+  const {
+    addedLines,
+    removedLines,
+    chunks,
+    consolidatedHunks,
+  } = _computeDiffChunks(oldText, newText, options.ignoreWhitespace);
+  const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
+  const {oldToNew, newToOld} = _computeLineDiffMapping(chunks);
+
+  const returnValue: ConsolidatedDiff = {
+    textDiff: {
+      addedLines,
+      removedLines,
+      oldLineOffsets: Array.from(oldLineOffsets), // serialize for JSON.
+      newLineOffsets: Array.from(newLineOffsets), // serialize for JSON.
+      oldToNew,
+      newToOld,
+    },
+    hunks: [],
+    oldFile: null,
+  };
+
+  if (options.includeOldText) {
+    returnValue.oldFile = oldText;
+  }
+  if (options.includeHunks) {
+    returnValue.hunks = consolidatedHunks;
+  }
+  return returnValue;
+}
+
 function _computeDiffChunks(
   oldText_: string,
   newText_: string,
@@ -86,11 +142,14 @@ function _computeDiffChunks(
     ignoreWhitespace,
   });
   const chunks = [];
+  const consolidatedHunks = [];
 
   let addedCount = 0;
   let removedCount = 0;
   let nextOffset = 0;
   let offset = 0;
+  let lineCount = 1;
+  let startNewHunk = true;
 
   const addedLines = [];
   const removedLines = [];
@@ -102,18 +161,41 @@ function _computeDiffChunks(
       removedCount += count;
       offset = nextOffset;
       nextOffset = 0;
+      lineCount += count;
+      startNewHunk = true;
     } else if (added) {
+      if (startNewHunk) {
+        consolidatedHunks.push({
+          added: count,
+          removed: 0,
+          oldText: '',
+          newStart: lineCount,
+        });
+      } else {
+        const hunkToEdit = consolidatedHunks[consolidatedHunks.length - 1];
+        hunkToEdit.added = count;
+        hunkToEdit.newStart = lineCount;
+      }
       for (let i = 0; i < count; i++) {
         addedLines.push(addedCount + i);
       }
       addedCount += count;
       nextOffset += count;
+      startNewHunk = true;
+      lineCount += count;
     } else {
+      consolidatedHunks.push({
+        added: 0,
+        removed: count,
+        oldText: value,
+        newStart: lineCount - 1,
+      });
       for (let i = 0; i < count; i++) {
         removedLines.push(removedCount + i);
       }
       removedCount += count;
       nextOffset -= count;
+      startNewHunk = false;
     }
     chunks.push({added, removed, value, count, offset});
     offset = 0;
@@ -128,7 +210,7 @@ function _computeDiffChunks(
       offset: nextOffset,
     });
   }
-  return {addedLines, removedLines, chunks};
+  return {addedLines, removedLines, chunks, consolidatedHunks};
 }
 
 function _computeOffsets(
