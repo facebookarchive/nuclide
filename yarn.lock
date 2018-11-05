@@ -2670,11 +2670,10 @@ dbly-linked-list@0.2.0:
   dependencies:
     lodash.isequal "^4.5.0"
 
-debrief@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/debrief/-/debrief-0.2.3.tgz#8b134b774296fa840a9000eca745e90581b83fbd"
-  dependencies:
-    babel-runtime "^6.26.0"
+debrief@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/debrief/-/debrief-1.2.2.tgz#61ad14d4b2eed8fce01930cb5c0e6968c09cd375"
+  integrity sha512-FW5iiE1IUR2VCIPDZsVjQYGDq7EbeJ6BsxayapsO7L+E8spjX/ieacUR6F0iwi+5nUqlz4bapiASZuXSMmdflQ==
 
 debug-log@^1.0.1:
   version "1.0.1"
@@ -2720,12 +2719,13 @@ decamelize@^2.0.0:
   dependencies:
     xregexp "4.0.0"
 
-decoders@1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/decoders/-/decoders-1.6.1.tgz#733cbe842055fd21a541cec446ca10eb688aac86"
+decoders@1.10.6:
+  version "1.10.6"
+  resolved "https://registry.yarnpkg.com/decoders/-/decoders-1.10.6.tgz#5e2bf80378ffad9f3fb37613f352615c04afe094"
+  integrity sha512-WvtSVy7UVUHHmWbd6xNS8F30nlXme6d4Ha8rdSXm5lNIfXJ1PJhmdq2M6RPmudtAG6I8SgGMawPL+DxURf5PzQ==
   dependencies:
-    debrief "^0.2.3"
-    lemons "^1.1.0"
+    debrief "^1.2.2"
+    lemons "^1.3.1"
 
 dedent@0.7.0, dedent@^0.7.0:
   version "0.7.0"
@@ -5552,9 +5552,10 @@ left-pad@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/left-pad/-/left-pad-1.2.0.tgz#d30a73c6b8201d8f7d8e7956ba9616087a68e0ee"
 
-lemons@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/lemons/-/lemons-1.1.0.tgz#58e6098a53fd2801255eb1c61e1fec5c4fdc3b2e"
+lemons@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/lemons/-/lemons-1.3.1.tgz#c1415d05f6ab5321418d3f472819e4ba1ffcfb29"
+  integrity sha512-y33wVNr5+4lZV0cen9JJgrqxXfCmjvVrfOqmy07boz07EN8qy371k6thpkHaLjvlruDNkvOfyIoDNN32xS1PHw==
 
 lerna@2.9.0:
   version "2.9.0"
