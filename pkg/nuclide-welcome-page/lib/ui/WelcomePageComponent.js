@@ -84,6 +84,7 @@ function mapStateToProps(
   return {...state, ...ownProps};
 }
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const WelcomePageContainer = connect(
   mapStateToProps,
   ActionCreators,

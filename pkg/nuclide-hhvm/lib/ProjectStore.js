@@ -77,6 +77,7 @@ export default class ProjectStore {
     this._launchSettingsByPath = new Map();
     this._attachSettingsByHost = new Map();
     this._dirty = false;
+    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     this._saveSettings = debounce(this._saveSettings, 1000);
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);

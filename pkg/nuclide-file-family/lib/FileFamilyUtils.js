@@ -14,6 +14,7 @@ import type {FileGraph} from './types';
 import {arrayUnique} from 'nuclide-commons/collection';
 
 export function getAlternatesFromGraph(graph: FileGraph, activeUri: string) {
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   return arrayUnique(
     graph.relations
       .filter(

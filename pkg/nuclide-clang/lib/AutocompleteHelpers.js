@@ -221,6 +221,7 @@ type ClangAutocompleteSuggestion = atom$AutocompleteSuggestion & {
 };
 
 export default class AutocompleteHelpers {
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   static _cacher = new AutocompleteCacher(
     AutocompleteHelpers._getAutocompleteSuggestions,
     {

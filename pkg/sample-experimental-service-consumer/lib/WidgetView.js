@@ -16,6 +16,7 @@ type State = {count: number};
 export default class WidgetView {
   componentId = 'sample-experimental-service-consumer.WidgetComponent';
   _updates: Subject<State> = new Subject();
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _disposed = new ReplaySubject(1);
   state: State = {count: 0};
 

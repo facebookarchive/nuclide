@@ -682,7 +682,9 @@ function getExternalDragPath(event: DragEvent): ?NuclideUri {
   return initialPath || textPlain || null;
 }
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export default connect(
   mapStateToProps,
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   mapDispatchToProps,
 )(FileTreeEntryComponent);

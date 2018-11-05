@@ -169,6 +169,7 @@ export class DeviceAndProcess extends React.Component<Props, State> {
     } catch (e) {
       return this.state.javaProcesses.getOrDefault([]);
     }
+    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     return this.state.javaProcesses
       .getOrDefault([])
       .filter(

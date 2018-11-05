@@ -148,6 +148,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     this._selectedRow = treeItem;
   };
 
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _getDisplayNames = createSelector([(props: Props) => props.uris], x => {
     return computeDisplayPaths(x);
   });

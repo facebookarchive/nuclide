@@ -60,6 +60,7 @@ const mapStateToProps = (state: AppState): $Shape<Props> => ({
   extraContent: Selectors.getExtraProjectSelectionContent(state),
 });
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export default connect(
   mapStateToProps,
   () => ({}),

@@ -91,6 +91,7 @@ export class OutlineViewSearchComponent extends React.Component<Props> {
     this.props.onQueryChange('');
   };
 
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _onDidChange = debounce(query => {
     analytics.track('outline-view:change-query');
     this.props.onQueryChange(query);

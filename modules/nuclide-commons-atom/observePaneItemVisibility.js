@@ -54,6 +54,7 @@ export function observeVisibleItems() {
   ).map(([activeItems, locationVisibilities]) => {
     // If it's not active, it's not visible.
     // If it's active, it's only visible if its container is.
+    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     return setFilter(activeItems, item => {
       const paneContainer = atom.workspace.paneContainerForItem(item);
       const location = paneContainer && paneContainer.getLocation();

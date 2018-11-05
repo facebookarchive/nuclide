@@ -13,6 +13,7 @@
 /* eslint-disable nuclide-internal/no-commonjs */
 
 // This extra module enables adding spies during testing.
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 try {
   // $FlowFB
   module.exports = require('../fb/analytics');

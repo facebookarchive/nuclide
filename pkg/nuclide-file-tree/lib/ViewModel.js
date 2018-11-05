@@ -34,6 +34,7 @@ export default class ViewModel {
   _component: ?FileTreeSidebarComponent;
   _disposable: UniversalDisposable;
   _focusRef: ?HTMLElement;
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _disposed = new ReplaySubject(1);
 
   constructor(store: Store) {

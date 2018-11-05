@@ -42,6 +42,7 @@ export function flushLogsAndAbort(): void {
  * Push initial default config to log4js.
  * Execute only once.
  */
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const initializeLogging = once(() => {
   setupLoggingService();
   log4js.configure(getDefaultConfig());

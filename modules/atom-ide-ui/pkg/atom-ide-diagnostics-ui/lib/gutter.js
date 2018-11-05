@@ -389,6 +389,7 @@ function highlightEditorRange(
 }
 
 _applyUpdateToEditor.displayName = 'applyUpdateToEditor';
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const applyUpdateToEditor = decorateTrackTimingSampled(
   _applyUpdateToEditor,
   APPLY_UPDATE_TO_EDITOR_SAMPLE_RATE,

@@ -74,6 +74,7 @@ export class FreeformRefactorComponent extends React.Component<Props, State> {
   }
 
   _getControls() {
+    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     return this.props.phase.refactoring.arguments
       .map((arg, index) => {
         switch (arg.type) {

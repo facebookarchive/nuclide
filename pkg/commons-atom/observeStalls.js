@@ -39,6 +39,7 @@ const BLOCKED_MAX = 600000;
 const BLOCKED_RANGE_PADDING = 15;
 
 // Share + cache the observable.
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 const observeStalls = once(
   (): Observable<number> => {
     const browserWindow = remote.getCurrentWindow();

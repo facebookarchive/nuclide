@@ -125,6 +125,7 @@ export function getFileMessageUpdates(
  * Gets all current diagnostic messages.
  * Prefer to get updates via ::onAllMessagesDidUpdate.
  */
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getMessages = createSelector(
   [getMessagesState],
   (messagesState): Array<DiagnosticMessage> => {
@@ -141,6 +142,7 @@ export const getMessages = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSupportedMessageKinds = createSelector(
   [getProviders],
   (providers): Set<DiagnosticMessageKind> => {
@@ -156,6 +158,7 @@ export const getSupportedMessageKinds = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getUiConfig = createSelector(
   [getProviders],
   (providers): UiConfig => {

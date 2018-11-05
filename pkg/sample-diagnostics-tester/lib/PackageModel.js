@@ -21,6 +21,7 @@ export type addMessageOption = {
 };
 
 export default class PackageModel {
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _disposed = new ReplaySubject(1);
   _element: ?HTMLElement;
   _messages: BehaviorSubject<Array<LinterMessageV2>> = new BehaviorSubject([]);

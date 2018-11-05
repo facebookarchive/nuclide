@@ -108,6 +108,7 @@ const getTargetNodeKeys = (state: AppState) => state._targetNodeKeys;
 
 export const getCwdApi = (state: AppState) => state._cwdApi;
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const hasCwd = createSelector([getCwdKey], cwdKey => cwdKey != null);
 
 export const getWorkingSet = (state: AppState) => state.workingSet;
@@ -182,6 +183,7 @@ const getContainedInOpenFilesWorkingSet = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeShouldBeSoftened = createSelector(
   [
     getIsEditingWorkingSet,
@@ -205,10 +207,12 @@ export const getNodeShouldBeSoftened = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeRepo = createSelector([getReposByRoot], reposByRoot => {
   return node => reposByRoot[node.rootUri];
 });
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeIsIgnored = createSelector([getNodeRepo], getNodeRepo_ => {
   return memoizeWithWeakMap(node => {
     const repo = getNodeRepo_(node);
@@ -218,6 +222,7 @@ export const getNodeIsIgnored = createSelector([getNodeRepo], getNodeRepo_ => {
   });
 });
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeCheckedStatus = createSelector(
   [getEditedWorkingSet, getNodeIsContainer],
   (editedWorkingSet, getNodeIsContainer_) => {
@@ -241,6 +246,7 @@ export const getNodeCheckedStatus = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeShouldBeShown = createSelector(
   [
     getNodeIsIgnored,
@@ -341,35 +347,41 @@ const getChildDerivedValues = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeChildrenAreLoading = createSelector(
   [getChildDerivedValues],
   getChildDerivedValues_ => node =>
     getChildDerivedValues_(node).childrenAreLoading,
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeContainsDragHover = createSelector(
   [getChildDerivedValues],
   getChildDerivedValues_ => node =>
     getChildDerivedValues_(node).containsDragHover,
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeContainsFilterMatches = createSelector(
   [getChildDerivedValues],
   getChildDerivedValues_ => node =>
     getChildDerivedValues_(node).containsFilterMatches,
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeContainsHidden = createSelector(
   [getChildDerivedValues],
   getChildDerivedValues_ => node => getChildDerivedValues_(node).containsHidden,
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getShownChildrenCount = createSelector(
   [getChildDerivedValues],
   getChildDerivedValues_ => node =>
     getChildDerivedValues_(node).shownChildrenCount,
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const countShownNodes = createSelector(
   [getRoots, getShownChildrenCount],
   (roots, getShownChildrenCount_) => {
@@ -400,6 +412,7 @@ const getVisualIndexOfTrackedNode = createSelector(
     trackedNode == null ? null : getVisualIndex_(trackedNode),
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getTrackedIndex = createSelector(
   [getVisualIndexOfTrackedNode, countShownNodes],
   (visualIndexOfTrackedNode: ?number, shownNodes: number) => {
@@ -415,6 +428,7 @@ export const getTrackedIndex = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getRootKeys = createSelector(
   [getRoots],
   (roots): Array<NuclideUri> =>
@@ -427,8 +441,10 @@ export const getRootKeys = createSelector(
 /**
  * Returns true if the store has no data, i.e. no roots, no children.
  */
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const isEmpty = createSelector([getRoots], roots => roots.isEmpty());
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSelectedNodes = createSelector(
   [getRoots, getSelectedUris],
   (roots, selectedUris): Immutable.List<FileTreeNode> => {
@@ -457,6 +473,7 @@ export const getNodeInRoots = (
   return rootNode.find(nodeKey);
 };
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getFocusedNodes = createSelector(
   [getRoots, getFocusedUris],
   (roots, focusedUris) => {
@@ -489,6 +506,7 @@ const getTargetNode = createSelector(
 
 // Retrieves target node in an immutable list if it's set, or all selected
 // nodes otherwise
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getTargetNodes = createSelector(
   [getRoots, getTargetNode, getSelectedNodes],
   (roots, targetNode, selectedNodes) => {
@@ -502,6 +520,7 @@ export const getTargetNodes = createSelector(
 /**
  * Returns a node if it is the only one selected, or null otherwise
  */
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSingleSelectedNode = createSelector(
   [getSelectedNodes],
   selectedNodes => {
@@ -513,6 +532,7 @@ export const getSingleSelectedNode = createSelector(
 );
 
 // Retrieves the target node, if it's set, or the first selected node otherwise
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSingleTargetNode = createSelector(
   [getTargetNode, getSingleSelectedNode],
   (targetNode, singleSelectedNode) => targetNode ?? singleSelectedNode,
@@ -598,12 +618,14 @@ export const getNodeForPath = (
   return rootNode && rootNode.find(uri);
 };
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const isEditedWorkingSetEmpty = createSelector(
   [getRoots, getNodeCheckedStatus],
   (roots, getNodeCheckedStatus_) =>
     roots.every(root => getNodeCheckedStatus_(root) === 'clear'),
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getFilterFound = createSelector(
   [getRoots, getNodeContainsFilterMatches],
   (roots, getNodeContainsFilterMatches_) =>
@@ -653,6 +675,7 @@ const getFindNodeAtOffset = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeByIndex = createSelector(
   [getRoots, getFindNodeAtOffset, getNodeShouldBeShown],
   (roots, findNodeAtOffset, getNodeShouldBeShown_) => {
@@ -666,6 +689,7 @@ export const getNodeByIndex = createSelector(
 export const getLoading = (state: AppState, nodeKey: NuclideUri) =>
   state._isLoadingMap.get(nodeKey);
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeIsSelected = createSelector(
   [getSelectedUris],
   selectedUris => {
@@ -675,6 +699,7 @@ export const getNodeIsSelected = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getNodeIsFocused = createSelector(
   [getFocusedUris],
   focusedUris => {
@@ -684,6 +709,7 @@ export const getNodeIsFocused = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSidebarTitle = createSelector([getCwdKey], cwdKey => {
   return cwdKey == null ? 'File Tree' : nuclideUri.basename(cwdKey);
 });
@@ -696,6 +722,7 @@ export const getFocusEditorOnFileSelection = (state: AppState): boolean => {
   return state.focusEditorOnFileSelection;
 };
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
   if (cwdKey == null) {
     return 'No Current Working Directory';
@@ -711,6 +738,7 @@ export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
   return `Current Working Directory: '${directory}' on '${host}'`;
 });
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getVcsStatus = createSelector(
   [getVcsStatuses],
   (
@@ -731,6 +759,7 @@ export const getVcsStatus = createSelector(
 // In previous versions, we exposed the FileTreeNodes directly. This was bad as it's really just an
 // implementation detail. So, when we wanted to move `vcsStatus` off of the node, we had an issue.
 // We now expose a limited API instead to avoid this.
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getFileTreeContextMenuNode = createSelector(
   [getVcsStatus, getNodeRepo, getNodeIsContainer],
   (getVcsStatusFromNode, getNodeRepo_, getNodeIsContainer_) => {
@@ -759,6 +788,7 @@ export const getFileTreeContextMenuNode = createSelector(
 //
 //
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const serialize = createSelector(
   [
     getRootKeys,
@@ -787,11 +817,14 @@ export const serialize = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const collectSelectionDebugState = createSelector(
   [getSelectedNodes, getFocusedNodes],
   (selectedNodes, focusedNodes) => {
     return {
+      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
       _selectedNodes: selectedNodes.toArray().map(node => node.uri),
+      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
       _focusedNodes: focusedNodes.toArray().map(node => node.uri),
     };
   },
@@ -853,6 +886,7 @@ export const collectDebugState = (state: AppState) => {
     _isCalculatingChanges: getIsCalculatingChanges(state),
     usePreviewTabs: getUsePreviewTabs(state),
     focusEditorOnFileSelection: getFocusEditorOnFileSelection(state),
+    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     roots: Array.from(getRoots(state).values()).map(root =>
       collectDebugStateForNode(state)(root),
     ),
@@ -861,8 +895,10 @@ export const collectDebugState = (state: AppState) => {
       excludeVcsIgnoredPaths: getExcludeVcsIgnoredPaths(state),
       hideVcsIgnoredPaths: getHideVcsIgnoredPaths(state),
       isEditingWorkingSet: getIsEditingWorkingSet(state),
+      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
       vcsStatuses: getVcsStatuses(state).toObject(),
       workingSet: getWorkingSet(state).getUris(),
+      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
       ignoredPatterns: getIgnoredPatterns(state)
         .toArray()
         .map(ignored => ignored.pattern),

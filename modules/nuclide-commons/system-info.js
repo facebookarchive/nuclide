@@ -49,6 +49,7 @@ export const NUCLIDE_VERSION_HEADER = {
 // ensures happens only once.
 //
 // [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const isRunningInTest = once(
   (): boolean => {
     try {

@@ -235,6 +235,7 @@ export class Console {
   // TODO: Consider removing records when their source is removed. This will likely require adding
   // the ability to enable and disable sources so, for example, when the debugger is no longer
   // active, it still remains in the source list.
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _getSourcesMemoized = memoizeUntilChanged(
     getSources,
     opts => opts,

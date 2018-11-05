@@ -28,6 +28,7 @@ import activatePackage from './activatePackage';
 export class ProcessPackageRunner implements PackageRunner {
   _processStream: ConnectableObservable<child_process$ChildProcess>;
   _outputStream: ConnectableObservable<ProcessMessage>;
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _disposed = new ReplaySubject(1);
 
   constructor(

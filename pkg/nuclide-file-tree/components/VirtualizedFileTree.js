@@ -422,7 +422,9 @@ const mapDispatchToProps = (dispatch, ownProps): $Shape<Props> => ({
   },
 });
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export default connect(
   mapStateToProps,
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   mapDispatchToProps,
 )(VirtualizedFileTree);
