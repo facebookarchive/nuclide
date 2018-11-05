@@ -239,6 +239,44 @@
         ]
       }
     ]
+  'attributes' :
+    'patterns': [
+      {
+        'begin': '(<<)'
+        'beginCaptures':
+          '1':
+            'name': 'punctuation.definition.attributes.php'
+        'end': '(>>)'
+        'endCaptures':
+          '1':
+            'name': 'punctuation.definition.attributes.php'
+        'name': 'meta.attributes.php'
+        'patterns': [
+          {
+            'include': '#comments'
+          }
+          {
+            'match': '([A-Za-z_][A-Za-z0-9_]*)'
+            'name': 'entity.other.attribute-name.php'
+          }
+          {
+            'begin': '(\\()'
+            'beginCaptures':
+              '1':
+                'name': 'punctuation.definition.parameters.begin.php'
+            'end': '(\\))'
+            'endCaptures':
+              '1':
+                'name': 'punctuation.definition.parameters.end.php'
+            'patterns': [
+              {
+                'include': '#language'
+              }
+            ]
+          }
+        ]
+      }
+    ]
   'constants':
     'patterns': [
       {
@@ -401,6 +439,9 @@
     'patterns': [
       {
         'include': '#comments'
+      }
+      {
+        'include': '#attributes'
       }
       {
         'include': '#type-annotation'
@@ -611,6 +652,9 @@
     'patterns': [
       {
         'include': '#comments'
+      }
+      {
+        'include': '#attributes'
       }
       {
         'include': '#xhp'
