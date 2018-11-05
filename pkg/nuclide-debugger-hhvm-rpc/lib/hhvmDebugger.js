@@ -502,6 +502,26 @@ class HHVMDebuggerWrapper {
     this._writeOutputWithHeader(outputEvent);
   }
 
+  _sortCompletionResponses(message: Object) {
+    const targets = message.body?.targets;
+    if (targets != null) {
+      message.body.targets = targets.sort((a, b) => {
+        const labelA = a.label || '';
+        const lenA = labelA == null ? 0 : labelA.length;
+        const labelB = b.label || '';
+        const lenB = labelB == null ? 0 : labelB.length;
+
+        if (lenA !== lenB) {
+          // Prefer shorter matches first.
+          return lenA - lenB;
+        }
+
+        // Otherwise alphabatize.
+        return labelA.localeCompare(labelB);
+      });
+    }
+  }
+
   _writeResponseMessage(message: Object) {
     this._writeOutputWithHeader({
       seq: ++this._sequenceNumber,
@@ -518,6 +538,10 @@ class HHVMDebuggerWrapper {
   _applyCompatabilityFixes(message: Object) {
     if (message.type === 'response') {
       switch (message.command) {
+        case 'completions': {
+          this._sortCompletionResponses(message);
+          break;
+        }
         case 'threads': {
           if (Array.isArray(message.body)) {
             // TODO(ericblue): Fix threads response on the HHVM side.
