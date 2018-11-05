@@ -460,6 +460,12 @@ class Activation {
               message: info,
             },
             filePaths => {
+              // Despite Electron's documented return type, filePaths can be
+              // undefined. Specifically, when the user clicks "cancel" in the
+              // file selection dialog on MacOS.
+              if (filePaths == null) {
+                return;
+              }
               downloadFilesWithNotifications(nodeUris, filePaths[0]);
             },
           );
