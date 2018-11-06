@@ -151,6 +151,25 @@ export const getMessages = createSelector(
 );
 
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getAllMessagesWithFixes = createSelector(
+  [getMessagesState],
+  (messagesState): Set<DiagnosticMessage> => {
+    // Intentionally does not use the `getMessages` selector so this is O(n*m*p)
+    // rather than O(2n*m*p) and to avoid turning the array into a set
+    const withFixes = new Set();
+    for (const providerMessageMap of messagesState.values()) {
+      for (const providerMessages of providerMessageMap.values()) {
+        for (let i = 0; i < providerMessages.length; i++) {
+          if (providerMessages[i].fix != null) {
+            withFixes.add(providerMessages[i]);
+          }
+        }
+      }
+    }
+    return withFixes;
+  },
+);
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSupportedMessageKinds = createSelector(
   [getProviders],
   (providers): Set<DiagnosticMessageKind> => {

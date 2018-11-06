@@ -15,9 +15,9 @@ import type MessageRangeTracker from '../MessageRangeTracker';
 
 import {combineEpicsFromImports} from 'nuclide-commons/epicHelpers';
 import {createEpicMiddleware} from 'nuclide-commons/redux-observable';
-import {arrayFlatten, setFilter} from 'nuclide-commons/collection';
-import {diffSets} from 'nuclide-commons/observable';
+import {diffSets, throttle} from 'nuclide-commons/observable';
 import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
+import * as Selectors from './Selectors';
 import * as Reducers from './Reducers';
 import * as Epics from './Epics';
 import {
@@ -26,6 +26,11 @@ import {
   createStore as _createStore,
 } from 'redux';
 import {Observable} from 'rxjs';
+
+// Unlike text decorations, these don't need to be rapidly updated on screen as
+// the user types, though they need to be reasonably responsive once the user
+// accepts a fix and the diagnostic (hopefully) disappears as a result.
+const THROTTLE_MESSAGES_WITH_FIXES = 300;
 
 export default function createStore(
   messageRangeTracker: MessageRangeTracker,
@@ -42,18 +47,17 @@ export default function createStore(
   );
 
   // When we get new messages with fixes, track them.
-  const messagesWithFixes = getFileMessages(store)
-    .map(messageSet => setFilter(messageSet, message => message.fix != null))
-    .filter(messageSet => messageSet.size > 0);
   // eslint-disable-next-line nuclide-internal/unused-subscription
-  messagesWithFixes.let(diffSets()).subscribe(({added, removed}) => {
-    if (added.size > 0) {
-      messageRangeTracker.addFileMessages(added);
-    }
-    if (removed.size > 0) {
-      messageRangeTracker.removeFileMessages(removed);
-    }
-  });
+  observeAllMessagesWithFixes(store)
+    .let(diffSets())
+    .subscribe(({added, removed}) => {
+      if (added.size > 0) {
+        messageRangeTracker.addFileMessages(added);
+      }
+      if (removed.size > 0) {
+        messageRangeTracker.removeFileMessages(removed);
+      }
+    });
 
   return store;
 }
@@ -67,16 +71,19 @@ const INITIAL_STATE = {
   lastUpdateSource: 'Provider',
 };
 
-function getFileMessages(store: Store): Observable<Set<DiagnosticMessage>> {
-  const states: Observable<AppState> = observableFromReduxStore(store);
-  return states
-    .map(state => state.messages)
-    .distinctUntilChanged()
-    .map(messages => {
-      const pathsToFileMessages = [...messages.values()];
-      const allMessages = arrayFlatten(
-        pathsToFileMessages.map(map => arrayFlatten([...map.values()])),
-      );
-      return new Set(allMessages);
-    });
+function observeAllMessagesWithFixes(
+  store: Store,
+): Observable<Set<DiagnosticMessage>> {
+  return (
+    observableFromReduxStore(store)
+      .map(state => state.messages)
+      .distinctUntilChanged()
+      // The initial state of messages is an empty map which would otherwise
+      // immediately start a throttle cooldown. Filter these out eaglery
+      // before throttling as we're not interested in them anyway.
+      .filter(messages => messages.size > 0)
+      .let(throttle(THROTTLE_MESSAGES_WITH_FIXES))
+      .map(() => Selectors.getAllMessagesWithFixes(store.getState()))
+      .filter(messagesWithFixes => messagesWithFixes.size > 0)
+  );
 }
