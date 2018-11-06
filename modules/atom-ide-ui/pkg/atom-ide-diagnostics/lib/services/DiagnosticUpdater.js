@@ -27,7 +27,7 @@ import {throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import * as Selectors from '../redux/Selectors';
 import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
-import {arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual, mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
@@ -73,7 +73,14 @@ export default class DiagnosticUpdater {
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
         .let(throttle(THROTTLE_FILE_MESSAGE_MS))
-        .map(state => ({
+        .map(state => [
+          Selectors.getProviderToMessagesForFile(state)(filePath),
+          state,
+        ])
+        .distinctUntilChanged(([aMessages], [bMessages]) =>
+          mapEqual(aMessages, bMessages),
+        )
+        .map(([, state]) => ({
           [Symbol.iterator]() {
             return Selectors.getBoundedThreadedFileMessages(state, filePath);
           },

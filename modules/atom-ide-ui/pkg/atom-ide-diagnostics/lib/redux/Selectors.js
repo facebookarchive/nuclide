@@ -29,18 +29,26 @@ const MAX_MESSAGE_COUNT_PER_FILE = 1000;
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getProviderToMessagesForFile = createSelector(
+  [getMessagesState],
+  messages => (filePath: string) => {
+    const providerToMessages = new Map();
+    for (const [provider, providerMessages] of messages) {
+      const fileMessages = providerMessages.get(filePath);
+      if (fileMessages != null && fileMessages.length > 0) {
+        providerToMessages.set(provider, fileMessages);
+      }
+    }
+    return providerToMessages;
+  },
+);
+
 function* getThreadedFileMessages(
   state: AppState,
   filePath: NuclideUri,
 ): Iterable<DiagnosticMessage> {
-  const providerToMessages = new Map();
-  for (const [provider, messages] of state.messages) {
-    const fileMessages = messages.get(filePath);
-    if (fileMessages != null && fileMessages.length > 0) {
-      providerToMessages.set(provider, fileMessages);
-    }
-  }
-
+  const providerToMessages = getProviderToMessagesForFile(state)(filePath);
   const providerToCurrentIndex: DefaultMap<
     ObservableDiagnosticProvider,
     number,
