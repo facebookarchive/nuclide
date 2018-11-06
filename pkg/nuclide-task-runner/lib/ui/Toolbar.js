@@ -9,10 +9,14 @@
  * @format
  */
 
-import type {Status, Bulletin} from 'nuclide-commons/process';
-import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
+import type {Status} from 'nuclide-commons/process';
+import type {
+  TaskRunner,
+  TaskMetadata,
+  TaskRunnerState,
+  TaskRunnerBulletinStatus,
+} from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
-
 import passesGK from 'nuclide-commons/passesGK';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {TASKS} from '../../../nuclide-buck/lib/BuckTaskRunner';
@@ -52,12 +56,13 @@ export type Props = {
 
 type State = {
   taskbarStatusComponentGK: boolean,
-  bulletin: Bulletin,
+  bulletin: ?TaskRunnerBulletinStatus,
 };
+
 export default class Toolbar extends React.Component<Props, State> {
   state: State = {
     taskbarStatusComponentGK: false,
-    bulletin: {title: '', body: ''},
+    bulletin: null,
   };
 
   constructor() {
@@ -66,18 +71,19 @@ export default class Toolbar extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (prevProps.status == null || prevProps.status.type !== 'bulletin') {
+    if (prevProps.status == null) {
       return;
     }
+    invariant(prevProps.status.type === 'bulletin');
+    const bulletin = ((prevProps.status.object: any): TaskRunnerBulletinStatus);
     if (
-      prevProps.status.bulletin.title !== this.state.bulletin.title ||
-      prevProps.status.bulletin.body !== this.state.bulletin.body
+      bulletin != null &&
+      (this.state.bulletin == null ||
+        (bulletin.title !== this.state.bulletin.title ||
+          bulletin.detail !== this.state.bulletin.detail))
     ) {
       this.setState({
-        bulletin: {
-          body: prevProps.status.bulletin.body,
-          title: prevProps.status.bulletin.title,
-        },
+        bulletin,
       });
     }
   }
@@ -130,13 +136,11 @@ export default class Toolbar extends React.Component<Props, State> {
     );
     let statusComponentContent = null;
     let fullWidthProgressBar = null;
-    if (this.state.taskbarStatusComponentGK) {
+    if (this.state.taskbarStatusComponentGK && taskbarVisible) {
       statusComponentContent = (
         <TaskRunnerStatusComponent
-          title={this.state.bulletin.title}
-          body={this.state.bulletin.body}
+          bulletin={this.state.bulletin}
           progress={this.props.progress}
-          taskbarVisible={taskbarVisible}
           taskIsRunning={this.props.taskIsRunning}
         />
       );

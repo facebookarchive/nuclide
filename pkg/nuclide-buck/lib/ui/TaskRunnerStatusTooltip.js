@@ -17,7 +17,7 @@ import * as React from 'react';
 type Props = {
   status: any,
   tooltipRoot: HTMLElement,
-  body: string,
+  detail: React.Element<any>,
 };
 
 type State = {
@@ -71,11 +71,7 @@ class TaskRunnerStatusTooltipComponent extends React.Component<Props, State> {
         )}
         {message == null ? null : <hr />}
 
-        <div
-          dangerouslySetInnerHTML={{
-            __html: marked(this.props.body),
-          }}
-        />
+        {this.props.detail}
       </div>
     );
   }

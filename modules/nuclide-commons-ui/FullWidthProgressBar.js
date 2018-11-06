@@ -16,14 +16,14 @@ import * as React from 'react';
 
 type Props = {
   progress: ?number /* 0..1 */,
-  visible: boolean,
+  visible?: boolean,
 };
 
 export default class FullWidthProgressBar extends React.Component<Props> {
   render(): React.Node {
     const className = classnames('nuclide-ui-full-width-progress-bar');
     return (
-      <div className={className} hidden={!this.props.visible}>
+      <div className={className} hidden={this.props.visible === false}>
         {this._renderBar()}
       </div>
     );

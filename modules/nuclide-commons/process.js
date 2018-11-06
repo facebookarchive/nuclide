@@ -736,14 +736,11 @@ export type ResultEvent = {
   result: mixed,
 };
 
-export type Bulletin = {title: string, body: string};
-export type BulletinStatus = {type: 'bulletin', bulletin: Bulletin};
-
-export type Status = {type: 'string', status: ?string} | BulletinStatus;
+export type Status = {type: string, object: mixed};
 
 export type StatusEvent = {
   type: 'status',
-  status: ?Status,
+  status: Status,
 };
 
 export type TaskEvent =

@@ -193,10 +193,13 @@ export function createResult(result: mixed): Observable<TaskEvent> {
   });
 }
 
-export function createStatus(status: string): Observable<TaskEvent> {
+export function createStatus(
+  type: string,
+  object: mixed,
+): Observable<TaskEvent> {
   return Observable.of({
     type: 'status',
-    status: {type: 'string', status},
+    status: {type, object},
   });
 }
 
@@ -218,7 +221,7 @@ export function createStep(
           type: 'status',
           status: {
             type: 'string',
-            status: stepName,
+            object: stepName,
           },
         })
       : Observable.empty(),

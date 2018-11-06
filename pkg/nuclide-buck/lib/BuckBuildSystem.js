@@ -10,6 +10,7 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
+import type {TaskRunnerBulletinStatus} from '../../nuclide-task-runner/lib/types';
 import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage, TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
@@ -37,6 +38,7 @@ import {
   createMessage,
   createResult,
   taskFromObservable,
+  createStatus,
 } from '../../commons-node/tasks';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -46,6 +48,7 @@ import {
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
+import React from 'react';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -61,11 +64,17 @@ export class BuckBuildSystem {
    *  "status" events in order to construct full frame strings due to the
    *  nature of buck's serial output stream.
    */
-  _statusMemory = {
-    // we'll only add one "target" to the "Building... " title
+  _statusMemory: {
+    addedBuildTargetToTitle: boolean,
+    bulletin: TaskRunnerBulletinStatus,
+    body: Array<string>,
+  } = {
     addedBuildTargetToTitle: false,
-    title: 'No events from buck...',
-    body: '',
+    bulletin: {
+      title: {message: '', seconds: null, error: false},
+      detail: <div />,
+    },
+    body: [],
   };
 
   build(opts: BuckBuildOptions): BuckBuildTask {
@@ -255,23 +264,25 @@ export class BuckBuildSystem {
     if (event == null || event.type !== 'buck-status') {
       return Observable.empty();
     }
-
-    const result = event.reset
-      ? Observable.of({
-          type: 'status',
-          status: {
-            type: 'bulletin',
-            bulletin: {
-              title: this._statusMemory.title.slice(),
-              body: this._statusMemory.body.slice(),
-            },
-          },
-        })
-      : Observable.empty();
+    let result = Observable.empty();
+    if (event.reset && this._statusMemory.bulletin != null) {
+      const detail = (
+        <div>
+          {this._statusMemory.body.map((line: string) => {
+            return <div key={line}>{line}</div>;
+          })}
+        </div>
+      );
+      const bulletin = {
+        title: JSON.parse(JSON.stringify(this._statusMemory.bulletin.title)),
+        detail,
+      };
+      result = createStatus('bulletin', bulletin);
+    }
 
     if (event.reset) {
       this._statusMemory.addedBuildTargetToTitle = false;
-      this._statusMemory.body = '';
+      this._statusMemory.body = [];
     }
 
     const PARSING_BUCK_FILES_REGEX = /(Pars.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
@@ -298,9 +309,9 @@ export class BuckBuildSystem {
       }
       // TODO refactor this logic into a react scoped class that can construct
       // these as react elements.
-      this._statusMemory.title = `${prefix}<span>${match[2]}</span> ${
-        match[3]
-      }`;
+      this._statusMemory.bulletin.title.message = `${prefix}<span>${
+        match[2]
+      }</span> ${match[3]}`;
     }
     /* this block parses the first subsequent Building... line
     * (i.e. " - fldr/com/facebook/someTarget:someTarget#header-info 2.3 sec")
@@ -313,7 +324,7 @@ export class BuckBuildSystem {
         if (target.length > 12) {
           target = target.slice(0, 12);
         }
-        this._statusMemory.title = `Building ../${target} <span>${
+        this._statusMemory.bulletin.title.message = `Building ../${target} <span>${
           match[2]
         }</span> ${match[3]}`;
         this._statusMemory.addedBuildTargetToTitle = true;
@@ -327,24 +338,21 @@ export class BuckBuildSystem {
         if (target.length > 35) {
           target = target.slice(0, 35);
         }
-        this._statusMemory.title = target;
+        this._statusMemory.bulletin.title.message = target;
       }
     }
     if (event.error) {
-      this._statusMemory.title = event.message.slice(0, 35);
+      this._statusMemory.bulletin.title.message = event.message.slice(0, 35);
     }
     // logging lines that don't match our REGEX so we can manually add them later
     if (match == null && !event.error) {
       getLogger('nuclide-buck-superconsole').warn('no match:' + event.message);
     }
-
     // body is cleared by event.reset, otherwise we append a newline & message
-    this._statusMemory.body = event.reset
-      ? event.message.trim()
-      : this._statusMemory.body + '<br/>' + event.message.trim();
-
+    this._statusMemory.body.push(event.message.trim());
     return result;
   }
+
   /**
    * Processes side diagnostics, converts relevant events to TaskEvents.
    */

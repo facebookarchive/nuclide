@@ -15,7 +15,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Task} from '../../commons-node/tasks';
 import type {Message, Status} from 'nuclide-commons/process';
 import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
-
+import * as React from 'react';
 import * as Immutable from 'immutable';
 
 export type AppState = {
@@ -48,6 +48,16 @@ export type EpicOptions = {
 export type SerializedAppState = {
   previousSessionVisible: ?boolean,
   version?: number,
+};
+
+export type TaskRunnerBulletinStatus = {
+  title: {message: string, error: boolean, seconds: ?number},
+  detail: React.Element<any>,
+};
+
+export type TaskRunnerBulletinStatusEvent = {
+  type: 'bulletin',
+  status: TaskRunnerBulletinStatus,
 };
 
 export type TaskStatus = {

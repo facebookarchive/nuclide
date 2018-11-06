@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {TaskRunnerBulletinStatus} from '../../../nuclide-task-runner/lib/types';
+
 import classnames from 'classnames';
 import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
 import {Observable, BehaviorSubject} from 'rxjs';
@@ -17,11 +19,8 @@ import * as React from 'react';
 import TaskRunnerStatusTooltip from './TaskRunnerStatusTooltip';
 
 type Props = {
-  title: ?string,
-  header?: ?string,
-  body: ?string,
-  taskbarVisible: boolean,
   taskIsRunning: boolean,
+  bulletin: ?TaskRunnerBulletinStatus,
   progress: ?number,
 };
 
@@ -77,14 +76,11 @@ export default class TaskRunnerStatusComponent extends React.Component<
     if (!this.state.visible && prevState.visible) {
       this._stopTimer();
     }
-    if (this.props.taskbarVisible) {
-      if (this.props.taskIsRunning && !this.state.visible) {
-        this.setState({visible: true});
-      }
-    } else {
-      if (this.state.visible) {
-        this.setState({visible: false});
-      }
+    if (this.props.taskIsRunning && !this.state.visible) {
+      this.setState({visible: true});
+    }
+    if (!this.props.taskIsRunning) {
+      this._stopTimer();
     }
   }
 
@@ -122,7 +118,7 @@ export default class TaskRunnerStatusComponent extends React.Component<
     const serverStatus = {
       data: {
         kind: 'green',
-        message: this.props.header,
+        message: null,
         buttons: ['Stop'],
       },
       provider: {
@@ -144,12 +140,10 @@ export default class TaskRunnerStatusComponent extends React.Component<
       <div className="nuclide-taskbar-status-container">
         <FullWidthProgressBar
           progress={this.props.progress == null ? 0 : this.props.progress}
-          visible={this.props.taskbarVisible}
         />
         <div className="nuclide-taskbar-status-providers-container">
           {this._renderProvider(
             serverStatus,
-            this.props.taskbarVisible,
             this.state.hoveredProviderName != null,
           )}
           {clearButton}
@@ -158,11 +152,7 @@ export default class TaskRunnerStatusComponent extends React.Component<
     );
   }
 
-  _renderProvider = (
-    status: any,
-    visible: boolean,
-    hovered: boolean,
-  ): React.Node => {
+  _renderProvider = (status: any, hovered: boolean): React.Node => {
     const {provider} = status;
     return (
       <div
@@ -174,23 +164,21 @@ export default class TaskRunnerStatusComponent extends React.Component<
         onMouseOut={this._onMouseOut}
         data-name={status.provider.name}
         key={status.provider.name}
-        style={{opacity: visible || hovered ? 1 : 0}}
         ref={this._setTooltipRef}>
-        {this.props.title == null || this.props.title === '' ? (
+        {this.props.bulletin?.title == null ? (
           this._defaultTitle()
         ) : (
           <div
             dangerouslySetInnerHTML={{
-              __html: this.props.title,
+              __html: this.props.bulletin?.title.message,
             }}
           />
         )}
         <div className="fb-on-demand-beta-small nuclide-taskbar-beta-small" />
         {this.state.hoveredProviderName !== provider.name ||
-        this.props.body == null ||
-        this.props.body === '' ? null : (
+        this.props.bulletin?.detail == null ? null : (
           <TaskRunnerStatusTooltip
-            body={this.props.body}
+            detail={this.props.bulletin?.detail}
             parentRef={this._tooltipRefs.get(status.provider.name)}
             status={status}
           />
