@@ -10,6 +10,8 @@
  * @format
  */
 
+/* eslint-env browser */
+
 import type {AbortSignal} from './AbortController';
 
 import performanceNow from './performanceNow';
@@ -33,17 +35,17 @@ type Options = {|
  * @param options.signal - An `AbortSignal` that can be used to cancel processing.
  */
 export default function processTimed(
-  process: () => Iterable<void>,
+  process: () => Iterator<void>,
   options: Options,
 ): void {
-  if (options.signal?.aborted) {
-    return;
-  }
-
-  // Kick off the generator once and hand a stateful iterator to
-  // `processTimedIterator`.
-  // $FlowFixMe
-  processTimedIterator(process(), options);
+  // Begin work in the next free tick. We could do this right away, but we don't
+  // know how much work has preceeded this in this task, and we want to keep every
+  // iteration, including the first one, to `limit` ms.
+  requestIdleCallback(() => {
+    // Kick off the generator once and hand a stateful iterator to
+    // `processTimedIterator`.
+    processTimedIterator(process(), options);
+  });
 }
 
 function processTimedIterator(
