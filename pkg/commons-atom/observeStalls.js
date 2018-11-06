@@ -12,7 +12,6 @@
 /* eslint-env browser */
 
 import invariant from 'assert';
-import nullthrows from 'nullthrows';
 import {remote} from 'electron';
 import {Observable} from 'rxjs';
 import {PerformanceObservable} from 'nuclide-commons-ui/observable-dom';
@@ -21,10 +20,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import once from 'nuclide-commons/once';
 
 invariant(remote != null);
-
-const CHROME_VERSION = Number(
-  nullthrows(process.versions.chrome).split('.')[0],
-);
 
 // The startup period naturally causes many event loop blockages.
 // Don't start checking blockages until some time has passed.
@@ -55,17 +50,6 @@ const observeStalls = once(
       .filter(() => document.hasFocus())
       // discard early longtasks as the app is booting
       .filter(() => process.uptime() > BLOCKED_GRACE_PERIOD)
-      // early versions of chromium report times in *microseconds* instead of
-      // milliseconds!
-      .map(
-        entry =>
-          CHROME_VERSION <= 56
-            ? {
-                duration: entry.duration / 1000,
-                startTime: entry.startTime / 1000,
-              }
-            : entry,
-      )
       // discard durations that are unrealistically long, or those that aren't
       // meaningful enough
       .filter(
