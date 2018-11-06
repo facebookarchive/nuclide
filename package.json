@@ -221,6 +221,7 @@
     "tool-bar",
     "highlight-selected",
     "language-babel",
+    "language-capirca",
     "language-graphql",
     "language-haskell",
     "language-ini",
