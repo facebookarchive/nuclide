@@ -18,12 +18,25 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import pty_types from './gen-nodejs/pty_types';
 import {getLogger} from 'log4js';
 import * as nodePty from 'nuclide-prebuilt-libs/pty';
+import invariant from 'assert';
 
 const logger = getLogger('thrift-pty-server-handler');
-const MAX_BUFFER_LENGTH_BYTES = 2147483647;
-const DEFAULT_BUFFER_LENGTH_BYTES = 1e6;
+// Unix pty's often use 4096. Other OS's have different values. Use 20kb to be safe.
+const MAX_PTY_OS_OUTPUT_CHUNK_BYTES = 20000;
+const PTY_PAUSE_THRESHOLD_BYTES = 4e6;
+const BUFFER_LENGTH_BYTES =
+  PTY_PAUSE_THRESHOLD_BYTES + MAX_PTY_OS_OUTPUT_CHUNK_BYTES;
+const MAX_POLL_RESPONSE_SIZE_BYTES = 1e6;
+const PTY_RESUME_THRESHOLD_BYTES = 0;
 const LONG_POLL_TIMEOUT_MESSAGE = 'long_poll_timed_out';
 const DEFAULT_ENCODING = 'utf-8';
+
+// ensure the last chunk of data can be stored in buffer before pausing pty
+invariant(
+  PTY_PAUSE_THRESHOLD_BYTES + MAX_PTY_OS_OUTPUT_CHUNK_BYTES <=
+    BUFFER_LENGTH_BYTES,
+);
+
 async function patchCurrentEnvironment(envPatches: {
   [string]: string,
 }): Promise<{[string]: string}> {
@@ -46,22 +59,22 @@ async function patchCurrentEnvironment(envPatches: {
  */
 export class ThriftPtyServiceHandler {
   _pty: ?ITerminal;
+  _isPtyPaused: boolean;
   _exitCode: ?number;
   _bufferCursor: number;
   _encoding: string;
   _buffer: Buffer;
   _droppedBytes: number;
-  _maxBufferPayloadBytes: number;
   _resolveLongPoll: ?(string) => typeof undefined;
 
   constructor() {
     this._pty = null;
-    this._buffer = Buffer.alloc(DEFAULT_BUFFER_LENGTH_BYTES);
+    this._buffer = Buffer.alloc(BUFFER_LENGTH_BYTES);
     this._bufferCursor = 0;
     this._exitCode = -1;
     this._encoding = DEFAULT_ENCODING;
     this._droppedBytes = 0;
-    this._maxBufferPayloadBytes = 1e6;
+    this._isPtyPaused = false;
   }
 
   dispose(): void {
@@ -155,15 +168,12 @@ export class ThriftPtyServiceHandler {
       }
 
       const lenNewData = Buffer.byteLength(chunk);
-      const bufferLength = this._buffer.length;
       const finalCursor = this._bufferCursor + lenNewData;
-      if (finalCursor > bufferLength) {
-        if (finalCursor > MAX_BUFFER_LENGTH_BYTES) {
-          // TODO add backpressure to pty output
-          this._droppedBytes += lenNewData;
-          return;
+      if (finalCursor > PTY_PAUSE_THRESHOLD_BYTES) {
+        if (this._pty) {
+          this._pty.pause();
+          this._isPtyPaused = true;
         }
-        this._expandBuffer(finalCursor);
       }
       this._buffer.write(chunk, this._bufferCursor);
       this._bufferCursor += lenNewData;
@@ -176,37 +186,31 @@ export class ThriftPtyServiceHandler {
     });
   }
 
-  _expandBuffer(requiredLength: number): void {
-    if (requiredLength > MAX_BUFFER_LENGTH_BYTES) {
-      throw new Error(
-        `Max buffer size is ${MAX_BUFFER_LENGTH_BYTES} (requested ${requiredLength})`,
-      );
-    }
-    const newLength = Math.min(requiredLength * 2, MAX_BUFFER_LENGTH_BYTES);
-    const newBuffer = Buffer.alloc(newLength);
-    this._buffer.copy(newBuffer, 0, 0, this._bufferCursor);
-    this._buffer = newBuffer;
-  }
-
   _drainOutputFromBuffer(): Buffer {
-    const exceedsMaxPayload = this._bufferCursor > this._maxBufferPayloadBytes;
+    const exceedsMaxPayload = this._bufferCursor > MAX_POLL_RESPONSE_SIZE_BYTES;
     let chunk;
     if (exceedsMaxPayload) {
       // return first n bytes of buffer
-      chunk = this._buffer.slice(0, this._maxBufferPayloadBytes);
+      chunk = this._buffer.slice(0, MAX_POLL_RESPONSE_SIZE_BYTES);
       // move buffer data to the left
       this._buffer.copy(
         this._buffer,
         0, // dest start
-        this._maxBufferPayloadBytes, // src start
+        MAX_POLL_RESPONSE_SIZE_BYTES, // src start
         this._bufferCursor, // src end
       );
       // move cursor back by the amount we stripped off the front
-      this._bufferCursor -= this._maxBufferPayloadBytes;
+      this._bufferCursor -= MAX_POLL_RESPONSE_SIZE_BYTES;
     } else {
       // send the whole buffer
       chunk = this._buffer.slice(0, this._bufferCursor);
       this._bufferCursor = 0;
+    }
+    if (this._isPtyPaused && this._bufferCursor <= PTY_RESUME_THRESHOLD_BYTES) {
+      if (this._pty) {
+        this._pty.resume();
+        this._isPtyPaused = false;
+      }
     }
     return chunk;
   }
