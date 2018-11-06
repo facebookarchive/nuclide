@@ -20,6 +20,7 @@
     "nuclide-watchman-helpers": "0.7.3-dev",
     "rimraf": "2.6.2",
     "rxjs-compat": "6.3.3",
+    "split-ca": "1.0.1",
     "ssh2": "0.5.4",
     "temp": "0.8.3",
     "thrift": "^0.11.0",
