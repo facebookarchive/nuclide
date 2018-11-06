@@ -10,12 +10,10 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
-import type {TaskRunnerBulletinStatus} from '../../nuclide-task-runner/lib/types';
 import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage, TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import {getLogger} from 'log4js';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import passesGK from 'nuclide-commons/passesGK';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
@@ -38,7 +36,6 @@ import {
   createMessage,
   createResult,
   taskFromObservable,
-  createStatus,
 } from '../../commons-node/tasks';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -48,7 +45,7 @@ import {
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
-import React from 'react';
+import {BuckConsoleParser} from './BuckConsoleParser';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -59,23 +56,6 @@ export class BuckBuildSystem {
   _diagnosticInvalidations: Subject<
     DiagnosticInvalidationMessage,
   > = new Subject();
-  /**
-   * _statusMemory is a memory structure used here to keep state across
-   *  "status" events in order to construct full frame strings due to the
-   *  nature of buck's serial output stream.
-   */
-  _statusMemory: {
-    addedBuildTargetToTitle: boolean,
-    bulletin: TaskRunnerBulletinStatus,
-    body: Array<string>,
-  } = {
-    addedBuildTargetToTitle: false,
-    bulletin: {
-      title: {message: '', seconds: null, error: false},
-      detail: <div />,
-    },
-    body: [],
-  };
 
   build(opts: BuckBuildOptions): BuckBuildTask {
     const {root, target, args} = opts;
@@ -248,110 +228,6 @@ export class BuckBuildSystem {
       invalidations: this._diagnosticInvalidations,
     };
   }
-  /*
-  * _processStatusEvent recieves an ANSI-stripped line of Buck superconsole
-  *  stdout as input with flags set by the ANSI. This function combines the
-  *  _statusMemory to reconstruct the buck superconsole. State is also used
-  *  for summarized title for the element. The TaskEvent we return contains:
-  *  title: the summarized one-line info based on buck state (max len: 35)
-  *  body: the combined stream inbetween reset flags which constitutes the
-  *         state that the buck superconsole wants to represent.
-  *
-  * TODO refactor this logic into a react scoped class that can construct
-  *  these as react elements.
-  */
-  _processStatusEvent(event: BuckEvent): Observable<TaskEvent> {
-    if (event == null || event.type !== 'buck-status') {
-      return Observable.empty();
-    }
-    let result = Observable.empty();
-    if (event.reset && this._statusMemory.bulletin != null) {
-      const detail = (
-        <div>
-          {this._statusMemory.body.map((line: string) => {
-            return <div key={line}>{line}</div>;
-          })}
-        </div>
-      );
-      const bulletin = {
-        title: JSON.parse(JSON.stringify(this._statusMemory.bulletin.title)),
-        detail,
-      };
-      result = createStatus('bulletin', bulletin);
-    }
-
-    if (event.reset) {
-      this._statusMemory.addedBuildTargetToTitle = false;
-      this._statusMemory.body = [];
-    }
-
-    const PARSING_BUCK_FILES_REGEX = /(Pars.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
-    const CREATING_ACTION_GRAPH_REGEX = /(Creat.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
-    const BUILDING_REGEX = /(Buil.* )([\d:]+\d*\.?\d*)\s(min|sec)/g;
-    const BUILD_TARGET_REGEX = /\s-\s.*\/(?!.*\/)(.*)\.\.\.\s([\d:]+\d*\.?\d*)\s(min|sec)/g;
-    const STARTING_BUCK_REGEX = /(Starting.*)/g;
-
-    /* We'll attempt to match the event.message to a few known regex matches,
-    * otherwise we'll ignore it. When we find a match, we'll parse it for
-    * length, markup, and set the title.
-    */
-    let match = PARSING_BUCK_FILES_REGEX.exec(event.message);
-    if (match == null) {
-      match = CREATING_ACTION_GRAPH_REGEX.exec(event.message);
-    }
-    if (match == null) {
-      match = BUILDING_REGEX.exec(event.message);
-    }
-    if (match != null && match.length > 1) {
-      let prefix = match[1];
-      if (prefix.length > 24) {
-        prefix = prefix.slice(0, 24);
-      }
-      // TODO refactor this logic into a react scoped class that can construct
-      // these as react elements.
-      this._statusMemory.bulletin.title.message = `${prefix}<span>${
-        match[2]
-      }</span> ${match[3]}`;
-    }
-    /* this block parses the first subsequent Building... line
-    * (i.e. " - fldr/com/facebook/someTarget:someTarget#header-info 2.3 sec")
-    * into: "Building... someTarget:som 2.3 sec". & gates itself with addedBuildTargetToTitle
-    */
-    if (match == null && !this._statusMemory.addedBuildTargetToTitle) {
-      match = BUILD_TARGET_REGEX.exec(event.message);
-      if (match != null) {
-        let target = match[1].split('#')[0];
-        if (target.length > 12) {
-          target = target.slice(0, 12);
-        }
-        this._statusMemory.bulletin.title.message = `Building ../${target} <span>${
-          match[2]
-        }</span> ${match[3]}`;
-        this._statusMemory.addedBuildTargetToTitle = true;
-      }
-    }
-
-    if (match == null) {
-      match = STARTING_BUCK_REGEX.exec(event.message);
-      if (match != null) {
-        let target = match[0];
-        if (target.length > 35) {
-          target = target.slice(0, 35);
-        }
-        this._statusMemory.bulletin.title.message = target;
-      }
-    }
-    if (event.error) {
-      this._statusMemory.bulletin.title.message = event.message.slice(0, 35);
-    }
-    // logging lines that don't match our REGEX so we can manually add them later
-    if (match == null && !event.error) {
-      getLogger('nuclide-buck-superconsole').warn('no match:' + event.message);
-    }
-    // body is cleared by event.reset, otherwise we append a newline & message
-    this._statusMemory.body.push(event.message.trim());
-    return result;
-  }
 
   /**
    * Processes side diagnostics, converts relevant events to TaskEvents.
@@ -366,12 +242,13 @@ export class BuckBuildSystem {
     // Save error messages until the end so diagnostics have a chance to finish.
     // Real exceptions will not be handled by this, of course.
     let errorMessage = null;
+    const consoleParser = new BuckConsoleParser();
     return Observable.concat(
       events.flatMap(event => {
         if (event.type === 'progress') {
           return Observable.of(event);
         } else if (event.type === 'buck-status') {
-          return this._processStatusEvent(event);
+          return consoleParser.processStatusEvent(event);
         } else if (event.type === 'log') {
           return createMessage(event.message, event.level);
         } else if (event.type === 'build-output') {
