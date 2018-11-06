@@ -211,8 +211,8 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "atom": ">=1.27.0",
-    "node": ">=7.9.0"
+    "atom": ">=1.28.0",
+    "node": ">=8.9.3"
   },
   "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
