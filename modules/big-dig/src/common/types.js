@@ -11,7 +11,7 @@
  */
 
 export type AgentOptions = {
-  ca?: Buffer | string,
+  ca?: Buffer | string | Array<Buffer>,
   key?: Buffer | string,
   cert?: Buffer | string,
   family?: 4 | 6,

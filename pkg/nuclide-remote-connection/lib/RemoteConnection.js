@@ -39,7 +39,7 @@ export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
   family?: 4 | 6, // ipv4 or ipv6?
-  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
+  certificateAuthorityCertificate?: Buffer | Array<Buffer>, // certificate of ca.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
   version?: ServerConnectionVersion,
