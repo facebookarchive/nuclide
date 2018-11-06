@@ -29,6 +29,9 @@ import {
 } from '../../nuclide-remote-connection';
 import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnection';
 
+// TODO: get this from the connection dialog (which will only be present behind a gk)
+const useRootCanalCerts = false;
+
 /**
  * Adapts big-dig's SshHandshake to what Nuclide expects.
  * After the migration is complete, we should be able to refactor this away.
@@ -151,6 +154,7 @@ export default function connectBigDigSshHandshake(
     authMethod,
     password,
     exclusive,
+    useRootCanalCerts,
   });
   return sshHandshake;
 }

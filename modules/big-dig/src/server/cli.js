@@ -40,6 +40,7 @@ export type BigDigCliParams = {|
   serverParams: mixed,
   ports: ?string,
   exclusive: ?string,
+  useRootCanalCerts?: boolean,
   caPath?: string,
   serverCertPath?: string,
   serverKeyPath?: string,
@@ -64,6 +65,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     caPath,
     serverCertPath,
     serverKeyPath,
+    useRootCanalCerts,
   } = params;
   let {ports, timeout} = params;
   if (cname != null && (typeof cname !== 'string' || cname.length === 0)) {
@@ -115,7 +117,15 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   }
 
   let certificateStrategy;
-  if (caPath != null || serverCertPath != null || serverKeyPath != null) {
+  if (useRootCanalCerts === true) {
+    certificateStrategy = {
+      type: 'rootcanal',
+    };
+  } else if (
+    caPath != null ||
+    serverCertPath != null ||
+    serverKeyPath != null
+  ) {
     if (
       typeof caPath !== 'string' ||
       typeof serverCertPath !== 'string' ||

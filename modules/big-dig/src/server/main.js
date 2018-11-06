@@ -19,6 +19,7 @@ import {getLogger} from 'log4js';
 import os from 'os';
 import temp from 'temp';
 import {generateCertificates} from './certificates';
+import invariant from 'assert';
 
 export type CertificateStrategy =
   | {
@@ -30,6 +31,9 @@ export type CertificateStrategy =
       clientCommonName: string,
       serverCommonName: string,
       openSSLConfigPath: string,
+    }
+  | {
+      type: 'rootcanal',
     };
 
 export type StartServerParams = {
@@ -78,9 +82,21 @@ export async function startServer({
         key: await fs.readFileAsString(paths.clientKey),
       };
       break;
+    case 'rootcanal':
+      logger.info('using rootcanal certificates');
+      const env = getOriginalEnvironment(process.env);
+      const hostname = env.HOSTNAME;
+      invariant(hostname != null);
+      paths = {
+        serverCert: `/etc/pki/tls/certs/${hostname}.crt`,
+        serverKey: `/etc/pki/tls/certs/${hostname}.key`,
+        caCert: '/var/facebook/rootcanal/corp_root.pem',
+      };
+      break;
     case 'reuse':
-      paths = certificateStrategy.paths;
       logger.info('reusing existing certificates');
+      paths = certificateStrategy.paths;
+
       break;
     default:
       (certificateStrategy.type: empty);
@@ -92,6 +108,7 @@ export async function startServer({
     fs.readFileAsBuffer(paths.serverCert),
     fs.readFileAsBuffer(paths.caCert),
   ]);
+
   const params: LauncherScriptParams = {
     key: key.toString(),
     cert: cert.toString(),
@@ -176,4 +193,24 @@ export async function startServer({
   await fs.writeFile(jsonOutputFile, json, {mode: 0o600});
   logger.info(`Server config written to ${jsonOutputFile}.`);
   child.unref();
+}
+
+type DevserverEnvironment = {
+  HOSTNAME?: string,
+};
+
+function getOriginalEnvironment(nuclideEnvironment): DevserverEnvironment {
+  const {NUCLIDE_ORIGINAL_ENV} = nuclideEnvironment;
+  let result = {};
+  if (NUCLIDE_ORIGINAL_ENV != null && NUCLIDE_ORIGINAL_ENV.trim() !== '') {
+    result = new Buffer(NUCLIDE_ORIGINAL_ENV, 'base64')
+      .toString()
+      .split('\0')
+      .reduce((env, curr) => {
+        const keyAndValue = curr.split('=');
+        env[keyAndValue[0]] = keyAndValue[1];
+        return env;
+      }, {});
+  }
+  return result;
 }

@@ -69,6 +69,10 @@ export type SshConnectionConfiguration = {
   authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
   exclusive?: string, // Ensure that only one server with this "exclusive" tag is running.
+  useRootCanalCerts?: boolean,
+  serverCertPath?: string,
+  serverKeyPath?: string,
+  serverCaPath?: string,
 };
 
 export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
@@ -828,6 +832,7 @@ export class SshHandshake {
       serverParams: this._config.remoteServerCustomParams,
       exclusive: this._config.exclusive,
       ports: this._config.remoteServerPorts,
+      useRootCanalCerts: this._config.useRootCanalCerts,
     };
 
     try {
