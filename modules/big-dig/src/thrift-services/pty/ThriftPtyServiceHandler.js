@@ -23,7 +23,8 @@ const logger = getLogger('thrift-pty-server-handler');
 const MAX_BUFFER_LENGTH_BYTES = 2147483647;
 const DEFAULT_BUFFER_LENGTH_BYTES = 1e6;
 const POLL_WAIT_TIME_MS = 50;
-
+const LONG_POLL_TIMEOUT_MESSAGE = 'long_poll_timed_out';
+const DEFAULT_ENCODING = 'utf-8';
 async function patchCurrentEnvironment(envPatches: {
   [string]: string,
 }): Promise<{[string]: string}> {
@@ -52,13 +53,14 @@ export class ThriftPtyServiceHandler {
   _buffer: Buffer;
   _droppedBytes: number;
   _maxBufferPayloadBytes: number;
+  _resolveLongPoll: ?(string) => typeof undefined;
 
   constructor() {
     this._pty = null;
     this._buffer = Buffer.alloc(DEFAULT_BUFFER_LENGTH_BYTES);
     this._bufferCursor = 0;
     this._exitCode = -1;
-    this._encoding = 'binary';
+    this._encoding = DEFAULT_ENCODING;
     this._droppedBytes = 0;
     this._maxBufferPayloadBytes = 1e6;
   }
@@ -152,6 +154,15 @@ export class ThriftPtyServiceHandler {
 
   _addListeners(pty: ITerminal): void {
     const dataCallback = (chunk: string) => {
+      if (this._bufferCursor === 0 && this._resolveLongPoll) {
+        const resolveLongPoll = this._resolveLongPoll;
+        this._resolveLongPoll = null;
+        if (resolveLongPoll) {
+          resolveLongPoll(chunk);
+        }
+        return;
+      }
+
       const lenNewData = Buffer.byteLength(chunk);
       const bufferLength = this._buffer.length;
       const finalCursor = this._bufferCursor + lenNewData;
@@ -209,12 +220,15 @@ export class ThriftPtyServiceHandler {
     return chunk;
   }
 
-  _poll(timeoutSec: number): Promise<pty_types.PollEvent> {
-    return new Promise((resolve, reject) => {
-      const SEC_TO_MSEC = 1000;
-      const maxAttempts = (timeoutSec * SEC_TO_MSEC) / POLL_WAIT_TIME_MS;
-      let i = 0;
-
+  async _poll(timeoutSec: number): Promise<pty_types.PollEvent> {
+    return new Promise(async (resolve, reject) => {
+      if (this._bufferCursor) {
+        const pollEvent = new pty_types.PollEvent();
+        pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
+        pollEvent.chunk = this._drainOutputFromBuffer();
+        resolve(pollEvent);
+        return;
+      }
       if (this._pty == null) {
         const pollEvent = new pty_types.PollEvent();
         pollEvent.eventType = pty_types.PollEventType.NO_PTY;
@@ -223,27 +237,24 @@ export class ThriftPtyServiceHandler {
         resolve(pollEvent);
         return;
       }
-
-      const doPoll = () => {
-        i++;
-        if (i > maxAttempts) {
+      try {
+        const chunk = await this._waitForNewOutput(timeoutSec);
+        const pollEvent = new pty_types.PollEvent();
+        pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
+        pollEvent.chunk = Buffer.from(chunk);
+        resolve(pollEvent);
+        return;
+      } catch (e) {
+        if (e === LONG_POLL_TIMEOUT_MESSAGE) {
           const pollEvent = new pty_types.PollEvent();
           pollEvent.eventType = pty_types.PollEventType.TIMEOUT;
           pollEvent.chunk = null;
           resolve(pollEvent);
           return;
+        } else {
+          throw e;
         }
-
-        if (this._bufferCursor) {
-          const pollEvent = new pty_types.PollEvent();
-          pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
-          pollEvent.chunk = this._drainOutputFromBuffer();
-          resolve(pollEvent);
-          return;
-        }
-        setTimeout(doPoll, POLL_WAIT_TIME_MS);
-      };
-      doPoll();
+      }
     });
   }
 
@@ -294,6 +305,19 @@ export class ThriftPtyServiceHandler {
         setTimeout(collectBytes, POLL_WAIT_TIME_MS);
       };
       collectBytes();
+    });
+  }
+
+  async _waitForNewOutput(timeoutSec: number): Promise<string> {
+    const SEC_TO_MSEC = 1000;
+    return new Promise((resolveLongPoll, rejectLongPoll) => {
+      // attach resolve function to this object so the new data callback
+      // can resolve when new data arrives
+      this._resolveLongPoll = resolveLongPoll;
+
+      setTimeout(() => {
+        rejectLongPoll(LONG_POLL_TIMEOUT_MESSAGE);
+      }, timeoutSec * SEC_TO_MSEC);
     });
   }
 }
