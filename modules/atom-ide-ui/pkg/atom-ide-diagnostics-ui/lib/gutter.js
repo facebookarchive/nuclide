@@ -449,6 +449,8 @@ function _applyUpdateToEditor(
   });
 
   const abortController = new AbortController();
+  editorToAbortController.set(editor, abortController);
+
   processTimed(
     function*() {
       while (!processChunk(editor)) {
@@ -483,15 +485,13 @@ function _applyUpdateToEditor(
     },
   );
 
-  editorToAbortController.set(editor, abortController);
-
   return new UniversalDisposable(
     () => abortController.abort(),
     observableFromSubscribeFunction(cb => editor.onDidDestroy(cb))
       .let(takeUntilAbort(abortController.signal))
       .subscribe(() => {
         abortController.abort();
-        // clean up openned message ids
+        // clean up opened message ids
         removeOpenMessageId(
           Array.from(update),
           openedMessageIds,
