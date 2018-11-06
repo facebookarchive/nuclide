@@ -43,6 +43,10 @@ export default class TokenizedLine {
     return this._line.substr(this._tokens[idx].start);
   }
 
+  line() {
+    return this._line;
+  }
+
   str() {
     return `Line: [${this._line}]\nTokens:\n${this._tokens
       .map(t => `[${t.token}]@${t.start}`)

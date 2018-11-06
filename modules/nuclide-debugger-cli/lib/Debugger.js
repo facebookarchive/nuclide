@@ -106,7 +106,8 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new BreakpointCommand(this._console, this));
     dispatcher.registerCommand(new ContinueCommand(this));
     dispatcher.registerCommand(new ListCommand(this._console, this));
-    dispatcher.registerCommand(new PrintCommand(this._console, this));
+    const print = new PrintCommand(this._console, this);
+    dispatcher.registerCommand(print);
     dispatcher.registerCommand(new RunCommand(this));
     dispatcher.registerCommand(new EnterCodeCommand(this._console, this));
     dispatcher.registerCommand(new FrameCommand(this._console, this));
@@ -115,6 +116,10 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new OutCommand(this));
     dispatcher.registerCommand(new ShowCapsCommand(this._console, this));
     dispatcher.registerCommand(new InfoCommand(this._console, this));
+
+    dispatcher.setUnrecognizedCommandHandler(command =>
+      dispatcher.execute(`${print.name} ${command}`),
+    );
   }
 
   // launch is for launching a process from scratch when we need a new

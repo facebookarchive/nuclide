@@ -24,9 +24,14 @@ function regexpEscape(str: string): string {
 export default class CommandDispatcher implements DispatcherInterface {
   _commands: Command[] = [];
   _aliases: Map<string, string>;
+  _unrecognizedCommandHandler: ?(command: string) => Promise<?Error>;
 
   constructor(aliases: Map<string, string>) {
     this._aliases = aliases;
+  }
+
+  setUnrecognizedCommandHandler(handler: (command: string) => Promise<?Error>) {
+    this._unrecognizedCommandHandler = handler;
   }
 
   registerCommand(command: Command): void {
@@ -74,6 +79,10 @@ export default class CommandDispatcher implements DispatcherInterface {
     const matches = this.getCommandsMatching(cmd);
 
     if (matches.length === 0) {
+      const handler = this._unrecognizedCommandHandler;
+      if (handler != null) {
+        return handler(tokens.line());
+      }
       return new Error(`No command matches "${cmd}".`);
     }
 
