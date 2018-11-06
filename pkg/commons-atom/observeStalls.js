@@ -32,7 +32,7 @@ const BLOCKED_GRACE_PERIOD = 30;
 // Report all blockages over this threshold.
 const BLOCKED_MIN = 100;
 // Discard overly long blockages as spurious (e.g. computer was asleep)
-const BLOCKED_MAX = 600000;
+const BLOCKED_MAX = 60 * 1000; // 1 minute in ms
 // Range padding on either side of long task interval.
 // If an intentional block timestamp lies in this range,
 // we consider it intentional.
