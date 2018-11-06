@@ -154,6 +154,7 @@ export default class Debugger implements DebuggerInterface {
       }
 
       this._threads.clearFocusThread();
+      this._stoppedAtBreakpoint = null;
 
       if (this._attachMode) {
         const attachArgs = _adapter.adapter.transformAttachArguments(
@@ -1101,8 +1102,9 @@ export default class Debugger implements DebuggerInterface {
       body: {description, threadId, allThreadsStopped, breakpointId},
     } = event;
 
-    this._stoppedAtBreakpoint = null;
-    if (breakpointId != null) {
+    // NOTE if we hit a breakpoint while we're already at a breakpoint, don't
+    // switch context out from under the user.
+    if (breakpointId != null && this._stoppedAtBreakpoint == null) {
       try {
         this._stoppedAtBreakpoint = this._breakpoints.getBreakpointById(
           breakpointId,
@@ -1137,24 +1139,36 @@ export default class Debugger implements DebuggerInterface {
       this._console.outputLine('stop event with no thread information.');
     }
 
-    if (firstStop) {
-      const adapter = this._adapter;
-      invariant(adapter != null);
+    // If we're stopped at a breakpoint, we want to go to that thread regardless
+    // of stop order, unless we're already focused on another non-default thread
+    const focusThreadId = this._threads.focusThreadId;
+    const adapter = this._adapter;
+    invariant(adapter != null);
+    const defaultThreadId = adapter.adapter.asyncStopThread;
+    let showStack = firstStop;
 
-      if (this._threads.focusThreadId == null) {
-        const defaultThreadId: ?number = adapter.adapter.asyncStopThread;
-        if (this._stoppedAtBreakpoint || defaultThreadId == null) {
-          if (threadId != null) {
-            this._threads.setFocusThread(threadId);
-          } else {
-            const firstStopped = this._threads.firstStoppedThread();
-            invariant(firstStopped != null);
-            this._threads.setFocusThread(firstStopped);
-          }
-        } else {
-          this._threads.setFocusThread(defaultThreadId);
-        }
+    if (
+      this._stoppedAtBreakpoint &&
+      (focusThreadId == null || focusThreadId === defaultThreadId)
+    ) {
+      invariant(threadId != null);
+      this._threads.setFocusThread(threadId);
+      showStack = true;
+    }
+
+    // if we're not stopped at a breakpoint and we're not focused on a thread yet,
+    // pick one.
+    if (this._stoppedAtBreakpoint == null && focusThreadId == null) {
+      if (defaultThreadId == null) {
+        const firstStopped = this._threads.firstStoppedThread();
+        invariant(firstStopped != null);
+        this._threads.setFocusThread(firstStopped);
+      } else {
+        this._threads.setFocusThread(defaultThreadId);
       }
+    }
+
+    if (showStack) {
       try {
         const focusThread = this._threads.focusThreadId;
         if (focusThread == null) {
@@ -1169,24 +1183,27 @@ export default class Debugger implements DebuggerInterface {
             `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
           );
         }
-
-        const dispatcher = this._dispatcher;
-        if (dispatcher != null) {
-          for (const cmd of dispatcher.getCommands()) {
-            if (cmd.onStopped != null) {
-              cmd.onStopped();
-            }
-          }
-        }
       } catch (err) {
         this._console.outputLine(
           `failed to get source at stop point: ${err.message}`,
         );
       }
-
-      this._state = 'STOPPED';
-      this._console.startInput();
     }
+
+    // if this is the first stop, reset commands that want to know.
+    if (firstStop) {
+      const dispatcher = this._dispatcher;
+      if (dispatcher != null) {
+        for (const cmd of dispatcher.getCommands()) {
+          if (cmd.onStopped != null) {
+            cmd.onStopped();
+          }
+        }
+      }
+    }
+
+    this._state = 'STOPPED';
+    this._console.startInput();
   }
 
   async _disableBreakpointIfOneShot(breakpointId: ?number): Promise<void> {
