@@ -5,14 +5,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow
  * @format
  * @emails oncall+nuclide
  */
 import http from 'http';
 import querystring from 'querystring';
 import * as utils from '../lib/utils';
-import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
+import request from 'request';
 import waitsFor from '../../../jest/waits_for';
 
 describe('NuclideServer utils test', () => {
@@ -49,7 +49,7 @@ describe('NuclideServer utils test', () => {
         .then(bodyHandler)
         .then(() => res.end());
     };
-    asyncRequest({
+    request({
       uri: 'http://127.0.0.1:36845/abc',
       method: 'POST',
       body: 'string_abc',
