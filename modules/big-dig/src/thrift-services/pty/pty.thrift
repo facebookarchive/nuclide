@@ -32,9 +32,4 @@ service ThriftPtyService {
     2: string initialCommand,
   );
   void writeInput(1: string data);
-  binary executeCommand(
-    1: string data,
-    2: i32 minBytesOutput,
-    3: i32 timeoutSec
-  );
 }

@@ -22,7 +22,6 @@ import * as nodePty from 'nuclide-prebuilt-libs/pty';
 const logger = getLogger('thrift-pty-server-handler');
 const MAX_BUFFER_LENGTH_BYTES = 2147483647;
 const DEFAULT_BUFFER_LENGTH_BYTES = 1e6;
-const POLL_WAIT_TIME_MS = 50;
 const LONG_POLL_TIMEOUT_MESSAGE = 'long_poll_timed_out';
 const DEFAULT_ENCODING = 'utf-8';
 async function patchCurrentEnvironment(envPatches: {
@@ -141,14 +140,6 @@ export class ThriftPtyServiceHandler {
     }
   }
 
-  async executeCommand(
-    data: string,
-    minBytesOutput: number,
-    timeoutSec: number,
-  ): Promise<Buffer> {
-    return this._executeCommand(data, minBytesOutput, timeoutSec);
-  }
-
   // client api entrypoints above this point
   // private methods below this point
 
@@ -262,50 +253,6 @@ export class ThriftPtyServiceHandler {
     if (this._pty == null) {
       throw new pty_types.Error({message: 'no pty'});
     }
-  }
-
-  async _executeCommand(
-    data: string,
-    minBytesOutput: number,
-    timeoutSec: number,
-  ): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      this._requirePty();
-      if (minBytesOutput > this._maxBufferPayloadBytes) {
-        throw new Error(
-          'Cannot return more than ${this._maxBufferPayloadBytes} bytes in one response',
-        );
-      }
-      if (timeoutSec < 0) {
-        throw new Error('timeout time must be positive');
-      }
-
-      const startTime = Date.now();
-      const deadline = startTime + timeoutSec * 1000;
-
-      const collectBytes = () => {
-        if (this._bufferCursor >= minBytesOutput) {
-          const buffer = this._drainOutputFromBuffer();
-          resolve(buffer);
-          return;
-        } else {
-          const timeRemaining = deadline - Date.now();
-          if (timeRemaining <= 0) {
-            reject(
-              new Error(
-                'timeout. got ' +
-                  this._bufferCursor +
-                  'bytes but needed' +
-                  minBytesOutput,
-              ),
-            );
-            return;
-          }
-        }
-        setTimeout(collectBytes, POLL_WAIT_TIME_MS);
-      };
-      collectBytes();
-    });
   }
 
   async _waitForNewOutput(timeoutSec: number): Promise<string> {

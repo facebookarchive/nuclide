@@ -34,9 +34,4 @@ export interface ThriftPtyClient {
   setEncoding(encoding: string): Promise<void>;
   spawn(spawnArguments: SpawnArguments, initialCommand: ?string): Promise<void>;
   writeInput(data: string): Promise<void>;
-  executeCommand(
-    data: string,
-    minBytesOutput: number,
-    timeoutSec: number,
-  ): Promise<Buffer>;
 }
