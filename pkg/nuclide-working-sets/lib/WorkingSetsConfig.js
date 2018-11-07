@@ -9,13 +9,16 @@
  * @format
  */
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-
 import type {WorkingSetDefinition} from './types';
+
+import featureConfig from 'nuclide-commons-atom/feature-config';
+// @fb-only: import maybeConvertWorkingSets from './fb-convertODWorkingSets';
 
 const CONFIG_KEY = 'nuclide-working-sets.workingSets';
 
-type DefinitionsObserver = (definitions: Array<WorkingSetDefinition>) => void;
+export type DefinitionsObserver = (
+  definitions: Array<WorkingSetDefinition>,
+) => void;
 
 export class WorkingSetsConfig {
   observeDefinitions(callback: DefinitionsObserver): IDisposable {
@@ -25,7 +28,8 @@ export class WorkingSetsConfig {
         return {...def, sourceType: 'user'};
       });
 
-      callback(copiedDefinitions);
+      // @fb-only: maybeConvertWorkingSets(copiedDefinitions, callback);
+      callback(copiedDefinitions); // @oss-only
     };
 
     return featureConfig.observe(CONFIG_KEY, wrapped);
