@@ -212,7 +212,7 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "atom": ">=1.28.0",
+    "atom": ">=1.31.0",
     "node": ">=8.9.3"
   },
   "private": true,

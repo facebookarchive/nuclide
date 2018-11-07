@@ -3,10 +3,10 @@
     "clientOnly": true,
     "version-cmd": ["atom", "--version"],
     "version-output":
-      "Atom    : 1.31.1\nElectron: 2.0.7\nChrome  : 61.0.3163.100\nNode    : 8.9.3",
+      "Atom    : 1.32.1\nElectron: 2.0.9\nChrome  : 61.0.3163.100\nNode    : 8.9.3",
     "url":
-      "https://github.com/atom/atom/releases/download/v1.31.1/atom-mac.zip",
-    "shasum": "8941503ce1abe3d226c5f689a5395b8d7f70fd74742e5fe2a9f0499d6b17a1e3"
+      "https://github.com/atom/atom/releases/download/v1.32.1/atom-mac.zip",
+    "shasum": "7999b94794ee0c87d3e0fba44dcd4c42ca995598481d1711b1583913d320b824"
   },
   "flow": {
     "clientOnly": false,
