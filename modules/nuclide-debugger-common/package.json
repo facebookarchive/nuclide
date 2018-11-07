@@ -20,7 +20,7 @@
     "nuclide-commons-atom": "0.7.3-dev",
     "nuclide-commons-ui": "0.7.3-dev",
     "nullthrows": "1.0.0",
-    "react": "16.5.2",
+    "react": "16.6.0",
     "rxjs-compat": "6.3.3",
     "uuid": "3.0.1",
     "vscode-debugprotocol": "1.24.0"

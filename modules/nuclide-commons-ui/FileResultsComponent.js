@@ -23,7 +23,7 @@ import * as React from 'react';
 import PathWithFileIcon from './PathWithFileIcon';
 
 // $FlowIgnore: Not an official API yet.
-const AsyncMode = React.unstable_AsyncMode;
+const ConcurrentMode = React.unstable_ConcurrentMode;
 
 // Asynchronously highlight any results with a lot of lines.
 const ASYNC_LINE_LIMIT = 5;
@@ -282,9 +282,9 @@ export default class FileResultsComponent extends React.Component<
                     }
                     className="file-results-code">
                     {this.state.highlighted ? (
-                      <AsyncMode>
+                      <ConcurrentMode>
                         <HighlightedLines grammar={grammar} code={code} />
-                      </AsyncMode>
+                      </ConcurrentMode>
                     ) : (
                       code
                     )}

@@ -41,20 +41,20 @@ class HighlightedCodeExample extends React.Component<{}, {|count: number|}> {
       this.state.count,
     );
     // $FlowIgnore: Not an official API yet.
-    const AsyncMode = React.unstable_AsyncMode;
+    const ConcurrentMode = React.unstable_ConcurrentMode;
     return (
       <div>
         The code below is rendered with async React, so highlighting does not
         block (no matter how many lines have to be tokenized).
         <br />
         <Button onClick={this._addOneMore}>Add more code!</Button>
-        <AsyncMode>
+        <ConcurrentMode>
           <HighlightedCode
             grammar={jsGrammar}
             code={code}
             style={{marginTop: '8px'}}
           />
-        </AsyncMode>
+        </ConcurrentMode>
       </div>
     );
   }
