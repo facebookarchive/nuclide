@@ -208,25 +208,23 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
 
   let debugPort = config.debugPort;
   let domainSocketPath = null;
-  if (debugPort == null) {
-    try {
-      // $FlowFB
-      const fetch = require('fb-interngraph/sitevar').fetchSitevarOnce;
-      const siteVar = await fetch('NUCLIDE_VSP_DEBUGGER_CONFIG');
-      if (siteVar != null) {
-        if (siteVar.hhvm_attach_port != null) {
-          debugPort = siteVar.hhvm_attach_port;
-        }
-
-        if (siteVar.hhvm_domain_socket_path != null) {
-          domainSocketPath = siteVar.hhvm_domain_socket_path;
-        }
+  try {
+    // $FlowFB
+    const fetch = require('fb-interngraph/sitevar').fetchSitevarOnce;
+    const siteVar = await fetch('NUCLIDE_VSP_DEBUGGER_CONFIG');
+    if (siteVar != null) {
+      if (siteVar.hhvm_attach_port != null) {
+        debugPort = siteVar.hhvm_attach_port;
       }
-    } catch (e) {}
 
-    if (debugPort != null) {
-      config.debugPort = debugPort;
+      if (siteVar.hhvm_domain_socket_path != null) {
+        domainSocketPath = siteVar.hhvm_domain_socket_path;
+      }
     }
+  } catch (e) {}
+
+  if (debugPort != null) {
+    config.debugPort = debugPort;
   }
 
   const warnOnInterceptedFunctions = await passesGK(
