@@ -296,6 +296,7 @@ declare class atom$Disposable {
 }
 
 declare class atom$Emitter {
+  static onEventHandlerException(error: any): IDisposable,
   dispose(): void,
   on(name: string, callback: (v: any) => mixed): IDisposable,
   once(name: string, callback: (v: any) => mixed): IDisposable,

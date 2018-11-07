@@ -10,6 +10,7 @@
  */
 
 import fsPromise from 'nuclide-commons/fsPromise';
+import {Emitter} from 'event-kit';
 import {
   flushLogsAndAbort,
   flushLogsAndExit,
@@ -105,6 +106,10 @@ process.on('uncaughtException', err => {
 // We include this code here in anticipation of the Node/io.js merger.
 process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
+});
+
+Emitter.onEventHandlerException(error => {
+  logger.error('Caught server event handler exception', error);
 });
 
 const argv = yargs.default('port', DEFAULT_PORT).argv;
