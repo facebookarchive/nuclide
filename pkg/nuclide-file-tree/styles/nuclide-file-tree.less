@@ -35,6 +35,11 @@
       content: '';
       position: absolute;
     }
+
+    .name {
+      // Give the text a little breathing room.
+      padding-right: @component-padding / 2;
+    }
   }
 
   .nuclide-ui-checkbox[type="checkbox"] {
@@ -66,6 +71,19 @@
     &::before {
       background: @button-background-color-selected;
     }
+  }
+
+  .selection-indicator::before {
+    // We explicitly set the height on the selection indicator, so we want to
+    // make sure the pseudoelement (which gets the background color) takes up
+    // all of it.
+    height: 100% !important;
+  }
+
+  // Our selection indicators are behind the entries; we don't want to use the
+  // selected entries themselves (like the normal Atom tree-view does).
+  .entry.selected::before {
+    display: none !important;
   }
 }
 

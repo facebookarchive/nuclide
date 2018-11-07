@@ -461,6 +461,12 @@ export const getSelectedNodes = createSelector(
   },
 );
 
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getVisualIndexOfSelectedNodes = createSelector(
+  [getSelectedNodes, getVisualIndex],
+  (selectedNodes, getVisualIndex_) => selectedNodes.map(getVisualIndex_),
+);
+
 export const getNodeInRoots = (
   roots: Roots,
   rootKey: NuclideUri,

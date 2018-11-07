@@ -17,6 +17,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import invariant from 'assert';
+import Immutable from 'immutable';
 import {connect} from 'react-redux';
 import List from 'react-virtualized/dist/commonjs/List';
 
@@ -27,8 +28,8 @@ import * as Actions from '../lib/redux/Actions';
 import FileTreeEntryComponent from './FileTreeEntryComponent';
 import ProjectSelection from './ProjectSelection';
 import {track} from 'nuclide-analytics';
+import {debounce, once} from 'lodash';
 
-import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import * as Selectors from '../lib/redux/Selectors';
 
@@ -47,6 +48,7 @@ type Props = {|
   trackedIndex: ?number,
   shownNodes: number,
   selectedNodes: Immutable.Set<FileTreeNode>,
+  selectedNodeIndexes: Immutable.List<number>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   isEditingWorkingSet: boolean,
   clearTrackedNodeIfNotLoading: () => void,
@@ -68,6 +70,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   _nodeRef: ?FileTreeEntryComponent;
   _footerRef: ?ProjectSelection;
   _prevShownNodes: number = 0;
+  _selectionWidth: number = 100;
 
   _indexOfFirstRowInView: number = 0;
   _indexOfLastRowInView: number = 0;
@@ -104,6 +107,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
           this._remeasureHeights(true);
         }),
     );
+    this._updateSelectionWidth();
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
@@ -119,10 +123,71 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         this._listRef.recomputeRowHeights();
       }
     }
+
+    this._drawSelection();
+
+    // When folders are expanded and collapsed, we need to get our selection width again.
+    if (this.props.shownNodes !== prevProps.shownNodes) {
+      this._updateSelectionWidth();
+    }
   }
+
+  // Render the selection indicators into the selection container element.
+  //
+  // This is a little bit of a weird pattern, but simple. Normally, we would put this logic into the
+  // VirtualizedFileTree component's `render()`, however it needs to happen *after* the List
+  // component has rendered (because it queries it for positions). The means we'd have to render
+  // twice: once to render the grid and then again to update the selections with the grid
+  // information. This was found to be less performant (cause more stalls).
+  //
+  // It's likely that with some refactoring, we could address this but we'd still need to use a
+  // portal (since we're rendering the selection into a a node in the List) so this seems simpler.
+  //
+  // In future versions of React, this type of thing will be less hacky, since `useLayoutEffect`
+  // will provide an explicit way to take actions after layout is complete but before we yield back
+  // to the browser. (See https://reactjs.org/docs/hooks-reference.html#uselayouteffect)
+  _drawSelection = () => {
+    ReactDOM.render(
+      <SelectionRenderer
+        selectionWidth={this._selectionWidth}
+        selectedNodeIndexes={this.props.selectedNodeIndexes}
+        rowSizeAndPositionManager={
+          this._listRef?.Grid?.state?.instanceProps?.rowSizeAndPositionManager
+        }
+        getRowHeight={this._rowHeight}
+      />,
+      this._getSelectionContainer(),
+    );
+  };
+
+  _updateSelectionWidth = debounce(
+    () => {
+      const listEl = ReactDOM.findDOMNode(this._listRef);
+      if (listEl == null || !(listEl instanceof HTMLElement)) {
+        return;
+      }
+      const innerScrollContainer = listEl.querySelector(
+        '.ReactVirtualized__Grid__innerScrollContainer',
+      );
+      if (innerScrollContainer == null) {
+        return;
+      }
+      this._selectionWidth = innerScrollContainer.scrollWidth;
+      this._drawSelection();
+    },
+    100,
+    {leading: true, trailing: true},
+  );
+
+  _getSelectionContainer = once(() => {
+    const el = document.createElement('div');
+    Object.assign(el.style, {position: 'absolute', top: '0', left: '0'});
+    return el;
+  });
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+    ReactDOM.unmountComponentAtNode(this._getSelectionContainer());
   }
 
   _remeasureHeights(force: boolean = false): void {
@@ -178,6 +243,10 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     }
   }
 
+  _handleScroll = () => {
+    this._updateSelectionWidth();
+  };
+
   render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
@@ -212,6 +281,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         <List
           height={this.props.height}
           width={this.props.width}
+          onScroll={this._handleScroll}
           ref={this._setListRef}
           rowCount={this.props.shownNodes + 1}
           rowRenderer={this._rowRenderer}
@@ -248,7 +318,17 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }
 
   _setListRef = (node: ?React$ElementRef<List>): void => {
+    const prevNode = this._listRef;
     this._listRef = node;
+    if (node !== prevNode) {
+      // Attach an element into which we can render selection indicators.
+      const selectionContainer = this._getSelectionContainer();
+      selectionContainer.remove();
+      const el = ReactDOM.findDOMNode(node);
+      if (el != null && el instanceof HTMLElement) {
+        el.prepend(selectionContainer);
+      }
+    }
   };
 
   // $FlowFixMe -- flow does not recognize FileTreeEntryComponent as React component
@@ -364,6 +444,79 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }
 }
 
+type SelectionRendererProps = {|
+  selectionWidth: number,
+  selectedNodeIndexes: Immutable.List<number>,
+  rowSizeAndPositionManager: ?{
+    getSizeAndPositionOfCell: number => {offset: number},
+  },
+  getRowHeight: ?(args: {index: number}) => number,
+|};
+
+class SelectionRenderer extends React.Component<SelectionRendererProps> {
+  shouldComponentUpdate(nextProps: SelectionRendererProps): boolean {
+    if (
+      nextProps.getRowHeight !== this.props.getRowHeight ||
+      nextProps.rowSizeAndPositionManager !==
+        this.props.rowSizeAndPositionManager ||
+      nextProps.selectionWidth !== this.props.selectionWidth ||
+      !nextProps.selectedNodeIndexes.equals(this.props.selectedNodeIndexes)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  render() {
+    const {
+      rowSizeAndPositionManager,
+      selectionWidth,
+      selectedNodeIndexes,
+      getRowHeight,
+    } = this.props;
+
+    if (rowSizeAndPositionManager == null || getRowHeight == null) {
+      // Can't measure.
+      return null;
+    }
+
+    const selections = selectedNodeIndexes.toArray().map((index, i) => {
+      const realIndex = index - 1; // Indexes are 1-based for some reason.
+      const height = getRowHeight({index: realIndex});
+      // This is a hacky (but the only) way to get the position of the cell. This is necessary
+      // to render the selection behind the entry elements (which we do so as not to change the
+      // scroll width of the entry elements' container).
+      const top = rowSizeAndPositionManager.getSizeAndPositionOfCell(realIndex)
+        .offset;
+      return (
+        <Selection key={i} width={selectionWidth} height={height} top={top} />
+      );
+    });
+
+    return <>{selections}</>;
+  }
+}
+
+type SelectionProps = {|
+  top: number,
+  width: number,
+  height: number,
+|};
+
+function Selection(props: SelectionProps) {
+  return (
+    <div
+      className="selection-indicator selected"
+      style={{
+        position: 'absolute',
+        top: `${props.top}px`,
+        width: `${props.width}px`,
+        height: `${props.height}px`,
+      }}
+    />
+  );
+}
+
 // A version of `Selectors.getNodeByIndex()` that's optimized for sequential access.
 const getNodeByIndex = (() => {
   let prevRoots;
@@ -409,6 +562,7 @@ const getNodeByIndex = (() => {
 const mapStateToProps = (state: AppState, ownProps): $Shape<Props> => ({
   roots: Selectors.getRoots(state),
   selectedNodes: Selectors.getSelectedNodes(state).toSet(),
+  selectedNodeIndexes: Selectors.getVisualIndexOfSelectedNodes(state),
   focusedNodes: Selectors.getFocusedNodes(state).toSet(),
   isEditingWorkingSet: Selectors.getIsEditingWorkingSet(state),
   getNodeByIndex: index => getNodeByIndex(state, index),
