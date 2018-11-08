@@ -14,7 +14,7 @@
 
 import {createThriftClient} from '../../../services/thrift/createThriftClient';
 import {PTY_SERVICE_CONFIG} from '../thrift-pty-service-config';
-import {runPty} from '../ThriftPtyUtil';
+import {readPtyUntilExit} from '../ThriftPtyUtil';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('thrift-pty-example-client');
@@ -70,13 +70,15 @@ async function main(port: number): Promise<void> {
     ]);
   };
 
-  const exitCode = await runPty(
-    client,
-    spawnArguments,
-    'echo "running thrift pty client example"\n',
-    onSpawn,
-    onNewOutput,
-  );
+  const initialCommand = 'echo "running thrift pty client example"\n';
+  await client.spawn(spawnArguments, initialCommand);
+  try {
+    await onSpawn();
+  } catch (e) {
+    logger.error(e);
+  }
+
+  const exitCode = await readPtyUntilExit(client, onNewOutput);
   // $FlowIgnore
   process.stdin.setRawMode(false);
   console.log('exited with code', exitCode);

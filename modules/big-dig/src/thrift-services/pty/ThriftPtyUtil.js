@@ -9,7 +9,7 @@
  * @flow strict-local
  * @format
  */
-import type {ThriftPtyClient, SpawnArguments} from './types';
+import type {ThriftPtyClient} from './types';
 
 // $FlowIgnore
 import pty_types from './gen-nodejs/pty_types';
@@ -17,34 +17,24 @@ import {getLogger} from 'log4js';
 
 const logger = getLogger('run-thrift-pty');
 
-/**
- * Spawns pty process, then triggers callback `onNewOutput` as new output arrives.
- * Returns exit code of pty when complete.
- *
- * This function should abstract away the transport method; it currently uses
- * long polling but that may change.
- */
-export async function runPty(
-  client: ThriftPtyClient,
-  spawnArguments: SpawnArguments,
-  initialCommand: ?string,
-  onSpawn: () => Promise<void>,
+export async function readPtyUntilExit(
+  thriftPtyClient: ThriftPtyClient,
   onNewOutput: Buffer => void,
 ): Promise<number> {
   return new Promise(async (resolve, reject) => {
     const POLL_TIMEOUT_SEC = 60;
 
-    const poll = async () => {
+    const _poll = async () => {
       try {
-        const pollEvent = await client.poll(POLL_TIMEOUT_SEC);
+        const pollEvent = await thriftPtyClient.poll(POLL_TIMEOUT_SEC);
         switch (pollEvent.eventType) {
           case pty_types.PollEventType.NEW_OUTPUT: {
             onNewOutput(pollEvent.chunk);
-            setTimeout(poll, 0);
+            setTimeout(_poll, 0);
             break;
           }
           case pty_types.PollEventType.TIMEOUT: {
-            setTimeout(poll, 0);
+            setTimeout(_poll, 0);
             break;
           }
           case pty_types.PollEventType.NO_PTY: {
@@ -63,12 +53,6 @@ export async function runPty(
       }
     };
 
-    await client.spawn(spawnArguments, initialCommand);
-    try {
-      await onSpawn();
-    } catch (e) {
-      logger.error(e);
-    }
-    await poll();
+    await _poll();
   });
 }
