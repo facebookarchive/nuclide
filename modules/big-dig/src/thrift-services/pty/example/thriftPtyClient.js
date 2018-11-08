@@ -12,7 +12,7 @@
 
 /* eslint-disable no-console */
 
-import {createThriftClient} from '../../../services/thrift/createThriftClient';
+import {getWrappedThriftClient} from '../../../services/thrift/createThriftClient';
 import {PTY_SERVICE_CONFIG} from '../thrift-pty-service-config';
 import {readPtyUntilExit} from '../ThriftPtyUtil';
 import {getLogger} from 'log4js';
@@ -20,7 +20,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('thrift-pty-example-client');
 
 async function main(port: number): Promise<void> {
-  const client = createThriftClient(PTY_SERVICE_CONFIG, port).getClient();
+  const client = getWrappedThriftClient(PTY_SERVICE_CONFIG, port).getClient();
   const encoding = 'utf-8';
   const spawnArguments = {
     command: '/bin/bash',

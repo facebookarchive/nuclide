@@ -20,16 +20,16 @@ import thrift from 'thrift';
 import EventEmitter from 'events';
 import {getTransport, getProtocol} from './config-utils';
 
-export class ThriftClientClass {
+export class WrappedThriftClient {
   _status: 'CONNECTED' | 'CLOSED_MANUALLY' | 'LOST_CONNECTION';
-  _client: Object;
+  _thriftClient: Object;
   _connection: Object;
   _emitter: EventEmitter;
 
   constructor(connection: Object, client: Object) {
     this._status = 'CONNECTED';
     this._connection = connection;
-    this._client = client;
+    this._thriftClient = client;
     this._emitter = new EventEmitter();
 
     this._connection.on('close', () => {
@@ -43,7 +43,7 @@ export class ThriftClientClass {
   getClient<T>(): T {
     switch (this._status) {
       case 'CONNECTED':
-        return (this._client: any);
+        return (this._thriftClient: any);
       case 'CLOSED_MANUALLY':
         throw new Error('Cannot get a closed client');
       case 'LOST_CONNECTION':
@@ -86,7 +86,7 @@ export class ThriftClientClass {
   }
 }
 
-export function createThriftClient(
+export function getWrappedThriftClient(
   serviceConfig: ThriftServiceConfig,
   port: number,
 ): ThriftClient {
@@ -94,6 +94,9 @@ export function createThriftClient(
     transport: getTransport(serviceConfig),
     protocol: getProtocol(serviceConfig),
   });
-  const client = thrift.createClient(serviceConfig.thriftService, connection);
-  return new ThriftClientClass(connection, client);
+  const thriftClient = thrift.createClient(
+    serviceConfig.thriftService,
+    connection,
+  );
+  return new WrappedThriftClient(connection, thriftClient);
 }

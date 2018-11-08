@@ -27,7 +27,7 @@ import {Tunnel} from '../tunnel/Tunnel';
 import {TunnelManager} from '../tunnel/TunnelManager';
 import EventEmitter from 'events';
 
-import {createThriftClient} from './createThriftClient';
+import {getWrappedThriftClient} from './createThriftClient';
 import {encodeMessage, decodeMessage} from './util';
 import {convertToServerConfig, genConfigId} from './config-utils';
 
@@ -111,11 +111,11 @@ export class ThriftClientManager {
   async createThriftClient(
     serviceConfig: ThriftServiceConfig,
   ): Promise<ThriftClient> {
-    invariant(!this._isClosed, 'big-dig thrift client manager close!');
+    invariant(!this._isClosed, 'big-dig thrift client manager is closed');
 
     const port = await this._getOrCreateTunnel(serviceConfig);
     const clientId = `${serviceConfig.name}\0${this._clientIndex++}`;
-    const client = createThriftClient(serviceConfig, port);
+    const client = getWrappedThriftClient(serviceConfig, port);
     const clientDispose = () => {
       this._clientByClientId.delete(clientId);
       this._closeTunnel(serviceConfig);

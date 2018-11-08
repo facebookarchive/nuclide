@@ -34,9 +34,9 @@ jest.mock(require.resolve('../../tunnel/TunnelManager'), () => {
   };
 });
 
-import {createThriftClient} from '../createThriftClient';
+import {getWrappedThriftClient} from '../createThriftClient';
 
-export class MockedThriftClientClass {
+export class MockedWrappedThriftClient {
   _client: Object;
   _clientId: string;
   _connection: Object;
@@ -158,7 +158,7 @@ describe('ThriftClientManager', () => {
     mockClientServerCommunication(clientMessage, serverMessage);
     // mock failed to create tunnel
     const mockedFailureMessage = 'failed to create thrift client';
-    getMock(createThriftClient).mockImplementation((...args) => {
+    getMock(getWrappedThriftClient).mockImplementation((...args) => {
       throw new Error(mockedFailureMessage);
     });
     manager = new ThriftClientManager(mockedTransport, mockedTunnelManager);
@@ -199,7 +199,7 @@ describe('ThriftClientManager', () => {
       onClientClose: () => {},
       onUnexpectedClientFailure: () => {},
     };
-    getMock(createThriftClient).mockReturnValue(mockedClient);
+    getMock(getWrappedThriftClient).mockReturnValue(mockedClient);
     mockClientServerCommunication(clientMessage, serverMessage);
     const client = await manager.createThriftClient(mockedServiceConfig);
     expect(client).toBe(mockedClient);
@@ -207,7 +207,7 @@ describe('ThriftClientManager', () => {
 
   it('reuse existing tunnel', async () => {
     // create the first client -> create new tunnel and new server
-    getMock(createThriftClient).mockReturnValue({
+    getMock(getWrappedThriftClient).mockReturnValue({
       onClientClose: () => {},
       onUnexpectedClientFailure: () => {},
     });
@@ -239,11 +239,11 @@ describe('ThriftClientManager', () => {
       .mockImplementationOnce(() => mockedConnection2);
     mockClientServerCommunication(clientMessage, serverMessage);
     // mock createThriftClient
-    getMock(createThriftClient).mockImplementation(
+    getMock(getWrappedThriftClient).mockImplementation(
       (clientId: string, serviceConfig: ThriftServiceConfig, port: number) => {
         const mockedConnection = thrift.createConnection();
         const mockedClient = thrift.createClient();
-        return new MockedThriftClientClass(
+        return new MockedWrappedThriftClient(
           clientId,
           mockedConnection,
           mockedClient,
@@ -294,11 +294,11 @@ describe('ThriftClientManager', () => {
       .mockImplementationOnce(() => mockedConnection3);
     mockClientServerCommunication(clientMessage, serverMessage);
     // mock createThriftClient
-    getMock(createThriftClient).mockImplementation(
+    getMock(getWrappedThriftClient).mockImplementation(
       (clientId: string, serviceConfig: ThriftServiceConfig, port: number) => {
         const mockedConnection = thrift.createConnection();
         const mockedClient = thrift.createClient();
-        return new MockedThriftClientClass(
+        return new MockedWrappedThriftClient(
           clientId,
           mockedConnection,
           mockedClient,

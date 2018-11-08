@@ -10,7 +10,7 @@
  * @format
  * @emails oncall+nuclide
  */
-import {createThriftClient} from '../createThriftClient';
+import {getWrappedThriftClient} from '../createThriftClient';
 import thrift from 'thrift';
 import EventEmitter from 'events';
 
@@ -54,18 +54,18 @@ describe('createThriftClient', () => {
   });
 
   it('cannot get a closed client', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     client.close();
     expect(() => client.getClient()).toThrow('Cannot get a closed client');
   });
 
   it('successfully initialize a client', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     expect(client.getClient()).toBe(mockedClient);
   });
 
   it('cannot get a client after connection end', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     mockedConnection.emit('close');
     expect(() => client.getClient()).toThrow(
       'Cannot get a client because connection is closed',
@@ -73,14 +73,14 @@ describe('createThriftClient', () => {
   });
 
   it('successfully close a client', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     client.close();
     client.close();
     expect(mockedConnection.end).toHaveBeenCalledTimes(1);
   });
 
   it('fire connection end handler while manually close connection', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     const clientClosedHandler = jest.fn();
     const clientBrokenHandler = jest.fn();
     client.onClientClose(clientClosedHandler);
@@ -92,7 +92,7 @@ describe('createThriftClient', () => {
   });
 
   it('fire connection close handler while connection is broken', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     const clientClosedHandler = jest.fn();
     const clientBrokenHandler = jest.fn();
     client.onClientClose(clientClosedHandler);
@@ -103,7 +103,7 @@ describe('createThriftClient', () => {
   });
 
   it('handle unsubscription to connection end event', () => {
-    const client = createThriftClient(mockServiceConfig, mockPort);
+    const client = getWrappedThriftClient(mockServiceConfig, mockPort);
     const fn = jest.fn();
     const subscription = client.onClientClose(fn);
     subscription.unsubscribe();
