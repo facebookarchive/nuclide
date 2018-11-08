@@ -29,6 +29,8 @@ import {genConfigId} from './config-utils';
 
 type ServerCacheEntry = {server: ThriftServer, refCount: number};
 
+const logger = getLogger('bigdig-thrift-service-manager');
+
 /**
  * This class manages the creation and disposal of thrift servers. A new server
  * processes will be spawned by a recieving `create_server` command with its
@@ -43,14 +45,11 @@ type ServerCacheEntry = {server: ThriftServer, refCount: number};
  */
 export class ThriftServerManager {
   _transport: Transport;
-  _logger: log4js$Logger;
   _subscription: Subscription;
-
   _configIdToServer: Map<string, ServerCacheEntry>;
 
   constructor(transport: Transport) {
     this._transport = transport;
-    this._logger = getLogger('bigdig-thrift-service-manager');
     this._configIdToServer = new Map();
 
     // Transport onMessage returns observable
@@ -66,8 +65,8 @@ export class ThriftServerManager {
    */
   async _handleMessage(message: ThriftMessage): Promise<void> {
     const {id, payload} = message;
-    this._logger.info('------- received message --------');
-    this._logger.info(message);
+    logger.info('------- received message --------');
+    logger.info(message);
     if (id == null || payload == null) {
       const errorMessage = 'Malformatted request message!';
       this._sendMessage(createFailureMessage(id, errorMessage));
@@ -103,7 +102,7 @@ export class ThriftServerManager {
     // server already exist, increase server refCount
     if (serverCacheEntry != null) {
       const {server, refCount} = serverCacheEntry;
-      this._logger.info('Server is already running for %s', configId);
+      logger.info('Server is already running for %s', configId);
       this._configIdToServer.set(configId, {
         server,
         refCount: refCount + 1,
@@ -116,7 +115,7 @@ export class ThriftServerManager {
         messagePayload = createSuccessResponse(server.getConnectionOptions());
       } catch (error) {
         messagePayload = createFailureResponse('Failed to create server');
-        this._logger.error('Failed to create server ', error);
+        logger.error('Failed to create server ', error);
       }
     }
     const responseMessage = {id, payload: messagePayload};
