@@ -1051,8 +1051,7 @@ export default class Debugger implements DebuggerInterface {
         e.event === 'hhvmConnectionRefused' ||
         e.event === 'hhvmConnectionDied'
       ) {
-        this._console.outputLine('Connection to debug server lost.');
-        this._console.close();
+        this._console.close('Connection to debug server lost.');
       }
     });
     /* eslint-enable nuclide-internal/unused-subscription */
@@ -1317,7 +1316,9 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
-    process.exit(0);
+    this._console.close(
+      'The debug adapter has exited. Typically this means the adapter has lost connection with the server.\n',
+    );
   }
 
   async _cacheThreads(): Promise<void> {

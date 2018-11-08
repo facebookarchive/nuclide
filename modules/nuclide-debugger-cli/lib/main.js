@@ -122,6 +122,8 @@ function showHelp(
 }
 
 async function main(): Promise<void> {
+  let cli: ?CommandLine;
+
   try {
     // see if there's session information on the command line
     const debuggerAdapterFactory = new DebuggerAdapterFactory();
@@ -152,10 +154,15 @@ async function main(): Promise<void> {
       configFile.ensureConfigRoot(),
       'history',
     );
-    const cli = new CommandLine(dispatcher, args.plain, logger, historySave);
+    const safeCli = (cli = new CommandLine(
+      dispatcher,
+      args.plain,
+      logger,
+      historySave,
+    ));
 
-    dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
-    dispatcher.registerCommand(new QuitCommand(() => cli.close()));
+    dispatcher.registerCommand(new HelpCommand(safeCli, dispatcher));
+    dispatcher.registerCommand(new QuitCommand(() => safeCli.close()));
 
     let adapter;
 
@@ -207,14 +214,18 @@ async function main(): Promise<void> {
       _ => {},
       _ => {
         debuggerInstance.closeSession().then(x => {
-          cli.outputLine();
+          safeCli.outputLine();
           process.exit(0);
         });
       },
     );
   } catch (x) {
-    process.stderr.write(`oops ${x.message} ${x.stack}\n`);
-    process.exit(1);
+    if (cli != null) {
+      cli.close(`${x.message}\n`);
+      return;
+    }
+    process.stderr.write(`${x.message}\n`);
+    process.exit(0);
   }
 }
 
