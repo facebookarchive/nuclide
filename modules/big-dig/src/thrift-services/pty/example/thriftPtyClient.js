@@ -14,7 +14,7 @@
 
 import {createThriftClient} from '../../../services/thrift/createThriftClient';
 import {PTY_SERVICE_CONFIG} from '../thrift-pty-service-config';
-import {runPty} from '../runPty';
+import {runPty} from '../ThriftPtyUtil';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('thrift-pty-example-client');
