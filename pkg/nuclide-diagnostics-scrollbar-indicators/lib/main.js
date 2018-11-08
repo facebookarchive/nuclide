@@ -25,10 +25,12 @@ import type {
 } from '../../../modules/atom-ide-ui/pkg/atom-ide-diagnostics/lib/types';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {throttle} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 
 const VISIBLE_TYPES = new Set(['Error']);
+const DIAGNOSTICS_THROTTLE_TIME = 200;
 
 function getMarkTypesFromMessages(
   messages: Array<DiagnosticMessage>,
@@ -91,10 +93,12 @@ class Activation {
         .switchMap(path => {
           return observableFromSubscribeFunction(cb =>
             diagnosticUpdater.observeFileMessages(path, cb),
-          ).map(messages => ({
-            markTypes: getMarkTypesFromMessages(messages.messages),
-            editor,
-          }));
+          )
+            .let(throttle(DIAGNOSTICS_THROTTLE_TIME))
+            .map(messages => ({
+              markTypes: getMarkTypesFromMessages(messages.messages),
+              editor,
+            }));
         }),
     );
 
