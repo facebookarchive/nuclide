@@ -105,7 +105,7 @@ export class ThriftClientManager {
   /**
    * Returns a new thrift client.
    *
-   * NOTE: Two clients with the same service config can share the same tunnel
+   * NOTE: Two clients with the same service config will share the same tunnel
    * to the remote server.
    */
   async createThriftClient(
@@ -130,7 +130,7 @@ export class ThriftClientManager {
    * Expect result from remote methods. Here return type `any` can be downcasted
    * to other expected data types in callers
    */
-  async _invokeRemoteMethod(
+  async _runThriftServiceCommand(
     command: ThriftServiceCommand,
     serverConfig: ThriftServerConfig,
   ): Promise<any> {
@@ -168,11 +168,11 @@ export class ThriftClientManager {
   _createRemoteServer(
     serverConfig: ThriftServerConfig,
   ): Promise<ConnectionOptions> {
-    return this._invokeRemoteMethod('start-server', serverConfig);
+    return this._runThriftServiceCommand('start-server', serverConfig);
   }
 
   _closeRemoteServer(serverConfig: ThriftServerConfig): Promise<any> {
-    return this._invokeRemoteMethod('stop-server', serverConfig);
+    return this._runThriftServiceCommand('stop-server', serverConfig);
   }
 
   async _getOrCreateTunnel(
