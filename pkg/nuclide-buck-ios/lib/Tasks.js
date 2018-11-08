@@ -101,10 +101,6 @@ export function runTask(
     return runRemoteTask();
   } else {
     const subcommand = _getLocalSubcommand(taskType, ruleType);
-    if (subcommand === 'install' || subcommand === 'test') {
-      startLogger(device);
-    }
-
     const debug = taskType === 'build-launch-debug';
 
     return builder.runSubcommand(
@@ -132,16 +128,4 @@ function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
   }
 
   return getBuckSubcommandForTaskType(taskType);
-}
-
-function startLogger(device: FbsimctlDevice): Observable<TaskEvent> {
-  return Observable.create(observer => {
-    if (device.type === 'simulator') {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-ios-simulator-logs:start',
-      );
-    }
-    observer.complete();
-  });
 }
