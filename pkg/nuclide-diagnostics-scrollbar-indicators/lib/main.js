@@ -13,10 +13,12 @@ import type {
   ScrollbarIndicatorUpdate,
   ScrollbarIndicatorProvider,
   ScrollbarIndicatorMark,
+  ScrollbarIndicatorMarkType,
 } from '../../nuclide-scrollbar-indicators';
 import createPackage from 'nuclide-commons-atom/createPackage';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {arrayPartition} from 'nuclide-commons/collection';
 import type {
   DiagnosticUpdater,
   DiagnosticMessage,
@@ -27,6 +29,18 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 
 const VISIBLE_TYPES = new Set(['Error']);
+
+function getMarkTypesFromMessages(
+  messages: Array<DiagnosticMessage>,
+): Map<ScrollbarIndicatorMarkType, Set<ScrollbarIndicatorMark>> {
+  const [staleMessages, notStaleMessages] = arrayPartition(messages, message =>
+    Boolean(message.stale),
+  );
+  return new Map([
+    ['DIAGNOSTIC_ERROR', visibleLinesFromMessages(notStaleMessages)],
+    ['STALE_DIAGNOSTIC_ERROR', visibleLinesFromMessages(staleMessages)],
+  ]);
+}
 
 function visibleLinesFromMessages(
   messages: Array<DiagnosticMessage>,
@@ -78,9 +92,7 @@ class Activation {
           return observableFromSubscribeFunction(cb =>
             diagnosticUpdater.observeFileMessages(path, cb),
           ).map(messages => ({
-            markTypes: new Map([
-              ['DIAGNOSTIC_ERROR', visibleLinesFromMessages(messages.messages)],
-            ]),
+            markTypes: getMarkTypesFromMessages(messages.messages),
             editor,
           }));
         }),

@@ -47,6 +47,7 @@ const SCALE = window.devicePixelRatio;
 const MIN_PIXEL_HEIGHT = SCALE * 2;
 
 const DIAGNOSTIC_ERROR_COLOR = '#ff0000';
+const STALE_DIAGNOSTIC_ERROR_COLOR = '#808080';
 const SEARCH_RESULT_COLOR = '#ffdd00';
 const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
   scrollbarMarkTypes.SELECTION,
@@ -55,6 +56,7 @@ const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
   scrollbarMarkTypes.SOURCE_CONTROL_CHANGE,
   scrollbarMarkTypes.SEARCH_RESULT,
   scrollbarMarkTypes.DIAGNOSTIC_ERROR,
+  scrollbarMarkTypes.STALE_DIAGNOSTIC_ERROR,
   scrollbarMarkTypes.CURSOR,
 ];
 
@@ -89,6 +91,8 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
     switch (type) {
       case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
         return {...right, color: DIAGNOSTIC_ERROR_COLOR};
+      case scrollbarMarkTypes.STALE_DIAGNOSTIC_ERROR:
+        return {...right, color: STALE_DIAGNOSTIC_ERROR_COLOR};
       case scrollbarMarkTypes.SELECTION:
         return {...middle, color: this.props.colors.syntaxSelectionColor};
       case scrollbarMarkTypes.CURSOR:
