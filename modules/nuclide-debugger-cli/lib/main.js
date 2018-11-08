@@ -48,7 +48,7 @@ function buildLogger(): log4js$Logger {
       {
         type: 'file',
         filename: '/tmp/nuclide-cli.log',
-        maxLogSize: 50 * 1024,
+        maxLogSize: 512 * 1024,
         category: '[all]',
       },
       {
