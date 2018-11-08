@@ -13,6 +13,7 @@
 import type {AgentOptions} from '../../common/types';
 
 import https from 'https';
+import http from 'http';
 import url from 'url';
 import invariant from 'assert';
 
@@ -87,7 +88,13 @@ function request(opts: RequestOptions, cb) {
     ca: agentOptions ? agentOptions.ca : undefined,
   };
 
-  const req = https.request(options, res => {
+  let requestMethod = https.request;
+
+  if (parsedUri.protocol != null && parsedUri.protocol.match(/http:/)) {
+    requestMethod = http.request;
+  }
+
+  const req = requestMethod(options, res => {
     let body = '';
 
     res.on('data', d => {
