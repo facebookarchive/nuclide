@@ -83,7 +83,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
   _getMarkStyleForType(type: ScrollbarIndicatorMarkType): MarkStyle {
     const canvasWidth = this._context.canvas.width;
     const oneThird = canvasWidth / 3;
-    const left = {width: canvasWidth, offset: 0};
+    const left = {width: oneThird, offset: 0};
     const middle = {width: oneThird, offset: oneThird};
     const right = {width: oneThird, offset: oneThird * 2};
     const full = {width: canvasWidth, offset: 0};
