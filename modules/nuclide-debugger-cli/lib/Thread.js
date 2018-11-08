@@ -70,4 +70,9 @@ export default class Thread {
   addStackFrames(frames: Array<DebugProtocol.StackFrame>): void {
     this._stack = this._stack.concat(frames);
   }
+
+  clearStackFrames() {
+    this._selectedStackFrame = 0;
+    this._stack = [];
+  }
 }

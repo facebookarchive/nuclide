@@ -158,6 +158,7 @@ export default class Debugger implements DebuggerInterface {
         throw new Error('Adapter is not set up in relaunch()');
       }
 
+      this._logger.info('clearFocusThread -- relaunch');
       this._threads.clearFocusThread();
       this._stoppedAtBreakpoint = null;
 
@@ -403,11 +404,13 @@ export default class Debugger implements DebuggerInterface {
       this._console.stopInput();
       const session = this._ensureDebugSession(true);
       this._stoppedAtBreakpoint = null;
+      this._threads.allThreads.forEach(thd => thd.clearStackFrames());
 
       // if we are attaching and still in configuration, this is where we'll
       // send configuration done.
       if (this._state === 'CONFIGURING') {
         if (this._attachMode) {
+          this._logger.info('clearFocusThread -- continue CONFIGURING');
           this._threads.clearFocusThread();
           return this._configurationDone();
         }
@@ -416,6 +419,7 @@ export default class Debugger implements DebuggerInterface {
 
       if (this._state === 'STOPPED') {
         const threadId = this.getActiveThread().id();
+        this._logger.info('clearFocusThread -- continue STOPPED');
         this._threads.clearFocusThread();
 
         await session.continue({threadId});
@@ -1103,8 +1107,12 @@ export default class Debugger implements DebuggerInterface {
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
     const {
-      body: {description, threadId, allThreadsStopped, breakpointId},
+      body: {description, threadId, allThreadsStopped, breakpointId, reason},
     } = event;
+
+    // NOTE that there are breakpoint stops that are implicit (breakpoint calls,
+    // return from nested breakpoint) where we won't have a breakpoint id
+    const breakpointStop = reason === 'breakpoint';
 
     // NOTE if we hit a breakpoint while we're already at a breakpoint, don't
     // switch context out from under the user.
@@ -1152,24 +1160,40 @@ export default class Debugger implements DebuggerInterface {
     let showStack = firstStop;
 
     if (
-      this._stoppedAtBreakpoint &&
+      breakpointStop &&
       (focusThreadId == null || focusThreadId === defaultThreadId)
     ) {
       invariant(threadId != null);
+      this._logger.info(`setFocusThread ${threadId} -- stopped at breakpoint`);
       this._threads.setFocusThread(threadId);
       showStack = true;
     }
 
     // if we're not stopped at a breakpoint and we're not focused on a thread yet,
     // pick one.
-    if (this._stoppedAtBreakpoint == null && focusThreadId == null) {
+    if (!breakpointStop && focusThreadId == null) {
       if (defaultThreadId == null) {
         const firstStopped = this._threads.firstStoppedThread();
         invariant(firstStopped != null);
+        this._logger.info(
+          `setFocusThread ${firstStopped} - first stopped thread`,
+        );
         this._threads.setFocusThread(firstStopped);
       } else {
+        this._logger.info(`setFocusThread ${defaultThreadId} -- REPL thread`);
         this._threads.setFocusThread(defaultThreadId);
       }
+    }
+
+    // if we got a stop event on the focused thread, that means that we either
+    // came back from a step command or hit a nested breakpoint, and we should
+    // show the top of stack again.
+    if (
+      this._threads.focusThreadId === threadId &&
+      this._threads.focusThread != null
+    ) {
+      this._threads.focusThread.clearStackFrames();
+      showStack = true;
     }
 
     if (showStack) {
