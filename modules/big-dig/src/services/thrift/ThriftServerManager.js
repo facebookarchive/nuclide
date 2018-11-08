@@ -85,7 +85,9 @@ export class ThriftServerManager {
       await this._startServer(id, serverConfig);
     } else if (command === 'stop-server') {
       await this._stopServer(id, serverConfig);
-    } // Ignore other commands
+    } else {
+      logger.error(`Got unknown command ${command}`);
+    }
   }
 
   async _startServer(
