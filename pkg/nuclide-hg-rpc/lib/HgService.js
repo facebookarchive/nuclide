@@ -106,6 +106,8 @@ const IGNORABLE_ERROR_SUFFIXES = [
   'abort: no files to copy',
   'No such file or directory',
   'does not exist!',
+  // Windows version of 'no such file or directory':
+  'The system cannot find the file specified',
 ];
 
 const DEFAULT_HG_COMMIT_TITLE_REGEX = /^<Replace this line with a title. Use 1 line only, 67 chars or less>/;
