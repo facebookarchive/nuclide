@@ -68,17 +68,18 @@ class Activation {
     // (or at least reduce) the logic here.
 
     this._subscriptions.add(
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-vcs-log:show-log-for-active-editor',
-        () => {
-          const uri = getActiveTextEditorURI();
-          if (uri != null) {
-            openLogPaneForURI(uri);
-            track('nuclide-vcs-log:open-from-text-editor');
-          }
+      atom.commands.add('atom-text-editor', {
+        'nuclide-vcs-log:show-log-for-active-editor': {
+          description: 'Show File History',
+          didDispatch: () => {
+            const uri = getActiveTextEditorURI();
+            if (uri != null) {
+              openLogPaneForURI(uri);
+              track('nuclide-vcs-log:open-from-text-editor');
+            }
+          },
         },
-      ),
+      }),
       atom.contextMenu.add({
         'atom-text-editor': [
           {
