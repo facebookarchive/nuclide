@@ -17,13 +17,13 @@ import type {AdbDevice} from './types';
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
-// $FlowIgnore untyped import
 import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
 import {Expect, expectedEqual} from 'nuclide-commons/expected';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track} from 'nuclide-commons/analytics';
 import {getAdbServiceByNuclideUri} from './utils';
+import passesGK from 'nuclide-commons/passesGK';
 
 export function observeAndroidDevices(
   host: NuclideUri,
@@ -32,40 +32,15 @@ export function observeAndroidDevices(
     ? nuclideUri.createRemoteUri(nuclideUri.getHostname(host), '/')
     : '';
   return pollersForUris.getOrCreate(serviceUri, () => {
-    return Observable.interval(2000)
-      .startWith(0)
-      .exhaustMap(() => {
-        const service = getAdbServiceByNuclideUri(serviceUri);
-        if (service == null) {
-          // Gracefully handle a lost remote connection
-          return Observable.of(Expect.pending());
-        }
-        return Observable.fromPromise(service.getDeviceList())
-          .map(devices => Expect.value(devices))
-          .catch(error => {
-            let message;
-            if (error.code === 'ENOENT') {
-              message = "'adb' not found in $PATH.";
-            } else if (
-              // RPC call timed out
-              error.name === 'RpcTimeoutError' ||
-              // RPC call succeeded, but the adb call itself timed out
-              error.message === 'Timeout has occurred'
-            ) {
-              message = 'Request timed out, retrying...';
-            } else if (error.message === 'Connection Closed') {
-              return Observable.of(Expect.pending());
-            } else {
-              message = error.message;
-            }
-            const newError = new Error(
-              "Can't fetch Android devices. " + message,
-            );
-            // $FlowIgnore
-            (newError: any).originalError = error;
-            return Observable.of(Expect.error(newError));
-          });
-      })
+    return Observable.defer(() =>
+      passesGK('nuclide_device_panel_use_adb_track_devices'),
+    )
+      .concatMap(
+        useTrackDevices =>
+          useTrackDevices
+            ? observeDevicesViaTrackDevices(serviceUri)
+            : observeDevicesViaPolling(serviceUri),
+      )
       .distinctUntilChanged((a, b) =>
         expectedEqual(
           a,
@@ -87,6 +62,73 @@ export function observeAndroidDevices(
       .publishReplay(1)
       .refCount();
   });
+}
+
+function convertErrorToValue(
+  error: Error,
+): Observable<Expected<Array<AdbDevice>>> {
+  let message;
+  // $FlowFixMe error.code
+  if (error.code === 'ENOENT') {
+    message = "'adb' not found in $PATH.";
+  } else if (
+    // RPC call timed out
+    error.name === 'RpcTimeoutError' ||
+    // RPC call succeeded, but the adb call itself timed out
+    error.message === 'Timeout has occurred'
+  ) {
+    message = 'Request timed out, retrying...';
+  } else if (error.message === 'Connection Closed') {
+    return Observable.of(Expect.pending());
+  } else {
+    message = error.message;
+  }
+  const newError = new Error("Can't fetch Android devices. " + message);
+  // $FlowIgnore
+  (newError: any).originalError = error;
+  return Observable.of(Expect.error(newError));
+}
+
+function observeDevicesViaPolling(
+  serviceUri: NuclideUri,
+): Observable<Expected<Array<AdbDevice>>> {
+  return Observable.interval(2000)
+    .startWith(0)
+    .exhaustMap(() => {
+      const service = getAdbServiceByNuclideUri(serviceUri);
+      if (service == null) {
+        // Gracefully handle a lost remote connection
+        return Observable.of(Expect.pending());
+      }
+      return Observable.fromPromise(service.getDeviceList())
+        .map(devices => Expect.value(devices))
+        .catch(error => convertErrorToValue(error));
+    });
+}
+
+function observeDevicesViaTrackDevices(
+  serviceUri: NuclideUri,
+): Observable<Expected<Array<AdbDevice>>> {
+  return (
+    Observable.defer(() => {
+      const service = getAdbServiceByNuclideUri(serviceUri);
+      if (service == null) {
+        // Gracefully handle a lost remote connection
+        return Observable.of(Expect.pending());
+      }
+      return service
+        .trackDevices()
+        .refCount()
+        .map(devices => Expect.value(devices))
+        .catch(error => convertErrorToValue(error));
+    })
+      // If the process ever exits, retry after 5s
+      // $FlowFixMe repeatWhen
+      .repeatWhen(notifications => notifications.delay(5000))
+      // Also, never complete this observable, so we don't switch to a new observable
+      // if the process exits, which would invalidate later caching (distinctUntilChanged/publishReplay)
+      .merge(Observable.never())
+  );
 }
 
 // This is a convenient way for any device panel plugins of type Android to get from Device to

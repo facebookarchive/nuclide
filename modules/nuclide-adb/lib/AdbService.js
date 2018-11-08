@@ -23,6 +23,7 @@ import {ConnectableObservable} from 'rxjs';
 import {Adb} from './Adb';
 import {Processes} from './common/Processes';
 import {runCommand} from 'nuclide-commons/process';
+import {observeProcessRaw} from 'nuclide-commons/process';
 
 export function getDeviceInfo(
   serial: string,
@@ -43,6 +44,17 @@ export async function stopProcess(
   pid: number,
 ): Promise<void> {
   return new Adb(serial).stopProcess(packageName, pid);
+}
+
+export function trackDevices(): ConnectableObservable<Array<AdbDevice>> {
+  return (
+    observeProcessRaw('adb', ['track-devices'])
+      .distinctUntilChanged()
+      // track-devices doesn't provide the full output
+      // we use its output as events to trigger an actual devices -l call
+      .switchMap(() => getDeviceList())
+      .publish()
+  );
 }
 
 export function getDeviceList(): Promise<Array<AdbDevice>> {
