@@ -47,7 +47,6 @@ import {
 } from '../../nuclide-hg-rpc/lib/hg-constants';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import LRU from 'lru-cache';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {getLogger} from 'log4js';
 import nullthrows from 'nullthrows';
 
@@ -461,10 +460,6 @@ export class HgRepositoryClient {
 
   observeStackStatusChanges(): HgStatusChanges {
     return this._sharedMembers.hgStackStatusChanges;
-  }
-
-  _observePaneItemVisibility(item: Object): Observable<boolean> {
-    return observePaneItemVisibility(item);
   }
 
   observeOperationProgressChanges(): Observable<OperationProgress> {
