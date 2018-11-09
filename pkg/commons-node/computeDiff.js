@@ -21,11 +21,13 @@ export type LineMapping = {
 export type ConsolidatedDiff = {
   textDiff: TextDiff,
   oldFile: ?string,
+  newFile: ?string,
   hunks: Array<ConsolidatedDiffHunk>,
 };
 
 export type DiffOptions = {
   includeOldText: boolean,
+  includeNewText: boolean,
   ignoreWhitespace: boolean,
   includeHunks: boolean,
 };
@@ -109,10 +111,14 @@ export function computeConsolidatedDiff(
     },
     hunks: [],
     oldFile: null,
+    newFile: null,
   };
 
   if (options.includeOldText) {
     returnValue.oldFile = oldText;
+  }
+  if (options.includeNewText) {
+    returnValue.newFile = newText;
   }
   if (options.includeHunks) {
     returnValue.hunks = consolidatedHunks;

@@ -118,6 +118,7 @@ adding a non-new-line line`,
         includeOldText: true,
         ignoreWhitespace: false,
         includeHunks: true,
+        includeNewText: false,
       };
       const {textDiff, oldFile, hunks} = computeConsolidatedDiff(
         '',
@@ -139,6 +140,7 @@ adding a non-new-line line`,
         includeOldText: false,
         ignoreWhitespace: false,
         includeHunks: true,
+        includeNewText: false,
       };
 
       const {textDiff, hunks} = computeConsolidatedDiff(
@@ -177,6 +179,7 @@ same end line`,
         includeOldText: false,
         ignoreWhitespace: false,
         includeHunks: true,
+        includeNewText: false,
       };
 
       const {textDiff, hunks} = computeConsolidatedDiff(
@@ -232,6 +235,7 @@ adding a non-new-line line`,
         includeOldText: false,
         ignoreWhitespace: false,
         includeHunks: true,
+        includeNewText: false,
       };
 
       const {hunks} = computeConsolidatedDiff(
@@ -254,6 +258,7 @@ adding a non-new-line line`,
         includeOldText: false,
         ignoreWhitespace: false,
         includeHunks: true,
+        includeNewText: false,
       };
 
       const {hunks} = computeConsolidatedDiff(
