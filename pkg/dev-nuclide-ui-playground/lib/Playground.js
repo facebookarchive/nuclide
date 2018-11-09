@@ -42,6 +42,7 @@ import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from 'nuclide-commons-ui/FileChanges.example';
 import {HighlightedCodeExamples} from 'nuclide-commons-ui/HighlightedCode.example';
 import {PulseButtonExample} from 'nuclide-commons-ui/PulseButton.example';
+import {DateSelectorExamples} from 'nuclide-commons-ui/DateSelector.example';
 import {WORKSPACE_VIEW_URI} from './constants';
 
 const playgroundComponents = [
@@ -74,6 +75,7 @@ const playgroundComponents = [
   ComboboxExamples,
   FileChangesExamples,
   HighlightedCodeExamples,
+  DateSelectorExamples,
 ];
 
 type ComponentSpec = {
