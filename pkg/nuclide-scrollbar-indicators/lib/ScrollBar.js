@@ -48,11 +48,14 @@ const MIN_PIXEL_HEIGHT = SCALE * 2;
 
 const DIAGNOSTIC_ERROR_COLOR = '#ff0000';
 const SEARCH_RESULT_COLOR = '#ffdd00';
+const INLINE_REVIEW_COMMENT_COLOR = '#9B4DCA'; // Purple
+
 const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
   scrollbarMarkTypes.SELECTION,
   scrollbarMarkTypes.SOURCE_CONTROL_ADDITION,
   scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL,
   scrollbarMarkTypes.SOURCE_CONTROL_CHANGE,
+  scrollbarMarkTypes.INLINE_REVIEW_COMMENT,
   scrollbarMarkTypes.SEARCH_RESULT,
   scrollbarMarkTypes.DIAGNOSTIC_ERROR,
   scrollbarMarkTypes.STALE_DIAGNOSTIC_ERROR,
@@ -102,6 +105,8 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
       case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
       case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
         return {...left, color: this.props.colors.backgroundColorInfo};
+      case scrollbarMarkTypes.INLINE_REVIEW_COMMENT:
+        return {...left, color: INLINE_REVIEW_COMMENT_COLOR};
       default:
         throw new Error(`Invalid scroll indicator mark type: ${type}`);
     }
