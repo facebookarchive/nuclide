@@ -48,21 +48,6 @@
           "FATAL",
           "OFF"
         ]
-      },
-      "codeLens": {
-        "title": "Enable code lens support (requires restart).",
-        "type": "boolean",
-        "default": true
-      },
-      "codeLensCopy": {
-        "title": "Enable copy-on-click for code lenses.",
-        "type": "boolean",
-        "default": true
-      },
-      "codeLensMultiLine": {
-        "title": "Allow code lenses to display on multiple lines.",
-        "type": "boolean",
-        "default": false
       }
     },
     "packageType": "AtomPackage"
