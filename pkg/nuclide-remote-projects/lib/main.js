@@ -223,10 +223,7 @@ class Activation {
     const projectFileUri = idx(currentProjectSpec, _ => _.originPath);
     let remoteProjectSpecUris;
     if (projectFileUri != null && nuclideUri.isRemote(projectFileUri)) {
-      const projectSpecPaths = idx(currentProjectSpec, _ => _.paths) || [];
-      remoteProjectSpecUris = new Set(
-        projectSpecPaths.map(path => nuclideUri.resolve(projectFileUri, path)),
-      );
+      remoteProjectSpecUris = new Set(currentProjectSpec?.paths ?? []);
     } else {
       remoteProjectSpecUris = new Set();
     }
