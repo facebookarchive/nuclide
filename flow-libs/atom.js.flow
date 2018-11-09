@@ -77,6 +77,7 @@ declare class atom$Package {
   getType(): 'atom' | 'textmate' | 'theme',
   hasActivationCommands(): boolean,
   hasActivationHooks(): boolean,
+  initializeTime: number,
   getActivationHooks(): Array<string>,
   onDidDeactivate(cb: () => mixed): IDisposable,
   activateNow(): void,
@@ -404,6 +405,7 @@ declare class atom$PackageManager {
   getLoadedPackage(name: string): ?atom$Package,
   getLoadedPackages(): Array<atom$Package>,
   isPackageLoaded(name: string): boolean,
+  hasLoadedInitialPackages(): boolean,
 
   // Accessing available packages
   getAvailablePackageNames(): Array<string>,
