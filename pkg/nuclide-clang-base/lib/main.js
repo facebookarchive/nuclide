@@ -18,14 +18,6 @@ const USE_CQUERY_CONFIG = 'fb-cquery.use-cquery';
 module.exports = {
   // If true, skip calling to clang service for given path.
   checkCqueryOverride: async (path: string): Promise<boolean> => {
-    let cqueryBlacklist = async _ => false;
-    try {
-      // $FlowFB
-      cqueryBlacklist = require('./fb-cquery-blacklist').default;
-    } catch (exc) {}
-    return (
-      featureConfig.get(USE_CQUERY_CONFIG) === true &&
-      !(await cqueryBlacklist(path))
-    );
+    return featureConfig.get(USE_CQUERY_CONFIG) === true;
   },
 };
