@@ -8436,6 +8436,11 @@ timed-out@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
 
+tiny-date-picker@3.2.6:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/tiny-date-picker/-/tiny-date-picker-3.2.6.tgz#a0b88787b4d813ccd0d36e94cf9e79f7252e3c35"
+  integrity sha512-SX72rn7Hjr8tqy6OGFjQe8Fs0wnPdT6tqpzBbTWRNHM2p3n1DVsC8YHmYbwoyu7vzTXnCGCw4ShWbmM7nE7ByQ==
+
 tmp@0.0.29:
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.29.tgz#f25125ff0dd9da3ccb0c2dd371ee1288bb9128c0"
