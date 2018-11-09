@@ -242,7 +242,7 @@
   'attributes' :
     'patterns': [
       {
-        'begin': '(<<)'
+        'begin': '(<<)(?!<)'
         'beginCaptures':
           '1':
             'name': 'punctuation.definition.attributes.php'
