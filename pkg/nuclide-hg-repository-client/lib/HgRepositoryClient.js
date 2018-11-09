@@ -1009,7 +1009,9 @@ export class HgRepositoryClient {
     filePaths: Array<NuclideUri>,
     revision: string,
   ): Observable<Array<{abspath: NuclideUri, path: NuclideUri, data: string}>> {
-    return this.runCommand(['cat', '-Tjson', ...filePaths]).map(JSON.parse);
+    return this.runCommand(['cat', '-Tjson', ...filePaths, '-r', revision]).map(
+      JSON.parse,
+    );
   }
 
   fetchFilesChangedAtRevision(
