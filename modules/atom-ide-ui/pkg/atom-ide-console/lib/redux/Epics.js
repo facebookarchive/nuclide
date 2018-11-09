@@ -35,6 +35,8 @@ export function registerExecutorEpic(
       // $FlowIssue: Flow is having some trouble with the spread here.
       records: executor.output.map(message => ({
         ...message,
+        // $FlowIssue: TODO with above.
+        incomplete: message.incomplete ?? false,
         kind: 'response',
         sourceId: executor.id,
         scopeName: null, // The output won't be in the language's grammar.
