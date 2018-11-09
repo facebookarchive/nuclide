@@ -12,6 +12,7 @@
 
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import dockForLocation from './dock-for-location';
 
 export function isPending(paneItem: atom$PaneItem) {
   const pane = atom.workspace.paneForItem(paneItem);
@@ -42,4 +43,19 @@ export function isConsoleVisible(): boolean {
       (paneContainer != null && paneContainer.isVisible())) &&
     consoleItem === consolePane.getActiveItem()
   );
+}
+
+export function showDockedPaneItem(item: Object) {
+  const pane = atom.workspace.paneForItem(item);
+  // We want to call workspace.open but it has no option to
+  // show the new pane without activating it.
+  // So instead we find the dock for the pane and show() it directly.
+  // https://github.com/atom/atom/issues/16007
+  if (pane != null) {
+    pane.activateItem(item);
+    const dock = dockForLocation(pane.getContainer().getLocation());
+    if (dock != null) {
+      dock.show();
+    }
+  }
 }

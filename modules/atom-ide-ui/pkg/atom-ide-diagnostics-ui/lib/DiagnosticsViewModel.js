@@ -16,8 +16,8 @@ import type {DiagnosticGroup, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
-import dockForLocation from 'nuclide-commons-atom/dock-for-location';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {showDockedPaneItem} from 'nuclide-commons-atom/pane-item';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
@@ -179,20 +179,10 @@ export class DiagnosticsViewModel {
           (a, b) => a.text === b.text,
         )
       ) {
-        const pane = atom.workspace.paneForItem(this);
         if (newProps.diagnostics.length > 0 && !newProps.isVisible) {
-          // We want to call workspace.open but it has no option to
-          // show the new pane without activating it.
-          // So instead we find the dock for the pane and show() it directly.
-          // https://github.com/atom/atom/issues/16007
-          if (pane != null) {
-            pane.activateItem(this);
-            const dock = dockForLocation(pane.getContainer().getLocation());
-            if (dock != null) {
-              dock.show();
-            }
-          }
+          showDockedPaneItem(this);
         } else if (newProps.diagnostics.length === 0 && newProps.isVisible) {
+          const pane = atom.workspace.paneForItem(this);
           // Only hide the diagnostics if it's the only item in its pane.
           if (pane != null) {
             const items = pane.getItems();
