@@ -12,7 +12,7 @@
 /* eslint-env browser */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import observeStalls from '../../commons-atom/observeStalls';
+import observeStalls from 'nuclide-commons-ui/observeStalls';
 import {HistogramTracker} from 'nuclide-analytics';
 
 export default function trackStalls(): IDisposable {
