@@ -128,6 +128,7 @@ describe('createStore', () => {
     expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
       {filePath: 'fileA', messages: [fileMessageA], totalMessages: 1},
     ]);
+    await sleep(600); // wait for the observeMessages throttle cooldown
     expect(spy_allMessages.mock.calls.length).toBe(2);
     expect(
       spy_allMessages.mock.calls[spy_allMessages.mock.calls.length - 1][0],
@@ -163,6 +164,7 @@ describe('createStore', () => {
         messages: [],
         totalMessages: 0,
       });
+      await sleep(600); // wait for the observeMessages throttle cooldown
       expect(spy_allMessages.mock.calls.length).toBe(1);
       expect(
         spy_allMessages.mock.calls[spy_allMessages.mock.calls.length - 1][0],
@@ -229,6 +231,7 @@ describe('createStore', () => {
       expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
         {filePath: 'fileA', messages: [fileMessageA2], totalMessages: 1},
       ]);
+      await sleep(600); // wait for the observeMessages throttle cooldown
       expect(spy_allMessages.mock.calls.length).toBe(2);
       expect(
         spy_allMessages.mock.calls[spy_allMessages.mock.calls.length - 1][0],
@@ -277,6 +280,7 @@ describe('createStore', () => {
         expect(spy_fileA.mock.calls[spy_fileA.mock.calls.length - 1]).toEqual([
           {filePath: 'fileA', messages: [], totalMessages: 0},
         ]);
+        await sleep(600); // wait for the observeMessages throttle cooldown
         expect(spy_allMessages.mock.calls.length).toBe(2);
         expect(
           spy_allMessages.mock.calls[spy_allMessages.mock.calls.length - 1][0],

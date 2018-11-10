@@ -31,20 +31,19 @@ import {arrayEqual, mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
-const THROTTLE_FILE_MESSAGE_MS = 100;
+// Receiving all messages is potentially dangerous as there can sometimes be
+// tens of thousands, and updates can occur **on keystroke**. Throttle these to
+// half of a second.
+const THROTTLE_ALL_MESSAGES_MS = 500;
+const THROTTLE_FILE_MESSAGES_MS = 100;
 
 export default class DiagnosticUpdater {
   _store: Store;
   _states: Observable<AppState>;
-  _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
 
   constructor(store: Store) {
     this._store = store;
     this._states = observableFromReduxStore(store);
-
-    this._allMessageUpdates = this._states
-      .map(Selectors.getMessages)
-      .distinctUntilChanged();
   }
 
   getMessages = (): Array<DiagnosticMessage> => {
@@ -62,7 +61,13 @@ export default class DiagnosticUpdater {
   observeMessages = (
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable => {
-    return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
+    return new UniversalDisposable(
+      this._states
+        .let(throttle(THROTTLE_ALL_MESSAGES_MS))
+        .map(Selectors.getMessages)
+        .distinctUntilChanged()
+        .subscribe(callback),
+    );
   };
 
   observeFileMessagesIterator = (
@@ -72,7 +77,7 @@ export default class DiagnosticUpdater {
     return new UniversalDisposable(
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .let(throttle(THROTTLE_FILE_MESSAGE_MS))
+        .let(throttle(THROTTLE_FILE_MESSAGES_MS))
         .map(state => [
           Selectors.getProviderToMessagesForFile(state)(filePath),
           state,
@@ -99,7 +104,7 @@ export default class DiagnosticUpdater {
       // Whether that's worth it depends on how often this is actually called with the same path.
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .let(throttle(THROTTLE_FILE_MESSAGE_MS))
+        .let(throttle(THROTTLE_FILE_MESSAGES_MS))
         .map(state => Selectors.getFileMessageUpdates(state, filePath))
         .distinctUntilChanged(
           (a, b) =>
