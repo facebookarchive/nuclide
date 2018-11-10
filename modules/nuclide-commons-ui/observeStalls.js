@@ -13,6 +13,7 @@
 /* eslint-env browser */
 
 import invariant from 'assert';
+import getDisplayName from 'nuclide-commons/getDisplayName';
 import {remote} from 'electron';
 import {Observable} from 'rxjs';
 import {PerformanceObservable} from './observable-dom';
@@ -34,13 +35,14 @@ const BLOCKED_MAX = 60 * 1000; // 1 minute in ms
 // we consider it intentional.
 const BLOCKED_RANGE_PADDING = 15;
 
+let intentionalBlockTime = 0;
+
 // Share + cache the observable.
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 const observeStalls = once(
   (): Observable<number> => {
     const browserWindow = remote.getCurrentWindow();
 
-    let intentionalBlockTime = 0;
     const onIntentionalBlock = () => {
       intentionalBlockTime = performance.now();
     };
@@ -102,3 +104,39 @@ const observeStalls = once(
 );
 
 export default observeStalls;
+
+/*
+ * Often times users take an action and can resonably expect a long, blocking task
+ * to run to completion before they can take action again:
+ * https://developers.google.com/web/fundamentals/performance/rail#ux
+ * This is analagous to a web page or app's initial loading, transitioning to
+ * another significant view, etc.
+ *
+ * This is a decorator that wraps a function that pauses in response to user action,
+ * opting it out of stall observation and forwarding any arguments passed and returning
+ * the original function's return value.
+ *
+ * **Use this cautiously and deliberately, only in situations where it is
+ * reasonable for a user to expect a pause!**
+ *
+ * If the action takes longer than 1s, we still record this as a stall, as it
+ * fails the RAIL model's definition of responsive loading.
+ */
+export function intentionallyBlocksInResponseToUserAction<T, U>(
+  fn: (...args: Array<T>) => U,
+): (...args: Array<T>) => U {
+  const intentionallyBlocks = function(...args: Array<T>) {
+    const before = performance.now();
+    const ret = fn.apply(this, args);
+    if (performance.now() - before < 1000) {
+      intentionalBlockTime = before;
+    }
+
+    return ret;
+  };
+
+  intentionallyBlocks.displayName = `intentionallyBlocks(${getDisplayName(
+    fn,
+  )})`;
+  return intentionallyBlocks;
+}
