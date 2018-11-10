@@ -12,7 +12,7 @@
 
 import type {Observable} from 'rxjs';
 
-import nullthrows from 'nullthrows';
+import getDisplayName from './getDisplayName';
 import UniversalDisposable from './UniversalDisposable';
 import {isPromise} from './promise';
 import performanceNow from './performanceNow';
@@ -219,6 +219,18 @@ export function trackTiming<T>(
   }
 }
 
+export function decorateTrackTiming<U: Array<*>, T>(
+  fn: (...args: U) => T,
+  values?: {[key: string]: any} = {},
+): (...args: U) => T {
+  const name = getDisplayName(fn);
+  function decoratedTrackTiming(...args: U) {
+    return trackTiming(name, fn.bind(this, ...args), values);
+  }
+  decoratedTrackTiming.displayName = `trackTiming(${name})`;
+  return decoratedTrackTiming;
+}
+
 /**
  * A sampled version of trackTiming that only tracks every 1/sampleRate calls.
  */
@@ -237,14 +249,13 @@ export function trackTimingSampled<T>(
   return operation();
 }
 
-export function decorateTrackTimingSampled<U: Iterable<*>, T>(
+export function decorateTrackTimingSampled<U: Array<*>, T>(
   fn: (...args: U) => T,
   sampleRate: number,
   values?: {[key: string]: any} = {},
 ): (...args: U) => T {
-  const name = nullthrows(fn.displayName || fn.name);
+  const name = getDisplayName(fn);
   function decoratedTrackTimingSampled(...args: U) {
-    // $FlowFixMe
     return trackTimingSampled(name, fn.bind(this, ...args), sampleRate, values);
   }
   decoratedTrackTimingSampled.displayName = `trackTimingSampled(${name})`;
