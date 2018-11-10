@@ -449,6 +449,7 @@ type SelectionRendererProps = {|
   selectedNodeIndexes: Immutable.List<number>,
   rowSizeAndPositionManager: ?{
     getSizeAndPositionOfCell: number => {offset: number},
+    getCellCount: () => number,
   },
   getRowHeight: ?(args: {index: number}) => number,
 |};
@@ -480,18 +481,27 @@ class SelectionRenderer extends React.Component<SelectionRendererProps> {
       return null;
     }
 
-    const selections = selectedNodeIndexes.toArray().map((index, i) => {
-      const realIndex = index - 1; // Indexes are 1-based for some reason.
-      const height = getRowHeight({index: realIndex});
-      // This is a hacky (but the only) way to get the position of the cell. This is necessary
-      // to render the selection behind the entry elements (which we do so as not to change the
-      // scroll width of the entry elements' container).
-      const top = rowSizeAndPositionManager.getSizeAndPositionOfCell(realIndex)
-        .offset;
-      return (
-        <Selection key={i} width={selectionWidth} height={height} top={top} />
-      );
-    });
+    const selections = selectedNodeIndexes
+      .toArray()
+      .map((index, i) => {
+        const realIndex = index - 1; // Indexes are 1-based for some reason.
+        const height = getRowHeight({index: realIndex});
+        // This is a hacky (but the only) way to get the position of the cell. This is necessary
+        // to render the selection behind the entry elements (which we do so as not to change the
+        // scroll width of the entry elements' container).
+        const isValidSelection =
+          realIndex < rowSizeAndPositionManager.getCellCount();
+        if (!isValidSelection) {
+          return null;
+        }
+        const top = rowSizeAndPositionManager.getSizeAndPositionOfCell(
+          realIndex,
+        ).offset;
+        return (
+          <Selection key={i} width={selectionWidth} height={height} top={top} />
+        );
+      })
+      .filter(Boolean);
 
     return <>{selections}</>;
   }
