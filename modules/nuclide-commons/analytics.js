@@ -278,4 +278,6 @@ export default {
   trackTimingSampled,
   startTracking,
   TimingTracker,
+  decorateTrackTiming,
+  decorateTrackTimingSampled,
 };
