@@ -23,11 +23,9 @@ import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {Observable} from 'rxjs';
 import * as Actions from '../lib/redux/Actions';
 import FileTreeEntryComponent from './FileTreeEntryComponent';
 import ProjectSelection from './ProjectSelection';
-import {track} from 'nuclide-analytics';
 import {debounce, once} from 'lodash';
 
 import type {FileTreeNode} from '../lib/FileTreeNode';
@@ -87,22 +85,13 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
   }
 
   componentDidMount(): void {
-    this._remeasureHeights();
     this._disposables.add(
       // Remeasure if the theme changes, and on initial theme load, which may
       // happen after this component mounts.
       observableFromSubscribeFunction(cb =>
         atom.themes.onDidChangeActiveThemes(cb),
       )
-        .switchMap(() =>
-          Observable.concat(
-            Observable.of(null),
-            // Atom does not actually wait for the `<style>` tag to be loaded
-            // before triggering `onDidChangeActiveThemes`. For now we will
-            // check again after 100ms and see if that catches the issue.
-            Observable.of(null).delay(100),
-          ),
-        )
+        .startWith(null)
         .subscribe(() => {
           this._remeasureHeights(true);
         }),
@@ -190,11 +179,40 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
     ReactDOM.unmountComponentAtNode(this._getSelectionContainer());
   }
 
-  _remeasureHeights(force: boolean = false): void {
+  // Used by `_remeasureHeights()` to determine whether we need to do any work.
+  _invalidHeights = {
+    root: true,
+    node: true,
+    footer: true,
+  };
+
+  /**
+   * Measure the heights of file tree entry components, if needed. (We need to do this because
+   * they're determined by the theme.) The actual work touches the DOM so we want to make sure we do
+   * it only when the theme changes (and to get the initial values).
+   *
+   * One tricky thing is that it's not enough to just force a remeasure when the themes change as we
+   * may not have nodes to measure at that point. Instead, we need to invalidate our measurements so
+   * that, once we do have nodes, we remember to take new ones.
+   *
+   * IMPORTANT: This function is called a lot (on every update) so it's important that the normal
+   * case (no measurement) be super cheap!
+   *
+   * FIXME: Because all nodes share the same ref, it's possible that one being removed could
+   * result in the nulling of our ref even though there are still plenty of nodes to measure.
+   * Subsequent remeasurements would then fail. In practice, this hasn't been an issue.
+   */
+  _remeasureHeights(invalidate: boolean = false): void {
+    if (invalidate) {
+      this._invalidHeights.root = true;
+      this._invalidHeights.node = true;
+      this._invalidHeights.footer = true;
+    }
+
     let heightUpdated = false;
     const newState = {};
 
-    if (force || (this.state.rootHeight == null && this._rootRef != null)) {
+    if (this._rootRef != null && this._invalidHeights.root) {
       const rootNode = ReactDOM.findDOMNode(this._rootRef);
       if (rootNode != null) {
         invariant(rootNode instanceof HTMLElement);
@@ -202,16 +220,12 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         if (rootHeight > 0) {
           newState.rootHeight = rootHeight;
           heightUpdated = true;
-          track('file-tee-remeasure-root-height', {
-            activeThemes: atom.themes.getActiveThemeNames().join(', '),
-            rootHeight,
-            force,
-          });
+          this._invalidHeights.root = false;
         }
       }
     }
 
-    if (force || (this.state.nodeHeight == null && this._nodeRef != null)) {
+    if (this._nodeRef != null && this._invalidHeights.node) {
       const node = ReactDOM.findDOMNode(this._nodeRef);
       if (node != null) {
         invariant(node instanceof HTMLElement);
@@ -219,11 +233,12 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         if (nodeHeight > 0) {
           newState.nodeHeight = nodeHeight;
           heightUpdated = true;
+          this._invalidHeights.node = false;
         }
       }
     }
 
-    if (force || (this.state.footerHeight == null && this._footerRef != null)) {
+    if (this._footerRef != null && this._invalidHeights.footer) {
       const footer = ReactDOM.findDOMNode(this._footerRef);
       if (footer != null) {
         invariant(footer instanceof HTMLElement);
@@ -231,6 +246,7 @@ class VirtualizedFileTree extends React.PureComponent<Props, State> {
         if (footerHeight > 0) {
           newState.footerHeight = footerHeight;
           heightUpdated = true;
+          this._invalidHeights.footer = false;
         }
       }
     }
