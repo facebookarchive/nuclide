@@ -11,6 +11,7 @@
 
 import type {ServerStatus} from './StatusComponent';
 
+import {track} from 'nuclide-commons/analytics';
 import makeTooltip from './Tooltip';
 import invariant from 'assert';
 import marked from 'marked';
@@ -84,6 +85,10 @@ class StatusTooltipComponent extends React.Component<Props> {
             key={b}
             buttonType={buttonType}
             onClick={() => {
+              track('nuclide-language-status:click', {
+                provider: provider.name,
+                button: b,
+              });
               provider.clickStatus(
                 nullthrows(this.props.editor),
                 data.id || '',

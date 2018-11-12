@@ -54,6 +54,9 @@ export class LanguageStatusManager {
   }
 
   addProvider(provider: LanguageStatusProvider): IDisposable {
+    track('nuclide-language-status:add-provider', {
+      provider: provider.name,
+    });
     this._disposables.add(this._providerRegistry.addProvider(provider));
     this._providersChanged.next();
 
