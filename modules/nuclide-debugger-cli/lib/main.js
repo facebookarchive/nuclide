@@ -17,6 +17,7 @@ import CommandDispatcher from './CommandDispatcher';
 import ConfigFile from './ConfigFile';
 import Debugger from './Debugger';
 import DebuggerAdapterFactory from './DebuggerAdapterFactory';
+import {getNuclideVersion} from 'nuclide-commons/system-info';
 import HelpCommand from './HelpCommand';
 import log4js from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -203,6 +204,9 @@ async function main(): Promise<void> {
           showBetaBanner(cli);
         } catch (_) {}
       }
+
+      cli.outputLine(`\nfbdbg version ${getNuclideVersion()}\n`);
+
       await debuggerInstance.launch(adapter);
     }
 
