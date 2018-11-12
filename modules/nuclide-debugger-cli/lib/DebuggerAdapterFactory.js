@@ -62,15 +62,19 @@ export default class DebuggerAdapterFactory {
   }
 
   adapterFromArguments(args: Arguments): Promise<?ParsedVSAdapter> {
-    let adapter;
-
-    if (args.attach) {
-      adapter = this._parseAttachArguments(args);
-    } else {
-      adapter = this._parseLaunchArguments(args);
+    // if there's --attach, but also a program, assume they really meant
+    // to launch the program
+    if (args._[0] != null) {
+      try {
+        return this._parseLaunchArguments(args);
+      } catch (_) {}
     }
 
-    return adapter;
+    if (args.attach) {
+      return this._parseAttachArguments(args);
+    }
+
+    return this._parseLaunchArguments(args);
   }
 
   contextSensitiveHelp(args: Arguments): Array<string> {
@@ -131,6 +135,7 @@ export default class DebuggerAdapterFactory {
       );
     }
 
+    delete args.attach;
     const commandLineArgs = adapter.parseArguments(args);
 
     return {
