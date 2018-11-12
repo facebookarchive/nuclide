@@ -54,6 +54,7 @@ type Props = {
   onFileChosen(filePath: NuclideUri): mixed,
   // Controls 'Open file' context menu item, if null or omitted, menu item doesn't appear
   onFileOpen?: ?(filePath: NuclideUri) => mixed,
+  onFileOpenFolder?: ?(filePath: NuclideUri) => mixed,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
   onAddFile?: ?(filePath: NuclideUri, analyticsSourceKey: string) => mixed,
@@ -80,6 +81,12 @@ export default class ChangedFile extends React.Component<Props> {
         const {filePath, onFileOpen} = this.props;
         if (onFileOpen != null) {
           onFileOpen(filePath);
+        }
+      }),
+      atom.commands.add(node, `${COMMAND_PREFIX}:open-file-folder`, event => {
+        const {filePath, onFileOpenFolder} = this.props;
+        if (onFileOpenFolder != null) {
+          onFileOpenFolder(filePath);
         }
       }),
       atom.commands.add(node, `${COMMAND_PREFIX}:copy-full-path`, event => {
@@ -269,6 +276,7 @@ export default class ChangedFile extends React.Component<Props> {
       rootPath,
       onFileChosen,
       onFileOpen,
+      onFileOpenFolder,
       onOpenFileInDiffView,
       onForgetFile,
       onDeleteFile,
@@ -298,6 +306,7 @@ export default class ChangedFile extends React.Component<Props> {
       (fileStatus === FileChangeStatus.CHANGE_DELETE ||
         fileStatus === FileChangeStatus.BOTH_CHANGED);
     const enableOpen = onFileOpen != null;
+    const enableOpenFolder = onFileOpenFolder != null;
 
     const eligibleActions = [];
     if (enableDiffView) {
@@ -364,6 +373,7 @@ export default class ChangedFile extends React.Component<Props> {
         data-enable-add={enableAdd || null}
         data-enable-revert={enableRestore || null}
         data-enable-open={enableOpen || null}
+        data-enable-open-folder={enableOpenFolder || null}
         className={this._getFileClassname()}
         key={filePath}>
         {checkbox}
@@ -437,6 +447,15 @@ atom.contextMenu.add({
       command: `${COMMAND_PREFIX}:open-file`,
       shouldDisplay: event => {
         return getCommandTargetForEvent(event).hasAttribute('data-enable-open');
+      },
+    },
+    {
+      label: 'Open Folder',
+      command: `${COMMAND_PREFIX}:open-file-folder`,
+      shouldDisplay: event => {
+        return getCommandTargetForEvent(event).hasAttribute(
+          'data-enable-open-folder',
+        );
       },
     },
     {

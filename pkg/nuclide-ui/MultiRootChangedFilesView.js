@@ -33,6 +33,7 @@ type Props = {
   onFileChecked?: (filePath: NuclideUri) => mixed,
   onFileChosen(filePath: NuclideUri): mixed,
   onFileOpen?: ?(filePath: NuclideUri) => mixed,
+  onFileOpenFolder?: ?(filePath: NuclideUri) => mixed,
   onMarkFileResolved?: (filePath: NuclideUri) => mixed,
   getRevertTargetRevision?: () => ?string,
   onClickAdd(filePath: NuclideUri): mixed,
@@ -140,6 +141,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
       onFileChecked,
       onFileChosen,
       onFileOpen,
+      onFileOpenFolder,
       onMarkFileResolved,
       openInDiffViewOption,
       selectedFile,
@@ -178,6 +180,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 onFileChecked={onFileChecked}
                 onFileChosen={onFileChosen}
                 onFileOpen={onFileOpen}
+                onFileOpenFolder={onFileOpenFolder}
                 onForgetFile={this._handleForgetFile}
                 onMarkFileResolved={onMarkFileResolved}
                 onOpenFileInDiffView={

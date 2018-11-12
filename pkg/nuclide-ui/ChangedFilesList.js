@@ -103,6 +103,7 @@ type Props = {
 
   onFileChosen(filePath: NuclideUri): mixed,
   onFileOpen?: ?(filePath: NuclideUri) => mixed,
+  onFileOpenFolder?: ?(filePath: NuclideUri) => mixed,
   // Callbacks controlling what happens when certain icons are clicked
   // If null or undefined, icon won't appear
   onAddFile?: ?(filePath: NuclideUri) => mixed,
@@ -139,6 +140,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       onForgetFile,
       onMarkFileResolved,
       onFileOpen,
+      onFileOpenFolder,
       onOpenFileInDiffView,
       onRevertFile,
       rootPath,
@@ -235,6 +237,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                     isSelected={selectedFile === filePath}
                     key={filePath}
                     onFileOpen={onFileOpen}
+                    onFileOpenFolder={onFileOpenFolder}
                     onAddFile={onAddFile}
                     onDeleteFile={onDeleteFile}
                     onFileChecked={onFileChecked}
