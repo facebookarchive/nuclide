@@ -13,6 +13,7 @@
 import EventEmitter from 'events';
 import History from './History';
 import blessed from 'blessed';
+import ScrollBox from './ScrollBox';
 
 type LineEditorOptions = {
   input?: ?stream$Readable,
@@ -32,14 +33,9 @@ export default class LineEditor extends EventEmitter {
   _options: LineEditorOptions;
   _program: blessed.Program;
   _screen: blessed.Screen;
-  _outputBox: blessed.Box; // the box containing the scrollback
+  _outputBox: ScrollBox; // the box containing the scrollback
   _consoleBox: blessed.Box; // the box containing the being edited command line
   _statusBox: blessed.Box; // status line box
-  _scrollback: Array<string>; // the entire scrollback
-  _boxTop: number; // the top line of the output
-  _boxBottom: boolean; // if the outupt is scrolled all the way to the bottom
-  _nextOutputSameLine: boolean; // true if the next output should be on the same line (no ending \n)
-  _more: boolean; // true if there's output the user hasn't seen
 
   _handlers: Map<string, () => void> = new Map();
   _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
@@ -61,7 +57,6 @@ export default class LineEditor extends EventEmitter {
     this._options = options;
     this._input = options.input || process.stdin;
     this._output = options.output || process.stdout;
-    this._nextOutputSameLine = false;
   }
 
   isTTY(): boolean {
@@ -127,7 +122,7 @@ export default class LineEditor extends EventEmitter {
     });
 
     this._program.showCursor();
-    this._outputBox = blessed.box({
+    this._outputBox = new ScrollBox({
       top: 0,
       left: 0,
       width: '100%',
@@ -139,6 +134,7 @@ export default class LineEditor extends EventEmitter {
       },
       wrap: false,
       valign: 'bottom',
+      maxScrollBack: MAX_SCROLLBACK,
     });
 
     this._consoleBox = blessed.box({
@@ -224,6 +220,7 @@ export default class LineEditor extends EventEmitter {
     });
 
     this._screen.on('resize', () => {
+      this._outputBox.resize();
       this._repaintOutput();
       this._redrawConsole();
     });
@@ -237,9 +234,6 @@ export default class LineEditor extends EventEmitter {
     this._buffer = '';
     this.setPrompt('$ ');
     this._cursor = 0;
-    this._scrollback = [];
-    this._boxTop = 0;
-    this._boxBottom = true;
     this._screen.render();
   }
 
@@ -387,17 +381,12 @@ export default class LineEditor extends EventEmitter {
   }
 
   _pageUp() {
-    this._boxTop = Math.max(0, this._boxTop - this._outputBox.height + 1);
-    this._updateScrollFlags();
+    this._outputBox.pageUp();
     this._repaintOutput();
   }
 
   _pageDown() {
-    this._boxTop = Math.min(
-      this._scrollback.length - this._outputBox.height,
-      this._boxTop + this._outputBox.height - 1,
-    );
-    this._updateScrollFlags();
+    this._outputBox.pageDown();
     this._repaintOutput();
   }
 
@@ -409,26 +398,13 @@ export default class LineEditor extends EventEmitter {
   }
 
   _topOfOutput() {
-    this._boxTop = 0;
-    this._updateScrollFlags();
+    this._outputBox.scrollToTop();
     this._repaintOutput();
   }
 
   _bottomOfOutput() {
-    this._boxTop = Math.max(
-      0,
-      this._scrollback.length - this._outputBox.height,
-    );
-    this._updateScrollFlags();
+    this._outputBox.scrollToBottom();
     this._repaintOutput();
-  }
-
-  _updateScrollFlags(): void {
-    this._boxBottom =
-      this._scrollback.length - this._boxTop <= this._outputBox.height;
-    if (this._boxBottom) {
-      this._more = false;
-    }
   }
 
   write(s: string): void {
@@ -438,28 +414,7 @@ export default class LineEditor extends EventEmitter {
       return;
     }
 
-    const trailingNewline = s.endsWith('\n');
-    const lines = s.split('\n');
-
-    if (trailingNewline) {
-      lines.splice(-1);
-    }
-
-    if (lines.length === 0) {
-      return;
-    }
-
-    if (this._nextOutputSameLine && this._scrollback.length !== 0) {
-      this._scrollback[this._scrollback.length - 1] += lines[0];
-      lines.shift();
-    }
-
-    this._scrollback = this._scrollback.concat(lines).slice(-MAX_SCROLLBACK);
-    this._nextOutputSameLine = !trailingNewline;
-
-    if (!this._boxBottom) {
-      this._more = true;
-    }
+    this._outputBox.write(s);
     this._repaintOutput();
   }
 
@@ -496,20 +451,6 @@ export default class LineEditor extends EventEmitter {
   }
 
   _repaintOutput(): void {
-    // if we're pinned to the bottom, recompute the top
-    if (this._boxBottom) {
-      this._boxTop = Math.max(
-        0,
-        this._scrollback.length - this._outputBox.height,
-      );
-    }
-
-    this._outputBox.setContent(
-      this._scrollback
-        .slice(this._boxTop, this._boxTop + this._outputBox.height)
-        .join('\n'),
-    );
-
     this._repaintStatus();
     this._screen.render();
   }
@@ -522,22 +463,18 @@ export default class LineEditor extends EventEmitter {
     const lpad = (str: string, width: number) =>
       (str + ' '.repeat(width)).substr(0, width);
 
-    const lastLine = Math.min(
-      this._boxTop + this._outputBox.height,
-      this._scrollback.length,
-    );
-    const scroll = `Lines ${this._boxTop + 1}-${lastLine} of ${
-      this._scrollback.length
-    }`;
+    const lastLine = this._outputBox.lastLine();
+    const scroll = `Lines ${this._outputBox.topLine() +
+      1}-${lastLine} of ${this._outputBox.lines()}`;
 
     const state =
       this._state === 'RUNNING'
         ? '{green-fg}RUNNING{/green-fg}'
         : '{red-fg}STOPPED{/red-fg}';
 
-    const where = this._more
+    const where = this._outputBox.moreOutput()
       ? statusMore
-      : this._boxBottom
+      : this._outputBox.atBottom()
         ? statusBottom
         : statusEmpty;
 

@@ -181,11 +181,15 @@ declare module 'blessed' {
   }
 
   declare class Box extends Element {
+    constructor(options: ElementOptions): void,
     getScroll(): number,
     scroll(lines: number): void;
   }
 
   declare module.exports: {
+    widget: {
+      Box: typeof Box,
+    },
     Program: typeof Program,
     Screen: typeof Screen,
     Node: typeof Node,
