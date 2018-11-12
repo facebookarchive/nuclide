@@ -957,6 +957,16 @@ async function _getLinuxBinaryPathForPid(pid: number): Promise<?string> {
   const exeLink = `/proc/${pid}/exe`;
   // /proc/xxx/exe is a symlink to the real binary in the file system.
   return runCommand('/bin/realpath', ['-q', '-e', exeLink])
+    .catch(_ =>
+      runCommand('/bin/sudo', [
+        '-n',
+        '--',
+        '/bin/realpath',
+        '-q',
+        '-e',
+        exeLink,
+      ]),
+    )
     .catch(_ => Observable.of(null))
     .toPromise();
 }
