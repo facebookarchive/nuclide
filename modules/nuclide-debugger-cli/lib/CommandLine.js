@@ -12,6 +12,7 @@
 
 import type {ConsoleIO} from './ConsoleIO';
 
+import {analytics} from './analytics';
 import CommandDispatcher from './CommandDispatcher';
 import LineEditor from './console/LineEditor';
 import {Observable, Subject} from 'rxjs';
@@ -99,7 +100,11 @@ export default class CommandLine implements ConsoleIO {
     );
 
     this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'close').subscribe(() => process.exit(1)),
+      Observable.fromEvent(this._cli, 'close')
+        .switchMap(_ => Observable.fromPromise(analytics.shutdown()))
+        .subscribe(() => {
+          process.exit(1);
+        }),
     );
 
     this._shouldPrompt = true;

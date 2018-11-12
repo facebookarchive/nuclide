@@ -11,6 +11,7 @@
  */
 import type {ConsoleIO} from './ConsoleIO';
 
+import {analytics} from './analytics';
 import CommandLine from './CommandLine';
 import CommandDispatcher from './CommandDispatcher';
 import ConfigFile from './ConfigFile';
@@ -175,6 +176,8 @@ async function main(): Promise<void> {
       process.exit(0);
     }
 
+    analytics.setAdapter(adapter);
+
     const muteOutputCategories =
       args.dvsp || adapter == null
         ? new Set()
@@ -213,10 +216,13 @@ async function main(): Promise<void> {
       _ => {},
       _ => {},
       _ => {
-        debuggerInstance.closeSession().then(x => {
-          safeCli.outputLine();
-          process.exit(0);
-        });
+        debuggerInstance
+          .closeSession()
+          .then(x => {
+            safeCli.outputLine();
+            return analytics.shutdown();
+          })
+          .then(() => process.exit(0));
       },
     );
   } catch (x) {
@@ -225,7 +231,7 @@ async function main(): Promise<void> {
       return;
     }
     process.stderr.write(`${x.message}\n`);
-    process.exit(0);
+    analytics.shutdown(`${x.message} ${x.stack}`).then(_ => process.exit(0));
   }
 }
 

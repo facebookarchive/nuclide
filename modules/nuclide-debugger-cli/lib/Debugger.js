@@ -25,6 +25,7 @@ import type {
 } from './BreakpointCollection';
 import type {Preset} from './ConfigFile';
 
+import {analytics} from './analytics';
 import BackTraceCommand from './BackTraceCommand';
 import Breakpoint, {BreakpointState} from './Breakpoint';
 import BreakpointCollection from './BreakpointCollection';
@@ -1320,7 +1321,7 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
+  async _onExitedDebugee(event: DebugProtocol.ExitedEvent): Promise<void> {
     this._setState('TERMINATED');
 
     this._console.outputLine(
@@ -1336,10 +1337,14 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
+    await analytics.shutdown();
+
     process.exit(0);
   }
 
-  _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
+  async _onTerminatedDebugee(
+    event: DebugProtocol.TerminatedEvent,
+  ): Promise<void> {
     // Some adapters will send multiple terminated events.
     if (this._state !== 'RUNNING') {
       return;
@@ -1357,6 +1362,8 @@ export default class Debugger implements DebuggerInterface {
       this.relaunch();
       return;
     }
+
+    await analytics.shutdown();
 
     process.exit(0);
   }
