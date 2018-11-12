@@ -400,6 +400,7 @@ function TypeComponent(props: {data: Classification}): React.Element<any> {
     <Icon
       icon={iconName}
       className={classification.stale ? 'nuclide-ui-table-type-icon-stale' : ''}
+      title={classification.stale ? 'Stale' : ''}
     />
   );
 }
