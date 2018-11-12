@@ -374,7 +374,22 @@ export default class Debugger implements DebuggerInterface {
     return frames[selectedFrame];
   }
 
+  _canStep(): boolean {
+    const focus = this._threads.focusThread;
+    if (focus == null || !focus.isStopped) {
+      this._console.outputLine(
+        'In order to step, the current thread must be stopped.',
+      );
+      return false;
+    }
+    return true;
+  }
+
   async stepIn(): Promise<void> {
+    if (!this._canStep()) {
+      return;
+    }
+
     try {
       await this._ensureDebugSession().stepIn({
         threadId: this.getActiveThread().id(),
@@ -386,6 +401,10 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async stepOver(): Promise<void> {
+    if (!this._canStep()) {
+      return;
+    }
+
     try {
       await this._ensureDebugSession().next({
         threadId: this.getActiveThread().id(),
@@ -397,6 +416,10 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async stepOut(): Promise<void> {
+    if (!this._canStep()) {
+      return;
+    }
+
     try {
       await this._ensureDebugSession().stepOut({
         threadId: this.getActiveThread().id(),
