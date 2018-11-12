@@ -16,6 +16,9 @@ import Breakpoint from './Breakpoint';
 import Thread from './Thread';
 import ThreadCollection from './ThreadCollection';
 
+export const STACK_FRAME_FOCUS_CHANGED = 'stack-frame-focus-changed';
+export const THREAD_FOCUS_CHANGED = 'thread-focus-changed';
+
 export type VariablesInScope = {
   expensive: boolean,
   scopeName: string,
@@ -30,6 +33,7 @@ export type BreakpointSetResult = {
 export interface DebuggerInterface {
   run(): Promise<void>;
   getThreads(): ThreadCollection;
+  setActiveThreadId(thread: number): void;
   getActiveThread(): Thread;
   stepIn(): Promise<void>;
   stepOver(): Promise<void>;

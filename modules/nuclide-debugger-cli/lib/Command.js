@@ -17,5 +17,4 @@ export interface Command {
   +helpText: string;
   +detailedHelpText?: string;
   execute(args: TokenizedLine): Promise<void>;
-  +onStopped?: () => void;
 }

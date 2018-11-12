@@ -34,6 +34,7 @@ import CommandDispatcher from './CommandDispatcher';
 import ContinueCommand from './ContinueCommand';
 import DownCommand from './DownCommand';
 import EnterCodeCommand from './EnterCodeCommand';
+import EventEmitter from 'events';
 import FrameCommand from './FrameCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
@@ -52,6 +53,11 @@ import RunCommand from './RunCommand';
 import ThreadCollection from './ThreadCollection';
 import UpCommand from './UpCommand';
 
+import {
+  STACK_FRAME_FOCUS_CHANGED,
+  THREAD_FOCUS_CHANGED,
+} from './DebuggerInterface';
+
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 
@@ -62,7 +68,8 @@ type SessionState =
   | 'STOPPED' // program has hit a breakpoint
   | 'TERMINATED'; // program is gone and not coming back
 
-export default class Debugger implements DebuggerInterface {
+export default class Debugger extends EventEmitter
+  implements DebuggerInterface {
   _console: ConsoleIO;
   _debugSession: ?VsDebugSession;
   _dispatcher: ?CommandDispatcher;
@@ -89,6 +96,7 @@ export default class Debugger implements DebuggerInterface {
     preset: ?Preset,
     muteOutputCategories: Set<string>,
   ) {
+    super();
     this._logger = logger;
     this._console = con;
     this._sourceFiles = new SourceFileCache(
@@ -162,7 +170,7 @@ export default class Debugger implements DebuggerInterface {
       }
 
       this._logger.info('clearFocusThread -- relaunch');
-      this._threads.clearFocusThread();
+      this._clearFocusThread();
       this._stoppedAtBreakpoint = null;
 
       if (this._attachMode) {
@@ -223,7 +231,7 @@ export default class Debugger implements DebuggerInterface {
       // don't do an actual pause.
       const replThread = this._replThread;
       if (replThread != null) {
-        this._threads.setFocusThread(replThread);
+        this._setFocusThread(replThread);
         return;
       }
 
@@ -291,7 +299,7 @@ export default class Debugger implements DebuggerInterface {
 
     // If there's a REPL thread, then just open up the prompt at it.
     if (this._replThread != null) {
-      this._threads.setFocusThread(this._replThread);
+      this._setFocusThread(this._replThread);
       this._console.startInput();
       return;
     }
@@ -315,6 +323,10 @@ export default class Debugger implements DebuggerInterface {
   getThreads(): ThreadCollection {
     this._ensureDebugSession();
     return this._threads;
+  }
+
+  setActiveThreadId(tid: number): void {
+    this._setFocusThread(tid);
   }
 
   getActiveThread(): Thread {
@@ -363,6 +375,7 @@ export default class Debugger implements DebuggerInterface {
       );
     }
     thread.setSelectedStackFrame(frameIndex);
+    this.emit(STACK_FRAME_FOCUS_CHANGED);
   }
 
   async getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame> {
@@ -448,7 +461,7 @@ export default class Debugger implements DebuggerInterface {
       if (this._state === 'CONFIGURING') {
         if (this._attachMode) {
           this._logger.info('clearFocusThread -- continue CONFIGURING');
-          this._threads.clearFocusThread();
+          this._clearFocusThread();
           return this._configurationDone();
         }
         throw new Error('There is not yet a running process to continue.');
@@ -461,14 +474,14 @@ export default class Debugger implements DebuggerInterface {
       ) {
         // in this state, continue doesn't really do anything but turn the
         // prompt off until the next breakpoint or SIGINT.
-        this._threads.clearFocusThread();
+        this._clearFocusThread();
         return;
       }
 
       if (this._state === 'STOPPED') {
         const threadId = this.getActiveThread().id();
         this._logger.info('clearFocusThread -- continue STOPPED');
-        this._threads.clearFocusThread();
+        this._clearFocusThread();
 
         await session.continue({threadId});
 
@@ -1227,7 +1240,7 @@ export default class Debugger implements DebuggerInterface {
     ) {
       invariant(threadId != null);
       this._logger.info(`setFocusThread ${threadId} -- stopped at breakpoint`);
-      this._threads.setFocusThread(threadId);
+      this._setFocusThread(threadId);
       showStack = true;
     }
 
@@ -1240,10 +1253,10 @@ export default class Debugger implements DebuggerInterface {
         this._logger.info(
           `setFocusThread ${firstStopped} - first stopped thread`,
         );
-        this._threads.setFocusThread(firstStopped);
+        this._setFocusThread(firstStopped);
       } else {
         this._logger.info(`setFocusThread ${defaultThreadId} -- REPL thread`);
-        this._threads.setFocusThread(defaultThreadId);
+        this._setFocusThread(defaultThreadId);
       }
     }
 
@@ -1259,6 +1272,8 @@ export default class Debugger implements DebuggerInterface {
     }
 
     if (showStack) {
+      // if we're here, the top of stack changed
+      this.emit(STACK_FRAME_FOCUS_CHANGED);
       try {
         const focusThread = this._threads.focusThreadId;
         if (focusThread == null) {
@@ -1280,20 +1295,7 @@ export default class Debugger implements DebuggerInterface {
       }
     }
 
-    // if this is the first stop, reset commands that want to know.
-    if (firstStop) {
-      const dispatcher = this._dispatcher;
-      if (dispatcher != null) {
-        for (const cmd of dispatcher.getCommands()) {
-          if (cmd.onStopped != null) {
-            cmd.onStopped();
-          }
-        }
-      }
-    }
-
     this._setState('STOPPED');
-
     this._console.startInput();
   }
 
@@ -1518,6 +1520,16 @@ export default class Debugger implements DebuggerInterface {
     }
 
     return this._debugSession;
+  }
+
+  _setFocusThread(tid: number): void {
+    this._threads.setFocusThread(tid);
+    this.emit(THREAD_FOCUS_CHANGED);
+  }
+
+  _clearFocusThread(): void {
+    this._threads.clearFocusThread();
+    this.emit(THREAD_FOCUS_CHANGED);
   }
 
   _setState(state: SessionState): void {

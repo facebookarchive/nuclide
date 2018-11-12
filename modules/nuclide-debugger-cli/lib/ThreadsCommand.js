@@ -52,7 +52,7 @@ thread.
       throw new Error('Thread id must be a positive integer.');
     }
 
-    this._debugger.getThreads().setFocusThread(tid);
+    this._debugger.setActiveThreadId(tid);
   }
 
   printCurrentThread(): void {
