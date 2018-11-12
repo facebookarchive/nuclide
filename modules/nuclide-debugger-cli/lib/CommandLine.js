@@ -175,4 +175,10 @@ export default class CommandLine implements ConsoleIO {
   close(error: ?string): void {
     this._cli.close(error);
   }
+
+  setState(state: string) {
+    // the debugger has multiple states, but the user only cares about
+    // running or stopped
+    this._cli.setState(state === 'RUNNING' ? 'RUNNING' : 'STOPPED');
+  }
 }

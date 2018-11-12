@@ -27,4 +27,5 @@ export interface ConsoleIO {
   observeKeys(): Observable<string>;
   isTTY(): boolean;
   close(error: ?string): void;
+  setState(state: string): void;
 }

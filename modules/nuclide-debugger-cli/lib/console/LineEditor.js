@@ -23,6 +23,8 @@ type LineEditorOptions = {
   historySaveFile?: string,
 };
 
+type State = 'RUNNING' | 'STOPPED';
+
 const MAX_SCROLLBACK = 2000;
 
 export default class LineEditor extends EventEmitter {
@@ -50,6 +52,7 @@ export default class LineEditor extends EventEmitter {
   _tty: boolean;
   _input: stream$Readable;
   _output: stream$Writable;
+  _state: State = 'STOPPED';
 
   constructor(options: LineEditorOptions, logger: log4js$Logger) {
     super();
@@ -77,6 +80,11 @@ export default class LineEditor extends EventEmitter {
       this._redrawConsole();
     }
     return;
+  }
+
+  setState(state: State) {
+    this._state = state;
+    this._repaintStatus();
   }
 
   enterFullScreen(): void {
@@ -157,7 +165,7 @@ export default class LineEditor extends EventEmitter {
         bg: 'gray',
       },
       align: 'right',
-      tags: false,
+      tags: true,
     });
 
     this._screen.append(this._outputBox);
@@ -522,13 +530,18 @@ export default class LineEditor extends EventEmitter {
       this._scrollback.length
     }`;
 
+    const state =
+      this._state === 'RUNNING'
+        ? '{green-fg}RUNNING{/green-fg}'
+        : '{red-fg}STOPPED{/red-fg}';
+
     const where = this._more
       ? statusMore
       : this._boxBottom
         ? statusBottom
         : statusEmpty;
 
-    this._statusBox.setContent(`| ${lpad(scroll, 30)} | ${where}`);
+    this._statusBox.setContent(`| ${lpad(scroll, 30)} | ${state} | ${where}`);
     this._screen.render();
   }
 

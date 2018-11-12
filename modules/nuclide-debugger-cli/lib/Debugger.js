@@ -80,6 +80,7 @@ export default class Debugger implements DebuggerInterface {
   _configured: boolean = false;
   _stoppedAtBreakpoint: ?Breakpoint = null;
   _disconnecting: boolean = false;
+  _replThread: ?number = null;
 
   constructor(
     logger: log4js$Logger,
@@ -126,6 +127,7 @@ export default class Debugger implements DebuggerInterface {
   // session
   launch(adapter: ParsedVSAdapter): Promise<void> {
     this._adapter = adapter;
+    this._replThread = adapter.adapter.replThread;
     this._breakpoints = new BreakpointCollection();
     return this.relaunch();
   }
@@ -140,7 +142,7 @@ export default class Debugger implements DebuggerInterface {
     }
 
     try {
-      this._state = 'INITIALIZING';
+      this._setState('INITIALIZING');
 
       this._configured = false;
       this._attached = false;
@@ -168,7 +170,7 @@ export default class Debugger implements DebuggerInterface {
         );
         await session.attach(attachArgs);
         this._attached = true;
-        return this._pauseAfterAttach();
+        return;
       }
 
       await session.launch(
@@ -191,20 +193,20 @@ export default class Debugger implements DebuggerInterface {
       return this._configurationDone();
     }
 
-    this._state = 'CONFIGURING';
+    this._setState('CONFIGURING');
     this._startConfigurationInput();
   }
 
   async _configurationDone(): Promise<void> {
     const session = this._ensureDebugSession(true);
-    this._state = 'RUNNING';
+    this._setState('RUNNING');
 
     await this._resetAllBreakpoints();
 
     // this needs to be sent last for adapters that don't support configurationDone
     await session.setExceptionBreakpoints({filters: []});
 
-    if (Boolean(session.capabilities.supportsConfigurationDoneRequest)) {
+    if (session.capabilities.supportsConfigurationDoneRequest === true) {
       try {
         await session.configurationDone();
       } catch (err) {
@@ -215,6 +217,15 @@ export default class Debugger implements DebuggerInterface {
     await this._cacheThreads();
     if (this._attachMode) {
       this._configured = true;
+
+      // if we're attaching to a debugger that has a repl thread, then
+      // don't do an actual pause.
+      const replThread = this._replThread;
+      if (replThread != null) {
+        this._threads.setFocusThread(replThread);
+        return;
+      }
+
       return this._pauseAfterAttach();
     }
 
@@ -227,7 +238,7 @@ export default class Debugger implements DebuggerInterface {
       if (this._adapter == null) {
         throw new Error('Adapter not set up in _pauseAfterAttach');
       }
-      let threadId: ?number = this._adapter.adapter.asyncStopThread;
+      let threadId: ?number = this._replThread;
       if (threadId == null) {
         const threads = this._threads.allThreads;
         if (threads.length !== 0) {
@@ -276,13 +287,18 @@ export default class Debugger implements DebuggerInterface {
     if (this._adapter == null) {
       throw new Error('No adapter set up in breakInto()');
     }
-    const adapter = this._adapter.adapter;
+
+    // If there's a REPL thread, then just open up the prompt at it.
+    if (this._replThread != null) {
+      this._threads.setFocusThread(this._replThread);
+      this._console.startInput();
+      return;
+    }
+
     // if there is a focus thread from before, stop that one, else pick
     // a thread or use the adapter-specified default
     let threadId: ?number = null;
-    if (adapter.asyncStopThread != null) {
-      threadId = adapter.asyncStopThread;
-    } else if (this._threads.focusThread != null) {
+    if (this._threads.focusThread != null) {
       threadId = this._threads.focusThread.id();
     } else if (this._threads.allThreads.length !== 0) {
       threadId = this._threads.allThreads[0].id();
@@ -312,15 +328,12 @@ export default class Debugger implements DebuggerInterface {
     tid: number,
     levels: number,
   ): Promise<DebugProtocol.StackFrame[]> {
-    const adapter = this._adapter;
-    invariant(adapter != null);
-
     const thread = this._threads.getThreadById(tid);
     if (thread == null) {
       throw new Error(`There is no thread #${tid}.`);
     }
 
-    if (!thread.isStopped && tid !== adapter.adapter.asyncStopThread) {
+    if (!thread.isStopped && tid !== this._replThread) {
       throw new Error(`Thread #${tid} is not stopped.`);
     }
 
@@ -415,6 +428,17 @@ export default class Debugger implements DebuggerInterface {
           return this._configurationDone();
         }
         throw new Error('There is not yet a running process to continue.');
+      }
+
+      if (
+        this._state === 'RUNNING' &&
+        this._replThread != null &&
+        this._attachMode
+      ) {
+        // in this state, continue doesn't really do anything but turn the
+        // prompt off until the next breakpoint or SIGINT.
+        this._threads.clearFocusThread();
+        return;
       }
 
       if (this._state === 'STOPPED') {
@@ -1101,6 +1125,7 @@ export default class Debugger implements DebuggerInterface {
 
     // only turn the console off if all threads have started up again
     if (this._threads.allThreadsRunning()) {
+      this._setState('RUNNING');
       this._console.stopInput();
     }
   }
@@ -1113,10 +1138,17 @@ export default class Debugger implements DebuggerInterface {
     // NOTE that there are breakpoint stops that are implicit (breakpoint calls,
     // return from nested breakpoint) where we won't have a breakpoint id
     const breakpointStop = reason === 'breakpoint';
+    const stopOnFocusThread =
+      this._threads.focusThreadId != null &&
+      this._threads.focusThreadId === threadId;
 
     // NOTE if we hit a breakpoint while we're already at a breakpoint, don't
-    // switch context out from under the user.
-    if (breakpointId != null && this._stoppedAtBreakpoint == null) {
+    // switch context out from under the user. The exception is if we hit a nested
+    // breakpoint; i.e. we're on the same thread.
+    if (
+      breakpointId != null &&
+      (this._stoppedAtBreakpoint == null || stopOnFocusThread)
+    ) {
       try {
         this._stoppedAtBreakpoint = this._breakpoints.getBreakpointById(
           breakpointId,
@@ -1132,7 +1164,15 @@ export default class Debugger implements DebuggerInterface {
     await this._cacheThreads();
 
     const firstStop = this._threads.allThreadsRunning();
-    if (firstStop && description != null) {
+
+    if (breakpointStop && this._stoppedAtBreakpoint != null) {
+      const bpt = this._stoppedAtBreakpoint;
+      // sometimes the adapter shows breakpoints with a different id than the
+      // debugger's so show the stop breakpoint locally
+      this._console.outputLine(
+        `Stopped: Breakpoint #${bpt.index} ${bpt.toString()}`,
+      );
+    } else if (firstStop && description != null) {
       this._console.outputLine(`Stopped: ${description}`);
     }
 
@@ -1154,9 +1194,7 @@ export default class Debugger implements DebuggerInterface {
     // If we're stopped at a breakpoint, we want to go to that thread regardless
     // of stop order, unless we're already focused on another non-default thread
     const focusThreadId = this._threads.focusThreadId;
-    const adapter = this._adapter;
-    invariant(adapter != null);
-    const defaultThreadId = adapter.adapter.asyncStopThread;
+    const defaultThreadId = this._replThread;
     let showStack = firstStop;
 
     if (
@@ -1230,7 +1268,8 @@ export default class Debugger implements DebuggerInterface {
       }
     }
 
-    this._state = 'STOPPED';
+    this._setState('STOPPED');
+
     this._console.startInput();
   }
 
@@ -1248,9 +1287,6 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onThread(event: DebugProtocol.ThreadEvent) {
-    const adapter = this._adapter;
-    invariant(adapter != null);
-
     const {
       body: {reason, threadId},
     } = event;
@@ -1265,7 +1301,7 @@ export default class Debugger implements DebuggerInterface {
 
     // for HHVM: ignore claims that the console eval thread has exited.
     // they aren't real.
-    if (reason === 'exited' && threadId !== adapter.adapter.asyncStopThread) {
+    if (reason === 'exited' && threadId !== this._replThread) {
       this._threads.removeThread(threadId);
     }
   }
@@ -1276,13 +1312,16 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _startConfigurationInput(): void {
-    if (this._readyForEvaluations && this._state === 'CONFIGURING') {
+    if (
+      this._readyForEvaluations &&
+      (this._state === 'CONFIGURING' || this._state === 'RUNNING')
+    ) {
       this._console.startInput();
     }
   }
 
   _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
-    this._state = 'TERMINATED';
+    this._setState('TERMINATED');
 
     this._console.outputLine(
       `Target exited with status ${event.body.exitCode}`,
@@ -1306,7 +1345,7 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
-    this._state = 'TERMINATED';
+    this._setState('TERMINATED');
 
     this._console.outputLine('The target has exited.');
 
@@ -1329,7 +1368,7 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
-    this._state = 'TERMINATED';
+    this._setState('TERMINATED');
 
     const adapter = this._adapter;
     invariant(adapter != null);
@@ -1449,5 +1488,10 @@ export default class Debugger implements DebuggerInterface {
     }
 
     return this._debugSession;
+  }
+
+  _setState(state: SessionState): void {
+    this._state = state;
+    this._console.setState(state);
   }
 }

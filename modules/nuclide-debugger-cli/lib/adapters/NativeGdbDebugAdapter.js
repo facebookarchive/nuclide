@@ -41,7 +41,7 @@ export default class NativeGdbDebugAdapter implements DebugAdapter {
   extensions: Set<string> = new Set('.exe');
   customArguments: Map<string, CustomArgumentType> = new Map();
   muteOutputCategories: Set<string> = new Set('log');
-  asyncStopThread: ?number = null;
+  replThread: ?number = null;
   supportsCodeBlocks: boolean = false;
 
   _includedOptions: Set<string> = new Set();

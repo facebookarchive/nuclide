@@ -33,9 +33,10 @@ export interface DebugAdapter {
   +customArguments: Map<string, CustomArgumentType>;
   // output event categories which should not be echoed to the console
   +muteOutputCategories: Set<string>;
-  // if not null, the thread which should be used for user-initiated pause
-  // if null, the first enumerated thread from the target process will be used
-  +asyncStopThread: ?number;
+  // if not null, a thread that the adapter has dedicated to repl requests
+  // if set, this thread should respond to debugger requests even if running,
+  // and the debugger will not generate a pause event in order to execute them.
+  +replThread: ?number;
   // whether or not the adapter handles interpreted code blocks via evaluation
   +supportsCodeBlocks: boolean;
   transformLaunchArguments(
