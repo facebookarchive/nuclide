@@ -714,7 +714,9 @@ export async function getLastBuildCommandInfo(
   if (await fsPromise.exists(logFile)) {
     let line;
     try {
-      line = await runCommand('head', ['-n', '1', logFile]).toPromise();
+      line = await runCommand('head', ['-n', '1', logFile], {
+        dontLogInNuclide: true,
+      }).toPromise();
     } catch (err) {
       return null;
     }
