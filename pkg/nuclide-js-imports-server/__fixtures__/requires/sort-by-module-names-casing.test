@@ -1,0 +1,6 @@
+const B = require('Ab');
+const A = require('AB');
+const C = require('AC');
+const D = require('Ac');
+
+const x = [A, B, C, D];
