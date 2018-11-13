@@ -21,24 +21,33 @@ const removeImplementationFromStackTrace = e => {
   e.stack = e.stack.replace(regexp, '\n');
 };
 
-/*
- * Async implementation of Jasmine's waitsFor()
- */
+// `waitsFor` is used to asynchronously wait for something to happen.
+// It continuously runs the function that is passed to it and does not return
+// until the function starts returning a truthy value or the timeout is reached.
+//
+// Example:
+//  const element = await waitsFor(() => webPage.hasElement(
+//    '#my-element',
+//    'could not find element on the page',
+//  ));
 const waitsFor = async <T>(
   fn: () => ?T,
   message?: string | (() => string),
   timeout: number = global[Symbol.for('WAITS_FOR_TIMEOUT')] || 4500,
 ): Promise<T> => {
-  const errorMessage =
+  // Error must be created right away, so we keep the stack trace.
+  // (we would lose it if we threw it from a promise/async loop)
+  const error = new Error('');
+
+  // The error message, however, needs to be create lazily. In case
+  // we want to capture the last state of the app after timeout is reached.
+  const lazyErrorMessage = () =>
     (message != null
       ? typeof message === 'function'
         ? message()
         : message
       : 'Expected the function to start returning "true" but it never did.') +
     ` Timeout = ${timeout}`;
-  // Error must be created right away, so we keep the stack trace.
-  // (we would lose it if we threw it from a promise/async loop)
-  const error = new Error(errorMessage);
   removeImplementationFromStackTrace(error);
 
   const startTime = Date.now();
@@ -46,6 +55,9 @@ const waitsFor = async <T>(
   // eslint-disable-next-line no-await-in-loop
   while (!Boolean((returnValue = await fn()))) {
     if (Date.now() - startTime > timeout) {
+      const finalMessage = lazyErrorMessage();
+      error.message = finalMessage;
+      error.stack = finalMessage + '\n' + error.stack;
       throw error;
     }
     // eslint-disable-next-line no-await-in-loop

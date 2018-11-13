@@ -18,13 +18,15 @@ it('waits', async () => {
 });
 
 it("can't wait anymore", async () => {
-  await expect(waitsFor(() => false, undefined, 1)).rejects.toThrow(
-    'but it never did',
-  );
+  await expect(
+    waitsFor(() => false, undefined, 1),
+  ).rejects.toThrowErrorMatchingSnapshot();
 });
 
 it('gives a message', async () => {
-  await expect(waitsFor(() => false, 'lol', 1)).rejects.toThrow('lol');
+  await expect(
+    waitsFor(() => false, 'lol', 1),
+  ).rejects.toThrowErrorMatchingSnapshot();
 });
 
 it('waits an async predicate', async () => {
