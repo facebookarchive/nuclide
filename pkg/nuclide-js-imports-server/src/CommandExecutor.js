@@ -10,16 +10,20 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {SourceOptions} from './common/options/SourceOptions';
 import type {AutoImportsManager} from './lib/AutoImportsManager';
 import type {JSExport, JSImport} from './lib/types';
 import type TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import type {
-  WorkspaceEdit,
   TextEdit,
+  WorkspaceEdit,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
+import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {IConnection} from 'vscode-languageserver';
+import {lspTextEdits_atomTextEdits} from '../../nuclide-vscode-language-service-rpc/lib/convert';
+import {getDefaultSettings, calculateOptions} from './common/settings';
 import {ADD_IMPORT_COMMAND_ID} from './constants';
 import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -30,6 +34,7 @@ import {
   getRequiredModule,
   compareForSuggestion,
 } from './utils/util';
+import TextBuffer from 'simple-text-buffer';
 import {atomRangeToLSPRange} from '../../nuclide-lsp-implementation-common/lsp-utils';
 
 export type AddImportCommandParams = [JSExport, NuclideUri];
@@ -66,38 +71,48 @@ export class CommandExecutor {
 
   executeCommand(command: string, args: any) {
     switch (command) {
-      case ADD_IMPORT_COMMAND_ID:
-        return this._addImport((args: AddImportCommandParams));
-      case 'getAllImports':
-        return this._getAllImports(args[0]);
+      case 'organizeImports':
+        return this._organizeImports(args[0]);
       default:
         throw new Error(`Unexpected command ${command}`);
     }
   }
 
-  _addImport(args: AddImportCommandParams) {
-    const [missingImport, fileMissingImport] = args;
-    const ast = parseFile(
-      this.documents
-        .get(nuclideUri.nuclideUriToUri(fileMissingImport))
-        .getText(),
-    );
-    if (ast == null || ast.program == null || ast.program.body == null) {
-      // File could not be parsed. If this is reached, we shouldn't be applying
-      // addImport anyways since the file must have changed from when we computed
-      // the CodeAction.
-      return;
-    }
-    const {body} = ast.program;
-    const edits = getEditsForImport(
-      this.importFormatter,
-      fileMissingImport,
-      missingImport,
-      body,
+  async _organizeImports(filePath: NuclideUri): Promise<void> {
+    // get edits for the missing imports
+    const edits = this._getEditsForFixingMissingImports(filePath);
+
+    // Apply text edits to add missing imports to a buffer containing the full
+    // source and then organize the imports in the buffer in a seperate step.
+    // This was done in 2 steps because code for organizing was ported from an
+    // external Atom package and we wanted to avoid a huge refactor.
+    const filePathUri = nuclideUri.nuclideUriToUri(filePath);
+    const inputSource = this.documents.get(filePathUri).getText();
+    const atomTextEdits = lspTextEdits_atomTextEdits(edits);
+
+    const buffer = new TextBuffer(inputSource);
+    applyTextEditsToBuffer(buffer, atomTextEdits);
+    const sourceWithMissingImportsAdded = buffer.getText();
+
+    const settings = getDefaultSettings();
+    const options = calculateOptions(settings);
+
+    const transformResult = transformCodeOrShowError(
+      sourceWithMissingImportsAdded,
+      options,
     );
 
-    this.connection.workspace.applyEdit(
-      this._toWorkspaceEdit(fileMissingImport, edits),
+    const edit = [
+      {
+        range: atomRangeToLSPRange(
+          new Range([0, 0], [Number.MAX_VALUE, Number.MAX_VALUE]),
+        ),
+        newText: transformResult,
+      },
+    ];
+
+    await this.connection.workspace.applyEdit(
+      this._toWorkspaceEdit(filePath, edit),
     );
   }
 
@@ -124,17 +139,9 @@ export class CommandExecutor {
     return ({changes, documentChanges}: WorkspaceEdit);
   }
 
-  _getAllImports(filePath: NuclideUri) {
-    const edits = this._getEditsForFixingAllImports(filePath);
-    const successfulEdits = edits.filter(edit => edit.newText !== '');
-    return {
-      edits,
-      addedRequires: successfulEdits.length > 0,
-      missingExports: successfulEdits.length !== edits.length,
-    };
-  }
-
-  _getEditsForFixingAllImports(fileMissingImport: NuclideUri): Array<TextEdit> {
+  _getEditsForFixingMissingImports(
+    fileMissingImport: NuclideUri,
+  ): Array<TextEdit> {
     const fileMissingImportUri = nuclideUri.nuclideUriToUri(fileMissingImport);
     const ast = parseFile(this.documents.get(fileMissingImportUri).getText());
     if (ast == null || ast.program == null || ast.program.body == null) {
@@ -166,6 +173,16 @@ export class CommandExecutor {
         }),
     );
   }
+}
+
+function transformCodeOrShowError(
+  inputSource: string,
+  options: SourceOptions,
+): string {
+  const {transform} = require('./common/transform');
+  // TODO: Add a limit so the transform is not run on files over a certain size.
+  const result = transform(inputSource, options);
+  return result.output;
 }
 
 export function getEditsForImport(
