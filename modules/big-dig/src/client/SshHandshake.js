@@ -70,9 +70,6 @@ export type SshConnectionConfiguration = {
   password: string, // for simple password-based authentication
   exclusive?: string, // Ensure that only one server with this "exclusive" tag is running.
   useRootCanalCerts?: boolean,
-  serverCertPath?: string,
-  serverKeyPath?: string,
-  serverCaPath?: string,
 };
 
 export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';

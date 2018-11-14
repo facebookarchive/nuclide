@@ -28,9 +28,22 @@ import {
   RemoteConnection,
 } from '../../nuclide-remote-connection';
 import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnection';
+import {getLogger} from 'log4js';
+
+let getAllFacebookCAs = () => {};
+let getCert = () => {};
+
+try {
+  // $FlowFB
+  const certTools = require('fb-cert-tools');
+  getAllFacebookCAs = certTools.getAllFacebookCAs;
+  getCert = certTools.getCert;
+} catch (e) {}
 
 // TODO: get this from the connection dialog (which will only be present behind a gk)
 const useRootCanalCerts = false;
+
+const logger = getLogger('connectBigDigSshHandshake');
 
 /**
  * Adapts big-dig's SshHandshake to what Nuclide expects.
@@ -68,6 +81,13 @@ export default function connectBigDigSshHandshake(
       remoteConfig: RemoteConnectionConfiguration,
       config: SshConnectionConfiguration,
     ) {
+      if (useRootCanalCerts) {
+        logger.info('using root canal certificates to connect');
+        remoteConfig.clientCertificate = getCert();
+        remoteConfig.certificateAuthorityCertificate = getAllFacebookCAs();
+        remoteConfig.clientKey = remoteConfig.clientCertificate;
+      }
+
       RemoteConnection.findOrCreate({
         ...remoteConfig,
         path: connectionConfig.cwd,
