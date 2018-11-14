@@ -651,7 +651,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
   }
 }
 
-export class DefaultWeakMap<K, V> extends WeakMap<K, V> {
+export class DefaultWeakMap<K: {}, V> extends WeakMap<K, V> {
   _factory: () => V;
 
   constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {

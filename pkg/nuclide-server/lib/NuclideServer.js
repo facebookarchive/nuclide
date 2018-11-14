@@ -128,6 +128,10 @@ export default class NuclideServer {
     ['get', 'post', 'delete', 'put'].forEach(methodName => {
       // $FlowFixMe - Use map instead of computed property on library type.
       this._app[methodName] = (uri, handler) => {
+        /* $FlowFixMe(>=0.86.0) This
+         * comment suppresses an error found when Flow v0.86 was
+         * deployed. To see the error, delete this comment and
+         * run Flow. */
         this._app.use(uri, (request, response, next) => {
           if (request.method.toUpperCase() !== methodName.toUpperCase()) {
             // skip if method doesn't match.
