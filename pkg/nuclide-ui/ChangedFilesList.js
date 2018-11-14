@@ -119,7 +119,10 @@ type State = {
   visiblePagesCount: number,
 };
 
-export default class ChangedFilesList extends React.Component<Props, State> {
+export default class ChangedFilesList extends React.PureComponent<
+  Props,
+  State,
+> {
   constructor(props: Props) {
     super(props);
     this.state = {
