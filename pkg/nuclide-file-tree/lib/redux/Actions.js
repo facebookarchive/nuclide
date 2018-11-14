@@ -597,6 +597,13 @@ export function updateRepositories(
   };
 }
 
+export function setRepositories(repositories: Immutable.Set<atom$Repository>) {
+  return {
+    type: SET_REPOSITORIES,
+    repositories,
+  };
+}
+
 export function revealNodeKey(nodeKey: ?string): Action {
   return {
     type: REVEAL_NODE_KEY,

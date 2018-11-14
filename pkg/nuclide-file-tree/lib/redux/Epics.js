@@ -187,10 +187,7 @@ export function updateRepositoriesEpic(
       const nextRepos: Immutable.Set<atom$Repository> = Immutable.Set(
         rootKeysForRepository.keys(),
       );
-      store.dispatch({
-        type: Actions.SET_REPOSITORIES,
-        repositories: nextRepos,
-      });
+      store.dispatch(Actions.setRepositories(nextRepos));
 
       const removedRepos = prevRepos.subtract(nextRepos);
       const addedRepos = nextRepos.subtract(prevRepos);
