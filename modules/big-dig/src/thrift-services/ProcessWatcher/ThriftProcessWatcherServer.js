@@ -14,13 +14,13 @@
 import thrift from 'thrift';
 // $FlowIgnore
 import ThriftProcessWatcherService from './gen-nodejs/ThriftProcessWatcherService';
-// TODO import {ThriftProcessWatcherServiceHandler} from './ThriftProcessWatcherServiceHandler';
+import {ThriftProcessWatcherServiceHandler} from './ThriftProcessWatcherServiceHandler';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('thrift-process-watcher-server');
 
 export class ThriftProcessWatcherServer {
-  // _handler: ThriftProcessWatcherServiceHandler;
+  _handler: ThriftProcessWatcherServiceHandler;
   _server: thrift.Server;
   _portOrPath: number | string;
 
@@ -34,8 +34,11 @@ export class ThriftProcessWatcherServer {
     if (this._server != null) {
       return;
     }
-    // TODO this._handler = new ThriftProcessWatcherServiceHandler();
-    this._server = thrift.createServer(ThriftProcessWatcherService, {});
+    this._handler = new ThriftProcessWatcherServiceHandler();
+    this._server = thrift.createServer(
+      ThriftProcessWatcherService,
+      this._handler,
+    );
     this._server.on('error', error => {
       logger.info('got error');
       throw error;
@@ -47,6 +50,6 @@ export class ThriftProcessWatcherServer {
     logger.info('Closing Server');
     this._server.close();
     this._server = null;
-    // TODO this._handler.dispose();
+    this._handler.dispose();
   }
 }
