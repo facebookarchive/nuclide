@@ -82,7 +82,7 @@ export function computeDisplayPaths(
   );
 }
 
-const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
+const FILE_CHANGES_INITIAL_PAGE_SIZE = 50;
 const GENERATED_TYPE_PRIORITY: Array<GeneratedFileType> = [
   'manual',
   'partial',
