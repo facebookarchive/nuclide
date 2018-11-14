@@ -29,16 +29,8 @@ import {
 } from '../../nuclide-remote-connection';
 import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnection';
 import {getLogger} from 'log4js';
-
-let getAllFacebookCAs = () => {};
-let getCert = () => {};
-
-try {
-  // $FlowFB
-  const certTools = require('fb-cert-tools');
-  getAllFacebookCAs = certTools.getAllFacebookCAs;
-  getCert = certTools.getCert;
-} catch (e) {}
+// @fb-only: import {getAllFacebookCAs, getCert} from 'fb-cert-tools';
+import {getAllFacebookCAs, getCert} from './cert-stubs'; // @oss-only
 
 // TODO: get this from the connection dialog (which will only be present behind a gk)
 const useRootCanalCerts = false;
