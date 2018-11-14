@@ -161,6 +161,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     exclusive,
     jsonOutputFile,
     absolutePathToServerMain,
+    useRootCanalCerts: useRootCanalCerts != null ? useRootCanalCerts : false,
     serverParams: params.serverParams,
   });
 }

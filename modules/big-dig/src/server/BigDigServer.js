@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 
 import WS from 'ws';
 import https from 'https';
+import fs from 'fs';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import url from 'url';
@@ -26,6 +27,12 @@ import {scanPortsToListen} from '../common/ports';
 
 // The absolutePathToServerMain must export a single function of this type.
 export type LauncherType = (server: BigDigServer) => Promise<void>;
+
+type Certificate = {
+  subject: {
+    CN: string,
+  },
+};
 
 export type BigDigServerOptions = {
   // These options will be passed verbatim to https.createServer(). Admittedly,
@@ -41,6 +48,7 @@ export type BigDigServerOptions = {
   },
   ports: string,
   absolutePathToServerMain: string,
+  useRootCanalCerts: boolean,
   // Any sort of JSON-serializable object is fine.
   serverParams: mixed,
 };
@@ -61,7 +69,8 @@ export class BigDigServer {
   _logger: log4js$Logger;
   _tagToSubscriber: Map<string, Subscriber>;
   _clientIdToTransport: Map<string, QueuedAckTransport>;
-
+  _useRootCanalCerts: boolean;
+  _owners: Array<string>;
   _httpsServer: https.Server;
   _webSocketServer: WS.Server;
 
@@ -69,9 +78,14 @@ export class BigDigServer {
    * Note: The webSocketServer must be running on top of the httpsServer.
    * Note: This BigDigServer is responsible for closing httpServer and wss.
    */
-  constructor(httpsServer: https.Server, webSocketServer: WS.Server) {
+  constructor(
+    httpsServer: https.Server,
+    webSocketServer: WS.Server,
+    useRootCanalCerts: boolean,
+  ) {
     this._logger = getLogger('BigDigServer');
     this._tagToSubscriber = new Map();
+    this._useRootCanalCerts = useRootCanalCerts;
     this._httpsServer = httpsServer;
     this._httpsServer.on('request', this._onHttpsRequest.bind(this));
     this._httpsServer.on('error', err => {
@@ -86,6 +100,17 @@ export class BigDigServer {
     this._webSocketServer.on('error', err => {
       this._logger.error('Received error from webSocketServer', err);
     });
+    if (this._useRootCanalCerts) {
+      try {
+        this._owners = fs
+          .readFileSync('/etc/devserver.owners')
+          .toString()
+          .split('\n');
+      } catch (e) {
+        this._logger.error('no devserver.owners file found!');
+        this._owners = [];
+      }
+    }
   }
 
   static async createServer(
@@ -109,7 +134,11 @@ export class BigDigServer {
     const tunnelLauncher: LauncherType = require('../services/tunnel/launcher');
     const thriftLauncher: LauncherType = require('../services/thrift/launcher');
 
-    const bigDigServer = new BigDigServer(webServer, webSocketServer);
+    const bigDigServer = new BigDigServer(
+      webServer,
+      webSocketServer,
+      options.useRootCanalCerts,
+    );
 
     await launcher(bigDigServer);
     await tunnelLauncher(bigDigServer);
@@ -143,6 +172,18 @@ export class BigDigServer {
     request: http$IncomingMessage,
     response: http$ServerResponse,
   ) {
+    if (this._useRootCanalCerts) {
+      // $FlowIgnore
+      const certObj = request.socket.getPeerCertificate();
+      const user = this._extractUserFromCert(certObj);
+      if (user == null || !this._checkUserIsOwner(user)) {
+        this._logger.error(`invalid user: ${user != null ? user : 'null'}`);
+        response.writeHead(401);
+        response.end();
+        return;
+      }
+    }
+
     // catch request's error that might be caused after request ends OK
     // see: https://github.com/nodejs/node/issues/14102
     request.on('error', error => {
@@ -158,6 +199,19 @@ export class BigDigServer {
     this._logger.info(
       `Ignored HTTPS ${request.method} request for ${request.url}`,
     );
+  }
+
+  _extractUserFromCert(cert: Certificate): ?string {
+    const match = cert.subject.CN.match(/user:(.*)\//);
+    if (match != null && match.length > 1) {
+      return match[1];
+    } else {
+      return null;
+    }
+  }
+
+  _checkUserIsOwner(user: string): boolean {
+    return this._owners.includes(user);
   }
 
   _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {

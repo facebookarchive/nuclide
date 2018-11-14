@@ -44,6 +44,7 @@ export type StartServerParams = {
   exclusive: ?string,
   jsonOutputFile: string,
   absolutePathToServerMain: string,
+  useRootCanalCerts: boolean,
   serverParams: mixed,
 };
 
@@ -55,6 +56,7 @@ export async function startServer({
   exclusive,
   jsonOutputFile,
   absolutePathToServerMain,
+  useRootCanalCerts,
   serverParams,
 }: StartServerParams): Promise<void> {
   const logger = getLogger();
@@ -117,6 +119,7 @@ export async function startServer({
     expirationDays,
     exclusive,
     absolutePathToServerMain,
+    useRootCanalCerts,
     serverParams,
   };
 

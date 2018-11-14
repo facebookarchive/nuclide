@@ -27,6 +27,7 @@ export type LauncherScriptParams = {|
   expirationDays: number,
   exclusive: ?string,
   absolutePathToServerMain: string,
+  useRootCanalCerts: boolean,
   serverParams: mixed,
 |};
 
@@ -59,7 +60,10 @@ async function handleLaunchParams(params: LauncherScriptParams) {
       key: params.key,
       cert: params.cert,
       ca: params.ca,
+      rejectUnauthorized: true,
+      requestCert: true,
     },
+    useRootCanalCerts: params.useRootCanalCerts,
     absolutePathToServerMain: params.absolutePathToServerMain,
     serverParams: params.serverParams,
   });
