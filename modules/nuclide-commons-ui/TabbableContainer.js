@@ -21,11 +21,13 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type DefaultProps = {
   contained: boolean,
+  focusOnMount: boolean,
 };
 
 type Props = {
   children?: React$Node,
   contained: boolean,
+  focusOnMount: boolean,
   className?: string,
 };
 
@@ -41,16 +43,17 @@ export default class TabbableContainer extends React.Component<Props> {
 
   static defaultProps: DefaultProps = {
     contained: false,
-    autoFocus: false,
+    focusOnMount: true,
   };
 
   componentDidMount() {
     const rootNode = this._rootNode;
     invariant(rootNode != null);
+    const {focusOnMount} = this.props;
 
     // If focus has been deliberately set inside the container, don't try
     // to override it
-    if (!rootNode.contains(document.activeElement)) {
+    if (focusOnMount && !rootNode.contains(document.activeElement)) {
       const tabbableElements = tabbable(rootNode);
       const firstTabbableElement = tabbableElements[0];
       if (firstTabbableElement instanceof HTMLElement) {
