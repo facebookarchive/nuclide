@@ -126,7 +126,7 @@
     "q": "1.4.1",
     "queue-fifo": "0.2.4",
     "react": "16.6.0",
-    "react-devtools-core": "3.4.0",
+    "react-devtools-core": "3.4.2",
     "react-dom": "16.6.0",
     "react-redux": "5.0.6",
     "react-relay": "1.6.0",
