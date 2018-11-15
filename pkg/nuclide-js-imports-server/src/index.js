@@ -221,12 +221,7 @@ documents.listen(connection);
 connection.listen();
 
 function getAllTriggerCharacters(): Array<string> {
-  const characters = [' ', '}', '='];
-  // Add all the characters from A-z
-  for (let char = 'A'.charCodeAt(0); char <= 'z'.charCodeAt(0); char++) {
-    characters.push(String.fromCharCode(char));
-  }
-  return characters;
+  return [' ', '{', '}', '='];
 }
 
 function shouldProvideDiagnostics(params: Object, root: NuclideUri): boolean {
