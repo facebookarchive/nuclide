@@ -14,6 +14,7 @@
 
 import {execSync} from 'child_process';
 import path from 'path';
+import {packageDepsNames} from '../fb-e2e/constants';
 
 const THIRD_PARTY_DIR = path.resolve(__dirname, '../third_party');
 const TAR_PATH = path.join(THIRD_PARTY_DIR, 'apm_deps.tar.gz');
@@ -41,7 +42,6 @@ test('the list of packed deps matches what is in package.json', () => {
   // $FlowFixMe dynamic require
   const nuclidePkgJson = require(NUCLIDE_PACKAGE_JSON);
   expect(nuclidePkgJson).toHaveProperty('package-deps');
-  const {'package-deps': packageDeps} = nuclidePkgJson;
   const packageDepsInTar = depsInsideTar();
-  expect(packageDeps.sort()).toEqual(packageDepsInTar.sort());
+  expect(packageDepsNames).toEqual(packageDepsInTar.sort());
 });
