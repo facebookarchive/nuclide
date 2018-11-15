@@ -14,6 +14,7 @@ import type {ConsoleIO} from './ConsoleIO';
 
 import {analytics} from './analytics';
 import CommandDispatcher from './CommandDispatcher';
+import ConfigFile from './ConfigFile';
 import LineEditor from './console/LineEditor';
 import {Observable, Subject} from 'rxjs';
 
@@ -39,20 +40,18 @@ export default class CommandLine implements ConsoleIO {
     plain: boolean,
     logger: log4js$Logger,
     historySaveFile: string,
+    config: ConfigFile,
   ) {
     this._dispatcher = dispatcher;
 
-    let lineEditorArgs = {
+    const lineEditorArgs = {
       input: process.stdin,
       output: process.stdout,
       historySaveFile,
+      tty: !plain,
+      useTerminalColors: config.settings().useTerminalColors === true,
     };
-    if (plain) {
-      lineEditorArgs = {
-        ...lineEditorArgs,
-        tty: false,
-      };
-    }
+
     this._cli = new LineEditor(lineEditorArgs, logger);
 
     this.setPrompt();

@@ -22,6 +22,7 @@ type LineEditorOptions = {
   maxHistoryItems?: number,
   removeHistoryDuplicates?: boolean,
   historySaveFile?: string,
+  useTerminalColors?: boolean,
 };
 
 type State = 'RUNNING' | 'STOPPED';
@@ -121,6 +122,8 @@ export default class LineEditor extends EventEmitter {
       output: this._output,
     });
 
+    const termColors = options.useTerminalColors === true;
+
     this._program.showCursor();
     this._outputBox = new ScrollBox({
       top: 0,
@@ -128,10 +131,12 @@ export default class LineEditor extends EventEmitter {
       width: '100%',
       height: '100%-2',
       scrollable: true,
-      style: {
-        fg: 'white',
-        bg: 'black',
-      },
+      style: termColors
+        ? {}
+        : {
+            fg: 'white',
+            bg: 'black',
+          },
       wrap: false,
       valign: 'bottom',
       maxScrollBack: MAX_SCROLLBACK,
@@ -143,10 +148,12 @@ export default class LineEditor extends EventEmitter {
       width: '100%',
       height: 1,
       content: '',
-      style: {
-        fg: 'green',
-        bg: 'black',
-      },
+      style: termColors
+        ? {bold: true}
+        : {
+            fg: 'green',
+            bg: 'black',
+          },
       tags: false,
     });
 
@@ -156,10 +163,12 @@ export default class LineEditor extends EventEmitter {
       width: '100%',
       height: 1,
       content: '',
-      style: {
-        fg: 'black',
-        bg: 'gray',
-      },
+      style: termColors
+        ? {inverse: true}
+        : {
+            fg: 'black',
+            bg: 'gray',
+          },
       align: 'right',
       tags: true,
     });

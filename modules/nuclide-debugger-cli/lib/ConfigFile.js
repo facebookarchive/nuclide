@@ -27,11 +27,16 @@ type PresetSummary = {
   description: string,
 };
 
+type Settings = {
+  useTerminalColors?: boolean,
+};
+
 type ConfigFileContents = {
   aliases?: {[string]: string},
   presets: {
     [string]: Preset,
   },
+  settings: Settings,
 };
 
 export default class ConfigFile {
@@ -57,6 +62,10 @@ export default class ConfigFile {
             presets: {
               ...agg.presets,
               ...presets.presets,
+            },
+            settings: {
+              ...agg.settings,
+              ...presets.settings,
             },
           };
         } catch (_) {
@@ -118,5 +127,9 @@ export default class ConfigFile {
       name,
       description: this._config.presets[name].description,
     }));
+  }
+
+  settings(): Settings {
+    return this._config.settings;
   }
 }

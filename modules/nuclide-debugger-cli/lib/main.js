@@ -161,6 +161,7 @@ async function main(): Promise<void> {
       args.plain,
       logger,
       historySave,
+      configFile,
     ));
 
     dispatcher.registerCommand(new HelpCommand(safeCli, dispatcher));
