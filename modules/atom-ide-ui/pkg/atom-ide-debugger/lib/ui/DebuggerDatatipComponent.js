@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
+import type {EvaluationResult} from 'atom-ide-ui';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';

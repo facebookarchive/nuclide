@@ -10,8 +10,7 @@
  * @format
  */
 
-// TODO @jxg export debugger typedefs from main module. (t11406963)
-import type {EvaluationResult} from './TextRenderer';
+import type {EvaluationResult} from 'atom-ide-ui';
 
 import * as React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';

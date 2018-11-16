@@ -12,7 +12,6 @@
 
 import type {Observable} from 'rxjs';
 import type {List} from 'immutable';
-import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
 // The type of the object passed to your package's `consumeConsole()` function.
@@ -54,6 +53,23 @@ export type SourceInfo = {
   stop?: () => void,
   // `getProperties()` can be optionally provided for expandable messages.
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
+};
+
+/* Evaluation & values */
+export type EvaluationResult = {
+  type: string,
+  // Either:
+  value?: string,
+  // Or:
+  description?: string,
+  objectId?: string,
+  subtype?: string,
+  // Or:
+  objects?: Array<{
+    description: string,
+    type: ?string,
+    expression: Object,
+  }>,
 };
 
 // Message levels. For use with the `console.append()` API.

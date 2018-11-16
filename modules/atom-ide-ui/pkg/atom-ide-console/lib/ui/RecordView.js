@@ -12,7 +12,7 @@
 
 import type {Executor, Level, Record, SourceInfo} from '../types';
 import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
-import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
+import type {EvaluationResult} from 'atom-ide-ui';
 
 import classnames from 'classnames';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';

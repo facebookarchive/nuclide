@@ -17,7 +17,7 @@ import type {
   IStackFrame,
   ContextType,
 } from './types';
-import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
+import type {EvaluationResult} from 'atom-ide-ui';
 import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
 import nullthrows from 'nullthrows';

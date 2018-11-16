@@ -11,23 +11,7 @@
  */
 
 import * as React from 'react';
-
-/* Evaluation & values */
-export type EvaluationResult = {
-  type: string,
-  // Either:
-  value?: string,
-  // Or:
-  description?: string,
-  objectId?: string,
-  subtype?: string,
-  // Or:
-  objects?: Array<{
-    description: string,
-    type: ?string,
-    expression: Object,
-  }>,
-};
+import type {EvaluationResult} from 'atom-ide-ui';
 
 export function TextRenderer(evaluationResult: EvaluationResult): React.Node {
   const {type, value} = evaluationResult;
