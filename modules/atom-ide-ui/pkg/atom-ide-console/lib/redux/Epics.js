@@ -78,7 +78,6 @@ export function executeEpic(
           level: 'log',
           text: code,
           scopeName: executor.scopeName(),
-          data: null,
           repeatCount: 1,
           incomplete: false,
         }),

@@ -297,7 +297,7 @@ class Activation {
             text: message.text,
             level: message.level,
             format: message.format,
-            data: message.data,
+            expressions: message.expressions,
             tags: message.tags,
             scopeName: message.scopeName,
             sourceId: sourceInfo.id,

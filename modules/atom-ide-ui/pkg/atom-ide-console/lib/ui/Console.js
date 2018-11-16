@@ -12,6 +12,7 @@
 
 /* eslint-env browser */
 
+import type {IExpression} from '../../../..';
 import type {
   ConsolePersistedState,
   ConsoleSourceStatus,
@@ -25,7 +26,6 @@ import type {
 } from '../types';
 import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
-import type {Executor} from '../types';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {setDifference, areSetsEqual} from 'nuclide-commons/collection';
@@ -474,37 +474,25 @@ function filterRecords(
 }
 
 async function serializeRecordObject(
-  executor: Executor,
   visited: Set<string>,
-  data: {
-    objectId?: string,
-    description?: string,
-    value?: string,
-  },
+  expression: IExpression,
   text: string,
   level: number,
 ): Promise<string> {
-  const getText = record => {
+  const getText = exp => {
     let indent = '';
     for (let i = 0; i < level; i++) {
       indent += '\t';
     }
-    return (
-      indent +
-      (record.description != null
-        ? record.description
-        : record.value != null
-          ? record.value
-          : '')
-    );
+    return indent + exp.getValue();
   };
 
-  if (data.objectId == null) {
+  if (!expression.hasChildren()) {
     // Leaf node.
-    return text + getText(data);
+    return text + getText(expression);
   }
 
-  const id = data.objectId;
+  const id = expression.getId();
   if (visited.has(id)) {
     // Guard against cycles.
     return text;
@@ -512,21 +500,13 @@ async function serializeRecordObject(
 
   visited.add(id);
 
-  if (executor.getProperties == null) {
-    return text;
-  }
-
-  const childProperties = (await executor.getProperties(id).toPromise()) || [];
-  const serializedProps = childProperties.map(childProp => {
-    return serializeRecordObject(
-      executor,
-      visited,
-      childProp.value,
-      '',
-      level + 1,
-    );
+  const children = await expression.getChildren();
+  const serializedProps = children.map(childProp => {
+    return serializeRecordObject(visited, childProp, '', level + 1);
   });
-  return getText(data) + '\n' + (await Promise.all(serializedProps)).join('\n');
+  return (
+    getText(expression) + '\n' + (await Promise.all(serializedProps)).join('\n')
+  );
 }
 
 async function createPaste(
@@ -544,29 +524,20 @@ async function createPaste(
       const level =
         record.level != null ? record.level.toString().toUpperCase() : 'LOG';
       const timestamp = record.timestamp.toLocaleString();
-      let text =
-        record.text ||
-        (record.data && record.data.value) ||
-        ERROR_TRANSCRIBING_MESSAGE;
+      let text = record.text || ERROR_TRANSCRIBING_MESSAGE;
 
       if (
         record.kind === 'response' &&
-        record.data != null &&
-        record.data.objectId != null &&
-        record.data.objectId !== ''
+        record.expressions != null &&
+        record.expressions.length > 0
       ) {
-        const executor = record.executor;
-        if (executor != null) {
+        text = '';
+        for (const expression of record.expressions) {
           // If the record has a data object, and the object has an ID,
           // recursively expand the nodes of the object and serialize it
           // for the paste.
-          text = await serializeRecordObject(
-            executor,
-            new Set(),
-            record.data,
-            '',
-            0,
-          );
+          // eslint-disable-next-line no-await-in-loop
+          text += await serializeRecordObject(new Set(), expression, '', 0);
         }
       }
 

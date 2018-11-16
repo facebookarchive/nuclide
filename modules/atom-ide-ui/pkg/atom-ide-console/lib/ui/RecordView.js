@@ -10,14 +10,16 @@
  * @format
  */
 
-import type {Executor, Level, Record, SourceInfo} from '../types';
+import type {Level, Record} from '../types';
 import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
-import type {EvaluationResult} from 'atom-ide-ui';
 
 import classnames from 'classnames';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
+
+// TODO: Fix lint rule, this is in the same package!
+// eslint-disable-next-line nuclide-internal/modules-dependencies
+import {ExpressionTreeComponent} from 'atom-ide-ui';
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
 import shallowEqual from 'shallowequal';
@@ -29,8 +31,6 @@ import nullthrows from 'nullthrows';
 type Props = {
   record: Record,
   showSourceLabel: boolean,
-  getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?SourceInfo,
   onHeightChange: (record: Record, newHeight: number) => void,
   expansionStateId: Object,
 };
@@ -83,12 +83,8 @@ export default class RecordView extends React.Component<Props> {
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
       // highlighting.
       return <pre>{record.text || ' '}</pre>;
-    } else if (record.kind === 'response') {
-      const executor = this.props.getExecutor(record.sourceId);
-      return this._renderNestedValueComponent(executor);
-    } else if (record.data != null) {
-      const provider = this.props.getProvider(record.sourceId);
-      return this._renderNestedValueComponent(provider);
+    } else if (record.expressions != null) {
+      return this._renderNestedValueComponent();
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
@@ -104,68 +100,39 @@ export default class RecordView extends React.Component<Props> {
     return !shallowEqual(this.props, nextProps);
   }
 
-  _renderNestedValueComponent(
-    provider: ?SourceInfo | ?Executor,
-  ): React.Element<any> {
+  _renderNestedValueComponent(): React.Element<any> {
     const {record, expansionStateId} = this.props;
-    const getProperties = provider == null ? null : provider.getProperties;
-    const type = record.data == null ? null : record.data.type;
-    if (type === 'objects') {
-      // Render multiple objects.
-      const children = [];
-      for (const [index, object] of nullthrows(
-        record.data?.objects,
-      ).entries()) {
-        const evaluationResult: EvaluationResult = {
-          description: object.description,
-          type: object.type || '',
-          // $FlowFixMe: that isn't an object ID,
-          objectId: object.expression,
-        };
+    const expressions = nullthrows(record.expressions);
 
-        // Each child must have it's own expansion state ID.
-        const expansionStateKey = 'child' + index;
-        if (!expansionStateId[expansionStateKey]) {
-          expansionStateId[expansionStateKey] = {};
-        }
-
-        if (object.expression.reference === 0) {
-          children.push(
-            <SimpleValueComponent
-              expression={null}
-              evaluationResult={{
-                type: object.type != null ? object.type : 'text',
-                value: object.expression.getValue(),
-              }}
-            />,
-          );
-        } else {
-          children.push(
-            <LazyNestedValueComponent
-              className="console-lazy-nested-value"
-              evaluationResult={evaluationResult}
-              fetchChildren={getProperties}
-              simpleValueComponent={SimpleValueComponent}
-              shouldCacheChildren={true}
-              expansionStateId={expansionStateId[expansionStateKey]}
-            />,
-          );
-        }
+    // Render multiple objects.
+    const children = [];
+    for (const expression of expressions) {
+      if (!expression.hasChildren()) {
+        children.push(
+          <SimpleValueComponent
+            expression={null}
+            evaluationResult={{
+              type: expression.type != null ? expression.type : 'text',
+              value: expression.getValue(),
+            }}
+          />,
+        );
+      } else {
+        children.push(
+          <ExpressionTreeComponent
+            className="console-lazy-nested-value"
+            expression={expression}
+            containerContext={expansionStateId}
+            hideExpressionName={true}
+          />,
+        );
       }
-      return <span className="console-multiple-objects">{children}</span>;
-    } else {
-      // Render single object.
-      return (
-        <LazyNestedValueComponent
-          className="console-lazy-nested-value"
-          evaluationResult={record.data}
-          fetchChildren={getProperties}
-          simpleValueComponent={SimpleValueComponent}
-          shouldCacheChildren={true}
-          expansionStateId={expansionStateId}
-        />
-      );
     }
+    return children.length <= 1 ? (
+      children[0]
+    ) : (
+      <span className="console-multiple-objects">{children}</span>
+    );
   }
 
   render(): React.Node {
@@ -175,6 +142,10 @@ export default class RecordView extends React.Component<Props> {
     const classNames = classnames('console-record', `level-${level || 'log'}`, {
       request: kind === 'request',
       response: kind === 'response',
+      // Allow native keybindings for text-only nodes. The ExpressionTreeComponent
+      // will handle keybindings for expression nodes.
+      'native-key-bindings':
+        record.expressions == null || record.expressions.length === 0,
     });
 
     const iconName = getIconName(record);
@@ -202,7 +173,10 @@ export default class RecordView extends React.Component<Props> {
       <MeasuredComponent
         onMeasurementsChanged={this._debouncedMeasureAndNotifyHeight}>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-        <div ref={this._handleRecordWrapper} className={classNames}>
+        <div
+          ref={this._handleRecordWrapper}
+          className={classNames}
+          tabindex="0">
           {icon}
           <div className="console-record-content-wrapper">
             {record.repeatCount > 1 && (

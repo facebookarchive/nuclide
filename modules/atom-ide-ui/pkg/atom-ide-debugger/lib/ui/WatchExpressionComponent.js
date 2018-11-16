@@ -22,7 +22,7 @@ import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueCompon
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {
-  expressionAsEvaluationResultStream,
+  evaluateExpressionAsStream,
   fetchChildrenForLazyComponent,
 } from '../utils';
 
@@ -135,7 +135,7 @@ export default class WatchExpressionComponent extends React.Component<
     } else if (focusedProcess == null) {
       evalResult = Observable.of(null);
     } else {
-      evalResult = expressionAsEvaluationResultStream(
+      evalResult = evaluateExpressionAsStream(
         watchExpression,
         focusedProcess,
         focusedStackFrame,

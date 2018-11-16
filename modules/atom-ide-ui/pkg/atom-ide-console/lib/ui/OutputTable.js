@@ -82,7 +82,7 @@ export default class OutputTable extends React.Component<Props, State> {
   _heights: DefaultWeakMap<Record, number> = new DefaultWeakMap(
     () => INITIAL_RECORD_HEIGHT,
   );
-  // LazyNestedValueComponent expects an expansionStateId which is a stable
+  // ExpressionTreeComponent expects an expansionStateId which is a stable
   // object instance across renders, but is unique across consoles. We
   // technically support multiple consoles in the UI, so here we ensure these
   // references are local to the OutputTable instance.
@@ -144,10 +144,7 @@ export default class OutputTable extends React.Component<Props, State> {
 
   render(): React.Node {
     return (
-      <div
-        className="console-table-wrapper native-key-bindings"
-        ref={this._handleRef}
-        tabIndex="1">
+      <div className="console-table-wrapper" ref={this._handleRef} tabIndex="1">
         {this._containerRendered() ? (
           <List
             // $FlowFixMe(>=0.53.0) Flow suppress

@@ -133,17 +133,17 @@ export function expressionAsEvaluationResult(
   }
 }
 
-export function expressionAsEvaluationResultStream(
+export function evaluateExpressionAsStream(
   expression: IEvaluatableExpression,
   focusedProcess: IProcess,
   focusedStackFrame: ?IStackFrame,
   context: ContextType,
-): Observable<Expected<EvaluationResult>> {
+): Observable<Expected<IExpression>> {
   return Observable.fromPromise(
     expression.evaluate(focusedProcess, focusedStackFrame, context),
   )
-    .map(() => expressionAsEvaluationResult(expression))
-    .map(val => Expect.value(val))
+    .catch(error => Observable.of(Expect.error(error)))
+    .map(() => Expect.value(expression))
     .startWith(Expect.pending());
 }
 

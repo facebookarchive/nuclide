@@ -49,6 +49,7 @@ type ExpressionTreeNodeProps = {|
   pending?: boolean,
   expansionCache: Map<string, boolean>,
   nodePath: string,
+  hideExpressionName?: boolean,
 |};
 
 type ExpressionTreeNodeState = {|
@@ -170,7 +171,11 @@ export class ExpressionTreeNode extends React.Component<
         </div>
       );
     } else {
-      return (
+      return this.props.hideExpressionName ? (
+        <div className="nuclide-ui-lazy-nested-value-container native-key-bindings">
+          {value}
+        </div>
+      ) : (
         <div className="nuclide-ui-lazy-nested-value-container native-key-bindings">
           <span className={ValueComponentClassNames.identifier}>
             {expression}
@@ -431,6 +436,7 @@ export type ExpressionTreeComponentProps = {|
   pending?: boolean,
   containerContext: Object,
   className?: string,
+  hideExpressionName?: boolean,
 |};
 
 export class ExpressionTreeComponent extends React.Component<
@@ -460,6 +466,7 @@ export class ExpressionTreeComponent extends React.Component<
           pending={this.props.pending}
           nodePath="root"
           expansionCache={this._getExpansionCache()}
+          hideExpressionName={this.props.hideExpressionName}
         />
       </span>
     );

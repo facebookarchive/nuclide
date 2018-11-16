@@ -50,7 +50,9 @@ function shouldAccumulateRecordCount(
   );
 
   // if data exists, we should not accumulate this into the previous record
-  const doesDataExist = recordA.data || recordB.data;
+  const doesDataExist =
+    (recordA.expressions && recordA.expressions.length > 0) ||
+    (recordB.expressions && recordB.expressions.length > 0);
 
   const recATags = recordA.tags;
   const recBTags = recordB.tags;

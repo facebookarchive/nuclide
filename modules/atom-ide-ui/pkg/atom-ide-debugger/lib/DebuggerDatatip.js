@@ -17,7 +17,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getDefaultEvaluationExpression} from './evaluationExpression';
 import {DebuggerMode} from './constants';
 import DebuggerDatatipComponent from './ui/DebuggerDatatipComponent';
-import {expressionAsEvaluationResultStream} from './utils';
+import {evaluateExpressionAsStream} from './utils';
 
 export async function debuggerDatatip(
   service: IDebugService,
@@ -45,7 +45,8 @@ export async function debuggerDatatip(
     // and fallback to scopes variables resolution.
     return null;
   }
-  const propStream = expressionAsEvaluationResultStream(
+
+  const propStream = evaluateExpressionAsStream(
     service.createExpression(expression),
     focusedProcess,
     focusedStackFrame,
@@ -54,6 +55,7 @@ export async function debuggerDatatip(
     expression,
     evaluationResult,
   }));
+
   return {
     component: bindObservableAsProps(propStream, DebuggerDatatipComponent),
     range,

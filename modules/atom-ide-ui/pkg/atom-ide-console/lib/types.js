@@ -12,7 +12,7 @@
 
 import type {Observable} from 'rxjs';
 import type {List} from 'immutable';
-import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import type {IExpression} from '../../..';
 
 // The type of the object passed to your package's `consumeConsole()` function.
 export type ConsoleService = (options: SourceInfo) => ConsoleApi;
@@ -51,8 +51,6 @@ export type SourceInfo = {
   // for more information.
   start?: () => void,
   stop?: () => void,
-  // `getProperties()` can be optionally provided for expandable messages.
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 /* Evaluation & values */
@@ -100,7 +98,7 @@ export type Message = {
   format?: MessageFormat,
 
   // Internally used properties. These are subject to change so don't use em!
-  data?: EvaluationResult,
+  expressions?: Array<IExpression>,
   tags?: ?Array<string>,
   kind?: ?MessageKind,
   scopeName?: ?string,
@@ -119,7 +117,7 @@ type MessageFormat = 'ansi';
 // A normalized type used internally to represent all possible kinds of messages. Responses and
 // Messages are transformed into these.
 // Make sure shouldAccumulateRecordCount in Reducers.js is up to date with these fields
-export type Record = {
+export type Record = {|
   messageId?: string,
   text: string,
   level: Level,
@@ -132,11 +130,11 @@ export type Record = {
   sourceId: string,
   sourceName: string,
   scopeName: ?string,
-  data?: ?EvaluationResult,
+  expressions?: Array<IExpression>,
   timestamp: Date,
 
   executor?: Executor,
-};
+|};
 
 export type RecordToken = {|
   +getCurrentText: () => string,
@@ -174,7 +172,6 @@ export type Source = {
 type BasicRecordProvider = {
   records: Observable<Record>,
   id: string,
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 type ControllableRecordProviderProps = {
@@ -206,7 +203,6 @@ export type Executor = {
   output: Observable<Message | {result?: EvaluationResult}>,
   scopeName: () => string,
   provideSymbols?: (prefix: string) => Array<string>,
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
   onDidChangeScopeName?: (callback: () => void) => IDisposable,
 };
 

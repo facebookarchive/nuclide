@@ -91,11 +91,7 @@ import {
   getTerminalService,
   resolveDebugConfiguration,
 } from '../AtomServiceContainer';
-import {
-  expressionAsEvaluationResultStream,
-  fetchChildrenForLazyComponent,
-  capitalize,
-} from '../utils';
+import {evaluateExpressionAsStream, capitalize} from '../utils';
 import {
   Model,
   ExceptionBreakpoint,
@@ -885,15 +881,11 @@ export default class DebugService implements IDebugService {
             uuid.v4(),
           );
           container.getChildren().then(children => {
-            const result = {
-              type: 'objects',
-              objects: children.map(variable => ({
-                description: variable.getValue(),
-                type: variable.type,
-                expression: variable,
-              })),
-            };
-            this._consoleOutput.next({text: 'object', data: result, level});
+            this._consoleOutput.next({
+              text: `object[${children.length}]`,
+              expressions: children,
+              level,
+            });
           });
         }),
         () => {
@@ -1959,7 +1951,7 @@ export default class DebugService implements IDebugService {
     const subscription =
       // We filter here because the first value in the BehaviorSubject is null no matter what, and
       // we want the console to unsubscribe the stream after the first non-null value.
-      expressionAsEvaluationResultStream(
+      evaluateExpressionAsStream(
         expression,
         focusedProcess,
         focusedStackFrame,
@@ -1982,7 +1974,7 @@ export default class DebugService implements IDebugService {
           } else {
             this._consoleOutput.next({
               text: 'object',
-              data: result.value,
+              expressions: [expression],
               level,
             });
           }
@@ -2021,7 +2013,6 @@ export default class DebugService implements IDebugService {
         evaluateExpression(new Expression(expression), 'log');
       },
       output: this._consoleOutput,
-      getProperties: (fetchChildrenForLazyComponent: any),
     };
 
     this._consoleDisposables.add(
