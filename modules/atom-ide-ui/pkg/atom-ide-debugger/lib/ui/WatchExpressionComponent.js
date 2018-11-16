@@ -11,6 +11,7 @@
  */
 
 import type {IEvaluatableExpression, IStackFrame, IProcess} from '../types';
+import type {ExpressionTreeComponentProps} from './ExpressionTreeComponent';
 
 import {Observable} from 'rxjs';
 import * as React from 'react';
@@ -18,13 +19,10 @@ import classnames from 'classnames';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nullthrows from 'nullthrows';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
+import invariant from 'assert';
 import {Icon} from 'nuclide-commons-ui/Icon';
-import {
-  evaluateExpressionAsStream,
-  fetchChildrenForLazyComponent,
-} from '../utils';
+import {evaluateExpressionAsStream} from '../utils';
+import {ExpressionTreeComponent} from './ExpressionTreeComponent';
 
 type Props = {
   watchExpressions: Array<IEvaluatableExpression>,
@@ -57,15 +55,6 @@ export default class WatchExpressionComponent extends React.Component<
     this.state = {
       rowBeingEdited: null,
     };
-  }
-
-  _getExpansionStateIdForExpression(expression: string): Object {
-    let expansionStateId = this._expansionStates.get(expression);
-    if (expansionStateId == null) {
-      expansionStateId = {};
-      this._expansionStates.set(expression, expansionStateId);
-    }
-    return expansionStateId;
   }
 
   removeExpression(id: string, event: MouseEvent): void {
@@ -114,7 +103,7 @@ export default class WatchExpressionComponent extends React.Component<
   ): React.Element<any> => {
     const {focusedProcess, focusedStackFrame} = this.props;
     const id = watchExpression.getId();
-    let evalResult;
+    const containerContext = this;
     if (id === this.state.rowBeingEdited) {
       return (
         <AtomInput
@@ -132,20 +121,32 @@ export default class WatchExpressionComponent extends React.Component<
           initialValue={watchExpression.name}
         />
       );
-    } else if (focusedProcess == null) {
-      evalResult = Observable.of(null);
-    } else {
-      evalResult = evaluateExpressionAsStream(
-        watchExpression,
-        focusedProcess,
-        focusedStackFrame,
-        'watch',
-      );
     }
-    const ValueComponent = bindObservableAsProps(
-      evalResult.map(evaluationResult => ({evaluationResult})),
-      LazyNestedValueComponent,
-    );
+
+    const ExpressionComponent =
+      focusedProcess == null
+        ? null
+        : bindObservableAsProps(
+            evaluateExpressionAsStream(
+              watchExpression,
+              focusedProcess,
+              focusedStackFrame,
+              'watch',
+            ).map(result => {
+              invariant(result != null);
+              const props: ExpressionTreeComponentProps = {
+                containerContext,
+                pending: result.isPending,
+                expression:
+                  result.isPending || result.isError
+                    ? watchExpression
+                    : result.value,
+              };
+              return props;
+            }),
+            ExpressionTreeComponent,
+          );
+
     return (
       <div
         className={classnames(
@@ -159,14 +160,14 @@ export default class WatchExpressionComponent extends React.Component<
             'debugger-watch-expression-value-content',
           )}
           onDoubleClick={this._setRowBeingEdited.bind(this, id)}>
-          <ValueComponent
-            expression={watchExpression.name}
-            fetchChildren={(fetchChildrenForLazyComponent: any)}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this._getExpansionStateIdForExpression(
-              watchExpression.name,
-            )}
-          />
+          {ExpressionComponent == null ? (
+            <span>
+              {watchExpression.name}: Not available{' '}
+              <i>(the debugger is not running)</i>.
+            </span>
+          ) : (
+            <ExpressionComponent />
+          )}
         </div>
         <div className="debugger-watch-expression-controls">
           <Icon

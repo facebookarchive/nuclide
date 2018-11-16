@@ -80,7 +80,7 @@ export default class VsDebugSession extends V8Protocol {
   _onDidLoadSource: Subject<DebugProtocol.LoadedSourceEvent>;
   _onDidCustom: Subject<DebugProtocol.DebugEvent>;
   _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
-  _onDidEvaluate: Subject<DebugProtocol.EvaluateResponse>;
+  _onDidEvaluate: Subject<void>;
   _runInTerminalHandler: ?RunInTerminalHandler;
   _isReadOnly: boolean;
 
@@ -173,7 +173,7 @@ export default class VsDebugSession extends V8Protocol {
     return this._onDidCustom.asObservable();
   }
 
-  observeEvaluations(): Observable<DebugProtocol.EvaluateResponse> {
+  observeEvaluations(): Observable<void> {
     return this._onDidEvaluate.asObservable();
   }
 
@@ -482,7 +482,10 @@ export default class VsDebugSession extends V8Protocol {
       throw new Error('Read only target cannot set variable.');
     }
 
-    return this.send('setVariable', args);
+    return this.send('setVariable', args).then(response => {
+      this._onDidEvaluate.next();
+      return response;
+    });
   }
 
   restartFrame(
@@ -592,7 +595,9 @@ export default class VsDebugSession extends V8Protocol {
     args: DebugProtocol.EvaluateArguments,
   ): Promise<DebugProtocol.EvaluateResponse> {
     return this.send('evaluate', args).then(result => {
-      this._onDidEvaluate.next(result);
+      if (args.context === 'repl') {
+        this._onDidEvaluate.next();
+      }
       return result;
     });
   }
