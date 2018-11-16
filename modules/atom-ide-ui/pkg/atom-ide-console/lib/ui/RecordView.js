@@ -22,7 +22,6 @@ import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
 import shallowEqual from 'shallowequal';
 import Ansi from 'nuclide-commons-ui/Ansi';
-import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
 import debounce from 'nuclide-commons/debounce';
 import parseText from '../parseText';
 import nullthrows from 'nullthrows';
@@ -123,7 +122,6 @@ export default class RecordView extends React.Component<Props> {
           // $FlowFixMe: that isn't an object ID,
           objectId: object.expression,
         };
-        const simpleValueComponent = getComponent(object.type);
 
         // Each child must have it's own expansion state ID.
         const expansionStateKey = 'child' + index;
@@ -147,7 +145,7 @@ export default class RecordView extends React.Component<Props> {
               className="console-lazy-nested-value"
               evaluationResult={evaluationResult}
               fetchChildren={getProperties}
-              simpleValueComponent={simpleValueComponent}
+              simpleValueComponent={SimpleValueComponent}
               shouldCacheChildren={true}
               expansionStateId={expansionStateId[expansionStateKey]}
             />,
@@ -157,13 +155,12 @@ export default class RecordView extends React.Component<Props> {
       return <span className="console-multiple-objects">{children}</span>;
     } else {
       // Render single object.
-      const simpleValueComponent = getComponent(type);
       return (
         <LazyNestedValueComponent
           className="console-lazy-nested-value"
           evaluationResult={record.data}
           fetchChildren={getProperties}
-          simpleValueComponent={simpleValueComponent}
+          simpleValueComponent={SimpleValueComponent}
           shouldCacheChildren={true}
           expansionStateId={expansionStateId}
         />
@@ -236,19 +233,6 @@ export default class RecordView extends React.Component<Props> {
   _handleRecordWrapper = (wrapper: HTMLElement) => {
     this._wrapper = wrapper;
   };
-}
-
-function getComponent(type: ?string): React.ComponentType<any> {
-  switch (type) {
-    case 'text':
-      return props => TextRenderer(props.evaluationResult);
-    case 'boolean':
-    case 'string':
-    case 'number':
-    case 'object':
-    default:
-      return SimpleValueComponent;
-  }
 }
 
 function getHighlightClassName(level: Level): string {
