@@ -1750,6 +1750,7 @@ declare class atom$Project {
   onDidAddBuffer(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
   onDidReplace((settings: atom$ProjectSpecification) => mixed): IDisposable,
   observeBuffers(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
+  observeRepositories(callback: (repository: atom$Repository)=> mixed): IDisposable,
   replace?: (newSettings: atom$ProjectSpecification) => void,
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>,
