@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {EvaluationResult, IExpression} from 'atom-ide-ui';
+import type {EvaluationResult, IExpression, IVariable} from 'atom-ide-ui';
 import type {Expected} from 'nuclide-commons/expected';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -194,11 +194,10 @@ export class ExpressionTreeNode extends React.Component<
     );
   };
 
-  // $FlowFixMe - fixed in next diff in this stack.
   _getVariableExpression(): ?IVariable {
     const {expression} = this.props;
-    // $FlowFixMe - fixed in next diff in this stack.
-    return expression.canSetVariable == null || expression.setVariable == null
+    return (expression: any).canSetVariable == null ||
+      (expression: any).setVariable == null
       ? null
       : (expression: any);
   }
@@ -259,6 +258,25 @@ export class ExpressionTreeNode extends React.Component<
     return evaluationResult.value || '';
   };
 
+  _setEditorGrammar = (editor: ?AtomInput): void => {
+    if (editor == null) {
+      return;
+    }
+
+    const variable = this._getVariableExpression();
+    if (variable == null) {
+      return;
+    }
+
+    if (variable.grammarName != null && variable.grammarName !== '') {
+      const grammar = atom.grammars.grammarForScopeName(variable.grammarName);
+      if (grammar == null) {
+        return;
+      }
+      editor.getTextEditor().setGrammar(grammar);
+    }
+  };
+
   _renderEditView = (
     evaluationResult: EvaluationResult,
   ): React.Element<any> => {
@@ -276,6 +294,7 @@ export class ExpressionTreeNode extends React.Component<
           onConfirm={this._updateValue}
           onCancel={() => this._cancelEdit()}
           onBlur={() => this._cancelEdit()}
+          ref={this._setEditorGrammar}
         />
         <Icon
           icon="check"

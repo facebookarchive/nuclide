@@ -2008,9 +2008,9 @@ export default class DebugService implements IDebugService {
       scopeName: () => {
         if (
           viewModel.focusedProcess != null &&
-          viewModel.focusedProcess.configuration.config.grammarName != null
+          viewModel.focusedProcess.configuration.grammarName != null
         ) {
-          return viewModel.focusedProcess.configuration.config.grammarName;
+          return viewModel.focusedProcess.configuration.grammarName;
         }
         return 'text.plain';
       },

@@ -120,7 +120,7 @@ export type {
 // Deprecated console types. Exported only for legacy users.
 export type {RegisterExecutorFunction} from './pkg/atom-ide-console/lib/types';
 
-export type {IExpression} from './pkg/atom-ide-debugger/lib/types';
+export type {IExpression, IVariable} from './pkg/atom-ide-debugger/lib/types';
 export {
   ExpressionTreeComponent,
 } from './pkg/atom-ide-debugger/lib/ui/ExpressionTreeComponent';

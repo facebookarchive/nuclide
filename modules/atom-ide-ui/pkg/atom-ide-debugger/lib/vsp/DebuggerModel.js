@@ -451,6 +451,13 @@ export class Variable extends ExpressionContainer implements IVariable {
     return this._type;
   }
 
+  get grammarName(): ?string {
+    if (this.process == null) {
+      return null;
+    }
+    return this.process.configuration.grammarName;
+  }
+
   async setVariable(value: string): Promise<void> {
     const process = nullthrows(this.process);
     track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {

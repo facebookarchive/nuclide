@@ -183,9 +183,9 @@ export function getLaunchProcessConfig(
     debugMode: 'launch',
     isRestartable: true,
     adapterType: VsAdapterTypes.HHVM,
+    grammarName: 'source.hackfragment',
     config: {
       ...config,
-      grammarName: 'source.hackfragment',
     },
     processName: `HHVM (${nuclideUri.basename(scriptPath)})`,
     servicedFileExtensions: ['php', 'hh'],
@@ -238,9 +238,9 @@ export async function startAttachProcessConfig(
           : 'localhost'
         : 'Attached to script on port ' + (attachPort || 0)
     })`,
+    grammarName: 'source.hackfragment',
     config: {
       ...config,
-      grammarName: 'source.hackfragment',
     },
     customControlButtons: getCustomControlButtons(),
     servicedFileExtensions: ['php', 'hh'],

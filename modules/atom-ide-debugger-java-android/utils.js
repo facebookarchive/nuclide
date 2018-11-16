@@ -266,11 +266,11 @@ export async function resolveConfiguration(
       clickEvents,
     ),
     servicedFileExtensions: ['java'],
+    grammarName: 'source.java',
     config: {
       ...attachPortTargetConfig,
       deviceSerial,
       packageName,
-      grammarName: 'source.java',
     },
     onDebugStartingCallback: instance => {
       subscriptions.add(
