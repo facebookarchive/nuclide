@@ -11,6 +11,7 @@
  */
 
 import type {ConsoleIO} from './ConsoleIO';
+import type {Completions} from './console/LineEditor';
 
 import {analytics} from './analytics';
 import CommandDispatcher from './CommandDispatcher';
@@ -136,6 +137,10 @@ export default class CommandLine implements ConsoleIO {
   setPrompt(prompt: ?string): void {
     this._overridePrompt = prompt;
     this._updatePrompt();
+  }
+
+  setCompletions(completions: Completions): void {
+    this._cli.setCompletions(completions);
   }
 
   _updatePrompt(): void {

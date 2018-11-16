@@ -81,4 +81,8 @@ export interface DebuggerInterface {
   supportsCodeBlocks(): boolean;
   adapterCaps(): DebugProtocol.Capabilities;
   info(expression: string): Promise<DebugProtocol.InfoResponse>;
+  getCompletions(
+    text: string,
+    column: number,
+  ): Promise<Array<DebugProtocol.CompletionItem>>;
 }

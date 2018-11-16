@@ -9,6 +9,7 @@
  * @flow strict
  * @format
  */
+import type {Completions} from './console/LineEditor';
 
 import {Observable} from 'rxjs';
 
@@ -19,6 +20,7 @@ export interface ConsoleIO {
   output(text: string): void;
   outputLine(line?: string): void;
   setPrompt(prompt: ?string): void;
+  setCompletions(completions: Completions): void;
   prompt(): void;
   stopInput(keepPromptWhenStopped?: boolean): void;
   startInput(): void;

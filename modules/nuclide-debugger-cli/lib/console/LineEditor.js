@@ -10,10 +10,18 @@
  * @format
  */
 
+import type {Completions} from './CompletionDialog';
+export type {Completions};
+
+import type {Keypress} from 'blessed';
+
+import * as DebugProtocol from 'vscode-debugprotocol';
+
 import EventEmitter from 'events';
 import History from './History';
 import blessed from 'blessed';
 import ScrollBox from './ScrollBox';
+import {CompletionsDialog} from './CompletionDialog';
 
 type LineEditorOptions = {
   input?: ?stream$Readable,
@@ -28,6 +36,7 @@ type LineEditorOptions = {
 type State = 'RUNNING' | 'STOPPED';
 
 const MAX_SCROLLBACK = 2000;
+const STATUS_MESSAGE_TIME = 2000; // hold status messages for 3 seconds
 
 export default class LineEditor extends EventEmitter {
   _fullscreen: boolean = false;
@@ -37,6 +46,7 @@ export default class LineEditor extends EventEmitter {
   _outputBox: ScrollBox; // the box containing the scrollback
   _consoleBox: blessed.Box; // the box containing the being edited command line
   _statusBox: blessed.Box; // status line box
+  _completionDialog: CompletionsDialog; // list control for tab completions
 
   _handlers: Map<string, () => void> = new Map();
   _closeError: ?string = null; // if we're closing on an error, what to print after console is back to normal
@@ -50,6 +60,16 @@ export default class LineEditor extends EventEmitter {
   _input: stream$Readable;
   _output: stream$Writable;
   _state: State = 'STOPPED';
+  _disableKeys: boolean = false;
+
+  // completion state
+  _completions: ?Completions;
+  _completionItems: Array<DebugProtocol.CompletionItem> = [];
+  _completionStart: number;
+
+  // status bar state
+  _statusMessage: string = '';
+  _statusMessageTimer: ?TimeoutID;
 
   constructor(options: LineEditorOptions, logger: log4js$Logger) {
     super();
@@ -96,6 +116,13 @@ export default class LineEditor extends EventEmitter {
     }
 
     this._initializeTTY(this._options);
+  }
+
+  setCompletions(completions: Completions): void {
+    if (this._tty) {
+      this._completionDialog.setCompletions(completions);
+    }
+    this._completions = completions;
   }
 
   _initializeBlessed(options: LineEditorOptions): void {
@@ -169,13 +196,36 @@ export default class LineEditor extends EventEmitter {
             fg: 'black',
             bg: 'gray',
           },
-      align: 'right',
       tags: true,
+    });
+
+    this._completionDialog = new CompletionsDialog({
+      top: 10,
+      left: 10,
+      width: '25%',
+      height: 25,
+      keys: true,
+      tags: true,
+      style: {
+        fg: 'white',
+        bg: 'blue',
+        border: {
+          bg: 'black',
+          fg: 'white',
+        },
+        selected: {
+          fg: 'blue',
+          bg: 'white',
+        },
+      },
+      border: 'line',
     });
 
     this._screen.append(this._outputBox);
     this._screen.append(this._consoleBox);
     this._screen.append(this._statusBox);
+    this._screen.append(this._completionDialog);
+    this._completionDialog.hide();
 
     this._handlers = new Map([
       ['backspace', () => this._backspace()],
@@ -189,6 +239,7 @@ export default class LineEditor extends EventEmitter {
       ['pagedown', () => this._pageDown()],
       ['right', () => this._right()],
       ['space', () => this._inputChar(' ')],
+      ['tab', () => this._tab()],
       ['up', () => this._historyPrevious()],
       ['C-home', () => this._topOfOutput()],
       ['C-end', () => this._bottomOfOutput()],
@@ -205,7 +256,12 @@ export default class LineEditor extends EventEmitter {
       ['\x7f', () => this._backspace()],
     ]);
 
-    this._screen.on('keypress', (ch, key) => {
+    this._screen.on('keypress', (ch: ?string, key: Keypress) => {
+      // turn off keys if a dialog like tab completion is up
+      if (this._disableKeys) {
+        return;
+      }
+
       // key.name is the base name of a key. For a character with shift/ctrl/etc.,
       // it's still just the character 'a', 'b', 'c', etc.
       // key.full is the name of the key with modifiers. e.g. ctrl-c is 'C-c',
@@ -239,6 +295,12 @@ export default class LineEditor extends EventEmitter {
         process.stderr.write(this._closeError);
       }
     });
+
+    this._completionDialog.on('nocompletions', e => this._noCompletions(e));
+    this._completionDialog.on('cancel', () => this._completionsCancel());
+    this._completionDialog.on('selected_item', item =>
+      this._completionsSelect(item),
+    );
 
     this._buffer = '';
     this.setPrompt('$ ');
@@ -276,6 +338,46 @@ export default class LineEditor extends EventEmitter {
     this._logger.info(`Buffer is now ${this._buffer}`);
     this._cursor++;
     this._textChanged();
+    this._redrawConsole();
+  }
+
+  _tab(): void {
+    if (!this._tty) {
+      return;
+    }
+
+    this._disableKeys = true;
+    this._completionDialog.selectCompletion(this._buffer, this._cursor);
+  }
+
+  _noCompletions(e: string): void {
+    this._temporaryStatus('No completions in current context.');
+    this._disableKeys = false;
+  }
+
+  _completionsCancel(): void {
+    this._completionDialog.hide();
+    this._disableKeys = false;
+    this._screen.render();
+  }
+
+  _completionsSelect(item: DebugProtocol.CompletionItem): void {
+    this._disableKeys = false;
+
+    const text = item.text != null ? item.text : item.label;
+
+    let wordStart = this._buffer.lastIndexOf(' ', this._cursor) + 1;
+
+    while (
+      wordStart < this._buffer.length &&
+      !text.startsWith(this._buffer.substr(wordStart))
+    ) {
+      wordStart++;
+    }
+
+    this._buffer = this._buffer.substr(0, wordStart) + text;
+    this._cursor = this._buffer.length;
+
     this._redrawConsole();
   }
 
@@ -464,6 +566,19 @@ export default class LineEditor extends EventEmitter {
     this._screen.render();
   }
 
+  _temporaryStatus(message: string): void {
+    if (this._statusMessageTimer != null) {
+      clearTimeout(this._statusMessageTimer);
+    }
+    this._statusMessage = message;
+    this._repaintStatus();
+
+    this._statusMessageTimer = setTimeout(() => {
+      this._statusMessage = '';
+      this._repaintStatus();
+    }, STATUS_MESSAGE_TIME);
+  }
+
   _repaintStatus(): void {
     const statusEmpty = '       ';
     const statusBottom = 'BOTTOM ';
@@ -487,7 +602,9 @@ export default class LineEditor extends EventEmitter {
         ? statusBottom
         : statusEmpty;
 
-    this._statusBox.setContent(`| ${lpad(scroll, 30)} | ${state} | ${where}`);
+    this._statusBox.setContent(
+      `${this._statusMessage}{|}| ${lpad(scroll, 30)} | ${state} | ${where}`,
+    );
     this._screen.render();
   }
 

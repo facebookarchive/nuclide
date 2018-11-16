@@ -923,6 +923,32 @@ export default class Debugger extends EventEmitter
     return session.info(args);
   }
 
+  async getCompletions(
+    text: string,
+    column: number,
+  ): Promise<Array<DebugProtocol.CompletionItem>> {
+    try {
+      const session = this._ensureDebugSession();
+      if (session.capabilities.supportsCompletionsRequest !== true) {
+        return Promise.resolve([]);
+      }
+
+      const frame = await this.getCurrentStackFrame();
+      const {
+        body: {targets},
+      } = await session.completions({
+        ...(frame == null ? frame : {frameId: frame.id}),
+        text,
+        column,
+        line: 0,
+      });
+
+      return targets;
+    } catch (_) {
+      return Promise.resolve([]);
+    }
+  }
+
   async createSession(adapter: ParsedVSAdapter): Promise<void> {
     this._console.stopInput();
 

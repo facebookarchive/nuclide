@@ -10,6 +10,16 @@
 
 
 declare module 'blessed' {
+  // comes in as the second parameter to a keypressed event
+  declare type Keypress = {
+    sequence: string,
+    full: string,
+    name?: string,
+    ctrl: boolean,
+    meta: boolean,
+    shift: boolean,
+  }
+
   declare type ProgramOptions = {
     log?: string,
     dump?: boolean,
@@ -33,6 +43,7 @@ declare module 'blessed' {
     options: NodeOptions,
     parent: ?Node,
     children: Array<Node>,
+    screen: Screen,
     prepend(node: Node): void,
     append(node: Node): void,
     remove(node: Node): void,
@@ -55,6 +66,8 @@ declare module 'blessed' {
     render: () => void,
     realloc: () => void,
     key(name: string | Array<string>, (ch: string, key: string) => void): events$EventEmitter,
+    height: number,
+    width: number,
   }
 
   // The docs say that attributes must be a number, but the code actually
@@ -132,7 +145,14 @@ declare module 'blessed' {
     atop: number,
     abottom: number,
     draggable: boolean,
-
+    position: {
+      left?: string | number,
+      right?: string | number,
+      top?: string | number,
+      bottom?: string | number,
+      height?: string | number,
+      width?: string | number,
+    },
     render(): void,
     hide(): void,
     show(): void,
@@ -183,19 +203,29 @@ declare module 'blessed' {
   declare class Box extends Element {
     constructor(options: ElementOptions): void,
     getScroll(): number,
-    scroll(lines: number): void;
+    scroll(lines: number): void,
+  }
+
+  declare class List extends Box {
+    constructor(options: ElementOptions): void,
+    setItems(items: Array<string>): void,
+    select(index: number): void,
+    selected: number,
   }
 
   declare module.exports: {
     widget: {
       Box: typeof Box,
+      List: typeof List,
     },
     Program: typeof Program,
     Screen: typeof Screen,
     Node: typeof Node,
     Box: typeof Box,
+    List: typeof List,
     program: (ProgramOptions) => Program,
     screen: (ScreenOptions) => Screen,
     box: (ElementOptions) => Box,
+    list: (ElementOptions) => List,
   };
 }

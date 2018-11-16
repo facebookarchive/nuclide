@@ -195,6 +195,7 @@ async function main(): Promise<void> {
     debuggerInstance.registerCommands(dispatcher);
 
     cli.enterFullScreen();
+    cli.setCompletions(debuggerInstance);
 
     if (adapter != null) {
       if (adapter.type === 'hhvm') {
