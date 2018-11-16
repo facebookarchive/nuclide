@@ -179,6 +179,10 @@ export class ExpressionContainer implements IExpressionContainer {
     this._children = null;
   }
 
+  get hasChildVariables(): boolean {
+    return this._namedVariables + this._indexedVariables > 0;
+  }
+
   getChildren(): Promise<IVariable[]> {
     if (this._children == null) {
       this._children = this._doGetChildren();
@@ -401,7 +405,7 @@ export class Expression extends ExpressionContainer
   }
 }
 
-export class Variable extends ExpressionContainer implements IExpression {
+export class Variable extends ExpressionContainer implements IVariable {
   // Used to show the error message coming from the adapter when setting the value #7807
   errorMessage: ?string;
   parent: ExpressionContainer;
@@ -469,6 +473,35 @@ export class Variable extends ExpressionContainer implements IExpression {
     } catch (err) {
       this.errorMessage = err.message;
     }
+  }
+
+  canSetVariable(): boolean {
+    const proc = this.process;
+    if (proc == null) {
+      return false;
+    }
+
+    const supportsSetVariable = Boolean(
+      proc.session.capabilities.supportsSetVariable,
+    );
+
+    // We can't set variables if the target is read only.
+    // We also require a variables reference for the parent for the protocol,
+    // and currently only set on leaves (variables with no children) because
+    // this layer doesn't know how to parse initializer expressions for setting
+    // the value of complex objects or arrays.
+    // TODO: It'd be nice to be able to set array identities here like: a = {1, 2, 3}.
+    const isReadOnlyTarget = Boolean(proc.configuration.isReadOnly);
+    const hasValidParentReference =
+      this.parent.reference != null &&
+      !Number.isNaN(this.parent.reference) &&
+      this.parent.reference >= 0;
+    return (
+      !isReadOnlyTarget &&
+      supportsSetVariable &&
+      hasValidParentReference &&
+      !this.hasChildren()
+    );
   }
 
   toString(): string {

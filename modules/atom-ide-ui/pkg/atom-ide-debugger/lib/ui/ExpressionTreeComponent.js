@@ -13,17 +13,25 @@
 import type {EvaluationResult, IExpression} from 'atom-ide-ui';
 import type {Expected} from 'nuclide-commons/expected';
 
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Icon} from 'nuclide-commons-ui/Icon';
+import {track} from 'nuclide-commons/analytics';
 import * as React from 'react';
 import classnames from 'classnames';
 import {Expect} from 'nuclide-commons/expected';
 import {expressionAsEvaluationResult} from '../utils';
 import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
+import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {Observable} from 'rxjs';
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
+import {STRING_REGEX} from 'nuclide-commons-ui/SimpleValueComponent';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ValueComponentClassNames} from 'nuclide-commons-ui/ValueComponentClassNames';
 
+const EDIT_VALUE_FROM_ICON = 'edit-value-from-icon';
 const NOT_AVAILABLE_MESSAGE = '<not available>';
 const SPINNER_DELAY = 200; /* ms */
 
@@ -38,7 +46,7 @@ const ExpansionStates: WeakMap<Object, Map<string, boolean>> = new WeakMap();
 
 type ExpressionTreeNodeProps = {|
   expression: IExpression,
-  value: Expected<EvaluationResult>,
+  pending?: boolean,
   expansionCache: Map<string, boolean>,
   nodePath: string,
 |};
@@ -46,6 +54,9 @@ type ExpressionTreeNodeProps = {|
 type ExpressionTreeNodeState = {|
   expanded: boolean,
   children: Expected<IExpression[]>,
+  isEditing: boolean,
+  pendingValue: ?string,
+  pendingSave: boolean,
 |};
 
 export class ExpressionTreeNode extends React.Component<
@@ -54,17 +65,27 @@ export class ExpressionTreeNode extends React.Component<
 > {
   state: ExpressionTreeNodeState;
   _toggleNodeExpanded: (e: SyntheticMouseEvent<>) => void;
+  _disposables: UniversalDisposable;
   _subscription: ?rxjs$ISubscription;
 
   constructor(props: ExpressionTreeNodeProps) {
     super(props);
     this._subscription = null;
+    this._disposables = new UniversalDisposable();
+    this._disposables.add(() => {
+      if (this._subscription != null) {
+        this._subscription.unsubscribe();
+      }
+    });
     this._toggleNodeExpanded = ignoreTextSelectionEvents(
       this._toggleExpand.bind(this),
     );
     this.state = {
       expanded: this._isExpanded(),
       children: Expect.pending(),
+      isEditing: false,
+      pendingValue: null,
+      pendingSave: false,
     };
   }
 
@@ -75,14 +96,11 @@ export class ExpressionTreeNode extends React.Component<
   }
 
   componentWillUnmount(): void {
-    if (this._subscription != null) {
-      this._subscription.unsubscribe();
-      this._subscription = null;
-    }
+    this._disposables.dispose();
   }
 
   _isExpandable = (): boolean => {
-    if (this.props.value.isPending || this.props.value.isError) {
+    if (this.props.pending) {
       return false;
     }
     return this.props.expression.hasChildren();
@@ -147,11 +165,13 @@ export class ExpressionTreeNode extends React.Component<
   ): React.Element<any> => {
     if (expression == null) {
       return (
-        <div className="nuclide-ui-lazy-nested-value-container">{value}</div>
+        <div className="nuclide-ui-lazy-nested-value-container native-key-bindings">
+          {value}
+        </div>
       );
     } else {
       return (
-        <div className="nuclide-ui-lazy-nested-value-container">
+        <div className="nuclide-ui-lazy-nested-value-container native-key-bindings">
           <span className={ValueComponentClassNames.identifier}>
             {expression}
           </span>
@@ -167,7 +187,6 @@ export class ExpressionTreeNode extends React.Component<
       <TreeItem key={nodePath}>
         <ExpressionTreeNode
           expression={child}
-          value={Expect.value(expressionAsEvaluationResult(child))}
           expansionCache={this.props.expansionCache}
           nodePath={nodePath}
         />
@@ -175,9 +194,127 @@ export class ExpressionTreeNode extends React.Component<
     );
   };
 
+  // $FlowFixMe - fixed in next diff in this stack.
+  _getVariableExpression(): ?IVariable {
+    const {expression} = this.props;
+    // $FlowFixMe - fixed in next diff in this stack.
+    return expression.canSetVariable == null || expression.setVariable == null
+      ? null
+      : (expression: any);
+  }
+
+  _isEditable = (): boolean => {
+    const variable = this._getVariableExpression();
+    return variable != null && variable.canSetVariable();
+  };
+
+  _updateValue = (): void => {
+    const {pendingValue} = this.state;
+    const variable = nullthrows(this._getVariableExpression());
+
+    const doEdit = pendingValue != null;
+    this._cancelEdit(doEdit);
+
+    if (doEdit) {
+      invariant(pendingValue != null);
+      const subscription = Observable.fromPromise(
+        variable.setVariable(pendingValue),
+      )
+        .catch(() => Observable.of(null))
+        .subscribe(() => {
+          this._disposables.remove(subscription);
+          this.setState({
+            pendingSave: false,
+          });
+        });
+
+      this._disposables.add(subscription);
+    }
+  };
+
+  _cancelEdit = (pendingSave: ?boolean = false): void => {
+    const newState: Object = {
+      isEditing: false,
+      pendingValue: null,
+    };
+    if (pendingSave != null) {
+      newState.pendingSave = pendingSave;
+    }
+    this.setState(newState);
+  };
+
+  _startEdit = (): void => {
+    this.setState({
+      isEditing: true,
+      pendingValue: null,
+      pendingSave: false,
+    });
+  };
+
+  _getValueAsString = (evaluationResult: EvaluationResult): string => {
+    const value = evaluationResult.value;
+    if (value != null && evaluationResult.type === 'string') {
+      return STRING_REGEX.test(value) ? value : `"${value}"`;
+    }
+    return evaluationResult.value || '';
+  };
+
+  _renderEditView = (
+    evaluationResult: EvaluationResult,
+  ): React.Element<any> => {
+    return (
+      <div className="expression-tree-line-control">
+        <AtomInput
+          className="expression-tree-value-box inline-block"
+          size="sm"
+          autofocus={true}
+          startSelected={false}
+          initialValue={this._getValueAsString(evaluationResult)}
+          onDidChange={pendingValue => {
+            this.setState({pendingValue: pendingValue.trim()});
+          }}
+          onConfirm={this._updateValue}
+          onCancel={() => this._cancelEdit()}
+          onBlur={() => this._cancelEdit()}
+        />
+        <Icon
+          icon="check"
+          title="Save changes"
+          className="expression-tree-edit-button-confirm"
+          onClick={this._updateValue}
+        />
+        <Icon
+          icon="x"
+          title="Cancel changes"
+          className="expression-tree-edit-button-cancel"
+          onClick={this._cancelEdit}
+        />
+      </div>
+    );
+  };
+
+  _renderEditHoverControls(): ?React.Element<any> {
+    if (!this._isEditable() || this.state.isEditing) {
+      return null;
+    }
+    return (
+      <div className="debugger-scopes-view-controls">
+        <Icon
+          icon="pencil"
+          className="debugger-scopes-view-edit-control"
+          onClick={_ => {
+            track(EDIT_VALUE_FROM_ICON);
+            this._startEdit();
+          }}
+        />
+      </div>
+    );
+  }
+
   render(): React.Node {
-    const {value, expression} = this.props;
-    if (value.isPending) {
+    const {pending, expression} = this.props;
+    const {pendingSave} = this.state;
+    if (pending || pendingSave) {
       // Value not available yet. Show a delayed loading spinner.
       return (
         <TreeItem className="nuclide-ui-lazy-nested-value-spinner">
@@ -186,21 +323,28 @@ export class ExpressionTreeNode extends React.Component<
       );
     }
 
-    if (value.isError) {
-      return this._renderValueLine(
-        expression.name,
-        value.error != null ? value.error.toString() : NOT_AVAILABLE_MESSAGE,
-      );
-    }
-
-    const evaluationResult = value.value;
+    const isEditable = this._isEditable();
+    const evaluationResult = expressionAsEvaluationResult(expression);
     if (!this._isExpandable()) {
       // This is a simple value with no children.
       return (
-        <SimpleValueComponent
-          expression={expression.name}
-          evaluationResult={evaluationResult}
-        />
+        <div
+          onDoubleClick={
+            isEditable && !this.state.isEditing ? this._startEdit : () => {}
+          }
+          className="expression-tree-line-control">
+          {this.state.isEditing ? (
+            this._renderEditView(evaluationResult)
+          ) : (
+            <span className="native-key-bindings expression-tree-value-box">
+              <SimpleValueComponent
+                expression={expression.name}
+                evaluationResult={evaluationResult}
+              />
+            </span>
+          )}
+          {isEditable ? this._renderEditHoverControls() : null}
+        </div>
       );
     }
 
@@ -212,7 +356,7 @@ export class ExpressionTreeNode extends React.Component<
     const pendingChildrenNode = (
       <ExpressionTreeNode
         expression={this.props.expression}
-        value={Expect.pending()}
+        pending={true}
         expansionCache={this.props.expansionCache}
         nodePath={this.props.nodePath}
       />
@@ -242,8 +386,13 @@ export class ExpressionTreeNode extends React.Component<
         className="nuclide-ui-lazy-nested-value-treelist">
         <NestedTreeItem
           collapsed={!this.state.expanded}
-          onSelect={this._toggleNodeExpanded}
-          title={this._renderValueLine(expression.name, description)}>
+          onConfirm={isEditable ? this._startEdit : () => {}}
+          onSelect={this.state.isEditing ? () => {} : this._toggleNodeExpanded}
+          title={
+            this.state.isEditing
+              ? this._renderEditView(evaluationResult)
+              : this._renderValueLine(expression.name, description)
+          }>
           {children}
         </NestedTreeItem>
       </TreeList>
@@ -253,7 +402,7 @@ export class ExpressionTreeNode extends React.Component<
 
 export type ExpressionTreeComponentProps = {|
   expression: IExpression,
-  value: Expected<EvaluationResult>,
+  pending?: boolean,
   containerContext: Object,
   className?: string,
 |};
@@ -275,14 +424,14 @@ export class ExpressionTreeComponent extends React.Component<
   };
 
   render(): React.Node {
-    const className = classnames(this.props.className, 'native-key-bindings', {
+    const className = classnames(this.props.className, {
       'nuclide-ui-lazy-nested-value': this.props.className == null,
     });
     return (
       <span className={className} tabIndex={-1}>
         <ExpressionTreeNode
           expression={this.props.expression}
-          value={this.props.value}
+          pending={this.props.pending}
           nodePath="root"
           expansionCache={this._getExpansionCache()}
         />

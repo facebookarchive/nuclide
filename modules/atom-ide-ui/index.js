@@ -122,6 +122,9 @@ export type {RegisterExecutorFunction} from './pkg/atom-ide-console/lib/types';
 
 export type {IExpression} from './pkg/atom-ide-debugger/lib/types';
 export {
+  ExpressionTreeComponent,
+} from './pkg/atom-ide-debugger/lib/ui/ExpressionTreeComponent';
+export {
   RemoteDebuggerService as DebuggerService,
 } from './pkg/atom-ide-debugger/lib/types';
 

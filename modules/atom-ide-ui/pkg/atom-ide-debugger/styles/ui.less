@@ -181,9 +181,6 @@
 
 .debugger-scopes-view-controls {
   opacity: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
   background-color: @background-color-highlight;
   padding-left: 4px;
   padding-right: 4px;
@@ -206,10 +203,6 @@
 
 .debugger-scope:hover {
   background-color: @background-color-highlight;
-  .debugger-scopes-view-controls {
-    opacity: 1;
-    color: fade(@text-color-highlight, 50%);
-  }
 }
 
 .debugger-watch-expression-controls {
@@ -528,4 +521,34 @@
 
 .debugger-terminate-thread-control:hover {
   opacity: 1;
+}
+
+.expression-tree-value-box {
+  width: inherit;
+  flex-grow: 1;
+}
+
+.expression-tree-edit-button-confirm {
+  color: @text-color-success;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.expression-tree-edit-button-cancel {
+  color: @text-color-error;
+  cursor: pointer;
+}
+
+.expression-tree-line-control {
+  display: flex;
+  width: 100%;
+  padding-right: 1em;
+  word-wrap: break-word;
+}
+
+.expression-tree-line-control:hover {
+  .debugger-scopes-view-controls {
+    opacity: 1;
+    color: fade(@text-color-highlight, 50%);
+  }
 }

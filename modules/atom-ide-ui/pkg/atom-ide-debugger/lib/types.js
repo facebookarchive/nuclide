@@ -95,6 +95,7 @@ export interface IEvaluatableExpression extends IExpression {
 }
 
 export interface IVariable extends IExpression {
+  canSetVariable(): boolean;
   setVariable(newValue: string): Promise<void>;
 }
 
