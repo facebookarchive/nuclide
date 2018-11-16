@@ -843,10 +843,24 @@ class Activation {
   }
 
   _copyDebuggerExpressionValue(event: Event) {
+    const selection = window.getSelection();
     const clickedElement: HTMLElement = (event.target: any);
-    const copyElement = clickedElement.closest('.nuclide-ui-lazy-nested-value');
+    const targetClass = '.nuclide-ui-lazy-nested-value';
+    const copyElement = clickedElement.closest(targetClass);
+
     if (copyElement != null) {
-      atom.clipboard.write(copyElement.textContent);
+      // If the user has text in the target node selected, copy only the selection
+      // instead of the entire node value.
+      if (
+        selection != null &&
+        selection.toString() !== '' &&
+        (copyElement.contains(selection?.anchorNode?.parentElement) ||
+          copyElement === selection?.anchorNode?.parentElement)
+      ) {
+        atom.clipboard.write(selection.toString());
+      } else {
+        atom.clipboard.write(copyElement.textContent);
+      }
     }
   }
 
