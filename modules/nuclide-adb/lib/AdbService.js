@@ -49,6 +49,11 @@ export async function stopProcess(
 export function trackDevices(): ConnectableObservable<Array<AdbDevice>> {
   return (
     observeProcessRaw('adb', ['track-devices'])
+      .filter(
+        event =>
+          event.kind !== 'stderr' ||
+          !event.data.startsWith('* daemon not running'),
+      )
       .distinctUntilChanged()
       // track-devices doesn't provide the full output
       // we use its output as events to trigger an actual devices -l call
