@@ -87,15 +87,8 @@ async function run(): Promise<void> {
     .usage('Usage: atom-notify')
     .help('h')
     .alias('h', 'help')
-    .option('p', {
-      alias: 'port',
-      describe: 'Port for connecting to nuclide',
-      type: 'number',
-    })
-    .option('f', {
-      alias: 'family',
-      describe:
-        'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
+    .option('socket', {
+      describe: 'Path to Unix domain socket on which to connect.',
       type: 'string',
     })
     .option('s', {

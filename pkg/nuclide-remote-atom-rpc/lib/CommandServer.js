@@ -27,7 +27,7 @@ import {
   SocketServer,
 } from '../../nuclide-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {createNewEntry, RPC_PROTOCOL} from '../shared/ConfigDirectory';
+import {getValidPathToSocket, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {firstOfIterable, concatIterators} from 'nuclide-commons/collection';
 
@@ -49,7 +49,7 @@ export class CommandServer {
   // process, so the most recent connection is likely the healthiest
   // connection.
   _connections: Array<CommandServerConnection> = [];
-  _server: ?SocketServer = null;
+  _serverPromise: ?Promise<SocketServer> = null;
   _multiConnectionAtomCommands: MultiConnectionAtomCommands;
 
   /**
@@ -69,21 +69,23 @@ export class CommandServer {
   }
 
   async _ensureServer(): Promise<SocketServer> {
-    if (this._server != null) {
-      return this._server;
+    if (this._serverPromise == null) {
+      this._serverPromise = this._createServer();
     }
+    const server = await this._serverPromise;
+    await server.untilListening();
+    return server;
+  }
 
+  async _createServer(): Promise<SocketServer> {
     const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
     const registry = new ServiceRegistry(
       [localNuclideUriMarshalers],
       services,
       RPC_PROTOCOL,
     );
-    const result = new SocketServer(registry);
-    this._server = result;
-    const address = await result.getAddress();
-    await createNewEntry(address.port, address.family);
-    return result;
+    const socketPath = await getValidPathToSocket();
+    return new SocketServer(registry, socketPath);
   }
 
   async getConnectionDetails(): Promise<?ConnectionDetails> {

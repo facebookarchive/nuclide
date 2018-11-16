@@ -13,6 +13,7 @@ import typeof * as EchoService from '../__mocks__/EchoService';
 
 import invariant from 'assert';
 import net from 'net';
+import fs from 'nuclide-commons/fsPromise';
 import {SocketServer} from '../lib/SocketServer';
 import {SocketTransport} from '../lib/SocketTransport';
 import {RpcConnection} from '../lib/RpcConnection';
@@ -24,6 +25,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('SocketServer', () => {
   let configPath: ?string;
+  let tempDir: ?string;
+  let server: ?SocketServer;
 
   beforeEach(async () => {
     const services3json = [
@@ -35,6 +38,7 @@ describe('SocketServer', () => {
         name: 'EchoService',
       },
     ];
+    tempDir = await fs.tempdir();
     const fbservices3json = [];
     configPath = await generateFixture(
       'services',
@@ -45,16 +49,26 @@ describe('SocketServer', () => {
     );
   });
 
-  it.skip('connect and send message', async () => {
-    // flowlint-next-line sketchy-null-string:off
-    invariant(configPath);
+  afterEach(async () => {
+    if (server != null) {
+      server.dispose();
+      server = null;
+    }
+    if (tempDir != null) {
+      fs.rimraf(tempDir);
+      tempDir = null;
+    }
+  });
+
+  it('connect and send message', async () => {
+    invariant(configPath != null);
+    invariant(tempDir != null);
     const services = loadServicesConfig(configPath);
     const registry = new ServiceRegistry([localNuclideUriMarshalers], services);
-    const server = new SocketServer(registry);
+    server = new SocketServer(registry, nuclideUri.join(tempDir, 'socket'));
     const address = await server.getAddress();
-    invariant(address.port !== 0);
-
-    const clientSocket = net.connect(address.port);
+    invariant(typeof address === 'string');
+    const clientSocket = net.connect({path: address});
     const clientTransport = new SocketTransport(clientSocket);
     const clientConnection = RpcConnection.createLocal(
       clientTransport,
@@ -66,7 +80,5 @@ describe('SocketServer', () => {
     const result = await echoService.echoString('Hello World!');
 
     expect(result).toBe('Hello World!');
-
-    server.dispose();
   });
 });

@@ -17,9 +17,9 @@ import {RpcConnection} from './RpcConnection';
 import {SocketTransport} from './SocketTransport';
 import {ServiceRegistry} from './ServiceRegistry';
 import {Emitter} from 'event-kit';
+import fs from 'nuclide-commons/fsPromise';
 
-// An RPC server which listens for connections on a localhost socket.
-// TODO: Consider extending with more socket listening options.
+// An RPC server which listens for connections on a unix domain socket.
 export class SocketServer {
   _serviceRegistry: ServiceRegistry;
   _server: Server;
@@ -27,7 +27,10 @@ export class SocketServer {
   _connections: Set<RpcConnection<SocketTransport>>;
   _emitter: Emitter;
 
-  constructor(serviceRegistry: ServiceRegistry) {
+  constructor(
+    serviceRegistry: ServiceRegistry,
+    pathToUnixDomainSocket: string,
+  ) {
     this._emitter = new Emitter();
     this._connections = new Set();
     this._serviceRegistry = serviceRegistry;
@@ -39,7 +42,8 @@ export class SocketServer {
     this._server.on('error', error => {
       this._onError(error);
     });
-    this._server.listen(0, 'localhost', undefined, () => {
+    this._server.listen({path: pathToUnixDomainSocket}, async () => {
+      await fs.chmod(pathToUnixDomainSocket, 0o700);
       this._listening.resolve();
     });
   }

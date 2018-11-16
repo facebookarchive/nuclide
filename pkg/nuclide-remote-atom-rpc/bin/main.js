@@ -188,23 +188,10 @@ async function run() {
       describe: 'Wait for the opened file to be closed in Atom before exiting',
       type: 'boolean',
     })
-    .option('p', {
-      alias: 'port',
-      describe: 'Port for connecting to nuclide',
-      type: 'number',
-    })
-    .option('f', {
-      alias: 'family',
-      describe:
-        'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
+    .option('socket', {
+      describe: 'Path to Unix domain socket on which to connect.',
       type: 'string',
     });
-  if ((argv.port == null) !== (argv.family == null)) {
-    process.stderr.write(
-      'Invalid options. Both port and family must be specified.\n',
-    );
-    process.exit(EXIT_CODE_INVALID_ARGUMENTS);
-  }
   const exitCode = await main(argv);
   process.exit(exitCode);
 }

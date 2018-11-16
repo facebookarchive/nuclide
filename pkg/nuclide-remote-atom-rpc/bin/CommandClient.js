@@ -12,7 +12,7 @@
 import typeof * as CommandService from '../lib/CommandService';
 import type {MultiConnectionAtomCommands} from '../lib/rpc-types';
 
-import {getServer, RPC_PROTOCOL} from '../shared/ConfigDirectory';
+import {getServerSocket, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import net from 'net';
 import {
   loadServicesConfig,
@@ -22,27 +22,14 @@ import {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {FailedConnectionError} from './errors';
-import invariant from 'assert';
-
-function convertStringFamilyToNumberFamily(family: string): number {
-  switch (family) {
-    case 'IPv4':
-      return 4;
-    case 'IPv6':
-      return 6;
-    default:
-      throw new Error(`Unrecognized network address family ${family}`);
-  }
-}
 
 export async function getCommands(
-  argv: {port: ?number, family: ?string},
+  argv: {socket: ?string},
   rejectIfZeroConnections: boolean,
 ): Promise<MultiConnectionAtomCommands> {
-  const commands =
-    argv.port != null && argv.family != null
-      ? await startCommands(argv.port, argv.family)
-      : await findExistingCommands();
+  const commands = await (argv.socket != null
+    ? startCommands(argv.socket)
+    : findExistingCommands());
 
   if ((await commands.getConnectionCount()) === 0 && rejectIfZeroConnections) {
     throw new FailedConnectionError(
@@ -55,27 +42,21 @@ export async function getCommands(
 
 async function findExistingCommands(): Promise<MultiConnectionAtomCommands> {
   // Get the RPC connection info for the filesystem.
-  const serverInfo = await getServer();
-  if (serverInfo == null) {
+  const socketPath = await getServerSocket();
+  if (socketPath == null) {
     throw new FailedConnectionError(
       'Could not find a nuclide-server with a connected Atom',
     );
   }
-  invariant(serverInfo != null);
-  const {commandPort, family} = serverInfo;
-  return startCommands(commandPort, family);
+  return startCommands(socketPath);
 }
 
 async function startCommands(
-  commandPort: number,
-  family: string,
+  socketPath: string,
 ): Promise<MultiConnectionAtomCommands> {
   // Setup the RPC connection to the NuclideServer process.
   const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
-  const socket = net.connect({
-    port: commandPort,
-    family: convertStringFamilyToNumberFamily(family),
-  });
+  const socket = net.connect({path: socketPath});
   const transport = new SocketTransport(socket);
   try {
     await transport.onConnected();
