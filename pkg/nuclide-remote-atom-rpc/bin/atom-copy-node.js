@@ -21,6 +21,7 @@ import {
   trackSuccess,
 } from './errors';
 import readStdin from 'get-stdin';
+import {restrictLength} from '../shared/MessageLength';
 
 /**
  * Command-line tool that sets contents of clipboard on a connected
@@ -47,11 +48,9 @@ async function main(argv): Promise<number> {
     }
   }
 
-  const input: string = await new Promise(resolve => {
-    readStdin(text => resolve(text));
-  });
+  const input = await readInput();
   if (input.length !== 0) {
-    await commands.setClipboardContents(input.substring(0, 1024 * 100));
+    await commands.setClipboardContents(input);
   } else {
     // On macOS, pbcopy blocks on stdin until an EOF. Printing help seems more useful.
     process.stderr.write(yargs.help());
@@ -59,6 +58,13 @@ async function main(argv): Promise<number> {
 
   await trackSuccess('copy', argv._);
   return EXIT_CODE_SUCCESS;
+}
+
+async function readInput(): Promise<string> {
+  const input: string = await new Promise(resolve => {
+    readStdin(resolve);
+  });
+  return restrictLength(input);
 }
 
 async function run(): Promise<void> {

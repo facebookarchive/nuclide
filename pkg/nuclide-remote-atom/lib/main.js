@@ -39,6 +39,7 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {shell} from 'electron';
+import {restrictLength} from '../../nuclide-remote-atom-rpc/shared/MessageLength';
 
 const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
 const ATOM_URI_ADD_PATH = 'add-path';
@@ -111,16 +112,12 @@ class Activation {
         return Promise.resolve();
       },
 
-      getClipboardContents(): Promise<string> {
-        // $FlowFixMe missing flow def
-        const contents: string = clipboard.readText();
-        return Promise.resolve(contents.substring(0, 100 * 1024));
+      async getClipboardContents(): Promise<string> {
+        return restrictLength(clipboard.readText());
       },
 
-      setClipboardContents(text: string): Promise<void> {
-        // $FlowFixMe missing flow def
+      async setClipboardContents(text: string): Promise<void> {
         clipboard.writeText(text);
-        return Promise.resolve();
       },
 
       dispose(): void {},
