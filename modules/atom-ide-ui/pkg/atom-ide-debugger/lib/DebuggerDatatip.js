@@ -51,10 +51,7 @@ export async function debuggerDatatip(
     focusedProcess,
     focusedStackFrame,
     'hover',
-  ).map(evaluationResult => ({
-    expression,
-    evaluationResult,
-  }));
+  ).map(exp => ({expression: exp, hideExpressionName: true, readOnly: true}));
 
   return {
     component: bindObservableAsProps(propStream, DebuggerDatatipComponent),

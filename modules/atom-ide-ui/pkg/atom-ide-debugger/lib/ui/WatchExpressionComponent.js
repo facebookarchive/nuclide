@@ -137,6 +137,7 @@ export default class WatchExpressionComponent extends React.Component<
               const props: ExpressionTreeComponentProps = {
                 containerContext,
                 pending: result.isPending,
+                readOnly: true,
                 expression:
                   result.isPending || result.isError
                     ? watchExpression

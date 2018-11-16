@@ -50,6 +50,7 @@ type ExpressionTreeNodeProps = {|
   expansionCache: Map<string, boolean>,
   nodePath: string,
   hideExpressionName?: boolean,
+  readOnly?: boolean,
 |};
 
 type ExpressionTreeNodeState = {|
@@ -209,7 +210,9 @@ export class ExpressionTreeNode extends React.Component<
 
   _isEditable = (): boolean => {
     const variable = this._getVariableExpression();
-    return variable != null && variable.canSetVariable();
+    return (
+      variable != null && variable.canSetVariable() && !this.props.readOnly
+    );
   };
 
   _updateValue = (): void => {
@@ -433,10 +436,11 @@ export class ExpressionTreeNode extends React.Component<
 
 export type ExpressionTreeComponentProps = {|
   expression: IExpression,
-  pending?: boolean,
   containerContext: Object,
+  pending?: boolean,
   className?: string,
   hideExpressionName?: boolean,
+  readOnly?: boolean,
 |};
 
 export class ExpressionTreeComponent extends React.Component<
@@ -467,6 +471,7 @@ export class ExpressionTreeComponent extends React.Component<
           nodePath="root"
           expansionCache={this._getExpansionCache()}
           hideExpressionName={this.props.hideExpressionName}
+          readOnly={this.props.readOnly}
         />
       </span>
     );

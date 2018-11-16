@@ -10,45 +10,35 @@
  * @format
  */
 
-import type {EvaluationResult} from 'atom-ide-ui';
+import type {Expected} from 'nuclide-commons/expected';
+import type {IExpression} from '../types';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-import {fetchChildrenForLazyComponent} from '../utils';
+import {ExpressionTreeComponent} from './ExpressionTreeComponent';
 
 type Props = {|
-  +expression: string,
-  +evaluationResult: ?EvaluationResult,
+  +expression: Expected<IExpression>,
 |};
 
 export default class DebuggerDatatipComponent extends React.Component<Props> {
   render(): React.Node {
-    const {expression, evaluationResult} = this.props;
-    let datatipElement;
-    if (evaluationResult == null) {
-      datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
+    const {expression} = this.props;
+    if (expression.isPending) {
+      return <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
+    } else if (expression.isError) {
+      return null;
     } else {
-      if (
-        evaluationResult.value == null &&
-        evaluationResult.description == null
-      ) {
-        return null;
-      } else {
-        datatipElement = (
+      return (
+        <div className="debugger-datatip">
           <span className="debugger-datatip-value">
-            <LazyNestedValueComponent
-              evaluationResult={evaluationResult}
-              expression={expression}
-              fetchChildren={(fetchChildrenForLazyComponent: any)}
-              simpleValueComponent={SimpleValueComponent}
-              expansionStateId={this}
+            <ExpressionTreeComponent
+              expression={expression.value}
+              containerContext={this}
             />
           </span>
-        );
-      }
+        </div>
+      );
     }
-    return <div className="debugger-datatip">{datatipElement}</div>;
   }
 }
