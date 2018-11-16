@@ -406,8 +406,6 @@ export class Expression extends ExpressionContainer
 }
 
 export class Variable extends ExpressionContainer implements IVariable {
-  // Used to show the error message coming from the adapter when setting the value #7807
-  errorMessage: ?string;
   parent: ExpressionContainer;
   name: string;
   evaluateName: ?string;
@@ -463,22 +461,17 @@ export class Variable extends ExpressionContainer implements IVariable {
     track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
       language: process.configuration.adapterType,
     });
-    try {
-      const response = await process.session.setVariable({
-        name: nullthrows(this.name),
-        value,
-        variablesReference: this.parent.reference,
-      });
-      if (response && response.body) {
-        this._value = response.body.value;
-        this._type =
-          response.body.type == null ? this._type : response.body.type;
-        this.reference = response.body.variablesReference || 0;
-        this._namedVariables = response.body.namedVariables || 0;
-        this._indexedVariables = response.body.indexedVariables || 0;
-      }
-    } catch (err) {
-      this.errorMessage = err.message;
+    const response = await process.session.setVariable({
+      name: nullthrows(this.name),
+      value,
+      variablesReference: this.parent.reference,
+    });
+    if (response && response.body) {
+      this._value = response.body.value;
+      this._type = response.body.type == null ? this._type : response.body.type;
+      this.reference = response.body.variablesReference || 0;
+      this._namedVariables = response.body.namedVariables || 0;
+      this._indexedVariables = response.body.indexedVariables || 0;
     }
   }
 

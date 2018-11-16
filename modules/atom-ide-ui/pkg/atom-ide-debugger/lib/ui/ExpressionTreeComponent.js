@@ -219,7 +219,14 @@ export class ExpressionTreeNode extends React.Component<
       const subscription = Observable.fromPromise(
         variable.setVariable(pendingValue),
       )
-        .catch(() => Observable.of(null))
+        .catch(error => {
+          if (error != null && error.message != null) {
+            atom.notifications.addError(
+              `Failed to set variable value: ${String(error.message)}`,
+            );
+          }
+          return Observable.of(null);
+        })
         .subscribe(() => {
           this._disposables.remove(subscription);
           this.setState({

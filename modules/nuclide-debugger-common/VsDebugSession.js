@@ -210,6 +210,54 @@ export default class VsDebugSession extends V8Protocol {
           return response;
         },
         (errorResponse: DebugProtocol.ErrorResponse) => {
+          let errorMessage = null;
+          let showUser = false;
+          const errorFormatString = errorResponse.body?.error?.format || '';
+          if (errorFormatString !== '') {
+            const errorObject: DebugProtocol.Message = (errorResponse.body
+              .error: any);
+            // Protocol response contained an ErrorResponse with details
+            // about how the debug adapter wants us to handle the error.
+            errorMessage = String(errorFormatString);
+            showUser = Boolean(errorObject.showUser);
+            const variables = errorObject.variables;
+            if (variables != null) {
+              for (const key of Object.keys(variables)) {
+                const pattern = new RegExp('{' + key + '}', 'g');
+                errorMessage = errorMessage.replace(pattern, variables[key]);
+              }
+            }
+
+            // TODO: Allow the consumer of the session to register a global
+            // error handler routine so we can still present errors even
+            // when running outside of Atom.
+            if (Boolean(showUser) && typeof atom !== 'undefined') {
+              atom.notifications.addError(errorMessage);
+            }
+          } else if (errorResponse.message != null) {
+            // Response message contained a user-facing string to display.
+            errorMessage = errorResponse.message;
+          } else {
+            // See if Response message contained a user-facing string to display.
+            // The protocol expects message to be on result, not result.body
+            // but some debug adapters are doing this incorrectly. Work with
+            // them anyway...
+            // $FlowIgnore
+            errorMessage = errorResponse.body?.message;
+          }
+
+          track('vs-debug-session:transaction', {
+            ...this._adapterAnalyticsExtras,
+            request: {command, arguments: args},
+            response: errorResponse,
+          });
+
+          if (errorMessage != null) {
+            throw new Error(errorMessage);
+          }
+
+          // If the debug adapter didn't specify what error to
+          // show the user, fallback to logging the request/response info.
           let formattedError =
             idx(errorResponse, _ => _.body.error.format) ||
             idx(errorResponse, _ => _.message);
@@ -223,11 +271,6 @@ export default class VsDebugSession extends V8Protocol {
               `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
             ].join(', ');
           }
-          track('vs-debug-session:transaction', {
-            ...this._adapterAnalyticsExtras,
-            request: {command, arguments: args},
-            response: errorResponse,
-          });
           throw new Error(formattedError);
         },
       );
