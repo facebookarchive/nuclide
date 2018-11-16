@@ -49,14 +49,28 @@ export function observeAndroidDevices(
           (e1, e2) => e1.message === e2.message,
         ),
       )
-      .do(value => {
+      .do(async value => {
         if (value.isError) {
+          const {error} = value;
           const logger = getLogger('nuclide-adb');
-          logger.warn(value.error.message);
-          track('nuclide-adb:device-poller:error', {
-            error: value.error,
-            host: serviceUri,
-          });
+          let extras = {error};
+          try {
+            if (
+              // $FlowIgnore
+              (error: any).originalError != null &&
+              // $FlowIgnore
+              (error: any).originalError.code === 'ENOENT'
+            ) {
+              const infoService = await getInfoServiceByNuclideUri(serviceUri);
+              if (infoService != null) {
+                const rpcEnv = infoService.getServerEnvironment();
+                extras = {...extras, pathEnv: rpcEnv.PATH};
+              }
+            }
+          } finally {
+            logger.warn(value.error.message);
+            track('nuclide-adb:device-poller:error', extras);
+          }
         }
       })
       .publishReplay(1)
@@ -129,6 +143,23 @@ function observeDevicesViaTrackDevices(
       // if the process exits, which would invalidate later caching (distinctUntilChanged/publishReplay)
       .merge(Observable.never())
   );
+}
+
+function getInfoServiceByNuclideUri(
+  uri: NuclideUri,
+  // $FlowIgnore env can contain anything
+): ?{getServerEnvironment(): Promise<Object>} {
+  let rpcService: ?nuclide$RpcService = null;
+  // Atom's service hub is synchronous.
+  atom.packages.serviceHub
+    .consume('nuclide-rpc-services', '0.0.0', provider => {
+      rpcService = provider;
+    })
+    .dispose();
+  if (rpcService == null) {
+    return null;
+  }
+  return rpcService.getServiceByNuclideUri('InfoService', uri);
 }
 
 // This is a convenient way for any device panel plugins of type Android to get from Device to
