@@ -1965,7 +1965,7 @@ export default class DebugService implements IDebugService {
         focusedStackFrame,
         'repl',
       )
-        .skip(1) // Skip the first pending null value.
+        .skip(1) // Skip the first pending value.
         .subscribe(result => {
           // Evaluate all watch expressions and fetch variables again since repl evaluation might have changed some.
           this._viewModel.setFocusedStackFrame(
@@ -1973,14 +1973,18 @@ export default class DebugService implements IDebugService {
             false,
           );
 
-          if (result == null || !expression.available) {
+          if (result.isError || result.isPending || !expression.available) {
             const message: ConsoleMessage = {
               text: expression.getValue(),
               level: 'error',
             };
             this._consoleOutput.next(message);
           } else {
-            this._consoleOutput.next({text: 'object', data: result, level});
+            this._consoleOutput.next({
+              text: 'object',
+              data: result.value,
+              level,
+            });
           }
           this._consoleDisposables.remove(subscription);
         });

@@ -19,10 +19,12 @@ import type {
 } from './types';
 import type {EvaluationResult} from 'atom-ide-ui';
 import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import type {Expected} from 'nuclide-commons/expected';
 
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 import logger from './logger';
+import {Expect} from 'nuclide-commons/expected';
 
 function getGutterLineNumber(target: HTMLElement): ?number {
   const eventLine = parseInt(target.dataset.line, 10);
@@ -136,12 +138,13 @@ export function expressionAsEvaluationResultStream(
   focusedProcess: IProcess,
   focusedStackFrame: ?IStackFrame,
   context: ContextType,
-): Observable<?EvaluationResult> {
+): Observable<Expected<EvaluationResult>> {
   return Observable.fromPromise(
     expression.evaluate(focusedProcess, focusedStackFrame, context),
   )
     .map(() => expressionAsEvaluationResult(expression))
-    .startWith(null);
+    .map(val => Expect.value(val))
+    .startWith(Expect.pending());
 }
 
 function typeForSimpleValue(value: string): string {
