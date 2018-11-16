@@ -75,7 +75,7 @@ type Color =
 export type Severity = 'info' | 'warning' | 'error';
 
 // A message object, for use with the `console.append()` API.
-export type Message = {
+export type Message = {|
   text: string,
   level: Level,
   format?: MessageFormat,
@@ -86,7 +86,7 @@ export type Message = {
   kind?: ?MessageKind,
   scopeName?: ?string,
   incomplete?: boolean,
-};
+|};
 
 //
 //
