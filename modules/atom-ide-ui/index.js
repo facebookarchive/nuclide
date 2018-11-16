@@ -137,5 +137,3 @@ export type {
 export type {
   Command as TerminalCommand,
 } from './pkg/atom-ide-terminal/lib/pty-service/rpc-types';
-
-export type {EvaluationResult} from './pkg/atom-ide-console/lib/types';

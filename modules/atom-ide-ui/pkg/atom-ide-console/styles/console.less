@@ -64,17 +64,17 @@
   min-height: 0;
 }
 
-.console-lazy-nested-value div, .console-lazy-nested-value span {
+.console-expression-tree-value div, .console-expression-tree-value span {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
   white-space: pre-wrap;
   word-break: normal;
   word-wrap: break-word;
 }
 
-.console-lazy-nested-value {
+.console-expression-tree-value {
   display: flex;
 
-  // The following selectors style the tree components inside of the LazyNestedValueComponent
+  // The following selectors style the tree components inside of the ExpressionTreeComponent
   // instance that is used by the console.
 
   .list-item::before {
@@ -269,7 +269,7 @@
   padding-top: 1px;
   padding-bottom: 1px;
 
-  .ui-lazy-nested-value-treelist {
+  .ui-expression-tree-value-treelist {
 
     // Inherit the line-height so that it's the same as other records. If we
     // don't do this, the expandable items will be taller.
@@ -443,8 +443,8 @@
   pre,
   code,
   pre a,
-  .console-lazy-nested-value div,
-  .console-lazy-nested-value span {
+  .console-expression-tree-value div,
+  .console-expression-tree-value span {
     color: @fg-color;
   }
 

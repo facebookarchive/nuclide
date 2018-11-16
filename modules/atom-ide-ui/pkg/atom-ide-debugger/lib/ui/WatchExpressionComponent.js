@@ -13,7 +13,6 @@
 import type {IEvaluatableExpression, IStackFrame, IProcess} from '../types';
 import type {ExpressionTreeComponentProps} from './ExpressionTreeComponent';
 
-import {Observable} from 'rxjs';
 import * as React from 'react';
 import classnames from 'classnames';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';

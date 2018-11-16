@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RegisterExecutorFunction} from 'atom-ide-ui';
+import type {ConsoleMessage, RegisterExecutorFunction} from 'atom-ide-ui';
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -32,7 +32,7 @@ export function consumeRegisterExecutor(
   registerExecutor: RegisterExecutorFunction,
 ): void {
   invariant(disposables != null);
-  const messages: Subject<{result?: Object}> = new Subject();
+  const messages: Subject<ConsoleMessage> = new Subject();
   disposables.add(
     registerExecutor({
       id: 'echo',
@@ -41,10 +41,7 @@ export function consumeRegisterExecutor(
       send(code: string): void {
         messages.next({
           level: 'log',
-          data: {
-            value: code,
-            type: 'text',
-          },
+          text: code,
         });
       },
       output: messages.asObservable(),

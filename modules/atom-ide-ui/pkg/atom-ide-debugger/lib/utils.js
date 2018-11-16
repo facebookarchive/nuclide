@@ -17,8 +17,6 @@ import type {
   IStackFrame,
   ContextType,
 } from './types';
-import type {EvaluationResult} from 'atom-ide-ui';
-import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
 import type {Expected} from 'nuclide-commons/expected';
 
 import nullthrows from 'nullthrows';
@@ -111,28 +109,6 @@ export function isLocalScopeName(scopeName: string): boolean {
   return ['Local', 'Locals'].indexOf(scopeName) !== -1;
 }
 
-export function expressionAsEvaluationResult(
-  expression: IExpression,
-): EvaluationResult {
-  const value = expression.getValue();
-  if (!expression.available) {
-    return {type: 'error', value};
-  } else if (!expression.hasChildren()) {
-    return {
-      type: typeForSimpleValue(value),
-      value,
-    };
-  } else {
-    return {
-      type: 'object',
-      description: value,
-      // Used a means to get children when requested later.
-      // $FlowFixMe: that isn't an object ID,
-      objectId: expression,
-    };
-  }
-}
-
 export function evaluateExpressionAsStream(
   expression: IEvaluatableExpression,
   focusedProcess: IProcess,
@@ -145,29 +121,6 @@ export function evaluateExpressionAsStream(
     .catch(error => Observable.of(Expect.error(error)))
     .map(() => Expect.value(expression))
     .startWith(Expect.pending());
-}
-
-function typeForSimpleValue(value: string): string {
-  if (value === 'undefined' || value === 'null') {
-    return value;
-  } else {
-    return 'default';
-  }
-}
-
-export function fetchChildrenForLazyComponent(
-  expression: IExpression,
-): Observable<?ExpansionResult> {
-  return Observable.fromPromise(
-    expression.getChildren().then(
-      children =>
-        children.map(child => ({
-          name: child.name,
-          value: expressionAsEvaluationResult(child),
-        })),
-      error => null,
-    ),
-  );
 }
 
 export function onUnexpectedError(error: any) {

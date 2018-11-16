@@ -53,23 +53,6 @@ export type SourceInfo = {
   stop?: () => void,
 };
 
-/* Evaluation & values */
-export type EvaluationResult = {
-  type: string,
-  // Either:
-  value?: string,
-  // Or:
-  description?: string,
-  objectId?: string,
-  subtype?: string,
-  // Or:
-  objects?: Array<{
-    description: string,
-    type: ?string,
-    expression: Object,
-  }>,
-};
-
 // Message levels. For use with the `console.append()` API.
 export type Level =
   | 'info'
@@ -200,7 +183,7 @@ export type Executor = {
   id: string,
   name: string,
   send(message: string): void,
-  output: Observable<Message | {result?: EvaluationResult}>,
+  output: Observable<Message>,
   scopeName: () => string,
   provideSymbols?: (prefix: string) => Array<string>,
   onDidChangeScopeName?: (callback: () => void) => IDisposable,

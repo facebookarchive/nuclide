@@ -108,19 +108,11 @@ export default class RecordView extends React.Component<Props> {
     const children = [];
     for (const expression of expressions) {
       if (!expression.hasChildren()) {
-        children.push(
-          <SimpleValueComponent
-            expression={null}
-            evaluationResult={{
-              type: expression.type != null ? expression.type : 'text',
-              value: expression.getValue(),
-            }}
-          />,
-        );
+        children.push(<SimpleValueComponent expression={expression} />);
       } else {
         children.push(
           <ExpressionTreeComponent
-            className="console-lazy-nested-value"
+            className="console-expression-tree-value"
             expression={expression}
             containerContext={expansionStateId}
             hideExpressionName={true}
@@ -176,7 +168,7 @@ export default class RecordView extends React.Component<Props> {
         <div
           ref={this._handleRecordWrapper}
           className={classNames}
-          tabindex="0">
+          tabIndex="0">
           {icon}
           <div className="console-record-content-wrapper">
             {record.repeatCount > 1 && (

@@ -10,31 +10,29 @@
  * @format
  */
 
-import type {EvaluationResult} from 'atom-ide-ui';
+import type {IExpression} from 'atom-ide-ui';
 
 import * as React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TextRenderer} from './TextRenderer';
 
 type Props = {
-  expression: ?string,
-  evaluationResult: EvaluationResult,
+  expression: IExpression,
 };
 
 const booleanRegex = /^true|false$/i;
 export const STRING_REGEX = /^(['"]).*\1$/;
 
-function renderNullish(
-  evaluationResult: EvaluationResult,
-): ?React.Element<any> {
-  const {type} = evaluationResult;
+function renderNullish(expression: IExpression): ?React.Element<any> {
+  const type = expression.type;
   return type === 'undefined' || type === 'null' ? (
     <span className={ValueComponentClassNames.nullish}>{type}</span>
   ) : null;
 }
 
-function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderString(expression: IExpression): ?React.Element<any> {
+  const type = expression.type;
+  const value = expression.getValue();
   if (value == null) {
     return null;
   }
@@ -53,8 +51,9 @@ function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
   }
 }
 
-function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderNumber(expression: IExpression): ?React.Element<any> {
+  const type = expression.type;
+  const value = expression.getValue();
   if (value == null) {
     return null;
   }
@@ -63,10 +62,9 @@ function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   ) : null;
 }
 
-function renderBoolean(
-  evaluationResult: EvaluationResult,
-): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderBoolean(expression: IExpression): ?React.Element<any> {
+  const type = expression.type;
+  const value = expression.getValue();
   if (value == null) {
     return null;
   }
@@ -75,8 +73,8 @@ function renderBoolean(
   ) : null;
 }
 
-function renderDefault(evaluationResult: EvaluationResult): ?string {
-  return evaluationResult.value;
+function renderDefault(expression: IExpression): ?string {
+  return expression.getValue();
 }
 
 const valueRenderers = [
@@ -90,27 +88,22 @@ const valueRenderers = [
 
 export default class SimpleValueComponent extends React.Component<Props> {
   shouldComponentUpdate(nextProps: Props): boolean {
-    const {expression, evaluationResult} = this.props;
-    return (
-      expression !== nextProps.expression ||
-      evaluationResult.type !== nextProps.evaluationResult.type ||
-      evaluationResult.value !== nextProps.evaluationResult.value ||
-      evaluationResult.description !== nextProps.evaluationResult.description
-    );
+    const {expression} = this.props;
+    return expression !== nextProps.expression;
   }
 
   render(): React.Node {
-    const {expression, evaluationResult} = this.props;
+    const {expression} = this.props;
     let displayValue;
     for (const renderer of valueRenderers) {
-      displayValue = renderer(evaluationResult);
+      displayValue = renderer(expression);
       if (displayValue != null) {
         break;
       }
     }
     if (displayValue == null || displayValue === '') {
-      // flowlint-next-line sketchy-null-string:off
-      displayValue = evaluationResult.description || '(N/A)';
+      const val = expression.getValue();
+      displayValue = val != null ? val : '(N/A)';
     }
     if (expression == null) {
       return (
@@ -119,10 +112,10 @@ export default class SimpleValueComponent extends React.Component<Props> {
         </span>
       );
     }
-    // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
-    // (t11408154)
     const renderedExpression = (
-      <span className={ValueComponentClassNames.identifier}>{expression}</span>
+      <span className={ValueComponentClassNames.identifier}>
+        {expression.name}
+      </span>
     );
     return (
       <span tabIndex={-1} className="native-key-bindings">

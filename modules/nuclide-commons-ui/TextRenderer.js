@@ -10,11 +10,13 @@
  * @format
  */
 
-import * as React from 'react';
-import type {EvaluationResult} from 'atom-ide-ui';
+import type {IExpression} from 'atom-ide-ui';
 
-export function TextRenderer(evaluationResult: EvaluationResult): React.Node {
-  const {type, value} = evaluationResult;
+import * as React from 'react';
+
+export function TextRenderer(expression: IExpression): React.Node {
+  const type = expression.type;
+  const value = expression.getValue();
   if (type === 'text') {
     return <span>{value}</span>;
   } else {

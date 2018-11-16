@@ -845,7 +845,7 @@ class Activation {
   _copyDebuggerExpressionValue(event: Event) {
     const selection = window.getSelection();
     const clickedElement: HTMLElement = (event.target: any);
-    const targetClass = '.nuclide-ui-lazy-nested-value';
+    const targetClass = '.nuclide-ui-expression-tree-value';
     const copyElement = clickedElement.closest(targetClass);
 
     if (copyElement != null) {
