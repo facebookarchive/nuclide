@@ -15,19 +15,13 @@ import type {Expected} from 'nuclide-commons/expected';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {Section} from 'nuclide-commons-ui/Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {
-  fetchChildrenForLazyComponent,
-  expressionAsEvaluationResult,
-} from '../utils';
 import {Expect} from 'nuclide-commons/expected';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import {ExpressionTreeComponent} from './ExpressionTreeComponent';
 
 type Props = {|
   +service: IDebugService,
@@ -116,23 +110,16 @@ export default class ScopesComponent extends React.Component<Props, State> {
   _renderScopeSection(scope: IScope): ?React.Element<any> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const expanded = this._isScopeExpanded(scope);
-    const {focusedProcess} = this.props.service.viewModel;
-    const canSetVariables =
-      focusedProcess != null &&
-      focusedProcess.session.capabilities.supportsSetVariable;
+    const ScopeBodyComponent = expanded
+      ? bindObservableAsProps(
+          this._getScopeVariables(scope).map(variables => ({
+            variables,
+            containerContext: this,
+          })),
+          ScopeComponent,
+        )
+      : () => null;
 
-    let ScopeBodyComponent = () => null;
-    if (expanded) {
-      ScopeBodyComponent = bindObservableAsProps(
-        this._getScopeVariables(scope).map(variables => ({
-          variables,
-          canSetVariables,
-          getExpansionStateIdForExpression: this
-            ._getExpansionStateIdForExpression,
-        })),
-        ScopeComponent,
-      );
-    }
     return (
       <Section
         key={scope.getId()}
@@ -145,15 +132,6 @@ export default class ScopesComponent extends React.Component<Props, State> {
       </Section>
     );
   }
-
-  _getExpansionStateIdForExpression = (expression: string): Object => {
-    let expansionStateId = this._expansionStates.get(expression);
-    if (expansionStateId == null) {
-      expansionStateId = {};
-      this._expansionStates.set(expression, expansionStateId);
-    }
-    return expansionStateId;
-  };
 
   _getScopeVariables(scope: IScope): Observable<Expected<Array<IVariable>>> {
     return Observable.of(Expect.pending()).concat(
@@ -210,8 +188,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
 
 type ScopeProps = {
   variables: Expected<Array<IVariable>>,
-  canSetVariables: boolean,
-  getExpansionStateIdForExpression: (name: string) => Object,
+  containerContext: Object,
 };
 
 class ScopeComponent extends React.Component<ScopeProps> {
@@ -230,39 +207,15 @@ class ScopeComponent extends React.Component<ScopeProps> {
     }
   }
 
-  _setVariable = (expression: ?string, newValue: ?string): void => {
-    const {variables} = this.props;
-    if (
-      !Boolean(expression) ||
-      !Boolean(newValue) ||
-      variables.isError ||
-      variables.isPending
-    ) {
-      return;
-    }
-    const variable = variables.value.find(v => v.name === expression);
-    if (variable == null) {
-      return;
-    }
-    invariant(newValue != null);
-    variable.setVariable(newValue).then(() => this.forceUpdate());
-  };
-
   _renderVariable(expression: IVariable): ?React.Element<any> {
     return (
       <div
-        className="debugger-expression-value-row debugger-scope native-key-bindings"
-        key={expression.getId()}>
+        className="debugger-expression-value-row debugger-scope"
+        key={expression.name}>
         <div className="debugger-expression-value-content">
-          <LazyNestedValueComponent
-            expression={expression.name}
-            evaluationResult={expressionAsEvaluationResult(expression)}
-            fetchChildren={(fetchChildrenForLazyComponent: any)}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this.props.getExpansionStateIdForExpression(
-              expression.name,
-            )}
-            setVariable={this.props.canSetVariables ? this._setVariable : null}
+          <ExpressionTreeComponent
+            expression={expression}
+            containerContext={this.props.containerContext}
           />
         </div>
       </div>
