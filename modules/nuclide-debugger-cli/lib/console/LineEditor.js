@@ -253,6 +253,8 @@ export default class LineEditor extends EventEmitter {
       ['up', () => this._historyPrevious()],
       ['C-home', () => this._topOfOutput()],
       ['C-end', () => this._bottomOfOutput()],
+      ['C-left', () => this._wordLeft()],
+      ['C-right', () => this._wordRight()],
       ['C-a', () => this._home()],
       ['C-c', () => this._sigint()],
       ['C-d', () => this._deleteRight(true)],
@@ -483,6 +485,46 @@ export default class LineEditor extends EventEmitter {
       this._textChanged();
       this._redrawConsole();
     }
+  }
+
+  _wordLeft(): void {
+    if (this._cursor === 0) {
+      return;
+    }
+
+    while (this._buffer[this._cursor - 1] === ' ') {
+      this._cursor--;
+    }
+
+    while (this._cursor > 0 && this._buffer[this._cursor - 1] !== ' ') {
+      this._cursor--;
+    }
+
+    this._redrawConsole();
+  }
+
+  _wordRight(): void {
+    if (this._cursor === this._buffer.length) {
+      return;
+    }
+
+    while (this._buffer[this._cursor + 1] === ' ') {
+      this._cursor++;
+    }
+
+    while (
+      this._cursor < this._buffer.length &&
+      this._buffer[this._cursor + 1] !== ' '
+    ) {
+      this._cursor++;
+    }
+
+    // word-right is expected to land on the space following the word.
+    if (this._cursor < this._buffer.length) {
+      this._cursor++;
+    }
+
+    this._redrawConsole();
   }
 
   _swapChars(): void {
