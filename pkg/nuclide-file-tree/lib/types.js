@@ -114,7 +114,6 @@ export type AppState = {|
   isEditingWorkingSet: boolean,
   editedWorkingSet: WorkingSet,
   openFilesWorkingSet: WorkingSet,
-  reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
 
   _workingSetsStore: ?WorkingSetsStore,
   _usePrefixNav: boolean,

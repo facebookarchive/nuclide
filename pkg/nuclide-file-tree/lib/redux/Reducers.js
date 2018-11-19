@@ -22,7 +22,6 @@ import * as Immutable from 'immutable';
 import {HgStatusToFileChangeStatus} from '../../../nuclide-vcs-base';
 import {matchesFilter} from '../FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
-import {repositoryForPath} from '../../../nuclide-vcs-base';
 import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from 'log4js';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
@@ -67,7 +66,6 @@ const DEFAULT_STATE: AppState = {
   isEditingWorkingSet: false,
   editedWorkingSet: new WorkingSet(),
   openFilesWorkingSet: new WorkingSet(),
-  reposByRoot: {},
 
   _workingSetsStore: null,
   _filter: '',
@@ -767,14 +765,9 @@ function setRepositories(
   state: AppState,
   repositories: Immutable.Set<atom$Repository>,
 ): AppState {
-  const reposByRoot = {};
-  Selectors.getRoots(state).forEach(root => {
-    reposByRoot[root.uri] = repositoryForPath(root.uri);
-  });
   return {
     ...state,
     _repositories: repositories,
-    reposByRoot,
   };
 }
 

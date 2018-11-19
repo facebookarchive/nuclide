@@ -20,6 +20,7 @@ import createStore from '../lib/redux/createStore';
 import * as Selectors from '../lib/redux/Selectors';
 import * as Actions from '../lib/redux/Actions';
 import * as EpicHelpers from '../lib/redux/EpicHelpers';
+import * as Immutable from 'immutable';
 
 import {copyFixture} from '../../nuclide-test-helpers';
 import fs from 'fs';
@@ -38,6 +39,14 @@ const tempCleanup = denodeify(tempModule.cleanup);
 import invariant from 'assert';
 
 class MockRepository {
+  _workingDirectory: string;
+
+  constructor(workingDirectory: string) {
+    this._workingDirectory = workingDirectory;
+  }
+
+  getWorkingDirectory = () => this._workingDirectory;
+
   isProjectAtRoot() {
     return true;
   }
@@ -443,9 +452,8 @@ it('omits vcs-excluded paths', async () => {
   store.dispatch(Actions.expandNode(dir1, fooTxt));
   store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
   store.dispatch(Actions.setHideVcsIgnoredPaths(true));
-
-  const mockRepo = new MockRepository();
-  store.getState().reposByRoot[dir1] = (mockRepo: any);
+  const mockRepo = new MockRepository(dir1);
+  store.dispatch(Actions.setRepositories(Immutable.Set([(mockRepo: any)])));
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(0);
 });
@@ -456,8 +464,8 @@ it('includes vcs-excluded paths when told to', async () => {
   store.dispatch(Actions.setExcludeVcsIgnoredPaths(false));
   store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
-  const mockRepo = new MockRepository();
-  store.getState().reposByRoot[dir1] = (mockRepo: any);
+  const mockRepo = new MockRepository(dir1);
+  store.dispatch(Actions.setRepositories(Immutable.Set([(mockRepo: any)])));
 
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);
@@ -469,8 +477,8 @@ it('includes vcs-excluded paths when explicitly told to', async () => {
   store.dispatch(Actions.setExcludeVcsIgnoredPaths(true));
   store.dispatch(Actions.setHideVcsIgnoredPaths(false));
 
-  const mockRepo = new MockRepository();
-  store.getState().reposByRoot[dir1] = (mockRepo: any);
+  const mockRepo = new MockRepository(dir1);
+  store.dispatch(Actions.setRepositories(Immutable.Set([(mockRepo: any)])));
 
   await loadChildKeys(dir1, dir1);
   expect(shownChildren(store.getState(), dir1, dir1).length).toBe(1);

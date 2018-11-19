@@ -31,6 +31,7 @@ import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Immutable from 'immutable';
 import {memoize, once} from 'lodash';
 import {createSelector} from 'reselect';
+import {repositoryContainsPath} from '../../../nuclide-vcs-base';
 
 //
 //
@@ -132,7 +133,23 @@ export const getEditedWorkingSet = (state: AppState) => state.editedWorkingSet;
 export const getOpenFilesWorkingSet = (state: AppState) =>
   state.openFilesWorkingSet;
 
-const getReposByRoot = (state: AppState) => state.reposByRoot;
+const getReposByRoot = createSelector(
+  [getRoots, getRepositories],
+  (roots, repos) => {
+    const reposByRoot = {};
+    roots.forEach(root => {
+      reposByRoot[root.uri] = repos.filter(Boolean).find(repo => {
+        try {
+          return repositoryContainsPath(repo, root.uri);
+        } catch (e) {
+          // The repo type is not supported.
+          return false;
+        }
+      });
+    });
+    return reposByRoot;
+  },
+);
 
 //
 //
