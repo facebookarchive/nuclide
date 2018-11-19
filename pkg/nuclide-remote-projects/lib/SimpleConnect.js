@@ -85,7 +85,7 @@ export function connectToServer(config: SimpleConnectConfiguration) {
       : remoteServerCommand;
 
   remoteServerCommand += ` --big-dig --version=${version}`;
-  const remoteServerPorts = '9093-9090';
+  const remoteServerPorts = '9093-9091';
 
   sshHandshake.connect({
     host: config.host,

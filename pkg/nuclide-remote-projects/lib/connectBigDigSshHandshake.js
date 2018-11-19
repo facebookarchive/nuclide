@@ -121,10 +121,10 @@ export default function connectBigDigSshHandshake(
   } = connectionConfig;
   let {remoteServerCommand} = connectionConfig;
   // If the user does not specify --port or -p in the remoteServerCommand, then
-  // we default to '9093-9090' as the port range. Currently, we do not give the
+  // we default to '9093-9091' as the port range. Currently, we do not give the
   // user a way to specify their own port range from the connection dialog.
   // We can straighten this out once we completely cutover to Big Dig.
-  let remoteServerPorts = '9093-9090';
+  let remoteServerPorts = '9093-9091';
   // Add the current Nuclide version, unless explicitly provided.
   let version = getNuclideVersion();
   // We'll only allow one Nuclide server per user - but you can override this.

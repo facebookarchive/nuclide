@@ -27,7 +27,7 @@ A successful start will display the port upon which the server has started, and
 a JSON dump of certificate information:
 
 ```
-Nuclide started on port 9090.
+Nuclide started on port 9091.
 {"workspace": null, "ca": "-----BEGIN CERTIFICATE-----\n...
 ```
 

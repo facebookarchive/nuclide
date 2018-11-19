@@ -19,7 +19,7 @@ import * as portHelper from '../../../common/ports';
 const ThriftFileSystemServiceHandler = jest.fn(function(root, watchman) {
   this._watcher = watchman;
 });
-const mockPort = 9090;
+const mockPort = 9091;
 
 jest.mock(
   require.resolve('../../../thrift-services/fs/ThriftFileSystemServiceHandler'),

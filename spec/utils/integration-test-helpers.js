@@ -25,7 +25,7 @@ import {getMountedReactRootNames} from '../../pkg/commons-atom/testHelpers';
 import {reset} from '../../pkg/nuclide-open-files';
 
 // TEST_NUCLIDE_SERVER_PORT can be set by the test runner to allow simultaneous remote tests.
-const SERVER_PORT = parseInt(process.env.TEST_NUCLIDE_SERVER_PORT, 10) || 9090;
+const SERVER_PORT = parseInt(process.env.TEST_NUCLIDE_SERVER_PORT, 10) || 9091;
 
 export function jasmineIntegrationTestSetup(): void {
   // To run remote tests, we have to star the nuclide server. It uses `nohup`, but apparently

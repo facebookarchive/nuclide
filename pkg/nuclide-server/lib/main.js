@@ -24,7 +24,7 @@ import servicesConfig from './servicesConfig';
 import yargs from 'yargs';
 import {getLogger} from 'log4js';
 
-const DEFAULT_PORT = 9090;
+const DEFAULT_PORT = 9091;
 
 const logger = getLogger('nuclide-server');
 

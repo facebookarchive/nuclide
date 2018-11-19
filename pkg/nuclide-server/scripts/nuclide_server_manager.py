@@ -35,7 +35,7 @@ try:
     from fb.nuclide_config import OPEN_PORTS, HOME_FOLDER
 except ImportError as e:
     # Default open ports.
-    OPEN_PORTS = [9090, 9091, 9092, 9093]
+    OPEN_PORTS = [9091, 9092, 9093]
     # Default home folder.
     HOME_FOLDER = os.path.expanduser('~')
     pass
