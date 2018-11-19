@@ -51,6 +51,7 @@ export default class CommandLine implements ConsoleIO {
       historySaveFile,
       tty: !plain,
       useTerminalColors: config.settings().useTerminalColors === true,
+      logKeystrokes: config.settings().logKeystrokes === true,
     };
 
     this._cli = new LineEditor(lineEditorArgs, logger);

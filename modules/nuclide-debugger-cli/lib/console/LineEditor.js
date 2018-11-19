@@ -22,6 +22,7 @@ import History from './History';
 import blessed from 'blessed';
 import ScrollBox from './ScrollBox';
 import {CompletionsDialog} from './CompletionDialog';
+import log4js from 'log4js';
 
 type LineEditorOptions = {
   input?: ?stream$Readable,
@@ -31,6 +32,7 @@ type LineEditorOptions = {
   removeHistoryDuplicates?: boolean,
   historySaveFile?: string,
   useTerminalColors?: boolean,
+  logKeystrokes?: boolean,
 };
 
 type State = 'RUNNING' | 'STOPPED';
@@ -61,6 +63,8 @@ export default class LineEditor extends EventEmitter {
   _output: stream$Writable;
   _state: State = 'STOPPED';
   _disableKeys: boolean = false;
+  _logKeystrokes: boolean;
+  _logger: log4js$Logger;
 
   // completion state
   _completions: ?Completions;
@@ -78,6 +82,8 @@ export default class LineEditor extends EventEmitter {
     this._options = options;
     this._input = options.input || process.stdin;
     this._output = options.output || process.stdout;
+    this._logKeystrokes = options.logKeystrokes === true;
+    this._logger = log4js.getLogger('default');
   }
 
   isTTY(): boolean {
@@ -257,6 +263,10 @@ export default class LineEditor extends EventEmitter {
     ]);
 
     this._screen.on('keypress', (ch: ?string, key: Keypress) => {
+      if (this._logKeystrokes) {
+        this._logger.info(`key: ${JSON.stringify(key)}`);
+      }
+
       // turn off keys if a dialog like tab completion is up
       if (this._disableKeys) {
         return;

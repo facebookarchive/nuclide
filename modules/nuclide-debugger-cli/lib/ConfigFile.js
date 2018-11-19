@@ -29,6 +29,7 @@ type PresetSummary = {
 
 type Settings = {
   useTerminalColors?: boolean,
+  logKeystrokes?: boolean,
 };
 
 type ConfigFileContents = {
