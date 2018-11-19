@@ -55,7 +55,6 @@ type EditorMarks = Immutable.Map<
 class Activation {
   _disposables: UniversalDisposable;
   _model: Model<{editorLines: EditorMarks, colors: ?ThemeColors}>;
-  _contextForEditor: Map<atom$TextEditor, CanvasRenderingContext2D>;
 
   constructor() {
     this._disposables = new UniversalDisposable();
