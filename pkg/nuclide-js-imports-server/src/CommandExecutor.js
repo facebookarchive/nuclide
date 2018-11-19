@@ -71,11 +71,39 @@ export class CommandExecutor {
 
   executeCommand(command: string, args: any) {
     switch (command) {
+      case ADD_IMPORT_COMMAND_ID:
+        return this._addImport((args: AddImportCommandParams));
       case 'organizeImports':
         return this._organizeImports(args[0]);
       default:
         throw new Error(`Unexpected command ${command}`);
     }
+  }
+
+  async _addImport(args: AddImportCommandParams): Promise<void> {
+    const [missingImport, fileMissingImport] = args;
+    const ast = parseFile(
+      this.documents
+        .get(nuclideUri.nuclideUriToUri(fileMissingImport))
+        .getText(),
+    );
+    if (ast == null || ast.program == null || ast.program.body == null) {
+      // File could not be parsed. If this is reached, we shouldn't be applying
+      // addImport anyways since the file must have changed from when we computed
+      // the CodeAction.
+      return;
+    }
+    const {body} = ast.program;
+    const edits = getEditsForImport(
+      this.importFormatter,
+      fileMissingImport,
+      missingImport,
+      body,
+    );
+
+    await this.connection.workspace.applyEdit(
+      this._toWorkspaceEdit(fileMissingImport, edits),
+    );
   }
 
   async _organizeImports(filePath: NuclideUri): Promise<void> {
