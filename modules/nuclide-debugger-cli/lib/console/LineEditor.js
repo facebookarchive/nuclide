@@ -92,7 +92,9 @@ export default class LineEditor extends EventEmitter {
 
   close(error: ?string) {
     this._closeError = error;
-    this._history.save();
+    if (this._history != null) {
+      this._history.save();
+    }
     this.emit('close');
   }
 
@@ -106,7 +108,9 @@ export default class LineEditor extends EventEmitter {
 
   setState(state: State) {
     this._state = state;
-    this._repaintStatus();
+    if (this._tty && this._fullscreen) {
+      this._repaintStatus();
+    }
   }
 
   enterFullScreen(): void {
