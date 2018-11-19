@@ -16,6 +16,7 @@ import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {compact} from 'nuclide-commons/observable';
+import {arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
 import ExportCache from './ExportCache';
 import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
@@ -255,18 +256,19 @@ export function indexDirectory(
       );
     });
 
-  return Observable.of(cachedUpdates)
+  return Observable.of([cachedUpdates])
     .concat(workerMessages)
     .map(message => {
       // Inject the main files at this point, since we have a list of all map files.
       // This could be pure but it's just not worth the cost.
-      message.forEach(update => {
+      const msg = arrayFlatten(arrayCompact(message));
+      msg.forEach(update => {
         const mainDir = mainFiles.get(update.file);
         if (mainDir != null) {
           decorateExportUpdateWithMainDirectory(update, mainDir);
         }
       });
-      return message;
+      return msg;
     });
 }
 
