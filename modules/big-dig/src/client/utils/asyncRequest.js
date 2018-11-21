@@ -12,10 +12,12 @@
 
 import type {AgentOptions} from '../../common/types';
 
+import invariant from 'assert';
+import request from 'request';
 import https from 'https';
 import http from 'http';
 import url from 'url';
-import invariant from 'assert';
+import passesGK from 'nuclide-commons/passesGK';
 
 export type RequestOptions = {
   uri: string,
@@ -36,14 +38,17 @@ type HttpResponse = {statusCode: number};
  * the option:
  * {useQuerystring: false}
  */
-export default function asyncRequest(
+export default (async function asyncRequest(
   options: RequestOptions,
 ): Promise<ResponseBody> {
+  const useNodeRequest = await passesGK('bigdig_node_http_request');
+
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
     }
-    request(options, (error, response, body) => {
+
+    const handleResponse = (error, response, body) => {
       if (error) {
         reject(error);
       } else if (
@@ -69,11 +74,18 @@ export default function asyncRequest(
         invariant(response != null);
         resolve({body, response});
       }
-    });
-  });
-}
+    };
 
-function request(opts: RequestOptions, cb) {
+    if (useNodeRequest) {
+      nodeRequest(options, handleResponse);
+    } else {
+      request(options, handleResponse);
+    }
+  });
+});
+
+// TODO support IPv6 support T36867827/T36962554 for all cases
+function nodeRequest(opts: RequestOptions, cb) {
   const parsedUri = url.parse(opts.uri);
   const agentOptions = opts.agentOptions;
 

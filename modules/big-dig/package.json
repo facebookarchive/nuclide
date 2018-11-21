@@ -18,6 +18,7 @@
     "nuclide-commons": "0.7.3-dev",
     "nuclide-prebuilt-libs": "0.5.2",
     "nuclide-watchman-helpers": "0.7.3-dev",
+    "request": "2.79.0",
     "rimraf": "2.6.2",
     "rxjs-compat": "6.3.3",
     "split-ca": "1.0.1",
