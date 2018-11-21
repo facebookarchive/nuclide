@@ -12,7 +12,7 @@
     "clientOnly": false,
     "version-cmd": ["flow", "version"],
     "version-output":
-      "Flow, a static type checker for JavaScript, version 0.85.0",
+      "Flow, a static type checker for JavaScript, version 0.86.0",
     "url": null,
     "shasum": null
   },
