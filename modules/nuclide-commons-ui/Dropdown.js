@@ -75,6 +75,7 @@ type Props = {
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
+  tabIndex?: string,
 
   // Function used to determine whether an option is selected, useful if its
   // value doesn't match the pointer to `value`. === is used by default.
@@ -143,7 +144,8 @@ export class Dropdown extends React.Component<Props> {
         buttonComponent={this.props.buttonComponent}
         onExpand={this._openMenu}
         size={this.props.size}
-        tooltip={this.props.tooltip}>
+        tooltip={this.props.tooltip}
+        tabIndex={this.props.tabIndex}>
         {label}
       </DropdownButton>
     );
@@ -247,6 +249,7 @@ type DropdownButtonProps = {
   tooltip?: atom$TooltipsAddOptions,
   onExpand?: (event: SyntheticMouseEvent<> | KeyboardEvent) => void,
   onButtonDOMNodeChange?: (?HTMLButtonElement) => mixed,
+  tabIndex?: string,
 };
 
 const noop = () => {};
@@ -315,7 +318,8 @@ export class DropdownButton extends React.Component<DropdownButtonProps> {
         size={getButtonSize(size)}
         className={className}
         disabled={disabled === true}
-        onClick={onExpand || noop}>
+        onClick={onExpand || noop}
+        tabIndex={this.props.tabIndex}>
         {label}
         <Icon icon="triangle-down" className="nuclide-ui-dropdown-icon" />
       </ButtonComponent>

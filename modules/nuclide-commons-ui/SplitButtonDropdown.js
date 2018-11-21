@@ -37,6 +37,7 @@ type Props = {
   size?: ?ButtonSize,
   value: any,
   selectionComparator?: (dropdownValue: any, optionValue: any) => boolean,
+  tabIndex?: string,
 };
 
 export class SplitButtonDropdown extends React.Component<Props> {
@@ -70,7 +71,8 @@ export class SplitButtonDropdown extends React.Component<Props> {
           size={size == null ? undefined : size}
           disabled={confirmDisabled === true}
           icon={selectedOption.icon || undefined}
-          onClick={onConfirm.bind(null, value)}>
+          onClick={onConfirm.bind(null, value)}
+          tabIndex={this.props.tabIndex}>
           {// flowlint-next-line sketchy-null-mixed:off, sketchy-null-string:off
           selectedOption.selectedLabel || selectedOption.label || ''}
         </ButtonComponent>
@@ -82,6 +84,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
           value={value}
           onChange={onChange}
           selectionComparator={selectionComparator}
+          tabIndex={this.props.tabIndex}
         />
       </ButtonGroup>
     );
