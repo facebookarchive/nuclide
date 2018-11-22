@@ -58,7 +58,9 @@ export function arrayFlatten<T>(
 ): Array<T> {
   const result = [];
   for (const subArray of array) {
-    result.push(...subArray);
+    for (const element of subArray) {
+      result.push(element);
+    }
   }
   return result;
 }
