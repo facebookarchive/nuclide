@@ -28,14 +28,11 @@ import {
   RemoteConnection,
 } from '../../nuclide-remote-connection';
 import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnection';
-import {getLogger} from 'log4js';
 // @fb-only: import {getAllFacebookCAs, getCert} from 'fb-cert-tools';
 import {getAllFacebookCAs, getCert} from './cert-stubs'; // @oss-only
 
 // TODO: get this from the connection dialog (which will only be present behind a gk)
 const useRootCanalCerts = false;
-
-const logger = getLogger('connectBigDigSshHandshake');
 
 /**
  * Adapts big-dig's SshHandshake to what Nuclide expects.
@@ -45,6 +42,19 @@ export default function connectBigDigSshHandshake(
   connectionConfig: NuclideSshConnectionConfigurationType,
   delegate: NuclideSshConnectionDelegateType,
 ): SshHandshake {
+  let clientCertificate = null;
+  let certificateAuthorityCertificate = null;
+  let clientKey = null;
+  if (useRootCanalCerts) {
+    clientCertificate = getCert();
+    certificateAuthorityCertificate = getAllFacebookCAs();
+    // When the server is requesting a cert, it requires the
+    // clientKey to be set to the client cert, or else it won't
+    // be sent. I don't understand the exact mechanism behind why
+    // that's happening, but it seems to be required.
+    clientKey = clientCertificate;
+  }
+
   const sshHandshake = new SshHandshake({
     onKeyboardInteractive(name, instructions, instructionsLang, prompts) {
       const prompt = prompts[0];
@@ -73,13 +83,6 @@ export default function connectBigDigSshHandshake(
       remoteConfig: RemoteConnectionConfiguration,
       config: SshConnectionConfiguration,
     ) {
-      if (useRootCanalCerts) {
-        logger.info('using root canal certificates to connect');
-        remoteConfig.clientCertificate = getCert();
-        remoteConfig.certificateAuthorityCertificate = getAllFacebookCAs();
-        remoteConfig.clientKey = remoteConfig.clientCertificate;
-      }
-
       RemoteConnection.findOrCreate({
         ...remoteConfig,
         path: connectionConfig.cwd,
@@ -154,6 +157,7 @@ export default function connectBigDigSshHandshake(
   // Add an extra flag to indicate the use of big-dig.
   remoteServerCommand += ' --big-dig';
   remoteServerCommand += ` --version=${version}`;
+
   sshHandshake.connect({
     host,
     sshPort,
@@ -167,6 +171,9 @@ export default function connectBigDigSshHandshake(
     password,
     exclusive,
     useRootCanalCerts,
+    clientCertificate,
+    certificateAuthorityCertificate,
+    clientKey,
   });
   return sshHandshake;
 }

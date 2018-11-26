@@ -69,7 +69,10 @@ export type SshConnectionConfiguration = {
   authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
   exclusive?: string, // Ensure that only one server with this "exclusive" tag is running.
-  useRootCanalCerts?: boolean,
+  useRootCanalCerts?: boolean, // whether or not to use rootcanal certs
+  certificateAuthorityCertificate?: ?Buffer | Array<Buffer>, // the ca cert
+  clientCertificate?: ?Buffer, // the client certificate
+  clientKey?: ?Buffer, // the client key
 };
 
 export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
@@ -288,7 +291,7 @@ export class SshHandshake {
   _remoteHost: ?string;
   _remoteFamily: ?DnsFamily;
   _remotePort: number;
-  _certificateAuthorityCertificate: Buffer;
+  _certificateAuthorityCertificate: Array<Buffer> | Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
   _canceled: boolean;
@@ -564,6 +567,15 @@ export class SshHandshake {
         );
       }
 
+      if (this._config.useRootCanalCerts) {
+        invariant(this._config.clientKey != null);
+        invariant(this._config.certificateAuthorityCertificate != null);
+        invariant(this._config.clientCertificate != null);
+        this._clientKey = this._config.clientKey;
+        this._certificateAuthorityCertificate = this._config.certificateAuthorityCertificate;
+        this._clientCertificate = this._config.clientCertificate;
+      }
+
       return [await this._onSshConnectionIsReady(), this._config];
     } catch (error) {
       const wrappedError = this._wrapError(error);
@@ -645,13 +657,19 @@ export class SshHandshake {
     // Do not throw when any of them (`ca`, `cert`, or `key`) are undefined because that will be the
     // case when the server is started in "insecure" mode. See `::_isSecure`, which returns the
     // security of this connection after the server is started.
-    if (typeof serverInfo.ca === 'string') {
+    if (
+      this._certificateAuthorityCertificate == null &&
+      typeof serverInfo.ca === 'string'
+    ) {
       this._certificateAuthorityCertificate = new Buffer(serverInfo.ca);
     }
-    if (typeof serverInfo.cert === 'string') {
+    if (
+      this._clientCertificate == null &&
+      typeof serverInfo.cert === 'string'
+    ) {
       this._clientCertificate = new Buffer(serverInfo.cert);
     }
-    if (typeof serverInfo.key === 'string') {
+    if (this._clientKey == null && typeof serverInfo.key === 'string') {
       this._clientKey = new Buffer(serverInfo.key);
     }
   }
