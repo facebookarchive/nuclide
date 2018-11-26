@@ -17,10 +17,10 @@ import shallowEqual from 'shallowequal';
 const REREGISTER_DELAY = 100;
 
 const _tooltipRequests: Map<Element, atom$TooltipsAddOptions> = new Map();
-const _createdTooltips: Map<
+const _createdTooltips: WeakMap<
   Element,
   {options: atom$TooltipsAddOptions, disposable: IDisposable},
-> = new Map();
+> = new WeakMap();
 const _toDispose: Set<Element> = new Set();
 let _timeoutHandle: ?TimeoutID;
 
