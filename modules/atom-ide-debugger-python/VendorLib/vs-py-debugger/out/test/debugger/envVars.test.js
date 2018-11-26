@@ -10,14 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-string-literal no-unused-expression chai-vague-errors max-func-body-length
+// tslint:disable:no-string-literal no-unused-expression chai-vague-errors max-func-body-length no-any
 const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const path = require("path");
 const shortid = require("shortid");
 const types_1 = require("../../client/common/types");
 const types_2 = require("../../client/common/variables/types");
-const helper_1 = require("../../client/debugger/DebugClients/helper");
+const helper_1 = require("../../client/debugger/debugAdapter/DebugClients/helper");
 const initialize_1 = require("../initialize");
 const serviceRegistry_1 = require("../unittests/serviceRegistry");
 chai_1.use(chaiAsPromised);
@@ -52,6 +52,7 @@ suite('Resolving Environment Variables when Debugging', () => {
             const args = {
                 program: '', pythonPath: '', args: [], envFile: '',
                 console
+                // tslint:disable-next-line:no-any
             };
             const envVars = yield helper.getEnvironmentVariables(args);
             chai_1.expect(envVars).not.be.undefined;
@@ -84,6 +85,7 @@ suite('Resolving Environment Variables when Debugging', () => {
             const args = {
                 program: '', pythonPath: '', args: [], envFile: '',
                 console, env
+                // tslint:disable-next-line:no-any
             };
             const envVars = yield helper.getEnvironmentVariables(args);
             // tslint:disable-next-line:no-unused-expression chai-vague-errors

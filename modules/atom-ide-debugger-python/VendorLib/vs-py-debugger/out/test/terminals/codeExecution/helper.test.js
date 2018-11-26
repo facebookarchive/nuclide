@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-multiline-string no-trailing-whitespace max-func-body-length no-any
 const chai_1 = require("chai");
 const fs = require("fs-extra");
 const os_1 = require("os");
@@ -24,10 +23,12 @@ const decoder_1 = require("../../../client/common/process/decoder");
 const proc_1 = require("../../../client/common/process/proc");
 const types_2 = require("../../../client/common/process/types");
 const types_3 = require("../../../client/common/types");
+const platform_1 = require("../../../client/common/utils/platform");
 const types_4 = require("../../../client/common/variables/types");
 const helper_1 = require("../../../client/terminals/codeExecution/helper");
 const common_1 = require("../../common");
 const TEST_FILES_PATH = path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'test', 'pythonFiles', 'terminalExec');
+// tslint:disable-next-line:max-func-body-length
 suite('Terminal - Code Execution Helper', () => {
     let documentManager;
     let applicationShell;
@@ -45,6 +46,7 @@ suite('Terminal - Code Execution Helper', () => {
         configService = TypeMoq.Mock.ofType();
         const pythonSettings = TypeMoq.Mock.ofType();
         pythonSettings.setup(p => p.pythonPath).returns(() => common_1.PYTHON_PATH);
+        // tslint:disable-next-line:no-any
         processService.setup((x) => x.then).returns(() => undefined);
         configService.setup(c => c.getSettings(TypeMoq.It.isAny())).returns(() => pythonSettings.object);
         envVariablesProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({}));
@@ -59,8 +61,6 @@ suite('Terminal - Code Execution Helper', () => {
         document = TypeMoq.Mock.ofType();
         editor = TypeMoq.Mock.ofType();
         editor.setup(e => e.document).returns(() => document.object);
-        // tslint:disable-next-line:no-invalid-this
-        // this.skip();
     });
     function ensureBlankLinesAreRemoved(source, expectedSource) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -75,11 +75,19 @@ suite('Terminal - Code Execution Helper', () => {
             chai_1.expect(normalizedZCode).to.be.equal(expectedSource);
         });
     }
-    test('Ensure blank lines are NOT removed when code is not indented (simple)', () => __awaiter(this, void 0, void 0, function* () {
-        const code = ['import sys', '', '', '', 'print(sys.executable)', '', 'print("1234")', '', '', 'print(1)', 'print(2)'];
-        const expectedCode = code.filter(line => line.trim().length > 0).join(os_1.EOL);
-        yield ensureBlankLinesAreRemoved(code.join(os_1.EOL), expectedCode);
-    }));
+    test('Ensure blank lines are NOT removed when code is not indented (simple)', function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            // This test has not been working for many months in Python 2.7 under
+            // Windows.Tracked by #2544.
+            if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                // tslint:disable-next-line:no-invalid-this
+                return this.skip();
+            }
+            const code = ['import sys', '', '', '', 'print(sys.executable)', '', 'print("1234")', '', '', 'print(1)', 'print(2)'];
+            const expectedCode = code.filter(line => line.trim().length > 0).join(os_1.EOL);
+            yield ensureBlankLinesAreRemoved(code.join(os_1.EOL), expectedCode);
+        });
+    });
     test('Ensure there are no multiple-CR elements in the normalized code.', () => __awaiter(this, void 0, void 0, function* () {
         const code = ['import sys', '', '', '', 'print(sys.executable)', '', 'print("1234")', '', '', 'print(1)', 'print(2)'];
         const actualProcessService = new proc_1.ProcessService(new decoder_1.BufferDecoder());
@@ -92,21 +100,45 @@ suite('Terminal - Code Execution Helper', () => {
         chai_1.expect(doubleCrIndex).to.be.equal(-1, 'Double CR (CRCRLF) line endings detected in normalized code snippet.');
     }));
     ['', '1', '2', '3', '4', '5', '6', '7'].forEach(fileNameSuffix => {
-        test(`Ensure blank lines are removed (Sample${fileNameSuffix})`, () => __awaiter(this, void 0, void 0, function* () {
-            const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
-            const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
-            yield ensureBlankLinesAreRemoved(code, expectedCode);
-        }));
-        test(`Ensure last two blank lines are preserved (Sample${fileNameSuffix})`, () => __awaiter(this, void 0, void 0, function* () {
-            const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
-            const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
-            yield ensureBlankLinesAreRemoved(code + os_1.EOL, expectedCode + os_1.EOL);
-        }));
-        test(`Ensure last two blank lines are preserved even if we have more than 2 trailing blank lines (Sample${fileNameSuffix})`, () => __awaiter(this, void 0, void 0, function* () {
-            const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
-            const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
-            yield ensureBlankLinesAreRemoved(code + os_1.EOL + os_1.EOL + os_1.EOL + os_1.EOL, expectedCode + os_1.EOL);
-        }));
+        test(`Ensure blank lines are removed (Sample${fileNameSuffix})`, function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                // This test has not been working for many months in Python 2.7 under
+                // Windows.Tracked by #2544.
+                if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                    // tslint:disable-next-line:no-invalid-this
+                    return this.skip();
+                }
+                const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
+                const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
+                yield ensureBlankLinesAreRemoved(code, expectedCode);
+            });
+        });
+        test(`Ensure last two blank lines are preserved (Sample${fileNameSuffix})`, function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                // This test has not been working for many months in Python 2.7 under
+                // Windows.Tracked by #2544.
+                if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                    // tslint:disable-next-line:no-invalid-this
+                    return this.skip();
+                }
+                const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
+                const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
+                yield ensureBlankLinesAreRemoved(code + os_1.EOL, expectedCode + os_1.EOL);
+            });
+        });
+        test(`Ensure last two blank lines are preserved even if we have more than 2 trailing blank lines (Sample${fileNameSuffix})`, function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                // This test has not been working for many months in Python 2.7 under
+                // Windows.Tracked by #2544.
+                if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                    // tslint:disable-next-line:no-invalid-this
+                    return this.skip();
+                }
+                const code = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_raw.py`), 'utf8');
+                const expectedCode = yield fs.readFile(path.join(TEST_FILES_PATH, `sample${fileNameSuffix}_normalized.py`), 'utf8');
+                yield ensureBlankLinesAreRemoved(code + os_1.EOL + os_1.EOL + os_1.EOL + os_1.EOL, expectedCode + os_1.EOL);
+            });
+        });
     });
     test('Display message if there\s no active file', () => __awaiter(this, void 0, void 0, function* () {
         documentManager.setup(doc => doc.activeTextEditor).returns(() => undefined);

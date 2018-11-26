@@ -26,17 +26,18 @@ const constants_1 = require("../../telemetry/constants");
 const logger_1 = require("../logger");
 const types_2 = require("./types");
 let AzureBlobStoreNugetRepository = class AzureBlobStoreNugetRepository {
-    constructor(serviceContainer, azureBlobStorageAccount, azureBlobStorageContainer) {
+    constructor(serviceContainer, azureBlobStorageAccount, azureBlobStorageContainer, azureCDNBlobStorageAccount) {
         this.serviceContainer = serviceContainer;
         this.azureBlobStorageAccount = azureBlobStorageAccount;
         this.azureBlobStorageContainer = azureBlobStorageContainer;
+        this.azureCDNBlobStorageAccount = azureCDNBlobStorageAccount;
     }
     getPackages(packageName) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.listPackages(this.azureBlobStorageAccount, this.azureBlobStorageContainer, packageName);
+            return this.listPackages(this.azureBlobStorageAccount, this.azureBlobStorageContainer, packageName, this.azureCDNBlobStorageAccount);
         });
     }
-    listPackages(azureBlobStorageAccount, azureBlobStorageContainer, packageName) {
+    listPackages(azureBlobStorageAccount, azureBlobStorageContainer, packageName, azureCDNBlobStorageAccount) {
         // tslint:disable-next-line:no-require-imports
         const az = require('azure-storage');
         const blobStore = az.createBlobServiceAnonymous(azureBlobStorageAccount);
@@ -52,7 +53,7 @@ let AzureBlobStoreNugetRepository = class AzureBlobStoreNugetRepository {
                 resolve(result.entries.map(item => {
                     return {
                         package: item.name,
-                        uri: `${azureBlobStorageAccount}/${azureBlobStorageContainer}/${item.name}`,
+                        uri: `${azureCDNBlobStorageAccount}/${azureBlobStorageContainer}/${item.name}`,
                         version: nugetService.getVersionFromPackageFileName(item.name)
                     };
                 }));
@@ -62,13 +63,14 @@ let AzureBlobStoreNugetRepository = class AzureBlobStoreNugetRepository {
 };
 __decorate([
     telemetry_1.captureTelemetry(constants_1.PYTHON_LANGUAGE_SERVER_LIST_BLOB_STORE_PACKAGES),
-    logger_1.log('Listing Nuget Packages', logger_1.LogOptions.Arguments)
+    logger_1.traceVerbose('Listing Nuget Packages')
 ], AzureBlobStoreNugetRepository.prototype, "listPackages", null);
 AzureBlobStoreNugetRepository = __decorate([
     inversify_1.injectable(),
     __param(0, inversify_1.inject(types_1.IServiceContainer)),
     __param(1, inversify_1.unmanaged()),
-    __param(2, inversify_1.unmanaged())
+    __param(2, inversify_1.unmanaged()),
+    __param(3, inversify_1.unmanaged())
 ], AzureBlobStoreNugetRepository);
 exports.AzureBlobStoreNugetRepository = AzureBlobStoreNugetRepository;
 //# sourceMappingURL=azureBlobStoreNugetRepository.js.map

@@ -14,8 +14,8 @@ class OnTypeFormattingDispatcher {
         return [];
     }
     getTriggerCharacters() {
-        let keys = Object.keys(this.providers);
-        keys = keys.sort(); // Make output deterministic
+        const keys = Object.keys(this.providers);
+        keys.sort(); // Make output deterministic
         const first = keys.shift();
         if (first) {
             return {

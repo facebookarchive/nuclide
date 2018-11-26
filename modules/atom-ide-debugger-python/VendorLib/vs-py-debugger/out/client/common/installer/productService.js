@@ -13,6 +13,7 @@ const types_1 = require("../types");
 let ProductService = class ProductService {
     constructor() {
         this.ProductTypes = new Map();
+        this.ProductTypes.set(types_1.Product.bandit, types_1.ProductType.Linter);
         this.ProductTypes.set(types_1.Product.flake8, types_1.ProductType.Linter);
         this.ProductTypes.set(types_1.Product.mypy, types_1.ProductType.Linter);
         this.ProductTypes.set(types_1.Product.pep8, types_1.ProductType.Linter);

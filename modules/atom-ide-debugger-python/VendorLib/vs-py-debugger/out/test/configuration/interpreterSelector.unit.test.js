@@ -16,10 +16,10 @@ const types_1 = require("../../client/common/application/types");
 const pathUtils_1 = require("../../client/common/platform/pathUtils");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/types");
+const platform_1 = require("../../client/common/utils/platform");
 const interpreterSelector_1 = require("../../client/interpreter/configuration/interpreterSelector");
 const types_4 = require("../../client/interpreter/configuration/types");
 const contracts_1 = require("../../client/interpreter/contracts");
-const platform_1 = require("../../utils/platform");
 const info = {
     architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',

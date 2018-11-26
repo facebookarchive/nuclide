@@ -20,11 +20,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const random_1 = require("../../utils/random");
 const types_1 = require("../activation/types");
 const types_2 = require("../common/application/types");
 require("../common/extensions");
 const types_3 = require("../common/types");
+const localize = require("../common/utils/localize");
+const random_1 = require("../common/utils/random");
 // persistent state names, exported to make use of in testing
 var LSSurveyStateKeys;
 (function (LSSurveyStateKeys) {
@@ -49,8 +50,8 @@ let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
         this.lsService = lsService;
         this.disabledInCurrentSession = false;
         this.isInitialized = false;
-        this.bannerMessage = 'Can you please take 2 minutes to tell us how the Python Language Server is working for you?';
-        this.bannerLabels = ['Yes, take survey now', 'No, thanks'];
+        this.bannerMessage = localize.LanguageServiceSurveyBanner.bannerMessage();
+        this.bannerLabels = [localize.LanguageServiceSurveyBanner.bannerLabelYes(), localize.LanguageServiceSurveyBanner.bannerLabelNo()];
         this.minCompletionsBeforeShow = showAfterMinimumEventsCount;
         this.maxCompletionsBeforeShow = showBeforeMaximumEventsCount;
         this.initialize();

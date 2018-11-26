@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -46,7 +46,7 @@ suite('Linting - LintingEngine', () => {
         const outputChannel = TypeMoq.Mock.ofType();
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_3.IOutputChannel), TypeMoq.It.isValue(constants_1.STANDARD_OUTPUT_CHANNEL))).returns(() => outputChannel.object);
         lintManager = TypeMoq.Mock.ofType();
-        lintManager.setup(x => x.isLintingEnabled(TypeMoq.It.isAny())).returns(() => true);
+        lintManager.setup(x => x.isLintingEnabled(TypeMoq.It.isAny())).returns(() => __awaiter(this, void 0, void 0, function* () { return true; }));
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_4.ILinterManager), TypeMoq.It.isAny())).returns(() => lintManager.object);
         lintingEngine = new lintingEngine_1.LintingEngine(serviceContainer.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_4.ILintingEngine), TypeMoq.It.isAny())).returns(() => lintingEngine);
@@ -57,7 +57,7 @@ suite('Linting - LintingEngine', () => {
             lintingEngine.lintDocument(doc, 'auto').ignoreErrors();
         }
         catch (_a) {
-            lintManager.verify(l => l.isLintingEnabled(TypeMoq.It.isValue(doc.uri)), TypeMoq.Times.once());
+            lintManager.verify(l => l.isLintingEnabled(TypeMoq.It.isAny(), TypeMoq.It.isValue(doc.uri)), TypeMoq.Times.once());
         }
     });
     test('Ensure document.uri is passed into createLinter', () => {

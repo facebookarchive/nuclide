@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
 const fs = require("fs");
-const async_1 = require("../../utils/async");
+const async_1 = require("../common/utils/async");
 class HashVerifier {
     verifyHash(filePath, platformString, expectedDigest) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -72,12 +72,12 @@ let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstal
             if (info && info.name) {
                 // If we have the name of the conda environment, then use that.
                 args.push('--name');
-                args.push(info.name);
+                args.push(info.name.toCommandArgument());
             }
             else if (info && info.path) {
                 // Else provide the full path to the environment path.
                 args.push('--prefix');
-                args.push(info.path);
+                args.push(info.path.fileToCommandArgument());
             }
             args.push(moduleName);
             return {

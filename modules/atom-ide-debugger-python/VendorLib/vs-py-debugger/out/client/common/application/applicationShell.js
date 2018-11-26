@@ -46,6 +46,9 @@ let ApplicationShell = class ApplicationShell {
     showWorkspaceFolderPick(options) {
         return vscode_1.window.showWorkspaceFolderPick(options);
     }
+    withProgress(options, task) {
+        return vscode_1.window.withProgress(options, task);
+    }
 };
 ApplicationShell = __decorate([
     inversify_1.injectable()

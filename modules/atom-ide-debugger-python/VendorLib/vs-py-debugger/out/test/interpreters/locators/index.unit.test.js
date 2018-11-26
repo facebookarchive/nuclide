@@ -16,10 +16,10 @@ const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../client/common/platform/types");
 const types_2 = require("../../../client/common/types");
+const enum_1 = require("../../../client/common/utils/enum");
+const platform_1 = require("../../../client/common/utils/platform");
 const contracts_1 = require("../../../client/interpreter/contracts");
 const locators_1 = require("../../../client/interpreter/locators");
-const enum_1 = require("../../../utils/enum");
-const platform_1 = require("../../../utils/platform");
 suite('Interpreters - Locators Index', () => {
     let serviceContainer;
     let info;

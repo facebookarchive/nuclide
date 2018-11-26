@@ -15,9 +15,9 @@ const TypeMoq = require("typemoq");
 require("../../../client/common/extensions");
 const pyenvActivationProvider_1 = require("../../../client/common/terminal/environmentActivationProviders/pyenvActivationProvider");
 const types_1 = require("../../../client/common/terminal/types");
+const enum_1 = require("../../../client/common/utils/enum");
+const platform_1 = require("../../../client/common/utils/platform");
 const contracts_1 = require("../../../client/interpreter/contracts");
-const enum_1 = require("../../../utils/enum");
-const platform_1 = require("../../../utils/platform");
 suite('Terminal Environment Activation pyenv', () => {
     let serviceContainer;
     let interpreterService;

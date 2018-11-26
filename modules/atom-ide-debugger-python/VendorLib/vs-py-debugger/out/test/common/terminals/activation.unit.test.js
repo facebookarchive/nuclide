@@ -15,8 +15,8 @@ const TypeMoq = require("typemoq");
 const types_1 = require("../../../client/common/application/types");
 const types_2 = require("../../../client/common/terminal/types");
 const types_3 = require("../../../client/common/types");
+const misc_1 = require("../../../client/common/utils/misc");
 const activation_1 = require("../../../client/terminals/activation");
-const misc_1 = require("../../../utils/misc");
 suite('Terminal Auto Activation', () => {
     let activator;
     let terminalManager;

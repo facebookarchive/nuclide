@@ -22,15 +22,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any
 const inversify_1 = require("inversify");
 const md5 = require("md5");
-const async_1 = require("../../../../utils/async");
+const vscode_1 = require("vscode");
 const types_1 = require("../../../common/application/types");
+require("../../../common/extensions");
+const logger_1 = require("../../../common/logger");
 const types_2 = require("../../../common/types");
+const async_1 = require("../../../common/utils/async");
 let CacheableLocatorService = class CacheableLocatorService {
     constructor(name, serviceContainer, cachePerWorkspace = false) {
         this.serviceContainer = serviceContainer;
         this.cachePerWorkspace = cachePerWorkspace;
         this.promisesPerResource = new Map();
+        this.handlersAddedToResource = new Set();
+        this.locating = new vscode_1.EventEmitter();
         this.cacheKeyPrefix = `INTERPRETERS_CACHE_v2_${name}`;
+    }
+    get onLocating() {
+        return this.locating.event;
     }
     getInterpreters(resource) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -39,18 +47,43 @@ let CacheableLocatorService = class CacheableLocatorService {
             if (!deferred) {
                 deferred = async_1.createDeferred();
                 this.promisesPerResource.set(cacheKey, deferred);
+                this.addHandlersForInterpreterWatchers(cacheKey, resource)
+                    .ignoreErrors();
                 this.getInterpretersImplementation(resource)
                     .then((items) => __awaiter(this, void 0, void 0, function* () {
                     yield this.cacheInterpreters(items, resource);
                     deferred.resolve(items);
                 }))
                     .catch(ex => deferred.reject(ex));
+                this.locating.fire(deferred.promise);
             }
             if (deferred.completed) {
                 return deferred.promise;
             }
             const cachedInterpreters = this.getCachedInterpreters(resource);
             return Array.isArray(cachedInterpreters) ? cachedInterpreters : deferred.promise;
+        });
+    }
+    addHandlersForInterpreterWatchers(cacheKey, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.handlersAddedToResource.has(cacheKey)) {
+                return;
+            }
+            this.handlersAddedToResource.add(cacheKey);
+            const watchers = yield this.getInterpreterWatchers(resource);
+            const disposableRegisry = this.serviceContainer.get(types_2.IDisposableRegistry);
+            watchers.forEach(watcher => {
+                watcher.onDidCreate(() => {
+                    logger_1.Logger.verbose(`Interpreter Watcher change handler for ${this.cacheKeyPrefix}`);
+                    this.promisesPerResource.delete(cacheKey);
+                    this.getInterpreters(resource).ignoreErrors();
+                }, this, disposableRegisry);
+            });
+        });
+    }
+    getInterpreterWatchers(_resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return [];
         });
     }
     createPersistenceStore(resource) {

@@ -19,9 +19,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
-const misc_1 = require("../../../utils/misc");
 const constants_1 = require("../../common/constants");
 const types_1 = require("../../common/types");
+const async_1 = require("../../common/utils/async");
+const misc_1 = require("../../common/utils/misc");
 const types_2 = require("../../ioc/types");
 const constants_2 = require("../common/constants");
 const types_3 = require("../common/types");
@@ -43,6 +44,10 @@ let TestManagerRunner = class TestManagerRunner {
     // tslint:disable-next-line:max-func-body-length
     runTest(testResultsService, options, testManager) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.busy && !this.busy.completed) {
+                return this.busy.promise;
+            }
+            this.busy = async_1.createDeferred();
             options.tests.summary.errors = 0;
             options.tests.summary.failures = 0;
             options.tests.summary.passed = 0;
@@ -106,32 +111,34 @@ let TestManagerRunner = class TestManagerRunner {
             });
             // Test everything.
             if (testPaths.length === 0) {
-                const runTestPromise = runTestInternal();
-                yield this.removeListenersAfter(runTestPromise);
+                yield this.removeListenersAfter(runTestInternal());
             }
-            // Ok, the test runner can only work with one test at a time.
-            if (options.testsToRun) {
+            else {
                 let promise = Promise.resolve(undefined);
-                if (Array.isArray(options.testsToRun.testFile)) {
-                    options.testsToRun.testFile.forEach(testFile => {
-                        promise = promise.then(() => runTestInternal(testFile.fullPath, testFile.nameToRun));
-                    });
+                // Ok, the test runner can only work with one test at a time.
+                if (options.testsToRun) {
+                    if (Array.isArray(options.testsToRun.testFile)) {
+                        options.testsToRun.testFile.forEach(testFile => {
+                            promise = promise.then(() => runTestInternal(testFile.fullPath, testFile.nameToRun));
+                        });
+                    }
+                    if (Array.isArray(options.testsToRun.testSuite)) {
+                        options.testsToRun.testSuite.forEach(testSuite => {
+                            const testFileName = options.tests.testSuites.find(t => t.testSuite === testSuite).parentTestFile.fullPath;
+                            promise = promise.then(() => runTestInternal(testFileName, testSuite.nameToRun));
+                        });
+                    }
+                    if (Array.isArray(options.testsToRun.testFunction)) {
+                        options.testsToRun.testFunction.forEach(testFn => {
+                            const testFileName = options.tests.testFunctions.find(t => t.testFunction === testFn).parentTestFile.fullPath;
+                            promise = promise.then(() => runTestInternal(testFileName, testFn.nameToRun));
+                        });
+                    }
+                    yield this.removeListenersAfter(promise);
                 }
-                if (Array.isArray(options.testsToRun.testSuite)) {
-                    options.testsToRun.testSuite.forEach(testSuite => {
-                        const testFileName = options.tests.testSuites.find(t => t.testSuite === testSuite).parentTestFile.fullPath;
-                        promise = promise.then(() => runTestInternal(testFileName, testSuite.nameToRun));
-                    });
-                }
-                if (Array.isArray(options.testsToRun.testFunction)) {
-                    options.testsToRun.testFunction.forEach(testFn => {
-                        const testFileName = options.tests.testFunctions.find(t => t.testFunction === testFn).parentTestFile.fullPath;
-                        promise = promise.then(() => runTestInternal(testFileName, testFn.nameToRun));
-                    });
-                }
-                yield this.removeListenersAfter(promise);
             }
             testResultsService.updateResults(options.tests);
+            this.busy.resolve(options.tests);
             return options.tests;
         });
     }
@@ -141,12 +148,11 @@ let TestManagerRunner = class TestManagerRunner {
     // tslint:disable-next-line:no-any
     removeListenersAfter(after) {
         return __awaiter(this, void 0, void 0, function* () {
-            return after.then(() => {
+            return after
+                .then(() => this.server.removeAllListeners())
+                .catch((err) => {
                 this.server.removeAllListeners();
-                return after;
-            }, (reason) => {
-                this.server.removeAllListeners();
-                return after;
+                throw err; // keep propagating this downward
             });
         });
     }

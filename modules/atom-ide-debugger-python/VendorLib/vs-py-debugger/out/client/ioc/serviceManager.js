@@ -1,6 +1,4 @@
 "use strict";
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,6 +6,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 const inversify_1 = require("inversify");
 let ServiceManager = class ServiceManager {
     constructor(container) {
@@ -49,6 +49,14 @@ let ServiceManager = class ServiceManager {
     }
     getAll(serviceIdentifier, name) {
         return name ? this.container.getAllNamed(serviceIdentifier, name) : this.container.getAll(serviceIdentifier);
+    }
+    rebind(serviceIdentifier, constructor, name) {
+        if (name) {
+            this.container.rebind(serviceIdentifier).to(constructor).whenTargetNamed(name);
+        }
+        else {
+            this.container.rebind(serviceIdentifier).to(constructor);
+        }
     }
 };
 ServiceManager = __decorate([

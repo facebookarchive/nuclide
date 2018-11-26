@@ -26,7 +26,7 @@ const glob = require("glob");
 const inversify_1 = require("inversify");
 const path = require("path");
 const tmp = require("tmp");
-const async_1 = require("../../../utils/async");
+const async_1 = require("../utils/async");
 const types_1 = require("./types");
 let FileSystem = class FileSystem {
     constructor(platformService) {

@@ -20,8 +20,8 @@ const common_1 = require("./common");
 __export(require("./constants"));
 __export(require("./ciConstants"));
 const dummyPythonFile = path.join(__dirname, '..', '..', 'src', 'test', 'pythonFiles', 'dummy.py');
-const multirootPath = path.join(__dirname, '..', '..', 'src', 'testMultiRootWkspc');
-const workspace3Uri = vscode.Uri.file(path.join(multirootPath, 'workspace3'));
+exports.multirootPath = path.join(__dirname, '..', '..', 'src', 'testMultiRootWkspc');
+const workspace3Uri = vscode.Uri.file(path.join(exports.multirootPath, 'workspace3'));
 //First thing to be executed.
 process.env['VSC_PYTHON_CI_TEST'] = '1';
 // Ability to use custom python environments for testing
@@ -38,21 +38,21 @@ exports.initializePython = initializePython;
 function initialize() {
     return __awaiter(this, void 0, void 0, function* () {
         yield initializePython();
-        yield activateExtension();
+        const api = yield activateExtension();
         // Dispose any cached python settings (used only in test env).
         configSettings_1.PythonSettings.dispose();
+        // tslint:disable-next-line:no-any
+        return api;
     });
 }
 exports.initialize = initialize;
 function activateExtension() {
     return __awaiter(this, void 0, void 0, function* () {
         const extension = vscode.extensions.getExtension(constants_1.PVSC_EXTENSION_ID);
-        if (extension.isActive) {
-            return;
-        }
         const api = yield extension.activate();
         // Wait untill its ready to use.
         yield api.ready;
+        return api;
     });
 }
 exports.activateExtension = activateExtension;

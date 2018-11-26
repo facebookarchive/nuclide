@@ -20,11 +20,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const semver_1 = require("semver");
-const version_1 = require("../../../../utils/version");
 const logger_1 = require("../../../common/logger");
 const types_1 = require("../../../common/platform/types");
 const types_2 = require("../../../common/process/types");
 const types_3 = require("../../../common/types");
+const version_1 = require("../../../common/utils/version");
 const types_4 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
 const condaHelper_1 = require("./condaHelper");
@@ -119,7 +119,7 @@ let CondaService = class CondaService {
                 return version;
             }
             // Use a bogus version, at least to indicate the fact that a version was returned.
-            logger_1.warn(`Unable to parse Version of Conda, ${versionString}`);
+            logger_1.Logger.warn(`Unable to parse Version of Conda, ${versionString}`);
             return new semver_1.SemVer('0.0.1');
         });
     }
@@ -235,6 +235,37 @@ let CondaService = class CondaService {
         return path.join(condaEnvironmentPath, relativePath);
     }
     /**
+     * For the given interpreter return an activated Conda environment object
+     * with the correct addition to the path and environmental variables
+     */
+    // Base Node.js SpawnOptions uses any for environment, so use that here as well
+    // tslint:disable-next-line:no-any
+    getActivatedCondaEnvironment(interpreter, inputEnvironment) {
+        if (interpreter.type !== contracts_1.InterpreterType.Conda) {
+            return;
+        }
+        const activatedEnvironment = Object.assign({}, inputEnvironment);
+        const isWindows = this.platform.isWindows;
+        if (interpreter.envPath) {
+            if (isWindows) {
+                // Windows: Path, ; as separator, 'Scripts' as directory
+                const condaPath = path.join(interpreter.envPath, 'Scripts');
+                activatedEnvironment.Path = condaPath.concat(';', `${inputEnvironment.Path ? inputEnvironment.Path : ''}`);
+            }
+            else {
+                // Mac: PATH, : as separator, 'bin' as directory
+                const condaPath = path.join(interpreter.envPath, 'bin');
+                activatedEnvironment.PATH = condaPath.concat(':', `${inputEnvironment.PATH ? inputEnvironment.PATH : ''}`);
+            }
+            // Conda also wants a couple of environmental variables set
+            activatedEnvironment.CONDA_PREFIX = interpreter.envPath;
+        }
+        if (interpreter.envName) {
+            activatedEnvironment.CONDA_DEFAULT_ENV = interpreter.envName;
+        }
+        return activatedEnvironment;
+    }
+    /**
      * Is the given interpreter from conda?
      */
     detectCondaEnvironment(interpreter) {
@@ -273,7 +304,13 @@ let CondaService = class CondaService {
                 const interpreters = yield this.registryLookupForConda.getInterpreters();
                 const condaInterpreters = interpreters.filter(this.detectCondaEnvironment);
                 const condaInterpreter = this.getLatestVersion(condaInterpreters);
-                const condaPath = condaInterpreter ? path.join(path.dirname(condaInterpreter.path), 'conda.exe') : '';
+                let condaPath = condaInterpreter ? path.join(path.dirname(condaInterpreter.path), 'conda.exe') : '';
+                if (yield fileSystem.fileExists(condaPath)) {
+                    return condaPath;
+                }
+                // Conda path has changed locations, check the new location in the scripts directory after checking
+                // the old location
+                condaPath = condaInterpreter ? path.join(path.dirname(condaInterpreter.path), 'Scripts', 'conda.exe') : '';
                 if (yield fileSystem.fileExists(condaPath)) {
                     return condaPath;
                 }
@@ -291,7 +328,7 @@ let CondaService = class CondaService {
             const globPattern = this.platform.isWindows ? exports.CondaLocationsGlobWin : exports.CondaLocationsGlob;
             const condaFiles = yield fileSystem.search(globPattern)
                 .catch((failReason) => {
-                logger_1.warn('Default conda location search failed.', `Searching for default install locations for conda results in error: ${failReason}`);
+                logger_1.Logger.warn('Default conda location search failed.', `Searching for default install locations for conda results in error: ${failReason}`);
                 return [];
             });
             const validCondaFiles = condaFiles.filter(condaPath => condaPath.length > 0);

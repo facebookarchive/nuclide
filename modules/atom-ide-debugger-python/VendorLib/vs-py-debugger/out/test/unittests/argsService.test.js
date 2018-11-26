@@ -8,12 +8,12 @@ const chai_1 = require("chai");
 const child_process_1 = require("child_process");
 const typeMoq = require("typemoq");
 const types_1 = require("../../client/common/types");
+const enum_1 = require("../../client/common/utils/enum");
 const argumentsHelper_1 = require("../../client/unittests/common/argumentsHelper");
 const argsService_1 = require("../../client/unittests/nosetest/services/argsService");
 const argsService_2 = require("../../client/unittests/pytest/services/argsService");
 const types_2 = require("../../client/unittests/types");
 const argsService_3 = require("../../client/unittests/unittest/services/argsService");
-const enum_1 = require("../../utils/enum");
 const common_1 = require("../common");
 suite('ArgsService: Common', () => {
     [types_1.Product.unittest, types_1.Product.nosetest, types_1.Product.pytest]

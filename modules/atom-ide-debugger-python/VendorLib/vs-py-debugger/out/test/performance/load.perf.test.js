@@ -17,7 +17,7 @@ const os_1 = require("os");
 const path = require("path");
 const vscode_1 = require("vscode");
 const constants_1 = require("../../client/common/constants");
-const stopWatch_1 = require("../../utils/stopWatch");
+const stopWatch_1 = require("../../client/common/utils/stopWatch");
 const AllowedIncreaseInActivationDelayInMS = 500;
 suite('Activation Times', () => {
     if (process.env.ACTIVATION_TIMES_LOG_FILE_PATH) {

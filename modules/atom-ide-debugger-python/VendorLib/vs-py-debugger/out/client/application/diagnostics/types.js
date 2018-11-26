@@ -10,4 +10,5 @@ var DiagnosticScope;
 exports.IDiagnosticsService = Symbol('IDiagnosticsService');
 exports.IDiagnosticFilterService = Symbol('IDiagnosticFilterService');
 exports.IDiagnosticHandlerService = Symbol('IDiagnosticHandlerService');
+exports.IInvalidPythonPathInDebuggerService = Symbol('IInvalidPythonPathInDebuggerService');
 //# sourceMappingURL=types.js.map

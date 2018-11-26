@@ -9,8 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
 const net = require("net");
-const async_1 = require("../../../../utils/async");
-const misc_1 = require("../../../../utils/misc");
+const async_1 = require("../../utils/async");
+const misc_1 = require("../../utils/misc");
 let SocketServer = class SocketServer extends events_1.EventEmitter {
     constructor() {
         super();

@@ -18,7 +18,7 @@ const types_1 = require("../../../client/common/platform/types");
 const bash_1 = require("../../../client/common/terminal/environmentActivationProviders/bash");
 const types_2 = require("../../../client/common/terminal/types");
 const types_3 = require("../../../client/common/types");
-const enum_1 = require("../../../utils/enum");
+const enum_1 = require("../../../client/common/utils/enum");
 // tslint:disable-next-line:max-func-body-length
 suite('Terminal Environment Activation (bash)', () => {
     ['usr/bin/python', 'usr/bin/env with spaces/env more/python', 'c:\\users\\windows paths\\conda\\python.exe'].forEach(pythonPath => {

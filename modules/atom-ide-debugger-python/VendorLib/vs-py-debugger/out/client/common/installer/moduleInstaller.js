@@ -22,11 +22,11 @@ const fs = require("fs");
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode = require("vscode");
-const misc_1 = require("../../../utils/misc");
 const contracts_1 = require("../../interpreter/contracts");
 const constants_1 = require("../constants");
 const types_1 = require("../terminal/types");
 const types_2 = require("../types");
+const misc_1 = require("../utils/misc");
 let ModuleInstaller = class ModuleInstaller {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;

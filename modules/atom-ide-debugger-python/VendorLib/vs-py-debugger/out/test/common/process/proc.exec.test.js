@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17,10 +17,12 @@ const configSettings_1 = require("../../../client/common/configSettings");
 const decoder_1 = require("../../../client/common/process/decoder");
 const proc_1 = require("../../../client/common/process/proc");
 const types_1 = require("../../../client/common/process/types");
+const platform_1 = require("../../../client/common/utils/platform");
+const common_1 = require("../../common");
 const initialize_1 = require("./../../initialize");
 chai_1.use(chaiAsPromised);
 // tslint:disable-next-line:max-func-body-length
-suite('ProcessService', () => {
+suite('ProcessService Observable', () => {
     let pythonPath;
     suiteSetup(() => {
         pythonPath = configSettings_1.PythonSettings.getInstance().pythonPath;
@@ -36,14 +38,22 @@ suite('ProcessService', () => {
         chai_1.expect(result.stdout.trim()).to.be.equal(printOutput, 'Invalid output');
         chai_1.expect(result.stderr).to.equal(undefined, 'stderr not undefined');
     }));
-    test('exec should output print unicode characters', () => __awaiter(this, void 0, void 0, function* () {
-        const procService = new proc_1.ProcessService(new decoder_1.BufferDecoder());
-        const printOutput = 'öä';
-        const result = yield procService.exec(pythonPath, ['-c', `print("${printOutput}")`]);
-        chai_1.expect(result).not.to.be.an('undefined', 'result is undefined');
-        chai_1.expect(result.stdout.trim()).to.be.equal(printOutput, 'Invalid output');
-        chai_1.expect(result.stderr).to.equal(undefined, 'stderr not undefined');
-    }));
+    test('exec should output print unicode characters', function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            // This test has not been working for many months in Python 2.7 under
+            // Windows. Tracked by #2546. (unicode under Py2.7 is tough!)
+            if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                // tslint:disable-next-line:no-invalid-this
+                return this.skip();
+            }
+            const procService = new proc_1.ProcessService(new decoder_1.BufferDecoder());
+            const printOutput = 'öä';
+            const result = yield procService.exec(pythonPath, ['-c', `print("${printOutput}")`]);
+            chai_1.expect(result).not.to.be.an('undefined', 'result is undefined');
+            chai_1.expect(result.stdout.trim()).to.be.equal(printOutput, 'Invalid output');
+            chai_1.expect(result.stderr).to.equal(undefined, 'stderr not undefined');
+        });
+    });
     test('exec should wait for completion of program with new lines', function () {
         return __awaiter(this, void 0, void 0, function* () {
             // tslint:disable-next-line:no-invalid-this

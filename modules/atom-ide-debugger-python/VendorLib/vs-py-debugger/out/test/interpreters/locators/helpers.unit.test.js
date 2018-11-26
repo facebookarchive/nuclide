@@ -15,10 +15,10 @@ const chai_1 = require("chai");
 const path = require("path");
 const TypeMoq = require("typemoq");
 const types_1 = require("../../../client/common/platform/types");
+const enum_1 = require("../../../client/common/utils/enum");
+const platform_1 = require("../../../client/common/utils/platform");
 const contracts_1 = require("../../../client/interpreter/contracts");
 const helpers_1 = require("../../../client/interpreter/locators/helpers");
-const enum_1 = require("../../../utils/enum");
-const platform_1 = require("../../../utils/platform");
 var OS;
 (function (OS) {
     OS["Windows"] = "Windows";

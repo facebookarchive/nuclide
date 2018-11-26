@@ -93,7 +93,8 @@ let InterpreterService = class InterpreterService {
                 return;
             }
             // Always pick the highest version by default.
-            const pythonPath = interpretersInWorkspace.sort((a, b) => a.version > b.version ? 1 : -1)[0].path;
+            interpretersInWorkspace.sort((a, b) => a.version > b.version ? 1 : -1);
+            const pythonPath = interpretersInWorkspace[0].path;
             // Ensure this new environment is at the same level as the current workspace.
             // In windows the interpreter is under scripts/python.exe on linux it is under bin/python.
             // Meaning the sub directory must be either scripts, bin or other (but only one level deep).

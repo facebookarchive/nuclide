@@ -13,9 +13,9 @@ const path = require("path");
 const TypeMoq = require("typemoq");
 const types_1 = require("../../client/common/platform/types");
 const types_2 = require("../../client/common/types");
+const platform_1 = require("../../client/common/utils/platform");
 const contracts_1 = require("../../client/interpreter/contracts");
 const windowsRegistryService_1 = require("../../client/interpreter/locators/services/windowsRegistryService");
-const platform_1 = require("../../utils/platform");
 const mocks_1 = require("./mocks");
 const environmentsPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'environments');
 // tslint:disable-next-line:max-func-body-length

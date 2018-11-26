@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const stream_1 = require("stream");
 const main_1 = require("vscode-debugadapter/lib/main");
-const protocolWriter_1 = require("../../../client/debugger/Common/protocolWriter");
+const protocolWriter_1 = require("../../../client/debugger/debugAdapter/Common/protocolWriter");
 suite('Debugging - Protocol Writer', () => {
     test('Test request, response and event messages', () => __awaiter(this, void 0, void 0, function* () {
         let dataWritten = '';

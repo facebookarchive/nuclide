@@ -55,7 +55,7 @@ suite('Linting - Pylint', () => {
         serviceManager.addSingletonInstance(types_2.IPlatformService, platformService.object);
         config = TypeMoq.Mock.ofType();
         serviceManager.addSingletonInstance(types_4.IConfigurationService, config.object);
-        const linterManager = new linterManager_1.LinterManager(serviceContainer);
+        const linterManager = new linterManager_1.LinterManager(serviceContainer, workspace.object);
         serviceManager.addSingletonInstance(types_5.ILinterManager, linterManager);
         const logger = TypeMoq.Mock.ofType();
         serviceManager.addSingletonInstance(types_4.ILogger, logger.object);

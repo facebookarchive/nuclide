@@ -11,14 +11,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("../common/extensions");
 const types_1 = require("../common/types");
 const baseLinter_1 = require("./baseLinter");
-const REGEX = '(?<file>.+):(?<line>\\d+): (?<type>\\w+): (?<message>.*)\\r?(\\n|$)';
+exports.REGEX = '(?<file>.+):(?<line>\\d+): (?<type>\\w+): (?<message>.*)\\r?(\\n|$)';
 class MyPy extends baseLinter_1.BaseLinter {
     constructor(outputChannel, serviceContainer) {
         super(types_1.Product.mypy, outputChannel, serviceContainer);
     }
     runLinter(document, cancellation) {
         return __awaiter(this, void 0, void 0, function* () {
-            const messages = yield this.run([document.uri.fsPath], document, cancellation, REGEX);
+            const messages = yield this.run([document.uri.fsPath], document, cancellation, exports.REGEX);
             messages.forEach(msg => {
                 msg.severity = this.parseMessagesSeverity(msg.type, this.pythonSettings.linting.mypyCategorySeverity);
                 msg.code = msg.type;

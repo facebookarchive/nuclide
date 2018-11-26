@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = require("stream");
 const TypeMoq = require("typemoq");
-const protocolLogger_1 = require("../../../client/debugger/Common/protocolLogger");
+const protocolLogger_1 = require("../../../client/debugger/debugAdapter/Common/protocolLogger");
 // tslint:disable-next-line:max-func-body-length
 suite('Debugging - Protocol Logger', () => {
     let protocolLogger;

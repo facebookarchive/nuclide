@@ -38,7 +38,9 @@ exports.parseEnvFile = parseEnvFile;
 function mergeEnvVariables(targetEnvVars, sourceEnvVars = process.env) {
     const service = new environment_1.EnvironmentVariablesService(new pathUtils_1.PathUtils(exports.IS_WINDOWS));
     service.mergeVariables(sourceEnvVars, targetEnvVars);
-    service.appendPythonPath(targetEnvVars, sourceEnvVars.PYTHONPATH);
+    if (sourceEnvVars.PYTHONPATH) {
+        service.appendPythonPath(targetEnvVars, sourceEnvVars.PYTHONPATH);
+    }
     return targetEnvVars;
 }
 exports.mergeEnvVariables = mergeEnvVariables;

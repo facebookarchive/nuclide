@@ -32,6 +32,11 @@ let ApplicationEnvironment = class ApplicationEnvironment {
         // tslint:disable-next-line:non-literal-require
         return require(path.join(constants_1.EXTENSION_ROOT_DIR, 'package.json')).displayName;
     }
+    // tslint:disable-next-line:no-any
+    get packageJson() {
+        // tslint:disable-next-line:non-literal-require
+        return require(path.join(constants_1.EXTENSION_ROOT_DIR, 'package.json'));
+    }
 };
 ApplicationEnvironment = __decorate([
     inversify_1.injectable()

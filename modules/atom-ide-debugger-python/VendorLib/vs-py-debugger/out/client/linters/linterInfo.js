@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
+const types_1 = require("../common/types");
 class LinterInfo {
     constructor(product, id, configService, configFileNames = []) {
         this.configService = configService;
@@ -66,4 +67,23 @@ class LinterInfo {
     }
 }
 exports.LinterInfo = LinterInfo;
+class PylintLinterInfo extends LinterInfo {
+    constructor(configService, workspaceService, configFileNames = []) {
+        super(types_1.Product.pylint, 'pylint', configService, configFileNames);
+        this.workspaceService = workspaceService;
+    }
+    isEnabled(resource) {
+        const enabled = super.isEnabled(resource);
+        if (!enabled || this.configService.getSettings(resource).jediEnabled) {
+            return enabled;
+        }
+        // If we're using new LS, then by default Pylint is disabled (unless the user provides a value).
+        const inspection = this.workspaceService.getConfiguration('python.linting', resource).inspect('pylintEnabled');
+        if (!inspection || inspection.globalValue === undefined && inspection.workspaceFolderValue === undefined || inspection.workspaceValue === undefined) {
+            return false;
+        }
+        return enabled;
+    }
+}
+exports.PylintLinterInfo = PylintLinterInfo;
 //# sourceMappingURL=linterInfo.js.map

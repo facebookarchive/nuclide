@@ -19,9 +19,9 @@ const fileSystem_1 = require("../../client/common/platform/fileSystem");
 const types_1 = require("../../client/common/platform/types");
 const types_2 = require("../../client/common/process/types");
 const types_3 = require("../../client/common/types");
+const platform_1 = require("../../client/common/utils/platform");
 const contracts_1 = require("../../client/interpreter/contracts");
 const condaService_1 = require("../../client/interpreter/locators/services/condaService");
-const platform_1 = require("../../utils/platform");
 const mocks_1 = require("./mocks");
 const untildify = require('untildify');
 const environmentsPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'environments');
@@ -544,6 +544,28 @@ suite('Interpreters Conda Service', () => {
         const pythonPath = path.join('c', 'users', 'xyz', '.conda', 'envs', 'one', 'python');
         fileSystem.setup(f => f.directoryExists(TypeMoq.It.isValue(path.join(path.dirname(pythonPath), 'conda-meta')))).returns(() => Promise.resolve(true));
         yield testFailureOfGettingCondaEnvironments(false, true, false, pythonPath);
+    }));
+    test('Create activated conda environment for Windows', () => __awaiter(this, void 0, void 0, function* () {
+        const pythonInterpreter = Object.assign({}, info, { type: contracts_1.InterpreterType.Conda, envPath: 'C:\\Anaconda', envName: 'Anaconda' });
+        const environment = { Path: 'C:\\test' };
+        platformService.setup(p => p.isWindows).returns(() => true);
+        const newEnvironment = condaService.getActivatedCondaEnvironment(pythonInterpreter, environment);
+        // This part depends on the OS of path.join in getActivatedCondaEnvironment, so compute it here to match
+        const expectedPath = path.join(pythonInterpreter.envPath, 'Scripts');
+        chai_1.expect(newEnvironment.Path).to.be.equal(expectedPath.concat(';', environment.Path), 'Incorrect Windows Path Value');
+        chai_1.expect(newEnvironment.CONDA_PREFIX).to.be.equal(pythonInterpreter.envPath, 'Incorrect Windows CONDA_PREFIX Value');
+        chai_1.expect(newEnvironment.CONDA_DEFAULT_ENV).to.be.equal(pythonInterpreter.envName, 'Incorrect Windows CONDA_DEFAULT_ENV Value');
+    }));
+    test('Create activated conda environment for Non-Windows', () => __awaiter(this, void 0, void 0, function* () {
+        const pythonInterpreter = Object.assign({}, info, { type: contracts_1.InterpreterType.Conda, envPath: 'usr/Anaconda', envName: 'Anaconda' });
+        const environment = { PATH: 'usr/test' };
+        platformService.setup(p => p.isWindows).returns(() => false);
+        const newEnvironment = condaService.getActivatedCondaEnvironment(pythonInterpreter, environment);
+        // This part depends on the OS of path.join in getActivatedCondaEnvironment, so compute it here to match
+        const expectedPath = path.join('usr/Anaconda', 'bin');
+        chai_1.expect(newEnvironment.PATH).to.be.equal(expectedPath.concat(':', environment.PATH), 'Incorrect Non-Windows Path Value');
+        chai_1.expect(newEnvironment.CONDA_PREFIX).to.be.equal(pythonInterpreter.envPath, 'Incorrect Non-Windows CONDA_PREFIX Value');
+        chai_1.expect(newEnvironment.CONDA_DEFAULT_ENV).to.be.equal(pythonInterpreter.envName, 'Incorrect Non-Windows CONDA_DEFAULT_ENV Value');
     }));
 });
 //# sourceMappingURL=condaService.unit.test.js.map

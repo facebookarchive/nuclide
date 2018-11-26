@@ -15,15 +15,15 @@ const path = require("path");
 const vscode_debugadapter_testsupport_1 = require("vscode-debugadapter-testsupport");
 const constants_1 = require("../../client/common/constants");
 const constants_2 = require("../../client/common/platform/constants");
-const constants_3 = require("../../client/debugger/Common/constants");
-const Contracts_1 = require("../../client/debugger/Common/Contracts");
-const misc_1 = require("../../utils/misc");
+const misc_1 = require("../../client/common/utils/misc");
+const constants_3 = require("../../client/debugger/constants");
+const types_1 = require("../../client/debugger/types");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const constants_4 = require("./common/constants");
 const debugClient_1 = require("./debugClient");
 const debugFilesPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'debugging');
-const EXPERIMENTAL_DEBUG_ADAPTER = path.join(__dirname, '..', '..', 'client', 'debugger', 'mainV2.js');
+const EXPERIMENTAL_DEBUG_ADAPTER = path.join(__dirname, '..', '..', 'client', 'debugger', 'debugAdapter', 'main.js');
 let testCounter = 0;
 const testAdapterFilePath = EXPERIMENTAL_DEBUG_ADAPTER;
 const debuggerType = constants_3.DebuggerTypeName;
@@ -64,14 +64,15 @@ suite(`Standard Debugging - Misc tests: ${debuggerType}`, () => {
             return new debugClient_1.DebugClientEx(testAdapterFilePath, debuggerType, coverageDirectory, { cwd: constants_1.EXTENSION_ROOT_DIR });
         }
     }
-    function buildLaunchArgs(pythonFile, stopOnEntry = false) {
+    function buildLaunchArgs(pythonFile, stopOnEntry = false, showReturnValue = false) {
         const env = { PYTHONPATH: constants_3.PTVSD_PATH };
         // tslint:disable-next-line:no-unnecessary-local-variable
         const options = {
             program: path.join(debugFilesPath, pythonFile),
             cwd: debugFilesPath,
             stopOnEntry,
-            debugOptions: [Contracts_1.DebugOptions.RedirectOutput],
+            showReturnValue,
+            debugOptions: [types_1.DebugOptions.RedirectOutput],
             pythonPath: common_1.PYTHON_PATH,
             args: [],
             env,

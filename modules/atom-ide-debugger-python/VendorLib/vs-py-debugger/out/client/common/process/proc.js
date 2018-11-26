@@ -5,13 +5,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any
 const child_process_1 = require("child_process");
 const Observable_1 = require("rxjs/Observable");
-const async_1 = require("../../../utils/async");
+const async_1 = require("../utils/async");
 const constants_1 = require("./constants");
 const types_1 = require("./types");
 class ProcessService {
     constructor(decoder, env) {
         this.decoder = decoder;
         this.env = env;
+    }
+    static isAlive(pid) {
+        try {
+            process.kill(pid, 0);
+            return true;
+        }
+        catch (_a) {
+            return false;
+        }
+    }
+    static kill(pid) {
+        // tslint:disable-next-line:no-require-imports
+        const killProcessTree = require('tree-kill');
+        try {
+            killProcessTree(pid);
+        }
+        catch (_a) {
+            // Ignore.
+        }
     }
     execObservable(file, args, options = {}) {
         const encoding = options.encoding = typeof options.encoding === 'string' && options.encoding.length > 0 ? options.encoding : constants_1.DEFAULT_ENCODING;

@@ -17,8 +17,8 @@ const types_2 = require("../../../client/common/platform/types");
 const helper_1 = require("../../../client/common/terminal/helper");
 const types_3 = require("../../../client/common/terminal/types");
 const types_4 = require("../../../client/common/types");
+const enum_1 = require("../../../client/common/utils/enum");
 const contracts_1 = require("../../../client/interpreter/contracts");
-const enum_1 = require("../../../utils/enum");
 // tslint:disable-next-line:max-func-body-length
 suite('Terminal Service helpers', () => {
     let helper;

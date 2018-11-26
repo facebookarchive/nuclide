@@ -5,7 +5,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const Path = require("path");
-const Types = require("../../../utils/sysTypes");
+const Types = require("../utils/sysTypes");
 /* tslint:disable:rule1 no-any no-unnecessary-callback-wrapper jsdoc-format no-for-in prefer-const no-increment-decrement */
 class AbstractSystemVariables {
     // tslint:disable-next-line:no-any

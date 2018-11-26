@@ -21,8 +21,8 @@ const constants_1 = require("../../client/common/constants");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/process/types");
 const types_4 = require("../../client/common/types");
+const misc_1 = require("../../client/common/utils/misc");
 const importSortProvider_1 = require("../../client/providers/importSortProvider");
-const misc_1 = require("../../utils/misc");
 suite('Import Sort Provider', () => {
     let serviceContainer;
     let shell;

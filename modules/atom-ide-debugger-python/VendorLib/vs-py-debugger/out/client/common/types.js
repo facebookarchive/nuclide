@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IOutputChannel = Symbol('IOutputChannel');
 exports.IDocumentSymbolProvider = Symbol('IDocumentSymbolProvider');
@@ -50,6 +50,7 @@ var Product;
     Product[Product["rope"] = 14] = "rope";
     Product[Product["isort"] = 15] = "isort";
     Product[Product["black"] = 16] = "black";
+    Product[Product["bandit"] = 17] = "bandit";
 })(Product = exports.Product || (exports.Product = {}));
 var ModuleNamePurpose;
 (function (ModuleNamePurpose) {
@@ -68,6 +69,7 @@ exports.IBrowserService = Symbol('IBrowserService');
 exports.IPythonExtensionBanner = Symbol('IPythonExtensionBanner');
 exports.BANNER_NAME_LS_SURVEY = 'LSSurveyBanner';
 exports.BANNER_NAME_PROPOSE_LS = 'ProposeLS';
+exports.BANNER_NAME_DS_SURVEY = 'DSSurveyBanner';
 exports.IFeatureDeprecationManager = Symbol('IFeatureDeprecationManager');
 exports.IEditorUtils = Symbol('IEditorUtils');
 //# sourceMappingURL=types.js.map

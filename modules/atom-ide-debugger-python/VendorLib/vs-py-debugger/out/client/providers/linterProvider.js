@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15,6 +15,7 @@ const vscode_1 = require("vscode");
 const types_1 = require("../common/application/types");
 const configSettingMonitor_1 = require("../common/configSettingMonitor");
 const constants_1 = require("../common/constants");
+require("../common/extensions");
 const types_2 = require("../common/platform/types");
 const types_3 = require("../common/types");
 const contracts_1 = require("../interpreter/contracts");
@@ -32,7 +33,7 @@ class LinterProvider {
         this.disposables.push(this.interpreterService.onDidChangeInterpreter(() => this.engine.lintOpenPythonFiles()));
         this.documents.onDidOpenTextDocument(e => this.onDocumentOpened(e), this.context.subscriptions);
         this.documents.onDidCloseTextDocument(e => this.onDocumentClosed(e), this.context.subscriptions);
-        this.documents.onDidSaveTextDocument((e) => this.onDocumentSaved(e), this.context.subscriptions);
+        this.documents.onDidSaveTextDocument(e => this.onDocumentSaved(e), this.context.subscriptions);
         this.configMonitor = new configSettingMonitor_1.ConfigSettingMonitor('linting');
         this.configMonitor.on('change', this.lintSettingsChangedHandler.bind(this));
         // On workspace reopen we don't get `onDocumentOpened` since it is first opened
@@ -70,12 +71,14 @@ class LinterProvider {
             this.engine.lintDocument(document, 'save').ignoreErrors();
             return;
         }
-        const linters = this.linterManager.getActiveLinters(document.uri);
-        const fileName = path.basename(document.uri.fsPath).toLowerCase();
-        const watchers = linters.filter((info) => info.configFileNames.indexOf(fileName) >= 0);
-        if (watchers.length > 0) {
-            setTimeout(() => this.engine.lintOpenPythonFiles(), 1000);
-        }
+        this.linterManager.getActiveLinters(false, document.uri)
+            .then((linters) => {
+            const fileName = path.basename(document.uri.fsPath).toLowerCase();
+            const watchers = linters.filter((info) => info.configFileNames.indexOf(fileName) >= 0);
+            if (watchers.length > 0) {
+                setTimeout(() => this.engine.lintOpenPythonFiles(), 1000);
+            }
+        }).ignoreErrors();
     }
     onDocumentClosed(document) {
         if (!document || !document.fileName || !document.uri) {

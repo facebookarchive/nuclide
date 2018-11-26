@@ -15,7 +15,7 @@ const getFreePort = require("get-port");
 const net = require("net");
 const TypeMoq = require("typemoq");
 const types_1 = require("../../../client/common/types");
-const debugStreamProvider_1 = require("../../../client/debugger/Common/debugStreamProvider");
+const debugStreamProvider_1 = require("../../../client/debugger/debugAdapter/Common/debugStreamProvider");
 const common_1 = require("../../common");
 // tslint:disable-next-line:max-func-body-length
 suite('Debugging - Stream Provider', () => {

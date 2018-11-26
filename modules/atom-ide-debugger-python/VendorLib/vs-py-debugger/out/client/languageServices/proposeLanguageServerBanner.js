@@ -21,10 +21,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
-const random_1 = require("../../utils/random");
 const types_1 = require("../common/application/types");
 require("../common/extensions");
 const types_2 = require("../common/types");
+const random_1 = require("../common/utils/random");
 // persistent state names, exported to make use of in testing
 var ProposeLSStateKeys;
 (function (ProposeLSStateKeys) {

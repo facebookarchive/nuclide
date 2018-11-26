@@ -13,7 +13,7 @@ const untildify = require('untildify');
 exports.IS_WINDOWS = /^win/.test(process.platform);
 // tslint:disable-next-line:completed-docs
 class PythonSettings extends events_1.EventEmitter {
-    constructor(workspaceFolder, initialize = true) {
+    constructor(workspaceFolder) {
         super();
         this.downloadLanguageServer = true;
         this.jediEnabled = true;
@@ -31,17 +31,7 @@ class PythonSettings extends events_1.EventEmitter {
         // tslint:disable-next-line:variable-name
         this._pythonPath = '';
         this.workspaceRoot = workspaceFolder ? workspaceFolder : vscode_1.Uri.file(__dirname);
-        if (initialize) {
-            this.disposables.push(vscode_1.workspace.onDidChangeConfiguration(() => {
-                const currentConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
-                this.update(currentConfig);
-                // If workspace config changes, then we could have a cascading effect of on change events.
-                // Let's defer the change notification.
-                setTimeout(() => this.emit('change'), 1);
-            }));
-            const initialConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
-            this.update(initialConfig);
-        }
+        this.initialize();
     }
     // tslint:disable-next-line:function-name
     static getInstance(resource) {
@@ -91,7 +81,8 @@ class PythonSettings extends events_1.EventEmitter {
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.venvPath = systemVariables.resolveAny(pythonSettings.get('venvPath'));
         this.venvFolders = systemVariables.resolveAny(pythonSettings.get('venvFolders'));
-        this.condaPath = systemVariables.resolveAny(pythonSettings.get('condaPath'));
+        const condaPath = systemVariables.resolveAny(pythonSettings.get('condaPath'));
+        this.condaPath = condaPath && condaPath.length > 0 ? getAbsolutePath(condaPath, workspaceRoot) : condaPath;
         this.downloadLanguageServer = systemVariables.resolveAny(pythonSettings.get('downloadLanguageServer', true));
         this.jediEnabled = systemVariables.resolveAny(pythonSettings.get('jediEnabled', true));
         this.autoUpdateLanguageServer = systemVariables.resolveAny(pythonSettings.get('autoUpdateLanguageServer', true));
@@ -147,6 +138,7 @@ class PythonSettings extends events_1.EventEmitter {
             flake8Args: [], flake8Enabled: false, flake8Path: 'flake',
             lintOnSave: false, maxNumberOfProblems: 100,
             mypyArgs: [], mypyEnabled: false, mypyPath: 'mypy',
+            banditArgs: [], banditEnabled: false, banditPath: 'bandit',
             pep8Args: [], pep8Enabled: false, pep8Path: 'pep8',
             pylamaArgs: [], pylamaEnabled: false, pylamaPath: 'pylama',
             prospectorArgs: [], prospectorEnabled: false, prospectorPath: 'prospector',
@@ -184,6 +176,7 @@ class PythonSettings extends events_1.EventEmitter {
         this.linting.prospectorPath = getAbsolutePath(systemVariables.resolveAny(this.linting.prospectorPath), workspaceRoot);
         this.linting.pydocstylePath = getAbsolutePath(systemVariables.resolveAny(this.linting.pydocstylePath), workspaceRoot);
         this.linting.mypyPath = getAbsolutePath(systemVariables.resolveAny(this.linting.mypyPath), workspaceRoot);
+        this.linting.banditPath = getAbsolutePath(systemVariables.resolveAny(this.linting.banditPath), workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         const formattingSettings = systemVariables.resolveAny(pythonSettings.get('formatting'));
         if (this.formatting) {
@@ -201,6 +194,7 @@ class PythonSettings extends events_1.EventEmitter {
         };
         this.formatting.autopep8Path = getAbsolutePath(systemVariables.resolveAny(this.formatting.autopep8Path), workspaceRoot);
         this.formatting.yapfPath = getAbsolutePath(systemVariables.resolveAny(this.formatting.yapfPath), workspaceRoot);
+        this.formatting.blackPath = getAbsolutePath(systemVariables.resolveAny(this.formatting.blackPath), workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         const autoCompleteSettings = systemVariables.resolveAny(pythonSettings.get('autoComplete'));
         if (this.autoComplete) {
@@ -288,6 +282,13 @@ class PythonSettings extends events_1.EventEmitter {
             launchArgs: [],
             activateEnvironment: true
         };
+        const dataScienceSettings = systemVariables.resolveAny(pythonSettings.get('dataScience'));
+        if (this.datascience) {
+            Object.assign(this.datascience, dataScienceSettings);
+        }
+        else {
+            this.datascience = dataScienceSettings;
+        }
     }
     get pythonPath() {
         return this._pythonPath;
@@ -304,6 +305,17 @@ class PythonSettings extends events_1.EventEmitter {
         catch (ex) {
             this._pythonPath = value;
         }
+    }
+    initialize() {
+        this.disposables.push(vscode_1.workspace.onDidChangeConfiguration(() => {
+            const currentConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
+            this.update(currentConfig);
+            // If workspace config changes, then we could have a cascading effect of on change events.
+            // Let's defer the change notification.
+            setTimeout(() => this.emit('change'), 1);
+        }));
+        const initialConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
+        this.update(initialConfig);
     }
 }
 PythonSettings.pythonSettings = new Map();

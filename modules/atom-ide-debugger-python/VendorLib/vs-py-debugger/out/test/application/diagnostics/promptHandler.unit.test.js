@@ -16,7 +16,7 @@ const vscode_1 = require("vscode");
 const promptHandler_1 = require("../../../client/application/diagnostics/promptHandler");
 const types_1 = require("../../../client/application/diagnostics/types");
 const types_2 = require("../../../client/common/application/types");
-const enum_1 = require("../../../utils/enum");
+const enum_1 = require("../../../client/common/utils/enum");
 suite('Application Diagnostics - PromptHandler', () => {
     let serviceContainer;
     let appShell;

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode = require("vscode");
-const fs_1 = require("../../utils/fs");
+const fs_1 = require("../common/utils/fs");
 // tslint:disable:no-require-imports no-var-requires no-suspicious-comment
 // TODO: Turn these into imports.
 const LineByLineReader = require('line-by-line');

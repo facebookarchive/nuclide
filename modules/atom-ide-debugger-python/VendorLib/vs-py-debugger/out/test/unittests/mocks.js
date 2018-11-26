@@ -16,9 +16,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
+const async_1 = require("../../client/common/utils/async");
 const constants_1 = require("../../client/unittests/common/constants");
 const baseTestManager_1 = require("../../client/unittests/common/managers/baseTestManager");
-const async_1 = require("../../utils/async");
 let MockDebugLauncher = class MockDebugLauncher {
     constructor() {
         this._launched = async_1.createDeferred();

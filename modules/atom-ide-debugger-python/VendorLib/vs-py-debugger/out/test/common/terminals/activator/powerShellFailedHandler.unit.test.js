@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const TypeMoq = require("typemoq");
 const powershellFailedHandler_1 = require("../../../../client/common/terminal/activator/powershellFailedHandler");
 const types_1 = require("../../../../client/common/terminal/types");
-const enum_1 = require("../../../../utils/enum");
+const enum_1 = require("../../../../client/common/utils/enum");
 // tslint:disable-next-line:max-func-body-length
 suite('Terminal Activation Powershell Failed Handler', () => {
     let psHandler;

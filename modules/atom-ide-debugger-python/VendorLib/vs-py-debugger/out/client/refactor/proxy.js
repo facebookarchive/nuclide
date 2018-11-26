@@ -11,11 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode_1 = require("vscode");
-const async_1 = require("../../utils/async");
-const text_1 = require("../../utils/text");
 require("../common/extensions");
 const types_1 = require("../common/process/types");
 const util_1 = require("../common/util");
+const async_1 = require("../common/utils/async");
+const text_1 = require("../common/utils/text");
 class RefactorProxy extends vscode_1.Disposable {
     constructor(extensionDir, pythonSettings, workspaceRoot, serviceContainer) {
         super(() => { });

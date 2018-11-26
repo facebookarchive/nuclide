@@ -21,8 +21,8 @@ const productInstaller_1 = require("../../../client/common/installer/productInst
 const productService_1 = require("../../../client/common/installer/productService");
 const types_2 = require("../../../client/common/installer/types");
 const types_3 = require("../../../client/common/types");
-const async_1 = require("../../../utils/async");
-const enum_1 = require("../../../utils/enum");
+const async_1 = require("../../../client/common/utils/async");
+const enum_1 = require("../../../client/common/utils/enum");
 chai_1.use(chaiAsPromised);
 suite('Module Installer', () => {
     [undefined, vscode_1.Uri.file('resource')].forEach(resource => {

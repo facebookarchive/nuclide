@@ -19,9 +19,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable:no-require-imports
 const inversify_1 = require("inversify");
 const path = require("path");
-// tslint:disable-next-line:no-require-imports
 const untildify = require("untildify");
 const types_1 = require("../../../common/application/types");
 const types_2 = require("../../../common/types");
@@ -29,14 +29,21 @@ const types_3 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
 const baseVirtualEnvService_1 = require("./baseVirtualEnvService");
 let WorkspaceVirtualEnvService = class WorkspaceVirtualEnvService extends baseVirtualEnvService_1.BaseVirtualEnvService {
-    constructor(globalVirtualEnvPathProvider, serviceContainer) {
-        super(globalVirtualEnvPathProvider, serviceContainer, 'WorkspaceVirtualEnvService', true);
+    constructor(workspaceVirtualEnvPathProvider, serviceContainer, builder) {
+        super(workspaceVirtualEnvPathProvider, serviceContainer, 'WorkspaceVirtualEnvService', true);
+        this.builder = builder;
+    }
+    getInterpreterWatchers(resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return [yield this.builder.getWorkspaceVirtualEnvInterpreterWatcher(resource)];
+        });
     }
 };
 WorkspaceVirtualEnvService = __decorate([
     inversify_1.injectable(),
     __param(0, inversify_1.inject(contracts_1.IVirtualEnvironmentsSearchPathProvider)), __param(0, inversify_1.named('workspace')),
-    __param(1, inversify_1.inject(types_3.IServiceContainer))
+    __param(1, inversify_1.inject(types_3.IServiceContainer)),
+    __param(2, inversify_1.inject(contracts_1.IInterpreterWatcherBuilder))
 ], WorkspaceVirtualEnvService);
 exports.WorkspaceVirtualEnvService = WorkspaceVirtualEnvService;
 let WorkspaceVirtualEnvironmentsSearchPathProvider = class WorkspaceVirtualEnvironmentsSearchPathProvider {

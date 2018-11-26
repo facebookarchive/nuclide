@@ -7,10 +7,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var Logger_1;
 const inversify_1 = require("inversify");
 const helpers_1 = require("./helpers");
+const types_1 = require("./types");
 const PREFIX = 'Python Extension: ';
-let Logger = class Logger {
+let Logger = Logger_1 = class Logger {
+    // tslint:disable-next-line:no-any
+    static error(title = '', message) {
+        new Logger_1().logError(`${title}, ${message}`);
+    }
+    // tslint:disable-next-line:no-any
+    static warn(title = '', message = '') {
+        new Logger_1().logWarning(`${title}, ${message}`);
+    }
+    // tslint:disable-next-line:no-any
+    static verbose(title = '') {
+        new Logger_1().logInformation(title);
+    }
     logError(message, ex) {
         if (ex) {
             console.error(`${PREFIX}${message}`, ex);
@@ -45,25 +59,16 @@ __decorate([
 __decorate([
     helpers_1.skipIfTest(false)
 ], Logger.prototype, "logInformation", null);
-Logger = __decorate([
+Logger = Logger_1 = __decorate([
     inversify_1.injectable()
 ], Logger);
 exports.Logger = Logger;
-// tslint:disable-next-line:no-any
-function error(title = '', message) {
-    new Logger().logError(`${title}, ${message}`);
-}
-exports.error = error;
-// tslint:disable-next-line:no-any
-function warn(title = '', message = '') {
-    new Logger().logWarning(`${title}, ${message}`);
-}
-exports.warn = warn;
 var LogOptions;
 (function (LogOptions) {
-    LogOptions[LogOptions["Arguments"] = 0] = "Arguments";
-    LogOptions[LogOptions["ReturnValue"] = 1] = "ReturnValue";
-})(LogOptions = exports.LogOptions || (exports.LogOptions = {}));
+    LogOptions[LogOptions["None"] = 0] = "None";
+    LogOptions[LogOptions["Arguments"] = 1] = "Arguments";
+    LogOptions[LogOptions["ReturnValue"] = 2] = "ReturnValue";
+})(LogOptions || (LogOptions = {}));
 // tslint:disable-next-line:no-any
 function argsToLogString(args) {
     try {
@@ -93,7 +98,19 @@ function returnValueToLogString(returnValue) {
     }
     return returnValueMessage;
 }
-function log(message, options = LogOptions.Arguments | LogOptions.ReturnValue) {
+function traceVerbose(message) {
+    return trace(message, LogOptions.Arguments | LogOptions.ReturnValue);
+}
+exports.traceVerbose = traceVerbose;
+function traceError(message, ex) {
+    return trace(message, LogOptions.Arguments | LogOptions.ReturnValue, types_1.LogLevel.Error);
+}
+exports.traceError = traceError;
+function traceInfo(message) {
+    return trace(message);
+}
+exports.traceInfo = traceInfo;
+function trace(message, options = LogOptions.None, logLevel) {
     // tslint:disable-next-line:no-function-expression no-any
     return function (_, __, descriptor) {
         const originalMethod = descriptor.value;
@@ -101,6 +118,9 @@ function log(message, options = LogOptions.Arguments | LogOptions.ReturnValue) {
         descriptor.value = function (...args) {
             // tslint:disable-next-line:no-any
             function writeSuccess(returnValue) {
+                if (logLevel === types_1.LogLevel.Error) {
+                    return;
+                }
                 writeToLog(returnValue);
             }
             function writeError(ex) {
@@ -152,5 +172,4 @@ function log(message, options = LogOptions.Arguments | LogOptions.ReturnValue) {
         return descriptor;
     };
 }
-exports.log = log;
 //# sourceMappingURL=logger.js.map

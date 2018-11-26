@@ -10,9 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode_1 = require("vscode");
-const async_1 = require("../../../../utils/async");
-const fs_1 = require("../../../../utils/fs");
 const types_1 = require("../../../common/types");
+const async_1 = require("../../../common/utils/async");
+const fs_1 = require("../../../common/utils/fs");
 const constants_1 = require("../constants");
 const types_2 = require("./../types");
 class TestConfigurationManager {

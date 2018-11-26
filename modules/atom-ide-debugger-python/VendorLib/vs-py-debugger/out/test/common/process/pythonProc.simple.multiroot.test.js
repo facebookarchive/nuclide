@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -29,6 +29,7 @@ const serviceRegistry_1 = require("../../../client/common/process/serviceRegistr
 const types_2 = require("../../../client/common/process/types");
 const types_3 = require("../../../client/common/types");
 const util_1 = require("../../../client/common/util");
+const platform_1 = require("../../../client/common/utils/platform");
 const serviceRegistry_2 = require("../../../client/common/variables/serviceRegistry");
 const container_1 = require("../../../client/ioc/container");
 const serviceManager_1 = require("../../../client/ioc/serviceManager");
@@ -90,12 +91,20 @@ suite('PythonExecutableService', () => {
         const promise = pythonExecService.exec([workspace4PyFile.fsPath], { cwd: path.dirname(workspace4PyFile.fsPath), throwOnStdErr: true });
         yield chai_1.expect(promise).to.eventually.be.rejectedWith(types_2.StdErrError);
     }));
-    test('Importing with a valid PYTHONPATH from .env file should succeed', () => __awaiter(this, void 0, void 0, function* () {
-        yield configService.updateSetting('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
-        const pythonExecService = yield pythonExecFactory.create({ resource: workspace4PyFile });
-        const promise = pythonExecService.exec([workspace4PyFile.fsPath], { cwd: path.dirname(workspace4PyFile.fsPath), throwOnStdErr: true });
-        yield chai_1.expect(promise).to.eventually.have.property('stdout', `Hello${os_1.EOL}`);
-    }));
+    test('Importing with a valid PYTHONPATH from .env file should succeed', function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            // This test has not been working for many months in Python 2.7 under
+            // Windows. Tracked by #2547.
+            if (common_1.isOs(platform_1.OSType.Windows) && (yield common_1.isPythonVersion('2.7'))) {
+                // tslint:disable-next-line:no-invalid-this
+                return this.skip();
+            }
+            yield configService.updateSetting('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
+            const pythonExecService = yield pythonExecFactory.create({ resource: workspace4PyFile });
+            const promise = pythonExecService.exec([workspace4PyFile.fsPath], { cwd: path.dirname(workspace4PyFile.fsPath), throwOnStdErr: true });
+            yield chai_1.expect(promise).to.eventually.have.property('stdout', `Hello${os_1.EOL}`);
+        });
+    });
     test('Known modules such as \'os\' and \'sys\' should be deemed \'installed\'', () => __awaiter(this, void 0, void 0, function* () {
         const pythonExecService = yield pythonExecFactory.create({ resource: workspace4PyFile });
         const osModuleIsInstalled = pythonExecService.isModuleInstalled('os');

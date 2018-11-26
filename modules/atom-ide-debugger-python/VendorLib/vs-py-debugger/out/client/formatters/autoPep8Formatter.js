@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const stopWatch_1 = require("../../utils/stopWatch");
 const productInstaller_1 = require("../common/installer/productInstaller");
 const types_1 = require("../common/types");
+const stopWatch_1 = require("../common/utils/stopWatch");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 const baseFormatter_1 = require("./baseFormatter");

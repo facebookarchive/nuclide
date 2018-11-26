@@ -310,6 +310,7 @@ function translateProductToModule(product, purpose) {
         case types_7.Product.flake8: return 'flake8';
         case types_7.Product.unittest: return 'unittest';
         case types_7.Product.rope: return 'rope';
+        case types_7.Product.bandit: return 'bandit';
         default: {
             throw new Error(`Product ${product} cannot be installed as a Python Module.`);
         }

@@ -12,8 +12,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const stream_1 = require("stream");
-const protocolParser_1 = require("../../../client/debugger/Common/protocolParser");
-const async_1 = require("../../../utils/async");
+const async_1 = require("../../../client/common/utils/async");
+const protocolParser_1 = require("../../../client/debugger/debugAdapter/Common/protocolParser");
 const common_1 = require("../../common");
 suite('Debugging - Protocol Parser', () => {
     test('Test request, response and event messages', () => __awaiter(this, void 0, void 0, function* () {

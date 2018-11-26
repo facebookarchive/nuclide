@@ -18,12 +18,12 @@ const net_1 = require("net");
 const path = require("path");
 const messages_1 = require("vscode-debugadapter/lib/messages");
 const constants_1 = require("../../client/common/constants");
-const constants_2 = require("../../client/debugger/Common/constants");
-const protocolParser_1 = require("../../client/debugger/Common/protocolParser");
-const protocolWriter_1 = require("../../client/debugger/Common/protocolWriter");
-const mainV2_1 = require("../../client/debugger/mainV2");
-const async_1 = require("../../utils/async");
-const misc_1 = require("../../utils/misc");
+const async_1 = require("../../client/common/utils/async");
+const misc_1 = require("../../client/common/utils/misc");
+const constants_2 = require("../../client/debugger/constants");
+const protocolParser_1 = require("../../client/debugger/debugAdapter/Common/protocolParser");
+const protocolWriter_1 = require("../../client/debugger/debugAdapter/Common/protocolWriter");
+const main_1 = require("../../client/debugger/debugAdapter/main");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const fileToDebug = path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd-nowait.py');
@@ -69,7 +69,7 @@ suite('Debugging - Capabilities', function () {
         }(cmd, requestArgs);
     }
     function createDebugSession() {
-        return new class extends mainV2_1.PythonDebugger {
+        return new class extends main_1.PythonDebugger {
             constructor() {
                 super({});
             }
@@ -92,7 +92,7 @@ suite('Debugging - Capabilities', function () {
         const port = yield getFreePort({ host, port: 3000 });
         const env = Object.assign({}, process.env);
         env.PYTHONPATH = constants_2.PTVSD_PATH;
-        proc = child_process_1.spawn(common_1.PYTHON_PATH, ['-m', 'ptvsd', '--server', '--wait', '--port', `${port}`, '--file', fileToDebug], { cwd: path.dirname(fileToDebug), env });
+        proc = child_process_1.spawn(common_1.PYTHON_PATH, ['-m', 'ptvsd', '--host', 'localhost', '--wait', '--port', `${port}`, '--file', fileToDebug], { cwd: path.dirname(fileToDebug), env });
         yield async_1.sleep(3000);
         const connected = async_1.createDeferred();
         const socket = new net_1.Socket();

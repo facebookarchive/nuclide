@@ -14,9 +14,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const path = require("path");
 const constants_1 = require("../../client/common/constants");
-const constants_2 = require("../../client/debugger/Common/constants");
-const Contracts_1 = require("../../client/debugger/Common/Contracts");
-const misc_1 = require("../../utils/misc");
+const misc_1 = require("../../client/common/utils/misc");
+const constants_2 = require("../../client/debugger/constants");
+const types_1 = require("../../client/debugger/types");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const utils_1 = require("./utils");
@@ -45,27 +45,29 @@ suite('Run without Debugging', () => {
         catch (ex) { }
         yield common_1.sleep(1000);
     }));
-    function buildLauncArgs(pythonFile, stopOnEntry = false) {
+    function buildLaunchArgs(pythonFile, stopOnEntry = false, showReturnValue = false) {
         // tslint:disable-next-line:no-unnecessary-local-variable
-        const options = {
+        return {
             program: path.join(debugFilesPath, pythonFile),
             cwd: debugFilesPath,
             stopOnEntry,
+            showReturnValue,
             noDebug: true,
-            debugOptions: [Contracts_1.DebugOptions.RedirectOutput],
+            debugOptions: [types_1.DebugOptions.RedirectOutput],
             pythonPath: common_1.PYTHON_PATH,
             args: [],
             env: { PYTHONPATH: constants_2.PTVSD_PATH },
             envFile: '',
             logToFile: false,
-            type: debuggerType
+            type: debuggerType,
+            name: '',
+            request: 'launch'
         };
-        return options;
     }
     test('Should run program to the end', () => __awaiter(this, void 0, void 0, function* () {
         yield Promise.all([
             debugClient.configurationSequence(),
-            debugClient.launch(buildLauncArgs('simplePrint.py', false)),
+            debugClient.launch(buildLaunchArgs('simplePrint.py', false)),
             debugClient.waitForEvent('initialized'),
             debugClient.waitForEvent('terminated')
         ]);
@@ -73,7 +75,7 @@ suite('Run without Debugging', () => {
     test('test stderr output for Python', () => __awaiter(this, void 0, void 0, function* () {
         yield Promise.all([
             debugClient.configurationSequence(),
-            debugClient.launch(buildLauncArgs('stdErrOutput.py', false)),
+            debugClient.launch(buildLaunchArgs('stdErrOutput.py', false)),
             debugClient.waitForEvent('initialized'),
             debugClient.assertOutput('stderr', 'error output'),
             debugClient.waitForEvent('terminated')
@@ -82,7 +84,7 @@ suite('Run without Debugging', () => {
     test('Test stdout output', () => __awaiter(this, void 0, void 0, function* () {
         yield Promise.all([
             debugClient.configurationSequence(),
-            debugClient.launch(buildLauncArgs('stdOutOutput.py', false)),
+            debugClient.launch(buildLaunchArgs('stdOutOutput.py', false)),
             debugClient.waitForEvent('initialized'),
             debugClient.assertOutput('stdout', 'normal output'),
             debugClient.waitForEvent('terminated')
@@ -105,7 +107,7 @@ suite('Run without Debugging', () => {
             });
             yield Promise.all([
                 debugClient.configurationSequence(),
-                debugClient.launch(buildLauncArgs('sampleWithSleep.py', false)),
+                debugClient.launch(buildLaunchArgs('sampleWithSleep.py', false)),
                 debugClient.waitForEvent('initialized'),
                 processIdOutput
             ]);

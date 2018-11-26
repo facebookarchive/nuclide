@@ -13,8 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const semver = require("semver");
 const osinfo_1 = require("../../../client/common/platform/osinfo");
-const platform = require("../../../utils/platform");
-const version_1 = require("../../../utils/version");
+const platform = require("../../../client/common/utils/platform");
+const version_1 = require("../../../client/common/utils/version");
 exports.WIN_10 = new platform.Info(platform.OSType.Windows, 'x64', new semver.SemVer('10.0.1'));
 exports.MAC_HIGH_SIERRA = new platform.Info(platform.OSType.OSX, 'x64', new semver.SemVer('10.13.1'));
 exports.UBUNTU_BIONIC = new platform.Info(platform.OSType.Linux, 'x64', version_1.parseVersion('18.04'), 

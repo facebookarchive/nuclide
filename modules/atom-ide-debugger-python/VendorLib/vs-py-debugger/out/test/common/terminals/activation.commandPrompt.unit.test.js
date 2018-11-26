@@ -19,7 +19,7 @@ const types_1 = require("../../../client/common/platform/types");
 const commandPrompt_1 = require("../../../client/common/terminal/environmentActivationProviders/commandPrompt");
 const types_2 = require("../../../client/common/terminal/types");
 const types_3 = require("../../../client/common/types");
-const enum_1 = require("../../../utils/enum");
+const enum_1 = require("../../../client/common/utils/enum");
 suite('Terminal Environment Activation (cmd/powershell)', () => {
     ['c:/programfiles/python/python', 'c:/program files/python/python',
         'c:\\users\\windows paths\\conda\\python.exe'].forEach(pythonPath => {

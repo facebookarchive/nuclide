@@ -14,8 +14,8 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const path = require("path");
 const pathUtils_1 = require("../../../client/common/platform/pathUtils");
+const platform_1 = require("../../../client/common/utils/platform");
 const environment_1 = require("../../../client/common/variables/environment");
-const platform_1 = require("../../../utils/platform");
 chai_1.use(chaiAsPromised);
 const envFilesFolderPath = path.join(__dirname, '..', '..', '..', '..', 'src', 'testMultiRootWkspc', 'workspace4');
 // tslint:disable-next-line:max-func-body-length

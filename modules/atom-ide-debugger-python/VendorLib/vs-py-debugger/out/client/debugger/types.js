@@ -2,11 +2,19 @@
 // Licensed under the MIT License.
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IProtocolParser = Symbol('IProtocolParser');
-exports.IProtocolLogger = Symbol('IProtocolLogger');
-exports.IDebugStreamProvider = Symbol('IDebugStreamProvider');
-exports.IProtocolMessageWriter = Symbol('IProtocolMessageWriter');
-exports.IDebugConfigurationProvider = Symbol('DebugConfigurationProvider');
-exports.IDebuggerBanner = Symbol('IDebuggerBanner');
-exports.IExcutableValidator = Symbol('IExcutableValidator');
+var DebugOptions;
+(function (DebugOptions) {
+    DebugOptions["RedirectOutput"] = "RedirectOutput";
+    DebugOptions["Django"] = "Django";
+    DebugOptions["Jinja"] = "Jinja";
+    DebugOptions["DebugStdLib"] = "DebugStdLib";
+    DebugOptions["Sudo"] = "Sudo";
+    DebugOptions["Pyramid"] = "Pyramid";
+    DebugOptions["FixFilePathCase"] = "FixFilePathCase";
+    DebugOptions["WindowsClient"] = "WindowsClient";
+    DebugOptions["UnixClient"] = "UnixClient";
+    DebugOptions["StopOnEntry"] = "StopOnEntry";
+    DebugOptions["ShowReturnValue"] = "ShowReturnValue";
+    DebugOptions["SubProcess"] = "Multiprocess";
+})(DebugOptions = exports.DebugOptions || (exports.DebugOptions = {}));
 //# sourceMappingURL=types.js.map

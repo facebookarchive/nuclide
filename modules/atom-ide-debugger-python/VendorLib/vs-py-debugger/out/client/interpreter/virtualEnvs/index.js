@@ -21,13 +21,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
-const enum_1 = require("../../../utils/enum");
-const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/application/types");
 const types_2 = require("../../common/platform/types");
 const types_3 = require("../../common/process/types");
 const types_4 = require("../../common/terminal/types");
 const types_5 = require("../../common/types");
+const enum_1 = require("../../common/utils/enum");
+const misc_1 = require("../../common/utils/misc");
 const types_6 = require("../../ioc/types");
 const contracts_1 = require("../contracts");
 const PYENVFILES = ['pyvenv.cfg', path.join('..', 'pyvenv.cfg')];

@@ -20,7 +20,7 @@ from encodings import utf_8, ascii
 try:
     import thread
 except ImportError:
-    # Renamed in Python3k
+    # Renamed in Python 3
     import _thread as thread
 
 # Reference material
@@ -143,8 +143,8 @@ class jediSocketServer(object):
                 if self.check_for_exit_socket_loop():
                     break
 
-                # we receive a series of 4 byte commands.  Each command then
-                # has it's own format which we must parse before continuing to
+                # we receive a series of 4 byte commands. Each command then
+                # has its own format which we must parse before continuing to
                 # the next command.
                 self.flush()
                 self.conn.settimeout(10)

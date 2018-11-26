@@ -20,16 +20,16 @@ const fs = require("fs-extra");
 const path = require("path");
 const pidusage = require("pidusage");
 const vscode_1 = require("vscode");
-const async_1 = require("../../utils/async");
-const decorators_1 = require("../../utils/decorators");
-const stopWatch_1 = require("../../utils/stopWatch");
 const configSettings_1 = require("../common/configSettings");
 const constants_1 = require("../common/constants");
 require("../common/extensions");
 const types_1 = require("../common/process/types");
 const types_2 = require("../common/types");
+const async_1 = require("../common/utils/async");
+const decorators_1 = require("../common/utils/decorators");
+const stopWatch_1 = require("../common/utils/stopWatch");
 const types_3 = require("../common/variables/types");
-const logger = require("./../common/logger");
+const logger_1 = require("./../common/logger");
 const IS_WINDOWS = /^win/.test(process.platform);
 const pythonVSCodeTypeMappings = new Map();
 pythonVSCodeTypeMappings.set('none', vscode_1.CompletionItemKind.Value);
@@ -319,7 +319,7 @@ class JediProxy {
         this.proc = undefined;
     }
     handleError(source, errorMessage) {
-        logger.error(`${source} jediProxy`, `Error (${source}) ${errorMessage}`);
+        logger_1.Logger.error(`${source} jediProxy`, `Error (${source}) ${errorMessage}`);
     }
     // tslint:disable-next-line:max-func-body-length
     spawnProcess(cwd) {
@@ -342,7 +342,7 @@ class JediProxy {
             this.proc = result.proc;
             this.languageServerStarted.resolve();
             this.proc.on('end', (end) => {
-                logger.error('spawnProcess.end', `End - ${end}`);
+                logger_1.Logger.error('spawnProcess.end', `End - ${end}`);
             });
             this.proc.on('error', error => {
                 this.handleError('error', `${error}`);

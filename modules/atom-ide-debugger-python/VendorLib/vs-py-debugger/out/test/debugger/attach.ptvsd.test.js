@@ -10,22 +10,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-invalid-this max-func-body-length no-empty no-increment-decrement
+require("../../client/common/extensions");
 const child_process_1 = require("child_process");
 const getFreePort = require("get-port");
 const path = require("path");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const constants_1 = require("../../client/common/constants");
-require("../../client/common/extensions");
-const constants_2 = require("../../client/common/platform/constants");
 const types_1 = require("../../client/common/platform/types");
-const debugger_1 = require("../../client/debugger");
-const constants_3 = require("../../client/debugger/Common/constants");
-const Contracts_1 = require("../../client/debugger/Common/Contracts");
+const util_1 = require("../../client/common/util");
+const constants_2 = require("../../client/debugger/constants");
+const pythonV2Provider_1 = require("../../client/debugger/extension/configProviders/pythonV2Provider");
+const types_2 = require("../../client/debugger/types");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const utils_1 = require("./utils");
+// tslint:disable:no-invalid-this max-func-body-length no-empty no-increment-decrement no-unused-variable no-console
 const fileToDebug = path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd.py');
 suite('Attach Debugger', () => {
     let debugClient;
@@ -61,13 +61,14 @@ suite('Attach Debugger', () => {
             const env = Object.assign({}, process.env);
             // Set the path for PTVSD to be picked up.
             // tslint:disable-next-line:no-string-literal
-            env['PYTHONPATH'] = constants_3.PTVSD_PATH;
-            const pythonArgs = ['-m', 'ptvsd', '--server', '--wait', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
+            env['PYTHONPATH'] = constants_2.PTVSD_PATH;
+            const pythonArgs = ['-m', 'ptvsd', '--host', 'localhost', '--wait', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
             proc = child_process_1.spawn(common_1.PYTHON_PATH, pythonArgs, { env: env, cwd: path.dirname(fileToDebug) });
+            const exited = new Promise(resolve => proc.once('close', resolve));
             yield common_1.sleep(3000);
             // Send initialize, attach
             const initializePromise = debugClient.initializeRequest({
-                adapterID: constants_3.DebuggerTypeName,
+                adapterID: constants_2.DebuggerTypeName,
                 linesStartAt1: true,
                 columnsStartAt1: true,
                 supportsRunInTerminalRequest: true,
@@ -80,17 +81,17 @@ suite('Attach Debugger', () => {
                 request: 'attach',
                 localRoot,
                 remoteRoot,
-                type: constants_3.DebuggerTypeName,
+                type: constants_2.DebuggerTypeName,
                 port: port,
                 host: 'localhost',
                 logToFile: false,
-                debugOptions: [Contracts_1.DebugOptions.RedirectOutput]
+                debugOptions: [types_2.DebugOptions.RedirectOutput]
             };
             const platformService = TypeMoq.Mock.ofType();
             platformService.setup(p => p.isWindows).returns(() => isLocalHostWindows);
             const serviceContainer = TypeMoq.Mock.ofType();
             serviceContainer.setup(c => c.get(types_1.IPlatformService, TypeMoq.It.isAny())).returns(() => platformService.object);
-            const configProvider = new debugger_1.PythonV2DebugConfigurationProvider(serviceContainer.object);
+            const configProvider = new pythonV2Provider_1.PythonV2DebugConfigurationProvider(serviceContainer.object);
             yield configProvider.resolveDebugConfiguration({ index: 0, name: 'root', uri: vscode_1.Uri.file(localRoot) }, options);
             const attachPromise = debugClient.attachRequest(options);
             yield Promise.all([
@@ -116,16 +117,12 @@ suite('Attach Debugger', () => {
                 stdOutPromise, stdErrPromise,
                 breakpointStoppedPromise
             ]);
-            yield Promise.all([
-                utils_1.continueDebugging(debugClient),
-                debugClient.assertOutput('stdout', 'this is print'),
-                debugClient.waitForEvent('exited'),
-                debugClient.waitForEvent('terminated')
-            ]);
+            yield utils_1.continueDebugging(debugClient);
+            yield exited;
         });
     }
     test('Confirm we are able to attach to a running program', () => __awaiter(this, void 0, void 0, function* () {
-        yield testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), constants_2.IS_WINDOWS);
+        yield testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), util_1.IS_WINDOWS);
     }));
 });
 //# sourceMappingURL=attach.ptvsd.test.js.map

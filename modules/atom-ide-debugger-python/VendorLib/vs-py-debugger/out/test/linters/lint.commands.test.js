@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -36,7 +36,7 @@ suite('Linting - Linter Selector', () => {
         initializeServices();
     }));
     suiteTeardown(initialize_1.closeActiveWindows);
-    teardown(() => __awaiter(this, void 0, void 0, function* () { return yield initialize_1.closeActiveWindows(); }));
+    teardown(() => __awaiter(this, void 0, void 0, function* () { return initialize_1.closeActiveWindows(); }));
     function initializeServices() {
         const cont = new inversify_1.Container();
         const serviceManager = new serviceManager_1.ServiceManager(cont);
@@ -49,7 +49,8 @@ suite('Linting - Linter Selector', () => {
         serviceManager.addSingletonInstance(types_1.IApplicationShell, appShell.object);
         engine = TypeMoq.Mock.ofType();
         serviceManager.addSingletonInstance(types_4.ILintingEngine, engine.object);
-        lm = new linterManager_1.LinterManager(serviceContainer);
+        const workspaceService = TypeMoq.Mock.ofType();
+        lm = new linterManager_1.LinterManager(serviceContainer, workspaceService.object);
         serviceManager.addSingletonInstance(types_4.ILinterManager, lm);
         commands = new linterCommands_1.LinterCommands(serviceContainer);
     }
@@ -95,7 +96,7 @@ suite('Linting - Linter Selector', () => {
             assert.equal(options.matchOnDescription, true, 'Quick pick options are incorrect');
             assert.equal(options.matchOnDetail, true, 'Quick pick options are incorrect');
             assert.equal(options.placeHolder, `current: ${current}`, 'Quick pick current option is incorrect');
-            assert.equal(lm.isLintingEnabled(undefined), enable, 'Linting selector did not change linting on/off flag');
+            assert.equal(yield lm.isLintingEnabled(true, undefined), enable, 'Linting selector did not change linting on/off flag');
         });
     }
     function selectLinterAsync(products) {
@@ -117,7 +118,7 @@ suite('Linting - Linter Selector', () => {
             const linters = lm.getAllLinterInfos();
             yield lm.setActiveLintersAsync(products);
             let current;
-            let activeLinters = lm.getActiveLinters();
+            let activeLinters = yield lm.getActiveLinters(true);
             switch (activeLinters.length) {
                 case 0:
                     current = 'none';
@@ -137,7 +138,7 @@ suite('Linting - Linter Selector', () => {
             assert.equal(options.matchOnDescription, true, 'Quick pick options are incorrect');
             assert.equal(options.matchOnDetail, true, 'Quick pick options are incorrect');
             assert.equal(options.placeHolder, `current: ${current}`, 'Quick pick current option is incorrect');
-            activeLinters = lm.getActiveLinters();
+            activeLinters = yield lm.getActiveLinters(true);
             assert.equal(activeLinters.length, 1, 'Linting selector did not change active linter');
             assert.equal(activeLinters[0].product, types_2.Product.pylint, 'Linting selector did not change to pylint');
             if (products.length > 1) {

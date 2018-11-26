@@ -1,4 +1,6 @@
-"use strict";
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15,6 +17,7 @@ const types_1 = require("../../client/common/process/types");
 const autoPep8Formatter_1 = require("../../client/formatters/autoPep8Formatter");
 const blackFormatter_1 = require("../../client/formatters/blackFormatter");
 const yapfFormatter_1 = require("../../client/formatters/yapfFormatter");
+const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const textUtils_1 = require("../textUtils");
 const serviceRegistry_1 = require("../unittests/serviceRegistry");
@@ -30,7 +33,7 @@ let formattedYapf = '';
 let formattedBlack = '';
 let formattedAutoPep8 = '';
 // tslint:disable-next-line:max-func-body-length
-suite('Formatting', () => {
+suite('Formatting - General', () => {
     let ioc;
     suiteSetup(() => __awaiter(this, void 0, void 0, function* () {
         yield initialize_1.initialize();
@@ -40,12 +43,10 @@ suite('Formatting', () => {
         });
         fs.ensureDirSync(path.dirname(autoPep8FileToFormat));
         const pythonProcess = yield ioc.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(workspaceRootPath) });
-        const py2 = (yield ioc.getPythonMajorVersion(vscode_1.Uri.parse(originalUnformattedFile))) === 2;
         const yapf = pythonProcess.execModule('yapf', [originalUnformattedFile], { cwd: workspaceRootPath });
         const autoPep8 = pythonProcess.execModule('autopep8', [originalUnformattedFile], { cwd: workspaceRootPath });
         const formatters = [yapf, autoPep8];
-        // When testing against 3.5 and older, this will break.
-        if (!py2) {
+        if (yield formattingTestIsBlackSupported()) {
             // Black doesn't support emitting only to stdout; it either works
             // through a pipe, emits a diff, or rewrites the file in-place.
             // Thus it's easier to let it do its in-place rewrite and then
@@ -53,14 +54,21 @@ suite('Formatting', () => {
             const black = pythonProcess.execModule('black', [blackReferenceFile], { cwd: workspaceRootPath });
             formatters.push(black);
         }
-        yield Promise.all(formatters).then(formattedResults => {
+        yield Promise.all(formatters).then((formattedResults) => __awaiter(this, void 0, void 0, function* () {
             formattedYapf = formattedResults[0].stdout;
             formattedAutoPep8 = formattedResults[1].stdout;
-            if (!py2) {
+            if (yield formattingTestIsBlackSupported()) {
                 formattedBlack = fs.readFileSync(blackReferenceFile).toString();
             }
-        });
+        }));
     }));
+    function formattingTestIsBlackSupported() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const processService = yield ioc.serviceContainer.get(types_1.IProcessServiceFactory)
+                .create(vscode_1.Uri.file(workspaceRootPath));
+            return !(yield common_1.isPythonVersionInProcess(processService, '2', '3.0', '3.1', '3.2', '3.3', '3.4', '3.5'));
+        });
+    }
     setup(() => __awaiter(this, void 0, void 0, function* () {
         yield initialize_1.initializeTest();
         initializeDI();
@@ -118,8 +126,8 @@ suite('Formatting', () => {
     // tslint:disable-next-line:no-function-expression
     test('Black', function () {
         return __awaiter(this, void 0, void 0, function* () {
-            const pyVersion = yield ioc.getPythonMajorMinorVersion(vscode_1.Uri.parse(blackFileToFormat));
-            if (pyVersion && (pyVersion.major < 3 || (pyVersion.major === 3 && pyVersion.minor < 6))) {
+            if (!(yield formattingTestIsBlackSupported())) {
+                // Skip for versions of python below 3.6, as Black doesn't support them at all.
                 // tslint:disable-next-line:no-invalid-this
                 return this.skip();
             }

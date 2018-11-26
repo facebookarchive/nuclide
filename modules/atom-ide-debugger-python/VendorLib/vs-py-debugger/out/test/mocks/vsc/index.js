@@ -55,7 +55,15 @@ var vscMock;
     vscMock.Disposable = Disposable;
     class EventEmitter {
         constructor() {
-            this.event = this.add;
+            this.add = (listener, thisArgs, disposables) => {
+                this.emitter.addListener('evt', listener);
+                return {
+                    dispose: () => {
+                        this.emitter.removeListener('evt', listener);
+                    }
+                };
+            };
+            this.event = this.add.bind(this);
             this.emitter = new events_1.EventEmitter();
         }
         fire(data) {
@@ -64,20 +72,12 @@ var vscMock;
         dispose() {
             this.emitter.removeAllListeners();
         }
-        add(listener, thisArgs, disposables) {
-            this.emitter.addListener('evt', listener);
-            return {
-                dispose: () => {
-                    this.emitter.removeListener('evt', listener);
-                }
-            };
-        }
     }
     vscMock.EventEmitter = EventEmitter;
     class CancellationToken extends EventEmitter {
         constructor() {
             super();
-            this.onCancellationRequested = this.add;
+            this.onCancellationRequested = this.add.bind(this);
         }
         cancel() {
             this.isCancellationRequested = true;

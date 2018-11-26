@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -32,7 +32,7 @@ class LinterCommands {
         return __awaiter(this, void 0, void 0, function* () {
             const linters = this.linterManager.getAllLinterInfos();
             const suggestions = linters.map(x => x.id).sort();
-            const activeLinters = this.linterManager.getActiveLinters(this.settingsUri);
+            const activeLinters = yield this.linterManager.getActiveLinters(true, this.settingsUri);
             let current;
             switch (activeLinters.length) {
                 case 0:
@@ -54,6 +54,7 @@ class LinterCommands {
             if (selection !== undefined) {
                 const index = linters.findIndex(x => x.id === selection);
                 if (activeLinters.length > 1) {
+                    // tslint:disable-next-line:messages-must-be-localized
                     const response = yield this.appShell.showWarningMessage(`Multiple linters are enabled in settings. Replace with '${selection}'?`, 'Yes', 'No');
                     if (response !== 'Yes') {
                         return;
@@ -66,7 +67,7 @@ class LinterCommands {
     enableLintingAsync() {
         return __awaiter(this, void 0, void 0, function* () {
             const options = ['on', 'off'];
-            const current = this.linterManager.isLintingEnabled(this.settingsUri) ? options[0] : options[1];
+            const current = (yield this.linterManager.isLintingEnabled(true, this.settingsUri)) ? options[0] : options[1];
             const quickPickOptions = {
                 matchOnDetail: true,
                 matchOnDescription: true,

@@ -11,9 +11,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
-const fs_1 = require("../../../utils/fs");
 const types_1 = require("../../common/platform/types");
 const util_1 = require("../../common/util");
+const fs_1 = require("../../common/utils/fs");
 const types_2 = require("../../ioc/types");
 const contracts_1 = require("../contracts");
 const CheckPythonInterpreterRegEx = util_1.IS_WINDOWS ? /^python(\d+(.\d+)?)?\.exe$/ : /^python(\d+(.\d+)?)?$/;

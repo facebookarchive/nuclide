@@ -17,10 +17,10 @@ const types_1 = require("../../client/common/application/types");
 const channelManager_1 = require("../../client/common/installer/channelManager");
 const types_2 = require("../../client/common/installer/types");
 const types_3 = require("../../client/common/types");
+const platform_1 = require("../../client/common/utils/platform");
 const contracts_1 = require("../../client/interpreter/contracts");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
-const platform_1 = require("../../utils/platform");
 const info = {
     architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',

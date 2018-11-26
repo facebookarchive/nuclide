@@ -19,11 +19,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
-const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/application/types");
 const constants = require("../../common/constants");
 const helpers_1 = require("../../common/helpers");
 const types_2 = require("../../common/types");
+const misc_1 = require("../../common/utils/misc");
 const types_3 = require("../../ioc/types");
 const constants_1 = require("../common/constants");
 const types_4 = require("../common/types");

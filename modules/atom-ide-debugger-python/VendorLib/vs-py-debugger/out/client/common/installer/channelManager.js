@@ -56,13 +56,13 @@ let InstallationChannelManager = class InstallationChannelManager {
     }
     getInstallationChannels(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            let installers = this.serviceContainer.getAll(types_4.IModuleInstaller);
+            const installers = this.serviceContainer.getAll(types_4.IModuleInstaller);
             const supportedInstallers = [];
             if (installers.length === 0) {
                 return [];
             }
             // group by priority and pick supported from the highest priority
-            installers = installers.sort((a, b) => b.priority - a.priority);
+            installers.sort((a, b) => b.priority - a.priority);
             let currentPri = installers[0].priority;
             for (const mi of installers) {
                 if (mi.priority !== currentPri) {

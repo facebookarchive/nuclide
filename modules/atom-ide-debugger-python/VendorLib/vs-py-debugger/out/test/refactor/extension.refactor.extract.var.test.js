@@ -87,8 +87,7 @@ suite('Variable Extraction', () => {
     // tslint:disable-next-line:no-function-expression
     test('Extract Variable', function () {
         return __awaiter(this, void 0, void 0, function* () {
-            const pyVersion = yield ioc.getPythonMajorMinorVersion(common_1.rootWorkspaceUri);
-            if (pyVersion.major === 3 && pyVersion.minor === 7) {
+            if (common_1.isPythonVersion('3.7')) {
                 // tslint:disable-next-line:no-invalid-this
                 return this.skip();
             }

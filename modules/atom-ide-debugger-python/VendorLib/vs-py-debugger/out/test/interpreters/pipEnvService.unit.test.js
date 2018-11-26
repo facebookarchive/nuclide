@@ -19,10 +19,10 @@ const types_1 = require("../../client/common/application/types");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/process/types");
 const types_4 = require("../../client/common/types");
+const enum_1 = require("../../client/common/utils/enum");
 const types_5 = require("../../client/common/variables/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const pipEnvService_1 = require("../../client/interpreter/locators/services/pipEnvService");
-const enum_1 = require("../../utils/enum");
 var OS;
 (function (OS) {
     OS[OS["Mac"] = 0] = "Mac";

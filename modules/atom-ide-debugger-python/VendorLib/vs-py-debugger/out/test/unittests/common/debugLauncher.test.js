@@ -20,9 +20,9 @@ const types_1 = require("../../../client/common/application/types");
 const constants_1 = require("../../../client/common/constants");
 require("../../../client/common/extensions");
 const types_2 = require("../../../client/common/types");
-const Contracts_1 = require("../../../client/debugger/Common/Contracts");
+const constants_2 = require("../../../client/debugger/constants");
+const types_3 = require("../../../client/debugger/types");
 const debugLauncher_1 = require("../../../client/unittests/common/debugLauncher");
-const constants_2 = require("../../../client/debugger/Common/constants");
 chai_1.use(chaiAsPromised);
 // tslint:disable-next-line:max-func-body-length
 suite('Unit Tests - Debug Launcher', () => {
@@ -83,7 +83,7 @@ suite('Unit Tests - Debug Launcher', () => {
             const args = ['/one/two/three/testfile.py'];
             const cwd = workspaceFolders[0].uri.fsPath;
             const program = testLaunchScript;
-            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider);
+            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [types_3.DebugOptions.RedirectOutput], testProvider);
             debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
             debugService.verifyAll();
         }));
@@ -95,7 +95,7 @@ suite('Unit Tests - Debug Launcher', () => {
             const args = ['/one/two/three/testfile.py', '--debug', '1'];
             const cwd = workspaceFolders[0].uri.fsPath;
             const program = testLaunchScript;
-            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider);
+            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [types_3.DebugOptions.RedirectOutput], testProvider);
             debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
             debugService.verifyAll();
         }));

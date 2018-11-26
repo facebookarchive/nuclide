@@ -23,8 +23,8 @@ const vscode_1 = require("vscode");
 const types_1 = require("../../common/application/types");
 const constants_1 = require("../../common/constants");
 const types_2 = require("../../common/types");
-const Contracts_1 = require("../../debugger/Common/Contracts");
-const types_3 = require("../../ioc/types");
+const types_3 = require("../../debugger/types");
+const types_4 = require("../../ioc/types");
 let DebugLauncher = class DebugLauncher {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
@@ -57,7 +57,7 @@ let DebugLauncher = class DebugLauncher {
                 args: debugArgs,
                 console: 'none',
                 envFile: configSettings.envFile,
-                debugOptions: [Contracts_1.DebugOptions.RedirectOutput]
+                debugOptions: [types_3.DebugOptions.RedirectOutput]
             }).then(() => void (0));
         });
     }
@@ -86,7 +86,7 @@ let DebugLauncher = class DebugLauncher {
 };
 DebugLauncher = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_3.IServiceContainer))
+    __param(0, inversify_1.inject(types_4.IServiceContainer))
 ], DebugLauncher);
 exports.DebugLauncher = DebugLauncher;
 //# sourceMappingURL=debugLauncher.js.map

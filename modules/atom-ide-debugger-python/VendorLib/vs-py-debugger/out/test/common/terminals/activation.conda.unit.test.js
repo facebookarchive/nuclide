@@ -22,8 +22,8 @@ const condaActivationProvider_1 = require("../../../client/common/terminal/envir
 const helper_1 = require("../../../client/common/terminal/helper");
 const types_3 = require("../../../client/common/terminal/types");
 const types_4 = require("../../../client/common/types");
+const enum_1 = require("../../../client/common/utils/enum");
 const contracts_1 = require("../../../client/interpreter/contracts");
-const enum_1 = require("../../../utils/enum");
 suite('Terminal Environment Activation conda', () => {
     let terminalHelper;
     let disposables = [];

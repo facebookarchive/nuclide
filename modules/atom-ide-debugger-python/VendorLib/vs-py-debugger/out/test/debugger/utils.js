@@ -17,11 +17,11 @@ const request = require("request");
 const vscode_debugadapter_testsupport_1 = require("vscode-debugadapter-testsupport");
 const constants_1 = require("../../client/common/constants");
 const constants_2 = require("../../client/common/platform/constants");
-const constants_3 = require("./common/constants");
+const constants_3 = require("../../client/debugger/constants");
+const constants_4 = require("./common/constants");
 const debugClient_1 = require("./debugClient");
-const constants_4 = require("../../client/debugger/Common/constants");
-const testAdapterFilePath = path.join(constants_1.EXTENSION_ROOT_DIR, 'out', 'client', 'debugger', 'mainV2.js');
-const debuggerType = constants_4.DebuggerTypeName;
+const testAdapterFilePath = path.join(constants_1.EXTENSION_ROOT_DIR, 'out', 'client', 'debugger', 'debugAdapter', 'main.js');
+const debuggerType = constants_3.DebuggerTypeName;
 /**
  * Creates the debug adapter.
  * We do not need to support code coverage on AppVeyor, lets use the standard test adapter.
@@ -37,7 +37,7 @@ function createDebugAdapter(coverageDirectory) {
         else {
             debugClient = new debugClient_1.DebugClientEx(testAdapterFilePath, debuggerType, coverageDirectory, { cwd: constants_1.EXTENSION_ROOT_DIR });
         }
-        debugClient.defaultTimeout = constants_3.DEBUGGER_TIMEOUT;
+        debugClient.defaultTimeout = constants_4.DEBUGGER_TIMEOUT;
         yield debugClient.start();
         return debugClient;
     });

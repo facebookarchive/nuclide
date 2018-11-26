@@ -14,10 +14,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../../client/common/types");
+const enum_1 = require("../../../../client/common/utils/enum");
 const constants_1 = require("../../../../client/unittests/common/constants");
 const testConfigurationManager_1 = require("../../../../client/unittests/common/managers/testConfigurationManager");
 const types_2 = require("../../../../client/unittests/common/types");
-const enum_1 = require("../../../../utils/enum");
 class MockTestConfigurationManager extends testConfigurationManager_1.TestConfigurationManager {
     requiresUserToConfigure(wkspace) {
         throw new Error('Method not implemented.');

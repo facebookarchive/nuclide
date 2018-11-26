@@ -9,40 +9,41 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 let WorkspaceService = class WorkspaceService {
     get onDidChangeConfiguration() {
-        return vscode.workspace.onDidChangeConfiguration;
+        return vscode_1.workspace.onDidChangeConfiguration;
     }
     get rootPath() {
-        return Array.isArray(vscode.workspace.workspaceFolders) ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+        return Array.isArray(vscode_1.workspace.workspaceFolders) ? vscode_1.workspace.workspaceFolders[0].uri.fsPath : undefined;
     }
     get workspaceFolders() {
-        return vscode.workspace.workspaceFolders;
+        return vscode_1.workspace.workspaceFolders;
     }
     get onDidChangeWorkspaceFolders() {
-        return vscode.workspace.onDidChangeWorkspaceFolders;
+        return vscode_1.workspace.onDidChangeWorkspaceFolders;
     }
     get hasWorkspaceFolders() {
-        return Array.isArray(vscode.workspace.workspaceFolders) && vscode.workspace.workspaceFolders.length > 0;
+        return Array.isArray(vscode_1.workspace.workspaceFolders) && vscode_1.workspace.workspaceFolders.length > 0;
     }
     getConfiguration(section, resource) {
-        return vscode.workspace.getConfiguration(section, resource);
+        return vscode_1.workspace.getConfiguration(section, resource);
     }
     getWorkspaceFolder(uri) {
-        return vscode.workspace.getWorkspaceFolder(uri);
+        return vscode_1.workspace.getWorkspaceFolder(uri);
     }
     asRelativePath(pathOrUri, includeWorkspaceFolder) {
-        return vscode.workspace.asRelativePath(pathOrUri, includeWorkspaceFolder);
+        return vscode_1.workspace.asRelativePath(pathOrUri, includeWorkspaceFolder);
     }
     createFileSystemWatcher(globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents) {
-        return vscode.workspace.createFileSystemWatcher(globPattern, ignoreChangeEvents, ignoreChangeEvents, ignoreDeleteEvents);
+        return vscode_1.workspace.createFileSystemWatcher(globPattern, ignoreChangeEvents, ignoreChangeEvents, ignoreDeleteEvents);
     }
     findFiles(include, exclude, maxResults, token) {
-        return vscode.workspace.findFiles(include, exclude, maxResults, token);
+        return vscode_1.workspace.findFiles(include, exclude, maxResults, token);
     }
-    get onDidSaveTextDocument() {
-        return vscode.workspace.onDidSaveTextDocument;
+    getWorkspaceFolderIdentifier(resource) {
+        const workspaceFolder = resource ? vscode_1.workspace.getWorkspaceFolder(resource) : undefined;
+        return workspaceFolder ? workspaceFolder.uri.fsPath : '';
     }
 };
 WorkspaceService = __decorate([

@@ -69,7 +69,7 @@ let PowerShellActivationHackDiagnosticsService = class PowerShellActivationHackD
                     command: {
                         diagnostic, invoke: () => __awaiter(this, void 0, void 0, function* () {
                             commandPrompt_1.useCommandPromptAsDefaultShell(currentProcess, configurationService)
-                                .catch(ex => logger_1.error('Use Command Prompt as default shell', ex));
+                                .catch(ex => logger_1.Logger.error('Use Command Prompt as default shell', ex));
                         })
                     }
                 },

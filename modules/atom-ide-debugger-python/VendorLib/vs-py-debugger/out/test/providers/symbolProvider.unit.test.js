@@ -15,10 +15,10 @@ const chai_1 = require("chai");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/platform/types");
+const string_1 = require("../../client/common/utils/string");
+const text_1 = require("../../client/common/utils/text");
 const jediProxyFactory_1 = require("../../client/languageServices/jediProxyFactory");
 const symbolProvider_1 = require("../../client/providers/symbolProvider");
-const string_1 = require("../../utils/string");
-const text_1 = require("../../utils/text");
 const assertArrays = require('chai-arrays');
 chai_1.use(assertArrays);
 suite('Jedi Symbol Provider', () => {

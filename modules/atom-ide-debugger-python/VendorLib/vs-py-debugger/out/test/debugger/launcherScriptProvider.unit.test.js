@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const path = require("path");
 const constants_1 = require("../../client/common/constants");
-const launcherProvider_1 = require("../../client/debugger/DebugClients/launcherProvider");
+const launcherProvider_1 = require("../../client/debugger/debugAdapter/DebugClients/launcherProvider");
 suite('Debugger - Launcher Script Provider', () => {
     test('Ensure debugger gets the launcher from PythonTools directory', () => {
         const launcherPath = new launcherProvider_1.DebuggerLauncherScriptProvider().getLauncherFilePath();

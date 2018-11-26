@@ -15,10 +15,10 @@ const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/application/types");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/types");
+const platform_1 = require("../../client/common/utils/platform");
 const contracts_1 = require("../../client/interpreter/contracts");
 const display_1 = require("../../client/interpreter/display");
 const types_4 = require("../../client/interpreter/virtualEnvs/types");
-const platform_1 = require("../../utils/platform");
 // tslint:disable:no-any max-func-body-length
 const info = {
     architecture: platform_1.Architecture.Unknown,
@@ -128,7 +128,7 @@ suite('Interpreters Display', () => {
         virtualEnvMgr.setup(v => v.getEnvironmentName(TypeMoq.It.isValue(pythonPath))).returns(() => Promise.resolve(''));
         yield interpreterDisplay.refresh(resource);
         statusBar.verify(s => s.color = TypeMoq.It.isValue('yellow'), TypeMoq.Times.once());
-        statusBar.verify(s => s.text = TypeMoq.It.isValue('$(alert) Select Python Environment'), TypeMoq.Times.once());
+        statusBar.verify(s => s.text = TypeMoq.It.isValue('$(alert) Select Python Interpreter'), TypeMoq.Times.once());
     }));
     test('Ensure we try to identify the active workspace when a resource is not provided ', () => __awaiter(this, void 0, void 0, function* () {
         const workspaceFolder = vscode_1.Uri.file('x');

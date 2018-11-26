@@ -22,9 +22,9 @@ const productInstaller_1 = require("../../../client/common/installer/productInst
 const types_2 = require("../../../client/common/installer/types");
 const types_3 = require("../../../client/common/terminal/types");
 const types_4 = require("../../../client/common/types");
+const enum_1 = require("../../../client/common/utils/enum");
+const misc_1 = require("../../../client/common/utils/misc");
 const contracts_1 = require("../../../client/interpreter/contracts");
-const enum_1 = require("../../../utils/enum");
-const misc_1 = require("../../../utils/misc");
 /* Complex test to ensure we cover all combinations:
 We could have written separate tests for each installer, but we'd be replicate code.
 Both approachs have their benefits.
@@ -46,7 +46,10 @@ suite('Module Installer', () => {
         proxyServers.forEach(proxyServer => {
             [undefined, vscode_1.Uri.file('/users/dev/xyz')].forEach(resource => {
                 // Conda info is relevant only for CondaInstaller.
-                const condaEnvs = installerClass === condaInstaller_1.CondaInstaller ? [{ name: 'My-Env01', path: '' }, { name: '', path: '/conda/path' }] : [];
+                const condaEnvs = installerClass === condaInstaller_1.CondaInstaller ? [
+                    { name: 'My-Env01', path: '' }, { name: '', path: path.join('conda', 'path') },
+                    { name: 'My-Env01 With Spaces', path: '' }, { name: '', path: path.join('conda with spaces', 'path') }
+                ] : [];
                 [undefined, ...condaEnvs].forEach(condaEnvInfo => {
                     const testProxySuffix = proxyServer.length === 0 ? 'without proxy info' : 'with proxy info';
                     const testCondaEnv = condaEnvInfo ? (condaEnvInfo.name ? 'without conda name' : 'with conda path') : 'without conda';
@@ -139,11 +142,11 @@ suite('Module Installer', () => {
                                                 const expectedArgs = ['install'];
                                                 if (condaEnvInfo && condaEnvInfo.name) {
                                                     expectedArgs.push('--name');
-                                                    expectedArgs.push(condaEnvInfo.name);
+                                                    expectedArgs.push(condaEnvInfo.name.toCommandArgument());
                                                 }
                                                 else if (condaEnvInfo && condaEnvInfo.path) {
                                                     expectedArgs.push('--prefix');
-                                                    expectedArgs.push(condaEnvInfo.path);
+                                                    expectedArgs.push(condaEnvInfo.path.fileToCommandArgument());
                                                 }
                                                 expectedArgs.push('"pylint<2.0.0"');
                                                 yield installModuleAndVerifyCommand(condaExecutable, expectedArgs);
@@ -173,11 +176,11 @@ suite('Module Installer', () => {
                                                 const expectedArgs = ['install'];
                                                 if (condaEnvInfo && condaEnvInfo.name) {
                                                     expectedArgs.push('--name');
-                                                    expectedArgs.push(condaEnvInfo.name);
+                                                    expectedArgs.push(condaEnvInfo.name.toCommandArgument());
                                                 }
                                                 else if (condaEnvInfo && condaEnvInfo.path) {
                                                     expectedArgs.push('--prefix');
-                                                    expectedArgs.push(condaEnvInfo.path);
+                                                    expectedArgs.push(condaEnvInfo.path.fileToCommandArgument());
                                                 }
                                                 expectedArgs.push('pylint');
                                                 yield installModuleAndVerifyCommand(condaExecutable, expectedArgs);
@@ -221,11 +224,11 @@ suite('Module Installer', () => {
                                     const expectedArgs = ['install'];
                                     if (condaEnvInfo && condaEnvInfo.name) {
                                         expectedArgs.push('--name');
-                                        expectedArgs.push(condaEnvInfo.name);
+                                        expectedArgs.push(condaEnvInfo.name.toCommandArgument());
                                     }
                                     else if (condaEnvInfo && condaEnvInfo.path) {
                                         expectedArgs.push('--prefix');
-                                        expectedArgs.push(condaEnvInfo.path);
+                                        expectedArgs.push(condaEnvInfo.path.fileToCommandArgument());
                                     }
                                     expectedArgs.push(moduleName);
                                     yield installModuleAndVerifyCommand(condaExecutable, expectedArgs);

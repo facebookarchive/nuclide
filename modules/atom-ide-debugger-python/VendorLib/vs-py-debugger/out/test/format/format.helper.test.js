@@ -12,8 +12,8 @@ const assert = require("assert");
 const TypeMoq = require("typemoq");
 const configSettings_1 = require("../../client/common/configSettings");
 const types_1 = require("../../client/common/types");
+const EnumEx = require("../../client/common/utils/enum");
 const helper_1 = require("../../client/formatters/helper");
-const EnumEx = require("../../utils/enum");
 const initialize_1 = require("../initialize");
 const serviceRegistry_1 = require("../unittests/serviceRegistry");
 // tslint:disable-next-line:max-func-body-length

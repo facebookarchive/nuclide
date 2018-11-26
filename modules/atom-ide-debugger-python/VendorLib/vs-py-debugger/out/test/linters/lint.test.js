@@ -1,4 +1,6 @@
-"use strict";
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,6 +15,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/application/types");
+const workspace_1 = require("../../client/common/application/workspace");
 const constants_1 = require("../../client/common/constants");
 const productInstaller_1 = require("../../client/common/installer/productInstaller");
 const productPath_1 = require("../../client/common/installer/productPath");
@@ -126,7 +129,7 @@ suite('Linting - General Tests', () => {
         ioc.registerLinterTypes();
         ioc.registerVariableTypes();
         ioc.registerPlatformTypes();
-        linterManager = new linterManager_1.LinterManager(ioc.serviceContainer);
+        linterManager = new linterManager_1.LinterManager(ioc.serviceContainer, new workspace_1.WorkspaceService());
         configService = ioc.serviceContainer.get(types_3.IConfigurationService);
         ioc.serviceManager.addSingletonInstance(types_2.IProductService, new productService_1.ProductService());
         ioc.serviceManager.addSingleton(types_2.IProductPathService, productPath_1.CTagsProductPathService, types_3.ProductType.WorkspaceSymbols);
@@ -160,7 +163,7 @@ suite('Linting - General Tests', () => {
             const cancelToken = new vscode_1.CancellationTokenSource();
             yield linterManager.setActiveLintersAsync([product]);
             yield linterManager.enableLintingAsync(enabled);
-            const linter = linterManager.createLinter(product, output, ioc.serviceContainer);
+            const linter = yield linterManager.createLinter(product, output, ioc.serviceContainer);
             const messages = yield linter.lint(document, cancelToken.token);
             if (enabled) {
                 assert.notEqual(messages.length, 0, `No linter errors when linter is enabled, Output - ${output.output}`);
@@ -207,7 +210,7 @@ suite('Linting - General Tests', () => {
             const cancelToken = new vscode_1.CancellationTokenSource();
             const document = yield vscode_1.workspace.openTextDocument(pythonFile);
             yield linterManager.setActiveLintersAsync([product], document.uri);
-            const linter = linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
+            const linter = yield linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
             const messages = yield linter.lint(document, cancelToken.token);
             if (messagesToBeReceived.length === 0) {
                 assert.equal(messages.length, 0, `No errors in linter, Output - ${outputChannel.output}`);
@@ -291,7 +294,7 @@ suite('Linting - General Tests', () => {
             const cancelToken = new vscode_1.CancellationTokenSource();
             const document = yield vscode_1.workspace.openTextDocument(pythonFile);
             yield linterManager.setActiveLintersAsync([product], document.uri);
-            const linter = linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
+            const linter = yield linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
             const messages = yield linter.lint(document, cancelToken.token);
             assert.equal(messages.length, messageCountToBeReceived, 'Expected number of lint errors does not match lint error count');
         });

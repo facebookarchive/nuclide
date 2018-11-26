@@ -1,4 +1,6 @@
-"use strict";
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+'use strict';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -28,6 +30,25 @@ function matchNamedRegEx(data, regex) {
     return undefined;
 }
 exports.matchNamedRegEx = matchNamedRegEx;
+function parseLine(line, regex, linterID, colOffset = 0) {
+    const match = matchNamedRegEx(line, regex);
+    if (!match) {
+        return;
+    }
+    // tslint:disable-next-line:no-any
+    match.line = Number(match.line);
+    // tslint:disable-next-line:no-any
+    match.column = Number(match.column);
+    return {
+        code: match.code,
+        message: match.message,
+        column: isNaN(match.column) || match.column <= 0 ? 0 : match.column - colOffset,
+        line: match.line,
+        type: match.type,
+        provider: linterID
+    };
+}
+exports.parseLine = parseLine;
 class BaseLinter {
     constructor(product, outputChannel, serviceContainer, columnOffset = 0) {
         this.outputChannel = outputChannel;
@@ -43,10 +64,6 @@ class BaseLinter {
     }
     get info() {
         return this._info;
-    }
-    isLinterExecutableSpecified(resource) {
-        const executablePath = this.info.pathName(resource);
-        return path.basename(executablePath).length > 0 && path.basename(executablePath) !== executablePath;
     }
     lint(document, cancellation) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -115,22 +132,7 @@ class BaseLinter {
             .catch(this.logger.logError.bind(this, 'Error in errorHandler.handleError'));
     }
     parseLine(line, regEx) {
-        const match = matchNamedRegEx(line, regEx);
-        if (!match) {
-            return;
-        }
-        // tslint:disable-next-line:no-any
-        match.line = Number(match.line);
-        // tslint:disable-next-line:no-any
-        match.column = Number(match.column);
-        return {
-            code: match.code,
-            message: match.message,
-            column: isNaN(match.column) || match.column <= 0 ? 0 : match.column - this.columnOffset,
-            line: match.line,
-            type: match.type,
-            provider: this.info.id
-        };
+        return parseLine(line, regEx, this.info.id, this.columnOffset);
     }
     parseLines(outputLines, regEx) {
         const messages = [];

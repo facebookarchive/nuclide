@@ -5,8 +5,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-reference
 /// <reference path="./vscode-extension-telemetry.d.ts" />
 const vscode_1 = require("vscode");
-const stopWatch_1 = require("../../utils/stopWatch");
 const constants_1 = require("../common/constants");
+const stopWatch_1 = require("../common/utils/stopWatch");
 let telemetryReporter;
 function getTelemetryReporter() {
     if (telemetryReporter) {

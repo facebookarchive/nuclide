@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const async_1 = require("../../../../utils/async");
+const async_1 = require("../../utils/async");
 const types_1 = require("../types");
 class BaseTerminalActivator {
     constructor(helper) {

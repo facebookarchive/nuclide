@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const stopWatch_1 = require("../../utils/stopWatch");
 const configSettings_1 = require("../common/configSettings");
 const editor_1 = require("../common/editor");
 const types_1 = require("../common/types");
+const stopWatch_1 = require("../common/utils/stopWatch");
 const proxy_1 = require("../refactor/proxy");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");

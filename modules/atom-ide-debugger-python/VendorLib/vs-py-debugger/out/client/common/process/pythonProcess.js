@@ -18,11 +18,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
-const platform_1 = require("../../../utils/platform");
 const constants_1 = require("../constants");
 const errorUtils_1 = require("../errors/errorUtils");
 const moduleNotInstalledError_1 = require("../errors/moduleNotInstalledError");
 const types_1 = require("../platform/types");
+const platform_1 = require("../utils/platform");
 let PythonExecutionService = class PythonExecutionService {
     constructor(serviceContainer, procService, pythonPath) {
         this.procService = procService;

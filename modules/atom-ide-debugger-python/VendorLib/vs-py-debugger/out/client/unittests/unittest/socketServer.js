@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
 const net = require("net");
-const async_1 = require("../../../utils/async");
+const async_1 = require("../../common/utils/async");
 // tslint:disable-next-line:variable-name
 const MaxConnections = 100;
 let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmitter {
@@ -31,6 +31,7 @@ let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmit
         }
     }
     start(options = { port: 0, host: 'localhost' }) {
+        this.ipcBuffer = '';
         this.startedDef = async_1.createDeferred();
         this.server = net.createServer(this.connectionListener.bind(this));
         this.server.maxConnections = MaxConnections;
@@ -55,7 +56,10 @@ let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmit
         this.sockets.push(socket);
         socket.setEncoding('utf8');
         this.log('## socket connection to server detected ##');
-        socket.on('close', this.onCloseSocket.bind(this));
+        socket.on('close', () => {
+            this.ipcBuffer = '';
+            this.onCloseSocket();
+        });
         socket.on('error', (err) => {
             this.log('server socket error', err);
             this.emit('error', err);
@@ -74,7 +78,15 @@ let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmit
                 if (dataStr.length < startIndex + lengthOfMessage) {
                     return;
                 }
-                const message = JSON.parse(dataStr.substring(startIndex, lengthOfMessage + startIndex));
+                // tslint:disable-next-line:no-any
+                let message;
+                try {
+                    message = JSON.parse(dataStr.substring(startIndex, lengthOfMessage + startIndex));
+                }
+                catch (jsonErr) {
+                    this.emit('error', jsonErr);
+                    return;
+                }
                 dataStr = this.ipcBuffer = dataStr.substring(startIndex + lengthOfMessage);
                 this.emit(message.event, message.body, sock);
             }

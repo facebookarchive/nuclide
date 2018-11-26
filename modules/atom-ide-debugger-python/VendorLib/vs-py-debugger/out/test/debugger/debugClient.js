@@ -6,7 +6,7 @@ const child_process_1 = require("child_process");
 const path = require("path");
 const vscode_debugadapter_testsupport_1 = require("vscode-debugadapter-testsupport");
 const constants_1 = require("../../client/common/constants");
-const misc_1 = require("../../utils/misc");
+const misc_1 = require("../../client/common/utils/misc");
 class DebugClientEx extends vscode_debugadapter_testsupport_1.DebugClient {
     constructor(executable, debugType, coverageDirectory, spawnOptions) {
         super('node', '', debugType, spawnOptions);

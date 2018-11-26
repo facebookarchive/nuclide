@@ -33,7 +33,7 @@ let UnitTestHelper = class UnitTestHelper {
         const testIds = [];
         if (testsToRun && testsToRun.testFolder) {
             // Get test ids of files in these folders.
-            testsToRun.testFolder.map(folder => {
+            testsToRun.testFolder.forEach(folder => {
                 tests.testFiles.forEach(f => {
                     if (f.fullPath.startsWith(folder.name)) {
                         testIds.push(f.nameToRun);

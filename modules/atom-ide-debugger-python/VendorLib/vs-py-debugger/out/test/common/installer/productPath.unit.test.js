@@ -22,10 +22,10 @@ const productPath_1 = require("../../../client/common/installer/productPath");
 const productService_1 = require("../../../client/common/installer/productService");
 const types_1 = require("../../../client/common/installer/types");
 const types_2 = require("../../../client/common/types");
+const enum_1 = require("../../../client/common/utils/enum");
 const types_3 = require("../../../client/formatters/types");
 const types_4 = require("../../../client/linters/types");
 const types_5 = require("../../../client/unittests/common/types");
-const enum_1 = require("../../../utils/enum");
 chai_1.use(chaiAsPromised);
 suite('Product Path', () => {
     [undefined, vscode_1.Uri.file('resource')].forEach(resource => {

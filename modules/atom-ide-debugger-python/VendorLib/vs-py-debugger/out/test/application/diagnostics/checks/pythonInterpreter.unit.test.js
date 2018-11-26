@@ -21,8 +21,8 @@ const types_2 = require("../../../../client/application/diagnostics/types");
 const types_3 = require("../../../../client/common/application/types");
 const types_4 = require("../../../../client/common/platform/types");
 const types_5 = require("../../../../client/common/types");
+const misc_1 = require("../../../../client/common/utils/misc");
 const contracts_1 = require("../../../../client/interpreter/contracts");
-const misc_1 = require("../../../../utils/misc");
 const core_1 = require("../../../core");
 suite('Application Diagnostics - Checks Python Interpreter', () => {
     let diagnosticService;

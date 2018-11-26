@@ -11,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
-const async_1 = require("../../utils/async");
-const stopWatch_1 = require("../../utils/stopWatch");
+const async_1 = require("../common/utils/async");
+const stopWatch_1 = require("../common/utils/stopWatch");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");
 // Draw the line at Language Server analysis 'timing out'

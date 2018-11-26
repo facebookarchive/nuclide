@@ -9,7 +9,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const platform = require("../../../utils/platform");
+const platform = require("../utils/platform");
 const osinfo = require("./osinfo");
 let PlatformService = class PlatformService {
     get info() {

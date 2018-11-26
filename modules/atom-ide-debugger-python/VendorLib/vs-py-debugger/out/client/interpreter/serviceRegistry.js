@@ -10,21 +10,25 @@ const pythonPathUpdaterServiceFactory_1 = require("./configuration/pythonPathUpd
 const types_2 = require("./configuration/types");
 const contracts_1 = require("./contracts");
 const display_1 = require("./display");
+const progressDisplay_1 = require("./display/progressDisplay");
 const shebangCodeLensProvider_1 = require("./display/shebangCodeLensProvider");
 const helpers_1 = require("./helpers");
 const interpreterService_1 = require("./interpreterService");
 const interpreterVersion_1 = require("./interpreterVersion");
 const helpers_2 = require("./locators/helpers");
 const index_1 = require("./locators/index");
+const progressService_1 = require("./locators/progressService");
 const condaEnvFileService_1 = require("./locators/services/condaEnvFileService");
 const condaEnvService_1 = require("./locators/services/condaEnvService");
 const condaService_1 = require("./locators/services/condaService");
 const currentPathService_1 = require("./locators/services/currentPathService");
 const globalVirtualEnvService_1 = require("./locators/services/globalVirtualEnvService");
+const interpreterWatcherBuilder_1 = require("./locators/services/interpreterWatcherBuilder");
 const KnownPathsService_1 = require("./locators/services/KnownPathsService");
 const pipEnvService_1 = require("./locators/services/pipEnvService");
 const windowsRegistryService_1 = require("./locators/services/windowsRegistryService");
 const workspaceVirtualEnvService_1 = require("./locators/services/workspaceVirtualEnvService");
+const workspaceVirtualEnvWatcherService_1 = require("./locators/services/workspaceVirtualEnvWatcherService");
 const index_2 = require("./virtualEnvs/index");
 const types_3 = require("./virtualEnvs/types");
 function registerTypes(serviceManager) {
@@ -33,6 +37,8 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(contracts_1.IVirtualEnvironmentsSearchPathProvider, workspaceVirtualEnvService_1.WorkspaceVirtualEnvironmentsSearchPathProvider, 'workspace');
     serviceManager.addSingleton(contracts_1.ICondaService, condaService_1.CondaService);
     serviceManager.addSingleton(types_3.IVirtualEnvironmentManager, index_2.VirtualEnvironmentManager);
+    serviceManager.add(contracts_1.IInterpreterWatcher, workspaceVirtualEnvWatcherService_1.WorkspaceVirtualEnvWatcherService, contracts_1.WORKSPACE_VIRTUAL_ENV_SERVICE);
+    serviceManager.addSingleton(contracts_1.IInterpreterWatcherBuilder, interpreterWatcherBuilder_1.InterpreterWatcherBuilder);
     serviceManager.addSingleton(contracts_1.IInterpreterVersionService, interpreterVersion_1.InterpreterVersionService);
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, index_1.PythonInterpreterLocatorService, contracts_1.INTERPRETER_LOCATOR_SERVICE);
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, condaEnvFileService_1.CondaEnvFileService, contracts_1.CONDA_ENV_FILE_SERVICE);
@@ -56,6 +62,8 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(contracts_1.IInterpreterHelper, helpers_1.InterpreterHelper);
     serviceManager.addSingleton(contracts_1.IInterpreterLocatorHelper, helpers_2.InterpreterLocatorHelper);
     serviceManager.addSingleton(types_2.IInterpreterComparer, interpreterComparer_1.InterpreterComparer);
+    serviceManager.addSingleton(contracts_1.InterpreterLocatorProgressHandler, progressDisplay_1.InterpreterLocatorProgressStatubarHandler);
+    serviceManager.addSingleton(contracts_1.IInterpreterLocatorProgressService, progressService_1.InterpreterLocatorProgressService);
 }
 exports.registerTypes = registerTypes;
 //# sourceMappingURL=serviceRegistry.js.map

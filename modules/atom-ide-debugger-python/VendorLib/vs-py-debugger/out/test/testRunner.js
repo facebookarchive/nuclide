@@ -10,6 +10,7 @@ const istanbul = require("istanbul");
 const Mocha = require("mocha");
 const path = require("path");
 const remapIstanbul = require('remap-istanbul');
+const reactHelpers_1 = require("./datascience/reactHelpers");
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY.
 // Since we are not running in a tty environment, we just implement the method statically.
 const tty = require('tty');
@@ -33,6 +34,9 @@ exports.configure = configure;
 function run(testsRoot, callback) {
     // Enable source map support.
     require('source-map-support').install();
+    // nteract/transforms-full expects to run in the browser so we have to fake
+    // parts of the browser here.
+    reactHelpers_1.setUpDomEnvironment();
     // Check whether code coverage is enabled.
     const options = getCoverageOptions(testsRoot);
     if (options && options.enabled) {
@@ -42,7 +46,7 @@ function run(testsRoot, callback) {
         coverageRunner.setupCoverage();
     }
     // Run the tests.
-    glob(`**/**.${testFilesGlob}.js`, { cwd: testsRoot }, (error, files) => {
+    glob(`**/**.${testFilesGlob}.js`, { ignore: ['**/**.unit.test.js', '**/**.functional.test.js'], cwd: testsRoot }, (error, files) => {
         if (error) {
             return callback(error);
         }

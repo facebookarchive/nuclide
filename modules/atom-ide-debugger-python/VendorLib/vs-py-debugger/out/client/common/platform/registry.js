@@ -16,7 +16,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const Registry = require("winreg");
-const platform_1 = require("../../../utils/platform");
+const platform_1 = require("../utils/platform");
 const types_1 = require("./types");
 var RegistryArchitectures;
 (function (RegistryArchitectures) {

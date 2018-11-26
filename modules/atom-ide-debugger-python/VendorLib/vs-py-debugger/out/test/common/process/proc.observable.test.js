@@ -8,7 +8,7 @@ const vscode_1 = require("vscode");
 const configSettings_1 = require("../../../client/common/configSettings");
 const decoder_1 = require("../../../client/common/process/decoder");
 const proc_1 = require("../../../client/common/process/proc");
-const async_1 = require("../../../utils/async");
+const async_1 = require("../../../client/common/utils/async");
 const initialize_1 = require("./../../initialize");
 chai_1.use(chaiAsPromised);
 // tslint:disable-next-line:max-func-body-length

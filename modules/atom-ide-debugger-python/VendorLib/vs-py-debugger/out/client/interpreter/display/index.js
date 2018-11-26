@@ -60,7 +60,7 @@ let InterpreterDisplay = class InterpreterDisplay {
             else {
                 this.statusBar.tooltip = '';
                 this.statusBar.color = 'yellow';
-                this.statusBar.text = '$(alert) Select Python Environment';
+                this.statusBar.text = '$(alert) Select Python Interpreter';
             }
             this.statusBar.show();
         });

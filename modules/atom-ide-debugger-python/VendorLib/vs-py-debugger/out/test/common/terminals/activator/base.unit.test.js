@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const chai_1 = require("chai");
 const TypeMoq = require("typemoq");
+const chai_1 = require("chai");
 const base_1 = require("../../../../client/common/terminal/activator/base");
-const misc_1 = require("../../../../utils/misc");
+const misc_1 = require("../../../../client/common/utils/misc");
 // tslint:disable:max-func-body-length no-any
 suite('Terminal Base Activator', () => {
     let activator;

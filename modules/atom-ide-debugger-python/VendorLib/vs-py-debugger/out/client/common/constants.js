@@ -78,6 +78,16 @@ function isTestExecution() {
     return process.env.VSC_PYTHON_CI_TEST === '1';
 }
 exports.isTestExecution = isTestExecution;
+/**
+ * Whether we're running unit tests (*.unit.test.ts).
+ * These tests have a speacial meaning, they run fast.
+ * @export
+ * @returns {boolean}
+ */
+function isUnitTestExecution() {
+    return process.env.VSC_PYTHON_UNIT_TEST === '1';
+}
+exports.isUnitTestExecution = isUnitTestExecution;
 function isLanguageServerTest() {
     return process.env.VSC_PYTHON_LANGUAGE_SERVER === '1';
 }

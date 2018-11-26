@@ -13,20 +13,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const async_1 = require("../../utils/async");
 const types_1 = require("../common/application/types");
 require("../common/extensions");
 const types_2 = require("../common/platform/types");
 const types_3 = require("../common/process/types");
+const async_1 = require("../common/utils/async");
 const DataVersion = 1;
 class InterpreterData {
     constructor(dataVersion, 
     // tslint:disable-next-line:no-shadowed-variable
-    path, version, prefix, searchPaths, hash) {
+    path, version, searchPaths, hash) {
         this.dataVersion = dataVersion;
         this.path = path;
         this.version = version;
-        this.prefix = prefix;
         this.searchPaths = searchPaths;
         this.hash = hash;
     }
@@ -88,15 +87,13 @@ class InterpreterDataService {
     }
     getInterpreterDataFromPython(execService, interpreterPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield execService.exec(['-c', 'import sys; print(sys.version_info); print(sys.prefix)'], {});
-            // 2.7.14 (v2.7.14:84471935ed, Sep 16 2017, 20:19:30) <<SOMETIMES NEW LINE HERE>>
-            // [MSC v.1500 32 bit (Intel)]
-            // C:\Python27
+            const result = yield execService.exec(['-c', 'import sys; print(sys.version_info)'], {});
+            // sys.version_info(major=3, minor=6, micro=6, releaselevel='final', serial=0)
             if (!result.stdout) {
                 throw Error('Unable to determine Python interpreter version and system prefix.');
             }
             const output = result.stdout.splitLines({ removeEmptyEntries: true, trim: true });
-            if (!output || output.length < 2) {
+            if (!output || output.length < 1) {
                 throw Error('Unable to parse version and and system prefix from the Python interpreter output.');
             }
             const majorMatches = output[0].match(/major=(\d*?),/);
@@ -104,10 +101,9 @@ class InterpreterDataService {
             if (!majorMatches || majorMatches.length < 2 || !minorMatches || minorMatches.length < 2) {
                 throw Error('Unable to parse interpreter version.');
             }
-            const prefix = output[output.length - 1];
             const hash = yield this.getInterpreterHash(interpreterPath);
             const searchPaths = yield this.getSearchPaths(execService);
-            return new InterpreterData(DataVersion, interpreterPath, `${majorMatches[1]}.${minorMatches[1]}`, prefix, searchPaths, hash);
+            return new InterpreterData(DataVersion, interpreterPath, `${majorMatches[1]}.${minorMatches[1]}`, searchPaths, hash);
         });
     }
     getSearchPaths(execService) {

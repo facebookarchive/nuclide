@@ -5,7 +5,7 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any no-increment-decrement
-const sysTypes_1 = require("../../../utils/sysTypes");
+const sysTypes_1 = require("../utils/sysTypes");
 function validateConstraints(args, constraints) {
     const len = Math.min(args.length, constraints.length);
     for (let i = 0; i < len; i++) {

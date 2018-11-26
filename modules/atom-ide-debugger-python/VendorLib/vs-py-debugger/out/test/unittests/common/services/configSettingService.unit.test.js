@@ -17,8 +17,8 @@ const typeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../../client/common/application/types");
 const types_2 = require("../../../../client/common/types");
+const enum_1 = require("../../../../client/common/utils/enum");
 const configSettingService_1 = require("../../../../client/unittests/common/services/configSettingService");
-const enum_1 = require("../../../../utils/enum");
 chai_1.use(chaiPromise);
 const updateMethods = ['updateTestArgs', 'disable', 'enable'];
 suite('Unit Tests - ConfigSettingsService', () => {

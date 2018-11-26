@@ -19,6 +19,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const _ = require("lodash");
+const vscode_1 = require("vscode");
 const types_1 = require("../../common/platform/types");
 const types_2 = require("../../common/types");
 const types_3 = require("../../ioc/types");
@@ -33,6 +34,17 @@ let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
         serviceContainer.get(types_2.IDisposableRegistry).push(this);
         this.platform = serviceContainer.get(types_1.IPlatformService);
         this.interpreterLocatorHelper = serviceContainer.get(contracts_1.IInterpreterLocatorHelper);
+    }
+    /**
+     * This class should never emit events when we're locating.
+     * The events will be fired by the indivitual locators retrieved in `getLocators`.
+     *
+     * @readonly
+     * @type {Event<Promise<PythonInterpreter[]>>}
+     * @memberof PythonInterpreterLocatorService
+     */
+    get onLocating() {
+        return new vscode_1.EventEmitter().event;
     }
     /**
      * Release any held resources.

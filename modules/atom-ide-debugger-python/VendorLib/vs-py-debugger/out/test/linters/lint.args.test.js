@@ -23,6 +23,7 @@ const types_3 = require("../../client/common/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
+const bandit_1 = require("../../client/linters/bandit");
 const flake8_1 = require("../../client/linters/flake8");
 const linterManager_1 = require("../../client/linters/linterManager");
 const mypy_1 = require("../../client/linters/mypy");
@@ -83,7 +84,7 @@ suite('Linting - Arguments', () => {
                     serviceManager.addSingletonInstance(types_3.IInstaller, installer.object);
                     const platformService = TypeMoq.Mock.ofType();
                     serviceManager.addSingletonInstance(types_2.IPlatformService, platformService.object);
-                    lm = new linterManager_1.LinterManager(serviceContainer);
+                    lm = new linterManager_1.LinterManager(serviceContainer, workspaceService.object);
                     serviceManager.addSingletonInstance(types_4.ILinterManager, lm);
                     document = TypeMoq.Mock.ofType();
                 }));
@@ -142,6 +143,11 @@ suite('Linting - Arguments', () => {
                     };
                     yield linter.lint(document.object, cancellationToken);
                     chai_1.expect(invoked).to.be.equal(true, 'method not invoked');
+                }));
+                test('Bandit', () => __awaiter(this, void 0, void 0, function* () {
+                    const linter = new bandit_1.Bandit(outputChannel.object, serviceContainer);
+                    const expectedArgs = ['-f', 'custom', '--msg-template', '{line},0,{severity},{test_id}:{msg}', '-n', '-1', fileUri.fsPath];
+                    yield testLinter(linter, expectedArgs);
                 }));
             });
         });

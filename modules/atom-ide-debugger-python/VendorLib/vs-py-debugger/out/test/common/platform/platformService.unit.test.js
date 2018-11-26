@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const os = require("os");
 const platformService_1 = require("../../../client/common/platform/platformService");
-const platform_1 = require("../../../utils/platform");
+const platform_1 = require("../../../client/common/utils/platform");
 // tslint:disable-next-line:max-func-body-length
 suite('PlatformService', () => {
     test('local info', () => __awaiter(this, void 0, void 0, function* () {

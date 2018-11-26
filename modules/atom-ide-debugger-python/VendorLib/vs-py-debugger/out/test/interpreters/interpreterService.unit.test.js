@@ -23,15 +23,15 @@ const registry_1 = require("../../client/common/platform/registry");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/process/types");
 const types_4 = require("../../client/common/types");
+const EnumEx = require("../../client/common/utils/enum");
+const misc_1 = require("../../client/common/utils/misc");
+const platform_1 = require("../../client/common/utils/platform");
 const types_5 = require("../../client/interpreter/configuration/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const interpreterService_1 = require("../../client/interpreter/interpreterService");
 const types_6 = require("../../client/interpreter/virtualEnvs/types");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
-const EnumEx = require("../../utils/enum");
-const misc_1 = require("../../utils/misc");
-const platform_1 = require("../../utils/platform");
 chai_1.use(chaiAsPromised);
 const info = {
     architecture: platform_1.Architecture.Unknown,

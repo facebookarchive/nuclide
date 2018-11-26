@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -23,11 +23,11 @@ const inversify_1 = require("inversify");
 const minimatch_1 = require("minimatch");
 const path = require("path");
 const vscode = require("vscode");
-const stopWatch_1 = require("../../utils/stopWatch");
 const types_1 = require("../common/application/types");
 const constants_1 = require("../common/constants");
 const types_2 = require("../common/platform/types");
 const types_3 = require("../common/types");
+const stopWatch_1 = require("../common/utils/stopWatch");
 const types_4 = require("../ioc/types");
 const provider_1 = require("../jupyter/provider");
 const telemetry_1 = require("../telemetry");
@@ -86,14 +86,15 @@ let LintingEngine = class LintingEngine {
                 }
             });
             this.pendingLintings.set(document.uri.fsPath, cancelToken);
-            const promises = this.linterManager.getActiveLinters(document.uri)
-                .map(info => {
+            const activeLinters = yield this.linterManager.getActiveLinters(false, document.uri);
+            const promises = activeLinters
+                .map((info) => __awaiter(this, void 0, void 0, function* () {
                 const stopWatch = new stopWatch_1.StopWatch();
-                const linter = this.linterManager.createLinter(info.product, this.outputChannel, this.serviceContainer, document.uri);
+                const linter = yield this.linterManager.createLinter(info.product, this.outputChannel, this.serviceContainer, document.uri);
                 const promise = linter.lint(document, cancelToken.token);
                 this.sendLinterRunTelemetry(info, document.uri, promise, stopWatch, trigger);
                 return promise;
-            });
+            }));
             const hasJupyterCodeCells = yield this.documentHasJupyterCodeCells(document, cancelToken.token);
             // linters will resolve asynchronously - keep a track of all
             // diagnostics reported as them come in.
@@ -125,18 +126,18 @@ let LintingEngine = class LintingEngine {
         });
     }
     // tslint:disable-next-line:no-any
-    linkJupiterExtension(jupiter) {
+    linkJupyterExtension(jupyter) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!jupiter) {
+            if (!jupyter) {
                 return;
             }
-            if (!jupiter.isActive) {
-                yield jupiter.activate();
+            if (!jupyter.isActive) {
+                yield jupyter.activate();
             }
             // tslint:disable-next-line:no-unsafe-any
-            jupiter.exports.registerLanguageProvider(PYTHON.language, new provider_1.JupyterProvider());
+            jupyter.exports.registerLanguageProvider(PYTHON.language, new provider_1.JupyterProvider());
             // tslint:disable-next-line:no-unsafe-any
-            this.documentHasJupyterCodeCells = jupiter.exports.hasCodeCells;
+            this.documentHasJupyterCodeCells = jupyter.exports.hasCodeCells;
         });
     }
     sendLinterRunTelemetry(info, resource, promise, stopWatch, trigger) {
@@ -156,14 +157,14 @@ let LintingEngine = class LintingEngine {
         const position = new vscode.Position(message.line - 1, message.column);
         const range = new vscode.Range(position, position);
         const severity = lintSeverityToVSSeverity.get(message.severity);
-        const diagnostic = new vscode.Diagnostic(range, `${message.code}:${message.message}`, severity);
+        const diagnostic = new vscode.Diagnostic(range, message.message, severity);
         diagnostic.code = message.code;
         diagnostic.source = message.provider;
         return diagnostic;
     }
     shouldLintDocument(document) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.linterManager.isLintingEnabled(document.uri)) {
+            if (!(yield this.linterManager.isLintingEnabled(false, document.uri))) {
                 this.diagnosticCollection.set(document.uri, []);
                 return false;
             }

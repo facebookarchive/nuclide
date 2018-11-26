@@ -20,12 +20,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const platform_1 = require("../../utils/platform");
 const types_1 = require("../common/application/types");
 const constants_1 = require("../common/constants");
 require("../common/extensions");
 const types_2 = require("../common/platform/types");
 const types_3 = require("../common/types");
+const platform_1 = require("../common/utils/platform");
 const types_4 = require("../ioc/types");
 const telemetry_1 = require("../telemetry");
 const constants_2 = require("../telemetry/constants");

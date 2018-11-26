@@ -14,10 +14,10 @@ const chai_1 = require("chai");
 const chaipromise = require("chai-as-promised");
 const typeMoq = require("typemoq");
 const types_1 = require("../../../client/common/application/types");
+const platform_1 = require("../../../client/common/utils/platform");
 const testUtils_1 = require("../../../client/unittests/common/testUtils");
 const flatteningVisitor_1 = require("../../../client/unittests/common/testVisitors/flatteningVisitor");
 const parserService_1 = require("../../../client/unittests/pytest/services/parserService");
-const platform_1 = require("../../../utils/platform");
 const pytest_unittest_parser_data_1 = require("./pytest_unittest_parser_data");
 chai_1.use(chaipromise);
 // The PyTest test parsing is done via the stdout result of the

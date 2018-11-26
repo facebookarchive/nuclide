@@ -62,7 +62,7 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             resolvePackagePath('atom-ide-debugger-python'),
-            'VendorLib/vs-py-debugger/out/client/debugger/mainV2.js',
+            'VendorLib/vs-py-debugger/out/client/debugger/debugAdapter/main.js',
           ),
         ],
       },

@@ -15,7 +15,7 @@ const net = require("net");
 const socketCallbackHandler_1 = require("../../client/common/net/socket/socketCallbackHandler");
 const socketServer_1 = require("../../client/common/net/socket/socketServer");
 const SocketStream_1 = require("../../client/common/net/socket/SocketStream");
-const async_1 = require("../../utils/async");
+const async_1 = require("../../client/common/utils/async");
 const uint64be = require('uint64be');
 // tslint:disable-next-line:no-unnecessary-class
 class Commands {

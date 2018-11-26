@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const languageServerHashes_1 = require("./languageServerHashes");
+const languageServerHashes_1 = require("./languageServer/languageServerHashes");
 var PlatformName;
 (function (PlatformName) {
     PlatformName["Windows32Bit"] = "win-x86";

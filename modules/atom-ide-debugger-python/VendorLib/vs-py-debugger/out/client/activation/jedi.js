@@ -34,6 +34,9 @@ const referenceProvider_1 = require("../providers/referenceProvider");
 const renameProvider_1 = require("../providers/renameProvider");
 const signatureProvider_1 = require("../providers/signatureProvider");
 const symbolProvider_1 = require("../providers/symbolProvider");
+const blockFormatProvider_1 = require("../typeFormatters/blockFormatProvider");
+const dispatcher_1 = require("../typeFormatters/dispatcher");
+const onEnterFormatter_1 = require("../typeFormatters/onEnterFormatter");
 const types_3 = require("../unittests/types");
 const main_1 = require("../workspaceSymbols/main");
 let JediExtensionActivator = class JediExtensionActivator {
@@ -56,6 +59,14 @@ let JediExtensionActivator = class JediExtensionActivator {
             context.subscriptions.push(vscode_1.languages.registerReferenceProvider(this.documentSelector, new referenceProvider_1.PythonReferenceProvider(jediFactory)));
             context.subscriptions.push(vscode_1.languages.registerCompletionItemProvider(this.documentSelector, new completionProvider_1.PythonCompletionItemProvider(jediFactory, this.serviceManager), '.'));
             context.subscriptions.push(vscode_1.languages.registerCodeLensProvider(this.documentSelector, this.serviceManager.get(contracts_1.IShebangCodeLensProvider)));
+            const onTypeDispatcher = new dispatcher_1.OnTypeFormattingDispatcher({
+                '\n': new onEnterFormatter_1.OnEnterFormatter(),
+                ':': new blockFormatProvider_1.BlockFormatProviders()
+            });
+            const onTypeTriggers = onTypeDispatcher.getTriggerCharacters();
+            if (onTypeTriggers) {
+                context.subscriptions.push(vscode_1.languages.registerOnTypeFormattingEditProvider(constants_1.PYTHON, onTypeDispatcher, onTypeTriggers.first, ...onTypeTriggers.more));
+            }
             const serviceContainer = this.serviceManager.get(types_2.IServiceContainer);
             context.subscriptions.push(new main_1.WorkspaceSymbols(serviceContainer));
             const symbolProvider = new symbolProvider_1.JediSymbolProvider(serviceContainer, jediFactory);

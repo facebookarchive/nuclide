@@ -16,15 +16,15 @@ const getFreePort = require("get-port");
 const net = require("net");
 const path = require("path");
 const vscode_debugadapter_testsupport_1 = require("vscode-debugadapter-testsupport");
-const constants_1 = require("../../client/debugger/Common/constants");
-const Contracts_1 = require("../../client/debugger/Common/Contracts");
-const misc_1 = require("../../utils/misc");
+const misc_1 = require("../../client/common/utils/misc");
+const constants_1 = require("../../client/debugger/constants");
+const types_1 = require("../../client/debugger/types");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const constants_2 = require("./common/constants");
 chai_1.use(chaiAsPromised);
 const debugFilesPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'debugging');
-const EXPERIMENTAL_DEBUG_ADAPTER = path.join(__dirname, '..', '..', 'client', 'debugger', 'mainV2.js');
+const EXPERIMENTAL_DEBUG_ADAPTER = path.join(__dirname, '..', '..', 'client', 'debugger', 'debugAdapter', 'main.js');
 const testAdapterFilePath = EXPERIMENTAL_DEBUG_ADAPTER;
 const debuggerType = constants_1.DebuggerTypeName;
 // tslint:disable-next-line:max-func-body-length
@@ -51,25 +51,28 @@ suite(`Standard Debugging of ports and hosts: ${debuggerType}`, () => {
         }
         catch (ex) { }
     }));
-    function buildLauncArgs(pythonFile, stopOnEntry = false, port, host) {
+    function buildLaunchArgs(pythonFile, stopOnEntry = false, port, host, showReturnValue = false) {
         return {
             program: path.join(debugFilesPath, pythonFile),
             cwd: debugFilesPath,
             stopOnEntry,
+            showReturnValue,
             logToFile: true,
-            debugOptions: [Contracts_1.DebugOptions.RedirectOutput],
+            debugOptions: [types_1.DebugOptions.RedirectOutput],
             pythonPath: common_1.PYTHON_PATH,
             args: [],
             envFile: '',
             host, port,
-            type: debuggerType
+            type: debuggerType,
+            name: '',
+            request: 'launch'
         };
     }
     function testDebuggingWithProvidedPort(port, host) {
         return __awaiter(this, void 0, void 0, function* () {
             yield Promise.all([
                 debugClient.configurationSequence(),
-                debugClient.launch(buildLauncArgs('startAndWait.py', false, port, host)),
+                debugClient.launch(buildLaunchArgs('startAndWait.py', false, port, host)),
                 debugClient.waitForEvent('initialized')
             ]);
             // Confirm port is in use (if one was provided).

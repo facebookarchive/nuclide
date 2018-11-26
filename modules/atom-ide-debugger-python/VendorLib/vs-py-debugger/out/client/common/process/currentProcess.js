@@ -1,5 +1,6 @@
-"use strict";
-// tslint:disable:no-any
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+'use strict';
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable:no-any
 const inversify_1 = require("inversify");
 let CurrentProcess = class CurrentProcess {
     constructor() {
@@ -26,6 +28,9 @@ let CurrentProcess = class CurrentProcess {
     }
     get stdin() {
         return process.stdin;
+    }
+    get execPath() {
+        return process.execPath;
     }
 };
 CurrentProcess = __decorate([
