@@ -25,6 +25,7 @@ export type RequestOptions = {
   agentOptions?: AgentOptions,
   useQuerystring?: boolean,
   timeout?: number,
+  body?: string,
 };
 
 export type ResponseBody = {body: string, response: HttpResponse};
@@ -122,5 +123,5 @@ function nodeRequest(opts: RequestOptions, cb) {
     cb(err, null, null);
   });
 
-  req.end();
+  req.end(opts.body);
 }
