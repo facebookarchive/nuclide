@@ -85,6 +85,7 @@ export default class BlameGutter {
     this._subscriptions.add(
       editor.onDidDestroy(() => {
         this._isEditorDestroyed = true;
+        this.destroy();
       }),
     );
     const editorView = atom.views.getView(editor);
