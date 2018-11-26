@@ -90,16 +90,19 @@ class Activation {
     ).mergeMap(editor =>
       observeEditorPaths(editor)
         .filter(Boolean)
-        .switchMap(path => {
-          return observableFromSubscribeFunction(cb =>
+        .switchMap(path =>
+          observableFromSubscribeFunction(cb =>
             diagnosticUpdater.observeFileMessages(path, cb),
-          )
-            .let(throttle(DIAGNOSTICS_THROTTLE_TIME))
-            .map(messages => ({
-              markTypes: getMarkTypesFromMessages(messages.messages),
-              editor,
-            }));
-        }),
+          ),
+        )
+        .let(throttle(DIAGNOSTICS_THROTTLE_TIME))
+        .map(messages => ({
+          markTypes: getMarkTypesFromMessages(messages.messages),
+          editor,
+        }))
+        .takeUntil(
+          observableFromSubscribeFunction(cb => editor.onDidDestroy(cb)),
+        ),
     );
 
     const disposable = new UniversalDisposable(

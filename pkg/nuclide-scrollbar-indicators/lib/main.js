@@ -126,15 +126,32 @@ class Activation {
   ): IDisposable {
     const disposable = new UniversalDisposable(
       observableFromSubscribeFunction(cb => provider.onUpdate(cb)).subscribe(
-        update => {
+        ({editor, markTypes}) => {
+          if (editor.isDestroyed()) {
+            return;
+          }
+
+          // `update` contains a reference to an editor which we'll hold onto
+          // to reference its marks. Make sure we properly dispose of that
+          // editor's entries when it's destroyed, and don't create a disposable
+          // for that editor if it already exists in the map (in which case the
+          // disposable should already exist)
+          if (!this._model.state.editorLines.get(editor)) {
+            this._disposables.addUntilDestroyed(editor, () => {
+              this._model.setState({
+                editorLines: this._model.state.editorLines.delete(editor),
+              });
+            });
+          }
+
           const newEditorLines = Object.values(scrollbarMarkTypes).reduce(
             (editorLines, _type) => {
               // Object.values returns mixed, so we have to tell Flow that we
               // trust the types of these `type`s.
               const type: ScrollbarIndicatorMarkType = (_type: any);
-              const typeMarks = update.markTypes.get(type) || new Set();
+              const typeMarks = markTypes.get(type) || new Set();
               return editorLines.updateIn(
-                [update.editor, type, provider],
+                [editor, type, provider],
                 marks => typeMarks,
               );
             },
