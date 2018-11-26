@@ -790,7 +790,9 @@ export class DatatipManager {
           this._modifierDatatipProviders,
         );
         this._editorManagers.set(editor, manager);
-        this._subscriptions.addUntilDestroyed(editor, manager);
+        this._subscriptions.addUntilDestroyed(editor, manager, () => {
+          this._editorManagers.delete(editor);
+        });
       }),
     );
   }
