@@ -51,6 +51,7 @@ export default function addTooltip(
           _toDispose.add(node);
         }
       }
+      node = null;
 
       return;
     }
