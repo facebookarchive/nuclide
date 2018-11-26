@@ -51,6 +51,30 @@ function spawnWorker() {
   if (!servicesConfigs.length) {
     return;
   }
+
+  let out = '';
+  let success = false;
+  let endOfData = false;
+
+  const finish = () => {
+    if (success && endOfData) {
+      try {
+        const json = JSON.parse(out);
+        const a = path.relative(basedir, json.src);
+        if (argv.save) {
+          const b = path.relative(path.dirname(json.src), json.dest);
+          console.log(`${a} => ${b}`);
+        } else {
+          console.log(`${a}`);
+        }
+      } catch (err) {
+        console.error(`Error ${err} parsing ${servicesConfig.name}:\n${out}`);
+        process.exit(1);
+      }
+      spawnWorker();
+    }
+  };
+
   const servicesConfig = servicesConfigs.shift();
   const ps = child_process
     .spawn(require.resolve('../pkg/nuclide-rpc/bin/generate-proxy.js'), [
@@ -70,27 +94,20 @@ function spawnWorker() {
         console.error(`Exit code ${code} parsing ${servicesConfig.name}`);
         process.exit(code);
       } else {
-        try {
-          const json = JSON.parse(out);
-          const a = path.relative(basedir, json.src);
-          if (argv.save) {
-            const b = path.relative(path.dirname(json.src), json.dest);
-            console.log(`${a} => ${b}`);
-          } else {
-            console.log(`${a}`);
-          }
-        } catch (err) {
-          console.error(`Error ${err} parsing ${servicesConfig.name}:\n${out}`);
-          process.exit(1);
-        }
-        spawnWorker();
+        success = true;
+        finish();
       }
     });
 
-  let out = '';
   ps.stdout.on('data', data => {
     out += data;
   });
+
+  ps.stdout.on('end', _ => {
+    endOfData = true;
+    finish();
+  });
+
   ps.stderr.on('data', data => {
     console.error(data.toString());
   });
