@@ -9,13 +9,25 @@ from ptvsd._remote import (
 )
 from ptvsd.wrapper import debugger_attached
 
+import json
+try:
+    from urllib.request import urlopen, Request, URLError
+except ImportError:
+    from urllib2 import urlopen, Request, URLError
+
 WAIT_TIMEOUT = 1.0
 
 DEFAULT_HOST = '0.0.0.0'
 DEFAULT_PORT = 5678
 
+DEBUGGER_UI_PORT = 9615
+
 _debug_current_thread = None
 _pending_threads = set()
+
+_attach_port = None
+_ui_attach_enabled = False
+_ui_attach_options = {}
 
 
 def wait_for_attach(timeout=None):
@@ -67,6 +79,9 @@ def enable_attach(address=(DEFAULT_HOST, DEFAULT_PORT), redirect_output=True):
     port = address[1]
     address = (address[0], port if type(port) is int else int(port))
 
+    global _attach_port
+    _attach_port = address[1]
+
     ptvsd_enable_attach(
         address,
         redirect_output=redirect_output,
@@ -95,6 +110,9 @@ def attach(address, redirect_output=True):
     port = address[1]
     address = (address[0], port if type(port) is int else int(port))
 
+    global _attach_port
+    _attach_port = address[1]
+
     ptvsd_attach(address, redirect_output=redirect_output)
 
 
@@ -120,3 +138,60 @@ def break_into_debugger():
         patch_multiprocessing=False,
         stop_at_frame=sys._getframe().f_back,
     )
+
+
+def set_attach_ui_options(options):
+    global _ui_attach_options
+    _ui_attach_options = options
+
+
+# `set_trace` should pause debug execution and attach the debugger UI to the debugger engine
+def set_trace():
+    # Enable on-demand UI attach to the debugger.
+    enable_attach_ui()
+    # Trigger the debugger ui to attach, if one exists
+    debugger_ui_attach()
+    wait_for_attach(30)
+    if is_attached():
+        break_into_debugger()
+    else:
+        import sys
+        sys.stderr.write('Debugger timed out (30 seconds) waiting for attach!\n')
+
+
+def enable_attach_ui():
+    global _attach_enabled, _ui_attach_options, _ui_attach_enabled
+    if not is_attached():
+        enable_attach()
+    if not _ui_attach_enabled:
+        _ui_attach_enabled = debugger_ui_enable_attach()
+
+
+def debugger_ui_enable_attach():
+    global _attach_port, _ui_attach_options
+    attach_info = {"domain": "debug", "type": "python", "command": "enable-attach",
+        "port": _attach_port, "options": _ui_attach_options}
+    return debugger_ui_request(attach_info)
+
+
+def debugger_ui_request(info):
+    req = Request('http://127.0.0.1:' + str(DEBUGGER_UI_PORT),
+        data=json.dumps(info).encode('utf8'),
+        headers={'Content-Type': 'application/json', 'Accept': 'application/json'})
+    try:
+        response = urlopen(req)
+    except URLError:
+        # It's okay if there's no debugger ui server waiting for that info
+        return False
+    json_response = json.loads(response.read())
+    if not json_response['success']:
+        raise RuntimeError('Failed attach attempt')
+    return True
+
+
+def debugger_ui_attach():
+    if is_attached():
+        return
+    global _attach_port
+    attach_info = {"domain": "debug", "type": "python", "command": "attach", "port": _attach_port}
+    debugger_ui_request(attach_info)
