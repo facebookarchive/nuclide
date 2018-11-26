@@ -81,12 +81,16 @@ export type TaskMetadata = {
   hidden?: boolean, // By default, this is false
 };
 
+export type TaskOptions = {
+  [string]: mixed,
+};
+
 export type TaskRunner = {
   id: string,
   name: string,
   +getExtraUi?: () => React$ComponentType<any>,
   +getIcon: () => React$ComponentType<any>,
-  +runTask: (taskType: string) => Task,
+  +runTask: (taskType: string, options: ?TaskOptions) => Task,
   // Returns a callback that executes when the task runner determines whether it should be enabled
   // or when the task list changes for the project root
   +setProjectRoot: (
@@ -112,7 +116,11 @@ export type Store = {
 
 export type BoundActionCreators = {
   registerTaskRunner(taskRunner: TaskRunner): void,
-  runTask(taskId: TaskMetadata): void,
+  runTask(
+    taskRunner: TaskRunner,
+    taskId: TaskMetadata,
+    options: ?TaskOptions,
+  ): void,
   setProjectRoot(dir: ?NuclideUri): void,
   setConsoleService(service: ?ConsoleService): void,
   setToolbarVisibility(visible: boolean): void,
@@ -226,7 +234,9 @@ export type UnregisterTaskRunnerAction = {
 export type RunTaskAction = {
   type: 'RUN_TASK',
   payload: {
-    taskMeta: TaskMetadata & {taskRunner: TaskRunner},
+    taskMeta: TaskMetadata,
+    taskRunner: TaskRunner,
+    options: ?TaskOptions,
     verifySaved: boolean,
   },
 };

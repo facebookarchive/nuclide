@@ -17,6 +17,7 @@ import type {
   Store,
   TaskMetadata,
   TaskRunner,
+  TaskOptions,
   TaskRunnerState,
 } from '../types';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
@@ -352,14 +353,16 @@ export function verifySavedBeforeRunningTaskEpic(
     )
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
-      const {taskMeta} = action.payload;
+      const {taskRunner, taskMeta, options} = action.payload;
       const unsavedEditors = atom.workspace
         .getTextEditors()
         .filter(editor => editor.getPath() != null && editor.isModified());
 
       // Everything saved? Run it!
       if (unsavedEditors.length === 0) {
-        return Observable.of(Actions.runTask(taskMeta, false));
+        return Observable.of(
+          Actions.runTask(taskRunner, taskMeta, options, false),
+        );
       }
 
       return promptForShouldSave(taskMeta).switchMap(shouldSave => {
@@ -378,7 +381,7 @@ export function verifySavedBeforeRunningTaskEpic(
           });
           return Observable.concat(
             saveAll.ignoreElements(),
-            Observable.of(Actions.runTask(taskMeta)),
+            Observable.of(Actions.runTask(taskRunner, taskMeta, options)),
           ).catch(err => {
             atom.notifications.addError(
               'An unexpected error occurred while saving the files.',
@@ -387,7 +390,9 @@ export function verifySavedBeforeRunningTaskEpic(
             return Observable.empty();
           });
         }
-        return Observable.of(Actions.runTask(taskMeta, false));
+        return Observable.of(
+          Actions.runTask(taskRunner, taskMeta, options, false),
+        );
       });
     });
 }
@@ -407,17 +412,16 @@ export function runTaskEpic(
       const state = store.getState();
       const stopRunningTask = state.runningTask != null;
 
-      const {taskMeta} = action.payload;
+      const {taskMeta, taskRunner, options} = action.payload;
       const {activeTaskRunner} = state;
-      const newTaskRunner = taskMeta.taskRunner;
 
       return Observable.concat(
         stopRunningTask
           ? Observable.of(Actions.stopTask())
           : Observable.empty(),
-        activeTaskRunner === newTaskRunner
+        activeTaskRunner === taskRunner
           ? Observable.empty()
-          : Observable.of(Actions.selectTaskRunner(newTaskRunner, true)),
+          : Observable.of(Actions.selectTaskRunner(taskRunner, true)),
         store.getState().visible
           ? Observable.empty()
           : Observable.of(Actions.setToolbarVisibility(true, true)),
@@ -427,7 +431,7 @@ export function runTaskEpic(
           }
 
           return (
-            createTaskObservable(taskMeta, store.getState)
+            createTaskObservable(taskRunner, taskMeta, options, store.getState)
               // Stop listening once the task is done.
               .takeUntil(
                 actions.ofType(
@@ -714,7 +718,9 @@ export function appendMessageToConsoleEpic(
  * Run a task and transform its output into domain-specific actions.
  */
 function createTaskObservable(
-  taskMeta: TaskMetadata & {taskRunner: TaskRunner},
+  taskRunner: TaskRunner,
+  taskMeta: TaskMetadata,
+  options: ?TaskOptions,
   getState: () => AppState,
 ): Observable<Action> {
   return Observable.defer(() => {
@@ -722,7 +728,7 @@ function createTaskObservable(
     if (taskFailedNotification != null) {
       taskFailedNotification.dismiss();
     }
-    const task = taskMeta.taskRunner.runTask(taskMeta.type);
+    const task = taskRunner.runTask(taskMeta.type, options);
     const taskStatus = {
       metadata: taskMeta,
       task,
@@ -753,7 +759,7 @@ function createTaskObservable(
               type: Actions.TASK_MESSAGE,
               payload: {
                 message: event.message,
-                taskRunner: taskMeta.taskRunner,
+                taskRunner,
               },
             });
           } else if (event.type === 'status' && event.status != null) {
@@ -761,7 +767,7 @@ function createTaskObservable(
               type: Actions.TASK_MESSAGE,
               payload: {
                 message: {text: event.status, level: 'info'},
-                taskRunner: taskMeta.taskRunner,
+                taskRunner,
               },
             });
           } else {
@@ -774,7 +780,7 @@ function createTaskObservable(
           type: Actions.TASK_COMPLETED,
           payload: {
             taskStatus: {...taskStatus, progress: 1},
-            taskRunner: taskMeta.taskRunner,
+            taskRunner,
           },
         }),
       );
@@ -790,7 +796,7 @@ function createTaskObservable(
         type: Actions.TASK_ERRORED,
         payload: {
           error,
-          taskRunner: taskMeta.taskRunner,
+          taskRunner,
           taskStatus: nullthrows(getState().runningTask),
         },
       });

@@ -28,6 +28,7 @@ import type {
   StopTaskAction,
   TaskMetadata,
   TaskRunner,
+  TaskOptions,
   TaskRunnerState,
   ToggleToolbarVisibilityAction,
   UnregisterTaskRunnerAction,
@@ -75,7 +76,9 @@ export function registerTaskRunner(
 }
 
 export function runTask(
-  taskMeta: TaskMetadata & {taskRunner: TaskRunner},
+  taskRunner: TaskRunner,
+  taskMeta: TaskMetadata,
+  options: ?TaskOptions,
   verifySaved: boolean = true,
 ): RunTaskAction {
   return {
@@ -83,6 +86,8 @@ export function runTask(
     payload: {
       verifySaved,
       taskMeta,
+      taskRunner,
+      options,
     },
   };
 }

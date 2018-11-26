@@ -21,8 +21,8 @@ import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 
 export default function getToolbarProps(store: Store): Observable<Props> {
   const staticProps = {
-    runTask: taskMeta => {
-      store.dispatch(Actions.runTask(taskMeta));
+    runTask: (taskMeta, taskRunner) => {
+      store.dispatch(Actions.runTask(taskRunner, taskMeta));
     },
     selectTaskRunner: taskRunner => {
       store.dispatch(Actions.selectTaskRunner(taskRunner, true));

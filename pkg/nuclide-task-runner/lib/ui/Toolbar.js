@@ -47,7 +47,7 @@ export type Props = {
   extraUiComponent: ?React.ComponentType<any>,
   progress: ?number,
   status: ?Status,
-  runTask: (taskMeta: TaskMetadata & {taskRunner: TaskRunner}) => void,
+  runTask: (taskMeta: TaskMetadata, taskRunner: TaskRunner) => void,
   selectTaskRunner: (taskRunner: TaskRunner) => void,
   stopRunningTask: () => void,
   taskIsRunning: boolean,
@@ -220,10 +220,7 @@ export default class Toolbar extends React.Component<Props, State> {
             task.disabled || this.props.runningTaskIsCancelable === false
           }
           onClick={event => {
-            this.props.runTask({
-              ...task,
-              taskRunner: activeTaskRunner,
-            });
+            this.props.runTask(task, activeTaskRunner);
           }}
         />
       );
@@ -259,12 +256,9 @@ export default class Toolbar extends React.Component<Props, State> {
             size={ButtonSizes.SMALL}
             tooltip={taskTooltip}
             disabled={buttonDisabled}
-            onClick={() => {
-              this.props.runTask({
-                ...selectedDebugTask,
-                taskRunner: activeTaskRunner,
-              });
-            }}
+            onClick={() =>
+              this.props.runTask(selectedDebugTask, activeTaskRunner)
+            }
           />
         );
 

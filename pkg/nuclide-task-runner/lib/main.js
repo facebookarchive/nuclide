@@ -160,8 +160,9 @@ class Activation {
           'atom-workspace': {
             [`nuclide-task-runner:${taskRunner.name
               .toLowerCase()
-              .replace(' ', '-')}-${taskMeta.type}`]: () => {
-              this._actionCreators.runTask({...taskMeta, taskRunner});
+              .replace(' ', '-')}-${taskMeta.type}`]: event => {
+              const {detail} = (event: any);
+              this._actionCreators.runTask(taskRunner, taskMeta, detail);
             },
           },
         }),
@@ -199,10 +200,11 @@ class Activation {
         taskMeta => ({
           'atom-workspace': {
             [`nuclide-task-runner:${taskMeta.type}`]: () => {
-              this._actionCreators.runTask({
-                ...taskMeta,
-                taskRunner: this._store.getState().activeTaskRunner,
-              });
+              const taskRunner: ?TaskRunner = this._store.getState()
+                .activeTaskRunner;
+              if (taskRunner != null) {
+                this._actionCreators.runTask(taskRunner, taskMeta);
+              }
             },
           },
         }),
@@ -409,7 +411,6 @@ class Activation {
 createPackage(module.exports, Activation);
 
 function activateInitialPackagesObservable(): Observable<void> {
-  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (atom.packages.hasActivatedInitialPackages) {
     return Observable.of(undefined);
   }
