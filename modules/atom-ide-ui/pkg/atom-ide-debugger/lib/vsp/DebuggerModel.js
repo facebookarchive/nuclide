@@ -66,6 +66,7 @@ import type {
   DebuggerModeType,
 } from '../types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {Expected} from 'nuclide-commons/expected';
 
@@ -98,9 +99,15 @@ export class Source implements ISource {
       this._raw = raw;
     }
     if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
+      const name =
+        this._raw.name != null
+          ? this._raw.name
+          : this._raw.path != null
+            ? nuclideUri.parsePath(this._raw.path).base
+            : UNKNOWN_SOURCE;
       this.uri = `${DEBUG_SOURCES_URI}/${sessionId}/${
         this._raw.sourceReference
-      }/${this._raw.name == null ? UNKNOWN_SOURCE : this._raw.name}`;
+      }/${name}`;
     } else {
       this.uri = this._raw.path || '';
     }
