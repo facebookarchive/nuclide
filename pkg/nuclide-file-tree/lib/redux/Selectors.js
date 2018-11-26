@@ -25,6 +25,7 @@ import type {
   Roots,
 } from '../types';
 
+import {objectFromPairs} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import * as FileTreeHelpers from '../FileTreeHelpers';
@@ -858,8 +859,12 @@ export const getCanTransferFiles = (state: AppState) =>
 
 const collectDebugStateForNode = (state: AppState) => (
   node: FileTreeNode,
-): NodeDebugState => {
-  return {
+): json$JsonObject => {
+  // We jump through some hoops here to make sure that the return value is both a valid
+  // `NodeDebugState` and JSON serializable. This prevents us from accidentally trying to serialize
+  // a Map, for example.
+  // See <https://github.com/facebook/flow/issues/4825#issuecomment-424077876> for details.
+  const serialized: json$JsonObject = {
     uri: node.uri,
     rootUri: node.rootUri,
     isExpanded: node.isExpanded,
@@ -882,11 +887,14 @@ const collectDebugStateForNode = (state: AppState) => (
     shouldBeSoftened: getNodeShouldBeSoftened(state)(node),
     isIgnored: getNodeIsIgnored(state)(node),
     checkedStatus: getNodeCheckedStatus(state)(node),
-
+  };
+  const withChildren: NodeDebugState = {
+    ...serialized,
     children: Array.from(node.children.values()).map(child =>
       collectDebugStateForNode(state)(child),
     ),
   };
+  return ((withChildren: any): json$JsonObject);
 };
 
 // Note: The Flow types for reselect's `createSelector` only support up to 16
@@ -894,22 +902,30 @@ const collectDebugStateForNode = (state: AppState) => (
 // bug, it does not need to be optimized for multiple consecutive calls on
 // similar states. Therefore, we've opted to not use createSelector for this
 // selector.
-export const collectDebugState = (state: AppState) => {
+export const collectDebugState = (state: AppState): json$JsonObject => {
+  const selectionRange = getSelectionRange(state);
+  const serializedSelectionRange =
+    selectionRange == null ? null : selectionRange.serialize();
+
+  const vcsStatuses = {};
+  for (const [key, value] of getVcsStatuses(state).entries()) {
+    vcsStatuses[key] = objectFromPairs(value.entries());
+  }
+
   return {
     currentWorkingRoot: getCwdKey(state),
     openFilesExpanded: getOpenFilesExpanded(state),
     uncommittedChangesExpanded: getUncommittedChangesExpanded(state),
     foldersExpanded: getFoldersExpanded(state),
-    reorderPreviewStatus: getReorderPreviewStatus(state),
+    reorderPreviewStatus: {...getReorderPreviewStatus(state)},
     _filter: getFilter(state),
-    _selectionRange: getSelectionRange(state),
-    _targetNodeKeys: getTargetNodeKeys(state),
+    _selectionRange: serializedSelectionRange,
+    _targetNodeKeys: {...getTargetNodeKeys(state)},
     _trackedRootKey: getTrackedRootKey(state),
     _trackedNodeKey: getTrackedNodeKey(state),
     _isCalculatingChanges: getIsCalculatingChanges(state),
     usePreviewTabs: getUsePreviewTabs(state),
     focusEditorOnFileSelection: getFocusEditorOnFileSelection(state),
-    // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
     roots: Array.from(getRoots(state).values()).map(root =>
       collectDebugStateForNode(state)(root),
     ),
@@ -918,15 +934,15 @@ export const collectDebugState = (state: AppState) => {
       excludeVcsIgnoredPaths: getExcludeVcsIgnoredPaths(state),
       hideVcsIgnoredPaths: getHideVcsIgnoredPaths(state),
       isEditingWorkingSet: getIsEditingWorkingSet(state),
-      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
-      vcsStatuses: getVcsStatuses(state).toObject(),
-      workingSet: getWorkingSet(state).getUris(),
-      // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
-      ignoredPatterns: getIgnoredPatterns(state)
-        .toArray()
-        .map(ignored => ignored.pattern),
-      openFilesWorkingSet: getOpenFilesWorkingSet(state).getUris(),
-      editedWorkingSet: getEditedWorkingSet(state).getUris(),
+      vcsStatuses,
+      workingSet: [...getWorkingSet(state).getUris()],
+      ignoredPatterns: [
+        ...getIgnoredPatterns(state)
+          .toArray()
+          .map(ignored => ignored.pattern),
+      ],
+      openFilesWorkingSet: [...getOpenFilesWorkingSet(state).getUris()],
+      editedWorkingSet: [...getEditedWorkingSet(state).getUris()],
     },
     selectionManager: collectSelectionDebugState(state),
   };

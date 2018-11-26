@@ -65,7 +65,7 @@ export type InitialData = {|
   foldersExpanded: ?boolean,
 |};
 
-export type NodeDebugState = {
+export type NodeDebugState = {|
   uri: NuclideUri,
   rootUri: NuclideUri,
   isExpanded: boolean,
@@ -74,7 +74,6 @@ export type NodeDebugState = {
   isLoading: boolean,
   wasFetched: boolean,
   isCwd: boolean,
-  children: Immutable.OrderedMap<string, FileTreeNode>,
   connectionTitle: string,
   highlightedText: string,
   matchesFilter: boolean,
@@ -90,7 +89,7 @@ export type NodeDebugState = {
   isIgnored: boolean,
   checkedStatus: NodeCheckedStatus,
   children: Array<NodeDebugState>,
-};
+|};
 
 type TargetNodeKeys = {|
   rootKey: NuclideUri,

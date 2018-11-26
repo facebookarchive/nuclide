@@ -36,6 +36,13 @@ export class RangeKey {
   equals(other: RangeKey): boolean {
     return this._rootKey === other._rootKey && this._nodeKey === other._nodeKey;
   }
+
+  serialize() {
+    return {
+      rootKey: this._rootKey,
+      nodeKey: this._nodeKey,
+    };
+  }
 }
 
 export class SelectionRange {
@@ -70,5 +77,12 @@ export class SelectionRange {
     return (
       this._anchor.equals(other._anchor) && this._range.equals(other._range)
     );
+  }
+
+  serialize() {
+    return {
+      anchor: this._anchor.serialize(),
+      range: this._range.serialize(),
+    };
   }
 }
