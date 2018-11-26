@@ -2,9 +2,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
+const path = require("path");
 require("../../../common/extensions");
 const conda_1 = require("./conda");
+/**
+ * Helpers for conda.
+ */
 class CondaHelper {
+    /**
+     * Return the string to display for the conda interpreter.
+     */
     getDisplayName(condaInfo = {}) {
         // Samples.
         // "3.6.1 |Anaconda 4.4.0 (64-bit)| (default, May 11 2017, 13:25:24) [MSC v.1900 64 bit (AMD64)]".
@@ -17,7 +24,12 @@ class CondaHelper {
         const sysVersionParts = sysVersion.split('|', 2);
         if (sysVersionParts.length === 2) {
             const displayName = sysVersionParts[1].trim();
-            return this.isIdentifiableAsAnaconda(displayName) ? displayName : `${displayName} : ${conda_1.AnacondaDisplayName}`;
+            if (this.isIdentifiableAsAnaconda(displayName)) {
+                return displayName;
+            }
+            else {
+                return `${displayName} : ${conda_1.AnacondaDisplayName}`;
+            }
         }
         else {
             return conda_1.AnacondaDisplayName;
@@ -40,7 +52,7 @@ class CondaHelper {
      * @memberof CondaHelper
      */
     parseCondaEnvironmentNames(condaEnvironmentList) {
-        const environments = condaEnvironmentList.splitLines();
+        const environments = condaEnvironmentList.splitLines({ trim: false });
         const baseEnvironmentLine = environments.filter(line => line.indexOf('*') > 0);
         if (baseEnvironmentLine.length === 0) {
             return;
@@ -56,12 +68,16 @@ class CondaHelper {
                 name = name.substring(0, name.length - 1).trim();
             }
             const envPath = line.substring(pathStartIndex).trim();
+            name = name.length === 0 ? path.basename(envPath) : name;
             if (name.length > 0 && envPath.length > 0) {
                 envs.push({ name, path: envPath });
             }
         });
         return envs;
     }
+    /**
+     * Does the given string match a known Anaconda identifier.
+     */
     isIdentifiableAsAnaconda(value) {
         const valueToSearch = value.toLowerCase();
         return conda_1.AnacondaIdentfiers.some(item => valueToSearch.indexOf(item.toLowerCase()) !== -1);

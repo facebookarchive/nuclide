@@ -9,12 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
 const net = require("net");
-const core_utils_1 = require("../../core.utils");
-const helpers_1 = require("../../helpers");
+const async_1 = require("../../../../utils/async");
+const misc_1 = require("../../../../utils/misc");
 let SocketServer = class SocketServer extends events_1.EventEmitter {
     constructor() {
         super();
-        this.clientSocket = helpers_1.createDeferred();
+        this.clientSocket = async_1.createDeferred();
     }
     get client() {
         return this.clientSocket.promise;
@@ -34,7 +34,7 @@ let SocketServer = class SocketServer extends events_1.EventEmitter {
         this.socketServer = undefined;
     }
     Start(options = {}) {
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         this.socketServer = net.createServer(this.connectionListener.bind(this));
         const port = typeof options.port === 'number' ? options.port : 0;
         const host = typeof options.host === 'string' ? options.host : 'localhost';
@@ -58,7 +58,7 @@ let SocketServer = class SocketServer extends events_1.EventEmitter {
         client.on('data', (data) => {
             this.emit('data', client, data);
         });
-        client.on('error', (err) => core_utils_1.noop);
+        client.on('error', (err) => misc_1.noop);
         client.on('timeout', d => {
             // let msg = "Debugger client timedout, " + d;
         });

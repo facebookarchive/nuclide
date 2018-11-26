@@ -6,6 +6,7 @@ exports.PYTHON = [
     { scheme: 'file', language: exports.PYTHON_LANGUAGE },
     { scheme: 'untitled', language: exports.PYTHON_LANGUAGE }
 ];
+exports.PVSC_EXTENSION_ID = 'ms-python.python';
 var Commands;
 (function (Commands) {
     Commands.Set_Interpreter = 'python.setInterpreter';

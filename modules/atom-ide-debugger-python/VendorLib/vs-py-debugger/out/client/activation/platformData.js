@@ -29,21 +29,19 @@ class PlatformData {
         this.platform = platform;
     }
     getPlatformName() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.platform.isWindows) {
-                return this.platform.is64bit ? PlatformName.Windows64Bit : PlatformName.Windows32Bit;
+        if (this.platform.isWindows) {
+            return this.platform.is64bit ? PlatformName.Windows64Bit : PlatformName.Windows32Bit;
+        }
+        if (this.platform.isMac) {
+            return PlatformName.Mac64Bit;
+        }
+        if (this.platform.isLinux) {
+            if (!this.platform.is64bit) {
+                throw new Error('Microsoft Python Language Server does not support 32-bit Linux.');
             }
-            if (this.platform.isMac) {
-                return PlatformName.Mac64Bit;
-            }
-            if (this.platform.isLinux) {
-                if (!this.platform.is64bit) {
-                    throw new Error('Microsoft Python Language Server does not support 32-bit Linux.');
-                }
-                return PlatformName.Linux64Bit;
-            }
-            throw new Error('Unknown OS platform.');
-        });
+            return PlatformName.Linux64Bit;
+        }
+        throw new Error('Unknown OS platform.');
     }
     getEngineDllName() {
         return 'Microsoft.Python.LanguageServer.dll';

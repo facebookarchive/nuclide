@@ -76,12 +76,12 @@ suite('Python Path Settings Updater', () => {
             yield updater.updatePythonPath(pythonPath);
             workspaceConfig.verify(w => w.update(TypeMoq.It.isValue('pythonPath'), TypeMoq.It.isValue(pythonPath), TypeMoq.It.isValue(vscode_1.ConfigurationTarget.WorkspaceFolder)), TypeMoq.Times.once());
         }));
-        test('Python Path should be updated with ${workspaceFolder} for relative paths', () => __awaiter(this, void 0, void 0, function* () {
+        test('Python Path should be truncated for worspace-relative paths', () => __awaiter(this, void 0, void 0, function* () {
             const workspaceFolderPath = path.join('user', 'desktop', 'development');
             const workspaceFolder = vscode_1.Uri.file(workspaceFolderPath);
             const updater = updaterServiceFactory.getWorkspaceFolderPythonPathConfigurationService(workspaceFolder);
             const pythonPath = vscode_1.Uri.file(path.join(workspaceFolderPath, 'env', 'bin', 'python')).fsPath;
-            const expectedPythonPath = path.join('${workspaceFolder}', 'env', 'bin', 'python');
+            const expectedPythonPath = path.join('env', 'bin', 'python');
             const workspaceConfig = setupConfigProvider(workspaceFolder);
             workspaceConfig.setup(w => w.inspect(TypeMoq.It.isValue('pythonPath'))).returns(() => undefined);
             yield updater.updatePythonPath(pythonPath);
@@ -113,12 +113,12 @@ suite('Python Path Settings Updater', () => {
             yield updater.updatePythonPath(pythonPath);
             workspaceConfig.verify(w => w.update(TypeMoq.It.isValue('pythonPath'), TypeMoq.It.isValue(pythonPath), TypeMoq.It.isValue(false)), TypeMoq.Times.once());
         }));
-        test('Python Path should be updated with ${workspaceFolder} for relative paths', () => __awaiter(this, void 0, void 0, function* () {
+        test('Python Path should be truncated for workspace-relative paths', () => __awaiter(this, void 0, void 0, function* () {
             const workspaceFolderPath = path.join('user', 'desktop', 'development');
             const workspaceFolder = vscode_1.Uri.file(workspaceFolderPath);
             const updater = updaterServiceFactory.getWorkspacePythonPathConfigurationService(workspaceFolder);
             const pythonPath = vscode_1.Uri.file(path.join(workspaceFolderPath, 'env', 'bin', 'python')).fsPath;
-            const expectedPythonPath = path.join('${workspaceFolder}', 'env', 'bin', 'python');
+            const expectedPythonPath = path.join('env', 'bin', 'python');
             const workspaceConfig = setupConfigProvider(workspaceFolder);
             workspaceConfig.setup(w => w.inspect(TypeMoq.It.isValue('pythonPath'))).returns(() => undefined);
             yield updater.updatePythonPath(pythonPath);

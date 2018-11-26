@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const helpers_1 = require("../../common/helpers");
+const async_1 = require("../../../utils/async");
 const types_1 = require("../../common/types");
 const BaseDebugServer_1 = require("./BaseDebugServer");
 class LocalDebugServerV2 extends BaseDebugServer_1.BaseDebugServer {
@@ -18,7 +18,7 @@ class LocalDebugServerV2 extends BaseDebugServer_1.BaseDebugServer {
         super(debugSession);
         this.args = args;
         this.serviceContainer = serviceContainer;
-        this.clientSocket = helpers_1.createDeferred();
+        this.clientSocket = async_1.createDeferred();
     }
     Stop() {
         if (this.socketServer) {

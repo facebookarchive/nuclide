@@ -18,13 +18,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
+const platform_1 = require("../../../utils/platform");
 const constants_1 = require("../constants");
 const errorUtils_1 = require("../errors/errorUtils");
 const moduleNotInstalledError_1 = require("../errors/moduleNotInstalledError");
 const types_1 = require("../platform/types");
 let PythonExecutionService = class PythonExecutionService {
     constructor(serviceContainer, procService, pythonPath) {
-        this.serviceContainer = serviceContainer;
         this.procService = procService;
         this.pythonPath = pythonPath;
         this.fileSystem = serviceContainer.get(types_1.IFileSystem);
@@ -40,8 +40,18 @@ let PythonExecutionService = class PythonExecutionService {
                         .then(output => output.stdout.trim())
                 ]);
                 const json = JSON.parse(jsonValue);
+                const version_info = json.versionInfo;
+                // Exclude PII from `version_info` to ensure we don't send this up via telemetry.
+                for (let index = 0; index < 3; index += 1) {
+                    if (typeof version_info[index] !== 'number') {
+                        version_info[index] = 0;
+                    }
+                }
+                if (['alpha', 'beta', 'candidate', 'final'].indexOf(version_info[3]) === -1) {
+                    version_info[3] = 'unknown';
+                }
                 return {
-                    architecture: json.is64Bit ? types_1.Architecture.x64 : types_1.Architecture.x86,
+                    architecture: json.is64Bit ? platform_1.Architecture.x64 : platform_1.Architecture.x86,
                     path: this.pythonPath,
                     version,
                     sysVersion: json.sysVersion,

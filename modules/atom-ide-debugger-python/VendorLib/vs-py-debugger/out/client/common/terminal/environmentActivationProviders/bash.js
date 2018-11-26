@@ -38,9 +38,9 @@ let Bash = class Bash extends baseActivationProvider_1.BaseActivationCommandProv
             targetShell === types_2.TerminalShellType.tcshell ||
             targetShell === types_2.TerminalShellType.fish;
     }
-    getActivationCommands(resource, targetShell) {
+    getActivationCommandsForInterpreter(pythonPath, targetShell) {
         return __awaiter(this, void 0, void 0, function* () {
-            const scriptFile = yield this.findScriptFile(resource, this.getScriptsInOrderOfPreference(targetShell));
+            const scriptFile = yield this.findScriptFile(pythonPath, this.getScriptsInOrderOfPreference(targetShell));
             if (!scriptFile) {
                 return;
             }

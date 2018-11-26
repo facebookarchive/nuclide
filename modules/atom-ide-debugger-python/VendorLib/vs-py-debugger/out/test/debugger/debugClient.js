@@ -6,7 +6,7 @@ const child_process_1 = require("child_process");
 const path = require("path");
 const vscode_debugadapter_testsupport_1 = require("vscode-debugadapter-testsupport");
 const constants_1 = require("../../client/common/constants");
-const core_utils_1 = require("../../client/common/core.utils");
+const misc_1 = require("../../utils/misc");
 class DebugClientEx extends vscode_debugadapter_testsupport_1.DebugClient {
     constructor(executable, debugType, coverageDirectory, spawnOptions) {
         super('node', '', debugType, spawnOptions);
@@ -31,12 +31,12 @@ class DebugClientEx extends vscode_debugadapter_testsupport_1.DebugClient {
             const runtime = path.join(constants_1.EXTENSION_ROOT_DIR, 'node_modules', '.bin', 'istanbul');
             const args = ['cover', '--report=json', '--print=none', `--dir=${this.coverageDirectory}`, '--handle-sigint', this.executable];
             this.adapterProcess = child_process_1.spawn(runtime, args, this.spawnOptions);
-            this.adapterProcess.stderr.on('data', core_utils_1.noop);
+            this.adapterProcess.stderr.on('data', misc_1.noop);
             this.adapterProcess.on('error', (err) => {
                 console.error(err);
                 reject(err);
             });
-            this.adapterProcess.on('exit', core_utils_1.noop);
+            this.adapterProcess.on('exit', misc_1.noop);
             this.connect(this.adapterProcess.stdout, this.adapterProcess.stdin);
             resolve();
         });

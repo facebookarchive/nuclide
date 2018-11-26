@@ -1,24 +1,28 @@
 // tslint:disable:quotemark ordered-imports no-any no-empty
-"use strict";
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
-const helpers_1 = require("../../common/helpers");
+const async_1 = require("../../../utils/async");
 class BaseDebugServer extends events_1.EventEmitter {
+    constructor(debugSession, pythonProcess) {
+        super();
+        this.isRunning = false;
+        this.debugSession = debugSession;
+        this.pythonProcess = pythonProcess;
+        this.debugClientConnected = async_1.createDeferred();
+        this.clientSocket = async_1.createDeferred();
+    }
     get client() {
         return this.clientSocket.promise;
     }
     get IsRunning() {
+        if (this.isRunning === undefined) {
+            return false;
+        }
         return this.isRunning;
     }
     get DebugClientConnected() {
         return this.debugClientConnected.promise;
-    }
-    constructor(debugSession, pythonProcess) {
-        super();
-        this.debugSession = debugSession;
-        this.pythonProcess = pythonProcess;
-        this.debugClientConnected = helpers_1.createDeferred();
-        this.clientSocket = helpers_1.createDeferred();
     }
 }
 exports.BaseDebugServer = BaseDebugServer;

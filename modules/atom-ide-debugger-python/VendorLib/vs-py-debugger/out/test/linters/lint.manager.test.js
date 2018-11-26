@@ -13,12 +13,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const inversify_1 = require("inversify");
 const service_1 = require("../../client/common/configuration/service");
-const enumUtils_1 = require("../../client/common/enumUtils");
 const types_1 = require("../../client/common/types");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
 const types_2 = require("../../client/ioc/types");
 const linterManager_1 = require("../../client/linters/linterManager");
+const EnumEx = require("../../utils/enum");
 const initialize_1 = require("../initialize");
 // tslint:disable-next-line:max-func-body-length
 suite('Linting - Manager', () => {
@@ -111,7 +111,7 @@ suite('Linting - Manager', () => {
         assert.notEqual(pylint.configFileNames.indexOf('pylintrc'), -1, 'Pylint configuration files miss pylintrc.');
         assert.notEqual(pylint.configFileNames.indexOf('.pylintrc'), -1, 'Pylint configuration files miss .pylintrc.');
     }));
-    enumUtils_1.EnumEx.getValues(types_1.Product).forEach(product => {
+    EnumEx.getValues(types_1.Product).forEach(product => {
         const linterIdMapping = new Map();
         linterIdMapping.set(types_1.Product.flake8, 'flake8');
         linterIdMapping.set(types_1.Product.mypy, 'mypy');

@@ -18,12 +18,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const path = require("path");
 const vscode_1 = require("vscode");
 const types_1 = require("../../common/application/types");
 const settings = require("../../common/configSettings");
 const constants_1 = require("../../common/constants");
-const types_2 = require("../../common/platform/types");
+const types_2 = require("../../common/types");
 const types_3 = require("../../ioc/types");
 const contracts_1 = require("../contracts");
 const types_4 = require("./types");
@@ -35,20 +34,21 @@ let InterpreterSelector = class InterpreterSelector {
         this.workspaceService = this.serviceContainer.get(types_1.IWorkspaceService);
         this.applicationShell = this.serviceContainer.get(types_1.IApplicationShell);
         this.documentManager = this.serviceContainer.get(types_1.IDocumentManager);
-        this.fileSystem = this.serviceContainer.get(types_2.IFileSystem);
-        const commandManager = serviceContainer.get(types_1.ICommandManager);
-        this.disposables.push(commandManager.registerCommand(constants_1.Commands.Set_Interpreter, this.setInterpreter.bind(this)));
-        this.disposables.push(commandManager.registerCommand(constants_1.Commands.Set_ShebangInterpreter, this.setShebangInterpreter.bind(this)));
+        this.pathUtils = this.serviceContainer.get(types_2.IPathUtils);
+        this.interpreterComparer = this.serviceContainer.get(types_4.IInterpreterComparer);
     }
     dispose() {
         this.disposables.forEach(disposable => disposable.dispose());
     }
+    initialize() {
+        const commandManager = this.serviceContainer.get(types_1.ICommandManager);
+        this.disposables.push(commandManager.registerCommand(constants_1.Commands.Set_Interpreter, this.setInterpreter.bind(this)));
+        this.disposables.push(commandManager.registerCommand(constants_1.Commands.Set_ShebangInterpreter, this.setShebangInterpreter.bind(this)));
+    }
     getSuggestions(resourceUri) {
         return __awaiter(this, void 0, void 0, function* () {
-            let interpreters = yield this.interpreterManager.getInterpreters(resourceUri);
-            interpreters = yield this.removeDuplicates(interpreters);
-            // tslint:disable-next-line:no-non-null-assertion
-            interpreters.sort((a, b) => a.displayName > b.displayName ? 1 : -1);
+            const interpreters = yield this.interpreterManager.getInterpreters(resourceUri);
+            interpreters.sort(this.interpreterComparer.compare.bind(this.interpreterComparer));
             return Promise.all(interpreters.map(item => this.suggestionToQuickPickItem(item, resourceUri)));
         });
     }
@@ -68,30 +68,14 @@ let InterpreterSelector = class InterpreterSelector {
     }
     suggestionToQuickPickItem(suggestion, workspaceUri) {
         return __awaiter(this, void 0, void 0, function* () {
-            let detail = suggestion.path;
-            if (workspaceUri && suggestion.path.startsWith(workspaceUri.fsPath)) {
-                detail = `.${path.sep}${path.relative(workspaceUri.fsPath, suggestion.path)}`;
-            }
+            const detail = this.pathUtils.getDisplayName(suggestion.path, workspaceUri ? workspaceUri.fsPath : undefined);
             const cachedPrefix = suggestion.cachedEntry ? '(cached) ' : '';
             return {
                 // tslint:disable-next-line:no-non-null-assertion
                 label: suggestion.displayName,
-                description: suggestion.companyDisplayName || '',
                 detail: `${cachedPrefix}${detail}`,
                 path: suggestion.path
             };
-        });
-    }
-    removeDuplicates(interpreters) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = [];
-            interpreters.forEach(x => {
-                if (result.findIndex(a => a.displayName === x.displayName
-                    && a.type === x.type && this.fileSystem.arePathsSame(path.dirname(a.path), path.dirname(x.path))) < 0) {
-                    result.push(x);
-                }
-            });
-            return result;
         });
     }
     setInterpreter() {
@@ -108,10 +92,7 @@ let InterpreterSelector = class InterpreterSelector {
                 wkspace = targetConfig.folderUri;
             }
             const suggestions = yield this.getSuggestions(wkspace);
-            let currentPythonPath = settings.PythonSettings.getInstance().pythonPath;
-            if (wkspace && currentPythonPath.startsWith(wkspace.fsPath)) {
-                currentPythonPath = `.${path.sep}${path.relative(wkspace.fsPath, currentPythonPath)}`;
-            }
+            const currentPythonPath = this.pathUtils.getDisplayName(settings.PythonSettings.getInstance().pythonPath, wkspace ? wkspace.fsPath : undefined);
             const quickPickOptions = {
                 matchOnDetail: true,
                 matchOnDescription: true,

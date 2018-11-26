@@ -14,15 +14,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const path = require("path");
 const constants_1 = require("../../client/common/constants");
-const core_utils_1 = require("../../client/common/core.utils");
 const constants_2 = require("../../client/debugger/Common/constants");
 const Contracts_1 = require("../../client/debugger/Common/Contracts");
+const misc_1 = require("../../utils/misc");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const utils_1 = require("./utils");
 const isProcessRunning = require('is-running');
 const debugFilesPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'debugging');
-const debuggerType = 'pythonExperimental';
+const debuggerType = constants_2.DebuggerTypeName;
 suite('Run without Debugging', () => {
     let debugClient;
     setup(function () {
@@ -39,7 +39,7 @@ suite('Run without Debugging', () => {
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
         yield common_1.sleep(1000);
         try {
-            yield debugClient.stop().catch(core_utils_1.noop);
+            yield debugClient.stop().catch(misc_1.noop);
             // tslint:disable-next-line:no-empty
         }
         catch (ex) { }
@@ -88,26 +88,34 @@ suite('Run without Debugging', () => {
             debugClient.waitForEvent('terminated')
         ]);
     }));
-    test('Should kill python process when ending debug session', () => __awaiter(this, void 0, void 0, function* () {
-        const processIdOutput = new Promise(resolve => {
-            debugClient.on('output', (event) => {
-                if (event.event === 'output' && event.body.category === 'stdout') {
-                    resolve(parseInt(event.body.output.trim(), 10));
-                }
+    test('Should kill python process when ending debug session', function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const skipped = true;
+            if (skipped) {
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: Why was this skipped?  See gh-2308.
+                return this.skip();
+            }
+            const processIdOutput = new Promise(resolve => {
+                debugClient.on('output', (event) => {
+                    if (event.event === 'output' && event.body.category === 'stdout') {
+                        resolve(parseInt(event.body.output.trim(), 10));
+                    }
+                });
             });
+            yield Promise.all([
+                debugClient.configurationSequence(),
+                debugClient.launch(buildLauncArgs('sampleWithSleep.py', false)),
+                debugClient.waitForEvent('initialized'),
+                processIdOutput
+            ]);
+            const processId = yield processIdOutput;
+            chai_1.expect(processId).to.be.greaterThan(0, 'Invalid process id');
+            yield debugClient.stop();
+            yield common_1.sleep(1000);
+            // Confirm the process is dead
+            chai_1.expect(isProcessRunning(processId)).to.be.equal(false, 'Python program is still alive');
         });
-        yield Promise.all([
-            debugClient.configurationSequence(),
-            debugClient.launch(buildLauncArgs('sampleWithSleep.py', false)),
-            debugClient.waitForEvent('initialized'),
-            processIdOutput
-        ]);
-        const processId = yield processIdOutput;
-        chai_1.expect(processId).to.be.greaterThan(0, 'Invalid process id');
-        yield debugClient.stop();
-        yield common_1.sleep(1000);
-        // Confirm the process is dead
-        chai_1.expect(isProcessRunning(processId)).to.be.equal(false, 'Python program is still alive');
-    }));
+    });
 });
 //# sourceMappingURL=run.test.js.map

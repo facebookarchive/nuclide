@@ -22,6 +22,7 @@ require("../../../client/common/extensions");
 const types_2 = require("../../../client/common/types");
 const Contracts_1 = require("../../../client/debugger/Common/Contracts");
 const debugLauncher_1 = require("../../../client/unittests/common/debugLauncher");
+const constants_2 = require("../../../client/debugger/Common/constants");
 chai_1.use(chaiAsPromised);
 // tslint:disable-next-line:max-func-body-length
 suite('Unit Tests - Debug Launcher', () => {
@@ -44,10 +45,10 @@ suite('Unit Tests - Debug Launcher', () => {
         settings.setup(p => p.unitTest).returns(() => unitTestSettings.object);
         debugLauncher = new debugLauncher_1.DebugLauncher(serviceContainer.object);
     }));
-    function setupDebugManager(workspaceFolder, name, type, request, program, cwd, args, console, debugOptions, testProvider, useExperimentalDebugger) {
+    function setupDebugManager(workspaceFolder, name, type, request, program, cwd, args, console, debugOptions, testProvider) {
         const envFile = __filename;
         settings.setup(p => p.envFile).returns(() => envFile);
-        const debugArgs = testProvider === 'unittest' && useExperimentalDebugger ? args.filter(item => item !== '--debug') : args;
+        const debugArgs = testProvider === 'unittest' ? args.filter(item => item !== '--debug') : args;
         debugService.setup(d => d.startDebugging(TypeMoq.It.isValue(workspaceFolder), TypeMoq.It.isObjectWith({ name, type, request, program, cwd, args: debugArgs, console, envFile, debugOptions })))
             .returns(() => Promise.resolve(undefined))
             .verifiable(TypeMoq.Times.once());
@@ -55,19 +56,14 @@ suite('Unit Tests - Debug Launcher', () => {
     function createWorkspaceFolder(folderPath) {
         return { index: 0, name: path.basename(folderPath), uri: vscode_1.Uri.file(folderPath) };
     }
-    function getTestLauncherScript(testProvider, useExperimentalDebugger) {
+    function getTestLauncherScript(testProvider) {
         switch (testProvider) {
             case 'unittest': {
                 return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'PythonTools', 'visualstudio_py_testlauncher.py');
             }
             case 'pytest':
             case 'nosetest': {
-                if (useExperimentalDebugger) {
-                    return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'testlauncher.py');
-                }
-                else {
-                    return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'PythonTools', 'testlauncher.py');
-                }
+                return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'testlauncher.py');
             }
             default: {
                 throw new Error(`Unknown test provider '${testProvider}'`);
@@ -76,58 +72,52 @@ suite('Unit Tests - Debug Launcher', () => {
     }
     const testProviders = ['nosetest', 'pytest', 'unittest'];
     testProviders.forEach(testProvider => {
-        [true, false].forEach(useExperimentalDebugger => {
-            const testTitleSuffix = `(Test Framework '${testProvider}', and use experimental debugger = '${useExperimentalDebugger}')`;
-            const testLaunchScript = getTestLauncherScript(testProvider, useExperimentalDebugger);
-            const debuggerType = useExperimentalDebugger ? 'pythonExperimental' : 'python';
-            test(`Must launch debugger ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
-                unitTestSettings.setup(u => u.useExperimentalDebugger).returns(() => useExperimentalDebugger);
-                workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
-                const workspaceFolders = [createWorkspaceFolder('one/two/three'), createWorkspaceFolder('five/six/seven')];
-                workspaceService.setup(u => u.workspaceFolders).returns(() => workspaceFolders);
-                workspaceService.setup(u => u.getWorkspaceFolder(TypeMoq.It.isAny())).returns(() => workspaceFolders[0]);
-                const args = ['/one/two/three/testfile.py'];
-                const cwd = workspaceFolders[0].uri.fsPath;
-                const program = testLaunchScript;
-                setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider, useExperimentalDebugger);
-                debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
-                debugService.verifyAll();
-            }));
-            test(`Must launch debugger with arguments ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
-                unitTestSettings.setup(u => u.useExperimentalDebugger).returns(() => useExperimentalDebugger);
-                workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
-                const workspaceFolders = [createWorkspaceFolder('one/two/three'), createWorkspaceFolder('five/six/seven')];
-                workspaceService.setup(u => u.workspaceFolders).returns(() => workspaceFolders);
-                workspaceService.setup(u => u.getWorkspaceFolder(TypeMoq.It.isAny())).returns(() => workspaceFolders[0]);
-                const args = ['/one/two/three/testfile.py', '--debug', '1'];
-                const cwd = workspaceFolders[0].uri.fsPath;
-                const program = testLaunchScript;
-                setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider, useExperimentalDebugger);
-                debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
-                debugService.verifyAll();
-            }));
-            test(`Must not launch debugger if cancelled ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
-                unitTestSettings.setup(u => u.useExperimentalDebugger).returns(() => false);
-                workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
-                debugService.setup(d => d.startDebugging(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-                    .returns(() => Promise.resolve(undefined))
-                    .verifiable(TypeMoq.Times.never());
-                const cancellationToken = new vscode_1.CancellationTokenSource();
-                cancellationToken.cancel();
-                const token = cancellationToken.token;
-                yield chai_1.expect(debugLauncher.launchDebugger({ cwd: '', args: [], token, testProvider })).to.be.eventually.equal(undefined, 'not undefined');
-                debugService.verifyAll();
-            }));
-            test(`Must throw an exception if there are no workspaces ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
-                unitTestSettings.setup(u => u.useExperimentalDebugger).returns(() => false);
-                workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => false);
-                debugService.setup(d => d.startDebugging(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-                    .returns(() => Promise.resolve(undefined))
-                    .verifiable(TypeMoq.Times.never());
-                yield chai_1.expect(debugLauncher.launchDebugger({ cwd: '', args: [], testProvider })).to.eventually.rejectedWith('Please open a workspace');
-                debugService.verifyAll();
-            }));
-        });
+        const testTitleSuffix = `(Test Framework '${testProvider}')`;
+        const testLaunchScript = getTestLauncherScript(testProvider);
+        const debuggerType = constants_2.DebuggerTypeName;
+        test(`Must launch debugger ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
+            workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
+            const workspaceFolders = [createWorkspaceFolder('one/two/three'), createWorkspaceFolder('five/six/seven')];
+            workspaceService.setup(u => u.workspaceFolders).returns(() => workspaceFolders);
+            workspaceService.setup(u => u.getWorkspaceFolder(TypeMoq.It.isAny())).returns(() => workspaceFolders[0]);
+            const args = ['/one/two/three/testfile.py'];
+            const cwd = workspaceFolders[0].uri.fsPath;
+            const program = testLaunchScript;
+            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider);
+            debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
+            debugService.verifyAll();
+        }));
+        test(`Must launch debugger with arguments ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
+            workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
+            const workspaceFolders = [createWorkspaceFolder('one/two/three'), createWorkspaceFolder('five/six/seven')];
+            workspaceService.setup(u => u.workspaceFolders).returns(() => workspaceFolders);
+            workspaceService.setup(u => u.getWorkspaceFolder(TypeMoq.It.isAny())).returns(() => workspaceFolders[0]);
+            const args = ['/one/two/three/testfile.py', '--debug', '1'];
+            const cwd = workspaceFolders[0].uri.fsPath;
+            const program = testLaunchScript;
+            setupDebugManager(workspaceFolders[0], 'Debug Unit Test', debuggerType, 'launch', program, cwd, args, 'none', [Contracts_1.DebugOptions.RedirectOutput], testProvider);
+            debugLauncher.launchDebugger({ cwd, args, testProvider }).ignoreErrors();
+            debugService.verifyAll();
+        }));
+        test(`Must not launch debugger if cancelled ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
+            workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => true);
+            debugService.setup(d => d.startDebugging(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+                .returns(() => Promise.resolve(undefined))
+                .verifiable(TypeMoq.Times.never());
+            const cancellationToken = new vscode_1.CancellationTokenSource();
+            cancellationToken.cancel();
+            const token = cancellationToken.token;
+            yield chai_1.expect(debugLauncher.launchDebugger({ cwd: '', args: [], token, testProvider })).to.be.eventually.equal(undefined, 'not undefined');
+            debugService.verifyAll();
+        }));
+        test(`Must throw an exception if there are no workspaces ${testTitleSuffix}`, () => __awaiter(this, void 0, void 0, function* () {
+            workspaceService.setup(u => u.hasWorkspaceFolders).returns(() => false);
+            debugService.setup(d => d.startDebugging(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+                .returns(() => Promise.resolve(undefined))
+                .verifiable(TypeMoq.Times.never());
+            yield chai_1.expect(debugLauncher.launchDebugger({ cwd: '', args: [], testProvider })).to.eventually.rejectedWith('Please open a workspace');
+            debugService.verifyAll();
+        }));
     });
 });
 //# sourceMappingURL=debugLauncher.test.js.map

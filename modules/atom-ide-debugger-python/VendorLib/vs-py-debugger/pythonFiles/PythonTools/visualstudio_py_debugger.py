@@ -47,12 +47,12 @@ from codecs import BOM_UTF8
 try:
     # In the local attach scenario, visualstudio_py_util is injected into globals()
     # by PyDebugAttach before loading this module, and cannot be imported.
-    _vspu = ptvsd.visualstudio_py_util
+    _vspu = visualstudio_py_util
 except:
     try:
-        import ptvsd.visualstudio_py_util as _vspu
-    except ImportError:
         import visualstudio_py_util as _vspu
+    except ImportError:
+        import ptvsd.visualstudio_py_util as _vspu
 
 to_bytes = _vspu.to_bytes
 exec_file = _vspu.exec_file
@@ -69,17 +69,15 @@ safe_repr = _vspu.SafeRepr()
 try:
     # In the local attach scenario, visualstudio_py_repl is injected into globals()
     # by PyDebugAttach before loading this module, and cannot be imported.
-    _vspr = ptvsd.visualstudio_py_repl
+    _vspr = visualstudio_py_repl
 except:
     try:
-        import ptvsd.visualstudio_py_repl as _vspr
-    except ImportError:
         import visualstudio_py_repl as _vspr
-
+    except ImportError:
+        import ptvsd.visualstudio_py_repl as _vspr
 
 try:
     import stackless
-    stackless.tasklet # work-around lazy on-demand importers
 except ImportError:
     stackless = None
 
@@ -1314,8 +1312,7 @@ class Thread(object):
         assert self._is_blocked 
         assert self.id != thread.get_ident()    # only someone else should unblock us
         
-        if self._block_lock.locked():
-            self._block_lock.release()
+        self._block_lock.release()
 
     def schedule_work(self, work):
         self.unblock_work = work
@@ -2363,16 +2360,9 @@ def attach_process_from_socket(sock, debug_options, report = False, block = Fals
     global debugger_thread_id
     debugger_thread_id = _start_new_thread(DebuggerLoop(conn).loop, ())
 
-    for mod_value in list(sys.modules.values()):
+    for mod_name, mod_value in sys.modules.items():
         try:
-            lazyModule = False
-            try:
-                lazyModule = mod_value.__class__.__name__ == 'LazyImporter'
-            except:
-                lazyModule = False
-            filename = None
-            if not lazyModule:
-                filename = getattr(mod_value, '__file__', None)
+            filename = getattr(mod_value, '__file__', None)
             if filename is not None:
                 try:
                     fullpath = path.abspath(filename)
@@ -2381,7 +2371,7 @@ def attach_process_from_socket(sock, debug_options, report = False, block = Fals
                 else:
                     MODULES.append((filename, Module(fullpath)))
         except:
-            traceback.print_exc()
+            traceback.print_exc()   
 
     if report:
         THREADS_LOCK.acquire()
@@ -2606,14 +2596,9 @@ def parse_debug_options(s):
 # Accept current Process id to pass back to debugger
 def debug(file, port_num, debug_id, debug_options, currentPid, run_as = 'script'):
     # remove us from modules so there's no trace of us
-    if dict_contains(sys.modules, 'visualstudio_py_debugger'):
-        sys.modules['$visualstudio_py_debugger'] = sys.modules['visualstudio_py_debugger']
-        __name__ = '$visualstudio_py_debugger'
-        del sys.modules['visualstudio_py_debugger']
-    elif dict_contains(sys.modules, 'ptvsd.visualstudio_py_debugger'):
-        sys.modules['$ptvsd.visualstudio_py_debugger'] = sys.modules['ptvsd.visualstudio_py_debugger']
-        __name__ = '$ptvsd.visualstudio_py_debugger'
-        del sys.modules['ptvsd.visualstudio_py_debugger']
+    sys.modules['$visualstudio_py_debugger'] = sys.modules['visualstudio_py_debugger']
+    __name__ = '$visualstudio_py_debugger'
+    del sys.modules['visualstudio_py_debugger']
 
     wait_on_normal_exit = 'WaitOnNormalExit' in debug_options
 
@@ -2637,8 +2622,6 @@ def debug(file, port_num, debug_id, debug_options, currentPid, run_as = 'script'
         elif run_as == 'code':
             exec_code(file, '<string>', globals_obj)
         else:
-            # fix sys.path to be the script file dir
-            sys.path[0] = ''
             exec_file(file, globals_obj)
     finally:
         sys.settrace(None)

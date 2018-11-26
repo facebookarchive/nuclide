@@ -29,7 +29,7 @@ const baseProvider_1 = require("./baseProvider");
 const types_3 = require("./types");
 let PythonV2DebugConfigurationProvider = class PythonV2DebugConfigurationProvider extends baseProvider_1.BaseConfigurationProvider {
     constructor(serviceContainer) {
-        super('pythonExperimental', serviceContainer);
+        super('python', serviceContainer);
     }
     provideLaunchDefaults(workspaceFolder, debugConfiguration) {
         const _super = name => super[name];
@@ -38,6 +38,9 @@ let PythonV2DebugConfigurationProvider = class PythonV2DebugConfigurationProvide
             const debugOptions = debugConfiguration.debugOptions;
             if (debugConfiguration.debugStdLib) {
                 this.debugOption(debugOptions, Contracts_1.DebugOptions.DebugStdLib);
+            }
+            if (debugConfiguration.stopOnEntry) {
+                this.debugOption(debugOptions, Contracts_1.DebugOptions.StopOnEntry);
             }
             if (debugConfiguration.django) {
                 this.debugOption(debugOptions, Contracts_1.DebugOptions.Django);

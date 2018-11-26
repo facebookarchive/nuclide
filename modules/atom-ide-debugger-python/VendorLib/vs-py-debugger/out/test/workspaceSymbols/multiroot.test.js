@@ -11,7 +11,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const path = require("path");
 const vscode_1 = require("vscode");
-const types_1 = require("../../client/common/process/types");
+const types_1 = require("../../client/common/application/types");
+const types_2 = require("../../client/common/platform/types");
+const types_3 = require("../../client/common/process/types");
 const generator_1 = require("../../client/workspaceSymbols/generator");
 const provider_1 = require("../../client/workspaceSymbols/provider");
 const initialize_1 = require("../initialize");
@@ -45,20 +47,20 @@ suite('Multiroot Workspace Symbols', () => {
         ioc.registerCommonTypes();
         ioc.registerVariableTypes();
         ioc.registerProcessTypes();
-        processServiceFactory = ioc.serviceContainer.get(types_1.IProcessServiceFactory);
+        processServiceFactory = ioc.serviceContainer.get(types_3.IProcessServiceFactory);
     }
     test('symbols should be returned when enabeld and vice versa', () => __awaiter(this, void 0, void 0, function* () {
         const childWorkspaceUri = vscode_1.Uri.file(path.join(multirootPath, 'parent', 'child'));
         const outputChannel = new mockClasses_1.MockOutputChannel('Output');
         yield common_1.updateSetting('workspaceSymbols.enabled', false, childWorkspaceUri, vscode_1.ConfigurationTarget.WorkspaceFolder);
         let generator = new generator_1.Generator(childWorkspaceUri, outputChannel, processServiceFactory);
-        let provider = new provider_1.WorkspaceSymbolProvider([generator], outputChannel);
+        let provider = new provider_1.WorkspaceSymbolProvider(ioc.serviceContainer.get(types_2.IFileSystem), ioc.serviceContainer.get(types_1.ICommandManager), [generator]);
         let symbols = yield provider.provideWorkspaceSymbols('', new vscode_1.CancellationTokenSource().token);
         assert.equal(symbols.length, 0, 'Symbols returned even when workspace symbols are turned off');
         generator.dispose();
         yield common_1.updateSetting('workspaceSymbols.enabled', true, childWorkspaceUri, vscode_1.ConfigurationTarget.WorkspaceFolder);
         generator = new generator_1.Generator(childWorkspaceUri, outputChannel, processServiceFactory);
-        provider = new provider_1.WorkspaceSymbolProvider([generator], outputChannel);
+        provider = new provider_1.WorkspaceSymbolProvider(ioc.serviceContainer.get(types_2.IFileSystem), ioc.serviceContainer.get(types_1.ICommandManager), [generator]);
         symbols = yield provider.provideWorkspaceSymbols('', new vscode_1.CancellationTokenSource().token);
         assert.notEqual(symbols.length, 0, 'Symbols should be returned when workspace symbols are turned on');
     }));
@@ -72,7 +74,7 @@ suite('Multiroot Workspace Symbols', () => {
             new generator_1.Generator(childWorkspaceUri, outputChannel, processServiceFactory),
             new generator_1.Generator(workspace2Uri, outputChannel, processServiceFactory)
         ];
-        const provider = new provider_1.WorkspaceSymbolProvider(generators, outputChannel);
+        const provider = new provider_1.WorkspaceSymbolProvider(ioc.serviceContainer.get(types_2.IFileSystem), ioc.serviceContainer.get(types_1.ICommandManager), generators);
         const symbols = yield provider.provideWorkspaceSymbols('meth1Of', new vscode_1.CancellationTokenSource().token);
         assert.equal(symbols.length, 2, 'Incorrect number of symbols returned');
         assert.notEqual(symbols.findIndex(sym => sym.location.uri.fsPath.endsWith('childFile.py')), -1, 'File with symbol not found in child workspace folder');

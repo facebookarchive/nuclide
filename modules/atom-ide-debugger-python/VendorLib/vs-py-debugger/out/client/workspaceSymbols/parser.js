@@ -1,16 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
 const path = require("path");
-const utils_1 = require("../common/utils");
-const LineByLineReader = require("line-by-line");
+const vscode = require("vscode");
+const fs_1 = require("../../utils/fs");
+// tslint:disable:no-require-imports no-var-requires no-suspicious-comment
+// TODO: Turn these into imports.
+const LineByLineReader = require('line-by-line');
 const NamedRegexp = require('named-js-regexp');
 const fuzzy = require('fuzzy');
 const IsFileRegEx = /\tkind:file\tline:\d+$/g;
 const LINE_REGEX = '(?<name>\\w+)\\t(?<file>.*)\\t\\/\\^(?<code>.*)\\$\\/;"\\tkind:(?<type>\\w+)\\tline:(?<line>\\d+)$';
 function matchNamedRegEx(data, regex) {
-    let compiledRegexp = NamedRegexp(regex, 'g');
-    let rawMatch = compiledRegexp.exec(data);
+    const compiledRegexp = NamedRegexp(regex, 'g');
+    const rawMatch = compiledRegexp.exec(data);
     if (rawMatch !== null) {
         return rawMatch.groups();
     }
@@ -88,19 +90,19 @@ Object.keys(newValuesAndKeys).forEach(key => {
     CTagKinMapping.set(key, newValuesAndKeys[key]);
 });
 function parseTags(workspaceFolder, tagFile, query, token, maxItems = 200) {
-    return utils_1.fsExistsAsync(tagFile).then(exists => {
+    return fs_1.fsExistsAsync(tagFile).then(exists => {
         if (!exists) {
-            return null;
+            return Promise.resolve([]);
         }
         return new Promise((resolve, reject) => {
-            let lr = new LineByLineReader(tagFile);
+            const lr = new LineByLineReader(tagFile);
             let lineNumber = 0;
-            let tags = [];
-            lr.on("error", function (err) {
+            const tags = [];
+            lr.on('error', (err) => {
                 reject(err);
             });
-            lr.on("line", function (line) {
-                lineNumber++;
+            lr.on('line', (line) => {
+                lineNumber = lineNumber + 1;
                 if (token.isCancellationRequested) {
                     lr.close();
                     return;
@@ -113,7 +115,7 @@ function parseTags(workspaceFolder, tagFile, query, token, maxItems = 200) {
                     lr.close();
                 }
             });
-            lr.on("end", function () {
+            lr.on('end', () => {
                 resolve(tags);
             });
         });
@@ -124,7 +126,7 @@ function parseTagsLine(workspaceFolder, line, searchPattern) {
     if (IsFileRegEx.test(line)) {
         return;
     }
-    let match = matchNamedRegEx(line, LINE_REGEX);
+    const match = matchNamedRegEx(line, LINE_REGEX);
     if (!match) {
         return;
     }
@@ -135,14 +137,13 @@ function parseTagsLine(workspaceFolder, line, searchPattern) {
     if (!path.isAbsolute(file)) {
         file = path.resolve(workspaceFolder, '.vscode', file);
     }
-    const symbolKind = CTagKinMapping.has(match.type) ? CTagKinMapping.get(match.type) : vscode.SymbolKind.Null;
-    const tag = {
+    const symbolKind = CTagKinMapping.get(match.type) || vscode.SymbolKind.Null;
+    return {
         fileName: file,
         code: match.code,
         position: new vscode.Position(Number(match.line) - 1, 0),
         symbolName: match.name,
         symbolKind: symbolKind
     };
-    return tag;
 }
 //# sourceMappingURL=parser.js.map

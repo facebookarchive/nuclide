@@ -11,15 +11,7 @@ class TelemetryEvent extends vscode_debugadapter_1.OutputEvent {
     }
 }
 exports.TelemetryEvent = TelemetryEvent;
-exports.VALID_DEBUG_OPTIONS = [
-    'WaitOnAbnormalExit',
-    'WaitOnNormalExit',
-    'RedirectOutput',
-    'DebugStdLib',
-    'BreakOnSystemExitZero',
-    'DjangoDebugging',
-    'Django'
-];
+exports.DjangoApp = 'DJANGO';
 var DebugFlags;
 (function (DebugFlags) {
     DebugFlags[DebugFlags["None"] = 0] = "None";
@@ -31,7 +23,6 @@ var DebugOptions;
     DebugOptions["WaitOnNormalExit"] = "WaitOnNormalExit";
     DebugOptions["RedirectOutput"] = "RedirectOutput";
     DebugOptions["Django"] = "Django";
-    DebugOptions["DjangoDebugging"] = "DjangoDebugging";
     DebugOptions["Jinja"] = "Jinja";
     DebugOptions["DebugStdLib"] = "DebugStdLib";
     DebugOptions["BreakOnSystemExitZero"] = "BreakOnSystemExitZero";
@@ -40,6 +31,7 @@ var DebugOptions;
     DebugOptions["FixFilePathCase"] = "FixFilePathCase";
     DebugOptions["WindowsClient"] = "WindowsClient";
     DebugOptions["UnixClient"] = "UnixClient";
+    DebugOptions["StopOnEntry"] = "StopOnEntry";
 })(DebugOptions = exports.DebugOptions || (exports.DebugOptions = {}));
 var FrameKind;
 (function (FrameKind) {

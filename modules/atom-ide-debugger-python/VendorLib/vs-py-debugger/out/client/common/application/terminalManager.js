@@ -14,6 +14,9 @@ let TerminalManager = class TerminalManager {
     get onDidCloseTerminal() {
         return vscode_1.window.onDidCloseTerminal;
     }
+    get onDidOpenTerminal() {
+        return vscode_1.window.onDidOpenTerminal;
+    }
     createTerminal(options) {
         return vscode_1.window.createTerminal(options);
     }

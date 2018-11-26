@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const types_1 = require("../../../ioc/types");
+const execVSCCommand_1 = require("./execVSCCommand");
 const ignore_1 = require("./ignore");
 const launchBrowser_1 = require("./launchBrowser");
 let DiagnosticsCommandFactory = class DiagnosticsCommandFactory {
@@ -27,6 +28,9 @@ let DiagnosticsCommandFactory = class DiagnosticsCommandFactory {
             }
             case 'launch': {
                 return new launchBrowser_1.LaunchBrowserCommand(diagnostic, this.serviceContainer, options.options);
+            }
+            case 'executeVSCCommand': {
+                return new execVSCCommand_1.ExecuteVSCCommand(diagnostic, this.serviceContainer, options.options);
             }
             default: {
                 throw new Error(`Unknown Diagnostic command commandType '${commandType}'`);

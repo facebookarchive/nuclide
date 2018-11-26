@@ -122,7 +122,7 @@ class TestRunner {
     }
     getReleaseVersion() {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = 'https://marketplace.visualstudio.com/items?itemName=ms-python.python';
+            const url = `https://marketplace.visualstudio.com/items?itemName=${constants_1.PVSC_EXTENSION_ID}`;
             const content = yield new Promise((resolve, reject) => {
                 request(url, (error, response, body) => {
                     if (error) {

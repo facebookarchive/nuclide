@@ -28,7 +28,7 @@ const currentProcess_1 = require("../../../client/common/process/currentProcess"
 const serviceRegistry_1 = require("../../../client/common/process/serviceRegistry");
 const types_2 = require("../../../client/common/process/types");
 const types_3 = require("../../../client/common/types");
-const utils_1 = require("../../../client/common/utils");
+const util_1 = require("../../../client/common/util");
 const serviceRegistry_2 = require("../../../client/common/variables/serviceRegistry");
 const container_1 = require("../../../client/ioc/container");
 const serviceManager_1 = require("../../../client/ioc/serviceManager");
@@ -61,7 +61,7 @@ suite('PythonExecutableService', () => {
         const serviceManager = new serviceManager_1.ServiceManager(cont);
         serviceManager.addSingletonInstance(types_4.IServiceContainer, serviceContainer);
         serviceManager.addSingletonInstance(types_3.IDisposableRegistry, []);
-        serviceManager.addSingletonInstance(types_3.IsWindows, utils_1.IS_WINDOWS);
+        serviceManager.addSingletonInstance(types_3.IsWindows, util_1.IS_WINDOWS);
         serviceManager.addSingleton(types_3.IPathUtils, pathUtils_1.PathUtils);
         serviceManager.addSingleton(types_3.ICurrentProcess, currentProcess_1.CurrentProcess);
         serviceManager.addSingleton(types_3.IConfigurationService, service_1.ConfigurationService);
@@ -71,7 +71,7 @@ suite('PythonExecutableService', () => {
         serviceRegistry_2.registerTypes(serviceManager);
         configService = serviceManager.get(types_3.IConfigurationService);
         pythonExecFactory = serviceContainer.get(types_2.IPythonExecutionFactory);
-        yield configService.updateSettingAsync('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
+        yield configService.updateSetting('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
         return initialize_1.initializeTest();
     }));
     suiteTeardown(initialize_1.closeActiveWindows);
@@ -80,18 +80,18 @@ suite('PythonExecutableService', () => {
         cont.unload();
         yield initialize_1.closeActiveWindows();
         yield common_1.clearPythonPathInWorkspaceFolder(workspace4Path);
-        yield configService.updateSettingAsync('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
+        yield configService.updateSetting('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
         yield initialize_1.initializeTest();
     }));
     test('Importing without a valid PYTHONPATH should fail', () => __awaiter(this, void 0, void 0, function* () {
-        yield configService.updateSettingAsync('envFile', 'someInvalidFile.env', workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
+        yield configService.updateSetting('envFile', 'someInvalidFile.env', workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
         pythonExecFactory = serviceContainer.get(types_2.IPythonExecutionFactory);
         const pythonExecService = yield pythonExecFactory.create({ resource: workspace4PyFile });
         const promise = pythonExecService.exec([workspace4PyFile.fsPath], { cwd: path.dirname(workspace4PyFile.fsPath), throwOnStdErr: true });
         yield chai_1.expect(promise).to.eventually.be.rejectedWith(types_2.StdErrError);
     }));
     test('Importing with a valid PYTHONPATH from .env file should succeed', () => __awaiter(this, void 0, void 0, function* () {
-        yield configService.updateSettingAsync('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
+        yield configService.updateSetting('envFile', undefined, workspace4PyFile, vscode_1.ConfigurationTarget.WorkspaceFolder);
         const pythonExecService = yield pythonExecFactory.create({ resource: workspace4PyFile });
         const promise = pythonExecService.exec([workspace4PyFile.fsPath], { cwd: path.dirname(workspace4PyFile.fsPath), throwOnStdErr: true });
         yield chai_1.expect(promise).to.eventually.have.property('stdout', `Hello${os_1.EOL}`);

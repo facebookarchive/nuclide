@@ -24,52 +24,71 @@ const types_2 = require("../../../common/process/types");
 const types_3 = require("../../../common/types");
 const types_4 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
-const types_5 = require("../../virtualEnvs/types");
 const cacheableLocatorService_1 = require("./cacheableLocatorService");
+/**
+ * Locates the currently configured Python interpreter.
+ *
+ * If no interpreter is configured then it falls back to the system
+ * Python (3 then 2).
+ */
 let CurrentPathService = class CurrentPathService extends cacheableLocatorService_1.CacheableLocatorService {
-    constructor(virtualEnvMgr, helper, processServiceFactory, serviceContainer) {
+    constructor(helper, processServiceFactory, serviceContainer) {
         super('CurrentPathService', serviceContainer);
-        this.virtualEnvMgr = virtualEnvMgr;
         this.helper = helper;
         this.processServiceFactory = processServiceFactory;
         this.fs = serviceContainer.get(types_1.IFileSystem);
     }
+    /**
+     * Release any held resources.
+     *
+     * Called by VS Code to indicate it is done with the resource.
+     */
     // tslint:disable-next-line:no-empty
     dispose() { }
+    /**
+     * Return the located interpreters.
+     *
+     * This is used by CacheableLocatorService.getInterpreters().
+     */
     getInterpretersImplementation(resource) {
-        return this.suggestionsFromKnownPaths();
+        return this.suggestionsFromKnownPaths(resource);
     }
+    /**
+     * Return the located interpreters.
+     */
     suggestionsFromKnownPaths(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const configSettings = this.serviceContainer.get(types_3.IConfigurationService).getSettings(resource);
             const currentPythonInterpreter = this.getInterpreter(configSettings.pythonPath, '').then(interpreter => [interpreter]);
-            const python = this.getInterpreter('python', '').then(interpreter => [interpreter]);
-            const python2 = this.getInterpreter('python2', '').then(interpreter => [interpreter]);
             const python3 = this.getInterpreter('python3', '').then(interpreter => [interpreter]);
-            return Promise.all([currentPythonInterpreter, python, python2, python3])
+            const python2 = this.getInterpreter('python2', '').then(interpreter => [interpreter]);
+            const python = this.getInterpreter('python', '').then(interpreter => [interpreter]);
+            return Promise.all([currentPythonInterpreter, python3, python2, python])
                 // tslint:disable-next-line:underscore-consistent-invocation
                 .then(listOfInterpreters => _.flatten(listOfInterpreters))
                 .then(interpreters => interpreters.filter(item => item.length > 0))
                 // tslint:disable-next-line:promise-function-async
-                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter, resource))));
+                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))))
+                .then(interpreters => interpreters.filter(item => !!item).map(item => item));
         });
     }
-    getInterpreterDetails(interpreter, resource) {
+    /**
+     * Return the information about the identified interpreter binary.
+     */
+    getInterpreterDetails(interpreter) {
         return __awaiter(this, void 0, void 0, function* () {
-            return Promise.all([
-                this.helper.getInterpreterInformation(interpreter),
-                this.virtualEnvMgr.getEnvironmentName(interpreter),
-                this.virtualEnvMgr.getEnvironmentType(interpreter, resource)
-            ]).
-                then(([details, virtualEnvName, type]) => {
+            return this.helper.getInterpreterInformation(interpreter)
+                .then(details => {
                 if (!details) {
                     return;
                 }
-                const displayName = `${details.version ? details.version : ''}${virtualEnvName.length > 0 ? ` (${virtualEnvName})` : ''}`;
-                return Object.assign({}, details, { displayName, envName: virtualEnvName, path: interpreter, type: type ? type : contracts_1.InterpreterType.Unknown });
+                return Object.assign({}, details, { path: interpreter, type: details.type ? details.type : contracts_1.InterpreterType.Unknown });
             });
         });
     }
+    /**
+     * Return the path to the interpreter (or the default if not found).
+     */
     getInterpreter(pythonPath, defaultValue) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -92,10 +111,9 @@ let CurrentPathService = class CurrentPathService extends cacheableLocatorServic
 };
 CurrentPathService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_5.IVirtualEnvironmentManager)),
-    __param(1, inversify_1.inject(contracts_1.IInterpreterHelper)),
-    __param(2, inversify_1.inject(types_2.IProcessServiceFactory)),
-    __param(3, inversify_1.inject(types_4.IServiceContainer))
+    __param(0, inversify_1.inject(contracts_1.IInterpreterHelper)),
+    __param(1, inversify_1.inject(types_2.IProcessServiceFactory)),
+    __param(2, inversify_1.inject(types_4.IServiceContainer))
 ], CurrentPathService);
 exports.CurrentPathService = CurrentPathService;
 //# sourceMappingURL=currentPathService.js.map

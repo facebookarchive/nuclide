@@ -16,7 +16,8 @@ const fs = require("fs-extra");
 const os_1 = require("os");
 const path = require("path");
 const vscode_1 = require("vscode");
-const stopWatch_1 = require("../../client/common/stopWatch");
+const constants_1 = require("../../client/common/constants");
+const stopWatch_1 = require("../../utils/stopWatch");
 const AllowedIncreaseInActivationDelayInMS = 500;
 suite('Activation Times', () => {
     if (process.env.ACTIVATION_TIMES_LOG_FILE_PATH) {
@@ -26,7 +27,7 @@ suite('Activation Times', () => {
             return;
         }
         test(`Capture Extension Activation Times (Version: ${process.env.ACTIVATION_TIMES_EXT_VERSION}, sample: ${sampleCounter})`, () => __awaiter(this, void 0, void 0, function* () {
-            const pythonExtension = vscode_1.extensions.getExtension('ms-python.python');
+            const pythonExtension = vscode_1.extensions.getExtension(constants_1.PVSC_EXTENSION_ID);
             if (!pythonExtension) {
                 throw new Error('Python Extension not found');
             }

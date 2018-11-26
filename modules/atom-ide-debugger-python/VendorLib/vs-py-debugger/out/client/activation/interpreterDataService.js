@@ -13,9 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const async_1 = require("../../utils/async");
 const types_1 = require("../common/application/types");
 require("../common/extensions");
-const helpers_1 = require("../common/helpers");
 const types_2 = require("../common/platform/types");
 const types_3 = require("../common/process/types");
 const DataVersion = 1;
@@ -74,7 +74,7 @@ class InterpreterDataService {
         const platform = this.serviceContainer.get(types_2.IPlatformService);
         const pythonExecutable = path.join(path.dirname(interpreterPath), platform.isWindows ? 'python.exe' : 'python');
         // Hash mod time and creation time
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         fs.lstat(pythonExecutable, (err, stats) => {
             if (err) {
                 deferred.resolve('');
@@ -112,7 +112,7 @@ class InterpreterDataService {
     }
     getSearchPaths(execService) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield execService.exec(['-c', 'import sys; print(sys.path);'], {});
+            const result = yield execService.exec(['-c', 'import sys; import os; print(sys.path + os.getenv("PYTHONPATH", "").split(os.pathsep));'], {});
             if (!result.stdout) {
                 throw Error('Unable to determine Python interpreter search paths.');
             }

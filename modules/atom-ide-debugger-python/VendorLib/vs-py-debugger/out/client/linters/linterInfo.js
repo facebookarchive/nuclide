@@ -38,7 +38,7 @@ class LinterInfo {
     }
     enableAsync(enabled, resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.configService.updateSettingAsync(`linting.${this.enabledSettingName}`, enabled, resource);
+            return this.configService.updateSetting(`linting.${this.enabledSettingName}`, enabled, resource);
         });
     }
     isEnabled(resource) {

@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("../common/extensions");
 const types_1 = require("../common/types");
 const baseLinter_1 = require("./baseLinter");
-const REGEX = '(?<file>.py):(?<line>\\d+): (?<type>\\w+): (?<message>.*)\\r?(\\n|$)';
+const REGEX = '(?<file>.+):(?<line>\\d+): (?<type>\\w+): (?<message>.*)\\r?(\\n|$)';
 class MyPy extends baseLinter_1.BaseLinter {
     constructor(outputChannel, serviceContainer) {
         super(types_1.Product.mypy, outputChannel, serviceContainer);

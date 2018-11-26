@@ -14,7 +14,6 @@ const inversify_1 = require("inversify");
 const TypeMoq = require("typemoq");
 const vscode = require("vscode");
 const types_1 = require("../../client/common/application/types");
-const helpers_1 = require("../../client/common/helpers");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/types");
 const contracts_1 = require("../../client/interpreter/contracts");
@@ -23,6 +22,7 @@ const serviceManager_1 = require("../../client/ioc/serviceManager");
 const linterManager_1 = require("../../client/linters/linterManager");
 const types_4 = require("../../client/linters/types");
 const linterProvider_1 = require("../../client/providers/linterProvider");
+const async_1 = require("../../utils/async");
 const initialize_1 = require("../initialize");
 // tslint:disable-next-line:max-func-body-length
 suite('Linting - Provider', () => {
@@ -117,7 +117,7 @@ suite('Linting - Provider', () => {
         // tslint:disable-next-line:no-unused-variable
         const provider = new linterProvider_1.LinterProvider(context.object, serviceContainer);
         emitter.fire(document.object);
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         setTimeout(() => deferred.resolve(), 2000);
         yield deferred.promise;
         engine.verify(x => x.lintOpenPythonFiles(), TypeMoq.Times.once());

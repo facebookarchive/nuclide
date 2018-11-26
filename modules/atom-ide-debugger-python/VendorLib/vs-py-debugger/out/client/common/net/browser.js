@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,25 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process = require("child_process");
+// tslint:disable:no-require-imports no-var-requires
+const opn = require('opn');
 const inversify_1 = require("inversify");
-const os = require("os");
 function launch(url) {
-    let openCommand;
-    if (os.platform() === 'win32') {
-        openCommand = 'explorer';
-    }
-    else if (os.platform() === 'darwin') {
-        openCommand = '/usr/bin/open';
-    }
-    else {
-        openCommand = '/usr/bin/xdg-open';
-    }
-    if (!openCommand) {
-        console.error(`Unable to determine platform to launch the browser in the Python extension on platform '${os.platform()}'.`);
-        console.error(`Link is: ${url}`);
-    }
-    child_process.spawn(openCommand, [url]);
+    opn(url);
 }
 exports.launch = launch;
 let BrowserService = class BrowserService {

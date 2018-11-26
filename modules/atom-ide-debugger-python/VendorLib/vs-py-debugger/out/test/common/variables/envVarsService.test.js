@@ -14,8 +14,8 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const path = require("path");
 const pathUtils_1 = require("../../../client/common/platform/pathUtils");
-const platformService_1 = require("../../../client/common/platform/platformService");
 const environment_1 = require("../../../client/common/variables/environment");
+const platform_1 = require("../../../utils/platform");
 chai_1.use(chaiAsPromised);
 const envFilesFolderPath = path.join(__dirname, '..', '..', '..', '..', 'src', 'testMultiRootWkspc', 'workspace4');
 // tslint:disable-next-line:max-func-body-length
@@ -23,7 +23,7 @@ suite('Environment Variables Service', () => {
     let pathUtils;
     let variablesService;
     setup(() => {
-        pathUtils = new pathUtils_1.PathUtils(new platformService_1.PlatformService().isWindows);
+        pathUtils = new pathUtils_1.PathUtils(platform_1.isWindows());
         variablesService = new environment_1.EnvironmentVariablesService(pathUtils);
     });
     test('Custom variables should be undefined with non-existent files', () => __awaiter(this, void 0, void 0, function* () {

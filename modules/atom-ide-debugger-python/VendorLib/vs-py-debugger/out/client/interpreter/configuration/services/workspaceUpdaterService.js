@@ -22,8 +22,7 @@ class WorkspacePythonPathUpdaterService {
                 return;
             }
             if (pythonPath.startsWith(this.workspace.fsPath)) {
-                // tslint:disable-next-line:no-invalid-template-strings
-                pythonPath = path.join('${workspaceFolder}', path.relative(this.workspace.fsPath, pythonPath));
+                pythonPath = path.relative(this.workspace.fsPath, pythonPath);
             }
             yield pythonConfig.update('pythonPath', pythonPath, false);
         });

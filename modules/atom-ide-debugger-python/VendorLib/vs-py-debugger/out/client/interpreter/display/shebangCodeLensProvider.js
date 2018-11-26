@@ -21,7 +21,7 @@ const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
 const settings = require("../../common/configSettings");
 const types_1 = require("../../common/process/types");
-const utils_1 = require("../../common/utils");
+const util_1 = require("../../common/util");
 const types_2 = require("../../ioc/types");
 let ShebangCodeLensProvider = class ShebangCodeLensProvider {
     constructor(serviceContainer) {
@@ -53,7 +53,7 @@ let ShebangCodeLensProvider = class ShebangCodeLensProvider {
         return __awaiter(this, void 0, void 0, function* () {
             let cmdFile = pythonPath;
             let args = ['-c', 'import sys;print(sys.executable)'];
-            if (pythonPath.indexOf('bin/env ') >= 0 && !utils_1.IS_WINDOWS) {
+            if (pythonPath.indexOf('bin/env ') >= 0 && !util_1.IS_WINDOWS) {
                 // In case we have pythonPath as '/usr/bin/env python'.
                 const parts = pythonPath.split(' ').map(part => part.trim()).filter(part => part.length > 0);
                 cmdFile = parts.shift();

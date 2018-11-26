@@ -11,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const stopWatch_1 = require("../../utils/stopWatch");
 const productInstaller_1 = require("../common/installer/productInstaller");
-const stopWatch_1 = require("../common/stopWatch");
 const types_1 = require("../common/types");
 const telemetry_1 = require("../telemetry");
 const constants_1 = require("../telemetry/constants");

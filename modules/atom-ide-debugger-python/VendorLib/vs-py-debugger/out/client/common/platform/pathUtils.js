@@ -13,9 +13,13 @@ const inversify_1 = require("inversify");
 const path = require("path");
 const types_1 = require("../types");
 const constants_1 = require("./constants");
+// tslint:disable-next-line:no-var-requires no-require-imports
+const untildify = require('untildify');
 let PathUtils = class PathUtils {
     constructor(isWindows) {
         this.isWindows = isWindows;
+        this.home = '';
+        this.home = untildify('~');
     }
     get delimiter() {
         return path.delimiter;
@@ -26,6 +30,17 @@ let PathUtils = class PathUtils {
     }
     basename(pathValue, ext) {
         return path.basename(pathValue, ext);
+    }
+    getDisplayName(pathValue, cwd) {
+        if (cwd && pathValue.startsWith(cwd)) {
+            return `.${path.sep}${path.relative(cwd, pathValue)}`;
+        }
+        else if (pathValue.startsWith(this.home)) {
+            return `~${path.sep}${path.relative(this.home, pathValue)}`;
+        }
+        else {
+            return pathValue;
+        }
     }
 };
 PathUtils = __decorate([

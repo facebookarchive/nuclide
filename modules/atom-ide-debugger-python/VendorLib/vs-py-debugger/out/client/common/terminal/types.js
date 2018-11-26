@@ -19,5 +19,7 @@ var TerminalShellType;
 })(TerminalShellType = exports.TerminalShellType || (exports.TerminalShellType = {}));
 exports.ITerminalServiceFactory = Symbol('ITerminalServiceFactory');
 exports.ITerminalHelper = Symbol('ITerminalHelper');
+exports.ITerminalActivator = Symbol('ITerminalActivator');
 exports.ITerminalActivationCommandProvider = Symbol('ITerminalActivationCommandProvider');
+exports.ITerminalActivationHandler = Symbol('ITerminalActivationHandler');
 //# sourceMappingURL=types.js.map

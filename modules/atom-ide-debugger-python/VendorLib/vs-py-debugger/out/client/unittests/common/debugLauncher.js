@@ -23,7 +23,6 @@ const vscode_1 = require("vscode");
 const types_1 = require("../../common/application/types");
 const constants_1 = require("../../common/constants");
 const types_2 = require("../../common/types");
-const constants_2 = require("../../debugger/Common/constants");
 const Contracts_1 = require("../../debugger/Common/Contracts");
 const types_3 = require("../../ioc/types");
 let DebugLauncher = class DebugLauncher {
@@ -46,14 +45,12 @@ let DebugLauncher = class DebugLauncher {
             }
             const cwd = cwdUri ? cwdUri.fsPath : workspaceFolder.uri.fsPath;
             const configSettings = this.serviceContainer.get(types_2.IConfigurationService).getSettings(vscode_1.Uri.file(cwd));
-            const useExperimentalDebugger = configSettings.unitTest.useExperimentalDebugger === true;
             const debugManager = this.serviceContainer.get(types_1.IDebugService);
-            const debuggerType = useExperimentalDebugger ? constants_2.ExperimentalDebuggerType : 'python';
-            const debugArgs = this.fixArgs(options.args, options.testProvider, useExperimentalDebugger);
-            const program = this.getTestLauncherScript(options.testProvider, useExperimentalDebugger);
+            const debugArgs = this.fixArgs(options.args, options.testProvider);
+            const program = this.getTestLauncherScript(options.testProvider);
             return debugManager.startDebugging(workspaceFolder, {
                 name: 'Debug Unit Test',
-                type: debuggerType,
+                type: 'python',
                 request: 'launch',
                 program,
                 cwd,
@@ -64,27 +61,22 @@ let DebugLauncher = class DebugLauncher {
             }).then(() => void (0));
         });
     }
-    fixArgs(args, testProvider, useExperimentalDebugger) {
-        if (testProvider === 'unittest' && useExperimentalDebugger) {
+    fixArgs(args, testProvider) {
+        if (testProvider === 'unittest') {
             return args.filter(item => item !== '--debug');
         }
         else {
             return args;
         }
     }
-    getTestLauncherScript(testProvider, useExperimentalDebugger) {
+    getTestLauncherScript(testProvider) {
         switch (testProvider) {
             case 'unittest': {
                 return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'PythonTools', 'visualstudio_py_testlauncher.py');
             }
             case 'pytest':
             case 'nosetest': {
-                if (useExperimentalDebugger) {
-                    return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'testlauncher.py');
-                }
-                else {
-                    return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'PythonTools', 'testlauncher.py');
-                }
+                return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'testlauncher.py');
             }
             default: {
                 throw new Error(`Unknown test provider '${testProvider}'`);

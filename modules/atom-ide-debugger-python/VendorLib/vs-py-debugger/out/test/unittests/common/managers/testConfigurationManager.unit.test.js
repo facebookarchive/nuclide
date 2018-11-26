@@ -13,11 +13,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
-const enumUtils_1 = require("../../../../client/common/enumUtils");
 const types_1 = require("../../../../client/common/types");
 const constants_1 = require("../../../../client/unittests/common/constants");
 const testConfigurationManager_1 = require("../../../../client/unittests/common/managers/testConfigurationManager");
 const types_2 = require("../../../../client/unittests/common/types");
+const enum_1 = require("../../../../utils/enum");
 class MockTestConfigurationManager extends testConfigurationManager_1.TestConfigurationManager {
     requiresUserToConfigure(wkspace) {
         throw new Error('Method not implemented.');
@@ -28,7 +28,7 @@ class MockTestConfigurationManager extends testConfigurationManager_1.TestConfig
 }
 suite('Unit Test Configuration Manager (unit)', () => {
     [types_1.Product.pytest, types_1.Product.unittest, types_1.Product.nosetest].forEach(product => {
-        const prods = enumUtils_1.EnumEx.getNamesAndValues(types_1.Product);
+        const prods = enum_1.getNamesAndValues(types_1.Product);
         const productName = prods.filter(item => item.value === product)[0];
         suite(productName.name, () => {
             const workspaceUri = vscode_1.Uri.file(__dirname);

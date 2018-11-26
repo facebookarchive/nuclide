@@ -26,7 +26,9 @@ const types_3 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
 const cacheableLocatorService_1 = require("./cacheableLocatorService");
 const conda_1 = require("./conda");
-const condaHelper_1 = require("./condaHelper");
+/**
+ * Locates conda env interpreters based on the conda service's info.
+ */
 let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.CacheableLocatorService {
     constructor(condaService, helper, logger, serviceContainer, fileSystem) {
         super('CondaEnvService', serviceContainer);
@@ -34,65 +36,25 @@ let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.Ca
         this.helper = helper;
         this.logger = logger;
         this.fileSystem = fileSystem;
-        this.condaHelper = new condaHelper_1.CondaHelper();
     }
+    /**
+     * Release any held resources.
+     *
+     * Called by VS Code to indicate it is done with the resource.
+     */
     // tslint:disable-next-line:no-empty
     dispose() { }
-    parseCondaInfo(info) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const condaDisplayName = this.condaHelper.getDisplayName(info);
-            // The root of the conda environment is itself a Python interpreter
-            // envs reported as e.g.: /Users/bob/miniconda3/envs/someEnv.
-            const envs = Array.isArray(info.envs) ? info.envs : [];
-            if (info.default_prefix && info.default_prefix.length > 0) {
-                envs.push(info.default_prefix);
-            }
-            const promises = envs
-                .map((envPath) => __awaiter(this, void 0, void 0, function* () {
-                const pythonPath = this.condaService.getInterpreterPath(envPath);
-                if (!(yield this.fileSystem.fileExists(pythonPath))) {
-                    return;
-                }
-                const details = yield this.helper.getInterpreterInformation(pythonPath);
-                if (!details) {
-                    return;
-                }
-                const versionWithoutCompanyName = this.stripCondaDisplayName(this.stripCompanyName(details.version), condaDisplayName);
-                const displayName = `${condaDisplayName} ${versionWithoutCompanyName}`.trim();
-                return Object.assign({}, details, { path: pythonPath, displayName, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath });
-            }));
-            return Promise.all(promises)
-                .then(interpreters => interpreters.filter(interpreter => interpreter !== null && interpreter !== undefined))
-                // tslint:disable-next-line:no-non-null-assertion
-                .then(interpreters => interpreters.map(interpreter => interpreter));
-        });
-    }
+    /**
+     * Return the located interpreters.
+     *
+     * This is used by CacheableLocatorService.getInterpreters().
+     */
     getInterpretersImplementation(resource) {
         return this.getSuggestionsFromConda();
     }
-    stripCompanyName(content) {
-        // Strip company name from version.
-        const startOfCompanyName = conda_1.AnacondaCompanyNames.reduce((index, companyName) => {
-            if (index > 0) {
-                return index;
-            }
-            return content.indexOf(`:: ${companyName}`);
-        }, -1);
-        return startOfCompanyName > 0 ? content.substring(0, startOfCompanyName).trim() : content;
-    }
-    stripCondaDisplayName(content, condaDisplayName) {
-        // Strip company name from version.
-        if (content.endsWith(condaDisplayName)) {
-            let updatedContent = content.substr(0, content.indexOf(condaDisplayName)).trim();
-            if (updatedContent.endsWith('::')) {
-                updatedContent = updatedContent.substr(0, content.indexOf('::')).trim();
-            }
-            return updatedContent;
-        }
-        else {
-            return content;
-        }
-    }
+    /**
+     * Return the list of interpreters for all the conda envs.
+     */
     getSuggestionsFromConda() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -100,7 +62,7 @@ let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.Ca
                 if (!info) {
                     return [];
                 }
-                const interpreters = yield this.parseCondaInfo(info);
+                const interpreters = yield parseCondaInfo(info, this.condaService, this.fileSystem, this.helper);
                 const environments = yield this.condaService.getCondaEnvironments(true);
                 if (Array.isArray(environments) && environments.length > 0) {
                     interpreters
@@ -108,7 +70,6 @@ let CondaEnvService = class CondaEnvService extends cacheableLocatorService_1.Ca
                         const environment = environments.find(item => this.fileSystem.arePathsSame(item.path, interpreter.envPath));
                         if (environment) {
                             interpreter.envName = environment.name;
-                            interpreter.displayName = `${interpreter.displayName} (${environment.name})`;
                         }
                     });
                 }
@@ -135,4 +96,34 @@ CondaEnvService = __decorate([
     __param(4, inversify_1.inject(types_1.IFileSystem))
 ], CondaEnvService);
 exports.CondaEnvService = CondaEnvService;
+/**
+ * Return the list of conda env interpreters.
+ */
+function parseCondaInfo(info, condaService, fileSystem, helper) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // The root of the conda environment is itself a Python interpreter
+        // envs reported as e.g.: /Users/bob/miniconda3/envs/someEnv.
+        const envs = Array.isArray(info.envs) ? info.envs : [];
+        if (info.default_prefix && info.default_prefix.length > 0) {
+            envs.push(info.default_prefix);
+        }
+        const promises = envs
+            .map((envPath) => __awaiter(this, void 0, void 0, function* () {
+            const pythonPath = condaService.getInterpreterPath(envPath);
+            if (!(yield fileSystem.fileExists(pythonPath))) {
+                return;
+            }
+            const details = yield helper.getInterpreterInformation(pythonPath);
+            if (!details) {
+                return;
+            }
+            return Object.assign({}, details, { path: pythonPath, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath });
+        }));
+        return Promise.all(promises)
+            .then(interpreters => interpreters.filter(interpreter => interpreter !== null && interpreter !== undefined))
+            // tslint:disable-next-line:no-non-null-assertion
+            .then(interpreters => interpreters.map(interpreter => interpreter));
+    });
+}
+exports.parseCondaInfo = parseCondaInfo;
 //# sourceMappingURL=condaEnvService.js.map

@@ -1,7 +1,11 @@
-"use strict";
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const Path = require("path");
-const Types = require("./sysTypes");
+const Types = require("../../../utils/sysTypes");
 /* tslint:disable:rule1 no-any no-unnecessary-callback-wrapper jsdoc-format no-for-in prefer-const no-increment-decrement */
 class AbstractSystemVariables {
     // tslint:disable-next-line:no-any

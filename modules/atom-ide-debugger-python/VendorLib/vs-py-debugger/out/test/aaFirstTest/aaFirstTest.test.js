@@ -10,7 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const extension_1 = require("../../client/extension");
+const chai_1 = require("chai");
+const vscode_1 = require("vscode");
+const constants_1 = require("../../client/common/constants");
 const initialize_1 = require("../initialize");
 // NOTE:
 // We need this to be run first, as this ensures the extension activates.
@@ -25,7 +27,7 @@ suite('Activate Extension', () => {
         });
     });
     test('Python extension has activated', () => __awaiter(this, void 0, void 0, function* () {
-        yield extension_1.activated;
+        chai_1.expect(vscode_1.extensions.getExtension(constants_1.PVSC_EXTENSION_ID).isActive).to.equal(true, 'Extension has not been activated');
     }));
 });
 //# sourceMappingURL=aaFirstTest.test.js.map

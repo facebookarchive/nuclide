@@ -20,8 +20,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_1 = require("vscode");
+const stopWatch_1 = require("../../../utils/stopWatch");
 const types_1 = require("../../common/process/types");
-const stopWatch_1 = require("../../common/stopWatch");
 const types_2 = require("../../ioc/types");
 const telemetry_1 = require("../../telemetry");
 const constants_1 = require("../../telemetry/constants");
@@ -60,13 +60,14 @@ let PythonPathUpdaterService = class PythonPathUpdaterService {
             };
             if (!failed) {
                 const processService = yield this.executionFactory.create({ pythonPath });
-                const infoPromise = processService.getInterpreterInformation().catch(() => undefined);
+                const infoPromise = processService.getInterpreterInformation()
+                    .catch(() => undefined);
                 const pipVersionPromise = this.interpreterVersionService.getPipVersion(pythonPath)
                     .then(value => value.length === 0 ? undefined : value)
-                    .catch(() => undefined);
+                    .catch(() => '');
                 const [info, pipVersion] = yield Promise.all([infoPromise, pipVersionPromise]);
                 if (info) {
-                    telemtryProperties.version = info.version;
+                    telemtryProperties.pythonVersion = info.version_info.join('.');
                 }
                 if (pipVersion) {
                     telemtryProperties.pipVersion = pipVersion;

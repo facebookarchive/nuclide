@@ -19,9 +19,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
+const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/application/types");
 const constants = require("../../common/constants");
-const core_utils_1 = require("../../common/core.utils");
 const helpers_1 = require("../../common/helpers");
 const types_2 = require("../../common/types");
 const types_3 = require("../../ioc/types");
@@ -64,7 +64,7 @@ let TestResultDisplay = class TestResultDisplay {
             .then(tests => this.updateTestRunWithSuccess(tests, debug))
             .catch(this.updateTestRunWithFailure.bind(this))
             // We don't care about any other exceptions returned by updateTestRunWithFailure
-            .catch(core_utils_1.noop);
+            .catch(misc_1.noop);
     }
     displayDiscoverStatus(testDiscovery, quietMode = false) {
         this.displayProgress('Discovering Tests', 'Discovering tests (click to stop)', constants.Commands.Tests_Ask_To_Stop_Discovery);
@@ -154,7 +154,7 @@ let TestResultDisplay = class TestResultDisplay {
             const settingsToDisable = ['unitTest.promptToConfigure', 'unitTest.pyTestEnabled',
                 'unitTest.unittestEnabled', 'unitTest.nosetestsEnabled'];
             for (const setting of settingsToDisable) {
-                yield configurationService.updateSettingAsync(setting, false).catch(core_utils_1.noop);
+                yield configurationService.updateSetting(setting, false).catch(misc_1.noop);
             }
         });
     }

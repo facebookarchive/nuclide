@@ -11,10 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode_1 = require("vscode");
+const async_1 = require("../../utils/async");
+const text_1 = require("../../utils/text");
 require("../common/extensions");
-const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/process/types");
-const utils_1 = require("../common/utils");
+const util_1 = require("../common/util");
 class RefactorProxy extends vscode_1.Disposable {
     constructor(extensionDir, pythonSettings, workspaceRoot, serviceContainer) {
         super(() => { });
@@ -35,7 +36,7 @@ class RefactorProxy extends vscode_1.Disposable {
         this._process = undefined;
     }
     getOffsetAt(document, position) {
-        if (!utils_1.IS_WINDOWS) {
+        if (!util_1.IS_WINDOWS) {
             return document.offsetAt(position);
         }
         // get line count
@@ -43,7 +44,7 @@ class RefactorProxy extends vscode_1.Disposable {
         // So for each line, reduce one characer (for CR)
         // But Not all Windows users use CRLF
         const offset = document.offsetAt(position);
-        const winEols = utils_1.getWindowsLineEndingCount(document, offset);
+        const winEols = text_1.getWindowsLineEndingCount(document, offset);
         return offset - winEols;
     }
     rename(document, name, filePath, range, options) {
@@ -107,7 +108,7 @@ class RefactorProxy extends vscode_1.Disposable {
     initialize(pythonPath) {
         return __awaiter(this, void 0, void 0, function* () {
             const pythonProc = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(this.workspaceRoot) });
-            this.initialized = helpers_1.createDeferred();
+            this.initialized = async_1.createDeferred();
             const args = ['refactor.py', this.workspaceRoot];
             const cwd = path.join(this._extensionDir, 'pythonFiles');
             const result = pythonProc.execObservable(args, { cwd });

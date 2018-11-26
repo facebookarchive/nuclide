@@ -24,6 +24,7 @@ const types_2 = require("../common/platform/types");
 const types_3 = require("../common/process/types");
 const types_4 = require("../common/types");
 const types_5 = require("../ioc/types");
+const contracts_1 = require("./contracts");
 const EXPITY_DURATION = 24 * 60 * 60 * 1000;
 function getFirstNonEmptyLineFromMultilineString(stdout) {
     if (!stdout) {
@@ -45,7 +46,7 @@ let InterpreterHelper = class InterpreterHelper {
         if (!workspaceService.hasWorkspaceFolders) {
             return;
         }
-        if (workspaceService.workspaceFolders.length === 1) {
+        if (Array.isArray(workspaceService.workspaceFolders) && workspaceService.workspaceFolders.length === 1) {
             return { folderUri: workspaceService.workspaceFolders[0].uri, configTarget: vscode_1.ConfigurationTarget.Workspace };
         }
         if (documentManager.activeTextEditor) {
@@ -57,9 +58,10 @@ let InterpreterHelper = class InterpreterHelper {
     }
     getInterpreterInformation(pythonPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const fileHash = yield this.fs.getFileHash(pythonPath).catch(() => '');
-            const store = this.persistentFactory.createGlobalPersistentState(pythonPath, undefined, EXPITY_DURATION);
-            if (store.value && store.value.fileHash === fileHash) {
+            let fileHash = yield this.fs.getFileHash(pythonPath).catch(() => '');
+            fileHash = fileHash ? fileHash : '';
+            const store = this.persistentFactory.createGlobalPersistentState(`${pythonPath}.v2`, undefined, EXPITY_DURATION);
+            if (store.value && fileHash && store.value.fileHash === fileHash) {
                 return store.value;
             }
             const processService = yield this.serviceContainer.get(types_3.IPythonExecutionFactory).create({ pythonPath });
@@ -74,9 +76,34 @@ let InterpreterHelper = class InterpreterHelper {
             }
             catch (ex) {
                 console.error(`Failed to get interpreter information for '${pythonPath}'`, ex);
-                return {};
+                return;
             }
         });
+    }
+    isMacDefaultPythonPath(pythonPath) {
+        return pythonPath === 'python' || pythonPath === '/usr/bin/python';
+    }
+    getInterpreterTypeDisplayName(interpreterType) {
+        switch (interpreterType) {
+            case contracts_1.InterpreterType.Conda: {
+                return 'conda';
+            }
+            case contracts_1.InterpreterType.PipEnv: {
+                return 'pipenv';
+            }
+            case contracts_1.InterpreterType.Pyenv: {
+                return 'pyenv';
+            }
+            case contracts_1.InterpreterType.Venv: {
+                return 'venv';
+            }
+            case contracts_1.InterpreterType.VirtualEnv: {
+                return 'virtualenv';
+            }
+            default: {
+                return '';
+            }
+        }
     }
 };
 InterpreterHelper = __decorate([

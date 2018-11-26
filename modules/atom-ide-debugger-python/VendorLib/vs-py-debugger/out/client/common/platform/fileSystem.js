@@ -10,14 +10,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
+const fileSystem = require("fs");
 const fs = require("fs-extra");
 const glob = require("glob");
 const inversify_1 = require("inversify");
 const path = require("path");
 const tmp = require("tmp");
-const helpers_1 = require("../helpers");
+const async_1 = require("../../../utils/async");
 const types_1 = require("./types");
 let FileSystem = class FileSystem {
     constructor(platformService) {
@@ -50,6 +59,11 @@ let FileSystem = class FileSystem {
      */
     readFile(filePath) {
         return fs.readFile(filePath).then(buffer => buffer.toString());
+    }
+    writeFile(filePath, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield fs.writeFile(filePath, data, { encoding: 'utf8' });
+        });
     }
     directoryExists(filePath) {
         return this.objectExists(filePath, (stats) => stats.isDirectory());
@@ -99,7 +113,7 @@ let FileSystem = class FileSystem {
         });
     }
     copyFile(src, dest) {
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         const rs = fs.createReadStream(src).on('error', (err) => {
             deferred.reject(err);
         });
@@ -112,7 +126,7 @@ let FileSystem = class FileSystem {
         return deferred.promise;
     }
     deleteFile(filename) {
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         fs.unlink(filename, err => err ? deferred.reject(err) : deferred.resolve());
         return deferred.promise;
     }
@@ -146,6 +160,19 @@ let FileSystem = class FileSystem {
                     return reject(err);
                 }
                 resolve({ filePath: tmpFile, dispose: cleanupCallback });
+            });
+        });
+    }
+    createWriteStream(filePath) {
+        return fileSystem.createWriteStream(filePath);
+    }
+    chmod(filePath, mode) {
+        return new Promise((resolve, reject) => {
+            fileSystem.chmod(filePath, mode, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
             });
         });
     }

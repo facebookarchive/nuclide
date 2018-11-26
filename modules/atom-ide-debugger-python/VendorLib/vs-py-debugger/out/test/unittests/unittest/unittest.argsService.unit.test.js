@@ -52,5 +52,4 @@ suite('ArgsService: unittest', () => {
         chai_1.expect(testDirs[0]).to.equal(dir);
     });
 });
-
 //# sourceMappingURL=unittest.argsService.unit.test.js.map

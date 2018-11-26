@@ -195,5 +195,4 @@ class Stub {
     }
 }
 exports.Stub = Stub;
-
 //# sourceMappingURL=stub.js.map

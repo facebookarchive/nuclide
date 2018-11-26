@@ -13,7 +13,7 @@ function updateSparkLibrary() {
     const pythonConfig = vscode.workspace.getConfiguration('python');
     const extraLibPath = 'autoComplete.extraPaths';
     // tslint:disable-next-line:no-invalid-template-strings
-    const sparkHomePath = '${env.SPARK_HOME}';
+    const sparkHomePath = '${env:SPARK_HOME}';
     pythonConfig.update(extraLibPath, [path.join(sparkHomePath, 'python'),
         path.join(sparkHomePath, 'python/pyspark')]).then(() => {
         //Done

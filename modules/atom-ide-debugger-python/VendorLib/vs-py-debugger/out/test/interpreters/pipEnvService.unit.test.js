@@ -16,13 +16,13 @@ const path = require("path");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/application/types");
-const enumUtils_1 = require("../../client/common/enumUtils");
 const types_2 = require("../../client/common/platform/types");
 const types_3 = require("../../client/common/process/types");
 const types_4 = require("../../client/common/types");
 const types_5 = require("../../client/common/variables/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const pipEnvService_1 = require("../../client/interpreter/locators/services/pipEnvService");
+const enum_1 = require("../../utils/enum");
 var OS;
 (function (OS) {
     OS[OS["Mac"] = 0] = "Mac";
@@ -31,7 +31,7 @@ var OS;
 })(OS || (OS = {}));
 suite('Interpreters - PipEnv', () => {
     const rootWorkspace = vscode_1.Uri.file(path.join('usr', 'desktop', 'wkspc1')).fsPath;
-    enumUtils_1.EnumEx.getNamesAndValues(OS).forEach(os => {
+    enum_1.getNamesAndValues(OS).forEach(os => {
         [undefined, vscode_1.Uri.file(path.join(rootWorkspace, 'one.py'))].forEach(resource => {
             const testSuffix = ` (${os.name}, ${resource ? 'with' : 'without'} a workspace)`;
             let pipEnvService;

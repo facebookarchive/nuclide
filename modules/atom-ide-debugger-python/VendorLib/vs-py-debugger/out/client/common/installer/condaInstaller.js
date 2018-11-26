@@ -24,6 +24,9 @@ const contracts_1 = require("../../interpreter/contracts");
 const types_1 = require("../../ioc/types");
 const types_2 = require("../types");
 const moduleInstaller_1 = require("./moduleInstaller");
+/**
+ * A Python module installer for a conda environment.
+ */
 let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstaller {
     constructor(serviceContainer) {
         super(serviceContainer);
@@ -56,6 +59,9 @@ let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstal
             return this.isCurrentEnvironmentACondaEnvironment(resource);
         });
     }
+    /**
+     * Return the commandline args needed to install the module.
+     */
     getExecutionInfo(moduleName, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const condaService = this.serviceContainer.get(contracts_1.ICondaService);
@@ -80,6 +86,9 @@ let CondaInstaller = class CondaInstaller extends moduleInstaller_1.ModuleInstal
             };
         });
     }
+    /**
+     * Is anaconda the current interpreter?
+     */
     isCurrentEnvironmentACondaEnvironment(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const condaService = this.serviceContainer.get(contracts_1.ICondaService);

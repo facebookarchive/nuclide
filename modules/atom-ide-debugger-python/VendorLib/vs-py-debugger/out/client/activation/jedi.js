@@ -58,12 +58,13 @@ let JediExtensionActivator = class JediExtensionActivator {
             context.subscriptions.push(vscode_1.languages.registerCodeLensProvider(this.documentSelector, this.serviceManager.get(contracts_1.IShebangCodeLensProvider)));
             const serviceContainer = this.serviceManager.get(types_2.IServiceContainer);
             context.subscriptions.push(new main_1.WorkspaceSymbols(serviceContainer));
-            const symbolProvider = new symbolProvider_1.PythonSymbolProvider(serviceContainer, jediFactory);
+            const symbolProvider = new symbolProvider_1.JediSymbolProvider(serviceContainer, jediFactory);
             context.subscriptions.push(vscode_1.languages.registerDocumentSymbolProvider(this.documentSelector, symbolProvider));
             const pythonSettings = this.serviceManager.get(types_1.IConfigurationService).getSettings();
             if (pythonSettings.devOptions.indexOf('DISABLE_SIGNATURE') === -1) {
                 context.subscriptions.push(vscode_1.languages.registerSignatureHelpProvider(this.documentSelector, new signatureProvider_1.PythonSignatureProvider(jediFactory), '(', ','));
             }
+            context.subscriptions.push(vscode_1.languages.registerRenameProvider(constants_1.PYTHON, new renameProvider_1.PythonRenameProvider(serviceContainer)));
             const testManagementService = this.serviceManager.get(types_3.IUnitTestManagementService);
             testManagementService.activate()
                 .then(() => testManagementService.activateCodeLenses(symbolProvider))

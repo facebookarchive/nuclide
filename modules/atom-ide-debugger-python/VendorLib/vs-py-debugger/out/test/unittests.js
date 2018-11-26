@@ -11,6 +11,7 @@ const Mocha = require("mocha");
 const path = require("path");
 const ciConstants_1 = require("./ciConstants");
 const vscodeMoscks = require("./vscode-mock");
+process.env.VSC_PYTHON_CI_TEST = '1';
 function runTests(testOptions) {
     vscodeMoscks.initialize();
     const grep = testOptions ? testOptions.grep : undefined;

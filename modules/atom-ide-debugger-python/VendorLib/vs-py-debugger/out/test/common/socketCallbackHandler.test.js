@@ -12,11 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const getFreePort = require("get-port");
 const net = require("net");
-const helpers_1 = require("../../client/common/helpers");
 const socketCallbackHandler_1 = require("../../client/common/net/socket/socketCallbackHandler");
 const socketServer_1 = require("../../client/common/net/socket/socketServer");
 const SocketStream_1 = require("../../client/common/net/socket/SocketStream");
+const async_1 = require("../../utils/async");
 const uint64be = require('uint64be');
+// tslint:disable-next-line:no-unnecessary-class
 class Commands {
 }
 Commands.ExitCommandBytes = new Buffer('exit');
@@ -84,13 +85,22 @@ class MockSocketClient {
     constructor(port) {
         this.port = port;
     }
+    get SocketStream() {
+        if (this.socketStream === undefined) {
+            throw Error('not listening');
+        }
+        return this.socketStream;
+    }
     start() {
-        this.def = helpers_1.createDeferred();
+        this.def = async_1.createDeferred();
         this.socket = net.connect(this.port, this.connectionListener.bind(this));
         return this.def.promise;
     }
     connectionListener() {
-        this.SocketStream = new SocketStream_1.SocketStream(this.socket, new Buffer(''));
+        if (this.socket === undefined || this.def === undefined) {
+            throw Error('not started');
+        }
+        this.socketStream = new SocketStream_1.SocketStream(this.socket, new Buffer(''));
         this.def.resolve();
         this.socket.on('error', () => { });
         this.socket.on('data', (data) => {
@@ -170,7 +180,7 @@ suite('SocketCallbackHandler', () => {
         const callbackHandler = new MockSocketCallbackHandler(socketServer);
         const socketClient = new MockSocketClient(port);
         yield socketClient.start();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         callbackHandler.on('handshake', () => {
             def.resolve();
         });
@@ -190,7 +200,7 @@ suite('SocketCallbackHandler', () => {
         const callbackHandler = new MockSocketCallbackHandler(socketServer);
         const socketClient = new MockSocketClient(port);
         yield socketClient.start();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         let timeOut = setTimeout(() => {
             def.reject('Handshake not completed in allocated time');
         }, 5000);
@@ -225,7 +235,7 @@ suite('SocketCallbackHandler', () => {
         const callbackHandler = new MockSocketCallbackHandler(socketServer);
         const socketClient = new MockSocketClient(port);
         yield socketClient.start();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         const PING_MESSAGE = 'This is the Ping Message - Функция проверки ИНН и КПП - 说明';
         callbackHandler.on('handshake', () => {
             // Send a custom message (only after handshake has been done)
@@ -257,7 +267,7 @@ suite('SocketCallbackHandler', () => {
         const callbackHandler = new MockSocketCallbackHandler(socketServer);
         const socketClient = new MockSocketClient(port);
         yield socketClient.start();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         callbackHandler.on('handshake', () => def.resolve());
         callbackHandler.on('error', (actual, expected, message) => {
             if (!def.completed) {
@@ -277,7 +287,7 @@ suite('SocketCallbackHandler', () => {
         const callbackHandler = new MockSocketCallbackHandler(socketServer);
         const socketClient = new MockSocketClient(port);
         yield socketClient.start();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         callbackHandler.on('handshake', () => def.resolve());
         callbackHandler.on('error', (actual, expected, message) => {
             if (!def.completed) {

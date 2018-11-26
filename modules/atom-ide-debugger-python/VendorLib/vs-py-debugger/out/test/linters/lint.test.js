@@ -31,6 +31,7 @@ const pep8ConfigPath = path.join(pythoFilesPath, 'pep8config');
 const pydocstyleConfigPath27 = path.join(pythoFilesPath, 'pydocstyleconfig27');
 const pylintConfigPath = path.join(pythoFilesPath, 'pylintconfig');
 const fileToLint = path.join(pythoFilesPath, 'file.py');
+const threeLineLintsPath = path.join(pythoFilesPath, 'threeLineLints.py');
 const pylintMessagesToBeReturned = [
     { line: 24, column: 0, severity: types_4.LintMessageSeverity.Information, code: 'I0011', message: 'Locally disabling no-member (E1101)', provider: '', type: '' },
     { line: 30, column: 0, severity: types_4.LintMessageSeverity.Information, code: 'I0011', message: 'Locally disabling no-member (E1101)', provider: '', type: '' },
@@ -138,11 +139,11 @@ suite('Linting - General Tests', () => {
         return __awaiter(this, void 0, void 0, function* () {
             // Don't run these updates in parallel, as they are updating the same file.
             const target = initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace;
-            yield configService.updateSettingAsync('linting.enabled', true, common_1.rootWorkspaceUri, target);
-            yield configService.updateSettingAsync('linting.lintOnSave', false, common_1.rootWorkspaceUri, target);
-            yield configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+            yield configService.updateSetting('linting.enabled', true, common_1.rootWorkspaceUri, target);
+            yield configService.updateSetting('linting.lintOnSave', false, common_1.rootWorkspaceUri, target);
+            yield configService.updateSetting('linting.pylintUseMinimalCheckers', false, workspaceUri);
             linterManager.getAllLinterInfos().forEach((x) => __awaiter(this, void 0, void 0, function* () {
-                yield configService.updateSettingAsync(makeSettingKey(x.product), false, common_1.rootWorkspaceUri, target);
+                yield configService.updateSetting(makeSettingKey(x.product), false, common_1.rootWorkspaceUri, target);
             }));
         });
     }
@@ -153,7 +154,7 @@ suite('Linting - General Tests', () => {
         return __awaiter(this, void 0, void 0, function* () {
             const setting = makeSettingKey(product);
             const output = ioc.serviceContainer.get(types_3.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
-            yield configService.updateSettingAsync(setting, enabled, common_1.rootWorkspaceUri, initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace);
+            yield configService.updateSetting(setting, enabled, common_1.rootWorkspaceUri, initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace);
             file = file ? file : fileToLint;
             const document = yield vscode_1.workspace.openTextDocument(file);
             const cancelToken = new vscode_1.CancellationTokenSource();
@@ -243,29 +244,37 @@ suite('Linting - General Tests', () => {
         yield testLinterMessages(productInstaller_1.Product.pep8, path.join(pep8ConfigPath, 'file.py'), filteredPep88MessagesToBeReturned);
     }));
     test('Pydocstyle with config in root', () => __awaiter(this, void 0, void 0, function* () {
-        yield configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+        yield configService.updateSetting('linting.pylintUseMinimalCheckers', false, workspaceUri);
         yield fs.copy(path.join(pydocstyleConfigPath27, '.pydocstyle'), path.join(workspaceUri.fsPath, '.pydocstyle'));
         yield testLinterMessages(productInstaller_1.Product.pydocstyle, path.join(pydocstyleConfigPath27, 'file.py'), []);
     }));
     test('PyLint minimal checkers', () => __awaiter(this, void 0, void 0, function* () {
         const file = path.join(pythoFilesPath, 'minCheck.py');
-        yield configService.updateSettingAsync('linting.pylintUseMinimalCheckers', true, workspaceUri);
+        yield configService.updateSetting('linting.pylintUseMinimalCheckers', true, workspaceUri);
         yield testEnablingDisablingOfLinter(productInstaller_1.Product.pylint, false, file);
-        yield configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+        yield configService.updateSetting('linting.pylintUseMinimalCheckers', false, workspaceUri);
         yield testEnablingDisablingOfLinter(productInstaller_1.Product.pylint, true, file);
     }));
     // tslint:disable-next-line:no-function-expression
     test('Multiple linters', function () {
         return __awaiter(this, void 0, void 0, function* () {
-            // tslint:disable-next-line:no-invalid-this
-            this.timeout(40000);
+            //      Unreliable test being skipped until we can sort it out.  See gh-2609.
+            //          - Fails about 1/3 of runs on Windows
+            //          - Symptom: lintingEngine::lintOpenPythonFiles returns values *after* command await resolves in lint.tests
+            //          - lintOpenPythonFiles returns 3 sets of values, not what I expect (1).
+            //          - Haven't yet found a way to await on this properly.
+            const skipped = true;
+            if (skipped) {
+                // tslint:disable-next-line:no-invalid-this
+                return this.skip();
+            }
             yield initialize_1.closeActiveWindows();
             const document = yield vscode_1.workspace.openTextDocument(path.join(pythoFilesPath, 'print.py'));
             yield vscode_1.window.showTextDocument(document);
-            yield configService.updateSettingAsync('linting.enabled', true, workspaceUri);
-            yield configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
-            yield configService.updateSettingAsync('linting.pylintEnabled', true, workspaceUri);
-            yield configService.updateSettingAsync('linting.flake8Enabled', true, workspaceUri);
+            yield configService.updateSetting('linting.enabled', true, workspaceUri);
+            yield configService.updateSetting('linting.pylintUseMinimalCheckers', false, workspaceUri);
+            yield configService.updateSetting('linting.pylintEnabled', true, workspaceUri);
+            yield configService.updateSetting('linting.flake8Enabled', true, workspaceUri);
             const commands = ioc.serviceContainer.get(types_1.ICommandManager);
             const collection = yield commands.executeCommand('python.runLinting');
             assert.notEqual(collection, undefined, 'python.runLinting did not return valid diagnostics collection.');
@@ -275,5 +284,23 @@ suite('Linting - General Tests', () => {
             assert.notEqual(messages.filter(x => x.source === 'flake8').length, 0, 'No flake8 messages.');
         });
     });
+    // tslint:disable-next-line:no-any
+    function testLinterMessageCount(product, pythonFile, messageCountToBeReceived) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const outputChannel = ioc.serviceContainer.get(types_3.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
+            const cancelToken = new vscode_1.CancellationTokenSource();
+            const document = yield vscode_1.workspace.openTextDocument(pythonFile);
+            yield linterManager.setActiveLintersAsync([product], document.uri);
+            const linter = linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
+            const messages = yield linter.lint(document, cancelToken.token);
+            assert.equal(messages.length, messageCountToBeReceived, 'Expected number of lint errors does not match lint error count');
+        });
+    }
+    test('Three line output counted as one message', () => __awaiter(this, void 0, void 0, function* () {
+        const maxErrors = 5;
+        const target = initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace;
+        yield configService.updateSetting('linting.maxNumberOfProblems', maxErrors, common_1.rootWorkspaceUri, target);
+        yield testLinterMessageCount(productInstaller_1.Product.pylint, threeLineLintsPath, maxErrors);
+    }));
 });
 //# sourceMappingURL=lint.test.js.map

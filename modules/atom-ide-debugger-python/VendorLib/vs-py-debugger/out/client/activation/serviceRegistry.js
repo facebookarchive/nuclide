@@ -2,19 +2,32 @@
 // Licensed under the MIT License.
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-const types_1 = require("../common/types");
+const types_1 = require("../common/nuget/types");
+const types_2 = require("../common/types");
 const languageServerSurveyBanner_1 = require("../languageServices/languageServerSurveyBanner");
 const proposeLanguageServerBanner_1 = require("../languageServices/proposeLanguageServerBanner");
 const activationService_1 = require("./activationService");
+const downloadChannelRules_1 = require("./downloadChannelRules");
 const jedi_1 = require("./jedi");
 const languageServer_1 = require("./languageServer");
-const types_2 = require("./types");
+const languageServerFolderService_1 = require("./languageServerFolderService");
+const languageServerPackageRepository_1 = require("./languageServerPackageRepository");
+const languageServerPackageService_1 = require("./languageServerPackageService");
+const types_3 = require("./types");
 function registerTypes(serviceManager) {
-    serviceManager.addSingleton(types_2.IExtensionActivationService, activationService_1.ExtensionActivationService);
-    serviceManager.add(types_2.IExtensionActivator, jedi_1.JediExtensionActivator, types_2.ExtensionActivators.Jedi);
-    serviceManager.add(types_2.IExtensionActivator, languageServer_1.LanguageServerExtensionActivator, types_2.ExtensionActivators.DotNet);
-    serviceManager.addSingleton(types_1.IPythonExtensionBanner, languageServerSurveyBanner_1.LanguageServerSurveyBanner, types_1.BANNER_NAME_LS_SURVEY);
-    serviceManager.addSingleton(types_1.IPythonExtensionBanner, proposeLanguageServerBanner_1.ProposeLanguageServerBanner, types_1.BANNER_NAME_PROPOSE_LS);
+    serviceManager.addSingleton(types_3.IExtensionActivationService, activationService_1.ExtensionActivationService);
+    serviceManager.add(types_3.IExtensionActivator, jedi_1.JediExtensionActivator, types_3.ExtensionActivators.Jedi);
+    serviceManager.add(types_3.IExtensionActivator, languageServer_1.LanguageServerExtensionActivator, types_3.ExtensionActivators.DotNet);
+    serviceManager.addSingleton(types_2.IPythonExtensionBanner, languageServerSurveyBanner_1.LanguageServerSurveyBanner, types_2.BANNER_NAME_LS_SURVEY);
+    serviceManager.addSingleton(types_2.IPythonExtensionBanner, proposeLanguageServerBanner_1.ProposeLanguageServerBanner, types_2.BANNER_NAME_PROPOSE_LS);
+    serviceManager.addSingleton(types_3.ILanguageServerFolderService, languageServerFolderService_1.LanguageServerFolderService);
+    serviceManager.addSingleton(types_3.ILanguageServerPackageService, languageServerPackageService_1.LanguageServerPackageService);
+    serviceManager.addSingleton(types_1.INugetRepository, languageServerPackageRepository_1.StableLanguageServerPackageRepository, languageServerPackageRepository_1.LanguageServerDownloadChannel.stable);
+    serviceManager.addSingleton(types_1.INugetRepository, languageServerPackageRepository_1.BetaLanguageServerPackageRepository, languageServerPackageRepository_1.LanguageServerDownloadChannel.beta);
+    serviceManager.addSingleton(types_1.INugetRepository, languageServerPackageRepository_1.DailyLanguageServerPackageRepository, languageServerPackageRepository_1.LanguageServerDownloadChannel.daily);
+    serviceManager.addSingleton(types_3.IDownloadChannelRule, downloadChannelRules_1.DownloadDailyChannelRule, languageServerPackageRepository_1.LanguageServerDownloadChannel.daily);
+    serviceManager.addSingleton(types_3.IDownloadChannelRule, downloadChannelRules_1.DownloadBetaChannelRule, languageServerPackageRepository_1.LanguageServerDownloadChannel.beta);
+    serviceManager.addSingleton(types_3.IDownloadChannelRule, downloadChannelRules_1.DownloadStableChannelRule, languageServerPackageRepository_1.LanguageServerDownloadChannel.stable);
 }
 exports.registerTypes = registerTypes;
 //# sourceMappingURL=serviceRegistry.js.map

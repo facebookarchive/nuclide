@@ -21,13 +21,15 @@ const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_1 = require("vscode");
 const types_1 = require("../common/application/types");
-const types_2 = require("../common/process/types");
-const types_3 = require("../common/types");
-const utils = require("../common/utils");
-const types_4 = require("../ioc/types");
-const types_5 = require("./configuration/types");
+const registry_1 = require("../common/platform/registry");
+const types_2 = require("../common/platform/types");
+const types_3 = require("../common/process/types");
+const types_4 = require("../common/types");
+const types_5 = require("../ioc/types");
+const types_6 = require("./configuration/types");
 const contracts_1 = require("./contracts");
-const types_6 = require("./virtualEnvs/types");
+const types_7 = require("./virtualEnvs/types");
+const EXPITY_DURATION = 24 * 60 * 60 * 1000;
 let InterpreterService = class InterpreterService {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
@@ -40,7 +42,9 @@ let InterpreterService = class InterpreterService {
         };
         this.locator = serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.INTERPRETER_LOCATOR_SERVICE);
         this.helper = serviceContainer.get(contracts_1.IInterpreterHelper);
-        this.pythonPathUpdaterService = this.serviceContainer.get(types_5.IPythonPathUpdaterServiceManager);
+        this.pythonPathUpdaterService = this.serviceContainer.get(types_6.IPythonPathUpdaterServiceManager);
+        this.fs = this.serviceContainer.get(types_2.IFileSystem);
+        this.persistentStateFactory = this.serviceContainer.get(types_4.IPersistentStateFactory);
     }
     refresh(resource) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,14 +53,20 @@ let InterpreterService = class InterpreterService {
         });
     }
     initialize() {
-        const disposables = this.serviceContainer.get(types_3.IDisposableRegistry);
+        const disposables = this.serviceContainer.get(types_4.IDisposableRegistry);
         const documentManager = this.serviceContainer.get(types_1.IDocumentManager);
         disposables.push(documentManager.onDidChangeActiveTextEditor((e) => e ? this.refresh(e.document.uri) : undefined));
-        const configService = this.serviceContainer.get(types_3.IConfigurationService);
+        const configService = this.serviceContainer.get(types_4.IConfigurationService);
         configService.getSettings().addListener('change', this.onConfigChanged);
     }
     getInterpreters(resource) {
-        return this.locator.getInterpreters(resource);
+        return __awaiter(this, void 0, void 0, function* () {
+            const interpreters = yield this.locator.getInterpreters(resource);
+            yield Promise.all(interpreters
+                .filter(item => !item.displayName)
+                .map((item) => __awaiter(this, void 0, void 0, function* () { return item.displayName = yield this.getDisplayName(item, resource); })));
+            return interpreters;
+        });
     }
     autoSetInterpreter() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -67,7 +77,7 @@ let InterpreterService = class InterpreterService {
             if (!activeWorkspace) {
                 return;
             }
-            // Check pipenv first
+            // Check pipenv first.
             const pipenvService = this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.PIPENV_SERVICE);
             let interpreters = yield pipenvService.getInterpreters(activeWorkspace.folderUri);
             if (interpreters.length > 0) {
@@ -78,7 +88,7 @@ let InterpreterService = class InterpreterService {
             const virtualEnvInterpreterProvider = this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.WORKSPACE_VIRTUAL_ENV_SERVICE);
             interpreters = yield virtualEnvInterpreterProvider.getInterpreters(activeWorkspace.folderUri);
             const workspacePathUpper = activeWorkspace.folderUri.fsPath.toUpperCase();
-            const interpretersInWorkspace = interpreters.filter(interpreter => interpreter.path.toUpperCase().startsWith(workspacePathUpper));
+            const interpretersInWorkspace = interpreters.filter(interpreter => vscode_1.Uri.file(interpreter.path).fsPath.toUpperCase().startsWith(workspacePathUpper));
             if (interpretersInWorkspace.length === 0) {
                 return;
             }
@@ -95,7 +105,7 @@ let InterpreterService = class InterpreterService {
     }
     dispose() {
         this.locator.dispose();
-        const configService = this.serviceContainer.get(types_3.IConfigurationService);
+        const configService = this.serviceContainer.get(types_4.IConfigurationService);
         configService.getSettings().removeListener('change', this.onConfigChanged);
         this.didChangeInterpreterEmitter.dispose();
     }
@@ -104,7 +114,7 @@ let InterpreterService = class InterpreterService {
     }
     getActiveInterpreter(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pythonExecutionFactory = this.serviceContainer.get(types_2.IPythonExecutionFactory);
+            const pythonExecutionFactory = this.serviceContainer.get(types_3.IPythonExecutionFactory);
             const pythonExecutionService = yield pythonExecutionFactory.create({ resource });
             const fullyQualifiedPath = yield pythonExecutionService.getExecutablePath().catch(() => undefined);
             // Python path is invalid or python isn't installed.
@@ -116,24 +126,91 @@ let InterpreterService = class InterpreterService {
     }
     getInterpreterDetails(pythonPath, resource) {
         return __awaiter(this, void 0, void 0, function* () {
+            // If we don't have the fully qualified path, then get it.
+            if (path.basename(pythonPath) === pythonPath) {
+                const pythonExecutionFactory = this.serviceContainer.get(types_3.IPythonExecutionFactory);
+                const pythonExecutionService = yield pythonExecutionFactory.create({ resource });
+                pythonPath = yield pythonExecutionService.getExecutablePath().catch(() => '');
+                // Python path is invalid or python isn't installed.
+                if (!pythonPath) {
+                    return;
+                }
+            }
+            let fileHash = yield this.fs.getFileHash(pythonPath).catch(() => '');
+            fileHash = fileHash ? fileHash : '';
+            const store = this.persistentStateFactory.createGlobalPersistentState(`${pythonPath}.interpreter.details.v5`, undefined, EXPITY_DURATION);
+            if (store.value && fileHash && store.value.fileHash === fileHash) {
+                return store.value;
+            }
+            const fs = this.serviceContainer.get(types_2.IFileSystem);
             const interpreters = yield this.getInterpreters(resource);
-            const interpreter = interpreters.find(i => utils.arePathsSame(i.path, pythonPath));
-            if (interpreter) {
-                return interpreter;
+            let interpreterInfo = interpreters.find(i => fs.arePathsSame(i.path, pythonPath));
+            if (!interpreterInfo) {
+                const interpreterHelper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
+                const virtualEnvManager = this.serviceContainer.get(types_7.IVirtualEnvironmentManager);
+                const [info, type] = yield Promise.all([
+                    interpreterHelper.getInterpreterInformation(pythonPath),
+                    virtualEnvManager.getEnvironmentType(pythonPath)
+                ]);
+                if (!info) {
+                    return;
+                }
+                const details = Object.assign({}, info, { path: pythonPath, type: type });
+                const envName = type === contracts_1.InterpreterType.Unknown ? undefined : yield virtualEnvManager.getEnvironmentName(pythonPath, resource);
+                interpreterInfo = Object.assign({}, details, { envName });
+                interpreterInfo.displayName = yield this.getDisplayName(interpreterInfo, resource);
             }
-            const interpreterHelper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
-            const virtualEnvManager = this.serviceContainer.get(types_6.IVirtualEnvironmentManager);
-            const [details, virtualEnvName, type] = yield Promise.all([
-                interpreterHelper.getInterpreterInformation(pythonPath),
-                virtualEnvManager.getEnvironmentName(pythonPath),
-                virtualEnvManager.getEnvironmentType(pythonPath)
-            ]);
-            if (details) {
-                return;
+            yield store.updateValue(Object.assign({}, interpreterInfo, { path: pythonPath, fileHash }));
+            return interpreterInfo;
+        });
+    }
+    /**
+     * Gets the display name of an interpreter.
+     * The format is `Python <Version> <bitness> (<env name>: <env type>)`
+     * E.g. `Python 3.5.1 32-bit (myenv2: virtualenv)`
+     * @param {Partial<PythonInterpreter>} info
+     * @returns {string}
+     * @memberof InterpreterService
+     */
+    getDisplayName(info, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const store = this.persistentStateFactory.createGlobalPersistentState(`${info.path}.interpreter.displayName.v5`, undefined, EXPITY_DURATION);
+            if (store.value) {
+                return store.value;
             }
-            const dislayNameSuffix = virtualEnvName.length > 0 ? ` (${virtualEnvName})` : '';
-            const displayName = `${details.version}${dislayNameSuffix}`;
-            return Object.assign({}, details, { displayName, path: pythonPath, envName: virtualEnvName, type: type });
+            const displayNameParts = ['Python'];
+            const envSuffixParts = [];
+            if (info.version_info && info.version_info.length > 0) {
+                displayNameParts.push(info.version_info.slice(0, 3).join('.'));
+            }
+            if (info.architecture) {
+                displayNameParts.push(registry_1.getArchitectureDisplayName(info.architecture));
+            }
+            if (!info.envName && info.path && info.type && info.type === contracts_1.InterpreterType.PipEnv) {
+                // If we do not have the name of the environment, then try to get it again.
+                // This can happen based on the context (i.e. resource).
+                // I.e. we can determine if an environment is PipEnv only when giving it the right workspacec path (i.e. resource).
+                const virtualEnvMgr = this.serviceContainer.get(types_7.IVirtualEnvironmentManager);
+                info.envName = yield virtualEnvMgr.getEnvironmentName(info.path, resource);
+            }
+            if (info.envName && info.envName.length > 0) {
+                envSuffixParts.push(`'${info.envName}'`);
+            }
+            if (info.type) {
+                const interpreterHelper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
+                const name = interpreterHelper.getInterpreterTypeDisplayName(info.type);
+                if (name) {
+                    envSuffixParts.push(name);
+                }
+            }
+            const envSuffix = envSuffixParts.length === 0 ? '' :
+                `(${envSuffixParts.join(': ')})`;
+            const displayName = `${displayNameParts.join(' ')} ${envSuffix}`.trim();
+            // If dealing with cached entry, then do not store the display name in cache.
+            if (!info.cachedEntry) {
+                yield store.updateValue(displayName);
+            }
+            return displayName;
         });
     }
     shouldAutoSetInterpreter() {
@@ -161,7 +238,7 @@ let InterpreterService = class InterpreterService {
 };
 InterpreterService = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_4.IServiceContainer))
+    __param(0, inversify_1.inject(types_5.IServiceContainer))
 ], InterpreterService);
 exports.InterpreterService = InterpreterService;
 //# sourceMappingURL=interpreterService.js.map

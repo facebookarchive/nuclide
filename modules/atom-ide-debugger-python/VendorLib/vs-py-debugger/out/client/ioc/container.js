@@ -12,7 +12,14 @@ const events_1 = require("events");
 const inversify_1 = require("inversify");
 // This needs to be done once, hence placed in a common location.
 // Used by UnitTestSockerServer and also the extension unit tests.
-inversify_1.decorate(inversify_1.injectable(), events_1.EventEmitter);
+// Place within try..catch, as this can only be done once (it's
+// possible another extesion would perform this before our extension).
+try {
+    inversify_1.decorate(inversify_1.injectable(), events_1.EventEmitter);
+}
+catch (ex) {
+    console.warn('Failed to decorate EventEmitter for DI (possibly already decorated by another Extension)', ex);
+}
 let ServiceContainer = class ServiceContainer {
     constructor(container) {
         this.container = container;

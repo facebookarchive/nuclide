@@ -13,7 +13,7 @@ const untildify = require('untildify');
 exports.IS_WINDOWS = /^win/.test(process.platform);
 // tslint:disable-next-line:completed-docs
 class PythonSettings extends events_1.EventEmitter {
-    constructor(workspaceFolder) {
+    constructor(workspaceFolder, initialize = true) {
         super();
         this.downloadLanguageServer = true;
         this.jediEnabled = true;
@@ -22,20 +22,26 @@ class PythonSettings extends events_1.EventEmitter {
         this.envFile = '';
         this.venvPath = '';
         this.venvFolders = [];
+        this.condaPath = '';
         this.devOptions = [];
         this.disableInstallationChecks = false;
         this.globalModuleInstallation = false;
+        this.autoUpdateLanguageServer = true;
         this.disposables = [];
         // tslint:disable-next-line:variable-name
         this._pythonPath = '';
         this.workspaceRoot = workspaceFolder ? workspaceFolder : vscode_1.Uri.file(__dirname);
-        this.disposables.push(vscode_1.workspace.onDidChangeConfiguration(() => {
-            this.initializeSettings();
-            // If workspace config changes, then we could have a cascading effect of on change events.
-            // Let's defer the change notification.
-            setTimeout(() => this.emit('change'), 1);
-        }));
-        this.initializeSettings();
+        if (initialize) {
+            this.disposables.push(vscode_1.workspace.onDidChangeConfiguration(() => {
+                const currentConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
+                this.update(currentConfig);
+                // If workspace config changes, then we could have a cascading effect of on change events.
+                // Let's defer the change notification.
+                setTimeout(() => this.emit('change'), 1);
+            }));
+            const initialConfig = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
+            this.update(initialConfig);
+        }
     }
     // tslint:disable-next-line:function-name
     static getInstance(resource) {
@@ -76,18 +82,19 @@ class PythonSettings extends events_1.EventEmitter {
         this.disposables = [];
     }
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-    initializeSettings() {
+    update(pythonSettings) {
         const workspaceRoot = this.workspaceRoot.fsPath;
         const systemVariables = new systemVariables_1.SystemVariables(this.workspaceRoot ? this.workspaceRoot.fsPath : undefined);
-        const pythonSettings = vscode_1.workspace.getConfiguration('python', this.workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.pythonPath = systemVariables.resolveAny(pythonSettings.get('pythonPath'));
         this.pythonPath = getAbsolutePath(this.pythonPath, workspaceRoot);
         // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
         this.venvPath = systemVariables.resolveAny(pythonSettings.get('venvPath'));
         this.venvFolders = systemVariables.resolveAny(pythonSettings.get('venvFolders'));
+        this.condaPath = systemVariables.resolveAny(pythonSettings.get('condaPath'));
         this.downloadLanguageServer = systemVariables.resolveAny(pythonSettings.get('downloadLanguageServer', true));
         this.jediEnabled = systemVariables.resolveAny(pythonSettings.get('jediEnabled', true));
+        this.autoUpdateLanguageServer = systemVariables.resolveAny(pythonSettings.get('autoUpdateLanguageServer', true));
         if (this.jediEnabled) {
             // tslint:disable-next-line:no-backbone-get-set-outside-model no-non-null-assertion
             this.jediPath = systemVariables.resolveAny(pythonSettings.get('jediPath'));
@@ -206,7 +213,6 @@ class PythonSettings extends events_1.EventEmitter {
         this.autoComplete = this.autoComplete ? this.autoComplete : {
             extraPaths: [],
             addBrackets: false,
-            preloadModules: [],
             showAdvancedMembers: false,
             typeshedPaths: []
         };

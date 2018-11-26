@@ -23,8 +23,7 @@ class WorkspaceFolderPythonPathUpdaterService {
                 return;
             }
             if (pythonPath.startsWith(this.workspaceFolder.fsPath)) {
-                // tslint:disable-next-line:no-invalid-template-strings
-                pythonPath = path.join('${workspaceFolder}', path.relative(this.workspaceFolder.fsPath, pythonPath));
+                pythonPath = path.relative(this.workspaceFolder.fsPath, pythonPath);
             }
             yield pythonConfig.update('pythonPath', pythonPath, vscode_1.ConfigurationTarget.WorkspaceFolder);
         });

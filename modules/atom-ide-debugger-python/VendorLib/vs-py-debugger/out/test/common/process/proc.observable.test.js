@@ -6,9 +6,9 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const vscode_1 = require("vscode");
 const configSettings_1 = require("../../../client/common/configSettings");
-const helpers_1 = require("../../../client/common/helpers");
 const decoder_1 = require("../../../client/common/process/decoder");
 const proc_1 = require("../../../client/common/process/proc");
+const async_1 = require("../../../utils/async");
 const initialize_1 = require("./../../initialize");
 chai_1.use(chaiAsPromised);
 // tslint:disable-next-line:max-func-body-length
@@ -79,7 +79,7 @@ suite('ProcessService', () => {
             'print("2")', 'sys.stdout.flush()', 'time.sleep(2)'];
         const cancellationToken = new vscode_1.CancellationTokenSource();
         const result = procService.execObservable(pythonPath, ['-c', pythonCode.join(';')], { token: cancellationToken.token });
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         def.promise.then(done).catch(done);
         chai_1.expect(result).not.to.be.an('undefined', 'result is undefined');
         result.out.subscribe(output => {

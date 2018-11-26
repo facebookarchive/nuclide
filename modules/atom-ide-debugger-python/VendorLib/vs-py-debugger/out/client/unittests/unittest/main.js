@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_utils_1 = require("../../common/core.utils");
+const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/types");
 const constants_1 = require("../common/constants");
 const baseTestManager_1 = require("../common/managers/baseTestManager");
@@ -25,7 +25,7 @@ class TestManager extends baseTestManager_1.BaseTestManager {
         this.runner = this.serviceContainer.get(types_3.ITestManagerRunner, this.testProvider);
     }
     configure() {
-        core_utils_1.noop();
+        misc_1.noop();
     }
     getDiscoveryOptions(ignoreCache) {
         const args = this.settings.unitTest.unittestArgs.slice(0);

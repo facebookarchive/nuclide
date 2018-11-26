@@ -333,7 +333,7 @@ let UnitTestManagementService = class UnitTestManagementService {
         if (!settings.unitTest.autoTestDiscoverOnSaveEnabled) {
             return;
         }
-        this.discoverTestsForDocument(doc);
+        this.discoverTestsForDocument(doc).ignoreErrors();
     }
     registerHandlers() {
         const documentManager = this.serviceContainer.get(types_1.IDocumentManager);

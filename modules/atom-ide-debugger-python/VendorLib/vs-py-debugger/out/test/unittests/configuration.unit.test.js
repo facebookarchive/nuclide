@@ -15,15 +15,15 @@ const chai_1 = require("chai");
 const typeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/application/types");
-const enumUtils_1 = require("../../client/common/enumUtils");
 const types_2 = require("../../client/common/types");
 const constants_1 = require("../../client/unittests/common/constants");
 const configuration_1 = require("../../client/unittests/configuration");
 const types_3 = require("../../client/unittests/types");
+const enum_1 = require("../../utils/enum");
 suite('Unit Tests - ConfigurationService', () => {
     [types_2.Product.pytest, types_2.Product.unittest, types_2.Product.nosetest].forEach(prodItem => {
         const product = prodItem;
-        const prods = enumUtils_1.EnumEx.getNamesAndValues(types_2.Product);
+        const prods = enum_1.getNamesAndValues(types_2.Product);
         const productName = prods.filter(item => item.value === product)[0];
         const workspaceUri = vscode_1.Uri.file(__filename);
         suite(productName.name, () => {

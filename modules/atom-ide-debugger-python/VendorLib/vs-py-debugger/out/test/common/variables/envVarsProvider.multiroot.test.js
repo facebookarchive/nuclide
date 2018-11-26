@@ -16,13 +16,12 @@ const fs = require("fs-extra");
 const os_1 = require("os");
 const path = require("path");
 const vscode_1 = require("vscode");
-const helpers_1 = require("../../../client/common/helpers");
 const constants_1 = require("../../../client/common/platform/constants");
 const types_1 = require("../../../client/common/types");
-const types_2 = require("../../../client/common/types");
-const utils_1 = require("../../../client/common/utils");
+const util_1 = require("../../../client/common/util");
 const environment_1 = require("../../../client/common/variables/environment");
 const environmentVariablesProvider_1 = require("../../../client/common/variables/environmentVariablesProvider");
+const async_1 = require("../../../utils/async");
 const common_1 = require("../../common");
 const initialize_1 = require("../../initialize");
 const process_1 = require("../../mocks/process");
@@ -34,7 +33,7 @@ const workspace4PyFile = vscode_1.Uri.file(path.join(workspace4Path.fsPath, 'one
 // tslint:disable-next-line:max-func-body-length
 suite('Multiroot Environment Variables Provider', () => {
     let ioc;
-    const pathVariableName = utils_1.IS_WINDOWS ? constants_1.WINDOWS_PATH_VARIABLE_NAME : constants_1.NON_WINDOWS_PATH_VARIABLE_NAME;
+    const pathVariableName = util_1.IS_WINDOWS ? constants_1.WINDOWS_PATH_VARIABLE_NAME : constants_1.NON_WINDOWS_PATH_VARIABLE_NAME;
     suiteSetup(function () {
         return __awaiter(this, void 0, void 0, function* () {
             if (!initialize_1.IS_MULTI_ROOT_TEST) {
@@ -66,7 +65,7 @@ suite('Multiroot Environment Variables Provider', () => {
         const mockProcess = new process_1.MockProcess(mockVariables);
         const variablesService = new environment_1.EnvironmentVariablesService(pathUtils);
         const disposables = ioc.serviceContainer.get(types_1.IDisposableRegistry);
-        const isWindows = ioc.serviceContainer.get(types_2.IsWindows);
+        const isWindows = ioc.serviceContainer.get(types_1.IsWindows);
         return new environmentVariablesProvider_1.EnvironmentVariablesProvider(variablesService, disposables, isWindows, mockProcess);
     }
     test('Custom variables should not be undefined without an env file', () => __awaiter(this, void 0, void 0, function* () {
@@ -337,7 +336,7 @@ suite('Multiroot Environment Variables Provider', () => {
                 delete processVariables.PYTHONPATH;
             }
             const envProvider = getVariablesProvider(processVariables);
-            let eventRaisedPromise = helpers_1.createDeferred();
+            let eventRaisedPromise = async_1.createDeferred();
             envProvider.onDidEnvironmentVariablesChange(() => eventRaisedPromise.resolve(true));
             const vars = envProvider.getEnvironmentVariables(workspace4PyFile);
             yield chai_1.expect(vars).to.eventually.not.equal(undefined, 'Variables is is undefiend');
@@ -349,14 +348,14 @@ suite('Multiroot Environment Variables Provider', () => {
             let eventRaised = yield eventRaisedPromise.promise;
             chai_1.expect(eventRaised).to.equal(true, 'Create notification not raised');
             // Modify env3.
-            eventRaisedPromise = helpers_1.createDeferred();
+            eventRaisedPromise = async_1.createDeferred();
             fs.writeFileSync(env3, `${contents}${os_1.EOL}X123456PYEXTUNITTESTVAR=123456`);
             // Wait for settings to get refreshed.
             yield new Promise(resolve => setTimeout(resolve, 5000));
             eventRaised = yield eventRaisedPromise.promise;
             chai_1.expect(eventRaised).to.equal(true, 'Change notification not raised');
             // Now remove env3.
-            eventRaisedPromise = helpers_1.createDeferred();
+            eventRaisedPromise = async_1.createDeferred();
             yield fs.remove(env3);
             // Wait for settings to get refreshed.
             yield new Promise(resolve => setTimeout(resolve, 5000));

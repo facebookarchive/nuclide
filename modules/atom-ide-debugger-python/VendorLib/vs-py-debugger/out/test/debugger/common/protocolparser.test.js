@@ -12,8 +12,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const stream_1 = require("stream");
-const helpers_1 = require("../../../client/common/helpers");
 const protocolParser_1 = require("../../../client/debugger/Common/protocolParser");
+const async_1 = require("../../../utils/async");
 const common_1 = require("../../common");
 suite('Debugging - Protocol Parser', () => {
     test('Test request, response and event messages', () => __awaiter(this, void 0, void 0, function* () {
@@ -51,7 +51,7 @@ suite('Debugging - Protocol Parser', () => {
         stream.write('Content-Length: 289\r\n\r\n{"command":"initialize","arguments":{"clientID":"vscode","adapterID":"pythonExperiment","pathFormat":"path","linesStartAt1":true,"columnsStartAt1":true,"supportsVariableType":true,"supportsVariablePaging":true,"supportsRunInTerminalRequest":true,"locale":"en-us"},"type":"request","seq":1}');
         yield chai_1.expect(requestDetected).to.eventually.equal(true, 'request not parsed');
         protocolParser.dispose();
-        const responseDetected = helpers_1.createDeferred();
+        const responseDetected = async_1.createDeferred();
         protocolParser.on('response_initialize', () => responseDetected.resolve(true));
         stream.write('Content-Length: 265\r\n\r\n{"seq":1,"type":"response","request_seq":1,"command":"initialize","success":true,"body":{"supportsEvaluateForHovers":false,"supportsConditionalBreakpoints":true,"supportsConfigurationDoneRequest":true,"supportsFunctionBreakpoints":false,"supportsSetVariable":true}}');
         // Wait for messages to go through and get parsed (unnecenssary, but add for testing edge cases).

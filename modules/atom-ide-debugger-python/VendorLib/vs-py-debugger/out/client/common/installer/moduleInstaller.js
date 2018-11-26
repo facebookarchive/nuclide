@@ -22,9 +22,9 @@ const fs = require("fs");
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode = require("vscode");
+const misc_1 = require("../../../utils/misc");
 const contracts_1 = require("../../interpreter/contracts");
 const constants_1 = require("../constants");
-const core_utils_1 = require("../core.utils");
 const types_1 = require("../terminal/types");
 const types_2 = require("../types");
 let ModuleInstaller = class ModuleInstaller {
@@ -88,7 +88,7 @@ let ModuleInstaller = class ModuleInstaller {
                 fs.open(filePath, fs.constants.O_CREAT | fs.constants.O_RDWR, (error, fd) => {
                     if (!error) {
                         fs.close(fd, (e) => {
-                            fs.unlink(filePath, core_utils_1.noop);
+                            fs.unlink(filePath, misc_1.noop);
                         });
                     }
                     return resolve(!error);

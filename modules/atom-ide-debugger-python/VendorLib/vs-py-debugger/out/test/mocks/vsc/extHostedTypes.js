@@ -429,6 +429,15 @@ var vscMockExtHostedTypes;
         // resourceEdits(): [vscode.Uri, vscode.Uri][] {
         // 	return this._resourceEdits.map(({ from, to }) => (<[vscode.Uri, vscode.Uri]>[from, to]));
         // }
+        createFile(uri, options) {
+            throw new Error("Method not implemented.");
+        }
+        deleteFile(uri, options) {
+            throw new Error("Method not implemented.");
+        }
+        renameFile(oldUri, newUri, options) {
+            throw new Error("Method not implemented.");
+        }
         replace(uri, range, newText) {
             let edit = new TextEdit(range, newText);
             let array = this.get(uri);

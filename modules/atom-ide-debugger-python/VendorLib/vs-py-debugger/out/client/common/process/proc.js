@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any
 const child_process_1 = require("child_process");
 const Observable_1 = require("rxjs/Observable");
-const helpers_1 = require("../helpers");
+const async_1 = require("../../../utils/async");
 const constants_1 = require("./constants");
 const types_1 = require("./types");
 class ProcessService {
@@ -80,7 +80,7 @@ class ProcessService {
             spawnOptions.env.PYTHONIOENCODING = 'utf-8';
         }
         const proc = child_process_1.spawn(file, args, spawnOptions);
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         const disposables = [];
         const on = (ee, name, fn) => {
             ee.on(name, fn);

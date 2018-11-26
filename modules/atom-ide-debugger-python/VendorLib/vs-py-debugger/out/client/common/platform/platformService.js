@@ -9,30 +9,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const os_1 = require("os");
-const constants_1 = require("./constants");
+const platform = require("../../../utils/platform");
+const osinfo = require("./osinfo");
 let PlatformService = class PlatformService {
-    constructor() {
-        this._isWindows = /^win/.test(process.platform);
-        this._isMac = /^darwin/.test(process.platform);
-    }
-    get isWindows() {
-        return this._isWindows;
-    }
-    get isMac() {
-        return this._isMac;
-    }
-    get isLinux() {
-        return !(this.isWindows || this.isMac);
-    }
-    get is64bit() {
-        return os_1.arch() === 'x64';
+    get info() {
+        if (!this.cached) {
+            this.cached = platform.getInfo();
+        }
+        return this.cached;
     }
     get pathVariableName() {
-        return this.isWindows ? constants_1.WINDOWS_PATH_VARIABLE_NAME : constants_1.NON_WINDOWS_PATH_VARIABLE_NAME;
+        return osinfo.getPathVariableName(this.info);
     }
     get virtualEnvBinName() {
-        return this.isWindows ? 'scripts' : 'bin';
+        return osinfo.getVirtualEnvBinName(this.info);
+    }
+    // convenience methods
+    get isWindows() {
+        return platform.isWindows(this.info);
+    }
+    get isMac() {
+        return platform.isMac(this.info);
+    }
+    get isLinux() {
+        return platform.isLinux(this.info);
+    }
+    get is64bit() {
+        return platform.is64bit(this.info);
     }
 };
 PlatformService = __decorate([

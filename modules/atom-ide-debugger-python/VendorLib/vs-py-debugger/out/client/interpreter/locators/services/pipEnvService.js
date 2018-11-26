@@ -71,7 +71,7 @@ let PipEnvService = class PipEnvService extends cacheableLocatorService_1.Cachea
             if (!details) {
                 return;
             }
-            return Object.assign({}, details, { displayName: `${details.version} (${execName})`, path: interpreterPath, type: contracts_1.InterpreterType.PipEnv });
+            return Object.assign({}, details, { path: interpreterPath, type: contracts_1.InterpreterType.PipEnv });
         });
     }
     getPipenvWorkingDirectory(resource) {

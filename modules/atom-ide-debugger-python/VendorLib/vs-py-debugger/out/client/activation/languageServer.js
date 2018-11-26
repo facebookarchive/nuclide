@@ -1,6 +1,6 @@
-"use strict";
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+'use strict';
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -22,25 +22,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_languageclient_1 = require("vscode-languageclient");
+const async_1 = require("../../utils/async");
+const stopWatch_1 = require("../../utils/stopWatch");
 const types_1 = require("../common/application/types");
+// tslint:disable-next-line:ordered-imports
 const constants_1 = require("../common/constants");
-const helpers_1 = require("../common/helpers");
 const types_2 = require("../common/platform/types");
-const stopWatch_1 = require("../common/stopWatch");
 const types_3 = require("../common/types");
-const types_4 = require("../ioc/types");
+const types_4 = require("../common/variables/types");
+const types_5 = require("../ioc/types");
+const symbolProvider_1 = require("../providers/symbolProvider");
+const telemetry_1 = require("../telemetry");
 const constants_2 = require("../telemetry/constants");
-const telemetry_1 = require("../telemetry/telemetry");
-const types_5 = require("../unittests/types");
+const types_6 = require("../unittests/types");
 const downloader_1 = require("./downloader");
 const interpreterDataService_1 = require("./interpreterDataService");
 const platformData_1 = require("./platformData");
 const progress_1 = require("./progress");
+const types_7 = require("./types");
 const PYTHON = 'python';
 const dotNetCommand = 'dotnet';
 const languageClientName = 'Python Tools';
-const languageServerFolder = 'languageServer';
 const loadExtensionCommand = 'python._loadLanguageServerExtension';
+const buildSymbolsCmdDeprecatedInfo = {
+    doNotDisplayPromptStateKey: 'SHOW_DEPRECATED_FEATURE_PROMPT_BUILD_WORKSPACE_SYMBOLS',
+    message: 'The command \'Python: Build Workspace Symbols\' is deprecated when using the Python Language Server. The Python Language Server builds symbols in the workspace in the background.',
+    moreInfoUrl: 'https://github.com/Microsoft/vscode-python/issues/2267#issuecomment-408996859',
+    commands: ['python.buildWorkspaceSymbols']
+};
 let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
     constructor(services) {
         this.services = services;
@@ -56,10 +65,12 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
         this.fs = this.services.get(types_2.IFileSystem);
         this.platformData = new platformData_1.PlatformData(services.get(types_2.IPlatformService), this.fs);
         this.workspace = this.services.get(types_1.IWorkspaceService);
+        this.languageServerFolderService = this.services.get(types_7.ILanguageServerFolderService);
+        const deprecationManager = this.services.get(types_3.IFeatureDeprecationManager);
         // Currently only a single root. Multi-root support is future.
         this.root = this.workspace && this.workspace.hasWorkspaceFolders
             ? this.workspace.workspaceFolders[0].uri : undefined;
-        this.startupCompleted = helpers_1.createDeferred();
+        this.startupCompleted = async_1.createDeferred();
         const commandManager = this.services.get(types_1.ICommandManager);
         this.disposables.push(commandManager.registerCommand(loadExtensionCommand, (args) => __awaiter(this, void 0, void 0, function* () {
             if (this.languageClient) {
@@ -70,19 +81,24 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                 this.loadExtensionArgs = args;
             }
         })));
+        deprecationManager.registerDeprecation(buildSymbolsCmdDeprecatedInfo);
         this.surveyBanner = services.get(types_3.IPythonExtensionBanner, types_3.BANNER_NAME_LS_SURVEY);
-        this.configuration.getSettings().addListener('change', this.onSettingsChanged);
+        this.configuration.getSettings().addListener('change', this.onSettingsChanged.bind(this));
     }
     activate() {
         return __awaiter(this, void 0, void 0, function* () {
             this.sw.reset();
+            this.languageServerFolder = yield this.languageServerFolderService.getLanguageServerFolderName();
             const clientOptions = yield this.getAnalysisOptions();
             if (!clientOptions) {
                 return false;
             }
-            const testManagementService = this.services.get(types_5.IUnitTestManagementService);
-            testManagementService.activate()
-                .catch(ex => this.services.get(types_3.ILogger).logError('Failed to activate Unit Tests', ex));
+            this.startupCompleted.promise.then(() => {
+                const testManagementService = this.services.get(types_6.IUnitTestManagementService);
+                testManagementService.activate()
+                    .then(() => testManagementService.activateCodeLenses(new symbolProvider_1.LanguageServerSymbolProvider(this.languageClient)))
+                    .catch(ex => this.services.get(types_3.ILogger).logError('Failed to activate Unit Tests', ex));
+            }).ignoreErrors();
             return this.startLanguageServer(clientOptions);
         });
     }
@@ -95,14 +111,13 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
             for (const d of this.disposables) {
                 d.dispose();
             }
-            this.configuration.getSettings().removeListener('change', this.onSettingsChanged);
+            this.configuration.getSettings().removeListener('change', this.onSettingsChanged.bind(this));
         });
     }
     startLanguageServer(clientOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             // Determine if we are running MSIL/Universal via dotnet or self-contained app.
-            const reporter = telemetry_1.getTelemetryReporter();
-            reporter.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_ENABLED);
+            telemetry_1.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_ENABLED);
             const settings = this.configuration.getSettings();
             if (!settings.downloadLanguageServer) {
                 // Depends on .NET Runtime or SDK. Typically development-only case.
@@ -110,13 +125,12 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                 yield this.startLanguageClient();
                 return true;
             }
-            const mscorlib = path.join(this.context.extensionPath, languageServerFolder, 'mscorlib.dll');
+            const mscorlib = path.join(this.context.extensionPath, this.languageServerFolder, 'mscorlib.dll');
             if (!(yield this.fs.fileExists(mscorlib))) {
-                const downloader = new downloader_1.LanguageServerDownloader(this.services, languageServerFolder);
+                const downloader = new downloader_1.LanguageServerDownloader(this.platformData, this.languageServerFolder, this.services);
                 yield downloader.downloadLanguageServer(this.context);
-                reporter.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_DOWNLOADED);
             }
-            const serverModule = path.join(this.context.extensionPath, languageServerFolder, this.platformData.getEngineExecutableName());
+            const serverModule = path.join(this.context.extensionPath, this.languageServerFolder, this.platformData.getEngineExecutableName());
             this.languageClient = this.createSelfContainedLanguageClient(serverModule, clientOptions);
             try {
                 yield this.startLanguageClient();
@@ -124,7 +138,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
             }
             catch (ex) {
                 this.appShell.showErrorMessage(`Language server failed to start. Error ${ex}`);
-                reporter.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_ERROR, { error: 'Failed to start (platform)' });
+                telemetry_1.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_ERROR, undefined, { error: 'Failed to start (platform)' });
                 return false;
             }
         });
@@ -133,7 +147,9 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
         return __awaiter(this, void 0, void 0, function* () {
             this.context.subscriptions.push(this.languageClient.start());
             yield this.serverReady();
-            this.progressReporting = new progress_1.ProgressReporting(this.languageClient);
+            const disposables = this.services.get(types_3.IDisposableRegistry);
+            const progressReporting = new progress_1.ProgressReporting(this.languageClient);
+            disposables.push(progressReporting);
         });
     }
     serverReady() {
@@ -149,7 +165,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
     }
     createSimpleLanguageClient(clientOptions) {
         const commandOptions = { stdio: 'pipe' };
-        const serverModule = path.join(this.context.extensionPath, languageServerFolder, this.platformData.getEngineDllName());
+        const serverModule = path.join(this.context.extensionPath, this.languageServerFolder, this.platformData.getEngineDllName());
         const serverOptions = {
             run: { command: dotNetCommand, args: [serverModule], options: commandOptions },
             debug: { command: dotNetCommand, args: [serverModule, '--debug'], options: commandOptions }
@@ -164,6 +180,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
         };
         return new vscode_languageclient_1.LanguageClient(PYTHON, languageClientName, serverOptions, clientOptions);
     }
+    // tslint:disable-next-line:member-ordering
     getAnalysisOptions() {
         return __awaiter(this, void 0, void 0, function* () {
             // tslint:disable-next-line:no-any
@@ -188,7 +205,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                 properties['PrefixPath'] = interpreterData.prefix;
             }
             // tslint:disable-next-line:no-string-literal
-            properties['DatabasePath'] = path.join(this.context.extensionPath, languageServerFolder);
+            properties['DatabasePath'] = path.join(this.context.extensionPath, this.languageServerFolder);
             let searchPaths = interpreterData ? interpreterData.searchPaths.split(path.delimiter) : [];
             const settings = this.configuration.getSettings();
             if (settings.autoComplete) {
@@ -196,6 +213,13 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                 if (extraPaths && extraPaths.length > 0) {
                     searchPaths.push(...extraPaths);
                 }
+            }
+            const envVarsProvider = this.services.get(types_4.IEnvironmentVariablesProvider);
+            const vars = yield envVarsProvider.getEnvironmentVariables();
+            if (vars.PYTHONPATH && vars.PYTHONPATH.length > 0) {
+                const pathUtils = this.services.get(types_3.IPathUtils);
+                const paths = vars.PYTHONPATH.split(pathUtils.delimiter).filter(item => item.trim().length > 0);
+                searchPaths.push(...paths);
             }
             // Make sure paths do not contain multiple slashes so file URIs
             // in VS Code (Node.js) and in the language server (.NET) match.
@@ -205,7 +229,6 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
             const selector = [{ language: PYTHON, scheme: 'file' }];
             this.excludedFiles = this.getExcludedFiles();
             this.typeshedPaths = this.getTypeshedPaths(settings);
-            const traceLogging = (settings.analysis && settings.analysis.traceLogging) ? settings.analysis.traceLogging : false;
             // Options to control the language client
             return {
                 // Register the server for Python documents
@@ -230,7 +253,8 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                     excludeFiles: this.excludedFiles,
                     testEnvironment: constants_1.isTestExecution(),
                     analysisUpdates: true,
-                    traceLogging
+                    traceLogging: true,
+                    asyncStartup: true
                 },
                 middleware: {
                     provideCompletionItem: (document, position, context, token, next) => {
@@ -248,8 +272,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
         this.getVsCodeExcludeSection('search.exclude', list);
         this.getVsCodeExcludeSection('files.exclude', list);
         this.getVsCodeExcludeSection('files.watcherExclude', list);
-        this.getPythonExcludeSection('linting.ignorePatterns', list);
-        this.getPythonExcludeSection('workspaceSymbols.exclusionPattern', list);
+        this.getPythonExcludeSection(list);
         return list;
     }
     getVsCodeExcludeSection(setting, list) {
@@ -260,7 +283,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
                 .forEach(p => list.push(p));
         }
     }
-    getPythonExcludeSection(setting, list) {
+    getPythonExcludeSection(list) {
         const pythonSettings = this.configuration.getSettings(this.root);
         const paths = pythonSettings && pythonSettings.linting ? pythonSettings.linting.ignorePatterns : undefined;
         if (paths && Array.isArray(paths)) {
@@ -272,7 +295,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
     getTypeshedPaths(settings) {
         return settings.analysis.typeshedPaths && settings.analysis.typeshedPaths.length > 0
             ? settings.analysis.typeshedPaths
-            : [path.join(this.context.extensionPath, 'typeshed')];
+            : [path.join(this.context.extensionPath, this.languageServerFolder, 'Typeshed')];
     }
     onSettingsChanged() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -316,7 +339,7 @@ let LanguageServerExtensionActivator = class LanguageServerExtensionActivator {
 };
 LanguageServerExtensionActivator = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_4.IServiceContainer))
+    __param(0, inversify_1.inject(types_5.IServiceContainer))
 ], LanguageServerExtensionActivator);
 exports.LanguageServerExtensionActivator = LanguageServerExtensionActivator;
 //# sourceMappingURL=languageServer.js.map

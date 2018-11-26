@@ -4,15 +4,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:max-classes-per-file
 const path = require("path");
+const constants_1 = require("../../common/constants");
 class NoDebugLauncherScriptProvider {
     getLauncherFilePath() {
-        return path.join(path.dirname(__dirname), '..', '..', '..', 'pythonFiles', 'PythonTools', 'visualstudio_py_launcher_nodebug.py');
+        return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd_launcher.py');
     }
 }
 exports.NoDebugLauncherScriptProvider = NoDebugLauncherScriptProvider;
 class DebuggerLauncherScriptProvider {
     getLauncherFilePath() {
-        return path.join(path.dirname(__dirname), '..', '..', '..', 'pythonFiles', 'PythonTools', 'visualstudio_py_launcher.py');
+        return path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd_launcher.py');
     }
 }
 exports.DebuggerLauncherScriptProvider = DebuggerLauncherScriptProvider;

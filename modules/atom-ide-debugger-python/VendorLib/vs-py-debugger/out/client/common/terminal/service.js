@@ -27,7 +27,6 @@ const types_1 = require("../../ioc/types");
 const telemetry_1 = require("../../telemetry");
 const constants_1 = require("../../telemetry/constants");
 const types_2 = require("../application/types");
-const core_utils_1 = require("../core.utils");
 const types_3 = require("../types");
 const types_4 = require("./types");
 let TerminalService = class TerminalService {
@@ -41,9 +40,10 @@ let TerminalService = class TerminalService {
         this.terminalHelper = this.serviceContainer.get(types_4.ITerminalHelper);
         this.terminalManager = this.serviceContainer.get(types_2.ITerminalManager);
         this.terminalManager.onDidCloseTerminal(this.terminalCloseHandler, this, disposableRegistry);
+        this.terminalActivator = this.serviceContainer.get(types_4.ITerminalActivator);
     }
     get onDidCloseTerminal() {
-        return this.terminalClosed.event;
+        return this.terminalClosed.event.bind(this.terminalClosed);
     }
     dispose() {
         if (this.terminal) {
@@ -81,17 +81,7 @@ let TerminalService = class TerminalService {
             this.terminal = this.terminalManager.createTerminal({ name: this.title });
             // Sometimes the terminal takes some time to start up before it can start accepting input.
             yield new Promise(resolve => setTimeout(resolve, 100));
-            const activationCommamnds = yield this.terminalHelper.getEnvironmentActivationCommands(this.terminalShellType, this.resource);
-            if (activationCommamnds) {
-                for (const command of activationCommamnds) {
-                    this.terminal.show(preserveFocus);
-                    this.terminal.sendText(command);
-                    // Give the command some time to complete.
-                    // Its been observed that sending commands too early will strip some text off.
-                    const delay = (this.terminalShellType === types_4.TerminalShellType.powershell || types_4.TerminalShellType.powershellCore) ? 1000 : 500;
-                    yield core_utils_1.sleep(delay);
-                }
-            }
+            yield this.terminalActivator.activateEnvironmentInTerminal(this.terminal, this.resource, preserveFocus);
             this.terminal.show(preserveFocus);
             this.sendTelemetry().ignoreErrors();
         });
@@ -106,8 +96,8 @@ let TerminalService = class TerminalService {
         return __awaiter(this, void 0, void 0, function* () {
             const pythonPath = this.serviceContainer.get(types_3.IConfigurationService).getSettings(this.resource).pythonPath;
             const interpreterInfo = yield this.serviceContainer.get(contracts_1.IInterpreterService).getInterpreterDetails(pythonPath);
-            const pythonVersion = interpreterInfo.version_info ? interpreterInfo.version_info.join('.') : undefined;
-            const interpreterType = interpreterInfo.type;
+            const pythonVersion = (interpreterInfo && interpreterInfo.version_info) ? interpreterInfo.version_info.join('.') : undefined;
+            const interpreterType = interpreterInfo ? interpreterInfo.type : undefined;
             telemetry_1.captureTelemetry(constants_1.TERMINAL_CREATE, { terminal: this.terminalShellType, pythonVersion, interpreterType });
         });
     }

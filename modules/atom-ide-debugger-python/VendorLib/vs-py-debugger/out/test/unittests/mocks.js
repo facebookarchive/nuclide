@@ -16,12 +16,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
-const helpers_1 = require("../../client/common/helpers");
 const constants_1 = require("../../client/unittests/common/constants");
 const baseTestManager_1 = require("../../client/unittests/common/managers/baseTestManager");
+const async_1 = require("../../utils/async");
 let MockDebugLauncher = class MockDebugLauncher {
     constructor() {
-        this._launched = helpers_1.createDeferred();
+        this._launched = async_1.createDeferred();
     }
     get launched() {
         return this._launched.promise;
@@ -31,6 +31,9 @@ let MockDebugLauncher = class MockDebugLauncher {
         return this._promise;
     }
     get cancellationToken() {
+        if (this._token === undefined) {
+            throw Error('debugger not launched');
+        }
         return this._token;
     }
     getLaunchOptions(resource) {
@@ -43,7 +46,7 @@ let MockDebugLauncher = class MockDebugLauncher {
             this._launched.resolve(true);
             // tslint:disable-next-line:no-non-null-assertion
             this._token = options.token;
-            this._promise = helpers_1.createDeferred();
+            this._promise = async_1.createDeferred();
             // tslint:disable-next-line:no-non-null-assertion
             options.token.onCancellationRequested(() => {
                 if (this._promise) {
@@ -65,12 +68,13 @@ let MockTestManagerWithRunningTests = class MockTestManagerWithRunningTests exte
     constructor(testProvider, product, workspaceFolder, rootDirectory, serviceContainer) {
         super(testProvider, product, workspaceFolder, rootDirectory, serviceContainer);
         // tslint:disable-next-line:no-any
-        this.runnerDeferred = helpers_1.createDeferred();
+        this.runnerDeferred = async_1.createDeferred();
         this.enabled = true;
         // tslint:disable-next-line:no-any
-        this.discoveryDeferred = helpers_1.createDeferred();
+        this.discoveryDeferred = async_1.createDeferred();
     }
     getDiscoveryOptions(ignoreCache) {
+        // tslint:disable-next-line:no-object-literal-type-assertion
         return {};
     }
     // tslint:disable-next-line:no-any

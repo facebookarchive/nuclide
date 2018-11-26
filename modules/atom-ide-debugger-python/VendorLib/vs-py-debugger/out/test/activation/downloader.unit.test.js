@@ -10,52 +10,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-unused-variable
-const assert = require("assert");
+// tslint:disable:no-any
+const chai_1 = require("chai");
 const TypeMoq = require("typemoq");
 const downloader_1 = require("../../client/activation/downloader");
 const platformData_1 = require("../../client/activation/platformData");
-const types_1 = require("../../client/common/platform/types");
-const types_2 = require("../../client/common/types");
+const types_1 = require("../../client/activation/types");
+const constants_1 = require("../../client/common/constants");
+const types_2 = require("../../client/common/platform/types");
+const types_3 = require("../../client/common/types");
 suite('Activation - Downloader', () => {
     let languageServerDownloader;
-    let serviceContainer;
     let platformService;
+    let container;
+    let folderService;
     setup(() => {
-        serviceContainer = TypeMoq.Mock.ofType();
+        container = TypeMoq.Mock.ofType();
         platformService = TypeMoq.Mock.ofType();
+        folderService = TypeMoq.Mock.ofType();
         const fs = TypeMoq.Mock.ofType();
         const output = TypeMoq.Mock.ofType();
-        serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_2.IOutputChannel), TypeMoq.It.isAny())).returns(() => output.object);
-        serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_1.IPlatformService))).returns(() => platformService.object);
-        serviceContainer.setup(c => c.get(TypeMoq.It.isValue(types_1.IFileSystem))).returns(() => fs.object);
-        languageServerDownloader = new downloader_1.LanguageServerDownloader(serviceContainer.object, '');
+        const platformData = new platformData_1.PlatformData(platformService.object, fs.object);
+        container.setup(a => a.get(TypeMoq.It.isValue(types_3.IOutputChannel), TypeMoq.It.isValue(constants_1.STANDARD_OUTPUT_CHANNEL))).returns(() => output.object);
+        container.setup(a => a.get(TypeMoq.It.isValue(types_2.IFileSystem))).returns(() => fs.object);
+        container.setup(a => a.get(TypeMoq.It.isValue(types_1.ILanguageServerFolderService))).returns(() => folderService.object);
+        languageServerDownloader = new downloader_1.LanguageServerDownloader(platformData, '', container.object);
     });
-    function setupPlatform(platform) {
-        platformService.setup(x => x.isWindows).returns(() => platform.windows === true);
-        platformService.setup(x => x.isMac).returns(() => platform.mac === true);
-        platformService.setup(x => x.isLinux).returns(() => platform.linux === true);
-        platformService.setup(x => x.is64bit).returns(() => platform.is64Bit === true);
-    }
-    test('Windows 32Bit', () => __awaiter(this, void 0, void 0, function* () {
-        setupPlatform({ windows: true });
-        const link = yield languageServerDownloader.getDownloadUri();
-        assert.equal(link, downloader_1.DownloadLinks[platformData_1.PlatformName.Windows32Bit]);
-    }));
-    test('Windows 64Bit', () => __awaiter(this, void 0, void 0, function* () {
-        setupPlatform({ windows: true, is64Bit: true });
-        const link = yield languageServerDownloader.getDownloadUri();
-        assert.equal(link, downloader_1.DownloadLinks[platformData_1.PlatformName.Windows64Bit]);
-    }));
-    test('Mac 64Bit', () => __awaiter(this, void 0, void 0, function* () {
-        setupPlatform({ mac: true, is64Bit: true });
-        const link = yield languageServerDownloader.getDownloadUri();
-        assert.equal(link, downloader_1.DownloadLinks[platformData_1.PlatformName.Mac64Bit]);
-    }));
-    test('Linux 64Bit', () => __awaiter(this, void 0, void 0, function* () {
-        setupPlatform({ linux: true, is64Bit: true });
-        const link = yield languageServerDownloader.getDownloadUri();
-        assert.equal(link, downloader_1.DownloadLinks[platformData_1.PlatformName.Linux64Bit]);
+    test('Get download uri', () => __awaiter(this, void 0, void 0, function* () {
+        const pkg = { uri: 'xyz' };
+        folderService
+            .setup(f => f.getLatestLanguageServerVersion())
+            .returns(() => Promise.resolve(pkg))
+            .verifiable(TypeMoq.Times.once());
+        const info = yield languageServerDownloader.getDownloadInfo();
+        folderService.verifyAll();
+        chai_1.expect(info).to.deep.equal(pkg);
     }));
 });
 //# sourceMappingURL=downloader.unit.test.js.map

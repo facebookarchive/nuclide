@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 require("../common/extensions");
 const types_1 = require("../common/types");
-const utils_1 = require("./../common/utils");
+const util_1 = require("./../common/util");
 const baseLinter_1 = require("./baseLinter");
 const types_2 = require("./types");
 class PyDocStyle extends baseLinter_1.BaseLinter {
@@ -45,7 +45,7 @@ class PyDocStyle extends baseLinter_1.BaseLinter {
                 .filter((value, index) => index < maxLines && value.indexOf(':') >= 0)
                 .map(line => {
                 // Windows will have a : after the drive letter (e.g. c:\).
-                if (utils_1.IS_WINDOWS) {
+                if (util_1.IS_WINDOWS) {
                     return line.substring(line.indexOf(`${baseFileName}:`) + baseFileName.length + 1).trim();
                 }
                 return line.substring(line.indexOf(':') + 1).trim();

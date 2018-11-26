@@ -40,5 +40,4 @@ suite('ArgsService: nosetest', () => {
         chai_1.expect(testDirs[1]).to.equal(dir2);
     });
 });
-
 //# sourceMappingURL=nosetest.argsService.unit.test.js.map

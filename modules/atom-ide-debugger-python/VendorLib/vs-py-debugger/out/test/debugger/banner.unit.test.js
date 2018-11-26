@@ -23,12 +23,16 @@ suite('Debugging - Banner', () => {
     let launchCounterState;
     let launchThresholdCounterState;
     let showBannerState;
+    let userSelected;
+    let userSelectedState;
     let debugService;
     let appShell;
+    let runtime;
     let banner;
-    const message = 'Can you please take 2 minutes to tell us how the Experimental Debugger is working for you?';
+    const message = 'Can you please take 2 minutes to tell us how the debugger is working for you?';
     const yes = 'Yes, take survey now';
     const no = 'No thanks';
+    const later = 'Remind me later';
     setup(() => {
         serviceContainer = typemoq.Mock.ofType();
         browser = typemoq.Mock.ofType();
@@ -37,7 +41,10 @@ suite('Debugging - Banner', () => {
         launchCounterState = typemoq.Mock.ofType();
         showBannerState = typemoq.Mock.ofType();
         appShell = typemoq.Mock.ofType();
+        runtime = typemoq.Mock.ofType();
         launchThresholdCounterState = typemoq.Mock.ofType();
+        userSelected = true;
+        userSelectedState = typemoq.Mock.ofType();
         const factory = typemoq.Mock.ofType();
         factory
             .setup(f => f.createGlobalPersistentState(typemoq.It.isValue(banner_1.PersistentStateKeys.DebuggerLaunchCounter), typemoq.It.isAny()))
@@ -48,23 +55,69 @@ suite('Debugging - Banner', () => {
         factory
             .setup(f => f.createGlobalPersistentState(typemoq.It.isValue(banner_1.PersistentStateKeys.DebuggerLaunchThresholdCounter), typemoq.It.isAny()))
             .returns(() => launchThresholdCounterState.object);
+        factory
+            .setup(f => f.createGlobalPersistentState(typemoq.It.isValue(banner_1.PersistentStateKeys.UserSelected), typemoq.It.isAny()))
+            .returns(() => userSelectedState.object);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_2.IBrowserService))).returns(() => browser.object);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_2.IPersistentStateFactory))).returns(() => factory.object);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_1.IDebugService))).returns(() => debugService.object);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_2.ILogger))).returns(() => logger.object);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_2.IDisposableRegistry))).returns(() => []);
         serviceContainer.setup(s => s.get(typemoq.It.isValue(types_1.IApplicationShell))).returns(() => appShell.object);
-        banner = new banner_1.ExperimentalDebuggerBanner(serviceContainer.object);
+        serviceContainer.setup(s => s.get(typemoq.It.isValue(types_2.IRandom))).returns(() => runtime.object);
+        userSelectedState.setup(s => s.value)
+            .returns(() => userSelected);
+        banner = new banner_1.DebuggerBanner(serviceContainer.object);
     });
     test('Browser is displayed when launching service along with debugger launch counter', () => __awaiter(this, void 0, void 0, function* () {
         const debuggerLaunchCounter = 1234;
         launchCounterState.setup(l => l.value).returns(() => debuggerLaunchCounter).verifiable(typemoq.Times.once());
         browser.setup(b => b.launch(typemoq.It.isValue(`https://www.research.net/r/N7B25RV?n=${debuggerLaunchCounter}`)))
             .verifiable(typemoq.Times.once());
-        yield banner.launchSurvey();
+        appShell.setup(a => a.showInformationMessage(typemoq.It.isValue(message), typemoq.It.isValue(yes), typemoq.It.isValue(no), typemoq.It.isValue(later)))
+            .returns(() => Promise.resolve(yes));
+        yield banner.show();
         launchCounterState.verifyAll();
         browser.verifyAll();
     }));
+    for (let i = 0; i < 100; i = i + 1) {
+        const randomSample = i;
+        const expected = i < 10;
+        test(`users are selected 10% of the time (random: ${i})`, () => __awaiter(this, void 0, void 0, function* () {
+            showBannerState.setup(s => s.value).returns(() => true);
+            launchCounterState.setup(l => l.value).returns(() => 10);
+            launchThresholdCounterState.setup(t => t.value).returns(() => 10);
+            userSelected = undefined;
+            runtime.setup(r => r.getRandomInt(typemoq.It.isValue(0), typemoq.It.isValue(100)))
+                .returns(() => randomSample);
+            userSelectedState.setup(u => u.updateValue(typemoq.It.isValue(expected)))
+                .returns(() => Promise.resolve())
+                .verifiable(typemoq.Times.once());
+            const selected = yield banner.shouldShow();
+            chai_1.expect(selected).to.be.equal(expected, 'Incorrect value');
+            userSelectedState.verifyAll();
+        }));
+    }
+    for (const randomSample of [0, 10]) {
+        const expected = randomSample < 10;
+        test(`user selection does not change (random: ${randomSample})`, () => __awaiter(this, void 0, void 0, function* () {
+            showBannerState.setup(s => s.value).returns(() => true);
+            launchCounterState.setup(l => l.value).returns(() => 10);
+            launchThresholdCounterState.setup(t => t.value).returns(() => 10);
+            userSelected = undefined;
+            runtime.setup(r => r.getRandomInt(typemoq.It.isValue(0), typemoq.It.isValue(100)))
+                .returns(() => randomSample);
+            userSelectedState.setup(u => u.updateValue(typemoq.It.isValue(expected)))
+                .returns(() => Promise.resolve())
+                .verifiable(typemoq.Times.once());
+            const result1 = yield banner.shouldShow();
+            userSelected = expected;
+            const result2 = yield banner.shouldShow();
+            chai_1.expect(result1).to.be.equal(expected, `randomSample ${randomSample}`);
+            chai_1.expect(result2).to.be.equal(expected, `randomSample ${randomSample}`);
+            userSelectedState.verifyAll();
+        }));
+    }
     test('Increment Debugger Launch Counter when debug session starts', () => __awaiter(this, void 0, void 0, function* () {
         let onDidTerminateDebugSessionCb;
         debugService.setup(d => d.onDidTerminateDebugSession(typemoq.It.isAny()))
@@ -78,7 +131,7 @@ suite('Debugging - Banner', () => {
         showBannerState.setup(s => s.value).returns(() => true)
             .verifiable(typemoq.Times.atLeastOnce());
         banner.initialize();
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
         launchCounterState.verifyAll();
         browser.verifyAll();
         debugService.verifyAll();
@@ -100,37 +153,37 @@ suite('Debugging - Banner', () => {
         debugService.verifyAll();
         showBannerState.verifyAll();
     }));
-    test('shouldShowBanner must return false when Banner is disabled', () => __awaiter(this, void 0, void 0, function* () {
+    test('shouldShow must return false when Banner is disabled', () => __awaiter(this, void 0, void 0, function* () {
         showBannerState.setup(s => s.value).returns(() => false)
             .verifiable(typemoq.Times.once());
-        chai_1.expect(yield banner.shouldShowBanner()).to.be.equal(false, 'Incorrect value');
+        chai_1.expect(yield banner.shouldShow()).to.be.equal(false, 'Incorrect value');
         showBannerState.verifyAll();
     }));
-    test('shouldShowBanner must return false when Banner is enabled and debug counter is not same as threshold', () => __awaiter(this, void 0, void 0, function* () {
+    test('shouldShow must return false when Banner is enabled and debug counter is not same as threshold', () => __awaiter(this, void 0, void 0, function* () {
         showBannerState.setup(s => s.value).returns(() => true)
             .verifiable(typemoq.Times.once());
         launchCounterState.setup(l => l.value).returns(() => 1)
             .verifiable(typemoq.Times.once());
         launchThresholdCounterState.setup(t => t.value).returns(() => 10)
             .verifiable(typemoq.Times.atLeastOnce());
-        chai_1.expect(yield banner.shouldShowBanner()).to.be.equal(false, 'Incorrect value');
+        chai_1.expect(yield banner.shouldShow()).to.be.equal(false, 'Incorrect value');
         showBannerState.verifyAll();
         launchCounterState.verifyAll();
         launchThresholdCounterState.verifyAll();
     }));
-    test('shouldShowBanner must return true when Banner is enabled and debug counter is same as threshold', () => __awaiter(this, void 0, void 0, function* () {
+    test('shouldShow must return true when Banner is enabled and debug counter is same as threshold', () => __awaiter(this, void 0, void 0, function* () {
         showBannerState.setup(s => s.value).returns(() => true)
             .verifiable(typemoq.Times.once());
         launchCounterState.setup(l => l.value).returns(() => 10)
             .verifiable(typemoq.Times.once());
         launchThresholdCounterState.setup(t => t.value).returns(() => 10)
             .verifiable(typemoq.Times.atLeastOnce());
-        chai_1.expect(yield banner.shouldShowBanner()).to.be.equal(true, 'Incorrect value');
+        chai_1.expect(yield banner.shouldShow()).to.be.equal(true, 'Incorrect value');
         showBannerState.verifyAll();
         launchCounterState.verifyAll();
         launchThresholdCounterState.verifyAll();
     }));
-    test('showBanner must be invoked when shouldShowBanner returns true', () => __awaiter(this, void 0, void 0, function* () {
+    test('show must be invoked when shouldShow returns true', () => __awaiter(this, void 0, void 0, function* () {
         let onDidTerminateDebugSessionCb;
         const currentLaunchCounter = 50;
         debugService.setup(d => d.onDidTerminateDebugSession(typemoq.It.isAny()))
@@ -145,16 +198,16 @@ suite('Debugging - Banner', () => {
         launchCounterState.setup(l => l.updateValue(typemoq.It.isValue(currentLaunchCounter + 1)))
             .returns(() => Promise.resolve())
             .verifiable(typemoq.Times.atLeastOnce());
-        appShell.setup(a => a.showInformationMessage(typemoq.It.isValue(message), typemoq.It.isValue(yes), typemoq.It.isValue(no)))
+        appShell.setup(a => a.showInformationMessage(typemoq.It.isValue(message), typemoq.It.isValue(yes), typemoq.It.isValue(no), typemoq.It.isValue(later)))
             .verifiable(typemoq.Times.once());
         banner.initialize();
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
         appShell.verifyAll();
         showBannerState.verifyAll();
         launchCounterState.verifyAll();
         launchThresholdCounterState.verifyAll();
     }));
-    test('showBanner must not be invoked the second time after dismissing the message', () => __awaiter(this, void 0, void 0, function* () {
+    test('show must not be invoked the second time after dismissing the message', () => __awaiter(this, void 0, void 0, function* () {
         let onDidTerminateDebugSessionCb;
         let currentLaunchCounter = 50;
         debugService.setup(d => d.onDidTerminateDebugSession(typemoq.It.isAny()))
@@ -168,14 +221,14 @@ suite('Debugging - Banner', () => {
             .verifiable(typemoq.Times.atLeastOnce());
         launchCounterState.setup(l => l.updateValue(typemoq.It.isAny()))
             .callback(() => currentLaunchCounter = currentLaunchCounter + 1);
-        appShell.setup(a => a.showInformationMessage(typemoq.It.isValue(message), typemoq.It.isValue(yes), typemoq.It.isValue(no)))
+        appShell.setup(a => a.showInformationMessage(typemoq.It.isValue(message), typemoq.It.isValue(yes), typemoq.It.isValue(no), typemoq.It.isValue(later)))
             .returns(() => Promise.resolve(undefined))
             .verifiable(typemoq.Times.once());
         banner.initialize();
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
-        yield onDidTerminateDebugSessionCb({ type: constants_1.ExperimentalDebuggerType });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
+        yield onDidTerminateDebugSessionCb({ type: constants_1.DebuggerTypeName });
         appShell.verifyAll();
         showBannerState.verifyAll();
         launchCounterState.verifyAll();

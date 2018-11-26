@@ -297,7 +297,6 @@ def main():
                                 testId = m.id()
                                 if testId.startswith(opts.tests[0]):
                                     suite = cls
-                                    break
                                 if testId == opts.tests[0]:
                                     tests = m
                                     break

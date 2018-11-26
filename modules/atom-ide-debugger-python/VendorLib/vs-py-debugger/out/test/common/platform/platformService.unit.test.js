@@ -12,14 +12,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const os = require("os");
-const osinfo_1 = require("../../../client/common/platform/osinfo");
 const platformService_1 = require("../../../client/common/platform/platformService");
+const platform_1 = require("../../../utils/platform");
 // tslint:disable-next-line:max-func-body-length
 suite('PlatformService', () => {
     test('local info', () => __awaiter(this, void 0, void 0, function* () {
-        const expected = osinfo_1.getOSInfo();
+        const expected = platform_1.getInfo();
         const svc = new platformService_1.PlatformService();
-        const info = svc.os;
+        const info = svc.info;
         chai_1.expect(info).to.deep.equal(expected, 'invalid value');
     }));
     test('pathVariableName', () => __awaiter(this, void 0, void 0, function* () {
@@ -77,5 +77,4 @@ suite('PlatformService', () => {
         chai_1.expect(result).to.be.equal(expected, 'invalid value');
     }));
 });
-
 //# sourceMappingURL=platformService.unit.test.js.map

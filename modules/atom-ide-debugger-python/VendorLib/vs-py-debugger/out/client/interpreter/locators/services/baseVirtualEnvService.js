@@ -40,7 +40,7 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
     }
     suggestionsFromKnownVenvs(resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchPaths = this.searchPathsProvider.getSearchPaths(resource);
+            const searchPaths = yield this.searchPathsProvider.getSearchPaths(resource);
             return Promise.all(searchPaths.map(dir => this.lookForInterpretersInVenvs(dir, resource)))
                 .then(listOfInterpreters => _.flatten(listOfInterpreters));
         });
@@ -52,7 +52,7 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
                 .then(dirs => dirs.filter(dir => dir.length > 0))
                 .then(dirs => Promise.all(dirs.map(helpers_1.lookForInterpretersInDirectory)))
                 .then(pathsWithInterpreters => _.flatten(pathsWithInterpreters))
-                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter))))
+                .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter, resource))))
                 .then(interpreters => interpreters.filter(interpreter => !!interpreter).map(interpreter => interpreter))
                 .catch((err) => {
                 console.error('Python Extension (lookForInterpretersInVenvs):', err);
@@ -78,25 +78,20 @@ let BaseVirtualEnvService = class BaseVirtualEnvService extends cacheableLocator
             return '';
         }));
     }
-    getVirtualEnvDetails(interpreter) {
+    getVirtualEnvDetails(interpreter, resource) {
         return __awaiter(this, void 0, void 0, function* () {
             return Promise.all([
                 this.helper.getInterpreterInformation(interpreter),
-                this.virtualEnvMgr.getEnvironmentName(interpreter),
-                this.virtualEnvMgr.getEnvironmentType(interpreter)
+                this.virtualEnvMgr.getEnvironmentName(interpreter, resource),
+                this.virtualEnvMgr.getEnvironmentType(interpreter, resource)
             ])
                 .then(([details, virtualEnvName, type]) => {
                 if (!details) {
                     return;
                 }
-                const virtualEnvSuffix = virtualEnvName.length ? virtualEnvName : this.getVirtualEnvironmentRootDirectory(interpreter);
-                return Object.assign({}, details, { displayName: `${details.version} (${virtualEnvSuffix})`.trim(), envName: virtualEnvName, type: type });
+                return Object.assign({}, details, { envName: virtualEnvName, type: type });
             });
         });
-    }
-    getVirtualEnvironmentRootDirectory(interpreter) {
-        // Python interperters are always in a subdirectory of the environment folder.
-        return path.basename(path.dirname(path.dirname(interpreter)));
     }
 };
 BaseVirtualEnvService = __decorate([

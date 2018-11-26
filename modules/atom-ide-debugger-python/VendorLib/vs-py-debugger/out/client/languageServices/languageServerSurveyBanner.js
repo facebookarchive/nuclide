@@ -20,10 +20,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const types_1 = require("../common/application/types");
+const random_1 = require("../../utils/random");
+const types_1 = require("../activation/types");
+const types_2 = require("../common/application/types");
 require("../common/extensions");
-const types_2 = require("../common/types");
-const utils_1 = require("../common/utils");
+const types_3 = require("../common/types");
 // persistent state names, exported to make use of in testing
 var LSSurveyStateKeys;
 (function (LSSurveyStateKeys) {
@@ -41,13 +42,14 @@ This class represents a popup that will ask our users for some feedback after
 a specific event occurs N times.
 */
 let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
-    constructor(appShell, persistentState, browserService, showAfterMinimumEventsCount = 100, showBeforeMaximumEventsCount = 500) {
+    constructor(appShell, persistentState, browserService, lsService, showAfterMinimumEventsCount = 100, showBeforeMaximumEventsCount = 500) {
         this.appShell = appShell;
         this.persistentState = persistentState;
         this.browserService = browserService;
+        this.lsService = lsService;
         this.disabledInCurrentSession = false;
         this.isInitialized = false;
-        this.bannerMessage = 'Can you please take 2 minutes to tell us how the Experimental Debugger is working for you?';
+        this.bannerMessage = 'Can you please take 2 minutes to tell us how the Python Language Server is working for you?';
         this.bannerLabels = ['Yes, take survey now', 'No, thanks'];
         this.minCompletionsBeforeShow = showAfterMinimumEventsCount;
         this.maxCompletionsBeforeShow = showBeforeMaximumEventsCount;
@@ -120,7 +122,9 @@ let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
     launchSurvey() {
         return __awaiter(this, void 0, void 0, function* () {
             const launchCounter = yield this.getPythonLSLaunchCounter();
-            this.browserService.launch(`https://www.research.net/r/LJZV9BZ?n=${launchCounter}`);
+            let lsVersion = yield this.getPythonLSVersion();
+            lsVersion = encodeURIComponent(lsVersion);
+            this.browserService.launch(`https://www.research.net/r/LJZV9BZ?n=${launchCounter}&v=${lsVersion}`);
         });
     }
     incrementPythonLanguageServiceLaunchCounter() {
@@ -128,6 +132,12 @@ let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
             const state = this.persistentState.createGlobalPersistentState(LSSurveyStateKeys.ShowAttemptCounter, 0);
             yield state.updateValue(state.value + 1);
             return state.value;
+        });
+    }
+    getPythonLSVersion(fallback = 'unknown') {
+        return __awaiter(this, void 0, void 0, function* () {
+            const langServiceLatestFolder = yield this.lsService.getCurrentLanguageServerDirectory();
+            return langServiceLatestFolder ? langServiceLatestFolder.version.raw : fallback;
         });
     }
     getPythonLSLaunchCounter() {
@@ -140,7 +150,7 @@ let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
         return __awaiter(this, void 0, void 0, function* () {
             const state = this.persistentState.createGlobalPersistentState(LSSurveyStateKeys.ShowAfterCompletionCount, undefined);
             if (state.value === undefined) {
-                yield state.updateValue(utils_1.getRandomBetween(this.minCompletionsBeforeShow, this.maxCompletionsBeforeShow));
+                yield state.updateValue(random_1.getRandomBetween(this.minCompletionsBeforeShow, this.maxCompletionsBeforeShow));
             }
             return state.value;
         });
@@ -148,9 +158,10 @@ let LanguageServerSurveyBanner = class LanguageServerSurveyBanner {
 };
 LanguageServerSurveyBanner = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(types_1.IApplicationShell)),
-    __param(1, inversify_1.inject(types_2.IPersistentStateFactory)),
-    __param(2, inversify_1.inject(types_2.IBrowserService))
+    __param(0, inversify_1.inject(types_2.IApplicationShell)),
+    __param(1, inversify_1.inject(types_3.IPersistentStateFactory)),
+    __param(2, inversify_1.inject(types_3.IBrowserService)),
+    __param(3, inversify_1.inject(types_1.ILanguageServerFolderService))
 ], LanguageServerSurveyBanner);
 exports.LanguageServerSurveyBanner = LanguageServerSurveyBanner;
 //# sourceMappingURL=languageServerSurveyBanner.js.map

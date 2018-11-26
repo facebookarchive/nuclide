@@ -16,17 +16,17 @@ const chaiAsPromised = require("chai-as-promised");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../client/common/application/types");
-const enumUtils_1 = require("../../../client/common/enumUtils");
 require("../../../client/common/extensions");
-const helpers_1 = require("../../../client/common/helpers");
 const productInstaller_1 = require("../../../client/common/installer/productInstaller");
 const productService_1 = require("../../../client/common/installer/productService");
 const types_2 = require("../../../client/common/installer/types");
 const types_3 = require("../../../client/common/types");
+const async_1 = require("../../../utils/async");
+const enum_1 = require("../../../utils/enum");
 chai_1.use(chaiAsPromised);
 suite('Module Installer', () => {
     [undefined, vscode_1.Uri.file('resource')].forEach(resource => {
-        enumUtils_1.EnumEx.getNamesAndValues(types_3.Product).forEach(product => {
+        enum_1.getNamesAndValues(types_3.Product).forEach(product => {
             let disposables = [];
             let installer;
             let installationChannel;
@@ -36,7 +36,7 @@ suite('Module Installer', () => {
             let promptDeferred;
             let workspaceService;
             setup(() => {
-                promptDeferred = helpers_1.createDeferred();
+                promptDeferred = async_1.createDeferred();
                 serviceContainer = TypeMoq.Mock.ofType();
                 const outputChannel = TypeMoq.Mock.ofType();
                 disposables = [];
@@ -110,11 +110,8 @@ suite('Module Installer', () => {
                             moduleInstaller.verify(m => m.installModule(TypeMoq.It.isValue(moduleName), TypeMoq.It.isValue(resource)), TypeMoq.Times.once());
                         }
                     }));
-                    test(`Ensure the prompt is displayed only once, untill the prompt is closed, ${product.name} (${resource ? 'With a resource' : 'without a resource'})`, function () {
-                        return __awaiter(this, void 0, void 0, function* () {
-                            if (product.value === types_3.Product.unittest) {
-                                return this.skip();
-                            }
+                    if (product.value !== types_3.Product.unittest) {
+                        test(`Ensure the prompt is displayed only once, untill the prompt is closed, ${product.name} (${resource ? 'With a resource' : 'without a resource'})`, () => __awaiter(this, void 0, void 0, function* () {
                             workspaceService.setup(w => w.getWorkspaceFolder(TypeMoq.It.isValue(resource)))
                                 .returns(() => TypeMoq.Mock.ofType().object)
                                 .verifiable(TypeMoq.Times.exactly(resource ? 5 : 0));
@@ -130,13 +127,8 @@ suite('Module Installer', () => {
                             installer.promptToInstall(product.value, resource).ignoreErrors();
                             app.verifyAll();
                             workspaceService.verifyAll();
-                        });
-                    });
-                    test(`Ensure the prompt is displayed again when previous prompt has been closed, ${product.name} (${resource ? 'With a resource' : 'without a resource'})`, function () {
-                        return __awaiter(this, void 0, void 0, function* () {
-                            if (product.value === types_3.Product.unittest) {
-                                return this.skip();
-                            }
+                        }));
+                        test(`Ensure the prompt is displayed again when previous prompt has been closed, ${product.name} (${resource ? 'With a resource' : 'without a resource'})`, () => __awaiter(this, void 0, void 0, function* () {
                             workspaceService.setup(w => w.getWorkspaceFolder(TypeMoq.It.isValue(resource)))
                                 .returns(() => TypeMoq.Mock.ofType().object)
                                 .verifiable(TypeMoq.Times.exactly(resource ? 3 : 0));
@@ -148,8 +140,8 @@ suite('Module Installer', () => {
                             yield installer.promptToInstall(product.value, resource);
                             app.verifyAll();
                             workspaceService.verifyAll();
-                        });
-                    });
+                        }));
+                    }
                 }
             }
         });

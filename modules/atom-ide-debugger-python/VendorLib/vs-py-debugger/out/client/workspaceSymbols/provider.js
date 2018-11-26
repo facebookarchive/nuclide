@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -15,28 +15,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 const constants_1 = require("../common/constants");
-const utils_1 = require("../common/utils");
 const telemetry_1 = require("../telemetry");
 const constants_2 = require("../telemetry/constants");
 const parser_1 = require("./parser");
 class WorkspaceSymbolProvider {
-    constructor(tagGenerators, outputChannel) {
+    constructor(fs, commands, tagGenerators) {
+        this.fs = fs;
+        this.commands = commands;
         this.tagGenerators = tagGenerators;
-        this.outputChannel = outputChannel;
     }
     provideWorkspaceSymbols(query, token) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.tagGenerators.length === 0) {
                 return [];
             }
-            const generatorsWithTagFiles = yield Promise.all(this.tagGenerators.map(generator => utils_1.fsExistsAsync(generator.tagFilePath)));
+            const generatorsWithTagFiles = yield Promise.all(this.tagGenerators.map(generator => this.fs.fileExists(generator.tagFilePath)));
             if (generatorsWithTagFiles.filter(exists => exists).length !== this.tagGenerators.length) {
-                yield vscode.commands.executeCommand(constants_1.Commands.Build_Workspace_Symbols, true, token);
+                yield this.commands.executeCommand(constants_1.Commands.Build_Workspace_Symbols, true, token);
             }
             const generators = yield Promise.all(this.tagGenerators.map((generator) => __awaiter(this, void 0, void 0, function* () {
-                const tagFileExists = yield utils_1.fsExistsAsync(generator.tagFilePath);
+                const tagFileExists = yield this.fs.fileExists(generator.tagFilePath);
                 return tagFileExists ? generator : undefined;
             })));
             const promises = generators
@@ -47,7 +47,7 @@ class WorkspaceSymbolProvider {
                 if (!Array.isArray(items)) {
                     return [];
                 }
-                return items.map(item => new vscode.SymbolInformation(item.symbolName, item.symbolKind, '', new vscode.Location(vscode.Uri.file(item.fileName), item.position)));
+                return items.map(item => new vscode_1.SymbolInformation(item.symbolName, item.symbolKind, '', new vscode_1.Location(vscode_1.Uri.file(item.fileName), item.position)));
             }));
             const symbols = yield Promise.all(promises);
             return _.flatten(symbols);

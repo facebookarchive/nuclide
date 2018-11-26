@@ -17,7 +17,6 @@ const vscode_1 = require("vscode");
 const service_1 = require("../../client/common/configuration/service");
 require("../../client/common/extensions");
 const types_1 = require("../../client/common/types");
-const extension_1 = require("../../client/extension");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
 const constants_1 = require("../constants");
@@ -49,8 +48,8 @@ suite('Exclude files (Language Server)', () => {
     teardown(initialize_1.closeActiveWindows);
     function openFile(file) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield initialize_1.activateExtension();
             textDocument = yield vscode_1.workspace.openTextDocument(file);
-            yield extension_1.activated;
             yield vscode_1.window.showTextDocument(textDocument);
             // Make sure LS completes file loading and analysis.
             // In test mode it awaits for the completion before trying
@@ -60,7 +59,7 @@ suite('Exclude files (Language Server)', () => {
     }
     function setSetting(name, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield configService.updateSettingAsync(name, value, undefined, vscode_1.ConfigurationTarget.Global);
+            yield configService.updateSetting(name, value, undefined, vscode_1.ConfigurationTarget.Global);
         });
     }
     test('Default exclusions', () => __awaiter(this, void 0, void 0, function* () {

@@ -32,12 +32,13 @@ const types_4 = require("../../client/common/process/types");
 const types_5 = require("../../client/common/terminal/types");
 const types_6 = require("../../client/common/types");
 const contracts_1 = require("../../client/interpreter/contracts");
+const platform_1 = require("../../utils/platform");
 const common_1 = require("../common");
 const moduleInstaller_1 = require("../mocks/moduleInstaller");
 const serviceRegistry_1 = require("../unittests/serviceRegistry");
 const initialize_1 = require("./../initialize");
 const info = {
-    architecture: types_3.Architecture.Unknown,
+    architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',
     displayName: '',
     envName: '',
@@ -112,7 +113,7 @@ suite('Module Installer', () => {
         function resetSettings() {
             return __awaiter(this, void 0, void 0, function* () {
                 const configService = ioc.serviceManager.get(types_6.IConfigurationService);
-                yield configService.updateSettingAsync('linting.pylintEnabled', true, common_1.rootWorkspaceUri, vscode_1.ConfigurationTarget.Workspace);
+                yield configService.updateSetting('linting.pylintEnabled', true, common_1.rootWorkspaceUri, vscode_1.ConfigurationTarget.Workspace);
             });
         }
         function getCurrentPythonPath() {
@@ -158,7 +159,7 @@ suite('Module Installer', () => {
             ioc.serviceManager.addSingletonInstance(types_2.IModuleInstaller, new moduleInstaller_1.MockModuleInstaller('mock', true));
             const pythonPath = yield getCurrentPythonPath();
             const mockInterpreterLocator = TypeMoq.Mock.ofType();
-            mockInterpreterLocator.setup(p => p.getInterpreters(TypeMoq.It.isAny())).returns(() => Promise.resolve([Object.assign({}, info, { architecture: types_3.Architecture.Unknown, companyDisplayName: '', displayName: '', envName: '', path: pythonPath, type: contracts_1.InterpreterType.Conda, version: '' })]));
+            mockInterpreterLocator.setup(p => p.getInterpreters(TypeMoq.It.isAny())).returns(() => Promise.resolve([Object.assign({}, info, { architecture: platform_1.Architecture.Unknown, companyDisplayName: '', displayName: '', envName: '', path: pythonPath, type: contracts_1.InterpreterType.Conda, version: '' })]));
             ioc.serviceManager.addSingletonInstance(contracts_1.IInterpreterLocatorService, mockInterpreterLocator.object, contracts_1.INTERPRETER_LOCATOR_SERVICE);
             ioc.serviceManager.addSingletonInstance(contracts_1.IInterpreterLocatorService, TypeMoq.Mock.ofType().object, contracts_1.PIPENV_SERVICE);
             const processService = yield ioc.serviceContainer.get(types_4.IProcessServiceFactory).create();

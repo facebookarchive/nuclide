@@ -16,7 +16,6 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
-const enumUtils_1 = require("../../../client/common/enumUtils");
 require("../../../client/common/extensions");
 const productInstaller_1 = require("../../../client/common/installer/productInstaller");
 const productPath_1 = require("../../../client/common/installer/productPath");
@@ -26,10 +25,11 @@ const types_2 = require("../../../client/common/types");
 const types_3 = require("../../../client/formatters/types");
 const types_4 = require("../../../client/linters/types");
 const types_5 = require("../../../client/unittests/common/types");
+const enum_1 = require("../../../utils/enum");
 chai_1.use(chaiAsPromised);
 suite('Product Path', () => {
     [undefined, vscode_1.Uri.file('resource')].forEach(resource => {
-        enumUtils_1.EnumEx.getNamesAndValues(types_2.Product).forEach(product => {
+        enum_1.getNamesAndValues(types_2.Product).forEach(product => {
             let serviceContainer;
             let formattingSettings;
             let unitTestSettings;

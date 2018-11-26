@@ -19,26 +19,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const crypto = require("crypto");
 const inversify_1 = require("inversify");
 const types_1 = require("../common/application/types");
 require("../common/extensions");
 const types_2 = require("../common/types");
 const types_3 = require("../ioc/types");
 const constants_1 = require("./Common/constants");
+const SAMPLE_SIZE_PER_HUNDRED = 10;
 var PersistentStateKeys;
 (function (PersistentStateKeys) {
     PersistentStateKeys["ShowBanner"] = "ShowBanner";
     PersistentStateKeys["DebuggerLaunchCounter"] = "DebuggerLaunchCounter";
     PersistentStateKeys["DebuggerLaunchThresholdCounter"] = "DebuggerLaunchThresholdCounter";
+    PersistentStateKeys["UserSelected"] = "DebuggerUserSelected";
 })(PersistentStateKeys = exports.PersistentStateKeys || (exports.PersistentStateKeys = {}));
-let ExperimentalDebuggerBanner = class ExperimentalDebuggerBanner {
+let DebuggerBanner = class DebuggerBanner {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
-    }
-    get enabled() {
-        const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
-        return factory.createGlobalPersistentState(PersistentStateKeys.ShowBanner, true).value;
     }
     initialize() {
         if (this.initialized) {
@@ -46,29 +43,50 @@ let ExperimentalDebuggerBanner = class ExperimentalDebuggerBanner {
         }
         this.initialized = true;
         // Don't even bother adding handlers if banner has been turned off.
-        if (!this.enabled) {
+        if (!this.isEnabled()) {
             return;
         }
-        const debuggerService = this.serviceContainer.get(types_1.IDebugService);
-        const disposable = debuggerService.onDidTerminateDebugSession((e) => __awaiter(this, void 0, void 0, function* () {
-            if (e.type === constants_1.ExperimentalDebuggerType) {
-                const logger = this.serviceContainer.get(types_2.ILogger);
-                yield this.onDidTerminateDebugSession()
-                    .catch(ex => logger.logError('Error in debugger Banner', ex));
-            }
-        }));
-        this.serviceContainer.get(types_2.IDisposableRegistry).push(disposable);
+        this.addCallback();
     }
-    showBanner() {
+    // "enabled" state
+    isEnabled() {
+        const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
+        const key = PersistentStateKeys.ShowBanner;
+        const state = factory.createGlobalPersistentState(key, true);
+        return state.value;
+    }
+    disable() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
+            const key = PersistentStateKeys.ShowBanner;
+            const state = factory.createGlobalPersistentState(key, false);
+            yield state.updateValue(false);
+        });
+    }
+    // showing banner
+    shouldShow() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isEnabled() || this.disabledInCurrentSession) {
+                return false;
+            }
+            if (!(yield this.passedThreshold())) {
+                return false;
+            }
+            return this.isUserSelected();
+        });
+    }
+    show() {
         return __awaiter(this, void 0, void 0, function* () {
             const appShell = this.serviceContainer.get(types_1.IApplicationShell);
+            const msg = 'Can you please take 2 minutes to tell us how the debugger is working for you?';
             const yes = 'Yes, take survey now';
             const no = 'No thanks';
-            const response = yield appShell.showInformationMessage('Can you please take 2 minutes to tell us how the Experimental Debugger is working for you?', yes, no);
+            const later = 'Remind me later';
+            const response = yield appShell.showInformationMessage(msg, yes, no, later);
             switch (response) {
                 case yes:
                     {
-                        yield this.launchSurvey();
+                        yield this.action();
                         yield this.disable();
                         break;
                     }
@@ -83,77 +101,101 @@ let ExperimentalDebuggerBanner = class ExperimentalDebuggerBanner {
             }
         });
     }
-    shouldShowBanner() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.enabled || this.disabledInCurrentSession) {
-                return false;
-            }
-            const [threshold, debuggerCounter] = yield Promise.all([this.getDebuggerLaunchThresholdCounter(), this.getGetDebuggerLaunchCounter()]);
-            return debuggerCounter >= threshold;
-        });
-    }
-    disable() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
-            yield factory.createGlobalPersistentState(PersistentStateKeys.ShowBanner, false).updateValue(false);
-        });
-    }
-    launchSurvey() {
+    action() {
         return __awaiter(this, void 0, void 0, function* () {
             const debuggerLaunchCounter = yield this.getGetDebuggerLaunchCounter();
             const browser = this.serviceContainer.get(types_2.IBrowserService);
             browser.launch(`https://www.research.net/r/N7B25RV?n=${debuggerLaunchCounter}`);
         });
     }
+    // user selection
+    isUserSelected() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.userSelected !== undefined) {
+                return this.userSelected;
+            }
+            const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
+            const key = PersistentStateKeys.UserSelected;
+            const state = factory.createGlobalPersistentState(key, undefined);
+            let selected = state.value;
+            if (selected === undefined) {
+                const runtime = this.serviceContainer.get(types_2.IRandom);
+                const randomSample = runtime.getRandomInt(0, 100);
+                selected = randomSample < SAMPLE_SIZE_PER_HUNDRED;
+                state.updateValue(selected).ignoreErrors();
+            }
+            this.userSelected = selected;
+            return selected;
+        });
+    }
+    // persistent counter
+    passedThreshold() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [threshold, debuggerCounter] = yield Promise.all([
+                this.getDebuggerLaunchThresholdCounter(),
+                this.getGetDebuggerLaunchCounter()
+            ]);
+            return debuggerCounter >= threshold;
+        });
+    }
     incrementDebuggerLaunchCounter() {
         return __awaiter(this, void 0, void 0, function* () {
             const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
-            const state = factory.createGlobalPersistentState(PersistentStateKeys.DebuggerLaunchCounter, 0);
+            const key = PersistentStateKeys.DebuggerLaunchCounter;
+            const state = factory.createGlobalPersistentState(key, 0);
             yield state.updateValue(state.value + 1);
         });
     }
     getGetDebuggerLaunchCounter() {
         return __awaiter(this, void 0, void 0, function* () {
             const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
-            const state = factory.createGlobalPersistentState(PersistentStateKeys.DebuggerLaunchCounter, 0);
+            const key = PersistentStateKeys.DebuggerLaunchCounter;
+            const state = factory.createGlobalPersistentState(key, 0);
             return state.value;
         });
     }
     getDebuggerLaunchThresholdCounter() {
         return __awaiter(this, void 0, void 0, function* () {
             const factory = this.serviceContainer.get(types_2.IPersistentStateFactory);
-            const state = factory.createGlobalPersistentState(PersistentStateKeys.DebuggerLaunchThresholdCounter, undefined);
+            const key = PersistentStateKeys.DebuggerLaunchThresholdCounter;
+            const state = factory.createGlobalPersistentState(key, undefined);
             if (state.value === undefined) {
-                const hexValue = parseInt(`0x${this.getRandomHex()}`, 16);
-                const randomNumber = Math.floor((10 * hexValue) / 16) + 1;
+                const runtime = this.serviceContainer.get(types_2.IRandom);
+                const randomNumber = runtime.getRandomInt(1, 11);
                 yield state.updateValue(randomNumber);
             }
             return state.value;
         });
     }
-    getRandomHex() {
-        const appEnv = this.serviceContainer.get(types_1.IApplicationEnvironment);
-        const lastHexValue = appEnv.machineId.slice(-1);
-        const num = parseInt(`0x${lastHexValue}`, 16);
-        return isNaN(num) ? crypto.randomBytes(1).toString('hex').slice(-1) : lastHexValue;
+    // debugger-specific functionality
+    addCallback() {
+        const debuggerService = this.serviceContainer.get(types_1.IDebugService);
+        const disposable = debuggerService.onDidTerminateDebugSession((e) => __awaiter(this, void 0, void 0, function* () {
+            if (e.type === constants_1.DebuggerTypeName) {
+                const logger = this.serviceContainer.get(types_2.ILogger);
+                yield this.onDidTerminateDebugSession()
+                    .catch(ex => logger.logError('Error in debugger Banner', ex));
+            }
+        }));
+        this.serviceContainer.get(types_2.IDisposableRegistry).push(disposable);
     }
     onDidTerminateDebugSession() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.enabled) {
+            if (!this.isEnabled()) {
                 return;
             }
             yield this.incrementDebuggerLaunchCounter();
-            const show = yield this.shouldShowBanner();
+            const show = yield this.shouldShow();
             if (!show) {
                 return;
             }
-            yield this.showBanner();
+            yield this.show();
         });
     }
 };
-ExperimentalDebuggerBanner = __decorate([
+DebuggerBanner = __decorate([
     inversify_1.injectable(),
     __param(0, inversify_1.inject(types_3.IServiceContainer))
-], ExperimentalDebuggerBanner);
-exports.ExperimentalDebuggerBanner = ExperimentalDebuggerBanner;
+], DebuggerBanner);
+exports.DebuggerBanner = DebuggerBanner;
 //# sourceMappingURL=banner.js.map

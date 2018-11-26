@@ -73,7 +73,7 @@ let LinterManager = class LinterManager {
     }
     enableLintingAsync(enable, resource) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.configService.updateSettingAsync(`linting.${this.lintingEnabledSettingName}`, enable, resource);
+            yield this.configService.updateSetting(`linting.${this.lintingEnabledSettingName}`, enable, resource);
             // If nothing is enabled, fix it up to PyLint (default).
             if (enable && this.getActiveLinters(resource).length === 0) {
                 yield this.setActiveLintersAsync([types_1.Product.pylint], resource);

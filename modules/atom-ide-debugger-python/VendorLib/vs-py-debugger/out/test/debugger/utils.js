@@ -19,8 +19,9 @@ const constants_1 = require("../../client/common/constants");
 const constants_2 = require("../../client/common/platform/constants");
 const constants_3 = require("./common/constants");
 const debugClient_1 = require("./debugClient");
+const constants_4 = require("../../client/debugger/Common/constants");
 const testAdapterFilePath = path.join(constants_1.EXTENSION_ROOT_DIR, 'out', 'client', 'debugger', 'mainV2.js');
-const debuggerType = 'pythonExperimental';
+const debuggerType = constants_4.DebuggerTypeName;
 /**
  * Creates the debug adapter.
  * We do not need to support code coverage on AppVeyor, lets use the standard test adapter.

@@ -16,6 +16,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const Registry = require("winreg");
+const platform_1 = require("../../../utils/platform");
 const types_1 = require("./types");
 var RegistryArchitectures;
 (function (RegistryArchitectures) {
@@ -38,17 +39,17 @@ RegistryImplementation = __decorate([
     inversify_1.injectable()
 ], RegistryImplementation);
 exports.RegistryImplementation = RegistryImplementation;
-function getArchitectureDislayName(arch) {
+function getArchitectureDisplayName(arch) {
     switch (arch) {
-        case types_1.Architecture.x64:
+        case platform_1.Architecture.x64:
             return '64-bit';
-        case types_1.Architecture.x86:
+        case platform_1.Architecture.x86:
             return '32-bit';
         default:
             return '';
     }
 }
-exports.getArchitectureDislayName = getArchitectureDislayName;
+exports.getArchitectureDisplayName = getArchitectureDisplayName;
 function getRegistryValue(options, name = '') {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -76,9 +77,9 @@ function getRegistryKeys(options) {
 }
 function translateArchitecture(arch) {
     switch (arch) {
-        case types_1.Architecture.x86:
+        case platform_1.Architecture.x86:
             return RegistryArchitectures.x86;
-        case types_1.Architecture.x64:
+        case platform_1.Architecture.x64:
             return RegistryArchitectures.x64;
         default:
             return;

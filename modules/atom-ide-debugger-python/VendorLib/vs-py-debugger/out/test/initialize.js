@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode = require("vscode");
 const configSettings_1 = require("../client/common/configSettings");
-const extension_1 = require("../client/extension");
+const constants_1 = require("../client/common/constants");
 const common_1 = require("./common");
 __export(require("./constants"));
 __export(require("./ciConstants"));
@@ -38,14 +38,24 @@ exports.initializePython = initializePython;
 function initialize() {
     return __awaiter(this, void 0, void 0, function* () {
         yield initializePython();
-        // Opening a python file activates the extension.
-        yield vscode.workspace.openTextDocument(dummyPythonFile);
-        yield extension_1.activated;
+        yield activateExtension();
         // Dispose any cached python settings (used only in test env).
         configSettings_1.PythonSettings.dispose();
     });
 }
 exports.initialize = initialize;
+function activateExtension() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const extension = vscode.extensions.getExtension(constants_1.PVSC_EXTENSION_ID);
+        if (extension.isActive) {
+            return;
+        }
+        const api = yield extension.activate();
+        // Wait untill its ready to use.
+        yield api.ready;
+    });
+}
+exports.activateExtension = activateExtension;
 // tslint:disable-next-line:no-any
 function initializeTest() {
     return __awaiter(this, void 0, void 0, function* () {

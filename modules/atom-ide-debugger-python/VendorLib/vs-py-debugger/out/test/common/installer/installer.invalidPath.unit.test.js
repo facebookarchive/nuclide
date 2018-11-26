@@ -16,18 +16,18 @@ const path = require("path");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../client/common/application/types");
-const enumUtils_1 = require("../../../client/common/enumUtils");
 require("../../../client/common/extensions");
 const productInstaller_1 = require("../../../client/common/installer/productInstaller");
 const productService_1 = require("../../../client/common/installer/productService");
 const types_2 = require("../../../client/common/installer/types");
 const types_3 = require("../../../client/common/types");
+const enum_1 = require("../../../utils/enum");
 chai_1.use(chaiAsPromised);
 suite('Module Installer - Invalid Paths', () => {
     [undefined, vscode_1.Uri.file('resource')].forEach(resource => {
         ['moduleName', path.join('users', 'dev', 'tool', 'executable')].forEach(pathToExecutable => {
             const isExecutableAModule = path.basename(pathToExecutable) === pathToExecutable;
-            enumUtils_1.EnumEx.getNamesAndValues(types_3.Product).forEach(product => {
+            enum_1.getNamesAndValues(types_3.Product).forEach(product => {
                 let installer;
                 let serviceContainer;
                 let app;

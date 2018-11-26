@@ -13,8 +13,6 @@ const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../client/common/application/types");
 const service_1 = require("../../client/common/configuration/service");
-const enumUtils_1 = require("../../client/common/enumUtils");
-const helpers_1 = require("../../client/common/helpers");
 const channelManager_1 = require("../../client/common/installer/channelManager");
 const productInstaller_1 = require("../../client/common/installer/productInstaller");
 const productPath_1 = require("../../client/common/installer/productPath");
@@ -26,6 +24,8 @@ const pathUtils_1 = require("../../client/common/platform/pathUtils");
 const currentProcess_1 = require("../../client/common/process/currentProcess");
 const types_3 = require("../../client/common/process/types");
 const types_4 = require("../../client/common/types");
+const async_1 = require("../../utils/async");
+const enum_1 = require("../../utils/enum");
 const common_1 = require("../common");
 const moduleInstaller_1 = require("../mocks/moduleInstaller");
 const serviceRegistry_1 = require("../unittests/serviceRegistry");
@@ -86,7 +86,7 @@ suite('Installer', () => {
         return __awaiter(this, void 0, void 0, function* () {
             const installer = ioc.serviceContainer.get(types_4.IInstaller);
             const processService = yield ioc.serviceContainer.get(types_3.IProcessServiceFactory).create();
-            const checkInstalledDef = helpers_1.createDeferred();
+            const checkInstalledDef = async_1.createDeferred();
             processService.onExec((file, args, options, callback) => {
                 const moduleName = installer.translateProductToModuleName(product, types_4.ModuleNamePurpose.run);
                 if (args.length > 1 && args[0] === '-c' && args[1] === `import ${moduleName}`) {
@@ -98,7 +98,7 @@ suite('Installer', () => {
             yield checkInstalledDef.promise;
         });
     }
-    enumUtils_1.EnumEx.getNamesAndValues(types_4.Product).forEach(prod => {
+    enum_1.getNamesAndValues(types_4.Product).forEach(prod => {
         test(`Ensure isInstalled for Product: '${prod.name}' executes the right command`, () => __awaiter(this, void 0, void 0, function* () {
             ioc.serviceManager.addSingletonInstance(types_2.IModuleInstaller, new moduleInstaller_1.MockModuleInstaller('one', false));
             ioc.serviceManager.addSingletonInstance(types_2.IModuleInstaller, new moduleInstaller_1.MockModuleInstaller('two', true));
@@ -111,7 +111,7 @@ suite('Installer', () => {
     function testInstallingProduct(product) {
         return __awaiter(this, void 0, void 0, function* () {
             const installer = ioc.serviceContainer.get(types_4.IInstaller);
-            const checkInstalledDef = helpers_1.createDeferred();
+            const checkInstalledDef = async_1.createDeferred();
             const moduleInstallers = ioc.serviceContainer.getAll(types_2.IModuleInstaller);
             const moduleInstallerOne = moduleInstallers.find(item => item.displayName === 'two');
             moduleInstallerOne.on('installModule', moduleName => {
@@ -124,7 +124,7 @@ suite('Installer', () => {
             yield checkInstalledDef.promise;
         });
     }
-    enumUtils_1.EnumEx.getNamesAndValues(types_4.Product).forEach(prod => {
+    enum_1.getNamesAndValues(types_4.Product).forEach(prod => {
         test(`Ensure install for Product: '${prod.name}' executes the right command in IModuleInstaller`, () => __awaiter(this, void 0, void 0, function* () {
             ioc.serviceManager.addSingletonInstance(types_2.IModuleInstaller, new moduleInstaller_1.MockModuleInstaller('one', false));
             ioc.serviceManager.addSingletonInstance(types_2.IModuleInstaller, new moduleInstaller_1.MockModuleInstaller('two', true));

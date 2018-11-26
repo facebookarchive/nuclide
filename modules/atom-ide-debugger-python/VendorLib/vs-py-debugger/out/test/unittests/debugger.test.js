@@ -12,7 +12,6 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const path = require("path");
 const vscode_1 = require("vscode");
-const helpers_1 = require("../../client/common/helpers");
 const runner_1 = require("../../client/unittests//nosetest/runner");
 const runner_2 = require("../../client/unittests//pytest/runner");
 const runner_3 = require("../../client/unittests//unittest/runner");
@@ -26,6 +25,7 @@ const argsService_2 = require("../../client/unittests/pytest/services/argsServic
 const types_2 = require("../../client/unittests/types");
 const helper_1 = require("../../client/unittests/unittest/helper");
 const argsService_3 = require("../../client/unittests/unittest/services/argsService");
+const async_1 = require("../../utils/async");
 const common_1 = require("../common");
 const initialize_1 = require("./../initialize");
 const mocks_1 = require("./mocks");
@@ -43,17 +43,13 @@ const defaultUnitTestArgs = [
 suite('Unit Tests - debugging', () => {
     let ioc;
     const configTarget = initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace;
-    suiteSetup(function () {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Test disvovery is where the delay is, hence give 10 seconds (as we discover tests at least twice in each test).
-            // tslint:disable-next-line:no-invalid-this
-            this.timeout(10000);
-            yield initialize_1.initialize();
-            yield common_1.updateSetting('unitTest.unittestArgs', defaultUnitTestArgs, common_1.rootWorkspaceUri, configTarget);
-            yield common_1.updateSetting('unitTest.nosetestArgs', [], common_1.rootWorkspaceUri, configTarget);
-            yield common_1.updateSetting('unitTest.pyTestArgs', [], common_1.rootWorkspaceUri, configTarget);
-        });
-    });
+    suiteSetup(() => __awaiter(this, void 0, void 0, function* () {
+        // Test disvovery is where the delay is, hence give 10 seconds (as we discover tests at least twice in each test).
+        yield initialize_1.initialize();
+        yield common_1.updateSetting('unitTest.unittestArgs', defaultUnitTestArgs, common_1.rootWorkspaceUri, configTarget);
+        yield common_1.updateSetting('unitTest.nosetestArgs', [], common_1.rootWorkspaceUri, configTarget);
+        yield common_1.updateSetting('unitTest.pyTestArgs', [], common_1.rootWorkspaceUri, configTarget);
+    }));
     setup(() => __awaiter(this, void 0, void 0, function* () {
         yield common_1.deleteDirectory(path.join(testFilesPath, '.cache'));
         yield initialize_1.initializeTest();
@@ -98,7 +94,7 @@ suite('Unit Tests - debugging', () => {
             chai_1.assert.equal(tests.testFiles.length, 2, 'Incorrect number of test files');
             chai_1.assert.equal(tests.testFunctions.length, 2, 'Incorrect number of test functions');
             chai_1.assert.equal(tests.testSuites.length, 2, 'Incorrect number of test suites');
-            const deferred = helpers_1.createDeferred();
+            const deferred = async_1.createDeferred();
             const testFunction = [tests.testFunctions[0].testFunction];
             const runningPromise = testManager.runTest(constants_1.CommandSource.commandPalette, { testFunction }, false, true);
             // This promise should never resolve nor reject.
@@ -172,7 +168,7 @@ suite('Unit Tests - debugging', () => {
             const launched = yield mockDebugLauncher.launched;
             chai_1.assert.isTrue(launched, 'Debugger not launched');
             const discoveryPromise = testManager.discoverTests(constants_1.CommandSource.commandPalette, false, true);
-            const deferred = helpers_1.createDeferred();
+            const deferred = async_1.createDeferred();
             discoveryPromise
                 // tslint:disable-next-line:no-unsafe-any
                 .then(() => deferred.resolve(''))

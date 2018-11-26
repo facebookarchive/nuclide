@@ -168,7 +168,7 @@ class FormatterInstaller extends BaseInstaller {
                 for (const formatter of formatters) {
                     const formatterName = productNames_1.ProductNames.get(formatter);
                     if (item.endsWith(formatterName)) {
-                        yield this.configService.updateSettingAsync('formatting.provider', formatterName, resource);
+                        yield this.configService.updateSetting('formatting.provider', formatterName, resource);
                         return this.install(formatter, resource);
                     }
                 }

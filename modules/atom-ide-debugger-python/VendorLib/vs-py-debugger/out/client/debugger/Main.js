@@ -143,7 +143,6 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
     onPythonProcessLoaded(pyThread) {
         if (this.entryResponse) {
             this.sendResponse(this.entryResponse);
-            this.entryResponse = undefined;
         }
         this.debuggerLoadedPromiseResolve();
         if (this.launchArgs && !this.launchArgs.console) {
@@ -300,12 +299,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
         let isDjangoFile = false;
         if (this.launchArgs &&
             Array.isArray(this.launchArgs.debugOptions) &&
-            (this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0 || this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0)) {
-            isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
-        }
-        if (this.attachArgs &&
-            Array.isArray(this.attachArgs.debugOptions) &&
-            (this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0 || this.attachArgs.debugOptions.indexOf(Contracts_2.DebugOptions.DjangoDebugging) >= 0)) {
+            this.launchArgs.debugOptions.indexOf(Contracts_2.DebugOptions.Django) >= 0) {
             isDjangoFile = filePath.toUpperCase().endsWith(".HTML");
         }
         condition = typeof condition === "string" ? condition : "";
@@ -449,8 +443,7 @@ class PythonDebugger extends vscode_debugadapter_1.LoggingDebugSession {
                         return new vscode_debugadapter_1.StackFrame(frameId, frame.FunctionName);
                     }
                     else {
-                        const realFilePath = fs.realpathSync(fileName);
-                        return new vscode_debugadapter_1.StackFrame(frameId, frame.FunctionName, new vscode_debugadapter_1.Source(path.basename(realFilePath), realFilePath), this.convertDebuggerLineToClient(frame.LineNo - 1), 1);
+                        return new vscode_debugadapter_1.StackFrame(frameId, frame.FunctionName, new vscode_debugadapter_1.Source(path.basename(frame.FileName), fileName), this.convertDebuggerLineToClient(frame.LineNo - 1), 1);
                     }
                 });
             });

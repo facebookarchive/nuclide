@@ -21,8 +21,9 @@ const types_4 = require("../../client/common/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
+const platform_1 = require("../../utils/platform");
 const info = {
-    architecture: types_3.Architecture.Unknown,
+    architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',
     displayName: '',
     envName: '',

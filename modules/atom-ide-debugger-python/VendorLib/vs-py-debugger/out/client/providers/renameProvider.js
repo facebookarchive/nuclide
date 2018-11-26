@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const vscode = require("vscode");
+const vscode_1 = require("vscode");
 const configSettings_1 = require("../common/configSettings");
 const constants_1 = require("../common/constants");
 const editor_1 = require("../common/editor");
@@ -22,7 +22,7 @@ class PythonRenameProvider {
         this.outputChannel = serviceContainer.get(types_1.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
     }
     provideRenameEdits(document, position, newName, token) {
-        return vscode.workspace.saveAll(false).then(() => {
+        return vscode_1.workspace.saveAll(false).then(() => {
             return this.doRename(document, position, newName, token);
         });
     }
@@ -41,9 +41,9 @@ class PythonRenameProvider {
         if (oldName === newName) {
             return;
         }
-        let workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        if (!workspaceFolder && Array.isArray(vscode.workspace.workspaceFolders) && vscode.workspace.workspaceFolders.length > 0) {
-            workspaceFolder = vscode.workspace.workspaceFolders[0];
+        let workspaceFolder = vscode_1.workspace.getWorkspaceFolder(document.uri);
+        if (!workspaceFolder && Array.isArray(vscode_1.workspace.workspaceFolders) && vscode_1.workspace.workspaceFolders.length > 0) {
+            workspaceFolder = vscode_1.workspace.workspaceFolders[0];
         }
         const workspaceRoot = workspaceFolder ? workspaceFolder.uri.fsPath : __dirname;
         const pythonSettings = configSettings_1.PythonSettings.getInstance(workspaceFolder ? workspaceFolder.uri : undefined);
@@ -59,7 +59,7 @@ class PythonRenameProvider {
                 return Promise.reject('');
             }
             else {
-                vscode.window.showErrorMessage(reason);
+                vscode_1.window.showErrorMessage(reason);
                 this.outputChannel.appendLine(reason);
             }
             return Promise.reject(reason);

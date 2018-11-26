@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-any
+// tslint:disable:no-any unified-signatures
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
 let DocumentManager = class DocumentManager {
@@ -47,6 +47,12 @@ let DocumentManager = class DocumentManager {
     }
     showTextDocument(uri, options, preserveFocus) {
         return vscode_1.window.showTextDocument(uri, options, preserveFocus);
+    }
+    openTextDocument(arg) {
+        return vscode_1.workspace.openTextDocument(arg);
+    }
+    applyEdit(edit) {
+        return vscode_1.workspace.applyEdit(edit);
     }
 };
 DocumentManager = __decorate([

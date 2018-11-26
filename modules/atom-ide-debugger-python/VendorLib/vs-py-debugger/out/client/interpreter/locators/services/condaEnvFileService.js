@@ -18,12 +18,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
+const path = require("path");
 const types_1 = require("../../../common/platform/types");
 const types_2 = require("../../../common/types");
 const types_3 = require("../../../ioc/types");
 const contracts_1 = require("../../contracts");
 const cacheableLocatorService_1 = require("./cacheableLocatorService");
 const conda_1 = require("./conda");
+/**
+ * Locate conda env interpreters based on the "conda environments file".
+ */
 let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorService_1.CacheableLocatorService {
     constructor(helperService, condaService, fileSystem, serviceContainer, logger) {
         super('CondaEnvFileService', serviceContainer);
@@ -32,11 +36,24 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
         this.fileSystem = fileSystem;
         this.logger = logger;
     }
+    /**
+     * Release any held resources.
+     *
+     * Called by VS Code to indicate it is done with the resource.
+     */
     // tslint:disable-next-line:no-empty
     dispose() { }
+    /**
+     * Return the located interpreters.
+     *
+     * This is used by CacheableLocatorService.getInterpreters().
+     */
     getInterpretersImplementation(resource) {
         return this.getSuggestionsFromConda();
     }
+    /**
+     * Return the list of interpreters identified by the "conda environments file".
+     */
     getSuggestionsFromConda() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.condaService.condaEnvironmentsFile) {
@@ -46,6 +63,9 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
                 .then(exists => exists ? this.getEnvironmentsFromFile(this.condaService.condaEnvironmentsFile) : Promise.resolve([]));
         });
     }
+    /**
+     * Return the list of environments identified in the given file.
+     */
     getEnvironmentsFromFile(envFile) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -64,7 +84,6 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
                         const environment = environments.find(item => this.fileSystem.arePathsSame(item.path, interpreter.envPath));
                         if (environment) {
                             interpreter.envName = environment.name;
-                            interpreter.displayName = `${interpreter.displayName} (${environment.name})`;
                         }
                     });
                 }
@@ -77,6 +96,9 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
             }
         });
     }
+    /**
+     * Return the interpreter info for the given anaconda environment.
+     */
     getInterpreterDetails(environmentPath) {
         return __awaiter(this, void 0, void 0, function* () {
             const interpreter = this.condaService.getInterpreterPath(environmentPath);
@@ -87,19 +109,9 @@ let CondaEnvFileService = class CondaEnvFileService extends cacheableLocatorServ
             if (!details) {
                 return;
             }
-            const versionWithoutCompanyName = this.stripCompanyName(details.version);
-            return Object.assign({ displayName: `${conda_1.AnacondaDisplayName} ${versionWithoutCompanyName}` }, details, { path: interpreter, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath: environmentPath });
+            const envName = details.envName ? details.envName : path.basename(environmentPath);
+            return Object.assign({}, details, { path: interpreter, companyDisplayName: conda_1.AnacondaCompanyName, type: contracts_1.InterpreterType.Conda, envPath: environmentPath, envName });
         });
-    }
-    stripCompanyName(content) {
-        // Strip company name from version.
-        const startOfCompanyName = conda_1.AnacondaCompanyNames.reduce((index, companyName) => {
-            if (index > 0) {
-                return index;
-            }
-            return content.indexOf(`:: ${companyName}`);
-        }, -1);
-        return startOfCompanyName > 0 ? content.substring(0, startOfCompanyName).trim() : content;
     }
 };
 CondaEnvFileService = __decorate([

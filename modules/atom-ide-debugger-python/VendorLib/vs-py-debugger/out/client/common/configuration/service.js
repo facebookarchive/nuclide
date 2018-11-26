@@ -23,30 +23,40 @@ let ConfigurationService = class ConfigurationService {
     getSettings(resource) {
         return configSettings_1.PythonSettings.getInstance(resource);
     }
-    updateSettingAsync(setting, value, resource, configTarget) {
+    updateSectionSetting(section, setting, value, resource, configTarget) {
         return __awaiter(this, void 0, void 0, function* () {
-            const settingsInfo = configSettings_1.PythonSettings.getSettingsUriAndTarget(resource);
-            const pythonConfig = vscode_1.workspace.getConfiguration('python', settingsInfo.uri);
-            const currentValue = pythonConfig.inspect(setting);
+            const settingsInfo = section === 'python' ?
+                configSettings_1.PythonSettings.getSettingsUriAndTarget(resource) :
+                {
+                    uri: resource,
+                    target: configTarget ? configTarget : vscode_1.ConfigurationTarget.WorkspaceFolder
+                };
+            const configSection = vscode_1.workspace.getConfiguration(section, settingsInfo.uri);
+            const currentValue = configSection.inspect(setting);
             if (currentValue !== undefined &&
                 ((settingsInfo.target === vscode_1.ConfigurationTarget.Global && currentValue.globalValue === value) ||
                     (settingsInfo.target === vscode_1.ConfigurationTarget.Workspace && currentValue.workspaceValue === value) ||
                     (settingsInfo.target === vscode_1.ConfigurationTarget.WorkspaceFolder && currentValue.workspaceFolderValue === value))) {
                 return;
             }
-            yield pythonConfig.update(setting, value, settingsInfo.target);
-            yield this.verifySetting(pythonConfig, settingsInfo.target, setting, value);
+            yield configSection.update(setting, value, settingsInfo.target);
+            yield this.verifySetting(configSection, settingsInfo.target, setting, value);
+        });
+    }
+    updateSetting(setting, value, resource, configTarget) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.updateSectionSetting('python', setting, value, resource, configTarget);
         });
     }
     isTestExecution() {
         return process.env.VSC_PYTHON_CI_TEST === '1';
     }
-    verifySetting(pythonConfig, target, settingName, value) {
+    verifySetting(configSection, target, settingName, value) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.isTestExecution()) {
                 let retries = 0;
                 do {
-                    const setting = pythonConfig.inspect(settingName);
+                    const setting = configSection.inspect(settingName);
                     if (!setting && value === undefined) {
                         break; // Both are unset
                     }

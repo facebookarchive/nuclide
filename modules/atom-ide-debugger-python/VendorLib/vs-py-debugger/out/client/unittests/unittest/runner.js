@@ -19,8 +19,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
+const misc_1 = require("../../../utils/misc");
 const constants_1 = require("../../common/constants");
-const core_utils_1 = require("../../common/core.utils");
 const types_1 = require("../../common/types");
 const types_2 = require("../../ioc/types");
 const constants_2 = require("../common/constants");
@@ -40,6 +40,7 @@ let TestManagerRunner = class TestManagerRunner {
         this.logger = this.serviceContainer.get(types_1.ILogger);
         this.helper = this.serviceContainer.get(types_4.IUnitTestHelper);
     }
+    // tslint:disable-next-line:max-func-body-length
     runTest(testResultsService, options, testManager) {
         return __awaiter(this, void 0, void 0, function* () {
             options.tests.summary.errors = 0;
@@ -49,10 +50,9 @@ let TestManagerRunner = class TestManagerRunner {
             let failFast = false;
             const testLauncherFile = path.join(constants_1.EXTENSION_ROOT_DIR, 'pythonFiles', 'PythonTools', 'visualstudio_py_testlauncher.py');
             this.server.on('error', (message, ...data) => this.logger.logError(`${message} ${data.join(' ')}`));
-            this.server.on('log', core_utils_1.noop);
-            this.server.on('connect', core_utils_1.noop);
-            this.server.on('start', core_utils_1.noop);
-            this.server.on('socket.disconnected', core_utils_1.noop);
+            this.server.on('log', misc_1.noop);
+            this.server.on('connect', misc_1.noop);
+            this.server.on('start', misc_1.noop);
             this.server.on('result', (data) => {
                 const test = options.tests.testFunctions.find(t => t.testFunction.nameToRun === data.test);
                 const statusDetails = outcomeMapping.get(data.outcome);
@@ -106,7 +106,8 @@ let TestManagerRunner = class TestManagerRunner {
             });
             // Test everything.
             if (testPaths.length === 0) {
-                yield runTestInternal();
+                const runTestPromise = runTestInternal();
+                yield this.removeListenersAfter(runTestPromise);
             }
             // Ok, the test runner can only work with one test at a time.
             if (options.testsToRun) {
@@ -128,10 +129,25 @@ let TestManagerRunner = class TestManagerRunner {
                         promise = promise.then(() => runTestInternal(testFileName, testFn.nameToRun));
                     });
                 }
-                yield promise;
+                yield this.removeListenersAfter(promise);
             }
             testResultsService.updateResults(options.tests);
             return options.tests;
+        });
+    }
+    // remove all the listeners from the server after all tests are complete,
+    // and just pass the promise `after` through as we do not want to get in
+    // the way here.
+    // tslint:disable-next-line:no-any
+    removeListenersAfter(after) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return after.then(() => {
+                this.server.removeAllListeners();
+                return after;
+            }, (reason) => {
+                this.server.removeAllListeners();
+                return after;
+            });
         });
     }
     buildTestArgs(args) {

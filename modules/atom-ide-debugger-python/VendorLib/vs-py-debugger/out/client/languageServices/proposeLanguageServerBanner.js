@@ -21,10 +21,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
+const random_1 = require("../../utils/random");
 const types_1 = require("../common/application/types");
 require("../common/extensions");
 const types_2 = require("../common/types");
-const utils_1 = require("../common/utils");
 // persistent state names, exported to make use of in testing
 var ProposeLSStateKeys;
 (function (ProposeLSStateKeys) {
@@ -64,7 +64,7 @@ let ProposeLanguageServerBanner = class ProposeLanguageServerBanner {
             return;
         }
         // we only want 10% of folks that use Jedi to see this survey.
-        const randomSample = utils_1.getRandomBetween(0, 100);
+        const randomSample = random_1.getRandomBetween(0, 100);
         if (randomSample >= this.sampleSizePerHundred) {
             this.disable().ignoreErrors();
             return;
@@ -122,7 +122,7 @@ let ProposeLanguageServerBanner = class ProposeLanguageServerBanner {
     }
     enableNewLanguageServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.configuration.updateSettingAsync('jediEnabled', false, undefined, vscode_1.ConfigurationTarget.Global);
+            yield this.configuration.updateSetting('jediEnabled', false, undefined, vscode_1.ConfigurationTarget.Global);
         });
     }
 };

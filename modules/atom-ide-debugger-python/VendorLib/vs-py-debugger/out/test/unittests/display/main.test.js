@@ -16,12 +16,12 @@ const typeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../client/common/application/types");
 const constants_1 = require("../../../client/common/constants");
-const core_utils_1 = require("../../../client/common/core.utils");
-const helpers_1 = require("../../../client/common/helpers");
 const types_2 = require("../../../client/common/types");
 const constants_2 = require("../../../client/unittests/common/constants");
 const types_3 = require("../../../client/unittests/common/types");
 const main_1 = require("../../../client/unittests/display/main");
+const async_1 = require("../../../utils/async");
+const misc_1 = require("../../../utils/misc");
 const core_1 = require("../../core");
 suite('Unit Tests - TestResultDisplay', () => {
     const workspaceUri = vscode_1.Uri.file(__filename);
@@ -49,7 +49,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             display.dispose();
         }
         catch (_a) {
-            core_utils_1.noop();
+            misc_1.noop();
         }
     });
     function createTestResultDisplay() {
@@ -99,7 +99,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        display.displayProgressStatus(helpers_1.createDeferred().promise, false);
+        display.displayProgressStatus(async_1.createDeferred().promise, false);
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Test), typeMoq.Times.atLeastOnce());
         statusBar.verify(s => s.text = typeMoq.It.isValue('$(stop) Running Tests'), typeMoq.Times.atLeastOnce());
@@ -111,7 +111,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayProgressStatus(def.promise, false);
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Test), typeMoq.Times.atLeastOnce());
@@ -137,7 +137,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayProgressStatus(def.promise, false);
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Test), typeMoq.Times.atLeastOnce());
@@ -163,7 +163,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayProgressStatus(def.promise, false);
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Test), typeMoq.Times.atLeastOnce());
@@ -182,7 +182,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayProgressStatus(def.promise, false);
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Test), typeMoq.Times.atLeastOnce());
@@ -201,7 +201,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        display.displayDiscoverStatus(helpers_1.createDeferred().promise, false).ignoreErrors();
+        display.displayDiscoverStatus(async_1.createDeferred().promise, false).ignoreErrors();
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Discovery), typeMoq.Times.atLeastOnce());
         statusBar.verify(s => s.text = typeMoq.It.isValue('$(stop) Discovering Tests'), typeMoq.Times.atLeastOnce());
@@ -213,7 +213,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayDiscoverStatus(def.promise, false).ignoreErrors();
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Discovery), typeMoq.Times.atLeastOnce());
@@ -235,7 +235,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayDiscoverStatus(def.promise, false).ignoreErrors();
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Discovery), typeMoq.Times.atLeastOnce());
@@ -246,7 +246,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         for (const setting of ['unitTest.promptToConfigure', 'unitTest.pyTestEnabled',
             'unitTest.unittestEnabled', 'unitTest.nosetestsEnabled']) {
-            configurationService.setup(c => c.updateSettingAsync(typeMoq.It.isValue(setting), typeMoq.It.isValue(false)))
+            configurationService.setup(c => c.updateSetting(typeMoq.It.isValue(setting), typeMoq.It.isValue(false)))
                 .returns(() => Promise.resolve())
                 .verifiable(typeMoq.Times.once());
         }
@@ -264,7 +264,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayDiscoverStatus(def.promise, false).ignoreErrors();
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Discovery), typeMoq.Times.atLeastOnce());
@@ -284,7 +284,7 @@ suite('Unit Tests - TestResultDisplay', () => {
             .verifiable(typeMoq.Times.once());
         statusBar.setup(s => s.show()).verifiable(typeMoq.Times.once());
         createTestResultDisplay();
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         display.displayDiscoverStatus(def.promise, false).ignoreErrors();
         statusBar.verifyAll();
         statusBar.verify(s => s.command = typeMoq.It.isValue(constants_1.Commands.Tests_Ask_To_Stop_Discovery), typeMoq.Times.atLeastOnce());

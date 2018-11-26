@@ -42,7 +42,7 @@ class TestFileCodeLensProvider {
                     cancelTokenSrc.cancel();
                 }
             }, constants.Delays.MaxUnitTestCodeLensDelay);
-            return this.getCodeLenses(document, token, this.symbolProvider);
+            return this.getCodeLenses(document, cancelTokenSrc.token, this.symbolProvider);
         });
     }
     resolveCodeLens(codeLens, token) {
@@ -64,24 +64,30 @@ class TestFileCodeLensProvider {
                 return [];
             }
             const allFuncsAndSuites = getAllTestSuitesAndFunctionsPerFile(file);
-            return symbolProvider.provideDocumentSymbolsForInternalUse(document, token)
-                .then((symbols) => {
-                return symbols.filter(symbol => {
-                    return symbol.kind === vscode_1.SymbolKind.Function ||
-                        symbol.kind === vscode_1.SymbolKind.Method ||
-                        symbol.kind === vscode_1.SymbolKind.Class;
-                }).map(symbol => {
+            try {
+                const symbols = (yield symbolProvider.provideDocumentSymbols(document, token));
+                if (!symbols) {
+                    return [];
+                }
+                return symbols
+                    .filter(symbol => symbol.kind === vscode_1.SymbolKind.Function ||
+                    symbol.kind === vscode_1.SymbolKind.Method ||
+                    symbol.kind === vscode_1.SymbolKind.Class)
+                    .map(symbol => {
                     // This is bloody crucial, if the start and end columns are the same
                     // then vscode goes bonkers when ever you edit a line (start scrolling magically).
                     const range = new vscode_1.Range(symbol.location.range.start, new vscode_1.Position(symbol.location.range.end.line, symbol.location.range.end.character + 1));
                     return this.getCodeLens(document.uri, allFuncsAndSuites, range, symbol.name, symbol.kind, symbol.containerName);
-                }).reduce((previous, current) => previous.concat(current), []).filter(codeLens => codeLens !== null);
-            }, reason => {
+                })
+                    .reduce((previous, current) => previous.concat(current), [])
+                    .filter(codeLens => codeLens !== null);
+            }
+            catch (reason) {
                 if (token.isCancellationRequested) {
                     return [];
                 }
                 return Promise.reject(reason);
-            });
+            }
         });
     }
     getCodeLens(file, allFuncsAndSuites, range, symbolName, symbolKind, symbolContainer) {
@@ -93,7 +99,7 @@ class TestFileCodeLensProvider {
             case vscode_1.SymbolKind.Class: {
                 const cls = allFuncsAndSuites.suites.find(item => item.name === symbolName);
                 if (!cls) {
-                    return null;
+                    return [];
                 }
                 return [
                     new vscode_1.CodeLens(range, {

@@ -14,10 +14,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const path = require("path");
 const TypeMoq = require("typemoq");
-const enumUtils_1 = require("../../../client/common/enumUtils");
 const types_1 = require("../../../client/common/platform/types");
 const contracts_1 = require("../../../client/interpreter/contracts");
 const helpers_1 = require("../../../client/interpreter/locators/helpers");
+const enum_1 = require("../../../utils/enum");
+const platform_1 = require("../../../utils/platform");
 var OS;
 (function (OS) {
     OS["Windows"] = "Windows";
@@ -40,21 +41,20 @@ suite('Interpreters - Locators Helper', () => {
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(contracts_1.IInterpreterHelper))).returns(() => interpreterServiceHelper.object);
         helper = new helpers_1.InterpreterLocatorHelper(serviceContainer.object);
     });
-    test('Ensure default Mac interpreters are excluded from the list of interpreters', () => __awaiter(this, void 0, void 0, function* () {
+    test('Ensure default Mac interpreter is not excluded from the list of interpreters', () => __awaiter(this, void 0, void 0, function* () {
         platform.setup(p => p.isWindows).returns(() => false);
         platform.setup(p => p.isLinux).returns(() => false);
         platform
             .setup(p => p.isMac).returns(() => true)
-            .verifiable(TypeMoq.Times.atLeastOnce());
+            .verifiable(TypeMoq.Times.never());
         fs
             .setup(f => f.arePathsSame(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
             .returns(() => false)
             .verifiable(TypeMoq.Times.atLeastOnce());
         const interpreters = [];
-        const macInterpreterPath = path.join('users', 'python', 'bin', 'mac');
         ['conda', 'virtualenv', 'mac', 'pyenv'].forEach(name => {
             const interpreter = {
-                architecture: types_1.Architecture.Unknown,
+                architecture: platform_1.Architecture.Unknown,
                 displayName: name,
                 path: path.join('users', 'python', 'bin', name),
                 sysPrefix: name,
@@ -68,17 +68,17 @@ suite('Interpreters - Locators Helper', () => {
             interpreterServiceHelper
                 .setup(i => i.isMacDefaultPythonPath(TypeMoq.It.isValue(interpreter.path)))
                 .returns(() => name === 'mac')
-                .verifiable(TypeMoq.Times.once());
+                .verifiable(TypeMoq.Times.never());
         });
-        const expectedInterpreters = interpreters.filter(item => item.path !== macInterpreterPath);
+        const expectedInterpreters = interpreters.slice(0);
         const items = helper.mergeInterpreters(interpreters);
         interpreterServiceHelper.verifyAll();
         platform.verifyAll();
         fs.verifyAll();
-        chai_1.expect(items).to.be.lengthOf(3);
+        chai_1.expect(items).to.be.lengthOf(4);
         chai_1.expect(items).to.be.deep.equal(expectedInterpreters);
     }));
-    enumUtils_1.EnumEx.getNamesAndValues(OS).forEach(os => {
+    enum_1.getNamesAndValues(OS).forEach(os => {
         test(`Ensure duplicates are removed (same version and same interpreter directory on ${os.name})`, () => __awaiter(this, void 0, void 0, function* () {
             interpreterServiceHelper
                 .setup(i => i.isMacDefaultPythonPath(TypeMoq.It.isAny()))
@@ -95,7 +95,7 @@ suite('Interpreters - Locators Helper', () => {
             // Unique python paths and versions.
             ['3.6', '3.6', '2.7', '2.7'].forEach((name, index) => {
                 const interpreter = {
-                    architecture: types_1.Architecture.Unknown,
+                    architecture: platform_1.Architecture.Unknown,
                     displayName: name,
                     path: path.join('users', `python${name}${index}`, 'bin', name + index.toString()),
                     sysPrefix: name,
@@ -110,7 +110,7 @@ suite('Interpreters - Locators Helper', () => {
             // Same versions, but different executables.
             ['3.6', '3.6', '3.7', '3.7'].forEach((name, index) => {
                 const interpreter = {
-                    architecture: types_1.Architecture.Unknown,
+                    architecture: platform_1.Architecture.Unknown,
                     displayName: name,
                     path: path.join('users', 'python', 'bin', 'python.exe'),
                     sysPrefix: name,
@@ -120,7 +120,7 @@ suite('Interpreters - Locators Helper', () => {
                     version_info: [3, parseInt(name.substr(-1), 10), 0, 'final']
                 };
                 const duplicateInterpreter = {
-                    architecture: types_1.Architecture.Unknown,
+                    architecture: platform_1.Architecture.Unknown,
                     displayName: name,
                     path: path.join('users', 'python', 'bin', `python${name}.exe`),
                     sysPrefix: name,
@@ -143,7 +143,7 @@ suite('Interpreters - Locators Helper', () => {
             chai_1.expect(items).to.be.deep.equal(expectedInterpreters);
         }));
     });
-    enumUtils_1.EnumEx.getNamesAndValues(OS).forEach(os => {
+    enum_1.getNamesAndValues(OS).forEach(os => {
         test(`Ensure interpreter types are identified from other locators (${os.name})`, () => __awaiter(this, void 0, void 0, function* () {
             interpreterServiceHelper
                 .setup(i => i.isMacDefaultPythonPath(TypeMoq.It.isAny()))
@@ -162,7 +162,7 @@ suite('Interpreters - Locators Helper', () => {
                 // and type in second item is known (e.g. Conda).
                 const type = index === 0 ? contracts_1.InterpreterType.Unknown : contracts_1.InterpreterType.PipEnv;
                 const interpreter = {
-                    architecture: types_1.Architecture.Unknown,
+                    architecture: platform_1.Architecture.Unknown,
                     displayName: name,
                     path: path.join('users', 'python', 'bin', 'python.exe'),
                     sysPrefix: name,
@@ -185,5 +185,4 @@ suite('Interpreters - Locators Helper', () => {
         }));
     });
 });
-
 //# sourceMappingURL=helpers.unit.test.js.map

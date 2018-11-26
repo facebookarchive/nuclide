@@ -78,7 +78,7 @@ suite('Multiroot Linting', () => {
     function enableDisableSetting(workspaceFolder, configTarget, setting, value) {
         return __awaiter(this, void 0, void 0, function* () {
             const config = ioc.serviceContainer.get(types_2.IConfigurationService);
-            yield config.updateSettingAsync(setting, value, vscode_1.Uri.file(workspaceFolder), configTarget);
+            yield config.updateSetting(setting, value, vscode_1.Uri.file(workspaceFolder), configTarget);
         });
     }
     test('Enabling Pylint in root and also in Workspace, should return errors', () => __awaiter(this, void 0, void 0, function* () {

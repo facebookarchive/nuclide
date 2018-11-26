@@ -19,76 +19,69 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const _ = require("lodash");
-const path = require("path");
 const types_1 = require("../../common/platform/types");
 const types_2 = require("../../common/types");
-const utils_1 = require("../../common/utils");
 const types_3 = require("../../ioc/types");
 const contracts_1 = require("../contracts");
-const helpers_1 = require("./helpers");
+/**
+ * Facilitates locating Python interpreters.
+ */
 let PythonInterpreterLocatorService = class PythonInterpreterLocatorService {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
         this.disposables = [];
         serviceContainer.get(types_2.IDisposableRegistry).push(this);
         this.platform = serviceContainer.get(types_1.IPlatformService);
+        this.interpreterLocatorHelper = serviceContainer.get(contracts_1.IInterpreterLocatorHelper);
     }
-    getInterpreters(resource) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.getInterpretersPerResource(resource);
-        });
-    }
+    /**
+     * Release any held resources.
+     *
+     * Called by VS Code to indicate it is done with the resource.
+     */
     dispose() {
         this.disposables.forEach(disposable => disposable.dispose());
     }
-    getInterpretersPerResource(resource) {
+    /**
+     * Return the list of known Python interpreters.
+     *
+     * The optional resource arg may control where locators look for
+     * interpreters.
+     */
+    getInterpreters(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const locators = this.getLocators();
             const promises = locators.map((provider) => __awaiter(this, void 0, void 0, function* () { return provider.getInterpreters(resource); }));
             const listOfInterpreters = yield Promise.all(promises);
-            // tslint:disable-next-line:underscore-consistent-invocation
-            return _.flatten(listOfInterpreters)
+            const items = _.flatten(listOfInterpreters)
                 .filter(item => !!item)
-                .map(item => item)
-                .map(helpers_1.fixInterpreterDisplayName)
-                .map(item => { item.path = path.normalize(item.path); return item; })
-                .reduce((accumulator, current) => {
-                if (this.platform.isMac && helpers_1.isMacDefaultPythonPath(current.path)) {
-                    return accumulator;
-                }
-                const existingItem = accumulator.find(item => utils_1.arePathsSame(item.path, current.path));
-                if (!existingItem) {
-                    accumulator.push(current);
-                }
-                else {
-                    // Preserve type information.
-                    if (existingItem.type === contracts_1.InterpreterType.Unknown && current.type !== contracts_1.InterpreterType.Unknown) {
-                        existingItem.type = current.type;
-                    }
-                }
-                return accumulator;
-            }, []);
+                .map(item => item);
+            return this.interpreterLocatorHelper.mergeInterpreters(items);
         });
     }
+    /**
+     * Return the list of applicable interpreter locators.
+     *
+     * The locators are pulled from the registry.
+     */
     getLocators() {
-        const locators = [];
         // The order of the services is important.
         // The order is important because the data sources at the bottom of the list do not contain all,
         //  the information about the interpreters (e.g. type, environment name, etc).
         // This way, the items returned from the top of the list will win, when we combine the items returned.
-        if (this.platform.isWindows) {
-            locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.WINDOWS_REGISTRY_SERVICE));
-        }
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.CONDA_ENV_SERVICE));
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.CONDA_ENV_FILE_SERVICE));
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.GLOBAL_VIRTUAL_ENV_SERVICE));
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.WORKSPACE_VIRTUAL_ENV_SERVICE));
-        if (!this.platform.isWindows) {
-            locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.KNOWN_PATH_SERVICE));
-        }
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.CURRENT_PATH_SERVICE));
-        locators.push(this.serviceContainer.get(contracts_1.IInterpreterLocatorService, contracts_1.PIPENV_SERVICE));
-        return locators;
+        const keys = [
+            [contracts_1.WINDOWS_REGISTRY_SERVICE, 'win'],
+            [contracts_1.CONDA_ENV_SERVICE, ''],
+            [contracts_1.CONDA_ENV_FILE_SERVICE, ''],
+            [contracts_1.PIPENV_SERVICE, ''],
+            [contracts_1.GLOBAL_VIRTUAL_ENV_SERVICE, ''],
+            [contracts_1.WORKSPACE_VIRTUAL_ENV_SERVICE, ''],
+            [contracts_1.KNOWN_PATH_SERVICE, ''],
+            [contracts_1.CURRENT_PATH_SERVICE, '']
+        ];
+        return getLocators(keys, this.platform, (key) => {
+            return this.serviceContainer.get(contracts_1.IInterpreterLocatorService, key);
+        });
     }
 };
 PythonInterpreterLocatorService = __decorate([
@@ -96,4 +89,15 @@ PythonInterpreterLocatorService = __decorate([
     __param(0, inversify_1.inject(types_3.IServiceContainer))
 ], PythonInterpreterLocatorService);
 exports.PythonInterpreterLocatorService = PythonInterpreterLocatorService;
+function getLocators(keys, platform, getService) {
+    const locators = [];
+    for (const [key, platformName] of keys) {
+        if (!platform.info.matchPlatform(platformName)) {
+            continue;
+        }
+        const locator = getService(key);
+        locators.push(locator);
+    }
+    return locators;
+}
 //# sourceMappingURL=index.js.map

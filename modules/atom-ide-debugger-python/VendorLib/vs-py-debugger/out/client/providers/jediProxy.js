@@ -20,13 +20,13 @@ const fs = require("fs-extra");
 const path = require("path");
 const pidusage = require("pidusage");
 const vscode_1 = require("vscode");
+const async_1 = require("../../utils/async");
+const decorators_1 = require("../../utils/decorators");
+const stopWatch_1 = require("../../utils/stopWatch");
 const configSettings_1 = require("../common/configSettings");
 const constants_1 = require("../common/constants");
-const decorators_1 = require("../common/decorators");
 require("../common/extensions");
-const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/process/types");
-const stopWatch_1 = require("../common/stopWatch");
 const types_2 = require("../common/types");
 const types_3 = require("../common/variables/types");
 const logger = require("./../common/logger");
@@ -152,7 +152,7 @@ class JediProxy {
         this.lastKnownPythonInterpreter = this.pythonSettings.pythonPath;
         this.logger = serviceContainer.get(types_2.ILogger);
         this.pythonSettings.on('change', () => this.pythonSettingsChangeHandler());
-        this.initialized = helpers_1.createDeferred();
+        this.initialized = async_1.createDeferred();
         this.startLanguageServer().then(() => this.initialized.resolve()).ignoreErrors();
         this.proposeNewLanguageServerPopup = serviceContainer.get(types_2.IPythonExtensionBanner, types_2.BANNER_NAME_PROPOSE_LS);
         this.checkJediMemoryFootprint().ignoreErrors();
@@ -177,7 +177,7 @@ class JediProxy {
             }
             const executionCmd = cmd;
             const payload = this.createPayload(executionCmd);
-            executionCmd.deferred = helpers_1.createDeferred();
+            executionCmd.deferred = async_1.createDeferred();
             try {
                 this.proc.stdin.write(`${JSON.stringify(payload)}\n`);
                 this.commands.set(executionCmd.id, executionCmd);
@@ -241,7 +241,7 @@ class JediProxy {
             }
             this.lastCmdIdProcessedForPidUsage = this.lastCmdIdProcessed;
             // Do not run pidusage over and over, wait for it to finish.
-            const deferred = helpers_1.createDeferred();
+            const deferred = async_1.createDeferred();
             pidusage.stat(this.proc.pid, (err, result) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
                     this.pidUsageFailures.counter += 1;
@@ -327,7 +327,7 @@ class JediProxy {
             if (this.languageServerStarted && !this.languageServerStarted.completed) {
                 this.languageServerStarted.reject(new Error('Language Server not started.'));
             }
-            this.languageServerStarted = helpers_1.createDeferred();
+            this.languageServerStarted = async_1.createDeferred();
             const pythonProcess = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create({ resource: vscode_1.Uri.file(this.workspacePath) });
             // Check if the python path is valid.
             if ((yield pythonProcess.getExecutablePath().catch(() => '')).length === 0) {
@@ -337,12 +337,6 @@ class JediProxy {
             if (typeof this.pythonSettings.jediPath === 'string' && this.pythonSettings.jediPath.length > 0) {
                 args.push('custom');
                 args.push(this.pythonSettings.jediPath);
-            }
-            if (this.pythonSettings.autoComplete &&
-                Array.isArray(this.pythonSettings.autoComplete.preloadModules) &&
-                this.pythonSettings.autoComplete.preloadModules.length > 0) {
-                const modules = this.pythonSettings.autoComplete.preloadModules.filter(m => m.trim().length > 0).join(',');
-                args.push(modules);
             }
             const result = pythonProcess.execObservable(args, { cwd });
             this.proc = result.proc;

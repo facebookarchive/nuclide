@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
 const types_1 = require("../common/types");
+const interpreterComparer_1 = require("./configuration/interpreterComparer");
 const interpreterSelector_1 = require("./configuration/interpreterSelector");
 const pythonPathUpdaterService_1 = require("./configuration/pythonPathUpdaterService");
 const pythonPathUpdaterServiceFactory_1 = require("./configuration/pythonPathUpdaterServiceFactory");
@@ -13,6 +14,7 @@ const shebangCodeLensProvider_1 = require("./display/shebangCodeLensProvider");
 const helpers_1 = require("./helpers");
 const interpreterService_1 = require("./interpreterService");
 const interpreterVersion_1 = require("./interpreterVersion");
+const helpers_2 = require("./locators/helpers");
 const index_1 = require("./locators/index");
 const condaEnvFileService_1 = require("./locators/services/condaEnvFileService");
 const condaEnvService_1 = require("./locators/services/condaEnvService");
@@ -26,7 +28,7 @@ const workspaceVirtualEnvService_1 = require("./locators/services/workspaceVirtu
 const index_2 = require("./virtualEnvs/index");
 const types_3 = require("./virtualEnvs/types");
 function registerTypes(serviceManager) {
-    serviceManager.addSingletonInstance(contracts_1.IKnownSearchPathsForInterpreters, KnownPathsService_1.getKnownSearchPathsForInterpreters());
+    serviceManager.addSingleton(contracts_1.IKnownSearchPathsForInterpreters, KnownPathsService_1.KnownSearchPathsForInterpreters);
     serviceManager.addSingleton(contracts_1.IVirtualEnvironmentsSearchPathProvider, globalVirtualEnvService_1.GlobalVirtualEnvironmentsSearchPathProvider, 'global');
     serviceManager.addSingleton(contracts_1.IVirtualEnvironmentsSearchPathProvider, workspaceVirtualEnvService_1.WorkspaceVirtualEnvironmentsSearchPathProvider, 'workspace');
     serviceManager.addSingleton(contracts_1.ICondaService, condaService_1.CondaService);
@@ -44,9 +46,7 @@ function registerTypes(serviceManager) {
     if (isWindows) {
         serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, windowsRegistryService_1.WindowsRegistryService, contracts_1.WINDOWS_REGISTRY_SERVICE);
     }
-    else {
-        serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, KnownPathsService_1.KnownPathsService, contracts_1.KNOWN_PATH_SERVICE);
-    }
+    serviceManager.addSingleton(contracts_1.IInterpreterLocatorService, KnownPathsService_1.KnownPathsService, contracts_1.KNOWN_PATH_SERVICE);
     serviceManager.addSingleton(contracts_1.IInterpreterService, interpreterService_1.InterpreterService);
     serviceManager.addSingleton(contracts_1.IInterpreterDisplay, display_1.InterpreterDisplay);
     serviceManager.addSingleton(types_2.IPythonPathUpdaterServiceFactory, pythonPathUpdaterServiceFactory_1.PythonPathUpdaterServiceFactory);
@@ -54,6 +54,8 @@ function registerTypes(serviceManager) {
     serviceManager.addSingleton(types_2.IInterpreterSelector, interpreterSelector_1.InterpreterSelector);
     serviceManager.addSingleton(contracts_1.IShebangCodeLensProvider, shebangCodeLensProvider_1.ShebangCodeLensProvider);
     serviceManager.addSingleton(contracts_1.IInterpreterHelper, helpers_1.InterpreterHelper);
+    serviceManager.addSingleton(contracts_1.IInterpreterLocatorHelper, helpers_2.InterpreterLocatorHelper);
+    serviceManager.addSingleton(types_2.IInterpreterComparer, interpreterComparer_1.InterpreterComparer);
 }
 exports.registerTypes = registerTypes;
 //# sourceMappingURL=serviceRegistry.js.map

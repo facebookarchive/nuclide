@@ -133,22 +133,22 @@ class BaseLinter {
         };
     }
     parseLines(outputLines, regEx) {
-        return outputLines
-            .filter((value, index) => index <= this.pythonSettings.linting.maxNumberOfProblems)
-            .map(line => {
+        const messages = [];
+        for (const line of outputLines) {
             try {
                 const msg = this.parseLine(line, regEx);
                 if (msg) {
-                    return msg;
+                    messages.push(msg);
+                    if (messages.length >= this.pythonSettings.linting.maxNumberOfProblems) {
+                        break;
+                    }
                 }
             }
             catch (ex) {
                 this.logger.logError(`Linter '${this.info.id}' failed to parse the line '${line}.`, ex);
             }
-            return;
-        })
-            .filter(item => item !== undefined)
-            .map(item => item);
+        }
+        return messages;
     }
     displayLinterResultHeader(data) {
         this.outputChannel.append(`${'#'.repeat(10)}Linting Output - ${this.info.id}${'#'.repeat(10)}\n`);

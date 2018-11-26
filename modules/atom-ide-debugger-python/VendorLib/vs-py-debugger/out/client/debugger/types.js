@@ -7,4 +7,6 @@ exports.IProtocolLogger = Symbol('IProtocolLogger');
 exports.IDebugStreamProvider = Symbol('IDebugStreamProvider');
 exports.IProtocolMessageWriter = Symbol('IProtocolMessageWriter');
 exports.IDebugConfigurationProvider = Symbol('DebugConfigurationProvider');
+exports.IDebuggerBanner = Symbol('IDebuggerBanner');
+exports.IExcutableValidator = Symbol('IExcutableValidator');
 //# sourceMappingURL=types.js.map

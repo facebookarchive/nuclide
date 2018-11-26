@@ -28,4 +28,5 @@ exports.IInterpreterDisplay = Symbol('IInterpreterDisplay');
 exports.IShebangCodeLensProvider = Symbol('IShebangCodeLensProvider');
 exports.IInterpreterHelper = Symbol('IInterpreterHelper');
 exports.IPipEnvService = Symbol('IPipEnvService');
+exports.IInterpreterLocatorHelper = Symbol('IInterpreterLocatorHelper');
 //# sourceMappingURL=contracts.js.map

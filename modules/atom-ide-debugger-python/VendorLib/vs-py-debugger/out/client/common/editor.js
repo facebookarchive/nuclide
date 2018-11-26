@@ -1,12 +1,18 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const dmp = require("diff-match-patch");
-const fs = require("fs");
+const fs = require("fs-extra");
+const inversify_1 = require("inversify");
 const md5 = require("md5");
 const os_1 = require("os");
 const path = require("path");
 const vscode_1 = require("vscode");
-const vscode = require("vscode");
 // Code borrowed from goFormat.ts (Go Extension for VS Code)
 var EditAction;
 (function (EditAction) {
@@ -100,7 +106,7 @@ function getWorkspaceEditsFromPatch(filePatches, workspaceRoot) {
             throw new Error('Unable to parse Patch string');
         }
         const fileSource = fs.readFileSync(fileName).toString('utf8');
-        const fileUri = vscode.Uri.file(fileName);
+        const fileUri = vscode_1.Uri.file(fileName);
         // Add line feeds and build the text edits
         patches.forEach(p => {
             p.diffs.forEach(diff => {
@@ -304,4 +310,50 @@ function patch_fromText(textline) {
     }
     return patches;
 }
+let EditorUtils = class EditorUtils {
+    getWorkspaceEditsFromPatch(originalContents, patch, uri) {
+        const workspaceEdit = new vscode_1.WorkspaceEdit();
+        if (patch.startsWith('---')) {
+            // Strip the first two lines
+            patch = patch.substring(patch.indexOf('@@'));
+        }
+        if (patch.length === 0) {
+            return workspaceEdit;
+        }
+        // Remove the text added by unified_diff
+        // # Work around missing newline (http://bugs.python.org/issue2142).
+        patch = patch.replace(/\\ No newline at end of file[\r\n]/, '');
+        const d = new dmp.diff_match_patch();
+        const patches = patch_fromText.call(d, patch);
+        if (!Array.isArray(patches) || patches.length === 0) {
+            throw new Error('Unable to parse Patch string');
+        }
+        // Add line feeds and build the text edits
+        patches.forEach(p => {
+            p.diffs.forEach(diff => {
+                diff[1] += os_1.EOL;
+            });
+            getTextEditsInternal(originalContents, p.diffs, p.start1).forEach(edit => {
+                switch (edit.action) {
+                    case EditAction.Delete:
+                        workspaceEdit.delete(uri, new vscode_1.Range(edit.start, edit.end));
+                        break;
+                    case EditAction.Insert:
+                        workspaceEdit.insert(uri, edit.start, edit.text);
+                        break;
+                    case EditAction.Replace:
+                        workspaceEdit.replace(uri, new vscode_1.Range(edit.start, edit.end), edit.text);
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+        return workspaceEdit;
+    }
+};
+EditorUtils = __decorate([
+    inversify_1.injectable()
+], EditorUtils);
+exports.EditorUtils = EditorUtils;
 //# sourceMappingURL=editor.js.map

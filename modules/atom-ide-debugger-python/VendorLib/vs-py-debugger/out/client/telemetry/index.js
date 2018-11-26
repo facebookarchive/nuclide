@@ -2,11 +2,33 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 Object.defineProperty(exports, "__esModule", { value: true });
-const stopWatch_1 = require("../common/stopWatch");
-const telemetry_1 = require("./telemetry");
+// tslint:disable-next-line:no-reference
+/// <reference path="./vscode-extension-telemetry.d.ts" />
+const vscode_1 = require("vscode");
+const stopWatch_1 = require("../../utils/stopWatch");
+const constants_1 = require("../common/constants");
+let telemetryReporter;
+function getTelemetryReporter() {
+    if (telemetryReporter) {
+        return telemetryReporter;
+    }
+    const extensionId = constants_1.PVSC_EXTENSION_ID;
+    // tslint:disable-next-line:no-non-null-assertion
+    const extension = vscode_1.extensions.getExtension(extensionId);
+    // tslint:disable-next-line:no-unsafe-any
+    const extensionVersion = extension.packageJSON.version;
+    // tslint:disable-next-line:no-unsafe-any
+    const aiKey = extension.packageJSON.contributes.debuggers[0].aiKey;
+    // tslint:disable-next-line:no-require-imports
+    const reporter = require('vscode-extension-telemetry').default;
+    return telemetryReporter = new reporter(extensionId, extensionVersion, aiKey);
+}
 function sendTelemetryEvent(eventName, durationMs, properties) {
-    const reporter = telemetry_1.getTelemetryReporter();
-    const measures = typeof durationMs === 'number' ? { duration: durationMs } : undefined;
+    if (constants_1.isTestExecution()) {
+        return;
+    }
+    const reporter = getTelemetryReporter();
+    const measures = typeof durationMs === 'number' ? { duration: durationMs } : (durationMs ? durationMs : undefined);
     // tslint:disable-next-line:no-any
     const customProperties = {};
     if (properties) {
@@ -49,6 +71,7 @@ function captureTelemetry(eventName, properties, captureDuration = true) {
                 })
                     // tslint:disable-next-line:promise-function-async
                     .catch(ex => {
+                    // tslint:disable-next-line:no-any
                     sendTelemetryEvent(eventName, stopWatch.elapsedTime, properties);
                     return Promise.reject(ex);
                 });

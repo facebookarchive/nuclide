@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const RemoteDebugServer_1 = require("../DebugServers/RemoteDebugServer");
 const RemoteDebugServerv2_1 = require("../DebugServers/RemoteDebugServerv2");
 const DebugClient_1 = require("./DebugClient");
 class RemoteDebugClient extends DebugClient_1.DebugClient {
@@ -8,15 +7,9 @@ class RemoteDebugClient extends DebugClient_1.DebugClient {
     constructor(args, debugSession) {
         super(args, debugSession);
     }
-    CreateDebugServer(pythonProcess) {
-        if (this.args.type === 'pythonExperimental') {
-            // tslint:disable-next-line:no-any
-            this.debugServer = new RemoteDebugServerv2_1.RemoteDebugServerV2(this.debugSession, undefined, this.args);
-        }
-        else {
-            this.pythonProcess = pythonProcess;
-            this.debugServer = new RemoteDebugServer_1.RemoteDebugServer(this.debugSession, this.pythonProcess, this.args);
-        }
+    CreateDebugServer(_pythonProcess) {
+        // tslint:disable-next-line:no-any
+        this.debugServer = new RemoteDebugServerv2_1.RemoteDebugServerV2(this.debugSession, undefined, this.args);
         return this.debugServer;
     }
     get DebugType() {

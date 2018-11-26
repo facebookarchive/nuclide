@@ -7,19 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
 const vscode_1 = require("vscode");
 const configSettings_1 = require("../client/common/configSettings");
 const constants_1 = require("../client/common/constants");
-const core_1 = require("./core");
 const initialize_1 = require("./initialize");
-__export(require("./core"));
-// tslint:disable:no-non-null-assertion no-unsafe-any await-promise no-any no-use-before-declare no-string-based-set-timeout no-unsafe-any no-any no-invalid-this
+var core_1 = require("./core");
+exports.sleep = core_1.sleep;
+// tslint:disable:no-invalid-this no-any
 const fileInNonRootWorkspace = path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'test', 'pythonFiles', 'dummy.py');
 exports.rootWorkspaceUri = getWorkspaceRoot();
 exports.PYTHON_PATH = getPythonPath();
@@ -34,11 +31,21 @@ function updateSetting(setting, value, resource, configTarget) {
             return;
         }
         yield settings.update(setting, value, configTarget);
-        yield core_1.sleep(2000);
+        // We've experienced trouble with .update in the past, where VSC returns stale data even
+        // after invoking the update method. This issue has regressed a few times as well. This
+        // delay is merely a backup to ensure it extension doesn't break the tests due to similar
+        // regressions in VSC:
+        // await sleep(2000);
+        // ... please see issue #2356 and PR #2332 for a discussion on the matter
         configSettings_1.PythonSettings.dispose();
     });
 }
 exports.updateSetting = updateSetting;
+// In some tests we will be mocking VS Code API (mocked classes)
+const globalPythonPathSetting = vscode_1.workspace.getConfiguration('python') ? vscode_1.workspace.getConfiguration('python').inspect('pythonPath').globalValue : 'python';
+exports.clearPythonPathInWorkspaceFolder = (resource) => __awaiter(this, void 0, void 0, function* () { return retryAsync(setPythonPathInWorkspace)(resource, vscode_1.ConfigurationTarget.WorkspaceFolder); });
+exports.setPythonPathInWorkspaceRoot = (pythonPath) => __awaiter(this, void 0, void 0, function* () { return retryAsync(setPythonPathInWorkspace)(undefined, vscode_1.ConfigurationTarget.Workspace, pythonPath); });
+exports.resetGlobalPythonPathSetting = () => __awaiter(this, void 0, void 0, function* () { return retryAsync(restoreGlobalPythonPathSetting)(); });
 function getWorkspaceRoot() {
     if (!Array.isArray(vscode_1.workspace.workspaceFolders) || vscode_1.workspace.workspaceFolders.length === 0) {
         return vscode_1.Uri.file(path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'test'));
@@ -114,11 +121,6 @@ function deleteFile(file) {
     });
 }
 exports.deleteFile = deleteFile;
-// In some tests we will be mocking VS Code API (mocked classes)
-const globalPythonPathSetting = vscode_1.workspace.getConfiguration('python') ? vscode_1.workspace.getConfiguration('python').inspect('pythonPath').globalValue : 'python';
-exports.clearPythonPathInWorkspaceFolder = (resource) => __awaiter(this, void 0, void 0, function* () { return retryAsync(setPythonPathInWorkspace)(resource, vscode_1.ConfigurationTarget.WorkspaceFolder); });
-exports.setPythonPathInWorkspaceRoot = (pythonPath) => __awaiter(this, void 0, void 0, function* () { return retryAsync(setPythonPathInWorkspace)(undefined, vscode_1.ConfigurationTarget.Workspace, pythonPath); });
-exports.resetGlobalPythonPathSetting = () => __awaiter(this, void 0, void 0, function* () { return retryAsync(restoreGlobalPythonPathSetting)(); });
 function getPythonPath() {
     if (process.env.CI_PYTHON_PATH && fs.existsSync(process.env.CI_PYTHON_PATH)) {
         return process.env.CI_PYTHON_PATH;

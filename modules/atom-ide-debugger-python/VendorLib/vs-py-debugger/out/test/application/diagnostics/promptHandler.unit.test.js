@@ -16,7 +16,7 @@ const vscode_1 = require("vscode");
 const promptHandler_1 = require("../../../client/application/diagnostics/promptHandler");
 const types_1 = require("../../../client/application/diagnostics/types");
 const types_2 = require("../../../client/common/application/types");
-const enumUtils_1 = require("../../../client/common/enumUtils");
+const enum_1 = require("../../../utils/enum");
 suite('Application Diagnostics - PromptHandler', () => {
     let serviceContainer;
     let appShell;
@@ -28,7 +28,7 @@ suite('Application Diagnostics - PromptHandler', () => {
             .returns(() => appShell.object);
         promptHandler = new promptHandler_1.DiagnosticCommandPromptHandlerService(serviceContainer.object);
     });
-    enumUtils_1.EnumEx.getNamesAndValues(vscode_1.DiagnosticSeverity).forEach(severity => {
+    enum_1.getNamesAndValues(vscode_1.DiagnosticSeverity).forEach(severity => {
         test(`Handling a diagnositic of severity '${severity.name}' should display a message without any buttons`, () => __awaiter(this, void 0, void 0, function* () {
             const diagnostic = { code: '1', message: 'one', scope: types_1.DiagnosticScope.Global, severity: severity.value };
             switch (severity.value) {

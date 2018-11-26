@@ -87,5 +87,30 @@ suite('FileSystem', () => {
         const fileName = files[0].replace(/\\/g, '/');
         chai_1.expect(fileName).to.equal(expectedFileName);
     }));
+    test('Ensure creating a temporary file results in a unique temp file path', () => __awaiter(this, void 0, void 0, function* () {
+        const tempFile = yield fileSystem.createTemporaryFile('.tmp');
+        const tempFile2 = yield fileSystem.createTemporaryFile('.tmp');
+        chai_1.expect(tempFile.filePath).to.not.equal(tempFile2.filePath, 'Temp files must be unique, implementation of createTemporaryFile is off.');
+    }));
+    test('Ensure writing to a temp file is supported via file stream', () => __awaiter(this, void 0, void 0, function* () {
+        yield fileSystem.createTemporaryFile('.tmp').then((tf) => {
+            chai_1.expect(tf).to.not.equal(undefined, 'Error trying to create a temporary file');
+            const writeStream = fileSystem.createWriteStream(tf.filePath);
+            writeStream.write('hello', 'utf8', (err) => {
+                chai_1.expect(err).to.equal(undefined, `Failed to write to a temp file, error is ${err}`);
+            });
+        }, (failReason) => {
+            chai_1.expect(failReason).to.equal('No errors occured', `Failed to create a temporary file with error ${failReason}`);
+        });
+    }));
+    test('Ensure chmod works against a temporary file', () => __awaiter(this, void 0, void 0, function* () {
+        yield fileSystem.createTemporaryFile('.tmp').then((fl) => __awaiter(this, void 0, void 0, function* () {
+            yield fileSystem.chmod(fl.filePath, '7777').then((success) => {
+                // cannot check for success other than we got here, chmod in Windows won't have any effect on the file itself.
+            }, (failReason) => {
+                chai_1.expect(failReason).to.equal('There was no error using chmod', `Failed to perform chmod operation successfully, got error ${failReason}`);
+            });
+        }));
+    }));
 });
 //# sourceMappingURL=filesystem.unit.test.js.map

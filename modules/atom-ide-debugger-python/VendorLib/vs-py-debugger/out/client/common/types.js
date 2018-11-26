@@ -58,13 +58,16 @@ var ModuleNamePurpose;
 })(ModuleNamePurpose = exports.ModuleNamePurpose || (exports.ModuleNamePurpose = {}));
 exports.IInstaller = Symbol('IInstaller');
 exports.IPathUtils = Symbol('IPathUtils');
+exports.IRandom = Symbol('IRandom');
 exports.ICurrentProcess = Symbol('ICurrentProcess');
 exports.IConfigurationService = Symbol('IConfigurationService');
 exports.ISocketServer = Symbol('ISocketServer');
 exports.IExtensionContext = Symbol('ExtensionContext');
+exports.IExtensions = Symbol('IExtensions');
 exports.IBrowserService = Symbol('IBrowserService');
-exports.IExperimentalDebuggerBanner = Symbol('IExperimentalDebuggerBanner');
 exports.IPythonExtensionBanner = Symbol('IPythonExtensionBanner');
 exports.BANNER_NAME_LS_SURVEY = 'LSSurveyBanner';
 exports.BANNER_NAME_PROPOSE_LS = 'ProposeLS';
+exports.IFeatureDeprecationManager = Symbol('IFeatureDeprecationManager');
+exports.IEditorUtils = Symbol('IEditorUtils');
 //# sourceMappingURL=types.js.map

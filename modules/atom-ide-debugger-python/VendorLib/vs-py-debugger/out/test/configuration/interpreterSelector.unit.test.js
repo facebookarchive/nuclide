@@ -11,16 +11,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
-const inversify_1 = require("inversify");
 const TypeMoq = require("typemoq");
 const types_1 = require("../../client/common/application/types");
+const pathUtils_1 = require("../../client/common/platform/pathUtils");
 const types_2 = require("../../client/common/platform/types");
+const types_3 = require("../../client/common/types");
 const interpreterSelector_1 = require("../../client/interpreter/configuration/interpreterSelector");
+const types_4 = require("../../client/interpreter/configuration/types");
 const contracts_1 = require("../../client/interpreter/contracts");
-const container_1 = require("../../client/ioc/container");
-const serviceManager_1 = require("../../client/ioc/serviceManager");
+const platform_1 = require("../../utils/platform");
 const info = {
-    architecture: types_2.Architecture.Unknown,
+    architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',
     displayName: '',
     envName: '',
@@ -46,17 +47,13 @@ suite('Interpreters - selector', () => {
     let documentManager;
     let fileSystem;
     setup(() => {
-        const cont = new inversify_1.Container();
-        const serviceManager = new serviceManager_1.ServiceManager(cont);
-        serviceContainer = new container_1.ServiceContainer(cont);
-        workspace = TypeMoq.Mock.ofType();
-        serviceManager.addSingletonInstance(types_1.IWorkspaceService, workspace.object);
+        const commandManager = TypeMoq.Mock.ofType();
+        const comparer = TypeMoq.Mock.ofType();
+        serviceContainer = TypeMoq.Mock.ofType();
         appShell = TypeMoq.Mock.ofType();
-        serviceManager.addSingletonInstance(types_1.IApplicationShell, appShell.object);
         interpreterService = TypeMoq.Mock.ofType();
-        serviceManager.addSingletonInstance(contracts_1.IInterpreterService, interpreterService.object);
         documentManager = TypeMoq.Mock.ofType();
-        serviceManager.addSingletonInstance(types_1.IDocumentManager, documentManager.object);
+        workspace = TypeMoq.Mock.ofType();
         fileSystem = TypeMoq.Mock.ofType();
         fileSystem
             .setup(x => x.arePathsSame(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
@@ -64,38 +61,47 @@ suite('Interpreters - selector', () => {
         fileSystem
             .setup(x => x.getRealPath(TypeMoq.It.isAnyString()))
             .returns((a) => new Promise(resolve => resolve(a)));
-        serviceManager.addSingletonInstance(types_2.IFileSystem, fileSystem.object);
-        const commandManager = TypeMoq.Mock.ofType();
-        serviceManager.addSingletonInstance(types_1.ICommandManager, commandManager.object);
+        comparer.setup(c => c.compare(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => 0);
+        serviceContainer.setup(c => c.get(types_1.IWorkspaceService)).returns(() => workspace.object);
+        serviceContainer.setup(c => c.get(types_1.IApplicationShell)).returns(() => appShell.object);
+        serviceContainer.setup(c => c.get(contracts_1.IInterpreterService)).returns(() => interpreterService.object);
+        serviceContainer.setup(c => c.get(types_1.IDocumentManager)).returns(() => documentManager.object);
+        serviceContainer.setup(c => c.get(types_2.IFileSystem)).returns(() => fileSystem.object);
+        serviceContainer.setup(c => c.get(types_4.IInterpreterComparer)).returns(() => comparer.object);
+        serviceContainer.setup(c => c.get(types_1.ICommandManager)).returns(() => commandManager.object);
     });
-    test('Suggestions', () => __awaiter(this, void 0, void 0, function* () {
-        const initial = [
-            { displayName: '1', path: 'c:/path1/path1', type: contracts_1.InterpreterType.Unknown },
-            { displayName: '2', path: 'c:/path1/path1', type: contracts_1.InterpreterType.Unknown },
-            { displayName: '2', path: 'c:/path2/path2', type: contracts_1.InterpreterType.Unknown },
-            { displayName: '2 (virtualenv)', path: 'c:/path2/path2', type: contracts_1.InterpreterType.VirtualEnv },
-            { displayName: '3', path: 'c:/path2/path2', type: contracts_1.InterpreterType.Unknown },
-            { displayName: '4', path: 'c:/path4/path4', type: contracts_1.InterpreterType.Conda }
-        ].map(item => { return Object.assign({}, info, item); });
-        interpreterService
-            .setup(x => x.getInterpreters(TypeMoq.It.isAny()))
-            .returns(() => new Promise((resolve) => resolve(initial)));
-        const selector = new interpreterSelector_1.InterpreterSelector(serviceContainer);
-        const actual = yield selector.getSuggestions();
-        const expected = [
-            new InterpreterQuickPickItem('1', 'c:/path1/path1'),
-            new InterpreterQuickPickItem('2', 'c:/path1/path1'),
-            new InterpreterQuickPickItem('2', 'c:/path2/path2'),
-            new InterpreterQuickPickItem('2 (virtualenv)', 'c:/path2/path2'),
-            new InterpreterQuickPickItem('3', 'c:/path2/path2'),
-            new InterpreterQuickPickItem('4', 'c:/path4/path4')
-        ];
-        assert.equal(actual.length, expected.length, 'Suggestion lengths are different.');
-        for (let i = 0; i < expected.length; i += 1) {
-            assert.equal(actual[i].label, expected[i].label, `Suggestion label is different at ${i}: exected '${expected[i].label}', found '${actual[i].label}'.`);
-            assert.equal(actual[i].path, expected[i].path, `Suggestion path is different at ${i}: exected '${expected[i].path}', found '${actual[i].path}'.`);
-        }
-    }));
+    [true, false].forEach(isWindows => {
+        test(`Suggestions (${isWindows} ? 'Windows' : 'Non-Windows')`, () => __awaiter(this, void 0, void 0, function* () {
+            serviceContainer
+                .setup(c => c.get(types_3.IPathUtils))
+                .returns(() => new pathUtils_1.PathUtils(isWindows));
+            const initial = [
+                { displayName: '1', path: 'c:/path1/path1', type: contracts_1.InterpreterType.Unknown },
+                { displayName: '2', path: 'c:/path1/path1', type: contracts_1.InterpreterType.Unknown },
+                { displayName: '2', path: 'c:/path2/path2', type: contracts_1.InterpreterType.Unknown },
+                { displayName: '2 (virtualenv)', path: 'c:/path2/path2', type: contracts_1.InterpreterType.VirtualEnv },
+                { displayName: '3', path: 'c:/path2/path2', type: contracts_1.InterpreterType.Unknown },
+                { displayName: '4', path: 'c:/path4/path4', type: contracts_1.InterpreterType.Conda }
+            ].map(item => { return Object.assign({}, info, item); });
+            interpreterService
+                .setup(x => x.getInterpreters(TypeMoq.It.isAny()))
+                .returns(() => new Promise((resolve) => resolve(initial)));
+            const selector = new interpreterSelector_1.InterpreterSelector(serviceContainer.object);
+            const actual = yield selector.getSuggestions();
+            const expected = [
+                new InterpreterQuickPickItem('1', 'c:/path1/path1'),
+                new InterpreterQuickPickItem('2', 'c:/path1/path1'),
+                new InterpreterQuickPickItem('2', 'c:/path2/path2'),
+                new InterpreterQuickPickItem('2 (virtualenv)', 'c:/path2/path2'),
+                new InterpreterQuickPickItem('3', 'c:/path2/path2'),
+                new InterpreterQuickPickItem('4', 'c:/path4/path4')
+            ];
+            assert.equal(actual.length, expected.length, 'Suggestion lengths are different.');
+            for (let i = 0; i < expected.length; i += 1) {
+                assert.equal(actual[i].label, expected[i].label, `Suggestion label is different at ${i}: exected '${expected[i].label}', found '${actual[i].label}'.`);
+                assert.equal(actual[i].path, expected[i].path, `Suggestion path is different at ${i}: exected '${expected[i].path}', found '${actual[i].path}'.`);
+            }
+        }));
+    });
 });
-
 //# sourceMappingURL=interpreterSelector.unit.test.js.map

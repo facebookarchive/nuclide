@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const inversify_1 = require("inversify");
 const net = require("net");
-const helpers_1 = require("../../common/helpers");
+const async_1 = require("../../../utils/async");
 // tslint:disable-next-line:variable-name
 const MaxConnections = 100;
 let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmitter {
@@ -31,7 +31,7 @@ let UnitTestSocketServer = class UnitTestSocketServer extends events_1.EventEmit
         }
     }
     start(options = { port: 0, host: 'localhost' }) {
-        this.startedDef = helpers_1.createDeferred();
+        this.startedDef = async_1.createDeferred();
         this.server = net.createServer(this.connectionListener.bind(this));
         this.server.maxConnections = MaxConnections;
         this.server.on('error', (err) => {

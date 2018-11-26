@@ -9,10 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
+const chai_1 = require("chai");
 const fs = require("fs");
 const os_1 = require("os");
 const path = require("path");
 const vscode_1 = require("vscode");
+const constants_1 = require("../../client/common/constants");
 const importSortProvider_1 = require("../../client/providers/importSortProvider");
 const common_1 = require("../common");
 const initialize_1 = require("../initialize");
@@ -24,9 +26,8 @@ const fileToFormatWithConfig = path.join(sortingPath, 'withconfig', 'before.py')
 const originalFileToFormatWithConfig = path.join(sortingPath, 'withconfig', 'original.py');
 const fileToFormatWithConfig1 = path.join(sortingPath, 'withconfig', 'before.1.py');
 const originalFileToFormatWithConfig1 = path.join(sortingPath, 'withconfig', 'original.1.py');
-const extensionDir = path.join(__dirname, '..', '..', '..');
 // tslint:disable-next-line:max-func-body-length
-suite('Sorting', () => {
+suite('Sortingx', () => {
     let ioc;
     let sorter;
     const configTarget = initialize_1.IS_MULTI_ROOT_TEST ? vscode_1.ConfigurationTarget.WorkspaceFolder : vscode_1.ConfigurationTarget.Workspace;
@@ -46,7 +47,7 @@ suite('Sorting', () => {
         fs.writeFileSync(fileToFormatWithConfig1, fs.readFileSync(originalFileToFormatWithConfig1));
         yield common_1.updateSetting('sortImports.args', [], vscode_1.Uri.file(sortingPath), configTarget);
         yield initialize_1.closeActiveWindows();
-        sorter = new importSortProvider_1.PythonImportSortProvider(ioc.serviceContainer);
+        sorter = new importSortProvider_1.SortImportsEditingProvider(ioc.serviceContainer);
     }));
     teardown(() => __awaiter(this, void 0, void 0, function* () {
         ioc.dispose();
@@ -61,7 +62,9 @@ suite('Sorting', () => {
     test('Without Config', () => __awaiter(this, void 0, void 0, function* () {
         const textDocument = yield vscode_1.workspace.openTextDocument(fileToFormatWithoutConfig);
         yield vscode_1.window.showTextDocument(textDocument);
-        const edits = yield sorter.sortImports(extensionDir, textDocument);
+        const edit = (yield sorter.provideDocumentSortImportsEdits(textDocument.uri));
+        chai_1.expect(edit.entries()).to.be.lengthOf(1);
+        const edits = edit.entries()[0][1];
         assert.equal(edits.filter(value => value.newText === os_1.EOL && value.range.isEqual(new vscode_1.Range(2, 0, 2, 0))).length, 1, 'EOL not found');
         assert.equal(edits.filter(value => value.newText === '' && value.range.isEqual(new vscode_1.Range(3, 0, 4, 0))).length, 1, '"" not found');
         assert.equal(edits.filter(value => value.newText === `from rope.base import libutils${os_1.EOL}from rope.refactor.extract import ExtractMethod, ExtractVariable${os_1.EOL}from rope.refactor.rename import Rename${os_1.EOL}` && value.range.isEqual(new vscode_1.Range(6, 0, 6, 0))).length, 1, 'Text not found');
@@ -71,13 +74,15 @@ suite('Sorting', () => {
         const textDocument = yield vscode_1.workspace.openTextDocument(fileToFormatWithoutConfig);
         const originalContent = textDocument.getText();
         yield vscode_1.window.showTextDocument(textDocument);
-        yield vscode_1.commands.executeCommand('python.sortImports');
+        yield vscode_1.commands.executeCommand(constants_1.Commands.Sort_Imports);
         assert.notEqual(originalContent, textDocument.getText(), 'Contents have not changed');
     }));
     test('With Config', () => __awaiter(this, void 0, void 0, function* () {
         const textDocument = yield vscode_1.workspace.openTextDocument(fileToFormatWithConfig);
         yield vscode_1.window.showTextDocument(textDocument);
-        const edits = yield sorter.sortImports(extensionDir, textDocument);
+        const edit = (yield sorter.provideDocumentSortImportsEdits(textDocument.uri));
+        chai_1.expect(edit.entries()).to.be.lengthOf(1);
+        const edits = edit.entries()[0][1];
         const newValue = `from third_party import lib2${os_1.EOL}from third_party import lib3${os_1.EOL}from third_party import lib4${os_1.EOL}from third_party import lib5${os_1.EOL}from third_party import lib6${os_1.EOL}from third_party import lib7${os_1.EOL}from third_party import lib8${os_1.EOL}from third_party import lib9${os_1.EOL}`;
         assert.equal(edits.filter(value => value.newText === newValue && value.range.isEqual(new vscode_1.Range(0, 0, 3, 0))).length, 1, 'New Text not found');
     }));
@@ -85,7 +90,7 @@ suite('Sorting', () => {
         const textDocument = yield vscode_1.workspace.openTextDocument(fileToFormatWithConfig);
         const originalContent = textDocument.getText();
         yield vscode_1.window.showTextDocument(textDocument);
-        yield vscode_1.commands.executeCommand('python.sortImports');
+        yield vscode_1.commands.executeCommand(constants_1.Commands.Sort_Imports);
         assert.notEqual(originalContent, textDocument.getText(), 'Contents have not changed');
     }));
     test('With Changes and Config in Args', () => __awaiter(this, void 0, void 0, function* () {
@@ -95,7 +100,9 @@ suite('Sorting', () => {
         yield editor.edit(builder => {
             builder.insert(new vscode_1.Position(0, 0), `from third_party import lib0${os_1.EOL}`);
         });
-        const edits = yield sorter.sortImports(extensionDir, textDocument);
+        const edit = (yield sorter.provideDocumentSortImportsEdits(textDocument.uri));
+        chai_1.expect(edit.entries()).to.be.lengthOf(1);
+        const edits = edit.entries()[0][1];
         assert.notEqual(edits.length, 0, 'No edits');
     }));
     test('With Changes and Config in Args (via Command)', () => __awaiter(this, void 0, void 0, function* () {
@@ -106,7 +113,7 @@ suite('Sorting', () => {
             builder.insert(new vscode_1.Position(0, 0), `from third_party import lib0${os_1.EOL}`);
         });
         const originalContent = textDocument.getText();
-        yield vscode_1.commands.executeCommand('python.sortImports');
+        yield vscode_1.commands.executeCommand(constants_1.Commands.Sort_Imports);
         assert.notEqual(originalContent, textDocument.getText(), 'Contents have not changed');
     }));
 });

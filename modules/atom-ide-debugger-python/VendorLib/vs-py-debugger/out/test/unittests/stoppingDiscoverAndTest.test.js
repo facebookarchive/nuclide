@@ -14,10 +14,10 @@ const chai_1 = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const path = require("path");
 const vscode_1 = require("vscode");
-const helpers_1 = require("../../client/common/helpers");
 const types_1 = require("../../client/common/types");
 const constants_1 = require("../../client/unittests/common/constants");
 const types_2 = require("../../client/unittests/common/types");
+const async_1 = require("../../utils/async");
 const initialize_1 = require("../initialize");
 const mocks_1 = require("./mocks");
 const serviceRegistry_1 = require("./serviceRegistry");
@@ -63,7 +63,7 @@ suite('Unit Tests Stopping Discovery and Runner', () => {
         const discoveryPromise = mockTestManager.discoverTests(constants_1.CommandSource.auto);
         mockTestManager.discoveryDeferred.resolve(EmptyTests);
         const runningPromise = mockTestManager.runTest(constants_1.CommandSource.ui);
-        const deferred = helpers_1.createDeferred();
+        const deferred = async_1.createDeferred();
         // This promise should never resolve nor reject.
         runningPromise
             .then(() => Promise.reject('Debugger stopped when it shouldn\'t have'))

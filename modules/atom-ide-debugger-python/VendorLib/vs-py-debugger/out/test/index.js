@@ -13,7 +13,7 @@ process.env.IS_MULTI_ROOT_TEST = constants_1.IS_MULTI_ROOT_TEST.toString();
 // If running on CI server and we're running the debugger tests, then ensure we only run debug tests.
 // We do this to ensure we only run debugger test, as debugger tests are very flaky on CI.
 // So the solution is to run them separately and first on CI.
-const grep = ciConstants_1.IS_CI_SERVER && ciConstants_1.IS_CI_SERVER_TEST_DEBUGGER ? 'Debug' : undefined;
+const grep = ciConstants_1.IS_CI_SERVER_TEST_DEBUGGER ? 'Debug' : undefined;
 const testFilesSuffix = process.env.TEST_FILES_SUFFIX;
 // You can directly control Mocha options by uncommenting the following lines.
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info.

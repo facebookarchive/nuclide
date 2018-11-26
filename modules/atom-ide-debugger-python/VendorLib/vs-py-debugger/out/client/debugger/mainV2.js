@@ -20,7 +20,8 @@ const stream_1 = require("stream");
 const vscode_debugadapter_1 = require("vscode-debugadapter");
 const logger_1 = require("vscode-debugadapter/lib/logger");
 require("../../client/common/extensions");
-const core_utils_1 = require("../common/core.utils");
+const async_1 = require("../../utils/async");
+const misc_1 = require("../../utils/misc");
 const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/platform/types");
 const types_2 = require("../common/types");
@@ -30,6 +31,7 @@ const types_3 = require("./types");
 const killProcessTree = require('tree-kill');
 const DEBUGGER_CONNECT_TIMEOUT = 20000;
 const MIN_DEBUGGER_CONNECT_TIMEOUT = 5000;
+const InvalidPythonPathInDebuggerMessage = 'You need to select a Python interpreter before you start debugging. \n\nTip: click on "Select Python Environment" in the status bar.';
 /**
  * Primary purpose of this class is to perform the handshake with VS Code and launch PTVSD process.
  * I.e. it communicate with VS Code before PTVSD gets into the picture, once PTVSD is launched, PTVSD will talk directly to VS Code.
@@ -42,7 +44,7 @@ class PythonDebugger extends vscode_debugadapter_1.DebugSession {
     constructor(serviceContainer) {
         super(false);
         this.serviceContainer = serviceContainer;
-        this.client = helpers_1.createDeferred();
+        this.client = async_1.createDeferred();
         this.supportsRunInTerminalRequest = false;
     }
     shutdown() {
@@ -66,6 +68,7 @@ class PythonDebugger extends vscode_debugadapter_1.DebugSession {
         body.supportsSetExpression = true;
         body.supportsLogPoints = true;
         body.supportTerminateDebuggee = true;
+        body.supportsCompletionsRequest = true;
         body.exceptionBreakpointFilters = [
             {
                 filter: 'raised',
@@ -100,12 +103,29 @@ class PythonDebugger extends vscode_debugadapter_1.DebugSession {
         if ((typeof args.module !== 'string' || args.module.length === 0) && args.program && !fs.fileExistsSync(args.program)) {
             return this.sendErrorResponse(response, { format: `File does not exist. "${args.program}"`, id: 1 }, undefined, undefined, vscode_debugadapter_1.ErrorDestination.User);
         }
-        this.launchPTVSD(args)
-            .then(() => this.waitForPTVSDToConnect(args))
-            .then(() => this.emit('debugger_launched'))
+        this.validatePythonPath(response, args)
+            .then(valid => {
+            if (!valid) {
+                return;
+            }
+            return this.launchPTVSD(args)
+                .then(() => this.waitForPTVSDToConnect(args))
+                .then(() => this.emit('debugger_launched'));
+        })
             .catch(ex => {
             const message = this.getUserFriendlyLaunchErrorMessage(args, ex) || 'Debug Error';
             this.sendErrorResponse(response, { format: message, id: 1 }, undefined, undefined, vscode_debugadapter_1.ErrorDestination.User);
+        });
+    }
+    validatePythonPath(response, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const pythonPath = typeof args.pythonPath === 'string' && args.pythonPath.length > 0 ? args.pythonPath : 'python';
+            const validator = this.serviceContainer.get(types_3.IExcutableValidator);
+            const valid = yield validator.validateExecutable(pythonPath);
+            if (!valid) {
+                this.sendErrorResponse(response, { format: InvalidPythonPathInDebuggerMessage, id: 2 }, undefined, undefined, vscode_debugadapter_1.ErrorDestination.User);
+            }
+            return valid;
         });
     }
     launchPTVSD(args) {
@@ -232,7 +252,7 @@ class DebugManager {
                     // We need to wait till the process exits (else the message `Terminated: 15` gets printed onto the screen).
                     // 2. Also, its possible we manually sent the `Terminated` event above.
                     // Hence we need to wait till VSC receives the above event.
-                    yield core_utils_1.sleep(100);
+                    yield async_1.sleep(100);
                     vscode_debugadapter_1.logger.verbose('Kill process now');
                     killProcessTree(this.ptvsdProcessId);
                 }
@@ -245,7 +265,7 @@ class DebugManager {
                     this.debugSession.shutdown();
                 }
                 vscode_debugadapter_1.logger.verbose('disposing');
-                yield core_utils_1.sleep(100);
+                yield async_1.sleep(100);
                 // Dispose last, we don't want to dispose the protocol loggers too early.
                 this.disposables.forEach(disposable => disposable.dispose());
             }
@@ -354,9 +374,9 @@ class DebugManager {
         this.protocolLogger = this.serviceContainer.get(types_3.IProtocolLogger);
         this.protocolLogger.connect(this.throughInputStream, this.throughOutputStream);
         this.disposables.push(this.protocolLogger);
-        this.initializeRequestDeferred = helpers_1.createDeferred();
-        this.launchRequestDeferred = helpers_1.createDeferred();
-        this.attachRequestDeferred = helpers_1.createDeferred();
+        this.initializeRequestDeferred = async_1.createDeferred();
+        this.launchRequestDeferred = async_1.createDeferred();
+        this.attachRequestDeferred = async_1.createDeferred();
     }
     get initializeRequest() {
         return this.initializeRequestDeferred.promise;
@@ -426,7 +446,7 @@ class DebugManager {
 }
 function startDebugger() {
     return __awaiter(this, void 0, void 0, function* () {
-        vscode_debugadapter_1.logger.init(core_utils_1.noop, path.join(__dirname, '..', '..', '..', 'experimental_debug.log'));
+        vscode_debugadapter_1.logger.init(misc_1.noop, path.join(__dirname, '..', '..', '..', 'debug.log'));
         const serviceContainer = serviceRegistry_1.initializeIoc();
         const protocolMessageWriter = serviceContainer.get(types_3.IProtocolMessageWriter);
         try {

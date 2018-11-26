@@ -21,6 +21,7 @@ const fs = require("fs-extra");
 const inversify_1 = require("inversify");
 const _ = require("lodash");
 const path = require("path");
+const platform_1 = require("../../../../utils/platform");
 const types_1 = require("../../../common/platform/types");
 const types_2 = require("../../../common/types");
 const types_3 = require("../../../ioc/types");
@@ -50,14 +51,14 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
     getInterpretersFromRegistry() {
         return __awaiter(this, void 0, void 0, function* () {
             // https://github.com/python/peps/blob/master/pep-0514.txt#L357
-            const hkcuArch = this.is64Bit ? undefined : types_1.Architecture.x86;
+            const hkcuArch = this.is64Bit ? undefined : platform_1.Architecture.x86;
             const promises = [
                 this.getCompanies(types_1.RegistryHive.HKCU, hkcuArch),
-                this.getCompanies(types_1.RegistryHive.HKLM, types_1.Architecture.x86)
+                this.getCompanies(types_1.RegistryHive.HKLM, platform_1.Architecture.x86)
             ];
             // https://github.com/Microsoft/PTVS/blob/ebfc4ca8bab234d453f15ee426af3b208f3c143c/Python/Product/Cookiecutter/Shared/Interpreters/PythonRegistrySearch.cs#L44
             if (this.is64Bit) {
-                promises.push(this.getCompanies(types_1.RegistryHive.HKLM, types_1.Architecture.x64));
+                promises.push(this.getCompanies(types_1.RegistryHive.HKLM, platform_1.Architecture.x64));
             }
             const companies = yield Promise.all(promises);
             // tslint:disable-next-line:underscore-consistent-invocation
@@ -109,15 +110,13 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
             return Promise.all([
                 Promise.resolve(installPath),
                 this.registry.getValue(key, hive, arch, 'ExecutablePath'),
-                // tslint:disable-next-line:no-non-null-assertion
-                this.getInterpreterDisplayName(tagKey, companyKey, hive, arch),
                 this.registry.getValue(tagKey, hive, arch, 'SysVersion'),
                 this.getCompanyDisplayName(companyKey, hive, arch)
             ])
-                .then(([installedPath, executablePath, displayName, version, companyDisplayName]) => {
+                .then(([installedPath, executablePath, version, companyDisplayName]) => {
                 companyDisplayName = conda_1.AnacondaCompanyNames.indexOf(companyDisplayName) === -1 ? companyDisplayName : conda_1.AnacondaCompanyName;
                 // tslint:disable-next-line:prefer-type-cast no-object-literal-type-assertion
-                return { installPath: installedPath, executablePath, displayName, version, companyDisplayName };
+                return { installPath: installedPath, executablePath, version, companyDisplayName };
             });
         })
             .then((interpreterInfo) => __awaiter(this, void 0, void 0, function* () {
@@ -125,7 +124,6 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
                 return;
             }
             const executablePath = interpreterInfo.executablePath && interpreterInfo.executablePath.length > 0 ? interpreterInfo.executablePath : path.join(interpreterInfo.installPath, DefaultPythonExecutable);
-            const displayName = interpreterInfo.displayName;
             const helper = this.serviceContainer.get(contracts_1.IInterpreterHelper);
             const details = yield helper.getInterpreterInformation(executablePath);
             if (!details) {
@@ -133,21 +131,13 @@ let WindowsRegistryService = class WindowsRegistryService extends cacheableLocat
             }
             const version = interpreterInfo.version ? this.pathUtils.basename(interpreterInfo.version) : this.pathUtils.basename(tagKey);
             // tslint:disable-next-line:prefer-type-cast no-object-literal-type-assertion
-            return Object.assign({}, details, { architecture: arch, displayName, path: executablePath, version, companyDisplayName: interpreterInfo.companyDisplayName, type: contracts_1.InterpreterType.Unknown });
+            return Object.assign({}, details, { path: executablePath, version, companyDisplayName: interpreterInfo.companyDisplayName, type: contracts_1.InterpreterType.Unknown });
         }))
             .then(interpreter => interpreter ? fs.pathExists(interpreter.path).catch(() => false).then(exists => exists ? interpreter : null) : null)
             .catch(error => {
             console.error(`Failed to retrieve interpreter details for company ${companyKey},tag: ${tagKey}, hive: ${hive}, arch: ${arch}`);
             console.error(error);
             return null;
-        });
-    }
-    getInterpreterDisplayName(tagKey, companyKey, hive, arch) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const displayName = yield this.registry.getValue(tagKey, hive, arch, 'DisplayName');
-            if (displayName && displayName.length > 0) {
-                return displayName;
-            }
         });
     }
     getCompanyDisplayName(companyKey, hive, arch) {

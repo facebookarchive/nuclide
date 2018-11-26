@@ -12,9 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const path = require("path");
 const vscode_1 = require("vscode");
+const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/application/types");
 const constants = require("../../common/constants");
-const core_utils_1 = require("../../common/core.utils");
 const types_2 = require("../../ioc/types");
 const types_3 = require("../common/types");
 let TestDisplay = class TestDisplay {
@@ -32,7 +32,7 @@ let TestDisplay = class TestDisplay {
     displayTestUI(cmdSource, wkspace) {
         const tests = this.testCollectionStorage.getTests(wkspace);
         this.appShell.showQuickPick(buildItems(tests), { matchOnDescription: true, matchOnDetail: true })
-            .then(item => item ? onItemSelected(cmdSource, wkspace, item, false) : core_utils_1.noop());
+            .then(item => item ? onItemSelected(cmdSource, wkspace, item, false) : misc_1.noop());
     }
     selectTestFunction(rootDirectory, tests) {
         return new Promise((resolve, reject) => {
@@ -71,7 +71,7 @@ let TestDisplay = class TestDisplay {
                 testFunctions.some(testFunc => testFunc.nameToRun === fn.testFunction.nameToRun);
         });
         this.appShell.showQuickPick(buildItemsForFunctions(rootDirectory, flattenedFunctions, undefined, undefined, debug), { matchOnDescription: true, matchOnDetail: true })
-            .then(testItem => testItem ? onItemSelected(cmdSource, wkspace, testItem, debug) : core_utils_1.noop());
+            .then(testItem => testItem ? onItemSelected(cmdSource, wkspace, testItem, debug) : misc_1.noop());
     }
 };
 TestDisplay = __decorate([

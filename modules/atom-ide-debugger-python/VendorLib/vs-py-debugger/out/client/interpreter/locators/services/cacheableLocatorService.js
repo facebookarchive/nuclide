@@ -22,22 +22,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable:no-any
 const inversify_1 = require("inversify");
 const md5 = require("md5");
+const async_1 = require("../../../../utils/async");
 const types_1 = require("../../../common/application/types");
-const helpers_1 = require("../../../common/helpers");
 const types_2 = require("../../../common/types");
 let CacheableLocatorService = class CacheableLocatorService {
     constructor(name, serviceContainer, cachePerWorkspace = false) {
         this.serviceContainer = serviceContainer;
         this.cachePerWorkspace = cachePerWorkspace;
         this.promisesPerResource = new Map();
-        this.cacheKeyPrefix = `INTERPRETERS_CACHE_${name}`;
+        this.cacheKeyPrefix = `INTERPRETERS_CACHE_v2_${name}`;
     }
     getInterpreters(resource) {
         return __awaiter(this, void 0, void 0, function* () {
             const cacheKey = this.getCacheKey(resource);
             let deferred = this.promisesPerResource.get(cacheKey);
             if (!deferred) {
-                deferred = helpers_1.createDeferred();
+                deferred = async_1.createDeferred();
                 this.promisesPerResource.set(cacheKey, deferred);
                 this.getInterpretersImplementation(resource)
                     .then((items) => __awaiter(this, void 0, void 0, function* () {

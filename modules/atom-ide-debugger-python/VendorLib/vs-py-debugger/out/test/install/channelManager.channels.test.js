@@ -16,13 +16,13 @@ const TypeMoq = require("typemoq");
 const types_1 = require("../../client/common/application/types");
 const channelManager_1 = require("../../client/common/installer/channelManager");
 const types_2 = require("../../client/common/installer/types");
-const types_3 = require("../../client/common/platform/types");
-const types_4 = require("../../client/common/types");
+const types_3 = require("../../client/common/types");
 const contracts_1 = require("../../client/interpreter/contracts");
 const container_1 = require("../../client/ioc/container");
 const serviceManager_1 = require("../../client/ioc/serviceManager");
+const platform_1 = require("../../utils/platform");
 const info = {
-    architecture: types_3.Architecture.Unknown,
+    architecture: platform_1.Architecture.Unknown,
     companyDisplayName: '',
     displayName: '',
     envName: '',
@@ -90,7 +90,7 @@ suite('Installation - installation channels', () => {
         installer1.setup(x => x.displayName).returns(() => 'Name 1');
         installer2.setup(x => x.displayName).returns(() => 'Name 2');
         const cm = new channelManager_1.InstallationChannelManager(serviceContainer);
-        yield cm.getInstallationChannel(types_4.Product.pylint);
+        yield cm.getInstallationChannel(types_3.Product.pylint);
         assert.notEqual(items, undefined, 'showQuickPick not called');
         assert.equal(items.length, 2, 'Incorrect number of installer shown');
         assert.notEqual(items[0].label.indexOf('Name 1'), -1, 'Incorrect first installer name');

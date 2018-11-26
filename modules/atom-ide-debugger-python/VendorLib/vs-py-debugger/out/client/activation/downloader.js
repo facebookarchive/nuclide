@@ -10,60 +10,67 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fileSystem = require("fs");
 const path = require("path");
-const request = require("request");
 const requestProgress = require("request-progress");
 const vscode_1 = require("vscode");
+const async_1 = require("../../utils/async");
+const stopWatch_1 = require("../../utils/stopWatch");
 const constants_1 = require("../common/constants");
-const helpers_1 = require("../common/helpers");
 const types_1 = require("../common/platform/types");
 const types_2 = require("../common/types");
-const platformData_1 = require("./platformData");
+const telemetry_1 = require("../telemetry");
+const constants_2 = require("../telemetry/constants");
+const types_3 = require("./types");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const StreamZip = require('node-stream-zip');
-const downloadUriPrefix = 'https://pvsc.blob.core.windows.net/python-language-server';
-const downloadBaseFileName = 'Python-Language-Server';
-const downloadVersion = '0.1.18204.3';
 const downloadFileExtension = '.nupkg';
-exports.DownloadLinks = {
-    [platformData_1.PlatformName.Windows32Bit]: `${downloadUriPrefix}/${downloadBaseFileName}-${platformData_1.PlatformName.Windows32Bit}.${downloadVersion}${downloadFileExtension}`,
-    [platformData_1.PlatformName.Windows64Bit]: `${downloadUriPrefix}/${downloadBaseFileName}-${platformData_1.PlatformName.Windows64Bit}.${downloadVersion}${downloadFileExtension}`,
-    [platformData_1.PlatformName.Linux64Bit]: `${downloadUriPrefix}/${downloadBaseFileName}-${platformData_1.PlatformName.Linux64Bit}.${downloadVersion}${downloadFileExtension}`,
-    [platformData_1.PlatformName.Mac64Bit]: `${downloadUriPrefix}/${downloadBaseFileName}-${platformData_1.PlatformName.Mac64Bit}.${downloadVersion}${downloadFileExtension}`
-};
 class LanguageServerDownloader {
-    constructor(services, engineFolder) {
-        this.services = services;
+    constructor(platformData, engineFolder, serviceContainer) {
+        this.platformData = platformData;
         this.engineFolder = engineFolder;
-        this.output = this.services.get(types_2.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
-        this.fs = this.services.get(types_1.IFileSystem);
-        this.platform = this.services.get(types_1.IPlatformService);
-        this.platformData = new platformData_1.PlatformData(this.platform, this.fs);
+        this.serviceContainer = serviceContainer;
+        this.output = this.serviceContainer.get(types_2.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
+        this.fs = this.serviceContainer.get(types_1.IFileSystem);
     }
-    getDownloadUri() {
+    getDownloadInfo() {
         return __awaiter(this, void 0, void 0, function* () {
-            const platformString = yield this.platformData.getPlatformName();
-            return exports.DownloadLinks[platformString];
+            const lsFolderService = this.serviceContainer.get(types_3.ILanguageServerFolderService);
+            return lsFolderService.getLatestLanguageServerVersion().then(item => item);
         });
     }
     downloadLanguageServer(context) {
         return __awaiter(this, void 0, void 0, function* () {
-            const downloadUri = yield this.getDownloadUri();
+            const downloadInfo = yield this.getDownloadInfo();
+            const downloadUri = downloadInfo.uri;
+            const lsVersion = downloadInfo.version.raw;
+            const timer = new stopWatch_1.StopWatch();
+            let success = true;
             let localTempFilePath = '';
             try {
                 localTempFilePath = yield this.downloadFile(downloadUri, 'Downloading Microsoft Python Language Server... ');
-                yield this.unpackArchive(context.extensionPath, localTempFilePath);
             }
             catch (err) {
-                this.output.appendLine('failed.');
+                this.output.appendLine('download failed.');
                 this.output.appendLine(err);
+                success = false;
                 throw new Error(err);
             }
             finally {
-                if (localTempFilePath.length > 0) {
-                    yield this.fs.deleteFile(localTempFilePath);
-                }
+                telemetry_1.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_DOWNLOADED, timer.elapsedTime, { success, lsVersion });
+            }
+            timer.reset();
+            try {
+                yield this.unpackArchive(context.extensionPath, localTempFilePath);
+            }
+            catch (err) {
+                this.output.appendLine('extraction failed.');
+                this.output.appendLine(err);
+                success = false;
+                throw new Error(err);
+            }
+            finally {
+                telemetry_1.sendTelemetryEvent(constants_2.PYTHON_LANGUAGE_SERVER_EXTRACTED, timer.elapsedTime, { success, lsVersion });
+                yield this.fs.deleteFile(localTempFilePath);
             }
         });
     }
@@ -71,8 +78,8 @@ class LanguageServerDownloader {
         return __awaiter(this, void 0, void 0, function* () {
             this.output.append(`Downloading ${uri}... `);
             const tempFile = yield this.fs.createTemporaryFile(downloadFileExtension);
-            const deferred = helpers_1.createDeferred();
-            const fileStream = fileSystem.createWriteStream(tempFile.filePath);
+            const deferred = async_1.createDeferred();
+            const fileStream = this.fs.createWriteStream(tempFile.filePath);
             fileStream.on('finish', () => {
                 fileStream.close();
             }).on('error', (err) => {
@@ -82,7 +89,8 @@ class LanguageServerDownloader {
             yield vscode_1.window.withProgress({
                 location: vscode_1.ProgressLocation.Window
             }, (progress) => {
-                requestProgress(request(uri))
+                const httpClient = this.serviceContainer.get(types_3.IHttpClient);
+                requestProgress(httpClient.downloadFile(uri))
                     .on('progress', (state) => {
                     // https://www.npmjs.com/package/request-progress
                     const received = Math.round(state.size.transferred / 1024);
@@ -96,7 +104,7 @@ class LanguageServerDownloader {
                     deferred.reject(err);
                 })
                     .on('end', () => {
-                    this.output.append('complete.');
+                    this.output.appendLine('complete.');
                     deferred.resolve();
                 })
                     .pipe(fileStream);
@@ -109,11 +117,10 @@ class LanguageServerDownloader {
         return __awaiter(this, void 0, void 0, function* () {
             this.output.append('Unpacking archive... ');
             const installFolder = path.join(extensionPath, this.engineFolder);
-            const deferred = helpers_1.createDeferred();
+            const deferred = async_1.createDeferred();
             const title = 'Extracting files... ';
             yield vscode_1.window.withProgress({
-                location: vscode_1.ProgressLocation.Window,
-                title
+                location: vscode_1.ProgressLocation.Window
             }, (progress) => {
                 const zip = new StreamZip({
                     file: tempFilePath,
@@ -126,7 +133,7 @@ class LanguageServerDownloader {
                     if (!(yield this.fs.directoryExists(installFolder))) {
                         yield this.fs.createDirectory(installFolder);
                     }
-                    zip.extract(null, installFolder, (err, count) => {
+                    zip.extract(null, installFolder, (err) => {
                         if (err) {
                             deferred.reject(err);
                         }
@@ -135,7 +142,7 @@ class LanguageServerDownloader {
                         }
                         zip.close();
                     });
-                })).on('extract', (entry, file) => {
+                })).on('extract', () => {
                     extractedFiles += 1;
                     progress.report({ message: `${title}${Math.round(100 * extractedFiles / totalFiles)}%` });
                 }).on('error', e => {
@@ -143,11 +150,9 @@ class LanguageServerDownloader {
                 });
                 return deferred.promise;
             });
-            // Set file to executable
-            if (!this.platform.isWindows) {
-                const executablePath = path.join(installFolder, this.platformData.getEngineExecutableName());
-                fileSystem.chmodSync(executablePath, '0764'); // -rwxrw-r--
-            }
+            // Set file to executable (nothing happens in Windows, as chmod has no definition there)
+            const executablePath = path.join(installFolder, this.platformData.getEngineExecutableName());
+            yield this.fs.chmod(executablePath, '0764'); // -rwxrw-r--
             this.output.appendLine('done.');
         });
     }

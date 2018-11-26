@@ -24,7 +24,6 @@ const vscode_1 = require("vscode");
 const constants_1 = require("../../common/constants");
 const types_1 = require("../../common/types");
 const types_2 = require("../../ioc/types");
-const envPathVariable_1 = require("./checks/envPathVariable");
 const types_3 = require("./types");
 let ApplicationDiagnostics = class ApplicationDiagnostics {
     constructor(serviceContainer) {
@@ -32,12 +31,14 @@ let ApplicationDiagnostics = class ApplicationDiagnostics {
     }
     performPreStartupHealthCheck() {
         return __awaiter(this, void 0, void 0, function* () {
-            const envHealthCheck = this.serviceContainer.get(types_3.IDiagnosticsService, envPathVariable_1.EnvironmentPathVariableDiagnosticsServiceId);
-            const diagnostics = yield envHealthCheck.diagnose();
-            this.log(diagnostics);
-            if (diagnostics.length > 0) {
-                yield envHealthCheck.handle(diagnostics);
-            }
+            const diagnosticsServices = this.serviceContainer.getAll(types_3.IDiagnosticsService);
+            yield Promise.all(diagnosticsServices.map((diagnosticsService) => __awaiter(this, void 0, void 0, function* () {
+                const diagnostics = yield diagnosticsService.diagnose();
+                this.log(diagnostics);
+                if (diagnostics.length > 0) {
+                    yield diagnosticsService.handle(diagnostics);
+                }
+            })));
         });
     }
     log(diagnostics) {

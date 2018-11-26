@@ -14,21 +14,19 @@ if (Reflect.metadata === undefined) {
     // tslint:disable-next-line:no-require-imports no-var-requires
     require('reflect-metadata');
 }
-const stopWatch_1 = require("./common/stopWatch");
+const durations = {};
+const stopWatch_1 = require("../utils/stopWatch");
 // Do not move this linne of code (used to measure extension load times).
 const stopWatch = new stopWatch_1.StopWatch();
 const inversify_1 = require("inversify");
 const vscode_1 = require("vscode");
+const async_1 = require("../utils/async");
 const serviceRegistry_1 = require("./activation/serviceRegistry");
 const types_1 = require("./activation/types");
 const serviceRegistry_2 = require("./application/serviceRegistry");
 const types_2 = require("./application/types");
 const types_3 = require("./common/application/types");
-const configSettings_1 = require("./common/configSettings");
 const constants_1 = require("./common/constants");
-const featureDeprecationManager_1 = require("./common/featureDeprecationManager");
-const helpers_1 = require("./common/helpers");
-const pythonInstallation_1 = require("./common/installer/pythonInstallation");
 const serviceRegistry_3 = require("./common/installer/serviceRegistry");
 const serviceRegistry_4 = require("./common/platform/serviceRegistry");
 const serviceRegistry_5 = require("./common/process/serviceRegistry");
@@ -52,48 +50,50 @@ const types_9 = require("./linters/types");
 const codeActionsProvider_1 = require("./providers/codeActionsProvider");
 const formatProvider_1 = require("./providers/formatProvider");
 const linterProvider_1 = require("./providers/linterProvider");
-const renameProvider_1 = require("./providers/renameProvider");
 const replProvider_1 = require("./providers/replProvider");
+const serviceRegistry_13 = require("./providers/serviceRegistry");
 const simpleRefactorProvider_1 = require("./providers/simpleRefactorProvider");
 const terminalProvider_1 = require("./providers/terminalProvider");
+const types_10 = require("./providers/types");
 const updateSparkLibraryProvider_1 = require("./providers/updateSparkLibraryProvider");
-const sortImports = require("./sortImports");
 const telemetry_1 = require("./telemetry");
 const constants_2 = require("./telemetry/constants");
-const serviceRegistry_13 = require("./terminals/serviceRegistry");
-const types_10 = require("./terminals/types");
+const serviceRegistry_14 = require("./terminals/serviceRegistry");
+const types_11 = require("./terminals/types");
 const blockFormatProvider_1 = require("./typeFormatters/blockFormatProvider");
+const dispatcher_1 = require("./typeFormatters/dispatcher");
 const onEnterFormatter_1 = require("./typeFormatters/onEnterFormatter");
 const constants_3 = require("./unittests/common/constants");
-const serviceRegistry_14 = require("./unittests/serviceRegistry");
-const activationDeferred = helpers_1.createDeferred();
-exports.activated = activationDeferred.promise;
+const serviceRegistry_15 = require("./unittests/serviceRegistry");
+durations.codeLoadingTime = stopWatch.elapsedTime;
+const activationDeferred = async_1.createDeferred();
 // tslint:disable-next-line:max-func-body-length
 function activate(context) {
     return __awaiter(this, void 0, void 0, function* () {
+        durations.startActivateTime = stopWatch.elapsedTime;
         const cont = new inversify_1.Container();
         const serviceManager = new serviceManager_1.ServiceManager(cont);
         const serviceContainer = new container_1.ServiceContainer(cont);
         registerServices(context, serviceManager, serviceContainer);
-        const appDiagnostics = serviceContainer.get(types_2.IApplicationDiagnostics);
-        yield appDiagnostics.performPreStartupHealthCheck();
+        initializeServices(context, serviceManager, serviceContainer);
+        // When testing, do not perform health checks, as modal dialogs can be displayed.
+        if (!constants_1.isTestExecution()) {
+            const appDiagnostics = serviceContainer.get(types_2.IApplicationDiagnostics);
+            yield appDiagnostics.performPreStartupHealthCheck();
+        }
         const interpreterManager = serviceContainer.get(contracts_1.IInterpreterService);
-        // This must be completed before we can continue as language server needs the interpreter path.
-        interpreterManager.initialize();
         yield interpreterManager.autoSetInterpreter();
+        serviceManager.get(types_11.ITerminalAutoActivation).register();
         const configuration = serviceManager.get(types_5.IConfigurationService);
         const pythonSettings = configuration.getSettings();
-        const standardOutputChannel = serviceManager.get(types_5.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
-        context.subscriptions.push(vscode_1.languages.registerRenameProvider(constants_1.PYTHON, new renameProvider_1.PythonRenameProvider(serviceManager)));
-        simpleRefactorProvider_1.activateSimplePythonRefactorProvider(context, standardOutputChannel, serviceManager);
+        const standardOutputChannel = serviceContainer.get(types_5.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
+        simpleRefactorProvider_1.activateSimplePythonRefactorProvider(context, standardOutputChannel, serviceContainer);
         const activationService = serviceContainer.get(types_1.IExtensionActivationService);
         yield activationService.activate();
-        sortImports.activate(context, standardOutputChannel, serviceManager);
-        serviceManager.get(types_10.ICodeExecutionManager).registerCommands();
-        sendStartupTelemetry(exports.activated, serviceContainer).ignoreErrors();
-        const pythonInstaller = new pythonInstallation_1.PythonInstaller(serviceContainer);
-        pythonInstaller.checkPythonInstallation(configSettings_1.PythonSettings.getInstance())
-            .catch(ex => console.error('Python Extension: pythonInstaller.checkPythonInstallation', ex));
+        const sortImports = serviceContainer.get(types_10.ISortImportsEditingProvider);
+        sortImports.registerCommands();
+        serviceManager.get(types_11.ICodeExecutionManager).registerCommands();
+        sendStartupTelemetry(activationDeferred.promise, serviceContainer).ignoreErrors();
         interpreterManager.refresh()
             .catch(ex => console.error('Python Extension: interpreterManager.refresh', ex));
         const jupyterExtension = vscode_1.extensions.getExtension('donjayamanne.jupyter');
@@ -127,13 +127,17 @@ function activate(context) {
             context.subscriptions.push(vscode_1.languages.registerDocumentFormattingEditProvider(constants_1.PYTHON, formatProvider));
             context.subscriptions.push(vscode_1.languages.registerDocumentRangeFormattingEditProvider(constants_1.PYTHON, formatProvider));
         }
-        context.subscriptions.push(vscode_1.languages.registerOnTypeFormattingEditProvider(constants_1.PYTHON, new blockFormatProvider_1.BlockFormatProviders(), ':'));
-        context.subscriptions.push(vscode_1.languages.registerOnTypeFormattingEditProvider(constants_1.PYTHON, new onEnterFormatter_1.OnEnterFormatter(), '\n'));
-        const persistentStateFactory = serviceManager.get(types_5.IPersistentStateFactory);
-        const deprecationMgr = new featureDeprecationManager_1.FeatureDeprecationManager(persistentStateFactory, !!jupyterExtension);
+        const onTypeDispatcher = new dispatcher_1.OnTypeFormattingDispatcher({
+            '\n': new onEnterFormatter_1.OnEnterFormatter(),
+            ':': new blockFormatProvider_1.BlockFormatProviders()
+        });
+        const onTypeTriggers = onTypeDispatcher.getTriggerCharacters();
+        if (onTypeTriggers) {
+            context.subscriptions.push(vscode_1.languages.registerOnTypeFormattingEditProvider(constants_1.PYTHON, onTypeDispatcher, onTypeTriggers.first, ...onTypeTriggers.more));
+        }
+        const deprecationMgr = serviceContainer.get(types_5.IFeatureDeprecationManager);
         deprecationMgr.initialize();
-        context.subscriptions.push(new featureDeprecationManager_1.FeatureDeprecationManager(persistentStateFactory, !!jupyterExtension));
-        context.subscriptions.push(serviceContainer.get(types_7.IInterpreterSelector));
+        context.subscriptions.push(deprecationMgr);
         context.subscriptions.push(updateSparkLibraryProvider_1.activateUpdateSparkLibraryProvider());
         context.subscriptions.push(new replProvider_1.ReplProvider(serviceContainer));
         context.subscriptions.push(new terminalProvider_1.TerminalProvider(serviceContainer));
@@ -141,8 +145,10 @@ function activate(context) {
         serviceContainer.getAll(types_6.IDebugConfigurationProvider).forEach(debugConfig => {
             context.subscriptions.push(vscode_1.debug.registerDebugConfigurationProvider(debugConfig.debugType, debugConfig));
         });
-        serviceContainer.get(types_5.IExperimentalDebuggerBanner).initialize();
+        serviceContainer.get(types_6.IDebuggerBanner).initialize();
+        durations.endActivateTime = stopWatch.elapsedTime;
         activationDeferred.resolve();
+        return { ready: activationDeferred.promise };
     });
 }
 exports.activate = activate;
@@ -161,16 +167,24 @@ function registerServices(context, serviceManager, serviceContainer) {
     serviceRegistry_6.registerTypes(serviceManager);
     serviceRegistry_5.registerTypes(serviceManager);
     serviceRegistry_7.registerTypes(serviceManager);
-    serviceRegistry_14.registerTypes(serviceManager);
+    serviceRegistry_15.registerTypes(serviceManager);
     serviceRegistry_12.registerTypes(serviceManager);
     serviceRegistry_11.registerTypes(serviceManager);
     serviceRegistry_10.registerTypes(serviceManager);
     serviceRegistry_4.registerTypes(serviceManager);
     serviceRegistry_3.registerTypes(serviceManager);
-    serviceRegistry_13.registerTypes(serviceManager);
+    serviceRegistry_14.registerTypes(serviceManager);
     serviceRegistry_8.registerTypes(serviceManager);
     serviceRegistry_9.registerTypes(serviceManager);
     serviceRegistry_2.registerTypes(serviceManager);
+    serviceRegistry_13.registerTypes(serviceManager);
+}
+function initializeServices(context, serviceManager, serviceContainer) {
+    const selector = serviceContainer.get(types_7.IInterpreterSelector);
+    selector.initialize();
+    context.subscriptions.push(selector);
+    const interpreterManager = serviceContainer.get(contracts_1.IInterpreterService);
+    interpreterManager.initialize();
 }
 function sendStartupTelemetry(activatedPromise, serviceContainer) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -179,11 +193,10 @@ function sendStartupTelemetry(activatedPromise, serviceContainer) {
             yield activatedPromise;
             const terminalHelper = serviceContainer.get(types_4.ITerminalHelper);
             const terminalShellType = terminalHelper.identifyTerminalShell(terminalHelper.getTerminalShellPath());
-            const duration = stopWatch.elapsedTime;
             const condaLocator = serviceContainer.get(contracts_1.ICondaService);
             const interpreterService = serviceContainer.get(contracts_1.IInterpreterService);
             const [condaVersion, interpreter, interpreters] = yield Promise.all([
-                condaLocator.getCondaVersion().catch(() => undefined),
+                condaLocator.getCondaVersion().then(ver => ver ? ver.raw : '').catch(() => ''),
                 interpreterService.getActiveInterpreter().catch(() => undefined),
                 interpreterService.getInterpreters().catch(() => [])
             ]);
@@ -195,7 +208,7 @@ function sendStartupTelemetry(activatedPromise, serviceContainer) {
                 .filter(item => item && Array.isArray(item.version_info) ? item.version_info[0] === 3 : false)
                 .length > 0;
             const props = { condaVersion, terminal: terminalShellType, pythonVersion, interpreterType, workspaceFolderCount, hasPython3 };
-            telemetry_1.sendTelemetryEvent(constants_2.EDITOR_LOAD, duration, props);
+            telemetry_1.sendTelemetryEvent(constants_2.EDITOR_LOAD, durations, props);
         }
         catch (ex) {
             logger.logError('sendStartupTelemetry failed.', ex);

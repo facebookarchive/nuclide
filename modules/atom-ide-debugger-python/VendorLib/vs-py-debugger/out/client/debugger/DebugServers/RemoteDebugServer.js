@@ -2,7 +2,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_debugadapter_1 = require("vscode-debugadapter");
-const Contracts_1 = require("../Common/Contracts");
 const net = require("net");
 const BaseDebugServer_1 = require("./BaseDebugServer");
 const SocketStream_1 = require("../../common/net/socket/SocketStream");
@@ -116,9 +115,6 @@ class RemoteDebugServer extends BaseDebugServer_1.BaseDebugServer {
                 if (!commandBytesWritten) {
                     that.stream.Write(AttachCommandBytes);
                     let debugOptions = "WaitOnAbnormalExit, WaitOnNormalExit, RedirectOutput";
-                    if (Array.isArray(this.args.debugOptions)) {
-                        debugOptions = this.args.debugOptions.filter(opt => Contracts_1.VALID_DEBUG_OPTIONS.indexOf(opt) >= 0).join(',');
-                    }
                     that.stream.WriteString(debugOptions);
                     commandBytesWritten = true;
                 }

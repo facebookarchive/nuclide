@@ -10,9 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode_1 = require("vscode");
-const helpers_1 = require("../../../common/helpers");
+const async_1 = require("../../../../utils/async");
+const fs_1 = require("../../../../utils/fs");
 const types_1 = require("../../../common/types");
-const utils_1 = require("../../../common/utils");
 const constants_1 = require("../constants");
 const types_2 = require("./../types");
 class TestConfigurationManager {
@@ -62,7 +62,7 @@ class TestConfigurationManager {
             .map(item => item);
         items = [{ label: '.', description: 'Root directory' }, ...items];
         items = customOptions.concat(items);
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         vscode_1.window.showQuickPick(items, options).then(item => {
             if (!item) {
                 return def.resolve();
@@ -84,7 +84,7 @@ class TestConfigurationManager {
             { label: 'test_*.py', description: 'Python Files begining with \'test_\'' },
             { label: '*test*.py', description: 'Python Files containing the word \'test\'' }
         ];
-        const def = helpers_1.createDeferred();
+        const def = async_1.createDeferred();
         vscode_1.window.showQuickPick(items, options).then(item => {
             if (!item) {
                 return def.resolve();
@@ -94,7 +94,7 @@ class TestConfigurationManager {
         return def.promise;
     }
     getTestDirs(rootDir) {
-        return utils_1.getSubDirectories(rootDir).then(subDirs => {
+        return fs_1.getSubDirectories(rootDir).then(subDirs => {
             subDirs.sort();
             // Find out if there are any dirs with the name test and place them on the top.
             const possibleTestDirs = subDirs.filter(dir => dir.match(/test/i));

@@ -18,7 +18,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const core_utils_1 = require("../../common/core.utils");
+const misc_1 = require("../../../utils/misc");
 const types_1 = require("../../common/platform/types");
 const types_2 = require("../../ioc/types");
 const constants_1 = require("../common/constants");
@@ -50,7 +50,7 @@ let TestManagerRunner = class TestManagerRunner {
             if (options.testsToRun && options.testsToRun.testFunction) {
                 testPaths = testPaths.concat(options.testsToRun.testFunction.map(f => f.nameToRun));
             }
-            let deleteJUnitXmlFile = core_utils_1.noop;
+            let deleteJUnitXmlFile = misc_1.noop;
             const args = options.args;
             // Check if '--with-xunit' is in args list
             if (args.indexOf(WITH_XUNIT) === -1) {
@@ -102,7 +102,7 @@ let TestManagerRunner = class TestManagerRunner {
         return __awaiter(this, void 0, void 0, function* () {
             const xmlFile = this.argsHelper.getOptionValues(args, XUNIT_FILE);
             if (typeof xmlFile === 'string') {
-                return { filePath: xmlFile, dispose: core_utils_1.noop };
+                return { filePath: xmlFile, dispose: misc_1.noop };
             }
             return this.fs.createTemporaryFile('.xml');
         });

@@ -1,8 +1,9 @@
-"use strict";
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+const constants_1 = require("./constants");
 const moduleNotInstalledError_1 = require("./errors/moduleNotInstalledError");
-// tslint:disable-next-line:no-require-imports no-var-requires
-const tmp = require('tmp');
 function isNotInstalledError(error) {
     const isError = typeof (error) === 'object' && error !== null;
     // tslint:disable-next-line:no-any
@@ -17,59 +18,20 @@ function isNotInstalledError(error) {
     return errorObj.code === 'ENOENT' || errorObj.code === 127 || isModuleNoInstalledError;
 }
 exports.isNotInstalledError = isNotInstalledError;
-class DeferredImpl {
-    // tslint:disable-next-line:no-any
-    constructor(scope = null) {
-        this.scope = scope;
-        this._resolved = false;
-        this._rejected = false;
-        // tslint:disable-next-line:promise-must-complete
-        this._promise = new Promise((res, rej) => {
-            this._resolve = res;
-            this._reject = rej;
-        });
-    }
-    resolve(value) {
-        this._resolve.apply(this.scope ? this.scope : this, arguments);
-        this._resolved = true;
-    }
-    // tslint:disable-next-line:no-any
-    reject(reason) {
-        this._reject.apply(this.scope ? this.scope : this, arguments);
-        this._rejected = true;
-    }
-    get promise() {
-        return this._promise;
-    }
-    get resolved() {
-        return this._resolved;
-    }
-    get rejected() {
-        return this._rejected;
-    }
-    get completed() {
-        return this._rejected || this._resolved;
-    }
-}
-// tslint:disable-next-line:no-any
-function createDeferred(scope = null) {
-    return new DeferredImpl(scope);
-}
-exports.createDeferred = createDeferred;
-function createTemporaryFile(extension, temporaryDirectory) {
-    // tslint:disable-next-line:no-any
-    const options = { postfix: extension };
-    if (temporaryDirectory) {
-        options.dir = temporaryDirectory;
-    }
-    return new Promise((resolve, reject) => {
-        tmp.file(options, (err, tmpFile, fd, cleanupCallback) => {
-            if (err) {
-                return reject(err);
+function skipIfTest(isAsyncFunction) {
+    // tslint:disable-next-line:no-function-expression no-any
+    return function (_, __, descriptor) {
+        const originalMethod = descriptor.value;
+        // tslint:disable-next-line:no-function-expression no-any
+        descriptor.value = function (...args) {
+            if (constants_1.isTestExecution()) {
+                return isAsyncFunction ? Promise.resolve() : undefined;
             }
-            resolve({ filePath: tmpFile, cleanupCallback: cleanupCallback });
-        });
-    });
+            // tslint:disable-next-line:no-invalid-this no-use-before-declare no-unsafe-any
+            return originalMethod.apply(this, args);
+        };
+        return descriptor;
+    };
 }
-exports.createTemporaryFile = createTemporaryFile;
+exports.skipIfTest = skipIfTest;
 //# sourceMappingURL=helpers.js.map

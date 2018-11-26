@@ -27,10 +27,9 @@ const common_1 = require("../common");
 const initialize_1 = require("../initialize");
 const utils_1 = require("./utils");
 const fileToDebug = path.join(constants_1.EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd.py');
-suite('Attach Debugger - Experimental', () => {
+suite('Attach Debugger', () => {
     let debugClient;
     let proc;
-    suiteSetup(initialize_1.initialize);
     setup(function () {
         return __awaiter(this, void 0, void 0, function* () {
             if (!initialize_1.IS_MULTI_ROOT_TEST || !initialize_1.TEST_DEBUGGER) {
@@ -63,12 +62,12 @@ suite('Attach Debugger - Experimental', () => {
             // Set the path for PTVSD to be picked up.
             // tslint:disable-next-line:no-string-literal
             env['PYTHONPATH'] = constants_3.PTVSD_PATH;
-            const pythonArgs = ['-m', 'ptvsd', '--server', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
+            const pythonArgs = ['-m', 'ptvsd', '--server', '--wait', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
             proc = child_process_1.spawn(common_1.PYTHON_PATH, pythonArgs, { env: env, cwd: path.dirname(fileToDebug) });
             yield common_1.sleep(3000);
             // Send initialize, attach
             const initializePromise = debugClient.initializeRequest({
-                adapterID: 'pythonExperimental',
+                adapterID: constants_3.DebuggerTypeName,
                 linesStartAt1: true,
                 columnsStartAt1: true,
                 supportsRunInTerminalRequest: true,
@@ -81,7 +80,7 @@ suite('Attach Debugger - Experimental', () => {
                 request: 'attach',
                 localRoot,
                 remoteRoot,
-                type: 'pythonExperimental',
+                type: constants_3.DebuggerTypeName,
                 port: port,
                 host: 'localhost',
                 logToFile: false,
@@ -127,12 +126,6 @@ suite('Attach Debugger - Experimental', () => {
     }
     test('Confirm we are able to attach to a running program', () => __awaiter(this, void 0, void 0, function* () {
         yield testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), constants_2.IS_WINDOWS);
-    }));
-    test('Confirm local and remote paths are translated', () => __awaiter(this, void 0, void 0, function* () {
-        // If tests are running on windows, then treat debug client as a unix client and remote process as current OS.
-        const isLocalHostWindows = !constants_2.IS_WINDOWS;
-        const localWorkspace = isLocalHostWindows ? 'C:\\Project\\src' : '/home/user/Desktop/project/src';
-        yield testAttachingToRemoteProcess(localWorkspace, path.dirname(fileToDebug), isLocalHostWindows);
     }));
 });
 //# sourceMappingURL=attach.ptvsd.test.js.map

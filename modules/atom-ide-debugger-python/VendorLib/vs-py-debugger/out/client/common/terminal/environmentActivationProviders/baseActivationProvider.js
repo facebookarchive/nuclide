@@ -24,10 +24,13 @@ let BaseActivationCommandProvider = class BaseActivationCommandProvider {
     constructor(serviceContainer) {
         this.serviceContainer = serviceContainer;
     }
-    findScriptFile(resource, scriptFileNames) {
+    getActivationCommands(resource, targetShell) {
+        const pythonPath = this.serviceContainer.get(types_2.IConfigurationService).getSettings(resource).pythonPath;
+        return this.getActivationCommandsForInterpreter(pythonPath, targetShell);
+    }
+    findScriptFile(pythonPath, scriptFileNames) {
         return __awaiter(this, void 0, void 0, function* () {
             const fs = this.serviceContainer.get(types_1.IFileSystem);
-            const pythonPath = this.serviceContainer.get(types_2.IConfigurationService).getSettings(resource).pythonPath;
             for (const scriptFileName of scriptFileNames) {
                 // Generate scripts are found in the same directory as the interpreter.
                 const scriptFile = path.join(path.dirname(pythonPath), scriptFileName);

@@ -22,6 +22,7 @@ __version__ = "3.0.0.0"
 # hasn't been loaded already, it will assume that the thread on which it is being loaded is the
 # main thread. This will cause issues when the thread goes away after attach completes.
 
+import imp
 import os
 import sys
 import struct
@@ -67,7 +68,6 @@ def exec_code(code, file, global_variables):
     ``sys.path[0]`` will be changed to the value of `file` without the filename.
     Both values are restored when this function exits.
     '''
-    import imp
     original_main = sys.modules.get('__main__')
 
     global_variables = dict(global_variables)
@@ -510,14 +510,14 @@ class SafeRepr(object):
         d1 = {}
         d1_key = 'a' * self.maxstring_inner * 2
         d1[d1_key] = d1_key
-        re_test(d1, r"{'a+\.\.\.a+': 'a+\.\.\.a+'}")
+        re_test(d1, "{'a+\.\.\.a+': 'a+\.\.\.a+'}")
         d2 = {d1_key : d1}
-        re_test(d2, r"{'a+\.\.\.a+': {'a+\.\.\.a+': 'a+\.\.\.a+'}}")
+        re_test(d2, "{'a+\.\.\.a+': {'a+\.\.\.a+': 'a+\.\.\.a+'}}")
         d3 = {d1_key : d2}
         if len(self.maxcollection) == 2:
-            re_test(d3, r"{'a+\.\.\.a+': {'a+\.\.\.a+': {\.\.\.}}}")
+            re_test(d3, "{'a+\.\.\.a+': {'a+\.\.\.a+': {\.\.\.}}}")
         else:
-            re_test(d3, r"{'a+\.\.\.a+': {'a+\.\.\.a+': {'a+\.\.\.a+': 'a+\.\.\.a+'}}}")
+            re_test(d3, "{'a+\.\.\.a+': {'a+\.\.\.a+': {'a+\.\.\.a+': 'a+\.\.\.a+'}}}")
 
         # Ensure empty dicts work
         test({}, '{}')

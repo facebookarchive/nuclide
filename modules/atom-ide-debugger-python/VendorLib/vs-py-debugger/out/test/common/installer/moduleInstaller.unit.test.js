@@ -15,8 +15,6 @@ const path = require("path");
 const TypeMoq = require("typemoq");
 const vscode_1 = require("vscode");
 const types_1 = require("../../../client/common/application/types");
-const core_utils_1 = require("../../../client/common/core.utils");
-const enumUtils_1 = require("../../../client/common/enumUtils");
 const condaInstaller_1 = require("../../../client/common/installer/condaInstaller");
 const pipEnvInstaller_1 = require("../../../client/common/installer/pipEnvInstaller");
 const pipInstaller_1 = require("../../../client/common/installer/pipInstaller");
@@ -25,6 +23,8 @@ const types_2 = require("../../../client/common/installer/types");
 const types_3 = require("../../../client/common/terminal/types");
 const types_4 = require("../../../client/common/types");
 const contracts_1 = require("../../../client/interpreter/contracts");
+const enum_1 = require("../../../utils/enum");
+const misc_1 = require("../../../utils/misc");
 /* Complex test to ensure we cover all combinations:
 We could have written separate tests for each installer, but we'd be replicate code.
 Both approachs have their benefits.
@@ -194,7 +194,7 @@ suite('Module Installer', () => {
                                         yield installer.installModule(product.name, resource);
                                     }
                                     catch (_a) {
-                                        core_utils_1.noop();
+                                        misc_1.noop();
                                     }
                                     interpreterService.verifyAll();
                                 }));
@@ -249,7 +249,7 @@ function generatePythonInterpreterVersions() {
     });
 }
 function getModuleNamesForTesting() {
-    return enumUtils_1.EnumEx.getNamesAndValues(types_4.Product)
+    return enum_1.getNamesAndValues(types_4.Product)
         .map(product => {
         let moduleName = '';
         const mockSvc = TypeMoq.Mock.ofType().object;

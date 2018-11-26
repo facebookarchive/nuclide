@@ -11,17 +11,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const path = require("path");
 const vscode_debugadapter_1 = require("vscode-debugadapter");
+const misc_1 = require("../../../utils/misc");
 const open_1 = require("../../common/open");
 const pathUtils_1 = require("../../common/platform/pathUtils");
 const currentProcess_1 = require("../../common/process/currentProcess");
 const environment_1 = require("../../common/variables/environment");
-const constants_1 = require("../Common/constants");
 const Contracts_1 = require("../Common/Contracts");
 const Utils_1 = require("../Common/Utils");
-const LocalDebugServer_1 = require("../DebugServers/LocalDebugServer");
 const LocalDebugServerV2_1 = require("../DebugServers/LocalDebugServerV2");
 const DebugClient_1 = require("./DebugClient");
 const helper_1 = require("./helper");
+const VALID_DEBUG_OPTIONS = [
+    'RedirectOutput',
+    'DebugStdLib',
+    'stopOnEntry',
+    'BreakOnSystemExitZero',
+    'DjangoDebugging',
+    'Django'
+];
 var DebugServerStatus;
 (function (DebugServerStatus) {
     DebugServerStatus[DebugServerStatus["Unknown"] = 1] = "Unknown";
@@ -29,7 +36,6 @@ var DebugServerStatus;
     DebugServerStatus[DebugServerStatus["NotRunning"] = 3] = "NotRunning";
 })(DebugServerStatus || (DebugServerStatus = {}));
 class LocalDebugClient extends DebugClient_1.DebugClient {
-    // tslint:disable-next-line:no-any
     constructor(args, debugSession, canLaunchTerminal, launcherScriptProvider) {
         super(args, debugSession);
         this.canLaunchTerminal = canLaunchTerminal;
@@ -44,14 +50,8 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
         }
         return DebugServerStatus.Unknown;
     }
-    CreateDebugServer(pythonProcess, serviceContainer) {
-        if (this.args.type === 'pythonExperimental') {
-            this.debugServer = new LocalDebugServerV2_1.LocalDebugServerV2(this.debugSession, this.args, serviceContainer);
-        }
-        else {
-            this.pythonProcess = pythonProcess;
-            this.debugServer = new LocalDebugServer_1.LocalDebugServer(this.debugSession, this.pythonProcess, this.args);
-        }
+    CreateDebugServer(_pythonProcess, serviceContainer) {
+        this.debugServer = new LocalDebugServerV2_1.LocalDebugServerV2(this.debugSession, this.args, serviceContainer);
         return this.debugServer;
     }
     get DebugType() {
@@ -82,10 +82,6 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
             const environmentVariablesService = new environment_1.EnvironmentVariablesService(pathUtils);
             const helper = new helper_1.DebugClientHelper(environmentVariablesService, pathUtils, currentProcess);
             const environmentVariables = yield helper.getEnvironmentVariables(this.args);
-            if (this.args.type === 'pythonExperimental') {
-                // Import the PTVSD debugger, allowing users to use their own latest copies.
-                environmentVariablesService.appendPythonPath(environmentVariables, constants_1.PTVSD_PATH);
-            }
             // tslint:disable-next-line:max-func-body-length cyclomatic-complexity no-any
             return new Promise((resolve, reject) => {
                 const fileDir = this.args && this.args.program ? path.dirname(this.args.program) : '';
@@ -134,18 +130,7 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
             this.displayError(error);
         });
         proc.stderr.setEncoding('utf8');
-        proc.stderr.on('data', error => {
-            if (this.args.type === 'pythonExperimental') {
-                return;
-            }
-            // We generally don't need to display the errors as stderr output is being captured by debugger
-            // and it gets sent out to the debug client.
-            // Either way, we need some code in here so we read the stdout of the python process,
-            // Else it just keep building up (related to issue #203 and #52).
-            if (this.debugServerStatus === DebugServerStatus.NotRunning) {
-                return failedToLaunch(error);
-            }
-        });
+        proc.stderr.on('data', misc_1.noop);
         proc.stdout.on('data', d => {
             // This is necessary so we read the stdout of the python process,
             // Else it just keep building up (related to issue #203 and #52).
@@ -161,7 +146,7 @@ class LocalDebugClient extends DebugClient_1.DebugClient {
         const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
         const vsDebugOptions = [Contracts_1.DebugOptions.RedirectOutput];
         if (Array.isArray(this.args.debugOptions)) {
-            this.args.debugOptions.filter(opt => Contracts_1.VALID_DEBUG_OPTIONS.indexOf(opt) >= 0)
+            this.args.debugOptions.filter(opt => VALID_DEBUG_OPTIONS.indexOf(opt) >= 0)
                 .forEach(item => vsDebugOptions.push(item));
         }
         const djangoIndex = vsDebugOptions.indexOf(Contracts_1.DebugOptions.Django);
