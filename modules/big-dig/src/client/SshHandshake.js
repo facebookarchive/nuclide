@@ -816,21 +816,31 @@ export class SshHandshake {
     return server;
   }
 
+  _getServerStartConfig(config: SshConnectionConfiguration): Object {
+    const remoteTempFile = `/tmp/big-dig-sshhandshake-${Math.random()}`;
+    const params: BigDigCliParams = {
+      cname: config.host,
+      jsonOutputFile: remoteTempFile,
+      timeout: 60000,
+      expiration: '14d',
+      serverParams: config.remoteServerCustomParams,
+      exclusive: config.exclusive,
+      ports: config.remoteServerPorts,
+      useRootCanalCerts: config.useRootCanalCerts,
+    };
+
+    return {
+      command: config.remoteServer.command,
+      params,
+    };
+  }
+
   /**
    * Invokes the remote server and updates the server info via `_updateServerInfo`.
    */
   async _startRemoteServer(server: RemotePackage): Promise<void> {
-    const remoteTempFile = `/tmp/big-dig-sshhandshake-${Math.random()}`;
-    const params: BigDigCliParams = {
-      cname: this._config.host,
-      jsonOutputFile: remoteTempFile,
-      timeout: 60000,
-      expiration: '14d',
-      serverParams: this._config.remoteServerCustomParams,
-      exclusive: this._config.exclusive,
-      ports: this._config.remoteServerPorts,
-      useRootCanalCerts: this._config.useRootCanalCerts,
-    };
+    const params = this._getServerStartConfig(this._config).params;
+    const remoteTempFile = params.jsonOutputFile;
 
     try {
       // Run the server bootstrapper: this will create a server process, output the process info
