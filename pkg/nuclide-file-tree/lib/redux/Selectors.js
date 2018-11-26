@@ -912,6 +912,11 @@ export const collectDebugState = (state: AppState): json$JsonObject => {
     vcsStatuses[key] = objectFromPairs(value.entries());
   }
 
+  const fileChanges = {};
+  for (const [key, value] of getFileChanges(state).entries()) {
+    fileChanges[key] = objectFromPairs(value.entries());
+  }
+
   return {
     currentWorkingRoot: getCwdKey(state),
     openFilesExpanded: getOpenFilesExpanded(state),
@@ -935,6 +940,7 @@ export const collectDebugState = (state: AppState): json$JsonObject => {
       hideVcsIgnoredPaths: getHideVcsIgnoredPaths(state),
       isEditingWorkingSet: getIsEditingWorkingSet(state),
       vcsStatuses,
+      fileChanges,
       workingSet: [...getWorkingSet(state).getUris()],
       ignoredPatterns: [
         ...getIgnoredPatterns(state)
