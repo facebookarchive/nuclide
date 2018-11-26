@@ -310,7 +310,11 @@ def process_exec_queue(interpreter):
 if 'IPYTHONENABLE' in os.environ:
     IPYTHON = os.environ['IPYTHONENABLE'] == 'True'
 else:
-    IPYTHON = True
+    # There is an open bug here: https://github.com/Microsoft/ptvsd/issues/920
+    # and here: https://github.com/Microsoft/vscode-python/issues/2860.
+    # When syncing this, try syncing without this commit and if that does not
+    # work then try syncing with this commit.
+    IPYTHON = False
 
 try:
     try:

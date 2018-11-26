@@ -299,7 +299,7 @@ class PyDBDaemonThread(threading.Thread):
     created_pydb_daemon_threads = {}
 
     def __init__(self):
-        threading.Thread.__init__(self)
+        super(PyDBDaemonThread, self).__init__()
         self.setDaemon(True)
         self.killReceived = False
         self.pydev_do_not_trace = True

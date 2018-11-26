@@ -154,7 +154,7 @@ def execute_tests_in_parallel(tests, jobs, split, verbosity, coverage_files, cov
 class CommunicationThread(threading.Thread):
 
     def __init__(self, tests_queue):
-        threading.Thread.__init__(self)
+        super(CommunicationThread, self).__init__()
         self.setDaemon(True)
         self.queue = tests_queue
         self.finished = False
@@ -242,7 +242,7 @@ class CommunicationThread(threading.Thread):
 class ClientThread(threading.Thread):
 
     def __init__(self, job_id, port, verbosity, coverage_output_file=None, coverage_include=None):
-        threading.Thread.__init__(self)
+        super(ClientThread, self).__init__()
         self.setDaemon(True)
         self.port = port
         self.job_id = job_id
