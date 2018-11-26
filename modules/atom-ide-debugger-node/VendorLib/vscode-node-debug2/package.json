@@ -23,7 +23,7 @@
 		"@types/node": "^6.0.52",
 		"@types/source-map": "^0.1.27",
 		"del": "^2.2.2",
-		"event-stream": "^3.3.4",
+		"event-stream": "3.3.4",
 		"gulp": "^3.9.1",
 		"gulp-sourcemaps": "^2.2.0",
 		"gulp-tslint": "^8.1.2",
