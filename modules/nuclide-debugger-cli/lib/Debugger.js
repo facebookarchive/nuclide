@@ -44,6 +44,7 @@ import OutCommand from './OutCommand';
 import ShowCapsCommand from './ShowCapsCommand';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
+import OptoutCommand from './OptoutCommand';
 import Thread from './Thread';
 import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
@@ -126,6 +127,7 @@ export default class Debugger extends EventEmitter
     dispatcher.registerCommand(new OutCommand(this));
     dispatcher.registerCommand(new ShowCapsCommand(this._console, this));
     dispatcher.registerCommand(new InfoCommand(this._console, this));
+    dispatcher.registerCommand(new OptoutCommand(this._console));
 
     dispatcher.setUnrecognizedCommandHandler(command =>
       dispatcher.execute(`${print.name} ${command}`),
