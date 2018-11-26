@@ -50,9 +50,17 @@ class Activation {
           for (const el of document.getElementsByClassName(
             'nuclide-scrollbar-style-fix',
           )) {
-            const originalDisplayStyle = window.getComputedStyle(el).display;
+            if (window.getComputedStyle(el).display === 'none') {
+              // It's hidden. Don't bother doing anything.
+              continue;
+            }
+            const originalDisplayStyle = el.style.display;
             el.style.display = 'none';
             window.requestAnimationFrame(() => {
+              if (el.style.display !== 'none') {
+                // It changed out from under us!
+                return;
+              }
               el.style.display = originalDisplayStyle;
             });
           }
