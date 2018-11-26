@@ -89,6 +89,8 @@ export type ManagedPackageParams = {|
 /** Assume the package is already installed and not managed by Big-dig. */
 export type UnmanagedPackageParams = {|
   command: string,
+  cmd?: string,
+  flags?: Array<string>,
   cwd?: string,
 |};
 

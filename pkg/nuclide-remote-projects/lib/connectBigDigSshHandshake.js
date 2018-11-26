@@ -132,11 +132,17 @@ export default function connectBigDigSshHandshake(
   let version = getNuclideVersion();
   // We'll only allow one Nuclide server per user - but you can override this.
   let exclusive = 'atom';
+  // Keep an array of flags to send to the bootstrap service
+  const flags = [];
+  // cmd will be the command without any additional flags
+  let cmd = remoteServerCommand;
+
   // big-dig doesn't parse extra arguments.
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {
     const parsed = yargs.parse(remoteServerCommand);
     remoteServerCommand = parsed._.join(' ');
+    cmd = parsed._[0];
     if (parsed.version != null) {
       version = parsed.version;
     }
@@ -156,7 +162,9 @@ export default function connectBigDigSshHandshake(
 
   // Add an extra flag to indicate the use of big-dig.
   remoteServerCommand += ' --big-dig';
+  flags.push('--big-dig');
   remoteServerCommand += ` --version=${version}`;
+  flags.push(`--version=${version}`);
 
   sshHandshake.connect({
     host,
@@ -165,6 +173,8 @@ export default function connectBigDigSshHandshake(
     pathToPrivateKey: expandedPath,
     remoteServer: {
       command: remoteServerCommand,
+      cmd,
+      flags,
     },
     remoteServerPorts,
     authMethod,
