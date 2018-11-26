@@ -30,13 +30,13 @@ class Activation {
   _packageDisposables: UniversalDisposable;
   _registeredProviders: Set<BlameProvider>;
   // Map of a TextEditor to its BlameGutter, if it exists.
-  _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
+  _textEditorToBlameGutter: WeakMap<atom$TextEditor, BlameGutter>;
   // Map of a TextEditor to the subscription on its ::onDidDestroy.
   _textEditorToDestroySubscription: Map<atom$TextEditor, IDisposable>;
 
   constructor() {
     this._registeredProviders = new Set();
-    this._textEditorToBlameGutter = new Map();
+    this._textEditorToBlameGutter = new WeakMap();
     this._textEditorToDestroySubscription = new Map();
     this._packageDisposables = new UniversalDisposable();
     this._packageDisposables.add(
@@ -88,7 +88,6 @@ class Activation {
   dispose() {
     this._packageDisposables.dispose();
     this._registeredProviders.clear();
-    this._textEditorToBlameGutter.clear();
     for (const disposable of this._textEditorToDestroySubscription.values()) {
       disposable.dispose();
     }
