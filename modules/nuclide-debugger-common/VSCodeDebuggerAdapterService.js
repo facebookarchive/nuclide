@@ -83,6 +83,10 @@ export async function realpath(path: string): Promise<string> {
   return fsPromise.realpath(path);
 }
 
+export async function exists(path: string): Promise<boolean> {
+  return fsPromise.exists(path);
+}
+
 export async function getAdapterExecutableInfo(
   adapterType: VsAdapterType,
 ): Promise<VSAdapterExecutableInfo> {

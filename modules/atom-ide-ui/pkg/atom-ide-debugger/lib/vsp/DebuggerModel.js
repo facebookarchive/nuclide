@@ -67,6 +67,7 @@ import type {
 } from '../types';
 import type {IProcessConfig} from 'nuclide-debugger-common';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {Expected} from 'nuclide-commons/expected';
 
@@ -127,7 +128,9 @@ export class Source implements ISource {
   }
 
   get raw(): DebugProtocol.Source {
-    return this._raw;
+    return {
+      ...this._raw,
+    };
   }
 
   get reference(): ?number {
@@ -652,11 +655,21 @@ export class StackFrame implements IStackFrame {
   }
 
   async openInEditor(): Promise<?atom$TextEditor> {
+    const rawPath = this.source.raw.path;
+    const localRawPath = nuclideUri.getPath(rawPath || '');
+    if (
+      rawPath != null &&
+      localRawPath !== '' &&
+      (await getVSCodeDebuggerAdapterServiceByNuclideUri(rawPath).exists(
+        localRawPath,
+      ))
+    ) {
+      return openSourceLocation(rawPath, this.range.start.row);
+    }
     if (this.source.available) {
       return openSourceLocation(this.source.uri, this.range.start.row);
-    } else {
-      return null;
     }
+    return null;
   }
 }
 
