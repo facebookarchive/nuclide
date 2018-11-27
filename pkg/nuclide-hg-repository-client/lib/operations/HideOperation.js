@@ -12,6 +12,7 @@
 import type {Hash} from 'fb-vcs-common';
 import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
+import {ButtonTypes} from 'nuclide-commons-ui/Button';
 import {
   RevisionPreviews,
   getRevisionTreeMapFromTree,
@@ -33,6 +34,18 @@ export class HgHideOperation implements HgOperation {
 
   getEquivalentCommand() {
     return `hg hide ${this._hash}`;
+  }
+
+  getCommandDocumentation() {
+    // TODO: Pass RevisionTree into constructor so we can determine how many
+    // children will be affected and surface that here
+    return {
+      naturalLanguageDescription:
+        'Removes the commit and all of its descendants',
+      confirmationMessage: 'Are you sure you want to hide these commits?',
+      confirmationButtonType: ButtonTypes.ERROR,
+      confirmationButtonText: 'Hide commits',
+    };
   }
 
   makePreviewApplier(

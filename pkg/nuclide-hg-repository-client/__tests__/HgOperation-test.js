@@ -46,6 +46,7 @@ class TestHgOperation implements HgOperation {
   getCommandDocumentation() {
     return {
       naturalLanguageDescription: 'Just a test',
+      confirmationMessage: 'confirm',
     };
   }
 }

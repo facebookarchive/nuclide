@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {ButtonType} from 'nuclide-commons-ui/Button';
 import type {Observable} from 'rxjs';
 import type {RevisionTree, RevisionPreview} from './revisionTree/RevisionTree';
 import type {OperationProgress} from '../../nuclide-hg-rpc/lib/types';
@@ -34,6 +35,15 @@ export interface HgOperation {
 
   // Human-readable equivalent
   getEquivalentCommand(): string;
+
+  // Documentation that can be shown when previewing this command
+  getCommandDocumentation(): ?{
+    naturalLanguageDescription: ?string,
+    confirmationMessage: ?string,
+    confirmationButtonType?: ButtonType,
+    confirmationButtonText?: string,
+    confirmationNote?: ?string,
+  };
 
   // How to traverse and modify the commit tree to preview this operation before actually running it
   +makePreviewApplier?: (
