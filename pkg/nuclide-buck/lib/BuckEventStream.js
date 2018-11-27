@@ -26,8 +26,6 @@ import {exitEventToMessage} from 'nuclide-commons/process';
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 const BUILD_OUTPUT_REGEX = /^OK {3}(.*?) (.*?) (.*?)$/;
-const RESET_ANSI = '?7l';
-const ERROR_ANSI = '?7h[31m';
 
 export type BuckEvent =
   | {
@@ -37,8 +35,6 @@ export type BuckEvent =
   | {
       type: 'buck-status',
       message: string,
-      reset: boolean,
-      error: boolean,
     }
   | {
       type: 'log',
@@ -170,69 +166,72 @@ export function getEventsFromProcess(
         })
         .map(message => {
           invariant(message.kind === 'stdout' || message.kind === 'stderr');
-          const mdata = message.data;
-          const reset = mdata.includes(RESET_ANSI);
-          const error = mdata.includes(ERROR_ANSI);
-          const stripped = stripAnsi(message.data);
           return {
             type: 'buck-status',
-            message: stripped,
-            error,
-            reset,
+            message: message.data,
           };
         }),
-      processStream.map(message => {
-        switch (message.kind) {
-          case 'error':
-            return {
-              type: 'error',
-              message: `Buck failed: ${message.error.message}`,
-            };
-          case 'exit':
-            const logMessage = `Buck exited with ${exitEventToMessage(
-              message,
-            )}.`;
-            if (message.exitCode === 0) {
+      processStream
+        .filter(f => {
+          // Filtering ANSI messages out of the stdout/stderr stream so we don't
+          // need to handle them.
+          if (f.kind === 'stdout' || f.kind === 'stderr') {
+            return !f.data.startsWith('[', 1);
+          }
+          return true;
+        })
+        .map(message => {
+          switch (message.kind) {
+            case 'error':
               return {
-                type: 'log',
+                type: 'error',
+                message: `Buck failed: ${message.error.message}`,
+              };
+            case 'exit':
+              const logMessage = `Buck exited with ${exitEventToMessage(
+                message,
+              )}.`;
+              if (message.exitCode === 0) {
+                return {
+                  type: 'log',
+                  message: logMessage,
+                  level: 'info',
+                };
+              }
+              return {
+                type: 'error',
                 message: logMessage,
-                level: 'info',
               };
-            }
-            return {
-              type: 'error',
-              message: logMessage,
-            };
-          case 'stderr':
-          case 'stdout':
-            const match = message.data.trim().match(BUILD_OUTPUT_REGEX);
-            if (match != null && match.length === 4) {
-              return {
-                type: 'build-output',
-                output: {
-                  target: match[1],
-                  successType: match[2],
-                  path: match[3],
-                },
-              };
-            } else {
-              return {
-                type: 'log',
-                // Some Buck steps output ansi escape codes regardless of terminal setting.
-                message: stripAnsi(message.data),
-                // Build failure messages typically do not show up in the web socket.
-                // TODO(hansonw): fix this on the Buck side
-                level:
-                  message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
-                    ? 'log'
-                    : 'error',
-              };
-            }
-          default:
-            (message: empty);
-            throw new Error('impossible');
-        }
-      }),
+            case 'stderr':
+            case 'stdout':
+              const match = message.data.trim().match(BUILD_OUTPUT_REGEX);
+              if (match != null && match.length === 4) {
+                return {
+                  type: 'build-output',
+                  output: {
+                    target: match[1],
+                    successType: match[2],
+                    path: match[3],
+                  },
+                };
+              } else {
+                return {
+                  type: 'log',
+                  // Some Buck steps output ansi escape codes regardless of terminal setting.
+                  message: message.data,
+                  // Build failure messages typically do not show up in the web socket.
+                  // TODO(hansonw): fix this on the Buck side
+                  level:
+                    message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
+                      ? 'log'
+                      : 'error',
+                };
+              }
+            default:
+              (message: empty);
+              throw new Error('impossible');
+          }
+        }),
     );
   });
 }
