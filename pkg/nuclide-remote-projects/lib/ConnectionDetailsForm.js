@@ -26,16 +26,16 @@ import ReactDOM from 'react-dom';
 import {SupportedMethods} from 'big-dig/src/client/SshHandshake';
 import {Message} from 'nuclide-commons-ui/Message';
 import Link from 'nuclide-commons-ui/Link';
+import passesGK from 'nuclide-commons/passesGK';
 
 export type SshHandshakeAuthMethodsType = $Values<typeof SupportedMethods>;
 
 // @fb-only: const PKEY_LINK = 'https://fburl.com/deprecationnotice';
 const PKEY_LINK = null; // @oss-only
 
-const authMethods: Array<SshHandshakeAuthMethodsType> = [
+let authMethods: Array<SshHandshakeAuthMethodsType> = [
   SupportedMethods.PASSWORD,
   SupportedMethods.SSL_AGENT,
-  SupportedMethods.ROOTCANAL,
   SupportedMethods.PRIVATE_KEY,
 ];
 
@@ -67,6 +67,7 @@ type State = {
   shouldDisplayTooltipWarning: boolean,
   sshPort: string,
   username: string,
+  showRootCanalOption: boolean,
 };
 
 /** Component to prompt the user for connection details. */
@@ -100,7 +101,20 @@ export default class ConnectionDetailsForm extends React.Component<
       displayTitle: props.initialDisplayTitle,
       IPs: null,
       shouldDisplayTooltipWarning: false,
+      showRootCanalOption: false,
     };
+
+    passesGK('nuclide_rootcanal').then(showRootCanal => {
+      if (showRootCanal) {
+        authMethods = [
+          SupportedMethods.PASSWORD,
+          SupportedMethods.SSL_AGENT,
+          SupportedMethods.ROOTCANAL,
+          SupportedMethods.PRIVATE_KEY,
+        ];
+        this.setState({showRootCanalOption: true});
+      }
+    });
   }
 
   _onKeyPress(e: SyntheticKeyboardEvent<>): void {
@@ -247,6 +261,12 @@ export default class ConnectionDetailsForm extends React.Component<
         Use CorpCanal Certificate (EXPERIMENTAL)
       </div>
     );
+    const labels = [passwordLabel, sshAgentLabel, privateKeyLabel];
+
+    if (this.state.showRootCanalOption) {
+      labels.splice(2, 0, rootCanalLabel);
+    }
+
     let toolTipWarning;
     if (this.state.shouldDisplayTooltipWarning) {
       toolTipWarning = (
@@ -329,17 +349,13 @@ export default class ConnectionDetailsForm extends React.Component<
         <div className="form-group">
           <label>Authentication method:</label>
           <RadioGroup
-            optionLabels={[
-              passwordLabel,
-              sshAgentLabel,
-              rootCanalLabel,
-              privateKeyLabel,
-            ]}
+            optionLabels={labels}
             onSelectedChange={this._handleAuthMethodChange}
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
           {PKEY_LINK != null &&
-            this.state.selectedAuthMethodIndex === 3 && (
+            this.state.selectedAuthMethodIndex ===
+              authMethods.indexOf(SupportedMethods.PRIVATE_KEY) && (
               <Message type="warning">
                 Private keys are going away soon. Please see{' '}
                 <Link href={PKEY_LINK}>this post</Link>.
