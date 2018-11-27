@@ -76,11 +76,16 @@ export type SshConnectionConfiguration = {
   clientKey?: ?Buffer, // the client key
 };
 
-export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
-const SupportedMethods = Object.freeze({
+export type SupportedMethodTypes =
+  | 'SSL_AGENT'
+  | 'PASSWORD'
+  | 'PRIVATE_KEY'
+  | 'ROOTCANAL';
+export const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
   PRIVATE_KEY: 'PRIVATE_KEY',
+  ROOTCANAL: 'ROOTCANAL',
 });
 
 const ErrorType = Object.freeze({
@@ -586,6 +591,7 @@ export class SshHandshake {
       }
 
       const connectConfig = await this._getConnectConfig(address, config);
+
       const authError = await this._connectOrNeedsAuth(connectConfig);
       if (authError) {
         await this._connectFallbackViaPassword(

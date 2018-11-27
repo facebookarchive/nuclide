@@ -51,6 +51,7 @@ const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
   PRIVATE_KEY: 'PRIVATE_KEY',
+  ROOTCANAL: 'ROOTCANAL',
 });
 
 export type SshHandshakeAuthMethodsType = $Values<typeof SupportedMethods>;

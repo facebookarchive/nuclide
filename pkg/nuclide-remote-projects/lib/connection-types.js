@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {SshHandshakeAuthMethodsType} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {SshHandshakeAuthMethodsType} from './ConnectionDetailsForm';
 
 export type NuclideRemoteConnectionParams = {
   username: string,

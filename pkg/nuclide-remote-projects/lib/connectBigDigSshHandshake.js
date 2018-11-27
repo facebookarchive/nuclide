@@ -20,6 +20,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import {SshHandshake} from 'big-dig/src/client/index';
+import {SupportedMethods} from 'big-dig/src/client/SshHandshake';
 import yargs from 'yargs';
 import fs from 'fs-plus';
 import {getNuclideVersion} from 'nuclide-commons/system-info';
@@ -31,9 +32,6 @@ import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnect
 // @fb-only: import {getAllFacebookCAs, getCert} from 'fb-cert-tools';
 import {getAllFacebookCAs, getCert} from './cert-stubs'; // @oss-only
 
-// TODO: get this from the connection dialog (which will only be present behind a gk)
-const useRootCanalCerts = false;
-
 /**
  * Adapts big-dig's SshHandshake to what Nuclide expects.
  * After the migration is complete, we should be able to refactor this away.
@@ -42,6 +40,9 @@ export default function connectBigDigSshHandshake(
   connectionConfig: NuclideSshConnectionConfigurationType,
   delegate: NuclideSshConnectionDelegateType,
 ): SshHandshake {
+  const useRootCanalCerts =
+    connectionConfig.authMethod === SupportedMethods.ROOTCANAL;
+
   let clientCertificate = null;
   let certificateAuthorityCertificate = null;
   let clientKey = null;

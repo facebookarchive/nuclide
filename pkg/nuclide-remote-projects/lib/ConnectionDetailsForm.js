@@ -10,7 +10,6 @@
  */
 
 import type {DnsLookup} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
-import type {SshHandshakeAuthMethodsType} from '../../nuclide-remote-connection/lib/SshHandshake';
 import type {NuclideRemoteConnectionParamsWithPassword} from './connection-types';
 
 import {getOfficialRemoteServerCommand} from './connection-profile-utils';
@@ -24,17 +23,19 @@ import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-
 import RadioGroup from 'nuclide-commons-ui/RadioGroup';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import {SshHandshake} from '../../nuclide-remote-connection';
+import {SupportedMethods} from 'big-dig/src/client/SshHandshake';
 import {Message} from 'nuclide-commons-ui/Message';
 import Link from 'nuclide-commons-ui/Link';
+
+export type SshHandshakeAuthMethodsType = $Values<typeof SupportedMethods>;
 
 // @fb-only: const PKEY_LINK = 'https://fburl.com/deprecationnotice';
 const PKEY_LINK = null; // @oss-only
 
-const {SupportedMethods} = SshHandshake;
 const authMethods: Array<SshHandshakeAuthMethodsType> = [
   SupportedMethods.PASSWORD,
   SupportedMethods.SSL_AGENT,
+  SupportedMethods.ROOTCANAL,
   SupportedMethods.PRIVATE_KEY,
 ];
 
@@ -241,6 +242,11 @@ export default class ConnectionDetailsForm extends React.Component<
     const sshAgentLabel = (
       <div className="nuclide-auth-method">Use ssh-agent</div>
     );
+    const rootCanalLabel = (
+      <div className="nuclide-auth-method">
+        Use CorpCanal Certificate (EXPERIMENTAL)
+      </div>
+    );
     let toolTipWarning;
     if (this.state.shouldDisplayTooltipWarning) {
       toolTipWarning = (
@@ -323,12 +329,17 @@ export default class ConnectionDetailsForm extends React.Component<
         <div className="form-group">
           <label>Authentication method:</label>
           <RadioGroup
-            optionLabels={[passwordLabel, sshAgentLabel, privateKeyLabel]}
+            optionLabels={[
+              passwordLabel,
+              sshAgentLabel,
+              rootCanalLabel,
+              privateKeyLabel,
+            ]}
             onSelectedChange={this._handleAuthMethodChange}
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
           {PKEY_LINK != null &&
-            this.state.selectedAuthMethodIndex === 2 && (
+            this.state.selectedAuthMethodIndex === 3 && (
               <Message type="warning">
                 Private keys are going away soon. Please see{' '}
                 <Link href={PKEY_LINK}>this post</Link>.
