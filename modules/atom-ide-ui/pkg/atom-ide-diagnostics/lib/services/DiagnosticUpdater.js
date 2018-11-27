@@ -27,7 +27,7 @@ import {throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import * as Selectors from '../redux/Selectors';
 import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
-import {arrayEqual, mapEqual} from 'nuclide-commons/collection';
+import {mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
@@ -51,7 +51,7 @@ export default class DiagnosticUpdater {
   };
 
   getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
-    return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
+    return Selectors.getFileMessages(this._store.getState(), filePath);
   };
 
   getLastUpdateSource = (): LastUpdateSource => {
@@ -70,31 +70,6 @@ export default class DiagnosticUpdater {
     );
   };
 
-  observeFileMessagesIterator = (
-    filePath: NuclideUri,
-    callback: (update: Iterable<DiagnosticMessage>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._states
-        .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .let(throttle(THROTTLE_FILE_MESSAGES_MS))
-        .map(state => [
-          Selectors.getProviderToMessagesForFile(state)(filePath),
-          state,
-        ])
-        .distinctUntilChanged(([aMessages], [bMessages]) =>
-          mapEqual(aMessages, bMessages),
-        )
-        .map(([, state]) => ({
-          [Symbol.iterator]() {
-            return Selectors.getBoundedThreadedFileMessages(state, filePath);
-          },
-        }))
-        // $FlowFixMe Flow doesn't know about Symbol.iterator
-        .subscribe(callback),
-    );
-  };
-
   observeFileMessages = (
     filePath: NuclideUri,
     callback: (update: DiagnosticMessages) => mixed,
@@ -105,12 +80,14 @@ export default class DiagnosticUpdater {
       this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
         .let(throttle(THROTTLE_FILE_MESSAGES_MS))
-        .map(state => Selectors.getFileMessageUpdates(state, filePath))
-        .distinctUntilChanged(
-          (a, b) =>
-            a.totalMessages === b.totalMessages &&
-            arrayEqual(a.messages, b.messages),
+        .map(state => [
+          Selectors.getProviderToMessagesForFile(state)(filePath),
+          state,
+        ])
+        .distinctUntilChanged(([aMessages], [bMessages]) =>
+          mapEqual(aMessages, bMessages),
         )
+        .map(([, state]) => Selectors.getFileMessages(state, filePath))
         .subscribe(callback),
     );
   };

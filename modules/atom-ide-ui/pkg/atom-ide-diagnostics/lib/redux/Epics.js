@@ -69,7 +69,7 @@ export function applyFix(
       invariant(action.type === Actions.APPLY_FIXES_FOR_FILE);
       // TODO: Be consistent about file/filePath/path.
       const {file: filePath} = action.payload;
-      return Selectors.getFileMessages(store.getState(), filePath);
+      return Selectors.getFileMessages(store.getState(), filePath).messages;
     }),
   );
 

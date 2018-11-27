@@ -22,7 +22,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {createSelector} from 'reselect';
 import {DefaultMap, takeIterable} from 'nuclide-commons/collection';
-import {minBy} from 'lodash';
+import {memoize, minBy} from 'lodash';
 
 const MAX_MESSAGE_COUNT_PER_FILE = 1000;
 
@@ -44,78 +44,79 @@ export const getProviderToMessagesForFile = createSelector(
   },
 );
 
-function* getThreadedFileMessages(
-  state: AppState,
-  filePath: NuclideUri,
-): Iterable<DiagnosticMessage> {
-  const providerToMessages = getProviderToMessagesForFile(state)(filePath);
-  const providerToCurrentIndex: DefaultMap<
-    ObservableDiagnosticProvider,
-    number,
-  > = new DefaultMap(() => 0);
+const getThreadedFileMessages = createSelector(
+  [getProviderToMessagesForFile],
+  _getProviderToMessagesForFile => {
+    return function* _getThreadedFileMessages(
+      filePath: NuclideUri,
+    ): Iterable<DiagnosticMessage> {
+      const providerToMessages = _getProviderToMessagesForFile(filePath);
+      const providerToCurrentIndex: DefaultMap<
+        ObservableDiagnosticProvider,
+        number,
+      > = new DefaultMap(() => 0);
 
-  while (providerToMessages.size) {
-    // "Peek" at the next message from each provider, and store them so we can
-    // select the best next one.
-    const nextMessageCandidates: Array<
-      [ObservableDiagnosticProvider, DiagnosticMessage],
-    > = Array.from(providerToMessages.entries()).map(([provider, messages]) => [
-      provider,
-      messages[providerToCurrentIndex.get(provider)],
-    ]);
+      while (providerToMessages.size) {
+        // "Peek" at the next message from each provider, and store them so we can
+        // select the best next one.
+        const nextMessageCandidates: Array<
+          [ObservableDiagnosticProvider, DiagnosticMessage],
+        > = Array.from(providerToMessages.entries()).map(
+          ([provider, messages]) => [
+            provider,
+            messages[providerToCurrentIndex.get(provider)],
+          ],
+        );
 
-    // Pick the "closest" (lowest row and column pair) of the options we generated
-    const [closestProvider, closestMessage] = minBy(
-      nextMessageCandidates,
-      ([provider, message]) => {
-        const range = message && message.range;
-        return range
-          ? range.start.row + range.start.column / Number.MAX_SAFE_INTEGER
-          : 0;
-      },
-    );
+        // Pick the "closest" (lowest row and column pair) of the options we generated
+        const [closestProvider, closestMessage] = minBy(
+          nextMessageCandidates,
+          ([provider, message]) => {
+            const range = message && message.range;
+            return range
+              ? range.start.row + range.start.column / Number.MAX_SAFE_INTEGER
+              : 0;
+          },
+        );
 
-    // Advance this provider's index forward one. First, get "i"
-    const closestProviderIndex = providerToCurrentIndex.get(closestProvider);
-    const closestProviderMessages = providerToMessages.get(closestProvider);
-    if (
-      closestProviderMessages != null &&
-      closestProviderIndex < closestProviderMessages.length - 1
-    ) {
-      // "i++"
-      providerToCurrentIndex.set(closestProvider, closestProviderIndex + 1);
-    } else {
-      // We've exhausted the messages for this provider. Remove it from future
-      // consideration.
-      providerToMessages.delete(closestProvider);
-    }
+        // Advance this provider's index forward one. First, get "i"
+        const closestProviderIndex = providerToCurrentIndex.get(
+          closestProvider,
+        );
+        const closestProviderMessages = providerToMessages.get(closestProvider);
+        if (
+          closestProviderMessages != null &&
+          closestProviderIndex < closestProviderMessages.length - 1
+        ) {
+          // "i++"
+          providerToCurrentIndex.set(closestProvider, closestProviderIndex + 1);
+        } else {
+          // We've exhausted the messages for this provider. Remove it from future
+          // consideration.
+          providerToMessages.delete(closestProvider);
+        }
 
-    yield closestMessage;
-  }
-}
+        yield closestMessage;
+      }
+    };
+  },
+);
 
-export function* getBoundedThreadedFileMessages(
-  state: AppState,
-  filePath: NuclideUri,
-): Iterable<DiagnosticMessage> {
-  yield* takeIterable(
-    getThreadedFileMessages(state, filePath),
-    MAX_MESSAGE_COUNT_PER_FILE,
-  );
-}
+const getBoundedThreadedFileMessages = createSelector(
+  [getThreadedFileMessages],
+  _getThreadedFileMessages =>
+    memoize(
+      (filePath: NuclideUri): Array<DiagnosticMessage> =>
+        Array.from(
+          takeIterable(
+            _getThreadedFileMessages(filePath),
+            MAX_MESSAGE_COUNT_PER_FILE,
+          ),
+        ),
+    ),
+);
 
-/**
- * Gets the current diagnostic messages for the file.
- * Prefer to get updates via ::onFileMessagesDidUpdate.
- */
 export function getFileMessages(
-  state: AppState,
-  filePath: NuclideUri,
-): Array<DiagnosticMessage> {
-  return Array.from(getThreadedFileMessages(state, filePath));
-}
-
-export function getFileMessageUpdates(
   state: AppState,
   filePath: NuclideUri,
 ): DiagnosticMessages {
@@ -123,7 +124,7 @@ export function getFileMessageUpdates(
     filePath,
     // Excessive numbers of items cause performance issues in the gutter, table, and decorations.
     // Truncate the number of items MAX_MESSAGE_COUNT_PER_FILE.
-    messages: Array.from(getBoundedThreadedFileMessages(state, filePath)),
+    messages: getBoundedThreadedFileMessages(state)(filePath),
     // Include the total number of messages without truncation
     totalMessages: getFileMessageCount(state, filePath),
   };
@@ -169,6 +170,7 @@ export const getAllMessagesWithFixes = createSelector(
     return withFixes;
   },
 );
+
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getSupportedMessageKinds = createSelector(
   [getProviders],

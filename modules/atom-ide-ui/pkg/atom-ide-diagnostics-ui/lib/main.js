@@ -73,7 +73,7 @@ class Activation {
   _subscriptions: UniversalDisposable;
   _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
-  _fileDiagnostics: WeakMap<atom$TextEditor, Iterable<DiagnosticMessage>>;
+  _fileDiagnostics: WeakMap<atom$TextEditor, Array<DiagnosticMessage>>;
   _globalViewStates: ?Observable<GlobalViewState>;
   _gatekeeperServices: BehaviorSubject<?GatekeeperService> = new BehaviorSubject();
 
@@ -625,17 +625,18 @@ function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
   isStaleMessageEnabledStream: Observable<boolean>,
-): Observable<Iterable<DiagnosticMessage>> {
+): Observable<Array<DiagnosticMessage>> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
     .switchMap(
       filePath =>
         filePath != null
           ? observableFromSubscribeFunction(cb =>
-              diagnosticUpdater.observeFileMessagesIterator(filePath, cb),
+              diagnosticUpdater.observeFileMessages(filePath, cb),
             )
           : Observable.empty(),
     )
+    .map(messageUpdate => messageUpdate.messages)
     .combineLatest(isStaleMessageEnabledStream)
     .let(
       throttle(([_, isStaleMessageEnabled]) =>
@@ -651,14 +652,12 @@ function getEditorDiagnosticUpdates(
         // never show these messages as stale.
         isStaleMessageEnabled
           ? messages
-          : (function*() {
-              for (const message of messages) {
-                if (message != null && message.type !== 'Hint') {
-                  message.stale = false;
-                }
-                yield message;
+          : messages.map(m => {
+              if (m != null && m.type !== 'Hint') {
+                m.stale = false;
               }
-            })(),
+              return m;
+            }),
     )
     .takeUntil(
       observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
