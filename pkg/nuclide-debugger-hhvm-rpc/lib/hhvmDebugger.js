@@ -315,7 +315,13 @@ class HHVMDebuggerWrapper {
       if (!this._handleWrapperRequest(requestMsg)) {
         const callback = this._debuggerWriteCallback;
         if (callback != null) {
-          callback(this._translateNuclideRequest(requestMsg));
+          callback(
+            JSON.stringify(
+              this._translateEvaluateRequest(
+                this._translateNuclideRequest(requestMsg),
+              ),
+            ),
+          );
         }
       }
 
@@ -325,7 +331,7 @@ class HHVMDebuggerWrapper {
     }
   }
 
-  _translateNuclideRequest(requestMsg: request): string {
+  _translateNuclideRequest(requestMsg: request): request {
     // Nuclide has some extension messages that are not actually part of the
     // VS Code Debug protocol. These are prefixed with "nuclide_" to indicate
     // that they are non-standard requests. Since the HHVM side is agnostic
@@ -336,9 +342,26 @@ class HHVMDebuggerWrapper {
       requestMsg.command.startsWith('nuclide_')
     ) {
       requestMsg.command = requestMsg.command.replace('nuclide_', 'fb_');
-      return JSON.stringify(requestMsg);
+      return requestMsg;
     }
-    return JSON.stringify(requestMsg);
+    return requestMsg;
+  }
+
+  _translateEvaluateRequest(requestMsg: request): request {
+    // Workaround for the fact that the hhvm compiler returns '1'
+    // when evaluating a lot of expressions (the result from compiling
+    // the block rather than the value from executing the block)
+    if (
+      requestMsg.command === 'evaluate' &&
+      requestMsg.arguments.context === 'repl' &&
+      !requestMsg.arguments.expression.startsWith('$_')
+    ) {
+      requestMsg.arguments.expression = `$_=${
+        requestMsg.arguments.expression
+      };return $_;`;
+    }
+
+    return requestMsg;
   }
 
   _handleWrapperRequest(requestMsg: request): boolean {
