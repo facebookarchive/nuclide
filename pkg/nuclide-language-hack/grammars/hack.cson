@@ -654,7 +654,13 @@
         'include': '#comments'
       }
       {
-        'include': '#attributes'
+        'begin': '(?=^\\s*<<)'
+        'end': '(?<=>>)'
+        'patterns': [
+          {
+            'include': '#attributes'
+          }
+        ]
       }
       {
         'include': '#xhp'
