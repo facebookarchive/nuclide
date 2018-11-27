@@ -394,14 +394,16 @@ export class ExpressionTreeNode extends React.Component<
     } else if (this.state.children.isPending) {
       children = pendingChildrenNode;
     } else if (this.state.children.isError) {
-      this._renderValueLine(
+      children = this._renderValueLine(
         'Children',
         this.state.children.error != null
           ? this.state.children.error.toString()
           : NOT_AVAILABLE_MESSAGE,
       );
     } else {
-      this.state.children.value.map(child => this._renderChild(child));
+      children = this.state.children.value.map(child =>
+        this._renderChild(child),
+      );
     }
 
     return (
