@@ -133,7 +133,13 @@ export const getWorkingSet = (state: AppState) => state.workingSet;
 export const getIsEditingWorkingSet = (state: AppState) =>
   state.isEditingWorkingSet;
 
-const getVcsStatuses = (state: AppState) => state.vcsStatuses;
+// Get the VCS statuses for all of the mounted roots.
+const getVcsStatuses = createSelector(
+  [getRootUris, state => state.vcsStatuses],
+  (rootUris, allVcsStatuses) => {
+    return rootUris.toMap().map(rootUri => allVcsStatuses.get(rootUri));
+  },
+);
 
 const getExcludeVcsIgnoredPaths = (state: AppState) =>
   state.excludeVcsIgnoredPaths;
