@@ -19,12 +19,10 @@ import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Selectors from '../redux/Selectors';
 import {FileTreeNode} from '../FileTreeNode';
 import * as Immutable from 'immutable';
-import {HgStatusToFileChangeStatus} from '../../../nuclide-vcs-base';
 import {matchesFilter} from '../FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
 import {HistogramTracker} from 'nuclide-analytics';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange} from '../FileTreeSelectionRange';
 import * as Actions from '../redux/Actions';
@@ -45,7 +43,6 @@ const DEFAULT_STATE: AppState = {
 
   _roots: Immutable.OrderedMap(),
 
-  _fileChanges: Immutable.Map(),
   _generatedOpenChangedFiles: Immutable.Map(),
   _reorderPreviewStatus: null,
 
@@ -200,8 +197,6 @@ function reduceState(state_: AppState, action: Action): AppState {
       );
     case Actions.SET_FOLDERS_EXPANDED:
       return setFoldersExpanded(state, action.foldersExpanded);
-    case Actions.INVALIDATE_REMOVED_FOLDER:
-      return invalidateRemovedFolder(state);
     case Actions.SET_TARGET_NODE:
       return setTargetNode(state, action.rootKey, action.nodeKey);
     case Actions.UPDATE_GENERATED_STATUSES:
@@ -687,35 +682,9 @@ function setVcsStatuses(
   rootKey: NuclideUri,
   vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
 ): AppState {
-  // We use file changes for populating the uncommitted list, this is different as compared
-  // to what is computed in the vcsStatuses in that it does not need the exact path but just
-  // the root folder present in atom and the file name and its status. Another difference is
-  // in the terms used for status change, while uncommitted changes needs the HgStatusChange
-  // codes the file tree doesn't.
-  const nextState = setFileChanges(state, rootKey, vcsStatuses);
-
-  return {
-    ...nextState,
-    vcsStatuses: nextState.vcsStatuses.set(rootKey, vcsStatuses),
-  };
-}
-
-function setFileChanges(
-  state: AppState,
-  rootKey: NuclideUri,
-  vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
-): AppState {
-  let fileChanges = Immutable.Map();
-  vcsStatuses.forEach((statusCode, filePath) => {
-    fileChanges = fileChanges.set(
-      filePath,
-      HgStatusToFileChangeStatus[statusCode],
-    );
-  });
-
   return {
     ...state,
-    _fileChanges: state._fileChanges.set(rootKey, fileChanges),
+    vcsStatuses: state.vcsStatuses.set(rootKey, vcsStatuses),
   };
 }
 
@@ -1398,26 +1367,6 @@ function setFoldersExpanded(
   return {
     ...state,
     _foldersExpanded: foldersExpanded,
-  };
-}
-
-function invalidateRemovedFolder(state: AppState): AppState {
-  const updatedFileChanges = new Map();
-  atom.project.getPaths().forEach(projectPath => {
-    const standardizedPath = nuclideUri.ensureTrailingSeparator(projectPath);
-    // Atom sometimes tells you a repo exists briefly even after it has been removed
-    // This causes the map to first flush out the repo and then again try to add the
-    // repo but the files now don't exist causing an undefined value to be added.
-    // Adding check to prevent this from happening.
-    const fileChangesForPath = state._fileChanges.get(standardizedPath);
-    if (fileChangesForPath != null) {
-      updatedFileChanges.set(standardizedPath, fileChangesForPath);
-    }
-  });
-
-  return {
-    ...state,
-    _fileChanges: Immutable.Map(updatedFileChanges),
   };
 }
 

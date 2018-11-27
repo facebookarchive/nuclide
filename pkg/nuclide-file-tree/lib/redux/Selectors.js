@@ -10,7 +10,6 @@
  */
 
 import type {GeneratedFileType} from '../../../nuclide-generated-files-rpc';
-import type {FileChangeStatusValue} from '../../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 import type {FileTreeNode} from '../FileTreeNode';
@@ -32,7 +31,10 @@ import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Immutable from 'immutable';
 import {memoize, once} from 'lodash';
 import {createSelector, createSelectorCreator, defaultMemoize} from 'reselect';
-import {repositoryContainsPath} from '../../../nuclide-vcs-base';
+import {
+  repositoryContainsPath,
+  HgStatusToFileChangeStatus,
+} from '../../../nuclide-vcs-base';
 import {getLogger} from 'log4js';
 
 //
@@ -104,13 +106,6 @@ export const getRepositories = (
 ): Immutable.Set<atom$Repository> => state._repositories;
 
 export const getCwdKey = (state: AppState): ?NuclideUri => state._cwdKey;
-
-export const getFileChanges = (
-  state: AppState,
-): Immutable.Map<
-  NuclideUri,
-  Immutable.Map<NuclideUri, FileChangeStatusValue>,
-> => state._fileChanges;
 
 export const getGeneratedOpenChangedFiles = (
   state: AppState,
@@ -225,6 +220,19 @@ const getEnrichedVcsStatuses = createSelector(
       .toMap();
   },
 );
+
+// We use file changes for populating the uncommitted list, this is different as compared to what is
+// computed in the vcsStatuses in that it does not need the exact path but just the root folder
+// present in atom and the file name and its status. Another difference is in the terms used for
+// status change, while uncommitted changes needs the HgStatusChange codes the file tree doesn't.
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getFileChanges = createSelector([getVcsStatuses], vcsStatuses => {
+  return vcsStatuses.map(vcsStatusesForRoot => {
+    return Immutable.Map(vcsStatusesForRoot).map(
+      status => HgStatusToFileChangeStatus[status],
+    );
+  });
+});
 
 //
 //

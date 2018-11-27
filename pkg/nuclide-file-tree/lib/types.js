@@ -20,7 +20,6 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {SelectionRange} from './FileTreeSelectionRange';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
-import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 export type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
@@ -119,10 +118,6 @@ export type AppState = {|
   _autoExpandSingleChild: boolean,
   _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>,
   _repositories: Immutable.Set<atom$Repository>,
-  _fileChanges: Immutable.Map<
-    NuclideUri,
-    Immutable.Map<NuclideUri, FileChangeStatusValue>,
-  >,
 
   _generatedOpenChangedFiles: Immutable.Map<NuclideUri, GeneratedFileType>,
   _cwdApi: ?CwdApi,
@@ -375,9 +370,6 @@ export type Action =
       uncommittedChangesExpanded: boolean,
     }
   | {
-      type: 'INVALIDATE_REMOVED_FOLDER',
-    }
-  | {
       type: 'SET_TARGET_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
@@ -475,9 +467,6 @@ export type Action =
       type: 'SET_VCS_STATUSES',
       rootKey: string,
       vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
-    |}
-  | {|
-      type: 'INVALIDATE_REMOVED_FOLDER',
     |}
   | {|
       type: 'WORKING_SET_CHANGE_REQUESTED',

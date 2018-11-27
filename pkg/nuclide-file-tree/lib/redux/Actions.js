@@ -118,7 +118,6 @@ export const SET_OPEN_FILES_EXPANDED = 'SET_OPEN_FILES_EXPANDED';
 export const SET_UNCOMMITTED_CHANGES_EXPANDED =
   'SET_UNCOMMITTED_CHANGES_EXPANDED';
 export const SET_FOLDERS_EXPANDED = 'SET_FOLDERS_EXPANDED';
-export const INVALIDATE_REMOVED_FOLDER = 'INVALIDATE_REMOVED_FOLDER';
 export const SET_TARGET_NODE = 'SET_TARGET_NODE';
 export const UPDATE_GENERATED_STATUSES = 'UPDATE_GENERATED_STATUSES';
 export const ADD_FILTER_LETTER = 'ADD_FILTER_LETTER';
@@ -340,12 +339,6 @@ export function setVcsStatuses(
     type: SET_VCS_STATUSES,
     rootKey,
     vcsStatuses,
-  };
-}
-
-export function invalidateRemovedFolder(): Action {
-  return {
-    type: INVALIDATE_REMOVED_FOLDER,
   };
 }
 

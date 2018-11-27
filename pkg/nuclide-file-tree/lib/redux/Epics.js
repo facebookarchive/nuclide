@@ -203,7 +203,6 @@ export function updateRepositoriesEpic(
         }
 
         disposableForRepository = disposableForRepository.delete(repo);
-        store.dispatch(Actions.invalidateRemovedFolder());
         disposable.dispose();
       });
 
