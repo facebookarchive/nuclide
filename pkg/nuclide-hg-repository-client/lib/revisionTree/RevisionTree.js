@@ -35,6 +35,8 @@ export const RevisionPreviews = Object.freeze(
     STRIP_ROOT: null,
     STRIP_DESCENDANT: null,
     COMMIT_LIST_PREVIEW: null,
+    OPTIMISTIC_REBASE_ROOT: null,
+    OPTIMISTIC_REBASE_DESCENDANT: null,
   }),
 );
 export type RevisionPreview = $Values<typeof RevisionPreviews>;
@@ -49,6 +51,9 @@ export function getChildPreviewType(
       return RevisionPreviews.REBASE_DESCENDANT;
     case RevisionPreviews.STRIP_ROOT:
       return RevisionPreviews.STRIP_DESCENDANT;
+    case RevisionPreviews.OPTIMISTIC_REBASE_ROOT:
+      return RevisionPreviews.OPTIMISTIC_REBASE_DESCENDANT;
+    case RevisionPreviews.OPTIMISTIC_REBASE_DESCENDANT:
     case RevisionPreviews.REBASE_DESCENDANT:
     case RevisionPreviews.REBASE_OLD:
     case RevisionPreviews.STRIP_DESCENDANT:
