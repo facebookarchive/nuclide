@@ -50,6 +50,7 @@ function renderMessage(
       'diagnostics-popup-error': message.type === 'Error',
       'diagnostics-popup-warning': message.type === 'Warning',
       'diagnostics-popup-info': message.type === 'Info',
+      'diagnostics-popup-hint': message.type === 'Hint',
     },
   );
   const codeActions = getCodeActions(message, codeActionsForMessage);

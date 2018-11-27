@@ -14,8 +14,6 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {DiagnosticGroup} from './types';
 
-import invariant from 'assert';
-
 const PRIORITIZED_GROUPS: Array<DiagnosticGroup> = [
   'review',
   'errors',
@@ -30,7 +28,6 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
     case 'lint':
     case null:
     case undefined:
-      invariant(message.type !== 'Hint');
       // We have a separate button for each severity.
       switch (message.type) {
         case 'Error':
@@ -39,6 +36,8 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
           return 'warnings';
         case 'Info':
           return 'info';
+        case 'Hint':
+          return 'action';
         default:
           (message.type: empty);
           throw new Error(`Invalid message severity: ${message.type}`);

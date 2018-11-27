@@ -73,7 +73,7 @@ const GUTTER_CSS_GROUPS = {
   warnings: 'diagnostics-gutter-ui-gutter-warning',
   info: 'diagnostics-gutter-ui-gutter-info',
   action: 'diagnostics-gutter-ui-gutter-action',
-  hidden: '',
+  hidden: 'diagnostics-gutter-ui-gutter-action',
 };
 
 type MarkerMap = DefaultMap<number, Set<atom$Marker>>;
@@ -597,12 +597,22 @@ function createGutterItem({
   messages.forEach(msg => messageGroups.add(GroupUtils.getGroup(msg)));
   const group = GroupUtils.getHighestPriorityGroup(messageGroups);
 
+  const isShown = (message, cursorRow) =>
+    !(message.type === 'Hint' && message?.range?.start.row !== cursorRow);
+
   const item = document.createElement('span');
   const groupClassName = GUTTER_CSS_GROUPS[group];
-  item.className = classnames('diagnostics-gutter-ui-item', groupClassName, {
-    'diagnostics-gutter-ui-gutter-stale': messages.every(
-      message => message.stale,
-    ),
+  const getClassNames = ({cursorRow}) =>
+    classnames('diagnostics-gutter-ui-item', groupClassName, {
+      'diagnostics-gutter-ui-gutter-stale': messages.every(
+        message => message.stale,
+      ),
+      'diagnostics-gutter-ui-gutter-hidden': messages.every(
+        message => !isShown(message, cursorRow),
+      ),
+    });
+  item.className = getClassNames({
+    cursorRow: editor.getCursorBufferPosition().row,
   });
 
   // Add the icon
@@ -627,6 +637,25 @@ function createGutterItem({
       addOpenMessageId(messages, openedMessageIds, setOpenMessageIds);
     }),
   );
+
+  if (messages.every(message => message.type === 'Hint')) {
+    // Only show the lightbulb icon in the gutter if the cursor is on the same
+    // line. Otherwise we would have a gutter potentially filled up with
+    // lightbulb icons that aren't contextually useful for the user.
+    //
+    // Make sure to only add this subscription if we have a hint diagnostic, as
+    // otherwise we would have to potentially redraw every gutter item every
+    // time the cursor moved.
+    disposable.add(
+      observableFromSubscribeFunction(cb =>
+        editor.onDidChangeCursorPosition(cb),
+      ).subscribe(event => {
+        item.className = getClassNames({
+          cursorRow: event.newBufferPosition.row,
+        });
+      }),
+    );
+  }
 
   return {
     item,

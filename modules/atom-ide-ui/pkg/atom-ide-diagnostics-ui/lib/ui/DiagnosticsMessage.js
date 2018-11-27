@@ -33,7 +33,7 @@ const PROVIDER_CLASS_NAME = {
   Error: 'highlight-error',
   Warning: 'highlight-warning',
   Info: 'highlight-info',
-  Hint: '',
+  Hint: 'highlight-info', // use same styles as Info
 };
 
 function diagnosticHeader(props: DiagnosticsMessageProps) {
