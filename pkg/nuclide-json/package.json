@@ -20,11 +20,6 @@
       "versions": {
         "0.1.0": "getHyperclickProvider"
       }
-    },
-    "code-format.file": {
-      "versions": {
-        "0.1.0": "provideCodeFormat"
-      }
     }
   }
 }
