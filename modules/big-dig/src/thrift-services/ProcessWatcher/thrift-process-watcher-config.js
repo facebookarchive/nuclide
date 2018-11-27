@@ -20,7 +20,7 @@ export const PROCESS_WATCHER_SERVICE_CONFIG: ThriftServiceConfig = {
   remoteUri: '',
   remoteCommand: 'node',
   remoteCommandArgs: [
-    '{BIG_DIG_SERVICES_PATH}/src/thrift-services/ProcessWater/launchThriftProcessWatcherServer-entry.js',
+    '{BIG_DIG_SERVICES_PATH}/src/thrift-services/ProcessWatcher/launchThriftProcessWatcherServer-entry.js',
     '{IPC_PATH}',
   ],
   remoteConnection: {type: 'ipcSocket', path: ''},
