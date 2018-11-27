@@ -46,8 +46,8 @@ export default class DiagnosticUpdater {
     this._states = observableFromReduxStore(store);
   }
 
-  getMessages = (): Array<DiagnosticMessage> => {
-    return Selectors.getMessages(this._store.getState());
+  getAllMessages = (): Array<DiagnosticMessage> => {
+    return Selectors.getAllMessages(this._store.getState());
   };
 
   getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
@@ -64,7 +64,7 @@ export default class DiagnosticUpdater {
     return new UniversalDisposable(
       this._states
         .let(throttle(THROTTLE_ALL_MESSAGES_MS))
-        .map(Selectors.getMessages)
+        .map(Selectors.getAllMessages)
         .distinctUntilChanged()
         .subscribe(callback),
     );

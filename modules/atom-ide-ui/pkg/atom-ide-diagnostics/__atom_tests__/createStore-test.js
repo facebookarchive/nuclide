@@ -148,7 +148,7 @@ describe('createStore', () => {
       messages: [fileMessageA],
       totalMessages: 1,
     });
-    const allMessages = Selectors.getMessages(store.getState());
+    const allMessages = Selectors.getAllMessages(store.getState());
     expect(allMessages).toEqual([fileMessageA]);
   });
 
@@ -208,7 +208,7 @@ describe('createStore', () => {
         messages: [fileMessageB],
         totalMessages: 1,
       });
-      const allMessages = Selectors.getMessages(store.getState());
+      const allMessages = Selectors.getAllMessages(store.getState());
       expect(allMessages).toEqual([fileMessageA, fileMessageB]);
     },
   );
@@ -258,7 +258,7 @@ describe('createStore', () => {
         messages: [fileMessageB],
         totalMessages: 1,
       });
-      const allMessages = Selectors.getMessages(store.getState());
+      const allMessages = Selectors.getAllMessages(store.getState());
       expect(allMessages).toEqual([fileMessageA2, fileMessageB]);
     },
   );
@@ -309,7 +309,7 @@ describe('createStore', () => {
           messages: [fileMessageB],
           totalMessages: 1,
         });
-        const allMessages = Selectors.getMessages(store.getState());
+        const allMessages = Selectors.getAllMessages(store.getState());
         expect(allMessages).toEqual([fileMessageB]);
       },
     );
@@ -351,7 +351,7 @@ describe('createStore', () => {
     expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual(
       makeEmptyMessages('fileB'),
     );
-    expect(Selectors.getMessages(store.getState()).length).toBe(0);
+    expect(Selectors.getAllMessages(store.getState()).length).toBe(0);
   });
 
   describe('autofix', () => {

@@ -135,7 +135,7 @@ export function getFileMessages(
  * Prefer to get updates via ::onAllMessagesDidUpdate.
  */
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
-export const getMessages = createSelector(
+export const getAllMessages = createSelector(
   [getMessagesState],
   (messagesState): Array<DiagnosticMessage> => {
     const messages = [];
