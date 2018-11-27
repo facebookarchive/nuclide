@@ -163,3 +163,23 @@ export const getRevisionTreeMapFromTree = createSelector(
     return map;
   },
 );
+
+export function findInTree(
+  revisionTree: Array<RevisionTree>,
+  predicate: RevisionTree => boolean,
+): ?RevisionTree {
+  for (const node of walkTreePostorder(revisionTree)) {
+    if (predicate(node)) {
+      return node;
+    }
+  }
+  return null;
+}
+
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getHeadTree = createSelector(
+  [trees => trees],
+  (trees: Array<RevisionTree>): ?RevisionTree => {
+    return findInTree(trees, tree => tree.info.isHead);
+  },
+);
