@@ -31,6 +31,7 @@ import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {onceEventOrError} from '../common/events';
 import {getPackage} from './RemotePackage';
 import type {PackageParams, RemotePackage} from './RemotePackage';
+import asyncRequest from './utils/asyncRequest';
 
 export type {
   ExtractionMethod,
@@ -557,6 +558,33 @@ export class SshHandshake {
       const {address, family} = lookup;
       this._remoteFamily = family;
 
+      if (config.useRootCanalCerts) {
+        logger.info('using Nuclide bootstrap service to launch server');
+        invariant(config.clientCertificate != null);
+        invariant(config.clientKey != null);
+        invariant(config.certificateAuthorityCertificate != null);
+        const BOOT_PORT = 9094;
+        const cert = config.clientCertificate;
+        const key = config.clientKey;
+        const ca = config.certificateAuthorityCertificate;
+        const serverStartConfig = this._getServerStartConfig(config);
+        const uri = `https://${serverStartConfig.params.cname}:${BOOT_PORT}`;
+        const response = await asyncRequest({
+          agentOptions: {cert, key, ca},
+          uri,
+          method: 'POST',
+          body: JSON.stringify(serverStartConfig),
+        });
+        const remoteConnectionConfig = JSON.parse(response.body);
+        remoteConnectionConfig.host = config.host;
+        remoteConnectionConfig.family = this._remoteFamily;
+        remoteConnectionConfig.certificateAuthorityCertificate = ca;
+        remoteConnectionConfig.clientCertificate = cert;
+        remoteConnectionConfig.clientKey = key;
+        this._didConnect(remoteConnectionConfig);
+        return Promise.resolve([remoteConnectionConfig, config]);
+      }
+
       const connectConfig = await this._getConnectConfig(address, config);
       const authError = await this._connectOrNeedsAuth(connectConfig);
       if (authError) {
@@ -565,15 +593,6 @@ export class SshHandshake {
           connectConfig,
           config,
         );
-      }
-
-      if (this._config.useRootCanalCerts) {
-        invariant(this._config.clientKey != null);
-        invariant(this._config.certificateAuthorityCertificate != null);
-        invariant(this._config.clientCertificate != null);
-        this._clientKey = this._config.clientKey;
-        this._certificateAuthorityCertificate = this._config.certificateAuthorityCertificate;
-        this._clientCertificate = this._config.clientCertificate;
       }
 
       return [await this._onSshConnectionIsReady(), this._config];
@@ -848,7 +867,8 @@ export class SshHandshake {
     };
 
     return {
-      command: config.remoteServer.command,
+      command: config.remoteServer.commandNoArgs,
+      flags: config.remoteServer.flags,
       params,
     };
   }

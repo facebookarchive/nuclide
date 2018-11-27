@@ -134,15 +134,15 @@ export default function connectBigDigSshHandshake(
   let exclusive = 'atom';
   // Keep an array of flags to send to the bootstrap service
   const flags = [];
-  // cmd will be the command without any additional flags
-  let cmd = remoteServerCommand;
+  // commandNoArgs will be the command without any additional flags
+  let commandNoArgs = remoteServerCommand;
 
   // big-dig doesn't parse extra arguments.
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {
     const parsed = yargs.parse(remoteServerCommand);
     remoteServerCommand = parsed._.join(' ');
-    cmd = parsed._[0];
+    commandNoArgs = parsed._[0];
     if (parsed.version != null) {
       version = parsed.version;
     }
@@ -173,7 +173,7 @@ export default function connectBigDigSshHandshake(
     pathToPrivateKey: expandedPath,
     remoteServer: {
       command: remoteServerCommand,
-      cmd,
+      commandNoArgs,
       flags,
     },
     remoteServerPorts,

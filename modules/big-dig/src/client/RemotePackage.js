@@ -84,12 +84,16 @@ export type ManagedPackageParams = {|
   command: (installationPath: string, args: string) => string,
   /** Location to store the package. */
   installationPath: string,
+  /** the command with no additional arguments */
+  commandNoArgs?: string,
+  /** the flags that go with cmd */
+  flags?: Array<string>,
 |};
 
 /** Assume the package is already installed and not managed by Big-dig. */
 export type UnmanagedPackageParams = {|
   command: string,
-  cmd?: string,
+  commandNoArgs?: string,
   flags?: Array<string>,
   cwd?: string,
 |};
