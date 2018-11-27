@@ -45,7 +45,7 @@
     "nuclide-commons-atom": "0.7.3-dev",
     "nuclide-debugger-common": "0.7.3-dev",
     "nullthrows": "1.0.0",
-    "react": "16.6.0",
+    "react": "16.6.3",
     "reflect-metadata": "0.1.12",
     "rxjs-compat": "6.3.3",
     "semver": "5.5.0",
