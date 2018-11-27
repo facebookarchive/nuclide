@@ -28,6 +28,7 @@ export const RevisionPreviews = Object.freeze(
   keyMirror({
     HIDDEN: null,
     FOLD: null,
+    OPTIMISTIC_FOLD: null,
     REBASE_ROOT: null,
     REBASE_DESCENDANT: null,
     REBASE_OLD: null,
