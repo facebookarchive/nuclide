@@ -10,6 +10,7 @@
  */
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
+import {handleLegacyProcessMessages} from 'fb-vcs-common';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import type {
   AmendModeValue,
@@ -30,6 +31,7 @@ import {HgRepositorySubscriptions} from '../../nuclide-hg-rpc/lib/HgService';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
+import type {TreePreviewApplierFunction} from './HgOperation';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
@@ -40,6 +42,7 @@ import {
   fastDebounce,
   compact,
 } from 'nuclide-commons/observable';
+import {emptyHgOperationProgress} from './HgOperation';
 import RevisionsCache from './RevisionsCache';
 import {
   StatusCodeIdToNumber,
@@ -101,9 +104,12 @@ export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
+import type {HgOperation, HgOperationProgress} from './HgOperation';
+import type {RevisionTree} from './revisionTree/RevisionTree';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {mapTransform} from 'nuclide-commons/collection';
+import {getRevisionTree} from './revisionTree/RevisionTree';
 
 export type HgStatusChanges = {
   statusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>,
@@ -152,6 +158,10 @@ export class HgRepositoryClient {
     isFetchingPathStatuses: Subject<boolean>,
     manualStatusRefreshRequests: Subject<void>,
     refreshLocksFilesObserver: Subject<Map<string, boolean>>,
+
+    // ----- START: New API state below -----
+    currentlyRunningOperationProgress: BehaviorSubject<?HgOperationProgress>,
+    // ----- END: New API state -----
   };
 
   constructor(
@@ -298,6 +308,10 @@ export class HgRepositoryClient {
         this._sharedMembers.revisionsCache.refreshRevisions();
       }),
     );
+
+    // ----- START: new API initialization below here -----
+    this._sharedMembers.currentlyRunningOperationProgress = new BehaviorSubject();
+    // ----- END: new API initialization -----
   }
 
   // A single root HgRepositoryClient can back multiple HgRepositoryClients
@@ -1376,4 +1390,140 @@ export class HgRepositoryClient {
       .addRemove(this._sharedMembers.workingDirectoryPath)
       .refCount();
   }
+
+  // ------ START: New API methods below here ------
+
+  observeRevisionTree(): Observable<Array<RevisionTree>> {
+    return this.observeRevisionChanges().map(
+      (changes: {revisions: Array<RevisionInfo>, fromFilesystem: boolean}) => {
+        return getRevisionTree(changes.revisions);
+      },
+    );
+  }
+
+  /**
+   * Unified way to run any HgOperation. Returns an observable of progress information.
+   * The observable won't complete until the hg process has exited and the operation
+   * has determined to have been completed based on updates to the revision tree.
+   * Exit code and stderr are monitored for errors. Errors are thrown, but you can
+   * also provide a reporting function.
+   *
+   * TODO: For robustness, this observable should keep running even if the creator unsubscribes.
+   *       That way we would get error messages even if the caller throws and unsubscribes.
+   */
+  runOperation(
+    operation: HgOperation,
+    reportError?: (error: string, details?: string) => void,
+  ): Observable<HgOperationProgress> {
+    // Prevent running while another operation is still running
+    const existingOperation = this._sharedMembers.currentlyRunningOperationProgress.getValue();
+    if (existingOperation != null && !existingOperation.hasCompleted) {
+      const error =
+        `Cannot run hg ${operation.name}` +
+        ` while hg ${existingOperation.operation.name} is still running`;
+      reportError != null && reportError(error);
+      return Observable.throw(error);
+    }
+
+    // track the progress of this operation so we can emit it here and globally
+    let currentProgress = emptyHgOperationProgress(operation);
+    const progress = (changes: ?Object) => {
+      currentProgress =
+        changes == null ? currentProgress : {...currentProgress, ...changes};
+      this._sharedMembers.currentlyRunningOperationProgress.next(
+        changes == null ? null : currentProgress,
+      );
+    };
+    progress({}); // emit initial, empty progress (emit by shareReplay(1))
+
+    const operationCompletedSubject = new Subject();
+
+    let optimisticStateApplierResult;
+    if (operation.makeOptimisticStateApplier != null) {
+      // if an optimistic state applier is given, pass it the revisionTree,
+      // and send progress events with the optimistic state
+      // $FlowIssue: this type isn't being refined to non-null
+      optimisticStateApplierResult = operation
+        .makeOptimisticStateApplier(this.observeRevisionTree())
+        .do((optimisticStateApplier: ?TreePreviewApplierFunction) => {
+          progress({optimisticStateApplier});
+        })
+        .distinctUntilChanged()
+        .finally(() => {
+          // clear optimistic state
+          progress({optimisticStateApplier: null});
+        })
+        .ignoreElements();
+    } else {
+      // if no optimistic state applier is given, wait for one new revisionList
+      // update to arrive during or after the operation
+      optimisticStateApplierResult = this.observeRevisionChanges()
+        .take(1)
+        .ignoreElements();
+    }
+
+    const observeProcessAndOptimisticApplierRunning = Observable.merge(
+      this._sharedMembers.service
+        .observeExecution(
+          this._sharedMembers.workingDirectoryPath,
+          operation.getArgs(),
+        )
+        .refCount()
+        .do(handleLegacyProcessMessages(`hg ${operation.name}`))
+        .do(message => {
+          if (message.kind === 'exit') {
+            const {exitCode} = message;
+            progress({hasProcessExited: true, exitCode});
+          } else if (message.kind === 'stdout' || message.kind === 'stderr') {
+            progress({
+              stdout: [
+                ...currentProgress.stdout,
+                ...message.data
+                  .split('\n')
+                  .filter(s => s.trimRight().length > 0),
+              ],
+            });
+          }
+        })
+        .catch(error => {
+          reportError != null &&
+            reportError(`Failed to ${operation.name}`, error);
+          // rethrow in case caller wants to catch the error too
+          return Observable.throw(error);
+        })
+        .ignoreElements(),
+      optimisticStateApplierResult,
+    );
+
+    return Observable.merge(
+      observeProcessAndOptimisticApplierRunning.finally(() => {
+        // The process exited AND we've determined there's no more optimistic state needed
+        // We can mark this as fully completed.
+        progress({optimisticStateApplier: null, hasCompleted: true});
+        operationCompletedSubject.next();
+      }),
+      // Actually emit the progress messages as long as the operation is still going
+      this.observeCurrentOperationProgress().takeUntil(
+        operationCompletedSubject.asObservable(),
+      ),
+    ).finally(() => {
+      // Send null to *external* listeners to observeCurrentOperationProgress to
+      // signal this operation is done
+      progress(null);
+    });
+  }
+
+  /**
+   * All commands run through `runOperation` will emit progress and status
+   * through this observable. This can be used to monitor all ongoing operations.
+   */
+  observeCurrentOperationProgress(): Observable<HgOperationProgress> {
+    // $FlowIgnore -- shareReplay type is missing
+    return this._sharedMembers.currentlyRunningOperationProgress
+      .asObservable()
+      .distinctUntilChanged()
+      .shareReplay(1);
+  }
+
+  // ------ END: New API methods ------
 }
