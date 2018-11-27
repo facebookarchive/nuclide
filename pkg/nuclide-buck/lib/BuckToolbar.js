@@ -146,7 +146,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
     }
 
     return (
-      <div className="nuclide-buck-toolbar">
+      <div className="nuclide-buck-toolbar inline-block">
         <BuckToolbarTargetSelector
           appState={this.props.appState}
           setBuildTarget={this.props.setBuildTarget}

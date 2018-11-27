@@ -23,7 +23,7 @@ type DefaultProps = {
   maxOptionCount: number,
   onChange: (newValue: string) => mixed,
   onSelect: (newValue: string) => mixed,
-  width: ?number,
+  wrapperStyle: ?mixed,
   disabled: boolean,
 };
 
@@ -78,8 +78,8 @@ export class Combobox extends React.Component<Props, State> {
     maxOptionCount: 10,
     onChange: (newValue: string) => {},
     onSelect: (newValue: string) => {},
-    width: 200,
     disabled: false,
+    wrapperStyle: {},
   };
 
   constructor(props: Props) {
@@ -461,10 +461,7 @@ export class Combobox extends React.Component<Props, State> {
       );
     }
 
-    const {initialTextInput, placeholderText, size, width} = this.props;
-    const wrapperStyle = {
-      width: width == null ? undefined : `${width}px`,
-    };
+    const {initialTextInput, placeholderText, size, wrapperStyle} = this.props;
     return (
       <div
         className={
@@ -485,7 +482,6 @@ export class Combobox extends React.Component<Props, State> {
             this._freeformInput = input;
           }}
           size={size}
-          width={width}
           disabled={this.props.disabled}
         />
         {optionsContainer}

@@ -169,7 +169,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
         onSelect={this._handleBuildTargetChange}
         onBlur={this._handleBuildTargetChange}
         placeholderText="Buck build target"
-        width={null}
+        wrapperStyle={{width: '100%', 'max-width': '100%'}}
         ref={box => (this._comboBox = box)}
       />
     );
