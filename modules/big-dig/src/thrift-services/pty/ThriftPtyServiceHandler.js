@@ -65,7 +65,8 @@ export class ThriftPtyServiceHandler {
   _encoding: string;
   _buffer: Buffer;
   _droppedBytes: number;
-  _resolveLongPoll: ?(string) => typeof undefined;
+  _resolveLongPoll: ?(string) => void;
+  _longPollTimeout: ?TimeoutID;
 
   constructor() {
     this._pty = null;
@@ -75,6 +76,7 @@ export class ThriftPtyServiceHandler {
     this._encoding = DEFAULT_ENCODING;
     this._droppedBytes = 0;
     this._isPtyPaused = false;
+    this._longPollTimeout = null;
   }
 
   dispose(): void {
@@ -163,6 +165,9 @@ export class ThriftPtyServiceHandler {
         this._resolveLongPoll = null;
         if (resolveLongPoll) {
           resolveLongPoll(chunk);
+          if (this._longPollTimeout != null) {
+            clearTimeout(this._longPollTimeout);
+          }
         }
         return;
       }
@@ -266,7 +271,8 @@ export class ThriftPtyServiceHandler {
       // can resolve when new data arrives
       this._resolveLongPoll = resolveLongPoll;
 
-      setTimeout(() => {
+      this._longPollTimeout = setTimeout(() => {
+        this._resolveLongPoll = null;
         rejectLongPoll(LONG_POLL_TIMEOUT_MESSAGE);
       }, timeoutSec * SEC_TO_MSEC);
     });
