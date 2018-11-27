@@ -11,6 +11,7 @@
 
 import type {Observable} from 'rxjs';
 import type {RevisionTree, RevisionPreview} from './revisionTree/RevisionTree';
+import type {OperationProgress} from '../../nuclide-hg-rpc/lib/types';
 
 export type TreePreviewApplierFunction = (
   tree: RevisionTree,
@@ -46,4 +47,40 @@ export interface HgOperation {
   +makeOptimisticStateApplier?: (
     treeObservable: Observable<Array<RevisionTree>>,
   ) => Observable<?TreePreviewApplierFunction>;
+}
+
+/**
+ * This wrapper around an HgOperation contains information about a currently running or previously run operation.
+ * This includes how to optimistically render, which might change as the operation progresses.
+ *
+ * These objects are returned/observed from the service to render info, progress, errors, etc
+ * about previously submitted operations.
+ */
+export type HgOperationProgress = {
+  operation: HgOperation,
+
+  // The current preview applier to apply optimisitc state. Will be `null` if no
+  // optimistic state is required. Completes when the result of the operation is reflected in the data fetched from hg.
+  optimisticStateApplier: ?TreePreviewApplierFunction,
+
+  stdout: Array<string>, // also contains stderr
+  hasProcessExited: boolean, // whether the hg process has exited
+  hasCompleted: boolean, // whether the process exited AND we've gotten a new list from hg AND confirmed the result of operation is present
+  wasCanceled: boolean,
+  exitCode: ?number,
+
+  progress: ?OperationProgress, // current topic, progress precentage, time remaining
+};
+
+export function emptyHgOperationProgress(operation: HgOperation) {
+  return {
+    operation,
+    optimisticStateApplier: null,
+    stdout: [],
+    hasProcessExited: false,
+    hasCompleted: false,
+    wasCanceled: false,
+    exitCode: null,
+    progress: null,
+  };
 }
