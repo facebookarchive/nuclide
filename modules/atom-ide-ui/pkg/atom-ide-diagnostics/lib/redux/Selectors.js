@@ -15,6 +15,7 @@ import type {
   DiagnosticMessage,
   DiagnosticMessages,
   DiagnosticMessageKind,
+  MessagesState,
   ObservableDiagnosticProvider,
   UiConfig,
 } from '../types';
@@ -126,7 +127,7 @@ export function getFileMessages(
     // Truncate the number of items MAX_MESSAGE_COUNT_PER_FILE.
     messages: getBoundedThreadedFileMessages(state)(filePath),
     // Include the total number of messages without truncation
-    totalMessages: getFileMessageCount(state, filePath),
+    totalMessages: getFileMessageCount(state)(filePath),
   };
 }
 
@@ -208,14 +209,19 @@ export const getUiConfig = createSelector(
   },
 );
 
-function getFileMessageCount(state: AppState, filePath: NuclideUri): number {
-  let messageCount = 0;
-  for (const providerMessages of state.messages.values()) {
-    const messagesForFile = providerMessages.get(filePath);
-    if (messagesForFile == null) {
-      continue;
-    }
-    messageCount += messagesForFile.length;
-  }
-  return messageCount;
-}
+const getFileMessageCount = createSelector(
+  [getMessagesState],
+  (messages: MessagesState): ((filePath: NuclideUri) => number) => {
+    return memoize((filePath: NuclideUri) => {
+      let messageCount = 0;
+      for (const providerMessages of messages.values()) {
+        const messagesForFile = providerMessages.get(filePath);
+        if (messagesForFile == null) {
+          continue;
+        }
+        messageCount += messagesForFile.length;
+      }
+      return messageCount;
+    });
+  },
+);
