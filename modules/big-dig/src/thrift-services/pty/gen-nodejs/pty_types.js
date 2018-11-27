@@ -87,6 +87,7 @@ var PollEvent = module.exports.PollEvent = function(args) {
   this.eventType = null;
   this.chunk = null;
   this.exitCode = null;
+  this.exitSignal = null;
   if (args) {
     if (args.eventType !== undefined && args.eventType !== null) {
       this.eventType = args.eventType;
@@ -96,6 +97,9 @@ var PollEvent = module.exports.PollEvent = function(args) {
     }
     if (args.exitCode !== undefined && args.exitCode !== null) {
       this.exitCode = args.exitCode;
+    }
+    if (args.exitSignal !== undefined && args.exitSignal !== null) {
+      this.exitSignal = args.exitSignal;
     }
   }
 };
@@ -128,8 +132,15 @@ PollEvent.prototype.read = function(input) {
       }
       break;
       case 3:
-      if (ftype == Thrift.Type.I32) {
-        this.exitCode = input.readI32();
+      if (ftype == Thrift.Type.I16) {
+        this.exitCode = input.readI16();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.I16) {
+        this.exitSignal = input.readI16();
       } else {
         input.skip(ftype);
       }
@@ -156,8 +167,13 @@ PollEvent.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.exitCode !== null && this.exitCode !== undefined) {
-    output.writeFieldBegin('exitCode', Thrift.Type.I32, 3);
-    output.writeI32(this.exitCode);
+    output.writeFieldBegin('exitCode', Thrift.Type.I16, 3);
+    output.writeI16(this.exitCode);
+    output.writeFieldEnd();
+  }
+  if (this.exitSignal !== null && this.exitSignal !== undefined) {
+    output.writeFieldBegin('exitSignal', Thrift.Type.I16, 4);
+    output.writeI16(this.exitSignal);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

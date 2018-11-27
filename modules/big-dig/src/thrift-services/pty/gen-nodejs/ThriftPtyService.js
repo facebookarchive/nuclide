@@ -24,10 +24,16 @@ var Q = thrift.Q;
 var ttypes = require('./pty_types');
 //HELPER FUNCTIONS AND STRUCTURES
 
-var ThriftPtyService_dispose_args = function(args) {
+var ThriftPtyService_disposeId_args = function(args) {
+  this.id = null;
+  if (args) {
+    if (args.id !== undefined && args.id !== null) {
+      this.id = args.id;
+    }
+  }
 };
-ThriftPtyService_dispose_args.prototype = {};
-ThriftPtyService_dispose_args.prototype.read = function(input) {
+ThriftPtyService_disposeId_args.prototype = {};
+ThriftPtyService_disposeId_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -38,24 +44,43 @@ ThriftPtyService_dispose_args.prototype.read = function(input) {
     if (ftype == Thrift.Type.STOP) {
       break;
     }
-    input.skip(ftype);
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.I32) {
+        this.id = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
     input.readFieldEnd();
   }
   input.readStructEnd();
   return;
 };
 
-ThriftPtyService_dispose_args.prototype.write = function(output) {
-  output.writeStructBegin('ThriftPtyService_dispose_args');
+ThriftPtyService_disposeId_args.prototype.write = function(output) {
+  output.writeStructBegin('ThriftPtyService_disposeId_args');
+  if (this.id !== null && this.id !== undefined) {
+    output.writeFieldBegin('id', Thrift.Type.I32, 1);
+    output.writeI32(this.id);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
 };
 
-var ThriftPtyService_dispose_result = function(args) {
+var ThriftPtyService_disposeId_result = function(args) {
 };
-ThriftPtyService_dispose_result.prototype = {};
-ThriftPtyService_dispose_result.prototype.read = function(input) {
+ThriftPtyService_disposeId_result.prototype = {};
+ThriftPtyService_disposeId_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -73,16 +98,20 @@ ThriftPtyService_dispose_result.prototype.read = function(input) {
   return;
 };
 
-ThriftPtyService_dispose_result.prototype.write = function(output) {
-  output.writeStructBegin('ThriftPtyService_dispose_result');
+ThriftPtyService_disposeId_result.prototype.write = function(output) {
+  output.writeStructBegin('ThriftPtyService_disposeId_result');
   output.writeFieldStop();
   output.writeStructEnd();
   return;
 };
 
 var ThriftPtyService_poll_args = function(args) {
+  this.id = null;
   this.timeoutSec = null;
   if (args) {
+    if (args.id !== undefined && args.id !== null) {
+      this.id = args.id;
+    }
     if (args.timeoutSec !== undefined && args.timeoutSec !== null) {
       this.timeoutSec = args.timeoutSec;
     }
@@ -104,14 +133,18 @@ ThriftPtyService_poll_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.I32) {
+        this.id = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.I32) {
         this.timeoutSec = input.readI32();
       } else {
         input.skip(ftype);
       }
       break;
-      case 0:
-        input.skip(ftype);
-        break;
       default:
         input.skip(ftype);
     }
@@ -123,8 +156,13 @@ ThriftPtyService_poll_args.prototype.read = function(input) {
 
 ThriftPtyService_poll_args.prototype.write = function(output) {
   output.writeStructBegin('ThriftPtyService_poll_args');
+  if (this.id !== null && this.id !== undefined) {
+    output.writeFieldBegin('id', Thrift.Type.I32, 1);
+    output.writeI32(this.id);
+    output.writeFieldEnd();
+  }
   if (this.timeoutSec !== null && this.timeoutSec !== undefined) {
-    output.writeFieldBegin('timeoutSec', Thrift.Type.I32, 1);
+    output.writeFieldBegin('timeoutSec', Thrift.Type.I32, 2);
     output.writeI32(this.timeoutSec);
     output.writeFieldEnd();
   }
@@ -188,9 +226,13 @@ ThriftPtyService_poll_result.prototype.write = function(output) {
 };
 
 var ThriftPtyService_resize_args = function(args) {
+  this.id = null;
   this.columns = null;
   this.rows = null;
   if (args) {
+    if (args.id !== undefined && args.id !== null) {
+      this.id = args.id;
+    }
     if (args.columns !== undefined && args.columns !== null) {
       this.columns = args.columns;
     }
@@ -215,12 +257,19 @@ ThriftPtyService_resize_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.I32) {
-        this.columns = input.readI32();
+        this.id = input.readI32();
       } else {
         input.skip(ftype);
       }
       break;
       case 2:
+      if (ftype == Thrift.Type.I32) {
+        this.columns = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
       if (ftype == Thrift.Type.I32) {
         this.rows = input.readI32();
       } else {
@@ -238,13 +287,18 @@ ThriftPtyService_resize_args.prototype.read = function(input) {
 
 ThriftPtyService_resize_args.prototype.write = function(output) {
   output.writeStructBegin('ThriftPtyService_resize_args');
+  if (this.id !== null && this.id !== undefined) {
+    output.writeFieldBegin('id', Thrift.Type.I32, 1);
+    output.writeI32(this.id);
+    output.writeFieldEnd();
+  }
   if (this.columns !== null && this.columns !== undefined) {
-    output.writeFieldBegin('columns', Thrift.Type.I32, 1);
+    output.writeFieldBegin('columns', Thrift.Type.I32, 2);
     output.writeI32(this.columns);
     output.writeFieldEnd();
   }
   if (this.rows !== null && this.rows !== undefined) {
-    output.writeFieldBegin('rows', Thrift.Type.I32, 2);
+    output.writeFieldBegin('rows', Thrift.Type.I32, 3);
     output.writeI32(this.rows);
     output.writeFieldEnd();
   }
@@ -282,8 +336,12 @@ ThriftPtyService_resize_result.prototype.write = function(output) {
 };
 
 var ThriftPtyService_setEncoding_args = function(args) {
+  this.id = null;
   this.encoding = null;
   if (args) {
+    if (args.id !== undefined && args.id !== null) {
+      this.id = args.id;
+    }
     if (args.encoding !== undefined && args.encoding !== null) {
       this.encoding = args.encoding;
     }
@@ -304,15 +362,19 @@ ThriftPtyService_setEncoding_args.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
+      if (ftype == Thrift.Type.I32) {
+        this.id = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
       if (ftype == Thrift.Type.STRING) {
         this.encoding = input.readString();
       } else {
         input.skip(ftype);
       }
       break;
-      case 0:
-        input.skip(ftype);
-        break;
       default:
         input.skip(ftype);
     }
@@ -324,8 +386,13 @@ ThriftPtyService_setEncoding_args.prototype.read = function(input) {
 
 ThriftPtyService_setEncoding_args.prototype.write = function(output) {
   output.writeStructBegin('ThriftPtyService_setEncoding_args');
+  if (this.id !== null && this.id !== undefined) {
+    output.writeFieldBegin('id', Thrift.Type.I32, 1);
+    output.writeI32(this.id);
+    output.writeFieldEnd();
+  }
   if (this.encoding !== null && this.encoding !== undefined) {
-    output.writeFieldBegin('encoding', Thrift.Type.STRING, 1);
+    output.writeFieldBegin('encoding', Thrift.Type.STRING, 2);
     output.writeString(this.encoding);
     output.writeFieldEnd();
   }
@@ -364,13 +431,9 @@ ThriftPtyService_setEncoding_result.prototype.write = function(output) {
 
 var ThriftPtyService_spawn_args = function(args) {
   this.spawnArguments = null;
-  this.initialCommand = null;
   if (args) {
     if (args.spawnArguments !== undefined && args.spawnArguments !== null) {
       this.spawnArguments = new ttypes.SpawnArguments(args.spawnArguments);
-    }
-    if (args.initialCommand !== undefined && args.initialCommand !== null) {
-      this.initialCommand = args.initialCommand;
     }
   }
 };
@@ -396,13 +459,9 @@ ThriftPtyService_spawn_args.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 2:
-      if (ftype == Thrift.Type.STRING) {
-        this.initialCommand = input.readString();
-      } else {
+      case 0:
         input.skip(ftype);
-      }
-      break;
+        break;
       default:
         input.skip(ftype);
     }
@@ -419,17 +478,18 @@ ThriftPtyService_spawn_args.prototype.write = function(output) {
     this.spawnArguments.write(output);
     output.writeFieldEnd();
   }
-  if (this.initialCommand !== null && this.initialCommand !== undefined) {
-    output.writeFieldBegin('initialCommand', Thrift.Type.STRING, 2);
-    output.writeString(this.initialCommand);
-    output.writeFieldEnd();
-  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
 };
 
 var ThriftPtyService_spawn_result = function(args) {
+  this.success = null;
+  if (args) {
+    if (args.success !== undefined && args.success !== null) {
+      this.success = args.success;
+    }
+  }
 };
 ThriftPtyService_spawn_result.prototype = {};
 ThriftPtyService_spawn_result.prototype.read = function(input) {
@@ -443,7 +503,21 @@ ThriftPtyService_spawn_result.prototype.read = function(input) {
     if (ftype == Thrift.Type.STOP) {
       break;
     }
-    input.skip(ftype);
+    switch (fid)
+    {
+      case 0:
+      if (ftype == Thrift.Type.I32) {
+        this.success = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
     input.readFieldEnd();
   }
   input.readStructEnd();
@@ -452,14 +526,23 @@ ThriftPtyService_spawn_result.prototype.read = function(input) {
 
 ThriftPtyService_spawn_result.prototype.write = function(output) {
   output.writeStructBegin('ThriftPtyService_spawn_result');
+  if (this.success !== null && this.success !== undefined) {
+    output.writeFieldBegin('success', Thrift.Type.I32, 0);
+    output.writeI32(this.success);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
 };
 
 var ThriftPtyService_writeInput_args = function(args) {
+  this.id = null;
   this.data = null;
   if (args) {
+    if (args.id !== undefined && args.id !== null) {
+      this.id = args.id;
+    }
     if (args.data !== undefined && args.data !== null) {
       this.data = args.data;
     }
@@ -480,15 +563,19 @@ ThriftPtyService_writeInput_args.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
+      if (ftype == Thrift.Type.I32) {
+        this.id = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
       if (ftype == Thrift.Type.STRING) {
         this.data = input.readString();
       } else {
         input.skip(ftype);
       }
       break;
-      case 0:
-        input.skip(ftype);
-        break;
       default:
         input.skip(ftype);
     }
@@ -500,8 +587,13 @@ ThriftPtyService_writeInput_args.prototype.read = function(input) {
 
 ThriftPtyService_writeInput_args.prototype.write = function(output) {
   output.writeStructBegin('ThriftPtyService_writeInput_args');
+  if (this.id !== null && this.id !== undefined) {
+    output.writeFieldBegin('id', Thrift.Type.I32, 1);
+    output.writeI32(this.id);
+    output.writeFieldEnd();
+  }
   if (this.data !== null && this.data !== undefined) {
-    output.writeFieldBegin('data', Thrift.Type.STRING, 1);
+    output.writeFieldBegin('data', Thrift.Type.STRING, 2);
     output.writeString(this.data);
     output.writeFieldEnd();
   }
@@ -547,7 +639,7 @@ var ThriftPtyServiceClient = exports.Client = function(output, pClass) {
 ThriftPtyServiceClient.prototype = {};
 ThriftPtyServiceClient.prototype.seqid = function() { return this._seqid; };
 ThriftPtyServiceClient.prototype.new_seqid = function() { return this._seqid += 1; };
-ThriftPtyServiceClient.prototype.dispose = function(callback) {
+ThriftPtyServiceClient.prototype.disposeId = function(id, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -558,24 +650,27 @@ ThriftPtyServiceClient.prototype.dispose = function(callback) {
         _defer.resolve(result);
       }
     };
-    this.send_dispose();
+    this.send_disposeId(id);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_dispose();
+    this.send_disposeId(id);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_dispose = function() {
+ThriftPtyServiceClient.prototype.send_disposeId = function(id) {
   var output = new this.pClass(this.output);
-  output.writeMessageBegin('dispose', Thrift.MessageType.CALL, this.seqid());
-  var args = new ThriftPtyService_dispose_args();
+  output.writeMessageBegin('disposeId', Thrift.MessageType.CALL, this.seqid());
+  var params = {
+    id: id
+  };
+  var args = new ThriftPtyService_disposeId_args(params);
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
 };
 
-ThriftPtyServiceClient.prototype.recv_dispose = function(input,mtype,rseqid) {
+ThriftPtyServiceClient.prototype.recv_disposeId = function(input,mtype,rseqid) {
   var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
@@ -584,13 +679,13 @@ ThriftPtyServiceClient.prototype.recv_dispose = function(input,mtype,rseqid) {
     input.readMessageEnd();
     return callback(x);
   }
-  var result = new ThriftPtyService_dispose_result();
+  var result = new ThriftPtyService_disposeId_result();
   result.read(input);
   input.readMessageEnd();
 
   callback(null);
 };
-ThriftPtyServiceClient.prototype.poll = function(timeoutSec, callback) {
+ThriftPtyServiceClient.prototype.poll = function(id, timeoutSec, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -601,18 +696,19 @@ ThriftPtyServiceClient.prototype.poll = function(timeoutSec, callback) {
         _defer.resolve(result);
       }
     };
-    this.send_poll(timeoutSec);
+    this.send_poll(id, timeoutSec);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_poll(timeoutSec);
+    this.send_poll(id, timeoutSec);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_poll = function(timeoutSec) {
+ThriftPtyServiceClient.prototype.send_poll = function(id, timeoutSec) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('poll', Thrift.MessageType.CALL, this.seqid());
   var params = {
+    id: id,
     timeoutSec: timeoutSec
   };
   var args = new ThriftPtyService_poll_args(params);
@@ -639,7 +735,7 @@ ThriftPtyServiceClient.prototype.recv_poll = function(input,mtype,rseqid) {
   }
   return callback('poll failed: unknown result');
 };
-ThriftPtyServiceClient.prototype.resize = function(columns, rows, callback) {
+ThriftPtyServiceClient.prototype.resize = function(id, columns, rows, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -650,18 +746,19 @@ ThriftPtyServiceClient.prototype.resize = function(columns, rows, callback) {
         _defer.resolve(result);
       }
     };
-    this.send_resize(columns, rows);
+    this.send_resize(id, columns, rows);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_resize(columns, rows);
+    this.send_resize(id, columns, rows);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_resize = function(columns, rows) {
+ThriftPtyServiceClient.prototype.send_resize = function(id, columns, rows) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('resize', Thrift.MessageType.CALL, this.seqid());
   var params = {
+    id: id,
     columns: columns,
     rows: rows
   };
@@ -686,7 +783,7 @@ ThriftPtyServiceClient.prototype.recv_resize = function(input,mtype,rseqid) {
 
   callback(null);
 };
-ThriftPtyServiceClient.prototype.setEncoding = function(encoding, callback) {
+ThriftPtyServiceClient.prototype.setEncoding = function(id, encoding, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -697,18 +794,19 @@ ThriftPtyServiceClient.prototype.setEncoding = function(encoding, callback) {
         _defer.resolve(result);
       }
     };
-    this.send_setEncoding(encoding);
+    this.send_setEncoding(id, encoding);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_setEncoding(encoding);
+    this.send_setEncoding(id, encoding);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_setEncoding = function(encoding) {
+ThriftPtyServiceClient.prototype.send_setEncoding = function(id, encoding) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('setEncoding', Thrift.MessageType.CALL, this.seqid());
   var params = {
+    id: id,
     encoding: encoding
   };
   var args = new ThriftPtyService_setEncoding_args(params);
@@ -732,7 +830,7 @@ ThriftPtyServiceClient.prototype.recv_setEncoding = function(input,mtype,rseqid)
 
   callback(null);
 };
-ThriftPtyServiceClient.prototype.spawn = function(spawnArguments, initialCommand, callback) {
+ThriftPtyServiceClient.prototype.spawn = function(spawnArguments, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -743,20 +841,19 @@ ThriftPtyServiceClient.prototype.spawn = function(spawnArguments, initialCommand
         _defer.resolve(result);
       }
     };
-    this.send_spawn(spawnArguments, initialCommand);
+    this.send_spawn(spawnArguments);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_spawn(spawnArguments, initialCommand);
+    this.send_spawn(spawnArguments);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_spawn = function(spawnArguments, initialCommand) {
+ThriftPtyServiceClient.prototype.send_spawn = function(spawnArguments) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('spawn', Thrift.MessageType.CALL, this.seqid());
   var params = {
-    spawnArguments: spawnArguments,
-    initialCommand: initialCommand
+    spawnArguments: spawnArguments
   };
   var args = new ThriftPtyService_spawn_args(params);
   args.write(output);
@@ -777,9 +874,12 @@ ThriftPtyServiceClient.prototype.recv_spawn = function(input,mtype,rseqid) {
   result.read(input);
   input.readMessageEnd();
 
-  callback(null);
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('spawn failed: unknown result');
 };
-ThriftPtyServiceClient.prototype.writeInput = function(data, callback) {
+ThriftPtyServiceClient.prototype.writeInput = function(id, data, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -790,18 +890,19 @@ ThriftPtyServiceClient.prototype.writeInput = function(data, callback) {
         _defer.resolve(result);
       }
     };
-    this.send_writeInput(data);
+    this.send_writeInput(id, data);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_writeInput(data);
+    this.send_writeInput(id, data);
   }
 };
 
-ThriftPtyServiceClient.prototype.send_writeInput = function(data) {
+ThriftPtyServiceClient.prototype.send_writeInput = function(id, data) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('writeInput', Thrift.MessageType.CALL, this.seqid());
   var params = {
+    id: id,
     data: data
   };
   var args = new ThriftPtyService_writeInput_args(params);
@@ -844,35 +945,35 @@ ThriftPtyServiceProcessor.prototype.process = function(input, output) {
   }
 }
 ;
-ThriftPtyServiceProcessor.prototype.process_dispose = function(seqid, input, output) {
-  var args = new ThriftPtyService_dispose_args();
+ThriftPtyServiceProcessor.prototype.process_disposeId = function(seqid, input, output) {
+  var args = new ThriftPtyService_disposeId_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.dispose.length === 0) {
-    Q.fcall(this._handler.dispose.bind(this._handler))
+  if (this._handler.disposeId.length === 1) {
+    Q.fcall(this._handler.disposeId.bind(this._handler), args.id)
       .then(function(result) {
-        var result_obj = new ThriftPtyService_dispose_result({success: result});
-        output.writeMessageBegin("dispose", Thrift.MessageType.REPLY, seqid);
+        var result_obj = new ThriftPtyService_disposeId_result({success: result});
+        output.writeMessageBegin("disposeId", Thrift.MessageType.REPLY, seqid);
         result_obj.write(output);
         output.writeMessageEnd();
         output.flush();
       }, function (err) {
         var result;
         result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
-        output.writeMessageBegin("dispose", Thrift.MessageType.EXCEPTION, seqid);
+        output.writeMessageBegin("disposeId", Thrift.MessageType.EXCEPTION, seqid);
         result.write(output);
         output.writeMessageEnd();
         output.flush();
       });
   } else {
-    this._handler.dispose(function (err, result) {
+    this._handler.disposeId(args.id, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
-        result_obj = new ThriftPtyService_dispose_result((err !== null || typeof err === 'undefined') ? err : {success: result});
-        output.writeMessageBegin("dispose", Thrift.MessageType.REPLY, seqid);
+        result_obj = new ThriftPtyService_disposeId_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        output.writeMessageBegin("disposeId", Thrift.MessageType.REPLY, seqid);
       } else {
         result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
-        output.writeMessageBegin("dispose", Thrift.MessageType.EXCEPTION, seqid);
+        output.writeMessageBegin("disposeId", Thrift.MessageType.EXCEPTION, seqid);
       }
       result_obj.write(output);
       output.writeMessageEnd();
@@ -884,8 +985,8 @@ ThriftPtyServiceProcessor.prototype.process_poll = function(seqid, input, output
   var args = new ThriftPtyService_poll_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.poll.length === 1) {
-    Q.fcall(this._handler.poll.bind(this._handler), args.timeoutSec)
+  if (this._handler.poll.length === 2) {
+    Q.fcall(this._handler.poll.bind(this._handler), args.id, args.timeoutSec)
       .then(function(result) {
         var result_obj = new ThriftPtyService_poll_result({success: result});
         output.writeMessageBegin("poll", Thrift.MessageType.REPLY, seqid);
@@ -901,7 +1002,7 @@ ThriftPtyServiceProcessor.prototype.process_poll = function(seqid, input, output
         output.flush();
       });
   } else {
-    this._handler.poll(args.timeoutSec, function (err, result) {
+    this._handler.poll(args.id, args.timeoutSec, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
         result_obj = new ThriftPtyService_poll_result((err !== null || typeof err === 'undefined') ? err : {success: result});
@@ -920,8 +1021,8 @@ ThriftPtyServiceProcessor.prototype.process_resize = function(seqid, input, outp
   var args = new ThriftPtyService_resize_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.resize.length === 2) {
-    Q.fcall(this._handler.resize.bind(this._handler), args.columns, args.rows)
+  if (this._handler.resize.length === 3) {
+    Q.fcall(this._handler.resize.bind(this._handler), args.id, args.columns, args.rows)
       .then(function(result) {
         var result_obj = new ThriftPtyService_resize_result({success: result});
         output.writeMessageBegin("resize", Thrift.MessageType.REPLY, seqid);
@@ -937,7 +1038,7 @@ ThriftPtyServiceProcessor.prototype.process_resize = function(seqid, input, outp
         output.flush();
       });
   } else {
-    this._handler.resize(args.columns, args.rows, function (err, result) {
+    this._handler.resize(args.id, args.columns, args.rows, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
         result_obj = new ThriftPtyService_resize_result((err !== null || typeof err === 'undefined') ? err : {success: result});
@@ -956,8 +1057,8 @@ ThriftPtyServiceProcessor.prototype.process_setEncoding = function(seqid, input,
   var args = new ThriftPtyService_setEncoding_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.setEncoding.length === 1) {
-    Q.fcall(this._handler.setEncoding.bind(this._handler), args.encoding)
+  if (this._handler.setEncoding.length === 2) {
+    Q.fcall(this._handler.setEncoding.bind(this._handler), args.id, args.encoding)
       .then(function(result) {
         var result_obj = new ThriftPtyService_setEncoding_result({success: result});
         output.writeMessageBegin("setEncoding", Thrift.MessageType.REPLY, seqid);
@@ -973,7 +1074,7 @@ ThriftPtyServiceProcessor.prototype.process_setEncoding = function(seqid, input,
         output.flush();
       });
   } else {
-    this._handler.setEncoding(args.encoding, function (err, result) {
+    this._handler.setEncoding(args.id, args.encoding, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
         result_obj = new ThriftPtyService_setEncoding_result((err !== null || typeof err === 'undefined') ? err : {success: result});
@@ -992,8 +1093,8 @@ ThriftPtyServiceProcessor.prototype.process_spawn = function(seqid, input, outpu
   var args = new ThriftPtyService_spawn_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.spawn.length === 2) {
-    Q.fcall(this._handler.spawn.bind(this._handler), args.spawnArguments, args.initialCommand)
+  if (this._handler.spawn.length === 1) {
+    Q.fcall(this._handler.spawn.bind(this._handler), args.spawnArguments)
       .then(function(result) {
         var result_obj = new ThriftPtyService_spawn_result({success: result});
         output.writeMessageBegin("spawn", Thrift.MessageType.REPLY, seqid);
@@ -1009,7 +1110,7 @@ ThriftPtyServiceProcessor.prototype.process_spawn = function(seqid, input, outpu
         output.flush();
       });
   } else {
-    this._handler.spawn(args.spawnArguments, args.initialCommand, function (err, result) {
+    this._handler.spawn(args.spawnArguments, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
         result_obj = new ThriftPtyService_spawn_result((err !== null || typeof err === 'undefined') ? err : {success: result});
@@ -1028,8 +1129,8 @@ ThriftPtyServiceProcessor.prototype.process_writeInput = function(seqid, input, 
   var args = new ThriftPtyService_writeInput_args();
   args.read(input);
   input.readMessageEnd();
-  if (this._handler.writeInput.length === 1) {
-    Q.fcall(this._handler.writeInput.bind(this._handler), args.data)
+  if (this._handler.writeInput.length === 2) {
+    Q.fcall(this._handler.writeInput.bind(this._handler), args.id, args.data)
       .then(function(result) {
         var result_obj = new ThriftPtyService_writeInput_result({success: result});
         output.writeMessageBegin("writeInput", Thrift.MessageType.REPLY, seqid);
@@ -1045,7 +1146,7 @@ ThriftPtyServiceProcessor.prototype.process_writeInput = function(seqid, input, 
         output.flush();
       });
   } else {
-    this._handler.writeInput(args.data, function (err, result) {
+    this._handler.writeInput(args.id, args.data, function (err, result) {
       var result_obj;
       if ((err === null || typeof err === 'undefined')) {
         result_obj = new ThriftPtyService_writeInput_result((err !== null || typeof err === 'undefined') ? err : {success: result});

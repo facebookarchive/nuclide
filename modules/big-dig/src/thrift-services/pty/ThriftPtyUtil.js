@@ -18,6 +18,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('run-thrift-pty');
 
 export async function readPtyUntilExit(
+  ptyId: number,
   thriftPtyClient: ThriftPtyClient,
   onNewOutput: Buffer => void,
 ): Promise<number> {
@@ -26,7 +27,7 @@ export async function readPtyUntilExit(
 
     const _poll = async () => {
       try {
-        const pollEvent = await thriftPtyClient.poll(POLL_TIMEOUT_SEC);
+        const pollEvent = await thriftPtyClient.poll(ptyId, POLL_TIMEOUT_SEC);
         switch (pollEvent.eventType) {
           case pty_types.PollEventType.NEW_OUTPUT: {
             onNewOutput(pollEvent.chunk);

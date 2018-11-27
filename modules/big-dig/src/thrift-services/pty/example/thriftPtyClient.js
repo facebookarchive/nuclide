@@ -12,6 +12,8 @@
 
 /* eslint-disable no-console */
 
+import type {ThriftPtyClient} from '../types';
+
 import {getWrappedThriftClient} from '../../../services/thrift/createThriftClient';
 import {PTY_SERVICE_CONFIG} from '../thrift-pty-service-config';
 import {readPtyUntilExit} from '../ThriftPtyUtil';
@@ -20,7 +22,10 @@ import {getLogger} from 'log4js';
 const logger = getLogger('thrift-pty-example-client');
 
 async function main(port: number): Promise<void> {
-  const client = getWrappedThriftClient(PTY_SERVICE_CONFIG, port).getClient();
+  const client: ThriftPtyClient = getWrappedThriftClient(
+    PTY_SERVICE_CONFIG,
+    port,
+  ).getClient();
   const encoding = 'utf-8';
   const spawnArguments = {
     command: '/bin/bash',
@@ -36,7 +41,7 @@ async function main(port: number): Promise<void> {
     process.stdout.write(chunk.toString(encoding));
   };
 
-  const onSpawn = async () => {
+  const onSpawn = async ptyId => {
     // $FlowIgnore
     process.stdin.setRawMode(true); // disable echoing
     process.stdin.resume();
@@ -44,7 +49,7 @@ async function main(port: number): Promise<void> {
     process.stdin.on('data', async data => {
       if (client != null) {
         try {
-          await client.writeInput(data.toString());
+          await client.writeInput(ptyId, data.toString());
         } catch (e) {
           logger.error('Failed to write input to pty');
           logger.error(e);
@@ -57,7 +62,7 @@ async function main(port: number): Promise<void> {
     process.stdout.on('resize', async () => {
       try {
         // $FlowIgnore
-        await client.resize(process.stdout.columns, process.stdout.rows);
+        await client.resize(ptyId, process.stdout.columns, process.stdout.rows);
       } catch (e) {
         logger.error(e);
       }
@@ -65,20 +70,19 @@ async function main(port: number): Promise<void> {
 
     await Promise.all([
       // $FlowIgnore
-      client.resize(process.stdout.columns, process.stdout.rows),
-      client.setEncoding(encoding),
+      client.resize(ptyId, process.stdout.columns, process.stdout.rows),
+      client.setEncoding(ptyId, encoding),
     ]);
   };
 
-  const initialCommand = 'echo "running thrift pty client example"\n';
-  await client.spawn(spawnArguments, initialCommand);
+  const ptyId = await client.spawn(spawnArguments);
   try {
-    await onSpawn();
+    await onSpawn(ptyId);
   } catch (e) {
     logger.error(e);
   }
 
-  const exitCode = await readPtyUntilExit(client, onNewOutput);
+  const exitCode = await readPtyUntilExit(ptyId, client, onNewOutput);
   // $FlowIgnore
   process.stdin.setRawMode(false);
   console.log('exited with code', exitCode);

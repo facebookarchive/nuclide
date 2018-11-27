@@ -28,10 +28,10 @@ export type SpawnArguments = {
 };
 
 export interface ThriftPtyClient {
-  dispose(): Promise<void>;
-  poll(timeoutSec: number): Promise<pty_types.PollEvent>;
-  resize(columns: number, rows: number): Promise<void>;
-  setEncoding(encoding: string): Promise<void>;
-  spawn(spawnArguments: SpawnArguments, initialCommand: ?string): Promise<void>;
-  writeInput(data: string): Promise<void>;
+  disposeId(id: number): Promise<void>;
+  poll(id: number, timeoutSec: number): Promise<pty_types.PollEvent>;
+  resize(id: number, columns: number, rows: number): Promise<void>;
+  setEncoding(id: number, encoding: string): Promise<void>;
+  spawn(spawnArguments: SpawnArguments): Promise<number>;
+  writeInput(id: number, data: string): Promise<void>;
 }

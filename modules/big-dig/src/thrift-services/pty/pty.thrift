@@ -9,7 +9,8 @@ enum PollEventType {
 struct PollEvent {
   1: PollEventType eventType,
   2: binary chunk
-  3: i32 exitCode,
+  3: i16 exitCode,
+  4: i16 exitSignal,
 }
 
 struct SpawnArguments {
@@ -23,13 +24,10 @@ struct SpawnArguments {
 }
 
 service ThriftPtyService {
-  void dispose();
-  PollEvent poll(1: i32 timeoutSec);
-  void resize(1: i32 columns, 2: i32 rows)
-  void setEncoding(1: string encoding);
-  void spawn(
-    1: SpawnArguments spawnArguments,
-    2: string initialCommand,
-  );
-  void writeInput(1: string data);
+  void disposeId(1: i32 id);
+  PollEvent poll(1: i32 id, 2: i32 timeoutSec);
+  void resize(1: i32 id, 2: i32 columns, 3: i32 rows);
+  void setEncoding(1: i32 id, 2: string encoding);
+  i32 spawn(1: SpawnArguments spawnArguments);
+  void writeInput(1: i32 id, 2: string data);
 }

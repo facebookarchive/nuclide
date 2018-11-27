@@ -21,12 +21,14 @@ import * as nodePty from 'nuclide-prebuilt-libs/pty';
 import invariant from 'assert';
 
 const logger = getLogger('thrift-pty-server-handler');
+const KB = 1000;
+const MB = KB * KB;
 // Unix pty's often use 4096. Other OS's have different values. Use 20kb to be safe.
-const MAX_PTY_OS_OUTPUT_CHUNK_BYTES = 20000;
-const PTY_PAUSE_THRESHOLD_BYTES = 4e6;
+const MAX_PTY_OS_OUTPUT_CHUNK_BYTES = 20 * KB;
+const PTY_PAUSE_THRESHOLD_BYTES = 4 * MB;
 const BUFFER_LENGTH_BYTES =
   PTY_PAUSE_THRESHOLD_BYTES + MAX_PTY_OS_OUTPUT_CHUNK_BYTES;
-const MAX_POLL_RESPONSE_SIZE_BYTES = 1e6;
+const MAX_POLL_RESPONSE_SIZE_BYTES = 0.5 * MB;
 const PTY_RESUME_THRESHOLD_BYTES = 0;
 const LONG_POLL_TIMEOUT_MESSAGE = 'long_poll_timed_out';
 const DEFAULT_ENCODING = 'utf-8';
@@ -51,6 +53,26 @@ async function patchCurrentEnvironment(envPatches: {
   };
 }
 
+type PtyRunningMeta = {
+  status: 'running',
+  pty: ITerminal,
+  isPtyPaused: boolean,
+  bufferCursor: number,
+  encoding: string,
+  buffer: Buffer,
+  droppedBytes: number,
+  resolveLongPoll: ?(string) => void,
+  longPollTimeoutId: ?TimeoutID,
+};
+
+type PtyExitedMeta = {
+  status: 'exited',
+  signal: number,
+  code: number,
+};
+
+type PtyMeta = PtyRunningMeta | PtyExitedMeta;
+
 /**
  * These are the actual functions called by the Thrift server/service. The
  * auto-generated Thrift service handles the passing of data from the transport
@@ -58,66 +80,76 @@ async function patchCurrentEnvironment(envPatches: {
  * they're defined here in a service Handler.
  */
 export class ThriftPtyServiceHandler {
-  _pty: ?ITerminal;
-  _isPtyPaused: boolean;
-  _exitCode: ?number;
-  _bufferCursor: number;
-  _encoding: string;
-  _buffer: Buffer;
-  _droppedBytes: number;
-  _resolveLongPoll: ?(string) => void;
-  _longPollTimeout: ?TimeoutID;
+  _ptys: Map<number, PtyMeta>;
 
   constructor() {
-    this._pty = null;
-    this._buffer = Buffer.alloc(BUFFER_LENGTH_BYTES);
-    this._bufferCursor = 0;
-    this._exitCode = -1;
-    this._encoding = DEFAULT_ENCODING;
-    this._droppedBytes = 0;
-    this._isPtyPaused = false;
-    this._longPollTimeout = null;
+    this._ptys = new Map();
   }
 
   dispose(): void {
-    const pid = this._pty?.pid;
-    if (this._pty != null) {
-      this._pty.destroy();
-      this._pty = null;
-      logger.info('disposed of pty with pid', pid);
+    this._ptys.forEach((meta, id) => {
+      this.disposeId(id);
+    });
+  }
+
+  disposeId(id: number): void {
+    const meta = this._requireMeta(id);
+    if (meta.status === 'running') {
+      const pid = meta.pty.pid;
+      meta.pty.destroy();
+      logger.info('disposed of pty with pid', pid, 'id', id);
     }
   }
 
-  async poll(timeoutSec: number): Promise<pty_types.PollEvent> {
-    return this._poll(timeoutSec);
-  }
+  async poll(id: number, timeoutSec: number): Promise<pty_types.PollEvent> {
+    const meta = this._requireMeta(id);
 
-  resize(columns: number, rows: number): void {
-    this._requirePty();
-    if (this._pty != null) {
-      this._pty.resize(columns, rows);
+    if (meta.status === 'exited') {
+      const pollEvent = new pty_types.PollEvent();
+      pollEvent.eventType = pty_types.PollEventType.NO_PTY;
+      pollEvent.chunk = null;
+      pollEvent.exitCode = meta.code;
+      pollEvent.exitSignal = meta.signal;
+      return pollEvent;
+    }
+
+    if (meta.bufferCursor) {
+      const pollEvent = new pty_types.PollEvent();
+      pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
+      pollEvent.chunk = this._drainOutputFromBuffer(id);
+      return pollEvent;
+    }
+
+    try {
+      const chunk = await this._waitForNewOutput(meta, timeoutSec);
+      const pollEvent = new pty_types.PollEvent();
+      pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
+      pollEvent.chunk = Buffer.from(chunk);
+      return pollEvent;
+    } catch (e) {
+      if (e === LONG_POLL_TIMEOUT_MESSAGE) {
+        const pollEvent = new pty_types.PollEvent();
+        pollEvent.eventType = pty_types.PollEventType.TIMEOUT;
+        pollEvent.chunk = null;
+        return pollEvent;
+      } else {
+        throw e;
+      }
     }
   }
 
-  setEncoding(encoding: string): void {
-    this._requirePty();
-    if (this._pty != null) {
-      this._encoding = encoding;
-      this._pty.setEncoding(encoding);
-      logger.info('setting encoding to', encoding);
-    }
+  resize(id: number, columns: number, rows: number): void {
+    const pty = this._requireRunningMeta(id).pty;
+    pty.resize(columns, rows);
   }
 
-  async spawn(
-    spawnArguments: SpawnArguments,
-    initialCommand: ?string,
-  ): Promise<void> {
-    if (this._pty != null) {
-      logger.warn(
-        `pty with pid ${this._pty.pid} already exists. Not spawning.`,
-      );
-      return;
-    }
+  setEncoding(id: number, encoding: string): void {
+    const meta = this._requireRunningMeta(id);
+    meta.encoding = encoding;
+    meta.pty.setEncoding(encoding);
+  }
+
+  async spawn(spawnArguments: SpawnArguments): Promise<number> {
     const defaultSpawnCommand = '/bin/bash';
     if (!fsPromise.exists(spawnArguments.command)) {
       logger.warn(
@@ -127,9 +159,13 @@ export class ThriftPtyServiceHandler {
       );
       spawnArguments.command = defaultSpawnCommand;
     }
-    logger.info('creating new pty with these arguments');
+
+    const id = this._ptys.size;
+
+    logger.info('creating new pty id ', id, 'with these arguments');
     logger.info(spawnArguments);
-    this._pty = nodePty.spawn(
+
+    const pty = nodePty.spawn(
       spawnArguments.command,
       spawnArguments.commandArgs,
       {
@@ -141,138 +177,127 @@ export class ThriftPtyServiceHandler {
       },
     );
 
-    this._addListeners(this._pty);
-    if (initialCommand != null) {
-      this.writeInput(initialCommand);
-    }
-    logger.info('Spawned pty with pid', this._pty?.pid);
+    const meta = {
+      pty,
+      buffer: Buffer.alloc(BUFFER_LENGTH_BYTES),
+      bufferCursor: 0,
+      encoding: DEFAULT_ENCODING,
+      droppedBytes: 0,
+      isPtyPaused: false,
+      resolveLongPoll: null,
+      longPollTimeoutId: null,
+      status: 'running',
+    };
+    this._ptys.set(id, meta);
+    this._addListeners(id, meta);
+    logger.info('Spawned pty with pid', pty.pid, 'id', id);
+    return id;
   }
 
-  writeInput(data: string): void {
-    this._requirePty();
-    if (this._pty != null) {
-      this._pty.write(data);
-    }
+  writeInput(id: number, data: string): void {
+    const pty = this._requireRunningMeta(id).pty;
+    pty.write(data);
   }
 
   // client api entrypoints above this point
   // private methods below this point
 
-  _addListeners(pty: ITerminal): void {
+  _addListeners(id: number, meta: PtyRunningMeta): void {
     const dataCallback = (chunk: string) => {
-      if (this._bufferCursor === 0 && this._resolveLongPoll) {
-        const resolveLongPoll = this._resolveLongPoll;
-        this._resolveLongPoll = null;
-        if (resolveLongPoll) {
-          resolveLongPoll(chunk);
-          if (this._longPollTimeout != null) {
-            clearTimeout(this._longPollTimeout);
-          }
+      if (meta.bufferCursor === 0 && meta.resolveLongPoll) {
+        meta.resolveLongPoll(chunk);
+        if (meta.longPollTimeoutId != null) {
+          clearTimeout(meta.longPollTimeoutId);
         }
+        meta.resolveLongPoll = null;
         return;
       }
 
       const lenNewData = Buffer.byteLength(chunk);
-      const finalCursor = this._bufferCursor + lenNewData;
+      const finalCursor = meta.bufferCursor + lenNewData;
       if (finalCursor > PTY_PAUSE_THRESHOLD_BYTES) {
-        if (this._pty) {
-          this._pty.pause();
-          this._isPtyPaused = true;
+        if (meta.pty) {
+          meta.pty.pause();
+          meta.isPtyPaused = true;
         }
       }
-      this._buffer.write(chunk, this._bufferCursor);
-      this._bufferCursor += lenNewData;
+      if (meta.buffer != null) {
+        meta.buffer.write(chunk, meta.bufferCursor);
+        meta.bufferCursor += lenNewData;
+      }
     };
-    pty.addListener('data', dataCallback);
-    pty.addListener('exit', (code, signal) => {
-      logger.info('got exit code', code, 'signal', signal);
-      this._exitCode = code;
-      this.dispose();
+
+    meta.pty.addListener('data', dataCallback);
+    meta.pty.addListener('exit', (code, signal) => {
+      logger.info('got exit code', code, 'signal', signal, 'for id', id);
+      this._ptys.set(id, {status: 'exited', code, signal});
+      this.disposeId(id);
     });
   }
 
-  _drainOutputFromBuffer(): Buffer {
-    const exceedsMaxPayload = this._bufferCursor > MAX_POLL_RESPONSE_SIZE_BYTES;
+  _drainOutputFromBuffer(id: number): Buffer {
+    const meta = this._requireRunningMeta(id);
+    const buffer = meta.buffer;
+    const exceedsMaxPayload = meta.bufferCursor > MAX_POLL_RESPONSE_SIZE_BYTES;
     let chunk;
     if (exceedsMaxPayload) {
       // return first n bytes of buffer
-      chunk = this._buffer.slice(0, MAX_POLL_RESPONSE_SIZE_BYTES);
+      chunk = buffer.slice(0, MAX_POLL_RESPONSE_SIZE_BYTES);
       // move buffer data to the left
-      this._buffer.copy(
-        this._buffer,
+      buffer.copy(
+        buffer,
         0, // dest start
         MAX_POLL_RESPONSE_SIZE_BYTES, // src start
-        this._bufferCursor, // src end
+        meta.bufferCursor, // src end
       );
       // move cursor back by the amount we stripped off the front
-      this._bufferCursor -= MAX_POLL_RESPONSE_SIZE_BYTES;
+      meta.bufferCursor -= MAX_POLL_RESPONSE_SIZE_BYTES;
     } else {
       // send the whole buffer
-      chunk = this._buffer.slice(0, this._bufferCursor);
-      this._bufferCursor = 0;
+      chunk = buffer.slice(0, meta.bufferCursor);
+      meta.bufferCursor = 0;
     }
-    if (this._isPtyPaused && this._bufferCursor <= PTY_RESUME_THRESHOLD_BYTES) {
-      if (this._pty) {
-        this._pty.resume();
-        this._isPtyPaused = false;
-      }
+    if (meta.isPtyPaused && meta.bufferCursor <= PTY_RESUME_THRESHOLD_BYTES) {
+      meta.pty.resume();
+      meta.isPtyPaused = false;
     }
     return chunk;
   }
 
-  async _poll(timeoutSec: number): Promise<pty_types.PollEvent> {
-    return new Promise(async (resolve, reject) => {
-      if (this._bufferCursor) {
-        const pollEvent = new pty_types.PollEvent();
-        pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
-        pollEvent.chunk = this._drainOutputFromBuffer();
-        resolve(pollEvent);
-        return;
-      }
-      if (this._pty == null) {
-        const pollEvent = new pty_types.PollEvent();
-        pollEvent.eventType = pty_types.PollEventType.NO_PTY;
-        pollEvent.chunk = null;
-        pollEvent.exitCode = this._exitCode;
-        resolve(pollEvent);
-        return;
-      }
-      try {
-        const chunk = await this._waitForNewOutput(timeoutSec);
-        const pollEvent = new pty_types.PollEvent();
-        pollEvent.eventType = pty_types.PollEventType.NEW_OUTPUT;
-        pollEvent.chunk = Buffer.from(chunk);
-        resolve(pollEvent);
-        return;
-      } catch (e) {
-        if (e === LONG_POLL_TIMEOUT_MESSAGE) {
-          const pollEvent = new pty_types.PollEvent();
-          pollEvent.eventType = pty_types.PollEventType.TIMEOUT;
-          pollEvent.chunk = null;
-          resolve(pollEvent);
-          return;
-        } else {
-          throw e;
-        }
-      }
-    });
+  _requireMeta(ptyId: number): PtyMeta {
+    const meta = this._ptys.get(ptyId);
+    if (meta == null) {
+      throw new pty_types.Error({message: 'no pty metadata for id ' + ptyId});
+    }
+    return meta;
   }
 
-  _requirePty() {
-    if (this._pty == null) {
-      throw new pty_types.Error({message: 'no pty'});
+  _requireRunningMeta(ptyId: number): PtyRunningMeta {
+    const meta = this._requireMeta(ptyId);
+    if (meta.status === 'running') {
+      return meta;
+    } else {
+      throw new pty_types.Error({
+        message: `pty with id ${ptyId} is not running`,
+      });
     }
   }
 
-  async _waitForNewOutput(timeoutSec: number): Promise<string> {
+  async _waitForNewOutput(
+    meta: PtyRunningMeta,
+    timeoutSec: number,
+  ): Promise<string> {
     const SEC_TO_MSEC = 1000;
     return new Promise((resolveLongPoll, rejectLongPoll) => {
-      // attach resolve function to this object so the new data callback
-      // can resolve when new data arrives
-      this._resolveLongPoll = resolveLongPoll;
+      // attach resolve function to this pty's metadata so it can immediately
+      // resolve if new data arrives
+      if (meta.resolveLongPoll) {
+        throw new Error('Multiple clients cannot poll the same pty');
+      }
+      meta.resolveLongPoll = resolveLongPoll;
 
-      this._longPollTimeout = setTimeout(() => {
-        this._resolveLongPoll = null;
+      meta.longPollTimeoutId = setTimeout(() => {
+        meta.resolveLongPoll = null;
         rejectLongPoll(LONG_POLL_TIMEOUT_MESSAGE);
       }, timeoutSec * SEC_TO_MSEC);
     });
