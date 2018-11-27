@@ -98,6 +98,7 @@ const TESTS = [
   'sort-import-specifiers',
   'sort-imports',
   'sort-inline-requires',
+  'sort-inline-requires-special-character',
   'sort-require-aliasing-specifiers',
   'sort-require-specifiers',
   'sort-requires',
