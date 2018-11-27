@@ -25,7 +25,7 @@ import type {
 } from '../../atom-ide-diagnostics/lib/types';
 
 import {areSetsEqual} from 'nuclide-commons/collection';
-import {diffSets, throttle} from 'nuclide-commons/observable';
+import {diffSets} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import analytics from 'nuclide-commons/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -48,7 +48,6 @@ import showActionsMenu from './showActionsMenu';
 import showAtomLinterWarning from './showAtomLinterWarning';
 import StatusBarTile from './ui/StatusBarTile';
 import ReactDOM from 'react-dom';
-import {STALE_MESSAGE_UPDATE_THROTTLE_TIME} from './utils';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -66,8 +65,6 @@ export type DiagnosticsState = {|
 type OpenBlockDecorationState = {|
   openedMessageIds: Set<string>,
 |};
-
-const NUCLIDE_DIAGNOSTICS_STALE_GK = 'nuclide_diagnostics_stale';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -121,10 +118,7 @@ class Activation {
   }
 
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
-    this._getStatusBarTile().consumeDiagnosticUpdates(
-      diagnosticUpdater,
-      this._getIsStaleMessageEnabledStream(),
-    );
+    this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
 
     this._subscriptions.add(
       this._gutterConsumeDiagnosticUpdates(diagnosticUpdater),
@@ -149,7 +143,6 @@ class Activation {
         const subscription = getEditorDiagnosticUpdates(
           editor,
           diagnosticUpdater,
-          this._getIsStaleMessageEnabledStream(),
         )
           .finally(() => {
             this._subscriptions.remove(subscription);
@@ -236,17 +229,6 @@ class Activation {
     return new DiagnosticsViewModel(this._getGlobalViewStates());
   }
 
-  _getIsStaleMessageEnabledStream(): Observable<boolean> {
-    return this._gatekeeperServices
-      .switchMap(gkService => {
-        if (gkService != null) {
-          return gkService.passesGK(NUCLIDE_DIAGNOSTICS_STALE_GK);
-        }
-        return Observable.of(false);
-      })
-      .distinctUntilChanged();
-  }
-
   /**
    * An observable of the state that's shared between all panel copies. State that's unique to a
    * single copy of the diagnostics panel is managed in DiagnosticsViewModel. Generally, users will
@@ -267,27 +249,7 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
-        .combineLatest(this._getIsStaleMessageEnabledStream())
-        .let(
-          throttle(([, isStaleMessageEnabled]) =>
-            Observable.interval(
-              isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
-            ),
-          ),
-        )
-        .map(([diagnostics, isStaleMessageEnabled]) =>
-          diagnostics.filter(d => d.type !== 'Hint').map(diagnostic => {
-            if (!isStaleMessageEnabled) {
-              // Note: reason of doing this is currently Flow is sending message
-              // marked as stale sometimes(on user type or immediately on save).
-              // Until we turn on the gk, we don't want user to see the Stale
-              // style/behavior just yet. so here we mark them as not stale.
-              diagnostic.stale = false;
-            }
-            return diagnostic;
-          }),
-        )
-        .let(throttle(300))
+        .map(diagnostics => diagnostics.filter(d => d.type !== 'Hint'))
         .startWith([]);
 
       const showTracesStream: Observable<
@@ -480,11 +442,7 @@ class Activation {
 
         const subscription = Observable.combineLatest(
           updateOpenedMessageIds,
-          getEditorDiagnosticUpdates(
-            editor,
-            diagnosticUpdater,
-            this._getIsStaleMessageEnabledStream(),
-          ),
+          getEditorDiagnosticUpdates(editor, diagnosticUpdater),
         )
           .finally(() => {
             subscriptions.remove(subscription);
@@ -624,7 +582,6 @@ function getActiveEditorPaths(): Observable<?NuclideUri> {
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
-  isStaleMessageEnabledStream: Observable<boolean>,
 ): Observable<Array<DiagnosticMessage>> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
@@ -632,33 +589,11 @@ function getEditorDiagnosticUpdates(
       filePath =>
         filePath != null
           ? observableFromSubscribeFunction(cb =>
-              diagnosticUpdater.observeFileMessages(filePath, cb),
+              diagnosticUpdater.observeFileMessagesWithoutHints(filePath, cb),
             )
           : Observable.empty(),
     )
     .map(messageUpdate => messageUpdate.messages)
-    .combineLatest(isStaleMessageEnabledStream)
-    .let(
-      throttle(([_, isStaleMessageEnabled]) =>
-        Observable.interval(
-          isStaleMessageEnabled ? STALE_MESSAGE_UPDATE_THROTTLE_TIME : 0,
-        ),
-      ),
-    )
-    .map(
-      ([messages, isStaleMessageEnabled]) =>
-        // Flow and other providers have begun sending updates that mark prior
-        // messages as stale. For users outside the stale diagnostics GK,
-        // never show these messages as stale.
-        isStaleMessageEnabled
-          ? messages
-          : messages.map(m => {
-              if (m != null && m.type !== 'Hint') {
-                m.stale = false;
-              }
-              return m;
-            }),
-    )
     .takeUntil(
       observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
     );

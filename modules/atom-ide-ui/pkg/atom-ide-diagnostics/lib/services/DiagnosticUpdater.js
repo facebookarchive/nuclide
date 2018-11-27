@@ -30,6 +30,7 @@ import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import {mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 // Receiving all messages is potentially dangerous as there can sometimes be
 // tens of thousands, and updates can occur **on keystroke**. Throttle these to
@@ -88,6 +89,23 @@ export default class DiagnosticUpdater {
           mapEqual(aMessages, bMessages),
         )
         .map(([, state]) => Selectors.getFileMessages(state)(filePath))
+        .subscribe(callback),
+    );
+  };
+
+  observeFileMessagesWithoutHints = (
+    filePath: NuclideUri,
+    callback: (update: DiagnosticMessages) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      observableFromSubscribeFunction(cb =>
+        this.observeFileMessages(filePath, cb),
+      )
+        .map(update => ({
+          filePath: update.filePath,
+          messages: update.messages.filter(m => m.type !== 'Hint'),
+          totalMessages: update.totalMessages,
+        }))
         .subscribe(callback),
     );
   };
