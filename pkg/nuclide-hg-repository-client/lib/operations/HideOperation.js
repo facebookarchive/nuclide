@@ -10,20 +10,36 @@
  */
 
 import type {Hash} from 'fb-vcs-common';
+import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
 import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
 import {ButtonTypes} from 'nuclide-commons-ui/Button';
+import {pluralize} from 'nuclide-commons/string';
 import {
   RevisionPreviews,
   getRevisionTreeMapFromTree,
+  walkTreePostorder,
+  getRevisionTreeMap,
 } from '../revisionTree/RevisionTree';
 
 import {Observable} from 'rxjs';
 
 export class HgHideOperation implements HgOperation {
   _hash: Hash;
-  constructor(hash: Hash) {
+  _affectedHashes: Set<Hash>; // includes this._hash
+
+  constructor(revisions: Array<RevisionInfo>, hash: Hash) {
     this._hash = hash;
+
+    // find all children that will be affected
+    this._affectedHashes = new Set();
+    const treeMap = getRevisionTreeMap(revisions);
+    const tree = treeMap.get(hash);
+    if (tree != null) {
+      for (const subtree of walkTreePostorder([tree])) {
+        this._affectedHashes.add(subtree.info.hash);
+      }
+    }
   }
 
   name = 'hide';
@@ -37,14 +53,19 @@ export class HgHideOperation implements HgOperation {
   }
 
   getCommandDocumentation() {
-    // TODO: Pass RevisionTree into constructor so we can determine how many
-    // children will be affected and surface that here
+    const numberOfRevisionsToStrip = this._affectedHashes.size;
+    const pluralizedCommits = pluralize('commit', numberOfRevisionsToStrip);
     return {
       naturalLanguageDescription:
         'Removes the commit and all of its descendants',
-      confirmationMessage: 'Are you sure you want to hide these commits?',
       confirmationButtonType: ButtonTypes.ERROR,
-      confirmationButtonText: 'Hide commits',
+      confirmationButtonText: `Hide ${pluralizedCommits}`,
+      confirmationMessage:
+        'Are you sure you want to remove ' +
+        (numberOfRevisionsToStrip === 1
+          ? 'this'
+          : `these ${numberOfRevisionsToStrip}`) +
+        ` ${pluralizedCommits}?`,
     };
   }
 
