@@ -41,10 +41,23 @@ const THROTTLE_FILE_MESSAGES_MS = 100;
 export default class DiagnosticUpdater {
   _store: Store;
   _states: Observable<AppState>;
+  _fileMessageObservables: Map<string, Observable<DiagnosticMessages>>;
+  _fileMessageWithoutHintsObservables: Map<
+    string,
+    Observable<DiagnosticMessages>,
+  >;
+  _allMessagesObservable: Observable<Array<DiagnosticMessage>>;
 
   constructor(store: Store) {
     this._store = store;
+    this._fileMessageObservables = new Map();
+    this._fileMessageWithoutHintsObservables = new Map();
     this._states = observableFromReduxStore(store);
+    this._allMessagesObservable = this._states
+      .let(throttle(THROTTLE_ALL_MESSAGES_MS))
+      .map(Selectors.getAllMessages)
+      .distinctUntilChanged()
+      .share();
   }
 
   getAllMessages = (): Array<DiagnosticMessage> => {
@@ -63,11 +76,7 @@ export default class DiagnosticUpdater {
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(
-      this._states
-        .let(throttle(THROTTLE_ALL_MESSAGES_MS))
-        .map(Selectors.getAllMessages)
-        .distinctUntilChanged()
-        .subscribe(callback),
+      this._allMessagesObservable.subscribe(callback),
     );
   };
 
@@ -75,10 +84,10 @@ export default class DiagnosticUpdater {
     filePath: NuclideUri,
     callback: (update: DiagnosticMessages) => mixed,
   ): IDisposable => {
-    return new UniversalDisposable(
-      // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
+    let observable = this._fileMessageObservables.get(filePath);
+    if (observable == null) {
       // Whether that's worth it depends on how often this is actually called with the same path.
-      this._states
+      observable = this._states
         .distinctUntilChanged((a, b) => a.messages === b.messages)
         .let(throttle(THROTTLE_FILE_MESSAGES_MS))
         .map(state => [
@@ -89,16 +98,22 @@ export default class DiagnosticUpdater {
           mapEqual(aMessages, bMessages),
         )
         .map(([, state]) => Selectors.getFileMessages(state)(filePath))
-        .subscribe(callback),
-    );
+        .finally(() => {
+          this._fileMessageObservables.delete(filePath);
+        })
+        .share();
+      this._fileMessageObservables.set(filePath, observable);
+    }
+    return new UniversalDisposable(observable.subscribe(callback));
   };
 
   observeFileMessagesWithoutHints = (
     filePath: NuclideUri,
     callback: (update: DiagnosticMessages) => mixed,
   ): IDisposable => {
-    return new UniversalDisposable(
-      observableFromSubscribeFunction(cb =>
+    let observable = this._fileMessageWithoutHintsObservables.get(filePath);
+    if (observable == null) {
+      observable = observableFromSubscribeFunction(cb =>
         this.observeFileMessages(filePath, cb),
       )
         .map(update => ({
@@ -106,8 +121,13 @@ export default class DiagnosticUpdater {
           messages: update.messages.filter(m => m.type !== 'Hint'),
           totalMessages: update.totalMessages,
         }))
-        .subscribe(callback),
-    );
+        .finally(() => {
+          this._fileMessageWithoutHintsObservables.delete(filePath);
+        })
+        .share();
+    }
+
+    return new UniversalDisposable(observable.subscribe(callback));
   };
 
   observeCodeActionsForMessage = (
