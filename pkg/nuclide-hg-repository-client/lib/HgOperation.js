@@ -48,7 +48,7 @@ export interface HgOperation {
   // How to traverse and modify the commit tree to preview this operation before actually running it
   +makePreviewApplier?: (
     baseTree: Array<RevisionTree>,
-  ) => TreePreviewApplierFunction;
+  ) => ?TreePreviewApplierFunction;
 
   // While an operation is running or when waiting for smartlog to refresh after running,
   // we want to show optimistic state. This optimistic preview applier might change
