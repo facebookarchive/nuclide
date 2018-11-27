@@ -167,7 +167,7 @@ export class CodeActionManager {
             this._diagnosticUpdater == null
               ? []
               : this._diagnosticUpdater
-                  .getFileMessageUpdates(file)
+                  .getFileMessages(file)
                   .messages.filter(
                     message =>
                       message.range && message.range.intersectsWith(range),

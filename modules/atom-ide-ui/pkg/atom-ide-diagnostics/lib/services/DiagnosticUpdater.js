@@ -50,7 +50,7 @@ export default class DiagnosticUpdater {
     return Selectors.getAllMessages(this._store.getState());
   };
 
-  getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
+  getFileMessages = (filePath: NuclideUri): DiagnosticMessages => {
     return Selectors.getFileMessages(this._store.getState(), filePath);
   };
 
