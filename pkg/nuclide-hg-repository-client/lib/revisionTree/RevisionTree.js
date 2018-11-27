@@ -37,6 +37,8 @@ export const RevisionPreviews = Object.freeze(
     COMMIT_LIST_PREVIEW: null,
     OPTIMISTIC_REBASE_ROOT: null,
     OPTIMISTIC_REBASE_DESCENDANT: null,
+    CHECKOUT_WAS_HERE: null,
+    CHECKOUT_MOVING_HERE: null,
   }),
 );
 export type RevisionPreview = $Values<typeof RevisionPreviews>;
