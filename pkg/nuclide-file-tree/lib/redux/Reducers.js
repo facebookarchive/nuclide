@@ -22,8 +22,6 @@ import * as Immutable from 'immutable';
 import {HgStatusToFileChangeStatus} from '../../../nuclide-vcs-base';
 import {matchesFilter} from '../FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
-import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
-import {getLogger} from 'log4js';
 import {WorkingSet} from '../../../nuclide-working-sets-common';
 import {HistogramTracker} from 'nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -40,8 +38,6 @@ const actionTrackers: Map<string, HistogramTracker> = new Map();
 
 // TODO: Don't `export default` an object.
 const {updateNodeAtRoot, updateNodeAtAllRoots} = FileTreeHelpers;
-
-const logger = getLogger('nuclide-file-tree');
 
 const DEFAULT_STATE: AppState = {
   // Used to ensure the version we serialized is the same version we are deserializing.
@@ -698,47 +694,9 @@ function setVcsStatuses(
   // codes the file tree doesn't.
   const nextState = setFileChanges(state, rootKey, vcsStatuses);
 
-  // We can't build on the child-derived properties to maintain vcs statuses in the entire
-  // tree, since the reported VCS status may be for a node that is not yet present in the
-  // fetched tree, and so it it can't affect its parents statuses. To have the roots colored
-  // consistently we manually add all parents of all of the modified nodes up till the root
-  const enrichedVcsStatuses = new Map(vcsStatuses);
-
-  const ensurePresentParents = uri => {
-    if (uri === rootKey) {
-      return;
-    }
-
-    let current = uri;
-    while (current !== rootKey) {
-      current = FileTreeHelpers.getParentKey(current);
-
-      if (enrichedVcsStatuses.has(current)) {
-        return;
-      }
-
-      enrichedVcsStatuses.set(current, StatusCodeNumber.MODIFIED);
-    }
-  };
-
-  vcsStatuses.forEach((status, uri) => {
-    if (
-      status === StatusCodeNumber.MODIFIED ||
-      status === StatusCodeNumber.ADDED ||
-      status === StatusCodeNumber.REMOVED
-    ) {
-      try {
-        // An invalid URI might cause an exception to be thrown
-        ensurePresentParents(uri);
-      } catch (e) {
-        logger.error(`Error enriching the VCS statuses for ${uri}`, e);
-      }
-    }
-  });
-
   return {
     ...nextState,
-    vcsStatuses: nextState.vcsStatuses.set(rootKey, enrichedVcsStatuses),
+    vcsStatuses: nextState.vcsStatuses.set(rootKey, vcsStatuses),
   };
 }
 

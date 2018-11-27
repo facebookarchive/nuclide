@@ -31,8 +31,21 @@ import {StatusCodeNumber} from '../../../nuclide-hg-rpc/lib/hg-constants';
 import * as FileTreeHelpers from '../FileTreeHelpers';
 import * as Immutable from 'immutable';
 import {memoize, once} from 'lodash';
-import {createSelector} from 'reselect';
+import {createSelector, createSelectorCreator, defaultMemoize} from 'reselect';
 import {repositoryContainsPath} from '../../../nuclide-vcs-base';
+import {getLogger} from 'log4js';
+
+//
+//
+// Reselect Utils
+//
+//
+
+// Create a "selector creator" that uses the object's "equals()" method instead of ===
+const createEqualsMethodSelector = createSelectorCreator(
+  defaultMemoize,
+  (a, b) => a.equals(b),
+);
 
 //
 //
@@ -58,6 +71,13 @@ export const getOpenFilesExpanded = (state: AppState) => {
 export const getRoots = (state: AppState) => {
   return state._roots;
 };
+
+// A set of the root URIs. Because this is a set, it's not appropriate when order is important.
+const getRootUris: (
+  state: AppState,
+) => Immutable.Set<NuclideUri> = createEqualsMethodSelector([getRoots], roots =>
+  roots.keySeq().toSet(),
+);
 
 export const getVersion = (state: AppState) => state.VERSION;
 
@@ -149,6 +169,60 @@ const getReposByRoot = createSelector(
       });
     });
     return reposByRoot;
+  },
+);
+
+// List the uris between `fromUri` and its ancestor `toUri` (not including `fromUri` but including
+// `toUri`).
+function* listAncestors(fromUri, toUri) {
+  let current = fromUri;
+  while (current !== toUri) {
+    try {
+      current = FileTreeHelpers.getParentKey(current);
+    } catch (err) {
+      // An invalid URI might cause an exception to be thrown
+      getLogger('nuclide-file-tree').error(
+        `Error getting parent key of ${current} while enumerating ancestors from ${fromUri} to ${toUri}`,
+        err,
+      );
+      return;
+    }
+    yield current;
+  }
+}
+
+// We can't build on the child-derived properties to maintain vcs statuses in the entire tree, since
+// the reported VCS status may be for a node that is not yet present in the fetched tree, and so it
+// it can't affect its parents statuses. To have the roots colored consistently we manually add all
+// parents of all of the modified nodes up till the root
+const getEnrichedVcsStatuses = createSelector(
+  [getRootUris, getVcsStatuses],
+  (rootUris, rawStatuses) => {
+    return rootUris
+      .toMap()
+      .map(rootKey => {
+        const rawStatusesForRoot = rawStatuses.get(rootKey) ?? new Map();
+        const enrichedStatusesForRoot = new Map(rawStatusesForRoot);
+        rawStatusesForRoot.forEach((status, uri) => {
+          if (
+            status !== StatusCodeNumber.MODIFIED &&
+            status !== StatusCodeNumber.ADDED &&
+            status !== StatusCodeNumber.REMOVED
+          ) {
+            return;
+          }
+
+          // Set all of the ancestors to "modified."
+          for (const ancestorUri of listAncestors(uri, rootKey)) {
+            if (enrichedStatusesForRoot.has(ancestorUri)) {
+              return;
+            }
+            enrichedStatusesForRoot.set(ancestorUri, StatusCodeNumber.MODIFIED);
+          }
+        });
+        return enrichedStatusesForRoot;
+      })
+      .toMap();
   },
 );
 
@@ -764,15 +838,15 @@ export const getSidebarPath = createSelector([getCwdKey], cwdKey => {
 
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getVcsStatus = createSelector(
-  [getVcsStatuses],
+  [getEnrichedVcsStatuses],
   (
-    vcsStatuses: Immutable.Map<
+    vcsStatusesByRoot: Immutable.Map<
       NuclideUri,
       Map<NuclideUri, StatusCodeNumberValue>,
     >,
   ): ((node: FileTreeNode) => StatusCodeNumberValue) => {
     return node => {
-      const statusMap = vcsStatuses.get(node.rootUri);
+      const statusMap = vcsStatusesByRoot.get(node.rootUri);
       return statusMap == null
         ? StatusCodeNumber.CLEAN
         : statusMap.get(node.uri) ?? StatusCodeNumber.CLEAN;
@@ -908,7 +982,7 @@ export const collectDebugState = (state: AppState): json$JsonObject => {
     selectionRange == null ? null : selectionRange.serialize();
 
   const vcsStatuses = {};
-  for (const [key, value] of getVcsStatuses(state).entries()) {
+  for (const [key, value] of getEnrichedVcsStatuses(state).entries()) {
     vcsStatuses[key] = objectFromPairs(value.entries());
   }
 
