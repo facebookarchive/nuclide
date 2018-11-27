@@ -143,7 +143,7 @@ describe('createStore', () => {
     ).toEqual([fileMessageA]);
 
     // Expect the getter methods on DiagnosticStore to return correct info.
-    expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual({
+    expect(Selectors.getFileMessages(store.getState())('fileA')).toEqual({
       filePath: 'fileA',
       messages: [fileMessageA],
       totalMessages: 1,
@@ -198,12 +198,12 @@ describe('createStore', () => {
       ).toEqual([fileMessageA, fileMessageB]);
 
       // Expect the getter methods on DiagnosticStore to return correct data.
-      expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual({
+      expect(Selectors.getFileMessages(store.getState())('fileA')).toEqual({
         filePath: 'fileA',
         messages: [fileMessageA],
         totalMessages: 1,
       });
-      expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual({
+      expect(Selectors.getFileMessages(store.getState())('fileB')).toEqual({
         filePath: 'fileB',
         messages: [fileMessageB],
         totalMessages: 1,
@@ -248,12 +248,12 @@ describe('createStore', () => {
       ).toEqual([fileMessageA2, fileMessageB]);
 
       // Expect the getter methods on DiagnosticStore to return the correct info.
-      expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual({
+      expect(Selectors.getFileMessages(store.getState())('fileA')).toEqual({
         filePath: 'fileA',
         messages: [fileMessageA2],
         totalMessages: 1,
       });
-      expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual({
+      expect(Selectors.getFileMessages(store.getState())('fileB')).toEqual({
         filePath: 'fileB',
         messages: [fileMessageB],
         totalMessages: 1,
@@ -301,10 +301,10 @@ describe('createStore', () => {
         ).toEqual([fileMessageB]);
 
         // Expect the getter methods on DiagnosticStore to return the correct info.
-        expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual(
+        expect(Selectors.getFileMessages(store.getState())('fileA')).toEqual(
           makeEmptyMessages('fileA'),
         );
-        expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual({
+        expect(Selectors.getFileMessages(store.getState())('fileB')).toEqual({
           filePath: 'fileB',
           messages: [fileMessageB],
           totalMessages: 1,
@@ -345,10 +345,10 @@ describe('createStore', () => {
     expect(spy_allMessages.mock.calls.length).toBe(1);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
-    expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual(
+    expect(Selectors.getFileMessages(store.getState())('fileA')).toEqual(
       makeEmptyMessages('fileA'),
     );
-    expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual(
+    expect(Selectors.getFileMessages(store.getState())('fileB')).toEqual(
       makeEmptyMessages('fileB'),
     );
     expect(Selectors.getAllMessages(store.getState()).length).toBe(0);
@@ -386,11 +386,11 @@ describe('createStore', () => {
 
       it('should invalidate the message', () => {
         expect(
-          Selectors.getFileMessages(store.getState(), '/tmp/fileA').messages,
+          Selectors.getFileMessages(store.getState())('/tmp/fileA').messages,
         ).toEqual([messageWithAutofix]);
         store.dispatch(Actions.applyFix(messageWithAutofix));
         expect(
-          Selectors.getFileMessages(store.getState(), '/tmp/fileA').messages,
+          Selectors.getFileMessages(store.getState())('/tmp/fileA').messages,
         ).toEqual([]);
       });
     });

@@ -11,7 +11,6 @@
  */
 
 import type {
-  AppState,
   DiagnosticMessage,
   DiagnosticMessages,
   DiagnosticMessageKind,
@@ -29,6 +28,23 @@ const MAX_MESSAGE_COUNT_PER_FILE = 1000;
 
 const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
+
+const getFileMessageCount = createSelector(
+  [getMessagesState],
+  (messages: MessagesState): ((filePath: NuclideUri) => number) => {
+    return memoize((filePath: NuclideUri) => {
+      let messageCount = 0;
+      for (const providerMessages of messages.values()) {
+        const messagesForFile = providerMessages.get(filePath);
+        if (messagesForFile == null) {
+          continue;
+        }
+        messageCount += messagesForFile.length;
+      }
+      return messageCount;
+    });
+  },
+);
 
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getProviderToMessagesForFile = createSelector(
@@ -117,19 +133,24 @@ const getBoundedThreadedFileMessages = createSelector(
     ),
 );
 
-export function getFileMessages(
-  state: AppState,
-  filePath: NuclideUri,
-): DiagnosticMessages {
-  return {
-    filePath,
-    // Excessive numbers of items cause performance issues in the gutter, table, and decorations.
-    // Truncate the number of items MAX_MESSAGE_COUNT_PER_FILE.
-    messages: getBoundedThreadedFileMessages(state)(filePath),
-    // Include the total number of messages without truncation
-    totalMessages: getFileMessageCount(state)(filePath),
-  };
-}
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const getFileMessages = createSelector(
+  [getBoundedThreadedFileMessages, getFileMessageCount],
+  (
+    messagesForFilePath,
+    countForFilePath,
+  ): ((filePath: NuclideUri) => DiagnosticMessages) =>
+    memoize(
+      (filePath: NuclideUri): DiagnosticMessages => ({
+        filePath,
+        // Excessive numbers of items cause performance issues in the gutter, table, and decorations.
+        // Truncate the number of items MAX_MESSAGE_COUNT_PER_FILE.
+        messages: messagesForFilePath(filePath),
+        // Include the total number of messages without truncation
+        totalMessages: countForFilePath(filePath),
+      }),
+    ),
+);
 
 /**
  * Gets all current diagnostic messages.
@@ -206,22 +227,5 @@ export const getUiConfig = createSelector(
       }
     });
     return config;
-  },
-);
-
-const getFileMessageCount = createSelector(
-  [getMessagesState],
-  (messages: MessagesState): ((filePath: NuclideUri) => number) => {
-    return memoize((filePath: NuclideUri) => {
-      let messageCount = 0;
-      for (const providerMessages of messages.values()) {
-        const messagesForFile = providerMessages.get(filePath);
-        if (messagesForFile == null) {
-          continue;
-        }
-        messageCount += messagesForFile.length;
-      }
-      return messageCount;
-    });
   },
 );

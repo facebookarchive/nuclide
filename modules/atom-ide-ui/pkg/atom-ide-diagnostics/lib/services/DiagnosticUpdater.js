@@ -51,7 +51,7 @@ export default class DiagnosticUpdater {
   };
 
   getFileMessages = (filePath: NuclideUri): DiagnosticMessages => {
-    return Selectors.getFileMessages(this._store.getState(), filePath);
+    return Selectors.getFileMessages(this._store.getState())(filePath);
   };
 
   getLastUpdateSource = (): LastUpdateSource => {
@@ -87,7 +87,7 @@ export default class DiagnosticUpdater {
         .distinctUntilChanged(([aMessages], [bMessages]) =>
           mapEqual(aMessages, bMessages),
         )
-        .map(([, state]) => Selectors.getFileMessages(state, filePath))
+        .map(([, state]) => Selectors.getFileMessages(state)(filePath))
         .subscribe(callback),
     );
   };
