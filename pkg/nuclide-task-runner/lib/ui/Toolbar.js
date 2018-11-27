@@ -71,19 +71,25 @@ export default class Toolbar extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (prevProps.status == null || prevProps.status.type !== 'bulletin') {
+    // props.status is a message stream from redux, we're caching and comparing
+    //  state.bulletin when props.status.type === bulletin.
+
+    const {status} = this.props;
+
+    if (status == null || status.type !== 'bulletin') {
       return;
     }
-    invariant(prevProps.status.type === 'bulletin');
-    const bulletin = ((prevProps.status.object: any): TaskRunnerBulletinStatus);
+
+    const propsBulletin = ((status.object: any): TaskRunnerBulletinStatus);
+    invariant(propsBulletin != null);
+
     if (
-      bulletin != null &&
-      (this.state.bulletin == null ||
-        (bulletin.title !== this.state.bulletin.title ||
-          bulletin.detail !== this.state.bulletin.detail))
+      this.state.bulletin == null ||
+      (propsBulletin.title !== this.state.bulletin.title ||
+        propsBulletin.detail !== this.state.bulletin.detail)
     ) {
       this.setState({
-        bulletin,
+        bulletin: propsBulletin,
       });
     }
   }
