@@ -32,6 +32,7 @@ import {
   takeWhileInclusive,
   toAbortablePromise,
   toggle,
+  throttle,
 } from '../observable';
 import nullthrows from 'nullthrows';
 import AbortController from '../AbortController';
@@ -770,6 +771,52 @@ describe('nuclide-commons/observable', () => {
         .toArray()
         .toPromise();
       expect(result).toEqual(['hi', 'hi']);
+    });
+  });
+
+  describe('throttle', () => {
+    describe('default options (leading and trailing)', () => {
+      const timer = new Subject();
+      const source = new Subject();
+      const throttled = source.let(throttle(timer));
+
+      const emitted = [];
+      throttled.subscribe(value => emitted.push(value));
+
+      test('emits the leading value', () => {
+        source.next(1);
+        expect(emitted).toEqual([1]);
+        timer.next(null);
+        expect(emitted).toEqual([1]);
+        source.next(2);
+        source.next(3);
+        source.next(4);
+        expect(emitted).toEqual([1, 2]);
+        timer.next(null);
+        expect(emitted).toEqual([1, 2, 4]);
+      });
+    });
+
+    describe('leading disabled', () => {
+      const timer = new Subject();
+      const source = new Subject();
+      const throttled = source.let(throttle(timer, {leading: false}));
+
+      const emitted = [];
+      throttled.subscribe(value => emitted.push(value));
+
+      test('does not emit the leading value', () => {
+        source.next(1);
+        expect(emitted).toEqual([]);
+        timer.next(null);
+        expect(emitted).toEqual([1]);
+        source.next(2);
+        source.next(3);
+        source.next(4);
+        expect(emitted).toEqual([1]);
+        timer.next(null);
+        expect(emitted).toEqual([1, 4]);
+      });
     });
   });
 });

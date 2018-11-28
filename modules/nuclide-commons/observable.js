@@ -294,12 +294,17 @@ export function concatLatest<T>(
 // nothing is.
 const NONE = {};
 
+type ThrottleOptions = {
+  leading: boolean,
+};
+
 export function throttle<T>(
   delay:
     | number
     | ((value: T) => Observable<any> | Promise<any>)
     | Observable<any>
     | Promise<any>,
+  options?: ThrottleOptions = {leading: true},
 ): (observable: Observable<T>) => Observable<T> {
   let getDelay: (value: T) => Observable<any> | Promise<any>;
   switch (typeof delay) {
@@ -318,10 +323,10 @@ export function throttle<T>(
 
   return function doThrottle(source: Observable<T>): Observable<T> {
     return Observable.create(observer => {
-      // The elements that are actually emitted. We use this to know when to
-      // start ignoring elements.
-      const emittedElements = new Subject();
+      const {leading} = options;
+      const timerStarts = new Subject();
       let latestValue = NONE;
+      let latestValueIsLeading = false;
       let shouldIgnore = false;
 
       const checkShouldNext = () => {
@@ -330,17 +335,19 @@ export function throttle<T>(
           latestValue = ((latestValue: any): T);
 
           const valueToDispatch = latestValue;
-          latestValue = NONE;
           shouldIgnore = true;
 
-          observer.next(valueToDispatch);
-          emittedElements.next(valueToDispatch);
+          if (leading || !latestValueIsLeading) {
+            latestValue = NONE;
+            observer.next(valueToDispatch);
+          }
+          timerStarts.next(valueToDispatch);
         }
       };
 
       const sub = new Subscription();
       sub.add(
-        emittedElements
+        timerStarts
           .switchMap(x => {
             const timer = getDelay(x);
             if (timer instanceof Observable) {
@@ -351,6 +358,7 @@ export function throttle<T>(
           })
           .subscribe(() => {
             shouldIgnore = false;
+            latestValueIsLeading = false;
             checkShouldNext();
           }),
       );
@@ -358,6 +366,7 @@ export function throttle<T>(
         source.subscribe({
           next: x => {
             latestValue = x;
+            latestValueIsLeading = true;
             checkShouldNext();
           },
           error: err => {
@@ -365,6 +374,7 @@ export function throttle<T>(
           },
           complete: () => {
             shouldIgnore = false;
+            latestValueIsLeading = false;
             checkShouldNext();
             observer.complete();
           },
