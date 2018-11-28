@@ -24,7 +24,7 @@ type MarkStyle = {
 };
 type Props = {
   marks: Set<ScrollbarIndicatorMark>,
-  editor: atom$TextEditor,
+  screenRowForBufferRow(row: number): number,
   screenLineCount: number,
   markStyle: MarkStyle,
   height: number,
@@ -53,20 +53,20 @@ export default class ScrollBar extends React.PureComponent<Props> {
   _drawToCanvas() {
     const {width, height} = this._context.canvas;
     this._context.clearRect(0, 0, width, height);
-    const {markStyle, editor, screenLineCount, marks} = this.props;
+    const {
+      markStyle,
+      screenRowForBufferRow,
+      screenLineCount,
+      marks,
+    } = this.props;
 
     this._context.fillStyle = markStyle.color;
     marks.forEach(mark => {
-      const screenStart = editor.screenPositionForBufferPosition([
-        mark.start,
-        0,
-      ]).row;
+      const screenStart = screenRowForBufferRow(mark.start);
       const screenEnd =
         // Often the mark is just one line. In that case, avoid the additional
-        // call to `editor.screenPositionForBufferPosition`
-        mark.end === mark.start
-          ? screenStart
-          : editor.screenPositionForBufferPosition([mark.end, 0]).row;
+        // call to `sceeenRowForBufferRow`
+        mark.end === mark.start ? screenStart : screenRowForBufferRow(mark.end);
 
       const lineHeight = screenEnd - screenStart;
       const rangeHeight = Math.max(

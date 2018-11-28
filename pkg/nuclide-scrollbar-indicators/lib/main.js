@@ -89,18 +89,45 @@ class Activation {
             // displayLayer keeps this data cached. However, it does force a
             // quick check to see if the cache needs to be recomputed.
             .map(() => editor.getScreenLineCount())
-            .distinctUntilChanged(),
+            .distinctUntilChanged()
+            .map(screenLineCount => {
+              return {
+                screenLineCount,
+                // Computing the mapping from file line number to the displayed
+                // line number can be expensive. As far as I can tell, the
+                // results can be cached as long as folds or soft line wraps
+                // don't change.
+                //
+                // The following attempt at caching assumes that every fold/wrap
+                // change triggers a display layer change and results in a
+                // change to screenLineCount, which I _think_ is safe. The cache
+                // will be unnecessarily cleared every time a line is added or
+                // removed, but I don't know of a way to directly detect
+                // fold/wrap changes.
+                //
+                // This mostly just saves us from the following situation:
+                //
+                // You have a large number of diagnostics. As you type these
+                // are rapidly rerevaluated and replaced with results which
+                // are 90% the same.
+                //
+                // -- @jeldredge
+                screenRowForBufferRow: memoize(
+                  row => editor.screenPositionForBufferPosition([row, 0]).row,
+                ),
+              };
+            }),
         )
           .map(
             ([
               {markTypes, markers, colors},
               editorIsVisible,
-              screenLineCount,
+              {screenLineCount, screenRowForBufferRow},
             ]) => ({
               editorIsVisible,
               colors,
               markTypes: markTypes.map(markLinesFromProviderMarks),
-              editor,
+              screenRowForBufferRow,
               screenLineCount,
             }),
           )

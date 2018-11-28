@@ -25,7 +25,7 @@ export type Props = {
     Set<ScrollbarIndicatorMark>,
   >,
   colors: ?ThemeColors,
-  editor: atom$TextEditor,
+  screenRowForBufferRow(row: number): number,
   editorIsVisible: boolean,
   screenLineCount: number,
 };
@@ -116,9 +116,9 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
     const {
       markTypes,
       colors,
-      editor,
       screenLineCount,
       editorIsVisible,
+      screenRowForBufferRow,
     } = this.props;
     if (
       markTypes == null ||
@@ -139,7 +139,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
               key={type}
               type={type}
               marks={marks}
-              editor={editor}
+              screenRowForBufferRow={screenRowForBufferRow}
               markStyle={this._getMarkStyleForType(type, width, colors)}
               width={width}
               height={height}
