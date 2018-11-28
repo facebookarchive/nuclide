@@ -44,6 +44,9 @@ function toString(value: mixed): string {
 export default function parseText(
   text: string,
 ): Array<string | React.Element<any>> {
+  if (typeof text !== 'string') {
+    return [];
+  }
   const chunks = [];
   let lastIndex = 0;
   let index = 0;
