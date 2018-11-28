@@ -99,10 +99,7 @@ class Activation {
         .map(messages => ({
           markTypes: getMarkTypesFromMessages(messages.messages),
           editor,
-        }))
-        .takeUntil(
-          observableFromSubscribeFunction(cb => editor.onDidDestroy(cb)),
-        ),
+        })),
     );
 
     const disposable = new UniversalDisposable(

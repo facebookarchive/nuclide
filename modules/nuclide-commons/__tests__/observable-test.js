@@ -806,6 +806,16 @@ describe('nuclide-commons/observable', () => {
         expect(emitted).toEqual([1, 2, 4]);
         dispose();
       });
+
+      test('does not emit on completion', () => {
+        const {source, emitted, dispose} = makeThrottle();
+        source.next(1);
+        expect(emitted).toEqual([1]);
+        source.next(2);
+        source.complete();
+        expect(emitted).toEqual([1]);
+        dispose();
+      });
     });
 
     describe('leading disabled', () => {

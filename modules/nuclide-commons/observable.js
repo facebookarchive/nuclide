@@ -373,9 +373,8 @@ export function throttle<T>(
             observer.error(err);
           },
           complete: () => {
-            shouldIgnore = false;
-            latestValueIsLeading = false;
-            checkShouldNext();
+            // Ensure we don't hold a reference to the last value.
+            latestValue = NONE;
             observer.complete();
           },
         }),
