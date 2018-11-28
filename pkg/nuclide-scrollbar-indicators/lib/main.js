@@ -20,6 +20,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import Model from 'nuclide-commons/Model';
+import {throttle, nextAnimationFrame} from 'nuclide-commons/observable';
 import * as React from 'react';
 import Immutable from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -82,19 +83,21 @@ class Activation {
             // quick check to see if the cache needs to be recomputed.
             .map(() => editor.getScreenLineCount())
             .distinctUntilChanged(),
-        ).map(
-          ([
-            {markTypes, markers, colors},
-            editorIsVisible,
-            screenLineCount,
-          ]) => ({
-            editorIsVisible,
-            colors,
-            markTypes,
-            editor,
-            screenLineCount,
-          }),
-        );
+        )
+          .map(
+            ([
+              {markTypes, markers, colors},
+              editorIsVisible,
+              screenLineCount,
+            ]) => ({
+              editorIsVisible,
+              colors,
+              markTypes,
+              editor,
+              screenLineCount,
+            }),
+          )
+          .let(throttle(nextAnimationFrame, {leading: false}));
 
         const Component = bindObservableAsProps(props, ScrollBar);
         const node = renderReactRoot(<Component />);
