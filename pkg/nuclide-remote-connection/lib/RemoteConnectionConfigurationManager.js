@@ -240,14 +240,6 @@ async function decryptConfig(
   }
 
   const restoredClientKey = decryptString(encryptedString, password, salt);
-  if (
-    // @lint-ignore PRIVATEKEY1
-    !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')
-  ) {
-    getLogger('nuclide-remote-connection').error(
-      `decrypted client key did not start with expected header: ${restoredClientKey}`,
-    );
-  }
 
   // flowlint-next-line sketchy-null-string:off
   invariant(certificateAuthorityCertificate);
