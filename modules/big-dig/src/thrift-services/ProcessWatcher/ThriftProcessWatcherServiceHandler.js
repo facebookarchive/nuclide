@@ -30,6 +30,7 @@ type ProcessMeta = {
   messages: Array<ProcessMessage>,
   subscription: ?Subscription,
   resolveLongPoll: ?(Array<ProcessMessage>) => void,
+  longPollTimeoutId: ?TimeoutID,
 };
 
 export class ThriftProcessWatcherServiceHandler {
@@ -111,6 +112,7 @@ export class ThriftProcessWatcherServiceHandler {
       messages: [],
       subscription: null,
       resolveLongPoll: null,
+      longPollTimeoutId: null,
       // input // TODO
     };
 
@@ -178,18 +180,24 @@ export class ThriftProcessWatcherServiceHandler {
       return;
     }
 
-    const hasLongPoll = this._processes[id].resolveLongPoll != null;
-
-    if (hasLongPoll) {
-      const resolveLongPoll = this._processes[id].resolveLongPoll;
-      this._processes[id].resolveLongPoll = null;
-      if (resolveLongPoll != null) {
-        resolveLongPoll([msg]);
-      }
+    if (this._processes[id].resolveLongPoll) {
+      this._resolveLongPoll(id, [msg]);
     } else {
       this._processes[id].messages.push(msg);
     }
   };
+
+  _resolveLongPoll(id: number, msgs: Array<ProcessMessage>) {
+    if (this._processes[id].resolveLongPoll) {
+      this._processes[id].resolveLongPoll(msgs);
+    } else {
+      throw new Error('long poll cannot be resolved for process with id ' + id);
+    }
+    if (this._processes[id].longPollTimeoutId != null) {
+      clearTimeout(this._processes[id].longPollTimeoutId);
+    }
+    this._processes[id].resolveLongPoll = null;
+  }
 
   async _waitForNewMessages(
     processId: number,
@@ -197,9 +205,13 @@ export class ThriftProcessWatcherServiceHandler {
   ): Promise<Array<ProcessMessage>> {
     const SEC_TO_MSEC = 1000;
     return new Promise((resolveLongPoll, rejectLongPoll) => {
+      if (this._processes[processId].resolveLongPoll) {
+        throw new Error('Processes cannot have multiple watchers');
+      }
+
       this._processes[processId].resolveLongPoll = resolveLongPoll;
-      setTimeout(() => {
-        resolveLongPoll([]);
+      this._processes[processId].longPollTimeoutId = setTimeout(() => {
+        this._resolveLongPoll(processId, []);
       }, waitTimeSec * SEC_TO_MSEC);
     });
   }
