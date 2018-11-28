@@ -159,12 +159,11 @@ async function _getPid(
 
 async function _getAndroidSdkSourcePaths(
   targetUri: NuclideUri,
-  adbServiceUri: NuclideUri,
   deviceSerial: string,
 ): Promise<Array<string>> {
-  const sdkVersion = await getAdbServiceByNuclideUri(
-    adbServiceUri,
-  ).getAPIVersion(deviceSerial);
+  const sdkVersion = await getAdbServiceByNuclideUri(targetUri).getAPIVersion(
+    deviceSerial,
+  );
   const sdkSourcePath =
     sdkVersion !== ''
       ? await getJavaDebuggerHelpersServiceByNuclideUri(
@@ -198,11 +197,15 @@ export async function resolveConfiguration(
   const {config, debugMode, targetUri} = configuration;
   const adbServiceUri = config.adbServiceUri ?? targetUri;
   const resolvedTargetUri = config.selectSources ?? targetUri;
+  // We need to get rid of adbServiceUri and tunnelRequired completely
+  // can't do that until we can guarantee that adb forward is handled by something like adb_proxy
+  const tunnelRequired =
+    nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(resolvedTargetUri);
   const packageName = _getPackageName(debugMode, config);
   const deviceSerial = _getDeviceSerial(debugMode, config);
 
   track('atom-ide-debugger-java-android-configuration', {
-    adbServiceUri,
+    resolvedTargetUri,
     packageName,
     deviceSerial,
     debugMode,
@@ -211,7 +214,7 @@ export async function resolveConfiguration(
   if (debugMode === 'launch') {
     const {service, intent, activity} = config;
     await launchAndroidServiceOrActivity(
-      adbServiceUri,
+      resolvedTargetUri,
       (service: ?string),
       (activity: ?string),
       (intent: ?string) /* intent and action are the same */,
@@ -223,7 +226,7 @@ export async function resolveConfiguration(
   const pid = await _getPid(
     debugMode,
     config,
-    adbServiceUri,
+    resolvedTargetUri,
     deviceSerial,
     packageName,
   );
@@ -231,7 +234,7 @@ export async function resolveConfiguration(
   const subscriptions = new UniversalDisposable();
   const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
     deviceSerial,
-    adbServiceUri,
+    tunnelRequired,
     resolvedTargetUri,
     pid,
     subscriptions,
@@ -240,7 +243,6 @@ export async function resolveConfiguration(
 
   const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(
     resolvedTargetUri,
-    adbServiceUri,
     deviceSerial,
   );
 

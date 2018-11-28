@@ -23,7 +23,6 @@ import {getJavaDebuggerHelpersServiceByNuclideUri} from 'atom-ide-debugger-java/
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
@@ -119,26 +118,20 @@ export async function getPidFromPackageName(
 
 export async function getAdbAttachPortTargetInfo(
   deviceSerial: string,
-  adbServiceUri: NuclideUri,
+  tunnelRequired: boolean,
   targetUri: NuclideUri,
   pid: ?number,
   subscriptions: UniversalDisposable,
   packageName: string,
 ): Promise<JavaAttachPortTargetConfig> {
-  const tunnelRequired =
-    nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
   const tunnelService = tunnelRequired
     ? (await consumeFirstProvider('nuclide.ssh-tunnel'): ?SshTunnelService)
     : null;
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  // tunnel Service's getAvailableServerPort does something weird where it
-  //   wants adbServiceUri to be either '' or 'localhost'
+  const adbService = getAdbServiceByNuclideUri(targetUri);
   const adbPort = tunnelRequired
-    ? await nullthrows(tunnelService).getAvailableServerPort(
-        nuclideUri.isLocal(adbServiceUri) ? 'localhost' : adbServiceUri,
-      )
+    ? await nullthrows(tunnelService).getAvailableServerPort('')
     : await getJavaDebuggerHelpersServiceByNuclideUri(
-        adbServiceUri,
+        targetUri,
       ).getPortForJavaDebugger();
   const forwardSpec = await adbService.forwardJdwpPortToPid(
     deviceSerial,
@@ -178,7 +171,7 @@ export async function getAdbAttachPortTargetInfo(
       const tunnel = {
         description: 'Java debugger',
         from: {
-          host: nuclideUri.getHostname(targetUri),
+          host: targetUri,
           port: 'any_available',
           family: 4,
         },
