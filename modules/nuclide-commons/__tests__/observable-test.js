@@ -807,6 +807,13 @@ describe('nuclide-commons/observable', () => {
         dispose();
       });
 
+      test('defaults to leading when `leading` is omitted in options', () => {
+        const {source, emitted, dispose} = makeThrottle({});
+        source.next(1);
+        expect(emitted).toEqual([1]);
+        dispose();
+      });
+
       test('does not emit on completion', () => {
         const {source, emitted, dispose} = makeThrottle();
         source.next(1);

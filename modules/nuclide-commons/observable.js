@@ -294,9 +294,9 @@ export function concatLatest<T>(
 // nothing is.
 const NONE = {};
 
-type ThrottleOptions = {
-  leading: boolean,
-};
+type ThrottleOptions = {|
+  leading?: boolean,
+|};
 
 export function throttle<T>(
   delay:
@@ -323,7 +323,7 @@ export function throttle<T>(
 
   return function doThrottle(source: Observable<T>): Observable<T> {
     return Observable.create(observer => {
-      const {leading} = options;
+      const {leading = true} = options;
       const timerStarts = new Subject();
       let latestValue = NONE;
       let latestValueIsLeading = false;
