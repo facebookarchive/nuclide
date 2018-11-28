@@ -127,7 +127,6 @@ export default class Debugger extends EventEmitter
     dispatcher.registerCommand(new OutCommand(this));
     dispatcher.registerCommand(new ShowCapsCommand(this._console, this));
     dispatcher.registerCommand(new InfoCommand(this._console, this));
-    dispatcher.registerCommand(new OptoutCommand(this._console));
 
     dispatcher.setUnrecognizedCommandHandler(command =>
       dispatcher.execute(`${print.name} ${command}`),
@@ -138,6 +137,23 @@ export default class Debugger extends EventEmitter
   // session
   launch(adapter: ParsedVSAdapter): Promise<void> {
     this._adapter = adapter;
+
+    if (this._adapter.type === 'hhvm') {
+      try {
+        /* eslint-disable nuclide-internal/modules-dependencies */
+        // $FlowFB
+        const interngraph = require('fb-interngraph/app');
+        /* eslint-enable */
+
+        invariant(this._dispatcher != null);
+        this._dispatcher.registerCommand(
+          new OptoutCommand(this._console, interngraph.postObject),
+        );
+      } catch (_) {
+        this._logger.error(`Failed to get interngraph ${_.message}`);
+      }
+    }
+
     this._replThread = adapter.adapter.replThread;
     this._breakpoints = new BreakpointCollection();
     return this.relaunch();

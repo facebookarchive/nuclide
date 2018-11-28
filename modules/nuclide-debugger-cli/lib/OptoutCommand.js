@@ -14,9 +14,7 @@ import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 
 import os from 'os';
-import fs from 'fs';
 import {Observable} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {trackImmediate} from 'nuclide-commons/analytics';
 
 type InterruptEvent = {
@@ -30,15 +28,25 @@ type LineEvent = {
 
 type Event = InterruptEvent | LineEvent;
 
+type PostObject = (
+  path: string,
+  // $FlowFixMe old declaration in fb-interngraph
+  data: Object,
+  customHeaders: {},
+  // $FlowFixMe old declaration in fb-interngraph
+) => Promise<Object>;
+
 export default class OptoutCommand implements Command {
   name = 'zzz';
   helpText = 'Temporarily opt out of fbdbg.';
 
+  _postObject: PostObject;
   _console: ConsoleIO;
   _pendingText: string = '';
   _subscription: ?rxjs$ISubscription = null;
 
-  constructor(console: ConsoleIO) {
+  constructor(console: ConsoleIO, postObject: PostObject) {
+    this._postObject = postObject;
     this._console = console;
   }
 
@@ -74,7 +82,8 @@ export default class OptoutCommand implements Command {
 
           case 'line':
             if (event.line === '.') {
-              return this._eval();
+              this._console.setPrompt('');
+              return Observable.fromPromise(this._eval());
             }
             this._pendingText = `${this._pendingText}\n${event.line}`;
             this._console.prompt();
@@ -106,9 +115,25 @@ export default class OptoutCommand implements Command {
       reason,
     });
 
-    const optout = nuclideUri.join(os.homedir(), '.fbdbg-optout');
+    try {
+      const result = await this._postObject(
+        'nuclide/fbdbg/optout',
+        {userID: os.userInfo().username, action: 'optout'},
+        {},
+      );
 
-    fs.writeFileSync(optout, 'zzz\n');
+      if (result.success !== true) {
+        this._console.outputLine(
+          `Opt-out call failed, please try again later. ${JSON.stringify(
+            result,
+          )}`,
+        );
+        return;
+      }
+    } catch (err) {
+      this._console.outputLine(`Failed! ${err.message}`);
+      return;
+    }
 
     this._console.outputLine(
       'You have been successfully opted out (for now). If you quit and restart,\nyou will enter classic hphpd.',
