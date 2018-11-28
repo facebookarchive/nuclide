@@ -41,7 +41,7 @@ type SerializableServerConnectionConfiguration = {
   host: string,
   port: number,
   family?: 4 | 6,
-  certificateAuthorityCertificate?: string,
+  certificateAuthorityCertificate?: string | Array<string>,
   clientCertificate?: string,
   clientKey?: string,
   version?: ServerConnectionVersion,
@@ -187,11 +187,18 @@ async function encryptConfig(
   invariant(certificateAuthorityCertificate);
   invariant(clientCertificate);
 
+  let ca: Array<string> | string = [];
+  if (Array.isArray(certificateAuthorityCertificate)) {
+    ca = certificateAuthorityCertificate;
+  } else {
+    ca = certificateAuthorityCertificate.toString();
+  }
+
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     family: remoteProjectConfig.family,
-    certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
+    certificateAuthorityCertificate: ca,
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
     version: remoteProjectConfig.version,
@@ -246,13 +253,17 @@ async function decryptConfig(
   invariant(certificateAuthorityCertificate);
   // flowlint-next-line sketchy-null-string:off
   invariant(clientCertificate);
+
+  let ca = certificateAuthorityCertificate;
+  if (!Array.isArray(ca)) {
+    ca = new Buffer(ca);
+  }
+
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     family: remoteProjectConfig.family,
-    certificateAuthorityCertificate: new Buffer(
-      certificateAuthorityCertificate,
-    ),
+    certificateAuthorityCertificate: ca,
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),
     version: remoteProjectConfig.version,

@@ -45,7 +45,7 @@ export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
   family: DnsFamily, // IPv4/IPv6
-  certificateAuthorityCertificate?: Buffer | Array<Buffer>, // certificate of ca.
+  certificateAuthorityCertificate?: Buffer | Array<string>, // certificate of ca.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
 };
@@ -71,7 +71,7 @@ export type SshConnectionConfiguration = {
   password: string, // for simple password-based authentication
   exclusive?: string, // Ensure that only one server with this "exclusive" tag is running.
   useRootCanalCerts?: boolean, // whether or not to use rootcanal certs
-  certificateAuthorityCertificate?: ?Buffer | Array<Buffer>, // the ca cert
+  certificateAuthorityCertificate?: ?Buffer | Array<string>, // the ca cert
   clientCertificate?: ?Buffer, // the client certificate
   clientKey?: ?Buffer, // the client key
 };
@@ -297,7 +297,7 @@ export class SshHandshake {
   _remoteHost: ?string;
   _remoteFamily: ?DnsFamily;
   _remotePort: number;
-  _certificateAuthorityCertificate: Array<Buffer> | Buffer;
+  _certificateAuthorityCertificate: Array<string> | Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
   _canceled: boolean;

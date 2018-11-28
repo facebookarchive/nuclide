@@ -20,7 +20,7 @@ export type BigDigClientConfig = {
   +host: string,
   +port: number,
   +family?: 4 | 6,
-  +certificateAuthorityCertificate?: Buffer | string | Array<Buffer>,
+  +certificateAuthorityCertificate?: Buffer | string | Array<string>,
   +clientCertificate?: Buffer | string,
   +clientKey?: Buffer | string,
   +ignoreIntransientErrors: boolean,
