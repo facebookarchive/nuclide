@@ -13,11 +13,14 @@ export type {ScrollbarIndicatorMarkType} from './constants';
 export {scrollbarMarkTypes} from './constants';
 
 import type {ThemeColors} from './themeColors';
+import type {Props} from './ScrollBar';
 
 import type {ScrollbarIndicatorMarkType} from './constants';
+import {memoize} from 'lodash';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
+import {setUnion} from 'nuclide-commons/collection';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import Model from 'nuclide-commons/Model';
 import {throttle, nextAnimationFrame} from 'nuclide-commons/observable';
@@ -27,7 +30,6 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
-import {scrollbarMarkTypes} from './constants';
 import ScrollBar from './ScrollBar';
 
 import {getThemeChangeEvents, getThemeColors} from './themeColors';
@@ -53,6 +55,11 @@ type EditorMarks = Immutable.Map<
   >,
 >;
 
+const markLinesFromProviderMarks = memoize(providerMarks =>
+  setUnion(...providerMarks.values()),
+);
+markLinesFromProviderMarks.cache = new WeakMap();
+
 class Activation {
   _disposables: UniversalDisposable;
   _model: Model<{editorLines: EditorMarks, colors: ?ThemeColors}>;
@@ -66,9 +73,9 @@ class Activation {
         this._model.setState({colors: getThemeColors()});
       }),
       atom.workspace.observeTextEditors(editor => {
-        const props = Observable.combineLatest(
+        const props: Observable<Props> = Observable.combineLatest(
           this._model.toObservable().map(state => ({
-            markTypes: state.editorLines.get(editor),
+            markTypes: state.editorLines.get(editor) || Immutable.Map(),
             colors: state.colors,
           })),
           observePaneItemVisibility(editor),
@@ -92,7 +99,7 @@ class Activation {
             ]) => ({
               editorIsVisible,
               colors,
-              markTypes,
+              markTypes: markTypes.map(markLinesFromProviderMarks),
               editor,
               screenLineCount,
             }),
@@ -147,19 +154,13 @@ class Activation {
             });
           }
 
-          const newEditorLines = Object.values(scrollbarMarkTypes).reduce(
-            (editorLines, _type) => {
-              // Object.values returns mixed, so we have to tell Flow that we
-              // trust the types of these `type`s.
-              const type: ScrollbarIndicatorMarkType = (_type: any);
-              const typeMarks = markTypes.get(type) || new Set();
-              return editorLines.updateIn(
-                [editor, type, provider],
-                marks => typeMarks,
-              );
-            },
-            this._model.state.editorLines,
-          );
+          let newEditorLines = this._model.state.editorLines;
+          for (const [type, typeMarks] of markTypes.entries()) {
+            newEditorLines = newEditorLines.updateIn(
+              [editor, type, provider],
+              marks => typeMarks,
+            );
+          }
           this._model.setState({editorLines: newEditorLines});
         },
       ),

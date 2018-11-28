@@ -9,25 +9,22 @@
  * @format
  */
 
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import * as React from 'react';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import Immutable from 'immutable';
-import nullthrows from 'nullthrows';
 
-import type {
-  ScrollbarIndicatorProvider,
-  ScrollbarIndicatorMark,
-  ScrollbarIndicatorMarkType,
-} from './main';
+import type {ScrollbarIndicatorMark, ScrollbarIndicatorMarkType} from './main';
 import type {ThemeColors} from './themeColors';
 import {scrollbarMarkTypes} from './constants';
+import ScrollBarLayer from './ScrollBarLayer';
 
-type Props = {
+export type Props = {
   markTypes: ?Immutable.Map<
     ScrollbarIndicatorMarkType,
-    Immutable.Map<ScrollbarIndicatorProvider, Set<ScrollbarIndicatorMark>>,
+    Set<ScrollbarIndicatorMark>,
   >,
-  colors: ThemeColors,
+  colors: ?ThemeColors,
   editor: atom$TextEditor,
   editorIsVisible: boolean,
   screenLineCount: number,
@@ -42,9 +39,6 @@ type MarkStyle = {
   offset: number,
   color: string,
 };
-
-const SCALE = window.devicePixelRatio;
-const MIN_PIXEL_HEIGHT = SCALE * 2;
 
 const DIAGNOSTIC_ERROR_COLOR = '#ff0000';
 const SEARCH_RESULT_COLOR = '#ffdd00';
@@ -63,110 +57,99 @@ const TYPE_ORDER: Array<ScrollbarIndicatorMarkType> = [
 ];
 
 export default class ScrollBar extends React.PureComponent<Props, State> {
-  _canvas: ?HTMLCanvasElement;
-  _context: CanvasRenderingContext2D;
-  state = {
-    height: null,
-    width: null,
+  _node: ?HTMLDivElement;
+  state = {height: null, width: null};
+
+  _handleRef = (node: ?HTMLDivElement) => {
+    if (node == null) {
+      this.setState({height: null, width: null});
+      return;
+    }
+    const rect = node.getBoundingClientRect();
+    this.setState({height: rect.height, width: rect.width});
   };
 
-  componentDidMount() {
-    const canvas = nullthrows(this._canvas);
-    this._context = canvas.getContext('2d');
-    this._context.scale(SCALE, SCALE);
-    this._context.translate(0.5, 0.5);
-    const rect = canvas.getBoundingClientRect();
-    this.setState({
-      height: rect.height,
-      width: rect.width,
-    });
-    this._drawToCanvas();
-  }
-
-  _getMarkStyleForType(type: ScrollbarIndicatorMarkType): MarkStyle {
-    const canvasWidth = this._context.canvas.width;
-    const oneThird = canvasWidth / 3;
-    const left = {width: oneThird, offset: 0};
-    const middle = {width: oneThird, offset: oneThird};
-    const right = {width: oneThird, offset: oneThird * 2};
-    const full = {width: canvasWidth, offset: 0};
-    switch (type) {
-      case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
-        return {...right, color: DIAGNOSTIC_ERROR_COLOR};
-      case scrollbarMarkTypes.STALE_DIAGNOSTIC_ERROR:
-        return {...right, color: this.props.colors.textColorSubtle};
-      case scrollbarMarkTypes.SELECTION:
-        return {...middle, color: this.props.colors.syntaxSelectionColor};
-      case scrollbarMarkTypes.CURSOR:
-        return {...full, color: this.props.colors.syntaxTextColor};
-      case scrollbarMarkTypes.SEARCH_RESULT:
-        return {...middle, color: SEARCH_RESULT_COLOR};
-      case scrollbarMarkTypes.SOURCE_CONTROL_ADDITION:
-      case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
-      case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
-        return {...left, color: this.props.colors.backgroundColorInfo};
-      case scrollbarMarkTypes.INLINE_REVIEW_COMMENT:
-        return {...left, color: INLINE_REVIEW_COMMENT_COLOR};
-      default:
-        throw new Error(`Invalid scroll indicator mark type: ${type}`);
-    }
-  }
-
-  componentDidUpdate() {
-    if (!this.props.editorIsVisible) {
-      // Don't bother painting the canvas if it's not visible.
-      return;
-    }
-    this._drawToCanvas();
-  }
-
-  _drawToCanvas() {
-    const {width, height} = this._context.canvas;
-    this._context.clearRect(0, 0, width, height);
-    const {markTypes, colors, editor, screenLineCount} = this.props;
-    if (markTypes == null || colors == null) {
-      return;
-    }
-
-    TYPE_ORDER.forEach(type => {
-      const typeMarks = markTypes.get(type);
-      if (typeMarks == null) {
-        return;
+  // This is memoized not because the method is expensive, but to allow the
+  // ScrollbarLayer to take advantage of being a PureComponent.
+  _getMarkStyleForType = (memoizeUntilChanged(
+    (
+      type: ScrollbarIndicatorMarkType,
+      width: number,
+      colors: ThemeColors,
+    ): MarkStyle => {
+      const oneThird = width / 3;
+      const left = {width: oneThird, offset: 0};
+      const middle = {width: oneThird, offset: oneThird};
+      const right = {width: oneThird, offset: oneThird * 2};
+      const full = {width, offset: 0};
+      switch (type) {
+        case scrollbarMarkTypes.DIAGNOSTIC_ERROR:
+          return {...right, color: DIAGNOSTIC_ERROR_COLOR};
+        case scrollbarMarkTypes.STALE_DIAGNOSTIC_ERROR:
+          return {...right, color: colors.textColorSubtle};
+        case scrollbarMarkTypes.SELECTION:
+          return {...middle, color: colors.syntaxSelectionColor};
+        case scrollbarMarkTypes.CURSOR:
+          return {...full, color: colors.syntaxTextColor};
+        case scrollbarMarkTypes.SEARCH_RESULT:
+          return {...middle, color: SEARCH_RESULT_COLOR};
+        case scrollbarMarkTypes.SOURCE_CONTROL_ADDITION:
+        case scrollbarMarkTypes.SOURCE_CONTROL_REMOVAL:
+        case scrollbarMarkTypes.SOURCE_CONTROL_CHANGE:
+          return {...left, color: colors.backgroundColorInfo};
+        case scrollbarMarkTypes.INLINE_REVIEW_COMMENT:
+          return {...left, color: INLINE_REVIEW_COMMENT_COLOR};
+        default:
+          throw new Error(`Invalid scroll indicator mark type: ${type}`);
       }
-      const markStyle = this._getMarkStyleForType(type);
-      this._context.fillStyle = markStyle.color;
-      typeMarks.forEach((marks, provider) => {
-        marks.forEach(mark => {
-          const screenStart = editor.screenPositionForBufferPosition([
-            mark.start,
-            0,
-          ]).row;
-          const screenEnd =
-            // Often the mark is just one line. In that case, avoid the additional
-            // call to `editor.screenPositionForBufferPosition`
-            mark.end === mark.start
-              ? screenStart
-              : editor.screenPositionForBufferPosition([mark.end, 0]).row;
+    },
+  ): // We have to make this return type explicit:
+  // https://medium.com/flow-type/asking-for-required-annotations-64d4f9c1edf8
+  (
+    type: ScrollbarIndicatorMarkType,
+    width: number,
+    colors: ThemeColors,
+  ) => MarkStyle);
 
-          const lineHeight = screenEnd - screenStart;
-          const rangeHeight = Math.max(
-            MIN_PIXEL_HEIGHT,
-            Math.round(height * (lineHeight / screenLineCount)),
-          );
-          // Draw single lines as lines rather than ranges.
-          const markPixelHeight =
-            lineHeight === 1 ? MIN_PIXEL_HEIGHT : rangeHeight;
-          const positionPercent = screenStart / screenLineCount;
-          const pixelPosition = Math.floor(height * positionPercent);
-          this._context.fillRect(
-            markStyle.offset,
-            pixelPosition,
-            markStyle.width,
-            markPixelHeight,
-          );
-        });
-      });
-    });
+  _renderLayers(): Array<React.Node> {
+    const {width, height} = this.state;
+    const {
+      markTypes,
+      colors,
+      editor,
+      screenLineCount,
+      editorIsVisible,
+    } = this.props;
+    if (
+      markTypes == null ||
+      colors == null ||
+      width == null ||
+      height == null
+    ) {
+      return [];
+    }
+
+    return TYPE_ORDER.map(
+      (type): React.Node => {
+        const marks = markTypes.get(type);
+
+        return (
+          marks != null && (
+            <ScrollBarLayer
+              key={type}
+              type={type}
+              marks={marks}
+              editor={editor}
+              markStyle={this._getMarkStyleForType(type, width, colors)}
+              width={width}
+              height={height}
+              editorIsVisible={editorIsVisible}
+              screenLineCount={screenLineCount}
+            />
+          )
+        );
+      },
+    );
   }
 
   _handleMeasurementsChanged = (rect: DOMRectReadOnly) => {
@@ -181,11 +164,7 @@ export default class ScrollBar extends React.PureComponent<Props, State> {
         <MeasuredComponent
           style={{height: '100%', width: '100%'}}
           onMeasurementsChanged={this._handleMeasurementsChanged}>
-          <canvas
-            ref={node => (this._canvas = node)}
-            height={this.state.height}
-            width={this.state.width}
-          />
+          <div ref={this._handleRef}>{this._renderLayers()}</div>
         </MeasuredComponent>
       </div>
     );
