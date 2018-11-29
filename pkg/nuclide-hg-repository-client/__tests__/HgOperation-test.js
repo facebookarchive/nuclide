@@ -12,7 +12,6 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/types';
-import type {Hash} from 'fb-vcs-common';
 import type {HgOperation, TreePreviewApplierFunction} from '../lib/HgOperation';
 import type {RevisionTree} from '../lib/revisionTree/RevisionTree';
 
@@ -23,13 +22,12 @@ import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import {HgRepositoryClient} from '..';
 import {emptyHgOperationProgress} from '../lib/HgOperation';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {makeRevisionChain} from '../../fb-interactive-smartlog/__mocks__/mockRevisionHistory';
+import {makeRevisionChain} from '../../nuclide-hg-rpc/__mocks__/MockHgTypes';
 import {sleep} from 'nuclide-commons/promise';
 
 class TestHgOperation implements HgOperation {
-  _hash: Hash;
-  constructor(hash: Hash) {
+  _hash: string;
+  constructor(hash: string) {
     this._hash = hash;
   }
 

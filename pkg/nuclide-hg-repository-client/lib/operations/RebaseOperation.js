@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Hash} from 'fb-vcs-common';
 import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
 import type {RevisionTree} from '../revisionTree/RevisionTree';
 import {ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -22,10 +21,10 @@ import {
 import {Observable} from 'rxjs';
 
 export class HgRebaseOperation implements HgOperation {
-  _source: ?Hash; // null for .
-  _destination: Hash;
+  _source: ?string; // null for .
+  _destination: string;
 
-  constructor(source: ?Hash, destination: Hash) {
+  constructor(source: ?string, destination: string) {
     this._source = source;
     this._destination = destination;
   }

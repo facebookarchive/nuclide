@@ -35,3 +35,23 @@ export function createMockRevisionInfo(customValues: Object): RevisionInfo {
     ...customValues,
   };
 }
+
+export function makeRevisionChain(
+  num: number,
+  extra?: Object,
+): Array<RevisionInfo> {
+  const revisions = [];
+  for (let i = 0; i < num; i++) {
+    const hash = i.toString();
+    revisions.push(
+      createMockRevisionInfo({
+        hash,
+        id: i,
+        parents: i > 0 ? [(i - 1).toString()] : [],
+        phase: 'draft',
+        ...extra,
+      }),
+    );
+  }
+  return revisions;
+}

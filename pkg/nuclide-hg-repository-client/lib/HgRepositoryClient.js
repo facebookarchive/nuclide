@@ -10,7 +10,6 @@
  */
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
-import {handleLegacyProcessMessages} from 'fb-vcs-common';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import type {
   AmendModeValue,
@@ -52,6 +51,9 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import LRU from 'lru-cache';
 import {getLogger} from 'log4js';
 import nullthrows from 'nullthrows';
+
+// @fb-only: import {handleLegacyProcessMessages} from 'fb-vcs-common';
+const handleLegacyProcessMessages = (name: string) => {}; // @oss-only
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 const REVISION_DEBOUNCE_DELAY = 300;

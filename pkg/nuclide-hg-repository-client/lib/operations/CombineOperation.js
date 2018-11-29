@@ -9,12 +9,9 @@
  * @format
  */
 
-import type {CommitMessageFields} from 'fb-vcs-common';
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
 import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
-import type {Hash} from 'fb-vcs-common';
-import {getCommitMessage} from 'fb-vcs-common';
 import {
   getRevisionTreeMapFromTree,
   RevisionPreviews,
@@ -26,9 +23,9 @@ export const FOLDED_REVISION_PREVIEW_HASH = 'FOLD_PREVIEW_HASH';
 
 export class HgCombineOperation implements HgOperation {
   _commits: Array<string>;
-  _message: CommitMessageFields;
+  _message: string;
 
-  constructor(commits: Array<string>, combinedMessage: CommitMessageFields) {
+  constructor(commits: Array<string>, combinedMessage: string) {
     this._commits = commits;
     this._message = combinedMessage;
   }
@@ -38,13 +35,7 @@ export class HgCombineOperation implements HgOperation {
   getArgs() {
     const from = this._commits[0];
     const to = this._commits[this._commits.length - 1];
-    return [
-      'fold',
-      '--exact',
-      `${from}::${to}`,
-      '--message',
-      getCommitMessage(this._message),
-    ];
+    return ['fold', '--exact', `${from}::${to}`, '--message', this._message];
   }
 
   getEquivalentCommand() {
@@ -142,9 +133,9 @@ export class HgCombineOperation implements HgOperation {
   }
 
   _getFoldPreviewRevisionInfo(
-    treeMap: Map<Hash, RevisionTree>,
-    foldedRevisions: Array<Hash>,
-    foldedMessage: CommitMessageFields,
+    treeMap: Map<string, RevisionTree>,
+    foldedRevisions: Array<string>,
+    foldedMessage: string,
   ): ?RevisionInfo {
     const foldedRevisionsSet = new Set(foldedRevisions);
     const [foldBaseHash] = foldedRevisions;
@@ -166,8 +157,8 @@ export class HgCombineOperation implements HgOperation {
       // inherit foldBase's id so we sort wherever it was
       isHead: isFoldPreviewHead,
       hash: FOLDED_REVISION_PREVIEW_HASH,
-      title: foldedMessage.title,
-      description: getCommitMessage(foldedMessage),
+      title: foldedMessage.split('\n')[0],
+      description: foldedMessage,
     };
   }
 }

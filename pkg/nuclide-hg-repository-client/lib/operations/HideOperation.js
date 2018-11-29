@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Hash} from 'fb-vcs-common';
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
 import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
@@ -25,10 +24,10 @@ import {
 import {Observable} from 'rxjs';
 
 export class HgHideOperation implements HgOperation {
-  _hash: Hash;
-  _affectedHashes: Set<Hash>; // includes this._hash
+  _hash: string;
+  _affectedHashes: Set<string>; // includes this._hash
 
-  constructor(revisions: Array<RevisionInfo>, hash: Hash) {
+  constructor(revisions: Array<RevisionInfo>, hash: string) {
     this._hash = hash;
 
     // find all children that will be affected

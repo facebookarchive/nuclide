@@ -10,7 +10,6 @@
  */
 
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
-import type {Hash} from 'fb-phabricator-common/lib/types';
 import {
   MultiMap,
   firstOfIterable,
@@ -151,7 +150,7 @@ export function* walkTreePostorder(
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getRevisionTreeMap = createSelector(
   [getRevisionTree],
-  (trees: Array<RevisionTree>): Map<Hash, RevisionTree> => {
+  (trees: Array<RevisionTree>): Map<string, RevisionTree> => {
     const map = new Map();
     for (const node of walkTreePostorder(trees)) {
       map.set(node.info.hash, node);
@@ -163,7 +162,7 @@ export const getRevisionTreeMap = createSelector(
 // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
 export const getRevisionTreeMapFromTree = createSelector(
   [trees => trees],
-  (trees: Array<RevisionTree>): Map<Hash, RevisionTree> => {
+  (trees: Array<RevisionTree>): Map<string, RevisionTree> => {
     const map = new Map();
     for (const node of walkTreePostorder(trees)) {
       map.set(node.info.hash, node);
