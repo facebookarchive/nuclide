@@ -36,14 +36,26 @@ const _isEden = memoize(
   async (
     uri: NuclideUri,
     fileSystemService: FileSystemService,
-  ): Promise<boolean> => {
+  ): Promise<boolean | string> => {
     if (nuclideUri.endsWithEdenDir(uri)) {
       // this is needed to avoid checking for .eden/.eden/root, which results in
       // ELOOP: too many symbolic links encountered
       return true;
     }
     const edenDir = nuclideUri.join(uri, '.eden/root');
-    return fileSystemService.exists(edenDir);
+    try {
+      const isEden = await fileSystemService.exists(edenDir);
+      return isEden;
+    } catch (e) {
+      logger.error(
+        'Failed to determine if',
+        uri,
+        'is part of eden because "exists" call failed on',
+        edenDir,
+      );
+      logger.error(e);
+      return e ? e.code : '';
+    }
   },
 );
 
