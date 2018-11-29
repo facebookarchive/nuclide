@@ -10,7 +10,13 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Action, TaskRunner, TaskRunnerState, TaskStatus} from '../types';
+import type {
+  Action,
+  TaskRunner,
+  TaskRunnerState,
+  TaskStatus,
+  TaskOutcome,
+} from '../types';
 import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
 
 import * as Actions from './Actions';
@@ -139,6 +145,24 @@ export function runningTask(
     case Actions.TASK_STARTED:
       return action.payload.taskStatus;
     case Actions.TASK_STOPPED:
+      return null;
+    default:
+      return state;
+  }
+}
+
+export function mostRecentTaskOutcome(
+  state: ?TaskOutcome = null,
+  action: Action,
+): ?TaskOutcome {
+  switch (action.type) {
+    case Actions.TASK_COMPLETED:
+      return {type: 'COMPLETED'};
+    case Actions.TASK_ERRORED:
+      return {type: 'ERRORED'};
+    case Actions.TASK_STOPPED:
+      return {type: 'STOPPED'};
+    case Actions.TASK_STARTED:
       return null;
     default:
       return state;

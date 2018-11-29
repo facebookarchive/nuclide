@@ -32,8 +32,14 @@ export type AppState = {
 
   runningTask: ?TaskStatus,
 
+  mostRecentTaskOutcome: ?TaskOutcome,
+
   consoleService: ?ConsoleService,
   consolesForTaskRunners: Immutable.Map<TaskRunner, ConsoleApi>,
+};
+
+export type TaskOutcome = {
+  type: 'COMPLETED' | 'ERRORED' | 'STOPPED',
 };
 
 export type ToolbarStatePreference = {

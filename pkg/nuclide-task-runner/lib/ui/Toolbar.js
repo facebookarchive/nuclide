@@ -15,6 +15,7 @@ import type {
   TaskMetadata,
   TaskRunnerState,
   TaskRunnerBulletinStatus,
+  TaskOutcome,
 } from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 import passesGK from 'nuclide-commons/passesGK';
@@ -47,6 +48,7 @@ export type Props = {
   extraUiComponent: ?React.ComponentType<any>,
   progress: ?number,
   status: ?Status,
+  outcome: ?TaskOutcome,
   runTask: (taskMeta: TaskMetadata, taskRunner: TaskRunner) => void,
   selectTaskRunner: (taskRunner: TaskRunner) => void,
   stopRunningTask: () => void,
@@ -70,27 +72,64 @@ export default class Toolbar extends React.Component<Props, State> {
     this._setTaskBarStatusGk();
   }
 
+  outcomeToMessage(outcome: TaskOutcome): string {
+    switch (outcome.type) {
+      case 'COMPLETED':
+        return 'Task Completed';
+      case 'ERRORED':
+        return 'Error Occurred';
+      case 'STOPPED':
+        return 'Task Stopped';
+      default:
+        (outcome.type: empty);
+        throw new Error('impossible');
+    }
+  }
+
+  checkOutcome(
+    outcome: TaskOutcome,
+    prevOutcome: ?TaskOutcome,
+    bulletin: ?TaskRunnerBulletinStatus,
+  ) {
+    if (prevOutcome == null || outcome !== prevOutcome) {
+      const detail: React.Element<any> =
+        bulletin == null ? <></> : bulletin.detail;
+      this.setState({
+        bulletin: {
+          detail,
+          title: {
+            message: this.outcomeToMessage(outcome),
+            error: false,
+            seconds: 0,
+          },
+        },
+      });
+    }
+  }
+
   componentDidUpdate(prevProps: Props, prevState: State) {
     // props.status is a message stream from redux, we're caching and comparing
     //  state.bulletin when props.status.type === bulletin.
 
-    const {status} = this.props;
+    const {status, outcome} = this.props;
 
-    if (status == null || status.type !== 'bulletin') {
-      return;
+    if (status != null && status.type === 'bulletin') {
+      const propsBulletin = ((status.object: any): TaskRunnerBulletinStatus);
+      invariant(propsBulletin != null);
+
+      if (
+        this.state.bulletin == null ||
+        (propsBulletin.title !== this.state.bulletin.title ||
+          propsBulletin.detail !== this.state.bulletin.detail)
+      ) {
+        this.setState({
+          bulletin: propsBulletin,
+        });
+      }
     }
 
-    const propsBulletin = ((status.object: any): TaskRunnerBulletinStatus);
-    invariant(propsBulletin != null);
-
-    if (
-      this.state.bulletin == null ||
-      (propsBulletin.title !== this.state.bulletin.title ||
-        propsBulletin.detail !== this.state.bulletin.detail)
-    ) {
-      this.setState({
-        bulletin: propsBulletin,
-      });
+    if (outcome != null) {
+      this.checkOutcome(outcome, prevProps.outcome, this.state.bulletin);
     }
   }
 

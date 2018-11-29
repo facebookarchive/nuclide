@@ -61,6 +61,7 @@ export default function getToolbarProps(store: Store): Observable<Props> {
     toolbarDisabled:
       !state.initialPackagesActivated ||
       state.readyTaskRunners.count() !== state.taskRunners.count(),
+    outcome: state.mostRecentTaskOutcome,
     progress: state.runningTask?.progress,
     status: state.runningTask?.status,
     taskIsRunning: state.runningTask != null,
