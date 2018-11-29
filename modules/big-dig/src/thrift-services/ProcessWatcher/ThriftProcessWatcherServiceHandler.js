@@ -28,37 +28,35 @@ const logger = getLogger('thrift-process-watcher-handler');
 
 type ProcessMeta = {
   messages: Array<ProcessMessage>,
-  subscription: ?Subscription,
+  subscription: Subscription,
   resolveLongPoll: ?(Array<ProcessMessage>) => void,
   longPollTimeoutId: ?TimeoutID,
 };
 
 export class ThriftProcessWatcherServiceHandler {
-  _processes: {[id: number]: ProcessMeta};
+  _processes: Map<number, ProcessMeta>;
   _numObservedProcesses: number;
 
   constructor() {
     this._numObservedProcesses = 0;
-    this._processes = {};
+    this._processes = new Map();
   }
 
   dispose() {
-    for (const id in this._processes) {
-      this.unsubscribe(parseInt(id, 10));
-    }
+    this._processes.forEach((meta, id) => {
+      this.unsubscribe(id);
+    });
   }
 
   async nextMessages(
     processId: number,
     waitTimeSec: number,
   ): Promise<Array<ProcessWatcher_types.ProcessWatcherMessage>> {
-    if (!this._processes[processId]) {
-      throw new Error('no such process');
-    }
+    const meta = this._requireProcessMeta(processId);
 
     let messages = [];
     if (this._hasQueuedMessages(processId)) {
-      messages = this._processes[processId].messages;
+      messages = meta.messages;
       this._clearQueuedMessages(processId);
     } else {
       messages = await this._waitForNewMessages(processId, waitTimeSec);
@@ -72,10 +70,11 @@ export class ThriftProcessWatcherServiceHandler {
   }
 
   unsubscribe(id: number): void {
-    if (this._processes[id] && this._processes[id].subscription) {
+    const meta = this._getProcessMeta(id);
+    if (meta && meta.subscription) {
       logger.info('unsubscribing process with watcher id', id);
-      if (this._processes[id].subscription) {
-        this._processes[id].subscription.unsubscribe();
+      if (meta.subscription) {
+        meta.subscription.unsubscribe();
         this._enqueueProcessMessage(
           {kind: 'exit', exitCode: 1, signal: 'SIGKILL'},
           id,
@@ -108,17 +107,17 @@ export class ThriftProcessWatcherServiceHandler {
       );
     });
 
-    this._processes[id] = {
+    const meta: ProcessMeta = {
       messages: [],
-      subscription: null,
+      subscription: observable.subscribe(message => {
+        this._enqueueProcessMessage(message, id);
+      }),
       resolveLongPoll: null,
       longPollTimeoutId: null,
       // input // TODO
     };
+    this._processes.set(id, meta);
 
-    this._processes[id].subscription = observable.subscribe(message => {
-      this._enqueueProcessMessage(message, id);
-    });
     return id;
   }
 
@@ -155,11 +154,13 @@ export class ThriftProcessWatcherServiceHandler {
   }
 
   _clearQueuedMessages(processId: number) {
-    this._processes[processId].messages = [];
+    const meta = this._requireProcessMeta(processId);
+    meta.messages = [];
   }
 
   _hasQueuedMessages(processId: number) {
-    return this._processes[processId].messages.length > 0;
+    const meta = this._requireProcessMeta(processId);
+    return meta.messages.length > 0;
   }
 
   _lastMessageExits(messages: Array<ProcessMessage>) {
@@ -171,32 +172,34 @@ export class ThriftProcessWatcherServiceHandler {
   }
 
   _deleteProcessMeta(id: number) {
-    delete this._processes[id];
+    this._processes.delete(id);
   }
 
   _enqueueProcessMessage = (msg: ProcessMessage, id: number): void => {
-    if (!this._processes[id]) {
+    const meta = this._getProcessMeta(id);
+    if (!meta) {
       logger.error('got new message', msg, 'for deleted process', id);
       return;
     }
 
-    if (this._processes[id].resolveLongPoll) {
+    if (meta.resolveLongPoll) {
       this._resolveLongPoll(id, [msg]);
     } else {
-      this._processes[id].messages.push(msg);
+      meta.messages.push(msg);
     }
   };
 
   _resolveLongPoll(id: number, msgs: Array<ProcessMessage>) {
-    if (this._processes[id].resolveLongPoll) {
-      this._processes[id].resolveLongPoll(msgs);
+    const meta = this._requireProcessMeta(id);
+    if (meta.resolveLongPoll) {
+      meta.resolveLongPoll(msgs);
     } else {
       throw new Error('long poll cannot be resolved for process with id ' + id);
     }
-    if (this._processes[id].longPollTimeoutId != null) {
-      clearTimeout(this._processes[id].longPollTimeoutId);
+    if (meta.longPollTimeoutId != null) {
+      clearTimeout(meta.longPollTimeoutId);
     }
-    this._processes[id].resolveLongPoll = null;
+    meta.resolveLongPoll = null;
   }
 
   async _waitForNewMessages(
@@ -205,14 +208,27 @@ export class ThriftProcessWatcherServiceHandler {
   ): Promise<Array<ProcessMessage>> {
     const SEC_TO_MSEC = 1000;
     return new Promise((resolveLongPoll, rejectLongPoll) => {
-      if (this._processes[processId].resolveLongPoll) {
+      const meta = this._requireProcessMeta(processId);
+      if (meta.resolveLongPoll) {
         throw new Error('Processes cannot have multiple watchers');
       }
 
-      this._processes[processId].resolveLongPoll = resolveLongPoll;
-      this._processes[processId].longPollTimeoutId = setTimeout(() => {
+      meta.resolveLongPoll = resolveLongPoll;
+      meta.longPollTimeoutId = setTimeout(() => {
         this._resolveLongPoll(processId, []);
       }, waitTimeSec * SEC_TO_MSEC);
     });
+  }
+
+  _getProcessMeta(id: number): ?ProcessMeta {
+    return this._processes.get(id);
+  }
+
+  _requireProcessMeta(id: number): ProcessMeta {
+    const meta = this._processes.get(id);
+    if (!meta) {
+      throw new Error('no process exists with id ' + id);
+    }
+    return meta;
   }
 }
