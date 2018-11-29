@@ -65,8 +65,8 @@ export default class Toolbar extends React.Component<Props, State> {
     bulletin: null,
   };
 
-  constructor() {
-    super();
+  constructor(props: Props) {
+    super(props);
     this._setTaskBarStatusGk();
   }
 
@@ -290,7 +290,7 @@ export default class Toolbar extends React.Component<Props, State> {
           .map(debugTaskType => ({debugTaskType})),
         DebugDropdownComponent,
       );
-      debugElement = <DebugSectionComponent />;
+      debugElement = <DebugSectionComponent key="debug" />;
     }
 
     return state.tasks

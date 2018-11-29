@@ -31,8 +31,8 @@ class TaskRunnerStatusTooltipComponent extends React.Component<Props, State> {
     maxHeight: 0,
   };
   myRef: React.ElementRef<any>;
-  constructor() {
-    super();
+  constructor(props: Props) {
+    super(props);
     this.myRef = React.createRef();
   }
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -59,8 +59,8 @@ class TaskRunnerStatusTooltipComponent extends React.Component<Props, State> {
         className="nuclide-taskbar-status-tooltip-content"
         ref={this.myRef}
         style={{
-          'min-width': this.state.maxWidth + 'px',
-          'min-height': this.state.maxHeight + 'px',
+          minWidth: this.state.maxWidth + 'px',
+          minHeight: this.state.maxHeight + 'px',
         }}>
         {message == null ? null : (
           <div
