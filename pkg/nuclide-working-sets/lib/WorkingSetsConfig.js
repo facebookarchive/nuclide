@@ -11,6 +11,7 @@
 
 import type {WorkingSetDefinition} from './types';
 
+import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 // @fb-only: import maybeConvertWorkingSets from './fb-convertODWorkingSets';
 
@@ -40,13 +41,30 @@ export class WorkingSetsConfig {
   }
 
   setDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    featureConfig.set(
-      CONFIG_KEY,
-      definitions.filter(d => d.sourceType === 'user').map(def_ => {
+    const userDefinitions = definitions
+      .filter(d => d.sourceType === 'user')
+      .map(def_ => {
         const def = {...def_};
         delete def.sourceType; // No need to write this.
         return def;
-      }),
-    );
+      });
+    if (userDefinitions.length === 0) {
+      const previousDefinitions = this.getDefinitions();
+      if (
+        !Array.isArray(previousDefinitions) ||
+        previousDefinitions.length > 0
+      ) {
+        getLogger('nuclide-working-sets').warn(
+          `\
+Saving empty working sets.
+Previous:
+${JSON.stringify(previousDefinitions, null, 2)}
+Next:
+${JSON.stringify(definitions, null, 2)}`,
+          new Error('Working Sets Debug Error'),
+        );
+      }
+    }
+    featureConfig.set(CONFIG_KEY, userDefinitions);
   }
 }
