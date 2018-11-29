@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {TaskRunnerBulletinStatus} from '../../nuclide-task-runner/lib/types';
 import invariant from 'assert';
 import Ansi from 'nuclide-commons-ui/Ansi';
 import {createStatus} from '../../commons-node/tasks';
@@ -17,7 +16,6 @@ import type {BuckEvent} from './BuckEventStream';
 import type {TaskEvent} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
-
 import React from 'react';
 
 const RESET_ANSI = '[?7l';
@@ -30,14 +28,11 @@ export class BuckConsoleParser {
    */
   _statusMemory: {
     addedBuildTargetToTitle: boolean,
-    bulletin: TaskRunnerBulletinStatus,
+    title: string,
     body: Array<string>,
   } = {
     addedBuildTargetToTitle: false,
-    bulletin: {
-      title: {message: '', seconds: null, error: false},
-      detail: <div />,
-    },
+    title: '',
     body: [],
   };
 
@@ -60,19 +55,6 @@ export class BuckConsoleParser {
     const reset = message.includes(RESET_ANSI);
     const stripped = stripAnsi(message);
     const mem = this._statusMemory;
-    let result = Observable.empty();
-
-    if (mem.bulletin.title.message !== '') {
-      const bulletin = {
-        title: JSON.parse(JSON.stringify(mem.bulletin.title)),
-        detail: (
-          <>
-            <Ansi>{mem.body.join('')}</Ansi>
-          </>
-        ),
-      };
-      result = createStatus('bulletin', bulletin);
-    }
 
     if (reset) {
       mem.addedBuildTargetToTitle = false;
@@ -103,9 +85,7 @@ export class BuckConsoleParser {
       }
       // TODO refactor this logic into a react scoped class that can construct
       // these as react elements.
-      mem.bulletin.title.message = `${prefix}<span>${match[2]}</span> ${
-        match[3]
-      }`;
+      mem.title = `${prefix}<span>${match[2]}</span> ${match[3]}`;
     }
     /* this block parses the first subsequent Building... line
      * (i.e. " - fldr/com/facebook/someTarget:someTarget#header-info 2.3 sec")
@@ -118,9 +98,9 @@ export class BuckConsoleParser {
         if (target.length > 12) {
           target = target.slice(0, 12);
         }
-        mem.bulletin.title.message = `Building ../${target} <span>${
-          match[2]
-        }</span> ${match[3]}`;
+        mem.title = `Building ../${target} <span>${match[2]}</span> ${
+          match[3]
+        }`;
         mem.addedBuildTargetToTitle = true;
       }
     }
@@ -132,12 +112,23 @@ export class BuckConsoleParser {
         if (target.length > 35) {
           target = target.slice(0, 35);
         }
-        mem.bulletin.title.message = target;
+        mem.title = target;
       }
     }
 
     mem.body.push(message);
 
-    return result;
+    if (mem.title !== '') {
+      return createStatus('bulletin', {
+        title: {message: mem.title},
+        detail: (
+          <>
+            <Ansi>{mem.body.join('')}</Ansi>
+          </>
+        ),
+      });
+    }
+
+    return Observable.empty();
   }
 }
