@@ -8,13 +8,11 @@
 @accent-text-color: #000;
 @accent-color: #568af2;
 
-@terminal-background-color: #313640;
-
 .nuclide-taskbar-status-container {
   height: 23px;
   overflow: hidden;
   min-width: 235px;
-  background-color: @terminal-background-color;
+  background-color: @button-background-color;
   z-index: 3;
   font-family: @font-family;
   position: relative;
@@ -70,10 +68,10 @@
 }
 
 div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-arrow {
-  border-bottom-color: @terminal-background-color;
+  border-bottom-color: @button-background-color;
 }
 div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
-  background-color: @terminal-background-color;
+   background-color: @button-background-color;
 }
 
 .nuclide-taskbar-beta-small {
