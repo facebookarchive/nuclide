@@ -1,6 +1,6 @@
 {
   "name": "nuclide-debugger-cli",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Nuclide command line debugger.",
   "author": "Nuclide : Debugging",
   "license": "BSD-3-Clause",
