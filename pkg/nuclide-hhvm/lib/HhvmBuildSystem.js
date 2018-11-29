@@ -186,7 +186,7 @@ export default class HhvmBuildSystem {
       Observable.of(null),
       Observable.fromPromise(getDebuggerService()),
     ).switchMap(debugService => {
-      if (debugService == null) {
+      if (projectRoot == null || debugService == null) {
         return Observable.of(getTask(null));
       }
       return Observable.concat(
