@@ -32,7 +32,6 @@ import {
   takeWhileInclusive,
   toAbortablePromise,
   toggle,
-  throttle,
 } from '../observable';
 import nullthrows from 'nullthrows';
 import AbortController from '../AbortController';
@@ -771,77 +770,6 @@ describe('nuclide-commons/observable', () => {
         .toArray()
         .toPromise();
       expect(result).toEqual(['hi', 'hi']);
-    });
-  });
-
-  describe('throttle', () => {
-    function makeThrottle(options) {
-      const timer = new Subject();
-      const source = new Subject();
-      const throttled = source.let(throttle(timer, options));
-
-      const emitted = [];
-      const subscription = throttled.subscribe(value => emitted.push(value));
-
-      return {
-        timer,
-        source,
-        emitted,
-        dispose: () => subscription.unsubscribe(),
-      };
-    }
-
-    describe('default options (leading and trailing)', () => {
-      test('emits the leading value', () => {
-        const {source, timer, emitted, dispose} = makeThrottle();
-        source.next(1);
-        expect(emitted).toEqual([1]);
-        timer.next(null);
-        expect(emitted).toEqual([1]);
-        source.next(2);
-        source.next(3);
-        source.next(4);
-        expect(emitted).toEqual([1, 2]);
-        timer.next(null);
-        expect(emitted).toEqual([1, 2, 4]);
-        dispose();
-      });
-
-      test('defaults to leading when `leading` is omitted in options', () => {
-        const {source, emitted, dispose} = makeThrottle({});
-        source.next(1);
-        expect(emitted).toEqual([1]);
-        dispose();
-      });
-
-      test('does not emit on completion', () => {
-        const {source, emitted, dispose} = makeThrottle();
-        source.next(1);
-        expect(emitted).toEqual([1]);
-        source.next(2);
-        source.complete();
-        expect(emitted).toEqual([1]);
-        dispose();
-      });
-    });
-
-    describe('leading disabled', () => {
-      test('does not emit the leading value', () => {
-        const {source, timer, emitted, dispose} = makeThrottle({
-          leading: false,
-        });
-        source.next(1);
-        expect(emitted).toEqual([]);
-        timer.next(null);
-        expect(emitted).toEqual([1]);
-        source.next(2);
-        source.next(3);
-        source.next(4);
-        expect(emitted).toEqual([1]);
-        timer.next(null);
-        expect(emitted).toEqual([1, 4]);
-        dispose();
-      });
     });
   });
 });

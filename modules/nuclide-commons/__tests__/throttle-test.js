@@ -144,4 +144,69 @@ describe('throttle', () => {
     source.pipe(throttle(notifier)).subscribe(spy);
     expect(spy.mock.calls.length).toBe(1);
   });
+
+  function makeThrottle(options) {
+    const timer = new Subject();
+    const source = new Subject();
+    const throttled = source.let(throttle(timer, options));
+
+    const emitted = [];
+    const subscription = throttled.subscribe(value => emitted.push(value));
+
+    return {
+      timer,
+      source,
+      emitted,
+      dispose: () => subscription.unsubscribe(),
+    };
+  }
+
+  test('emits the leading value by default', () => {
+    const {source, timer, emitted, dispose} = makeThrottle();
+    source.next(1);
+    expect(emitted).toEqual([1]);
+    timer.next(null);
+    expect(emitted).toEqual([1]);
+    source.next(2);
+    source.next(3);
+    source.next(4);
+    expect(emitted).toEqual([1, 2]);
+    timer.next(null);
+    expect(emitted).toEqual([1, 2, 4]);
+    dispose();
+  });
+
+  test('defaults to leading when `leading` is omitted in options', () => {
+    const {source, emitted, dispose} = makeThrottle({});
+    source.next(1);
+    expect(emitted).toEqual([1]);
+    dispose();
+  });
+
+  test('does not emit on completion', () => {
+    const {source, emitted, dispose} = makeThrottle();
+    source.next(1);
+    expect(emitted).toEqual([1]);
+    source.next(2);
+    source.complete();
+    expect(emitted).toEqual([1]);
+    dispose();
+  });
+
+  test('does not emit the leading value, when leading: false', () => {
+    const {source, timer, emitted, dispose} = makeThrottle({
+      leading: false,
+    });
+    source.next(1);
+    expect(emitted).toEqual([]);
+    timer.next(null);
+    expect(emitted).toEqual([1]);
+    source.next(2);
+    source.next(3);
+    source.next(4);
+    expect(emitted).toEqual([1]);
+    timer.next(null);
+    expect(emitted).toEqual([1, 4]);
+    dispose();
+  });
 });
