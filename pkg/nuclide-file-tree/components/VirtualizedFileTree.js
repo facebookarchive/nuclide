@@ -501,11 +501,11 @@ class SelectionRenderer extends React.Component<SelectionRendererProps> {
       .toArray()
       .map((index, i) => {
         const realIndex = index - 1; // Indexes are 1-based for some reason.
-        const height = getRowHeight({index: realIndex});
         // This is a hacky (but the only) way to get the position of the cell. This is necessary
         // to render the selection behind the entry elements (which we do so as not to change the
         // scroll width of the entry elements' container).
         const isValidSelection =
+          realIndex >= 0 &&
           realIndex < rowSizeAndPositionManager.getCellCount();
         if (!isValidSelection) {
           return null;
@@ -513,6 +513,7 @@ class SelectionRenderer extends React.Component<SelectionRendererProps> {
         const top = rowSizeAndPositionManager.getSizeAndPositionOfCell(
           realIndex,
         ).offset;
+        const height = getRowHeight({index: realIndex});
         return (
           <Selection key={i} width={selectionWidth} height={height} top={top} />
         );
