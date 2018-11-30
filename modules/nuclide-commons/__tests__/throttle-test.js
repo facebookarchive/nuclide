@@ -70,7 +70,7 @@ describe('throttle', () => {
       values.push(x);
       const currentTime = Date.now();
       if (lastTiming != null) {
-        expect(currentTime - lastTiming).toBeGreaterThan(delay);
+        expect(currentTime - lastTiming).toBeGreaterThanOrEqual(delay);
       }
       lastTiming = currentTime;
     });
