@@ -57,7 +57,7 @@ export default class DiagnosticUpdater {
       .let(throttle(THROTTLE_ALL_MESSAGES_MS))
       .map(Selectors.getAllMessages)
       .distinctUntilChanged()
-      .share();
+      .shareReplay(1);
   }
 
   getAllMessages = (): Array<DiagnosticMessage> => {
@@ -101,7 +101,7 @@ export default class DiagnosticUpdater {
         .finally(() => {
           this._fileMessageObservables.delete(filePath);
         })
-        .share();
+        .shareReplay(1);
       this._fileMessageObservables.set(filePath, observable);
     }
     return new UniversalDisposable(observable.subscribe(callback));
