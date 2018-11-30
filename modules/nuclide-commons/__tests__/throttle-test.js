@@ -142,6 +142,6 @@ describe('throttle', () => {
       resolve('done');
     });
     source.pipe(throttle(notifier)).subscribe(spy);
-    expect(spy.mock.calls.length).toBe(2);
+    expect(spy.mock.calls.length).toBe(1);
   });
 });
