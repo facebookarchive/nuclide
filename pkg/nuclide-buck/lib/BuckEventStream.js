@@ -89,7 +89,8 @@ export function getEventsFromSocket(
           const strippedMessage = stripAnsi(message.message);
           const match = strippedMessage.match(BUILD_OUTPUT_REGEX);
           if (match != null && match.length === 4) {
-            // The result is also printed to stdout and converted into build-output there.
+            // The result is also printed to stdout and converted into build-output there
+            // because websocket isn't always present.
             return Observable.empty();
           } else if (strippedMessage !== '') {
             return log(strippedMessage, convertJavaLevel(message.level.name));
@@ -172,13 +173,22 @@ export function getEventsFromProcess(
           };
         }),
       processStream
-        .filter(f => {
-          // Filtering ANSI messages out of the stdout/stderr stream so we don't
-          // need to handle them.
-          if (f.kind === 'stdout' || f.kind === 'stderr') {
-            return !f.data.startsWith('[', 1);
+        .filter(message => {
+          // Filtering ANSI messages out of the stdout/stderr stream so
+          // they won't reach the nuclide console.
+          if (message.kind !== 'stdout' && message.kind !== 'stderr') {
+            return true;
           }
-          return true;
+          // Making exception for BUILD_OUTPUT
+          const match = stripAnsi(message.data)
+            .trim()
+            .match(BUILD_OUTPUT_REGEX);
+          const isBuildOutput = match != null && match.length === 4;
+          const isAnsi = message.data.startsWith('[', 1);
+          if (isAnsi) {
+            getLogger('BuckEventStream').warn('filter: ' + message.data);
+          }
+          return !isAnsi || isBuildOutput;
         })
         .map(message => {
           switch (message.kind) {
@@ -204,7 +214,9 @@ export function getEventsFromProcess(
               };
             case 'stderr':
             case 'stdout':
-              const match = message.data.trim().match(BUILD_OUTPUT_REGEX);
+              // Some Buck steps output ansi escape codes regardless of terminal setting.
+              const stripped = stripAnsi(message.data);
+              const match = stripped.trim().match(BUILD_OUTPUT_REGEX);
               if (match != null && match.length === 4) {
                 return {
                   type: 'build-output',
@@ -217,12 +229,11 @@ export function getEventsFromProcess(
               } else {
                 return {
                   type: 'log',
-                  // Some Buck steps output ansi escape codes regardless of terminal setting.
-                  message: message.data,
+                  message: stripped,
                   // Build failure messages typically do not show up in the web socket.
                   // TODO(hansonw): fix this on the Buck side
                   level:
-                    message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
+                    stripped.indexOf(BUILD_FAILED_MESSAGE) === -1
                       ? 'log'
                       : 'error',
                 };
