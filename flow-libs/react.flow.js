@@ -11,6 +11,16 @@
 
 /* eslint-disable no-undef */
 
+// This is the type for the result of calling React.createRef where your ref
+// is a component.
+//
+// Usage:
+//
+//  _nameInputRef: ReactComponentRef<ProtonTextInput> = React.createRef();
+declare type ReactComponentRef<TInstance: React$Component<any, any>> = {
+  current: null | TInstance,
+};
+
 // This is the type for the result of calling React.createRef where the ref is a
 // plain DOM element, like `input`, or `div`
 //

@@ -17,7 +17,6 @@ import * as React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Modal} from 'nuclide-commons-ui/Modal';
@@ -34,13 +33,14 @@ type PropsType = {
 type StateType = {
   bpId: string,
   enabledChecked: boolean,
+  condition: string,
 };
 
 export default class BreakpointConfigComponent extends React.Component<
   PropsType,
   StateType,
 > {
-  _condition: ?AtomInput;
+  _conditionInput: ReactComponentRef<AtomInput>;
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -48,9 +48,11 @@ export default class BreakpointConfigComponent extends React.Component<
   constructor(props: PropsType) {
     super(props);
     this._disposables = new UniversalDisposable();
+    this._conditionInput = React.createRef();
     this.state = {
       bpId: this.props.breakpoint.getId(),
       enabledChecked: this.props.breakpoint.enabled,
+      condition: this.props.breakpoint.condition ?? '',
     };
 
     const model = this.props.service.getModel();
@@ -80,8 +82,8 @@ export default class BreakpointConfigComponent extends React.Component<
         this._updateBreakpoint.bind(this),
       ),
       Observable.timer(100).subscribe(() => {
-        if (this._condition != null) {
-          this._condition.focus();
+        if (this._conditionInput.current != null) {
+          this._conditionInput.current.focus();
         }
       }),
     );
@@ -95,10 +97,8 @@ export default class BreakpointConfigComponent extends React.Component<
     const {breakpoint, service} = this.props;
     const {enabledChecked} = this.state;
     service.enableOrDisableBreakpoints(enabledChecked, this.props.breakpoint);
-    const condition = nullthrows(this._condition)
-      .getText()
-      .trim();
-    if (condition === (breakpoint.condition || '')) {
+    const condition = this.state.condition.trim();
+    if (condition === (breakpoint.condition ?? '')) {
       this.props.onDismiss();
       return;
     }
@@ -155,12 +155,11 @@ export default class BreakpointConfigComponent extends React.Component<
           <div className="block">
             <AtomInput
               placeholderText="Breakpoint hit condition..."
-              value={this.props.breakpoint.condition || ''}
+              value={this.state.condition}
               size="sm"
-              ref={input => {
-                this._condition = input;
-              }}
+              ref={this._conditionInput}
               autofocus={true}
+              onDidChange={value => this.setState({condition: value})}
             />
           </div>
           <label>
