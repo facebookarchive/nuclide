@@ -1971,10 +1971,15 @@ export default class DebugService implements IDebugService {
               level: 'error',
             };
             this._consoleOutput.next(message);
-          } else {
+          } else if (expression.hasChildren()) {
             this._consoleOutput.next({
               text: 'object',
               expressions: [expression],
+              level,
+            });
+          } else {
+            this._consoleOutput.next({
+              text: expression.getValue(),
               level,
             });
           }
