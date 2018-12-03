@@ -71,7 +71,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.chown(uri, uid, gid);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri, uid, gid});
     }
   }
 
@@ -79,7 +79,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.close(fd);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {fd});
     }
   }
 
@@ -102,7 +102,7 @@ export class ThriftFileSystemServiceHandler {
       }
       await fsPromise.copy(source, destination);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {source, destination, options});
     }
   }
 
@@ -110,7 +110,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.mkdir(uri);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -125,7 +125,7 @@ export class ThriftFileSystemServiceHandler {
             if (err == null) {
               resolve();
             } else {
-              reject(createThriftError(err));
+              reject(createThriftError(err, {uri, options}));
             }
           });
         });
@@ -138,7 +138,7 @@ export class ThriftFileSystemServiceHandler {
         }
       }
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri, options});
     }
   }
 
@@ -163,9 +163,12 @@ export class ThriftFileSystemServiceHandler {
     const isWindows = os.platform() === 'win32';
     const homePath = isWindows ? UserProfile : HOME;
     if (homePath == null) {
-      throw createThriftError({
-        message: 'could not find path to home directory',
-      });
+      throw createThriftError(
+        {
+          message: 'could not find path to home directory',
+        },
+        {uri},
+      );
     }
 
     if (uri === '~') {
@@ -185,14 +188,14 @@ export class ThriftFileSystemServiceHandler {
       const statData = await fsPromise.fstat(fd);
       return convertToThriftFileStat(statData);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {fd});
     }
   }
   async fsync(fd: number): Promise<void> {
     try {
       return await fsPromise.fsync(fd);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {fd});
     }
   }
 
@@ -200,7 +203,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.ftruncate(fd, len);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {fd, len});
     }
   }
 
@@ -209,7 +212,7 @@ export class ThriftFileSystemServiceHandler {
       const statData = await fsPromise.lstat(uri);
       return convertToThriftFileStat(statData);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -217,7 +220,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.mkdirp(uri);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -230,7 +233,7 @@ export class ThriftFileSystemServiceHandler {
       const fd = await fsPromise.open(uri, permissionFlags, mode);
       return fd;
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri, permissionFlags, mode});
     }
   }
 
@@ -266,7 +269,7 @@ export class ThriftFileSystemServiceHandler {
       );
       return arrayCompact(entries);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -276,7 +279,7 @@ export class ThriftFileSystemServiceHandler {
       const contents = await fsPromise.readFile(uri);
       return contents;
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -284,7 +287,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       return await fsPromise.realpath(uri);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -293,7 +296,7 @@ export class ThriftFileSystemServiceHandler {
       const expandedHome = await this.expandHomeDir(uri);
       return await fsPromise.realpath(expandedHome);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
 
@@ -305,7 +308,7 @@ export class ThriftFileSystemServiceHandler {
     try {
       await fsPromise.mv(oldUri, newUri, {clobber: options.overwrite});
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {oldUri, newUri, options});
     }
   }
 
@@ -314,21 +317,21 @@ export class ThriftFileSystemServiceHandler {
       const statData = await fsPromise.stat(uri);
       return convertToThriftFileStat(statData);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri});
     }
   }
   async unwatch(watchId: string): Promise<void> {
     try {
       await this._watcher.unwatch(watchId);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {watchId});
     }
   }
   async utimes(uri: string, atime: number, mtime: number): Promise<void> {
     try {
       return await fsPromise.utimes(uri, atime, mtime);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri, atime, mtime});
     }
   }
 
@@ -427,7 +430,7 @@ export class ThriftFileSystemServiceHandler {
 
       await fsPromise.writeFile(uri, content, writeOptions);
     } catch (err) {
-      throw createThriftError(err);
+      throw createThriftError(err, {uri, options});
     }
   }
 }
