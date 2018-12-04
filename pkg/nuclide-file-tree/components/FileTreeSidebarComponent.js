@@ -11,22 +11,27 @@
 /* global HTMLElement */
 
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/types'; //
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore.js';
-import type {Store} from '../lib/types';
+import type {Store, AppState} from '../lib/types';
 
 import {Emitter} from 'atom';
+import observableFromReduxStore from 'nuclide-commons/observableFromReduxStore';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable, Subject} from 'rxjs';
+import {getHeadToForkBaseRevisions} from '../../nuclide-hg-repository-client/lib/utils';
 import {ShowUncommittedChangesKind, PREFERRED_WIDTH} from '../lib/Constants';
 import * as FileTreeHelpers from '../lib/FileTreeHelpers';
 import * as Actions from '../lib/redux/Actions';
 import {Provider} from 'react-redux';
+import passesGK from 'nuclide-commons/passesGK';
 
 import {
   SHOW_OPEN_FILE_CONFIG_KEY,
@@ -97,6 +102,8 @@ type State = {|
   foldersExpanded: boolean,
   uncommittedChangesExpanded: boolean,
   openFilesExpanded: boolean,
+  cwdRevisions: ?Array<RevisionInfo>,
+  activeRevisionTitle: ?string,
 |};
 
 type Props = {|
@@ -120,6 +127,7 @@ export default class FileTreeSidebarComponent extends React.Component<
   constructor(props: Props) {
     super(props);
     this._emitter = new Emitter();
+    this._disposables = new UniversalDisposable();
     this.state = {
       shouldRenderToolbar: false,
       scrollerHeight: window.innerHeight,
@@ -148,6 +156,8 @@ export default class FileTreeSidebarComponent extends React.Component<
       openFilesExpanded: Selectors.getOpenFilesExpanded(
         this.props.store.getState(),
       ),
+      cwdRevisions: null,
+      activeRevisionTitle: null,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
@@ -160,13 +170,50 @@ export default class FileTreeSidebarComponent extends React.Component<
       ): Observable<any>),
     );
     this._showUncommittedKindConfigValue = FileTreeHelpers.observeUncommittedChangesKindConfigKey();
+    const observeCwd = Observable.fromPromise(
+      passesGK('nuclide_file_tree_revision_selector'),
+    ).switchMap(fileTreeRevisionSelectionEnabled => {
+      if (fileTreeRevisionSelectionEnabled) {
+        return observableFromReduxStore(this.props.store)
+          .switchMap((state: AppState) => {
+            const cwdApi = Selectors.getCwdApi(state);
+            if (cwdApi == null) {
+              return Observable.empty();
+            }
+            return observableFromSubscribeFunction(
+              cwdCb => new UniversalDisposable(cwdApi.observeCwd(cwdCb)),
+            );
+          })
+          .distinctUntilChanged()
+          .switchMap(directory => {
+            if (directory == null) {
+              return Observable.empty();
+            }
+            const repo = repositoryForPath(directory);
+            if (repo == null || repo.getType() !== 'hg') {
+              return Observable.empty();
+            }
+            return ((repo: any): HgRepositoryClient).observeRevisionChanges();
+          })
+          .map(revisionInfo =>
+            getHeadToForkBaseRevisions(revisionInfo.revisions)
+              .reverse()
+              .slice(0, -1),
+          );
+      } else {
+        return Observable.empty();
+      }
+    });
+
+    this._disposables.add(
+      observeCwd.subscribe(revisions =>
+        this.setState({cwdRevisions: revisions}),
+      ),
+    );
 
     this._scrollerElements = new Subject();
     this._scrollerRef = null;
-    this._disposables = new UniversalDisposable(
-      this._emitter,
-      this._subscribeToResizeEvents(),
-    );
+    this._disposables.add(this._emitter, this._subscribeToResizeEvents());
   }
 
   componentDidMount(): void {
@@ -405,7 +452,8 @@ All the changes across your entire stacked diff.
       // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
       <span ref={addTooltip({title: dropdownTooltip})}>
         <span className="nuclide-dropdown-label-text-wrapper">
-          {this.state.showUncommittedChangesKind.toUpperCase()}
+          {this.state.activeRevisionTitle ??
+            this.state.showUncommittedChangesKind.toUpperCase()}
         </span>
         {dropdownIcon}
         {calculatingChangesSpinner}
@@ -600,6 +648,25 @@ All the changes across your entire stacked diff.
   ): void => {
     invariant(remote != null);
     const menu = new remote.Menu();
+    if (this.state.cwdRevisions != null) {
+      this.state.cwdRevisions.forEach(revision => {
+        const revisionMenuItem = new remote.MenuItem({
+          type: 'checkbox',
+          checked: revision.title === this.state.activeRevisionTitle,
+          label: revision.title,
+          click: () => {
+            this._handleChangeWorkingRevision(revision);
+          },
+        });
+        menu.append(revisionMenuItem);
+      });
+
+      const separatorItem = new remote.MenuItem({
+        type: 'separator',
+      });
+      menu.append(separatorItem);
+    }
+
     for (const enumKey in ShowUncommittedChangesKind) {
       const kind: ShowUncommittedChangesKindValue =
         ShowUncommittedChangesKind[enumKey];
@@ -617,6 +684,11 @@ All the changes across your entire stacked diff.
     this._menu = menu;
     event.stopPropagation();
   };
+
+  _handleChangeWorkingRevision(revision: RevisionInfo): void {
+    this.props.store.dispatch(Actions.changeWorkingRevision(revision));
+    this.setState({activeRevisionTitle: revision.title});
+  }
 
   _handleShowUncommittedChangesKindChange(
     showUncommittedChangesKind: ShowUncommittedChangesKindValue,
