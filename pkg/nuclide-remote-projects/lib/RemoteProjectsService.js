@@ -57,7 +57,7 @@ export default class RemoteProjectsService {
     this._connect(config, true).catch(err => {
       atom.notifications.addError(
         'There was an error connecting to the remote project.',
-        {detail: err.message},
+        {dismissable: true, detail: err.message},
       );
       getLogger('nuclide-remote-projects').error(err);
     });
