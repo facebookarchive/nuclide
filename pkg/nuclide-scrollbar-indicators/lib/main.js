@@ -30,6 +30,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
+import {scrollbarMarkTypes} from './constants';
 import ScrollBar from './ScrollBar';
 
 import {getThemeChangeEvents, getThemeColors} from './themeColors';
@@ -181,13 +182,19 @@ class Activation {
             });
           }
 
-          let newEditorLines = this._model.state.editorLines;
-          for (const [type, typeMarks] of markTypes.entries()) {
-            newEditorLines = newEditorLines.updateIn(
-              [editor, type, provider],
-              marks => typeMarks,
-            );
-          }
+          const newEditorLines = Object.values(scrollbarMarkTypes).reduce(
+            (editorLines, _type) => {
+              // Object.values returns mixed, so we have to tell Flow that we
+              // trust the types of these `type`s.
+              const type: ScrollbarIndicatorMarkType = (_type: any);
+              const typeMarks = markTypes.get(type) || new Set();
+              return editorLines.updateIn(
+                [editor, type, provider],
+                marks => typeMarks,
+              );
+            },
+            this._model.state.editorLines,
+          );
           this._model.setState({editorLines: newEditorLines});
         },
       ),
