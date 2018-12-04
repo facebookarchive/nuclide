@@ -16,7 +16,10 @@ import type {RemoteTransferService} from '../../../nuclide-remote-transfer';
 import type {Action} from '../types';
 import type {FileTreeNode} from '../FileTreeNode';
 import type CwdApi from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {StatusCodeNumberValue} from '../../../nuclide-hg-rpc/lib/types';
+import type {
+  StatusCodeNumberValue,
+  RevisionInfo,
+} from '../../../nuclide-hg-rpc/lib/types';
 import type {RemoteProjectsService} from '../../../nuclide-remote-projects';
 import type {WorkingSet} from '../../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../../nuclide-working-sets/lib/types';
@@ -133,6 +136,7 @@ export const FOCUS = 'SELECTION:FOCUS';
 export const UNFOCUS = 'SELECTION:UNFOCUS';
 export const CLEAR_SELECTED = 'SELECTION:CLEAR_SELECTED';
 export const CLEAR_FOCUSED = 'SELECTION:CLEAR_FOCUSED';
+export const CHANGE_WORKING_REVISION = 'CHANGE_WORKING_REVISION';
 
 export function setCwd(rootKey: ?string): Action {
   return {
@@ -882,4 +886,8 @@ export function clearSelected(): Action {
 
 export function clearFocused(): Action {
   return {type: CLEAR_FOCUSED};
+}
+
+export function changeWorkingRevision(revision: ?RevisionInfo): Action {
+  return {type: CHANGE_WORKING_REVISION, revision};
 }

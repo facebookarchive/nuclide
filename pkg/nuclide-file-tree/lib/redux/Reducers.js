@@ -84,6 +84,7 @@ const DEFAULT_STATE: AppState = {
   vcsStatuses: Immutable.Map(),
   usePreviewTabs: false,
   focusEditorOnFileSelection: true,
+  currentWorkingRevision: null,
 };
 
 function reduceState(state_: AppState, action: Action): AppState {
@@ -250,6 +251,11 @@ function reduceState(state_: AppState, action: Action): AppState {
       };
     case Actions.CLEAR_FOCUSED:
       return clearFocused(state);
+    case Actions.CHANGE_WORKING_REVISION:
+      return {
+        ...state,
+        currentWorkingRevision: action.revision,
+      };
     default:
       break;
   }

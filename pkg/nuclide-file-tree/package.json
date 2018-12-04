@@ -47,6 +47,11 @@
       "versions": {
         "0.0.0": "provideFileTreeAdditionalLogFilesProvider"
       }
+    },
+    "nuclide-services.diff-compare-id-changes": {
+      "versions": {
+        "0.0.0": "getCompareIdChanges"
+      }
     }
   },
   "deserializers": {

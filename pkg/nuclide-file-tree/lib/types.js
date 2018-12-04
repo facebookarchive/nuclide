@@ -21,6 +21,7 @@ import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {SelectionRange} from './FileTreeSelectionRange';
 import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/types';
 
 export type Roots = Immutable.OrderedMap<NuclideUri, FileTreeNode>;
 
@@ -142,6 +143,7 @@ export type AppState = {|
   >,
   usePreviewTabs: boolean,
   focusEditorOnFileSelection: boolean,
+  currentWorkingRevision: ?RevisionInfo,
 |};
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -721,4 +723,5 @@ export type Action =
       node: FileTreeNode,
     |}
   | {|type: 'SELECTION:CLEAR_SELECTED'|}
-  | {|type: 'SELECTION:CLEAR_FOCUSED'|};
+  | {|type: 'SELECTION:CLEAR_FOCUSED'|}
+  | {|type: 'CHANGE_WORKING_REVISION', revision: ?RevisionInfo|};
