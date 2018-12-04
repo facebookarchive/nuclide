@@ -34,6 +34,7 @@ type StateType = {
   bpId: string,
   enabledChecked: boolean,
   condition: string,
+  logMessage: string,
 };
 
 export default class BreakpointConfigComponent extends React.Component<
@@ -53,6 +54,7 @@ export default class BreakpointConfigComponent extends React.Component<
       bpId: this.props.breakpoint.getId(),
       enabledChecked: this.props.breakpoint.enabled,
       condition: this.props.breakpoint.condition ?? '',
+      logMessage: this.props.breakpoint.logMessage ?? '',
     };
 
     const model = this.props.service.getModel();
@@ -98,7 +100,11 @@ export default class BreakpointConfigComponent extends React.Component<
     const {enabledChecked} = this.state;
     service.enableOrDisableBreakpoints(enabledChecked, this.props.breakpoint);
     const condition = this.state.condition.trim();
-    if (condition === (breakpoint.condition ?? '')) {
+    const logMessage = this.state.logMessage.trim();
+    if (
+      condition === (breakpoint.condition ?? '') &&
+      condition === (breakpoint.logMessage ?? '')
+    ) {
       this.props.onDismiss();
       return;
     }
@@ -115,12 +121,16 @@ export default class BreakpointConfigComponent extends React.Component<
     if (condition !== '') {
       bp.condition = condition;
     }
+    if (logMessage !== '') {
+      bp.logMessage = logMessage;
+    }
 
     await service.addUIBreakpoints([bp]);
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_UPDATE_CONDITION, {
       path: breakpoint.uri,
       line: breakpoint.line,
       condition,
+      logMessage,
       fileExtension: nuclideUri.extname(breakpoint.uri),
     });
     this.props.onDismiss();
@@ -166,6 +176,22 @@ export default class BreakpointConfigComponent extends React.Component<
             This expression will be evaluated each time the corresponding line
             is hit, but the debugger will only break execution if the expression
             evaluates to true.
+          </label>
+          <div className="block">
+            <AtomInput
+              placeholderText="Breakpoint log message..."
+              value={this.state.logMessage}
+              size="sm"
+              onDidChange={value => this.setState({logMessage: value})}
+            />
+          </div>
+          <label>
+            {
+              'This message will be logged into the Nuclide console each time \
+              the corresponding line is hit. The message can be interpolated \
+              with expressions by using curly braces. Example: "Counter: \
+              {counter}".'
+            }
           </label>
           <div className="debugger-bp-config-actions">
             <ButtonGroup>
