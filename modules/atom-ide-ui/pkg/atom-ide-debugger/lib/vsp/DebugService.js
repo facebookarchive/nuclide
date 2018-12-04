@@ -1085,6 +1085,12 @@ export default class DebugService implements IDebugService {
         ) {
           bp.condition = breakpoint.condition;
         }
+        if (
+          breakpoint.logMessage != null &&
+          breakpoint.logMessage.trim() !== ''
+        ) {
+          bp.logMessage = breakpoint.logMessage;
+        }
         return bp;
       });
     } catch (e) {}
@@ -1854,6 +1860,9 @@ export default class DebugService implements IDebugService {
         }
         if (bp.condition != null && bp.condition !== '') {
           bpToSend.condition = bp.condition;
+        }
+        if (bp.logMessage != null && bp.logMessage !== '') {
+          bpToSend.logMessage = bp.logMessage;
         }
         return bpToSend;
       }),

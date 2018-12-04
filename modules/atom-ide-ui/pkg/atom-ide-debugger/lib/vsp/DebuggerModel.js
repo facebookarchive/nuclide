@@ -1137,6 +1137,7 @@ export class Breakpoint implements IBreakpoint {
   column: number;
   enabled: boolean;
   condition: ?string;
+  logMessage: ?string;
   adapterData: any;
   hitCount: ?number;
 
@@ -1147,6 +1148,7 @@ export class Breakpoint implements IBreakpoint {
     column: number,
     enabled: boolean,
     condition: ?string,
+    logMessage: ?string,
     adapterData?: any,
   ) {
     this.uri = uri;
@@ -1164,6 +1166,11 @@ export class Breakpoint implements IBreakpoint {
       this.condition = condition;
     } else {
       this.condition = null;
+    }
+    if (logMessage != null && logMessage.trim() !== '') {
+      this.logMessage = logMessage;
+    } else {
+      this.logMessage = null;
     }
   }
 
@@ -1287,6 +1294,7 @@ export class Model implements IModel {
           uiBp.column,
           uiBp.enabled,
           uiBp.condition,
+          uiBp.logMessage,
         ),
       );
     }
@@ -1410,6 +1418,7 @@ export class Model implements IModel {
         uiBp.column,
         uiBp.enabled,
         uiBp.condition,
+        uiBp.logMessage,
       );
       bp.verified = true;
       return bp;
@@ -1580,6 +1589,7 @@ export class Model implements IModel {
               uiBp.column,
               uiBp.enabled,
               uiBp.condition,
+              uiBp.logMessage,
             ),
           );
         } else {

@@ -266,6 +266,7 @@ export interface IUIBreakpoint {
   +column: number;
   enabled: boolean;
   condition?: string;
+  logMessage?: string;
 }
 
 export interface IExceptionBreakpoint extends IEnableable {
@@ -478,6 +479,7 @@ export interface IBreakpoint extends IEnableable {
   +line: number;
   +column: number;
   +condition: ?string;
+  +logMessage: ?string;
   +verified: boolean;
   +idFromAdapter: ?number;
   +adapterData?: any;
