@@ -31,7 +31,8 @@ type Props = {
 
 type State = {
   hoveredProviderName: ?string,
-  secondsSinceMount: number,
+  secondsSinceTitleChange: string,
+  titleChangeTimestamp: number,
   visible: boolean,
   recentProgress: number,
 };
@@ -52,18 +53,20 @@ export default class TaskRunnerStatusComponent extends React.Component<
   _hoveredProviderName: BehaviorSubject<?string> = new BehaviorSubject(null);
   _disposables: UniversalDisposable = new UniversalDisposable();
   _intervalID: ?IntervalID;
-  _mountTimestamp: number = 0;
 
   state: State = {
     hoveredProviderName: null,
-    secondsSinceMount: 0,
+    secondsSinceTitleChange: '0.1',
+    titleChangeTimestamp: 0,
     visible: false,
     recentProgress: MinimumTaskProgress,
   };
 
   _tickUpdateSeconds() {
-    const timenow = Date.now() - this._mountTimestamp;
-    this.setState({secondsSinceMount: timenow / 1000});
+    const timenow = Date.now() - this.state.titleChangeTimestamp;
+    this.setState({
+      secondsSinceTitleChange: Math.max(timenow / 1000, 0.1).toFixed(1),
+    });
   }
 
   constructor() {
@@ -84,10 +87,11 @@ export default class TaskRunnerStatusComponent extends React.Component<
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const {taskIsRunning, progress, outcome} = this.props;
+    const {taskIsRunning, progress, outcome, bulletin} = this.props;
     const {visible} = this.state;
     if (visible && !prevState.visible) {
       this._startTimer();
+      this._setTitleChangeTimestamp();
     }
     if (!visible && prevState.visible) {
       this._stopTimer();
@@ -95,8 +99,11 @@ export default class TaskRunnerStatusComponent extends React.Component<
     if (taskIsRunning && !visible) {
       this.setState({visible: true});
     }
-    if (!taskIsRunning) {
-      this._stopTimer();
+    if (
+      bulletin != null &&
+      bulletin.title.message !== prevProps.bulletin?.title.message
+    ) {
+      this._setTitleChangeTimestamp();
     }
 
     let progressTargetValue = this.state.recentProgress;
@@ -124,9 +131,15 @@ export default class TaskRunnerStatusComponent extends React.Component<
     this._disposables.dispose();
   }
 
+  _setTitleChangeTimestamp(): void {
+    this.setState({
+      titleChangeTimestamp: Date.now(),
+      secondsSinceTitleChange: '0.1',
+    });
+  }
+
   _startTimer(): void {
     this._stopTimer();
-    this._mountTimestamp = Date.now();
     this._intervalID = setInterval(() => {
       this._tickUpdateSeconds();
     }, 100);
@@ -141,11 +154,13 @@ export default class TaskRunnerStatusComponent extends React.Component<
 
   _defaultTitle(): React.Node {
     return (
-      <div>
-        Running task...
-        <span> {this.state.secondsSinceMount.toFixed(1)} </span>
-        sec
-      </div>
+      <>
+        {'Running task... '}
+        <span className={classnames('task-seconds')}>
+          {this.state.secondsSinceTitleChange}
+        </span>
+        {' sec'}
+      </>
     );
   }
 
@@ -198,7 +213,15 @@ export default class TaskRunnerStatusComponent extends React.Component<
         );
       case 'log':
       default:
-        return <>{title.message}</>;
+        return (
+          <>
+            {`${title.message.slice(0, 24)} `}
+            <span className={classnames('task-seconds')}>
+              {this.state.secondsSinceTitleChange}
+            </span>
+            {' sec'}
+          </>
+        );
     }
   };
 
