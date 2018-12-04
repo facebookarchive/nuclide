@@ -57,12 +57,39 @@
   }
 }
 
-.nuclide-taskbar-status-provider-green {
-  color: @text-color;
-  font-size: 0.9em;
-  font-style: italic;
-  line-height:2;
-  z-index:4;
+.outcome-success {
+  .nuclide-taskbar-status-container > .nuclide-ui-full-width-progress-bar > .nuclide-ui-full-width-progress-bar-bar {
+    background-color: @text-color-success;
+  }
+  .nuclide-taskbar-status-container >
+  .nuclide-taskbar-status-providers-container >
+  .nuclide-taskbar-status-provider {
+    color: @text-color-success;
+  }
+}
+.outcome-cancelled {
+  .nuclide-taskbar-status-container > .nuclide-ui-full-width-progress-bar > .nuclide-ui-full-width-progress-bar-bar {
+    background-color: @text-color-warning;
+  }
+  .nuclide-taskbar-status-container >
+  .nuclide-taskbar-status-providers-container >
+  .nuclide-taskbar-status-provider {
+    color: @text-color-warning;
+  }
+}
+.outcome-error {
+  .nuclide-taskbar-status-container > .nuclide-ui-full-width-progress-bar > .nuclide-ui-full-width-progress-bar-bar {
+    background-color: @text-color-error;
+  }
+  .nuclide-taskbar-status-container >
+  .nuclide-taskbar-status-providers-container >
+  .nuclide-taskbar-status-provider {
+    color: @text-color-error;
+  }
+}
+
+.nuclide-taskbar-status-tooltip-content {
+  line-height: 1.2;
 }
 
 div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-arrow {
@@ -84,14 +111,18 @@ div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
     height: 21px;
     overflow: hidden;
     min-width: 26px;
-    color: @text-color;
-    padding: 0.1em 1em;
+    padding: 0em 1em;
     cursor: default;
     width:100%;
     font-family: Menlo, Consolas, DejaVu Sans Mono, monospace;
+
+    font-size: 0.9em;
+    font-style: italic;
+    line-height:2;
+    z-index:4;
 }
 
-.nuclide-taskbar-status-provider span {
+.nuclide-taskbar-status-provider span.task-seconds {
   color: lighten(@ui-site-color-1, 15%);
 }
 
@@ -108,7 +139,6 @@ div.tooltip.nuclide-taskbar-status-tooltip-green .tooltip-inner {
   font-size:11px;
   top: 1px;
 }
-
 
 .nuclide-taskbar-status-tooltip-content {
   padding: 0.75em 0.975em;

@@ -83,9 +83,7 @@ export class BuckConsoleParser {
       if (prefix.length > 24) {
         prefix = prefix.slice(0, 24);
       }
-      // TODO refactor this logic into a react scoped class that can construct
-      // these as react elements.
-      mem.title = `${prefix}<span>${match[2]}</span> ${match[3]}`;
+      mem.title = `${prefix}`;
     }
     /* this block parses the first subsequent Building... line
      * (i.e. " - fldr/com/facebook/someTarget:someTarget#header-info 2.3 sec")
@@ -98,9 +96,7 @@ export class BuckConsoleParser {
         if (target.length > 12) {
           target = target.slice(0, 12);
         }
-        mem.title = `Building ../${target} <span>${match[2]}</span> ${
-          match[3]
-        }`;
+        mem.title = `Building ../${target}`;
         mem.addedBuildTargetToTitle = true;
       }
     }

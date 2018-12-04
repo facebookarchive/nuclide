@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {TaskRunnerBulletinStatus} from '../../../nuclide-task-runner/lib/types';
+import type {
+  TaskRunnerBulletinStatus,
+  TaskRunnerBulletinTitle,
+  TaskOutcome,
+} from '../../../nuclide-task-runner/lib/types';
 
 import classnames from 'classnames';
 import FullWidthProgressBar from 'nuclide-commons-ui/FullWidthProgressBar';
@@ -20,6 +24,7 @@ import TaskRunnerStatusTooltip from './TaskRunnerStatusTooltip';
 
 type Props = {
   taskIsRunning: boolean,
+  outcome: ?TaskOutcome,
   bulletin: ?TaskRunnerBulletinStatus,
   progress: ?number,
 };
@@ -28,6 +33,14 @@ type State = {
   hoveredProviderName: ?string,
   secondsSinceMount: number,
   visible: boolean,
+  recentProgress: number,
+};
+
+const MinimumTaskProgress: number = 0.01;
+const LevelToIcon = {
+  success: 'icon-check',
+  error: 'icon-alert',
+  warning: 'icon-alert',
 };
 
 export default class TaskRunnerStatusComponent extends React.Component<
@@ -45,6 +58,7 @@ export default class TaskRunnerStatusComponent extends React.Component<
     hoveredProviderName: null,
     secondsSinceMount: 0,
     visible: false,
+    recentProgress: MinimumTaskProgress,
   };
 
   _tickUpdateSeconds() {
@@ -70,17 +84,38 @@ export default class TaskRunnerStatusComponent extends React.Component<
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (this.state.visible && !prevState.visible) {
+    const {taskIsRunning, progress, outcome} = this.props;
+    const {visible} = this.state;
+    if (visible && !prevState.visible) {
       this._startTimer();
     }
-    if (!this.state.visible && prevState.visible) {
+    if (!visible && prevState.visible) {
       this._stopTimer();
     }
-    if (this.props.taskIsRunning && !this.state.visible) {
+    if (taskIsRunning && !visible) {
       this.setState({visible: true});
     }
-    if (!this.props.taskIsRunning) {
+    if (!taskIsRunning) {
       this._stopTimer();
+    }
+
+    let progressTargetValue = this.state.recentProgress;
+    if (progress != null) {
+      progressTargetValue = Math.max(progress, MinimumTaskProgress);
+    } else if (outcome != null) {
+      // A race condition exists where { progress: 1 } won't reach here,
+      // so we're overwriting progress for successful tasks to 100%
+      if (outcome.type === 'success') {
+        progressTargetValue = 1;
+      }
+    } else {
+      // if progress && outcome are both null, then the Task has just started,
+      // so progress should be MinimumTaskProgress until progress is set by buck
+      progressTargetValue = MinimumTaskProgress;
+    }
+
+    if (this.state.recentProgress !== progressTargetValue) {
+      this.setState({recentProgress: progressTargetValue});
     }
   }
 
@@ -138,42 +173,47 @@ export default class TaskRunnerStatusComponent extends React.Component<
     }
     return (
       <div className="nuclide-taskbar-status-container">
-        <FullWidthProgressBar
-          progress={this.props.progress == null ? 0 : this.props.progress}
-        />
+        <FullWidthProgressBar progress={this.state.recentProgress} />
         <div className="nuclide-taskbar-status-providers-container">
           {this._renderProvider(
             serverStatus,
             this.state.hoveredProviderName != null,
           )}
-          {clearButton}
+          {this.props.taskIsRunning ? null : clearButton}
         </div>
       </div>
     );
   }
 
+  _reactNodeFromTitle = (title: TaskRunnerBulletinTitle): React.Node => {
+    switch (title.level) {
+      case 'success':
+      case 'error':
+      case 'warning':
+        return (
+          <>
+            <span className={classnames('icon ' + LevelToIcon[title.level])} />
+            {title.message}
+          </>
+        );
+      case 'log':
+      default:
+        return <>{title.message}</>;
+    }
+  };
+
   _renderProvider = (status: any, hovered: boolean): React.Node => {
     const {provider} = status;
+    const title = this.props.bulletin?.title;
     return (
       <div
-        className={classnames(
-          'nuclide-taskbar-status-provider',
-          'nuclide-taskbar-status-provider-green',
-        )}
+        className={classnames('nuclide-taskbar-status-provider')}
         onMouseOver={this._onMouseOver}
         onMouseOut={this._onMouseOut}
         data-name={status.provider.name}
         key={status.provider.name}
         ref={this._setTooltipRef}>
-        {this.props.bulletin?.title == null ? (
-          this._defaultTitle()
-        ) : (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: this.props.bulletin?.title.message,
-            }}
-          />
-        )}
+        {title == null ? this._defaultTitle() : this._reactNodeFromTitle(title)}
         <div className="fb-on-demand-beta-small nuclide-taskbar-beta-small" />
         {this.state.hoveredProviderName !== provider.name ||
         this.props.bulletin?.detail == null ? null : (
