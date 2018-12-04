@@ -17,10 +17,12 @@ import CommandDispatcher from './CommandDispatcher';
 import ConfigFile from './ConfigFile';
 import Debugger from './Debugger';
 import DebuggerAdapterFactory from './DebuggerAdapterFactory';
+import fs from 'fs';
 import {getNuclideVersion} from 'nuclide-commons/system-info';
 import HelpCommand from './HelpCommand';
 import log4js from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import os from 'os';
 import QuitCommand from './QuitCommand';
 import yargs from 'yargs';
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
@@ -28,6 +30,25 @@ import * as rawAnalyticsService from 'nuclide-analytics/lib/track';
 import {Observable} from 'rxjs';
 
 function buildLogger(): log4js$Logger {
+  // there are things in nuclide while will still try to log to
+  // $TMP/nuclide-$USER-logs, which won't exist if the user
+  // has never run nuclide.
+  const nuclideLoggingDir = nuclideUri.join(
+    os.tmpdir(),
+    `nuclide-${os.userInfo().username}-logs`,
+  );
+  try {
+    if (!fs.existsSync(nuclideLoggingDir)) {
+      fs.mkdirSync(nuclideLoggingDir);
+    }
+  } catch (ex) {
+    // This isn't fatal, it just means that the user will get a message
+    // and a bit of logging will be lost.
+    process.stderr.write(
+      `Could not create logging directory ${nuclideLoggingDir}\n`,
+    );
+  }
+
   const args = yargs.argv;
   const level = (args.loglevel || 'FATAL').toUpperCase();
   const validLevels = new Set([
