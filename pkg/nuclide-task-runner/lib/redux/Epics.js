@@ -20,6 +20,7 @@ import type {
   TaskOptions,
   TaskRunnerState,
 } from '../types';
+import textFromOutcomeAction from './textFromOutcomeAction';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
 import {isConsoleVisible} from 'nuclide-commons-atom/pane-item';
@@ -579,13 +580,11 @@ export function printTaskCanceledEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.TASK_STOPPED).map(action => {
     invariant(action.type === Actions.TASK_STOPPED);
-    const {type} = action.payload.taskStatus.metadata;
     const {taskRunner} = action.payload;
-    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
     return {
       type: Actions.TASK_MESSAGE,
       payload: {
-        message: {text: `${capitalizedType} cancelled.`, level: 'warning'},
+        message: {text: textFromOutcomeAction(action), level: 'warning'},
         taskRunner,
       },
     };
@@ -598,23 +597,11 @@ export function printTaskSucceededEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.TASK_COMPLETED).map(action => {
     invariant(action.type === Actions.TASK_COMPLETED);
-    const {type, label} = action.payload.taskStatus.metadata;
     const {taskRunner} = action.payload;
-    let text;
-    if (
-      type !== 'build-launch-debug' &&
-      type !== 'launch-debug' &&
-      type !== 'attach-debug'
-    ) {
-      text = label + ' succeeded.';
-    } else {
-      // "Debug succeeded." makes no sense here.
-      text = 'Debugger started.';
-    }
     return {
       type: Actions.TASK_MESSAGE,
       payload: {
-        message: {text, level: 'success'},
+        message: {text: textFromOutcomeAction(action), level: 'success'},
         taskRunner,
       },
     };

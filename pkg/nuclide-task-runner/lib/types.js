@@ -39,7 +39,8 @@ export type AppState = {
 };
 
 export type TaskOutcome = {
-  type: 'COMPLETED' | 'ERRORED' | 'STOPPED',
+  type: 'success' | 'cancelled' | 'error',
+  message: string,
 };
 
 export type ToolbarStatePreference = {
@@ -56,8 +57,13 @@ export type SerializedAppState = {
   version?: number,
 };
 
+export type TaskRunnerBulletinTitle = {
+  message: string,
+  level?: 'log' | 'success' | 'warning' | 'error',
+};
+
 export type TaskRunnerBulletinStatus = {
-  title: {message: string, error: boolean, seconds: ?number},
+  title: TaskRunnerBulletinTitle,
   detail: React.Element<any>,
 };
 

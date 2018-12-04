@@ -17,6 +17,7 @@ import type {
   TaskStatus,
   TaskOutcome,
 } from '../types';
+import textFromOutcomeAction from './textFromOutcomeAction';
 import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
 
 import * as Actions from './Actions';
@@ -157,11 +158,11 @@ export function mostRecentTaskOutcome(
 ): ?TaskOutcome {
   switch (action.type) {
     case Actions.TASK_COMPLETED:
-      return {type: 'COMPLETED'};
+      return {type: 'success', message: textFromOutcomeAction(action)};
     case Actions.TASK_ERRORED:
-      return {type: 'ERRORED'};
+      return {type: 'error', message: textFromOutcomeAction(action)};
     case Actions.TASK_STOPPED:
-      return {type: 'STOPPED'};
+      return {type: 'cancelled', message: textFromOutcomeAction(action)};
     case Actions.TASK_STARTED:
       return null;
     default:

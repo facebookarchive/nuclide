@@ -15,6 +15,7 @@ import type {
   TaskMetadata,
   TaskRunnerState,
   TaskRunnerBulletinStatus,
+  TaskRunnerBulletinTitle,
   TaskOutcome,
 } from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
@@ -72,21 +73,21 @@ export default class Toolbar extends React.Component<Props, State> {
     this._setTaskBarStatusGk();
   }
 
-  outcomeToMessage(outcome: TaskOutcome): string {
+  _outcomeToBulletinTitle(outcome: TaskOutcome): TaskRunnerBulletinTitle {
     switch (outcome.type) {
-      case 'COMPLETED':
-        return 'Task Completed';
-      case 'ERRORED':
-        return 'Error Occurred';
-      case 'STOPPED':
-        return 'Task Stopped';
+      case 'success':
+        return {message: outcome.message, level: outcome.type};
+      case 'error':
+        return {message: outcome.message, level: outcome.type};
+      case 'cancelled':
+        return {message: outcome.message, level: 'warning'};
       default:
         (outcome.type: empty);
         throw new Error('impossible');
     }
   }
 
-  checkOutcome(
+  _checkOutcome(
     outcome: TaskOutcome,
     prevOutcome: ?TaskOutcome,
     bulletin: ?TaskRunnerBulletinStatus,
@@ -97,11 +98,7 @@ export default class Toolbar extends React.Component<Props, State> {
       this.setState({
         bulletin: {
           detail,
-          title: {
-            message: this.outcomeToMessage(outcome),
-            error: false,
-            seconds: 0,
-          },
+          title: this._outcomeToBulletinTitle(outcome),
         },
       });
     }
@@ -129,7 +126,7 @@ export default class Toolbar extends React.Component<Props, State> {
     }
 
     if (outcome != null) {
-      this.checkOutcome(outcome, prevProps.outcome, this.state.bulletin);
+      this._checkOutcome(outcome, prevProps.outcome, this.state.bulletin);
     }
   }
 
@@ -186,6 +183,7 @@ export default class Toolbar extends React.Component<Props, State> {
         <TaskRunnerStatusComponent
           bulletin={this.state.bulletin}
           progress={this.props.progress}
+          outcome={this.props.outcome}
           taskIsRunning={this.props.taskIsRunning}
         />
       );
@@ -197,10 +195,11 @@ export default class Toolbar extends React.Component<Props, State> {
         />
       );
     }
-
+    const outcomeType = this.props.outcome?.type;
+    const outcomeClass = outcomeType != null ? `outcome-${outcomeType}` : '';
     return (
       <div className={`${className} padded`}>
-        <div className="nuclide-task-runner-toolbar-contents">
+        <div className={`nuclide-task-runner-toolbar-contents ${outcomeClass}`}>
           <span className="inline-block" style={dropdownVisibility}>
             <Dropdown
               buttonComponent={ButtonComponent}
