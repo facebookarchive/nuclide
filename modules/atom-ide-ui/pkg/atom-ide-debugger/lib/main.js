@@ -62,6 +62,7 @@ import os from 'os';
 import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 import {sortMenuGroups} from 'nuclide-commons/menuUtils';
+import passesGK from 'nuclide-commons/passesGK';
 
 const DATATIP_PACKAGE_NAME = 'debugger-datatip';
 
@@ -663,6 +664,7 @@ class Activation {
           onDismiss={() => {
             ReactDOM.unmountComponentAtNode(container);
           }}
+          allowLogMessage={passesGK('nuclide_debugger_logging_breakpoints')}
         />,
         container,
       );

@@ -28,6 +28,7 @@ type PropsType = {
   onDismiss: () => void,
   breakpoint: IBreakpoint,
   service: IDebugService,
+  allowLogMessage: Promise<boolean>,
 };
 
 type StateType = {
@@ -35,6 +36,7 @@ type StateType = {
   enabledChecked: boolean,
   condition: string,
   logMessage: string,
+  allowLogMessage: boolean,
 };
 
 export default class BreakpointConfigComponent extends React.Component<
@@ -55,6 +57,7 @@ export default class BreakpointConfigComponent extends React.Component<
       enabledChecked: this.props.breakpoint.enabled,
       condition: this.props.breakpoint.condition ?? '',
       logMessage: this.props.breakpoint.logMessage ?? '',
+      allowLogMessage: false,
     };
 
     const model = this.props.service.getModel();
@@ -69,6 +72,11 @@ export default class BreakpointConfigComponent extends React.Component<
         }
         this.forceUpdate();
       }),
+      Observable.fromPromise(this.props.allowLogMessage).subscribe(
+        allowLogMessage => {
+          this.setState({allowLogMessage});
+        },
+      ),
     );
   }
 
@@ -136,6 +144,30 @@ export default class BreakpointConfigComponent extends React.Component<
     this.props.onDismiss();
   }
 
+  _renderLogMessage(): ?React.Node {
+    if (!this.state.allowLogMessage) {
+      return null;
+    }
+
+    return (
+      <>
+        <div className="block">
+          <AtomInput
+            placeholderText="Breakpoint log message..."
+            value={this.state.logMessage}
+            size="sm"
+            onDidChange={value => this.setState({logMessage: value})}
+          />
+        </div>
+        <label>
+          This message will be logged to the Nuclide console each time the
+          corresponding line is hit. The message can be interpolated with
+          expressions by using curly braces. Example: "Counter: {'{counter}'}".
+        </label>
+      </>
+    );
+  }
+
   render(): React.Node {
     return (
       <Modal onDismiss={this.props.onDismiss}>
@@ -177,22 +209,7 @@ export default class BreakpointConfigComponent extends React.Component<
             is hit, but the debugger will only break execution if the expression
             evaluates to true.
           </label>
-          <div className="block">
-            <AtomInput
-              placeholderText="Breakpoint log message..."
-              value={this.state.logMessage}
-              size="sm"
-              onDidChange={value => this.setState({logMessage: value})}
-            />
-          </div>
-          <label>
-            {
-              'This message will be logged into the Nuclide console each time \
-              the corresponding line is hit. The message can be interpolated \
-              with expressions by using curly braces. Example: "Counter: \
-              {counter}".'
-            }
-          </label>
+          {this._renderLogMessage()}
           <div className="debugger-bp-config-actions">
             <ButtonGroup>
               <Button onClick={this.props.onDismiss}>Cancel</Button>
