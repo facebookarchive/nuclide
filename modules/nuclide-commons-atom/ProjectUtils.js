@@ -32,6 +32,8 @@ function formatProjectNameWord(word: string): string {
       return 'WWW';
     case 'ios':
       return 'iOS';
+    case '':
+      return '';
     default:
       return word[0].toUpperCase() + word.slice(1);
   }
@@ -44,10 +46,13 @@ function humanizeProjectName(name: string): string {
   }
   const hasCapitalLetters = /[A-Z]/.test(name);
   const id = x => x;
-  return name
-    .split(/[-_]+/)
-    .map(hasCapitalLetters ? id : formatProjectNameWord)
-    .join(' ');
+  return (
+    name
+      .split(/[-_]+/)
+      .filter(Boolean)
+      .map(hasCapitalLetters ? id : formatProjectNameWord)
+      .join(' ') || name
+  );
 }
 
 /**

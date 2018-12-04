@@ -25,6 +25,8 @@ describe('getLabelFromPath', () => {
       ['./abc/def/.my_project.project.toml', 'My Project'],
       ['./abc/def/.www.project.toml', 'www'],
       ['./abc/def/.hello', '.hello'],
+      ['./abc/def/_hello.project.toml', 'Hello'],
+      ['./abc/def/___', '___'],
     ]);
 
     pathsToExpectedLabels.forEach((label, path) => {
