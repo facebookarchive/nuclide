@@ -105,6 +105,12 @@ export type IProcessConfig = {|
   // adapter. If the callback returns an IDisposable, the disposable will
   // be disposed by the service when the corresponding debugging session stops.
   +onDebugStartedCallback?: (instance: IVspInstance) => IDisposable | void,
+
+  // If specified, this callback is invoked once the debug session is running.
+  // At this point the debugger is attached to the proecss. If the callback
+  // returns an IDisposable, the disposable will be disposed by the service
+  // when the corresponding debugging session stops.
+  +onDebugRunningCallback?: (instance: IVspInstance) => IDisposable | void,
 |};
 
 export interface IVsAdapterSpawner {

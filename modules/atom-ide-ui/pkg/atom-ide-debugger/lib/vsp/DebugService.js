@@ -1396,6 +1396,7 @@ export default class DebugService implements IDebugService {
         adapterType,
         onDebugStartingCallback,
         onDebugStartedCallback,
+        onDebugRunningCallback,
       } = configuration;
 
       track(AnalyticsEvents.DEBUGGER_START, {
@@ -1475,6 +1476,14 @@ export default class DebugService implements IDebugService {
           process.clearProcessStartingFlag();
           this._onDebuggerModeChanged(process, DebuggerMode.RUNNING);
           this._viewModel.setFocusedProcess(process, false);
+          if (onDebugRunningCallback != null && session != null) {
+            // Callbacks are passed IVspInstance which exposes only certain
+            // methods to them, rather than getting the full session.
+            const teardown = onDebugRunningCallback(instanceInterface(session));
+            if (teardown != null) {
+              sessionTeardownDisposables.add(teardown);
+            }
+          }
         }
       };
 
