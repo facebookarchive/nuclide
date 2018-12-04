@@ -192,7 +192,7 @@ export class RemoteConnection {
       // should restart the handshake process with same config.
       // But there are some errors for which we don't want to do that
       // (like if the connection fails because the directory doesn't exist).
-      if (e.code === 'ENOENT') {
+      if (e.code === 'ENOENT' || e.name === 'ProjectLoadError') {
         e.sshHandshakeErrorType = 'DIRECTORY_NOT_FOUND';
         throw e;
       }
