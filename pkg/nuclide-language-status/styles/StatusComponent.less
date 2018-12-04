@@ -1,4 +1,5 @@
 @import "ui-variables";
+@import "../../nuclide-scrollbar-indicators/styles/scroll-indicators";
 
 @color-info: lighten(@background-color-info, 20%);
 @color-warning: lighten(@background-color-warning, 20%);
@@ -10,6 +11,7 @@
 
 .nuclide-language-status-container {
   position: absolute;
+  right: @scrollbar-width;
   width: 100%;
   z-index: 3;
   font-family: @font-family;
@@ -37,7 +39,8 @@
   display: flex;
   position: absolute;
   right: 0;
-  top: 1px;
+  top: 0px;
+  z-index: -1;
 }
 
 .nuclide-language-status-provider {
@@ -85,10 +88,6 @@
 .nuclide-language-status-icon:before {
   display: inline;
   margin: 0 5px;
-}
-
-.nuclide-language-status-settings-container {
-  vertical-align:;
 }
 
 .btn.btn.nuclide-ui-dropdown-flat.nuclide-language-status-settings-dropdown {
