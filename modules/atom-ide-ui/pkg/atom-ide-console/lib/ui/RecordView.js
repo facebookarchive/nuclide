@@ -108,7 +108,12 @@ export default class RecordView extends React.Component<Props> {
     const children = [];
     for (const expression of expressions) {
       if (!expression.hasChildren()) {
-        children.push(<SimpleValueComponent expression={expression} />);
+        children.push(
+          <SimpleValueComponent
+            hideExpressionName={true}
+            expression={expression}
+          />,
+        );
       } else {
         children.push(
           <ExpressionTreeComponent

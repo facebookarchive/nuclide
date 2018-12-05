@@ -18,6 +18,7 @@ import {TextRenderer} from './TextRenderer';
 
 type Props = {
   expression: IExpression,
+  hideExpressionName?: boolean,
 };
 
 const booleanRegex = /^true|false$/i;
@@ -112,7 +113,8 @@ export default class SimpleValueComponent extends React.Component<Props> {
         </span>
       );
     }
-    const renderedExpression = (
+    const hideExpressionName = Boolean(this.props.hideExpressionName);
+    const renderedExpression = hideExpressionName ? null : (
       <span className={ValueComponentClassNames.identifier}>
         {expression.name}
       </span>
@@ -120,7 +122,8 @@ export default class SimpleValueComponent extends React.Component<Props> {
     return (
       <span tabIndex={-1} className="native-key-bindings">
         {renderedExpression}
-        : {displayValue}
+        {hideExpressionName ? null : ':'}
+        {displayValue}
       </span>
     );
   }
