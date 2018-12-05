@@ -1732,9 +1732,11 @@ export function runCommand(
 export function observeExecution(
   workingDirectory: NuclideUri,
   args: Array<string>,
+  options?: {useMerge3?: boolean},
 ): ConnectableObservable<LegacyProcessMessage> {
   const execOptions = {
     cwd: workingDirectory,
+    ...options,
   };
   return hgObserveExecution(args, execOptions).publish();
 }

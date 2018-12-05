@@ -17,4 +17,5 @@ export type HgExecOptions = {|
   NO_HGPLAIN?: boolean,
   TTY_OUTPUT?: boolean,
   HGEDITOR?: string,
+  useMerge3?: boolean,
 |};

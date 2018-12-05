@@ -141,7 +141,7 @@ async function getHgExecParams(
     // Prevent user-specified merge tools from attempting to
     // open interactive editors.
     '--config',
-    'ui.merge=:merge',
+    options_.useMerge3 === true ? 'ui.merge=:merge3' : 'ui.merge=:merge',
   ];
   let sshCommand;
   // expandHomeDir is not supported on windows

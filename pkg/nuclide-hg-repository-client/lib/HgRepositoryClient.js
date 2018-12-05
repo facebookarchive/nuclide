@@ -160,6 +160,7 @@ export class HgRepositoryClient {
     isFetchingPathStatuses: Subject<boolean>,
     manualStatusRefreshRequests: Subject<void>,
     refreshLocksFilesObserver: Subject<Map<string, boolean>>,
+    useMerge3: boolean,
 
     // ----- START: New API state below -----
     currentlyRunningOperationProgress: BehaviorSubject<?HgOperationProgress>,
@@ -201,6 +202,7 @@ export class HgRepositoryClient {
       isLoading: true,
       bookmarks: [],
     });
+    this._sharedMembers.useMerge3 = false;
 
     this._sharedMembers.repoSubscriptions = this._sharedMembers.service
       .createRepositorySubscriptions(this._sharedMembers.workingDirectoryPath)
@@ -426,6 +428,10 @@ export class HgRepositoryClient {
   _conflictStateChanged(isInConflict: boolean): void {
     this._sharedMembers.isInConflict = isInConflict;
     this._sharedMembers.emitter.emit(DID_CHANGE_CONFLICT_STATE);
+  }
+
+  setMerge3Enabled(enabled: boolean): void {
+    this._sharedMembers.useMerge3 = enabled;
   }
 
   /**
@@ -1469,6 +1475,7 @@ export class HgRepositoryClient {
         .observeExecution(
           this._sharedMembers.workingDirectoryPath,
           operation.getArgs(),
+          {useMerge3: this._sharedMembers.useMerge3},
         )
         .refCount()
         .do(handleLegacyProcessMessages(`hg ${operation.name}`))
