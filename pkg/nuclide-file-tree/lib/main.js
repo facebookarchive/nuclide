@@ -10,7 +10,6 @@
  */
 
 import type {TerminalApi} from 'atom-ide-ui';
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/types';
 import type {ExportStoreData, Store} from './types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
@@ -419,21 +418,23 @@ class Activation {
     };
   }
 
-  getCompareIdChanges(): Observable<?RevisionInfo> {
-    return Observable.fromPromise(
-      passesGK('nuclide_file_tree_revision_selector'),
-    ).switchMap(revisionSelectionEnabled => {
-      if (!revisionSelectionEnabled) {
-        return Observable.empty();
-      } else {
-        return observableFromSubscribeFunction(cb => this._store.subscribe(cb))
-          .switchMap(() =>
-            Observable.of(this._store.getState().currentWorkingRevision),
-          )
-          .distinctUntilChanged();
-      }
-    });
-  }
+  // TODO: Figure out how to send active revision changes to the diff service
+  //  See Jordan's interactive scrollbar for reference
+  // getCompareIdChanges(): Observable<?RevisionInfo> {
+  //   return Observable.fromPromise(
+  //     passesGK('nuclide_file_tree_revision_selector'),
+  //   ).switchMap(revisionSelectionEnabled => {
+  //     if (!revisionSelectionEnabled) {
+  //       return Observable.empty();
+  //     } else {
+  //       return observableFromSubscribeFunction(cb => this._store.subscribe(cb))
+  //         .switchMap(() =>
+  //           Observable.of(this._store.getState().currentWorkingRevision),
+  //         )
+  //         .distinctUntilChanged();
+  //     }
+  //   });
+  // }
 
   _createView(): ViewModel {
     // Currently, we assume that only one will be created.
