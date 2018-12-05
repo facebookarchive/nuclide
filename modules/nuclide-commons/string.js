@@ -72,10 +72,27 @@ const longFormats = [
   [Number.MAX_VALUE, 'years ago', YEAR],
 ];
 
+const longFormatsNumbers = [
+  [0.7 * MINUTE, 'just now'],
+  [1.5 * MINUTE, '1 minute ago'],
+  [60 * MINUTE, 'minutes ago', MINUTE],
+  [1.5 * HOUR, '1 hour ago'],
+  [DAY, 'hours ago', HOUR],
+  [2 * DAY, 'yesterday'],
+  [7 * DAY, 'days ago', DAY],
+  [1.5 * WEEK, '1 week ago'],
+  [MONTH, 'weeks ago', WEEK],
+  [1.5 * MONTH, '1 month ago'],
+  [YEAR, 'months ago', MONTH],
+  [1.5 * YEAR, '1 year ago'],
+  [Number.MAX_VALUE, 'years ago', YEAR],
+];
+
 export function relativeDate(
   input_: number | Date,
   reference_?: number | Date,
   useShortVariant?: boolean = false,
+  useNumbersOnly?: boolean = false,
 ): string {
   let input = input_;
   let reference = reference_;
@@ -91,7 +108,11 @@ export function relativeDate(
   }
 
   const delta = reference - input;
-  const formats = useShortVariant ? shortFormats : longFormats;
+  const formats = useShortVariant
+    ? shortFormats
+    : useNumbersOnly
+      ? longFormatsNumbers
+      : longFormats;
   for (const [limit, relativeFormat, remainder] of formats) {
     if (delta < limit) {
       if (typeof remainder === 'number') {

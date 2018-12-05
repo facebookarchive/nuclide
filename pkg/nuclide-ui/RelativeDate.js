@@ -22,6 +22,7 @@ type Props = DefaultProps & {
   date: Date,
   delay?: number,
   shorten?: boolean,
+  useNumbersOnly?: boolean,
   withToolip?: boolean,
 };
 const DEFAULT_RERENDER_DELAY = 10000; // ms
@@ -38,6 +39,7 @@ export default class RelativeDate extends React.Component<Props> {
   static defaultProps: DefaultProps = {
     delay: DEFAULT_RERENDER_DELAY,
     shorten: false,
+    useNumbersOnly: false,
     withToolip: false,
   };
 
@@ -58,6 +60,7 @@ export default class RelativeDate extends React.Component<Props> {
       // eslint-disable-next-line no-unused-vars
       delay: _,
       shorten,
+      useNumbersOnly,
       withToolip,
       ...remainingProps
     } = this.props;
@@ -74,7 +77,7 @@ export default class RelativeDate extends React.Component<Props> {
               })
             : null
         }>
-        {relativeDate(date, undefined, shorten)}
+        {relativeDate(date, undefined, shorten, useNumbersOnly)}
       </span>
     );
   }
