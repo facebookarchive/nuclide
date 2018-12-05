@@ -893,22 +893,46 @@
         ]
       }
       {
-        'begin': '\\b(catch)\\b\\s*\\(\\s*'
+        'begin': '\\b(catch)\\s*(\\()'
         'beginCaptures':
           '1':
             'name': 'keyword.control.exception.catch.php'
-        'end': '([A-Za-z_][A-Za-z_0-9]*)\\s*((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)\\s*\\)'
-        'endCaptures':
-          '1':
-            'name': 'support.class.exception.php'
           '2':
-            'name': 'variable.other.php'
-          '3':
-            'name': 'punctuation.definition.variable.php'
+            'name': 'punctuation.definition.parameters.begin.bracket.round.php'
+        'end': '\\)'
+        'endCaptures':
+          '0':
+            'name': 'punctuation.definition.parameters.end.bracket.round.php'
         'name': 'meta.catch.php'
         'patterns': [
           {
             'include': '#namespace'
+          }
+          {
+            'match': '''(?xi)
+              ([a-z_\\x{7f}-\\x{7fffffff}][a-z0-9_\\x{7f}-\\x{7fffffff}]*)                 # Exception class
+              ((?:\\s*\\|\\s*[a-z_\\x{7f}-\\x{7fffffff}][a-z0-9_\\x{7f}-\\x{7fffffff}]*)*) # Optional additional exception classes
+              \\s*
+              ((\\$+)[a-z_\\x{7f}-\\x{7fffffff}][a-z0-9_\\x{7f}-\\x{7fffffff}]*)           # Variable
+            '''
+            'captures':
+              '1':
+                'name': 'support.class.exception.php'
+              '2':
+                'patterns': [
+                  {
+                    'match': '(?i)[a-z_\\x{7f}-\\x{7fffffff}][a-z0-9_\\x{7f}-\\x{7fffffff}]*'
+                    'name': 'support.class.exception.php'
+                  }
+                  {
+                    'match': '\\|'
+                    'name': 'punctuation.separator.delimiter.php'
+                  }
+                ]
+              '3':
+                'name': 'variable.other.php'
+              '4':
+                'name': 'punctuation.definition.variable.php'
           }
         ]
       }
