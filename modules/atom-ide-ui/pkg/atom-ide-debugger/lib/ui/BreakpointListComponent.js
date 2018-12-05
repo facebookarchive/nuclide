@@ -22,11 +22,13 @@ import {track} from 'nuclide-commons/analytics';
 import {ListView, ListViewItem} from 'nuclide-commons-ui/ListView';
 import classnames from 'classnames';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import {Observable} from 'rxjs';
 import {AnalyticsEvents} from '../constants';
 import {openSourceLocation} from '../utils';
 import {Section} from 'nuclide-commons-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {observeProjectPathsAll} from 'nuclide-commons-atom/projects';
+import passesGK from 'nuclide-commons/passesGK';
 
 type Props = {|
   service: IDebugService,
@@ -39,6 +41,7 @@ type State = {
   exceptionBreakpointsCollapsed: boolean,
   unavailableBreakpointsCollapsed: boolean,
   activeProjects: NuclideUri[],
+  supportsLogMessage: boolean,
 };
 
 export default class BreakpointListComponent extends React.Component<
@@ -50,7 +53,13 @@ export default class BreakpointListComponent extends React.Component<
   constructor(props: Props) {
     super(props);
     this.state = this._computeState();
-    this._disposables = new UniversalDisposable();
+    this._disposables = new UniversalDisposable(
+      Observable.fromPromise(
+        passesGK('nuclide_debugger_logging_breakpoints'),
+      ).subscribe(supportsLogMessage => {
+        this.setState({supportsLogMessage});
+      }),
+    );
   }
 
   _computeState(): State {
@@ -63,11 +72,13 @@ export default class BreakpointListComponent extends React.Component<
     );
 
     let newActiveProjects = [];
+    let newSupportsLogMessage = false;
     if (this.state != null) {
-      const {activeProjects} = this.state;
+      const {activeProjects, supportsLogMessage} = this.state;
       if (activeProjects != null) {
         newActiveProjects = activeProjects;
       }
+      newSupportsLogMessage = supportsLogMessage;
     }
 
     return {
@@ -81,6 +92,7 @@ export default class BreakpointListComponent extends React.Component<
       exceptionBreakpointsCollapsed,
       unavailableBreakpointsCollapsed: true,
       activeProjects: newActiveProjects,
+      supportsLogMessage: newSupportsLogMessage,
     };
   }
 
@@ -146,6 +158,30 @@ export default class BreakpointListComponent extends React.Component<
     } else {
       return nuclideUri.getHostname(uri);
     }
+  }
+
+  _renderLogMessage(breakpoint: IBreakpoint): ?React.Node {
+    if (
+      !this.props.service.viewModel.focusedProcess ||
+      !this.state.supportsLogMessage ||
+      breakpoint.logMessage == null
+    ) {
+      return null;
+    }
+
+    return (
+      <div
+        className="debugger-breakpoint-condition"
+        title={`Breakpoint log message: ${breakpoint.logMessage}`}
+        data-path={breakpoint.uri}
+        data-line={breakpoint.line}
+        data-bpid={breakpoint.getId()}
+        onClick={event => {
+          atom.commands.dispatch(event.target, 'debugger:edit-breakpoint');
+        }}>
+        Log Message: {breakpoint.logMessage}
+      </div>
+    );
   }
 
   render(): React.Node {
@@ -285,6 +321,7 @@ export default class BreakpointListComponent extends React.Component<
                   {label}
                 </span>
                 {conditionElement}
+                {this._renderLogMessage(breakpoint)}
                 {hitcountElement}
               </div>
             </div>
