@@ -12,7 +12,11 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/types';
-import type {HgOperation, TreePreviewApplierFunction} from '../lib/HgOperation';
+import type {
+  HgOperation,
+  TreePreviewApplierFunction,
+  ReportedOptimisticState,
+} from '../lib/HgOperation';
 import type {RevisionTree} from '../lib/revisionTree/RevisionTree';
 
 import invariant from 'assert';
@@ -158,7 +162,7 @@ describe('HgOperations', () => {
       // $FlowIgnore - flow doesn't want us to rewrite methods
       operation.makeOptimisticStateApplier = (
         treeObservable: Observable<Array<RevisionTree>>,
-      ): Observable<?TreePreviewApplierFunction> => {
+      ): Observable<?ReportedOptimisticState> => {
         return treeObservable
           .takeWhile(trees => {
             return trees.length < 3;
@@ -172,7 +176,10 @@ describe('HgOperations', () => {
                 return func2;
             }
             return null;
-          });
+          })
+          .map(optimisticApplier => ({
+            optimisticApplier,
+          }));
       };
 
       const outputPromise = client
@@ -213,27 +220,27 @@ describe('HgOperations', () => {
         {
           ...baseProgress,
           stdout: ['1'],
-          optimisticStateApplier: func1,
+          optimisticApplier: func1,
         },
         {
           ...baseProgress,
           stdout: ['1', '2'],
-          optimisticStateApplier: func1,
+          optimisticApplier: func1,
         },
         {
           ...baseProgress,
           stdout: ['1', '2'],
-          optimisticStateApplier: func2,
+          optimisticApplier: func2,
         },
         {
           ...baseProgress,
           stdout: ['1', '2', '3'],
-          optimisticStateApplier: func2,
+          optimisticApplier: func2,
         },
         {
           ...baseProgress,
           stdout: ['1', '2', '3'],
-          optimisticStateApplier: null,
+          optimisticApplier: null,
         },
         {
           ...baseProgress,

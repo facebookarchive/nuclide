@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
+import type {
+  HgOperation,
+  TreePreviewApplierFunction,
+  ReportedOptimisticState,
+} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
 import {
   getRevisionTreeMapFromTree,
@@ -43,10 +47,10 @@ export class HgCheckoutOperation implements HgOperation {
 
   makeOptimisticStateApplier(
     treeObservable: Observable<Array<RevisionTree>>,
-  ): Observable<?TreePreviewApplierFunction> {
+  ): Observable<?ReportedOptimisticState> {
     const destination = this._destination;
     let lastKnownHeadHash;
-    const func: TreePreviewApplierFunction = (
+    const optimisticApplier: TreePreviewApplierFunction = (
       tree: RevisionTree,
       nodePreviewType: ?RevisionPreview,
     ) => {
@@ -79,6 +83,6 @@ export class HgCheckoutOperation implements HgOperation {
         // If the last known head is no longer head... the checkout was a success!
         return !(lastKnownHeadTree != null && !lastKnownHeadTree.info.isHead);
       })
-      .mapTo(func);
+      .mapTo({optimisticApplier});
   }
 }

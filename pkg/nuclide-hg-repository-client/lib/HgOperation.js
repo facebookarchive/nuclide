@@ -19,6 +19,10 @@ export type TreePreviewApplierFunction = (
   previewType: ?RevisionPreview,
 ) => [Array<RevisionTree>, ?RevisionPreview];
 
+export type ReportedOptimisticState = {
+  optimisticApplier?: ?TreePreviewApplierFunction,
+};
+
 /**
  * This interface defines an operation to be run by hg. This includes arguments,
  * human-readable command information, how to preview this operation, and when
@@ -56,7 +60,7 @@ export interface HgOperation {
   // This function is used by the hg service and the results are passed back for consumption via HgOperationProgress.
   +makeOptimisticStateApplier?: (
     treeObservable: Observable<Array<RevisionTree>>,
-  ) => Observable<?TreePreviewApplierFunction>;
+  ) => Observable<?ReportedOptimisticState>;
 }
 
 /**
@@ -69,10 +73,6 @@ export interface HgOperation {
 export type HgOperationProgress = {
   operation: HgOperation,
 
-  // The current preview applier to apply optimisitc state. Will be `null` if no
-  // optimistic state is required. Completes when the result of the operation is reflected in the data fetched from hg.
-  optimisticStateApplier: ?TreePreviewApplierFunction,
-
   stdout: Array<string>, // also contains stderr
   hasProcessExited: boolean, // whether the hg process has exited
   hasCompleted: boolean, // whether the process exited AND we've gotten a new list from hg AND confirmed the result of operation is present
@@ -80,12 +80,17 @@ export type HgOperationProgress = {
   exitCode: ?number,
 
   progress: ?OperationProgress, // current topic, progress precentage, time remaining
-};
 
-export function emptyHgOperationProgress(operation: HgOperation) {
+  // The current preview applier to apply optimisitc state. Will be `null` if no
+  // optimistic state is required. Completes when the result of the operation is reflected in the data fetched from hg.
+} & ReportedOptimisticState;
+
+export function emptyHgOperationProgress(
+  operation: HgOperation,
+): HgOperationProgress {
   return {
     operation,
-    optimisticStateApplier: null,
+    optimisticApplier: null,
     stdout: [],
     hasProcessExited: false,
     hasCompleted: false,

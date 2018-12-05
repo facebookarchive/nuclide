@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
+import type {HgOperation, ReportedOptimisticState} from '../HgOperation';
 import type {RevisionTree} from '../revisionTree/RevisionTree';
 
 import {Observable} from 'rxjs';
@@ -31,7 +31,7 @@ export class HgPullOperation implements HgOperation {
 
   makeOptimisticStateApplier(
     treeObservable: Observable<Array<RevisionTree>>,
-  ): Observable<?TreePreviewApplierFunction> {
+  ): Observable<?ReportedOptimisticState> {
     // We don't want to wait for an updated revisionlist because pull won't always trigger one.
     // Instead, consider this command complete as soon as it finishes running
     return Observable.empty();

@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
+import type {
+  HgOperation,
+  TreePreviewApplierFunction,
+  ReportedOptimisticState,
+} from '../HgOperation';
 import type {RevisionTree} from '../revisionTree/RevisionTree';
 import {ButtonTypes} from 'nuclide-commons-ui/Button';
 import {
@@ -97,7 +101,7 @@ export class HgRebaseOperation implements HgOperation {
 
   makeOptimisticStateApplier(
     treeObservable: Observable<Array<RevisionTree>>,
-  ): Observable<?TreePreviewApplierFunction> {
+  ): Observable<?ReportedOptimisticState> {
     return treeObservable
       .takeWhile(trees => {
         let source = this._source;
@@ -135,7 +139,7 @@ export class HgRebaseOperation implements HgOperation {
         };
         newSourceNode.info.parents = [this._destination];
 
-        const previewFunction: TreePreviewApplierFunction = (
+        const optimisticApplier: TreePreviewApplierFunction = (
           tree,
           nodePreviewType,
         ) => {
@@ -157,7 +161,9 @@ export class HgRebaseOperation implements HgOperation {
           return [tree.children, nodePreviewType];
         };
 
-        return Observable.of(previewFunction);
+        return Observable.of({
+          optimisticApplier,
+        });
       });
   }
 }

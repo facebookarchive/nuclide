@@ -30,7 +30,7 @@ import {HgRepositorySubscriptions} from '../../nuclide-hg-rpc/lib/HgService';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
-import type {TreePreviewApplierFunction} from './HgOperation';
+import type {ReportedOptimisticState} from './HgOperation';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
@@ -1453,13 +1453,21 @@ export class HgRepositoryClient {
       // $FlowIssue: this type isn't being refined to non-null
       optimisticStateApplierResult = operation
         .makeOptimisticStateApplier(this.observeRevisionTree())
-        .do((optimisticStateApplier: ?TreePreviewApplierFunction) => {
-          progress({optimisticStateApplier});
+        .do((reportedOptimisticState: ?ReportedOptimisticState) => {
+          if (reportedOptimisticState == null) {
+            progress({
+              optimisticApplier: null,
+            });
+          } else {
+            progress(reportedOptimisticState);
+          }
         })
         .distinctUntilChanged()
         .finally(() => {
-          // clear optimistic state
-          progress({optimisticStateApplier: null});
+          // clear only optimistic applier when finished
+          progress({
+            optimisticApplier: null,
+          });
         })
         .ignoreElements();
     } else {
@@ -1508,7 +1516,10 @@ export class HgRepositoryClient {
       observeProcessAndOptimisticApplierRunning.finally(() => {
         // The process exited AND we've determined there's no more optimistic state needed
         // We can mark this as fully completed.
-        progress({optimisticStateApplier: null, hasCompleted: true});
+        progress({
+          optimisticApplier: null,
+          hasCompleted: true,
+        });
         operationCompletedSubject.next();
       }),
       // Actually emit the progress messages as long as the operation is still going

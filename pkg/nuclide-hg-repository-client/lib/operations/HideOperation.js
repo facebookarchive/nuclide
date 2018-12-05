@@ -10,7 +10,11 @@
  */
 
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
-import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
+import type {
+  HgOperation,
+  TreePreviewApplierFunction,
+  ReportedOptimisticState,
+} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
 import {ButtonTypes} from 'nuclide-commons-ui/Button';
 import {pluralize} from 'nuclide-commons/string';
@@ -86,7 +90,7 @@ export class HgHideOperation implements HgOperation {
 
   makeOptimisticStateApplier(
     treeObservable: Observable<Array<RevisionTree>>,
-  ): Observable<?TreePreviewApplierFunction> {
+  ): Observable<?ReportedOptimisticState> {
     const hash = this._hash;
     const func: TreePreviewApplierFunction = (
       tree: RevisionTree,
@@ -105,6 +109,6 @@ export class HgHideOperation implements HgOperation {
         // only apply optimistic state while the original commit is visible
         return treeMap.get(hash) != null;
       })
-      .mapTo(func);
+      .mapTo({optimisticApplier: func});
   }
 }

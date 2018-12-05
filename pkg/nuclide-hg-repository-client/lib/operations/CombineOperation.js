@@ -10,7 +10,11 @@
  */
 
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/types';
-import type {HgOperation, TreePreviewApplierFunction} from '../HgOperation';
+import type {
+  HgOperation,
+  TreePreviewApplierFunction,
+  ReportedOptimisticState,
+} from '../HgOperation';
 import type {RevisionTree, RevisionPreview} from '../revisionTree/RevisionTree';
 import {
   getRevisionTreeMapFromTree,
@@ -50,7 +54,7 @@ export class HgCombineOperation implements HgOperation {
 
   makeOptimisticStateApplier(
     treeObservable: Observable<Array<RevisionTree>>,
-  ): Observable<?TreePreviewApplierFunction> {
+  ): Observable<?ReportedOptimisticState> {
     const from = this._commits[0];
     const to = this._commits[this._commits.length - 1];
     return treeObservable
@@ -64,10 +68,12 @@ export class HgCombineOperation implements HgOperation {
         return !(fromTree == null && toTree == null);
       })
       .map(tree => {
-        return this._makeFoldPreviewFunction(
-          tree,
-          RevisionPreviews.OPTIMISTIC_FOLD,
-        );
+        return {
+          optimisticApplier: this._makeFoldPreviewFunction(
+            tree,
+            RevisionPreviews.OPTIMISTIC_FOLD,
+          ),
+        };
       });
   }
 
