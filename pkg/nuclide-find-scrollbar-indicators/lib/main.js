@@ -74,26 +74,30 @@ class Activation {
             observableFromSubscribeFunction(cb =>
               searchMarkerLayer.onDidUpdate(cb),
             ),
-          ).switchMap(([visible]) => {
-            if (!visible) {
-              return Observable.of({editor, markTypes: new Map()});
-            }
-            // TODO: I'm not sure why this macrotask is needed, but calling
-            // `getMarkers` without it seems to return no markers.
-            return macrotask.first().map(() => {
-              const marks = searchMarkerLayer.getMarkers().map(marker => {
-                const range = marker.getBufferRange();
+          )
+            .switchMap(([visible]) => {
+              if (!visible) {
+                return Observable.of({editor, markTypes: new Map()});
+              }
+              // TODO: I'm not sure why this macrotask is needed, but calling
+              // `getMarkers` without it seems to return no markers.
+              return macrotask.first().map(() => {
+                const marks = searchMarkerLayer.getMarkers().map(marker => {
+                  const range = marker.getBufferRange();
+                  return {
+                    start: range.start.row,
+                    end: range.end.row,
+                  };
+                });
                 return {
-                  start: range.start.row,
-                  end: range.end.row,
+                  editor,
+                  markTypes: new Map([['SEARCH_RESULT', new Set(marks)]]),
                 };
               });
-              return {
-                editor,
-                markTypes: new Map([['SEARCH_RESULT', new Set(marks)]]),
-              };
-            });
-          });
+            })
+            .takeUntil(
+              observableFromSubscribeFunction(cb => editor.onDidDestroy(cb)),
+            );
         })
         .subscribe(update => {
           this._updates.next(update);
