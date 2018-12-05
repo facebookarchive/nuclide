@@ -34,6 +34,6 @@ export class HgPullOperation implements HgOperation {
   ): Observable<?ReportedOptimisticState> {
     // We don't want to wait for an updated revisionlist because pull won't always trigger one.
     // Instead, consider this command complete as soon as it finishes running
-    return Observable.empty();
+    return Observable.of({showFullscreenSpinner: true});
   }
 }

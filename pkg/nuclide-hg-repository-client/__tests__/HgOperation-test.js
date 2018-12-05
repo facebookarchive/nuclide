@@ -28,6 +28,7 @@ import {emptyHgOperationProgress} from '../lib/HgOperation';
 
 import {makeRevisionChain} from '../../nuclide-hg-rpc/__mocks__/MockHgTypes';
 import {sleep} from 'nuclide-commons/promise';
+import {HgPullOperation} from '../lib/operations/PullOperation';
 
 class TestHgOperation implements HgOperation {
   _hash: string;
@@ -295,6 +296,42 @@ describe('HgOperations', () => {
       const error = reportError.mock.calls[0][1];
       invariant(error instanceof Error);
       expect(error.toString()).toContain('Some error message!');
+    });
+
+    it('supports loading spinner in optimistic state', async () => {
+      const operation = new HgPullOperation();
+      mockExecutionOutput = [
+        {kind: 'stdout', data: 'hello'},
+        {kind: 'exit', exitCode: 0, signal: null},
+      ];
+
+      const outputPromise = client
+        .runOperation(operation)
+        .toArray()
+        .toPromise();
+
+      const output = await outputPromise;
+
+      const baseProgress = emptyHgOperationProgress(operation);
+      expect(output).toEqual([
+        {...baseProgress, showFullscreenSpinner: true},
+        {...baseProgress, showFullscreenSpinner: true, stdout: ['hello']},
+        {
+          ...baseProgress,
+          showFullscreenSpinner: true,
+          stdout: ['hello'],
+          hasProcessExited: true,
+          exitCode: 0,
+          hasCompleted: false,
+        },
+        {
+          ...baseProgress,
+          stdout: ['hello'],
+          hasProcessExited: true,
+          exitCode: 0,
+          hasCompleted: true,
+        },
+      ]);
     });
   });
 });

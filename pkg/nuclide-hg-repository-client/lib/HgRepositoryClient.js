@@ -1457,6 +1457,7 @@ export class HgRepositoryClient {
           if (reportedOptimisticState == null) {
             progress({
               optimisticApplier: null,
+              showFullscreenSpinner: undefined,
             });
           } else {
             progress(reportedOptimisticState);
@@ -1518,6 +1519,7 @@ export class HgRepositoryClient {
         // We can mark this as fully completed.
         progress({
           optimisticApplier: null,
+          showFullscreenSpinner: undefined,
           hasCompleted: true,
         });
         operationCompletedSubject.next();

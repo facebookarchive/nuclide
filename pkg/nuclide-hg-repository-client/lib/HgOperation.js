@@ -21,6 +21,7 @@ export type TreePreviewApplierFunction = (
 
 export type ReportedOptimisticState = {
   optimisticApplier?: ?TreePreviewApplierFunction,
+  showFullscreenSpinner?: boolean,
 };
 
 /**
