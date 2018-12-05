@@ -115,10 +115,11 @@ export class CommandExecutor {
     // This was done in 2 steps because code for organizing was ported from an
     // external Atom package and we wanted to avoid a huge refactor.
     const filePathUri = nuclideUri.nuclideUriToUri(filePath);
-    const inputSource = this.documents.get(filePathUri).getText();
     const atomTextEdits = lspTextEdits_atomTextEdits(edits);
+    const inputSource = this.documents.get(filePathUri).getText();
 
     const buffer = new TextBuffer(inputSource);
+    const oldRange = this.documents.get(filePathUri).buffer.getRange();
     applyTextEditsToBuffer(buffer, atomTextEdits);
     const sourceWithMissingImportsAdded = buffer.getText();
 
@@ -132,9 +133,7 @@ export class CommandExecutor {
 
     const edit = [
       {
-        range: atomRangeToLSPRange(
-          new Range([0, 0], [Number.MAX_VALUE, Number.MAX_VALUE]),
-        ),
+        range: atomRangeToLSPRange(oldRange),
         newText: transformResult,
       },
     ];
