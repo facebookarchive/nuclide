@@ -37,6 +37,7 @@ type Props = {
   collapsable?: boolean,
   collapsedByDefault?: boolean,
   hideHeadline?: boolean,
+  softWrapped?: boolean,
 };
 
 type DefaultProps = {
@@ -52,6 +53,7 @@ export type HunkProps = {
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
   onClickLine?: (lineNum: number) => mixed,
+  softWrapped?: boolean,
 };
 
 const MAX_GUTTER_WIDTH = 5;
@@ -279,7 +281,7 @@ export class HunkDiff extends React.Component<HunkProps> {
   }
 
   render(): React.Node {
-    const {hunk, grammar} = this.props;
+    const {hunk, grammar, softWrapped} = this.props;
     const {changes} = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
     const text = changes.map(change => change.content.slice(1)).join('\n');
@@ -294,6 +296,7 @@ export class HunkDiff extends React.Component<HunkProps> {
         grammar={grammar}
         gutterHidden={true}
         readOnly={true}
+        softWrapped={softWrapped}
         ref={editorRef => {
           // $FlowFixMe(>=0.53.0) Flow suppress
           this.editor = editorRef && editorRef.getModel();
@@ -428,6 +431,7 @@ export default class FileChanges extends React.Component<Props> {
       hideHeadline,
       diff,
       grammar,
+      softWrapped,
     } = this.props;
     const {chunks, from: fromFileName, to: toFileName} = diff;
     if (toFileName == null || fromFileName == null) {
@@ -460,6 +464,7 @@ export default class FileChanges extends React.Component<Props> {
               goToLocation(fullPath, {line});
             }
           }}
+          softWrapped={softWrapped}
         />,
       );
       i++;
