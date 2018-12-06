@@ -639,16 +639,16 @@ export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 }
 
 export class DefaultMap<K, V> extends Map<K, V> {
-  _factory: () => V;
+  _factory: K => V;
 
-  constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {
+  constructor(factory: K => V, iterable: ?Iterable<[K, V]>) {
     super(iterable);
     this._factory = factory;
   }
 
   get(key: K): V {
     if (!this.has(key)) {
-      const value = this._factory();
+      const value = this._factory(key);
       this.set(key, value);
       return value;
     }
@@ -658,16 +658,16 @@ export class DefaultMap<K, V> extends Map<K, V> {
 }
 
 export class DefaultWeakMap<K: {}, V> extends WeakMap<K, V> {
-  _factory: () => V;
+  _factory: K => V;
 
-  constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {
+  constructor(factory: K => V, iterable: ?Iterable<[K, V]>) {
     super(iterable);
     this._factory = factory;
   }
 
   get(key: K): V {
     if (!this.has(key)) {
-      const value = this._factory();
+      const value = this._factory(key);
       this.set(key, value);
       return value;
     }

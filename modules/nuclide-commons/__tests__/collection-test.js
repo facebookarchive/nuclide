@@ -308,12 +308,14 @@ describe('collect', () => {
 });
 
 describe('DefaultMap', () => {
-  it('calls the factory each time you get a nonexistant key', () => {
+  it('calls the factory each time with the nonexistent key', () => {
     const spy = jest.fn().mockReturnValue('default');
     const map = new DefaultMap(spy);
     expect(map.size).toBe(0);
     expect(map.get('a')).toBe('default');
+    expect(spy).toHaveBeenLastCalledWith('a');
     expect(map.get('b')).toBe('default');
+    expect(spy).toHaveBeenLastCalledWith('b');
     expect(map.size).toBe(2);
     expect(spy.mock.calls).toHaveLength(2);
   });
@@ -353,11 +355,13 @@ describe('DefaultWeakMap', () => {
   const a = {};
   const b = {};
   const c = {};
-  it('calls the factory each time you get a nonexistant key', () => {
+  it('calls the factory each time with the nonexistent key', () => {
     const spy = jest.fn().mockReturnValue('default');
     const map = new DefaultWeakMap(spy);
     expect(map.get(a)).toBe('default');
+    expect(spy).toHaveBeenLastCalledWith(a);
     expect(map.get(b)).toBe('default');
+    expect(spy).toHaveBeenLastCalledWith(b);
     expect(spy.mock.calls).toHaveLength(2);
   });
 
