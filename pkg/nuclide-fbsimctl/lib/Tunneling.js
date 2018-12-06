@@ -41,21 +41,23 @@ export function startTunnelingIdb(uri: NuclideUri): Observable<'ready'> {
     ).publishReplay(1);
 
     let idbDaemonPort;
-    const subscription = observable
-      .subscribe({
-        next: port => (idbDaemonPort = port),
-        error: e => {
-          getLogger('nuclide-idb:tunneling').error(e);
-          track('nuclide-idb:tunneling:error', {host: uri, error: e});
-          const detail =
-            "Your local devices won't be available on this host." +
-            (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
-          atom.notifications.addError('Failed to tunnel iOS devices', {
-            dismissable: true,
-            detail,
-          });
-        },
-      })
+    const subscription = observable.subscribe({
+      next: port => (idbDaemonPort = port),
+      error: e => {
+        getLogger('nuclide-idb:tunneling').error(e);
+        track('nuclide-idb:tunneling:error', {host: uri, error: e});
+        const detail =
+          "Your local devices won't be available on this host." +
+          (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
+        atom.notifications.addError('Failed to tunnel iOS devices', {
+          dismissable: true,
+          detail,
+        });
+      },
+    });
+
+    // .add returns a Subscription, the teardown logic of which doesn't seem to get disposed on unsubscribe
+    subscription
       .add(() => {
         if (idbDaemonPort != null) {
           idbService.disconnectFromDaemon('localhost', idbDaemonPort);

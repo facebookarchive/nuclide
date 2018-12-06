@@ -111,7 +111,6 @@ export async function connectToDaemon(
     hostname,
     port.toString(),
   ]).toPromise();
-  return;
 }
 
 export async function disconnectFromDaemon(
@@ -124,7 +123,6 @@ export async function disconnectFromDaemon(
     hostname,
     port.toString(),
   ]).toPromise();
-  return;
 }
 
 export type IdbInstallMessage = {

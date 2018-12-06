@@ -98,38 +98,40 @@ export function startTunnelingAdb(
       .publishReplay(1);
 
     let adbmuxPort;
-    const subscription = observable
-      .subscribe({
-        next: port => (adbmuxPort = port),
-        error: e => {
-          getLogger('nuclide-adb:tunneling').error(e);
-          track('nuclide-adb:tunneling:error', {host: uri, error: e});
-          if (e.name === MISSING_ADB_ERROR) {
-            return;
+    const subscription = observable.subscribe({
+      next: port => (adbmuxPort = port),
+      error: e => {
+        getLogger('nuclide-adb:tunneling').error(e);
+        track('nuclide-adb:tunneling:error', {host: uri, error: e});
+        if (e.name === MISSING_ADB_ERROR) {
+          return;
+        }
+        let detail;
+        const buttons = [];
+        if (e.name === VERSION_MISMATCH_ERROR) {
+          detail = e.message;
+          const {adbUpgradeLink} = options;
+          if (e.name === VERSION_MISMATCH_ERROR && adbUpgradeLink != null) {
+            buttons.push({
+              text: 'View upgrade instructions',
+              onDidClick: () => shell.openExternal(adbUpgradeLink),
+            });
           }
-          let detail;
-          const buttons = [];
-          if (e.name === VERSION_MISMATCH_ERROR) {
-            detail = e.message;
-            const {adbUpgradeLink} = options;
-            if (e.name === VERSION_MISMATCH_ERROR && adbUpgradeLink != null) {
-              buttons.push({
-                text: 'View upgrade instructions',
-                onDidClick: () => shell.openExternal(adbUpgradeLink),
-              });
-            }
-          } else {
-            detail =
-              "Your local devices won't be available on this host." +
-              (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
-          }
-          atom.notifications.addError('Failed to tunnel Android devices', {
-            dismissable: true,
-            detail,
-            buttons,
-          });
-        },
-      })
+        } else {
+          detail =
+            "Your local devices won't be available on this host." +
+            (e.name != null && e.name !== 'Error' ? `\n \n${e.name}` : '');
+        }
+        atom.notifications.addError('Failed to tunnel Android devices', {
+          dismissable: true,
+          detail,
+          buttons,
+        });
+      },
+    });
+
+    // .add returns a Subscription, the teardown logic of which doesn't seem to get disposed on unsubscribe
+    subscription
       .add(() => {
         if (adbmuxPort != null) {
           adbService.checkOutMuxPort(adbmuxPort);
