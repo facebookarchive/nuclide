@@ -29,7 +29,7 @@ export function getSimulatorPlatform(
   ) => Observable<BuckEvent>,
 ): Observable<Platform> {
   return fbsimctl
-    .observeIosDevices()
+    .observeIosDevices('')
     .filter(expected => !expected.isPending)
     .map(expected => {
       // TODO: Come up with a way to surface the error in UI
@@ -86,7 +86,7 @@ export function getDevicePlatform(
   ) => Observable<BuckEvent>,
 ): Observable<Platform> {
   return fbsimctl
-    .observeIosDevices()
+    .observeIosDevices('')
     .filter(expected => !expected.isPending)
     .map(expected => {
       let deviceGroups = [];

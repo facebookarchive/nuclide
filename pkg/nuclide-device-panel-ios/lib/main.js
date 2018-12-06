@@ -13,9 +13,6 @@ import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Expect} from 'nuclide-commons/expected';
 import {observeIosDevices} from '../../nuclide-fbsimctl';
 
 class Activation {
@@ -29,25 +26,15 @@ class Activation {
   registerDeviceList(api: DevicePanelServiceApi): IDisposable {
     return api.registerListProvider({
       observe: host => {
-        if (nuclideUri.isRemote(host)) {
-          return Observable.of(
-            Expect.error(
-              new Error(
-                'iOS devices on remote hosts are not currently supported.',
-              ),
-            ),
-          );
-        } else {
-          return observeIosDevices().map(expected =>
-            expected.map(devices =>
-              devices.map(device => ({
-                identifier: device.udid,
-                displayName: device.name,
-                ignoresSelection: true,
-              })),
-            ),
-          );
-        }
+        return observeIosDevices('').map(expected =>
+          expected.map(devices =>
+            devices.map(device => ({
+              identifier: device.udid,
+              displayName: device.name,
+              ignoresSelection: true,
+            })),
+          ),
+        );
       },
       getType: () => this._type,
     });
