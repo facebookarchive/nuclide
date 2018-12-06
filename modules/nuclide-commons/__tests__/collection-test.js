@@ -739,6 +739,16 @@ describe('range', () => {
     expect([...range(2, 1)]).toEqual([]);
     expect([...range(1, 1)]).toEqual([]);
   });
+
+  it('can step by values other than 1', () => {
+    expect([...range(1, 6, 2)]).toEqual([1, 3, 5]);
+  });
+
+  it('cannot take negative step', () => {
+    expect(() => {
+      [...range(2, 1, -1)];
+    }).toThrow();
+  });
 });
 
 describe('objectFromPairs', () => {

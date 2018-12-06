@@ -10,6 +10,8 @@
  * @format
  */
 
+import invariant from 'assert';
+
 export function ensureArray<T>(x: Array<T> | T): Array<T> {
   return Array.isArray(x) ? x : [x];
 }
@@ -547,6 +549,8 @@ export function* range(
   stop: number,
   step?: number = 1,
 ): Iterable<number> {
+  // We don't currently support negative step values.
+  invariant(step > 0);
   for (let i = start; i < stop; i += step) {
     yield i;
   }
