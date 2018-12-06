@@ -82,6 +82,13 @@ export function observeIosDevices(
 function observeDevicesViaFbsimctl(
   serviceUri: NuclideUri,
 ): Observable<Expected<Array<FbsimctlDevice>>> {
+  if (nuclideUri.isRemote(serviceUri)) {
+    return Observable.of(
+      Expect.error(
+        new Error('iOS devices on remote hosts are not currently supported.'),
+      ),
+    );
+  }
   return Observable.interval(2000)
     .startWith(0)
     .exhaustMap(() => {

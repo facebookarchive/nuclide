@@ -8,7 +8,6 @@
  * @flow strict-local
  * @format
  */
-
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {IdbDevice} from './types';
@@ -100,6 +99,32 @@ export function connect(
     .concatMap(filterStdout)
     .map(line => JSON.parse(line))
     .publish();
+}
+
+export async function connectToDaemon(
+  hostname: string,
+  port: number,
+): Promise<void> {
+  await runCommand('idb', [
+    'connect',
+    '--daemon',
+    hostname,
+    port.toString(),
+  ]).toPromise();
+  return;
+}
+
+export async function disconnectFromDaemon(
+  hostname: string,
+  port: number,
+): Promise<void> {
+  await runCommand('idb', [
+    'disconnect',
+    '--daemon',
+    hostname,
+    port.toString(),
+  ]).toPromise();
+  return;
 }
 
 export type IdbInstallMessage = {

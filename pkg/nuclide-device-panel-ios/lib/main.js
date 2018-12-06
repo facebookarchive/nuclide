@@ -14,6 +14,7 @@ import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeIosDevices} from '../../nuclide-fbsimctl';
+import {IdbTunnelingProvider} from './IdbTunnelingProvider';
 
 class Activation {
   _disposables = new UniversalDisposable();
@@ -24,20 +25,23 @@ class Activation {
   }
 
   registerDeviceList(api: DevicePanelServiceApi): IDisposable {
-    return api.registerListProvider({
-      observe: host => {
-        return observeIosDevices('').map(expected =>
-          expected.map(devices =>
-            devices.map(device => ({
-              identifier: device.udid,
-              displayName: device.name,
-              ignoresSelection: true,
-            })),
-          ),
-        );
-      },
-      getType: () => this._type,
-    });
+    return new UniversalDisposable(
+      api.registerListProvider({
+        observe: host => {
+          return observeIosDevices(host).map(expected =>
+            expected.map(devices =>
+              devices.map(device => ({
+                identifier: device.udid,
+                displayName: device.name,
+                ignoresSelection: true,
+              })),
+            ),
+          );
+        },
+        getType: () => this._type,
+      }),
+      api.registerDeviceTypeComponentProvider(new IdbTunnelingProvider()),
+    );
   }
 }
 
