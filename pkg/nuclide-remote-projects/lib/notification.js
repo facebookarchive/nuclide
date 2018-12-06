@@ -33,7 +33,7 @@ export function humanizeErrorMessage(
   error: Error,
   config: SshConnectionConfiguration,
 ): HumanizedErrorMessage {
-  const originalErrorDetail = `Original error message:\n ${error.message}`;
+  const originalErrorDetail = `Original error message:\n  ${error.message}`;
 
   // This comes from people and people can't be trusted. Escape it before dumping it into the DOM.
   const host = escapeHtml(config.host);
@@ -205,13 +205,13 @@ export function notifySshHandshakeError(
   }
 
   const notification = atom.notifications.addError(title || '', {
-    detail: [body, originalErrorDetail].filter(Boolean).join('\n\n'),
+    detail: [body, originalErrorDetail].filter(Boolean).join('\n \n'),
     dismissable: true,
     buttons,
   });
 }
 
-function handleSyncDateTime(notification) {
+export function handleSyncDateTime(notification: atom$Notification) {
   switch (process.platform) {
     case 'darwin':
       shell.openItem('/System/Library/PreferencePanes/DateAndTime.prefPane');
