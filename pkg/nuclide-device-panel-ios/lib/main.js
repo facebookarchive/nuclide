@@ -12,8 +12,12 @@
 import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import passesGK from 'nuclide-commons/passesGK';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 import {observeIosDevices} from '../../nuclide-fbsimctl';
+import {startTunnelingIdb} from '../../nuclide-fbsimctl/lib/Tunneling';
+import {ServerConnection} from '../../nuclide-remote-connection';
 import {IdbTunnelingProvider} from './IdbTunnelingProvider';
 
 class Activation {
@@ -22,6 +26,25 @@ class Activation {
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
     this._disposables.add(this.registerDeviceList(api));
+    this._disposables.add(
+      new UniversalDisposable(
+        ServerConnection.onDidAddServerConnection(async connection => {
+          if (!(await passesGK('nuclide_idb_tunneling_devservers'))) {
+            return;
+          }
+          const hostname = connection.getRemoteHostname();
+          if (
+            !hostname.startsWith('dev') &&
+            !hostname.endsWith('.sb.facebook.com')
+          ) {
+            return;
+          }
+          startTunnelingIdb(connection.getUriOfRemotePath('/')).catch(() =>
+            Observable.empty(),
+          );
+        }),
+      ),
+    );
   }
 
   registerDeviceList(api: DevicePanelServiceApi): IDisposable {
