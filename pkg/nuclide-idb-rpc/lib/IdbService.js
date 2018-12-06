@@ -11,10 +11,13 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
+import type {IdbDevice} from './types';
+
+import {observeProcess, runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import fsPromise from 'nuclide-commons/fsPromise';
+import {parseIdbJsonOutput} from './Parsing';
 
 export type IdbDaemonReadyMessage = {
   port: number,
@@ -56,6 +59,19 @@ export function startCompanion(
         .map(line => JSON.parse(line)),
     )
     .publish();
+}
+
+export async function listTargets(): Promise<Array<IdbDevice>> {
+  const output = await runCommand('idb', ['list-targets', '--json'])
+    .catch(e => {
+      if (e.stdout != null) {
+        e.message += `\n\n${e.stdout}`;
+      }
+      throw e;
+    })
+    .timeout(5000)
+    .toPromise();
+  return parseIdbJsonOutput(output);
 }
 
 export type IdbConnectMessage = {

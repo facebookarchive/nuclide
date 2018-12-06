@@ -5,24 +5,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow strict
  * @format
  */
 
-export type FbsimctlDeviceState =
+export type IdbDeviceState =
   | 'Creating'
   | 'Booting'
   | 'Shutting Down'
   | 'Shutdown'
   | 'Booted';
 
-export type FbsimctlDevice = {|
+export type IdbDevice = {|
   name: string,
   udid: string,
-  state: FbsimctlDeviceState,
-  os: string,
-  arch: string,
-  type: FbsimctlDeviceType,
+  state: IdbDeviceState,
+  type: IdbDeviceType,
+  osVersion: string,
+  architecture: string,
+  daemonHost: string,
+  daemonPort: number,
 |};
 
-export type FbsimctlDeviceType = 'simulator' | 'physical_device';
+export type IdbDeviceType = 'simulator' | 'device';

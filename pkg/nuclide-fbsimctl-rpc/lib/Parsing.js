@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {FbsimctlDevice, DeviceType} from './types';
+import type {FbsimctlDevice, FbsimctlDeviceType} from './types';
 
 export function parseFbsimctlJsonOutput(output: string): Array<FbsimctlDevice> {
   const devices = [];
@@ -65,7 +65,7 @@ export function parseFbsimctlJsonOutput(output: string): Array<FbsimctlDevice> {
   return devices;
 }
 
-function typeFromArch(arch: string): ?DeviceType {
+function typeFromArch(arch: string): ?FbsimctlDeviceType {
   switch (arch) {
     case 'x86_64':
     case 'i386':

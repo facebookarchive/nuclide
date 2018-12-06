@@ -24,6 +24,7 @@ import {getLogger} from 'log4js';
 import {track} from 'nuclide-analytics';
 import {
   getFbsimctlServiceByNuclideUri,
+  getIdbServiceByNuclideUri,
   getInfoServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 
@@ -98,7 +99,56 @@ function observeDevicesViaFbsimctl(
 function observeDevicesViaIdb(
   serviceUri: NuclideUri,
 ): Observable<Expected<Array<FbsimctlDevice>>> {
-  return Observable.of(Expect.error(new Error('not implemented')));
+  return Observable.interval(2000)
+    .startWith(0)
+    .exhaustMap(() => {
+      const service = getIdbServiceByNuclideUri(serviceUri);
+      if (service == null) {
+        // Gracefully handle a lost remote connection
+        return Observable.of(Expect.pending());
+      }
+      return (
+        Observable.fromPromise(service.listTargets())
+          // convert to be compatible
+          .map(devices =>
+            devices.map(d => ({
+              name: d.name,
+              udid: d.udid,
+              state: d.state,
+              os: d.osVersion,
+              arch: d.architecture,
+              type: d.type === 'device' ? 'physical_device' : 'simulator',
+            })),
+          )
+          .map(devices => Expect.value(devices))
+          .catch(error => convertIdbErrorToValue(error))
+      );
+    });
+}
+
+function convertIdbErrorToValue(
+  error: Error,
+): Observable<Expected<Array<FbsimctlDevice>>> {
+  let message;
+  // $FlowFixMe error.code
+  if (error.code === 'ENOENT') {
+    message = "'idb' not found in $PATH.";
+  } else if (
+    // RPC call timed out
+    error.name === 'RpcTimeoutError' ||
+    // RPC call succeeded, but the idb call itself timed out
+    error.message === 'Timeout has occurred'
+  ) {
+    message = 'Request timed out, retrying...';
+  } else if (error.message === 'Connection Closed') {
+    return Observable.of(Expect.pending());
+  } else {
+    message = error.message;
+  }
+  const newError = new Error("Can't fetch iOS devices. " + message);
+  // $FlowIgnore
+  (newError: any).originalError = error;
+  return Observable.of(Expect.error(newError));
 }
 
 function convertFbsimctlErrorToValue(
