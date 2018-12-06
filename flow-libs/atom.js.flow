@@ -535,6 +535,7 @@ declare class atom$Pane {
   setActiveItem(item: Object): Object,
   setFlexScale(flexScale: number): number,
   getContainer(): atom$PaneContainer,
+  getActiveEditor(): ?atom$TextEditor,
 
   element: HTMLElement,
 }
@@ -652,12 +653,19 @@ declare class atom$Range {
     object: atom$RangeLike,
     copy?: boolean,
   ): atom$Range,
+  static fromPointWithDelta(
+    startPoint: atom$PointLike,
+    rowDelta: number,
+    columnDelta: number
+  ): atom$Range,
+
   constructor(pointA: atom$PointLike, pointB: atom$PointLike): void,
   compare(other: atom$Range): number,
   start: atom$Point,
   end: atom$Point,
   isEmpty(): boolean,
   isEqual(otherRange: atom$RangeLike): boolean,
+  isSingleLine(): boolean,
   intersectsWith(otherRange: atom$RangeLike, exclusive?: boolean): boolean,
   containsPoint(point: atom$PointLike, exclusive?: boolean): boolean,
   containsRange(other: atom$Range, exclusive?: boolean): boolean,
@@ -857,6 +865,7 @@ declare class atom$TextEditor extends atom$Model {
   onDidChangeSoftWrapped(callback: (softWrapped: boolean) => mixed): IDisposable,
   onDidChangeSelectionRange(callback: (event: atom$ChangeSelectionRangeEvent) => mixed): IDisposable,
   observeSelections(callback: (selection: atom$Selection) => mixed): IDisposable,
+  onDidAddSelection(callback: (selection: atom$Selection) => mixed): IDisposable,
 
   // File Details
   getTitle: () => string,
@@ -936,6 +945,7 @@ declare class atom$TextEditor extends atom$Model {
   getVisibleRowRange(): [number, number],
   bufferRowForScreenRow(screenRow: number): number,
   screenRangeForBufferRange(bufferRange: atom$RangeLike): atom$Range,
+  bufferRangeForBufferRow(bufferRow: number): atom$Range,
 
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration,
@@ -986,6 +996,7 @@ declare class atom$TextEditor extends atom$Model {
   unfoldBufferRow(bufferRow: number): void,
 
   // Selections
+  getLastSelection(): atom$Selection,
   getSelectedText(): string,
   selectAll(): void,
   getSelectedBufferRange(): atom$Range,
@@ -1027,7 +1038,7 @@ declare class atom$TextEditor extends atom$Model {
   scan(
     regex: RegExp,
     iterator: (foundMatch: {
-      match: mixed,
+      match: RegExp$matchResult,
       matchText: string,
       range: atom$Range,
       stop: () => mixed,
@@ -2226,6 +2237,7 @@ declare class atom$Selection {
       undo?: boolean,
     },
   ): string,
+  isEmpty(): boolean,
 }
 
 declare class atom$PanelContainer {
