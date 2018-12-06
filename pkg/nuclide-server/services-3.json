@@ -60,6 +60,10 @@
     "name": "HgService"
   },
   {
+    "implementation": "../nuclide-idb-rpc/lib/IdbService.js",
+    "name": "IdbService"
+  },
+  {
     "implementation": "./lib/services/InfoService.js",
     "name": "InfoService"
   },

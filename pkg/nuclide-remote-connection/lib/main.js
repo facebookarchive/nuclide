@@ -75,6 +75,7 @@ import typeof * as GeneratedFileService from '../../nuclide-generated-files-rpc'
 import typeof * as GrepService from '../../nuclide-grep-rpc';
 import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
+import typeof * as IdbService from '../../nuclide-idb-rpc';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
@@ -178,6 +179,10 @@ export function getHhvmDebuggerServiceByNuclideUri(
   uri: NuclideUri,
 ): HhvmDebuggerService {
   return nullthrows(getServiceByNuclideUri('HhvmDebuggerService', uri));
+}
+
+export function getIdbServiceByNuclideUri(uri: NuclideUri): IdbService {
+  return nullthrows(getServiceByNuclideUri('IdbService', uri));
 }
 
 export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
