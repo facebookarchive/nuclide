@@ -229,7 +229,6 @@
   "package-deps": [
     "file-icons",
     "tool-bar",
-    "highlight-selected:0.14.0",
     "language-babel",
     "language-capirca",
     "language-graphql",
