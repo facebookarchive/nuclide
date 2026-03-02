@@ -16,7 +16,7 @@ import type {
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type FindReferencesConfig = {|
@@ -80,7 +80,10 @@ export class FindReferencesProvider<T: LanguageService> {
         return null;
       }
 
-      return (await languageService).findReferences(fileVersion, position);
+      return (await languageService)
+        .findReferences(fileVersion, position)
+        .refCount()
+        .toPromise();
     });
   }
 }

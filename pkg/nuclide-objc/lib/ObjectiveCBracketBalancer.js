@@ -5,13 +5,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import {Point} from 'atom';
 
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import observeLanguageTextEditors from '../../commons-atom/observe-language-text-editors';
 
 const GRAMMARS = ['source.objc', 'source.objcpp'];
@@ -131,7 +131,8 @@ export default class ObjectiveCBracketBalancer {
         currentRowPlusOne !== closeBracketPosition.row
       ) {
         const targetLine = buffer.lineForRow(currentRowPlusOne);
-        const targetMatch = /\S/.exec(targetLine);
+        // $FlowFixMe (>= v0.75.0)
+        const targetMatch: RegExp$matchResult = /\S/.exec(targetLine);
 
         if (targetLine[targetMatch.index] === '[') {
           return null;

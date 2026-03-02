@@ -20,10 +20,8 @@ function writeTsv(
 ): void {
   const file = fs.openSync(location, 'a');
   if (record) {
-    // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, columns.map(column => record[column]).join('\t') + '\n');
   } else {
-    // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, columns.join('\t') + '\n');
   }
   fs.closeSync(file);
@@ -43,8 +41,7 @@ function readAllTsv(
 ): {columns: Array<string>, records: Array<Object>} {
   let columns = [];
   const records = [];
-  fs
-    .readFileSync(location, 'utf8')
+  fs.readFileSync(location, 'utf8')
     .split('\n')
     .forEach((row, r) => {
       if (r === 0) {
@@ -65,7 +62,7 @@ function readAllTsv(
   return {columns, records};
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   writeTsv,
   writeAllTsv,

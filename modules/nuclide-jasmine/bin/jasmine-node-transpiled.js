@@ -8,14 +8,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /* eslint-disable no-console */
 
@@ -31,9 +28,7 @@ const args = [
   require.resolve('./run-jasmine-tests'),
   '--forceexit',
   '--captureExceptions',
-].concat(
-  process.argv.slice(2)
-);
+].concat(process.argv.slice(2));
 
 const cmd = ['cd', process.cwd(), '&& node'].concat(args).join(' ');
 

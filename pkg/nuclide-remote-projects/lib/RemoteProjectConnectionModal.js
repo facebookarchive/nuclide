@@ -5,19 +5,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 /* globals Element */
 
-import type {RemoteConnection} from '../../nuclide-remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 import type {
   NuclideNewConnectionProfileInitialFields,
   NuclideRemoteConnectionParams,
 } from './connection-types';
 import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {ConnectionDialogMode} from './ConnectionDialog';
+import type {HumanizedErrorMessage} from './notification';
 
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import ConnectionDialog from './ConnectionDialog';
@@ -25,9 +26,22 @@ import CreateConnectionProfileForm from './CreateConnectionProfileForm';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-type Screen = 'connect' | 'create-connection';
+export type Screen = 'connect' | 'create-connection';
 
-export type Props = {
+export type Props = {|
+  connectionError: ?HumanizedErrorMessage,
+  connectionFormDirty: boolean,
+  setConnectionFormDirty: boolean => void,
+
+  confirmConnectionPrompt: (answers: Array<string>) => void,
+  connectionPromptInstructions: string,
+
+  connectionDialogMode: ConnectionDialogMode,
+  setConnectionDialogMode: ConnectionDialogMode => void,
+
+  connect: SshConnectionConfiguration => void,
+  cancelConnection: () => void,
+
   connectionProfiles: Array<NuclideRemoteConnectionProfile>,
   initialFormFields:
     | NuclideNewConnectionProfileInitialFields
@@ -36,13 +50,6 @@ export type Props = {
   screen: Screen,
   onScreenChange: (screen: Screen) => mixed,
 
-  onCancel: () => mixed,
-  onClosed?: () => mixed,
-  onConnect: (
-    connection: RemoteConnection,
-    config: SshConnectionConfiguration,
-  ) => mixed,
-  onError: (error: Error, config: SshConnectionConfiguration) => mixed,
   onDeleteProfileClicked: (selectedProfileIndex: number) => mixed,
   onSaveProfile: (
     index: number,
@@ -51,7 +58,7 @@ export type Props = {
   onProfileSelected: (selectedProfileIndex: number) => void,
 
   onProfileCreated: (profile: NuclideRemoteConnectionProfile) => mixed,
-};
+|};
 
 export default class RemoteProjectConnectionModal extends React.Component<
   Props,
@@ -94,15 +101,22 @@ export default class RemoteProjectConnectionModal extends React.Component<
       case 'connect':
         return (
           <ConnectionDialog
+            error={this.props.connectionError}
+            dirty={this.props.connectionFormDirty}
+            setDirty={this.props.setConnectionFormDirty}
+            confirmConnectionPrompt={this.props.confirmConnectionPrompt}
+            connectionPromptInstructions={
+              this.props.connectionPromptInstructions
+            }
+            mode={this.props.connectionDialogMode}
+            setMode={this.props.setConnectionDialogMode}
+            connect={this.props.connect}
+            cancelConnection={this.props.cancelConnection}
             selectedProfileIndex={this.props.selectedProfileIndex}
             connectionProfiles={this.props.connectionProfiles}
             onAddProfileClicked={() => {
               this.props.onScreenChange('create-connection');
             }}
-            onCancel={this.props.onCancel}
-            onClosed={this.props.onClosed}
-            onConnect={this.props.onConnect}
-            onError={this.props.onError}
             onDeleteProfileClicked={this.props.onDeleteProfileClicked}
             onSaveProfile={this.props.onSaveProfile}
             onProfileSelected={this.props.onProfileSelected}

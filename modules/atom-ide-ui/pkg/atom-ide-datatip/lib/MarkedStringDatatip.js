@@ -16,6 +16,9 @@ import marked from 'marked';
 import * as React from 'react';
 
 import MarkedStringSnippet from './MarkedStringSnippet';
+import createDOMPurify from 'dompurify';
+
+const domPurify = createDOMPurify();
 
 type Props = {
   markedStrings: Array<MarkedString>,
@@ -29,7 +32,11 @@ export default class MarkedStringDatatip extends React.PureComponent<Props> {
           <div
             className="datatip-marked-container"
             dangerouslySetInnerHTML={{
-              __html: marked(chunk.value, {sanitize: true}),
+              __html: domPurify.sanitize(
+                marked(chunk.value, {
+                  breaks: true,
+                }),
+              ),
             }}
             key={i}
           />

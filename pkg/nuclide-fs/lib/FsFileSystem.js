@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -118,11 +118,22 @@ export class FsFileSystem implements FileSystem {
   }
 
   move(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {
-    return fsPromise.move(sourcePath, destinationPath);
+    return fsPromise.mv(sourcePath, destinationPath, {
+      mkdirp: true,
+      clobber: false,
+    });
   }
 
   copy(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {
     return fsPromise.copy(sourcePath, destinationPath);
+  }
+
+  symlink(
+    source: NuclideUri,
+    target: NuclideUri,
+    type?: string,
+  ): Promise<void> {
+    return fsPromise.symlink(source, target, type);
   }
 
   rimraf(path: NuclideUri): Promise<void> {
@@ -162,6 +173,10 @@ export class FsFileSystem implements FileSystem {
 
   isNfs(path: NuclideUri): Promise<boolean> {
     return fsPromise.isNfs(path);
+  }
+
+  isFuse(path: NuclideUri): Promise<boolean> {
+    return fsPromise.isFuse(path);
   }
 
   async openArchive(path: NuclideUri): Promise<FileSystem> {

@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -31,6 +31,7 @@ export default class HealthPaneItem extends React.Component<
     super(props);
     this.state = {
       stats: null,
+      domCounters: null,
       childProcessesTree: null,
     };
   }
@@ -68,12 +69,7 @@ export default class HealthPaneItem extends React.Component<
   }
 
   render() {
-    const {
-      toolbarJewel,
-      updateToolbarJewel,
-      childProcessesTree,
-      stats,
-    } = this.state;
+    const {childProcessesTree, stats, domCounters} = this.state;
 
     if (stats == null) {
       return <div />;
@@ -84,16 +80,16 @@ export default class HealthPaneItem extends React.Component<
         // Need native-key-bindings and tabIndex={-1} to be able to copy paste
         className="pane-item padded nuclide-health-pane-item native-key-bindings"
         tabIndex={-1}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <HealthPaneItemComponent
-          toolbarJewel={toolbarJewel}
-          updateToolbarJewel={updateToolbarJewel}
           cpuPercentage={stats.cpuPercentage}
           heapPercentage={stats.heapPercentage}
           memory={stats.rss}
           activeHandles={stats.activeHandles}
           activeRequests={stats.activeRequests}
           activeHandlesByType={stats.activeHandlesByType}
+          attachedDomNodes={domCounters && domCounters.attachedNodes}
+          domNodes={domCounters && domCounters.nodes}
+          domListeners={domCounters && domCounters.jsEventListeners}
           childProcessesTree={childProcessesTree}
         />
       </div>

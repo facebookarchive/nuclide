@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
@@ -18,5 +18,4 @@ export const Settings = {
     // with the same ID as the filename.
     shouldAddAllFilesAsDefaultExport: true,
   },
-  indexNodeModulesWhiteList: [/^(.)*\/Nuclide/],
 };

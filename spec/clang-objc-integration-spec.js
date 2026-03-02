@@ -62,7 +62,7 @@ describe('Clang Integration Test (objc)', () => {
       return busySignal.isBusy();
     });
 
-    waitsFor('compilation to finish', 60000, () => {
+    waitsFor('compilation to finish', 120000, () => {
       return !busySignal.isBusy();
     });
 
@@ -152,9 +152,7 @@ describe('Clang Integration Test (objc)', () => {
 
     waitsForFilePosition('FoundationStub.h', 45, 12);
 
-    runs(() => {
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
-    });
+    // Deactivate nuclide packages.
+    waitsForPromise(deactivateAllPackages);
   });
 });

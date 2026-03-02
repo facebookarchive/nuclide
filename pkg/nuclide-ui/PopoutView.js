@@ -11,12 +11,13 @@
 
 /* global MutationObserver */
 
-import invariant from 'invariant';
+import invariant from 'assert';
 import {remote, ipcRenderer} from 'electron';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import type {BrowserWindow} from 'nuclide-commons/electron-remote';
 
 type Props = {
   children: React.Element<any>,
@@ -39,7 +40,7 @@ let popoutWindowId = 1;
 export class PopoutView extends React.Component<Props, State> {
   props: Props;
   state: State;
-  _popoutPane: ?electron$BrowserWindow;
+  _popoutPane: ?BrowserWindow;
   _disposables: UniversalDisposable;
   _prepared: boolean;
   _popoutWindowId: string;
@@ -98,7 +99,7 @@ export class PopoutView extends React.Component<Props, State> {
     this._update();
 
     const observer = new MutationObserver((mutations, obs) => {
-      // TODO: be more efficent by computing delta and only updating what actually changed.
+      // TODO: be more efficient by computing delta and only updating what actually changed.
       const container = ReactDOM.findDOMNode(this);
       invariant(container != null && container.innerHTML != null);
 
@@ -161,7 +162,9 @@ export class PopoutView extends React.Component<Props, State> {
 
     const display = this.state.isPoppedOut
       ? 'none'
-      : this.props.allowPopIn ? 'block' : 'none';
+      : this.props.allowPopIn
+        ? 'block'
+        : 'none';
 
     return <div style={{display}}>{this.props.children}</div>;
   }
@@ -304,8 +307,9 @@ export class PopoutView extends React.Component<Props, State> {
     // Hook up the IPC channel listener for the renderer.
     invariant(this._popoutPane != null);
     this._popoutPane.webContents.executeJavaScript(`
-      require('electron').ipcRenderer.on('${this
-        ._popoutWindowId}', function(e, ipcArgs) {
+      require('electron').ipcRenderer.on('${
+        this._popoutWindowId
+      }', function(e, ipcArgs) {
         try {
           if (ipcArgs != null) {
             const funcName = ipcArgs[0];
@@ -360,8 +364,8 @@ export class PopoutView extends React.Component<Props, State> {
   _addContainer(): void {
     const host = document.createElement('div');
     host.id = 'nuclide-popout-container-root';
-    /* $FlowFixMe */
     host.style =
+      /* $FlowFixMe */
       'padding: 0px; width: 100%; height: 100%; margin: 0px; border: 0px;';
     if (document.body != null) {
       document.body.appendChild(host);

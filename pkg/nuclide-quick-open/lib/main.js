@@ -11,7 +11,7 @@
 
 import type {ProviderResult, Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   DeepLinkService,
   DeepLinkParams,
@@ -25,7 +25,7 @@ import ReactDOM from 'react-dom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import debounce from 'nuclide-commons/debounce';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';
@@ -101,7 +101,10 @@ class Activation {
     selections: Array<ProviderResult>,
     providerName: string,
     query: string,
+    selectionIndex: ?number,
   ): void {
+    const multipleSelections = selectionIndex == null;
+    invariant(multipleSelections === selections.length > 1);
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
       // TODO: Having a callback to call shouldn't necessarily preclude
@@ -118,14 +121,26 @@ class Activation {
           line: selection.line,
           column: selection.column,
         });
+      }
+
+      if (
+        selection.resultType === 'FILE' ||
+        selection.resultType === 'SYMBOL'
+      ) {
         track('quickopen-select-file', {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,
+          'quickopen-index':
+            // If a selection index is provided, then it's only a single selection.
+            // Otherwise, we're selecting via "Open All", so indexes go in order.
+            // $FlowFixMe
+            multipleSelections ? i : selectionIndex.toString(),
+          'quickopen-openmultiple': multipleSelections,
           // The currently open "tab".
           'quickopen-provider': providerName,
           'quickopen-session': this._analyticsSessionId || '',
           // Because the `provider` is usually OmniSearch, also track the original provider.
-          // flowlint-next-line sketchy-null-mixed:off
+          // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
           'quickopen-provider-source': selection.sourceProvider || '',
         });
       }

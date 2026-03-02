@@ -1,23 +1,37 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-.datatip-overlay {
+.datatip-element {
   background: @app-background-color;
   box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
   color: @syntax-text-color;
   font-family: Menlo, Monaco, Consolas, monospace;
-  font-size: @font-size;
+  font-size: 80%;
   margin-top: -2px; // Compensate for shadow
   position: relative;
   white-space: nowrap;
+  pointer-events: all;
 }
 
 .datatip-dragging {
   cursor: -webkit-grabbing;
+  user-select: none;
 }
 
 .datatip-pinned {
   cursor: -webkit-grab;
+}
+
+.datatip-overlay {
+  z-index: 12 !important; // HACK: exceed the z-index of
+                          // .atom-dock-resize-handle-resizable, so that
+                          // mouseleaves aren't triggered when the cursor enters
+                          // the resizable
+}
+
+.datatip-pinned-overlay {
+  &:extend(.datatip-overlay);
+  pointer-events: none;
 }
 
 .datatip-container {
@@ -49,8 +63,10 @@
   cursor: pointer;
   display: flex;
   line-height: 2;
-  margin: 0.1em 0 0 0;
+  padding-bottom: 0.1em;
   padding-left: 0.5em;
+  padding-right: 0.3em;
+  padding-top: 0.0em;
   &:hover {
     background-color: rgba(255, 255, 255, 0.05);
     color: @syntax-selection-flash-color;
@@ -66,7 +82,10 @@
 atom-text-editor {
 
   .datatip-highlight-region > .region {
-    background: @syntax-selection-color;
+    // Use a faded version of the cursor color so as to have a distinction when
+    // overlapping with a selection (`@syntax-selection-color`). This element is
+    // on top of the selection element, so that will show through.
+    background: fade(@syntax-cursor-color, 10%);
   }
 
   .datatip-highlight-region-active > .region {

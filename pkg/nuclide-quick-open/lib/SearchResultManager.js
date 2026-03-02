@@ -11,7 +11,6 @@
 
 /* global performance */
 
-import type {Directory} from '../../nuclide-remote-connection';
 import type {
   ProviderResult,
   Provider,
@@ -41,11 +40,13 @@ type ResultRenderer<T> = (
 ) => React.Element<any>;
 
 import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {fastDebounce} from 'nuclide-commons/observable';
+import {trackSampled} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Subject} from 'rxjs';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {triggerAfterWait} from 'nuclide-commons/promise';
 import debounce from 'nuclide-commons/debounce';
@@ -66,6 +67,8 @@ const OMNISEARCH_PROVIDER = {
 };
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
+// Quick-open generates a *ton* of queries - sample the tracking.
+const TRACK_SOURCE_RATE = 10;
 
 function getQueryDebounceDelay(provider: Provider<ProviderResult>) {
   return provider.debounceDelay != null
@@ -82,14 +85,15 @@ export default class SearchResultManager {
     atom$Directory,
     Set<DirectoryProviderType<*>>,
   >;
+
   _globalEligibleProviders: Set<GlobalProviderType<*>>;
   _providerSubscriptions: Map<Provider<ProviderResult>, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
-  _currentWorkingRoot: ?Directory;
+  _currentWorkingRoot: ?string;
   _debouncedUpdateDirectories: {(): Promise<void> | void} & IDisposable;
   _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _querySubscriptions: UniversalDisposable;
   _activeProviderName: string;
   _lastRawQuery: ?string;
@@ -116,7 +120,7 @@ export default class SearchResultManager {
       /* immediate */ false,
     );
     this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._querySubscriptions = new UniversalDisposable();
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     this._queryStream = new Subject();
@@ -201,7 +205,9 @@ export default class SearchResultManager {
             .isEligibleForDirectory(directory)
             .catch(err => {
               getLogger('nuclide-quick-open').warn(
-                `isEligibleForDirectory failed for directory provider ${provider.name}`,
+                `isEligibleForDirectory failed for directory provider ${
+                  provider.name
+                }`,
                 err,
               );
               return false;
@@ -259,7 +265,7 @@ export default class SearchResultManager {
         for (const provider of providers) {
           this._querySubscriptions.add(
             this._queryStream
-              .debounceTime(getQueryDebounceDelay(provider))
+              .let(fastDebounce(getQueryDebounceDelay(provider)))
               .subscribe(query =>
                 this._executeDirectoryQuery(directory, provider, query),
               ),
@@ -269,14 +275,14 @@ export default class SearchResultManager {
       for (const provider of this._globalEligibleProviders) {
         this._querySubscriptions.add(
           this._queryStream
-            .debounceTime(getQueryDebounceDelay(provider))
+            .let(fastDebounce(getQueryDebounceDelay(provider)))
             .subscribe(query => this._executeGlobalQuery(provider, query)),
         );
       }
     }
   }
 
-  setCurrentWorkingRoot(newRoot: ?Directory): void {
+  setCurrentWorkingRoot(newRoot: ?string): void {
     this._currentWorkingRoot = newRoot;
   }
 
@@ -293,7 +299,10 @@ export default class SearchResultManager {
       // no sorting takes place. It would be nice to the project root that contains the current
       // working root on top. But Directory::contains includes code that synchronously queries the
       // filesystem so I want to avoid it for now.
-      if (dir.getPath() === currentWorkingRoot.getPath()) {
+      if (
+        nuclideUri.normalizeDir(dir.getPath()) ===
+        nuclideUri.normalizeDir(currentWorkingRoot)
+      ) {
         // This *not* currentWorkingRoot. It's the directory from this._directories. That's because
         // currentWorkingRoot uses the Directory type (which explicitly includes remote directory
         // objects), whereas this module uses atom$Directory. That should probably be addressed.
@@ -401,26 +410,23 @@ export default class SearchResultManager {
   }
 
   _executeGlobalQuery(provider: GlobalProviderType<*>, query: string): void {
-    for (const globalProvider of this._globalEligibleProviders) {
-      const startTime = performance.now();
-      const loadingFn = () => {
-        this._setLoading(query, GLOBAL_KEY, globalProvider);
-        this._emitter.emit('results-changed');
-      };
-      triggerAfterWait(
-        globalProvider.executeQuery(query, this._directories),
-        LOADING_EVENT_DELAY,
-        loadingFn,
-      ).then(result => {
-        track('quickopen-query-source-provider', {
-          'quickopen-source-provider': globalProvider.name,
-          'quickopen-query-duration': (performance.now() - startTime
-          ).toString(),
-          'quickopen-result-count': result.length.toString(),
-        });
-        this._processResult(query, result, GLOBAL_KEY, globalProvider);
+    const startTime = performance.now();
+    const loadingFn = () => {
+      this._setLoading(query, GLOBAL_KEY, provider);
+      this._emitter.emit('results-changed');
+    };
+    triggerAfterWait(
+      provider.executeQuery(query, this._directories),
+      LOADING_EVENT_DELAY,
+      loadingFn,
+    ).then(result => {
+      trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
+        'quickopen-source-provider': provider.name,
+        'quickopen-query-duration': (performance.now() - startTime).toString(),
+        'quickopen-result-count': result.length.toString(),
       });
-    }
+      this._processResult(query, result, GLOBAL_KEY, provider);
+    });
   }
 
   _executeDirectoryQuery(
@@ -439,7 +445,7 @@ export default class SearchResultManager {
       LOADING_EVENT_DELAY,
       loadingFn,
     ).then(result => {
-      track('quickopen-query-source-provider', {
+      trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
         'quickopen-source-provider': provider.name,
         'quickopen-query-duration': (performance.now() - startTime).toString(),
         'quickopen-result-count': result.length.toString(),
@@ -508,10 +514,13 @@ export default class SearchResultManager {
         };
         const resultList = cachedResult.results || defaultResult.results;
         results[path] = {
-          results: resultList.map(result => ({
-            ...result,
-            sourceProvider: providerName,
-          })),
+          results: resultList.map(result =>
+            // $FlowFixMe (v0.54.1 <)
+            ({
+              ...result,
+              sourceProvider: providerName,
+            }),
+          ),
           loading: cachedResult.loading || defaultResult.loading,
           error: cachedResult.error || defaultResult.error,
         };
@@ -616,5 +625,4 @@ export const __test__ = {
   _getOmniSearchProviderSpec(): ProviderSpec {
     return OMNISEARCH_PROVIDER;
   },
-  UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
 };

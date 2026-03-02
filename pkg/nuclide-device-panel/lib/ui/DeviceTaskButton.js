@@ -9,23 +9,22 @@
  * @format
  */
 
-import type {Device, DeviceAction} from '../types';
+import type {Task} from 'nuclide-debugger-common/types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {|
-  actions: DeviceAction[],
-  device: Device,
+  tasks: Array<Task>,
   icon: IconName,
   title: string,
 |};
 
 export class DeviceTaskButton extends React.Component<Props> {
   render(): React.Node {
-    const options = this.props.actions;
+    const options = this.props.tasks;
     if (options.length === 0) {
       return <span />;
     } else {
@@ -38,12 +37,11 @@ export class DeviceTaskButton extends React.Component<Props> {
             isFlat={true}
             options={options.map(option => ({
               value: option,
-              label: option.name,
+              label: option.getName(),
             }))}
             placeholder={placeholder}
             size="xs"
-            onChange={(action: DeviceAction) =>
-              action != null && action.callback(this.props.device)}
+            onChange={(task: Task) => task != null && task.start()}
           />
         </div>
       );

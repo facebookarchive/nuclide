@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 // Taken from
 // https://github.com/facebook/react-native/blob/d72c6fd/packager/react-packager/src/node-haste/DependencyGraph/docblock.js
@@ -33,7 +30,6 @@ function extract(contents) {
   }
   return '';
 }
-
 
 const commentStartRe = /^\/\*\*/;
 const commentEndRe = /\*\/$/;
@@ -85,7 +81,6 @@ function parseAsObject(docblock) {
   }
   return result;
 }
-
 
 exports.extract = extract;
 exports.parse = parse;

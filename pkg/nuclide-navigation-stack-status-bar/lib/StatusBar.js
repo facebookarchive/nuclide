@@ -13,19 +13,26 @@ import type {NavigationStackService} from '../../nuclide-navigation-stack';
 
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import {Disposable} from 'atom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import shallowEqual from 'shallowequal';
+import * as analytics from 'nuclide-analytics';
 
-type Props = {
-  enableBack: boolean,
-  enableForward: boolean,
-  onBack: () => mixed,
-  onForward: () => mixed,
-};
+type Props =
+  | {
+      available: true,
+      enableBack: boolean,
+      enableForward: boolean,
+      onBack: () => mixed,
+      onForward: () => mixed,
+    }
+  | {
+      available: false,
+    };
 
 // Since this is a button which can change the current file, place it where
 // it won't change position when the current file name changes, which means way left.
@@ -33,18 +40,34 @@ const STATUS_BAR_PRIORITY = -100;
 
 export function consumeStatusBar(
   statusBar: atom$StatusBar,
-  navigationStack: NavigationStackService,
+  navigationStackServices: Observable<?NavigationStackService>,
 ): IDisposable {
-  const onBack = navigationStack.navigateBackwards;
-  const onForward = navigationStack.navigateForwards;
-  const props: Observable<Props> = observableFromSubscribeFunction(
-    navigationStack.subscribe,
-  ).map(stack => ({
-    enableBack: stack.hasPrevious,
-    enableForward: stack.hasNext,
-    onBack,
-    onForward,
-  }));
+  const props: Observable<Props> = navigationStackServices
+    .switchMap(navigationStack => {
+      if (navigationStack == null) {
+        return Observable.of({
+          available: false,
+        });
+      }
+      const onBack = () => {
+        analytics.track('status-bar-nav-stack-clicked-back');
+        navigationStack.navigateBackwards();
+      };
+      const onForward = () => {
+        analytics.track('status-bar-nav-stack-clicked-forward');
+        navigationStack.navigateForwards();
+      };
+      return observableFromSubscribeFunction(navigationStack.subscribe).map(
+        stack => ({
+          available: true,
+          enableBack: stack.hasPrevious,
+          enableForward: stack.hasNext,
+          onBack,
+          onForward,
+        }),
+      );
+    })
+    .distinctUntilChanged(shallowEqual);
   const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
   const item = renderReactRoot(<Tile />);
   item.className = 'nuclide-navigation-stack-tile inline-block';
@@ -54,32 +77,39 @@ export function consumeStatusBar(
     priority: STATUS_BAR_PRIORITY,
   });
 
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     statusBarTile.destroy();
   });
 }
 
-function NavStackStatusBarTile(props: Props): React.Element<any> {
-  return (
-    <ButtonGroup size="EXTRA_SMALL">
-      <Button
-        icon="chevron-left"
-        onClick={props.onBack}
-        disabled={!props.enableBack}
-        tooltip={{
-          title: 'Navigate Backwards',
-          keyBindingCommand: 'nuclide-navigation-stack:navigate-backwards',
-        }}
-      />
-      <Button
-        icon="chevron-right"
-        onClick={props.onForward}
-        disabled={!props.enableForward}
-        tooltip={{
-          title: 'Navigate Forwards',
-          keyBindingCommand: 'nuclide-navigation-stack:navigate-forwards',
-        }}
-      />
-    </ButtonGroup>
-  );
+class NavStackStatusBarTile extends React.Component<Props> {
+  render(): React.Node {
+    if (!this.props.available) {
+      return null;
+    }
+    return (
+      <ButtonGroup size="EXTRA_SMALL">
+        <Button
+          icon="chevron-left"
+          onClick={this.props.onBack}
+          disabled={!this.props.enableBack}
+          tooltip={{
+            title: 'Go Back',
+            keyBindingCommand: 'nuclide-navigation-stack:navigate-backwards',
+          }}
+          className="nuclide-navigation-stack-button"
+        />
+        <Button
+          icon="chevron-right"
+          onClick={this.props.onForward}
+          disabled={!this.props.enableForward}
+          tooltip={{
+            title: 'Go Forward',
+            keyBindingCommand: 'nuclide-navigation-stack:navigate-forwards',
+          }}
+          className="nuclide-navigation-stack-button"
+        />
+      </ButtonGroup>
+    );
+  }
 }

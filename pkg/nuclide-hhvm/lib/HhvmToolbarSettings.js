@@ -12,7 +12,7 @@
 import type ProjectStore from './ProjectStore';
 
 import * as React from 'react';
-import {Modal} from '../../nuclide-ui/Modal';
+import {Modal} from 'nuclide-commons-ui/Modal';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -23,20 +23,22 @@ type State = {
 };
 
 class Example extends React.Component<{}, State> {
-  constructor() {
-    super();
-    this.state = {
-      text: '',
-      isRegExp: false,
-      invalid: false,
-    };
-  }
+  state = {
+    text: '',
+    isRegExp: false,
+    invalid: false,
+  };
 
   render(): React.Node {
+    const {text, isRegExp, invalid} = this.state;
+
     return (
       <div>
         <Block>
-          <RegExpFilter value={this.state} onChange={this._handleChange} />
+          <RegExpFilter
+            value={{text, isRegExp, invalid}}
+            onChange={this._handleChange}
+          />
         </Block>
       </div>
     );

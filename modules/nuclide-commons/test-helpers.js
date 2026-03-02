@@ -15,6 +15,7 @@ import type {Observable} from 'rxjs';
 import invariant from 'assert';
 import fs from 'fs';
 import temp from 'temp';
+import uuid from 'uuid';
 import fsPromise from './fsPromise';
 import nuclideUri from './nuclideUri';
 import {asyncLimit} from './promise';
@@ -53,14 +54,14 @@ export async function expectAsyncFailure(
 }
 
 /**
-  * This is useful for mocking a module that the module under test requires.
-  * After setting up the mocks, you must invalidate the require cache and then
-  * re-require the module under test so that it picks up the mocked
-  * dependencies.
-  *
-  * The require parameter is needed because require is bound differently in each
-  * file, and we need to execute this in the caller's context.
-  */
+ * This is useful for mocking a module that the module under test requires.
+ * After setting up the mocks, you must invalidate the require cache and then
+ * re-require the module under test so that it picks up the mocked
+ * dependencies.
+ *
+ * The require parameter is needed because require is bound differently in each
+ * file, and we need to execute this in the caller's context.
+ */
 export function clearRequireCache(require: Object, module: string): void {
   delete require.cache[require.resolve(module)];
 }
@@ -188,4 +189,17 @@ export async function generateFixture(
   );
 
   return tempDir;
+}
+
+export function writeCoverage(): void {
+  const {COVERAGE_DIR} = process.env;
+  if (COVERAGE_DIR != null) {
+    const coverage = global.__coverage__;
+    if (coverage != null) {
+      fs.writeFileSync(
+        nuclideUri.join(COVERAGE_DIR, uuid.v4() + '.json'),
+        JSON.stringify(coverage),
+      );
+    }
+  }
 }

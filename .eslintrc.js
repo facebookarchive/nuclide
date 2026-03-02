@@ -6,14 +6,11 @@
  * the root directory of this source tree.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 /* eslint-disable max-len */
 
 module.exports = {
@@ -36,7 +33,18 @@ module.exports = {
     atomtest: true,
     es6: true,
     jasmine: true,
+    jest: true,
     node: true,
+  },
+
+  settings: {
+    react: {
+      // TODO: (wbinnssmith) T35336490
+      // Remove this when we update to a version of eslint-plugin-react
+      // that automatically detects the react version:
+      // https://github.com/yannickcr/eslint-plugin-react/commit/dc28d2636b11aaed033454e7ff98c486c08740df
+      version: require('./package.json').dependencies.react,
+    },
   },
 
   extends: ['plugin:jsx-a11y/recommended'],
@@ -93,6 +101,7 @@ module.exports = {
     'dot-location': [1, 'property'],
     'dot-notation': 1,
     eqeqeq: [1, 'always', {null: 'never'}],
+    'getter-return': 2,
     'guard-for-in': 0,
     'no-alert': 0,
     'no-caller': 1,
@@ -189,16 +198,7 @@ module.exports = {
     'brace-style': [1, '1tbs', {allowSingleLine: true}],
     camelcase: 0,
     'capitalized-comments': 0,
-    'comma-dangle': [
-      1,
-      {
-        arrays: 'always-multiline',
-        objects: 'always-multiline',
-        imports: 'always-multiline',
-        exports: 'always-multiline',
-        functions: 'always-multiline',
-      },
-    ],
+    'comma-dangle': 0,
     'comma-spacing': 1,
     'comma-style': 1,
     'computed-property-spacing': 1,
@@ -217,6 +217,7 @@ module.exports = {
     'keyword-spacing': 1,
     'line-comment-position': 0,
     'linebreak-style': 1,
+    'lines-between-class-members': 0,
     'lines-around-comment': 0,
     'lines-around-directive': 0,
     'max-depth': 0,
@@ -281,7 +282,7 @@ module.exports = {
     'spaced-comment': [
       1,
       'always',
-      {line: {exceptions: ['-']}, block: {balanced: true}},
+      {line: {exceptions: ['-']}, block: {balanced: true, markers: [':']}},
     ],
     'template-tag-spacing': 1,
     'unicode-bom': [1, 'never'],
@@ -322,7 +323,12 @@ module.exports = {
 
     // dependencies (https://github.com/zertosh/eslint-plugin-dependencies)
     'dependencies/case-sensitive': 1,
-    'dependencies/no-cycles': [0, {skip: ['/spec/', '/sample-[^/]+/']}],
+    'dependencies/no-cycles': [
+      1,
+      {
+        skip: ['/VendorLib/', '/sample-[^/]+/', '/scripts/', '/spec/'],
+      },
+    ],
     'dependencies/no-unresolved': 0,
     'dependencies/require-json-ext': 1,
 
@@ -334,7 +340,7 @@ module.exports = {
     'flowtype/no-dupe-keys': 0,
     'flowtype/no-primitive-constructor-types': 1,
     'flowtype/no-weak-types': 0,
-    'flowtype/object-type-delimiter': 1,
+    'flowtype/object-type-delimiter': 0,
     'flowtype/require-parameter-type': 0,
     'flowtype/require-return-type': 0,
     'flowtype/require-valid-file-annotation': 0,
@@ -363,21 +369,27 @@ module.exports = {
     'jasmine/no-unsafe-spy': 0,
     'jasmine/valid-expect': 0,
 
-    // nuclide-internal (https://github.com/facebook/nuclide/tree/master/resources/eslint-plugin-nuclide-internal)
-    'rulesdir/atom-apis': 1,
-    'rulesdir/consistent-import-name': 1,
-    'rulesdir/dom-apis': 1,
-    'rulesdir/flow-fb-oss': 1,
-    'rulesdir/import-type-style': 1,
-    'rulesdir/license-header': 1,
-    'rulesdir/modules-dependencies': 1,
-    'rulesdir/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
-    'rulesdir/no-shell-quote': 1,
-    'rulesdir/no-unnecessary-disposable-wrapping': 1,
-    'rulesdir/no-unresolved': 1,
-    'rulesdir/prefer-nuclide-uri': 1,
-    'rulesdir/use-nuclide-ui-components': 1,
-    'rulesdir/no-commonjs': 1,
+    // nuclide-internal (https://github.com/facebook/nuclide/tree/master/modules/eslint-plugin-nuclide-internal)
+    'nuclide-internal/api-spelling': 1,
+    'nuclide-internal/atom-apis': 1,
+    'nuclide-internal/consistent-import-name': 1,
+    'nuclide-internal/disallowed-modules': 1,
+    'nuclide-internal/dom-apis': 1,
+    'nuclide-internal/flow-fb-oss': 1,
+    'nuclide-internal/import-type-style': 1,
+    'nuclide-internal/jsx-simple-callback-refs': 1,
+    'nuclide-internal/license-header': 1,
+    'nuclide-internal/modules-dependencies': 1,
+    'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
+    'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
+    'nuclide-internal/no-unobserved-gk': 1,
+    'nuclide-internal/no-unresolved': 1,
+    'nuclide-internal/prefer-nuclide-uri': 1,
+    'nuclide-internal/react-virtualized-import': 1,
+    'nuclide-internal/require-universal-disposable': 1,
+    'nuclide-internal/use-nuclide-ui-components': 1,
+    'nuclide-internal/no-commonjs': 1,
+    'nuclide-internal/unused-subscription': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
@@ -389,6 +401,7 @@ module.exports = {
     'react/display-name': 0,
     'react/forbid-component-props:': 0,
     'react/forbid-prop-types': 1,
+    'react/no-access-state-in-setstate': 1,
     'react/no-array-index-key': 0,
     'react/no-children-prop': 0,
     'react/no-danger': 0,
@@ -402,10 +415,14 @@ module.exports = {
     'react/no-multi-comp': 0,
     'react/no-render-return-value': 0,
     'react/no-set-state': 0,
-    'react/no-string-refs': 0,
+
+    // String refs don't work correctly if multiple versions of React are at play.
+    'react/no-string-refs': 1,
+
     'react/no-unescaped-entities': 0,
     'react/no-unknown-property': 1,
-    'react/no-unused-prop-types': 0,
+    'react/no-unused-prop-types': 1,
+    'react/no-unused-state': 1,
     'react/prefer-es6-class': 0,
     'react/prefer-stateless-function': 0,
     // 'react/prefer-stateless-function': 1,
@@ -441,7 +458,6 @@ module.exports = {
     'react/jsx-no-undef': 1,
     'react/jsx-pascal-case': 0,
     'react/jsx-sort-props': 0,
-    'react/jsx-space-before-closing': 1,
     'react/jsx-tag-spacing': 1,
     'react/jsx-uses-react': 1,
     'react/jsx-uses-vars': 1,
@@ -452,6 +468,7 @@ module.exports = {
     'jsx-a11y/accessible-emoji': 0,
     'jsx-a11y/alt-text': 0, // incremental: error
     'jsx-a11y/anchor-has-content': 0,
+    'jsx-a11y/anchor-is-valid': 0, // incremental: error
     'jsx-a11y/aria-activedescendant-has-tabindex': 0,
     'jsx-a11y/aria-props': 1,
     'jsx-a11y/aria-proptypes': 0,
@@ -478,6 +495,7 @@ module.exports = {
         ],
       },
     ],
+    'jsx-a11y/label-has-associated-control': 0,
     'jsx-a11y/label-has-for': 0,
     'jsx-a11y/lang': 0,
     'jsx-a11y/mouse-events-have-key-events': 0,
@@ -535,7 +553,61 @@ module.exports = {
     'jsx-a11y/role-supports-aria-props': 0,
     'jsx-a11y/scope': 0,
     'jsx-a11y/tabindex-no-positive': 0,
+
+    'unicorn/catch-error-name': 0,
+    'unicorn/explicit-length-check': 0,
+    'unicorn/filename-case': 0,
+    'unicorn/no-abusive-eslint-disable': 0,
+    'unicorn/no-process-exit': 0,
+    'unicorn/throw-new-error': 2,
+    'unicorn/number-literal-case': 0,
+    'unicorn/escape-case': 0,
+    'unicorn/no-array-instanceof': 0,
+    'unicorn/no-new-buffer': 0,
+    'unicorn/no-hex-escape': 0,
+    'unicorn/custom-error-definition': 0,
+    'unicorn/prefer-starts-ends-with': 0,
+    'unicorn/prefer-type-error': 0,
+    'unicorn/no-fn-reference-in-iterator': 0,
+    'unicorn/import-index': 0,
+    'unicorn/new-for-builtins': 0,
+    'unicorn/regex-shorthand': 0,
+    'unicorn/prefer-spread': 0,
+    'unicorn/error-message': 0,
+    'unicorn/no-unsafe-regex': 0,
+    'unicorn/prefer-add-event-listener': 0,
   },
+
+  overrides: [
+    {
+      files: ['**/__e2e_fixtures__/**/*'],
+      rules: {
+        'no-implicit-coercion': 0,
+        'nuclide-internal/atom-apis': 0,
+        'nuclide-internal/license-header': 0,
+        'nuclide-internal/modules-dependencies': 0,
+        'nuclide-internal/prefer-nuclide-uri': 0,
+        'nuclide-internal/unused-subscription': 0,
+        'nuclide-internal/no-commonjs': 0,
+      },
+    },
+    {
+      files: ['**/__{atom_,e2e_,}tests__/**/*', 'jest/**/*'],
+      rules: {
+        'nuclide-internal/prefer-nuclide-uri': 0,
+        'nuclide-internal/modules-dependencies': 0,
+        'nuclide-internal/atom-apis': 0,
+        'nuclide-internal/unused-subscription': 0,
+        'no-implicit-coercion': 0,
+      },
+    },
+    {
+      files: ['**/*-spec.js', '**/__mocks__/**/*'],
+      rules: {
+        'nuclide-internal/unused-subscription': 0,
+      },
+    },
+  ],
 
   plugins: [
     'dependencies',
@@ -545,10 +617,7 @@ module.exports = {
     'prefer-object-spread',
     'prettier',
     'react',
-    'rulesdir',
+    'nuclide-internal',
+    'unicorn',
   ],
 };
-
-// TODO(#21523621): Remove rulesdir when Yarn workspaces is enforced.
-const rulesDirPlugin = require('eslint-plugin-rulesdir');
-rulesDirPlugin.RULES_DIR = 'modules/eslint-plugin-nuclide-internal';

@@ -6,14 +6,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
 import classnames from 'classnames';
 import * as React from 'react';
 
-type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
+export type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
 
 type Props = {
   className?: string,

@@ -12,11 +12,11 @@
 /* global getComputedStyle */
 
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
 import debounce from 'nuclide-commons/debounce';
 import {maybeToString} from 'nuclide-commons/string';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-analytics';
 import {getLogger} from 'log4js';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM.
@@ -24,7 +24,7 @@ const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
 const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
 const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 // The frequency with which to poll the element that the NUX is bound to.
-const POLL_ELEMENT_TIMEOUT = 100; // milliseconds
+const POLL_ELEMENT_INTERVAL = 100; // milliseconds
 
 const logger = getLogger('nuclide-nux');
 
@@ -36,7 +36,7 @@ export class NuxView {
   _selector: () => ?HTMLElement;
   _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   _content: string;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _callback: ?(success: boolean) => void;
   _tooltipDisposable: IDisposable;
   _completePredicate: ?() => boolean;
@@ -92,7 +92,7 @@ export class NuxView {
     this._index = indexInTour;
     this._finalNuxInTour = indexInTour === tourSize - 1;
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   _createNux(creationAttempt: number = 1): void {
@@ -114,7 +114,7 @@ export class NuxView {
         ATTACHMENT_RETRY_TIMEOUT,
       );
       this._disposables.add(
-        new Disposable(() => {
+        new UniversalDisposable(() => {
           // eslint-disable-next-line eqeqeq
           if (attachmentTimeout !== null) {
             clearTimeout(attachmentTimeout);
@@ -162,19 +162,19 @@ export class NuxView {
         this._handleDisposableClick(false);
       }
     };
-    // The element is polled every `POLL_ELEMENT_TIMEOUT` milliseconds instead
+    // The element is polled every `POLL_ELEMENT_INTERVAL` milliseconds instead
     // of using a MutationObserver. When an element such as a panel is closed,
     // it may not mutate but simply be removed from the DOM - a change which
     // would not be captured by the MutationObserver.
-    const pollElementTimeout = setInterval(
+    const pollElementInterval = setInterval(
       tryDismissTooltip.bind(this, elem),
-      POLL_ELEMENT_TIMEOUT,
+      POLL_ELEMENT_INTERVAL,
     );
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         // eslint-disable-next-line eqeqeq
-        if (pollElementTimeout !== null) {
-          clearTimeout(pollElementTimeout);
+        if (pollElementInterval !== null) {
+          clearInterval(pollElementInterval);
         }
       }),
     );
@@ -185,7 +185,7 @@ export class NuxView {
     );
     this._modifiedElem.addEventListener('click', boundClickListener);
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         this._modifiedElem.removeEventListener('click', boundClickListener);
         window.removeEventListener('resize', debouncedWindowResizeListener);
       }),
@@ -213,11 +213,14 @@ export class NuxView {
     // In this case we show a hint to the user.
     const nextLinkButton = `\
       <span
-        class="nuclide-nux-link ${nextLinkStyle} nuclide-nux-next-link-${this
-      ._index}"
-        ${nextLinkStyle === LINK_DISABLED
-          ? 'title="Interact with the indicated UI element to proceed."'
-          : ''}>
+        class="nuclide-nux-link ${nextLinkStyle} nuclide-nux-next-link-${
+      this._index
+    }"
+        ${
+          nextLinkStyle === LINK_DISABLED
+            ? 'title="Interact with the indicated UI element to proceed."'
+            : ''
+        }>
         Continue
       </span>
     `;
@@ -233,8 +236,9 @@ export class NuxView {
             ${this._content}
         </div>
         <div class="nuclide-nux-navigation">
-          <span class="nuclide-nux-link ${LINK_ENABLED} nuclide-nux-dismiss-link-${this
-      ._index}">
+          <span class="nuclide-nux-link ${LINK_ENABLED} nuclide-nux-dismiss-link-${
+      this._index
+    }">
             ${!this._finalNuxInTour ? 'Dismiss' : 'Complete'} Tour
           </span>
           ${!this._finalNuxInTour ? nextLinkButton : ''}
@@ -264,7 +268,7 @@ export class NuxView {
       invariant(nextElement != null);
       nextElement.addEventListener('click', nextElementClickListener);
       this._disposables.add(
-        new Disposable(() =>
+        new UniversalDisposable(() =>
           nextElement.removeEventListener('click', nextElementClickListener),
         ),
       );
@@ -288,7 +292,7 @@ export class NuxView {
     dismissElement.addEventListener('click', dismissElementClickListener);
 
     this._disposables.add(
-      new Disposable(() =>
+      new UniversalDisposable(() =>
         dismissElement.removeEventListener(
           'click',
           dismissElementClickListener,

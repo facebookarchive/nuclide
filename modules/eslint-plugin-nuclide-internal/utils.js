@@ -7,25 +7,18 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const fs = require('fs');
 const path = require('path');
 
-const ATOM_BUILTIN_PACKAGES = new Set([
-  'atom',
-  'electron',
-  'remote',
-]);
+const ATOM_BUILTIN_PACKAGES = new Set(['atom', 'electron', 'remote']);
 
-function getPackage(startPath) {
+function getPackage(startPath, getPath = false) {
   let current = path.resolve(startPath);
   while (true) {
     const filename = path.join(current, 'package.json');
@@ -34,7 +27,7 @@ function getPackage(startPath) {
       const json = JSON.parse(source);
       json.__filename = filename;
       json.__dirname = current;
-      return json;
+      return getPath ? {configPath: filename, json} : json;
     } catch (err) {
       if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
         const next = path.join(current, '..');
@@ -61,8 +54,32 @@ function isRequire(node) {
   );
 }
 
+function isRequireResolve(node) {
+  return (
+    node &&
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    node.callee.object.type === 'Identifier' &&
+    node.callee.object.name === 'require' &&
+    node.callee.property.type === 'Identifier' &&
+    node.callee.property.name === 'resolve' &&
+    node.arguments[0] &&
+    node.arguments[0].type === 'Literal'
+  );
+}
+
+function isFbOnlyFile(filePath) {
+  return (
+    filePath
+      .split(path.sep)
+      .find(part => part.startsWith('fb-') || part === 'fb') != null
+  );
+}
+
 module.exports = {
   ATOM_BUILTIN_PACKAGES,
   getPackage,
   isRequire,
+  isRequireResolve,
+  isFbOnlyFile,
 };

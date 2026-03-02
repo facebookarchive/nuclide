@@ -8,7 +8,7 @@
 ./node_modules/.bin/eslint \
   --no-eslintrc \
   --parser=babel-eslint \
-  --rulesdir=resources/eslint-plugin-nuclide-internal \
+  --rulesdir=modules/eslint-plugin-nuclide-internal \
   --rule='consistent-import-name: 1' \
   -- file.js
 ```

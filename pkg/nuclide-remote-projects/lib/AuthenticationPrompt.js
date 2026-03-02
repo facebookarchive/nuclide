@@ -5,11 +5,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {getNotificationService} from './AtomNotifications';
 
@@ -23,17 +24,19 @@ type Props = {
 export default class AuthenticationPrompt extends React.Component<Props, void> {
   props: Props;
 
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
+  _password: ?HTMLInputElement;
+  _root: ?HTMLElement;
 
   constructor(props: Props) {
     super(props);
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   componentDidMount(): void {
     // Hitting enter when this panel has focus should confirm the dialog.
     this._disposables.add(
-      atom.commands.add(this.refs.root, 'core:confirm', event =>
+      atom.commands.add(nullthrows(this._root), 'core:confirm', event =>
         this.props.onConfirm(),
       ),
     );
@@ -45,7 +48,7 @@ export default class AuthenticationPrompt extends React.Component<Props, void> {
       ),
     );
 
-    this.refs.password.focus();
+    nullthrows(this._password).focus();
 
     const raiseNativeNotification = getNotificationService();
     if (raiseNativeNotification != null) {
@@ -66,11 +69,11 @@ export default class AuthenticationPrompt extends React.Component<Props, void> {
   }
 
   focus(): void {
-    this.refs.password.focus();
+    nullthrows(this._password).focus();
   }
 
   getPassword(): string {
-    return this.refs.password.value;
+    return nullthrows(this._password).value;
   }
 
   _onKeyUp = (e: SyntheticKeyboardEvent<>): void => {
@@ -89,7 +92,10 @@ export default class AuthenticationPrompt extends React.Component<Props, void> {
     // * `instructions` are pre-formatted, so apply `whiteSpace: pre` to maintain formatting coming
     //   from the server.
     return (
-      <div ref="root">
+      <div
+        ref={el => {
+          this._root = el;
+        }}>
         <div className="block" style={{whiteSpace: 'pre'}}>
           {this.props.instructions}
         </div>
@@ -97,7 +103,9 @@ export default class AuthenticationPrompt extends React.Component<Props, void> {
           tabIndex="0"
           type="password"
           className="nuclide-password native-key-bindings"
-          ref="password"
+          ref={el => {
+            this._password = el;
+          }}
           onKeyPress={this._onKeyUp}
         />
       </div>

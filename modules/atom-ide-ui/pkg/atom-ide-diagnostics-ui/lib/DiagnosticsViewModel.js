@@ -12,32 +12,37 @@
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Props} from './ui/DiagnosticsView';
-import type {FilterType, GlobalViewState} from './types';
+import type {DiagnosticGroup, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {showDockedPaneItem} from 'nuclide-commons-atom/pane-item';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
+import {arrayEqual, areSetsEqual} from 'nuclide-commons/collection';
+import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
-import DiagnosticsUi from './ui/DiagnosticsUi';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import Model from 'nuclide-commons/Model';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable} from 'rxjs';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
+import * as GroupUtils from './GroupUtils';
+import DiagnosticsView from './ui/DiagnosticsView';
 
 type SerializedDiagnosticsViewModel = {
   deserializer: 'atom-ide-ui.DiagnosticsViewModel',
   state: {
-    hiddenTypes: Array<FilterType>,
+    hiddenGroups: Array<DiagnosticGroup>,
   },
 };
 
 type State = {|
-  hiddenTypes: Set<FilterType>,
+  hiddenGroups: Set<DiagnosticGroup>,
   selectedMessage: ?DiagnosticMessage,
   textFilter: {|
     text: string,
@@ -56,22 +61,75 @@ export class DiagnosticsViewModel {
   _disposables: IDisposable;
 
   constructor(globalStates: Observable<GlobalViewState>) {
+    // Memoize `_filterDiagnostics()`
+    (this: any)._filterDiagnostics = memoizeUntilChanged(
+      this._filterDiagnostics,
+      (
+        diagnostics,
+        pattern,
+        hiddenGroups,
+        filterByActiveTextEditor,
+        filterPath,
+      ) => ({
+        diagnostics,
+        pattern,
+        hiddenGroups,
+        filterByActiveTextEditor,
+        filterPath,
+      }),
+      (a, b) =>
+        patternsAreEqual(a.pattern, b.pattern) &&
+        areSetsEqual(a.hiddenGroups, b.hiddenGroups) &&
+        arrayEqual(a.diagnostics, b.diagnostics) &&
+        a.filterByActiveTextEditor === b.filterByActiveTextEditor &&
+        a.filterPath === b.filterPath,
+    );
+
     const {pattern, invalid} = getFilterPattern('', false);
     this._model = new Model({
       // TODO: Get this from constructor/serialization.
-      hiddenTypes: new Set(),
+      hiddenGroups: new Set(),
       textFilter: {text: '', isRegExp: false, pattern, invalid},
       selectedMessage: null,
     });
     const visibility = observePaneItemVisibility(this).distinctUntilChanged();
     this._disposables = new UniversalDisposable(
       visibility
-        .debounceTime(1000)
+        .let(fastDebounce(1000))
         .distinctUntilChanged()
         .filter(Boolean)
         .subscribe(() => {
           analytics.track('diagnostics-show-table');
         }),
+      atom.commands.add(
+        '.diagnostics-ui-table-container',
+        'diagnostics:copy',
+        () => {
+          if (window.getSelection().toString() === '') {
+            // if there is a selectedMessage and no selected text, copy
+            // selectedMessage.text to the clipboard
+            const currentMessageText = this._model.state.selectedMessage
+              ? this._model.state.selectedMessage.text
+              : null;
+            if (currentMessageText != null) {
+              atom.clipboard.write(currentMessageText);
+            }
+          } else {
+            document.execCommand('copy');
+          }
+        },
+      ),
+      atom.contextMenu.add({
+        '.diagnostics-ui-table-container .nuclide-ui-table-row-selected': [
+          {
+            command: 'diagnostics:copy',
+            label: 'Copy',
+            shouldDisplay() {
+              return window.getSelection().toString() !== '';
+            },
+          },
+        ],
+      }),
     );
 
     // Combine the state that's shared between instances, the state that's unique to this instance,
@@ -79,24 +137,66 @@ export class DiagnosticsViewModel {
     const props = Observable.combineLatest(
       globalStates,
       this._model.toObservable(),
-      (globalState, instanceState) => ({
-        ...globalState,
-        ...instanceState,
-        diagnostics: this._filterDiagnostics(
-          globalState.diagnostics,
-          instanceState.textFilter.pattern,
-          instanceState.hiddenTypes,
-        ),
-        onTypeFilterChange: this._handleTypeFilterChange,
-        onTextFilterChange: this._handleTextFilterChange,
-        selectMessage: this._selectMessage,
-        gotoMessageLocation: goToDiagnosticLocation,
-        supportedMessageKinds: globalState.supportedMessageKinds,
-      }),
+      visibility,
+      (globalState, instanceState, isVisible) => {
+        const {
+          pathToActiveTextEditor,
+          ...globalStateWithoutPathToActiveTextEditor
+        } = globalState;
+
+        return {
+          ...globalStateWithoutPathToActiveTextEditor,
+          ...instanceState,
+          isVisible,
+          diagnostics: this._filterDiagnostics(
+            globalState.diagnostics,
+            instanceState.textFilter.pattern,
+            instanceState.hiddenGroups,
+            globalState.filterByActiveTextEditor,
+            pathToActiveTextEditor,
+          ),
+          onTypeFilterChange: this._handleTypeFilterChange,
+          onTextFilterChange: this._handleTextFilterChange,
+          selectMessage: this._selectMessage,
+          gotoMessageLocation: goToDiagnosticLocation,
+          supportedMessageKinds: globalState.supportedMessageKinds,
+        };
+      },
     );
 
-    // "Mute" the props stream when the view is hidden so we don't do unnecessary updates.
-    this._props = toggle(props, visibility);
+    this._props = this._trackVisibility(props);
+  }
+
+  // If autoVisibility setting is on, then automatically show/hide on changes.
+  _trackVisibility(props: Observable<Props>): Observable<Props> {
+    let lastDiagnostics = [];
+    return props.do(newProps => {
+      if (
+        newProps.autoVisibility &&
+        !arrayEqual(
+          newProps.diagnostics,
+          lastDiagnostics,
+          (a, b) => a.text === b.text,
+        )
+      ) {
+        if (newProps.diagnostics.length > 0 && !newProps.isVisible) {
+          showDockedPaneItem(this);
+        } else if (newProps.diagnostics.length === 0 && newProps.isVisible) {
+          const pane = atom.workspace.paneForItem(this);
+          // Only hide the diagnostics if it's the only item in its pane.
+          if (pane != null) {
+            const items = pane.getItems();
+            if (
+              items.length === 1 &&
+              items[0] instanceof DiagnosticsViewModel
+            ) {
+              atom.workspace.hide(this);
+            }
+          }
+        }
+        lastDiagnostics = newProps.diagnostics;
+      }
+    });
   }
 
   destroy(): void {
@@ -120,19 +220,19 @@ export class DiagnosticsViewModel {
   }
 
   serialize(): SerializedDiagnosticsViewModel {
-    const {hiddenTypes} = this._model.state;
+    const {hiddenGroups} = this._model.state;
     return {
       deserializer: 'atom-ide-ui.DiagnosticsViewModel',
       state: {
-        hiddenTypes: [...hiddenTypes],
+        hiddenGroups: [...hiddenGroups],
       },
     };
   }
 
   getElement(): HTMLElement {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsUi);
-      const element = renderReactRoot(<Component />);
+      const Component = bindObservableAsProps(this._props, DiagnosticsView);
+      const element = renderReactRoot(<Component />, 'DiagnosticsRoot');
       element.classList.add('diagnostics-ui');
       this._element = element;
     }
@@ -142,16 +242,17 @@ export class DiagnosticsViewModel {
   /**
    * Toggle the filter.
    */
-  _handleTypeFilterChange = (type: FilterType): void => {
-    const {hiddenTypes} = this._model.state;
-    const hidden = hiddenTypes.has(type);
-    const nextHiddenTypes = new Set(hiddenTypes);
+  _handleTypeFilterChange = (type: DiagnosticGroup): void => {
+    const {hiddenGroups} = this._model.state;
+    const hidden = hiddenGroups.has(type);
+    const nextHiddenTypes = new Set(hiddenGroups);
     if (hidden) {
       nextHiddenTypes.delete(type);
     } else {
       nextHiddenTypes.add(type);
     }
-    this._model.setState({hiddenTypes: nextHiddenTypes});
+    this._model.setState({hiddenGroups: nextHiddenTypes});
+    analytics.track('diagnostics-panel-change-filter');
   };
 
   _handleTextFilterChange = (value: RegExpFilterChange): void => {
@@ -161,16 +262,21 @@ export class DiagnosticsViewModel {
     this._model.setState({
       textFilter: {text, isRegExp, invalid, pattern},
     });
+    analytics.track('diagnostics-panel-change-filter');
   };
 
-  // TODO: Memoize this.
   _filterDiagnostics(
     diagnostics: Array<DiagnosticMessage>,
     pattern: ?RegExp,
-    hiddenTypes: Set<FilterType>,
+    hiddenGroups: Set<DiagnosticGroup>,
+    filterByActiveTextEditor: boolean,
+    filterByPath: ?string,
   ): Array<DiagnosticMessage> {
     return diagnostics.filter(message => {
-      if (hiddenTypes.has(getMessageFilterType(message))) {
+      if (hiddenGroups.has(GroupUtils.getGroup(message))) {
+        return false;
+      }
+      if (filterByActiveTextEditor && message.filePath !== filterByPath) {
         return false;
       }
       if (pattern == null) {
@@ -180,7 +286,7 @@ export class DiagnosticsViewModel {
         (message.text != null && pattern.test(message.text)) ||
         (message.html != null && pattern.test(message.html)) ||
         pattern.test(message.providerName) ||
-        (message.scope === 'file' && pattern.test(message.filePath))
+        pattern.test(message.filePath)
       );
     });
   }
@@ -190,37 +296,12 @@ export class DiagnosticsViewModel {
   };
 }
 
-function getMessageFilterType(message: DiagnosticMessage): FilterType {
-  const {kind} = message;
-  switch (kind) {
-    case 'lint':
-    case null:
-    case undefined:
-      // We have a separate button for each severity.
-      switch (message.type) {
-        case 'Error':
-          return 'errors';
-        case 'Warning':
-          return 'warnings';
-        case 'Info':
-          return 'warnings';
-        default:
-          (message.type: empty);
-          throw new Error(`Invalid message severity: ${message.type}`);
-      }
-    case 'review':
-      return 'review';
-    default:
-      (kind: empty);
-      throw new Error(`Invalid message kind: ${kind}`);
-  }
-}
-
 function goToDiagnosticLocation(
   message: DiagnosticMessage,
-  options: {|focusEditor: boolean|},
+  options: {|focusEditor: boolean, pendingPane: boolean|},
 ): void {
-  if (message.scope !== 'file' || message.filePath == null) {
+  // TODO: what should we do for project-path diagnostics?
+  if (nuclideUri.endsWithSeparator(message.filePath)) {
     return;
   }
 
@@ -235,6 +316,24 @@ function goToDiagnosticLocation(
     line,
     column,
     activatePane: options.focusEditor,
-    pending: true,
+    pending: options.pendingPane,
   });
+}
+
+function patternsAreEqual(a: ?RegExp, b: ?RegExp) {
+  if (a === b) {
+    return true;
+  }
+  if (a == null && b == null) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return false;
+  }
+  return (
+    a.source === b.source &&
+    a.global === b.global &&
+    a.multiline === b.multiline &&
+    a.ignoreCase === b.ignoreCase
+  );
 }

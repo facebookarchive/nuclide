@@ -11,18 +11,24 @@
 
 import invariant from 'assert';
 
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {FileTreeStore} from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import * as main from '../../pkg/nuclide-file-tree/lib/main';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import * as Actions from '../../pkg/nuclide-file-tree/lib/redux/Actions';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import * as Selectors from '../../pkg/nuclide-file-tree/lib/redux/Selectors';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {WORKSPACE_VIEW_URI as FILE_TREE_VIEW_URI} from '../../pkg/nuclide-file-tree/lib/Constants';
 
 import type {TestContext} from './remotable-tests';
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
-    const store = FileTreeStore.getInstance();
+    // $FlowIgnore: createPackage is magical
+    const store = main.__getStore();
+
     let elem;
     waitsFor('DOM to load', 10000, () => {
       elem = document.querySelector(EVENT_HANDLER_SELECTOR);
@@ -47,10 +53,9 @@ export function runTest(context: TestContext) {
 
     runs(() => {
       invariant(elem != null);
-      store.clearFilter();
-
-      atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
-      expect(store.getFilter()).toEqual('a');
+      store.dispatch(Actions.clearFilter());
+      atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
+      expect(Selectors.getFilter(store.getState())).toEqual('a');
     });
 
     // Close and open file tree
@@ -58,10 +63,10 @@ export function runTest(context: TestContext) {
     open();
 
     runs(() => {
-      expect(store.getFilter()).toEqual('');
+      expect(Selectors.getFilter(store.getState())).toEqual('');
       invariant(elem != null);
-      atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
-      expect(store.getFilter()).toEqual('a');
+      atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
+      expect(Selectors.getFilter(store.getState())).toEqual('a');
     });
   });
 }

@@ -1,4 +1,7 @@
 @import "ui-variables";
+
+@diagnostics-table-classification-icon-size: 14px;
+
 .diagnostics-ui-table-container {
   display: flex;
   flex-direction: column;
@@ -18,6 +21,20 @@
     td:last-child,
     th:last-child {
       border-right-width: 0;
+    }
+  }
+
+  .nuclide-ui-table-body-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    .icon.diagnostics-icon-stale {
+      color: @text-color-subtle;
+    }
+
+    .diagnostics-full-description-message {
+      white-space: normal;
     }
   }
 }
@@ -46,7 +63,7 @@
   text-align: center;
 }
 
-.nuclide-diagnostics-ui-path-cell {
+.nuclide-diagnostics-ui-dir-cell-contents {
   direction: rtl;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -69,12 +86,32 @@
 }
 
 .nuclide-diagnostics-ui-cell-classification {
-  text-align: center;
-  .icon::before {
-    margin-right: 0;
+  .nuclide-ui-table-row & {
+    text-align: center;
+
+    .icon::before {
+      width: @diagnostics-table-classification-icon-size;
+      height: @diagnostics-table-classification-icon-size;
+      font-size: @diagnostics-table-classification-icon-size;
+      margin-right: 0;
+    }
+  }
+
+  .nuclide-ui-table:not(:focus) .nuclide-ui-table-row &,
+  .nuclide-ui-table-row:not(.nuclide-ui-table-row-selected) & {
+    .icon { color: @text-color-info; }
+    .icon-nuclicon-error { color: @text-color-error; }
+    .icon-nuclicon-warning { color: @text-color-warning; }
   }
 }
 
-.nuclide-diagnostics-ui-description-cell {
-  overflow: hidden;
+.nuclide-ui-table .nuclide-ui-table-row
+.nuclide-diagnostics-ui-cell-classification.nuclide-ui-table-body-cell
+.icon.nuclide-ui-table-type-icon-stale {
+  color: @text-color-subtle;
+}
+
+.nuclide-diagnostics-ui-settings-modal {
+  flex-direction: column;
+  padding: @component-padding;
 }

@@ -13,6 +13,7 @@
 import SettingsCheckbox from './SettingsCheckbox';
 import SettingsInput from './SettingsInput';
 import SettingsSelect from './SettingsSelect';
+import SettingsColorInput from './SettingsColorInput';
 import invariant from 'assert';
 import * as React from 'react';
 
@@ -20,12 +21,16 @@ type Props = {
   keyPath: string,
   schema: atom$ConfigSchema,
   value: any,
+  title: ?string,
   onChange: (value: any) => mixed,
+  hideDetails?: boolean,
 };
 
-export default function SettingsControl(props: Props): ?React.Element<any> {
-  const {keyPath, value, onChange, schema} = props;
-  const {description, title} = schema;
+export default function SettingsControl(props: Props): React.Node {
+  const {keyPath, value, onChange, schema, title, hideDetails} = props;
+  const {description: settingDescription} = schema;
+
+  const description = hideDetails === true ? '' : settingDescription;
 
   if (schema) {
     if (schema.enum) {
@@ -40,7 +45,16 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
         />
       );
     } else if (schema.type === 'color') {
-      invariant(false); // Not implemented.
+      return (
+        // $FlowFixMe(>=0.53.0) Flow suppress
+        <SettingsColorInput
+          description={description}
+          keyPath={keyPath}
+          onChange={onChange}
+          title={title}
+          value={value}
+        />
+      );
     } else if (isBoolean(value) || schema.type === 'boolean') {
       return (
         // $FlowFixMe(>=0.53.0) Flow suppress

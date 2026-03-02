@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {Process, ProcessTask} from '../types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Process, ProcessTask} from 'nuclide-debugger-common/types';
+import type {Expected} from 'nuclide-commons/expected';
 
 import {ProcessTaskButton} from './ProcessTaskButton';
 import * as React from 'react';

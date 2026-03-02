@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -31,13 +31,18 @@ class Activation {
 
   consumeLegacyProvider(provider: CodeFormatProvider): IDisposable {
     // Legacy providers used `selector` / `inclusionPriority`.
+    // $FlowIgnore legacy API compatability.
     provider.grammarScopes =
       provider.grammarScopes ||
+      // $FlowIgnore
       (provider.selector != null ? provider.selector.split(', ') : null);
     provider.priority =
       provider.priority != null
         ? provider.priority
-        : provider.inclusionPriority != null ? provider.inclusionPriority : 0;
+        : // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+          provider.inclusionPriority != null
+          ? provider.inclusionPriority
+          : 0;
     if (provider.formatCode) {
       return this.consumeRangeProvider(provider);
     } else if (provider.formatEntireFile) {

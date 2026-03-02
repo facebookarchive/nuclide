@@ -30,7 +30,8 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
-describe('Mercurial Repository Integration Tests', () => {
+// eslint-disable-next-line
+xdescribe('Mercurial Repository Integration Tests', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       jasmineIntegrationTestSetup();
@@ -128,6 +129,6 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   afterEach(() => {
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 });

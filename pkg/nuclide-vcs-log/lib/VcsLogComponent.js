@@ -10,9 +10,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
+import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/types';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
+import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 import * as React from 'react';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {shell} from 'electron';
@@ -30,6 +31,7 @@ type Props = {
   repository: HgRepositoryClient,
   onDiffClick: (oldId: string, newId: string) => void,
   logEntries: ?Array<VcsLogEntry>,
+  fileLoadingError: ?string,
   oldContent: ?string,
   newContent: ?string,
 };
@@ -61,7 +63,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {logEntries} = this.props;
+    const {logEntries, fileLoadingError} = this.props;
     if (logEntries != null) {
       // Even if the "Show Differential Revision" preference is enabled, only show the column if
       // there is at least one row with a Differential revision. This way, enabling the preference
@@ -96,9 +98,9 @@ export default class VcsLogComponent extends React.Component<Props, State> {
               <tbody>
                 <tr>
                   <th className="nuclide-vcs-log-header-cell">Date</th>
-                  <th className="nuclide-vcs-log-header-cell">ID</th>
+                  <th className="nuclide-vcs-log-header-cell">Hash</th>
                   {showDifferentialRevision ? (
-                    <th className="nuclide-vcs-log-header-cell">Revision</th>
+                    <th className="nuclide-vcs-log-header-cell">Diff</th>
                   ) : null}
                   <th className="nuclide-vcs-log-header-cell">Author</th>
                   <th className="nuclide-vcs-log-header-cell">Summary</th>
@@ -117,13 +119,22 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         const filePath = this.props.files[0];
         const {oldContent, newContent} = this.props;
         const props = {filePath, oldContent, newContent};
+        const diffSection =
+          fileLoadingError != null ? (
+            <EmptyState
+              title={'Error loading diffs'}
+              message={fileLoadingError}
+            />
+          ) : (
+            <ShowDiff {...props} />
+          );
         return (
           // $FlowFixMe(>=0.53.0) Flow suppress
           <ResizableFlexContainer
             direction={FlexDirections.VERTICAL}
             className={'nuclide-vcs-log-container'}>
             <ResizableFlexItem initialFlexScale={3}>
-              <ShowDiff {...props} />
+              {diffSection}
             </ResizableFlexItem>
             <ResizableFlexItem
               initialFlexScale={1}
@@ -135,14 +146,14 @@ export default class VcsLogComponent extends React.Component<Props, State> {
       }
     } else {
       return (
-        <div>
-          <div>
-            <em>Loading hg log {this._files.join(' ')}</em>
-          </div>
-          <div className="nuclide-vcs-log-spinner">
-            <div className="loading-spinner-large inline-block" />
-          </div>
-        </div>
+        <EmptyState
+          title={'Loading hg log ' + this._files.join(' ')}
+          message={
+            <div className="nuclide-vcs-log-spinner">
+              <div className="loading-spinner-large inline-block" />
+            </div>
+          }
+        />
       );
     }
   }
@@ -243,7 +254,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         </td>
         {differentialCell}
         <td className="nuclide-vcs-log-author-cell">
-          {shortNameForAuthor(logEntry.user)}
+          {shortNameForAuthor(logEntry.author)}
         </td>
         <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
           {parseFirstLine(logEntry.desc)}

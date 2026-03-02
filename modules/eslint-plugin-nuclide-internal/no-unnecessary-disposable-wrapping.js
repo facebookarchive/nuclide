@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * This rule prevents unnecessary wrapping of disposables in `new UniversalDisposable` expressions.
@@ -25,10 +22,14 @@
 module.exports = function(context) {
   return {
     NewExpression(node) {
-      if (!isNewUniversalDisposableExpression(node)) { return; }
+      if (!isNewUniversalDisposableExpression(node)) {
+        return;
+      }
       for (let i = 0; i < node.arguments.length; i++) {
         const nodeArg = node.arguments[i];
-        if (!isNewDisposableExpression(nodeArg)) { continue; }
+        if (!isNewDisposableExpression(nodeArg)) {
+          continue;
+        }
         context.report({
           node: nodeArg,
           message: 'Unnecessary Disposable wrapping',
@@ -43,8 +44,8 @@ module.exports = function(context) {
               nodeArg,
               source.text.slice(
                 nodeArg.arguments[0].range[0],
-                nodeArg.arguments[nodeArg.arguments.length - 1].range[1]
-              )
+                nodeArg.arguments[nodeArg.arguments.length - 1].range[1],
+              ),
             );
           },
         });
@@ -55,9 +56,9 @@ module.exports = function(context) {
 
 function isNewUniversalDisposableExpression(node) {
   return (
-    node.type === 'NewExpression'
-    && node.callee.type === 'Identifier'
-    && node.callee.name === 'UniversalDisposable'
+    node.type === 'NewExpression' &&
+    node.callee.type === 'Identifier' &&
+    node.callee.name === 'UniversalDisposable'
   );
 }
 

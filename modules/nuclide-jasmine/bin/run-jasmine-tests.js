@@ -8,25 +8,23 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 /* eslint-disable no-console */
 
 // jasmine-node test runner with Atom test globals and babel transpiling support.
 
-// TODO(#21523621): Use a regular require once Yarn workspaces are enforced
-// eslint-disable-next-line rulesdir/modules-dependencies
-require('../../nuclide-node-transpiler');
+require('nuclide-node-transpiler');
 
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.
 process.once('exit', code => {
+  const {writeCoverage} = require('nuclide-commons/test-helpers');
+  writeCoverage();
+
   const temp = require('temp');
   if (code === 0) {
     // jasmine-node is swallowing temp's exit handler, so force a cleanup.
@@ -34,7 +32,7 @@ process.once('exit', code => {
       temp.cleanupSync();
     } catch (err) {
       if (err && err.message !== 'not tracking') {
-        console.log(`temp.cleanup() failed. ${err}`);
+        console.log('temp.cleanup() failed.', err);
       }
     }
   } else {

@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -18,22 +18,24 @@ import type {
   LinterProvider,
   OutlineProvider,
 } from 'atom-ide-ui';
+import type {
+  FileFamilyProvider,
+  FileGraph,
+} from '../../nuclide-file-family/lib/types';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
-import type {RefactorProvider} from '../../nuclide-refactorizer';
 import type {
   ClangConfigurationProvider,
   ClangDeclarationInfoProvider,
 } from './types';
-import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
+import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
-import {CompositeDisposable, Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeActions from './CodeActions';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
-import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {
@@ -43,10 +45,10 @@ import {
   getDeclarationInfo,
 } from './libclang';
 
-let subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?UniversalDisposable = null;
 
 export function activate() {
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
   // Provide a 'Clean and rebuild' command to restart the Clang server for the current file
   // and reset all compilation flags. Useful when BUCK targets or headers change,
   // since those are heavily cached for performance. Also great for testing!
@@ -72,8 +74,12 @@ export function activate() {
 }
 
 /** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
+    analytics: {
+      eventName: 'nuclide-clang',
+      shouldLogInsertedSuggestion: false,
+    },
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
     inclusionPriority: 1,
     suggestionPriority: 5, // Higher than the snippets provider.
@@ -85,9 +91,9 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 
 export function createTypeHintProvider(): TypeHintProvider {
   return {
-    inclusionPriority: 1,
+    priority: 1,
     providerName: PACKAGE_NAME,
-    selector: Array.from(GRAMMAR_SET).join(', '),
+    grammarScopes: Array.from(GRAMMAR_SET),
     typeHint(editor, position) {
       return TypeHintHelpers.typeHint(editor, position);
     },
@@ -99,6 +105,7 @@ export function provideDefinitions(): DefinitionProvider {
     name: PACKAGE_NAME,
     priority: 20,
     grammarScopes: GRAMMARS,
+    wordRegExp: null,
     getDefinition(
       editor: TextEditor,
       position: atom$Point,
@@ -133,22 +140,8 @@ export function provideOutlineView(): OutlineProvider {
     name: PACKAGE_NAME,
     priority: 10,
     grammarScopes: Array.from(GRAMMAR_SET),
-    updateOnEdit: false,
     getOutline(editor) {
       return OutlineViewHelpers.getOutline(editor);
-    },
-  };
-}
-
-export function provideRefactoring(): RefactorProvider {
-  return {
-    grammarScopes: Array.from(GRAMMAR_SET),
-    priority: 1,
-    refactoringsAtPoint(editor, point) {
-      return Refactoring.refactoringsAtPoint(editor, point);
-    },
-    refactor(request) {
-      return Refactoring.refactor(request);
     },
   };
 }
@@ -159,19 +152,38 @@ export function provideDeclarationInfo(): ClangDeclarationInfoProvider {
   };
 }
 
-export function provideRelatedFiles(): RelatedFilesProvider {
+export function provideFileFamily(): FileFamilyProvider {
   return {
-    getRelatedFiles(filePath: NuclideUri): Promise<Array<string>> {
-      return getRelatedSourceOrHeader(filePath).then(
-        related => (related == null ? [] : [related]),
-      );
+    async getRelatedFiles(filePath: NuclideUri): Promise<FileGraph> {
+      const relatedSourceOrHeader = await getRelatedSourceOrHeader(filePath);
+      if (relatedSourceOrHeader == null) {
+        return {
+          files: new Map(),
+          relations: [],
+        };
+      }
+
+      return {
+        files: new Map([
+          [filePath, {labels: new Set()}],
+          [relatedSourceOrHeader, {labels: new Set()}],
+        ]),
+        relations: [
+          {
+            from: filePath,
+            to: relatedSourceOrHeader,
+            labels: new Set(['alternate']),
+            directed: true,
+          },
+        ],
+      };
     },
   };
 }
 
 export function consumeClangConfigurationProvider(
   provider: ClangConfigurationProvider,
-): Disposable {
+): IDisposable {
   return registerClangProvider(provider);
 }
 

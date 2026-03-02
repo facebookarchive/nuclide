@@ -11,7 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-type ExportType =
+// Warning: this list is not comprehensive.
+// Other AST types may potentially be exported as well.
+export type ExportType =
   | 'FunctionDeclaration'
   | 'ClassDeclaration'
   | 'VariableDeclaration'
@@ -36,6 +38,7 @@ export type JSImport = {
 export type JSExport = {
   id: string,
   uri: NuclideUri,
+  line: number, // Line number (1-based for AST consistency)
   isTypeExport: boolean,
   isDefault: boolean,
   hasteName?: string,

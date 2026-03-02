@@ -18,14 +18,27 @@ import {Block} from './Block';
 
 const ButtonSizeExample = (): React.Element<any> => (
   <Block>
-    <Button className="inline-block" size="EXTRA_SMALL">
+    <Button
+      tooltip={{title: 'An Extra Small Tooltip'}}
+      className="inline-block"
+      size="EXTRA_SMALL">
       extra_small
     </Button>
-    <Button className="inline-block" size="SMALL">
+    <Button
+      tooltip={{title: 'A Small Tooltip'}}
+      className="inline-block"
+      size="SMALL">
       small
     </Button>
-    <Button className="inline-block">regular</Button>
-    <Button className="inline-block" size="LARGE">
+    <Button
+      tooltip={{title: 'A Regular Sized Tooltip'}}
+      className="inline-block">
+      regular
+    </Button>
+    <Button
+      tooltip={{title: 'A Large Tooltip'}}
+      className="inline-block"
+      size="LARGE">
       large
     </Button>
   </Block>

@@ -12,6 +12,7 @@
 
 import type {SettingsPropsDefault} from './SettingsUtils';
 
+import {Checkbox} from './Checkbox';
 import {normalizeIdentifier} from './SettingsUtils';
 import * as React from 'react';
 
@@ -20,11 +21,6 @@ type Props = SettingsPropsDefault & {
 };
 
 export default class SettingsCheckbox extends React.Component<Props> {
-  _handleChange = (event: SyntheticEvent<>) => {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
-    this.props.onChange(isChecked);
-  };
-
   render(): React.Node {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
@@ -35,13 +31,13 @@ export default class SettingsCheckbox extends React.Component<Props> {
     return (
       <div className="checkbox">
         <label htmlFor={id}>
-          <input
-            checked={value}
+          <Checkbox
             id={id}
-            onChange={this._handleChange}
-            type="checkbox"
+            checked={value}
+            className="setting-title"
+            onChange={this.props.onChange}
+            label={title}
           />
-          <div className="setting-title">{title}</div>
         </label>
         <div className="setting-description">{description}</div>
       </div>

@@ -50,7 +50,7 @@ export default (async function runCommand(
   const markdownFile = resolvePath(argv._[0]);
 
   // don't want to pull in too many Nuclide dependencies here
-  // eslint-disable-next-line rulesdir/atom-apis
+  // eslint-disable-next-line nuclide-internal/atom-apis
   const textEditor = await atom.workspace.open(markdownFile);
   await atom.packages.activatePackage('markdown-preview');
 
@@ -59,8 +59,8 @@ export default (async function runCommand(
     'markdown-preview',
   );
   invariant(markdownPreviewPackage);
-  // Apparently copyHtml() is exposed as an export of markdown-preview.
-  markdownPreviewPackage.mainModule.copyHtml();
+  // Apparently copyHTML() is exposed as an export of markdown-preview.
+  markdownPreviewPackage.mainModule.copyHTML();
   // Note it should be possible to get the HTML via MarkdownPreviewView.getHTML(),
   // but that was causing this script to lock up, for some reason.
   const htmlBody = atom.clipboard.read();

@@ -12,13 +12,14 @@
 import type {ClangCompileResult} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from 'atom-ide-ui';
 
+import {track, trackTiming} from 'nuclide-analytics';
+import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
+import {DEFAULT_FLAGS_WARNING, HEADER_DEFAULT_FLAGS_WARNING} from './constants';
+import {getDiagnostics} from './libclang';
 import invariant from 'assert';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {getLogger} from 'log4js';
-import {DEFAULT_FLAGS_WARNING} from './constants';
-import {getDiagnostics} from './libclang';
 
 const IDENTIFIER_REGEX = /[a-z0-9_]+/gi;
 
@@ -150,7 +151,9 @@ export default class ClangLinter {
       result.push({
         type: 'Info',
         filePath: bufferPath,
-        text: DEFAULT_FLAGS_WARNING,
+        text: isHeaderFile(bufferPath)
+          ? HEADER_DEFAULT_FLAGS_WARNING
+          : DEFAULT_FLAGS_WARNING,
         range: buffer.rangeForRow(0),
       });
     }

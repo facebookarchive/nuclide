@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * This rule forbids instantiating native DOM elements such as <button /> with special classnames
@@ -29,7 +26,8 @@ module.exports = function(context) {
       if (node.name === 'button') {
         context.report({
           node,
-          message: 'Prefer using `<Button />` from nuclide-commons-ui over home-built `<button />`s',
+          message:
+            'Prefer using `<Button />` from nuclide-commons-ui over home-built `<button />`s',
         });
       }
     },

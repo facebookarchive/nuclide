@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -22,4 +22,4 @@ async function runCommand(args: Array<string>): Promise<ExitCode> {
 // This modules is purposefully written in CommonJS to test that atom-script
 // can correctly handle modules that export a function, as opposed to a
 // `default` function.
-module.exports = runCommand; // eslint-disable-line rulesdir/no-commonjs
+module.exports = runCommand; // eslint-disable-line nuclide-internal/no-commonjs

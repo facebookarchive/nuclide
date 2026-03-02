@@ -7,42 +7,33 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const fs = require('fs');
 const path = require('path');
 
-const MISSING_MENU_ITEM_ERROR = 'All workspace-level Atom commands ' +
+const MISSING_MENU_ITEM_ERROR =
+  'All workspace-level Atom commands ' +
   'should have a corresponding menu item in the same package.';
 
-const COMMAND_LITERAL_ERROR = 'Please use literals for Atom commands. ' +
+const COMMAND_LITERAL_ERROR =
+  'Please use literals for Atom commands. ' +
   'This improves readability and makes command names easily greppable.';
 
-const WORKSPACE_VIEW_LOOKUP_ERROR = 'Prefer the string "atom-workspace" to calling'
-  + ' `atom.views.getView()`.';
+const WORKSPACE_VIEW_LOOKUP_ERROR =
+  'Prefer the string "atom-workspace" to calling `atom.views.getView()`.';
 
 const DISALLOWED_WORKSPACE_METHODS = {
-  open: 'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open',
-  observeTextEditors: 'Use observeTextEditors from commons-atom/text-editor instead of ' +
-    'atom.workspace.observeTextEditors. It ignores broken nuclide:/path ' +
-    'URIs, which appear briefly when reloading Atom with remote projects.',
-  isTextEditor: 'Use isValidTextEditor from commons-atom/text-editor instead of ' +
-    'atom.workspace.isTextEditor. It additionally blocks editors with broken nuclide:/path ' +
-    'URIs, which appear briefly when reloading Atom with remote projects.',
+  open:
+    'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open',
 };
 
 // Commands with these prefixes will be whitelisted.
-const WHITELISTED_PREFIXES = [
-  'core:',
-  'sample-',
-];
+const WHITELISTED_PREFIXES = ['core:', 'sample-'];
 
 function isCommandWhitelisted(command) {
   return WHITELISTED_PREFIXES.some(prefix => command.startsWith(prefix));
@@ -110,7 +101,9 @@ function menuItemContainsCommand(item, command) {
     return command === item.command;
   }
   if (item.submenu != null) {
-    return item.submenu.some(subitem => menuItemContainsCommand(subitem, command));
+    return item.submenu.some(subitem =>
+      menuItemContainsCommand(subitem, command),
+    );
   }
   return false;
 }
@@ -130,7 +123,9 @@ function checkLiterals(literals, context) {
     if (isCommandWhitelisted(literals[i].value)) {
       continue;
     }
-    if (!configs.some(config => menuContainsCommand(config, literals[i].value))) {
+    if (
+      !configs.some(config => menuContainsCommand(config, literals[i].value))
+    ) {
       context.report({
         node: literals[i],
         message: MISSING_MENU_ITEM_ERROR + ' (' + literals[i].value + ')',
@@ -167,7 +162,9 @@ module.exports = function(context) {
     if (firstValue == null) {
       // Another common pattern for atom.commands.add. Be lazy and just get the string..
       const stringValue = context.getSourceCode().getText(args[0]);
-      if (stringValue.replace(/\s/g, '') === 'atom.views.getView(atom.workspace)') {
+      if (
+        stringValue.replace(/\s/g, '') === 'atom.views.getView(atom.workspace)'
+      ) {
         context.report({
           node: node.callee,
           message: WORKSPACE_VIEW_LOOKUP_ERROR,
@@ -217,8 +214,10 @@ module.exports = function(context) {
    * but this shouldn't really happen in practice.
    */
   function checkWorkspaceFactory(node) {
-    if (node.callee.type !== 'MemberExpression' ||
-        node.callee.property.name !== 'registerFactory') {
+    if (
+      node.callee.type !== 'MemberExpression' ||
+      node.callee.property.name !== 'registerFactory'
+    ) {
       return;
     }
     const args = node.arguments;
@@ -226,8 +225,7 @@ module.exports = function(context) {
       return;
     }
     for (const prop of args[0].properties) {
-      if (prop.key.name === 'toggleCommand' &&
-          prop.value.type === 'Literal') {
+      if (prop.key.name === 'toggleCommand' && prop.value.type === 'Literal') {
         checkLiterals([prop.value], context);
       }
     }
@@ -237,13 +235,14 @@ module.exports = function(context) {
     if (isSpecFile(context.getFilename())) {
       return;
     }
-    if (node.callee.type === 'MemberExpression' &&
-        node.callee.object.type === 'MemberExpression' &&
-        node.callee.object.object.type === 'Identifier' &&
-        node.callee.object.object.name === 'atom' &&
-        node.callee.object.property.type === 'Identifier' &&
-        node.callee.object.property.name === 'workspace' &&
-        node.callee.property.type === 'Identifier'
+    if (
+      node.callee.type === 'MemberExpression' &&
+      node.callee.object.type === 'MemberExpression' &&
+      node.callee.object.object.type === 'Identifier' &&
+      node.callee.object.object.name === 'atom' &&
+      node.callee.object.property.type === 'Identifier' &&
+      node.callee.object.property.name === 'workspace' &&
+      node.callee.property.type === 'Identifier'
     ) {
       const message = DISALLOWED_WORKSPACE_METHODS[node.callee.property.name];
       if (message != null) {

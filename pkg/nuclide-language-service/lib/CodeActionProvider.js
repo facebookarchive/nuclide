@@ -11,14 +11,14 @@
 
 import type {LanguageService} from './LanguageService';
 import type {
-  FileDiagnosticMessage,
   CodeAction,
   CodeActionProvider as CodeActionProviderType,
+  DiagnosticMessage,
 } from 'atom-ide-ui';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 export type CodeActionConfig = {|
   version: '0.1.0',
@@ -70,7 +70,7 @@ export class CodeActionProvider<T: LanguageService> {
   getCodeActions(
     editor: atom$TextEditor,
     range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
+    diagnostics: Array<DiagnosticMessage>,
   ): Promise<Array<CodeAction>> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
@@ -84,7 +84,8 @@ export class CodeActionProvider<T: LanguageService> {
       const codeActions = await (await languageService).getCodeActions(
         fileVersion,
         range,
-        diagnostics,
+        // $FlowIssue: Flow doesn't understand this.
+        diagnostics.map(d => ({...d, actions: undefined})),
       );
 
       return codeActions.map(action => ({

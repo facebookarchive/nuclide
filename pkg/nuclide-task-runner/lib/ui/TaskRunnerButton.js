@@ -25,7 +25,6 @@ export function TaskRunnerButton(props: Props): React.Element<any> {
   const IconComponent = props.iconComponent;
   const icon = IconComponent ? <IconComponent /> : null;
   const buttonProps = {...props};
-  delete buttonProps.label;
   delete buttonProps.iconComponent;
   return (
     <Button {...buttonProps} className="nuclide-task-runner-task-runner-button">

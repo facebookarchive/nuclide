@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LRUCache} from 'lru-cache';
 
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import LRU from 'lru-cache';
 import {runCommand} from 'nuclide-commons/process';
@@ -44,14 +45,19 @@ export async function getGeneratedFileType(
   const filename = nuclideUri.basename(filePath);
   const fileTags = await findTaggedFiles(dirPath, [filename]);
 
-  const tag = fileTags.get(filename);
+  let tag = fileTags.get(filename);
   if (tag == null) {
-    cache.set(filePath, 'manual');
-    return 'manual';
+    tag = 'manual';
   }
 
   cache.set(filePath, tag);
   return tag;
+}
+
+export async function invalidateFileTypeCache(
+  filePath: NuclideUri,
+): Promise<void> {
+  cache.del(filePath);
 }
 
 export async function getGeneratedFileTypes(
@@ -83,14 +89,20 @@ export async function getGeneratedFileTypes(
 
   for (const file of uncheckedFiles) {
     const filePath = nuclideUri.join(dirPath, file);
-    const tag = fileTags.get(file);
-    if (tag == null) {
-      cache.set(filePath, 'manual');
-      fileTypes.set(filePath, 'manual');
-    } else {
-      cache.set(filePath, tag);
+    let tag = fileTags.get(file);
+    if (tag != null) {
       fileTypes.set(filePath, tag);
+    } else {
+      if (matchesGeneratedPaths(filePath)) {
+        tag = 'generated';
+        fileTypes.set(filePath, tag);
+      } else {
+        tag = 'manual';
+        // don't send this across the wire; receiver should assume that if it gets
+        // a response, any files in the directory that aren't specified are manual
+      }
     }
+    cache.set(filePath, tag);
   }
 
   return fileTypes;
@@ -99,56 +111,84 @@ export async function getGeneratedFileTypes(
 // 1000 entries should allow for a good number of open directories
 const cache: LRUCache<NuclideUri, GeneratedFileType> = new LRU({max: 1000});
 
-function findTaggedFiles(
+function getTagPattern(forWindows: boolean): ?string {
+  if (config.generatedTag == null) {
+    return config.partialGeneratedTag;
+  }
+  if (config.partialGeneratedTag == null) {
+    return config.generatedTag;
+  }
+  const separator = forWindows ? ' ' : '\\|';
+  return config.generatedTag + separator + config.partialGeneratedTag;
+}
+
+// If calling grep/findstr fails because they aren't available, we don't want to waste time trying
+// again, so we use this variable to keep track.
+let trySpawningToFindTaggedFiles = true;
+
+async function findTaggedFiles(
   dirPath: NuclideUri,
   filenames: Array<string>,
 ): Promise<Map<string, GeneratedFileType>> {
+  if (!trySpawningToFindTaggedFiles) {
+    return new Map();
+  }
+
   let command: string;
-  let args: Array<string>;
-  let options;
+  let baseArgs: Array<string>;
+  let pattern: ?string;
   if (process.platform === 'win32' && nuclideUri.isLocal(dirPath)) {
     command = 'findstr';
-    const pattern = config.generatedTag + ' ' + config.partialGeneratedTag;
-    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // ignore "files with nonprintable characters"
-    args = ['-p', pattern, ...filesToGrep];
-    options = {
-      cwd: dirPath,
-    };
+    baseArgs = ['-p'];
+    pattern = getTagPattern(true);
   } else {
     command = 'grep';
-    const pattern = config.generatedTag + '\\|' + config.partialGeneratedTag;
-    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // print with filename, ignore binary files and skip directories
-    args = ['-HId', 'skip', pattern, ...filesToGrep];
-    options = {
-      cwd: dirPath,
-      isExitError: ({exitCode, signal}) => {
-        return signal != null && (exitCode == null || exitCode > 1);
-      },
-    };
+    baseArgs = ['-HId', 'skip'];
+    pattern = getTagPattern(false);
   }
-  return runCommand(command, args, options)
-    .map(stdout => {
-      const fileTags: Map<string, GeneratedFileType> = new Map();
-      for (const line of stdout.split('\n')) {
-        const match = line.match(GREP_PARSE_PATTERN);
-        if (match != null && match.length === 3) {
-          const filename = match[1];
-          const matchedLine = match[2].trim();
-          if (matchedLine.includes(config.generatedTag)) {
-            fileTags.set(filename, 'generated');
-          } else if (
-            matchedLine.includes(config.partialGeneratedTag) &&
-            fileTags.get(filename) !== 'generated'
-          ) {
-            fileTags.set(filename, 'partial');
-          }
-        }
+  if (pattern == null) {
+    return new Map();
+  }
+  const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
+  const args = [...baseArgs, pattern, ...filesToGrep];
+  const options = {
+    cwd: dirPath,
+    isExitError: ({exitCode, signal}) => {
+      return signal != null && (exitCode == null || exitCode > 1);
+    },
+  };
+
+  let stdout;
+  try {
+    stdout = await runCommand(command, args, options).toPromise();
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      getLogger('nuclide-generated-files-rpc').error(err);
+      trySpawningToFindTaggedFiles = false;
+      return new Map();
+    }
+    throw err;
+  }
+
+  const fileTags: Map<string, GeneratedFileType> = new Map();
+  for (const line of stdout.split('\n')) {
+    const match = line.match(GREP_PARSE_PATTERN);
+    if (match != null && match.length === 3) {
+      const filename = match[1];
+      const matchedLine = match[2].trim();
+      if (matchedLine.includes(config.generatedTag)) {
+        fileTags.set(filename, 'generated');
+      } else if (
+        matchedLine.includes(config.partialGeneratedTag) &&
+        fileTags.get(filename) !== 'generated'
+      ) {
+        fileTags.set(filename, 'partial');
       }
-      return fileTags;
-    })
-    .toPromise();
+    }
+  }
+  return fileTags;
 }
 
 function matchesGeneratedPaths(filePath: NuclideUri): boolean {

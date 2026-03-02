@@ -9,50 +9,12 @@
  * @format
  */
 
-// flowlint-next-line untyped-type-import:off
-import type {Position, IPosition, IRange} from 'vscode-languageserver-types';
-
 import {Point, Range} from 'simple-text-buffer';
-
-export function lspPositionToAtomPoint(lspPosition: IPosition): atom$Point {
-  return new Point(lspPosition.line, lspPosition.character);
-}
-
-export function atomPointToLSPPosition(atomPoint: atom$PointObject): IPosition {
-  return {
-    line: atomPoint.row,
-    character: atomPoint.column,
-  };
-}
 
 export function babelLocationToAtomRange(location: Object): atom$Range {
   return new Range(
     new Point(location.start.line - 1, location.start.col),
     new Point(location.end.line - 1, location.end.col),
-  );
-}
-
-export function atomRangeToLSPRange(atomRange: atom$Range): IRange {
-  return {
-    start: atomPointToLSPPosition(atomRange.start),
-    end: atomPointToLSPPosition(atomRange.end),
-  };
-}
-
-export function lspRangeToAtomRange(lspRange: IRange): atom$RangeObject {
-  return {
-    start: lspPositionToAtomPoint(lspRange.start),
-    end: lspPositionToAtomPoint(lspRange.end),
-  };
-}
-
-export function compareLspPosition(a: Position, b: Position): number {
-  return a.line - b.line || a.character - b.character;
-}
-
-export function compareLspRange(a: IRange, b: IRange): number {
-  return (
-    compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end)
   );
 }
 
@@ -105,6 +67,16 @@ export function compareForSuggestion(path1: string, path2: string): number {
   if (p1 !== p2) {
     // Provide highest-priority matches first.
     return p2 - p1;
+  }
+  const parts1 = path1.split('.', 2);
+  const parts2 = path2.split('.', 2);
+  if (parts1[0] === parts2[0]) {
+    // Prefer x.react over any other x.{suffix}.
+    const isReact1 = parts1[1] === 'react';
+    const isReact2 = parts2[1] === 'react';
+    if (isReact1 !== isReact2) {
+      return Number(isReact2) - Number(isReact1);
+    }
   }
   // Prefer shorter paths.
   if (path1.length !== path2.length) {

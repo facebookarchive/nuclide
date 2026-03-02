@@ -19,14 +19,15 @@ import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DirectoryEntry, WriteOptions} from '../../../nuclide-fs';
 
-import mv from 'mv';
 import fs from 'fs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import {observeRawStream} from 'nuclide-commons/stream';
 import {Observable} from 'rxjs';
+import {getNuclideRealDir} from 'nuclide-commons/system-info';
 import {ROOT_FS} from '../../../nuclide-fs';
+import {getPathToLogDir} from '../../../nuclide-logging';
 
 //------------------------------------------------------------------------------
 // Services
@@ -134,6 +135,61 @@ export async function readdir(
 }
 
 /**
+ * Sorts the result of readdir() by alphabetical order (case-insensitive).
+ */
+export async function readdirSorted(
+  path: NuclideUri,
+): Promise<Array<DirectoryEntry>> {
+  return (await ROOT_FS.readdir(path)).sort((a, b) => {
+    return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
+  });
+}
+
+/**
+ * Recursively lists all children of the given directory. The limit param
+ * puts a bound on the maximum number of entries that can be returned.
+ * TODO: Consider adding concurrency while traversing search directories.
+ */
+export async function readdirRecursive(
+  root: NuclideUri,
+  limit: number = 100,
+): Promise<Array<DirectoryEntry>> {
+  // Keep a running array of all files and directories we encounter.
+  const result = [];
+
+  const helper = async (path): Promise<void> => {
+    const entries = await ROOT_FS.readdir(nuclideUri.join(root, path));
+
+    // We have to sort the entries to ensure that the limit is applied
+    // consistently.
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+    for (const entry of entries) {
+      // Prevent the results array from going over the limit.
+      if (result.length >= limit) {
+        break;
+      }
+
+      const [name, isFile, isSymbolicLink] = entry;
+
+      // Path to this entry from root.
+      const entryPath = nuclideUri.join(path, name);
+
+      result.push([entryPath, isFile, isSymbolicLink]);
+
+      // Recurse on directory if we aren't at the limit.
+      if (!isFile && result.length < limit) {
+        // eslint-disable-next-line no-await-in-loop
+        await helper(entryPath);
+      }
+    }
+  };
+
+  await helper('.');
+  return result;
+}
+
+/**
  * Gets the real path of a file path.
  * It could be different than the given path if the file is a symlink
  * or exists in a symlinked directory.
@@ -148,6 +204,13 @@ export function realpath(path: NuclideUri): Promise<NuclideUri> {
  */
 export function resolveRealPath(path: string): Promise<string> {
   return ROOT_FS.realpath(nuclideUri.expandHomeDir(path));
+}
+
+/**
+ * Returns the specified file path with the home dir ~/ expanded.
+ */
+export function expandHomeDir(path: string): Promise<string> {
+  return Promise.resolve(nuclideUri.expandHomeDir(path));
 }
 
 /**
@@ -183,12 +246,17 @@ export async function copy(
   sourcePath: NuclideUri,
   destinationPath: NuclideUri,
 ): Promise<boolean> {
-  const isExistingFile = await ROOT_FS.exists(destinationPath);
-  if (isExistingFile) {
-    return false;
+  try {
+    await ROOT_FS.copy(sourcePath, destinationPath);
+  } catch (err) {
+    if (err.code === 'EEXIST') {
+      // expected if the targetPath already exists
+      return false;
+    }
+    throw err;
   }
-  await ROOT_FS.copy(sourcePath, destinationPath);
-  await copyFilePermissions(sourcePath, destinationPath);
+  // TODO: May need to move into ROOT_FS if future filesystems support writing.
+  await fsPromise.copyFilePermissions(sourcePath, destinationPath);
   return true;
 }
 
@@ -219,6 +287,30 @@ export async function copyDir(
   );
   // Are all the resulting booleans true?
   return didCopyAll.every(b => b);
+}
+
+/**
+ * Runs the equivalent of `ln -s sourcePath targetPath`
+ * `type` is an argument particular to Windows platforms, and will be ignored
+ * on any others.
+ * @return true if the operation was successful; false if it wasn't.
+ */
+export async function symlink(
+  sourcePath: NuclideUri,
+  targetPath: NuclideUri,
+  type?: 'dir' | 'file' | 'junction',
+): Promise<boolean> {
+  try {
+    await ROOT_FS.symlink(sourcePath, targetPath, type);
+  } catch (err) {
+    if (err.code === 'EEXIST') {
+      // expected if the targetPath already exists
+      return false;
+    }
+    throw err;
+  }
+  await fsPromise.copyFilePermissions(sourcePath, targetPath);
+  return true;
 }
 
 /**
@@ -300,42 +392,11 @@ export function isNfs(path: NuclideUri): Promise<boolean> {
   return ROOT_FS.isNfs(path);
 }
 
-// TODO: Move to nuclide-commons
-function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    mv(sourcePath, destinationPath, {mkdirp: false}, error => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-async function copyFilePermissions(
-  sourcePath: string,
-  destinationPath: string,
-): Promise<void> {
-  try {
-    const {mode, uid, gid} = await ROOT_FS.stat(sourcePath);
-    await Promise.all([
-      // The user may not have permissions to use the uid/gid.
-      ROOT_FS.chown(destinationPath, uid, gid).catch(() => {}),
-      ROOT_FS.chmod(destinationPath, mode),
-    ]);
-  } catch (e) {
-    // If the file does not exist, then ENOENT will be thrown.
-    if (e.code !== 'ENOENT') {
-      throw e;
-    }
-    // For new files, use the default process file creation mask.
-    await ROOT_FS.chmod(
-      destinationPath,
-      // $FlowIssue: umask argument is optional
-      0o666 & ~process.umask(), // eslint-disable-line no-bitwise
-    );
-  }
+/**
+ * Returns true if the path being checked exists in a `Fuse` mounted directory device.
+ */
+export function isFuse(path: NuclideUri): Promise<boolean> {
+  return ROOT_FS.isFuse(path);
 }
 
 /**
@@ -351,7 +412,8 @@ export function writeFile(
   data: string,
   options?: WriteOptions,
 ): Promise<void> {
-  return _writeFile(path, data, options);
+  // TODO: May need to move into ROOT_FS if future filesystems support writing.
+  return fsPromise.writeFileAtomic(path, data, options);
 }
 
 /**
@@ -364,45 +426,7 @@ export function writeFileBuffer(
   data: Buffer,
   options?: {encoding?: string, mode?: number, flag?: string},
 ): Promise<void> {
-  return _writeFile(path, data, options);
-}
-
-async function _writeFile(
-  path: NuclideUri,
-  data: string | Buffer,
-  options?: {encoding?: string, mode?: number, flag?: string},
-): Promise<void> {
-  let complete = false;
-  const tempFilePath = await fsPromise.tempfile('nuclide');
-  try {
-    await fsPromise.writeFile(tempFilePath, data, options);
-
-    // Expand the target path in case it contains symlinks.
-    let realPath = path;
-    try {
-      realPath = await resolveRealPath(path);
-    } catch (e) {
-      // Fallback to using the specified path if it cannot be expanded.
-      // Note: this is expected in cases where the remote file does not
-      // actually exist.
-    }
-
-    // Ensure file still has original permissions:
-    // https://github.com/facebook/nuclide/issues/157
-    // We update the mode of the temp file rather than the destination file because
-    // if we did the mv() then the chmod(), there would be a brief period between
-    // those two operations where the destination file might have the wrong permissions.
-    await copyFilePermissions(realPath, tempFilePath);
-
-    // TODO(mikeo): put renames into a queue so we don't write older save over new save.
-    // Use mv as fs.rename doesn't work across partitions.
-    await mvPromise(tempFilePath, realPath);
-    complete = true;
-  } finally {
-    if (!complete) {
-      await fsPromise.unlink(tempFilePath);
-    }
-  }
+  return fsPromise.writeFileAtomic(path, data, options);
 }
 
 export async function getFreeSpace(path: NuclideUri): Promise<?number> {
@@ -423,4 +447,21 @@ export async function getFreeSpace(path: NuclideUri): Promise<?number> {
     })
     .toPromise()
     .catch(() => null);
+}
+
+// Wrapper around fsPromise.tempdir()
+export async function tempdir(prefix: string = ''): Promise<string> {
+  return fsPromise.tempdir(prefix);
+}
+
+export async function getNuclideDir(): Promise<NuclideUri> {
+  return getNuclideRealDir();
+}
+
+export async function getNuclideLogDir(): Promise<NuclideUri> {
+  return getPathToLogDir();
+}
+
+export async function guessRealPath(path: NuclideUri): Promise<NuclideUri> {
+  return fsPromise.guessRealPath(path);
 }

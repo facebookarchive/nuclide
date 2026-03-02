@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -14,9 +14,17 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
+  DiagnosticMessageType,
+  UiConfig,
 } from '../../atom-ide-diagnostics/lib/types';
 
-export type FilterType = 'errors' | 'warnings' | 'review';
+// We group diagnostics based on kind and severity.
+export type DiagnosticGroup =
+  | 'errors'
+  | 'warnings'
+  | 'info'
+  | 'review'
+  | 'action';
 
 // State that's shared between every diagnostics panel instance.
 export type GlobalViewState = {
@@ -24,7 +32,35 @@ export type GlobalViewState = {
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
+  showDirectoryColumn: boolean,
+  autoVisibility: boolean,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
+  uiConfig: UiConfig,
+};
+
+export type Location = {|
+  fullPath: NuclideUri,
+  locationInFile: ?{|
+    basename: string,
+    line: number,
+  |},
+|};
+
+export type DisplayDiagnostic = {
+  +classification: {
+    kind: DiagnosticMessageKind,
+    severity: DiagnosticMessageType,
+  },
+  +providerName: string,
+  +description: {
+    showTraces: boolean,
+    diagnostic: DiagnosticMessage,
+    text: string,
+    isPlainText: boolean,
+  },
+  +dir: string,
+  +location: ?Location,
+  +line: ?number,
 };

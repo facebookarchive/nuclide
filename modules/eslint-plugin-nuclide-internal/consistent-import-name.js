@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const {isRequire} = require('./utils');
 
@@ -111,8 +108,10 @@ module.exports = function(context) {
       }
       for (let i = 0; i < node.specifiers.length; i++) {
         const specifier = node.specifiers[i];
-        if (specifier.type === 'ImportDefaultSpecifier' ||
-            specifier.type === 'ImportNamespaceSpecifier') {
+        if (
+          specifier.type === 'ImportDefaultSpecifier' ||
+          specifier.type === 'ImportNamespaceSpecifier'
+        ) {
           checkNameForId(specifier, specifier.local.name, id);
         } else {
           checkNameForId(specifier, null, id);

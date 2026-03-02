@@ -9,10 +9,8 @@
  * @format
  */
 
-import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
-
 import * as React from 'react';
-import {MeasuredComponent} from './MeasuredComponent';
+import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import {Button} from 'nuclide-commons-ui/Button';
 
 type Props = {
@@ -41,10 +39,15 @@ export class ShowMoreComponent extends React.Component<Props, State> {
     };
   }
 
-  _updateMeasurements = (newMeasurements: DOMMeasurements): void => {
-    if (newMeasurements.scrollHeight !== this.state.currentHeight) {
+  _updateMeasurements = (
+    newMeasurements: DOMRectReadOnly,
+    target: HTMLElement,
+  ): void => {
+    const newHeight = target.scrollHeight;
+
+    if (newHeight !== this.state.currentHeight) {
       this.setState({
-        currentHeight: newMeasurements.scrollHeight,
+        currentHeight: newHeight,
       });
     }
   };
@@ -91,6 +94,9 @@ export class ShowMoreComponent extends React.Component<Props, State> {
   }
 
   _toggleShowMore = (): void => {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({showingMore: !this.state.showingMore});
   };
 }

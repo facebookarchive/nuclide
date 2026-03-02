@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -18,14 +18,15 @@ import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';
 import CommandsSectionComponent from './sections/CommandsSectionComponent';
 
 type Props = {
-  toolbarJewel: string,
-  updateToolbarJewel: (value: string) => void,
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
+  attachedDomNodes: ?number,
+  domNodes: ?number,
+  domListeners: ?number,
   childProcessesTree: ?ChildProcessInfo,
 };
 

@@ -13,42 +13,36 @@ import type {NavigationStackService} from '../../nuclide-navigation-stack';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {Observable, Subject} from 'rxjs';
+import {ReplaySubject} from 'rxjs';
 import {consumeStatusBar} from './StatusBar';
 
 class Activation {
   _disposables: UniversalDisposable;
-  _statusBarSubject: Subject<atom$StatusBar>;
-  _navigationStackSubject: Subject<NavigationStackService>;
+  _navigationStackSubject: ReplaySubject<?NavigationStackService>;
 
   constructor(state: ?Object) {
     this._disposables = new UniversalDisposable();
-    this._statusBarSubject = new Subject();
-    this._navigationStackSubject = new Subject();
-
-    const serviceSubscription = Observable.combineLatest(
-      this._statusBarSubject,
-      this._navigationStackSubject,
-    ).subscribe(([statusBar, stack]) => {
-      this._disposables.add(consumeStatusBar(statusBar, stack));
-    });
-    this._disposables.add(
-      this._statusBarSubject,
-      this._navigationStackSubject,
-      serviceSubscription,
-    );
+    this._navigationStackSubject = new ReplaySubject(1);
+    this._disposables.add(this._navigationStackSubject);
   }
 
   consumeNavigationStack(navigationStack: NavigationStackService): IDisposable {
     this._navigationStackSubject.next(navigationStack);
-    this._navigationStackSubject.complete();
-    return this._disposables;
+    return new UniversalDisposable(() => {
+      this._navigationStackSubject.next(null);
+    });
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    this._statusBarSubject.next(statusBar);
-    this._statusBarSubject.complete();
-    return this._disposables;
+    const disposable = consumeStatusBar(
+      statusBar,
+      this._navigationStackSubject,
+    );
+    this._disposables.add(disposable);
+    return new UniversalDisposable(() => {
+      disposable.dispose();
+      this._disposables.remove(disposable);
+    });
   }
 
   dispose() {

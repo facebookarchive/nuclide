@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /* eslint-disable no-console */
 
@@ -23,8 +20,8 @@ module.exports = context => {
   const template = context.template;
 
   const buildIfThrow = template(`
-    if (!$0) {
-      throw new Error($1);
+    if (!CONDITION) {
+      throw new Error(MESSAGE);
     }
   `);
 
@@ -36,7 +33,7 @@ module.exports = context => {
 
     if (node.arguments[0] == null) {
       throw path.buildCodeFrameError(
-        '`invariant()` must at least one argument.'
+        '`invariant()` must at least one argument.',
       );
     }
 
@@ -44,18 +41,20 @@ module.exports = context => {
 
     if (stmtParent.type !== 'ExpressionStatement') {
       throw path.buildCodeFrameError(
-        '`invariant()` must be used as an expression statement.'
+        '`invariant()` must be used as an expression statement.',
       );
     }
 
     stmtParent.replaceWith(
-      buildIfThrow(
-        node.arguments[0],
-        node.arguments[1] || t.stringLiteral(
-          'Invariant violation: '
-          + JSON.stringify(path.get('arguments.0').getSource())
-        )
-      )
+      buildIfThrow({
+        CONDITION: node.arguments[0],
+        MESSAGE:
+          node.arguments[1] ||
+          t.stringLiteral(
+            'Invariant violation: ' +
+              JSON.stringify(path.get('arguments.0').getSource()),
+          ),
+      }),
     );
   }
 
@@ -70,8 +69,10 @@ module.exports = context => {
           }
           let removeBinding = true;
           for (const refPath of binding.referencePaths) {
-            if (refPath.parentKey !== 'callee' ||
-                refPath.parent.type !== 'CallExpression') {
+            if (
+              refPath.parentKey !== 'callee' ||
+              refPath.parent.type !== 'CallExpression'
+            ) {
               removeBinding = false;
               continue;
             }
@@ -81,7 +82,7 @@ module.exports = context => {
             // import invariant from '';
             if (binding.path.parent.specifiers.length === 1) {
               binding.path.parentPath.remove();
-            // import invariant, {deepEqual} from '';
+              // import invariant, {deepEqual} from '';
             } else {
               binding.path.remove();
             }

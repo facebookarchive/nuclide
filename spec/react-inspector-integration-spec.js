@@ -5,19 +5,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';
 import {
-  activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
 import WS from 'ws';
 
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {WORKSPACE_VIEW_URI} from '../pkg/nuclide-react-inspector/lib/ui/Inspector';
 
 describe('React Native Inspector', () => {
@@ -25,20 +25,21 @@ describe('React Native Inspector', () => {
     waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
-      // Activate nuclide packages.
-      await activateAllPackages();
+      await atom.packages.activatePackage(
+        nuclideUri.join(__dirname, '../pkg/nuclide-react-inspector'),
+      );
     });
   });
 
   afterEach(() => {
     // Deactivate nuclide packages.
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 
   it('tries to connect to the RN app on port 8097', () => {
     // Activate the Inspector
 
-    // eslint-disable-next-line rulesdir/atom-apis
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
 
     waitsForPromise({timeout: 3000}, async () => {

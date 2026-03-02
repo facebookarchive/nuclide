@@ -14,7 +14,7 @@ import type {SyntacticSelectionProvider as SyntacticSelectionProviderType} from 
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 
 export type SyntacticSelectionConfig = {|
   version: '0.1.0',

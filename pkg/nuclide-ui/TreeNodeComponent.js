@@ -12,8 +12,8 @@
 import type {LazyTreeNode} from './LazyTreeNode';
 
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+import nullthrows from 'nullthrows';
 
 const INDENT_IN_PX = 10;
 const INDENT_PER_LEVEL_IN_PX = 15;
@@ -43,6 +43,8 @@ type Props = {
  * Represents one entry in a TreeComponent.
  */
 export class TreeNodeComponent extends React.PureComponent<Props, void> {
+  _arrow: ?HTMLElement;
+
   render(): React.Node {
     const rowClassNameObj: {[key: string]: ?boolean} = {
       // Support for selectors in the "file-icons" package.
@@ -83,7 +85,11 @@ export class TreeNodeComponent extends React.PureComponent<Props, void> {
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}
         onMouseDown={this._onMouseDown}>
-        <span className="nuclide-tree-component-item-arrow" ref="arrow">
+        <span
+          className="nuclide-tree-component-item-arrow"
+          ref={el => {
+            this._arrow = el;
+          }}>
           {arrow}
         </span>
         {this.props.labelElement != null ? (
@@ -104,7 +110,7 @@ export class TreeNodeComponent extends React.PureComponent<Props, void> {
 
   _onClick = (event: SyntheticMouseEvent<>): void => {
     // $FlowFixMe
-    if (ReactDOM.findDOMNode(this.refs.arrow).contains(event.target)) {
+    if (nullthrows(this._arrow).contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {
       this.props.onClick(event, this.props.node);

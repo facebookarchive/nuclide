@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -17,21 +18,24 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessages,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
   CodeAction,
-  FileDiagnosticMessage,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {
   AutocompleteRequest,
   AutocompleteResult,
+  FileDiagnosticMap,
+  FileDiagnosticMessage,
   FormatOptions,
   LanguageService,
   SymbolResult,
+  Completion,
+  CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {Observable} from 'rxjs';
@@ -39,11 +43,11 @@ import {Observable} from 'rxjs';
 // An implementation of LanguageService which always returns no results.
 // Useful for implementing aggregate language services.
 export class NullLanguageService {
-  getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
+  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
     return Observable.empty().publish();
   }
 
@@ -55,6 +59,10 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
+  }
+
   getDefinition(
     fileVersion: FileVersion,
     position: atom$Point,
@@ -62,11 +70,23 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
+  onToggleCoverage(set: boolean): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    return Promise.resolve(null);
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.of(null).publish();
+  }
+
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): ConnectableObservable<?RenameReturn> {
+    return Observable.of(null).publish();
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
@@ -77,7 +97,20 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
-  getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    return Promise.resolve(null);
+  }
+
+  resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData> {
+    return Promise.resolve(null);
+  }
+
+  getAdditionalLogFiles(
+    deadline: DeadlineRequest,
+  ): Promise<Array<AdditionalLogFile>> {
     return Promise.resolve([]);
   }
 
@@ -128,10 +161,10 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
-  getEvaluationExpression(
+  signatureHelp(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+  ): Promise<?SignatureHelp> {
     return Promise.resolve(null);
   }
 
@@ -167,6 +200,34 @@ export class NullLanguageService {
     originalCursorPosition: atom$Point,
   ): Promise<?atom$Range> {
     return Promise.resolve(null);
+  }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return Observable.of({kind: 'null'}).publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {}
+
+  onWillSave(fileVersion: FileVersion): ConnectableObservable<TextEdit> {
+    return Observable.empty().publish();
+  }
+
+  async sendLspRequest(
+    filePath: NuclideUri,
+    method: string,
+    params: mixed,
+  ): Promise<mixed> {}
+
+  async sendLspNotification(method: string, params: mixed): Promise<void> {}
+
+  observeLspNotifications(
+    notificationMethod: string,
+  ): ConnectableObservable<mixed> {
+    return Observable.empty().publish();
   }
 
   dispose(): void {}

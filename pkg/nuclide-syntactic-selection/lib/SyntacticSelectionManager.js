@@ -123,17 +123,17 @@ export class SyntacticSelectionManager {
   }
 
   /**
-  * Either retrieves the monitor object for the currently active text editor
-  * from the cache, or creates (and caches) the new one
-  *
-  * The monitor object hides the complexity of maintaining the last selection
-  * explicitly made by user and handles the expand/collapse requests
-  *
-  * The monitor objects are held in the state only as long as an editor's
-  * selection is modified by the syntactic selection feature. I.e. should a
-  * user change the selection manually, the editor is removed from the cache
-  * and any in-flight collapse/expand requests are abandoned (ignored).
-  */
+   * Either retrieves the monitor object for the currently active text editor
+   * from the cache, or creates (and caches) the new one
+   *
+   * The monitor object hides the complexity of maintaining the last selection
+   * explicitly made by user and handles the expand/collapse requests
+   *
+   * The monitor objects are held in the state only as long as an editor's
+   * selection is modified by the syntactic selection feature. I.e. should a
+   * user change the selection manually, the editor is removed from the cache
+   * and any in-flight collapse/expand requests are abandoned (ignored).
+   */
   _getTextSelectionMonitor(): ?TextEditorSelectionMonitor {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -178,7 +178,7 @@ export class SyntacticSelectionManager {
     let expectedSelection = selectedRanges[0];
 
     // Sometimes Atom may reinterpret the range that is provided by the language
-    // service. In this case we have one more oportunity to detecting that
+    // service. In this case we have one more opportunity to detecting that
     // the selection change is done by us. That is if it is done synchronously
     // it is definitely ours. Unfortunately this relies on an implementation
     // details, and thus is not future-proof. Still, better then terminating

@@ -47,7 +47,6 @@ function makeSizedFixture(location: string, size: number): void {
   // $FlowFixMe: Bad upstream definition
   fs.truncateSync(file, 0);
   for (let i = 0; i < size; i += lineLength) {
-    // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, line);
   }
   fs.closeSync(file);
@@ -77,7 +76,7 @@ function green(str: string): string {
   return `\x1b[92m${str}\x1b[0m`;
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   timedAsync,
   timedSync,

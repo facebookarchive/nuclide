@@ -5,6 +5,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides a UI for packages to indicate that they are busy",
+  "author": "Nuclide : Diagnostics",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "activationCommands": {},
   "consumedServices": {

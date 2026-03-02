@@ -13,10 +13,16 @@
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import classnames from 'classnames';
-import idx from 'idx';
 import * as React from 'react';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
+import shallowEqual from 'shallowequal';
 import {Icon} from './Icon';
+import {
+  areSetsEqual,
+  objectMapValues,
+  objectFromPairs,
+  arrayEqual,
+} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ResizeObservable} from './observable-dom';
 import {scrollIntoViewIfNeeded} from './scrollIntoView';
@@ -36,7 +42,7 @@ export type Column<T: Object> = {
   width?: number,
   // Optional React component for rendering cell contents.
   // The component receives the cell value via `props.data`.
-  component?: React.ComponentType<any>,
+  component?: React.ComponentType<{data: any}>,
   shouldRightAlign?: boolean,
   // A class to add to the cell. This will be added to both the header and body; you can
   // differentiate between them with `.nuclide-ui-table-header-cell` and
@@ -45,13 +51,18 @@ export type Column<T: Object> = {
   // A minimum width (in pixels) for the column.
   minWidth?: number,
 };
+
 export type Row<T: Object> = {
-  +className?: string,
-  +data: T,
+  className?: string,
+  data: T,
+  rowAttributes?: Object,
 };
-type WidthMap<T> = {
-  [key: $Keys<T>]: number,
-};
+
+type PercentageWidthMap<T> = {[key: $Keys<T>]: number};
+// Same shape; the separate type is just used for documentation--Flow doesn't recognize a
+// difference.
+type PixelWidthMap<T> = {[key: $Keys<T>]: number};
+
 type Props<T> = {
   /**
    * Optional classname for the entire table.
@@ -68,10 +79,6 @@ type Props<T> = {
    * Whether to shade even and odd items differently. Default behavior is `true`.
    */
   alternateBackground?: number,
-  /**
-   * Whether column widths can be resized interactively via drag&drop. Default behavior is `true`.
-   */
-  resizable?: boolean,
   children?: React.Element<any>,
   /**
    * Whether columns can be sorted.
@@ -85,7 +92,7 @@ type Props<T> = {
    * Whether items can be selected.
    * If specified, `onSelect` must also be specified.
    */
-  selectable?: boolean,
+  selectable?: boolean | ((row: T) => boolean),
   selectedIndex?: ?number,
   /**
    * Handler to be called upon selection. Called iff `selectable` is `true`. We pass along the event
@@ -117,6 +124,9 @@ type Props<T> = {
    */
   onConfirm?: (selectedItem: any, selectedIndex: number) => mixed,
 
+  onBodyBlur?: (event: SyntheticEvent<*>) => mixed,
+  onBodyFocus?: (event: SyntheticEvent<*>) => mixed,
+
   /**
    * Optional React Component to override the default message when zero rows are provided.
    * Useful for showing loading spinners and custom messages.
@@ -131,6 +141,11 @@ type Props<T> = {
    * It disables the 'sortable' prop.
    */
   headerTitle?: string,
+  /**
+   * Optional HTMLElement to render a custom table header. Takes precedence over
+   * headerTitle.
+   */
+  headerElement?: React.Node,
 
   /**
    * Should keyboard navigation be enabled? This option exists for historical purposes. Ideally it
@@ -142,19 +157,32 @@ type Props<T> = {
   enableKeyboardNavigation?: ?boolean,
 };
 
+type ResizeOffset = {|
+  deltaPx: number, // In pixels
+  resizerLocation: number, // The column after which the resizer is located.
+|};
+
 type State<T> = {|
-  columnWidths: ?WidthMap<T>,
+  tableWidth: number,
+
+  // The user's preferred column distributions. These do not take into account the minimum widths.
+  preferredColumnWidths: PercentageWidthMap<T>,
+
+  // During a drag operation, specifies the change the user desires in the column size (and to which
+  // column). This is kept as a separate piece of state from the calculated widths and only combined
+  // with them in `render()` so that we can recalculate widths if the table changes size. We could
+  // also support cancelation of the resize (though we don't yet).
+  resizeOffset: ?ResizeOffset,
 
   // It's awkward to have hover styling when you're using keyboard navigation and the mouse just
   // happens to be over a row. Therefore, we'll keep track of when you use keyboard navigation and
   // will disable the hover state until you move the mouse again.
   usingKeyboard: boolean,
-|};
 
-type ResizerLocation<T> = {
-  leftColumnKey: $Keys<T>,
-  rightColumnKey: $Keys<T>,
-};
+  // Reflects the previous value stored in `this.props.columns`. Used exclusively
+  // by `getDerivedStateFromProps` to determine whether to change column width.
+  lastColumns: ?Array<Column<T>>,
+|};
 
 /**
  * Design concerns:
@@ -184,140 +212,126 @@ type ResizerLocation<T> = {
  * minimum widths of the columns. (Ideally, the table would scroll horizontally in this case.)
  */
 export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
-  _resizingDisposable: ?IDisposable; // Active while resizing.
   _mouseMoveDisposable: ?IDisposable;
   _rootNode: ?HTMLDivElement;
   _disposables: UniversalDisposable;
   _tableBody: ?HTMLElement;
 
+  _resizeStarts: Subject<{
+    event: SyntheticMouseEvent<*>,
+    resizerLocation: number,
+  }>;
+
+  static getDerivedStateFromProps(
+    nextProps: Props<T>,
+    prevState: State<T>,
+  ): $Shape<State<T>> {
+    const newState = {};
+    if (nextProps.columns !== prevState.lastColumns) {
+      newState.lastColumns = nextProps.columns;
+    }
+    // Did the columns change? If so, we need to recalculate the widths.
+    const currentColumns = prevState.lastColumns;
+    const nextColumns = nextProps.columns;
+
+    if (currentColumns == null) {
+      return newState;
+    }
+
+    if (
+      nextColumns.length !== currentColumns.length ||
+      // If the columns just changed order, we want to keep their widths.
+      !areSetsEqual(
+        new Set(currentColumns.map(column => column.key)),
+        new Set(nextColumns.map(column => column.key)),
+      )
+    ) {
+      newState.preferredColumnWidths = getInitialPreferredColumnWidths(
+        nextColumns,
+      );
+    }
+
+    return newState;
+  }
+
   constructor(props: Props<T>) {
     super(props);
-    this._resizingDisposable = null;
+    this._resizeStarts = new Subject();
     this.state = {
-      columnWidths: null,
+      preferredColumnWidths: getInitialPreferredColumnWidths(props.columns),
+      resizeOffset: null,
+      tableWidth: 0,
       usingKeyboard: false,
+      lastColumns: null,
     };
   }
 
-  _handleResizerMouseDown(
-    event: SyntheticMouseEvent<>,
-    resizerLocation: ResizerLocation<T>,
-  ): void {
-    if (this._resizingDisposable != null) {
-      this._stopResizing();
+  shouldComponentUpdate(nextProps: Props<T>, nextState: State<T>): boolean {
+    // If the state changed, we need to re-render.
+    if (!shallowEqual(nextState, this.state, compareState)) {
+      return true;
     }
-    // Prevent browser from initiating drag events on accidentally selected elements.
-    const selection = document.getSelection();
-    if (selection != null) {
-      selection.removeAllRanges();
+
+    if (!shallowEqual(nextProps, this.props, compareCheapProps)) {
+      return true;
     }
-    const tableWidth = this.refs.table.getBoundingClientRect().width;
-    const startX = event.pageX;
-    const startWidths = this.state.columnWidths;
-    invariant(startWidths != null);
-    this._resizingDisposable = new UniversalDisposable(
-      Observable.fromEvent(document, 'mousemove').subscribe(evt => {
-        this._handleResizerGlobalMouseMove(
-          evt,
-          startX,
-          startWidths,
-          resizerLocation,
-          tableWidth,
-        );
-      }),
-      Observable.fromEvent(document, 'mouseup').subscribe(() => {
-        this._stopResizing();
-      }),
-    );
+
+    if (!arrayEqual(nextProps.columns, this.props.columns, shallowEqual)) {
+      return true;
+    }
+
+    if (!arrayEqual(nextProps.rows, this.props.rows)) {
+      return true;
+    }
+
+    return false;
   }
-
-  _stopResizing(): void {
-    if (this._resizingDisposable == null) {
-      return;
-    }
-    this._resizingDisposable.dispose();
-    this._resizingDisposable = null;
-  }
-
-  _handleResizerGlobalMouseMove = (
-    event: MouseEvent,
-    startX: number,
-    startWidths: WidthMap<T>,
-    location: ResizerLocation<T>,
-    tableWidth: number,
-  ): void => {
-    const pxToRatio = px => px / tableWidth;
-
-    const delta = pxToRatio(event.pageX - startX);
-    const {leftColumnKey, rightColumnKey} = location;
-
-    // Determine which column is shrinking and which is growing. This will allow us to apply the min
-    // width limitations correctly.
-    let shrinkingColumnKey;
-    let growingColumnKey;
-    if (delta < 0) {
-      [shrinkingColumnKey, growingColumnKey] = [leftColumnKey, rightColumnKey];
-    } else {
-      [shrinkingColumnKey, growingColumnKey] = [rightColumnKey, leftColumnKey];
-    }
-
-    const prevShrinkingColumnWidth = startWidths[shrinkingColumnKey];
-    const prevGrowingColumnWidth = startWidths[growingColumnKey];
-    const shrinkingColumn = this.props.columns.find(
-      column => column.key === shrinkingColumnKey,
-    );
-    invariant(shrinkingColumn != null);
-    const shrinkingColumnMinWidth = pxToRatio(
-      shrinkingColumn.minWidth == null
-        ? DEFAULT_MIN_COLUMN_WIDTH
-        : shrinkingColumn.minWidth,
-    );
-    const nextShrinkingColumnWidth = Math.max(
-      shrinkingColumnMinWidth,
-      prevShrinkingColumnWidth - Math.abs(delta),
-    );
-    const actualChange = nextShrinkingColumnWidth - prevShrinkingColumnWidth;
-    const nextGrowingColumnWidth = prevGrowingColumnWidth - actualChange;
-
-    this.setState({
-      columnWidths: {
-        ...this.state.columnWidths,
-        [shrinkingColumnKey]: nextShrinkingColumnWidth,
-        [growingColumnKey]: nextGrowingColumnWidth,
-      },
-    });
-  };
 
   componentDidMount(): void {
     const el = nullthrows(this._rootNode);
 
     this._disposables = new UniversalDisposable(
+      // Update the column widths when the table is resized.
       new ResizeObservable(el)
         .startWith((null: any))
         .map(() => el.offsetWidth)
         .filter(tableWidth => tableWidth > 0)
         .subscribe(tableWidth => {
-          // Update the column widths to account for minimum widths. This logic could definitely be
-          // improved. As it is now, if you resize the table to be very small and then make it large
-          // again, the proportions from when it was at its smallest will be preserved. If no
-          // columns have min widths, then this is what you want. But if a minimum width prevented
-          // one or more of the columns from shrinking, you'll probably consider them too wide when
-          // the table's expanded.
-          const preferredColumnWidths =
-            this.state.columnWidths ||
-            getInitialPercentageWidths(this.props.columns);
-          this.setState({
-            columnWidths: ensureMinWidths(
-              preferredColumnWidths,
-              this._getMinWidths(),
-              tableWidth,
-              this.props.columns.map(c => c.key),
-            ),
-          });
+          this.setState({tableWidth});
         }),
-      () => {
-        this._stopResizing();
-      },
+      this._resizeStarts
+        .switchMap(({event: startEvent, resizerLocation}) => {
+          const startX = startEvent.pageX;
+          return Observable.fromEvent(document, 'mousemove')
+            .takeUntil(Observable.fromEvent(document, 'mouseup'))
+            .map(event => ({
+              deltaPx: event.pageX - startX,
+              resizerLocation,
+            }))
+            .concat(Observable.of(null));
+        })
+        .subscribe(resizeOffset => {
+          if (resizeOffset == null) {
+            // Finalize the resize by updating the user's preferred column widths to account for
+            // their action. Note that these preferences are only updated when columns are resized
+            // (NOT when the table is). This is important so that, if the user resizes the table
+            // such that a column is at its minimum width and then resizes the table back to its
+            // orignal size, their original column widths are restored.
+            const preferredColumnWidths = _calculatePreferredColumnWidths({
+              currentWidths: this._calculateColumnWidths(),
+              // TODO: (wbinnssmith) T30771435 this setState depends on current state
+              // and should use an updater function rather than an object
+              // eslint-disable-next-line react/no-access-state-in-setstate
+              tableWidth: this.state.tableWidth,
+              minWidths: getMinWidths(this.props.columns),
+            });
+
+            // Update the preferred distributions and end the resize.
+            this.setState({preferredColumnWidths, resizeOffset: null});
+          } else {
+            this.setState({resizeOffset});
+          }
+        }),
       atom.commands.add(el, {
         'core:move-up': event => {
           this.setState({usingKeyboard: true});
@@ -350,14 +364,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
   componentWillUnmount(): void {
     this._disposables.dispose();
-  }
-
-  _getMinWidths(): WidthMap<T> {
-    const minWidths = {};
-    this.props.columns.forEach(column => {
-      minWidths[column.key] = column.minWidth;
-    });
-    return minWidths;
   }
 
   componentDidUpdate(prevProps: Props<T>, prevState: State<T>): void {
@@ -407,22 +413,21 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (selectedIndex == null) {
       return;
     }
-    const nextSelectedIndex = selectedIndex + offset;
-    if (
-      nextSelectedIndex < 0 ||
-      nextSelectedIndex >= this.props.rows.length ||
-      nextSelectedIndex === selectedIndex
-    ) {
+    const nextSelectedIndex = Math.max(
+      0,
+      Math.min(this.props.rows.length - 1, selectedIndex + offset),
+    );
+    if (nextSelectedIndex === selectedIndex) {
       return;
     }
     this._selectRow({index: nextSelectedIndex, event});
   }
 
-  _selectRow(options: {|
+  _selectRow = (options: {|
     index: number,
     event: SelectionEvent,
     confirm?: boolean,
-  |}): void {
+  |}): void => {
     const {index: selectedIndex, event, confirm} = options;
     const {onSelect, onWillSelect, rows} = this.props;
     if (onSelect == null) {
@@ -439,9 +444,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (confirm && this.props.onConfirm != null) {
       this.props.onConfirm(selectedItem, selectedIndex);
     }
-  }
+  };
 
-  _handleSortByColumn(sortedBy: $Keys<T>): void {
+  _handleSortByColumn = (sortedBy: $Keys<T>): void => {
     const {onSort, sortDescending, sortedColumn} = this.props;
     if (onSort == null) {
       return;
@@ -452,10 +457,17 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         ? false
         : !sortDescending,
     );
-  }
+  };
 
-  _renderEmptyCellContent(): React.Element<any> {
-    return <div />;
+  // Just a bound version of the `_calculateColumnWidths` function for convenience.
+  _calculateColumnWidths(): PercentageWidthMap<T> {
+    return _calculateColumnWidths({
+      preferredWidths: this.state.preferredColumnWidths,
+      minWidths: getMinWidths(this.props.columns),
+      tableWidth: this.state.tableWidth,
+      columnOrder: this.props.columns.map(column => column.key),
+      resizeOffset: this.state.resizeOffset,
+    });
   }
 
   render(): React.Node {
@@ -469,17 +481,22 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   }
 
   _renderContents(): React.Node {
-    const {columnWidths} = this.state;
-    if (columnWidths == null) {
+    if (this.state.tableWidth === 0) {
       // We don't have the table width yet so we can't render the columns.
       return null;
     }
 
     const {
       alternateBackground,
+      collapsable,
       columns,
+      enableKeyboardNavigation,
+      emptyComponent,
+      headerElement,
       headerTitle,
       maxBodyHeight,
+      onBodyBlur,
+      onBodyFocus,
       rows,
       selectable,
       selectedIndex,
@@ -487,174 +504,322 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       sortedColumn,
       sortDescending,
     } = this.props;
-    const header =
-      headerTitle != null ? (
+
+    const columnWidths = this._calculateColumnWidths();
+    return (
+      <>
+        <TableHeader
+          columns={columns}
+          columnWidths={columnWidths}
+          headerElement={headerElement}
+          headerTitle={headerTitle}
+          onSortByColumn={this._handleSortByColumn}
+          resizeStarts={this._resizeStarts}
+          sortable={sortable}
+          sortedColumn={sortedColumn}
+          sortDescending={sortDescending}
+        />
+        <TableBody
+          emptyComponent={emptyComponent}
+          enableKeyboardNavigation={enableKeyboardNavigation}
+          rows={rows}
+          columns={columns}
+          columnWidths={columnWidths}
+          selectable={selectable}
+          usingKeyboard={this.state.usingKeyboard}
+          selectRow={this._selectRow}
+          onBodyBlur={onBodyBlur}
+          onBodyFocus={onBodyFocus}
+          alternateBackground={alternateBackground}
+          collapsable={collapsable}
+          selectedIndex={selectedIndex}
+          maxBodyHeight={maxBodyHeight}
+          tableRef={el => {
+            this._tableBody = el;
+          }}
+        />
+      </>
+    );
+  }
+}
+
+function EmptyCellContent(): React.Node {
+  return <div />;
+}
+
+type TableHeaderProps<T> = {|
+  columns: Array<Column<T>>,
+  columnWidths: PercentageWidthMap<T>,
+  headerElement: ?React.Node,
+  headerTitle: ?string,
+  onSortByColumn: (sortedBy: $Keys<T>) => void,
+  resizeStarts: Subject<{
+    event: SyntheticMouseEvent<*>,
+    resizerLocation: number,
+  }>,
+  sortable: ?boolean,
+  sortDescending: ?boolean,
+  sortedColumn: ?$Keys<T>,
+|};
+class TableHeader<T: Object> extends React.PureComponent<TableHeaderProps<T>> {
+  render(): React.Node {
+    const {
+      columns,
+      columnWidths,
+      headerElement,
+      headerTitle,
+      onSortByColumn,
+      resizeStarts,
+      sortable,
+      sortDescending,
+      sortedColumn,
+    } = this.props;
+
+    let inner;
+    if (headerElement != null || headerTitle != null) {
+      inner = (
         <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
-          {headerTitle}
+          {headerElement != null ? headerElement : headerTitle}
         </div>
-      ) : (
-        columns.map((column, i) => {
-          const {title, key, shouldRightAlign, cellClassName} = column;
-          const leftColumnKey = column.key;
-          const rightColumnKey = idx(columns[i + 1], _ => _.key);
-          let resizer;
-          if (leftColumnKey != null && rightColumnKey != null) {
-            resizer = (
-              <div
-                className="nuclide-ui-table-header-resize-handle"
-                onMouseDown={event => {
-                  this._handleResizerMouseDown(event, {
-                    leftColumnKey,
-                    rightColumnKey,
-                  });
-                }}
-                onClick={(e: SyntheticMouseEvent<>) => {
-                  // Prevent sortable column header click event from firing.
-                  e.stopPropagation();
-                }}
-              />
+      );
+    } else {
+      inner = columns.map((column, i) => {
+        const {title, key, shouldRightAlign, cellClassName} = column;
+        let resizer;
+        if (i < columns.length - 1) {
+          resizer = (
+            <div
+              className="nuclide-ui-table-header-resize-handle"
+              onMouseDown={event => {
+                resizeStarts.next({event, resizerLocation: i});
+              }}
+              onClick={(e: SyntheticMouseEvent<>) => {
+                // Prevent sortable column header click event from firing.
+                e.stopPropagation();
+              }}
+            />
+          );
+        }
+        const width = columnWidths[key];
+        const optionalHeaderCellProps = {};
+        if (width != null) {
+          optionalHeaderCellProps.style = {width: `${width * 100}%`};
+        }
+        let sortIndicator;
+        let titleOverlay = title;
+        if (sortable) {
+          optionalHeaderCellProps.onClick = () => {
+            onSortByColumn(key);
+          };
+          titleOverlay += ' – click to sort';
+          if (sortedColumn === key) {
+            sortIndicator = (
+              <span className="nuclide-ui-table-sort-indicator">
+                <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} />
+              </span>
             );
           }
-          const width = columnWidths[key];
-          const optionalHeaderCellProps = {};
-          if (width != null) {
-            optionalHeaderCellProps.style = {width: `${width * 100}%`};
+        }
+
+        return (
+          <div
+            className={classnames(cellClassName, {
+              'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+              'nuclide-ui-table-header-cell': true,
+              'nuclide-ui-table-header-cell-sortable': sortable,
+            })}
+            title={titleOverlay}
+            key={key}
+            {...optionalHeaderCellProps}>
+            {title}
+            {sortIndicator}
+            {resizer}
+          </div>
+        );
+      });
+    }
+
+    return (
+      <div key="header" className="nuclide-ui-table">
+        <div className="nuclide-ui-table-header">{inner}</div>
+      </div>
+    );
+  }
+}
+
+type TableBodyProps<T> = {|
+  alternateBackground: ?number,
+  collapsable: ?boolean,
+  columns: Array<Column<T>>,
+  columnWidths: PercentageWidthMap<T>,
+  emptyComponent: ?React.ComponentType<any>,
+  enableKeyboardNavigation: ?boolean,
+  maxBodyHeight: ?string,
+  onBodyBlur: ?(event: SyntheticEvent<*>) => mixed,
+  onBodyFocus: ?(event: SyntheticEvent<*>) => mixed,
+  rows: Array<Row<T>>,
+  selectable: ?(boolean | ((row: T) => boolean)),
+  selectedIndex: ?number,
+  selectRow: (options: {|
+    index: number,
+    event: SelectionEvent,
+    confirm?: boolean,
+  |}) => void,
+  tableRef: React.Ref<'div'>,
+  usingKeyboard: boolean,
+|};
+class TableBody<T: Object> extends React.PureComponent<TableBodyProps<T>> {
+  render(): React.Node {
+    const {
+      alternateBackground,
+      collapsable,
+      columns,
+      columnWidths,
+      emptyComponent,
+      enableKeyboardNavigation,
+      maxBodyHeight,
+      rows,
+      selectable,
+      selectedIndex,
+      selectRow,
+      tableRef,
+      usingKeyboard,
+    } = this.props;
+
+    let body;
+    if (rows.length === 0) {
+      const EmptyComponent = emptyComponent ?? DefaultEmptyComponent;
+      body = <EmptyComponent />;
+    } else {
+      body = rows.map((row, i) => {
+        const {className: rowClassName, data, rowAttributes} = row;
+        const renderedRow = columns.map((column, j) => {
+          const {
+            key,
+            cellClassName,
+            component: Component,
+            shouldRightAlign,
+          } = column;
+          let datum = data[key];
+          if (Component != null) {
+            datum = <Component data={datum} />;
+          } else if (datum == null) {
+            datum = <EmptyCellContent />;
           }
-          let sortIndicator;
-          let titleOverlay = title;
-          if (sortable) {
-            optionalHeaderCellProps.onClick = () => {
-              this._handleSortByColumn(key);
-            };
-            titleOverlay += ' – click to sort';
-            if (sortedColumn === key) {
-              sortIndicator = (
-                <span className="nuclide-ui-table-sort-indicator">
-                  <Icon
-                    icon={sortDescending ? 'triangle-down' : 'triangle-up'}
-                  />
-                </span>
-              );
-            }
+          const cellStyle = {};
+          const width = columnWidths[key];
+          if (width != null) {
+            cellStyle.width = `${width * 100}%`;
           }
           return (
             <div
               className={classnames(cellClassName, {
+                'nuclide-ui-table-body-cell': true,
                 'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
-                'nuclide-ui-table-header-cell': true,
-                'nuclide-ui-table-header-cell-sortable': sortable,
               })}
-              title={titleOverlay}
-              key={key}
-              {...optionalHeaderCellProps}>
-              {title}
-              {sortIndicator}
-              {resizer}
+              key={j}
+              style={cellStyle}
+              title={typeof datum !== 'object' ? String(datum) : null}
+              {...rowAttributes}>
+              {datum}
             </div>
           );
-        })
-      );
-    let body = rows.map((row, i) => {
-      const {className: rowClassName, data} = row;
-      const renderedRow = columns.map((column, j) => {
-        const {
-          key,
-          cellClassName,
-          component: Component,
-          shouldRightAlign,
-        } = column;
-        let datum = data[key];
-        if (Component != null) {
-          datum = <Component data={datum} />;
-        } else if (datum == null) {
-          datum = this._renderEmptyCellContent();
-        }
-        const cellStyle = {};
-        const width = columnWidths[key];
-        if (width != null) {
-          cellStyle.width = `${width * 100}%`;
-        }
+        });
+
+        const selectableRow =
+          typeof selectable === 'function' ? selectable(row.data) : selectable;
+        const rowProps = selectableRow
+          ? {
+              onClick: event => {
+                switch (event.detail) {
+                  // This (`event.detail === 0`) shouldn't happen normally but does when the click is
+                  // triggered by the integration test.
+                  case 0:
+                  case 1:
+                    selectRow({index: i, event});
+                    return;
+                  case 2:
+                    // We need to check `event.detail` (instead of using `onDoubleClick`) because
+                    // (for some reason) `onDoubleClick` is only firing sporadically.
+                    // TODO: Figure out why. Repros in the diagnostic table with React 16.0.0 and
+                    // Atom 1.22.0-beta1 (Chrome 56.0.2924.87). This may be because we're swapping out
+                    // the component on the click so a different one is receiving the second?
+                    selectRow({index: i, event, confirm: true});
+                    return;
+                }
+              },
+            }
+          : {};
+        const isSelectedRow = selectedIndex != null && i === selectedIndex;
         return (
           <div
-            className={classnames(cellClassName, {
-              'nuclide-ui-table-body-cell': true,
-              'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+            className={classnames(rowClassName, {
+              'nuclide-ui-table-row': true,
+              'nuclide-ui-table-row-selectable': selectableRow,
+              'nuclide-ui-table-row-disabled':
+                typeof selectable === 'function' && !selectableRow,
+              'nuclide-ui-table-row-using-keyboard-nav': usingKeyboard,
+              'nuclide-ui-table-row-selected': isSelectedRow,
+              'nuclide-ui-table-row-alternate':
+                alternateBackground !== false && i % 2 === 1,
+              'nuclide-ui-table-collapsed-row': collapsable && !isSelectedRow,
             })}
-            key={j}
-            style={cellStyle}
-            title={typeof datum !== 'object' ? String(datum) : null}>
-            {datum}
+            data-row-index={i}
+            key={i}
+            {...rowProps}>
+            {renderedRow}
           </div>
         );
       });
-      const rowProps = selectable
-        ? {
-            onClick: event => {
-              this._selectRow({index: i, event});
-            },
-            onDoubleClick: event => {
-              this._selectRow({index: i, event, confirm: true});
-            },
-          }
-        : {};
-      const isSelectedRow = selectedIndex != null && i === selectedIndex;
-      return (
-        <div
-          className={classnames(rowClassName, {
-            'nuclide-ui-table-row': true,
-            'nuclide-ui-table-row-selectable': selectable,
-            'nuclide-ui-table-row-using-keyboard-nav': this.state.usingKeyboard,
-            'nuclide-ui-table-row-selected': isSelectedRow,
-            'nuclide-ui-table-row-alternate':
-              alternateBackground !== false && i % 2 === 1,
-            'nuclide-ui-table-collapsed-row':
-              this.props.collapsable && !isSelectedRow,
-          })}
-          key={i}
-          {...rowProps}>
-          {renderedRow}
-        </div>
-      );
-    });
-    if (rows.length === 0) {
-      const EmptyComponent = this.props.emptyComponent || DefaultEmptyComponent;
-      body = <EmptyComponent />;
     }
+
+    const bodyClassNames = classnames(
+      'nuclide-ui-table',
+      'nuclide-ui-table-body',
+      {
+        // Before this class is applied only when `!this.props.selectable`
+        // because (for some reason) `onDoubleClick` isn't being fired when
+        // the element's "user-select" style is "none". Now re-enabling it to
+        // support copy text selection
+        'nuclide-ui-table-body-selectable-text': true,
+        // Using native-key-bindings prevents the up and down arrows from being captured.
+        'native-key-bindings': !enableKeyboardNavigation,
+      },
+    );
+
     const scrollableBodyStyle = {};
     if (maxBodyHeight != null) {
       scrollableBodyStyle.maxHeight = maxBodyHeight;
       scrollableBodyStyle.overflowY = 'auto';
     }
-    const bodyClassNames = classnames(
-      'nuclide-ui-table',
-      'nuclide-ui-table-body',
-      // Using native-key-bindings prevents the up and down arrows from being captured.
-      {'native-key-bindings': !this.props.enableKeyboardNavigation},
-    );
-    return [
-      <div key="header" className="nuclide-ui-table" ref="table">
-        <div className="nuclide-ui-table-header">{header}</div>
-      </div>,
-      <div key="body" style={scrollableBodyStyle}>
-        <div
-          ref={el => {
-            this._tableBody = el;
-          }}
-          className={bodyClassNames}
-          tabIndex="-1">
+    return (
+      <div
+        style={scrollableBodyStyle}
+        onFocus={event => {
+          if (this.props.onBodyFocus != null) {
+            this.props.onBodyFocus(event);
+          }
+        }}
+        onBlur={event => {
+          if (this.props.onBodyBlur != null) {
+            this.props.onBodyBlur(event);
+          }
+        }}>
+        {/* eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs */}
+        <div ref={tableRef} className={bodyClassNames} tabIndex="-1">
           {body}
         </div>
-      </div>,
-    ];
+      </div>
+    );
   }
 }
 
 /**
  * Get the initial size of each column as a percentage of the total.
  */
-function getInitialPercentageWidths<T: Object>(
+function getInitialPreferredColumnWidths<T: Object>(
   columns: Array<Column<T>>,
-): WidthMap<T> {
+): PercentageWidthMap<T> {
   const columnWidthRatios = {};
   let assignedWidth = 0;
   const unresolvedColumns = [];
@@ -674,27 +839,207 @@ function getInitialPercentageWidths<T: Object>(
   return columnWidthRatios;
 }
 
+function getMinWidths<T: Object>(columns: Array<Column<T>>): PixelWidthMap<T> {
+  const minWidths = {};
+  columns.forEach(column => {
+    minWidths[column.key] =
+      column.minWidth == null ? DEFAULT_MIN_COLUMN_WIDTH : column.minWidth;
+  });
+  return minWidths;
+}
+
 /**
- * Convert percentage widths into actual pixel widths, taking into account minimum widths.
+ * Calculate widths, taking into account the preferred and minimum widths. Exported for testing
+ * only.
  */
-function ensureMinWidths<T: Object>(
-  preferredWidths: WidthMap<T>,
-  minWidths: WidthMap<T>,
+export function _calculateColumnWidths<T: Object>(options: {
+  preferredWidths: PercentageWidthMap<T>,
+  minWidths: PixelWidthMap<T>,
   tableWidth: number,
   columnOrder: Array<$Keys<T>>,
-): WidthMap<T> {
-  const adjusted = {};
-  let remainingWidth = 1;
-  columnOrder.forEach(columnName => {
-    const minWidth = minWidths[columnName] || DEFAULT_MIN_COLUMN_WIDTH;
-    const minWidthRatio = minWidth / tableWidth;
-    const preferredWidth = preferredWidths[columnName];
-    const width = Math.min(
-      remainingWidth,
-      Math.max(minWidthRatio, preferredWidth),
-    );
-    adjusted[columnName] = width;
-    remainingWidth -= width;
+  resizeOffset: ?ResizeOffset,
+}): PercentageWidthMap<T> {
+  const {
+    preferredWidths,
+    minWidths: minWidthsPx,
+    tableWidth,
+    columnOrder,
+    resizeOffset: resizeOffset_,
+  } = options;
+  const resizeOffset = resizeOffset_ || {deltaPx: 0, resizerLocation: 0};
+  const widthsPx = {};
+
+  // Calculate the pixel widths of each column given its desired percentage width and minimum pixel
+  // width.
+  {
+    // Figure out how many pixels each column wants, given the current available width.
+    let widthToAllocate = tableWidth;
+    let columnsToAllocate = columnOrder;
+    while (columnsToAllocate.length > 0 && widthToAllocate > 0) {
+      const remainingPct = columnsToAllocate
+        .map(columnName => preferredWidths[columnName])
+        .reduce((a, b) => a + b, 0);
+      const desiredWidthsPx = objectFromPairs(
+        columnsToAllocate.map(columnName => {
+          const desiredPct = preferredWidths[columnName] / remainingPct;
+          const desiredPx = Math.round(desiredPct * widthToAllocate);
+          return [columnName, desiredPx];
+        }),
+      );
+
+      // Allocate widths for the columns who want less than their minimum width.
+      let remainingPx = widthToAllocate;
+      let remainingColumns = [];
+      columnsToAllocate.forEach(columnName => {
+        const desiredPx = desiredWidthsPx[columnName];
+        const minPx = minWidthsPx[columnName];
+        if (minPx >= desiredPx) {
+          widthsPx[columnName] = Math.min(minPx, remainingPx);
+          remainingPx -= widthsPx[columnName];
+        } else {
+          remainingColumns.push(columnName);
+        }
+      });
+
+      // If we didn't need to truncate any of the columns, give them all their desired width.
+      if (columnsToAllocate.length === remainingColumns.length) {
+        Object.assign(widthsPx, desiredWidthsPx);
+        remainingColumns = [];
+      }
+
+      // If we had to truncate any of the columns, that changes the calculations for how big the
+      // remaining columns want to be, so make another pass.
+      widthToAllocate = remainingPx;
+      columnsToAllocate = remainingColumns;
+    }
+  }
+
+  {
+    // Adjust the column widths according to the resized column.
+    const {deltaPx, resizerLocation} = resizeOffset;
+    const leftColumns = columnOrder.slice(0, resizerLocation + 1);
+    const rightColumns = columnOrder.slice(resizerLocation + 1);
+
+    const [shrinkingColumns, growingColumn] =
+      deltaPx < 0
+        ? [leftColumns.reverse(), rightColumns[0]]
+        : [rightColumns, leftColumns[leftColumns.length - 1]];
+    const targetChange = Math.abs(deltaPx);
+    let cumulativeChange = 0;
+
+    for (const columnName of shrinkingColumns) {
+      const startWidth = widthsPx[columnName];
+      const minWidth = minWidthsPx[columnName];
+      const remainingWidth = targetChange - cumulativeChange;
+      const newWidth = Math.max(minWidth, startWidth - remainingWidth);
+      const change = Math.abs(startWidth - newWidth);
+      cumulativeChange += change;
+      widthsPx[columnName] = newWidth;
+      if (cumulativeChange >= targetChange) {
+        break;
+      }
+    }
+
+    widthsPx[growingColumn] += cumulativeChange;
+  }
+
+  // Convert all the widths from pixels to percentages.
+  const widths = {};
+  {
+    let remainingWidth = 1;
+    columnOrder.forEach((columnName, i) => {
+      const isLastColumn = i === columnOrder.length - 1;
+      if (isLastColumn) {
+        // Give the last column all the remaining to account for rounding issues.
+        widths[columnName] = remainingWidth;
+      } else {
+        widths[columnName] = widthsPx[columnName] / tableWidth;
+        remainingWidth -= widths[columnName];
+      }
+    });
+  }
+
+  return widths;
+}
+
+/**
+ * Given the current (percentage) widths of each column, determines what user-preferred distribution
+ * this represents. Exported for testing only.
+ */
+export function _calculatePreferredColumnWidths<T: Object>(options: {
+  currentWidths: PercentageWidthMap<T>,
+  tableWidth: number,
+  minWidths: PixelWidthMap<T>,
+}): PercentageWidthMap<T> {
+  const {currentWidths, tableWidth, minWidths: minWidthsPx} = options;
+  const currentWidthsPx = objectMapValues(currentWidths, w => w * tableWidth);
+
+  // If any column is at its minimum width, we take that to mean that the user wants the column
+  // remain at its minimum if the table is resized (as opposed to maintaining the same percentage).
+  // Accordingly, we make that column's preferred width 0.
+
+  const preferredColumnWidths = {};
+
+  // Figure out which columns are at their minimum widths.
+  let remainingPx = 0; // The width that isn't accounted for after minWidth.
+  const columnsNotAtMinimum = [];
+  for (const [columnName, widthPx] of Object.entries(currentWidthsPx)) {
+    invariant(typeof widthPx === 'number');
+    const minWidthPx = minWidthsPx[columnName];
+    if (Math.floor(widthPx) <= minWidthPx) {
+      // Keep it at its min-width.
+      preferredColumnWidths[columnName] = 0;
+    } else {
+      remainingPx += widthPx;
+      columnsNotAtMinimum.push([columnName, widthPx]);
+    }
+  }
+
+  // Now distribute the widths of the other columns.
+  let remainingPct = 1;
+  columnsNotAtMinimum.forEach(([columnName, width], index) => {
+    const isLastColumn = index === columnsNotAtMinimum.length - 1;
+    if (isLastColumn) {
+      // We give the last column the remaining width just to be certain they all add up to 1.
+      preferredColumnWidths[columnName] = remainingPct;
+    } else {
+      preferredColumnWidths[columnName] = width / remainingPx;
+      remainingPct -= preferredColumnWidths[columnName];
+    }
   });
-  return adjusted;
+
+  return preferredColumnWidths;
+}
+
+/**
+ * An equality check for comparing Props using `shallowEqual()`. This only performs the cheap
+ * checks and assumes that the rows and columns are equal. (They can be checked separatedly iff
+ * necessary.)
+ */
+function compareCheapProps(a: mixed, b: mixed, key: ?string): boolean | void {
+  switch (key) {
+    case undefined:
+      // This is a magic way of telling `shallowEqual()` to use the default comparison for the
+      // props objects (inspect its members).
+      return undefined;
+    case 'rows':
+    case 'columns':
+      // We'll check these later iff we need to since they're more expensive.
+      return true;
+    default:
+      return a === b;
+  }
+}
+
+function compareState(a: mixed, b: mixed, key: ?string): boolean | void {
+  switch (key) {
+    case undefined:
+      return undefined;
+    case 'lastColumns':
+      // `lastColumns` isn't used to render anything and only exists for
+      // `getDerivedStateFromProps`. Don't count this toward rerendering.
+      return true;
+    default:
+      return a === b;
+  }
 }

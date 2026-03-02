@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -60,13 +60,15 @@ export default class RegExpFilter extends React.Component<Props, State> {
     this._currentValue = props.value;
   }
 
-  componentWillReceiveProps(props: Props): void {
+  UNSAFE_componentWillReceiveProps(props: Props): void {
     // We need to store this so that we can use it in the event handlers.
     this._currentValue = props.value;
   }
 
   render(): React.Node {
-    const {value: {text, isRegExp, invalid}} = this.props;
+    const {
+      value: {text, isRegExp, invalid},
+    } = this.props;
     const size = this.props.size || 'sm';
     const buttonSize = getButtonSize(size);
     const inputWidth =
@@ -74,7 +76,6 @@ export default class RegExpFilter extends React.Component<Props, State> {
     const inputClassName = classnames(
       'nuclide-ui-regexp-filter-input',
       this.props.inputClassName,
-      {invalid},
     );
 
     return (
@@ -83,6 +84,7 @@ export default class RegExpFilter extends React.Component<Props, State> {
           ref={el => {
             this._input = el;
           }}
+          invalid={invalid}
           className={inputClassName}
           size={size}
           width={inputWidth}

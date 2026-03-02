@@ -20,11 +20,12 @@ import type {
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {linterMessagesToDiagnosticUpdate} from '../services/LinterAdapter';
+import {linterMessagesToDiagnosticUpdate} from './LinterAdapter';
 
 export class IndieLinterDelegate {
   _name: string;
   _supportedMessageKinds: Array<DiagnosticMessageKind>;
+  _uiSettings: Array<string>;
   _messages: Array<LinterMessageV2>;
   _updates: Subject<DiagnosticProviderUpdate>;
   _invalidations: Subject<DiagnosticInvalidationMessage>;
@@ -37,6 +38,9 @@ export class IndieLinterDelegate {
   constructor(config: LinterConfig) {
     this._name = config.name;
     this._supportedMessageKinds = config.supportedMessageKinds || ['lint'];
+    this._uiSettings = Object.freeze(
+      config.uiSettings ? config.uiSettings.slice() : [],
+    );
     this._messages = [];
     this._updates = new Subject();
     this._invalidations = new Subject();
@@ -53,6 +57,10 @@ export class IndieLinterDelegate {
   get supportedMessageKinds(): Array<DiagnosticMessageKind> {
     // We'll count on ourselves not to mutate this.
     return this._supportedMessageKinds;
+  }
+
+  get uiSettings(): Array<string> {
+    return this._uiSettings;
   }
 
   getMessages(): Array<LinterMessageV2> {
@@ -74,7 +82,9 @@ export class IndieLinterDelegate {
   }
 
   setAllMessages(messages: Array<LinterMessageV2>): void {
-    this.clearMessages();
+    if (messages.length === 0) {
+      this._invalidations.next({scope: 'all'});
+    }
     this._messages = messages;
     this._updates.next(
       linterMessagesToDiagnosticUpdate(null, [...messages], this._name),

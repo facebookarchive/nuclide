@@ -11,11 +11,10 @@
  */
 
 /* eslint-env browser */
-/* global IntersectionObserver, PerformanceObserver, ResizeObserver */
+/* global IntersectionObserver, PerformanceObserver, ResizeObserver, DOMRect */
 
-import type {Subscriber} from 'rxjs/Subscriber';
-
-import invariant from 'invariant';
+import invariant from 'assert';
+import os from 'os';
 import {Observable, Subscription} from 'rxjs';
 import shallowEqual from 'shallowequal';
 import {isIterable} from 'nuclide-commons/collection';
@@ -74,12 +73,24 @@ import {isIterable} from 'nuclide-commons/collection';
  *   mutations.subscribe(record => console.log(record));
  */
 
+// A bug in Chrome < 62 frees PerformanceObservers and their listeners
+// once the PerformanceObserver is eligible for GC:
+// https://bugs.chromium.org/p/chromium/issues/detail?id=742530
+//
+// This means that callbacks for a PerformanceObserver will stop getting called
+// (and themselves GCed) at an abitrary time.
+//
+// Intentionally hold references to all DOM Observers in this set, and delete
+// them when the last subscriber unsubscribes.
+const observers = new Set();
+
+// $FlowFixMe(>=0.55.0) Flow suppress
 type RecordCallback = (records: any, ...rest: Array<any>) => mixed;
 interface DOMObserver {
-  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver,
-  observe(...observeArgs: Array<any>): void,
-  disconnect(): void,
-  +unobserve?: (...unobserveArgs: Array<any>) => void,
+  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver;
+  observe(...observeArgs: Array<any>): void;
+  disconnect(): void;
+  +unobserve?: (...unobserveArgs: Array<any>) => void;
 }
 
 class DOMObserverObservable<
@@ -103,14 +114,13 @@ class DOMObserverObservable<
     }
   }
 
-  lift<R, S>(
-    operator: rxjs$Operator<TNext, R>,
-  ): DOMObserverObservable<R, S, TObserveArgs> {
-    const obs = new DOMObserverObservable(
-      this._DOMObserverCtor,
-      ...this._observations[0],
-    );
-    obs._observations = this._observations.slice();
+  lift<R>(operator: rxjs$Operator<TNext, R>): this {
+    const Constructor = this.constructor;
+    const [firstObservation, ...restObservations] = this._observations;
+    const obs = new Constructor(this._DOMObserverCtor, ...firstObservation);
+    for (const observation of restObservations) {
+      obs.observe(...observation);
+    }
     obs.source = this;
     obs.operator = operator;
     return obs;
@@ -127,8 +137,9 @@ class DOMObserverObservable<
   unobserve(...unobserveArgs: TObserveArgs): void {
     if (this._domObserver != null && this._domObserver.unobserve == null) {
       throw new Error(
-        `Cannot unobserve: This observable has an active ${this._DOMObserverCtor
-          .name} and it does not support unobserve`,
+        `Cannot unobserve: This observable has an active ${
+          this._DOMObserverCtor.name
+        } and it does not support unobserve`,
       );
     }
 
@@ -162,7 +173,7 @@ class DOMObserverObservable<
     });
   }
 
-  _subscribe(subscriber: Subscriber<TNext>): rxjs$Subscription {
+  _subscribe(subscriber: rxjs$Subscriber<TNext>): rxjs$Subscription {
     if (this._refs === 0) {
       invariant(this._domObserver == null);
       this._domObserver = new this._DOMObserverCtor(records => {
@@ -172,6 +183,7 @@ class DOMObserverObservable<
       for (const observation of this._observations) {
         this._domObserver.observe(...observation);
       }
+      observers.add(this._domObserver);
     }
 
     const subscription = new Subscription();
@@ -185,6 +197,7 @@ class DOMObserverObservable<
         invariant(this._domObserver != null);
         this._domObserver.disconnect();
         this._domObserver = null;
+        observers.delete(this._domObserver);
       }
     });
 
@@ -208,6 +221,7 @@ export class IntersectionObservable extends DOMObserverObservable<
       global.IntersectionObserver !== null,
       'environment must contain IntersectionObserver',
     );
+    // $FlowFixMe(>=0.55.0) Flow suppress
     super(IntersectionObserver, target);
   }
 }
@@ -218,7 +232,6 @@ export class IntersectionObservable extends DOMObserverObservable<
 export class MutationObservable extends DOMObserverObservable<
   Array<MutationRecord>,
   MutationRecord,
-  // $FlowFixMe
   [Node, MutationObserverInit],
 > {
   constructor(target: Node, options?: MutationObserverInit) {
@@ -227,7 +240,8 @@ export class MutationObservable extends DOMObserverObservable<
       global.MutationObserver !== null,
       'environment must contain MutationObserver',
     );
-    super(MutationObserver, target);
+    // $FlowFixMe(>=0.55.0) Flow suppress
+    super(MutationObserver, target, options);
   }
 }
 
@@ -245,6 +259,7 @@ export class PerformanceObservable extends DOMObserverObservable<
       global.PerformanceObserver !== null,
       'environment must contain PerformanceObserver',
     );
+    // $FlowFixMe(>=0.55.0) Flow suppress
     super(PerformanceObserver, options);
   }
 }
@@ -263,6 +278,81 @@ export class ResizeObservable extends DOMObserverObservable<
       global.ResizeObserver !== null,
       'environment must contain ResizeObserver',
     );
-    super(ResizeObserver, target);
+
+    if (os.platform() === 'win32' || os.platform() === 'linux') {
+      super(WindowsResizeMeasurementPatchingObserver, target);
+    } else {
+      // $FlowFixMe(>=0.55.0) Flow suppress
+      super(ResizeObserver, target);
+    }
+  }
+}
+
+function lastRectPerTarget(
+  entries: Array<ResizeObserverEntry>,
+): Map<HTMLElement, DOMRectReadOnly> {
+  const rectMap = new Map();
+  entries.forEach(entry => rectMap.set(entry.target, entry.contentRect));
+  return rectMap;
+}
+
+function remeasureContentRect(
+  element: HTMLElement,
+  contentRect: DOMRectReadOnly,
+): DOMRectReadOnly {
+  const {clientHeight, clientWidth} = element;
+
+  // Client height/width include padding
+  // https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth
+  // We have to strip it to obtain result similar to what the original computed style provided
+  const computedStyle = window.getComputedStyle(element);
+  const {paddingLeft, paddingRight, paddingTop, paddingBottom} = computedStyle;
+
+  const height =
+    clientHeight - parseFloat(paddingTop) - parseFloat(paddingBottom);
+  const width =
+    clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight);
+
+  return new DOMRectReadOnly(contentRect.x, contentRect.y, width, height);
+}
+
+/*
+ * The values provided by the ResizeOverver on Windows do not seem to reflect the actual size
+ * of the element (!!!), so we need to "fix" them before passing on to the downstream subscriber
+ * We're wrapping the ResizeObserver instance and are patching the last result of the array with
+ * a set of custom measured values
+ */
+class WindowsResizeMeasurementPatchingObserver implements DOMObserver {
+  _resizeObserver: ResizeObserver;
+
+  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver {
+    const remeasuringCallback = (entries: Array<ResizeObserverEntry>): void => {
+      const rebuiltEntries = [];
+      const mappedRects = lastRectPerTarget(entries);
+      mappedRects.forEach((originalRect, target) => {
+        const contentRect = remeasureContentRect(target, originalRect);
+        rebuiltEntries.push({target, contentRect});
+      });
+
+      callback(rebuiltEntries);
+    };
+    this._resizeObserver = new ResizeObserver(remeasuringCallback, ...rest);
+
+    // To make flow happy
+    return this;
+  }
+
+  observe(...observeArgs: Array<any>): void {
+    this._resizeObserver.observe(...observeArgs);
+  }
+
+  disconnect(): void {
+    this._resizeObserver.disconnect();
+  }
+
+  unobserve(...unobserveArgs: Array<any>): void {
+    if (typeof this._resizeObserver.unobserve === 'function') {
+      this._resizeObserver.unobserve(...unobserveArgs);
+    }
   }
 }

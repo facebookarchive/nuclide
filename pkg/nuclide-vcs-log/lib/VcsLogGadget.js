@@ -10,6 +10,10 @@
  */
 
 import * as React from 'react';
+import trackReactProfilerRender from 'nuclide-commons/trackReactProfilerRender';
+
+// $FlowFixMe Profiler is neither stable nor typed
+const Profiler = React.unstable_Profiler;
 
 type Props = {
   title: string,
@@ -28,6 +32,10 @@ export default class VcsLogGadget extends React.Component<Props> {
 
   render(): React.Node {
     const {component: Component} = this.props;
-    return <Component />;
+    return (
+      <Profiler id="VcsLogRoot" onRender={trackReactProfilerRender}>
+        <Component />
+      </Profiler>
+    );
   }
 }

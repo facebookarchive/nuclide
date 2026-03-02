@@ -9,62 +9,99 @@
  * @format
  */
 
-import Dequeue from 'dequeue';
+import {default as Deque} from 'double-ended-queue';
+import util from 'util';
+import invariant from 'assert';
 
-type LogEntry = {|time: number, text: string|};
+type LogEntry = {|time: number, level: string, text: string|};
+
+// Retain past five minutes
+const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000;
+
+// ...but only if it is less than 10 MB
+const DEFAULT_RETENTION_SIZE_LIMIT = 10 * 1000 * 1000;
 
 export class MemoryLogger {
-  _underlyingLogger: log4js$Logger;
-  _logs: Dequeue = new Dequeue(); // stores LogEntry elements
+  _underlyingLogger: ?log4js$Logger;
+  _logs: Deque<LogEntry> = new Deque();
   _retentionPeriod: number;
+  _sizeLimit: number;
+  _size: number;
 
   constructor(
-    underlyingLogger: log4js$Logger,
-    retentionPeriod: number = 5 * 60 * 1000, // retain past five minutes
+    underlyingLogger: ?log4js$Logger,
+    retentionPeriod: number = DEFAULT_RETENTION_PERIOD_MS,
+    sizeLimit: number = DEFAULT_RETENTION_SIZE_LIMIT,
   ) {
     this._underlyingLogger = underlyingLogger;
     this._retentionPeriod = retentionPeriod;
+    this._sizeLimit = sizeLimit;
+    this._size = 0;
   }
 
   dispose(): void {
-    this._logs.empty();
+    this._logs.isEmpty();
   }
 
-  dump(): string {
-    // We only have a destructive way to enumerate all elements of _log,
-    // so we'll build up a replacement list.
-    const newLogs = new Dequeue();
-    let result = '';
-    while (this._logs.length > 0) {
-      const log: LogEntry = this._logs.shift();
-      result += log.text + '\n';
-      newLogs.push(log);
+  dump(count?: number): string {
+    let logs = this._logs.toArray();
+    if (count != null && count < this._logs.length) {
+      invariant(count > 0, 'Must provide a positive count');
+      logs = logs.slice(logs.length - count);
     }
-    this._logs = newLogs;
-    return result;
+    return logs
+      .map(
+        entry => `${formatTime(entry.time)} ${entry.level} - ${entry.text}\n`,
+      )
+      .join('');
   }
 
-  getUnderlyingLogger(): log4js$Logger {
+  getUnderlyingLogger(): ?log4js$Logger {
     return this._underlyingLogger;
   }
 
-  trace(message: string) {
-    this._underlyingLogger.trace(message.substring(0, 400));
+  debug(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.debug(message.substring(0, 400));
+    }
+    this._appendAndExpunge('DEBUG', message);
+  }
+
+  trace(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.trace(message.substring(0, 400));
+    }
     this._appendAndExpunge('TRACE', message);
   }
 
-  info(message: string) {
-    this._underlyingLogger.info(message.substring(0, 400));
+  info(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.info(message.substring(0, 400));
+    }
     this._appendAndExpunge('INFO', message);
   }
 
-  warn(message: string) {
-    this._underlyingLogger.warn(message);
+  warn(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.warn(message);
+    }
     this._appendAndExpunge('WARN', message);
   }
 
-  error(message: string) {
-    this._underlyingLogger.error(message);
+  error(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.error(message);
+    }
     this._appendAndExpunge('ERROR', message);
   }
 
@@ -75,21 +112,25 @@ export class MemoryLogger {
 
     // this._logs will keep the past five minute's worth of logs
     const time = Date.now();
-    const text =
-      new Date(time).toLocaleTimeString('en-US', {hour12: false}) +
-      ' ' +
-      level +
-      ' - ' +
-      message;
     // push the new entry
-    const newLog: LogEntry = {time, text};
+    const newLog: LogEntry = {time, level, text: message};
     this._logs.push(newLog);
-    // and unshift all expired entries
-    while (
-      this._logs.length > 0 &&
-      (this._logs.first(): LogEntry).time + this._retentionPeriod <= time
-    ) {
+    // the format is HH:MM:SS level - text (level + text + 12 chars)
+    this._size += newLog.level.length + newLog.text.length + 12;
+    // and remove all expired entries
+    while (true) {
+      const front = this._logs.peekFront();
+      if (front == null) {
+        break;
+      }
+      if (
+        time <= front.time + this._retentionPeriod &&
+        this._size <= this._sizeLimit
+      ) {
+        break;
+      }
       this._logs.shift();
+      this._size -= front.level.length + front.text.length + 12;
     }
   }
 }
@@ -118,12 +159,10 @@ export class SnapshotLogger {
     const results = [];
     for (const [filepath, snapshots] of this._files) {
       for (const snapshot of snapshots) {
-        const time = new Date(snapshot.time).toLocaleTimeString('en-US', {
-          hour12: false,
-        });
-        const version = String(snapshot.version);
         results.push({
-          title: `${filepath} ${time},v${version}`,
+          title: `${filepath} ${formatTime(snapshot.time)},v${
+            snapshot.version
+          }`,
           text: snapshot.text,
         });
       }
@@ -172,4 +211,12 @@ export class SnapshotLogger {
   close(filepath: string): void {
     this._files.delete(filepath);
   }
+}
+
+/**
+ * Formats a UNIX timestamp in 24-hour US format.
+ * e.g. 16:01:19
+ */
+function formatTime(time: number): string {
+  return new Date(time).toLocaleTimeString('en-US', {hour12: false});
 }

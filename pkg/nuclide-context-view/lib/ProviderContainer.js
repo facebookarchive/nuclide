@@ -10,8 +10,8 @@
  */
 
 import * as React from 'react';
-import {Section} from '../../nuclide-ui/Section';
-import {track} from '../../nuclide-analytics';
+import {Section} from 'nuclide-commons-ui/Section';
+import {track} from 'nuclide-analytics';
 
 type Props = {
   title: string,

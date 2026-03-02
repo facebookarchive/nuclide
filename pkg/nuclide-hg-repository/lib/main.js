@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
@@ -23,20 +24,16 @@ import {
   collect,
   arrayFlatten,
 } from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import registerGrammar from '../../commons-atom/register-grammar';
-import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import {
-  addPath,
-  confirmAndRevertPath,
-  revertPath,
-} from '../../nuclide-vcs-base';
+import {addPath, confirmAndRevertPath} from '../../nuclide-vcs-base';
 import HgRepositoryProvider from './HgRepositoryProvider';
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
 const HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1050;
 
-let subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?UniversalDisposable = null;
 
 type HgContenxtMenuAction = 'Revert' | 'Add';
 
@@ -61,7 +58,12 @@ function shouldDisplayActionTreeItem(
   } else if (action === 'Add') {
     const nodes = contextMenu.getSelectedNodes();
     return nodes.every(node => {
-      if (node.repo == null || node.repo.getType() !== 'hg') {
+      if (
+        node.repo == null ||
+        node.repo.getType() !== 'hg' ||
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+        typeof node.repo.isStatusUntracked !== 'function'
+      ) {
         return false;
       }
       return node.repo.isStatusUntracked(node.vcsStatusCode);
@@ -110,18 +112,7 @@ function isActivePathAddable(): boolean {
 }
 
 export function activate(state: any): void {
-  subscriptions = new CompositeDisposable();
-
-  subscriptions.add(
-    atom.commands.add(
-      'atom-text-editor',
-      'nuclide-hg-repository:revert',
-      event => {
-        const editorElement: atom$TextEditorElement = (event.currentTarget: any);
-        revertPath(editorElement.getModel().getPath());
-      },
-    ),
-  );
+  subscriptions = new UniversalDisposable();
 
   subscriptions.add(
     atom.commands.add(
@@ -129,7 +120,9 @@ export function activate(state: any): void {
       'nuclide-hg-repository:confirm-and-revert',
       event => {
         const editorElement: atom$TextEditorElement = (event.currentTarget: any);
-        confirmAndRevertPath(editorElement.getModel().getPath());
+        const path = editorElement.getModel().getPath();
+        const repository = path == null ? null : repositoryForPath(path);
+        confirmAndRevertPath(repository, path);
       },
     ),
   );
@@ -140,7 +133,9 @@ export function activate(state: any): void {
       'nuclide-hg-repository:add',
       event => {
         const editorElement: atom$TextEditorElement = (event.currentTarget: any);
-        addPath(editorElement.getModel().getPath());
+        const path = editorElement.getModel().getPath();
+        const repository = path == null ? null : repositoryForPath(path);
+        addPath(repository, path);
       },
     ),
   );
@@ -191,7 +186,9 @@ export function addItemsToFileTreeContextMenu(
       callback() {
         // TODO(most): support reverting multiple nodes at once.
         const revertNode = contextMenu.getSingleSelectedNode();
-        confirmAndRevertPath(revertNode == null ? null : revertNode.uri);
+        const path = revertNode == null ? null : revertNode.uri;
+        const repository = path == null ? null : repositoryForPath(path);
+        confirmAndRevertPath(repository, path);
       },
       shouldDisplay() {
         return shouldDisplayActionTreeItem(contextMenu, 'Revert');
@@ -207,7 +204,9 @@ export function addItemsToFileTreeContextMenu(
       callback() {
         const nodes = contextMenu.getSelectedNodes();
         for (const addNode of nodes) {
-          addPath(addNode == null ? null : addNode.uri);
+          const path = addNode == null ? addNode : addNode.uri;
+          const repository = path == null ? null : repositoryForPath(path);
+          addPath(repository, path);
         }
       },
       shouldDisplay() {
@@ -218,7 +217,7 @@ export function addItemsToFileTreeContextMenu(
   );
   subscriptions.add(addContextDisposable);
 
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     if (subscriptions != null) {
       subscriptions.remove(revertContextDisposable);
       subscriptions.remove(addContextDisposable);
@@ -237,7 +236,9 @@ export function createHgRepositoryProvider() {
   return new HgRepositoryProvider();
 }
 
-async function getAllHgAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+async function getAllHgAdditionalLogFiles(
+  deadline: DeadlineRequest,
+): Promise<Array<AdditionalLogFile>> {
   // Atom provides one repository object per project.
   const repositories: Array<?atom$Repository> = atom.project.getRepositories();
   // We want to avoid duplication in the case where two different projects both
@@ -261,13 +262,14 @@ async function getAllHgAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
   );
 
   const results: Array<Array<AdditionalLogFile>> = await Promise.all(
-    uniqueRepositories.map(r => r.getAdditionalLogFiles()),
+    uniqueRepositories.map(r => r.getAdditionalLogFiles(deadline)),
   );
   return arrayFlatten(results);
 }
 
 export function createHgAdditionalLogFilesProvider(): AdditionalLogFilesProvider {
   return {
+    id: 'hg',
     getAdditionalLogFiles: getAllHgAdditionalLogFiles,
   };
 }

@@ -1,5 +1,5 @@
-// flow-typed signature: 85ea5a515c42c00188d893614f410655
-// flow-typed version: 72fe9c1b53/marked_v0.3.x/flow_>=v0.28.x
+// flow-typed signature: 4a38f4feaff5e86951b8882473d31965
+// flow-typed version: 78c72eef44/marked_v0.3.x/flow_>=v0.28.x
 
 type marked$AlignFlag = 'left' | 'right' | 'center'
 
@@ -151,7 +151,7 @@ type marked$Marked = {
   Lexer: typeof marked$Lexer;
   lexer: typeof marked$Lexer.lexer;
   InlineLexer: typeof marked$InlineLexer;
-  inlinelexer: marked$InlineLexer.output;
+  inlinelexer: typeof marked$InlineLexer.output;
   Renderer: typeof marked$Renderer;
   parse: marked$Marked;
 }
@@ -160,4 +160,3 @@ type marked$Marked = {
 declare module marked {
   declare export default marked$Marked;
 }
-

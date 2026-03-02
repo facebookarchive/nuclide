@@ -67,10 +67,12 @@ export class StatusBarTileComponent extends React.Component<Props> {
         formattedPercentage,
         result.providerName,
       );
+
       return (
         <UnstyledButton
           onClick={this.props.onClick}
           className={classes}
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             title: tooltipString,
             delay: 0,

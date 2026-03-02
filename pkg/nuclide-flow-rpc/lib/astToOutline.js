@@ -121,6 +121,8 @@ function itemToTree(item: any): ?OutlineTree {
       return declareModuleOutline(item, extent);
     case 'DeclareVariable':
       return declareVariableOutline(item, extent);
+    case 'InterfaceDeclaration':
+      return declareInterfaceOutline(item, extent);
     default:
       return null;
   }
@@ -263,16 +265,21 @@ function moduleExportsOutline(assignmentStatement: any): ?OutlineTree {
   }
 
   const right = assignmentStatement.right;
-  if (right.type !== 'ObjectExpression') {
-    return null;
+
+  switch (right.type) {
+    case 'ClassExpression':
+      return itemToTree(right);
+    case 'ObjectExpression':
+      const properties: Array<Object> = right.properties;
+      return {
+        kind: 'module',
+        tokenizedText: [plain('module.exports')],
+        children: arrayCompact(properties.map(moduleExportsPropertyOutline)),
+        ...getExtent(assignmentStatement),
+      };
+    default:
+      return null;
   }
-  const properties: Array<Object> = right.properties;
-  return {
-    kind: 'module',
-    tokenizedText: [plain('module.exports')],
-    children: arrayCompact(properties.map(moduleExportsPropertyOutline)),
-    ...getExtent(assignmentStatement),
-  };
 }
 
 function isModuleExports(left: Object): boolean {
@@ -563,6 +570,22 @@ function declareVariableOutline(item: any, extent: Extent): ?OutlineTree {
     kind: 'variable',
     tokenizedText: [keyword('var'), whitespace(' '), method(item.id.name)],
     representativeName: item.id.name,
+    children: [],
+    ...extent,
+  };
+}
+
+function declareInterfaceOutline(item: any, extent: Extent): ?OutlineTree {
+  const tokenizedText = [keyword('interface')];
+  let representativeName = undefined;
+  if (item.id != null) {
+    tokenizedText.push(whitespace(' '), type(item.id.name));
+    representativeName = item.id.name;
+  }
+  return {
+    kind: 'interface',
+    tokenizedText,
+    representativeName,
     children: [],
     ...extent,
   };

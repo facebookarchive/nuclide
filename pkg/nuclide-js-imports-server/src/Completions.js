@@ -15,6 +15,7 @@ import {
   type TextEdit,
   CompletionItemKind,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+import type DefinitionManager from '../../nuclide-ui-component-tools-common/lib/definitionManager';
 import type {ImportType} from './lib/ImportFormatter';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
@@ -22,7 +23,7 @@ import {ImportFormatter, createImportStatement} from './lib/ImportFormatter';
 import {compareForSuggestion} from './utils/util';
 import {setIntersect} from 'nuclide-commons/collection';
 
-import type TextDocuments from './TextDocuments';
+import type TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JSExport} from './lib/types';
 
@@ -53,15 +54,18 @@ const IMPORT_STATEMENT_REGEXES = {
 };
 
 export class Completions {
+  definitionManager: DefinitionManager;
   documents: TextDocuments;
   autoImportsManager: AutoImportsManager;
   importsFormatter: ImportFormatter;
 
   constructor(
+    definitionManager: DefinitionManager,
     documents: TextDocuments,
     autoImportsManager: AutoImportsManager,
     importsFormatter: ImportFormatter,
   ) {
+    this.definitionManager = definitionManager;
     this.documents = documents;
     this.autoImportsManager = autoImportsManager;
     this.importsFormatter = importsFormatter;
@@ -74,9 +78,8 @@ export class Completions {
     const {position, textDocument} = textDocumentPosition;
 
     // TODO(seansegal): Handle imports broken up on multiple lines.
-    const line = this.documents
-      .get(textDocument.uri)
-      .buffer.lineForRow(position.line);
+    const document = this.documents.get(textDocument.uri);
+    const line = document.buffer.lineForRow(position.line);
 
     if (
       positionIsAtLineEnd(line, position) &&
@@ -105,6 +108,11 @@ export class Completions {
               position.line,
             );
       }
+    } else {
+      return this.definitionManager.getCompletions(
+        document,
+        textDocumentPosition,
+      );
     }
     return [];
   }
@@ -140,15 +148,17 @@ export function provideFullImportCompletions(
       .sort(compareForSuggestion);
     return results.concat(
       importPaths.slice(0, needed).map(importPath => {
+        const textEdit = createLineEdit(
+          lineNum,
+          line,
+          createImportStatement(id, importPath, importType),
+        );
         return {
           label: id,
+          filterText: textEdit.newText,
           kind: CompletionItemKind.Module,
-          inlineDetail: importsFormatter.stripLeadingDots(importPath),
-          textEdit: createLineEdit(
-            lineNum,
-            line,
-            createImportStatement(id, importPath, importType),
-          ),
+          detail: importsFormatter.stripLeadingDots(importPath),
+          textEdit,
         };
       }),
     );
@@ -180,17 +190,19 @@ export function provideImportFileCompletions(
     .sort(compareForSuggestion)
     .slice(0, MAX_RESULTS)
     .map(importPath => {
+      const textEdit = createLineEdit(
+        lineNum,
+        line,
+        createImportStatement(ids.join(', '), importPath, importType),
+      );
       return {
         label:
           importType === 'requireImport' || importType === 'requireDestructured'
             ? `= require('${importPath}');`
             : `from '${importPath}';`,
         kind: CompletionItemKind.Module,
-        textEdit: createLineEdit(
-          lineNum,
-          line,
-          createImportStatement(ids.join(', '), importPath, importType),
-        ),
+        filterText: textEdit.newText,
+        textEdit,
       };
     });
 }
@@ -227,15 +239,13 @@ function filterSuggestions(
       return suggestions.filter(exp => exp.isDefault && !exp.isTypeExport);
     case 'defaultType':
       return suggestions.filter(
-        exp =>
-          exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
+        exp => exp.isDefault && (exp.isTypeExport || canBeTypeImported(exp)),
       );
     case 'namedValue':
       return suggestions.filter(exp => !exp.isDefault && !exp.isTypeExport);
     case 'namedType':
       return suggestions.filter(
-        exp =>
-          !exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
+        exp => !exp.isDefault && (exp.isTypeExport || canBeTypeImported(exp)),
       );
     case 'requireImport':
       return suggestions.filter(exp => exp.isDefault && !exp.isTypeExport);
@@ -298,16 +308,12 @@ function isImportStatement(line: string): boolean {
   return /^\s*import/.test(line) || /^const/.test(line);
 }
 
-// This function will always return true when an export is a Class export,
-// but will sometimes return true even if an export is NOT a class export.
-// More specifically, if the type of export is unknown (for example, this would
-// happen in the program: "class SomeClass{}; export {SomeClass}")
-// this function returns true.
-function isClassOrUnknownExport(exp: JSExport): boolean {
+//
+function canBeTypeImported(exp: JSExport): boolean {
   return (
-    !exp.type ||
-    exp.type === 'ClassDeclaration' ||
-    exp.type === 'ClassExpression'
+    exp.type !== 'FunctionDeclaration' &&
+    exp.type !== 'FunctionExpression' &&
+    exp.type !== 'VariableDeclaration'
   );
 }
 

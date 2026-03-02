@@ -17,6 +17,7 @@ import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 
@@ -46,6 +47,9 @@ type State = {
 
 export class PanelView extends React.Component<Props, State> {
   _disposables: ?UniversalDisposable;
+  _commandField: ?AtomInput;
+  _inputField: ?AtomTextEditor;
+  _outputField: ?AtomTextEditor;
 
   constructor(props: Props) {
     super(props);
@@ -64,7 +68,9 @@ export class PanelView extends React.Component<Props, State> {
       <div className="sample-lsp-tester-panel padded">
         <div className="sample-lsp-tester-command-wrapper">
           <AtomInput
-            ref="commandField"
+            ref={input => {
+              this._commandField = input;
+            }}
             className="sample-lsp-tester-command"
             placeholderText="Command to Run (e.g. node jsonServerMain.js --stdio)"
           />
@@ -82,7 +88,9 @@ export class PanelView extends React.Component<Props, State> {
           </ButtonGroup>
         </div>
         <AtomTextEditor
-          ref="inputField"
+          ref={editor => {
+            this._inputField = editor;
+          }}
           className="sample-lsp-tester-input"
           grammar={this.state.grammar}
           gutterHidden={true}
@@ -97,7 +105,9 @@ export class PanelView extends React.Component<Props, State> {
         <div className="sample-lsp-tester-output-wrapper">
           <label>Output:</label>
           <AtomTextEditor
-            ref="outputField"
+            ref={editor => {
+              this._outputField = editor;
+            }}
             className="sample-lsp-tester-output"
             gutterHidden={true}
             disabled={true}
@@ -108,16 +118,18 @@ export class PanelView extends React.Component<Props, State> {
   }
 
   _handleStartButtonClick = (): void => {
-    const commandString = this.refs.commandField.getText();
+    const commandString = nullthrows(this._commandField).getText();
     this.props.startServer(commandString.trim());
   };
 
   componentDidMount(): void {
     // Fill in initial command
-    this.refs.commandField.setText(this.props.initialCommand || '');
+    nullthrows(this._commandField).setText(this.props.initialCommand || '');
 
     // Fill in initial message text.
-    this.refs.inputField.getModel().setText(this.props.initialMessage);
+    nullthrows(this._inputField)
+      .getModel()
+      .setText(this.props.initialMessage);
 
     this._disposables = new UniversalDisposable(
       // Subscribe to the responses. Note that we don't handle this prop changing after mount.
@@ -127,7 +139,7 @@ export class PanelView extends React.Component<Props, State> {
             `${message.kind.toUpperCase()}...\n${indent(message.body)}`,
         )
         .subscribe(data => {
-          const textEditor = this.refs.outputField.getModel();
+          const textEditor = nullthrows(this._outputField).getModel();
           textEditor.getBuffer().append(`${data}\n\n`);
           (atom.views.getView(textEditor): any).scrollToBottom();
         }),
@@ -138,7 +150,7 @@ export class PanelView extends React.Component<Props, State> {
   }
 
   _handleSendButtonClick = (event: SyntheticMouseEvent<>): void => {
-    const {inputField} = this.refs;
+    const inputField = nullthrows(this._inputField);
     const rawMessage = inputField.getModel().getText();
     let parsed;
     try {

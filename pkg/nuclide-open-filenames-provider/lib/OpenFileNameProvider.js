@@ -5,14 +5,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
-import {Matcher} from '../../nuclide-fuzzy-native';
+import {Matcher} from 'nuclide-fuzzy-native';
 
 // Returns paths of currently opened editor tabs.
 function getOpenTabsMatching(query: string): Array<FileResult> {
@@ -53,5 +53,5 @@ const OpenFileListProvider: Provider<FileResult> = {
   },
 };
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = OpenFileListProvider;

@@ -47,14 +47,18 @@ export class WorkingSetSelectionComponent extends React.Component<
 
     this.state = {
       selectionIndex: 0,
-      applicableDefinitions: workingSetsStore.getApplicableDefinitions(),
+      applicableDefinitions: sortApplicableDefinitions(
+        workingSetsStore.getApplicableDefinitions(),
+      ),
       notApplicableDefinitions: workingSetsStore.getNotApplicableDefinitions(),
     };
 
     this._disposables = new UniversalDisposable(
       workingSetsStore.subscribeToDefinitions(definitions => {
         this.setState({
-          applicableDefinitions: definitions.applicable,
+          applicableDefinitions: sortApplicableDefinitions(
+            definitions.applicable,
+          ),
           notApplicableDefinitions: definitions.notApplicable,
         });
         if (
@@ -94,7 +98,7 @@ export class WorkingSetSelectionComponent extends React.Component<
     this._disposables.dispose();
   }
 
-  componentWillUpdate(nextProps: Props, nextState: State): void {
+  UNSAFE_componentWillUpdate(nextProps: Props, nextState: State): void {
     const applicableLength = nextState.applicableDefinitions.length;
 
     if (applicableLength > 0) {
@@ -113,21 +117,24 @@ export class WorkingSetSelectionComponent extends React.Component<
   }
 
   render(): React.Node {
-    const applicableDefinitions = this.state.applicableDefinitions.map(
-      (def, index) => {
-        return (
-          <ApplicableDefinitionLine
-            key={def.name}
-            def={def}
-            index={index}
-            selected={index === this.state.selectionIndex}
-            toggleWorkingSet={this._toggleWorkingSet}
-            onSelect={this._setSelectionIndex}
-            onDeleteWorkingSet={this._deleteWorkingSet}
-            onEditWorkingSet={this.props.onEditWorkingSet}
-          />
-        );
-      },
+    const projectDefinitionRows = this.state.applicableDefinitions
+      .filter(def => def.sourceType === 'project')
+      .map((def, index) => this._renderDefinitionRow(def, index));
+    const applicableDefinitionRows = this.state.applicableDefinitions
+      .filter(def => def.sourceType !== 'project')
+      .map((def, index) =>
+        this._renderDefinitionRow(def, projectDefinitionRows.length + index),
+      );
+
+    const projectSection =
+      projectDefinitionRows.length === 0 ? null : (
+        <ol className="list-group mark-active">{projectDefinitionRows}</ol>
+      );
+
+    const applicableDefinitionsSection = (
+      <ol className="list-group mark-active" style={{maxHeight: '80vh'}}>
+        {applicableDefinitionRows}
+      </ol>
     );
 
     let notApplicableSection;
@@ -158,15 +165,35 @@ export class WorkingSetSelectionComponent extends React.Component<
 
     return (
       <div className="select-list" tabIndex="0" onBlur={this._checkFocus}>
-        <ol className="list-group mark-active" style={{'max-height': '80vh'}}>
-          {applicableDefinitions}
-        </ol>
+        {projectSection}
+        {applicableDefinitionsSection}
         {notApplicableSection}
       </div>
     );
   }
 
+  _renderDefinitionRow(
+    def: WorkingSetDefinition,
+    index: number,
+  ): React.Element<*> {
+    return (
+      <ApplicableDefinitionLine
+        key={def.name}
+        def={def}
+        index={index}
+        selected={index === this.state.selectionIndex}
+        toggleWorkingSet={this._toggleWorkingSet}
+        onSelect={this._setSelectionIndex}
+        onDeleteWorkingSet={this._deleteWorkingSet}
+        onEditWorkingSet={this.props.onEditWorkingSet}
+      />
+    );
+  }
+
   _moveSelectionIndex(step: number): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({selectionIndex: this.state.selectionIndex + step});
   }
 
@@ -229,22 +256,32 @@ class ApplicableDefinitionLine extends React.Component<
         className={classnames(classes)}
         onMouseOver={() => this.props.onSelect(this.props.index)}
         onClick={this._lineOnClick}>
-        <ButtonGroup className="pull-right">
-          <Button
-            icon="trashcan"
-            onClick={this._deleteButtonOnClick}
-            tabIndex="-1"
-            title="Delete this working set"
-          />
-          <Button
-            icon="pencil"
-            onClick={this._editButtonOnClick}
-            tabIndex="-1"
-            title="Edit this working set"
-          />
-        </ButtonGroup>
+        {this._renderButtons()}
         <span>{this.props.def.name}</span>
       </li>
+    );
+  }
+
+  _renderButtons(): ?React.Element<*> {
+    if (this.props.def.sourceType === 'project') {
+      // Project working set definitions can't be edited or deleted.
+      return null;
+    }
+    return (
+      <ButtonGroup className="pull-right">
+        <Button
+          icon="trashcan"
+          onClick={this._deleteButtonOnClick}
+          tabIndex="-1"
+          title="Delete this working set"
+        />
+        <Button
+          icon="pencil"
+          onClick={this._editButtonOnClick}
+          tabIndex="-1"
+          title="Edit this working set"
+        />
+      </ButtonGroup>
     );
   }
 
@@ -296,4 +333,17 @@ class NonApplicableDefinitionLine extends React.Component<
     this.props.onDeleteWorkingSet(this.props.def.name);
     event.stopPropagation();
   };
+}
+
+// Since the selection is based on index, we need to make sure these are ordered correctly (i.e.
+// with the project definitions first).
+function sortApplicableDefinitions(
+  definitions: Array<WorkingSetDefinition>,
+): Array<WorkingSetDefinition> {
+  return definitions.slice().sort((a, b) => {
+    if (a.sourceType === b.sourceType) {
+      return a.name.localeCompare(b.name);
+    }
+    return a.sourceType === 'project' ? -1 : 1;
+  });
 }

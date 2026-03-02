@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -18,6 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {getBuckProjectRoot, getBuckService} from '../../../nuclide-buck-base';
+import {observeBuildCommands} from '../observeBuildCommands';
 import * as Actions from './Actions';
 import {
   getFileSystemServiceByNuclideUri,
@@ -58,15 +59,24 @@ export function setBuckRootEpic(
       return Observable.empty();
     }
     const watcherService = getFileWatcherServiceByNuclideUri(buckRoot);
-    return Observable.of(undefined)
-      .concat(
-        watcherService
-          .watchWithNode(buckRoot, true)
-          .refCount()
-          .filter(event => nuclideUri.basename(event.path) === '.buckversion'),
-      )
-      .switchMap(() => readBuckversionFile(buckRoot))
-      .map(fileContents => Actions.setBuckversionFileContents(fileContents));
+    return Observable.merge(
+      Observable.of(undefined)
+        .concat(
+          watcherService
+            .watchWithNode(buckRoot, true)
+            .refCount()
+            .filter(
+              event => nuclideUri.basename(event.path) === '.buckversion',
+            ),
+        )
+        .switchMap(() => readBuckversionFile(buckRoot))
+        .map(fileContents => Actions.setBuckversionFileContents(fileContents)),
+      observeBuildCommands(
+        buckRoot,
+        () => store.getState().taskSettings,
+        () => store.getState().unsanitizedTaskSettings,
+      ),
+    );
   });
 }
 
@@ -113,9 +123,12 @@ export function setBuildTargetEpic(
       if (buckService == null) {
         return Observable.of(null);
       }
-      return Observable.defer(() =>
-        buckService.buildRuleTypeFor(buckRoot, buildTarget),
-      ).catch(() => Observable.of(null));
+      return Observable.defer(() => {
+        return buckService.buildRuleTypeFor(buckRoot, buildTarget);
+      }).catch(error => {
+        getLogger().error(error);
+        return Observable.of(null);
+      });
     })
     .switchMap(ruleType => Observable.of(setRuleType(ruleType)));
 }

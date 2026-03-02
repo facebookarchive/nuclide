@@ -5,12 +5,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  LanguageService,
+  Completion,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -18,23 +21,33 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   DiagnosticMessageType,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessages,
   FindReferencesReturn,
+  RenameReturn,
   Outline,
-  FileDiagnosticMessage,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
-import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  AutocompleteResult,
+  FileDiagnosticMap,
+  FileDiagnosticMessage,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
-import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+import {Observable} from 'rxjs';
+import {
+  runCommand,
+  ProcessExitError,
+  getOriginalEnvironment,
+} from 'nuclide-commons/process';
+import {asyncSome} from 'nuclide-commons/promise';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {maybeToString} from 'nuclide-commons/string';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import once from '../../commons-node/once';
+import once from 'nuclide-commons/once';
+import {IDENTIFIER_REGEXP} from './constants';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
@@ -48,7 +61,7 @@ export type PythonCompletion = {
   type: string,
   text: string,
   description?: string,
-  params?: Array<string>,
+  params: ?Array<string>,
 };
 
 export type PythonDefinition = {
@@ -159,11 +172,11 @@ class PythonSingleFileLanguageService {
   getDiagnostics(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
+  ): Promise<?FileDiagnosticMap> {
     throw new Error('Not Yet Implemented');
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
     throw new Error('Not Yet Implemented');
   }
 
@@ -184,6 +197,10 @@ class PythonSingleFileLanguageService {
     );
   }
 
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
+  }
+
   getDefinition(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
@@ -192,12 +209,23 @@ class PythonSingleFileLanguageService {
     return getDefinition(serverManager, filePath, buffer, position);
   }
 
-  async findReferences(
+  findReferences(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Observable<?FindReferencesReturn> {
+    return Observable.fromPromise(
+      this._findReferences(filePath, buffer, position),
+    );
+  }
+
+  async _findReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    const result = await getReferences(
+    const result = await _getReferences(
+      serverManager,
       filePath,
       buffer.getText(),
       position.row,
@@ -236,6 +264,15 @@ class PythonSingleFileLanguageService {
     };
   }
 
+  rename(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    newName: string,
+  ): Observable<?RenameReturn> {
+    throw new Error('Not Yet Implemented');
+  }
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     throw new Error('Not Yet Implemented');
   }
@@ -244,7 +281,7 @@ class PythonSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    const service = await serverManager.getJediService(filePath);
+    const service = await serverManager.getJediService();
     const items = await service.get_outline(filePath, buffer.getText());
 
     if (items == null) {
@@ -257,12 +294,40 @@ class PythonSingleFileLanguageService {
     };
   }
 
-  typeHint(
+  async typeHint(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    throw new Error('Not Yet Implemented');
+    const word = wordAtPositionFromBuffer(buffer, position, IDENTIFIER_REGEXP);
+    if (word == null) {
+      return null;
+    }
+    const service = await serverManager.getJediService();
+    const result = await service.get_hover(
+      filePath,
+      buffer.getText(),
+      serverManager.getSysPath(filePath),
+      word.wordMatch[0],
+      position.row,
+      position.column,
+    );
+    if (result == null) {
+      return null;
+    }
+    return {
+      hint: [
+        {
+          type: 'markdown',
+          value: result,
+        },
+      ],
+      range: word.range,
+    };
+  }
+
+  async onToggleCoverage(set: boolean): Promise<void> {
+    return;
   }
 
   highlight(
@@ -298,6 +363,7 @@ class PythonSingleFileLanguageService {
       stdout = await runCommand(command, args, {
         cwd: dirName,
         input: contents,
+        env: await getOriginalEnvironment(),
         // At the moment, yapf outputs 3 possible exit codes:
         // 0 - success, no content change.
         // 2 - success, contents changed.
@@ -327,12 +393,19 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  getEvaluationExpression(
+  async signatureHelp(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    throw new Error('Not Yet Implemented');
+  ): Promise<?SignatureHelp> {
+    const service = await serverManager.getJediService();
+    return service.get_signature_help(
+      filePath,
+      buffer.getText(),
+      serverManager.getSysPath(filePath),
+      position.row,
+      position.column,
+    );
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
@@ -375,14 +448,22 @@ const getFormatterCommandImpl = once(() => {
   }
 });
 
-export async function getReferences(
+// Exported for testing.
+export async function _getReferences(
+  manager: JediServerManager,
   src: NuclideUri,
   contents: string,
   line: number,
   column: number,
 ): Promise<?Array<PythonReference>> {
-  const service = await serverManager.getJediService(src);
-  return service.get_references(src, contents, line, column);
+  const service = await manager.getJediService();
+  return service.get_references(
+    src,
+    contents,
+    manager.getSysPath(src),
+    line,
+    column,
+  );
 }
 
 // Set to false if flake8 isn't found, so we don't repeatedly fail.
@@ -390,7 +471,6 @@ let shouldRunFlake8 = true;
 
 export async function getDiagnostics(
   src: NuclideUri,
-  contents: string,
 ): Promise<Array<PythonDiagnostic>> {
   if (!shouldRunFlake8) {
     return [];
@@ -398,7 +478,7 @@ export async function getDiagnostics(
 
   let result;
   try {
-    result = await runLinterCommand(src, contents);
+    result = await runLinterCommand(src);
   } catch (err) {
     // A non-successful exit code can result in some cases that we want to ignore,
     // for example when an incorrect python version is specified for a source file.
@@ -416,14 +496,8 @@ export async function getDiagnostics(
   return parseFlake8Output(src, result);
 }
 
-async function runLinterCommand(
-  src: NuclideUri,
-  contents: string,
-): Promise<string> {
+async function runLinterCommand(src: NuclideUri): Promise<string> {
   const dirName = nuclideUri.dirname(src);
-  const configDir = await fsPromise.findNearestFile('.flake8', dirName);
-  // flowlint-next-line sketchy-null-string:off
-  const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
 
   let result;
   let runFlake8;
@@ -435,7 +509,7 @@ async function runLinterCommand(
   }
 
   if (runFlake8 != null) {
-    result = await runFlake8(src, contents, configPath);
+    result = await runFlake8(src);
     if (result != null) {
       return result;
     }
@@ -444,21 +518,40 @@ async function runLinterCommand(
   const command =
     (global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8')) ||
     'flake8';
-  const args = [];
 
-  // flowlint-next-line sketchy-null-string:off
-  if (configPath) {
-    args.push('--config');
-    args.push(configPath);
-  }
-
-  // Read contents from stdin.
-  args.push('-');
   invariant(typeof command === 'string');
-  return runCommand(command, args, {
+  return runCommand(command, [src], {
     cwd: dirName,
-    input: contents,
+    env: await getOriginalEnvironment(),
     // 1 indicates unclean lint result (i.e. has errors/warnings).
     isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
   }).toPromise();
+}
+
+/**
+ * Retrieves a list of buildable targets to obtain link trees for a given file.
+ * (This won't return anything if a link tree is already available.)
+ */
+export async function getBuildableTargets(
+  src: NuclideUri,
+): Promise<Array<string>> {
+  const linkTreeManager = serverManager._linkTreeManager;
+  const linkTrees = await linkTreeManager.getLinkTreePaths(src);
+  if (linkTrees.length === 0) {
+    return [];
+  }
+  if (await asyncSome(linkTrees, fsPromise.exists)) {
+    return [];
+  }
+  const buckRoot = await linkTreeManager.getBuckRoot(src);
+  const owner = await linkTreeManager.getOwner(src);
+  if (buckRoot == null || owner == null) {
+    return [];
+  }
+  const dependents = await linkTreeManager.getDependents(buckRoot, owner);
+  return Array.from(dependents.keys());
+}
+
+export function reset(): void {
+  serverManager.reset();
 }

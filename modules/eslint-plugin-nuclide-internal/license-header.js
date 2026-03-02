@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const idx = require('idx');
 
@@ -44,14 +41,11 @@ const NO_FLOW_AND_NO_TRANSPILE = `\
  * the root directory of this source tree.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 `;
 
 const BSD_FLOW_FORMAT_AND_TRANSPILE = `\
@@ -78,15 +72,19 @@ const BSD_NO_FLOW_AND_NO_TRANSPILE = `\
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 `;
+
+const REGEXP_TO_IGNORE = [
+  /^.*@(?:emails|transpile).*\n/gm,
+  /^.*@gk-enable.*\n/gm,
+  /^.*@gk-disable.*\n/gm,
+  /^.*@sitevars.*\n/gm,
+];
 
 module.exports = function(context) {
   // "eslint-disable" disables rules after it. Since the directives have to go
@@ -101,13 +99,21 @@ module.exports = function(context) {
   return {
     Program(node) {
       const sourceCode = context.getSourceCode();
-      const source = sourceCode.text;
+
+      const source = REGEXP_TO_IGNORE.reduce(
+        (s, regexp) => s.replace(regexp, ''),
+        sourceCode.text,
+      );
       const useBSDLicense = idx(context, _ => _.options[0].useBSDLicense);
 
       const flowHeader = useBSDLicense
         ? BSD_FLOW_FORMAT_AND_TRANSPILE
         : FLOW_FORMAT_AND_TRANSPILE;
-      if (source.startsWith(flowHeader)) {
+      if (
+        source
+          .replace(/@flow( strict(-local)?)?/, '@flow')
+          .startsWith(flowHeader)
+      ) {
         return;
       }
 

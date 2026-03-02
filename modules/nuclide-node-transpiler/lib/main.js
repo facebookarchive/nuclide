@@ -7,23 +7,22 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * To use the require hook, you should follow this pattern:
  *
- *   const {__DEV__} = require('nuclide-node-transpiler/lib/env');
+ *   const {__DEV__} = require('<relative_path>/nuclide-node-transpiler/lib/env');
  *   if (__DEV__) {
  *     require('nuclide-node-transpiler');
  *   }
  *
+ * It's important that the lib/env path is relative, as that file is the one
+ * responsible for injecting the modules/ require path!
  */
 
 const {__DEV__} = require('./env');

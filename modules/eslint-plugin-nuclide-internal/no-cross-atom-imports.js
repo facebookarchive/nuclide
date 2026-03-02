@@ -7,19 +7,21 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 const resolveFrom = require('resolve-from');
 
-const {ATOM_BUILTIN_PACKAGES, getPackage, isRequire} = require('./utils');
+const {
+  ATOM_BUILTIN_PACKAGES,
+  getPackage,
+  isRequire,
+  isRequireResolve,
+} = require('./utils');
 
 const ATOM_IDE_PACKAGES = new Set([
   'atom-ide-ui',
@@ -32,32 +34,34 @@ module.exports = function(context) {
   const dirname = path.dirname(filename);
   const ownPackage = getPackage(filename);
 
-  const whitelist =
-    new Set(context.options[0] && context.options[0].whitelist || []);
+  const whitelist = new Set(
+    (context.options[0] && context.options[0].whitelist) || [],
+  );
 
   if (!ownPackage) {
     throw new Error(`"${filename}" does not have a package.json`);
   }
 
   // Packages come in 3 flavors:
-  // packageType: Atom & testRunner: apm
-  // packageType: Node & testRunner: apm
-  // packageType: Node & testRunner: npm
-  const isPureNode = ownPackage.nuclide && ownPackage.nuclide.testRunner === 'npm';
+  const ATOM_PACKAGE = 'AtomPackage';
+  const ATOM_LIBRARY = 'AtomLibrary';
+  const NODE_LIBRARY = 'NodeLibrary';
+
+  const ownPackageType = ownPackage.nuclide && ownPackage.nuclide.packageType;
 
   function getCrossImportPackage(id) {
-    // npm packages can't require Atom builtins.
+    // Node libraries packages can't require Atom builtins.
     if (ATOM_BUILTIN_PACKAGES.has(id)) {
-      if (isPureNode) {
-        return {type: 'NO_NPM_TO_ATOM_BUILTIN', name: id};
+      if (ownPackageType === NODE_LIBRARY) {
+        return {type: 'NO_NODE_TO_ATOM_BUILTIN', name: id};
       } else {
         return null;
       }
     }
 
     if (ATOM_IDE_PACKAGES.has(id)) {
-      if (isPureNode) {
-        return {type: 'NO_NPM_TO_ATOM_UI_PACKAGES', name: id};
+      if (ownPackageType === NODE_LIBRARY) {
+        return {type: 'NO_NODE_TO_ATOM_UI_PACKAGES', name: id};
       } else {
         return null;
       }
@@ -73,27 +77,31 @@ module.exports = function(context) {
       return null;
     }
     const resolvedPackage = getPackage(resolved);
+
+    const resolvedPackageType =
+      resolvedPackage.nuclide && resolvedPackage.nuclide.packageType;
     // Requiring anything within our own package is ok.
     if (resolvedPackage.__dirname === ownPackage.__dirname) {
       return null;
     }
-    // An apm package requiring a whitelisted package is ok.
-    if (ownPackage.nuclide &&
-        ownPackage.nuclide.testRunner === 'apm' &&
-        whitelist.has(resolvedPackage.name)) {
+    // An Atom package/library requiring a whitelisted package is ok.
+    if (
+      [ATOM_LIBRARY, ATOM_PACKAGE].includes(ownPackageType) &&
+      whitelist.has(resolvedPackage.name)
+    ) {
       return null;
     }
     // Nothing can require into an Atom package
-    if (resolvedPackage.nuclide &&
-        resolvedPackage.nuclide.packageType === 'Atom') {
+    if (resolvedPackageType === ATOM_PACKAGE) {
       return {type: 'NO_ATOM', name: resolvedPackage.name};
     }
-    // npm packages can only require other npm packages.
-    if (ownPackage.nuclide &&
-        ownPackage.nuclide.testRunner === 'npm' &&
-        resolvedPackage.nuclide &&
-        resolvedPackage.nuclide.testRunner === 'apm') {
-      return {type: 'NO_NPM_TO_APM', name: resolvedPackage.name};
+    // Node packages can only require other npm packages.
+    if (
+      ownPackageType === NODE_LIBRARY &&
+      (resolvedPackageType === ATOM_LIBRARY ||
+        resolvedPackageType === ATOM_PACKAGE)
+    ) {
+      return {type: 'NO_NODE_TO_ATOM', name: resolvedPackage.name};
     }
 
     return null;
@@ -102,14 +110,14 @@ module.exports = function(context) {
   function reportError(node, action, result) {
     const message =
       result.type === 'NO_ATOM'
-        ? 'Atom package "{{name}}" is not {{action}} from other packages.' :
-      result.type === 'NO_NPM_TO_APM'
-        ? 'apm package "{{name}}" is not {{action}} from an npm package.' :
-      result.type === 'NO_NPM_TO_ATOM_BUILTIN'
-        ? 'Atom builtin package "{{name}}" is not {{action}} from an npm package.' :
-      result.type === 'NO_NPM_TO_ATOM_UI_PACKAGES'
-        ? 'Nuclide/Atom UI package "{{name}}" is not {{action}} from an npm package.' :
-      null;
+        ? 'Atom package "{{name}}" is not {{action}} from other packages.'
+        : result.type === 'NO_NODE_TO_ATOM'
+          ? 'Atom package "{{name}}" is not {{action}} from a Node library.'
+          : result.type === 'NO_NODE_TO_ATOM_BUILTIN'
+            ? 'Atom builtin package "{{name}}" is not {{action}} from a Node library.'
+            : result.type === 'NO_NODE_TO_ATOM_UI_PACKAGES'
+              ? 'Nuclide/Atom UI package "{{name}}" is not {{action}} from a Node library.'
+              : null;
     context.report({
       node,
       data: {name: result.name, action},
@@ -119,7 +127,7 @@ module.exports = function(context) {
 
   return {
     CallExpression(node) {
-      if (!isRequire(node)) {
+      if (!isRequire(node) && !isRequireResolve(node)) {
         return;
       }
       // require("…")

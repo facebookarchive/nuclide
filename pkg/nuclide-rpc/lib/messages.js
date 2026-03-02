@@ -12,7 +12,6 @@
 // Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage =
   | CallMessage
-  | NewObjectMessage
   | CallObjectMessage
   | DisposeMessage
   | UnsubscribeMessage;
@@ -21,14 +20,6 @@ export type CallMessage = {
   protocol: string,
   type: 'call',
   method: string,
-  id: number,
-  args: Object,
-};
-
-export type NewObjectMessage = {
-  protocol: string,
-  type: 'new',
-  interface: string,
   id: number,
   args: Object,
 };
@@ -102,17 +93,23 @@ export type ErrorMessage = {
   error: any,
 };
 
+const ERROR_MESSAGE_LIMIT = 1000;
+
 // TODO: This should be a custom marshaller registered in the TypeRegistry
 export function decodeError(
   message: Object,
   encodedError: ?(Object | string),
 ): ?(Error | string) {
   if (encodedError != null && typeof encodedError === 'object') {
-    const resultError = new Error();
-    resultError.message =
-      `Remote Error: ${encodedError.message} processing message ${JSON.stringify(
-        message,
-      )}\n` + JSON.stringify(encodedError.stack);
+    let messageStr = JSON.stringify(message);
+    if (messageStr.length > ERROR_MESSAGE_LIMIT) {
+      messageStr =
+        messageStr.substr(0, ERROR_MESSAGE_LIMIT) +
+        `<${messageStr.length - ERROR_MESSAGE_LIMIT} bytes>`;
+    }
+    const resultError = new Error(encodedError.message);
+    // $FlowIssue - attach RPC message onto the created error
+    resultError.rpcMessage = messageStr;
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;
     resultError.stack = encodedError.stack;
@@ -149,21 +146,6 @@ export function createCallObjectMessage(
     type: 'call-object',
     method: methodName,
     objectId,
-    id,
-    args,
-  };
-}
-
-export function createNewObjectMessage(
-  protocol: string,
-  interfaceName: string,
-  id: number,
-  args: Object,
-): NewObjectMessage {
-  return {
-    protocol,
-    type: 'new',
-    interface: interfaceName,
     id,
     args,
   };

@@ -9,9 +9,8 @@
  * @format
  */
 
-import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {FileChange, WatchmanSubscription} from 'nuclide-watchman-helpers';
 import type {PathSet} from './PathSet';
-import type {WatchmanSubscription} from '../../../nuclide-watchman-helpers';
 
 import fs from 'nuclide-commons/fsPromise';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -21,7 +20,7 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 
 import {hgRunCommand} from '../../../nuclide-hg-rpc/lib/hg-utils';
-import {WatchmanClient} from '../../../nuclide-watchman-helpers';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 
 // TODO: This probably won't work on Windows, but we'll worry about that
 // when Watchman officially supports Windows.
@@ -71,7 +70,6 @@ export default class PathSetUpdater {
     const changeSubscription = observableFromSubscribeFunction(callback => {
       return subscription.on('change', callback);
     })
-      // $FlowFixMe (bufferTime isn't in the libdef for rxjs)
       .bufferTime(WATCHMAN_SUBSCRIPTION_BUFFER_TIME)
       .mergeMap(bufferedFiles => this._flattenBufferedChanges(bufferedFiles))
       .mergeMap(
@@ -184,7 +182,13 @@ export default class PathSetUpdater {
     const filesMap = new Map();
     bufferedFiles.forEach(files => {
       files.forEach(file => {
-        filesMap.set(file.name, file);
+        const existing = filesMap.get(file.name);
+        // If a file gets created and then modified, we have to preserve the 'new' bit.
+        if (existing != null && file.exists && existing.new) {
+          filesMap.set(file.name, {...file, new: true});
+        } else {
+          filesMap.set(file.name, file);
+        }
       });
     });
     return Observable.of(Array.from(filesMap.values()));

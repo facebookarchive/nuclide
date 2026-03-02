@@ -15,12 +15,9 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
 import debounce from 'nuclide-commons/debounce';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
-import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import type {OutlineTreeForUi} from './createOutlines';
-
-const SCORE_THRESHOLD = 0.1;
 
 export type SearchResult = {
   matches: boolean,
@@ -28,63 +25,27 @@ export type SearchResult = {
   matchingCharacters?: Array<number>,
 };
 
-type Props = {
+type Props = {|
+  query: string,
+  onQueryChange: string => void,
   editor: atom$TextEditor,
   outlineTrees: Array<OutlineTreeForUi>,
-  updateSearchResults: (
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  ) => void,
-};
+  searchResults: Map<OutlineTreeForUi, SearchResult>,
+|};
 
-type State = {
-  currentQuery: string,
-};
+export class OutlineViewSearchComponent extends React.Component<Props> {
+  _inputRef: ?React.ElementRef<typeof AtomInput>;
 
-export class OutlineViewSearchComponent extends React.Component<Props, State> {
-  searchResults: Map<OutlineTreeForUi, SearchResult>;
-
-  constructor(props: Props) {
-    super(props);
-    // An element is considered visible if it is not in the Map or if it has a
-    // Search result that has the visible property set to true. Therefore, all
-    // elements are visible when the Map is empty.
-    this.searchResults = new Map();
-    this.state = {
-      currentQuery: '',
-    };
-  }
-
-  SEARCH_PLACEHOLDER = 'Search Outline';
+  SEARCH_PLACEHOLDER = 'Filter';
   DEBOUNCE_TIME = 100;
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    if (prevState.currentQuery === '' && this.state.currentQuery === '') {
-      return;
-    }
-    if (this.state.currentQuery === '') {
-      this.props.updateSearchResults(new Map());
-      return;
-    }
-    if (prevProps.editor !== this.props.editor) {
-      this.setState({currentQuery: ''});
-      return;
-    }
-    if (
-      prevState.currentQuery !== this.state.currentQuery ||
-      prevProps.outlineTrees !== this.props.outlineTrees
-    ) {
-      const newMap = new Map();
-      this.props.outlineTrees.forEach(root =>
-        updateSearchSet(
-          this.state.currentQuery,
-          root,
-          newMap,
-          this.searchResults,
-          prevState.currentQuery,
-        ),
-      );
-      this.searchResults = newMap;
-      this.props.updateSearchResults(this.searchResults);
+  _handleInputRef = (element: ?React.ElementRef<typeof AtomInput>) => {
+    this._inputRef = element;
+  };
+
+  focus() {
+    if (this._inputRef != null) {
+      this._inputRef.focus();
     }
   }
 
@@ -106,7 +67,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
 
   _onConfirm = () => {
     const firstElement = this._findFirstResult(
-      this.searchResults,
+      this.props.searchResults,
       this.props.outlineTrees,
     );
     if (firstElement == null) {
@@ -119,35 +80,41 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     analytics.track('outline-view:search-enter');
     pane.activate();
     pane.activateItem(this.props.editor);
+    const landingPosition: atom$Point =
+      firstElement.landingPosition != null
+        ? firstElement.landingPosition
+        : firstElement.startPosition;
     goToLocationInEditor(this.props.editor, {
-      line: firstElement.startPosition.row,
-      column: firstElement.startPosition.column,
+      line: landingPosition.row,
+      column: landingPosition.column,
     });
-    this.setState({currentQuery: ''});
+    this.props.onQueryChange('');
   };
 
+  // $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
   _onDidChange = debounce(query => {
-    this.setState({currentQuery: query});
+    analytics.track('outline-view:change-query');
+    this.props.onQueryChange(query);
   }, this.DEBOUNCE_TIME);
 
   _onDidClear = () => {
-    this.setState({currentQuery: ''});
+    this.props.onQueryChange('');
   };
 
   render(): React.Node {
     return (
       <div className="outline-view-search-bar">
-        <Icon icon="search" className="outline-view-search-icon" />
         <AtomInput
           className="outline-view-search-pane"
           onConfirm={this._onConfirm}
           onCancel={this._onDidClear}
           onDidChange={this._onDidChange}
-          placeholderText={this.state.currentQuery || this.SEARCH_PLACEHOLDER}
-          value={this.state.currentQuery}
+          placeholderText={this.props.query || this.SEARCH_PLACEHOLDER}
+          ref={this._handleInputRef}
+          value={this.props.query}
           size="sm"
         />
-        {this.state.currentQuery.length > 0 ? (
+        {this.props.query.length > 0 ? (
           <Icon
             icon="x"
             className="outline-view-search-clear"
@@ -157,50 +124,4 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
       </div>
     );
   }
-}
-
-/* Exported for testing */
-export function updateSearchSet(
-  query: string,
-  root: OutlineTreeForUi,
-  map: Map<OutlineTreeForUi, SearchResult>,
-  prevMap: Map<OutlineTreeForUi, SearchResult>,
-  prevQuery: ?string,
-): void {
-  root.children.forEach(child =>
-    updateSearchSet(query, child, map, prevMap, prevQuery),
-  );
-  // Optimization using results from previous query.
-  // flowlint-next-line sketchy-null-string:off
-  if (prevQuery) {
-    const previousResult = prevMap.get(root);
-    if (
-      previousResult &&
-      (query === prevQuery ||
-        (query.startsWith(prevQuery) && !previousResult.visible))
-    ) {
-      map.set(root, previousResult);
-      return;
-    }
-  }
-  const text = root.tokenizedText
-    ? root.tokenizedText.map(e => e.value).join('')
-    : root.plainText || '';
-  const matches =
-    query === '' ||
-    fuzzaldrinPlus.score(text, query) / fuzzaldrinPlus.score(query, query) >
-      SCORE_THRESHOLD;
-  const visible =
-    matches ||
-    Boolean(
-      root.children.find(child => {
-        const childResult = map.get(child);
-        return !childResult || childResult.visible;
-      }),
-    );
-  let matchingCharacters;
-  if (matches) {
-    matchingCharacters = fuzzaldrinPlus.match(text, query);
-  }
-  map.set(root, {matches, visible, matchingCharacters});
 }

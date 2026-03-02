@@ -16,21 +16,23 @@ import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
 import {relativeDate} from 'nuclide-commons/string';
-import {Matcher} from '../../nuclide-fuzzy-native';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import {Matcher} from 'nuclide-fuzzy-native';
+import PathWithFileIcon from 'nuclide-commons-ui/PathWithFileIcon';
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
 type FilePath = string;
 type TimeStamp = number;
 type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 type RecentFilesService = {
-  getRecentFiles(): FileList,
-  touchFile(path: string): void,
+  getRecentFiles(): Promise<FileList>,
+  touchFile(path: string): Promise<void>,
 };
 
 let _recentFilesService: ?RecentFilesService = null;
 
-function getRecentFilesMatching(query: string): Array<FileResult> {
+async function getRecentFilesMatching(
+  query: string,
+): Promise<Array<FileResult>> {
   if (_recentFilesService == null) {
     return [];
   }
@@ -40,15 +42,11 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
       atom.workspace.getTextEditors().map(editor => editor.getPath()),
     ),
   );
-  const validRecentFiles = _recentFilesService
-    .getRecentFiles()
-    .filter(
-      result =>
-        !openFiles.has(result.path) &&
-        projectPaths.some(
-          projectPath => result.path.indexOf(projectPath) !== -1,
-        ),
-    );
+  const validRecentFiles = (await _recentFilesService.getRecentFiles()).filter(
+    result =>
+      !openFiles.has(result.path) &&
+      projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1),
+  );
   const timestamps: Map<FilePath, TimeStamp> = new Map();
   const matcher = new Matcher(
     validRecentFiles.map(recentFile => {

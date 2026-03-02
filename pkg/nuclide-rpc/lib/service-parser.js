@@ -25,7 +25,7 @@ import type {
   Babel$Node,
 } from './types';
 
-import * as babylon from 'babylon';
+import memoizeWithDisk from '../../commons-node/memoizeWithDisk';
 import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
@@ -33,6 +33,7 @@ import resolveFrom from 'resolve-from';
 import {objectFromMap} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
+import os from 'os';
 
 function isPrivateMemberName(name: string): boolean {
   return name.startsWith('_');
@@ -140,6 +141,20 @@ export function _clearFileParsers(): void {
   fileParsers.clear();
 }
 
+const memoizedBabylonParse = memoizeWithDisk(
+  function babylonParse(src, options) {
+    // External dependency: ensure that it's included in the key below.
+    const babylon = require('@babel/parser');
+    return babylon.parse(src, options).program;
+  },
+  (src, options) => [
+    src,
+    options,
+    require('@babel/parser/package.json').version,
+  ],
+  nuclideUri.join(os.tmpdir(), 'nuclide-rpc-cache'),
+);
+
 class FileParser {
   _fileName: string;
   // Whether this file defines the service (i.e. not an import)
@@ -187,11 +202,20 @@ class FileParser {
    * This doesn't actually visit any of the type definitions.
    */
   parse(source: string): void {
-    const ast = babylon.parse(source, {
+    const babylonOptions = {
       sourceType: 'module',
-      plugins: ['*', 'jsx', 'flow'],
-    });
-    const program = ast.program;
+      plugins: [
+        'jsx',
+        'flow',
+        'exportExtensions',
+        'objectRestSpread',
+        'classProperties',
+        'nullishCoalescingOperator',
+        'optionalChaining',
+        'optionalCatchBinding',
+      ],
+    };
+    const program = memoizedBabylonParse(source, babylonOptions);
     invariant(
       program && program.type === 'Program',
       'The result of parsing is a Program node.',
@@ -355,6 +379,7 @@ class FileParser {
     serviceParser: ServiceParser,
     declaration: any,
   ): FunctionDefinition {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (this._fileType === 'import') {
       throw this._error(declaration, 'Exported function in imported RPC file');
     }
@@ -420,6 +445,7 @@ class FileParser {
     serviceParser: ServiceParser,
     declaration: Object,
   ): InterfaceDefinition {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (this._fileType === 'import') {
       throw this._error(declaration, 'Exported class in imported RPC file');
     }
@@ -428,22 +454,22 @@ class FileParser {
       kind: 'interface',
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
-      constructorArgs: [],
       staticMethods: {},
       instanceMethods: {},
     };
 
     const classBody = declaration.body;
     for (const method of classBody.body) {
-      if (method.kind === 'constructor') {
-        def.constructorArgs = method.params.map(param =>
-          this._parseParameter(serviceParser, param),
-        );
-        if (method.returnType) {
-          throw this._error(method, 'constructors may not have return types');
-        }
-      } else {
+      if (method.kind !== 'constructor') {
         if (!isPrivateMemberName(method.key.name)) {
+          if (method.type !== 'ClassMethod') {
+            throw this._error(
+              method,
+              'Class fields that are not methods are not supported. If this ' +
+                'field is supposed to be private please prefix it with an ' +
+                'underscore.',
+            );
+          }
           const {name, type} = this._parseClassMethod(serviceParser, method);
           const isStatic = Boolean(method.static);
           this._validateMethod(method, name, type, isStatic);
@@ -496,7 +522,6 @@ class FileParser {
       kind: 'interface',
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
-      constructorArgs: null,
       staticMethods: {},
       instanceMethods: {},
     };
@@ -562,7 +587,7 @@ class FileParser {
     this._assert(
       definition,
       definition.key && definition.key.type === 'Identifier',
-      'This method defintion has an key (a name).',
+      'This method definition has an key (a name).',
     );
     this._assert(
       definition,
@@ -733,7 +758,7 @@ class FileParser {
         return {kind: 'boolean'};
       case 'StringLiteralTypeAnnotation':
         return {kind: 'string-literal', value: typeAnnotation.value};
-      case 'NumericLiteralTypeAnnotation':
+      case 'NumberLiteralTypeAnnotation':
         return {kind: 'number-literal', value: typeAnnotation.value};
       case 'BooleanLiteralTypeAnnotation':
         return {kind: 'boolean-literal', value: typeAnnotation.value};
@@ -923,8 +948,9 @@ class FileParser {
         return type.name;
       case 'QualifiedTypeIdentifier':
         invariant(type.id.type === 'Identifier');
-        return `${this._parseTypeName(serviceParser, type.qualification)}.${type
-          .id.name}`;
+        return `${this._parseTypeName(serviceParser, type.qualification)}.${
+          type.id.name
+        }`;
       default:
         throw this._error(type, `Expected named type. Found ${type.type}`);
     }

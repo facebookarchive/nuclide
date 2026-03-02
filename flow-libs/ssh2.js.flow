@@ -160,6 +160,8 @@ declare module 'ssh2' {
   }
 
   declare class Client extends events$EventEmitter {
+      config: Object;
+
       // Client-events
 
       /**

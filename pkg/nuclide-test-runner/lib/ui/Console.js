@@ -22,6 +22,7 @@ export default class Console extends React.Component<Props> {
   render() {
     return (
       <AtomTextEditor
+        correctContainerWidth={false}
         gutterHidden={true}
         path=".ansi"
         readOnly={true}

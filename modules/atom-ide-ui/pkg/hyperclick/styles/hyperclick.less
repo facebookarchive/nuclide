@@ -2,6 +2,8 @@
 
 atom-text-editor .highlight.hyperclick > .region {
   border-bottom: 1px solid @syntax-text-color;
+  /* Avoid being obscured by the datatip highlight */
+  z-index: 1;
 }
 
 atom-text-editor:not([mini]).hyperclick .lines {

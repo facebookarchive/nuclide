@@ -6,18 +6,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {Datatip} from '../../atom-ide-datatip/lib/types';
 import type {
   DiagnosticUpdater,
-  FileDiagnosticMessage,
+  DiagnosticMessage,
 } from '../../atom-ide-diagnostics/lib/types';
 
 import invariant from 'assert';
 import * as React from 'react';
+import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -25,20 +26,27 @@ import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
 const gotoLine = (file: string, line: number) => goToLocation(file, {line});
 
-function makeDatatipComponent(
-  messages: Array<FileDiagnosticMessage>,
+export function makeDatatipComponent(
+  messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
-): React.ComponentType<*> {
-  const fixer = message => diagnosticUpdater.applyFix(message);
+  props?: $Shape<React.ElementProps<typeof DiagnosticsPopup>>,
+): React.ComponentType<mixed> {
   return bindObservableAsProps(
-    observableFromSubscribeFunction(cb =>
-      diagnosticUpdater.observeCodeActionsForMessage(cb),
-    ).map(codeActionsForMessage => ({
-      messages,
-      fixer,
-      goToLocation: gotoLine,
-      codeActionsForMessage,
-    })),
+    Observable.combineLatest(
+      observableFromSubscribeFunction(cb =>
+        diagnosticUpdater.observeCodeActionsForMessage(cb),
+      ),
+      observableFromSubscribeFunction(cb =>
+        diagnosticUpdater.observeDescriptions(cb),
+      ),
+    ).map(([codeActionsForMessage, descriptions]) => {
+      return {
+        messages,
+        codeActionsForMessage,
+        descriptions,
+        ...props,
+      };
+    }),
     DiagnosticsPopup,
   );
 }
@@ -46,7 +54,7 @@ function makeDatatipComponent(
 export default (async function getDiagnosticDatatip(
   editor: TextEditor,
   position: atom$Point,
-  messagesAtPosition: Array<FileDiagnosticMessage>,
+  messagesAtPosition: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
 ): Promise<?Datatip> {
   let range = null;
@@ -56,9 +64,13 @@ export default (async function getDiagnosticDatatip(
     }
   }
   diagnosticUpdater.fetchCodeActions(editor, messagesAtPosition);
+  diagnosticUpdater.fetchDescriptions(messagesAtPosition);
   invariant(range != null);
   return {
-    component: makeDatatipComponent(messagesAtPosition, diagnosticUpdater),
+    component: makeDatatipComponent(messagesAtPosition, diagnosticUpdater, {
+      fixer: message => diagnosticUpdater.applyFix(message),
+      goToLocation: gotoLine,
+    }),
     pinnable: false,
     range,
   };

@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * This file installs the logic that modifies Node's built in require()
@@ -41,7 +38,9 @@ function transpiler_require_hook(_module, filename) {
     if (NodeTranspiler.shouldCompile(src)) {
       if (transpiling != null) {
         // This means that the transpiler tried to transpile itself.
-        throw new Error(`Circular transpile from "${transpiling}" to "${filename}"`);
+        throw new Error(
+          `Circular transpile from "${transpiling}" to "${filename}"`,
+        );
       }
       try {
         transpiling = filename;

@@ -17,24 +17,24 @@ import shallowEqual from 'shallowequal';
 const REREGISTER_DELAY = 100;
 
 const _tooltipRequests: Map<Element, atom$TooltipsAddOptions> = new Map();
-const _createdTooltips: Map<
+const _createdTooltips: WeakMap<
   Element,
   {options: atom$TooltipsAddOptions, disposable: IDisposable},
-> = new Map();
+> = new WeakMap();
 const _toDispose: Set<Element> = new Set();
-let _timeoutHandle: ?number;
+let _timeoutHandle: ?TimeoutID;
 
 /**
-* Adds a self-disposing Atom's tooltip to a react element.
-*
-* Typical usage:
-* <div ref={addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})} />
-* or, if the ref needs to be preserved:
-* <div ref={c => {
-*   addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})(c);
-*   _myDiv = c;
-* }} />
-*/
+ * Adds a self-disposing Atom tooltip to a react element.
+ *
+ * Typical usage:
+ * <div ref={addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})} />
+ * or, if the ref needs to be preserved:
+ * <div ref={c => {
+ *   addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})(c);
+ *   _myDiv = c;
+ * }} />
+ */
 export default function addTooltip(
   options: atom$TooltipsAddOptions,
 ): (elementRef: React.ElementRef<any>) => void {
@@ -45,8 +45,13 @@ export default function addTooltip(
 
     if (elementRef == null) {
       if (node != null) {
-        _toDispose.add(node);
+        if (_tooltipRequests.has(node)) {
+          _tooltipRequests.delete(node);
+        } else {
+          _toDispose.add(node);
+        }
       }
+      node = null;
 
       return;
     }

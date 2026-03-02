@@ -30,6 +30,7 @@ export default class SettingsCategory extends React.Component<Props> {
             <ControlGroup key={settingName}>
               <SettingsControl
                 keyPath={settingData.keyPath}
+                title={settingData.title}
                 value={settingData.value}
                 onChange={settingData.onChange}
                 schema={settingData.schema}

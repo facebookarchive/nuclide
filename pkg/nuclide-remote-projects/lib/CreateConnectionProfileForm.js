@@ -17,11 +17,11 @@ import type {
 } from './connection-types';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {TabbableContainer} from '../../nuclide-ui/TabbableContainer';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -52,15 +52,16 @@ const emptyFunction = () => {};
  */
 export default class CreateConnectionProfileForm extends React.Component<
   Props,
-  void,
 > {
   props: Props;
 
-  disposables: CompositeDisposable;
+  _connectionDetails: ?ConnectionDetailsForm;
+  disposables: UniversalDisposable;
+  _profileName: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
-    this.disposables = new CompositeDisposable();
+    this.disposables = new UniversalDisposable();
   }
 
   componentDidMount(): void {
@@ -73,7 +74,7 @@ export default class CreateConnectionProfileForm extends React.Component<
       // $FlowFixMe
       atom.commands.add(root, 'core:cancel', this._clickCancel),
     );
-    this.refs['profile-name'].focus();
+    nullthrows(this._profileName).focus();
   }
 
   componentWillUnmount(): void {
@@ -89,59 +90,61 @@ export default class CreateConnectionProfileForm extends React.Component<
     const initialFields = this.props.initialFormFields;
 
     return (
-      <TabbableContainer contained={true}>
-        <div>
-          <div className="form-group">
-            <label>{PROFILE_NAME_LABEL}:</label>
-            <AtomInput initialValue="" ref="profile-name" unstyled={true} />
-          </div>
-          <ConnectionDetailsForm
-            initialUsername={initialFields.username}
-            initialServer={initialFields.server}
-            initialCwd={initialFields.cwd}
-            initialRemoteServerCommand={
-              // flowlint-next-line sketchy-null-string:off
-              initialFields.remoteServerCommand ||
-              DEFAULT_SERVER_COMMAND_PLACEHOLDER
-            }
-            initialSshPort={initialFields.sshPort}
-            initialPathToPrivateKey={initialFields.pathToPrivateKey}
-            initialAuthMethod={initialFields.authMethod}
-            initialDisplayTitle={initialFields.displayTitle}
-            profileHosts={this.props.profileHosts}
-            onCancel={emptyFunction}
-            onConfirm={this._clickSave}
-            onDidChange={emptyFunction}
-            ref="connection-details"
+      <div>
+        <div className="form-group">
+          <label>{PROFILE_NAME_LABEL}:</label>
+          <AtomInput
+            initialValue=""
+            ref={input => {
+              this._profileName = input;
+            }}
+            unstyled={true}
           />
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <ButtonGroup>
-              <Button onClick={this._clickCancel}>Cancel</Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._clickSave}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
         </div>
-      </TabbableContainer>
+        <ConnectionDetailsForm
+          initialUsername={initialFields.username}
+          initialServer={initialFields.server}
+          initialCwd={initialFields.cwd}
+          initialRemoteServerCommand={
+            // flowlint-next-line sketchy-null-string:off
+            initialFields.remoteServerCommand ||
+            DEFAULT_SERVER_COMMAND_PLACEHOLDER
+          }
+          initialSshPort={initialFields.sshPort}
+          initialPathToPrivateKey={initialFields.pathToPrivateKey}
+          initialAuthMethod={initialFields.authMethod}
+          initialDisplayTitle={initialFields.displayTitle}
+          profileHosts={this.props.profileHosts}
+          onCancel={emptyFunction}
+          onConfirm={this._clickSave}
+          onDidChange={emptyFunction}
+          needsPasswordValue={false}
+          ref={details => {
+            this._connectionDetails = details;
+          }}
+        />
+        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+          <ButtonGroup>
+            <Button onClick={this._clickCancel}>Cancel</Button>
+            <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
+              Save
+            </Button>
+          </ButtonGroup>
+        </div>
+      </div>
     );
   }
 
   _getProfileName(): string {
-    const fieldName = 'profile-name';
-    return (
-      (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || ''
-    );
+    return (this._profileName && this._profileName.getText().trim()) || '';
   }
 
   _clickSave = (): void => {
     // Validate the form inputs.
     const profileName = this._getProfileName();
-    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = this.refs[
-      'connection-details'
-    ].getFormFields();
+    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = nullthrows(
+      this._connectionDetails,
+    ).getFormFields();
     const validationResult = validateFormInputs(
       profileName,
       connectionDetails,

@@ -16,6 +16,7 @@ import nullthrows from 'nullthrows';
 
 type Props = {
   className?: string,
+  block?: boolean,
 };
 
 export default class UnstyledButton extends React.Component<Props> {
@@ -29,9 +30,11 @@ export default class UnstyledButton extends React.Component<Props> {
   _setRef = (node: ?HTMLButtonElement) => (this._node = node);
 
   render(): React$Element<any> {
-    const {className, ...props} = this.props;
-    const classes = classnames('nuclide-ui-unstyled-button', className);
-    // eslint-disable-next-line rulesdir/use-nuclide-ui-components
+    const {block, className, ...props} = this.props;
+    const classes = classnames('btn', 'nuclide-ui-unstyled-button', className, {
+      'btn-block': block,
+    });
+    // eslint-disable-next-line nuclide-internal/use-nuclide-ui-components
     return <button className={classes} ref={this._setRef} {...props} />;
   }
 }

@@ -7,27 +7,19 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 const path = require('path');
 
 const basedir = path.join(__dirname, '../../..');
 
-const ignorePatterns = [
-  '**/node_modules/**',
-  '**/VendorLib/**',
-];
+const ignorePatterns = ['**/node_modules/**', '**/VendorLib/**'];
 // ^--v These need to be kept in sync.
-const ignoreRe = new RegExp(
-  String.raw`/(node_modules|VendorLib)/`
-);
+const ignoreRe = new RegExp(String.raw`/(node_modules|VendorLib)/`);
 
 module.exports = {
   /**
@@ -39,10 +31,12 @@ module.exports = {
     const glob = require('glob');
     // Do not use `basedir + '**/*.js'`, otherwise we risk ignoring ourselves
     // if a parent directory matches an ignore pattern.
-    const files = glob.sync('**/*.js', {
-      cwd,
-      ignore: ignorePatterns,
-    }).map(x => path.join(cwd, x));
+    const files = glob
+      .sync('**/*.js', {
+        cwd,
+        ignore: ignorePatterns,
+      })
+      .map(x => path.join(cwd, x));
     return files;
   },
   isIncluded(filename) {

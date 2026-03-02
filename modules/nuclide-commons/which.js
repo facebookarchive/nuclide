@@ -6,13 +6,14 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
+import type {ObserveProcessOptions} from './process';
+
 import os from 'os';
 import nuclideUri from './nuclideUri';
-
 import {runCommand} from './process';
 
 /**
@@ -31,12 +32,19 @@ function sanitizePathForWindows(path: string): string {
   }
 }
 
-export default (async function which(path: string): Promise<?string> {
+export default (async function which(
+  path: string,
+  options?: ObserveProcessOptions = {},
+): Promise<?string> {
   const isWindows = process.platform === 'win32';
   const whichCommand = isWindows ? 'where' : 'which';
   const searchPath = isWindows ? sanitizePathForWindows(path) : path;
   try {
-    const result = await runCommand(whichCommand, [searchPath]).toPromise();
+    const result = await runCommand(
+      whichCommand,
+      [searchPath],
+      options,
+    ).toPromise();
     return result.split(os.EOL)[0];
   } catch (e) {
     return null;

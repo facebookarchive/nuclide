@@ -7,14 +7,11 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
+ * @format
  */
 'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
-  */
+/* eslint nuclide-internal/no-commonjs: 0 */
 
 /**
  * This rule forbids the import of a native 'path' module.
@@ -29,13 +26,15 @@
 module.exports = function(context) {
   return {
     ImportDeclaration(node) {
-      if (node.source.value === 'path' &&
+      if (
+        node.source.value === 'path' &&
         node.importKind !== 'type' &&
         node.importKind !== 'typeof'
       ) {
         context.report({
           node,
-          message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
+          message:
+            'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         });
       }
     },

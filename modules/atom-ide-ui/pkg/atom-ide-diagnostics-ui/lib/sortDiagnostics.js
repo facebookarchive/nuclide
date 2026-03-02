@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,7 +15,7 @@ import type {
   DiagnosticMessageKind,
   DiagnosticMessageType,
 } from '../../atom-ide-diagnostics/lib/types';
-import type {DisplayDiagnostic} from './ui/ExperimentalDiagnosticsTable';
+import type {DisplayDiagnostic} from './types';
 
 import invariant from 'assert';
 
@@ -34,7 +34,8 @@ export default function sortDiagnostics(
 ): Array<Row<DisplayDiagnostic>> {
   const compare = SORT_FUNCTIONS[sortedColumnName];
   invariant(compare != null);
-  const sorted = diagnostics.sort(compare);
+  // Don't sort in place.
+  const sorted = diagnostics.slice().sort(compare);
   // We can't just reverse the sign of the comparison function because that would maintain the
   // ordering of "equal" items with respect to eachother.
   return sortDescending ? sorted.reverse() : sorted;
@@ -66,6 +67,13 @@ const SORT_FUNCTIONS = {
     compareDescription,
   ),
   location: compose(
+    compareBasename,
+    comparePath,
+    compareClassification,
+    compareSource,
+    compareDescription,
+  ),
+  line: compose(
     compareBasename,
     comparePath,
     compareClassification,

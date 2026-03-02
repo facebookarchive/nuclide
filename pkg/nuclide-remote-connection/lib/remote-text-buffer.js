@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,7 +15,6 @@ import invariant from 'assert';
 import {TextBuffer} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
 
@@ -47,14 +46,7 @@ export async function loadBufferForUri(
 
 function loadBufferForUriStatic(uri: NuclideUri): Promise<atom$TextBuffer> {
   if (nuclideUri.isLocal(uri)) {
-    if (nuclideUri.isInArchive(uri)) {
-      return TextBuffer.load(
-        ROOT_ARCHIVE_FS.newArchiveFile(uri),
-        TEXT_BUFFER_PARAMS,
-      );
-    } else {
-      return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
-    }
+    return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
   }
   const connection = ServerConnection.getForUri(uri);
   if (connection == null) {
@@ -82,9 +74,6 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   };
   if (nuclideUri.isLocal(uri)) {
     buffer = new TextBuffer(params);
-    if (nuclideUri.isInArchive(uri)) {
-      buffer.setFile(ROOT_ARCHIVE_FS.newArchiveFile(uri));
-    }
   } else {
     const connection = ServerConnection.getForUri(uri);
     if (connection == null) {

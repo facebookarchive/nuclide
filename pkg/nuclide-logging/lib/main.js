@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -17,22 +17,18 @@
  * to `global` object.
  */
 
+import type {SessionInfo} from 'nuclide-commons/analytics';
+
 import log4js from 'log4js';
 
-import once from '../../commons-node/once';
-import {
-  getDefaultConfig,
-  getPathToLogFile,
-  FileAppender,
-  getServerLogAppenderConfig,
-} from './config';
+import {setRawAnalyticsService} from 'nuclide-commons/analytics';
+import * as rawAnalyticsService from 'nuclide-analytics/lib/track';
 
-export {
-  getDefaultConfig,
-  getPathToLogFile,
-  FileAppender,
-  getServerLogAppenderConfig,
-};
+import once from 'nuclide-commons/once';
+import {getDefaultConfig, getPathToLogDir, getPathToLogFile} from './config';
+import {Observable} from 'rxjs';
+
+export {getDefaultConfig, getPathToLogDir, getPathToLogFile};
 
 export function flushLogsAndExit(exitCode: number): void {
   log4js.shutdown(() => process.exit(exitCode));
@@ -46,10 +42,19 @@ export function flushLogsAndAbort(): void {
  * Push initial default config to log4js.
  * Execute only once.
  */
-export const initialUpdateConfig = once(() => {
+// $FlowFixMe (>=0.85.0) (T35986896) Flow upgrade suppress
+export const initializeLogging = once(() => {
+  setupLoggingService();
   log4js.configure(getDefaultConfig());
 });
 
-export function initializeLogging() {
-  initialUpdateConfig();
+export function setupLoggingService(): void {
+  let obs: Observable<SessionInfo> = Observable.from([]);
+
+  try {
+    // $FlowFB
+    obs = require('../../fb-appsession-observer').observeApplicationSession();
+  } catch (_) {}
+
+  setRawAnalyticsService(rawAnalyticsService, obs);
 }

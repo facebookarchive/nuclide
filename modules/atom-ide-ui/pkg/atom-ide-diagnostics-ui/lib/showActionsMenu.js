@@ -6,13 +6,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
 import type {
   DiagnosticUpdater,
-  FileDiagnosticMessage,
+  DiagnosticMessage,
 } from '../../atom-ide-diagnostics/lib/types';
 
 import invariant from 'assert';
@@ -30,7 +30,7 @@ const CODE_ACTIONS_TIMEOUT = 2000;
 export default function showActionsMenu(
   editor: TextEditor,
   position: atom$Point,
-  messagesAtPosition: Array<FileDiagnosticMessage>,
+  messagesAtPosition: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
 ): IDisposable {
   diagnosticUpdater.fetchCodeActions(editor, messagesAtPosition);
@@ -47,7 +47,6 @@ export default function showActionsMenu(
       .take(1)
       .race(Observable.of(new WeakMap()).delay(CODE_ACTIONS_TIMEOUT))
       .subscribe(codeActionsForMessage => {
-        const currentWindow = remote.getCurrentWindow();
         const menu = new remote.Menu();
         const fixes = arrayCompact(
           messagesAtPosition.map(message => {
@@ -96,12 +95,16 @@ export default function showActionsMenu(
         const scrollView = editorView.querySelector('.scroll-view');
         invariant(scrollView != null);
         const boundingRect = scrollView.getBoundingClientRect();
-        menu.popup(
-          currentWindow,
-          boundingRect.left + pixelPosition.left - editorView.getScrollLeft(),
-          boundingRect.top + pixelPosition.top - editorView.getScrollTop(),
-          0,
-        );
+        menu.popup({
+          x: Math.round(
+            boundingRect.left + pixelPosition.left - editorView.getScrollLeft(),
+          ),
+          y: Math.round(
+            boundingRect.top + pixelPosition.top - editorView.getScrollTop(),
+          ),
+          positioningItem: 0,
+          async: true,
+        });
       }),
   );
 }

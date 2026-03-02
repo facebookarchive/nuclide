@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -18,7 +18,7 @@ import type {
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackTiming} from 'nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -35,6 +35,10 @@ export type CodeFormatConfig = {|
   // If true, support formatting at a position (such as for as-you-type
   // formatting). If false, don't support that.
   canFormatAtPosition: boolean,
+
+  // If true, cursor will be moved back to original position after TextEdit(s)
+  // are applied. If false, TextEdit(s) may move the cursor.
+  keepCursorPosition?: boolean,
 |};
 
 export class CodeFormatProvider<T: LanguageService> {
@@ -101,6 +105,7 @@ export class CodeFormatProvider<T: LanguageService> {
             config.priority,
             config.analyticsEventName,
             connectionToLanguageService,
+            config.keepCursorPosition,
           ).provide(),
         ),
       );
@@ -180,7 +185,7 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   formatEntireFile(
     editor: atom$TextEditor,
     range: atom$Range,
-  ): Promise<{
+  ): Promise<?{
     newCursor?: number,
     formatted: string,
   }> {
@@ -200,7 +205,7 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
         }
       }
 
-      return {formatted: editor.getText()};
+      return null;
     });
   }
 
@@ -214,6 +219,26 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
 }
 
 class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
+  keepCursorPosition: boolean;
+
+  constructor(
+    name: string,
+    grammarScopes: Array<string>,
+    priority: number,
+    analyticsEventName: string,
+    connectionToLanguageService: ConnectionCache<T>,
+    keepCursorPosition?: boolean = false,
+  ) {
+    super(
+      name,
+      grammarScopes,
+      priority,
+      analyticsEventName,
+      connectionToLanguageService,
+    );
+    this.keepCursorPosition = keepCursorPosition;
+  }
+
   formatAtPosition(
     editor: atom$TextEditor,
     position: atom$Point,
@@ -245,11 +270,12 @@ class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
       formatAtPosition: this.formatAtPosition.bind(this),
       grammarScopes: this.grammarScopes,
       priority: this.priority,
+      keepCursorPosition: this.keepCursorPosition,
     };
   }
 }
 
-function getFormatOptions(editor: atom$TextEditor): FormatOptions {
+export function getFormatOptions(editor: atom$TextEditor): FormatOptions {
   return {
     tabSize: editor.getTabLength(),
     insertSpaces: editor.getSoftTabs(),

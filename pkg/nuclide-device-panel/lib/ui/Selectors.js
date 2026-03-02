@@ -10,14 +10,15 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
+import type {DeviceTypeComponent} from 'nuclide-debugger-common/types';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import * as Immutable from 'immutable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
-
-const FB_HOST_SUFFIX = '.facebook.com';
 
 type Props = {|
   setHost: (host: NuclideUri) => void,
@@ -27,6 +28,7 @@ type Props = {|
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
+  hostSelectorComponents: Immutable.List<DeviceTypeComponent>,
 |};
 
 export class Selectors extends React.Component<Props> {
@@ -36,21 +38,24 @@ export class Selectors extends React.Component<Props> {
     }
   }
 
-  _getLabelForHost(host: string): string {
-    if (host === '') {
-      return 'local';
-    }
-    const hostName = nuclideUri.getHostname(host);
-    return hostName.endsWith(FB_HOST_SUFFIX)
-      ? hostName.substring(0, hostName.length - FB_HOST_SUFFIX.length)
-      : hostName;
+  _getLabelForHost(host: NuclideUri): string {
+    return host === ''
+      ? 'localhost'
+      : nuclideUri.nuclideUriToDisplayHostname(host);
   }
 
-  _getHostOptions(): Array<{value: ?string, label: string}> {
+  _getHostOptions(): Array<Option> {
     return this.props.hosts.map(host => {
       return {value: host, label: this._getLabelForHost(host)};
     });
   }
+
+  _getHostSelectorNodes = (): Immutable.List<React.Element<any>> => {
+    return this.props.hostSelectorComponents.map(component => {
+      const Type = component.type;
+      return <Type key={component.key} />;
+    });
+  };
 
   _getTypesButtons(): React.Element<any>[] {
     return this.props.deviceTypes.map(deviceType => {
@@ -84,6 +89,23 @@ export class Selectors extends React.Component<Props> {
     );
   }
 
+  _getHostSelector(): React.Element<any> {
+    return (
+      <div className="nuclide-device-panel-host-selector">
+        {this._getHostSelectorNodes()}
+        <Dropdown
+          options={this._getHostOptions()}
+          onChange={host => {
+            this.props.setHost(host);
+            this._updateDeviceType();
+          }}
+          value={this.props.host}
+          key="connection"
+        />
+      </div>
+    );
+  }
+
   _updateDeviceType(): void {
     if (this.props.deviceTypes.length > 0) {
       this._setDeviceType(
@@ -96,20 +118,9 @@ export class Selectors extends React.Component<Props> {
 
   render(): React.Node {
     return (
-      <div>
-        <div className="nuclide-device-panel-host-selector">
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-          <Dropdown
-            options={this._getHostOptions()}
-            onChange={host => {
-              this.props.setHost(host);
-              this._updateDeviceType();
-            }}
-            value={this.props.host}
-            key="connection"
-          />
-        </div>
+      <div className="block nuclide-device-panel-navigation-row">
         {this._getTypesSelector()}
+        {this._getHostSelector()}
       </div>
     );
   }

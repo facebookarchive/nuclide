@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
@@ -17,7 +17,7 @@ export type BatchHandler<T> = (batch: Array<T>) => void;
 export default class BatchProcessedQueue<T> {
   _batchPeriod: number;
   _handler: BatchHandler<T>;
-  _timeoutId: ?number;
+  _timeoutId: ?TimeoutID;
   _items: Array<T>;
 
   constructor(batchPeriod: number, handler: BatchHandler<T>) {

@@ -15,7 +15,7 @@ import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
@@ -36,11 +36,7 @@ class Activation {
     );
 
     this._editorService = new ActiveEditorRegistry(
-      (provider, editor) => {
-        analytics.track('outline-view-getoutline');
-        return provider.getOutline(editor);
-      },
-      {},
+      (provider, editor) => provider.getOutline(editor),
       getActiveEditorRegistryEventSources(),
     );
   }
@@ -99,9 +95,7 @@ function getActiveEditorRegistryEventSources() {
     activeEditors: observeActivePaneItemDebounced()
       .switchMap(item => {
         if (isValidTextEditor(item)) {
-          // Flow cannot understand the type refinement provided by the isValidTextEditor function,
-          // so we have to cast.
-          return Observable.of(((item: any): atom$TextEditor));
+          return Observable.of(item);
         } else if (item instanceof OutlineViewPanelState) {
           // Ignore switching to the outline view.
           return Observable.empty();

@@ -13,11 +13,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
-import {
-  runCommandDetailed,
-  scriptifyCommand,
-  ProcessExitError,
-} from 'nuclide-commons/process';
+import {runCommandDetailed, ProcessExitError} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {
@@ -78,7 +74,6 @@ export function hgObserveExecution(
   return Observable.fromPromise(
     getHgExecParams(args_, {
       ...(options_: any),
-      // Ensure that the hg command gets scriptified.
       TTY_OUTPUT: process.platform !== 'win32',
     }),
   ).switchMap(({command, args, options}) => {
@@ -98,10 +93,9 @@ export function hgRunCommand(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Observable<string> {
-  return Observable.fromPromise(
-    getHgExecParams(args_, options_),
-  ).switchMap(({command, args, options}) =>
-    runCommand(command, args, {...options, killTreeWhenDone: true}),
+  return Observable.fromPromise(getHgExecParams(args_, options_)).switchMap(
+    ({command, args, options}) =>
+      runCommand(command, args, {...options, killTreeWhenDone: true}),
   );
 }
 
@@ -141,7 +135,14 @@ async function getHgExecParams(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
-  let args = [...args_, '--noninteractive'];
+  let args = [
+    ...args_,
+    '--noninteractive',
+    // Prevent user-specified merge tools from attempting to
+    // open interactive editors.
+    '--config',
+    options_.useMerge3 === true ? 'ui.merge=:merge3' : 'ui.merge=:merge',
+  ];
   let sshCommand;
   // expandHomeDir is not supported on windows
   if (process.platform !== 'win32') {
@@ -166,15 +167,22 @@ async function getHgExecParams(
       // Without assuming hg is being run in a tty, the progress extension won't get used
       '--config',
       'progress.assume-tty=1',
+      // Never show progress bar in stdout since we use the progressfile
+      '--config',
+      'progress.renderer=none',
+      // Prevent scary error message on amend in the middle of a stack
+      '--config',
+      'fbamend.education=',
     );
   }
   const [hgCommandName] = args;
   if (EXCLUDE_FROM_HG_BLACKBOX_COMMANDS.has(hgCommandName)) {
     args.push('--config', 'extensions.blackbox=!');
   }
-  let options = {
+  const options = {
     ...options_,
     env: {
+      LANG: 'en_US.utf-8', // make sure hg uses unicode if user hasn't set LANG themselves
       ...(await getOriginalEnvironment()),
       ATOM_BACKUP_EDITOR: 'false',
     },
@@ -182,19 +190,18 @@ async function getHgExecParams(
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     options.env.HGPLAIN = 1;
+    // Make an exception for plain mode so the progress file gets written
+    options.env.HGPLAINEXCEPT = 'progress';
   }
   if (options.HGEDITOR != null) {
     options.env.HGEDITOR = options.HGEDITOR;
   }
 
-  let command;
+  const command = 'hg';
   if (options.TTY_OUTPUT) {
-    [command, args, options] = scriptifyCommand('hg', args, options);
     // HG commit/amend have unconventional ways of escaping slashes from messages.
     // We have to 'unescape' to make it work correctly.
     args = args.map(arg => arg.replace(/\\\\/g, '\\'));
-  } else {
-    command = 'hg';
   }
   return {command, args, options};
 }
@@ -242,16 +249,4 @@ function getAtomRpcScriptPath(): string {
     }
   }
   return atomRpcEditorPath;
-}
-
-export function processExitCodeAndThrow(
-  processMessage: LegacyProcessMessage,
-): Observable<LegacyProcessMessage> {
-  // TODO(T17463635)
-  if (processMessage.kind === 'exit' && processMessage.exitCode !== 0) {
-    return Observable.throw(
-      new Error(`HG failed with exit code: ${String(processMessage.exitCode)}`),
-    );
-  }
-  return Observable.of(processMessage);
 }

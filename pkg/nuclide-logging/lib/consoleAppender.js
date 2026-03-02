@@ -47,14 +47,19 @@ function layout(loggingEvent: any): Array<any> {
  * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
  * the object in console logged by this Appender.
  */
-function consoleAppender(): (loggingEvent: any) => void {
+function consoleAppender(config: Object): (loggingEvent: any) => void {
   return loggingEvent => {
-    // eslint-disable-next-line no-console
-    console.log(...layout(loggingEvent));
+    if (config.stderr) {
+      // eslint-disable-next-line no-console
+      console.error(...layout(loggingEvent));
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(...layout(loggingEvent));
+    }
   };
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   appender: consoleAppender,
   configure: consoleAppender,

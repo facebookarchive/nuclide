@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -84,7 +84,7 @@ export default class HyperclickHelpers {
           const relpath = nuclideUri.relative(tagsDir, file);
           let title = `${tag.name} (${relpath})`;
           if (fields != null) {
-            // Python uses a.b.c; most other langauges use a::b::c.
+            // Python uses a.b.c; most other languages use a::b::c.
             // There are definitely other cases, but it's not a big issue.
             const sep = file.endsWith('.py') ? '.' : '::';
             for (const field of QUALIFYING_FIELDS) {

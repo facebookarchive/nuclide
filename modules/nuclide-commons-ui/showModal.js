@@ -19,21 +19,32 @@ import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+import TabbableContainer from './TabbableContainer';
+
 /**
  * Given a function to dismiss the modal, return a React element for the content.
  * Call the function when e.g. the user clicks a Cancel or Submit button.
  */
-type ContentFactory = (dismiss: () => void) => React.Element<any>;
+type ContentFactory = ({
+  dismiss(): void,
+  element: Element,
+}) => React.Node;
 
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
   /** Called when the modal is dismissed (just before it is destroyed). */
-  onDismiss?: () => void,
+  onDismiss?: () => mixed,
+  onOpen?: () => mixed,
   /**
    * Called when the user clicks outside the modal, return false to prevent dismissal.
    * If unspecified the modal will be dismissed if the user clicks outside the modal.
    */
   shouldDismissOnClickOutsideModal?: () => boolean,
+  /**
+   * Called when the user presses the escape key, return false to prevent dismissal.
+   * If unspecified the modal will be dismissed if the user presses escape.
+   */
+  shouldDismissOnPressEscape?: () => boolean,
   /** Passed to atom's underlying addModalPanel function. */
   priority?: number,
   /** Passed to atom's underlying addModalPanel function. */
@@ -59,13 +70,22 @@ export default function showModal(
   });
   const shouldDismissOnClickOutsideModal =
     options.shouldDismissOnClickOutsideModal || (() => true);
+  const shouldDismissOnPressEscape =
+    options.shouldDismissOnPressEscape || (() => true);
+
+  const element = atomPanel.getElement();
+  const previouslyFocusedElement = document.activeElement;
   const disposable = new UniversalDisposable(
     Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
       if (!shouldDismissOnClickOutsideModal()) {
         return;
       }
       invariant(target instanceof Node);
-      if (!atomPanel.getItem().contains(target)) {
+      if (
+        !atomPanel.getItem().contains(target) &&
+        // don't count clicks on notifications or tooltips as clicks 'outside'
+        target.closest('atom-notifications, .tooltip') == null
+      ) {
         atomPanel.hide();
       }
     }),
@@ -74,9 +94,11 @@ export default function showModal(
         disposable.dispose();
       }
     }),
-    atom.commands.add('atom-workspace', 'core:cancel', () =>
-      disposable.dispose(),
-    ),
+    atom.commands.add('body', 'core:cancel', () => {
+      if (shouldDismissOnPressEscape()) {
+        disposable.dispose();
+      }
+    }),
     () => {
       // Call onDismiss before unmounting the component and destroying the panel:
       if (options.onDismiss) {
@@ -84,15 +106,24 @@ export default function showModal(
       }
       ReactDOM.unmountComponentAtNode(hostElement);
       atomPanel.destroy();
+      if (previouslyFocusedElement != null) {
+        previouslyFocusedElement.focus();
+      }
     },
   );
 
   ReactDOM.render(
     <ModalContainer>
-      {contentFactory(disposable.dispose.bind(disposable))}
+      {contentFactory({dismiss: disposable.dispose.bind(disposable), element})}
     </ModalContainer>,
     hostElement,
+    () => {
+      if (options.onOpen) {
+        options.onOpen();
+      }
+    },
   );
+
   return disposable;
 }
 
@@ -109,7 +140,13 @@ type Props = {
  */
 class ModalContainer extends React.Component<Props> {
   render(): React.Node {
-    return <div tabIndex="-1">{this.props.children}</div>;
+    return (
+      <div tabIndex="-1">
+        <TabbableContainer contained={true}>
+          {this.props.children}
+        </TabbableContainer>
+      </div>
+    );
   }
 
   componentDidMount(): void {
