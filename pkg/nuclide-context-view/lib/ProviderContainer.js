@@ -10,8 +10,8 @@
  */
 
 import * as React from 'react';
-import {Section} from '../../nuclide-ui/Section';
-import {track} from '../../nuclide-analytics';
+import {Section} from 'nuclide-commons-ui/Section';
+import {track} from 'nuclide-analytics';
 
 type Props = {
   title: string,
@@ -41,9 +41,7 @@ export class ProviderContainer extends React.Component<Props, State> {
           collapsable={true}
           onChange={this._setCollapsed}
           collapsed={this.state.collapsed}>
-          <div className="padded">
-            {this.props.children}
-          </div>
+          <div className="padded">{this.props.children}</div>
         </Section>
       </div>
     );

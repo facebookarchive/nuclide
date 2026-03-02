@@ -11,13 +11,15 @@
 
 import {arrayCompact, arrayEqual} from 'nuclide-commons/collection';
 import classnames from 'classnames';
-import createPaneContainer from '../commons-atom/create-pane-container';
+import createPaneContainer from 'nuclide-commons-atom/create-pane-container';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 type Props = {
   children?: ?React.Element<any>,
   className?: string,
+  // eslint-disable-next-line react/no-unused-prop-types
   direction: FlexDirection,
 };
 
@@ -45,6 +47,7 @@ function getChildrenFlexScales(children: ?React.Element<any>): Array<number> {
 }
 
 export class ResizableFlexContainer extends React.Component<Props> {
+  _flexContainer: ?HTMLElement;
   _paneContainer: Object;
   _panes: Array<atom$Pane>;
 
@@ -53,7 +56,7 @@ export class ResizableFlexContainer extends React.Component<Props> {
     this._renderPanes();
   }
 
-  componentWillReceiveProps(newProps: Props): void {
+  UNSAFE_componentWillReceiveProps(newProps: Props): void {
     if (
       !arrayEqual(
         getChildrenFlexScales(this.props.children),
@@ -73,10 +76,8 @@ export class ResizableFlexContainer extends React.Component<Props> {
     const flexScales = getChildrenFlexScales(props.children);
     const {direction} = props;
     this._paneContainer = createPaneContainer();
-    const containerNode = ReactDOM.findDOMNode(this.refs.flexContainer);
-    // $FlowFixMe
+    const containerNode = nullthrows(this._flexContainer);
     containerNode.innerHTML = '';
-    // $FlowFixMe
     containerNode.appendChild(atom.views.getView(this._paneContainer));
     const startingPane: atom$Pane = this._paneContainer.getActivePane();
     let lastPane = startingPane;
@@ -131,11 +132,19 @@ export class ResizableFlexContainer extends React.Component<Props> {
       'nuclide-ui-resizable-flex-container',
       className,
     );
-    return <div className={containerClassName} ref="flexContainer" />;
+    return (
+      <div
+        className={containerClassName}
+        ref={el => {
+          this._flexContainer = el;
+        }}
+      />
+    );
   }
 }
 
 type ResizableFlexItemProps = {
+  // eslint-disable-next-line react/no-unused-prop-types
   initialFlexScale: number,
   children?: ?React.Element<any>,
 };

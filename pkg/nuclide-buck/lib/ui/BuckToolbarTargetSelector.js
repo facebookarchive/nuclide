@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -36,6 +36,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
 
   _cachedOwners: ?Promise<Array<string>>;
   _cachedOwnersPath: ?string;
+  _comboBox: ?Combobox;
 
   constructor(props: Props) {
     super(props);
@@ -82,6 +83,12 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
           ? Promise.resolve([])
           : buckService
               .listAliases(buckRoot)
+              .catch(e => {
+                atom.notifications.addError(
+                  `Error invoking Buck to list aliases:\n${e.toString()}`,
+                );
+                return [];
+              })
               // Sort in alphabetical order.
               .then(aliases =>
                 aliases.sort((a, b) =>
@@ -110,7 +117,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
       buckService == null
         ? Promise.resolve([])
         : buckService
-            .getOwners(buckRoot, path)
+            .getOwners(buckRoot, path, [])
             .then(
               // Strip off the optional leading "//" to match typical user input.
               owners =>
@@ -131,11 +138,18 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
   }
 
   _handleBuildTargetChange = (value: string) => {
+    this._scrollToEnd();
     const trimmed = value.trim();
     if (this.props.appState.buildTarget === trimmed) {
       return;
     }
     this.props.setBuildTarget(trimmed);
+  };
+
+  _scrollToEnd = () => {
+    if (this._comboBox != null) {
+      this._comboBox.scrollToEnd();
+    }
   };
 
   render(): React.Node {
@@ -155,7 +169,8 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
         onSelect={this._handleBuildTargetChange}
         onBlur={this._handleBuildTargetChange}
         placeholderText="Buck build target"
-        width={null}
+        wrapperStyle={{width: '100%', maxWidth: '100%'}}
+        ref={box => (this._comboBox = box)}
       />
     );
   }

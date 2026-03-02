@@ -13,7 +13,7 @@ import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
+import humanizeKeystroke from 'nuclide-commons/humanizeKeystroke';
 import humanizeEventName from '../../commons-node/humanizeEventName';
 
 /* global KeyboardEvent */
@@ -72,13 +72,10 @@ export default class KeyBindingHint extends React.Component<any, State> {
     });
 
     return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
+      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
       <div ref={tooltip}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Icon icon="keyboard">
-          <span style={{paddingLeft: '5px'}}>
-            {firstBinding}
-          </span>
+          <span style={{paddingLeft: '5px'}}>{firstBinding}</span>
         </Icon>
       </div>
     );
@@ -93,6 +90,7 @@ export default class KeyBindingHint extends React.Component<any, State> {
     if (!this._areProcessingUserEvent) {
       this._areProcessingUserEvent = true;
       // If they are already using the keyboard, they don't need our advice.
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (event.originalEvent instanceof KeyboardEvent) {
         this.setState({event: null});
       } else {

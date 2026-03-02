@@ -65,13 +65,9 @@ export default class QuickOpenHelpers {
     return (
       <div title={kind}>
         <span className={`file icon ${icon}`}>
-          <code>
-            {item.name}
-          </code>
+          <code>{item.name}</code>
         </span>
-        <span className="omnisearch-symbol-result-filename">
-          {path}
-        </span>
+        <span className="omnisearch-symbol-result-filename">{path}</span>
       </div>
     );
   }
@@ -110,11 +106,12 @@ export default class QuickOpenHelpers {
         .map(tag => {
           return {
             ...tag,
+            resultType: 'FILE',
             path: tag.file,
             dir,
             async callback() {
               const line = await getLineNumberForTag(tag);
-              goToLocation(tag.file, line);
+              goToLocation(tag.file, {line});
             },
           };
         });

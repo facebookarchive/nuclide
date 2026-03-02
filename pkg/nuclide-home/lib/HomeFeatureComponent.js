@@ -11,6 +11,7 @@
 
 import * as React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {track} from 'nuclide-analytics';
 
 type Props = {
   title: string,
@@ -21,13 +22,16 @@ type Props = {
 
 export default class HomeFeatureComponent extends React.Component<Props> {
   _tryIt = (): void => {
-    const {command} = this.props;
+    const {command, title} = this.props;
     if (command == null) {
       return;
     }
+    track('home-feature-tried', {title});
     switch (typeof command) {
       case 'string':
-        atom.commands.dispatch(atom.views.getView(atom.workspace), command);
+        atom.commands.dispatch(atom.views.getView(atom.workspace), command, {
+          _source: 'nuclide-home',
+        });
         return;
       case 'function':
         command();
@@ -45,18 +49,16 @@ export default class HomeFeatureComponent extends React.Component<Props> {
           className={`nuclide-home-summary icon icon-${this.props.icon}`}>
           {title}
           {// flowlint-next-line sketchy-null-string:off
-          command
-            ? <Button
-                className="pull-right nuclide-home-tryit"
-                size={ButtonSizes.SMALL}
-                onClick={this._tryIt}>
-                Try it
-              </Button>
-            : null}
+          command ? (
+            <Button
+              className="pull-right nuclide-home-tryit"
+              size={ButtonSizes.SMALL}
+              onClick={this._tryIt}>
+              Try it
+            </Button>
+          ) : null}
         </summary>
-        <div className="nuclide-home-detail">
-          {this.props.description}
-        </div>
+        <div className="nuclide-home-detail">{this.props.description}</div>
       </details>
     );
   }

@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
@@ -30,10 +30,6 @@ export default class FileTreeSidebarFilterComponent extends React.Component<
     });
     const text = `search for: ${filter}`;
 
-    return (
-      <div className={classes}>
-        {text}
-      </div>
-    );
+    return <div className={classes}>{text}</div>;
   }
 }

@@ -9,26 +9,30 @@
  * @format
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-type Props = {
+// These props are all turned into attributes in `updateAttributes`
+/* eslint-disable react/no-unused-prop-types */
+type Props = {|
   className: ?string,
   nodeintegration?: boolean,
   onDidFinishLoad: (event: Event) => mixed,
   src: string,
   style: ?Object,
-};
+  useragent?: string,
+|};
+/* eslint-enable react/no-unused-prop-types */
 
 export class Webview extends React.Component<Props, void> {
   props: Props;
 
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor(props: Object) {
     super(props);
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   componentDidMount() {
@@ -41,7 +45,7 @@ export class Webview extends React.Component<Props, void> {
     // $FlowFixMe
     element.addEventListener('did-finish-load', this._handleDidFinishLoad);
     this._disposables.add(
-      new Disposable(() =>
+      new UniversalDisposable(() =>
         // $FlowFixMe
         element.removeEventListener(
           'did-finish-load',

@@ -22,6 +22,7 @@ type Props = DefaultProps & {
   date: Date,
   delay?: number,
   shorten?: boolean,
+  useNumbersOnly?: boolean,
   withToolip?: boolean,
 };
 const DEFAULT_RERENDER_DELAY = 10000; // ms
@@ -33,11 +34,12 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
 export default class RelativeDate extends React.Component<Props> {
-  _interval: ?number;
+  _interval: ?IntervalID;
 
   static defaultProps: DefaultProps = {
     delay: DEFAULT_RERENDER_DELAY,
     shorten: false,
+    useNumbersOnly: false,
     withToolip: false,
   };
 
@@ -58,23 +60,24 @@ export default class RelativeDate extends React.Component<Props> {
       // eslint-disable-next-line no-unused-vars
       delay: _,
       shorten,
+      useNumbersOnly,
       withToolip,
       ...remainingProps
     } = this.props;
     return (
       <span
         {...remainingProps}
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={
           withToolip
-            ? // $FlowFixMe(>=0.53.0) Flow suppress
-              addTooltip({
+            ? addTooltip({
                 title: date.toLocaleString(),
                 delay: 200,
                 placement: 'top',
               })
             : null
         }>
-        {relativeDate(date, undefined, shorten)}
+        {relativeDate(date, undefined, shorten, useNumbersOnly)}
       </span>
     );
   }

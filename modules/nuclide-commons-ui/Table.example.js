@@ -14,10 +14,9 @@ import * as React from 'react';
 import {Block} from './Block';
 import {Table} from './Table';
 
-const Highlight42Component = (props: {data: ?number}): ?React.Element<any> =>
-  <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>
-    {props.data}
-  </div>;
+const Highlight42Component = (props: {data: ?number}): React.Node => (
+  <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>{props.data}</div>
+);
 
 const TableExample = (): React.Element<any> => {
   const columns = [
@@ -67,7 +66,7 @@ const TableExample = (): React.Element<any> => {
       data: {
         first: 7,
         second: 42,
-        // third is empty
+        third: undefined,
         fourth: 66,
         fifth: 123,
       },
@@ -123,6 +122,9 @@ class SortableTableExample extends React.Component<
   }
 
   _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+    // TODO: (wbinnssmith) T30771435 this setState depends on current state
+    // and should use an updater function rather than an object
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const sortedRows = this.state.rows.sort((obj1, obj2) => {
       const order = sortDescending ? -1 : 1;
       return order * (obj1.data[sortedColumn] - obj2.data[sortedColumn]);
@@ -152,8 +154,9 @@ class SortableTableExample extends React.Component<
     return (
       <Block>
         <Table
-          emptyComponent={() =>
-            <div>An optional, custom "empty message" component.</div>}
+          emptyComponent={() => (
+            <div>An optional, custom "empty message" component.</div>
+          )}
           columns={columns}
           rows={this.state.rows}
           sortable={true}

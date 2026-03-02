@@ -14,7 +14,7 @@ import type {BoundActionCreators, Parameter} from './types';
 import * as React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {ParameterInput} from './ParameterInput';
@@ -100,11 +100,15 @@ export class RequestEditDialog extends React.Component<PropsType, void> {
     );
   }
 
-  _handleTextBufferChange(event: atom$TextEditEvent): void {
+  _handleTextBufferChange(event: atom$AggregatedTextEditEvent): void {
     // TODO: It's better to store changes, even if they are illegal JSON.
     let headers;
     try {
-      headers = JSON.parse(event.newText);
+      const editorComponent = this._editorComponent;
+      invariant(editorComponent != null);
+      const editor = editorComponent.getModel();
+      invariant(editor != null);
+      headers = JSON.parse(editor.getText());
     } catch (_) {
       return; // Do not store illegal JSON.
     }
@@ -161,7 +165,7 @@ export class RequestEditDialog extends React.Component<PropsType, void> {
     );
   }
 
-  _getParameters() {
+  _getParameters(): Array<Parameter> {
     return this.props.parameters.map(
       param => (param == null ? null : {...param}),
     );

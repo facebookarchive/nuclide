@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
@@ -47,8 +47,6 @@ export const ButtonGroup = (props: Props) => {
   });
   return (
     // $FlowFixMe(>=0.53.0) Flow suppress
-    <div className={newClassName}>
-      {children}
-    </div>
+    <div className={newClassName}>{children}</div>
   );
 };

@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import addTooltip from './addTooltip';
 
@@ -43,6 +42,8 @@ type Props = {
  * to ensure this component is pure.
  */
 export class Checkbox extends React.PureComponent<Props> {
+  _input: ?HTMLInputElement;
+
   static defaultProps: DefaultProps = {
     disabled: false,
     indeterminate: false,
@@ -76,10 +77,10 @@ export class Checkbox extends React.PureComponent<Props> {
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
   _setIndeterminate(): void {
-    // $FlowFixMe
-    ReactDOM.findDOMNode(
-      this.refs.input,
-    ).indeterminate = this.props.indeterminate;
+    if (this._input == null) {
+      return;
+    }
+    this._input.indeterminate = this.props.indeterminate;
   }
 
   render(): React.Node {
@@ -98,17 +99,15 @@ export class Checkbox extends React.PureComponent<Props> {
 
     const ref = tooltip ? addTooltip(tooltip) : null;
     const text =
-      label === ''
-        ? null
-        : <span className="nuclide-ui-checkbox-label-text">
-            {' '}{label}
-          </span>;
+      label === '' ? null : (
+        <span className="nuclide-ui-checkbox-label-text"> {label}</span>
+      );
     return (
       <label
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
-        // $FlowFixMe(>=0.53.0) Flow suppress
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={ref}
         onClick={onClick && ignoreTextSelectionEvents(onClick)}
         title={title}>
@@ -118,7 +117,9 @@ export class Checkbox extends React.PureComponent<Props> {
           disabled={disabled}
           onChange={this._onChange}
           onMouseDown={onMouseDown}
-          ref="input"
+          ref={el => {
+            this._input = el;
+          }}
           type="checkbox"
         />
         {text}

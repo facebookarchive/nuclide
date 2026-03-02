@@ -16,9 +16,10 @@ import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Block} from 'nuclide-commons-ui/Block';
 import * as React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import nullthrows from 'nullthrows';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
@@ -35,6 +36,7 @@ export class DefinitionPreviewView extends React.Component<
   ContextElementProps,
   State,
 > {
+  _editor: ?AtomTextEditor;
   _settingsChangeDisposable: IDisposable;
 
   constructor(props: ContextElementProps) {
@@ -63,7 +65,7 @@ export class DefinitionPreviewView extends React.Component<
     );
   }
 
-  componentWillReceiveProps(newProps: ContextElementProps): void {
+  UNSAFE_componentWillReceiveProps(newProps: ContextElementProps): void {
     if (newProps.definition != null) {
       const definition = newProps.definition;
       // The buffer always needs to point to the right file path, so create a new one with
@@ -106,7 +108,7 @@ export class DefinitionPreviewView extends React.Component<
     const marker = editor.markBufferPosition(definition.position);
     editor.decorateMarker(marker, {
       type: 'line',
-      class: 'nuclide-current-line-highlight',
+      class: 'debugger-current-line-highlight',
     });
   }
 
@@ -115,40 +117,48 @@ export class DefinitionPreviewView extends React.Component<
     const atMinHeight =
       this.state.editorHeight - EDITOR_HEIGHT_DELTA < MINIMUM_EDITOR_HEIGHT;
     // Show either a "No definition" message or the definition in an editors
-    return definition == null
-      ? <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
-      : <div className="pane-item nuclide-definition-preview">
-          <div
-            className="nuclide-definition-preview-editor"
-            style={{height: `${this.state.editorHeight}em`}}>
-            <AtomTextEditor
-              ref="editor"
-              gutterHidden={true}
-              lineNumberGutterVisible={false}
-              path={definition.path}
-              // Should be readonly, but can't because we can only make buffers readonly,
-              // We can't do readonly on editor granularity.
-              readOnly={false}
-              textBuffer={this.state.buffer}
-              syncTextContents={false}
-            />
-            <ButtonContainer
-              _openCurrentDefinitionInMainEditor={
-                this._openCurrentDefinitionInMainEditor
-              }
-              _increaseEditorHeight={this._increaseEditorHeight}
-              _decreaseEditorHeight={this._decreaseEditorHeight}
-              atMinHeight={atMinHeight}
-            />
-          </div>
-        </div>;
+    return definition == null ? (
+      <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
+    ) : (
+      <div className="pane-item nuclide-definition-preview">
+        <div
+          className="nuclide-definition-preview-editor"
+          style={{height: `${this.state.editorHeight}em`}}>
+          <AtomTextEditor
+            ref={editor => {
+              this._editor = editor;
+            }}
+            gutterHidden={true}
+            lineNumberGutterVisible={false}
+            path={definition.path}
+            // Should be readonly, but can't because we can only make buffers readonly,
+            // We can't do readonly on editor granularity.
+            readOnly={false}
+            textBuffer={this.state.buffer}
+            syncTextContents={false}
+          />
+          <ButtonContainer
+            _openCurrentDefinitionInMainEditor={
+              this._openCurrentDefinitionInMainEditor
+            }
+            _increaseEditorHeight={this._increaseEditorHeight}
+            _decreaseEditorHeight={this._decreaseEditorHeight}
+            atMinHeight={atMinHeight}
+          />
+        </div>
+      </div>
+    );
   }
 
   _openCurrentDefinitionInMainEditor = (): void => {
     analytics.track('nuclide-definition-preview:openInMainEditor');
     const def = this.props.definition;
     if (def != null) {
-      goToLocation(def.path, def.position.row, def.position.column, true);
+      goToLocation(def.path, {
+        line: def.position.row,
+        column: def.position.column,
+        center: true,
+      });
     }
   };
 
@@ -169,7 +179,7 @@ export class DefinitionPreviewView extends React.Component<
   };
 
   getEditor(): atom$TextEditor {
-    return this.refs.editor.getModel();
+    return nullthrows(this._editor).getModel();
   }
 
   _scrollToRow(row: number): void {

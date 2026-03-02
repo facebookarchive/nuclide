@@ -11,6 +11,7 @@
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
+import UnstyledButton from 'nuclide-commons-ui/UnstyledButton';
 import * as React from 'react';
 
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -55,6 +56,8 @@ export class StatusBarTileComponent extends React.Component<Props> {
         };
       }
       const classes: string = classnames({
+        'inline-block': true,
+        'nuclide-type-coverage-status-bar': true,
         'nuclide-type-coverage-status-bar-pending': this.props.pending,
         'nuclide-type-coverage-status-bar-ready': !this.props.pending,
         ...colorClasses,
@@ -64,31 +67,26 @@ export class StatusBarTileComponent extends React.Component<Props> {
         formattedPercentage,
         result.providerName,
       );
+
       return (
-        <div
-          style={{cursor: 'pointer'}}
+        <UnstyledButton
           onClick={this.props.onClick}
           className={classes}
-          // $FlowFixMe(>=0.53.0) Flow suppress
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             title: tooltipString,
             delay: 0,
             placement: 'top',
           })}>
-          {this._getIconElement(result.icon)}
-          {formattedPercentage}
-        </div>
+          {result.icon == null ? null : <Icon icon={result.icon} />}
+          <span className="nuclide-type-coverage-status-bar-percentage">
+            {formattedPercentage}
+          </span>
+        </UnstyledButton>
       );
     } else {
       return null;
     }
-  }
-
-  _getIconElement(icon: ?IconName): ?React.Element<any> {
-    if (icon == null) {
-      return null;
-    }
-    return <Icon icon={icon} />;
   }
 }
 

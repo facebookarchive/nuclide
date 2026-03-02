@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -14,7 +14,7 @@ import addTooltip from './addTooltip';
 import classnames from 'classnames';
 import * as React from 'react';
 
-type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
+export type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
 type Props = {
   className?: string,
   /** The size of the LoadingSpinner. Defaults to MEDIUM. */
@@ -48,7 +48,7 @@ export class LoadingSpinner extends React.Component<
   Props,
   {shouldRender: boolean},
 > {
-  _timeout: ?number;
+  _timeout: ?TimeoutID;
 
   constructor(props: Props) {
     super(props);
@@ -83,7 +83,12 @@ export class LoadingSpinner extends React.Component<
         : LoadingSpinnerSizes.MEDIUM;
     const sizeClassname = LoadingSpinnerClassnames[safeSize];
     const newClassName = classnames(className, 'loading', sizeClassname);
-    // $FlowFixMe(>=0.53.0) Flow suppress
-    return <div className={newClassName} ref={ref} />;
+    return (
+      <div
+        className={newClassName}
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+        ref={ref}
+      />
+    );
   }
 }

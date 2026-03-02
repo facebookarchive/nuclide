@@ -84,7 +84,6 @@ export class StatusBarTile extends React.Component<Props, State> {
         this.setState({result: null});
         break;
       case 'pane-change':
-      case 'edit':
       case 'save':
         this.setState({pending: true});
         break;
@@ -103,6 +102,7 @@ export class StatusBarTile extends React.Component<Props, State> {
         });
         break;
       default:
+        (result: empty);
         throw new Error(`Should handle kind ${result.kind}`);
     }
   }
