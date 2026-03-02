@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict
  * @format
  */
 
@@ -38,6 +38,7 @@ export default function findWholeRangeOfSymbol(
   spelling: ?string,
   extent: atom$Range,
 ): Array<atom$Range> {
+  // flowlint-next-line sketchy-null-string:off
   if (!spelling || text === spelling) {
     return [textRange];
   } else if (text + ':' === spelling) {

@@ -34,6 +34,7 @@ export default class SwiftPMAutocompletionProvider {
   }): Promise<?Array<atom$AutocompleteSuggestion>> {
     const filePath = request.editor.getPath();
     let compilerArgs;
+    // flowlint-next-line sketchy-null-string:off
     if (filePath) {
       const commands = await this._store.getCompileCommands();
       compilerArgs = commands.get(filePath);
@@ -43,15 +44,18 @@ export default class SwiftPMAutocompletionProvider {
     const offset =
       editor.getBuffer().characterIndexForPosition(bufferPosition) -
       prefix.length;
-    const result = await asyncExecuteSourceKitten('complete', [
-      '--text',
-      request.editor.getText(),
-      '--offset',
-      String(offset),
-      '--',
-      compilerArgs ? compilerArgs : '',
-    ]);
+    const result = await asyncExecuteSourceKitten(
+      'complete',
+      [
+        '--text',
+        request.editor.getText(),
+        '--offset',
+        String(offset),
+        '--',
+      ].concat(compilerArgs ? compilerArgs : []),
+    );
 
+    // flowlint-next-line sketchy-null-string:off
     if (!result) {
       return [];
     }

@@ -20,15 +20,15 @@ declare function waitsForPromise(
 ): void;
 
 declare class Benchmark {
-  description: string,
-  columns: Array<string>,
-  timeout: number,
-  iterations: number,
-  repetitions: number,
-  getIterationDescription?: (iteration: number) => string,
-  run: (iteration: number) => Object,
-  name?: string,
-  index?: number,
+  description: string;
+  columns: Array<string>;
+  timeout: number;
+  iterations: number;
+  repetitions: number;
+  getIterationDescription?: (iteration: number) => string;
+  run: (iteration: number) => Object;
+  name?: string;
+  index?: number;
 }
 
 type RunOptions = {
@@ -167,6 +167,7 @@ describe('Nuclide performance', () => {
 
 function getRunOptions(): RunOptions {
   let benchmarks = [];
+  // flowlint-next-line sketchy-null-string:off
   if (process.env.BENCHMARK) {
     // A single benchmark has been passed in from the command line or shell.
     benchmarks = [process.env.BENCHMARK];
@@ -179,10 +180,10 @@ function getRunOptions(): RunOptions {
   }
 
   let packages = [];
+  // flowlint-next-line sketchy-null-string:off
   if (process.env.BENCHMARK_PACKAGES) {
     // packages to be loaded have been passed in from the command line or shell.
-    packages = process.env.BENCHMARK_PACKAGES
-      .split(',')
+    packages = process.env.BENCHMARK_PACKAGES.split(',')
       .map(p => p.trim())
       .filter(p => p !== '');
   }
@@ -208,6 +209,7 @@ function getRunOptions(): RunOptions {
 
 function getTestState(): Object {
   const item = sessionStorage.getItem(RUN_STATE_KEY);
+  // flowlint-next-line sketchy-null-string:off
   if (item) {
     try {
       return JSON.parse(item);

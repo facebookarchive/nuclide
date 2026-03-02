@@ -26,7 +26,7 @@ export default function debounce<
   dispose(): void,
 } {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout: ?number;
+  let timeout: ?TimeoutID;
   let args: ?TArgs;
   let context: any;
   let timestamp = 0;

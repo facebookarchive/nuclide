@@ -12,15 +12,17 @@
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {Message} from './PanelView';
 
+import {getLogger} from 'log4js';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
 import {splitOnce} from 'nuclide-commons/string';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from 'nuclide-commons/process';
-import {SimpleModel} from '../../commons-node/SimpleModel';
+import Model from 'nuclide-commons/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {PanelView} from './PanelView';
-import React from 'react';
+import * as React from 'react';
 import * as rpc from 'vscode-jsonrpc';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Scheduler} from 'rxjs';
@@ -37,18 +39,17 @@ type SerializedState = {
   lastCommand: ?string,
 };
 
-export class LspTester extends SimpleModel {
+export class LspTester {
   _messages: ReplaySubject<Message>;
   _serverDisposable: ?UniversalDisposable;
   _writer: ?rpc.StreamMessageWriter;
-  state: State;
+  _model: Model<State>;
 
   constructor(serialized: ?SerializedState) {
-    super();
-    this.state = {
+    this._model = new Model({
       lastCommand: serialized && serialized.lastCommand,
       running: false,
-    };
+    });
     this._messages = new ReplaySubject(/* buffer size */ 200);
   }
 
@@ -70,8 +71,7 @@ export class LspTester extends SimpleModel {
 
   getElement(): HTMLElement {
     const initialMessage = this._getInitialMessage();
-    // $FlowFixMe: Observable.from symbol-iterator
-    const props = (Observable.from(this): Observable<State>).map(state => ({
+    const props = this._model.toObservable().map(state => ({
       initialCommand: state.lastCommand,
       initialMessage,
       messages: this._messages,
@@ -87,6 +87,7 @@ export class LspTester extends SimpleModel {
   _getInitialMessage(): string {
     const dirs = atom.project.getDirectories();
     const rootPath = dirs.length > 0 ? dirs[0].getPath() : null;
+    // flowlint-next-line sketchy-null-string:off
     const rootUri = rootPath ? `file://${rootPath}` : 'file://path/to/root';
     const initialMessage = {
       jsonrpc: '2.0',
@@ -115,23 +116,33 @@ export class LspTester extends SimpleModel {
   _startServer = (commandString: string): void => {
     this._stopServer();
     const [command, ...args] = shellParse(commandString);
-    const events = takeWhileInclusive(
+    const events =
       // Use the async scheduler so that `disposable.dispose()` can still be called in
       // error/complete handlers.
       spawn(command, args)
         .do(process => {
           this._writer = new rpc.StreamMessageWriter(process.stdin);
-          const reader = new rpc.StreamMessageReader(process.stdout);
-          rpc.createMessageConnection(reader, this._writer).listen();
+          const reader = new SafeStreamMessageReader(process.stdout);
+          rpc
+            .createMessageConnection(
+              reader,
+              this._writer,
+              getLogger('LspTester-jsonrpc'),
+            )
+            .listen();
         })
         .flatMap(proc =>
           getOutputStream(proc, {
             /* TODO(T17353599) */ isExitError: () => false,
           }),
         )
-        .subscribeOn(Scheduler.async),
-      event => event.kind !== 'error' && event.kind !== 'exit',
-    ).share();
+        .subscribeOn(Scheduler.async)
+        .let(
+          takeWhileInclusive(
+            event => event.kind !== 'error' && event.kind !== 'exit',
+          ),
+        )
+        .share();
     const responses = parseResponses(
       events
         .catch(() => Observable.empty()) // We'll handle them on the "other" stream.
@@ -143,7 +154,7 @@ export class LspTester extends SimpleModel {
     );
     const other = events.filter(event => event.kind !== 'stdout');
 
-    this.setState({
+    this._model.setState({
       lastCommand: commandString,
       running: true,
     });
@@ -166,7 +177,7 @@ export class LspTester extends SimpleModel {
         this._writer = null;
       },
       () => {
-        this.setState({running: false});
+        this._model.setState({running: false});
       },
     ));
   };
@@ -182,7 +193,7 @@ export class LspTester extends SimpleModel {
     return {
       deserializer: 'nuclide.LspTester',
       data: {
-        lastCommand: this.state.lastCommand,
+        lastCommand: this._model.state.lastCommand,
       },
     };
   }
@@ -224,7 +235,8 @@ function parseChunks(chunks: Array<string>): ?{header: string, body: mixed} {
 
 function parseResponses(raw: Observable<string>): Observable<string> {
   // TODO: We're parsing twice out of laziness here: once for validation, then for usage.
-  return bufferUntil(raw, (_, chunks) => parseChunks(chunks) != null)
+  return raw
+    .let(bufferUntil((_, chunks) => parseChunks(chunks) != null))
     .map(chunks => {
       const parsed = parseChunks(chunks);
       invariant(parsed != null);

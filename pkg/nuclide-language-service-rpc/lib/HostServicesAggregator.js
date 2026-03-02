@@ -10,9 +10,11 @@
  */
 
 import type {ShowNotificationLevel, Progress, HostServices} from './rpc-types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import invariant from 'assert';
-import {Subject, ConnectableObservable} from 'rxjs';
+import {Subject, ConnectableObservable, Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 // This is how we declare in Flow that a type fulfills an interface.
@@ -69,12 +71,20 @@ class HostServicesAggregator {
   _childRelays: Map<number, HostServicesRelay> = new Map();
   _counter: number = 0;
   _logger: log4js$Logger;
+  _isDisposed: boolean = false;
+
+  constructor() {
+    // HostServiceAggregator objects are only ever constructed from forkHostServices:
+    // 1. it calls the constructor (here)
+    // 2. it calls parent.childRegister(child)
+    // 3. it calls child.initialize(parent)
+    const relay = new HostServicesRelay(this, 0, null);
+    this._childRelays.set(0, relay);
+  }
 
   initialize(parent: HostServices, logger: log4js$Logger): void {
     this._parent = parent;
     this._logger = logger;
-    const relay = new HostServicesRelay(this, 0, null);
-    this._childRelays.set(0, relay);
   }
 
   _selfRelay(): HostServicesRelay {
@@ -96,6 +106,12 @@ class HostServicesAggregator {
     text: string,
   ): ConnectableObservable<void> {
     return this._selfRelay().dialogNotification(level, text);
+  }
+
+  applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean> {
+    return this._selfRelay().applyTextEditsForMultipleFiles(changes);
   }
 
   dialogRequest(
@@ -126,8 +142,24 @@ class HostServicesAggregator {
     return this._selfRelay().showActionRequired(title, options);
   }
 
+  dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean> {
+    return this._selfRelay().dispatchCommand(command, params);
+  }
+
+  isDisposed(): boolean {
+    return this._isDisposed;
+  }
+
   // Call 'dispose' to dispose of the aggregate and all its children
   dispose(): void {
+    // Guard against double-disposal (see below).
+    if (this._isDisposed) {
+      return;
+    }
+
     // We'll explicitly dispose of everything that our own self relay keeps
     // track of (e.g. outstanding busy signals, notifications, ...)
     this._selfRelay()._disposables.dispose();
@@ -142,17 +174,28 @@ class HostServicesAggregator {
       }
     }
 
-    // We'll throw a runtime exception upon any operations after dispose.
-    this._childRelays = ((null: any): Map<number, HostServicesRelay>);
+    this._isDisposed = true;
 
     // Finally, relay to our parent that we've been disposed.
-    this._parent.dispose();
+    if (this._parent != null) {
+      // If our parent were already disposed at the time forkHostServices was
+      // called, then its childRegister method would have disposed us even before
+      // our _parent was hooked up.
+      this._parent.dispose();
+    }
   }
 
   async childRegister(child: HostServices): Promise<HostServices> {
+    // The code which has a HostServices object doesn't necessarily know that
+    // its parent might have been disposed. And if it tries to fork, that
+    // should still succeed and produce a disposed child HostServices object.
     this._counter++;
     const relay = new HostServicesRelay(this, this._counter, child);
-    this._childRelays.set(this._counter, relay);
+    if (this.isDisposed()) {
+      child.dispose();
+    } else {
+      this._childRelays.set(this._counter, relay);
+    }
     return relay;
   }
 }
@@ -187,6 +230,9 @@ class HostServicesRelay {
     level: ShowNotificationLevel,
     text: string,
   ): void {
+    if (this._aggregator.isDisposed()) {
+      return;
+    }
     this._aggregator._parent.consoleNotification(source, level, text);
   }
 
@@ -194,6 +240,9 @@ class HostServicesRelay {
     level: ShowNotificationLevel,
     text: string,
   ): ConnectableObservable<void> {
+    if (this._aggregator.isDisposed()) {
+      return Observable.empty().publish();
+    }
     return this._aggregator._parent
       .dialogNotification(level, text)
       .refCount()
@@ -210,11 +259,23 @@ class HostServicesRelay {
     buttonLabels: Array<string>,
     closeLabel: string,
   ): ConnectableObservable<string> {
+    if (this._aggregator.isDisposed()) {
+      return Observable.empty().publish();
+    }
     return this._aggregator._parent
       .dialogRequest(level, text, buttonLabels, closeLabel)
       .refCount()
       .takeUntil(this._childIsDisposed)
       .publish();
+  }
+
+  applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean> {
+    if (this._aggregator.isDisposed()) {
+      return Promise.resolve(false);
+    }
+    return this._aggregator._parent.applyTextEditsForMultipleFiles(changes);
   }
 
   async showProgress(
@@ -232,22 +293,28 @@ class HostServicesRelay {
       dispose: () => {},
     };
 
-    // If we're already resolved, then return a no-op wrapper.
-    if (this._disposables.disposed) {
+    // If we're already disposed, then return a no-op wrapper.
+    if (this._aggregator.isDisposed()) {
       return no_op;
     }
 
     // Otherwise, we are going to make a request to our parent.
     const parentPromise = this._aggregator._parent.showProgress(title, options);
-    const cancel = this._childIsDisposed.toPromise();
-    let progress: ?Progress = await Promise.race([parentPromise, cancel]);
+    let progress: ?Progress = await Observable.from(parentPromise)
+      .takeUntil(this._childIsDisposed)
+      .toPromise();
 
     // Should a cancellation come while we're waiting for our parent,
     // then we'll immediately return a no-op wrapper and ensure that
     // the one from our parent will eventually be disposed.
-    // The "or" check below is in case both parentPromise and cancel were
-    // both signalled, and parentPromise happened to win the race.
-    if (progress == null || this._disposables.disposed) {
+    // The "or" check below is in case parentProgress returned something
+    // but also either the parent aggregator or the child aggregator
+    // were disposed.
+    if (
+      progress == null ||
+      this._aggregator.isDisposed() ||
+      this._disposables.disposed
+    ) {
       parentPromise.then(progress2 => progress2.dispose());
       return no_op;
     }
@@ -277,6 +344,9 @@ class HostServicesRelay {
     title: string,
     options?: {|clickable?: boolean|},
   ): ConnectableObservable<void> {
+    if (this._aggregator.isDisposed()) {
+      return Observable.empty().publish();
+    }
     return this._aggregator._parent
       .showActionRequired(title, options)
       .refCount()
@@ -284,12 +354,24 @@ class HostServicesRelay {
       .publish();
   }
 
+  async dispatchCommand(
+    command: string,
+    params: {|args: any, projectRoot: NuclideUri|},
+  ): Promise<boolean> {
+    if (this._aggregator.isDisposed()) {
+      return false;
+    }
+    return this._aggregator._parent.dispatchCommand(command, params);
+  }
+
   dispose(): void {
-    // Remember, this is a notification relayed from one of the children that
-    // it has just finished its "dispose" method. That's what a relay is.
-    // It is *NOT* a means to dispose of this relay
-    this._disposables.dispose();
-    this._aggregator._childRelays.delete(this._id);
+    if (!this._disposables.disposed) {
+      // Remember, this is a notification relayed from one of the children that
+      // it has just finished its "dispose" method. That's what a relay is.
+      // It is *NOT* a means to dispose of this relay
+      this._disposables.dispose();
+      this._aggregator._childRelays.delete(this._id);
+    }
   }
 
   childRegister(child: HostServices): Promise<HostServices> {
