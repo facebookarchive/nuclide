@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -16,15 +16,19 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
   NuclideRemoteConnectionProfile,
 } from './connection-types';
+import type {HumanizedErrorMessage} from './notification';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
+import {Message} from 'nuclide-commons-ui/Message';
+import nullthrows from 'nullthrows';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
-import {HR} from '../../nuclide-ui/HR';
+import {HR} from 'nuclide-commons-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
-import React from 'react';
+import * as React from 'react';
+import marked from 'marked';
 
 type Props = {
   // The initial list of connection profiles that will be displayed.
@@ -33,7 +37,7 @@ type Props = {
   // again (with the new props) on the ConnectionDetailsPrompt.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
   // If there is >= 1 connection profile, this index indicates the profile to use.
-  indexOfSelectedConnectionProfile: ?number,
+  selectedProfileIndex: ?number,
   // Function to call when 'enter'/'confirm' is selected by the user in this view.
   onConfirm: () => mixed,
   // Function to call when 'cancel' is selected by the user in this view.
@@ -45,8 +49,10 @@ type Props = {
   // Function that is called when the "-" button on the profiles list is clicked
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
-  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
-  onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed,
+  onDeleteProfileClicked: (selectedProfileIndex: number) => mixed,
+  onProfileClicked: (selectedProfileIndex: number) => mixed,
+
+  error: ?HumanizedErrorMessage,
 };
 
 type State = {
@@ -62,10 +68,11 @@ type State = {
  * 'profiles'. Clicking on a 'profile' in the NuclideListSelector auto-fills
  * the form with the information associated with that profile.
  */
-export default class ConnectionDetailsPrompt extends React.Component {
-  props: Props;
-  state: State;
-
+export default class ConnectionDetailsPrompt extends React.Component<
+  Props,
+  State,
+> {
+  _connectionDetailsForm: ?ConnectionDetailsForm;
   _settingFormFieldsLock: boolean;
 
   constructor(props: Props) {
@@ -93,23 +100,21 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // Manually update the contents of an existing `ConnectionDetailsForm`, because it contains
     // `AtomInput` components (which don't update their contents when their props change).
     if (
-      prevProps.indexOfSelectedConnectionProfile !==
-        this.props.indexOfSelectedConnectionProfile ||
+      prevProps.selectedProfileIndex !== this.props.selectedProfileIndex ||
       // If the connection profiles changed length, the effective selected profile also changed.
       (prevProps.connectionProfiles != null &&
         this.props.connectionProfiles != null &&
         prevProps.connectionProfiles.length !==
           this.props.connectionProfiles.length)
     ) {
-      const existingConnectionDetailsForm = this.refs[
-        'connection-details-form'
-      ];
+      const existingConnectionDetailsForm = this._connectionDetailsForm;
       if (existingConnectionDetailsForm) {
         // Setting values in the ConnectionDetailsForm fires change events. However, this is a
         // controlled update that should not trigger any change events. "Lock" change events until
         // synchronous updates to the form are complete.
         this._settingFormFieldsLock = true;
         existingConnectionDetailsForm.setFormFields(
+          // $FlowFixMe
           this.getPrefilledConnectionParams(),
         );
         existingConnectionDetailsForm.clearPassword();
@@ -132,11 +137,11 @@ export default class ConnectionDetailsPrompt extends React.Component {
   }
 
   focus(): void {
-    this.refs['connection-details-form'].focus();
+    nullthrows(this._connectionDetailsForm).focus();
   }
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {
-    return this.refs['connection-details-form'].getFormFields();
+    return nullthrows(this._connectionDetailsForm).getFormFields();
   }
 
   getPrefilledConnectionParams(): ?NuclideRemoteConnectionParams {
@@ -145,10 +150,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
     if (
       this.props.connectionProfiles != null &&
       this.props.connectionProfiles.length > 0 &&
-      this.props.indexOfSelectedConnectionProfile != null
+      this.props.selectedProfileIndex != null
     ) {
       const selectedProfile = this.props.connectionProfiles[
-        this.props.indexOfSelectedConnectionProfile
+        this.props.selectedProfileIndex
       ];
       return selectedProfile.params;
     }
@@ -163,7 +168,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
   };
 
   _onDefaultProfileClicked = (): void => {
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -174,7 +179,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     if (profileId == null) {
       return;
     }
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -185,7 +190,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
   };
 
   _onProfileClicked = (profileId: string): void => {
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -210,7 +215,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};
@@ -223,7 +228,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     } else {
       uniqueHosts = getUniqueHostsForProfiles(connectionProfiles);
       const mostRecentClassName = classnames('list-item', {
-        selected: this.props.indexOfSelectedConnectionProfile === 0,
+        selected: this.props.selectedProfileIndex === 0,
       });
 
       defaultConnectionProfileList = (
@@ -235,6 +240,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
               onDoubleClick={this.props.onConfirm}>
               <span
                 className="icon icon-info pull-right connection-details-icon-info"
+                // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
                 ref={addTooltip({
                   // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
                   // context to the Tooltip instance.
@@ -271,9 +277,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // The default profile is sliced from the Array to render it separately, which means
     // decrementing the effective index into the Array passed to the `MutableListSelector`.
     let idOfSelectedItem =
-      this.props.indexOfSelectedConnectionProfile == null
+      this.props.selectedProfileIndex == null
         ? null
-        : this.props.indexOfSelectedConnectionProfile - 1;
+        : this.props.selectedProfileIndex - 1;
+    // eslint-disable-next-line eqeqeq
     if (idOfSelectedItem === null || idOfSelectedItem < 0) {
       idOfSelectedItem = null;
     } else {
@@ -286,6 +293,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
         <span
           style={{paddingLeft: 10}}
           className="icon icon-info pull-right nuclide-remote-projects-tooltip-warning"
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip
@@ -322,25 +330,75 @@ export default class ConnectionDetailsPrompt extends React.Component {
             onDeleteButtonClicked={this._onDeleteProfileClicked}
           />
         </div>
-        <ConnectionDetailsForm
-          className="nuclide-remote-projects-connection-details"
-          initialUsername={prefilledConnectionParams.username}
-          initialServer={prefilledConnectionParams.server}
-          initialRemoteServerCommand={
-            prefilledConnectionParams.remoteServerCommand
-          }
-          initialCwd={prefilledConnectionParams.cwd}
-          initialSshPort={prefilledConnectionParams.sshPort}
-          initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
-          initialAuthMethod={prefilledConnectionParams.authMethod}
-          initialDisplayTitle={prefilledConnectionParams.displayTitle}
-          profileHosts={uniqueHosts}
-          onConfirm={this.props.onConfirm}
-          onCancel={this.props.onCancel}
-          onDidChange={this._handleConnectionDetailsFormDidChange}
-          ref="connection-details-form"
-        />
+        <div className="nuclide-remote-projects-connection-details">
+          <ErrorMessage error={this.props.error} />
+          <ConnectionDetailsForm
+            initialUsername={prefilledConnectionParams.username}
+            initialServer={prefilledConnectionParams.server}
+            initialRemoteServerCommand={
+              prefilledConnectionParams.remoteServerCommand
+            }
+            initialCwd={prefilledConnectionParams.cwd}
+            initialSshPort={prefilledConnectionParams.sshPort}
+            initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
+            initialAuthMethod={prefilledConnectionParams.authMethod}
+            initialDisplayTitle={prefilledConnectionParams.displayTitle}
+            profileHosts={uniqueHosts}
+            onConfirm={this.props.onConfirm}
+            onCancel={this.props.onCancel}
+            onDidChange={this._handleConnectionDetailsFormDidChange}
+            needsPasswordValue={true}
+            ref={form => {
+              this._connectionDetailsForm = form;
+            }}
+          />
+        </div>
       </div>
     );
   }
+}
+
+function ErrorMessage(props: {error: ?HumanizedErrorMessage}) {
+  const {error} = props;
+  if (error == null) {
+    return null;
+  }
+
+  const title =
+    error.title == null ? 'An unexpected error occurred.' : error.title;
+  return (
+    <Message
+      type="error"
+      className="nuclide-remote-projects-connection-error-message">
+      <span className="nuclide-remote-projects-connection-error-message-title">
+        {title}
+      </span>
+      <TroubleshootingTips detail={error.body} />
+    </Message>
+  );
+}
+
+class TroubleshootingTips extends React.Component<{detail: ?string}> {
+  render() {
+    if (this.props.detail == null) {
+      return null;
+    }
+
+    return (
+      <span
+        ref={this._addTooltip}
+        className="nuclide-remote-projects-error-troubleshooting-tips">
+        Troubleshooting Tips
+      </span>
+    );
+  }
+
+  _addTooltip = el => {
+    const formattedDetail = marked(nullthrows(this.props.detail));
+    addTooltip({
+      title: `<div class="nuclide-remote-projects-connection-error-message-tooltip-body">${formattedDetail}</div>`,
+      placement: 'bottom',
+      delay: 0,
+    })(el);
+  };
 }

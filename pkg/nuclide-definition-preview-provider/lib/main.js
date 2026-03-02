@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,7 +15,13 @@ import {getDefinitionPreviewServiceByNuclideUri} from '../../nuclide-remote-conn
 
 export function provideDefinitionPreview(): DefinitionPreviewProvider {
   return {
-    async getDefinitionPreview(definition: Definition): Promise<string> {
+    async getDefinitionPreview(
+      definition: Definition,
+    ): Promise<?{
+      mime: string,
+      contents: string,
+      encoding: string,
+    }> {
       const service = await getDefinitionPreviewServiceByNuclideUri(
         definition.path,
       );

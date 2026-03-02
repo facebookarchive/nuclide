@@ -1,15 +1,12 @@
 {
-  "lerna": "2.0.0-rc.5",
+  "lerna": "2.0.0",
   "packages": [
     "modules/*"
   ],
-  "version": "independent",
+  "version": "0.7.3-dev",
   "command": {
     "publish": {
-      "exact": true,
-      "ignore": [
-        "big-dig-samples"
-      ]
+      "exact": true
     }
   }
 }

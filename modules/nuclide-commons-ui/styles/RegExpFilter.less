@@ -1,0 +1,22 @@
+@import "ui-variables";
+
+// Target the filter field, making sure that we have a great enough specificity.
+atom-text-editor[mini].nuclide-ui-regexp-filter-input {
+  // Make it butt up against the button.
+  float: left;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+
+  &.is-focused {
+    // When focused, layer this on top of the regexp button so that the outline
+    // overlays it.
+    z-index: 1;
+  }
+}
+
+.btn.nuclide-ui-regexp-filter-button {
+  position: relative;
+  left: -1px;
+  font-weight: bold;
+  font-family: Menlo, monospace;
+}

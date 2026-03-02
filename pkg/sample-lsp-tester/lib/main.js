@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -40,6 +40,7 @@ class Activation {
   }
 
   deserializeLspTester(serialized: ?mixed): LspTester {
+    // flowlint-next-line sketchy-null-mixed:off
     const data = (serialized && serialized.data) || null;
     return new LspTester({
       lastCommand:

@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -32,6 +32,7 @@ export function getBuckService(filePath: string): ?BuckService {
  */
 export async function getBuckProjectRoot(filePath: string): Promise<?string> {
   let directory = buckProjectDirectoryByPath.get(filePath);
+  // flowlint-next-line sketchy-null-string:off
   if (!directory) {
     const service = getBuckService(filePath);
     if (service == null) {

@@ -1,0 +1,10 @@
+{
+  "name": "nuclide-fbsimctl",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Utilities for interacting with fbsimctl",
+  "author": "NEEDS OWNER",
+  "nuclide": {
+    "packageType": "AtomLibrary"
+  }
+}

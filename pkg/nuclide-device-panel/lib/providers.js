@@ -5,18 +5,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
-import {
+import type {
   DeviceListProvider,
   DeviceInfoProvider,
   DeviceProcessesProvider,
   DeviceTaskProvider,
   DeviceProcessTaskProvider,
   DeviceTypeTaskProvider,
-} from './types';
+  DeviceAppInfoProvider,
+  DeviceTypeComponentProvider,
+} from 'nuclide-debugger-common/types';
 
 type DeviceProviders = {
   deviceList: Set<DeviceListProvider>,
@@ -25,6 +27,8 @@ type DeviceProviders = {
   deviceProcesses: Set<DeviceProcessesProvider>,
   processTask: Set<DeviceProcessTaskProvider>,
   deviceTypeTask: Set<DeviceTypeTaskProvider>,
+  appInfo: Set<DeviceAppInfoProvider>,
+  deviceTypeComponent: Set<DeviceTypeComponentProvider>,
 };
 
 const providers: DeviceProviders = {
@@ -34,6 +38,9 @@ const providers: DeviceProviders = {
   deviceProcesses: new Set(),
   processTask: new Set(),
   deviceTypeTask: new Set(),
+  deviceAction: new Set(),
+  appInfo: new Set(),
+  deviceTypeComponent: new Set(),
 };
 
 export function getProviders(): DeviceProviders {
